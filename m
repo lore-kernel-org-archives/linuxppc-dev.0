@@ -1,40 +1,41 @@
-Message-ID: <37A9D6F8.65DEDFC@motorola.com>
-Date: Thu, 05 Aug 1999 11:24:56 -0700
-From: Robert Shaw <robert.shaw@motorola.com>
-MIME-Version: 1.0
-To: otto@cable.a2000.nl, linuxppc-user@lists.linuxppc.org
-CC: linuxppc-dev@lists.linuxppc.org, gewrgiou@imbc.gr
-Subject: Re: 2.2.10 kernel and Apple ISO USB keyboards
-References: <C12567C4.005220FB.00@syllogic.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 5 Aug 1999 20:40:41 +0200
+To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
+        linuxppc-user@lists.linuxppc.org
+CC: dburcaw@terraplex.com, jhaas@madison-web.com
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: BootX 1.1.2 in a tarball
+Message-Id: <19990805204041.006632@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-That URL should be:
+Ok, I finally followed Brad Midgley suggestion to make a tarball of the
+BootX folder copied to a netatalk volume. So you have a tarball
+containing all the .AppleDouble stuffs. You can get this back intact on
+MacOS (with resource forks, type/creators, ...) only by mounting it over
+the network via netatalk. However, you win the ability to read the source
+from Linux ;-) (You may still have trouble with MacOS-like carriage
+returns, I'll try to fix this for the next minor release).
 
-http://www.xs4all.nl/~om/
+So welcome http://calvaweb.calvacom.fr/bh40/BootX_1.1.2.tgz ;-)
 
-Thanks a bunch Otto!!!
+However, take care of the fact that ordinary MacOS tools like Stuffit are
+completely unable to expand those things. The result is usually
+unuseable. I hope someone with a bit of MacOS knowledge will find the
+time to write a decompression tool for that. I do have the knowledge but
+unfortunately not the time :-(
 
--Robert
+n.b. you may have noticed the cross-postingm, don't reply to all
+recipients of this email !
 
-o.moerbeek@syllogic.com wrote:
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-> Hi to you all,
->
-> With some help from  Kostas Gewrgiou (thanks!) I solved my keyboard key to mouse
-> button mapping problem. There's a How To on <http://www.xs4all/nl~om>. The
-> tricky part for me was seeing that due to some Xautoconfig problem the X server
-> did not use the xkb extension. Actually xkb not only works with USB ISO
-> keyboards, but with ALL Mac keyboards, be it ADB or USB.
->
-> Happily running 2.2.10,
-> Otto
->
-> --
-> Otto Moerbeek
-> otto@cable.a2000.nl
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
