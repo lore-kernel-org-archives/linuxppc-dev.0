@@ -1,48 +1,53 @@
-Message-ID: <20010708182837.7945.qmail@kunk.jriver.com>
-Subject: compiling 2.2.19 kernel with promise ide card support
-To: linuxppc-dev@lists.linuxppc.org
-Date: Sun, 8 Jul 2001 13:28:37 -0500 (CDT)
-From: Robert E Brose II <bob@kunk.jriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 8 Jul 2001 12:00:06 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Jeff Rugen <jprugen@earthlink.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RTC and SCSI for PowerStack/2.4.6 Kernel
+Message-ID: <20010708120006.D825@opus.bloom.county>
+References: <000701c10782$96a31e60$0401a8c0@trex>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <000701c10782$96a31e60$0401a8c0@trex>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm trying to get a 2.2.19 kernel running to check some differences
-I'm having with a 2.4 kernel. I've started with a stock 2.2.19
-kernel from kernel.org and added patches I need on the 7600.
+On Sun, Jul 08, 2001 at 12:49:58AM -0700, Jeff Rugen wrote:
 
-The problem I'm having is in getting the kernel to compile after adding
-the ide patches (to support the promise line of cards) from
+> I've finally gotten a 2.4.x kernel to boot on my Motorola Powerstack (100MHz
+> 604), but I'm having two problems.  I haven't found any info about them
+> searching the archives, so I'm wondering if anyone has seen/resolved the
+> problems I have, or can direct me to more information.
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/hedrick/ide-2.2.20/ide.2.2.19.05042001.patch
+Series E?  Got one right here, and I just booted 2_4_devel too :)
 
-I have installed Michel Lanners 2.2 pci patches and the ide patch goes
-in fine but when I try to compile the kernel I get....
+> First of all, the boot hangs when executing /sbin/hwclock.  I have (or maybe
+> 'had' now) the real-time-clock built as a module (in
+> drivers/macintosh/rtc.o), but the only thing I determined before commenting
+> out that line in rc.sysinit was that the machine hung when reaching that
+> point.  Is anyone successfully using the realtime clock on a Powerstack with
+> 2.4.x, and if so, is there anything in particular that needs to be
+> done/patched/whatever?  /sbin/hwclock is from util-linux-2.10m-7c.
 
-make[3]: Entering directory `/usr4/linux/drivers/block'
-cc -D__KERNEL__ -I/usr4/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -DEXPORT_SYMTAB -c ll_rw_blk.c
-In file included from ll_rw_blk.c:28:
-/usr4/linux/include/asm/ide.h:53: parse error before `*'
-/usr4/linux/include/asm/ide.h:56: warning: function declaration isn't a prototype
-/usr4/linux/include/asm/ide.h:63: parse error before `*'
-/usr4/linux/include/asm/ide.h:63: warning: function declaration isn't a prototype
+That looks like an OK version of util-linux.  Try compiling CONFIG_RTC_PPC in
+and not CONFIG_RTC.
 
+> Second, I am getting SCSI timeouts when running 2.4.6.  I don't know enough
+> about SCSI, but the log to the console is the following:
 
-The problem is at this declaration...
+Consistant?  I saw this once when booting off the HD but not the next time.
+Then I went back to NFS rooted.
 
-        void        (*ide_init_hwif)(hw_regs_t *hw,
-                                     ide_ioreg_t data_port,
-                                     ide_ioreg_t ctrl_port,
-                                     int *irq);
+> Which leads me to believe that I at least have the correct SCSI driver build
+> (NCR53C8XX, as the revision of 0x2 is less than the 16 that Configure.help
+> seems to indicate).  Should I instead be using the 53c7,8xx driver?  Or the
+> sym53c8xx?
 
-Can anyone drop me a clue as to the problem here??
+sym53c8xx will tell you unsupported chip.  I don't know if 53c7,8xx will work
+but give it a shot, please. :)
 
-Bob
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
