@@ -1,94 +1,36 @@
-Subject: Re: [MPC8260] accessing I/Os while MMU is off
-From: Gary Thomas <gary@mlbassoc.com>
-To: vincent poirson <poirsonv@yahoo.fr>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20030526123940.45233.qmail@web12702.mail.yahoo.com>
-References: <20030526123940.45233.qmail@web12702.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <1053953308.4694.387.camel@hermes>
-Mime-Version: 1.0
-Date: 26 May 2003 06:48:29 -0600
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: [announce] driver universe
+Date: Mon, 26 May 2003 15:07:05 +0200
+References: <011601c31f9a$17ec1b80$437d9e86@in2p3.fr>
+In-Reply-To: <011601c31f9a$17ec1b80$437d9e86@in2p3.fr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200305261507.05635.grave@ipno.in2p3.fr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2003-05-26 at 06:39, vincent poirson wrote:
-> Well, I forgot one operand in the addis instruction
-> but otherwise my code is OK. I checked that the right
-> PDATC adress was in the GPR.
-> I also forgot to say that my code works when I put it
-> in a interrupt handler in a normal kernel module.
-> What I do not understand is why the kernel keeps going
-> in machine check exception when I try to load PDATC
-> contents or store a value in PDATC.
->
+Hi all,
 
-Are you sure that the address you are using is correct?  In particular,
-this may be a mapped (via MMU) address.  The physical address can often
-be different.  When you are executing in this mode, you must use the
-physical address.
+I'm pleased to announce a new version (release ?) of our vme driver for the
+tundra chip universe.
 
->
->
->  --- None Atall <linux_meis@yahoo.com> a écrit : > You
-> missed a small shift... :)
-> >
-> > -----------------------
-> > li r16,r16,0x10
-> > li r13, 0xf001
-> > slw  r13,r13,r16
-> > addis r13, 0x0d50
-> > stw r14, 0(r13)
-> > -----------------------
-> >
-> >                    Dimitris.
-> >
-> > --- vincent poirson <poirsonv@yahoo.fr> wrote:
-> > >
-> > > Hello,
-> > >
-> > > I want to change my PDATC value while in
-> > > HardwareInterrupt code (in kernel/head.S) where
-> > MMU
-> > > is
-> > > off. So I simply do :
-> > > li r13, 0x0d50
-> > > addis r13, 0xf001
-> > > stw r14, 0(r13)
-> > > // where 0xf0010d50 is my PDATC adress and r14 the
-> > > value I want to store
-> > > I do not understand why my kernel crahes and goes
-> > in
-> > > machine exception. Surprisingly, I can change
-> > PDATC
-> > > with BDI2000 but not with assembler code. Is this
-> > an
-> > > adress translation problem ?
-> > > Am I missing something obvious ? Any help will be
-> > > appreciated.
-> > >
-> > > Thanks in advance.
-> > >
-> > >
-> > >
-> >
-> >
-> > =====
-> >
-> ------------------------------------------------------------
-> > -Dhmhtrios Meidanis
-> > -Degree in Mathematics, University of the Aegean.
-> > -Master in Computer Architecture and Digital
-> >  Systems, University of Crete.
-> >  Greece.
-> >
-> ------------------------------------------------------------
-> >
->
->
---
-Gary Thomas <gary@mlbassoc.com>
-MLB Associates
+It can be found at :
+	http://penguinppc.org/~xavier/
 
+It actually run with linux, rt linux and rtai linux.
+But there is a big lack of documentation (to be done...)
+Best of all, one can just have a look to the following directory to have a few
+examples :
+	vme_beta/universe/src/test_berr
+	vme_beta/universe/src/test_sysrst
+	vme_beta/universe/src/test_mmap
+	vme_beta/universe/src/camac_rtai
+
+I can also answer mail, but with a quite long delay. (sorry for that)
+
+O+ xavier
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
