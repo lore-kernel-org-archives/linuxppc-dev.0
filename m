@@ -1,32 +1,29 @@
-Message-ID: <3E6CB100.60402@embeddededge.com>
-Date: Mon, 10 Mar 2003 10:36:32 -0500
+Message-ID: <3E6CB1CB.8020502@embeddededge.com>
+Date: Mon, 10 Mar 2003 10:39:55 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Wojciech Kromer <krom@dgt-lab.com.pl>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8250 pci
-References: <3E6C667F.4070304@dgt-lab.com.pl>
+To: Donald MacArthur <dmacarth@ufl.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Changing Console Baud Rate
+References: <NDBBIHDFKLJKGJJGMFJOOECACHAA.dmacarth@ufl.edu>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wojciech Kromer wrote:
+Donald MacArthur wrote:
 
-> I'm looking for 8250 pci code for 2.4.19 linux (or any other).
->
-> Is code for 8240 applicable ?
+> I am currently working with an embedded planet MPC850 credit card board.  I
+> am also using the GPL timesys linux kernel.  I recently tried to change the
+> console baud rate in the kernel boot parameter from 9600 to 19200 yet when
+> the kernel booted up there was no change.  Any ideas on further
+> modifications required to change the console baud rate?
 
-Well, er, um, it depends :-)
-
-The 8250 has a custom, lightweight, PCI interface, while the 8240
-uses the standard mpc-10x controller.  The lower level initialization
-and PCI access functions won't work, but you can use the framework
-to get started.  The mpc-10x also implies the EPIC, so disregard
-all references to that.  You could also look at some of the other
-PCI interfaces, like the QSpan, for examples.
-
-Good luck.
+The console baud rate is taken from the board information structure, which
+is initalized from the boot rom environment.  The kernel console baud rate
+will match the boot rom baud rate (it kind of needs to do this support
+debugging modes).  If you want a different kernel baud rate, change the
+boot rom baud rate.
 
 
 	-- Dan
