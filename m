@@ -1,58 +1,35 @@
-Message-ID: <3C999B47.1040708@netian.com>
-Date: Thu, 21 Mar 2002 17:35:19 +0900
-From: Kim young-kyun <elecguy@netian.com>
+Message-ID: <3C99A4C5.FE7BC02A@imc-berlin.de>
+Date: Thu, 21 Mar 2002 10:15:49 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [Q] Kernel-compile error for walnut with 2.4.18 ?
-Content-Type: text/plain; charset=EUC-KR
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8xx and O_DIRECT ???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all.
+Hi there,
 
-I try to comile kernel 2.4.18 for walnut(IBM PowerPC 405GP) board on Red-Hat 7.1.
-I met below error message and I cannot solve this problem.
+has anyone successfully used the O_DIRECT option for file writing (on
+MPC8xx IDE)?
 
-powerpc-linux-gcc -D__KERNEL__
--I/home/elecguy/work/ppclinux/linux-2.4.18/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
--fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char
--msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
--Wa,-m403 -mcpu=403 -DKBUILD_BASENAME=ppc4xx_pic -c -o ppc4xx_pic.o
-ppc4xx_pic.c
-{standard input}: Assembler messages:
-{standard input}:83: Error: unsupported relocation against DCRN_EXISR
-{standard input}:84: Error: unsupported relocation against DCRN_EXIER
-{standard input}:111: Error: unsupported relocation against DCRN_EXIER
-{standard input}:128: Error: unsupported relocation against DCRN_EXIER
-{standard input}:145: Error: unsupported relocation against DCRN_EXIER
-{standard input}:149: Error: unsupported relocation against DCRN_EXISR
-{standard input}:64: Error: unsupported relocation against DCRN_EXIER
+I pulled the latest linux version from bitkeeper. When I start the file
+benchmark "bonnie" (http://www.garloff.de/kurt/linux/bonnie/) using the
+-o_direct option, I'll get:
 
-Cross-compiler is builded by following order.
+root@idif1:~# bonnie -d /mnt -s 20 -o_direct
+Bonnie 1.3: File '/mnt/Bonnie.95', size: 20971520, volumes: 1
+Using O_DIRECT for block based I/O
+Writing intelligently...       done:   4127 kB/s  73.8 %CPU
+Bonnie: drastic I/O error (/mnt/Bonnie.95.0): Not a directory
 
-1) binutils-2.12.90.0.1
-./configure --target=powerpc-linux --with-cpu=403
-make; make install
+During the "Writing intelligently" I can see this file!?
 
-2) gcc-core-2.95.3
-./configure --target=powerpc-linux --enable-shared --enable-languages=c
---with-newlib --with-cpu=403
-make; make install
+So, is -O_DIRECT actually working on MPC8xx?
 
-linux-2.4.18 with ppc-patch-2.4.18
-*in Makefile
-ARCH := ppc
-CROSS_COMPILE=powerpc-linux-
-AFLAGS := -D__ASSEMBLY__ $(CPPFLAGS) -Wa,-m403
-*in arch/ppc/Makefile
-CFLAGS := (Original flags)... -Wa,-m403
-*in make menuconfig
-Processor Type -> 4xx
-Machine Type -> Walnut
+Thanks a million,
 
-What's wrong?
-
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
