@@ -1,53 +1,26 @@
-Message-ID: <20030415064244.30457.qmail@web41804.mail.yahoo.com>
-Date: Mon, 14 Apr 2003 23:42:44 -0700 (PDT)
-From: Cedric Aubert <cedric_aubert@yahoo.fr>
-Reply-To: cedric_aubert@yahoo.fr
-Subject: RE: uClibc Compiling problem
-To: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <5.1.1.6.0.20030415094707.01cee220@dns.struinfo.it>
+Date: Tue, 15 Apr 2003 10:12:23 +0200
+To: linuxppc-embedded@lists.linuxppc.org
+From: llandre <r&d@wawnet.biz>
+Subject: Differences between PPC405GP(r) and PPC405EP Ethernet
+  controllers
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I'm porting U-Boot to the 405EP evaluation board. I have some troubles with
+the Ethernet interface. I assumed the ethernet driver written for the
+405GP(r) is ok for the 405EP, too. Is this right? If no, anybody can tell
+me the differences between the two controller?
+I posted the question here because the kernel has already been ported to
+the 405EP ev. board and it supports the Ethernet controllers.
 
-Excuse me Wolfgang, you are right, I will more clear
-in my question next
-time !! :-)
+Many thanks in advance.
 
-Do you know why the file crtbeginS.o is search in the
-directory
 
-/opt/eldk/usr/lib/gcc-lib/ppc-linux/2.95.4/m860/pic/
-
-instead of
-
-/opt/eldk/ppc_8xx/usr/lib/gcc-lib/ppc-linux/2.95.4/
-
-thanks
-
-> In message
-<20030414152233.13543.qmail@web41803.mail.yahoo.com>
-you wrote:
-> >
-> > Does anyone known why the file crtbeginS.o is
-absent
-> > in the
-> > ELDK 2.0.2 cross compiling tools (mpc860) ?
->
-> If you installed the  ELDK  (at  least  the  ppc_8xx
- package)  under
-> /opt/eldk, there should be a file
->
->
-/opt/eldk/ppc_8xx/usr/lib/gcc-lib/ppc-linux/2.95.4/crtbeginS.o
->
-> on your system. Please check again.
->
-> Best regards,
->
-> Wolfgang Denk
+llandre
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
