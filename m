@@ -1,44 +1,29 @@
-Message-ID: <3AB7FF89.3DC97EB2@intrex.net>
-Date: Tue, 20 Mar 2001 20:10:33 -0500
-From: Ralph Blach <rblach@intrex.net>
+Message-ID: <3AB7FFF6.EB575041@mvista.com>
+Date: Tue, 20 Mar 2001 20:12:22 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: es1371.o sound module on a IBM 405 walnut platform
-References: <3AB4E3BA.AF71AFE6@intrex.net> <3AB52248.D2411FF2@mvista.com> <3AB65B72.F77A0760@raleigh.ibm.com> <3AB65FCD.44826199@mvista.com>
+To: nunninger@web.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: strange problem while booting
+References: <3AB7E349.8AC5A1B0@enst.fr>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Stefan Nunninger wrote:
 
-> Ralph Blach wrote:
->
-> > Well it does.  And I recomend a new kernel interface, and Dan, I KNOW
-> > YOU WILL not like THE VERY IDEA,
-> > by here it is.
->
->
->
->
-> > By the same token, an interface to allocate noncached memory would be
-> > spiffy.
->
-> That's already been done for the 8xx and 4xx ports in the kernel
-> trees.
->
->         -- Dan
+>  loaded at:     00100000 00100000
 
-Yes it has, only for non cached pages.  But what propose is a new
-interface like kmalloc_noncache, and kfree_noncache.
-
-This would allow one to allocate noncached buffers for usb and SCSI work.
+You have to load the bits into memory at or above 0x200000...NO, don't
+change anything in the Makefile, just load the resulting bits like
+this.  The zImage decompressor has to relocate itself to 0x100000.
+There
+isn't any bss space allocated between the end of the data and the start
+of the zImage/initrd in the downloaded image.  Your decompressor code is
+likely writing over the images.
 
 
---
-Ralph "Chip" Blach
-KF4WBK
-Chapel Hill, North Carolina
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
