@@ -1,32 +1,47 @@
-Date: Thu, 17 Apr 2003 19:36:24 +0200
-From: "K.G." <k_guillaume@libertysurf.fr>
+Date: Thu, 17 Apr 2003 15:45:46 -0700
+From: Fred Gray <fegray@socrates.berkeley.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Experimental HFS+ resize support and bugfix for HFS (4th patch)
-Message-Id: <20030417193624.64a7954a.k_guillaume@libertysurf.fr>
+Subject: Genesis2_pci_IRQ_map vs. MVME2300/MVME2600
+Message-ID: <20030417224546.GG6525@socrates.berkeley.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Dear PPC kernel hackers,
 
-Here is my last patch against parted 1.6.5, to provide HFS and HFS+ support for it :
+In the structure Genesis2_pci_IRQ_map in arch/ppc/platforms/prep_pci.c, the
+following entries currently appear (at least in 2.4.21-pre6 from a
+linuxppc_2_4_devel tree obtained via rsync):
 
-http://xilun666.free.fr/parted-1.6.5-hfs-4.patch
+       0,      /* Slot 10 - Ethernet */
+       0,      /* Slot 11 - Universe PCI - VME Bridge */
+       3,      /* Slot 12 - unused */
+       0,      /* Slot 13 - unused */
+       2,      /* Slot 14 - SCSI */
 
-It includes :
-	memory leaks removal, code cleanups, resize hfs+ code,
-	more checks, minor hfs resize bugfix, probe code returns real geometry,
-and still all features of the third (same address, s/-4/-3/) patch.
+These numbers don't match with the Motorola MVME2300 and MVME2600 series boards
+that I'm using, where the following assignments are the reality:
 
-If you want to try it you should save your important data.
-You may want to run hpfsck or the Apple Sos Disk util too, before and after running parted with this patch.
-Please also report me success or failure, as well as messages from fsck utils.
+       0,      /* Slot 10 - unused */
+       0,      /* Slot 11 - IDE */
+       3,      /* Slot 12 - SCSI */
+       5,      /* Slot 13 - Universe PCI - VME Bridge */
+       2,      /* Slot 14 - Ethernet */
 
-Enjoy !
+Note that nearly all of the differences here are in the comments: the kernel
+works as distributed except that the Universe VME interface isn't assigned
+an IRQ.  The fact that every single one of the comments is wrong just makes it
+a little more interesting for someone like me to figure out what this
+mapping refers to. :-)
 
----
-Guillaume Knispel
+Thanks very much,
+
+-- Fred
+
+-- Fred Gray / Visiting Postdoctoral Researcher                         --
+-- Department of Physics / University of California, Berkeley           --
+-- fegray@socrates.berkeley.edu / phone 510-642-4057 / fax 510-642-9811 --
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
