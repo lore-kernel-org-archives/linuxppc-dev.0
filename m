@@ -1,27 +1,32 @@
-Date: Sat, 6 Oct 2001 09:16:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: Kaoru Fukui <k_fukui@highway.ne.jp>,
-	linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tom Rini <trini@kernel.crashing.org>,
+	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: ATI Radeon 32MB PCI, Apple 17 Flat panel on B+W G3
-Message-ID: <20011006091632.B10546@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011006122650.NJWF27994.tomts14-srv.bellnexxia.net@there> <20011006212902.Postino-007253@smtp01.highway.ne.jp> <20011006155635.IVKV12483.tomts13-srv.bellnexxia.net@there>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011006155635.IVKV12483.tomts13-srv.bellnexxia.net@there>
+Date: Sat, 6 Oct 2001 19:11:07 +0200
+Message-Id: <20011006171107.14805@smtp.wanadoo.fr>
+In-Reply-To: <20011006091632.B10546@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011006091632.B10546@cpe-24-221-152-185.az.sprintbbd.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Oct 06, 2001 at 11:58:37AM -0400, Kevin B. Hendricks wrote:
+>> I will give them a try.
+>
+>Radeon framebuffer support is also in -linus finally, so all of the
+>trees should support it.
 
-> I will give them a try.
+The version in -linus is slightly outdated afaik. Also, you may have
+to do the usual tweak to get the PLL right ;) (very similar to r128).
 
-Radeon framebuffer support is also in -linus finally, so all of the
-trees should support it.
+Ani and I have found some ways to fix that PLL issues once for all
+(basically, we have some code to really probe the refclk), and afaik,
+ATI OF drivers for radeon will actually give that info in the device
+tree (finally !).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
