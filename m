@@ -1,44 +1,35 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bill Fink <billfink@mindspring.com>
-Cc: Anton Blanchard <anton@samba.org>,
-	<linuxppc-dev@lists.linuxppc.org>,
-	"David S. Miller" <davem@redhat.com>
-Subject: Re: GigE Performance Comparison of GMAC and SUNGEM Drivers
-Date: Mon, 19 Nov 2001 13:54:59 +0100
-Message-Id: <20011119125459.20923@smtp.adsl.oleane.com>
-In-Reply-To: <20011119111548.F4531@krispykreme>
-References: <20011119111548.F4531@krispykreme>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: Linux Frame Buffer Device Development <Linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Till Adam <till@adam-lilienthal.de>,
+	Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [Linux-fbdev-devel] atyfb and the Mach64 LT PRO
+Date: Mon, 19 Nov 2001 14:19:54 +0100
+Message-Id: <20011119131954.30927@smtp.adsl.oleane.com>
+In-Reply-To: <20011118152214.LLAO13234.tomts8-srv.bellnexxia.net@there>
+References: <20011118152214.LLAO13234.tomts8-srv.bellnexxia.net@there>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>BTW: if you are adventerous and if the Mach64 stretch registers are
+>anything like those iin Rage128 or Radeon, you can check out the latest
+>patches to either to see how this is done for those ATI cards and try to
+>implement it yourself if you want to.
 >
+>A recent post to this mailing list (see the archive for a post whose
+>subject is "Scaling registers on r128" from Adrian Cox) supplied a patch
+>to the Rage128 that did exactly this.  You may be able to modify it easily.
 >
->Hi,
->
->> The GMAC driver had significantly better performance.  It sustained
->> 663 Mbps for the 60 second test period, and used 63 % of the CPU on
->> the transmitter and 64 % of the CPU on the receiver.  By comparison,
->> the SUNGEM driver only achieved 588 Mbps, and utilized 100 % of the
->> CPU on the transmitter and 86 % of the CPU on the receiver.  Thus,
->> the SUNGEM driver had an 11.3 % lower network performance while
->> using 58.7 % more CPU (and was in fact totally CPU saturated).
+>Just a thought.
 
-This is weird and unexpected as GMAC will request interrupt for each
-transmitted packet while sungem won't
+In fact, that depends if you have an LT-G, an LT-Pro or a Mobility M1.
 
-However, I noticed that sungem is getting a lot of rxmac and txmac
-interrupts, I'll investigate this a bit more.
-
-(Could you check the difference of /proc/interrupts between a test
-with gmac and a test with sungem ?)
-
-Note that I just updated sungem in my rsync tree, it now has all of
-the power management and ethtool/miitool support.
-I plan to replace gmac with sungem completely, so it would be nice to
-figure out where that problem comes from.
+A friend of mine have been hacking with those lately, he'll send more
+some more detailed infos once he gets something working.
 
 Ben.
 
