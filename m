@@ -1,41 +1,32 @@
-Date: Mon, 8 Sep 2003 16:26:29 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Brian Kuschak <bkuschak@yahoo.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: virt_to_phys() on 440
-Message-ID: <20030908162629.B16761@home.com>
-References: <20030908151459.A16761@home.com> <20030908223649.948.qmail@web40905.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030908223649.948.qmail@web40905.mail.yahoo.com>; from bkuschak@yahoo.com on Mon, Sep 08, 2003 at 03:36:49PM -0700
+Message-ID: <3F5D1A45.7040705@mvista.com>
+Date: Mon, 08 Sep 2003 17:09:41 -0700
+From: Todd Poynor <tpoynor@mvista.com>
+MIME-Version: 1.0
+To: Chris Simmonds <chris@2net.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: isp1161 usb driver for mpc 8xx
+References: <3F58E829.7060801@2net.co.uk>
+In-Reply-To: <3F58E829.7060801@2net.co.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Sep 08, 2003 at 03:36:49PM -0700, Brian Kuschak wrote:
+Chris Simmonds wrote:
 >
-> > These APIs are valid only for
-> > system
-> > memory kernel addresses that are staticly mapped.
-> >
-> > Anything wanting a generic translation from
-> > virt->phys should
-> > call iopa() directly until somebody drives a generic
-> > translation
-> > API into the kernel.
+> Hi,
 >
-> Thanks, I missed that.
+> Has anyone got a driver for the Philips isp 1161 usb hcd chip. There is
+> an x86 version by Roman Weissgaerber from a couple of years ago and I
+> have seen references to a port to 8xx. Ring a bell?
 
-BTW, it was pointed out to me that the changesets I made to linux-2.4
-to merge the 2.6 virt_to_* method have been merged back into current
-linuxppc-2.4 and linuxppc_2_4_devel.
+Hi, I have a version of Roman's driver that's been fixed up by David
+Gibson and myself to run on a ppc 405, it's been tested some but not a
+whole lot, can send it if you're interested.
 
-So, all current devel trees have the API correct implementation now.
 
-Now somebody needs to create a nice device-to-device DMA and bus
-address translation API. :)
+--
+Todd
 
--Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
