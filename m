@@ -1,15 +1,26 @@
-From: Der Herr Hofrat <der.herr@mail.hofr.at>
-Message-Id: <200301131920.h0DJKIb02471@hofr.at>
-Subject: Re: Control-C in bash ???
-In-Reply-To: <200301131409.00113.markc@mail.com> from Mark Chambers at "Jan 13,
- 2003 02:09:00 pm"
-To: markc@mail.com
-Date: Mon, 13 Jan 2003 20:20:18 +0100 (CET)
+Message-ID: <C08678384BE7D311B4D70004ACA3710511194633@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Der Herr Hofrat'" <der.herr@mail.hofr.at>, markc@mail.com
 Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Control-C in bash ???
+Date: Mon, 13 Jan 2003 12:25:06 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+This must be a minicom setting (although I can't find it) --
+control-C works fine for me in minicom.
+
+-----Original Message-----
+From: Der Herr Hofrat [mailto:der.herr@mail.hofr.at]
+Sent: Monday, January 13, 2003 12:20 PM
+To: markc@mail.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Control-C in bash ???
+
 
 
 >
@@ -17,10 +28,14 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 > and stop the ping.  For the life of me, I can't figure out how to do the
 > same on my MPC860 system!!!
 >
-> I have an MPC860 running 2.4.19, with a mostly unmodified eldk distribution
-> from Wolfgang Denx.  I did modify the init script to use /dev/console instead
-> of /ttyx (standard driver using SMC1).  I'd not only like a solution, I want
-> to undertand how cancelling a shell command is supposed to work  - I've poked
+> I have an MPC860 running 2.4.19, with a mostly unmodified eldk
+distribution
+> from Wolfgang Denx.  I did modify the init script to use /dev/console
+instead
+> of /ttyx (standard driver using SMC1).  I'd not only like a solution, I
+want
+> to undertand how cancelling a shell command is supposed to work  - I've
+poked
 > around and I can't figure out what's supposed to happen - Does the shell
 > generate a SIGINT, or the uart driver, or what?  Any enlightenment will be
 > greatly appreciated...
@@ -32,5 +47,6 @@ not deliver it (atleast minicom does not) - You can use ping -c 1
 it will terminate after one ping package. That was my workaround...
 
 hofrat
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
