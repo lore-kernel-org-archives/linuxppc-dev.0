@@ -1,83 +1,65 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: "ian reinhart geiser (ADMIN)" <geiseri@msoe.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Unresolved symbols....
-Date: Sat, 24 Jul 1999 10:46:53 +0200
-Content-Type: text/plain
-References: <Pine.OSF.3.96.990722115246.30323A-100000@torres.msoe.edu>
-In-Reply-To: <Pine.OSF.3.96.990722115246.30323A-100000@torres.msoe.edu>
+Date: Sat, 24 Jul 1999 12:28:56 -0400 (EDT)
+From: satadru pramanik <satadru@umich.edu>
+To: rumors@macosrumors.com
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: interesting stuff from the ibook dev pdf
+Message-ID: <Pine.LNX.4.10.9907241221310.19195-100000@beer.pub.umich.edu>
 MIME-Version: 1.0
-Message-Id: <99072410490300.00510@ns1102.munich.netsurf.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This looks like a bug in binutils that has been fixed recently. Try 2.9.4.0.8
-available on <ftp://dev.linuxppc.org/users/fsirl/R5/RPMS/ppc/>.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Franz.
+The New World Roms support additional Open FirmWare drivers for booting
+from USB AND FireWire, a byproduct of adding boot support for UDMA66
+
+- -excerpts-
+- --
+USB Storage Devices 3 The Macintosh USB software supports booting from an
+external USB storage device. Class drivers are software components that
+are able to communicate with many USB devices of a particular kind. If the
+appropriate class driver is present, any number of compliant devices can
+be plugged in and start working immediately without the need to install
+additional software. The Mac OS for the iBook includes USB Mass Storage
+Support 1.3, a class driver that supports devices that meet the USB Mass
+Storage Class specification. See USB Drivers (page 70).
+
+On the iBook, the Open Firmware code has been extended so that the device
+tree describes the new hardware features of the computer. The Open
+Firmware code also includes FCode drivers for the new hardware channels:
+UltraDMA66, FireWire, and USB.
+- --
+
+The document is at
+http://developer.apple.com/techpubs/hardware/Developer_Notes/Macintosh_CPUs-G3/iBook/iBook.pdf
+
+
+Imagine booting LinuxPPC via FireWire or USB on new Macs before you can
+boot any *nix on other architectures. (Well... Ok, I suppose that the Mac
+OS X Consumer Release might have it first.)
 
 
 
-Am Don, 22 Jul 1999 schrieb ian reinhart geiser (ADMIN):
->i am compileing the postgres ODBC drivers and i get the following
->error on linking:
->
->ld -Bdynamic -shared -soname libpsqlodbc.so.0.25 -Bsymbolic -lc -lm -o
->libpsqlod
->bc.so.0.25 info.o bind.o columninfo.o connection.o convert.o drvconn.o
->environ.o
-> execute.o lobj.o misc.o options.o pgtypes.o psqlodbc.o qresult.o
->results.o sock
->et.o parse.o statement.o gpps.o tuple.o tuplelist.o dlg_specific.o   -lc
->/lib/libc.so.6: undefined reference to `_r_debug@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_unload_cache@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_init_next@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_signal_error@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_relocate_object@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_initial_searchlist@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_profile@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_global_scope_alloc@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_fpu_control@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_debug_message@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_mcount@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_debug_initialize@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_start_profile@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_check_all_versions@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_catch_error@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_map_object@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_loaded@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_main_searchlist@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_profile_map@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_profile_output@@GLIBC_2.1'
->/lib/libc.so.6: undefined reference to `_dl_map_object_deps@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_debug_impcalls@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_debug_state@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `_dl_lookup_symbol@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `__libc_enable_secure@@GLIBC_2.0'
->/lib/libc.so.6: undefined reference to `__libc_stack_end@@GLIBC_2.1'
->make: *** [libpsqlodbc.so.0.25] Error 1
->
->any ideas on a way to fix this bugger?
->
->	-ian reinhart geiser
->
->.-----------------------------------------------------------.
->|[]                   NeXT Generation                    [X]|
->|--------------------------,--------------------------------.
->|  UNIX GEEK,              | Office:    I have none...      |
->|  Macintosh Specialist @  | Phone:     414.277.7288        |
->|  Milwaukee School of     |                                |
->|        Engineering       |--------------------------------|
->|                          |                                |
->|   ian reinhart geiser    | phone:   414.220.9683          |
->|   Apt #5                 | email:   geiseri@msoe.edu      |
->|   828 N Milwaukee St     | web:     www.msoe.edu/~geiseri |
->|   Milwaukee, WI 53202    |  NeXT/Be/Cyberdog Mail okay!   |
->|                          |   MIME or BinHex preferred     |
->|--------------------------'--------------------------------|
->'-----------------------------------------------------------'
->
+
+- --=
+satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
+MIS, Student Publications
+"I'm old enough to be living in the future I was warned about."
+  - Myron Krueger
+=--
+
+-----BEGIN PGP SIGNATURE-----
+Version: PGPfreeware 5.0i for non-commercial use
+Charset: noconv
+
+iQA/AwUBN5np1EwK0JxvsXXVEQKeYgCgjtm7Z1U7UVh/DkSV/4W8daWsfToAoJyt
+xRtwBk2TmtwJ257GihUDfJQ4
+=n609
+-----END PGP SIGNATURE-----
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
