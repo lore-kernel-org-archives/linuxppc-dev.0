@@ -1,41 +1,37 @@
-Message-ID: <39AE85BD.1B4651BB@relog.ch>
-Date: Thu, 31 Aug 2000 18:20:13 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: Dan Malek <dan@netx4.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
-        Tony Mantler <nicoya@apia.dhs.org>,
-        Tom Rini <trini@kernel.crashing.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Gabriel Paubert <paubert@iram.es>,
+        linuxppc-dev
+ <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
-References: <Pine.HPX.4.10.10008311808260.15978-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Thu, 31 Aug 2000 18:22:09 +0200
+Message-Id: <20000831162209.31786@mailhost.mipsys.com>
+In-Reply-To: <Pine.HPX.4.10.10008311753590.15978-100000@gra-ux1.iram.es>
+References: <Pine.HPX.4.10.10008311753590.15978-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
->
-> On Thu, 31 Aug 2000, Dan Malek wrote:
->
-> > I would also like to see us spend a little more time trying to
-> > stabilize 2.4 instead of trying to solve elaborate configuration and
-> > boot schemes.  That is what 2.5 is for.
->
-> What are your problems with 2.4 ? I'm at 2.4.0-test7 and I've not had any
-> problem so far, although I still need to upgrade my modutils.
+>First, kernel compile times are only fairly large after a big update, when
+>I do `make dep clean zImage'. Second, the proportion of time spend in the
+>specific PPC code (mostly arch/ppc and drivers/macintosh) is rather small.
+>Third, building a minimal kernel image for each machine would involve a
+>ton (and that's an undrestatement) of kernel options: CONFIG_INTC_8259,
+>CONFIG_INTC_POWERMAC, CONFIG_INTC_OPENPIC and others for the interrupt
+>controllers, half a dozen or so CONFIG_RTC types, same for CONFIG_NVRAM
+>and a few other things I surely forget. The only reasonable solution is to
+>aim for the smallest runtime kernel image.
 
-A few days ago, I rsynced linux-pmac-devel and tried 2.4.0-test7(-pre?) . I
-had problems with the network, no TCP connection could be established. Anyone
-seen this?
+Well, an easy first step is to have those per-machine cumulative compile
+options so you can choose pmac only, pmac+chrp, etc...
 
+That's only a few more config stuffs (CONFIG_PPC_PMAC, CONFIG_PPC_PREP,
+etc...), the core code wouldn't need to change. We can even optimize the
+various if (_machine == xxxx) using maros that get resolved to a constant
+when only one machine type is compiled in.
 
-Michel
+Ben.
 
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
