@@ -1,56 +1,57 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tom Rini <trini@kernel.crashing.org>,
-	Russell King <rmk@arm.linux.org.uk>
-Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 3 Serial issues up for discussion (was: Re: Serial core
- problems on embedded PPC)
-Date: Mon, 29 Jul 2002 20:13:52 +0200
-Message-Id: <20020729181352.27999@192.168.4.1>
-In-Reply-To: <20020729174341.GA12964@opus.bloom.county>
-References: <20020729174341.GA12964@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 29 Jul 2002 11:15:37 -0700
+From: Matt Porter <porter@cox.net>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Russell King <rmk@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 3 Serial issues up for discussion (was: Re: Serial core problems on embedded PPC)
+Message-ID: <20020729111537.A1420@home.com>
+References: <20020729181702.E25451@flint.arm.linux.org.uk> <20020729174341.GA12964@opus.bloom.county>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020729174341.GA12964@opus.bloom.county>; from trini@kernel.crashing.org on Mon, Jul 29, 2002 at 10:43:41AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> a. architectures provide a sub-module to 8250.c which contains the
->>    per-port details, rather than a table in serial.h.  This would
->>    ideally mean removing serial.h completely.  The relevant object
->>    would be linked into 8250.c when 8250.c is built as a module.
+On Mon, Jul 29, 2002 at 10:43:41AM -0700, Tom Rini wrote:
 >
->I think this would work best.  On PPC this would allow us to change the
->mess of include/asm-ppc/serial.h into a slightly cleaner Makefile
->(especially if we do the automagic <platforms/platform.h> or
-><asm/platform.h> bit that's been talked about in the past) magic and we
->could use that object file as well in the bootwrapper as well.
+> On Mon, Jul 29, 2002 at 06:17:02PM +0100, Russell King wrote:
+>
+>
+> > 1. Serial port initialisation
+> > -----------------------------
+> >
+> > Firstly, one thing to bear in mind here is that, as Alan says "be nice
+> > to make sure it was much earlier".  I guess Alan's right, so we can get
+> > oopsen out of the the kernel relatively easily, even when we're using
+> > framebuffer consoles.
+> >
+> > I'm sure Alan will enlighten us with his specific reasons if required.
+> >
+> > There have been several suggestions around on how to fix this table:
+> >
+> > a. architectures provide a sub-module to 8250.c which contains the
+> >    per-port details, rather than a table in serial.h.  This would
+> >    ideally mean removing serial.h completely.  The relevant object
+> >    would be linked into 8250.c when 8250.c is built as a module.
+>
+> I think this would work best.  On PPC this would allow us to change the
+> mess of include/asm-ppc/serial.h into a slightly cleaner Makefile
+> (especially if we do the automagic <platforms/platform.h> or
+> <asm/platform.h> bit that's been talked about in the past) magic and we
+> could use that object file as well in the bootwrapper as well.
 
-Especially, please, let's avoid once for all statically defined table,
-on PPC (specifically on pmac) the table is really dynamic, and
-the "legacy ports" (if any) may not be ttyS0..1, but could well be
-2..3, or higher, all this having to be decided at runtime for both
-built-in driver and modular (so eraly_serial_setup isn't good).
+I think this would be the cleanest method as well.  Especially when we
+recognize that the asm-ppc/serial.h situation will only get worse
+over time.  Every embedded PPC board designer has a unique location
+for his 16550 UART(s) and we just keep adding more preprocessor
+cruft for each port.  This should let us keep this board-specific
+info in our board port files...more abstraction=good.
 
-I quite like the sub-module mecanism. I'd rather have it done the
-opposite though. I don't care that much about sharing those files
-with the bootloader, and i'd rather see the core serial code beeing
-a submodule of the arch specific module.
-
-Typically, that would give us:
-
- - 8250_legacy.c would load 8250 core, probe legacy ports and
-instanciate them for typical x86 setup
- - 8250_ppc.c would instanciate known ports on PReP or CHRP machines
-and do nothing on pmac
- - 8250_pci.c would be a pci_driver and instanciate ports for a given
-PCI card
- - 8250_cs.c would be a pcmcia driver and instanciate ports for a
-given PCMCIA modem card
-
-etc... And of course, we can have an arbitrary set of the above loaded
-instanciating ports are they are found.
-
-Ben.
-
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
