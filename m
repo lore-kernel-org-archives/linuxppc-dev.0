@@ -1,35 +1,38 @@
-Date: Tue, 24 Apr 2001 18:19:15 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-Cc: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: pte entries for the 440
-In-Reply-To: <3AE5A354.9A82E5DA@raleigh.ibm.com>
-Message-ID: <Pine.HPX.4.10.10104241810010.23250-100000@gra-ux1.iram.es>
+Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF73D9FB4@NAPA>
+From: Hua Ji <hji@netscreen.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problem with MSR_IR setting(Instruction Relocateable)
+Date: Tue, 24 Apr 2001 10:26:23 -0700
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 24 Apr 2001, Ralph Blach wrote:
+ Hi, folks,
 
-> I am starting a port of linux to the IBM440 processor.  The 440 has an
-> 36 bit address space.  Reading the kernel sources, I see two options for
-> the page tables.
-> 1)One, make it a structure with the permissions being in the second
-> word.
-> 2)Make it a long long.
+I met a issue very confusing. My target is the ppc405GP and I am writing my
+propertiey OS.
 
-Make it a structure, gcc is (or at least was) not very good at
-manipulating 64 bit integers on 32 bit machines. I suspect that you need
-to shift/mask the physical address to put the bits in the correct place,
-in this case gcc prefers a stucture for sure.
+In my codes, after I finished the TLB setting(and for safe, I also set up
+the ICCE, DCCR  and DCWR), I enabled
+the MSR_IR and MSR_DR so that the CPU will now work on the address
+translation mode.
 
-It is much easier on the compiler and the register allocation routines to
-consider single register quantities.
+When I use JTAG for debugging, I am surprised to find this :
 
-	Regards,
-	Gabriel.
+**Every time when I step a "bl fool" in assember level, or setp a source
+line in c level, the MSR get changed and the MSR_IR
+got **disabled**!!. However, the MSR_DR stay. I am very confusing. Why
+changed my MSR??!!!:--(. This just suddently disabled
+all my TLB mapping for instruction as well as the caching settings!!
+
+
+Any hints are highly appreciated!
+
+
+Mike
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
