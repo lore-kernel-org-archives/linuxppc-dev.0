@@ -1,46 +1,46 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: kqtrinh@yahoo.com
-Subject: Re: Fwd: linuxppc_2_4_devel tree
-Date: Thu, 8 Aug 2002 16:23:38 -0300
-References: <18659.020808@vanet.com.br>
-In-Reply-To: <18659.020808@vanet.com.br>
+To: Jaap-Jan Boor <jjboor@lucent.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Message-Id: <02080816233800.01080@scop.digitel.com.br>
+Subject: Re: occasionally segmentation faults 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 08 Aug 2002 15:45:34 +0200."
+             <200208081345.PAA08157@hzsms01.nl.lucent.com>
+Date: Thu, 08 Aug 2002 22:12:28 +0200
+Message-Id: <20020808201233.91B7210DE1@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Khai,
+Dear Jaap-Jan,
 
-Well, it should be:
+in message <200208081345.PAA08157@hzsms01.nl.lucent.com> you wrote:
+>
+> then I downloaded and installed you eldk, but still
+> have sometimes the segmentation fault.
+>
+> My kernel is under suspicion now. I saw eldk also
 
-rsync -avz --delete  source.mvista.com::linuxppc_2_4_devel <your_directory>
+This is exactly what I suspeect, too.
 
-but I haven't tested it latelly. BTW, linuxppc_2_5 is now linuxppc-2.5
-(_this_ I know for sure :-)
+> contains a 2.4.4 kernel (I use 2.4.10)
 
-HTH,
+We were never able to get 2.4.10 stable (or any other version between
+some 2.4.7 and 2.4.14 or so).
 
-Scop.
+> Did you apply something else then the uart changes to it?
 
-On Thursday 08 August 2002 15:49, you wrote:
->
-> Hi folks,
->
-> Can someone tell me what's the exact rsync syntax to
-> obtain the source code from mvista rsync server?
->
-> Thanks,
-> --Khai
->
-> HotJobs - Search Thousands of New Jobs
-> http://www.hotjobs.com
->
->
->
-> ===8<===========End of original message text===========
+Well, yes. There are many extensions / changes / fixes in our  kernel
+source tree.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+      Bugs are by far the largest and  most successful class of
+      entity, with nearly a million known species. In this res-
+      pect they outnumber all the other  known  creatures about
+      four to one.  -- Professor Snope's Encyclopedia of Animal
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
