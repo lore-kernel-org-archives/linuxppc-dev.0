@@ -1,26 +1,32 @@
-Message-ID: <002f01c070de$15248760$4a1f76d8@washington>
-From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Neighbour Table Overflow on NFS Server
-Date: Thu, 28 Dec 2000 14:54:30 -0000
+Message-ID: <3A4B9BF0.EDC73E37@mvista.com>
+Date: Thu, 28 Dec 2000 15:00:48 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Kwansuk Kim <kskim@neowave.co.kr>
+CC: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Using gdbserver...
+References: <NEBBKFENMLEDKDHMEHPJIECCCCAA.kskim@neowave.co.kr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Kwansuk Kim wrote:
 
-I have been debugging my custom 823 board. I have an NFS Server setup on
-which my kernel on the board mounts. I have using this server without any
-problems for more than a month. All of the sudden, my NFS Server complains
-of "Neighbour Table overflow" . The NFS Server was not modified, nor
-restarted. The error also says that the Server returned error -5.  Can
-someone suggest any remedy for this problem?
+> I used ethernet on SCC1, and it worked very well except Ctrl-C interrupt.
+>
+> It didn't worked.
 
-Sincerely,
-Navin Boppuri
+Yep.  That part is missing from the serial port driver.  I finally
+got it working in the 8260 sources in 2.3/2.4 and I will shortly update
+all of the drivers.  I have lots of KGDB updates for many processor/board
+combinations (all slightly different of course), and I am trying to
+find some better/common PowerPC KGDB support.
 
+All you can do right now is ensure you have some breakpoints set that
+are known to be hit before you type 'continue'.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
