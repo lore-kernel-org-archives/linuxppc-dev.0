@@ -1,51 +1,65 @@
-Date: Sat, 31 Mar 2001 21:26:06 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Samuel Rydh <samuel@ibrium.se>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: I-cache flushing on the 7400
-In-Reply-To: <20010331201550.A20735@ibrium.se>
-Message-ID: <Pine.HPX.4.10.10103312111010.18988-100000@gra-ux1.iram.es>
+Date: Sat, 31 Mar 2001 15:16:06 -0500 (EST)
+From: Bill Fink <billfink@capu.net>
+To: Henry Worth <haworth@ncal.verio.com>
+Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
+Subject: Re: xine, ppc and illegal instructions 
+In-Reply-To: <3AC418FD.2FA4AE67@ncal.verio.com>
+Message-ID: <Pine.LNX.4.21.0103311202470.25703-100000@gwiz.nasa.atd.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 31 Mar 2001, Samuel Rydh wrote:
-
+> On Thu, 29 Mar 2001, Henry Worth wrote:
 >
-> On Sat, Mar 31, 2001 at 07:51:55PM +0200, Gabriel Paubert wrote:
->
-> > > 	LI_PHYS( r2,split_store_patch )
-> > > 	stw     r4,0(r2)			// store instruction
-> > > 	dcbst   0,r2				// Flush cache
-> > > 	sync
-> > > 	icbi    0,r2
-> > > 	isync
-> > >
-> > > 	.... some instructions and then a rfi to split_store_patch ....
-> > > 	rfi
-> > >
-> > > split_store_patch:
-> > > 	nop
-> > >
+> Bill Fink wrote:
 > >
-> > It should, while actually the isync does not seem necessary since rfi
-> > is a context synchronizing instruction (rfi and sc include implicitly the
-> > equivalent of an isync).
+> >A theory why xine 0.4.01 would work on Henry's system but not on mine
+> >was that Henry was running with a newer glibc (2.2.something).  I was
 >
-> Yes, but in this case the rfi instruction is within the same cache-line
-> as the nop. I think I need the extra isync to make sure the cache
-> line in question is not touched before the invalidation is completed.
+> Actually, I'm at 2.1.3 and 2.95.3 compiler, but the common
+> denominator for those failing seems to be Debian distributions,
+> whereas I'm LPPC Q4.
 
-As I understand the doc, you should not need it. The rfi is executed
-before the patched instruction, therefore the isync is redundant. It is
-the sync instruction that guarantees that the invalidation is completed.
-Even if the instructions up to the rfi and the patched instruction are in
-the prefetch queue, they will be flushed by the rfi and loaded again into
-the instruction cache after the context synchronization due to rfi.
+OK, maybe it's the compiler.  I'm running YDL 1.2.1 with:
 
-	Gabriel.
+gwiz% rpm -q -a | egrep 'gcc|glibc'
+gcc-2.95.2-1i
+gcc-c++-2.95.2-1i
+gcc-objc-2.95.2-1i
+gcc-g77-2.95.2-1i
+glibc-2.1.3-15f
+glibc-devel-2.1.3-15f
+
+You're running gcc-2.95.3 while I'm running gcc-2.95.2-1i.
+
+Well so much for that theory.  I just upgraded to gcc-2.95.3-2n from
+LPPC 2000 Q4 and it didn't help.
+
+How about shared libraries?  Here's the list of packages from my
+system that provide shared libraries for xine (from ldd):
+
+	glibc-2.1.3-15f
+	XFree86-libs-4.0.2-2a
+	imlib-1.9.8-1
+	libjpeg-devel-6b-10
+	libtiff-devel-3.5.4-5
+	libungif-4.1.0-3
+	libpng-devel-1.0.5-3
+	zlib-1.1.3-6
+	esound-0.2.20-0
+	audiofile-0.1.9-3
+
+Henry, could you please let me know what versions of the above you
+are running on your system so I can compare?
+
+I have a suspicion it might be an X problem although I can't say why
+I feel that way.  I'm running using Xv on an ATY Rage128.
+
+						-Thanks
+
+						-Bill
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
