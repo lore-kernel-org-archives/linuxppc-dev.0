@@ -1,48 +1,63 @@
-From: "Oliver Fuchs" <olivers.lists@gmx.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Tue, 24 Aug 2004 10:01:01 +0200
+Date: Tue, 24 Aug 2004 12:07:07 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
+Reply-To: Andrey Volkov <avolkov@varma-el.com>
+Message-ID: <149461203.20040824120707@varma-el.com>
+To: Sylvain Munaut <tnt@246tnt.com>
+Cc: Gabor Janak <g.janak@unicontrol.de>,
+	linuxppc-embedded@lists.linuxppc.org, Wolfgang Denk <wd@denx.de>
+Subject: [RFC] Re: BestComm and fec
+In-Reply-To: <412A4B69.7000305@246tNt.com>
+References: <412A4B69.7000305@246tNt.com>
 MIME-Version: 1.0
-Subject: Re: How to port ppc-linux to new custom boards? (virtexII)
-Message-ID: <412B11DD.135.65107F@localhost>
-In-reply-to: <18802.1093328823@www32.gmx.net>
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
 
-From:           	"Patrick Huesmann" <tricknology@gmx.de>
+> Andrey: Gabor has a working fec.c implementation.
 
-> Unfortunately, neither of these docs talks about tailoring the kernel to
-> custom hardware. They only state that "some changes" have to be applied to
-> the startup code. I need some more specific information, because I'm not a
-> expert PPC guru.
->
-I had to get up the kernel on two boards (MPC857T and MPC8280)
-recently. I use the ELDK3.0 with the kernel 2.4.24 shipped with it.
+> Apparently, you've both worked out a version of bestcomm for 2.6. But
+> you both based it on old code. (even non GPL).
 
-I had to modify the following files:
-arch/ppc/config.in
-	machine type (my board) added
-arch/ppc/boot/simple/embed_config.c
-	there is a function emebd_config() for every board selected by
-	#ifdefs; so I added one for my board
-arch/ppc/platforms
-	there are header files for every board; so I added one for my board
-include/asm-ppc/mpc8xx.h
-	#include <platforms/myboard.h> added; selected by #ifdef
+Terrible, may be its time to create special project for MPC5200 (if it
+doesn't exist in somewhere in I-net)? First intention - sourceforge.
+Comments/suggestions?
 
-This was enough to get the kernel up with a serial i/f.
-It may be necessary to modify the ethernet driver a little bit to
-adapt it to your pin configuration.
+Sylvain, Wolfgang I know you already have projects. But in case of
+Sylvain, as I understand, his project on his homepage.
+In case of Wolfgang, I'm not sure that DENX will happy to share their
+internal CVS with all I-net for write access. Am I right?
 
-Flash support was no problem for the CFI chips on the boards.
+> I've just tried just taking the newer one and stick it in 2.6 with the
+> fec Gabor sent, but it just crashes so it need more work ;) Dale
+> Farnsworth just said it'll look into it and porting new bestcomm as well.
 
-I'm just a newbie too, so don't kill me if there is something missed
-or wrong.
+My fec port work ok.
 
-HTH,
-Oliver
+> To resume the "close" future I'm planning :
+
+> I'm busy for two weeks ( I was planning on finishing other stuff earlier
+> and didn't work out finally ;( ). So I work less on the MPC but after
+> that, that's a full time assignment.
+
+>  - USB: Dale's patch are on their way to the official kernel. Once they
+> are in, He or I will send the necessary MPC5200 dependent stuff.
+>  - PCI: I'm working on that now, just brushing it up then I'll put it on
+> my tree and require testing
+>  - I2C: Waiting Adrian Cox patches to be in official tree ( they are in
+> -mm ), then apply mpc5200 specifics.
+>  - BestComm : Dale (the original fec writing among other things) is
+> adapting the newer bestcommcode and cleaning the fec driver as well.
+>  - IDE: Once  I get PCI in my tree, I'll look at IDE, a DMA-less version
+> at first.
+
+And CAN, RTC, and possible CRC32/16 (if it will fast enough) :).
+
+--
+Best regards,
+ Andrey Volkov
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
