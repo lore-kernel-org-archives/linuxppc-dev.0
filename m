@@ -1,11 +1,20 @@
-Return-Path: <telkimcs@empal.com>
-Message-ID: <20041202111332.41ae7a4c000d614500056bfc.1632@empal.com>
-From: =?ks_c_5601-1987?B?IrHoIMOivcQi?= <telkimcs@empal.com>
-To: <Linuxppc-embedded@ozlabs.org>
-Date: Thu, 2 Dec 2004 11:13:32 +0900
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
+	by ozlabs.org (Postfix) with ESMTP id 6B22D2BDF2
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  2 Dec 2004 19:07:51 +1100 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 2 Dec 2004 09:07:44 +0100
+References: <200412011707.14693.g.jaeger@sysgo.com>
+	<0429B8F6-43E7-11D9-A6C5-000393DBC2E8@freescale.com>
+In-Reply-To: <0429B8F6-43E7-11D9-A6C5-000393DBC2E8@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/html; charset="ks_c_5601-1987"
-Subject: [micropatch]mpc852t 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200412020907.44778.g.jaeger@sysgo.com>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH][PPC32] Fix gianfar netdriver oops when using bootp...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,33 +25,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-PEhUTUw+PEhFQUQ+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4wMC4yODAwLjE0NzYiIG5hbWU9
-R0VORVJBVE9SPg0KPFNUWUxFPlAgew0KCU1BUkdJTjogNXB4IDBweA0KfQ0KPC9TVFlMRT4NCjwv
-SEVBRD4NCjxCT0RZIHN0eWxlPSJGT05ULVNJWkU6IDEwcHQ7IENPTE9SOiBibGFjazsgRk9OVC1G
-QU1JTFk6ILG8uLIiPg0KPFA+SSB1c2UgcHJvdGluZyBsaW51eDIuNC4xOCBpbiBtcGM4NTJ0Ljwv
-UD4NCjxQPkkgZm91bmQgb3ZlcmxheSBzbWMxIGFuZCBzY2MzIGluIGRwcmFtIHBhcmFtYXRlci48
-L1A+DQo8UD5JIHRyeSB0byBtaWNyb3BhdGNoIG1wYzg1MnQuIGJ1dCBpdCBkaWRuJ3QgPC9QPg0K
-PFA+TGV0J3MgbWUga25vdyBob3cgdG8gdXNlIG1pY3JvcGF0Y2guPC9QPg0KPFA+Jm5ic3A7PC9Q
-Pg0KPFA+VGhhbmsgeW91IGZvciByZWFkaW5nIGEgbWFpbC48L1A+DQo8UD4mbmJzcDs8L1A+DQo8
-UD5mcm9tIGNzLiBraW0uPC9QPgo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPgp0ZCxmb250LGEJe2Zv
-bnQtc2l6ZTo5cHQ7IGZvbnQtZmFtaWx5OrW4v/I7IHdvcmQtYnJlYWs6YnJlYWstYWxsO30KYQkJ
-e2N1cnNvcjpoYW5kfQo8L3N0eWxlPgoKPHRhYmxlIGJvcmRlcj0wIGNlbGxwYWRkaW5nPTAgY2Vs
-bHNwYWNpbmc9MCB3aWR0aD02NjAgc3R5bGU9ImJvcmRlci10b3A6ZGFzaGVkIDFweCAjRkZDRjAw
-Ij4KPHRyPgo8dGQgdmFsaWduPXRvcCBzdHlsZT0icGFkZGluZzoxMCAxMCAwIDNweCIgd2lkdGg9
-MTAxPjxhIGhyZWY9Imh0dHA6Ly93d3cuZW1wYXMuY29tLz9yZWY9bSIgdGFyZ2V0PV9ibGFuaz48
-aW1nIHNyYz0iaHR0cDovL2liLmVtaW1nLmNvbS9lbXBhbC9zbG9nYW4vbG9nb19hZG1haWwuZ2lm
-IiBib3JkZXI9MD48L2E+PC90ZD4KPHRkIHN0eWxlPSJwYWRkaW5nLXRvcDoxMHB4IiB2YWxpZ249
-dG9wPgoKCTx0YWJsZSBib3JkZXI9MCBjZWxscGFkZGluZz0wIGNlbGxzcGFjaW5nPTAgd2lkdGg9
-MTAwJT4KCTx0cj48dGQ+PGZvbnQgc3R5bGU9Y29sb3I6RkY1OTAwOz6++7bXx9G1pSC1tyC+ssH2
-ILi7wNohPC9mb250Pjxicj48L3RkPjwvdHI+Cgk8dHI+PHRkIHN0eWxlPSJwYWRkaW5nLXRvcDoy
-cHgiPjxmb250IGNvbG9yPTMzMzMzMz6/pcbEvboguN7Az8C7IL6yuOkgsPjAr7W1ILXHtMIgwKXH
-z7XlsKEgsPjCpSEgLSA8YSBocmVmPSJodHRwOi8vZmlsZWJveC5lbXBhcy5jb20vZmlsZWJveF9p
-bmZvcGFnZS5odG1sLz9yZWY9bSIgdGFyZ2V0PV9ibGFuaz4gwNq8vMj3urix4jwvYT48L2ZvbnQ+
-PC90ZD48L3RyPgoJPC90YWJsZT4KCjwvdGQ+Cjx0ZCBzdHlsZT0icGFkZGluZy10b3A6N3B4IiBh
-bGlnbj1yaWdodD48YSBocmVmPSJodHRwOi8vZmlsZWJveC5lbXBhcy5jb20vZmlsZWJveF9pbmZv
-cGFnZS5odG1sLz9yZWY9bSIgdGFyZ2V0PV9ibGFuaz48aW1nIHNyYz0iaHR0cDovL2liLmVtaW1n
-LmNvbS9lbXBhbC9zbG9nYW4vbWFpbF9mX3Nsb2dhbjAxLmdpZiIgYm9yZGVyPTA+PC9hPjwvdGQ+
-CjwvdHI+CjwvdGFibGU+Cgo8L0JPRFk+PC9IVE1MPjxpbWcgd2lkdGg9MSBoZWlnaHQ9MSBzcmM9
-Imh0dHA6Ly9tYWlsLmVtcGFzLmNvbS9yc2QvZW1wYWxyY3B0Lmh0bWwvbkhRd3RtWnFhbVprYUEv
-clN1NUJvbXhtWkUvTWp2Ri1STmFtMTBlSEJ6WVMxbGJtRmtaR1ZrWkVOdWVHMWlZM0l2Ym5Oay9m
-b28uZ2lmIj4NCg0K
+Hi,
+
+On Wednesday 01 December 2004 23:19, Kumar Gala wrote:
+> There is some belief that the following patch should fix the issue:
+>=20
+> http://linux.bkbits.net:8080/linux-2.5/cset@1.2249.2.2? nav=3Dindex.html|=
+ChangeSet@-3d
+>=20
+> I would be interested to know if this helps w/o your patch.
+
+I'd like to cross-check this, but are you sure, you're referencing the corr=
+ect
+changeset? Currently I only got:
+Error 500
+Unable to find revision 1.2249.2.2
+
+Gerhard
+
+>=20
+> - kumar
+>=20
+> On Dec 1, 2004, at 10:07 AM, Gerhard Jaeger wrote:
+>=20
+> > Hi,
+> >
+> > this patch fixes an issue, that occurs on my MPC8541CDS, when trying to
+> >  use bootp to get the IP parameters. It seems, that the patch only =20
+> > cures
+> >  the symptom but obviously not the cause ;)
+> >
+> > Signed-off-by: Gerhard Jaeger <gjaeger@sysgo.com>
+> >
+> > --- linux-2.6.10-rc2-mm4/drivers/net/gianfar.c.orig=A0=A0=A0=A0 2004-11=
+=2D15 =20
+> > 02:26:34.000000000 +0100
+> >  +++ linux-2.6.10-rc2-mm4/drivers/net/gianfar.c=A0 2004-12-01 =20
+> > 17:00:19.000000000 +0100
+> >  @@ -1477,6 +1477,9 @@ static void gfar_phy_change(void *data)
+> >  =A0=A0=A0=A0=A0=A0=A0 struct gfar_private *priv =3D netdev_priv(dev);
+> > =A0=A0=A0=A0=A0=A0=A0 int result =3D 0;
+> >  =A0
+> >  +=A0=A0=A0=A0=A0=A0 if( !priv->mii_info->phyinfo )
+> >  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 return;
+> >  +
+> >  =A0=A0=A0=A0=A0=A0=A0 /* Delay to give the PHY a chance to change the
+> >  =A0=A0=A0=A0=A0=A0=A0=A0 * register state */
+> >  =A0=A0=A0=A0=A0=A0=A0 msleep(1);
+>=20
+>=20
