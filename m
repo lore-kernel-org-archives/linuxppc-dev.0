@@ -1,46 +1,40 @@
-Message-Id: <200007092056.VAA13850@hyperion.valhalla.net>
-Date: Sun, 09 Jul 2000 21:56:31 +0100
-Subject: Re: X still locks up
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: "Michel Dänzer" <daenzerm@student.ethz.ch>, Gwyn Judd <b.judd@xtra.co.nz>
-CC: linuxppc developers list <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
+Date: Sun, 9 Jul 2000 17:22:19 -0400
+From: Tom Vier <thomassr@erols.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: Mark Hatle <fray@mvista.com>, linuxppc-dev@lists.linuxppc.org,
+        yellowdog-devel@lists.yellowdoglinux.com
+Subject: Re: RFC: Changing default partition type for linux/ppc
+Message-ID: <20000709172219.C12414@zero>
+References: <39661556.D86AA2DA@mvista.com> <20000707222137.1227@192.168.1.10>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000707222137.1227@192.168.1.10>; from bh40@calva.net on Sat, Jul 08, 2000 at 12:21:37AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sun, Jul 9, 2000, 20:24 Michel Dänzer wrote:
-> Gwyn Judd wrote:
->
->> When I tried to play an mp3 through xmms X locked up completely although I
->> was able to change VT's, however I was unable to kill X or reboot properly.
+On Sat, Jul 08, 2000 at 12:21:37AM +0200, Benjamin Herrenschmidt wrote:
+> >My vote: let the kernel still look for Apple_UNIX_SVR2 the way it does
+> >now.  Then I would like it to be able to use anything that starts with
+> >"Linux".  That way people can name there parts types whatever they want,
+> >but Linux_ext2 and Linux_swap should be defaults.
 
-another thought - Which version of XMMS ?
+> The kernel will be able to use anything. The only kernel change concerns
+> the root auto-detect stuff.
 
-> Strange, if X hangs you actually shouldn't be able to switch VT...
+> What will need to change, however, are the various distro installers,
+> pdisk, yaboot, perhaps quik, ...
 
-True...
+i'd vote for "ext2", "hfs", etc. call them what they are, and keep it simple,
+instead of "Linux_Ext2fs" or something similar.
 
-More info.
+imho, partition types should be a "soft" standard. eg, an installer should
+default to only showing Apple_UNIX_SVR2 (or whatever standard partition
+names are created) unless the user selects "show all" or similar option.
+this is somewhat offtopic, though.
 
-I observed an effect (*before* doing the back-port) that when I reduced the
-buffer size to minimum X ran like treacle (ATI Mach64 + G3 shouldn't be)...
-could (just) possibly look a little like a lock-up if the machine was
-slower...
-
-Update:
-
-I just used the back-ported drivers to run Benno Senoner's latency test code
-- which simultaneously stresses various parts of the system whilst playing
-sound...  The includes running x11perf.
-
-No problems here... (the results are not so good but that's another
-story)...
-
-I might leave Benno's test running overnight to see if I can get the 'lock'
-effect - but I've been hammering this system (with complies, debugs, find /,
-netscape etc. etc.) and can't replicate the problem.
-
+--
+Tom Vier <thomassr@erols.com>
+DSA Key id 0x27371A2C
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
