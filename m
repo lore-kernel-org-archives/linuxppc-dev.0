@@ -1,41 +1,34 @@
-Message-ID: <C08678384BE7D311B4D70004ACA37105111946A2@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Low memory on Virtex-II Pro
-Date: Fri, 7 Feb 2003 14:56:30 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 7 Feb 2003 17:17:39 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: What Does a Linux Image Expect From U-boot?
+Message-ID: <20030208001739.GB1336@ip68-0-152-218.tc.ph.cox.net>
+References: <DF2B720CF774D21189EE00805FA7FA220517838F@nmrusdunsx3.nielsenmedia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DF2B720CF774D21189EE00805FA7FA220517838F@nmrusdunsx3.nielsenmedia.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+On Fri, Feb 07, 2003 at 03:47:11PM -0500, Wells, Charles wrote:
 
-There have been some recent posts about Linux & Virtex-II Pro
-(FPGA with PPC405 hard core).  & apparently people have it working.
+> My strategy has been to put whatever code is necessary at the beginning of
+> "linux/arch/ppc/boot/simple/head.S" to make the compressed image think it
+> just got control from u-boot.  Since I have the SDRAM setup at location
+> 0x00000000 and the FLASH and IMMR are up high out of the way, this seems
+> reasonable.
 
-One question before I start, though:
+You're headed down the wrong path, arch/ppc/boot/simple and U-Boot (and
+PPCBoot of course) are mutlally exclusive.  What you want to do is look
+at the embed_config file and define an embed_config function (iirc) to
+fill out the bd_t struct with the appropriate values.  Then just 'make
+zImage' and, depending on how your firmware works, load the image into
+memory w/o the ELF header and jump to where it was loaded.
 
-Of course the kernel starts at *virtual* address 0xc0000000, regardless
-of the processor.  But my understanding is that certain processors have
-zero-based *physical* addresses for RAM, and some don't -- x86 of course
-being an example of the former, and ARM being an example of the latter.
-I believe that PPC is an example of the former.  Certainly our MPC857T
-board, and all the other boards of which I'm aware, have RAM starting at
-physical address 0x00000000.
-
-Now, on our custom Virtex-II Pro board, with Xilinx EDK setup, there's a
-bit (the MSB) in the physical address that specifies whether a memory
-region is on the LMB bus or OPB bus.  We get to pick *which* bit, but
-there must be *a* bit set for the SDRAM.  The upshot is that our SDRAM
-starts at physical address 0xb0000000.  It can't be placed at address 0.
-And block RAM could be made low, but I can't see having megabytes of
-block RAM.
-
-So, I think I have to have the kernel at non-zero physical address
-with PPC405.
-
-Can anyone advise on success or failure of doing so?
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
