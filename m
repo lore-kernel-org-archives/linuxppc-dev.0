@@ -1,40 +1,29 @@
 From: Tom Harrington <tph@rmi.net>
-Message-Id: <199901250055.RAA20183@shell.rmi.net>
-Subject: Re: Linux and Mac together (Was: Re: mac-on-linux project status)
-To: robin@louis.bidmc.harvard.edu (Robin Colgrove)
-Date: Sun, 24 Jan 1999 17:55:16 -0700 (MST)
+Message-Id: <199901250114.SAA21010@shell.rmi.net>
+Subject: Re: mac-on-linux project status
+To: samuel@ibrium.se (Samuel Rydh)
+Date: Sun, 24 Jan 1999 18:14:11 -0700 (MST)
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <36AB7411.F40DFF97@louis.bidmc.harvard.edu> from "Robin Colgrove" at Jan 24, 99 02:28:22 pm
+In-Reply-To: <v03130301b2d040f84476@[192.168.0.1]> from "Samuel Rydh" at Jan 24, 99 04:48:41 am
 Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- 
-> Maybe I am just not understanding this but if both MkLinux and OS X run on 
-> top of the Mach microkernel, could they both be running simultaneously? If 
-> so, I could imagine using OS X (not OS X server) as my desktop OS while 
-> on the same machine MkLinux was taking care of the internet server things 
-> in the background. I do not need super high performance stuff since I 
-> only "host" a few dozen pretty low-intensity users.  Right now I get by on 
-> shareware tools (Quid Pro Quo, Rumor Mill, OTChat, NCSATelnet, Eudora 
-> Internet Mail Server) but I am reaching the limits of what I can do with 
-> these.
+> 4. Status of Hardware Emulation
+> 
+> The processor emulation is fairly complete, with some  exceptions:
+> 
+>   - floating point instructions
+>   - 603 support
+>   - HIDx registers
+> 
+> Some things in the MMU code needs to be fixed and tuned,  but the MMU
+> emulaton is in principle complete.
 
-In principle, yes,  Mach is capable of running multiple server operating 
-systems at the same time.  I have no idea what's involved in making this
-happen, but supposedly one of the advantges of a microkernel-based Linux
-(like MkLinux or L4Linux) is that you can run one Linux kernel while
-debugging another one simultaneously.  You may have trouble, though, if
-Apple is using a different version of Mach than MkLinux does, or if Apple
-has stuck some MacOS X Server-specific things into their Mach code.
-
-I really can't help you beyond suggesting that the MkLinux mailing lists
-might be a better place to ask.  If you succeed, though, I'd be very
-interested in hearing about it.  Good luck.  :-)
-
-Depending on how urgent your needs are and how much MacOS you need vs. 
-server stuff, you might be better off waiting for SheepShaver on Linux.
+Just out of curiosity, have you considered using PSIM?  It sounds like
+it's a pretty complete PowerPC emulator.  
+<ftp://cambridge.cygnus.com/pub/psim/index.html>.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
