@@ -1,54 +1,50 @@
-Date: Fri, 9 Apr 1999 12:35:37 +0200
-From: massin@col.bsf.alcatel.fr (Raphael Massin)
-Message-Id: <199904091035.MAA03310@c5s144.clb>
-To: eramdam@kieray1.p.y.ki.era.ericsson.se
-Subject: Re: embedded linux
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 9 Apr 1999 14:10:24 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Simone Piccardi <piccardi@fi.infn.it>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC on a Motorola MVME2400
+In-Reply-To: <370DBBD3.9559B590@fi.infn.it>
+Message-ID: <Pine.HPP.3.96.990409140539.13413a-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> hi there!
-> 
-> it seems like you've come a long way using embedded linux.
-> i've got the same problem with libc as you have.
-> but no answer, sorry.
-> i'm stuck with my kernel.
-> 
-> could you please tell me what kind of board you are using?
-> you probably run it on homebuilt hardware, and that brings me
-> to my real question:
-> 
-> do you run linux from ata-disk or via nfs and linux works?
 
-My turn to be sorry:-), i run linux without hard drive nor nfs.
 
-> i've got a mbx-board that runs linux without any problems.
-> the other motorola boards (fads, ads), they all hang using
-> nfs-root or using ata-flash.
-> 
-> i've written the boot-code myself.
-> 
-> have you written the boot-code for the 860 yourself
-
-Yes, in fact on my board, the zvmlinux is loaded via a backpannel
-and uses a RAM file system as root file system (the ram file system code
-has been modified to get its image from a section in the vmlinux image)
-
-> and do you have any experience you would like to share with me?
-
-I can do nothing for your ata-disk or nfs, but i would be pleased to help
-
-> i think my problem is that i don't get any page-faults when loading binaries.
-
-??
+On Fri, 9 Apr 1999, Simone Piccardi wrote:
 
 > 
-> thanks /
-> 
-> magnus
+> Hi,
+> we buy just some day ago a Motorola MVME 2431 VME board, to use it for
+> data acquisition for a Cosmic Ray Physics experiment. I saw from
+> previous mail that someone has started LinuxPPC on this board. 
+> Could you give us some info about it? 
+> Because I'm new to this board and to LinuxPPC (I always used linux on a
+> PC machine), there is some place (or any kind of documentation)
+> describing the boot procedure (we would like to use the net booting by
+> tftp)? 
 
-	Raphael 
+I have Linux/PPCeeee running quite well on 2600s. The corresponding
+patches are at:
+
+	ftp://vcorr1.iram.es/pub/linux-2.2/
+
+in files mvme2600.generic-patch-2.2.4 and mvme2600.vme-patch-2.2.4.
+(this last one is a VME driver subsystem which I hope to officialy
+announce soon, if I can find time to do something else than answering
+e-mail).
+
+I've not yet upgraded the various zImage (next week). They have serial
+consoles and I've used root-on-NFS with 2.2.1. 
+
+However, the 2400 has a new chipset (Hawk) which is not yet recognized.
+If you have the technical information about it, it will be fairly easy to
+add support in the early boot code. 
+
+	Regards,
+	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
