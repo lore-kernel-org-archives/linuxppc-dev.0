@@ -1,29 +1,44 @@
-Message-ID: <38A1D167.ABFED7F4@madison-web.com>
-Date: Wed, 09 Feb 2000 15:43:43 -0500
-From: Jason Haas <jhaas@madison-web.com>
+Message-ID: <38A1D81A.3BB316E6@wanadoo.fr>
+Date: Wed, 09 Feb 2000 22:11:54 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: the great state of the linuxppc-dev community
-References: <20000209070157.23913.qmail@wwcst271.netaddress.usa.net>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Vger CVS R.I.P. (Was Re: the state of the linuxppc-dev community)
+References: <Pine.LNX.4.10.10002091152160.11080-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-FWIW, I think we're really close to being able to jettison linuxppc.org into the
-world at large.
+Michael Schmitz wrote:
+[]
+> I could imagine a reworked web site, plus CVS or other access to the
+> sources would be a good start. I agree with Tony Mantler on the importance
+> of CVS - having run the m68k Mac port almost as one-man-show for a year,
+> switching to CVS encouraged at least five more people to start working on
+> various parts. Getting the latest sources without waiting for me
+> to build a new diff, checking in patches directly and improved
+> communication were instrumental in advancing development.
 
-- Most of the LinuxPPC.com-specific info has been removed.
-- All known distros are now represented, sorted by alpha.
-- A new design is being worked on for the main page, which is so very very 1996
-in terms of web design.
+Speaking of CVS, I find it strange that nobody in this thread mentions
+the vger CVS tree any more (but then I am finding many things strange
+recently, "ppclinux".apple.com forgetting mklinux and so on, it's
+probably me getting old). Until very recently, this tree maintained a
+very up-to-date version of PPC patches. It seems that since yesterday,
+PPC support on this tree is officially dead. There are comments like
 
-I think we'll be ready to really set it on its own soon, probably next month.
-Apparently Dan Bethe has big plans for it. ;-)
+RCS file: /cvs/linux/linux/include/asm-ppc/hw_irq.h,v
+[]
+revision 1.3
+date: 2000/02/07 21:37:25;  author: davem;  state: Exp;  lines: +1 -1
+Not maintained here anymore.
 
--- Jason
+Very sad. As a user, I found CVS much better than rsync, because it
+gives much more information and has more intelligence in merging with
+local changes. I only hope that bitkeeper will give similar
+possibilities.
 
-(really really hating being in the Mac OS)
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
