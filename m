@@ -1,41 +1,35 @@
-To: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling and using hhl's glibc 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 31 Jul 2001 14:28:18 EDT."
-             <Pine.LNX.4.33.0107311414190.1947-100000@localhost.localdomain>
-Date: Tue, 31 Jul 2001 16:50:06 +0200
-Message-Id: <20010731145011.C5CE510CAC@denx.denx.de>
+Date: Tue, 31 Jul 2001 08:05:52 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: James F Dougherty <jfd@GigabitNetworks.COM>
+Cc: mgreer@mvista.com, linuxppc-embedded@lists.linuxppc.org,
+	ppcboot-users@lists.sourceforge.net
+Subject: Re: ISA SIO Problems
+Message-ID: <20010731080552.B15710@opus.bloom.county>
+References: <200107310352.UAA02739@krakatoa.gigabitnetworks.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200107310352.UAA02739@krakatoa.gigabitnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.33.0107311414190.1947-100000@localhost.localdomain> you wrote:
->
-> I am getting ready, at long last, to start using glibc on our 603e based
-> embedded board. Hitherto, I have not used and of the HHL tools. It does,
-> however, look like their glibc has the best patches, so I'd like to give
+On Mon, Jul 30, 2001 at 08:52:09PM -0700, James F Dougherty wrote:
 
-How did you define "best patches" ?
+> When I fixed this, I immediately got console garbage (DLL value wrong for baud),
+> so I hard-coded the com1 uart baud to 9600 as a temporary hack.
 
-> My first big question is whether or not all of the needed patched are
-> already applied? There are 10 obvious patch files in the directory created
-> from the rpm.
-...
-> I should be able to handle the actual compile well enough- heaven knows
-> I've built glibc enough times (sigh...) But, does anyone have
-> recommendations for things to or not to do?
+Er, check out the 'serial_struct' I think it is, in include/linux/serial.h,
+you might try setting the 'custom_divisor' field, maybe..
 
-Why don't you just follow the build instructions in tyhe  .spec  file
-that is included with the source RPM?
+> On the baud mismatch, I found out that my system uses a 14.3Mhz UART crystal,
+> so the baud rates should change. Is there a clean way to change a #define, or
+> should I define my own baud2code/code2baud translation routines. What is the
+> cleanest way todo this?
 
-Wolfgang Denk
+In include/asm-ppc/mousse_serial.h: #define BASE_BAUD (14300000 / 16) maybe?
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Remember that Beethoven wrote his first symphony in C ...
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
