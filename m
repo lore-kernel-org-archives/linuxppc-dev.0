@@ -1,61 +1,37 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Poor 8260 FCC Ethernet performance 
-Date: Wed, 9 Jun 2004 17:33:39 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAF9@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Rune Torgersen" <runet@innovsys.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+To: "Mark Chambers" <markc@mail.com>
+Cc: "Matevz Langus" <matevz.langus@fortunal.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: JTAG debuggers for Motorola 8xx/82xx/85xx 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 09 Jun 2004 17:35:47 EDT."
+             <007a01c44e69$bb7de860$0301a8c0@chuck2>
+Date: Thu, 10 Jun 2004 00:38:05 +0200
+Message-Id: <20040609223810.DB4B7C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-BTW, found the problem with that piece of code about 2 seconds after
-sending it....
-The fcc_rbase &tbase parameters are not given the physical address, but
-the virtual one...
+In message <007a01c44e69$bb7de860$0301a8c0@chuck2> you wrote:
+>
+> For 8xx, the open source BDM4GDB (which you can get from www.denx.de) is
+> great.  I also partially ported the bdm driver to Windows for production
+> testing work.  Under Windows, I've used CrossView (from Tasking.com) with
+> Macraigor Wiggler (ocdemon.net) - all priced very reasonably.  However
+> CrossView does not support linux (but BDM4GDB does, of course)
 
-Change
- 	ep->fen_genfcc.fcc_rbase = (uint)&immap->im_dprambase[i];
-To
-	ep->fen_genfcc.fcc_rbase = __pa((uint)&immap->im_dprambase[i]);
+Note that the GDB in our ELDK not only supports the BDM4GDB, but also
+the wiggler ...
 
-And
-	ep->fen_genfcc.fcc_tbase = (uint)&immap->im_dprambase[i];
-To
-	ep->fen_genfcc.fcc_tbase = __pa((uint)&immap->im_dprambase[i]);
+Best regards,
 
+Wolfgang Denk
 
-And everything works great...
-Probably even increased performance a bit...
-
-Proper patch:
---- ../fcc_enet.c       2004-06-09 22:33:14.000000000 -0500
-+++ arch/ppc/8260_io/fcc_enet.c 2004-06-09 22:26:47.000000000 -0500
-@@ -1564,17 +1564,17 @@ init_fcc_param(fcc_info_t *fip, struct n
-         * These are relative offsets in the DP ram address space.
-         * Initialize base addresses for the buffer descriptors.
-         */
--#if 0
-+#if 1
-        /* I really want to do this, but for some reason it doesn't
-         * work with the data cache enabled, so I allocate from the
-         * main memory instead.
-         */
-        i = m8260_cpm_dpalloc(sizeof(cbd_t) * RX_RING_SIZE, 8);
--       ep->fen_genfcc.fcc_rbase = (uint)&immap->im_dprambase[i];
-+       ep->fen_genfcc.fcc_rbase = __pa((uint)&immap->im_dprambase[i]);
-        cep->rx_bd_base = (cbd_t *)&immap->im_dprambase[i];
-
-        i = m8260_cpm_dpalloc(sizeof(cbd_t) * TX_RING_SIZE, 8);
--       ep->fen_genfcc.fcc_tbase = (uint)&immap->im_dprambase[i];
-+       ep->fen_genfcc.fcc_tbase = __pa((uint)&immap->im_dprambase[i]);
-        cep->tx_bd_base = (cbd_t *)&immap->im_dprambase[i];
- #else
-        cep->rx_bd_base = (cbd_t *)m8260_cpm_hostalloc(sizeof(cbd_t) *
-RX_RING_SIZE, 8);
-
----
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"You shouldn't make my toaster angry." - Household security explained
+in "Johnny Quest"
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
