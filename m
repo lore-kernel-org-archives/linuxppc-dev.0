@@ -1,23 +1,16 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1EA1167A6E
+Return-Path: <likun@isantai.com>
+Received: from ns.isantai.com (unknown [211.95.163.86])
+	by ozlabs.org (Postfix) with ESMTP id 23FCF67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Mar 2005 11:11:39 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.61.0503291627130.16284@blarg.somerset.sps.mot.com>
-References: <20050329201209.GB30850@gate.ebshome.net>
-	<Pine.LNX.4.61.0503291627130.16284@blarg.somerset.sps.mot.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <84ab51297f043a761321ee6eddc43d4a@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 29 Mar 2005 20:10:57 -0500
-To: Kumar Gala <galak@freescale.com>
-Cc: Andrew Morton <akpm@osdl.org>, shall@mvista.com,
-	linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: CPM2 PIC cleanup irq_to_siubit array
+	Wed, 30 Mar 2005 11:40:08 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Message-ID: <OFD27DE2D9.FB92CA04-ON48256FD4.0007B768-48256FD4.000913D0@isantai.com>
+From: likun@isantai.com
+Date: Wed, 30 Mar 2005 09:43:13 +0800
+Content-Type: multipart/alternative;
+	boundary="=_alternative 000913C748256FD4_="
+Subject: How does the Montavisa previewkit?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,19 +21,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multipart message in MIME format.
+--=_alternative 000913C748256FD4_=
+Content-Type: text/plain; charset="us-ascii"
 
-On Mar 29, 2005, at 5:30 PM, Kumar Gala wrote:
+  Hi everbody:
+          i downloaded a Montavisa previewkit-mvl3.0.0_db1500-encrypt.img 
+yesterday ,it's a free kit.i want to use it as my hard hat linux .i work 
+on muti channels MPEG4 video process ,need OS strong real time,i kown the 
+vxworks being very good,but it's very expencive.so i had to use Embed 
+linux on mips-au1500 cpu.what i want to know is how does the real time of 
+Montavisa previewkit 
+,anybody know?
+          for example, i want to  deal with 16-24 channel MPEG4 codec 
+using MPEG4 ASIC chip .enviroment is Red hat 7.2 kenel 2.4.20.
+can  the Montavisa  response real time?
+             thank all
+                     jordon 
 
-> Cleaned up irq_to_siubit array so we no longer need to do 1 << 
-> (31-bit),
-> just 1 << bit.
 
-Will you please put a comment in here that indicates this array now
-has this computation done?  When I wrote it, these bit numbers
-matched the registers and the documentation, so I didn't take
-the time to explain. :-)
-
-Thanks.
+--=_alternative 000913C748256FD4_=
+Content-Type: text/html; charset="us-ascii"
 
 
-	-- Dan
+<br><font size=2 face="sans-serif">&nbsp; </font><font size=2><tt>Hi everbody:</tt></font><font size=2 face="sans-serif"><br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;i downloaded a Montavisa previewkit-mvl3.0.0_db1500-encrypt.img yesterday ,it's a free kit.i want to use it as my hard hat linux .i work on muti channels MPEG4 video process ,need OS strong real time,i kown the vxworks being very good,but it's very expencive.so i had to use Embed linux on mips-au1500 cpu.what i want to know is how does the real time of Montavisa previewkit </font>
+<br><font size=2 face="sans-serif">,anybody know?</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; for example, i want to &nbsp;deal with 16-24 channel MPEG4 codec using MPEG4 ASIC chip .enviroment is Red hat 7.2 kenel 2.4.20.</font>
+<br><font size=2 face="sans-serif">can &nbsp;the Montavisa &nbsp;response real time?</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;thank all</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;jordon </font>
+<br>
+<br>
+--=_alternative 000913C748256FD4_=--
