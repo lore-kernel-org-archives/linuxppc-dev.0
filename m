@@ -1,26 +1,37 @@
-Message-ID: <3F574D3A.5CDC3F36@gdatech.co.in>
-Date: Thu, 04 Sep 2003 20:03:30 +0530
-From: "J. Benjamin Vasanthakumar" <j.rakesh@gdatech.co.in>
+Message-ID: <3F574F48.9040704@kegel.com>
+Date: Thu, 04 Sep 2003 07:42:16 -0700
+From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Cc: d.srinivasan@gdatech.co.in
-Subject: JTAG for mpc8245
-Content-Type: text/plain; charset=us-ascii
+To: Der Herr Hofrat <der.herr@hofr.at>
+Cc: mss59@att.net, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Memory Profiling Tool
+References: <200309040558.h845wW900694@hofr.at>
+In-Reply-To: <200309040558.h845wW900694@hofr.at>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I am working with custom desgin board based on mc8245 processor. I want
-to
-use JTAG utility to update the kernel/bootcode etc. Is the JTAG code is
-available for this processor. Pl provide the link if its there so that I
-can
-download the same.
+Der Herr Hofrat wrote:
+>>Is there any memory profiling and leak detection tool available which works
+>>for both PPC and X86??
+>
+> bgcc - bounds checking gcc - its a patch to gcc
+>
+> the output will look something like this but can be tuned with compile time options:
+>
+> Bounds Checking GCC v gcc-3.2.2-3.1 Copyright (C) 1995 Richard W.M. Jones ...
 
-Thanks & regards,
+Hey!  I didn't know that was still alive!  Thanks for the tip!
+There's even a version for gcc-3.3.1 at
+http://web.inter.nl.net/hcc/Haj.Ten.Brugge/
 
-Rakesh Jagota
+- Dan
+
+--
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
