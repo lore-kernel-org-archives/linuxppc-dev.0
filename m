@@ -1,41 +1,32 @@
-Message-Id: <5.1.0.14.2.20021010062618.0221d928@falcon.si.com>
-Date: Thu, 10 Oct 2002 06:29:04 -0400
-To: <linuxppc-embedded@lists.linuxppc.org>
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: /dev/console and mknod question
-In-Reply-To: <0B0A39652BB0D411BCCF00508B9512EC08AEB466@tx14exm05.ftw.mot
- .com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: rekha gvv <rekhagvvc@yahoo.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: how to buitl ramdisk image.. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 10 Oct 2002 03:09:01 PDT."
+             <20021010100901.9814.qmail@web8005.mail.in.yahoo.com>
+Date: Thu, 10 Oct 2002 12:29:38 +0200
+Message-Id: <20021010102943.24607FAA2@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-mknod is a generic unix command, used to make device controlling entries
-(nodes) in the /dev tree.
-
-gvb
-
-
-At 10:21 PM 10/9/2002 -0500, Yu Bo-BOYU1 wrote:
-
->Finally I got the linux work on my custom board. At first I encountered
->"unable to open an initial console" problem. I created /dev/console then it
->worked.
+In message <20021010100901.9814.qmail@web8005.mail.in.yahoo.com> you wrote:
 >
->But I am still wondering how this /dev/console works ? Why mknod (which I
->think
->is a native intel platform command) can create a device that cross platform
->powerpc linux
->can understand ?
->
->Thanks.
->
->Bo Yu
->Motorola, GTSS
->1-817-245-6725
->
->
+> I am using linux2.4.4 for fads860T
+> can anyone tell me how to build an ramdisk.image.gz
 
+See for example our Simple Embedded Linux Framework (SELF) at
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Quantum Mechanics is God's version of "Trust me."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
