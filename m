@@ -1,19 +1,21 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 2834367AC1
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
+	by ozlabs.org (Postfix) with ESMTP id D04A367A8E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 01:55:08 +1100 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 23 Feb 2005 15:54:56 +0100
-References: <4219EC67.1070602@dgt-lab.com.pl>
-In-Reply-To: <4219EC67.1070602@dgt-lab.com.pl>
+	Thu, 24 Feb 2005 02:03:11 +1100 (EST)
+Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
+	by mail.tqs.de (Postfix) with ESMTP id 7BD723C66
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 23 Feb 2005 16:03:09 +0100 (CET)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200502231554.56860.g.jaeger@sysgo.com>
-Cc: Wojciech Kromer <krom@dgt-lab.com.pl>
-Subject: Re: any hints using gcc 3.4.3 for 2.4.25 kernel?
+	charset="iso-8859-1"
+Date: Wed, 23 Feb 2005 16:03:09 +0100
+Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B9F@TQ-MAILSRV-1>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: "Caruso, Nick" <ncaruso@irobot.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: AW: mpc5200: "len bad" messages from tftp (u-boot 1.1.1)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,27 +26,87 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 21 February 2005 15:12, Wojciech Kromer wrote:
-> a)first i have:
-> - 2.4.25 kernel (from denx cvs)
-> - eldk with 2.95.4 compiler
-> this one set works fine :)
-> 
-> b)then, i've tried  to same sources with:
-> gcc-3.4.3 , self build from uClibc buildroot
-> new hernel hangs just after decompressing :(
-> 
-> any tricks?
-> 
+Hi Caruso
 
-you can use the include/linux/init.h and compiler.h from 2.4.29
-kernel + patching some header files, where the inlining does not
-work any longer. I also suggest comparing with 2.4.29 kernel.
+linuxppc-embedded-bounces@ozlabs.org wrote on Mittwoch, 23. Februar
+2005 15:12:=20
+> We are seeing repeated errors during downloads using the tftp client
+> built into u-boot version 1.1.1.
 
-ciao,
-Gerhard
+This is not the correct mailing list for U-Boot related questions.
+Please use the u-boot users list (u-boot-users@lists.sourceforge.net)
+next time.
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+Attached is a patch for the mpc5xxx FEC driver, which fixes a variable-
+not-defined-as-volatile bug. I had similar Problems with the tftp =
+command
+and this patch helps. The patch ist against top of cvs. Wolfgang Denk=20
+sends it to me last week, so I am a bit surprised, that it didn't find=20
+its way into cvs, yet.
+
+Regards,
+Martin
+
+Index: cpu/mpc5xxx/fec.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+RCS file: /cvsroot/u-boot/u-boot/cpu/mpc5xxx/fec.c,v
+retrieving revision 1.18
+diff -u -r1.18 fec.c
+--- cpu/mpc5xxx/fec.c	16 Dec 2004 15:52:41 -0000	1.18
++++ cpu/mpc5xxx/fec.c	16 Feb 2005 09:16:55 -0000
+@@ -115,7 +115,7 @@
+ }
+=20
+ /********************************************************************/
+-static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, FEC_RBD * =
+pRbd)
++static void mpc5xxx_fec_rbd_clean(mpc5xxx_fec_priv *fec, volatile =
+FEC_RBD * pRbd)
+ {
+ 	/*
+ 	 * Reset buffer descriptor as empty
+@@ -141,7 +141,7 @@
+ /********************************************************************/
+ static void mpc5xxx_fec_tbd_scrub(mpc5xxx_fec_priv *fec)
+ {
+-	FEC_TBD *pUsedTbd;
++	volatile FEC_TBD *pUsedTbd;
+=20
+ #if (DEBUG & 0x1)
+ 	printf ("tbd_scrub: fec->cleanTbdNum =3D %d, fec->usedTbdIndex =3D =
+%d\n",
+@@ -354,10 +354,10 @@
+ 	/*
+ 	 * Initialize SmartDMA parameters stored in SRAM
+ 	 */
+-	*(int *)FEC_TBD_BASE =3D (int)fec->tbdBase;
+-	*(int *)FEC_RBD_BASE =3D (int)fec->rbdBase;
+-	*(int *)FEC_TBD_NEXT =3D (int)fec->tbdBase;
+-	*(int *)FEC_RBD_NEXT =3D (int)fec->rbdBase;
++	*(volatile int *)FEC_TBD_BASE =3D (int)fec->tbdBase;
++	*(volatile int *)FEC_RBD_BASE =3D (int)fec->rbdBase;
++	*(volatile int *)FEC_TBD_NEXT =3D (int)fec->tbdBase;
++	*(volatile int *)FEC_RBD_NEXT =3D (int)fec->rbdBase;
+=20
+ 	/*
+ 	 * Enable FEC-Lite controller
+@@ -688,7 +688,7 @@
+ 	 * 6-byte Ethernet addresses.
+ 	 */
+ 	mpc5xxx_fec_priv *fec =3D (mpc5xxx_fec_priv *)dev->priv;
+-	FEC_TBD *pTbd;
++	volatile FEC_TBD *pTbd;
+=20
+ #if (DEBUG & 0x20)
+ 	printf("tbd status: 0x%04x\n", fec->tbdBase[0].status);
+@@ -779,7 +779,7 @@
+ 	 * This command pulls one frame from the card
+ 	 */
+ 	mpc5xxx_fec_priv *fec =3D (mpc5xxx_fec_priv *)dev->priv;
+-	FEC_RBD *pRbd =3D &fec->rbdBase[fec->rbdIndex];
++	volatile FEC_RBD *pRbd =3D &fec->rbdBase[fec->rbdIndex];
+ 	unsigned long ievent;
+ 	int frame_length, len =3D 0;
+ 	NBUF *frame;
