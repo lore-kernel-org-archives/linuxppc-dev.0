@@ -1,16 +1,22 @@
-Return-Path: <Albert.David@barco.com>
-Received: from kuuvir04.barco.com (unknown.barco.com [194.7.240.10])
-	by ozlabs.org (Postfix) with SMTP id C6E1467A6B
+Return-Path: <glikely@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
+	by ozlabs.org (Postfix) with ESMTP id C689367A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Feb 2005 19:46:18 +1100 (EST)
-Message-ID: <EF7A806FA57EF5448A0885E06E1DB5CC07DEAE@noifps03.barco.com>
-From: "David, Albert" <Albert.David@barco.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Sat, 12 Feb 2005 09:19:19 +0100
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C510DB.8C6E3B26"
-Subject: Memory Size Requirement to Run Linux on Embedded Environment
+	Sat, 12 Feb 2005 21:24:30 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 57so354260wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 12 Feb 2005 02:24:29 -0800 (PST)
+Message-ID: <528646bc05021202175e967842@mail.gmail.com>
+Date: Sat, 12 Feb 2005 03:17:49 -0700
+From: Grant Likely <glikely@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <528646bc05021201091a106a96@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <EF7A806FA57EF5448A0885E06E1DB5CC07DEAE@noifps03.barco.com>
+	<528646bc05021201091a106a96@mail.gmail.com>
+Subject: Fwd: Memory Size Requirement to Run Linux on Embedded Environment
+Reply-To: Grant Likely <glikely@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,177 +27,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+Forgot to include list in reply; oops.
 
-------_=_NextPart_001_01C510DB.8C6E3B26
-Content-Type: text/plain
-
-Hi everyone!
-I am new to linux and my current project is to port linux on our custom
-hardware based on PPC405EP(AMCC).
-Currently we are in a hardware design phase but I am finding it hard to
-decide the Flash and SDRAM Memory size.
-We are planning to us 2.6 Kernel, with minimum hardware interfaces.
-
-Should we use Kernel 2.4 or 2.6?
-
-Main components of my target device are as follows..
-
-1)AMCC PPC405EP processor operating at 66.66Mhz External Oscillator(Hope we
-can go for higher operating frequencies by configuring internal registers of
-PPC).
-2)Virtex-2 Pro FPGA - memory mapped to PPC405.
-3)Ethernet Connectivity.
-4)IrDA.
-5)Two RS232 Serial Ports.
-6) IIC Bus.
+g.
 
 
-I assume the binary size of my application that will run on linux would be
-around 2 to 3 MB. By considering these facts of my hardware, what would be
-the size of kernel? And how many drivers I may require? What would be the
-size of my root file system? 
+---------- Forwarded message ----------
+From: Grant Likely <glikely@gmail.com>
+Date: Sat, 12 Feb 2005 02:09:13 -0700
+Subject: Re: Memory Size Requirement to Run Linux on Embedded Environment
+To: "David, Albert" <Albert.David@barco.com>
 
-Is it necessary to have a NAND Flash to handle the power failures? Or any
-CFI compliant NOR Flash would do!
 
-There will be parameters of about 65KB are to be used and these parameters
-can be changed in the field. This parameter block will have 2 copies to
-avoid data corruption due to power fail. Hence to avoid the use of NAND
-Flash I will be using 2 Parameter files to read and write(into flash) in a
-linux environment during normal operation. Am I right??
+On Sat, 12 Feb 2005 09:19:19 +0100, David, Albert
+<Albert.David@barco.com> wrote:
+>
+>
+> Hi everyone!
+> I am new to linux and my current project is to port linux on our custom
+> hardware based on PPC405EP(AMCC).
+> Currently we are in a hardware design phase but I am finding it hard to
+> decide the Flash and SDRAM Memory size.
+> We are planning to us 2.6 Kernel, with minimum hardware interfaces.
+>
+> Should we use Kernel 2.4 or 2.6?
+Use 2.6 unless you have a ready to go 2.4 port for your board which
+you do not need to modify.  This also assumes that you don't need any
+of the new 2.6 features.
+>
+> I assume the binary size of my application that will run on linux would be
+> around 2 to 3 MB. By considering these facts of my hardware, what would be
+> the size of kernel? And how many drivers I may require? What would be the
+> size of my root file system?
+2 to 3 MB if all you put on it is your app, slightly larger otherwise.
+ A very minimal system w/ busybox will easily fit into 1 or 2 MB.
+>
+> There will be parameters of about 65KB are to be used and these parameters
+> can be changed in the field. This parameter block will have 2 copies to
+> avoid data corruption due to power fail. Hence to avoid the use of NAND
+> Flash I will be using 2 Parameter files to read and write(into flash) in a
+> linux environment during normal operation. Am I right??
+You could map the FLASH as a MTD device and write to two different
+sectors directly; then you can use a RAM disk instead of going with
+JFFS on your flash.  Use a separate RedBoot partition for each
+parameter sector.  (Note; using RedBoot partitions does not preclude
+using u-boot)
+>
+> In this mailing list I have read the typical size of U-BOOT will be around
+> 256KB as suggested by Wolfgang Denk.
+U-boot will live at the beginning of flash.  The u-boot environment
+will take up another sector.  Your parameter files will take up at
+least one sector each.  The rest can be dedicated to the kernel and
+initrd images.  Set up a RedBoot partition for each.
+>
+> A rough approximation of Flash and SDRAM size would help me a lot to proceed
+> with my hardware design.
+How much RAM does your app need?  32M is gobs for a simple system.  If
+it's ultra simple you may even be able to go down to 16 (don't quote
+me though).  Add more if your app is RAM hungry.  16M of flash should
+also be gobs.  (Assuming 1-2M for the kernel and the rest for the
+initrd image)
 
-In this mailing list I have read the typical size of U-BOOT will be around
-256KB as suggested by Wolfgang Denk.
+Make sure you use uClibc and busybox if you want to keep your system small.
 
-A rough approximation of Flash and SDRAM size would help me a lot to proceed
-with my hardware design. 
-
-Pardon me If I am asking too basic questions, I know I have to do lot of
-reading before I proceed. 
-Your inputs are valuable to me!
-
-Thanks in advance for your support,
-BR,
-Albert David.
-
-- - - - - - - DISCLAIMER - - - - - - - - 
-Unless indicated otherwise, the information contained in this message is
-privileged and confidential, and is intended only for the use of the
-addressee(s) named above and others who have been specifically authorized to
-receive it. If you are not the intended recipient, you are hereby notified
-that any dissemination, distribution or copying of this message and/or
-attachments is strictly prohibited. The company accepts no liability for any
-damage caused by any virus transmitted by this email. Furthermore, the
-company does not warrant a proper and complete transmission of this
-information, nor does it accept liability for any delays. If you have
-received this message in error, please contact the sender and delete the
-message. Thank you.
-
-------_=_NextPart_001_01C510DB.8C6E3B26
-Content-Type: text/html
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-5.5.2657.88">
-<TITLE>Memory Size Requirement to Run Linux on Embedded =
-Environment</TITLE>
-</HEAD>
-<BODY>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">Hi everyone!</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">I am new to linux and my current =
-project is to port linux on our custom hardware based on =
-PPC405EP(AMCC).</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">Currently we are in a hardware =
-design phase but I am finding it hard to decide the Flash and SDRAM =
-Memory size.</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">We are planning to us 2.6 Kernel, =
-with minimum hardware interfaces.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">Should we use Kernel 2.4 or =
-2.6?</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">Main components of my target device =
-are as follows..</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">1)AMCC PPC405EP processor operating =
-at 66.66Mhz External Oscillator(Hope we can go for higher operating =
-frequencies by configuring internal registers of PPC).</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">2)Virtex-2 Pro FPGA - memory mapped =
-to PPC405.</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">3)Ethernet Connectivity.</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">4)IrDA.</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">5)Two RS232 Serial Ports.</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">6) IIC Bus.</FONT>
-</P>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">I assume the binary size of my =
-application that will run on linux would be around 2 to 3 MB. By =
-considering these facts of my hardware, what would be the size of =
-kernel? And how many drivers I may require? What would be the size of =
-my root file system? </FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">Is it necessary to have a NAND Flash =
-to handle the power failures? Or any CFI compliant NOR Flash would =
-do!</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">There will be parameters of about =
-65KB are to be used and these parameters can be changed in the field. =
-This parameter block will have 2 copies to avoid data corruption due to =
-power fail. Hence to avoid the use of NAND Flash I will be using 2 =
-Parameter files to read and write(into flash) in a linux environment =
-during normal operation. Am I right??</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">In this mailing list I have read the =
-typical size of U-BOOT will be around 256KB as suggested by Wolfgang =
-Denk.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">A rough approximation of Flash and =
-SDRAM size would help me a lot to proceed with my hardware design. =
-</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">Pardon me If I am asking too basic =
-questions, I know I have to do lot of reading before I proceed. </FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">Your inputs are valuable to =
-me!</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Verdana">Thanks in advance for your =
-support,</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">BR,</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Verdana">Albert David.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">- - - - - - - DISCLAIMER - - - - - - - =
-- </FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Unless indicated otherwise, the =
-information contained in this message is privileged and confidential, =
-and is intended only for the use of the addressee(s) named above and =
-others who have been specifically authorized to receive it. If you are =
-not the intended recipient, you are hereby notified that any =
-dissemination, distribution or copying of this message and/or =
-attachments is strictly prohibited. The company accepts no liability =
-for any damage caused by any virus transmitted by this email. =
-Furthermore, the company does not warrant a proper and complete =
-transmission of this information, nor does it accept liability for any =
-delays. If you have received this message in error, please contact the =
-sender and delete the message. Thank you.</FONT></P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C510DB.8C6E3B26--
+Cheers,
+g.
