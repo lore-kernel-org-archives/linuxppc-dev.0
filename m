@@ -1,45 +1,34 @@
-Date: Sun, 19 Aug 2001 19:18:10 -0400
-From: Ben Collins <bcollins@debian.org>
-To: Ira Weiny <iweiny@acm.org>
-Cc: Linux1394dev <linux1394-devel@lists.sourceforge.net>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Task Queue Imediate Bottom Halfs question.
-Message-ID: <20010819191810.E10646@visi.net>
-References: <3B803FEE.7079F34C@acm.org>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B803FEE.7079F34C@acm.org>; from iweiny@acm.org on Sun, Aug 19, 2001 at 03:38:38PM -0700
+Message-ID: <15232.21084.255152.281121@cargo.ozlabs.ibm.com>
+Date: Mon, 20 Aug 2001 09:57:16 +1000 (EST)
+To: mlan@cpu.lu
+Cc: hozer@drgw.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: About TAU (and ICTC)
+In-Reply-To: <200108191559.RAA01163@piglet.grunz.lu>
+References: <200108191003.MAA00874@piglet.grunz.lu>
+	<200108191559.RAA01163@piglet.grunz.lu>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Aug 19, 2001 at 03:38:38PM -0700, Ira Weiny wrote:
-> This is going to seem like a real stupid question but I just got burned
-> because I did not know the answer and I would like to know.
->
-> In the 1394 stack (OHCI) the IRQ handler schedules "bottom half tasklets
-> (task queues in the old stack)".  They are scheduled to be "imediate"
-> bottom half's.  I thought (wrongly) that a bottom half executed out of
-> IRQ time with interrupts __enabled__.  As a result I put in a Async Rec
-> handler which used printk (60ms worth to be exact).  Needless to say
-> this greatly disturbed our ISO transfers which did not get processed.
->
-> So, my question is, why use a bottom half here?  Or really what is the
-> difference between scheduling a task queue (tasklet) imediate vs just
-> running the code in the IRQ handler?
+Michel Lanners writes:
 
-A performance hit? Running it straight from the interrupt handler mean
-that the handler is blocking until the request is finished. Not only
-does it have to wait for the ohci layer to process it, but also the
-ieee1394 layer, which in turn processes to the protocol drivers (sbp2,
-etc.). Really bad.
+> My preliminary test indicate that settig ICTC to 33 (0x21) has no
+> noticeable effect on an idle machine. While running an endless kernel
+> compile loop, however, it makes the CPU temperature drop from 19C to
+> 15-17C, and increases battery life by about 20 min.
 
-Ben
+How long did each kernel compile take, with ICTC=0 and ICTC=0x21, and
+what was the average current consumption in each case?
 
---
- .----------=======-=-======-=========-----------=====------------=-=-----.
-/  Ben Collins  --  ...on that fantastic voyage...  --  Debian GNU/Linux   \
-`  bcollins@debian.org  --  bcollins@openldap.org  --  bcollins@linux.com  '
- `---=========------=======-------------=-=-----=-===-======-------=--=---'
+I would expect that the total battery charge used could well be higher
+with ICTC=0x21 than with ICTC=0, particularly if you had the LCD
+backlight on during the compile. :)
+
+Regards,
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
