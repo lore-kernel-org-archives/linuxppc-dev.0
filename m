@@ -1,43 +1,52 @@
-Date: Mon, 12 Aug 2002 10:42:04 +1000
+Date: Mon, 12 Aug 2002 15:54:27 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Beech LCD patch
-Message-ID: <20020812004204.GN23642@zax>
+To: akuster <akuster@dslextreme.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: First steps to OCP device model integration
+Message-ID: <20020812055427.GX23642@zax>
+References: <20020809042605.GC23642@zax> <3D541AE9.40007@dslextreme.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D541AE9.40007@dslextreme.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Could somebody please commit the following patch to
-linuxppc_2_4_devel.  It fixes a bug in the Beech/405LP LCD driver.
-I'd commit it myself, except me doing a push seems to break the tree
-at the moment.
+On Fri, Aug 09, 2002 at 12:41:29PM -0700, akuster wrote:
+>
+> David Gibson wrote:
+> >THe patch below implements the first steps in transitioning the
+> >handling of 4xx OCP devices to the unfied device model (in 2.5).  So
+> >far the code just registers an ocp bus and registers each device
+> >described in core_ocp on that bus.  The next step is to convert the
+> >actual device drivers so that that they register with the unified
+> >driver tree rather than through the old ocp_register() mechanism.
+> >
+> >I will commit this shortly unless there are serious objections.
+>
+> I object seriously.
+>
+>  Some of what you have might be useful.:) OCP is not just for 4xx.
+In
 
-diff -ruN linux.orig/drivers/video/ibmlcdfb.c linux/drivers/video/ibmlcdfb.c
---- linux.orig/drivers/video/ibmlcdfb.c	Fri Aug  9 19:16:04 2002
-+++ linux/drivers/video/ibmlcdfb.c	Fri Aug  9 19:15:51 2002
-@@ -1218,7 +1218,8 @@
- 	int ncolors;
- 	const struct ibmlcdfb_info *info = (struct ibmlcdfb_info *) inf;
+Sure, details, changing names is easy.  At the moment 4xx is the only
+thing using OCP so we might as well get it working for that before
+worrying too much about anything else.
 
--	ncolors = 1 << bpp_from_par(info->gen.info.par);
-+	ncolors = bpp_from_par(info->gen.info.par);
-+
- 	if (regno >= ncolors)
- 		return -EINVAL;
+> fact the name may need to change.  I have been working on overhalling
+> this interface and testing the ideas before having a review of the
+> changes.  I am on the hook to Paul and others to get this out in the
+> open to discuss and am not ready.  So if you could just relax and
+> wait I
 
-@@ -1249,7 +1250,8 @@
- 	int ncolors;
- 	struct ibmlcdfb_info *info = (struct ibmlcdfb_info *) inf;
+So how about you tell us about this new scheme of yours.  This is not
+a difficult problem, and you've been making intermittent mutterings
+for months.
 
--	ncolors = 1 << bpp_from_par(info->gen.info.par);
-+	ncolors = bpp_from_par(info->gen.info.par);
-+
- 	if (regno >= ncolors)
- 		return -EINVAL;
+> would appriciate it.  I would rather see the 2.5 kernel boot on a few
+> 4xx boards
 
-
+OCP support is currently the main thing lacking for that.
 
 --
 David Gibson			| For every complex problem there is a
