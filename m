@@ -1,65 +1,71 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: ppc826x BAD interrupts
-Date: Fri, 16 Jan 2004 11:29:51 -0500
-Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B436E589@tarpon.mangrovesystems.com>
-From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
-To: "Jeff Angielski" <jeff@theptrgroup.com>,
-	<linuxppc-dev@lists.linuxppc.org>
+Date: Fri, 16 Jan 2004 09:35:45 -0700
+From: Rob Baxter <robb@synergymicro.com>
+To: Jeff Angielski <jeff@theptrgroup.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc826x BAD interrupts
+Message-ID: <20040116163545.GA8577@synergymicro.com>
+References: <1074268973.4323.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1074268973.4323.13.camel@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This problem was discussed on mailing list before also and you can eliminate this problem by inserting a sync instruction at a certain place in the 8260 interrupt handling code. See, for example, http://www.geocrawler.com/archives/3/8358/2002/11/100/10173445/
+On Fri, Jan 16, 2004 at 11:02:53AM -0500, Jeff Angielski wrote:
+>
+> Looking at /proc/interrupts, I see a large number of "BAD" interrups on
+> both my MPC8260 reference board (2.4.21) and my PPC8266 custom board
+> (2.4.23).  Both use u-boot as the bootloader.
+>
+> bash-2.05# cat /proc/interrupts
+>            CPU0
+>  24:          0   8260 SIU   Edge      PCI IRQ demux
+>  33: 2658326944   8260 SIU   Edge      fenet
+>  40:      32524   8260 SIU   Edge      uart
+>  41:          0   8260 SIU   Edge      uart
+> BAD:    8862006  <<====== this the problem
+>
+> The source of this count is ppc_spurious_interrupts which is incremented
+> in the arch/ppc/kernel/irq.c if:
+>
+> 	1) there is no interrupt handler installed
+>
+> 	2) SIVEC is showing zero (no interrupts pending)
+>
+> Looking into the problem it would appear that the problem is the later
+> case and the get_irq() function in ppc8260_pic.c is indeed reading a
+> zero from the SIVEC.
+>
+> The questions I have are:
+>
+> 1) Has anybody seen this behavior on their PowerPC platform?
+> 2) Does anybody know why the SIVEC would be showing a zero?
+>
+> TIA,
+> Jeff Angielski
+> The PTR Group
+>
+>
+>
 
-Add a __asm__ volatile("sync"); at the end of the m8260_mask_and_ack  function in arch/ppc/kernel/ppc8260_pic.c to fix it.
+Hi Jeff,
 
+Yes, I have seen this on a PowerPC platform.  And what I have noticed is
+that faster (i.e., internal core frequency) the processor the more
+likelihood of this happening.  However, it is highly dependent upon the
+platform (e.g., interrupting devices, interrupt controller).
 
-Regards,
- 
-Muhammad Sarwar
-Mangrove Systems Inc.
+A good example is an interrupt request from a PCI bus device.  Many device
+driver interrupt handlers will clear the source of the interrupt by either
+reading or writing some register within the device, perform some necessary
+actions, and return from the handler.  The PCI device is slow to negate its
+interrupt request and the interrupt controller sees the interrupt request
+from the device again.  With the platforms that I'm associated with I've
+seen this happen more frequently (i.e., BAD interrupts) as processor
+internal core frequencies increase, especially with the 7457.
 
-
------Original Message-----
-From: Jeff Angielski [mailto:jeff@theptrgroup.com]
-Sent: Friday, January 16, 2004 11:03 AM
-To: linuxppc-dev@lists.linuxppc.org
-Subject: ppc826x BAD interrupts
-
-
-Looking at /proc/interrupts, I see a large number of "BAD" interrups on
-both my MPC8260 reference board (2.4.21) and my PPC8266 custom board
-(2.4.23).  Both use u-boot as the bootloader.
-
-bash-2.05# cat /proc/interrupts
-           CPU0
- 24:          0   8260 SIU   Edge      PCI IRQ demux
- 33: 2658326944   8260 SIU   Edge      fenet
- 40:      32524   8260 SIU   Edge      uart
- 41:          0   8260 SIU   Edge      uart
-BAD:    8862006  <<====== this the problem
-
-The source of this count is ppc_spurious_interrupts which is incremented
-in the arch/ppc/kernel/irq.c if:
-
-	1) there is no interrupt handler installed
-
-	2) SIVEC is showing zero (no interrupts pending)
-
-Looking into the problem it would appear that the problem is the later
-case and the get_irq() function in ppc8260_pic.c is indeed reading a
-zero from the SIVEC.
-
-The questions I have are:
-
-1) Has anybody seen this behavior on their PowerPC platform?
-2) Does anybody know why the SIVEC would be showing a zero?
-
-TIA,
-Jeff Angielski
-The PTR Group
-
+--
+Rob Baxter
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
