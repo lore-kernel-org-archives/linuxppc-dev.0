@@ -1,38 +1,32 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <libc-alpha@sources.redhat.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>, Dan Malek <dan@mvista.com>,
-	<cort@fsmlabs.com>, <paulus@samba.org>
-Subject: Re: PPC sysdep additions & problem
-Date: Fri, 6 Apr 2001 14:22:27 +0200
-Message-Id: <20010406122227.17368@mailhost.mipsys.com>
-In-Reply-To: <20010406101714.12391@mailhost.mipsys.com>
-References: <20010406101714.12391@mailhost.mipsys.com>
+Message-ID: <3ACDB553.DCEF53C2@iiic.ethz.ch>
+Date: Fri, 06 Apr 2001 14:23:47 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: "Zephaniah E. Hull" <warp@whitestar.soark.net>
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: [DRI] PCI GART support on trunk
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Note that so far, I had some problems loading binaries if I add
->3 entries to the aux table from the kernel with numbers 1000,1001,1002.
->I'm not sure what would have caused binaries not to load properly
->(apparently, their command line gets screwed, I'm not too sure yet).
->The glibc code that fills the "seen" mask definitely couldn't set
->bits for those entries, but this shouldn't have caused any problem.
+Yes, the branch has been merged in yesterday!
 
-Correcting myself, the behaviour of 1<<X with X>31 beeing undefined, the
-compiler was free to do a modulo, and so caused some real "seen" bits to
-be garbled.
 
-So I would suggest modifying slightly glibc to not mask bits above 31,
-thus allowing platform-specific high-value tags to be passed there in
-the future.
+This adds not only support for PCI Rage128 boards, but (more importantly ;)
+also PPC support!
 
-In the meantime, I still need a <31 number allocated for those cache
-line sizes ;)
 
-Ben.
+Zephaniah, us PPC folks would appreciate if you could update your DRI source
+packages sometime soon so that we can give them a whirl.
 
+
+Of course, even without debs I'd like people to test it and submit any bugs to
+the DRI BTS or post to dri-devel.
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
