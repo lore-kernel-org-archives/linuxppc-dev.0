@@ -1,6 +1,6 @@
-Message-ID: <3D403DC1.3070008@mvista.com>
-Date: Thu, 25 Jul 2002 11:04:49 -0700
-From: Todd Poynor <tpoynor@mvista.com>
+Message-ID: <3D404F83.8010308@embeddededge.com>
+Date: Thu, 25 Jul 2002 15:20:35 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Cort Dougan <cort@fsmlabs.com>,
@@ -15,20 +15,22 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Benjamin Herrenschmidt wrote:
 
-> Also, in this specific case, we might well want to have an machine
-> specific power saving feature: I've had various tweaks in mind for
-> powermac laptops that I never ended up implementing...
 
-This will also be true for the IBM 405LP (starting with the "Beech" eval
-board), which has a number of new PM features (
-http://www.research.ibm.com/arl/projects/papers/405LP.pdf ).  IBM has
-internally used a pm_idle function pointer a la i386, hoping that would
-be the community-accepted way, in case ya wanna add that to the
-suggestion pile, but I think any of the methods proposed would be fine.
+> Well, while I tend to agree with you on this, experience proved that
+> slightly abusing the ppc_md. indirection somewhat helped make the
+> code cleaner (read: more self-contained, less cruft, ...)
+
+All of the architectures except PowerPC seem to have a indirect
+pointer to a power saving idle function from the idle loop.  If
+you don't want to follow this, we could have all of the board
+specific files contain a 'power_save()' function, which could be
+empty, always compile it and always call it.  Today, the power
+saving stuff is all 6xx/7xx/Mac specific, which kinda needs to
+change if we want address the needs of embedded processors and
+products.
 
 
---
-Todd
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
