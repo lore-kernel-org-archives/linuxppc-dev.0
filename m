@@ -1,49 +1,33 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC5200 Patches 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 12 Nov 2003 08:18:24 MST."
-             <20031112151824.GC31581@ip68-0-152-218.tc.ph.cox.net>
-Date: Sun, 16 Nov 2003 21:33:13 +0100
-Message-Id: <20031116203318.21D9CC5F59@atlas.denx.de>
+Date: Mon, 17 Nov 2003 08:49:32 +1030
+From: Alan Modra <amodra@bigpond.net.au>
+To: Kumar Gala <kumar.gala@motorola.com>
+Cc: benh@kernel.crashing.org, Olaf Hering <olh@suse.de>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	David Edelsohn <dje@watson.ibm.com>
+Subject: Re: kernel oops due to unaligned access with lswi
+Message-ID: <20031116221932.GD14287@bubble.sa.bigpond.net.au>
+References: <20031115210449.GA10105@suse.de> <20031115222430.GA13820@suse.de> <200311152230.hAFMUwT32990@makai.watson.ibm.com> <20031115224342.GA16897@suse.de> <200311152259.hAFMxGT27464@makai.watson.ibm.com> <1068977831.681.8.camel@gaston> <3C0F7C71-185D-11D8-976A-000393DBC2E8@motorola.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C0F7C71-185D-11D8-976A-000393DBC2E8@motorola.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Tom & Dale,
+On Sun, Nov 16, 2003 at 11:49:32AM -0600, Kumar Gala wrote:
+> If Ben's comments are correct simply removing -mstring as an option
+> passed to the build should get the desired behavior.
 
-in message <20031112151824.GC31581@ip68-0-152-218.tc.ph.cox.net> you wrote:
->
-> Can I suggest breaking the trend slightly based on comments people have
-> made about 2.5/2.6?  Let's call it CONFIG_PPC_5xxx (and someday fix all
-> of the others).
-
-OK, so the discussion has stopped. What's happening now? I  sent  our
-stuff.  Dale  has  added some modification. We have more works in the
-queue. I think it makes little sense to  continue  without  a  common
-code base.
-
-Can you give any estimates when something will go into a public tree,
-and what this will be, and which tree?
-
-If there is any reason for you not to use the  "common"  trees  (like
-linuxppc_2_4_devel  ?)  yet,  maybe  we  can at least put the current
-state into a more dedicated tree like
-bk://source.mvista.com/linuxppc_2_4_mgt5100
-
-So that we can at least avoid to duplicate efforts while the work  is
-going on?
-
-Best regards,
-
-Wolfgang Denk
+Yes.  I can't see any problem with gcc's behaviour here, and I'm
+surprised that some processor is taking alignment exceptions on lswi.
+book3 ppcas says lswi will generate an alignment exception when "the
+operand is in storage that is Write Through Required or Caching
+Inhibited, or the processor is in Little-Endian mode".  It can also
+happen for operands that cross segment boundaries or page boudaries with
+different attributes.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-panic: kernel trap (ignored)
+Alan Modra
+IBM OzLabs - Linux Technology Centre
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
