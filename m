@@ -1,194 +1,71 @@
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>, frank@jrware.com,
-        linuxppc-dev@lists.linuxppc.org
-Message-Id: <v03110702b5c193385889@[129.100.29.243]>
-In-Reply-To: <v03110701b5c18e322a3b@[129.100.29.243]>
-References: <399B647A.A09F337@motorola.com>
- <200008161925.MAA00373@tallis.jrware.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 17 Aug 2000 09:05:44 -0400
-Subject: Re: Signal mask restore anomaly
+Message-ID: <399BF76E.97108126@mpifr-bonn.mpg.de>
+Date: Thu, 17 Aug 2000 16:32:14 +0200
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+MIME-Version: 1.0
+To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: PCI bus numbering help please
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Check you kernel source in arch/ppc/kernel/signal.c and in do_signal() make
-sure there is a break after the call to handle_signal() as shown in the
-code snippet below.
+Yes I _had_ pcmcia working on the Lombard, then I rsynced Ben's new kernel, and
+the chaos started...  With this kernel, plus the small patch to fix three
+registers in the CardBus bridge, the PCMCIA package reports both a vendor and a
+device id of 0xffff of any inserted card. I think this is a result of the card
+being on bus 1, and as max_bus in arch/ppc/kernel/pmac_pci.c is 0, the registers
+are simply not read at all. I then tried to increase the bus number in the
+routine add_bridges, but this lead to a kernel panic, although the device and
+vendor id were read correctly now (see below)...  I assume I have to add the
+CardBus bridge, but I have no idea _where_. Any help is welcome!
 
-               /* Whee!  Actually deliver the signal.  */
-                handle_signal(signr, ka, &info, oldset, regs, &newsp, frame);
-                break;
+Albrecht.
 
-If the break exists, then the problem is someplace else.  If not, add it
-and your troubles should go away (he said hopefully!).
-
-Kevin
-
-
-At 08:43 -0400 8/17/00, Hendricks, Kevin wrote:
->Hi,
->
->This bug was fixed in 2.2.14pre9 and later kernels.  Please upgrade or diff
->/arch/ppc/kernel/signal.c to see the fix.
->
->Kevin
->
->
->
->
->At 00:05 -0400 8/17/00, Jeffrey Hawkins wrote:
->>Frank,
->>
->>I am able to reproduce the same failures on a 2.2.13
->>PPC Kernel, with GCC 2.95.3-2c and GLIBC 2.1.3-15d.
->>Ran same test code on Solaris with correct operation.
->>
->>The failure is definitely a MASK restoration problem.
->>Since, one can recover from the problem by UNBLOCKING
->>the SIGINT.
->>
->>I believe the problem may be an interaction between the
->>Terminal I/O related SIGNALS being used (SIGTSTP and
->>SIGINT) and the use of the STDIO Library calls (printf
->>and getch).  By replacing the SIGTSTP and SIGINT signals
->>with SIGUSR1 and SIGUSR2, everything worked correctly
->>(tested via "kill" command from a separate terminal
->>window).
->>
->>Looking at the GLIBC Bug Database, I didn't see any bugs
->>which seem to correspond to this failure mechanism.  Most
->>of the SIGNALS bugs seem to be related THREADS.
->>
->>Looks like it is time submit a bug report to GNU....
->>
->>Jeff
->>
->>
->>Frank Jas wrote:
->>>
->>> Under certain circumstances, a signal blocked while a
->>> signal handler is executing will not be restored.
->>>
->>> This is my kernel info:
->>>
->>> Linux 2.2.6-15apmac #1 Mon May 31 03:54:09 EDT 1999 ppc unknown
->>>
->>> The behavior does not occur under Intel versions (2.2.5-15smp).
->>>
->>> Below is a program that tests out the use of signal masks
->>> with sigaction().  It sets up a handler for SIGINT and
->>> SIGTSTP.  The handler for SIGTSTP adds SIGINT to
->>> the signal mask for that handler.  So while the SIGTSTP
->>> handler is executing, occurences of SIGINT will be
->>> blocked until the handler returns.  SIGTSTP will also
->>> be blocked.
->>>
->>> #define _POSIX_SOURCE 1
->>> #define _GNU_SOURCE 1
->>>
->>> #include <signal.h>
->>> #include <errno.h>
->>> #include <stdio.h>
->>>
->>> void on_intr (signum)
->>>         int signum ;
->>> {
->>>         printf("\n    Interrupted with signal %d. \n", signum) ;
->>> }
->>>
->>> void on_tstp (signum)
->>>         int signum;
->>> {
->>>         printf ("\n     Handler for SIGTSTP wants text or ^C or ^Z: ") ;
->>>         getchar () ;
->>> }
->>>
->>> void main ()
->>> {
->>>         struct sigaction  new_intr_action;
->>>         struct sigaction  new_tstp_action;
->>>         int    c ;
->>>
->>>         sigemptyset (&new_intr_action.sa_mask);
->>>         new_intr_action.sa_handler = on_intr;
->>>         new_intr_action.sa_flags   = SA_RESTART;
->>>
->>>         sigaction  (SIGINT, &new_intr_action, 0);
->>>
->>>         sigemptyset (&new_tstp_action.sa_mask);
->>>         sigaddset   (&new_tstp_action.sa_mask, SIGINT);
->>>         new_tstp_action.sa_handler = on_tstp;
->>>         new_tstp_action.sa_flags   = SA_RESTART;
->>>
->>>         sigaction  (SIGTSTP, &new_tstp_action, 0);
->>>
->>>         printf("Starting main input loop enter text or ^Z or ^C:\n") ;
->>>
->>>         while ((c = getchar ()) != EOF) {
->>>                 putchar (c);
->>>         }
->>> }
->>>
->>> The following execution sequence leads to the anomalous behavior.
->>>
->>> Trigger the SIGTSTP handler with a ^Z
->>> While executing the handler, deliver a ^Z and ^C
->>> Hit return to return from the handler.
->>> Another instance of the SIGTSTP handler should execute.
->>> Hit return to return from that instance of the handler.
->>> Notice that the SIGINT handler does not execute and should have.
->>> Any subsequent SIGINT are apparently blocked.
->>>
->>> Apparently the nested occurence of SIGTSTP effected the restore
->>> of the SIGINT mask, and the handling of the pending SIGINT.
->>>
->>> The same behavior will result using 'kill' from another window
->>> to send the signals.
->>>
->>> Please let me know if this is not the appropriate venue for this
->>> post.
->>>
->>> Frank Jas
->>>
->>
->>--
->>********************************************************
->>
->>Jeffrey Hawkins
->>
->>Senior Staff Software Engineer
->>Motorola Wireless Data Solutions Engineering
->>
->>Address: DEPT:  DQ525
->>         MS:    IL-02-1055A
->>         1301 East Algonquin Road
->>         Schaumburg, IL 60196
->>
->>Phone:   (847)576-7463
->>FAX:     (847)576-7737
->>
->>********************************************************
->>
->
->
->--
->Kevin B. Hendricks, Associate Professor of Operations and Information
->Technology
->Richard Ivey School of Business, University of Western Ontario
->London, Ontario  N6A-3K7  CANADA
->khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
->
->
-
-
---
-Kevin B. Hendricks, Associate Professor of Operations and Information
-Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+pcmcia: Starting PCMCIA services:
+pcmcia:  modules
+kernel: Linux PCMCIA Card Services 3.1.20
+kernel:   kernel build: 2.2.17pre13-ben1 #1 Thu Aug 17 11:38:59 CEST 2000
+kernel:   options:  [pci] [cardbus]
+kernel: Intel PCIC probe:
+kernel:   TI 1211 rev 00 PCI-to-CardBus at slot 00:13, mem 0x80880000
+kernel:     host opts [0]: [serial pci & irq] [pci irq 22] [lat 32/176] [bus
+1/4]
+kernel:     PCI card interrupts, polling interval = 1000 ms
+pcmcia:  cardmgr.
+rc: Starting pcmcia succeeded
+cardmgr[367]: starting, version is 3.1.20
+cardmgr[367]: watching 1 sockets
+kernel: cs: cb_alloc(bus 1): vendor 0x9004, device 0x6075
+cardmgr[367]: initializing socket 0
+cardmgr[367]: socket 0: Adaptec APA-1480 SCSI Host Adapter
+cardmgr[367]: executing: 'modprobe cb_enabler'
+cardmgr[367]: executing: 'modprobe apa1480_cb'
+inet: inetd startup succeeded
+kernel: cs: cb_config(bus 1)
+kernel:   fn 0 bar 1: io 0x1000-0x10ff
+kernel:   fn 0 bar 2: mem 0x90030000-0x90030fff
+kernel:   fn 0 rom: mem 0x90020000-0x9002ffff
+kernel:   irq 22
+kernel: apa1480_attach(device 01:00.0)
+kernel: Machine check in kernel mode.  (regs at d1bb3450)
+kernel: Caused by (from srr1): Unknown values in srr1
+kernel: NIP: D886E398 XER: 20000000 LR: D886E378 REGS: d1bb3450 TRAP: 0200
+kernel: MSR: 00009030 [EEIRDRME]
+kernel: TASK = d1bb2000[367] 'cardmgr' mm->pgd d1bd2000 Last syscall: 54
+kernel: last math d1ae6000
+kernel: GPR00: 000000FF D1BB3500 D1BB2000 D8846000 D8846000 001FFFC0 C05DED00
+C05DED38
+kernel: GPR08: 00000008 C0140000 D1DF5CAC D8857000 22244424 10021CA4 00000000
+100A4350
+kernel: GPR16: 00000000 0000001F D8878AB0 D1BB38BC D1BB3508 00000000 00000000
+D1BB3518
+kernel: GPR24: 0000001E 0000003C D1DB0D7C D1BB37D8 000002D0 00000000 00000000
+D1DBA000
+kernel: Call backtrace:
+kernel: D886E378 C00D95B8 C00DA174 D885911C D8857520 D8857730 D8830284
+kernel: D8831A30 D8857218 D8857060 D884288C D88435F8 C003B6A4 C0003930
+kernel: 10002A24 1000312C 100046A0 0FF0B69C 00000000
+kernel: Kernel panic: machine check
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
