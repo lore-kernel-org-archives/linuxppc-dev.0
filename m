@@ -1,30 +1,28 @@
-Date: Wed, 13 Mar 2002 08:46:53 -0700
-From: Matt Porter <mporter@mvista.com>
-To: sanjay k k <fren00@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux kernel for PPC440
-Message-ID: <20020313084652.A12525@home.com>
-References: <20020313001215.11752.qmail@mailFA9.rediffmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020313001215.11752.qmail@mailFA9.rediffmail.com>; from fren00@rediffmail.com on Wed, Mar 13, 2002 at 12:12:15AM -0000
+Message-ID: <A1C99F4731CAD111BA5400A024FC3B0CBE0414@ESBILMA01EDCGE>
+From: "Billalabeitia, Jose Carlos (IndSys, GEPM)" <jc.billalabeitia@indsys.ge.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Formatting JFFS2 Flash
+Date: Wed, 13 Mar 2002 10:50:29 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Mar 13, 2002 at 12:12:15AM -0000, sanjay k k wrote:
->
-> Hi folks,
-> Does anybody porting Linux kernel for PPC440? Can anybody provide
-> some info on that?
+Hi:
 
-Yes, I am working on it right now.  Things are moving along quite
-nicely.
+	I have a PPC 860T custom board with kernel
+2.4.4-2001-11-11-denx and rtai-24.1.4-2-denx. I have
+a JFFS2 filesystem on 14MB Flash. I make an initial
+filesystem with the "mkfs.jffs2" utility, and the first time
+I copy a 1MB file into it, it takes about 2 minutes, and
+then on it takes 10 seconds to copy into it the same file.
+I suppose that the first time, jffs2 is doing something like
+"formatting" the flash.
+Does anybody out there know how to do this "formatting"
+in a smarter way?
 
-Regards,
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+				Thank you
+					Billa
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
