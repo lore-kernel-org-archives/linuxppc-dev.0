@@ -1,21 +1,15 @@
-Return-Path: <jean.nicollerat@microdev.ch>
-Received: from srv.brk07.com (srv.brk07.com [213.221.157.88])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8E6A967A6D
+Return-Path: <vllv_lst@yahoo.com>
+Received: from web90204.mail.scd.yahoo.com (web90204.mail.scd.yahoo.com
+	[66.218.94.88]) by ozlabs.org (Postfix) with SMTP id 88C4567A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 19:02:33 +1100 (EST)
-Received: from [81.13.179.73] (helo=chsetage)
-	by srv.brk07.com with smtp (Exim 4.44) id 1DBpit-0003Ua-ME
-	for linuxppc-embedded@ozlabs.org; Thu, 17 Mar 2005 08:47:16 +0100
-From: "Jean Nicollerat MD" <jean.nicollerat@microdev.ch>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 17 Mar 2005 08:47:46 +0100
-Message-ID: <HMECJAKDCPLOGPDHNAHECEKFCAAA.jean.nicollerat@microdev.ch>
+	Thu, 17 Mar 2005 19:20:26 +1100 (EST)
+Message-ID: <20050317082021.79119.qmail@web90204.mail.scd.yahoo.com>
+Date: Thu, 17 Mar 2005 00:20:21 -0800 (PST)
+From: Vlad L <vllv_lst@yahoo.com>
+To: Embedded Linux <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RTC with TQM823L
+Content-Type: text/plain; charset=us-ascii
+Subject: Posix message queue
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,32 +20,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-I need to have an interrup every 10ms in my application running in linux.
-I have a PowerPC 823 on the board TQM823L LCD from denx.
-I use the ocan driver.
-I try to use the RTC modules but with the code :
+Dear all,
 
-	fd = open ("/dev/rtc", O_RDONLY);
+I have MPC5200 based board and looking for Posix
+Message Queue for kernel 2.4... Can you, please,
+direct me to resorce where I can load such patch or
+library.
 
-	if (fd ==  -1) {
-		perror("/dev/rtc");
-	}
-	/* Turn on update interrupts (one per second) */
+Thank you.
+Vlad.
 
-	retval = ioctl(fd, RTC_UIE_ON, 0);
-	if (retval == -1) {
-		perror("ioctl");
-		//exit(errno);
-	}
 
-I get an error message :
-  ioctl : invalide argument # for then line :"retval = ioctl(fd, RTC_UIE_ON,
-0);"
-
-Can somebody help ? why it is not working or a better way to get function
-called each 10ms
-
-Thanks
-
-Jean
+		
+__________________________________ 
+Do you Yahoo!? 
+Yahoo! Small Business - Try our new resources site!
+http://smallbusiness.yahoo.com/resources/ 
