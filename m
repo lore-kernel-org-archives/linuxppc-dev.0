@@ -1,15 +1,19 @@
-Return-Path: <CWernham@Airspan.com>
-Received: from mail.airspan.com (mail.airspan.com [62.189.116.4])
-	by ozlabs.org (Postfix) with ESMTP id 13DE52BEA0
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Dec 2004 21:25:51 +1100 (EST)
-Message-ID: <41B8255A.3040101@airspan.com>
-Date: Thu, 09 Dec 2004 10:13:46 +0000
-From: Colin Wernham <cwernham@airspan.com>
-MIME-Version: 1.0
+Return-Path: <KendallB@scitechsoft.com>
+Received: from mail.scitechsoft.com (mail.scitechsoft.com [63.195.13.67])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A9ADF2BE83
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Dec 2004 09:02:57 +1100 (EST)
+Received: from KENDALLB (nat.scitechsoft.com [63.195.13.75])
+	by mail.scitechsoft.com (8.12.8/8.12.8) with ESMTP id iBALJwCm016246
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Dec 2004 13:20:00 -0800
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
 To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: PPC4XX DMA polarity bug in linuxppc-2.6.9
-Reply-To: cwernham@airspan.com
+Date: Fri, 10 Dec 2004 13:23:06 -0800
+MIME-Version: 1.0
+Message-ID: <41B9A33A.26557.5DDD7EC8@localhost>
+Content-type: text/plain; charset=US-ASCII
+Subject: Write Combining for PowerPC?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I believe that there is a PPC4xx DMA driver bug in the following kernel, 
-file and function:
-   linuxppc-2.6.9,
-    /arch/ppc/syslib/ppc4xx_dma.c,
-    ppc4xx_init_dma_channel()
+Hi Guys,
 
-Symptoms are:
-DMA does not work as the polarity bits (DMA Req, Ack, EOT) are not set 
-correctly in the DMA controller using the ppc4xx_init_dma_channel() 
-function call, but when this is called twice in succession, then it does 
-work.
+We are working on some PowerPC machines and noticed that the boxes don't 
+appear to support the equivalent of Write Combining that we get on x86 
+boxes. Copies to Video Memory on our Motorola Sandpoint box run about 
+10Mb/s, which is terribly, terribly slow!
 
-Cause is (I believe):
-/arch/ppc/syslib/ppc4xx_dma.c:
-On line 469 the old polarity bits in p_dma_ch are ORed in when it should 
-be ORing in the new polarity bits from p_init. p_init is then saved into 
-p_dma_ch. This means that it only gets correctly programmed when the 
-function is called twice:
+Does anyone know if it is possible to do something similar to Write 
+Combining for the PowerPC architecture, to speed up CPU access to the 
+linear framebuffer? Part of the problem is that for video overlay support 
+(not motion compensation) you have to dump the entire YUV frame into 
+video memory for the hardware overlay, and even on a 1GHz PPC box playing 
+an MPEG2 stream is not possible as X takes up over 80% of the CPU just to 
+copy the YUV data to video memory!
 
-    467  /* clear all polarity signals and then "or" in new signal levels */
-    468  polarity &= ~GET_DMA_POLARITY(dmanr);
-    469  polarity |= p_dma_ch->polarity;
+Obviously bus mastering will help solve this problem, but it would be 
+better if there was a way to enabling faster CPU access to the 
+framebuffer as well.
 
-Fix could be:
-    469  polarity |= p_init->polarity;
+Regards,
 
-Is there anyone else using the PPC4XX DMA?
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
 
-Colin Wernham
+~ SciTech SNAP - The future of device driver technology! ~
