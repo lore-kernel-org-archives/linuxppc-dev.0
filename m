@@ -1,52 +1,98 @@
-Date: Tue, 13 Jul 1999 14:53:09 +0200 (CEST)
+Date: Tue, 13 Jul 1999 15:45:54 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Joe Julicher <joe_julicher@macktrucks.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: FB stuff from Rev 1 G3
-In-Reply-To: <3.0.5.32.19990713084345.00807570@mailhost.bulldog.com>
-Message-ID: <Pine.LNX.4.10.9907131449000.6336-100000@mercator.cs.kuleuven.ac.be>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+cc: "David S. Miller" <davem@dm.cobaltmicro.com>
+Subject: Re: MESH problems in 2.2.x
+In-Reply-To: <Pine.LNX.4.10.9906221455110.5853-100000@michelin.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.4.10.9907131538530.6336-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 13 Jul 1999, Joe Julicher wrote:
-> I am trying to get 1600x1200-75 running on my G3.  The fb.modes database
-> does not have such an entry.  The closest being 1600x1200-76, which my
-> monitor complains about, or 1600x1200-66 which I complain about.  The MacOS
-> can do 1600x1200-75 (or so my monitor tells me) and the G3 documentation
-> says that is the greatest that my Rev 1 machine can do.  I CAN get this
-> setup with the no-video driver setting at boot.  BUT of course I want the
-> accel video.  How do I glean the video timing for this video mode.  Is
-> there a MacOS utility to measure the mode?  Is there a FB method to report
-> the mode when using the generic FB driver?  I tried fbset while I was in
-> no-driver mode, but it reported strange things that made no sense.  I
+On Tue, 22 Jun 1999, Geert Uytterhoeven wrote:
+> Since /me was stupid and told OF `boot scsi/disk@5:' (i.e. I forgot the file
+> part of the path), my OF kept on enjoying autoreboot cycles with `rebooting in
+> the correct mode for this client program' messages. The only thing that stopped
+> this was to remove the power from the scsi/disk@5 device. This was the first
+> time the power was removed since my previous mail about this.
+> 
+> And then I got
+> 
+>     scsi1: device driver called scsi_done() for a syncronous reset
+> 
+> again, booting 2.3.6 from vger-june15.
+> 
+> Fortunately I still had the working 2.1.130 kernel around. After I booted that
+> first, I was able to boot my 2.3.6 kernel.
+> 
+> So to boot recent kernels when you have sync-capable devices on the MESH, two
+> conditions have to be met:
+> 
+>   - boot 2.1.130 first
+>   - mesh_sync_targets = 0 (setting CONFIG_SCSI_MESH_SYNC_RATE=0 doesn't work)
 
-Offb doesn't know the real timings: all it knows is the resolution.
+And subsequent reboots don't cause problems anymore. Next time the machine is
+turned off, I need 2.1.130 again first before I can boot 2.3.6.
 
-> haven't yet sat down with a calculator and tweaked the 76hz & 66hz settings
-> into a 75hz setting.  I suppose that is what I need to do.
+> Anyone else seeing this?
 
-Yes, that's indeed what you need to do :-)
+Thus not everyone is seeing this...
 
-XFree86 has this modeline for 1600x1200 @ 75 Hz, 93.75 kHz hsync:
+Just made some diff between 2.1.130 and the `broken' kernels. The following
+two things make me suspicious:
 
-    Modeline "1600x1200"  202.5  1600 1664 1856 2160  1200 1201 1204 1250 +HSync +VSync
+Index: drivers/scsi/mesh.c
+@@ -1643,6 +1643,7 @@
+ static void
+ mesh_completed(struct mesh_state *ms, Scsi_Cmnd *cmd)
+ {
++#if 0
+ 	if (ms->completed_q == NULL)
+ 		ms->completed_q = cmd;
+ 	else
+@@ -1651,6 +1652,9 @@
+ 	cmd->host_scribble = NULL;
+ 	queue_task(&ms->tqueue, &tq_immediate);
+ 	mark_bh(IMMEDIATE_BH);
++#else
++	(*cmd->scsi_done)(cmd);
++#endif
+ }
+ 
+ /*
 
-Read linux/Documentation/fb/framebuffer.txt to learn how to convert the
-timings.
+Why did Dave (mesh.c 1.20, according to the vger CVS logs, which don't help me
+much) do this?
 
-Oh, I have them at hand here:
+Index: drivers/scsi/scsi_obsolete.c
+@@ -354,6 +357,18 @@
+     printk("In scsi_done(host = %d, result = %06x)\n", host->host_no, result);
+ #endif
+ 
++    if(SCpnt->flags & SYNC_RESET)
++    {
++        /*
++        * The behaviou of scsi_reset(SYNC) was changed in 2.1.? .
++        * The scsi mid-layer does a REDO after every sync reset, the driver
++        * must not do that any more. In order to prevent old drivers from
++        * crashing, all scsi_done() calls during sync resets are ignored.
++        */
++        printk("scsi%d: device driver called scsi_done() "
++	       "for a syncronous reset.\n", SCpnt->host->host_no);
++        return;
++    }
+     if(SCpnt->flags & WAS_SENSE)
+     {
+ 	SCpnt->use_sg = SCpnt->old_use_sg;
 
-    pixclock = 4938
-    left_margin = 304
-    right_margin = 64
-    upper_margin = 46
-    lower_margin = 1
-    hsync_length = 192
-    vsync_length = 3
-    syncflags = FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT
+And after the `return', my machine no longer does anything...
+
+I'll try to find out which one of the two guys causes my problems...
+
+Things are a bit difficult now, because I no longer have Internet connectivity
+on my boxes. DDS 2 GB packets with high latency form my sole link now :-(
 
 Greetings,
 
@@ -56,7 +102,6 @@ Greetings,
 Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
 Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
 Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
