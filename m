@@ -1,132 +1,83 @@
-From: "Jason Wohlgemuth" <jsw-embedded@mindspring.com>
-To: "RAJESH.B.V" <rajeshbv@trinc.com>, <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: cross compiling of bash for 8xx
-Date: Wed, 24 May 2000 08:58:17 -0400
-Message-ID: <NCBBKJKKGDLPHKDPAFFMIELMCEAA.jsw-embedded@mindspring.com>
+Message-ID: <392C039D.D0645FBD@embeddededge.com>
+Date: Wed, 24 May 2000 12:30:21 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <3.0.1.32.20000524115459.00698868@trinc.com>
+To: mporter@mvista.com
+CC: tjroberts@lucent.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: QUERY: Embedded PowerPC Linux?
+References: <39243D0C.68406C9D@lucent.com> <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Rajesh,
-
-Did you also download the pre-built 8xx glibc 2.1?  If I were you, I would
-try and use all the pre-built binaries and executables from mvista to make
-sure everything is working, then attempt to build everything yourself.
-Building everything yourself just takes a significant amount of time and has
-a couple gotchas.
-
-Good luck,
-Jason
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-RAJESH.B.V
-Sent: Wednesday, May 24, 2000 2:55 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cross compiling of bash for 8xx
+Matt Porter wrote:
 
 
+> .....  The assumption is that 6xx/7xx/7xxx are only
+> chrp/pmac/prep desktop systems and 8xx/82xx are embedded systems but that
+> is changing quickly.
 
-Hi Marcus,
+Some further information.  The 8240 it really a 603/PCI configuration.
+I followed Cort's Gemini port for most of this.  The 8260 is a 603 along
+the path of the 8xx/CPM configuration.
 
-Thank you for providing the script to compile bash.
+> I stub out all the chrp/pmac/prep garbage like "prom_init()" to make the
+> linker happy and have a reasonablly slim kernel for 29F040 boot flashes.
 
-Now i am able to compile the bash with some changes.
-it gave some error while compiling the  malloc to choose from gnu_malloc
-or   gcc_malloc
-So i turned off both the options and compiled.
-But still it is not executing.
-After completing all the checkings at the boot time the board is hanging
-without giving the prompt.
-I have compiled one more shell called "sash" and able to execute it.
-At the same time i have compiled the Busybox and it is also executing under
-Sash shell.
-I found some binaries which are for PPC8xx at  mvista.com site. From that
-site also i have downloaded the bash binary and failed to get the shell.
-I did not able to understand why some binaries are executing which are
-compiled with the same compiler and some are not...
-I am using GCC version 2.95.2 and Glibc version 2.
-I checked both the binaries which are working and failed with a hex editor .
-They were showing the same shared libraries  as    " /lib/ld.so.1"
-and using some  #defines in   "libc.so.6."
-
-Will be there any difference between the binaries compiled with cross
-compiler and straight compiler. i feel there should not be.
-
-Thanks in regards,
---Rajesh
+We should try to find some common compressed boot image as well, or
+better define why they are different.  I started the 'mbxboot' long
+ago with the 8xx processors, and it has proved useful for the 8260
+as well.  It seems to be the place where all of the highly integrated
+processors boot because of their unique I/O devices.  The 'coffboot'
+directory is where all of the standard I/O (like PCI with 165xx serial
+ports) boards exist.
 
 
+> I'm adding a (rather simplistic) PCI autoconfig routine to the pci_init()
+> call since a firmware/monitor is not always available or desired.
+
+Is this the right place for it, or should it be done prior to calling
+the Linux kernel?  I don't really know.  I have done this in both
+places, each has advantages and disadvantages.  For further discussion
+I am even considering a "PCI emulation" set of functions.  There are
+more and more boards with PCI type I/O devices, but attached to the
+processor busses instead of through a PCI bridge.  It would be nice to
+use the standard PCI drivers, but right now I have to hack up something
+custom because the PCI configuration functions don't make sense.  I
+think it would be useful to have these functions return something useful
+and use the standard driver.  Anyone else see this type of board design?
+
+> .......  The only intrusive thing I add is is a
+> CONFIG_EMBEDDED which arch/ppc/kernel/Makefile keys off of to not link
+
+Thank you.  That seems like a good thing.
+
+> One sore point is that MACH_<board> is defined as a single bit flag so we
+> will run out of those with the many MACH types that want to be in the
+> kernel in the near future.  That should probably get fixed up to something
+> with more longevity.
+
+I could never understand why this was a bit flag.  I think it would
+work equally well as a unique number, preferably monotonically increasing.
+These are used in switch statements and tested for their value.  I
+don't remember anything like 'if (_machine & MACH_<board>)'.
+
+> The other thing that needs to happen is that the directory structure
+> will need a reorg to avoid clutter
+
+Think very carefully about this.  A while back we broke head.S into
+head.S and head_8xx.S to avoid "clutter".  I wish we had not done that
+now.  There have been changes in the memory management and context
+switching that are done in head.S, and not to head_8xx.S (or attempted
+and not completed).  When generic changes are made, you have to visit
+all of the files affected and it is easy to miss them or ignore your
+duty to do so when they are separated.  I am all for avoiding the
+clutter in the files, but if you are in there making changes it should
+serve as a reminder that you are affecting many things you may have
+not considered.
 
 
-
-
-
-At 10:04 PM 5/20/00 +0200, you wrote:
->"RAJESH.B.V" <rajeshbv@trinc.com> writes:
->
->> Hi All,
->> I'm a newbie entered into this Linux world and working on mbx860...
->> i'm able to build the kernel and succeeded in running it.
->> But when i try to compile the applications like Bash and all i'm getting
->> some problem with shared libraries.
->> i'm using the compiler  powerpc-linux-gcc with version 2.95.2 and glibc
->> with version 1.99
->> if i compile with static libraries it is fine.
->> When compiling   Bash-2.03 when i try to configure with the command
->> " CC=powerpc-linux-gcc ./configure --target=860 " it is giving error when
->> it is searching to configure for  "getpgrep".
->> so the configure is exiting..
->
->--target is wrong here.
->
->--build is the environment you are compiling on.
->--host is the environment the program(s) will run on.
->--target is afaik only applicable for binutils, gcc and gdb, and
->specifies the system to generate code for (debug in the case of gdb).
->
->> And when i compile the ping application it is compiling well and when i
-try
->> to run it on my mbx860 board it is displaying an error that
->> "shared library libc.s0.6 is not found. failed to open libc.so.6"
->> but actually that lib file is there in the /lib path.
->>
->> can any one suggest me the solutions for the above..
->> Is there any site providing  the minimal root file system Disk Image with
->> libc-6 to download.
->
->The ping problem sounds like either a broken development environment
->and/or a broken runtime environment, hard to tell what the problem
->is there. strace and LD_DEBUG=help are your friends.
->
->As for cross compiling bash and other autoconf using applications
->I've been using a handy little wrapper script for configure. It's
->attached to this mail.
->
->//Marcus
->
->
->Attachment Converted: "C:\rajmail\Eudora\attach\acwppc"
->--
->-------------------------------+-----------------------------------
->        Marcus Sundberg        |       Phone: +46 707 452062
->  Embedded Systems Consultant  |      Email: marcus@cendio.se
->       Cendio Systems AB       |       http://www.cendio.com
->
-******************************************************************
-
- B.V. Rajesh
-
- RENDEZVOUS ON CHIP (I) PVT.LTD.
- VOICE: ph:040-7742606 ( Extn )- 306
- mailto:rajeshbv@trinc.com
- Web Page  :   http://www.trinc.com
- ******************************************************************
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
