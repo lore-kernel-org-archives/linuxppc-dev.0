@@ -1,49 +1,47 @@
-From: Paul Mackerras <paulus@au1.ibm.com>
-MIME-Version: 1.0
+Date: Sat, 21 Sep 2002 20:26:31 -0700
+From: curt brune <curt@acm.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: initrd, ramdisk problems
+Message-ID: <20020922032631.GA30804@lenin.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15755.43019.561962.41394@argo.ozlabs.ibm.com>
-Date: Sat, 21 Sep 2002 08:58:19 +1000 (EST)
-To: nbasker@india.tejasnetworks.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: data address causing machine check exception
-In-Reply-To: <1032528899.3d8b2403648a5@pop-mail.india.tejasnetworks.com>
-References: <20020919170814.E25F9FA8E@denx.denx.de>
-	<1032528899.3d8b2403648a5@pop-mail.india.tejasnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-nbasker@india.tejasnetworks.com writes:
+Hi,
 
-> In the sample crash I had sent in the previous mail (attached below),
-> I deliberately caused a crash by accessing an invalid address
-> 0xfd040000 which is in gpr[3], the first parameter to a
-> function that caused the crash.
->
-> But this invalid address is not in DAR or SRR0 as I expected,
-> instead I found the following;
-> srr0 = c0017f70 srr1 = 00001032 dar = 00000000 dsisr = 00000000.
->
-> Is it not gauranteed that DAR will have invalid address.
->
->  Machine check in kernel mode.
+I'm booting linux 2.4.18 on an embedded planet RPX_LITE-DW (823e) with
+a RAM disk, however I am getting a "crc" error while decompressing the
+RAM disk.  Snipped from the boot log are these two lines:
 
-What happened is that the address you accessed *was* mapped, but it
-was mapped to an invalid physical address.  Under these circumstances
-the processor assumes that the address is OK, since there is a mapping
-for it, and proceeds to do other work while the memory subsystem is
-fetching and returning the data.  When the memory subsystem says "I
-don't know anything about that physical address", the processor takes
-a machine check (0x200) exception.  The DAR is not set for a machine
-check exception, since a machine check exception can happen for a
-variety of reasons, and there could be several loads or stores
-outstanding, so there is no way in general to know which particular
-load or store caused the error.
+>> RAMDISK: Compressed image found at block 0
+>> crc errorFreeing initrd memory: 1670k freed
 
-If you try accessing an address which isn't mapped, you will get a
-data access exception (0x300) and the DAR will contain the address you
-tried to access.
+I built the kernel image using "gmake zImage.initrd" .  This picked up
+my gzipped ramdisk image OK.
 
-Paul.
+[editor: I know, I know.  I should be using ppcboot.]
+
+The ramdisk is 8192 bytes uncompressed.  Compressed it is 1.7MB.
+
+The target kernel is configured for 8192 byte ramdisks also.  This is
+stumping me.
+
+In the boot log I also noticed something funny.  My board only has
+16MB total on it and the kernel is configured for 8MB ramdisk.  In the
+boot log it says it is initializing 16 ramdisks of 8MB each ....
+
+>> Kernel command line: root=/dev/ram ramdisk=8192
+>> Memory: 13104k available (916k kernel code, 348k data, 52k init, 0k
+>> highmem)
+>> ...
+>> RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
+
+Looking in rd.c I see 16 is a #define constant.  Is this a problem?
+
+Cheers,
+Curt
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
