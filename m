@@ -1,39 +1,40 @@
-Date: Fri, 8 Mar 2002 09:03:41 +0100
+Date: Fri, 8 Mar 2002 09:07:50 +0100
 From: Harald Welte <laforge@gnumonks.org>
-To: "Ruhland, Paul" <PRuhland@microwavedata.com>
-Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Ethernet, kernel bug/weakness
-Message-ID: <20020308090341.V6936@sunbeam.de.gnumonks.org>
-References: <A60FFE6CA339C742BE11C311EA8BFF5401637E@mdsms2.inside.mdsroc.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.18-ben0 on G4 SMP: do_IRQ waiting for irq lock
+Message-ID: <20020308090750.W6936@sunbeam.de.gnumonks.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A60FFE6CA339C742BE11C311EA8BFF5401637E@mdsms2.inside.mdsroc.com>; from PRuhland@microwavedata.com on Thu, Mar 07, 2002 at 03:50:04PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 07, 2002 at 03:50:04PM -0500, Ruhland, Paul wrote:
-> Effect:
-> --
-> Once the ethernet traffic goes above the critical point described above, all
-> cpu cycles are spent servicing the ethernet traffic.
+Hi!
 
-This is a common problem, also found with gigabit ethernet and large x86
-boxes (or 100MBit and medium x86 boxes), as soon as you start shooting at them
-with foll wire speed 20bytes IP packets.
+I've tried to run 2.4.18-ben0 on my G4 SMP (dual 450 MHz) box.
 
-It is well-known and about two years ago Jamal Hadi Selim and others were
-solving the problem for a couple of example ethernet chips by using IRQ
-mitigation.  This way the packets will get dropped on the network card
-itself.
+I've tried both, a kernel with all IRQ's routed to CPU0 - and a kernel
+where both CPU's can handle IRQ's.
 
-Seems like your driver isn't using this strategy for some strange reason.
+Unfortunately in both kernel images, I don't even get past all init scripts,
+at some (random) point during bootup:
 
-Alternatively you can also try to detect high load within the driver and
-switch to polling mode - this also has been implemented successfully in
-some drivers, IIRC.
+do_IRQ waiting for irq lock (holder=1)
 
-> Paul Ruhland
+occurs.
+
+Any idea what's causing the problem?  I've already tried to boot in
+single user mode - and it's working fine.  Then I've started every single
+init script in /etc/rc2.d (it's debian) by hand - and the problem didn't
+occur.
+
+Am I right assuming that there is a deadlock where one CPU is holding
+the IRQ lock while the other wants to grab it?
+
+And how could this happen on a kernel where all IRQ's are routed to one
+CPU ??
+
+Thanks.
 
 --
 Live long and prosper
