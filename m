@@ -1,59 +1,77 @@
-Date: Fri, 8 Mar 2002 11:39:12 -0800
-From: David Ashley <dash@xdr.com>
-Message-Id: <200203081939.g28JdCP28936@xdr.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Bugfix in arch/ppc/8260_io/fcc_enet.c linux-2.4.17
+Message-ID: <3C8956BA.7000609@brocade.com>
+Date: Fri, 08 Mar 2002 16:26:34 -0800
+From: "Amit D. Chaudhary" <amitc@brocade.com>
+MIME-Version: 1.0
+To: David Ashley <dash@xdr.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Bugfix in arch/ppc/8260_io/fcc_enet.c linux-2.4.17
+References: <200203081939.g28JdCP28936@xdr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I found a bug which was manifest when linux boots and lots of ethernet
-packets are coming in. I think the problem is because the fcc_enet.c
-adds the network device in very early during the boot, and the driver is
-happily calling netif_rx() on the received packets even though the interface
-isn't officially "up". Linux appears not to like this, and would crash
-sporadically, or predictibly if I have a program on another computer running
-just blasting packets at the first one.
+David,
 
-The fix is to just put an if around this section in fcc_enet_rx:
-		skb = dev_alloc_skb(pkt_len-4);
+Is there an impact of your change on the board doing a netboot and
+loading the rootfs from a nfs mount?
 
-		if (skb == NULL) {
-			printk("%s: Memory squeeze, dropping packet.\n", dev->name);
-			cep->stats.rx_dropped++;
-		}
-		else {
-			skb->dev = dev;
-			skb_put(skb,pkt_len-4);	/* Make room */
-			eth_copy_and_sum(skb,
-				(unsigned char *)__va(bdp->cbd_bufaddr),
-				pkt_len-4, 0);
-			skb->protocol=eth_type_trans(skb,dev);
-			netif_rx(skb);
-		}
+Thanks
+Amit
 
-So it becomes:
-		if(dev->flags & IFF_UP) { /* only do if iface is up */
-	                skb = dev_alloc_skb(pkt_len-4);
-
-	                if (skb == NULL) {
-	                        printk("%s: Memory squeeze, dropping packet.\n", dev->name);
-	                        cep->stats.rx_dropped++;
-	                }
-	                else {
-	                        skb->dev = dev;
-	                        skb_put(skb,pkt_len-4); /* Make room */
-	                        eth_copy_and_sum(skb,
-	                                (unsigned char *)__va(bdp->cbd_bufaddr),
-	                                pkt_len-4, 0);
-	                        skb->protocol=eth_type_trans(skb,dev);
-	                        netif_rx(skb);
-	                }
-		}
-
-This fixes the crash bug.
-
--Dave
+David Ashley wrote:
+> I found a bug which was manifest when linux boots and lots of ethernet
+> packets are coming in. I think the problem is because the fcc_enet.c
+> adds the network device in very early during the boot, and the driver is
+> happily calling netif_rx() on the received packets even though the interface
+> isn't officially "up". Linux appears not to like this, and would crash
+> sporadically, or predictibly if I have a program on another computer running
+> just blasting packets at the first one.
+>
+> The fix is to just put an if around this section in fcc_enet_rx:
+> 		skb = dev_alloc_skb(pkt_len-4);
+>
+> 		if (skb == NULL) {
+> 			printk("%s: Memory squeeze, dropping packet.\n", dev->name);
+> 			cep->stats.rx_dropped++;
+> 		}
+> 		else {
+> 			skb->dev = dev;
+> 			skb_put(skb,pkt_len-4);	/* Make room */
+> 			eth_copy_and_sum(skb,
+> 				(unsigned char *)__va(bdp->cbd_bufaddr),
+> 				pkt_len-4, 0);
+> 			skb->protocol=eth_type_trans(skb,dev);
+> 			netif_rx(skb);
+> 		}
+>
+> So it becomes:
+> 		if(dev->flags & IFF_UP) { /* only do if iface is up */
+> 	                skb = dev_alloc_skb(pkt_len-4);
+>
+> 	                if (skb == NULL) {
+> 	                        printk("%s: Memory squeeze, dropping packet.\n", dev->name);
+> 	                        cep->stats.rx_dropped++;
+> 	                }
+> 	                else {
+> 	                        skb->dev = dev;
+> 	                        skb_put(skb,pkt_len-4); /* Make room */
+> 	                        eth_copy_and_sum(skb,
+> 	                                (unsigned char *)__va(bdp->cbd_bufaddr),
+> 	                                pkt_len-4, 0);
+> 	                        skb->protocol=eth_type_trans(skb,dev);
+> 	                        netif_rx(skb);
+> 	                }
+> 		}
+>
+> This fixes the crash bug.
+>
+> -Dave
+>
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
