@@ -1,34 +1,61 @@
-Subject: Re: loading the kernel and root FS separately from flash?
-From: David Woodhouse <dwmw2@infradead.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20040628103630.D1709C109F@atlas.denx.de>
-References: <20040628103630.D1709C109F@atlas.denx.de>
-Content-Type: text/plain
-Message-Id: <1088419257.6992.3.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Date: Mon, 28 Jun 2004 11:40:58 +0100
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: loading the kernel and root FS separately from flash? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 28 Jun 2004 06:13:18 EDT."
+             <Pine.LNX.4.60.0406280600140.3259@localhost.localdomain>
+Date: Mon, 28 Jun 2004 12:41:54 +0200
+Message-Id: <20040628104159.87EEDC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2004-06-28 at 12:36 +0200, Wolfgang Denk wrote:
-> In message <1088415754.6992.1.camel@hades.cambridge.redhat.com> you wrote:
-> >
-> > I think it should be OK when it's 4MiB in size. Mount time was far more
-> > of a problem in JFFS2 many years ago when people were using the 2.4
-> > kernel. It's a lot faster in 2.6.
+In message <Pine.LNX.4.60.0406280600140.3259@localhost.localdomain> you wrote:
 >
-> Is this really a question of which  kernel  is  running?  It  was  my
-> impression that this is merely an issue of which version of the JFFS2
-> (i. e. MTD) code you are using?
+> i suspect that leaving my root filesystem in flash would cause
+> noticeable performance problems (even if i managed to structure it so
 
-True -- for the moment at least you can drop the JFFS2 development tree
-into a 2.4 kernel.
+What makes you think so?
+
+The startup behaviour may change: at the moment you  load  the  whole
+root  filesystem  into  RAM before you can run anything at all - that
+means it takes longer before the first  application  can  start.  But
+then  everything  _is_  in  RAM, so anything else will start quickly,
+too.
+
+With a  flash  based  root  filesystem  only  the  things  (binaries,
+libraries)  that  are  actually  needed  for the first user processes
+(init etc.) will be loaded to RAM, so they may actually start  faster
+than  from  a  RAM  disk.  But  anything  else  may  require  to load
+additional libraries etc. so it may start slower than from a ramdisk.
+On the other hand, some code or binaries (like error handling  stuff,
+debug  tools  etc.) may not be loaded at all for normal operation, so
+you will have more RAM free, which adds to speed, too.
+
+> that it could be read-only).  how hard would it be to automatically
+> have that root FS copied from JFFS2 to RAM and mounted from there?
+
+This makes just no sense to me.
+
+> can that be done as a kernel option i haven't seen?  or do i have to
+> do that manually, involving something like "pivot_root"?  or is it
+> worth the trouble?
+
+I cannot see any advantages from such a setup.
+
+If you want a RAM based root filesystem, use a ramdisk.
+
+Best regards,
+
+Wolfgang Denk
 
 --
-dwmw2
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+At the source of every error which is blamed on the computer you will
+find at least two human errors, including the error of blaming it  on
+the computer.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
