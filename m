@@ -1,17 +1,19 @@
-Return-Path: <jonb@marel.is>
-Received: from marel.marel.is (GW-NAT01-ISLNET.marel.is [213.213.131.1])
-	by ozlabs.org (Postfix) with ESMTP id BB3982BF0E
+Return-Path: <wd@denx.de>
+Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
+	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id 79BBC2BF12
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 22:37:55 +1100 (EST)
-In-Reply-To: <20050105175646.GC14485@gate.ebshome.net>
-To: Eugene Surovegin <ebs@ebshome.net>
-MIME-Version: 1.0
-Message-ID: <OF4A31BCB9.4155B59E-ON00256F81.003A1A73-00256F81.003FE2D0@marel.is>
-From: "=?iso-8859-1?Q?J=F3n_Benediktsson?=" <jonb@marel.is>
-Date: Thu, 6 Jan 2005 11:37:36 +0000
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 - problem with CF card
+	Thu,  6 Jan 2005 23:13:13 +1100 (EST)
+To: Robin <robin@india.tejasnetworks.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 05 Mar 2005 23:05:55 +0530."
+	<4229EDFB.2040402@india.tejasnetworks.com>
+Date: Thu, 06 Jan 2005 13:12:33 +0100
+Sender: wd@denx.de
+Message-Id: <20050106121238.BB99AC108D@atlas.denx.de>
+Cc: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: TZ variable setting for denx 2.4.20 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,41 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene Surovegin <ebs@ebshome.net> wrote on 05.01.2005 17:56:46:
+In message <4229EDFB.2040402@india.tejasnetworks.com> you wrote:
+>
+> I am trying to find a way of setting TZ environment variable with DST
 
-> On Wed, Jan 05, 2005 at 02:49:42PM +0000, J?n Benediktsson wrote:
-> > > I am working with a custom MPC5200 board which uses the built-in=20
-> > > ATA/IDE controller for a compact flash card.=20
-> > > The Linux kernel is Denx linux=5F2=5F4=5Fdevel.=20
->=20
-> [snip]
->=20
-> > > mpc5xxx=5Fide: Setting up IDE interface ide0...=20
-> > > Probing IDE interface ide0...=20
-> > > hda: SanDisk SDCFBI-1024, ATA DISK drive=20
-> > > hdb: probing with STATUS(0x00) instead of ALTSTATUS(0x7f)=20
-> > > ide0: unexpected interrupt, status=3D0x00, count=3D1=20
->=20
-> I had similar problem with some CF cards (while other like in your=20
-> case worked fine).
->=20
-> Try disabling probing of the slave ide0 interface (hdb). I'm not=20
-> familiar with MPC5xxx, but most likely you can modify mpc5xxx=5Fide or=20
-> whatever code sets up access to your CF card.
->=20
-> Find where an instance of ide=5Fhwif=5Ft is initialized for ide0 and add =
+Your subject is misleading. Timezone handling is a user space  issue.
+It has nothing to do with the kernel verison.
 
-> something like:
->=20
->    /* Don't probe second drive */
->         hwif->drives[1].noprobe =3D 1;
->=20
+> I am using 2.4.20 linux kernel from denx.I am running date command from
 
-Thank you.  It was indeed the probing for the second drive that was=20
-causing the problem.
-Adding hdb=3Dnoprobe to the kernel command line (bootargs) fixes the proble=
-m=20
-without kernel modifications.
+This has nothing to do with your problems.
 
-Thanks again,
-Jon
+> busybox version 0.6 which in is using strftime. The processor is ppc860T.
+
+BB 0.6 ? AFAICT there is no such version. Do you mean  busybox-0.60.5 ?
+
+This is awfully old. Maybe  you  should  try  running  an  up-to-date
+version  of  busybox  first?  If  this doesn;'t work, please consider
+using the real GNU date  command.  You  should  understand  that  the
+busybox  tools  only provide limited functionality, so fancy features
+like complex timezone support may not be available.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Status quo. Latin for "the mess we're in."
