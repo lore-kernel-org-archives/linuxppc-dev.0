@@ -1,27 +1,43 @@
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <paulus@samba.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	Stefan Jeglinski <jeglin@4pi.com>
 Subject: Re: 2.4.13-pre5 crash when mounting proc
-To: Stefan Jeglinski <jeglin@4pi.com>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	owner-linuxppc-dev@lists.linuxppc.org, paulus@samba.org
-Message-ID: <OF822FE6C3.5704E540-ON86256AEC.0058270C@rchland.ibm.com>
-From: "David Boutcher" <boutcher@us.ibm.com>
-Date: Sun, 21 Oct 2001 11:03:56 -0500
+Date: Sun, 21 Oct 2001 20:58:12 +0200
+Message-Id: <20011021185812.24126@smtp.wanadoo.fr>
+In-Reply-To: <15314.48871.176187.508759@cargo.ozlabs.ibm.com>
+References: <15314.48871.176187.508759@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> c0054448 t copy_mount_options
-> c0054560 T do_mount
-> c005471c T sys_mount
+>> On boot, when it gets to "mounting proc
+>> filesystem," I get a break into the mon debugger, but I have no
+>> keyboard response (so no backtrace). The info I can copy is:
+>
+>You have an ADB keyboard, no?  I am surprised the keyboard doesn't
+>respond.
 
-Hmm...the iSeries kernels in devel are failing the same way.  I was
-assuming it was something I did (or didn't do) but now I'm thinking it's
-more general.
+Could be async probing not beeing complete. I could push the adb_sync
+kernel arg to the bk trees, at least _devel.
 
-Dave Boutcher
-Senior Technical Staff Member
-iSeries Linux Development and Architecture
+>> vector: 300 at pc = c02432fc lr = c00544e0 msr = b032 sp = c5dc3ef0
+>>
+>> plus some more that I'm not sure will help much. For this output
+>> alone, should I include System.map also?
+>
+>Yes, or alternatively find out where those pc and lr addresses are in
+>the System.map list and tell us the nearest symbols and their values.
+>
+>> Is this a known problem?
+>
+>Not to me...
+
+Not to me neither but I'm still running pre3.
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
