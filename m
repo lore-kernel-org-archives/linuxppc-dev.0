@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
-	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id 0472B2BDB5
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C58D12BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 26 Dec 2004 04:10:06 +1100 (EST)
-To: Suresh Chandra Mannava <msuresh@gamebox.net>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 25 Dec 2004 13:16:35 +0530."
-	<41CD1ADB.3010807@gamebox.net>
-Date: Sat, 25 Dec 2004 18:09:25 +0100
-Sender: wd@denx.de
-Message-Id: <20041225170931.05B4DC14C8@atlas.denx.de>
-Cc: etux@embeddedtux.org, linuxppc-embedded@ozlabs.org
-Subject: Re: kernel for MPC8260 SBC 
+	Sun, 26 Dec 2004 05:27:37 +1100 (EST)
+In-Reply-To: <313680C9A886D511A06000204840E1CF0A647403@whq-msgusr-02.pit.comms.marconi.com>
+References: <313680C9A886D511A06000204840E1CF0A647403@whq-msgusr-02.pit.comms.marconi.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <A1E3B6C2-5690-11D9-A059-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Sat, 25 Dec 2004 10:18:37 -0600
+To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: seeking advise on porting custom PPC platform (in my case it is
+	variant of 8xx ) from Linux 2.4.(.26) to Linux 2.6(.10-rc3)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +24,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Suresh,
+Alex,
 
-please read the  netiquette.  Please  never  post  the  same  message
-several times to different newsgroups.
+Its my understanding that code moved out of arch/ppc/platforms and=20
+arch/ppc/kernel in 2.4 into arch/ppc/syslib.  The code in 'syslib'=20
+deals with items that are not directly related with the CPU cores=20
+(arch/ppc/kernel) or with board issues (arch/ppc/platforms).  Any code=20=
 
-In message <41CD1ADB.3010807@gamebox.net> you wrote:
-> 
-> We developed a SBC based on MPC8260. We are planing to port Linux on it.
-> I downloaded mpc8260 cross compiling tools from denx.de.
-> 
-> I started cross-compiling linux-2.4.4.
+that is generic for a number of systems should be in arch/ppc/syslib. =20=
 
-Why? 2.4.4 ist very, very old. Use a more recent kernel tree. If  you
-want   to   stay   in   our   source   tree,   then  please  use  the
-linuxppc_2_4_devel module on our CVS server.
+So code managing pci, interrupt controllers, generic system setup, etc=20=
 
-> The problem is
-> I am not able to compile kernel. 8260 specific files in arch/ppc are not 
-> compiling due to not inclusion of
+lives in arch/ppc/syslib.
 
-Then your configuration is broken. The kkernel compiles fine for many boards.
+The transition predates my work with 2.6, I would guess that Paul M.=20
+was influential in this change.
 
-> "bd_t" structure. I Included the file "asm-ppc/bseip.h".
-> Still encountering many errors.
+If you are just doing a board port then your files should end up in=20
+arch/ppc/platforms.  It should be rare that you would need to touch=20
+anything in arch/ppc/syslib.
 
-This is not a big surprise. The "bseip.h" header file is for a MPC8xx
-based board - what makes you think that this might work on your  8260
-based hardware?
+- kumar
 
-> I even tried with linux-2.4.20 and encountered the same problems.
-> Is there any patch required for compiling the kernel cleanly.
+On Dec 24, 2004, at 11:05 AM, Povolotsky, Alexander wrote:
 
-No. There is no patch needed. The kernel trees are  clean.  You  just
-have  to  select a correct configuration. Ummm... and for your custom
-board you will probably have to port Linux first.
+> Hi,
+>
+> In Linux 2.6 I see the new directory arch/ppc/syslib, which does not=20=
 
-> Please provide pointer to the sutiable kernel along with patch.
+> exist
+>  in Linux 2.4(.26).
+>  I would GREATLY APPRECIATE if Tom or Dan (or someone else) could=20
+> explain
+>  what are the reasons for creating this new directory and describe on=20=
 
-See for example the linuxppc_2_4_devel module on our CVS server.
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Every little picofarad has a nanohenry all its own.      - Don Vonada
+> what
+>  basis existing
+>  Linux 2.4 files went there and why=A0 ...
+> and if there any new files (vs Linux 2.4) were created in that new=20
+> directory
+>  ?=A0
+>
+>  In general, I am seeking advise on porting PPC platform
+>  (in my case it isvariant of 8xx ) from Linux 2.4.(.26) to Linux
+>  2.6(.10-rc3).
+>  =A0Did anyone created howto document on this subject ?
+>
+> Thanks,
+>
+> Alex
+>  _______________________________________________
+> Linuxppc-embedded mailing list
+>  Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
