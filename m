@@ -1,50 +1,35 @@
+Message-Id: <l03130301b3ad9cf52c5f@[209.226.106.148]>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04020a02b3ac45cbc4ab@[192.168.0.2]>
-In-Reply-To: <8xyagpbzxm.fsf@s53.informatik.uni-bremen.de>
-References: Mike DeSimone's message of Fri, 9 Jul 1999 08:04:03 -0500
- Sacha Varma's message of Fri, 09 Jul 1999 12:29:35 +0100
- <3785DD1F.B853E731@ssl.co.uk> <v04020a00b3aba2034899@[192.168.0.2]>
-Date: Fri, 9 Jul 1999 19:41:36 -0500
+Date: Sat, 10 Jul 1999 21:45:08 -0400
 To: linuxppc-dev@lists.linuxppc.org
-From: Mike DeSimone <Hot-Wire@mail.utexas.edu>
-Subject: Re: altivec
+From: Eric Dorland <dorland@lords.com>
+Subject: CVS question
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Well, if you do instruction-by-instruction emulation, the iteration count is
->at most 16 (16 bytes in a vector). Furthermore, the overhead of a context
->switch into privileged mode and back again is not negligible (at the very
->least a pipeline flush and some saving/restoring of registers). Finally,
->keeping the emulated vector registers somewhere in memory means that you will
->quite often be limited by the availability of 'only' one load/store unit.
+I have I feeling this is a really basic question, perhaps more appropriate
+for the user list, but being a cvs question, I thought you guys would be in
+the know.
 
-That's true, I forgot about the 16 byte limit.  That will really make the
-overhead significant.  Kind of annoying to me (my typical vector length is
-over 900).  Maybe having two libraries is the way to go, then...
+I was trying to download the source for the 2.2.10 kernel so I could try
+the patch to the atyfb driver Tim Seufert (thanks tim!) so I tried to get
+it from CVS at cvs.on.openprojects.net. I reckoned it wouldn't be very
+hard, and it wasn't. It was easy to get the latest source, but I can't
+figure out how to get the 2.2.10 version. I thought the command:
 
->> I'm also wondering what has been done on this issue on the Intel side of
->> the fence, since KNI and 3Dnow! are similar to Altivec in concept and, at
->> least for 3Dnow!, implementation.
->>
->Similar? Please forgive my ranting, but AltiVec is feature-complete,
->orthogonal, and implemented without compromises. MMX, 3DNow!, and ISSE have
->none of the above three qualities. They were available sooner, but that's
->about it.
+cvs -z3 checkout -r2.2.10 linux
 
-That's why I said "similar in concept" ... not execution.  And I said KNI
-(the PIII new instructions), not MMX, which is integers only.  (Also why I
-didn't mention Sun's VIS).
-_________________________________________________________________________
-                                __________
-##   ##   ###   #####   #####   \********/   #####    ###    ##### ######
-### ###  ## ##  ##  ## ##        \*/\/\*/    ##  ##  ## ##  ##     ##
-#######  ## ##  #####   ####       /\/\      #####   ## ##   ####  ####
-## # ## ####### ##  ##     ##      \**/      ##  ## #######     ## ##
-##   ## ##   ## ##  ## #####        \/       #####  ##   ## #####  ######
-_________________________________________________________________________
-### Mike DeSimone ### Hot-Wire@mail.utexas.edu ### ares.marsbase.mars ###
+would do the trick, but it doesn't work. I seem to be using the -r switch
+incorrectly, but I don't know which switch to use. I feel like I'm missing
+something obvious, so please reply privately if this is a silly question,
+to avoid list clutter. Thanks.
+
+Eric Dorland
+mailto:dorland@lords.com
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
