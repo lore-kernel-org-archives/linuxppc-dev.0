@@ -1,51 +1,65 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C06BF@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: john@corelis.com, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Good Books
-Date: Fri, 28 Feb 2003 08:42:36 -0500
+From: "Georg Klug" <gklug@giga-stream.de>
+To: "KISHINAMI Masaya" <kishinami@cs.fujitsu.co.jp>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: AW: 405GP Networking issue
+Date: Fri, 28 Feb 2003 14:59:11 +0100
+Message-ID: <FFECLICFNBJAHONLGAKMAEINCIAA.gklug@giga-stream.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="US-ASCII"
+In-Reply-To: <200302281227.AA02348@kishinami.cs.fujitsu.co.jp>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I highly recommend this book.
+Hi Kishinami,
 
------Original Message-----
-From: Dr. Craig Hollabaugh [mailto:craig@hollabaugh.com]
-Sent: Thursday, February 27, 2003 9:24 PM
-To: john@corelis.com; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Good Books
+> We are debugging a custom board designed based on the 405GP
+> (200MHz) and have a problem not being sent ECHO REPLY ping
+> packet from custom board to our PC via repeater hub on the
+> heavy traffic under 10Mbps and half duplex condition.
 
+> ...
 
-
-At 05:05 PM 2/27/2003 -0800, John Chan wrote:
+> Following are the our simplest duplication process and the
+> results.
 >
->Hello, Folks,
+> 1. Connect the repeater hub to backbone LAN.
+> 2. Connect custom board, test PC to ping and other PCs to the
+>    repeater hub to the full. This case, 10 or more PCs are
+>    connected to repeater hub and each PC works normally by
+>    using network.
+> 3. Increase the traffic by using ftp command. The ftp data was
+>    never addressed to the custom board.
+> 4. Ping from our PC to custom board at one time.
+> 5. The 60% pings were lost such condition.
+> 6. We investigated the ping lost case.
+>    - LAN protocol analyzer captured the ECHO REQUEST which was
+>      address to custom board. It shows ECHO REQUEST was issued
+>      from our PC to LAN cable.
+>    - Logic analyzer captured the same ping packet which was
+>      already been captured by LAN analyzer between PHY(Intel
+>      LXT971A) and EMAC. It shows ECHO REQUEST was reached just
+>      before the EMAC.
+>    - The LAN device driver's receive buffer did not receive the
+>      ECHO REQUEST by using printk command. We suspected that the
+>      ECHO REQUEST was not issued to the MAL(Memory Access Layer),
+>      therefore ECHO REQUEST was not translated to the receive
+>      buffer.
 >
->I am looking for reference books which are related to PPC 440GP or/and
->embedded PPC or/and Linux on PPC. Do you have any suggestion?
+> At the same time, many 4 byte short packet(0x000000f0) which was
+> not addressed to custom board was received to the LAN device driver's
+> receive buffer with error status. According to 405GP manual, EMAC
+> discards the packet which is not of its own.
 
-John,
+to me it looks like an half duplex issue. You should check whether both:
+sender and receiver know that they are connected to a half duplex hub.
+Otherwise collisions could occur which are not detected by the receiver
+and also not by the transmitting entity. So you should make sure that
+FDE is set to 0 in the EMAC Mode register 1 (EMAC0_MR1) according to
+the Users manual)
 
-My book, Embedded Linux: Hardware, Software and Interfacing, uses a PPC860
-(Embedded Planet RPX-CLLF) in numerous interfacing examples. This might help
-with general PPC issues, not specifically the 440 though.
-
-Craig
-
-
-
-
-___________________________________________________________
-Dr. Craig Hollabaugh                   craig@hollabaugh.com
-Author of Embedded Linux
-
-P.O. Box 1405
-Ouray, CO 81427-1405        See my "kitchen sink" resume at
-970 325 4810 home            www.hollabaugh.com/resume.html
-970 325 0509 office
+Georg
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
