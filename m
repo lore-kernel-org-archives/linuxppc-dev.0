@@ -1,32 +1,21 @@
-Date: Mon, 24 May 2004 12:22:58 +0500 (GMT+0500)
-From: Venkatesh Savithri Mahesh <vsmahesh@cdotb.ernet.in>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 24 May 2004 13:27:45 +0200
+From: Marc Leeman <marc.leeman@barco.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Query about KERNELLOAD. 
-In-Reply-To: <20040524050640.GA2245@mars.ravnborg.org>
-Message-ID: <Pine.OSF.4.21.0405241202110.19979-100000@ws9.cdotb.ernet.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: memory dump
+Message-ID: <20040524112745.GV23093@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+A quick question:
 
-  I am a novice, please forgive me if this is very trivial.
+Can I obtain the memory location of kernel variables based on the
+System.map file in such a way that I can dump them with a BDI probe.
 
-  I am trying to run 2.4.16 kernel on a custom 8260 board with 128MB
-sdram. I am using the TRACE32 JTAG emulator from Lauterbach.
-
-  I am unable to load with KERNELLOAD=0xc0000000.
-
-  When the KERNELLOAD is changed to some other value, say 0x06000000
-kernel gets relocated to 0x0 succesfully but reaches a undef instruction
-after a few instuctions after emtering the MMU_init function.
-
-
-    Please advise me. Thanks for any information.
-
->> V S Mahesh.
-
+dump 0xabcdef 0x10000 dump.txt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
