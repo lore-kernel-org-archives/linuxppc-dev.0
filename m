@@ -1,45 +1,31 @@
-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-cc: mlan@cpu.lu, ldl@chpc.utah.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: controlfb.c bug in VRAM bank2 check if bank1 
-In-reply-to: Your message of "Wed, 15 Sep 1999 13:05:10 EDT."
-             <199909151707.MAA16408@lists.linuxppc.org>
-References: <199909151707.MAA16408@lists.linuxppc.org> 
-Mime-Version: 1.0
+Message-ID: <37DFF486.E219B51B@jlc.net>
+Date: Wed, 15 Sep 1999 15:33:26 -0400
+From: Dan Malek <dmalek@jlc.net>
+MIME-Version: 1.0
+To: David DeHaven <daved@trestle.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Hmm..
+References: <199909151423.HAA791029@meer.meer.net>
 Content-Type: text/plain; charset=us-ascii
-Date: Wed, 15 Sep 1999 14:26:55 -0400
-From: Kevin Puetz <puetzk@iastate.edu>
-Message-Id: <E11RKhj-0001UA-00@puetz.penguinpowered.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+David DeHaven wrote:
+> 
+> All we're missing now is G4 and "Velocity engine support"...
+> 
+> Any takers?
 
-khendricks@admin.ivey.uwo.ca said:
-> Hi,
-> Just to add fuel to the fire (although I am not sure if this is
-> related or not)
+Well, I did some work on alpha silicon about a year ago and I
+am pretty serious about audio processing, so I will be working
+on it again one of these days.  The price is certainly right.
 
-> My B+W G3 rev2 with 16MB of vram has never ever detected the correct
-> amount.  In  fact, if I run Xconfigurator, it tells me I have less
-> then 1MB of vram and  therefore won't let me use any of the higher
-> resolutions that should work
+Unfortunately (maybe fortunately :-), people pay me to do embedded
+8xx products so I can justify at least spending time on that
+processor.
 
-> The interesting thing is that if I change my bpp via the MacOS,
-> Xconfigurator  reports completely different amounts of vram available
-> and not in any logical  way that I can see.
 
-If you use 'no video driver' Linux will see the amount of VRAM that was 
-actually in use by MacOS when booting. You should probably look into a newer 
-kernel with aty128fb
-
-> Any fixes along these lines would be greatly appreciated (this is with
-> Paul's  2.2.10 stable kernel available from his website).
-
-Which is probably just old enough not to have the correct driver.
-
-> Just thought someone in the know should be told :-)
-
-> Kevin 
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
