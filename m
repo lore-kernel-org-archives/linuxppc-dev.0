@@ -1,83 +1,50 @@
-From: "Anil Giri" <anil@india.tejasnetworks.com>
-To: "bhupinder sahran" <bhup_sah@yahoo.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: problem in booting kernel
-Date: Mon, 12 May 2003 14:16:56 +0530
-Message-ID: <NFBBIIPBPPALGBNPGLOBGEEPJBAB.anil@india.tejasnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20030507155215.73920.qmail@web41504.mail.yahoo.com>
+To: Anil Giri <anil@india.tejasnetworks.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux-2.4.18 on MPC860T -Linux kernel boot problem 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 12 May 2003 18:37:57 +0500."
+             <1052744877.3ebf9cad5d4d8@pop-mail.india.tejasnetworks.com>
+Date: Mon, 12 May 2003 15:27:53 +0200
+Message-Id: <20030512132758.B86AFC6092@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-    Kernel Booting hangs just after entering start_kernel function.
-Even I can't see the printk fuction for printing linux banner getting
-executed.
-I have compiled linux-2.4.18 for MPC860.
+Dear Anil,
 
--Anil
+in message <1052744877.3ebf9cad5d4d8@pop-mail.india.tejasnetworks.com> you wrote:
+>
+> I'm trying to run a Linux kernel (2.4.18) on a Motorola MPC860T
+> processor.But my kernel boot hangs in my_console_write function in uart.c
+> I can't see any message on the console after "Now booting the kernel".
 
+Can you see  any  output  in  the  log_buf  area  if  you  perform  a
+post-mortem dump (using PPCBoot's "md" command) ?
 
------Original Message-----
-From: bhupinder sahran [mailto:bhup_sah@yahoo.com]
-Sent: Wednesday, May 07, 2003 9:22 PM
-To: Anil Giri; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: problem in booting kernel
+> My question is, has anyone been able to boot a 2.4.18 kernel on an
+> MPC860T, using PPCBoot as the boot loader ? If so, have you encountered such a
+> problem ? Is there any issue with clock freq. in Hz instead of Mhz.?
+> Is there any patch available for ppc?
 
-Hi
->From the inuts u have given it is very tough to find
-out. But let me ask u some of the questions.
+2.4.18 usually runs perfectly fine on 8xx, assuming that you made  no
+errors when porting the Linux kernel to your board.
 
-1. One possiblity is that ur serial port is not
-configured properly & u are not seeing any message
-from the console port.
-
-2. IF u are having the JTAG debugger find out the
-value in Program conuter & see where it matches in
-System.map.
-
-So tell me the PC value then it might be possible to
-catch the problem
-
-Thanx
-Bhupi
-Linux+Hypertransport -->Silicon
-www.gdatech.com
-Good after beer ---Linux
+Yes, there is an issue with clock frequencies in Hz versus MHz, which
+has been documented in several places. See for example  the  "README"
+and  "CHANGELOG"  files that come with the PPCBoot source (search for
+"CONFIG_CLOCKS_IN_MHZ"), or see section "10. Questions  and  Answers"
+of our documentation at http://www.denx.de/re/DPLG.html
 
 
---- Anil Giri <anil@india.tejasnetworks.com> wrote:
->
-> Hi,
->
->
->    I m trying to boot kernel for linux-2.4.18
-> (MPC860 processor), but it
->
->
-> hangs after "Now booting the kernel"  message. What
-> could be the reason???
->
->
-> also on debugging i found negative value for
-> register R3 instead of ptr to
->
->
-> board info data. Other register settings were ok.
->
->
-> Any imputs...
->
->
->
->
-> -Anil
->
->
->
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Bus error -- please leave by the rear door.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
