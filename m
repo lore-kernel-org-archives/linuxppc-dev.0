@@ -1,34 +1,39 @@
-Message-ID: <3C46F718.2070305@embeddededge.com>
-Date: Thu, 17 Jan 2002 11:08:56 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3C476C2B.80306@ixiacom.com>
+Date: Thu, 17 Jan 2002 16:28:27 -0800
+From: Bryan Rittmeyer <bryan@ixiacom.com>
 MIME-Version: 1.0
-To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: get_irq fix for 8260 platform
-References: <29887.1011251752@msa.cmst.csiro.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ppc750 TAU problems?
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Murray Jensen wrote:
+Hello all,
 
-> Hi All, if you have an 8260 and are wondering why the latest revisions of
-> the devel kernel hang during boot, then this patch might help you.
+ From Configure.help in a recent linuxppc_devel_2_4 snapshot (2.4.17):
 
-Heh :-).  Thanks, I just fixed this yesterday, too.  It appears the 8260
-has been neglected for a while, and now that I am doing something with
-it again I'll have more updates as well.
+CONFIG_TAU
+   G3 and G4 processors have an on-chip temperature sensor called the
+   'Thermal Assist Unit (TAU)', which, in theory, can measure the on-die
+   temperature within 2-4 degrees Celsius. This option shows the current
+   on-die temperature in /proc/cpuinfo if the cpu supports it.
 
-I didn't do the 'end' function, but I'll include this.  I'm also thinking
-about a real  priority interrupt scheme like was done for the 8xx a month
-or so ago.  It's a bit more complicated here, though.
+   Unfortunately, on some chip revisions, this sensor is very inaccurate
+   and in some cases, does not work at all, so don't assume the cpu
+   temp is actually what /proc/cpuinfo says it is.
 
-Thanks again.
+Can anyone provide further details on which IBM PPC750CXe versions have
+problematic TAU? It seems our 400 MHz parts work great with this driver
+(25 to 30C when idle) but our 600 MHz grades always read out an
+incorrect range of "11-13 C" or even "1-71 C" while at room temperature.
+Increasing the sampling delay in temp.c has no effect.
 
+-Bryan
 
-	-- Dan
+--
+Bryan Rittmeyer
+mailto:bryan@ixiacom.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
