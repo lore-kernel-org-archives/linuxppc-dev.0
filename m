@@ -1,114 +1,39 @@
-Date: Sat, 15 Jan 2000 11:25:24 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
+Date: Sat, 15 Jan 2000 14:36:31 -0700 (MST)
+From: Dan Burcaw <dburcaw@terraplex.com>
 To: linuxppc-dev@lists.linuxppc.org
-cc: Giuliano Pochini <pochini@denise.shiny.it>
-Subject: Re: sysrq support
-In-Reply-To: <20000115100525.J25867@suse.de>
-Message-ID: <Pine.LNX.4.10.10001151123590.1325-200000@opus.bloom.county>
+cc: linuxppc-user@lists.linuxppc.org,
+        yellowdog-general@lists.yellowdoglinux.com,
+        yellowdog-devel@lists.yellowdoglinux.com
+Subject: Mac-On-Linux Mailing Lists
+Message-ID: <Pine.LNX.4.10.10001151429520.17643-100000@newhope.terraplex.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811838-392723044-947960723=:1325"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
 
----1463811838-392723044-947960723=:1325
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+I'm pleased to announce that Terra Soft Solutions, makers of Yellow Dog
+Linux, has setup two mailing lists for developers and users of the
+Mac-On-Linux software.
 
-On Sat, 15 Jan 2000, Olaf Hering wrote:
+We've setup two lists -- mol-general and mol-devel -- after consulting
+with Samuel Rydh, the MOL author.
 
-> On Fri, Jan 14, Giuliano Pochini wrote:
-> 
-> > Is sysrq supported ?  On my Pmac7300 2.2.14 compile dies with:
-> > 
-> > keyboard.c: In function `handle_scancode':
-> > keyboard.c:252: structure has no member named `ppc_kbd_sysrq_xlate'
-> 
-> SysRq is broken since 2.2.14pre5.
-> 
-> The attached patch should fix it. I guess the patch can go into the main
-> kernel...
+For information on subscription, please visist
+http://lists.yellowdoglinux.com.
 
-This patch (I sent it to Cort and Paul a while back, but never heard
-anything) should work on CONFIG_PPC_ALL, or when you have two different
-types of keyboards (ie ADB and USB).
+Regards,
+Dan
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Terra Soft Solutions, Inc.
+ Yellow Dog Linux
+ "The Ultimate Companion for a Dedicated Server"
+ http://www.yellowdoglinux.com/
+ 
+ Black Lab Linux
+ Workstations and advanced, Parallel Solutions
+ http://www.blacklablinux.com/
 
----1463811838-392723044-947960723=:1325
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="sysrq.patch"
-Content-ID: <Pine.LNX.4.10.10001151125230.1325@opus.bloom.county>
-Content-Description: 
-Content-Disposition: attachment; filename="sysrq.patch"
-Content-Transfer-Encoding: BASE64
-
-LS0tIGFyY2gvcHBjL2tlcm5lbC9nZW1pbmlfc2V0dXAuYy5vcmlnCU1vbiBO
-b3YgMjkgMTU6MDc6MTAgMTk5OQ0KKysrIGFyY2gvcHBjL2tlcm5lbC9nZW1p
-bmlfc2V0dXAuYwlNb24gTm92IDI5IDE1OjA3OjI1IDE5OTkNCkBAIC01Nzcs
-NiArNTc3LDYgQEANCiAJcHBjX21kLmtiZF9sZWRzID0gTlVMTDsNCiAJcHBj
-X21kLmtiZF9pbml0X2h3ID0gTlVMTDsNCiAjaWZkZWYgQ09ORklHX01BR0lD
-X1NZU1JRDQotCXBwY19tZC5wcGNfa2JkX3N5c3JxX3hsYXRlID0gTlVMTDsN
-CisJcHBjX21kLmtiZF9zeXNycV94bGF0ZSA9IE5VTEw7DQogI2VuZGlmDQog
-fQ0KLS0tIGFyY2gvcHBjL2tlcm5lbC9jaHJwX3NldHVwLmMub3JpZwlNb24g
-Tm92IDI5IDE0OjI5OjA4IDE5OTkNCisrKyBhcmNoL3BwYy9rZXJuZWwvY2hy
-cF9zZXR1cC5jCU1vbiBOb3YgMjkgMTU6MDY6MDcgMTk5OQ0KQEAgLTQ4Nyw2
-ICs0ODcsNyBAQA0KIAkJcHBjX21kLmtiZF9pbml0X2h3ICAgICAgID0gcGNr
-YmRfaW5pdF9odzsNCiAjaWZkZWYgQ09ORklHX01BR0lDX1NZU1JRDQogCQlw
-cGNfbWQua2JkX3N5c3JxX3hsYXRlCSA9IHBja2JkX3N5c3JxX3hsYXRlOw0K
-KwkJcHBjX21kLlNZU1JRX0tFWQkgPSAweDU0Ow0KICNlbmRpZgkJDQogCX0N
-CiAJZWxzZQ0KQEAgLTQ5OSw2ICs1MDAsNyBAQA0KIAkJcHBjX21kLmtiZF9p
-bml0X2h3ICAgICAgID0gbWFja2JkX2luaXRfaHc7DQogI2lmZGVmIENPTkZJ
-R19NQUdJQ19TWVNSUQ0KIAkJcHBjX21kLmtiZF9zeXNycV94bGF0ZQkgPSBt
-YWNrYmRfc3lzcnFfeGxhdGU7DQorCQlwcGNfbWQuU1lTUlFfS0VZCSA9IDB4
-Njk7DQogI2VuZGlmCQkNCiAJfQ0KICNlbHNlDQpAQCAtNTEwLDYgKzUxMiw3
-IEBADQogCXBwY19tZC5rYmRfaW5pdF9odyAgICAgICA9IHBja2JkX2luaXRf
-aHc7DQogI2lmZGVmIENPTkZJR19NQUdJQ19TWVNSUQ0KIAlwcGNfbWQua2Jk
-X3N5c3JxX3hsYXRlCSA9IHBja2JkX3N5c3JxX3hsYXRlOw0KKwlwcGNfbWQu
-U1lTUlFfS0VZCSA9IDB4NTQ7DQogI2VuZGlmDQogI2VuZGlmDQogI2VuZGlm
-DQotLS0gYXJjaC9wcGMva2VybmVsL3ByZXBfc2V0dXAuYy5vcmlnCU1vbiBO
-b3YgMjkgMTQ6Mjk6MDggMTk5OQ0KKysrIGFyY2gvcHBjL2tlcm5lbC9wcmVw
-X3NldHVwLmMJTW9uIE5vdiAyOSAxNTowNjoyMCAxOTk5DQpAQCAtODYzLDYg
-Kzg2Myw3IEBADQogCXBwY19tZC5rYmRfaW5pdF9odyAgICAgICA9IHBja2Jk
-X2luaXRfaHc7DQogI2lmZGVmIENPTkZJR19NQUdJQ19TWVNSUQ0KIAlwcGNf
-bWQua2JkX3N5c3JxX3hsYXRlCSA9IHBja2JkX3N5c3JxX3hsYXRlOw0KKwlw
-cGNfbWQuU1lTUlFfS0VZCSA9IDB4NTQ7DQogI2VuZGlmDQogI2VuZGlmDQog
-fQ0KLS0tIGFyY2gvcHBjL2tlcm5lbC9wbWFjX3NldHVwLmMub3JpZwlNb24g
-Tm92IDI5IDE0OjI5OjA4IDE5OTkNCisrKyBhcmNoL3BwYy9rZXJuZWwvcG1h
-Y19zZXR1cC5jCU1vbiBOb3YgMjkgMTU6MDY6MjkgMTk5OQ0KQEAgLTYyNSw2
-ICs2MjUsNyBAQA0KIAlwcGNfbWQua2JkX2luaXRfaHcgICAgICAgPSBtYWNr
-YmRfaW5pdF9odzsNCiAjaWZkZWYgQ09ORklHX01BR0lDX1NZU1JRDQogCXBw
-Y19tZC5rYmRfc3lzcnFfeGxhdGUJID0gbWFja2JkX3N5c3JxX3hsYXRlOw0K
-KwlwcGNfbWQuU1lTUlFfS0VZCSA9IDB4Njk7DQogI2VuZGlmDQogI2VuZGlm
-DQogDQotLS0gYXJjaC9wcGMva2VybmVsL21ieF9zZXR1cC5jLm9yaWcJTW9u
-IE5vdiAyOSAxNDoyOTowOCAxOTk5DQorKysgYXJjaC9wcGMva2VybmVsL21i
-eF9zZXR1cC5jCU1vbiBOb3YgMjkgMTU6MDY6MzkgMTk5OQ0KQEAgLTQ2Niw2
-ICs0NjYsNyBAQA0KIAlwcGNfbWQua2JkX2luaXRfaHcgICAgICAgPSBwY2ti
-ZF9pbml0X2h3Ow0KICNpZmRlZiBDT05GSUdfTUFHSUNfU1lTUlENCiAJcHBj
-X21kLmtiZF9zeXNycV94bGF0ZQkgPSBwY2tiZF9zeXNycV94bGF0ZTsNCisJ
-cHBjX21kLlNZU1JRX0tFWQkgPSAweDU0Ow0KICNlbmRpZg0KIA0KICNpZiBk
-ZWZpbmVkKENPTkZJR19CTEtfREVWX0lERSkgfHwgZGVmaW5lZChDT05GSUdf
-QkxLX0RFVl9JREVfTU9EVUxFKQ0KLS0tIGluY2x1ZGUvYXNtLXBwYy9tYWNo
-ZGVwLmgub3JpZwlNb24gTm92IDI5IDE0OjU0OjEyIDE5OTkNCisrKyBpbmNs
-dWRlL2FzbS1wcGMvbWFjaGRlcC5oCU1vbiBOb3YgMjkgMTQ6NTU6NDYgMTk5
-OQ0KQEAgLTUwLDYgKzUwLDcgQEANCiAJdm9pZAkJKCprYmRfaW5pdF9odyko
-dm9pZCk7DQogI2lmZGVmIENPTkZJR19NQUdJQ19TWVNSUQ0KIAl1bnNpZ25l
-ZCBjaGFyIAkqa2JkX3N5c3JxX3hsYXRlOw0KKwl1bnNpZ25lZCBsb25nCVNZ
-U1JRX0tFWTsNCiAjZW5kaWYNCiANCiAJLyogUENJIGludGVyZmFjZXMgKi8N
-Ci0tLSBpbmNsdWRlL2FzbS1wcGMva2V5Ym9hcmQuaC5vcmlnCU1vbiBOb3Yg
-MjkgMTQ6NTQ6NDYgMTk5OQ0KKysrIGluY2x1ZGUvYXNtLXBwYy9rZXlib2Fy
-ZC5oCU1vbiBOb3YgMjkgMTU6MDY6NTMgMTk5OQ0KQEAgLTcxLDkgKzcxLDgg
-QEANCiAJCXBwY19tZC5rYmRfaW5pdF9odygpOw0KIH0NCiANCi0jZGVmaW5l
-IGtiZF9zeXNycV94bGF0ZQkocHBjX21kLnBwY19rYmRfc3lzcnFfeGxhdGUp
-DQotDQotZXh0ZXJuIHVuc2lnbmVkIGxvbmcgU1lTUlFfS0VZOw0KKyNkZWZp
-bmUga2JkX3N5c3JxX3hsYXRlCShwcGNfbWQua2JkX3N5c3JxX3hsYXRlKQ0K
-KyNkZWZpbmUgU1lTUlFfS0VZIChwcGNfbWQuU1lTUlFfS0VZKQ0KIA0KIC8q
-IHJlc291cmNlIGFsbG9jYXRpb24gKi8NCiAjZGVmaW5lIGtiZF9yZXF1ZXN0
-X3JlZ2lvbigpDQo=
----1463811838-392723044-947960723=:1325--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
