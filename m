@@ -1,29 +1,36 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20040524161520.GQ6763@smtp.west.cox.net>
-References: <DCEAAC0833DD314AB0B58112AD99B93B06DAE3@ismail.innsys.innovsys.com> <20040524161520.GQ6763@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <B1156562-AE3A-11D8-B485-003065F9B7DC@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Rune Torgersen <runet@innovsys.com>, Wolfgang Denk <wd@denx.de>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: 8260 CPM DP ram free function
-Date: Tue, 25 May 2004 07:00:10 -0400
-To: Tom Rini <trini@kernel.crashing.org>
+From: Marco Schramel <Schramel.Linux@go.bartec.de>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Zusatz zuRe: insmod trouble
+Date: Tue, 25 May 2004 13:30:03 +0200
+Cc: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
+References: <20040525095554.A5EC4C109F@atlas.denx.de>
+In-Reply-To: <20040525095554.A5EC4C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200405251330.03231.Schramel.Linux@go.bartec.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On May 24, 2004, at 12:15 PM, Tom Rini wrote:
+Ich habe noch vergessen, Ihnen meine Compileroptionen zu sagen,
+"ppc_82xx-gcc -I /home/marco/linux-2.4.26/include -D __KERNEL__ -D MODULE -c Demodriver.c"
+Ohne Warnungen mit ELDK 3.0
+Gruß
+Marco
 
 
-> Dan?
-
-Check it in!
-
-Thanks.
-
-	-- Dan
+--
+---------
+Marco Schramel
+R&D
+Bartec GmbH
+Schulstr. 30
+94239 Gotteszell, Germany
+www.bartec.de
+Marco.Schramel@go.bartec.de
+Phone:  +49 (0)9929/301332
+Fax:    +49 (0)9929/301112
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
