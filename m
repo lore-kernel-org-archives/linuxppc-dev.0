@@ -1,78 +1,133 @@
-Date: Thu, 29 Mar 2001 02:05:32 -0500 (EST)
-From: Daniel Berlin <dan@www.cgsoftware.com>
-To: "David S. Miller" <davem@redhat.com>
+From: "David S. Miller" <davem@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15042.57778.640138.923390@pizda.ninka.net>
+Date: Wed, 28 Mar 2001 23:18:10 -0800 (PST)
+To: Daniel Berlin <dan@www.cgsoftware.com>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: ieee1394 fixed soon...
-In-Reply-To: <15042.55896.10936.34707@pizda.ninka.net>
-Message-ID: <Pine.LNX.4.10.10103290147210.18522-100000@www.cgsoftware.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.10.10103290147210.18522-100000@www.cgsoftware.com>
+References: <15042.55896.10936.34707@pizda.ninka.net>
+	<Pine.LNX.4.10.10103290147210.18522-100000@www.cgsoftware.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Mar 2001, David S. Miller wrote:
+Daniel Berlin writes:
+ > If the patches + removing the bitfields for self-id
+ > (which it sounds like you already did) give you the ability to
+ > at least attempt to send packets (IE it runs the dma programs),
+ > you are in very good shape.  I had to get the byteswapping basically
+ > perfect to even get it to not just laugh at me and do nothing when we told
+ > ia dma context to run.
 
->
-> Daniel Berlin writes:
->  > Dave, I already took care of most of these. If you remove the selfid
->  > bitfields, the set of patches i sent to the linux1394 list recently to
->  > make it work on a powerbook g3 should work fine on other big-endian
->  > architectures.
->
-> Thanks, I was not aware of these patches, I'll check them out.
+What do you mean specifically when you say "removing the bitfields fo
+self-id"?  I notice in your patches that you don't byte swap
+q[0] and q[1] when they arrive for a self-id interrupt.  Are these
+quadlets supposed to be big-endian in memory?  Here is the change I made:
 
-Be aware they may need some tweaking. Apple does byteswapping in very odd
-conditions, (IE if i use firewire's physical dma access for the memory
-transfers in SBP-2 , for instance, you get it in a different byte order
-than if you turn off physical dma processing for the controller. But it's
-not just swapped, only pieces of it are.  Since it's at least consistent
-byte order when you let it do the physical dma on the controller, i stuck
-with that.) The powerbook g3 firewire controller is known to be buggy
-until very recent revisions, and disassembling the apple mac os x
-drivers for fun shows they explicitly check for it, so it's likely
-a non-broken big-endian firewire controller may act differently.  It would
-be a simple matter of not swapping some things i swap, though, not
-anything particularly difficult. Most of this stupidity is confined to
-the sbp-2 specific stuff, the ohci1394.[ch] (to swap stuff crossing the
-pci boundary that wasn't a register read/write)  and
-ieee1394_transactions.[ch] (to swap the data in non-quadlet cases, but
-not swap the headers)
-changes should work pretty well.  If the patches + removing the bitfields
-for self-id (which it sounds like you already did) give you the ability to
-at least attempt to send packets (IE it runs the dma programs),
-you are in very good shape.  I had to get the byteswapping basically
-perfect to even get it to not just laugh at me and do nothing when we told
-ia dma context to run.
+@@ -326,7 +326,7 @@
+ inline static int handle_selfid(struct ti_ohci *ohci, struct hpsb_host *host,
+ 				int phyid, int isroot)
+ {
+-	quadlet_t *q = ohci->selfid_buf_cpu;
++	quadlet_t val, *q = ohci->selfid_buf_cpu;
+ 	quadlet_t self_id_count=reg_read(ohci, OHCI1394_SelfIDCount);
+ 	size_t size;
+ 	quadlet_t lsid;
+@@ -337,12 +337,13 @@
+ 	   stage */
 
-I also assumed readl/writel do byteswapping, and thus, there was no need
-to swap the register reads/writes since they would be swapped for us.
+ 	/* Check status of self-id reception */
++	val = le32_to_cpu(q[0]);
+ 	if ((self_id_count&0x80000000) ||
+-	    ((self_id_count&0x00FF0000) != (q[0]&0x00FF0000))) {
++	    ((self_id_count&0x00FF0000) != (val&0x00FF0000))) {
+ 		PRINT(KERN_ERR, ohci->id,
+ 		      "Error in reception of self-id packets"
+ 		      "Self-id count: %08x q[0]: %08x",
+-		      self_id_count, q[0]);
++		      self_id_count, val);
 
-At the absolute least, it'll give you an idea of what needs to be swapped
-for big endian architectures.
+ 		/*
+ 		 * Tip by James Goodwin <jamesg@Filanet.com>:
+@@ -366,18 +367,22 @@
+ 	q++;
 
-It's also implemented in a way that makes the changes no-ops for LE
-architectures. (which is probably the only good thing about the endian
-choice of firewire).
->  > I also have a set of endian fixes for the sbp-2 driver that james goodwin
->  > (author of the sbp-2 stuff) is working on integrating, mainly it involves
->  > removal of all of the bitfields, which were screwing up non-LE
->  > architectures.
->  >
->  > I happily use my two 45 gig firewire drives under LinuxPPC, and have been
->  > for weeks.
->
-> It won't work on sparc64 until it is fixed to not use
-> virt_to_bus/bus_to_virt and uses the PCI dma interfaces instead.
+ 	while (size > 0) {
+-		if (q[0] == ~q[1]) {
++		quadlet_t q0, q1;
++
++		q0 = le32_to_cpu(q[0]);
++		q1 = le32_to_cpu(q[1]);
++		if (q0 == ~q1) {
+ 			PRINT(KERN_INFO, ohci->id, "selfid packet 0x%x rcvd",
+-			      q[0]);
+-			hpsb_selfid_received(host, cpu_to_be32(q[0]));
+-			if (((q[0]&0x3f000000)>>24)==phyid) {
+-				lsid=q[0];
++			      q0);
++			hpsb_selfid_received(host, cpu_to_be32(q0));
++			if (((q0&0x3f000000)>>24)==phyid) {
++				lsid=q0;
+ 				PRINT(KERN_INFO, ohci->id,
+ 				      "This node self-id is 0x%08x", lsid);
+ 			}
+ 		} else {
+ 			PRINT(KERN_ERR, ohci->id,
+-			      "inconsistent selfid 0x%x/0x%x", q[0], q[1]);
++			      "inconsistent selfid 0x%x/0x%x", q0, q1);
+ 		}
+ 		q += 2;
+ 		size -= 2;
 
-I have
-patches to do this somewhere, it didn't matter for powerppc, so it was
-only a half hearted attempt.
+And this seems to work just fine.
 
-> I have one of these drives as well :-)
+There are some problems I have with your patch, and some fixes in mine
+that are not in yours (using pci_alloc_consistent more efficiently)
+which ought to be integrated.
 
-It's very nice to just be able to go to class, come back, and plug back in
-one connection, and have access to a 90 gig XFS filesystem without hassle.
+For one thing, in your stuff, the comments and code near the comment
+"Pretty heinous." are totally bogus and wrong:
+
+	p->value &= cpu_to_le32(0xfffffff0);
+
+works _PERFECTLY_ fine.  As does:
+
+	p->value |= cpu_to_le32(0x1);
+
+You don't need to do all the stuff like this:
+
+	p->value = cpu_to_le32(le32_to_cpu(p->value) | 0x1);
+
+You only need to do this kind of thing when non-logical operations
+(such as addition/subtraction etc.) need to be done on the
+byte-swapped value.
+
+It would really be nice if the IEEE1394 developers kept on top of
+our patches and merged them to Linus soon.
+
+ > I also assumed readl/writel do byteswapping, and thus, there was no need
+ > to swap the register reads/writes since they would be swapped for us.
+
+Right, readl/writel push little-endian onto little-endian busses like
+PCI.
+
+ > At the absolute least, it'll give you an idea of what needs to be swapped
+ > for big endian architectures.
+
+I know what needs to be swapped thats why I did the patches I did :-)
+
+ > I have
+ > patches to do this somewhere, it didn't matter for powerppc, so it was
+ > only a half hearted attempt.
+
+Please push it to the ieee1394 maintainers, so the work need not
+be duplicated by others.  Thanks.
+
+Later,
+David S. Miller
+davem@redhat.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
