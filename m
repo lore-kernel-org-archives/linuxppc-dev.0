@@ -1,75 +1,41 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20030724125044.44568.qmail@web41808.mail.yahoo.com>
-Date: Thu, 24 Jul 2003 05:50:44 -0700 (PDT)
-From: Cedric Aubert <cedric_aubert@yahoo.fr>
-Reply-To: cedric_aubert@yahoo.fr
-Subject: RE: Motorola finally anounces the MPC5200
-To: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D55@norcom2.norcom.net>
+From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+To: "'Brian Padalino'" <bpadalino@perigee.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: U-Boot and 2.6.0-test1 kernel
+Date: Thu, 24 Jul 2003 09:09:52 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-That's right.
+See u-boot's readme file. It describes the image format required for u-boot,
+basically built from vmlinux using "mkimage" tool from denx eldk.
 
-There are a french news about a declaration of MV that
-they have
-full support of the MPC5200.
+Lokesh
 
-http://www.toolinux.com/lininfo/news/news/news20030724003893.htm
+-----Original Message-----
+From: Brian Padalino [mailto:bpadalino@perigee.com]
+Sent: Thursday, July 24, 2003 8:35 AM
+To: Linuxppc-Embedded
+Subject: U-Boot and 2.6.0-test1 kernel
 
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
->
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On
-Behalf Of Jerry
-> Van Baren
-> Sent: Thursday, July 24, 2003 1:54 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Motorola finally anounces the MPC5200
->
->
->
-> The spec sheet said it was built on the 603e core so
-linux support of the
-> core is already present.  The peripherals may or may
-not be supported
-> already, I did not look at them.  The 82xx is based
-on the 603e core as
-> well, so this will be a close cousin to the 82xx.
-The 8xx is a different
-> PPC core, would that make it an in-law :-)?
->
-> gvb
->
->
-> At 08:23 AM 7/24/2003 -0400, krom@dgt-lab.com.pl
-wrote:
->
-> > >
-> > > I had given up hope of them ever releasing it. I
-know some people were
-> > > working on the MGT5100 ( the MPC5200's cousin )
-. Where are the
-> > > development trees hosted? Any status on
-stability/maturity of the
-> > > peripheral drivers?
-> > >
-> >What about linux-kernel on this chip?
-> >Is it binary compatible (userspace programs) to
-mpc8xx/82xx ???
-> >
-> >--
-> >* * * * * * * * * * * *
-> >* per pedes ad astra! *
-> >* * * * * * * * * * * *
-mailto:krom@dgt-lab.com.pl
-> >
-> >
->
->
+
+I just made and flashed U-Boot over the OpenBIOS on my Ebony board, and it
+appears to be working very well.  I was able to do a tftp transfer and I
+like the interface much better than the IBM OpenBIOS -- my only problem is
+that when I download a binary image file made from the 2.6.0-test1 kernel,
+it says something about a Bad Magic number if i do "imi" for "imageinfo".
+
+Is there another utility I should be using to package this kernel up for
+U-Boot, or am I just not choosing the right file?
+
+Thanks,
+Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
