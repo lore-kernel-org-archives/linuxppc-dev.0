@@ -1,97 +1,35 @@
-From: "TiVo Webmaster" <webmaster@tivo.com>
-To: <wung_y@263.net>, "TiVo Webmaster" <webmaster@tivo.com>
-Cc: "linuxppc embedded mail list" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?)
-Date: Wed, 17 Nov 1999 17:33:16 -0800
-Message-ID: <NDBBIEEHNLDEANGPEBEHOEHMDBAA.webmaster@tivo.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <382B8585.D3922B01@263.net>
+Message-Id: <199911180439.UAA00333@lynx.Lynx.COM>
+Date: Wed, 17 Nov 1999 20:26:52 -0800
+To: linuxppc-embedded@lists.linuxppc.org
+From: Ron Fredericks <ronf@Lynx.COM>
+Subject: Linux driver support for 860 PowerQUICC and 8260 PowerQUICC II
+  devices?
+Cc: Ron Fredericks <ronf@Lynx.COM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Wang,
+Hello embedded Linux gang:
 
-I am sorry that I am not a Linux person, and the only engineer who might
-help with such a thing, as he created the tar balls, is on vacation.  I will
-ask him to take a look when he returns, though I am certain he will say
-something like "it is unsupported."
+Does anyone know if there is a public Linux driver for PowerQUICC devices?
 
-Still, I try to get him to contact you.
+"The CPM supports four serial communications controllers (SCCs) on the
+device; however, there are actually eight serial channels: four SCCs, two
+serial management controllers (SMCs), one serial peripheral interface (SPI)
+and one I2C interface."
 
-Sorry,
--Richard Bullwinkle
-TiVo Webmaster
+Best regards,
 
 
------Original Message-----
-From: Wang Yong [mailto:wung_y@263.net]
-Sent: Thursday, November 11, 1999 7:12 PM
-To: TiVo Webmaster
-Cc: linuxppc embedded mail list
-Subject: Re: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?)
-
-i downloaded the toolchain from tivo/linux but failed to build it on my
-i386 box. i have installed cross gcc for ppc-2.95.2 under
-    /usr/local/gcc-ppc.
-
-below is what i did to build:
-1. uncompress toolchain.tar.gz to my work directory
-2. run libc-ppc/doConfig
-3. create libc-ppc/configparms contains these lines:
-          CC=/usr/local/gcc-ppc/bin/gcc
-          AR=/usr/local/gcc-ppc/bin/ar
-          RANLIB=/usr/local/gcc-ppc/bin/ranlib
-          AS=/usr/local/gcc-ppc/bin/as
-          LD=/usr/local/gcc-ppc/bin/ld
-          BUILD_CC=/usr/bin/gcc
-4. run "make all" under directory "libc-ppc"
-after a while, i was told something wrong:
-mv -f /root/toolchain/libc-ppc/csu/crtn.s-new
-/root/toolchain/libc-ppc/csu/crtn.s
-/usr/local/gcc-ppc/bin/gcc -c  /root/toolchain/libc-ppc/csu/crti.s -o
-/root/toolchain/libc-ppc/csu/crti.o
-/usr/local/gcc-ppc/bin/gcc -c  /root/toolchain/libc-ppc/csu/crtn.s -o
-/root/toolchain/libc-ppc/csu/crtn.o
-/usr/local/gcc-ppc/bin/gcc ../sysdeps/powerpc/elf/crtbegin.S -c -I. -I..
--I../libio  -I/root/toolchain/libc-ppc -I../sysdeps/powerpo
-/usr/local/gcc-ppc/bin/gcc ../sysdeps/powerpc/elf/crtend.S -c -I. -I..
--I../libio  -I/root/toolchain/libc-ppc -I../sysdeps/powerpc/o
-make[2]: *** No rule to make target
-`/root/toolchain/libc-ppc/csu/crtbeginS.o', needed by `others'.  Stop.
-make[2]: Leaving directory `/root/toolchain/libc/csu'
-make[1]: *** [csu/others] Error 2
-make[1]: Leaving directory `/root/toolchain/libc'
-make: *** [all] Error 2
-
-i check the csu/Makefile and found the error may be caused by makefile.
-so
-i build crtbegin.so by myself and copy to the right place and after
-that i can go on. but another error appeared when build library of nss
-and
-nis. it seems it's also makefile's problem.
-
-is there something wrong in these steps? i think the makefile should
-be correct and i must do something wrong. has anyone already build
-libc-ppc
-successfully?
-
-
-
-
-
-TiVo Webmaster wrote:
->
-> Got it done yesterday!
->
-> http://www.tivo.com/linux
->
-> enjoy,
-> Richard Bullwinkle
-> TiVo Webmaster
->
+............................................................................
+Ron Fredericks 
+Strategic Alliance Manager ....Lynx Real-Time Systems
+e-mail: ronf@lynx.com ................2239 Samaritan Drive
+phone: 408-558-3120 ...................San Jose, CA 95124
+fax: 408-879-3920.....www.lynx.com/synergy/index.html 
+............................................................................
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
