@@ -1,50 +1,52 @@
-Date: Thu, 1 Mar 2001 20:43:30 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Matt Porter <mporter@mvista.com>
-Cc: Stefano Coluccini <s.coluccini@caen.it>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MVME5100 was RE:Bogus interrupt + little Makefile bug
-Message-ID: <20010301204330.A28660@opus.bloom.county>
-References: <20010228171203.A29030@beef.az.mvista.com> <NDBBIFIMCKPOADMAJOKMKEJBCPAA.s.coluccini@caen.it> <20010301081747.A30954@beef.az.mvista.com>
+Message-ID: <20010301202024.A7876@lx.c-side.com>
+Date: Thu, 1 Mar 2001 20:20:24 -0800
+From: Neil Russell <caret@c-side.com>
+To: brendan.simon@bigpond.com,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Cc: Dan Malek <dmalek@jlc.net>
+Subject: Re: linuxppc-embedded: mpc8260 bus frequency calculations
+References: <3A9EFA26.8030805@bigpond.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010301081747.A30954@beef.az.mvista.com>; from mporter@mvista.com on Thu, Mar 01, 2001 at 08:17:48AM -0700
+In-Reply-To: <3A9EFA26.8030805@bigpond.com>; from Brendan J Simon on Fri, Mar 02, 2001 at 12:40:54PM +1100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Mar 01, 2001 at 08:17:48AM -0700, Matt Porter wrote:
->
-> [Followups trimmed to only the embedded list]
->
-> On Thu, Mar 01, 2001 at 10:55:33AM +0100, Stefano Coluccini wrote:
-> > > Ok, I finally got time today to powerup the 5100 that's been laying
-> > > around here.  I just pushed the port to the linuxppc_2_5 tree.
-> > > Hopefully this saves some effort for others.
-> >
-> > Very great work !!!
-> >
-> > I have found a little bug in arch/ppc/boot/pp3/Makefile:
-> > the rule to make zImage.initrd miss the -pbp option in the mkprep
-> > invocation.
->
-> Ah, thanks.  A typo from the great bootloader reorganization, it seems.
+If bi_busfreq is set to 66.0 and the crystal is 66.6666, then the system
+clock should appear to go too fast.  Sounds like what you have is the other
+way around.  I've seen plenty of crystals that are running at 66.0 MHz.
+Do you have one of these?
 
-Quite probably.  If people in the know (Matt.. :) could check the other
-prep-ish board-dirs to make sure mkprep is invoked properly..
+The system time is set once at boot up from the RTC.  If the system
+gains/looses time by some fraction of a percent, then this may well
+be just error in the crystal.  Most systems I've seen have some error.
+The program "adjtimex" exists to correct this.
 
-> > I've seen that in the make menuconfig, selecting the MVME5100, does not
-> > display the possibility to specify the default kernel command line. Don't
-> > you think this is an useful option ?
+
+Neil.
+
+
+On Fri, Mar 02, 2001 at 12:40:54PM +1100, Brendan J Simon wrote:
 >
-> Oversight.  I just turned it on for a bunch of boards.
-
-...and will "soon" be always an option.  I think it's only useless right now
-on CHRP/PMAC stand alone kernels.  I of course need to check this out before I
-turn it on, and can probably make them use it too..
+> I've come accross a problem where our custom embedded 8260 board is
+> losing time.  I've tracked it down to the bi_busfreq value being set to
+> 66 instead of the true value of
+> 66.6666666666666666666666666666666666666.  One solution is to have the
+> board_info fields in units of Hz instead of MHz.  I could then set the
+> bi_busfreq value to 66666667 for much better accuracy.
+>
+> Another solution might be to regularly read the real time clock.  Does
+> linux do this normally or does it just read the RTC once at boot up and
+> then just rely on it's internal timers for the system time.  I can't see
+> how this can be very accurate.
+>
+> Thanks,
+> Brendan Simon.
+>
+>
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Neil Russell <caret@c-side.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
