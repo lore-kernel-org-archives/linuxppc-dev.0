@@ -1,40 +1,28 @@
-Date: Tue, 7 Mar 2000 22:32:38 +0100 (MET)
-From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.2.15pre11 on PB Lombard
-In-Reply-To: <200003070559.XAA13652@lists.linuxppc.org>
-Message-ID: <Pine.SOL.3.95.1000307220928.20594A-100000@juliet>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 7 Mar 2000 14:48:23 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michel Lanners <mlan@cpu.lu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: nvram access in 2.3.48?
+Message-ID: <20000307144823.E399@opus.bloom.county>
+References: <200003072129.WAA00353@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200003072129.WAA00353@piglet.grunz.lu>; from mlan@cpu.lu on Tue, Mar 07, 2000 at 10:29:45PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Tue, Mar 07, 2000 at 10:29:45PM +0100, Michel Lanners wrote:
 
-has anyone got the latest kernel from paulus's stable tree running on
-a 1999 powerbook? It panicks invariably after hda and hcd are initialized.
-xmon tells the following:
+> Another weiredity I've come across in my 2.3 crusade: /dev/nvram
+> doesn't seem to work anymore.
 
-Floppy drive(s): fd0 is 2.88M
-Machine check in kernel mode (regsat c03fdd90)
-caused by (from srr1): Unknown udm in srr1
-                               ^^^<- not sure about this bit, my handwriting
-                                     really leaves to be improved...:(
+Near as I can tell (and I'm about to try this and then see if bk will pass
+it along happily) is that all the calls to nvram_init have been changed to
+pmac_nvram_init.
 
-NIP: C00D0D54 XER:20000000 LR: C00D0D30 REGS: 03fdd90 TRAP: 0200
-MSR: 00009030 [EEIRDRME]
-TASK=c03fc000[1] 'swapper' mm->pdg c0162000 last syscall:120
-
-... some 2^4 adresses or so follow, which I could write down if anyone
-will find them useful. I can't get anything beyond that, because xmon
-prints everything else black on black!
-
-This happens both with CONFIG_MAC_FLOPPY set or unset (the above is without
-floppy driver)
-
-Grateful for any pointers,
-							Derek
-
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
