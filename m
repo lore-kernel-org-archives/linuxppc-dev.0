@@ -1,18 +1,14 @@
-Return-Path: <markc@mail.com>
-Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
-	[66.133.131.36]) by ozlabs.org (Postfix) with ESMTP id 471FF2BC0F
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Oct 2004 00:11:38 +1000 (EST)
-Message-ID: <00c201c4bb66$0139ccc0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "soar.wu" <soar.wu@utstar.com>, <linuxppc-embedded@ozlabs.org>
-References: <PCEFKKAFFIJFPILJEMCHAEAJCGAA.soar.wu@utstar.com>
-Date: Tue, 26 Oct 2004 10:13:24 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Cc: 
-Subject: Re: Help!
+Return-Path: <trini@kernel.crashing.org>
+Date: Tue, 26 Oct 2004 07:35:14 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Rune Torgersen <runet@innovsys.com>
+Message-ID: <20041026143514.GQ25154@smtp.west.cox.net>
+References: <DCEAAC0833DD314AB0B58112AD99B93B06DB95@ismail.innsys.innovsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DB95@ismail.innsys.innovsys.com>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: CPM2 uart early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,14 +19,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Clear Day>Firstly we will write data to the HPI,
->then read data from the HPI to the SDRAM(this SDRAM is connected with
-60x-BUS).
->The last we will read the data from the SDRAM to compare the data which is
-write >to HPI.
+On Fri, Oct 22, 2004 at 05:01:54PM -0500, Rune Torgersen wrote:
+> > From: Tom Rini [mailto:trini@kernel.crashing.org] 
+> > On Thu, Oct 21, 2004 at 04:57:56PM -0500, Rune Torgersen wrote:
+> > > BTW..
+> > > What are the device node numbers for ttyCPM[0..5] ?
+> > 
+> > 204 42...45 (devices.txt in linuxppc-2.5, Pantelis ever 
+> > figure out what to do about the device # conflict with the 
+> > i.MX driver so we can push that small bit upstream ?)
+> 
+> Aparently not that simple.... I looked in the source, and it depends if 
+> an 8250 stype serial port is defined or not...
+> 
+> #ifndef CONFIG_SERIAL_8250
+> #define SERIAL_CPM_MAJOR	TTY_MAJOR
+> #define SERIAL_CPM_MINOR	64
+> #else
+> #define SERIAL_CPM_MAJOR	204
+> #define SERIAL_CPM_MINOR	42
+> #endif
+> 
+> Urgh...
 
-Can you show the entire source for hpi_ul_memcpy_dsp2h()?
+That doesn't make sense.  Pantelis?
 
-Also, you say 'HPI' - are connected to a T.I. DSP?  Which one?
-
-Mark Chambers
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
