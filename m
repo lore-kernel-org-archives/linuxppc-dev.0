@@ -1,39 +1,60 @@
-Date: Mon, 03 May 1999 16:16:22 -0400
-Subject: Re: Mozilla for PPC
-From: "Justin McKillican" <linuxppc@home.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-CC: "Jason Y. Sproul" <jsproul@mail.wesleyan.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <19990503201546.CTYN24126.mail.rdc1.on.home.com@[24.112.218.109]>
+Message-Id: <v04003a06b353b65b1379@[204.22.210.180]>
+In-Reply-To: <Pine.PMDF.3.96.990503135548.540345761G-100000@uni.edu>
+References: <372D3AAD.3C76AF99@wanadoo.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Mon, 3 May 1999 16:32:19 -0400
+To: puetzk6715@uni.edu
+From: "sean o'malley" <somalley@ed.mde.state.mi.us>
+Subject: Re: local.h header file.
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- 
-> On Mon, 3 May 1999, Geert Uytterhoeven wrote:
-> 
->> On Mon, 3 May 1999, Jason Y. Sproul wrote:
->> > On Mon, 3 May 1999, Tom Rini wrote:
->> >
->> > > R5 RSN. <g>
->> >
->> > Are we talking O(weeks) or O(days) here? I'm trying to budget my time
->> > effectively, and it would help to have this info.
->>
->> Just install Debian-unstable and be happy with glibc-2.1.
+I found reference to MAX_OPEN_FILES in the SMB man pages so I would suspect
+the Samba source would have local.h and the smb.conf file would have the
+value MAX_OPEN_FILES
+
+
+Sean
+
+
+
+>Isn't this stuff in the kernel source?
 >
-> Yeah, but then you miss out on the nifty RH6-based installer.  The last
-> few "betas" and what's on linuxppc.slackers.cx has been rather stable.
+>On Mon, 3 May 1999, Martin Costabel wrote:
+>
+>>
+>> > Marc-AndrÈ Fortin wrote:
+>> >
+>> > Can somebody tell me if there is a file called local.h in RedHat Linux
+>> > 5.2? (if yes, where it is?)
+>> >
+>> > Or maybe the parameter I'm looking for (MAX_OPEN_FILES) is somewhere
+>> > else?
+>> >
+>> > Should I use the grep command to find files containing a specific
+>> > string? Is (grep) looks in all the subdirectories?
+>> > (I' tried, but no luck)
+>>
+>> To look for a string in all the *.h files in all subdirectories, you can
+>> do
+>>
+>>    find . -name "*.h" -print | xargs grep MAX_OPEN
+>>
+>> or some abbreviation thereof (you can omit the '.' and '-print').
+>>
+>> I didn't find any local.h nor MAX_OPEN_FILES here, BTW.
+>>
+>> --
+>> Martin
+>>
+>>
+>
 
 
 
-I haven't seen a single crash with my install from linuxppc.slackers.cx
-which i did about 2 weeks ago.
-
-
-justin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
