@@ -1,43 +1,42 @@
-Message-ID: <3D1C9FBA.24AF9045@mvista.com>
-Date: Fri, 28 Jun 2002 13:41:14 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Greg Allen <gallen@arlut.utexas.edu>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_BLOCK_DEV_RAM in linuxppc_2_4_devel
-References: <Pine.GSO.4.21.0206281716390.14426-100000@vervain.sonytel.be>
+From: Cort Dougan <cort@fsmlabs.com>
+Date: Fri, 28 Jun 2002 12:35:55 -0600
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] Fix pcore build in latest linuxppc_2_4_devel
+Message-ID: <20020628123555.F3851@host110.fsmlabs.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+If anyone wants the BK patch, drop me a note.
 
-> On Fri, 28 Jun 2002, Greg Allen wrote:
-> > I just did a bk pull on my modified linuxppc_2_4_devel tree, and it
-> > no longer compiles.
-> >
-> > snippit from init/do_mounts.c, line 381
-> >
-> >     #if defined(CONFIG_BLOCK_DEV_RAM) || defined(CONFIG_BLK_DEV_FD)
-> >     static void __init change_floppy(char *fmt, ...)
-> >     {
-> >
-> >
-> > The linker complains that this function should be present.
-> >
-> > I have CONFIG_BLK_DEV_RAM turned on, and no floppy. I can't find any
-> > other reference to CONFIG_BLOCK_DEV_RAM.
-> >
-> > Is this simply a typo that never got tested without CONFIG_BLK_DEV_FD
-> > turned off?
->
-> Must be CONFIG_BLK_DEV_RAM.
+diff -Nru a/BitKeeper/etc/logging_ok b/BitKeeper/etc/logging_ok
+--- a/BitKeeper/etc/logging_ok	Fri Jun 28 12:34:45 2002
++++ b/BitKeeper/etc/logging_ok	Fri Jun 28 12:34:45 2002
+@@ -50,3 +50,4 @@
+ trini@entropy.crashing.org
+ trini@opus.bloom.county
+ trini@stevedallas.bloom.county
++cort@host110.fsmlabs.com
+diff -Nru a/arch/ppc/platforms/pcore_setup.c b/arch/ppc/platforms/pcore_setup.c
+--- a/arch/ppc/platforms/pcore_setup.c	Fri Jun 28 12:34:45 2002
++++ b/arch/ppc/platforms/pcore_setup.c	Fri Jun 28 12:34:45 2002
+@@ -167,13 +167,13 @@
+ 	for ( i = 0 ; i < 16 ; i++ )
+ 		irq_desc[i].handler = &i8259_pic;
 
-I fixed it and pushed the changeset yesterday.  Do another bk pull.
+-	i8259_init(NULL);
++	i8259_init(0);
+ }
 
-Mark
+ static int
+ pcore_get_irq(struct pt_regs *regs)
+ {
+-	return i8259_poll();
++	return i8259_poll(regs);
+ }
 
+ /*
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
