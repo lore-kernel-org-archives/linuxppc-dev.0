@@ -1,46 +1,31 @@
-Date: Wed, 13 Jan 1999 16:14:25 -0500 (EST)
+Date: Wed, 13 Jan 1999 16:22:14 -0500 (EST)
 From: Tom Vier <nester@erols.com>
 Reply-To: thomassr@erols.com
 To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Porting to NuBus PowerMacs
-In-Reply-To: <Pine.LNX.3.96.990112141237.3746A-100000@globegate.utm.edu>
-Message-ID: <Pine.LNX.3.96.990113161217.4699D-100000@zero>
+In-Reply-To: <19990113052720169.AAA242@[24.236.15.64]>
+Message-ID: <Pine.LNX.3.96.990113161855.4699F-100000@zero>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 12 Jan 1999, David A. Gatwood wrote:
+i'd also be willing to help. i've never really done any low-level
+hardware coding, but i can certainly tweak and test things. i have
+7100/80 w/ 48megs ram and a spare 1gig i can use to test things, so i
+don't screw up my other drives.
 
-> It's a lot harder than this, unfortunately.  The NuBus machines' memory
-> isn't contiguous.  Thus, code would have to be written and/or obtained to
-
-doh!
-
-> find out what memory is available in the machine and where that memory is
-> located in RAM.  That's going to be a nasty problem unless some code is
-> pulled from the MkLinux booter.  I'd expect that to also require a
-> substantial number of changes to the way memory is handled in linux, but I
-> could be wrong.
-
-hhmmm. don't some other arch's have non contiguous memory?
-
-> Beyond that, it will also require changes to irq.c to handle the interrupt
-> controller and a lot of code for DMA, if that's desired (I don't think
-> it's even remotely similar, AFAICT).  Of course, that stuff can be
-> obtained from Mach, but it'll be a lot of work.  Oh, and the i/o base
-> address is different, which may or may not be a problem, and supporting
-> certain pieces of hardware (which will remain nameless) will also require
-> speed penalties (this is the other reason MkLinux is slower than
-> LinuxPPC...).
-
-what pieces of hardware? important ones?
+On Tue, 12 Jan 1999, Ron Nelson wrote:
+> I know you guys are only in the early stages with this but I have a 6100 
+> that I will run anything you come up with on.. I don't have mklinux on it
+> right now but I could get that on it and be a guinea pig if you need one..
 
 --
 Tom Vier - 0x82B007A8
 thomassr@erols.com       | goto the Zero Page at:
 Tortured Souls Software  | http://www.erols.com/thomassr/zero/
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
