@@ -1,21 +1,19 @@
-Return-Path: <sneakums@zork.net>
-Received: from zork.zork.net (zork.zork.net [64.81.246.102])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 990C62BE83
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Nov 2004 10:26:08 +1100 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <6ubrdsjiq1.fsf@zork.zork.net> <1100989339.3795.6.camel@gaston>
-	<6u7jogjg8t.fsf@zork.zork.net> <1100991146.3795.17.camel@gaston>
-	<6uy8gwi0qz.fsf@zork.zork.net>
-From: Sean Neakums <sneakums@zork.net>
-Date: Sat, 20 Nov 2004 23:25:57 +0000
-In-Reply-To: <6uy8gwi0qz.fsf@zork.zork.net> (Sean Neakums's message of "Sat,
-	20 Nov 2004 23:01:08 +0000")
-Message-ID: <6uu0rkhzlm.fsf@zork.zork.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 6ACBC2BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Nov 2004 11:02:01 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1100852423.3855.2.camel@gaston>
+References: <1100847411.25521.42.camel@gaston> <1100852423.3855.2.camel@gaston>
+Content-Type: text/plain
+Date: Sun, 21 Nov 2004 11:01:08 +1100
+Message-Id: <1100995268.3796.39.camel@gaston>
+Mime-Version: 1.0
+Cc: gentoo-ppc-user@gentoo.org
 Subject: Re: TEST: Sleep suppport for iBook G4 & Aluminium PowerBooks (ATI
 	based)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,20 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sean Neakums <sneakums@zork.net> writes:
+On Fri, 2004-11-19 at 19:20 +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2004-11-19 at 17:56 +1100, Benjamin Herrenschmidt wrote:
+> > So here's the new patch, it replaces the previous one for Aluminium
+> > PowerBooks, and is still against 2.6.9. I'll do something against 2.6.10
+> > when that one is out (it's a bit late to get that merged with Linus,
+> > 2.6.10 is in freeze mode now) and I hope to get all of that in 2.6.11.
+> >
+> > .../...
+> 
+> Ok, I already found a bug, occasional lockups on boot and when setting
+> the backlight. I uploaded a new version at:
 
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> Does it still happen if you disable dynamic clocks ?
->> (radeonfb.default_dynclk=-1 on the kernel cmdline and Option
->> "DynamicClocks" "false" in X if you are using X.org). And if you
->> disable accel in X ? (Option "NoAccel" "true")
->
-> I'll try these out.
+Here's a 3rd version. It may or may not help, as I didn't have a chance
+to test this one on either albook or ibook g4 yet. I added saving and
+restoring of a few more registers that may fix the Xv problem (or not...
+depends what X does at this point) and eventually some corruption
+problem (the bandwidth related registers weren't restored).
 
-With radeonfb.default_dynclk=-1 alone (using Debian's XFree86 4.3.0,
-so no Option "DynamicClocks" "false"), the corruption is slower to
-progress, but seems to be the same as the corruption seen with dynamic
-clocks enabled.
+It also adds an unrelated fix to the cpufreq code for powerbooks using
+PMU-based frequency switching which would occasionally cause hangs at
+boot.
 
-With NoAccel alone, I do not yet see any corruption; I would expect to
-have seen it by now, going by the previous tests.
+http://gate.crashing.org/~benh/albook-ibookg4-sleep-3.diff
+
+Ben.
