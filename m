@@ -1,35 +1,45 @@
-Date: Mon, 19 Jul 2004 09:32:03 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andreas Oberritter <obi@saftware.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] make platform_init() weak for 8xx
-Message-ID: <20040719163203.GA6813@smtp.west.cox.net>
-References: <1090253615.1415.24.camel@shiva.saftware.de>
-Mime-Version: 1.0
+To: "Embedded Linux PPC list" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: list of 2.6-related migration issues for embedded programmers?
+References: <Pine.LNX.4.60.0407190807450.9101@dell.enoriver.com>
+From: "Linh Dang" <linhd@nortelnetworks.com>
+Date: Mon, 19 Jul 2004 13:32:15 -0400
+In-Reply-To: <Pine.LNX.4.60.0407190807450.9101@dell.enoriver.com> (Robert P.
+ J. Day's message of "Mon, 19 Jul 2004 08:15:41 -0400")
+Message-ID: <wn5k6wzgaxs.fsf@linhd-2.ca.nortel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1090253615.1415.24.camel@shiva.saftware.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 19, 2004 at 06:13:35PM +0200, Andreas Oberritter wrote:
+On 19 Jul 2004, rpjday@mindspring.com wrote:
 
-> Hi Tom,
 >
-> this patch renames platform_init to m8xx_init in m8xx_setup.c and adds
-> new weak platform_init, which can be overridden by boards to allow them
-> to e.g. register platform_devices like redwood5.c does for 40x.
+>
+> - replace devfs with udev:  currently, even with my current 8xx 2.6
+> build, i'm sticking with devfs until i'm confident i understand
+> enough to move up.
 
-First, I don't see the redwood5 example you're talking about.
-Second, this takes us in the direction of 82xx.  Until the 82xx
-abstractions get flushed out a bit more, I remain unconvinced that
-they're really the right way to go (perhaps hooking the other direction
-would work better, e.g. platform_init() calls board_init(), with a weak
-version provided, and some functions forced to be provided by board.c,
-such as m8xx_map_io).
+It depends on your need. For our project, we don't use neither. Our
+init script read sysfs and do all the mknod-ings at boot time. it's
+just 2 for-loops of 3-lines each. But ofcourse, we have no hot-plug
+devices nor loadable modules.
+
+
+>
+> - initramfs:  currently, i'm still using a zImage.initrd-based
+> image, and all i know about initramfs is that it's checked for at
+> boot time.  should i care about it?  at some point, probably, i'm
+> sure.
+
+initramfs is convenient. you don't need root access nor special tools
+to create the root-fs. it very easy when you want to
+version-controlled you root-fs.
+
+
+my $0.02
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+L.D.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
