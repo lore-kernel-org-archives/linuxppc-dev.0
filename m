@@ -1,32 +1,44 @@
-Date: Fri, 29 Sep 2000 19:25:05 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-cc: R Shapiro <rshapiro@bbn.com>, Michel Dänzer <daenzerm@student.ethz.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
-In-Reply-To: <Pine.LNX.4.10.10009291631490.15714-100000@zirkon.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.LNX.4.21.0009291917490.1084-100000@idd-01.imbc.gr>
+Date: Fri, 29 Sep 2000 11:27:43 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
+Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
+In-Reply-To: <Pine.LNX.4.10.10009291253420.383-100000@cassiopeia.home>
+Message-ID: <Pine.A41.3.96LJ1.1b7.1000929112058.7632A-100000@unlserve.unl.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 29 Sep 2000, Michael Schmitz wrote:
+On Fri, 29 Sep 2000, Geert Uytterhoeven wrote:
 
-> That's not fixable at the X level (well, technically it is but I can't
-> figure out how and the X people refuse to consider that method). You will
-> need to boot via OF and yaboot (or equivalent oldworld) directly, not via
-> BootX to avoid the PCI resource conflict. Alternative: fix the resource
-> conflict at the kernel level, new patch by me in the works.
+> > > In 2.5.x, we'll have a user-defined xor mask for the cursor as the 17th entry
+> > > in the dispsw_data array.
+> >
+> > Can we put it for 2.4?  As far as I can see, the actual size of
+> > dispsw_data matters only between fb driver and fbcon-cfbxx.c, and the
+> > changes required for each driver seem to be rather small.  Besides,
+> > controlfb is not the only one which will benefit from this change.
+>
+> That's true. Personally, I see no problems with it if someone's willing to
+> write the patch for _all_ drivers at once. The real 2.4.0 is still a long way
+> to go, I think, and the impact of the required changes is known quite well.
 
-Hmm if you think that its fixable in the X level then we should give it
-a try, i can't see how though unless we get X to accept this allocations
-(are they legal ?). Any relocation is going to break the fbdev side since
-there is no way to inform the atyfb driver about this changes.
+Good!  I'll work on it.  Only a few allocate memory for dispsw_data
+dynamically, the changes should be trivial for most.
 
-  Kostas
+> The main thing we need to be careful about is that the xor mask is different
+> for truecolor and directcolor visuals: truecolor needs an `all ones' mask,
+> while directcolor needs `15' for each color component (drivers that incorrectly
+> report a directcolor instead of truecolor visual will easily be identified).
+
+I don't know how it will work out for atyfb, but we'll see...
+
+
+Takashi Oe
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
