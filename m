@@ -1,48 +1,32 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E4299264459540C109867@penguin.adic.com>
 To: linuxppc-embedded@lists.linuxppc.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: Is GCC >= 3.1 available for ELDK ? (or other means to compile Ada code)
-Date: 06 Jun 2003 13:34:00 +0200
-Message-ID: <87el27wic7.fsf@deepthought.outer.space.org>
-References: <30C145E544071F4FB8B627789F7910BD328FEE@csy-exchange1.giat.intra>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: x86(host) --> ppc(tgt) cross-tool-chain
+Date: Fri, 6 Jun 2003 07:11:39 -0700 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Albert,
+Hello,
 
-> Here at work I've been asked to get some Ada code ported on an
-> embedded, MPC855T-based platform using ELDK 2.02.
->
-> By the look of it, there are no major risks with repsect to the
-> scheduler or libraries or performance; the only problem is getting
-> to compile Ada code.
->
-> GCC supports Ada from version 3.1.1 up, but ELDK 2.0.2 features 2.95.4.
->
-> Is there a version of GCC >= 3.1.1 prepackaged for ELDK?
+Using Karim's new book "Building Embedded Linux Systems", has anyone out there successfully built an x86(host) --> ppc(tgt) tool chain using the versions stipulated in the book (gcc 2.95.3, binutils: 2.10.1, glibc, 2.2.1).
 
-Short answer - no.
+If yes:
 
-The ELDK still contains the reliable 2.95.4 compiler + associated
-binutils because there were several problems with the >=3.0 toolchains
-on the ppc platform.  To check the situation, I recently compiled gcc
-3.2.2 + binutils 2.13 as a cross-compiler for the 8xx platform without
-major problems out of the box.  A linux kernel compiled with the setup
-ran with no noticeable difficulties so I am pretty confident that
-the setup is stable for that platform.
+(a) What host system are you using?
 
-The only reason that there is no pre-packaged gcc >= 3.1 for the ELDK
-is the well known 24h/day limit and the fact that no customer demanded
-a newer gcc as yet.
+(b) Did you diverge from the directions in the book?
 
-Hope that helps
-  Detlev
+If no:
 
---
-Spelling is a lossed art
+(a) Can someone out there suggest a known valid combination?
+
+
+I anticipate needing ssh, some web-server and snmp as application requirements, so I figured it would be prudent to get the tool-chain working with glibc as opposed to uClibc.
+
+-- Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
