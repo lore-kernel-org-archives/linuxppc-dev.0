@@ -1,29 +1,40 @@
-Message-ID: <051301c01160$d5e0b560$1952df8d@SOYANG>
-From: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Serial 
-Date: Tue, 29 Aug 2000 11:28:36 +0900
+Message-ID: <002901c0116f$380a1200$481877d3@ajou.ac.kr>
+From: ¡÷πŒ±‘ <zzu@doit.ajou.ac.kr>
+To: <cal_erickson@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <Pine.LNX.4.21.0008290209060.960-100000@doit.ajou.ac.kr> <39AAA991.32FDF058@mvista.com>
+Subject: software floating point
+Date: Tue, 29 Aug 2000 13:11:09 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="EUC-KR"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.
+I have some questions...about soft-floating point...
 
-I'm using 8xxrom-0.3.0 for boot loader and MVista-2.2.13 for kernel.
-I tried to remove serial driver for some reason.
+I use MPC860, and I made cross develop enviroment.
+Host is i386 machine. Target is MPC860.
 
-I have 4 questions abou it.
+package that I use
+1. binutils-2.10
+2. gcc-2.95.2
+3. glibc-2.1.3 (add-ons : glibc-crypt-2.1, glibc-linuxthreads-2.1.3)
 
-0. If I remove it, will board boot correctly?
-1. Can I expect some performance gain with removal?
-2. Are there any easy way to do it?
-3. Where is most proper location for doing it? 8xxrom, m8xx_tty.c at mbxboot, or uart.c at 8xx_io?
+I did following steps..
+First, I compile the binutils for powerpc cpu.
+Second, I build cross compiler with gcc.
+Third, I compile glibc for powerpc with cross compiler that I made.
+Last, I re-build cross compiler include glibc for library.
 
-Thanks in advance.
+When compile third step, shoud I use some options to support software floating point?
+or shoud I edit some code to support software floating point?
 
-Have a nice day.
+To support software floating point, which steps should I use some special options in above steps and what option is it need?
+
+Thank u for reading my terrible english...^ ^
+Take care...
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
