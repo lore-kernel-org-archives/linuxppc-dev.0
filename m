@@ -1,41 +1,43 @@
-Subject: Re: System ACE MPU interface to CF card
-From: Jeff Angielski <jangiels@speakeasy.net>
-To: Sharad Gupta <sharad@buckeye.ece.drexel.edu>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <407EDCF7.2020009@buckeye.ece.drexel.edu>
-References: <407470ED.3030607@buckeye.ece.drexel.edu>
-	 <6058-40021@sneakemail.com> <407ADCFE.8080302@buckeye.ece.drexel.edu>
-	 <25757-52278@sneakemail.com>  <407EDCF7.2020009@buckeye.ece.drexel.edu>
-Content-Type: text/plain
-Message-Id: <1082322389.23738.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 18 Apr 2004 17:06:57 -0400
+To: "liuming" <lm_mailbox@sohu.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	"liuming" <lm_mailbox@163.com>
+Subject: Re: Need help booting linux on my 8265 board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 19 Apr 2004 00:33:02 +0800."
+             <000f01c42562$d3713150$a81e1aac@liuming>
+Date: Sun, 18 Apr 2004 23:11:50 +0200
+Message-Id: <20040418211155.E6F44C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-04-15 at 15:05, Sharad Gupta wrote:
-> Your patch helped me a lot in compiling and configuring my kernel. Just
-> on a side note, have you been able to talk to compact flash (mount fs on
-> it, fsck it ?) through system ace ?
+In message <000f01c42562$d3713150$a81e1aac@liuming> you wrote:
 >
-> My kernel hangs while doing partition check on the drive. All I ever see is
->
-> Partition check:
-> xsysacea:
->
-> (then nothing happens)
+>   I have problem booting linux on my 8265 board. Both u-boot and ppcboot
+> run well, but when I boot the linux kernel, the board be dead. At this
+> time the registers look like to be some default values(use powertap
+> pro). I try u-boot1.1, ppcboot1.1.5; linux kernel 2.4.4 2.4.18 2.4.20.
 
-Sounds to me like you do not have your interrupts configured properly
-between the SystemACE and the CPU or your xsa_thread is dying
-prematurely.
+I have already answered your questions on the U-Boot users mailing list.
 
-Either way, the kernel is getting no response when it actually tries to
-access the CF thru the SystemACE.
+Why didn't you read my message?
+
+> (1)about compile kernel
+> vim Makefile,        arch=ppc CROSS_COMPILE=ppc_82xx-
+> vim arch/ppc/platforms/ads826x.h,      IMAP_ADDR=0x04700000 BCSR=0x04500000
+
+Your memory map is broken; this cannot work.
 
 
-Jeff Angielski
-The PTR Group
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I will also, for an appropriate fee, certify that  your  keyboard  is
+object-oriented,  and  that  the bits on your hard disk are template-
+compatible.            - Jeffrey S. Haemer in <411akr$3ga@cygnus.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
