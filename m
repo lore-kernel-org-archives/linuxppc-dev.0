@@ -1,40 +1,34 @@
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <392EDED5.33749798@lucent.com>
-Date: Fri, 26 May 2000 15:30:13 -0500
-From: Tom Roberts <tjroberts@lucent.com>
+Message-ID: <392EE49F.234413C5@embeddededge.com>
+Date: Fri, 26 May 2000 16:54:55 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Subject: Curious limitation in copy_from_user()
+To: Tom Roberts <tjroberts@lucent.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Curious limitation in copy_from_user()
+References: <392EDED5.33749798@lucent.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-While porting Linux PPC to my hardware, I discovered a curious
-limitation in copy_from_user() -- it cannot handle uncached memory.
-I had mapped some main memory as uncached (using a BAT) because it
-is a communication buffer to the host (this is an ISA peripheral
-board with a PPC604 on it, and I'm trying to get Linux up on the 604;
-this was inside my console driver).
+Tom Roberts wrote:
+>
+> While porting Linux PPC to my hardware, I discovered a curious
+> limitation in copy_from_user() -- it cannot handle uncached memory.
 
-Note that copy_to_user() does not have this limitation -- basically
-copy_tofrom_user() is using dcbz-s to improve performance, so if the
-destination is uncached you get an exception in the kernel. My first
-workaround was simply to do a two-stage copy via a tmp[] buffer on
-the stack. Then I did it right by writing a cache_flush() routine
-and referencing the buffer via the usual (cached) kernel virtual
-address. Of course I called cache_flush() before copy_to_user from
-the host->board buffer, and called cache_flush() after copy_from_user
-to the board->host buffer (because the host can only reference
-physical memory, not the 604's cache).
+Yeeup.  We have discussed that before.  The later/newer kernels trap
+this fault and emulate the data move.  Although there are some cases
+as you just discovered, the larger sample indicated access to uncached
+memory spaces required special handling so this wasn't going to be
+a problem.
 
-	Note that in an SMP configuration you need to lock the buffer
-	from other CPUs. In my case there is only one 604, and each
-	buffer is dedicated to one-way traffic, so no locking is needed.
-
-I still need the uncached address to reference the queue pointers,
-but that is done using simple pointer dereferencing and is OK.
+The only choice is to not take advantage of the performance enhancements,
+which didn't seem like a good thing.  In your case, you will have to write
+your own function to validate the user buffer space and then copy the
+data in a loop.  Perhaps we need a copy_from_user_uncached() or
+something.
 
 
-Tom Roberts	tjroberts@lucent.com
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
