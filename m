@@ -1,43 +1,47 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: xfree86/fbdevhw not sending right mode to radeonfb.c
-Date: Sun, 18 Nov 2001 09:12:12 -0500
+Date: Sun, 18 Nov 2001 15:41:11 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Till Adam <till@adam-lilienthal.de>
+Cc: Linux Frame Buffer Device Development <Linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [Linux-fbdev-devel] atyfb and the Mach64 LT PRO
+In-Reply-To: <20011118104140.A27002@neb.adam-lilienthal.de>
+Message-ID: <Pine.GSO.4.21.0111181540180.2305-100000@mullein.sonytel.be>
 MIME-Version: 1.0
-Message-Id: <20011118140926.MNTJ9849.tomts10-srv.bellnexxia.net@there>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sun, 18 Nov 2001, Till Adam wrote:
+> # Thus spake Geert Uytterhoeven (geert@linux-m68k.org):
+>
+> > On Sat, 17 Nov 2001, Till Adam wrote:
+> > > So does the atyfb driver need to be extended to set the stretching
+> > > registers to a sane state to work properly with this card? If so, is
+> >
+> > Yes.
+> >
+> > > there someone on this list for whom this would be a three minute job and
+> > > who'd be willing to hack this in? I'm willing to help and test, but I'd
+> > > appreciate the guidance of someone with more experience in this.
+> >
+> > Some PPC people already started working on this.
+>
+> Any details on who to hook up with or where to find these folks? A
+> mailing list perhaps?
 
-I am still working on the radeon driver for XFree86 and trying to get the
-useFBDev options to work properly.
+linuxppc-dev@lists.linuxppc.org (CC'ed in this message)
 
-I have a properly constructued mode line in my XF86Config-4 which I
-specifiy.
+Gr{oetje,eeting}s,
 
-However when the XFree86 radeon_driver passes this initial mode to the
-radeonfb.c kernel framebuffer driver, most of the mode information is
-missing (no detailed timing info, just xres and yres, etc.
+						Geert
 
-The radeonfb.c messes up when this incomplete mode information is passed
-to it (from fbdevHWModeInit ?).
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-So where should I look to see where this is messing up.  It does not
-appear to be an issue with the framebuffer kernel driver since it is the
-victim of the receiving end of the bad data.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-It is almost like the the xfree86 code that parses the XF86Config-4 config
-file is not properly grabbing the specific mode information (or somehow
-later it is being mangled).
-
-Any hints or guidance of where to look in xfree86, would be greatly
-appreciated.
-
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
