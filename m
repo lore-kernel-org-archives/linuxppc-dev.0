@@ -1,29 +1,27 @@
-Date: Fri, 28 Apr 2000 09:47:20 +0200 (CEST)
+Date: Fri, 28 Apr 2000 13:42:23 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: "W. Taylor Holliday" <wtholliday@ucdavis.edu>,
-        Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree 4.0 dual monitor on AGP G4
-In-Reply-To: <39092B2B.249FFC07@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10004280915030.10268-100000@opal.biophys.uni-duesseldorf.de>
+To: Rolf Liu <rolfl@sc23.sc.mcel.mot.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: the problem with kernel format
+In-Reply-To: <005201bfb0ca$c075ef20$bf0102c8@dell191.sc.mcel.mot.com>
+Message-ID: <Pine.LNX.4.10.10004281340260.13173-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > If I apply your patch and recompile, how should I modify the config file?
-> > Get rid of all BusID's? Just for the second monitor?
->
-> I suggest always giving all BusIDs, it doesn't hurt as long as BusID and fbdev
-> match.
+> How I can translate the ELF to BIN( BDX...)????????
+> By the way, the visionPROBE provides a converter , which can
+> only translate the usual ELF to BIN(BDX).
+> But the kernel file is a compressed one(including vmlinux,bootloader,
+> and other initializing code).So the converter can't translate the compressed
+> one to BIN(BDX).
 
-Meaning fb0 usually is the one with your consoles on it (unless you mapped
-them to another one), the rest follows in order of the devices being
-probed by the kernel. The ordering of devices is defined by the order the
-*fb_init calls appear in the source, and the exact order is still being
-worked on as far as I understood Geert.
-I think there's no way to change the device ordering at boot time ...
+There should be a file called 'vmlinux' in the top level directory of your
+kernel source. This is the kernel image, uncompressed, without boot loader
+or decompressor, in ELF format. Seems your converter should like that file
+better than zImage.
 
 	Michael
 
