@@ -1,17 +1,19 @@
 Return-Path: <mgreer@mvista.com>
 Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 175ED67A79
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 06:33:23 +1100 (EST)
-Message-ID: <41ED6480.7060907@mvista.com>
-Date: Tue, 18 Jan 2005 12:33:20 -0700
+	by ozlabs.org (Postfix) with ESMTP id C5E3A67A65
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 06:43:16 +1100 (EST)
+Message-ID: <41ED66D0.2090506@mvista.com>
+Date: Tue, 18 Jan 2005 12:43:12 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: Tom Rini <trini@kernel.crashing.org>
 References: <41EC29A8.1040703@mvista.com>
 	<20050118161515.GI28724@smtp.west.cox.net>
-	<41ED5BBA.2090808@mvista.com>
-	<20050118190514.GL28724@smtp.west.cox.net>
-In-Reply-To: <20050118190514.GL28724@smtp.west.cox.net>
+	<93780AB0-696D-11D9-81BE-003065F9B7DC@embeddededge.com>
+	<20050118181330.GJ28724@smtp.west.cox.net>
+	<41ED5C51.8020809@mvista.com>
+	<20050118190848.GM28724@smtp.west.cox.net>
+In-Reply-To: <20050118190848.GM28724@smtp.west.cox.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
@@ -26,93 +28,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Tom Rini wrote:
 
->On Tue, Jan 18, 2005 at 11:55:54AM -0700, Mark A. Greer wrote:
+>On Tue, Jan 18, 2005 at 11:58:25AM -0700, Mark A. Greer wrote:
 >  
 >
 >>Tom Rini wrote:
+>>
 >>    
 >>
->[snip]
->  
->
->>>>Is there a better way to do this?
->>>>  
->>>>
->>>>        
->>>>
->>>How about we try borrowing the MIPS abstraction and force todc_time,
->>>pmac_time (any others?) to directly define (and EXPORT_SYMBOL)
->>>get_rtc_time / set_rtc_time / etc.
->>>
+>>>I think one of us wasn't clear.  I'm not arguing for nuking
+>>>ppc_md.{get,set}_rtc_time(), I'm arguing for nuking
+>>>get_rtc_time()/set_rtc_time() inlines from <asm-ppc/rtc.h> (which are
+>>>used by drivers/char/genrtc.c) in favor of todc_time et al providing the
+>>>functions for genrtc.  So all of the other places we use
+>>>ppc_md.{get,set}_rtc_time() are unchanged.
 >>>      
 >>>
->>Yep, MIPS has a solution...and so does ARM...and so does PPC.  This is 
->>sort of my point.
+>>Ahh.  Okay, that's good but it should be done in drivers/rtc or 
+>>something like and not just another arch specific solution.
 >>    
 >>
 >
->And my point was to use someone elses solution, 'cuz that's how we go
->from N to N-1 to 1 :)
+>It's not an arch specific solution today.
 >
 
-If effort is going to be put into this then why not just go from N 
-directly to 1?  BTW, I am not volunteering.  ;)
+Okay, I see what you mean and yes moving that up (or something 
+equivalent) would be a good idea.
 
->
->  
->
->>If we really want to do it right then someone needs to architect a 
->>generic solution.  What I have done is generic but does not handle the 
->>case that Geert mentioned when you have one kernel binary and several 
->>possible rtc chips.  In the meantime, what I have done works fine for 
->>all but that case.
->>    
->>
->
->I guess there's two points:
->- How does your solution differ from what MIPS does, and probably ARM
->  does of saying the backend (todc_time, i2c-foo) provides
->  get_rtc_time/set_rtc_time?
->
-First, I want to make sure we all on the same page.  There are really 
-two issues being discussed and I think we're all swinging back and forth 
-between the two.
+That's not what my patch is about though.  My patch is just so I can 
+provide a generic solution with what is there today.  Its not 
+redesigning anything, its just getting asm-ppc/rtc.h out of the way so I 
+can make my own, generic get_rtc_time(), etc.
 
-Issue 1) -  My patch:
-
-I had to write some support for an ST m41t00 rtc w/ an i2c interface.  I 
-could have made it ppc only or generic with the same amount of effort so 
-I chose the generic one.  The gereric one I chose was to use the code in 
-genrtc and interface directly to the bottom of that code b/c that's 
-where things become arch-specific.  However, that is where I collided 
-with asm-ppc/rtc.h, hence the patch.
-
-What I did is generic because genrtc.c is generic, the rtc "driver" is 
-generic, and you can plug in any generic i2c algo/adapter driver 
-underneath the entire thing.
-
-Issue 2) - What should the *real* rtc architecture be?
-
-RMK's solution may be fine, I'd have to look.  I think a discussion like 
-this is good but I know I don't have the time right now to do it.
-
-This is the one I think you, Tom, are talking about.  That's good but 
-just understand that my patch has nothing to do with a generic solution 
-for all rtc's.  I'm just trying to get this one to work (issue 1).
-
->- I horribly briefly talked with rmk about this a long time ago, and I
->  think he has the generic solution, siting in arch/arm/common/rtctime.c
->  (sure it would need to be moved to drivers/char/something, but..).
+>  It's just that no one that's
+>written an rtc chip library (*cough* todc_time.c *cough*)
 >
 
-Yep, if it isn't in the right place, it doesn't help (for now anyway).
+Heh!
 
->- I lied, #3 how does ARM, which I think lets you select multiple
->  boards, and thus probably end up with multiple rtc chip choices, deal
->  with it.
+> has placed one
+>in drivers/char/ and let the chips (or the file) be selected.  genrtc.c
+>already says "someone else tell me how to get the time".  I kinda sorta
+>think arch/arm/common/rtctime.c does too, except it has hooks for alarm.
 >
 
-Yep, ARM has  a reasonable solution but its ARM only and I'm not trying 
-to rewrite anything at this point (see above).
+Yeah, its probably time for a better solution to what's there today...  
+Maybe I can get to it but it won't be for a while.
 
 Mark
