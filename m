@@ -1,10 +1,10 @@
-Date: Thu, 25 Jan 2001 19:37:20 +0100 (MET)
+Date: Thu, 25 Jan 2001 20:03:10 +0100 (MET)
 From: Roman Zippel <zippel@fh-brandenburg.de>
-To: Dan Malek <dan@mvista.com>
-cc: mgreer@mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_HIGHMEM on PPC
-In-Reply-To: <3A705D92.682A6FEF@mvista.com>
-Message-ID: <Pine.GSO.4.10.10101251858330.22965-100000@zeus.fh-brandenburg.de>
+To: jekacur@ca.ibm.com
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Fwd: sigcontext on Linux-ppc in user space]
+In-Reply-To: <OF38EA3C4D.2A886AF4-ON852569DF.00530F62@LocalDomain>
+Message-ID: <Pine.GSO.4.10.10101251957050.24557-100000@zeus.fh-brandenburg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,49 +13,28 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Hi,
 
-On Thu, 25 Jan 2001, Dan Malek wrote:
-
-> > .... If you have a highmem page, use kmap to get
-> > temporary virtual mapping. On the other hand most of the drivers should
-> > never see a highmem page.
->
-> On the other hand, if highmem was designed properly the kernel
-> should just fault in the needed pages and virt_to_phys and friends
-> should just work in this space, too.  Yet another set of functions
-> to use and restrictions just because a physical page exists beyond
-> some arbitrary boundary?  Geeze, I thought we learned from Mush-DOS
-> back in the mid-80's this was not a good design........
-
-The problem is the ia32 guys want to address 64GByte, what requires a
-64bit physical address, what nobody can handle on 32bit Systems.
-
-> I removed the #ifdef APUS in the virt_to_phys and friends macros
-> and made everyone call iopa which is going to move to a new file
-> called arch/ppc/mm/ioremap.c (like other architectures do).  I
-> don't think the mm_ptov() function works on anything because the
-> kmap_chunks is gone (at least in the linuxppc_2_5 I am using).
-> Perhaps I'm just missing some updates from you.  I'll delete
-> these functions from apus_setup.c since they are common to everyone
-> now.  I'm almost done with this first phase of IBM4xx merge, which
-> I will probably start checking in later today.  I'm just testing
-> on as many other platforms as I can to ensure I didn't break other
-> stuff.
-
-Please be careful with what you're doing, otherwise you have to rewrite it
-again for the real 2.5.
-For what exactly do you need such generic virt_to_phys? AFAIK 2.5 will go
-more page oriented, so drivers get a set of pages to work on. That will
-mean bounce buffer management will be moved into the drivers. So I expect
-at some point virt_to_phys will become obsolete or at least private to the
-architecture specific part. Either everything is done with pages or one
-has to store a virtual/physical address pair. Doing a generic conversion
-functions for the latter is often slower, so it's currently expected that
-drivers just store it themselves.
-That's at least my understanding of the developments to come, what can be
-of course completely wrong. :-) To be sure you had to ask one the kernel
-gurus.
+Could you try the patch below?
 
 bye, Roman
+
+diff -u -r1.1.1.5 signal.c
+--- arch/ppc/kernel/signal.c	2000/09/13 17:59:51	1.1.1.5
++++ arch/ppc/kernel/signal.c	2001/01/25 18:59:54
+@@ -334,12 +334,12 @@
+ 	newsp -= __SIGNAL_FRAMESIZE;
+ 	if (put_user(regs->gpr[1], (unsigned long *)newsp)
+ 	    || get_user(regs->nip, &rt_sf->uc.uc_mcontext.handler)
+-	    || get_user(regs->gpr[3], &rt_sf->uc.uc_mcontext.signal)
+-	    || get_user(regs->gpr[4], (unsigned long *)&rt_sf->pinfo)
+-	    || get_user(regs->gpr[5], (unsigned long *)&rt_sf->puc))
++	    || get_user(regs->gpr[3], &rt_sf->uc.uc_mcontext.signal))
+ 		goto badframe;
+
+ 	regs->gpr[1] = newsp;
++	regs->gpr[4] = (unsigned long *)&rt_sf->pinfo;
++	regs->gpr[5] = (unsigned long *)&rt_sf->puc;
+ 	regs->gpr[6] = (unsigned long) rt_sf;
+ 	regs->link = (unsigned long) frame->tramp;
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
