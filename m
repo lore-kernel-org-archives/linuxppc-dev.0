@@ -1,32 +1,29 @@
-Date: Wed, 29 Aug 2001 02:02:41 -0400 (EDT)
-From: Bill Fink <billfink@capu.net>
-To: paulus@samba.org
-Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
-Subject: Re: Call for help: altivec-enabled vlc
-Message-ID: <Pine.LNX.4.21.0108290153420.26316-100000@gwiz.nasa.atd.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: thomas graichen <list-linux.ppc.dev@spoiled.org>
+Reply-To: thomas graichen <tgr@spoiled.org>
+Subject: status of kdb, kernel profiling etc. patchesfor ppc
+Date: Wed, 29 Aug 2001 10:09:45 +0200
+Message-ID: <news2mail-20010829080945.22819BF4.NOFFLE@tecklenburg2.spm.de>
+Reply-To: thomas graichen <tgr@spoiled.org>
+To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I use this in mpeg2dec (actually a hacked version that I use to play
-> videos off my tivo) and Anton Blanchard hacked this into xine. I also
-> have altivec-enabled motion compensation routines for libmpeg2.
->
-> Hope this is useful...
+over the last months i remember having seen some posts here
+regarding patches which added ppc support to various other
+projects focuessed on kernel debugging and profiling like
+kdb, ther kernel profiling patch, the lockmetering patch
+and lkcd kernel crash dumps ... what is the state of
+them ... are there any plans to clean those things
+up and fold them back into the other projects?
 
-Most definitely useful!
+a lot of thanks in advance
 
-Could you also post your altivec-enabled MC routines?  And if you
-could provide Anton Blanchard's xine patches or a pointer to them,
-that would be doubly great.  I don't believe these have been posted
-to any of the xine e-mail lists, so I'm not sure where else to look
-for them.
+t
 
-						-Thanks
-
-						-Bill
-
+--
+thomas graichen <tgr@spoiled.org> ... perfection is reached, not
+when there is no longer anything to add, but when there is no
+longer anything to take away. --- antoine de saint-exupery
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
