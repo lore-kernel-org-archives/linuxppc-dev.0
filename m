@@ -1,41 +1,38 @@
-Date: Tue, 10 Apr 2001 00:28:03 +0100
-Subject: Re: HTML device-trees posted
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: jeramy b smith <ultrapenguin@netscape.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010409232808.8FEE62EFAF@apollo.valhalla.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PATCH: small 2.4-benh SMP fix
+From: Lars Brinkhoff <lars.spam@nocrew.org>
+Date: 10 Apr 2001 03:07:24 +0200
+In-Reply-To: <20010409232808.8FEE62EFAF@apollo.valhalla.net>
+Message-ID: <85y9t9sgtv.fsf@junk.nocrew.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 05, 2001, Jeramy wrote:
-> I noticed the IBM device trees on tibitt's page. Do we want to make a
-> combined page and put it in the 'developer library/reference' section ?
+Suggest following patch against linux-2.4-benh to fix errors
+(BEGIN/END_FTR_SECTION undefined) and warnings (CONFIG_PPC601_SYNC_FIX
+redefined) when compilning an SMP kernel:
 
-Fine by me... but you should also check with Tilmann
+--- arch/ppc/kernel/ppc_asm.h~	Tue Apr 10 02:59:04 2001
++++ arch/ppc/kernel/ppc_asm.h	Tue Apr 10 03:00:04 2001
+@@ -12,6 +12,7 @@
+  */
 
-It's rather audio-centric (because this seems to be the area where we are
-most likely to have to account for machines nearly individually)...
+ #include <linux/config.h>
++#include <asm/cputable.h>
 
-I'm afraid it's only very basic html as well... it could do with making a
-bit more slick ;-) (any volunteers?)
+ #include "ppc_asm.tmpl"
+ #include "ppc_defs.h"
+@@ -66,7 +67,9 @@
+ #define REST_16VR(n,b,base)	REST_8VR(n,b,base); REST_8VR(n+8,b,base)
+ #define REST_32VR(n,b,base)	REST_16VR(n,b,base); REST_16VR(n+16,b,base)
 
-- there are some other machine trees on the suse site that I didn't convert
-to html.
-
-IMHO we should also try to link in some pointers to sites with OF info as
-well ... e.g. ftp://playground.sun.com/pub/1275/coredoc/1275-1994/
-
-and a reference to the Apple hardware pages (perhaps):
-
-developer.apple.com/techpubs/hardware/hardware.html
-
-and (errm ;-) there might be some similar stuff on netBSD/FreeBSB/mkLinux
-pages that would be a useful x-reference (sorry, don't have the URLs).
-
-ciao,
-Iain.
++#ifndef CONFIG_PPC601_SYNC_FIX
+ #define CONFIG_PPC601_SYNC_FIX
++#endif
+ #ifdef CONFIG_PPC601_SYNC_FIX
+ #define SYNC BEGIN_FTR_SECTION()  \
+ 	sync; \
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
