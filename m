@@ -1,48 +1,36 @@
-In-Reply-To: <19991122150653.A13066@hq.fsmlabs.com>
-Date: Tue, 23 Nov 1999 11:44:59 +0100
-To: Cort Dougan <cort@fsmlabs.com>, linuxppc-dev@lists.linuxppc.org,
+Message-ID: <383A716F.D020496C@fadata.bg>
+Date: Tue, 23 Nov 1999 12:50:23 +0200
+From: Momchil Velikov <velco@fadata.bg>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: Cort Dougan <cort@fsmlabs.com>, linuxppc-dev@lists.linuxppc.org,
         paulus@linuxcare.com
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: bootloader & head.S weirdness (patch)
-Message-Id: <19991123114459.026069@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: bootloader & head.S weirdness
+References: <19991123113504.011766@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 22, 1999, Cort Dougan <cort@fsmlabs.com> wrote:
+Benjamin Herrenschmidt wrote:
+> 
+> On Mon, Nov 22, 1999, Cort Dougan <cort@fsmlabs.com> wrote:
+> 
+> >CC: linuxppc-dev@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+> >----------
+> >Not always.  Keep in mind we have several machine types that follow the
+> >same patch there.  We don't always enter with OF and OF doesn't always give
+> >1:1 mappings, either.
+> 
+> Yes, I agree. but I beleive the piece of bootloader appended to the head
+> of the kernel image or the early bootloader used (quik ?) should take
+> care of those very weird case and of mapping the kernel 1:1 before
+> entering it.
 
->I applied the patch (with some changes necessary to get it into
->2.2.14pre7).  It breaks pmac netboot during the jump from
->__secondary_stat() to clear_bats(). 
+Please, excuse my ignorance, but why not just set real-mode OF variable
+to true (maybe in the ELF .note section) ?
 
-You mean netbooting the kernel image directly from OF without going thru
-a bootloader ? Or are you talking about the xcoff piggyback bootstrap ?
-
->There must be some I mappings we need
->to preserve in order to get to non-pc relative code.  It's worth noting
->that OF loads us and gives us mappings for 0xc000000 since that's where
->we're linked at. 
-
-I never managed to get OF load the kernel image directly. How did you
-acheive this result (OF setting up such a mapping ?). In this specific
-case, it's always possible to ask OF about our physical address and use
-it for the return address of mmu_off. It should be returned by prom_init
-in r3. This would be cleaner anyway. I'll look into fixing that but I'd
-like to know how you did this netboot stuff so I can reproduce it here.
-(Could you send me your bootptab ?)
-
->BootX and Quik don't do that so that's probably why they
->work.  Netboot is really useful so I'd prefer to not break it (definitely
->not in 2.2).  Any ideas for workarounds?
-
-Yes, as I wrote before, OF can tell us the real physical address and we
-can return it from prom_init so that mmu_off does the right thing.
-
->Chrp and prep netboot works fine.  Boot via quik on chrp works, too.
-
-Great.
-
+Regards,
+-velco
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
