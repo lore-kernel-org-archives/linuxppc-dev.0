@@ -1,44 +1,37 @@
-To: Jeff Mintz <jmintz@ghs.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Network problem when using jtag debugger on EP8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 21 Nov 2003 15:14:49 PST."
-             <3FBE9C69.36C74D2F@ghs.com>
-Date: Sun, 23 Nov 2003 22:38:15 +0100
-Message-Id: <20031123213820.F257CC5F5F@atlas.denx.de>
+Message-Id: <5.2.0.9.0.20031124101121.027949a0@172.16.15.10>
+Date: Mon, 24 Nov 2003 10:11:38 +0530
+To: linuxppc-embedded@lists.linuxppc.org
+From: "L. Puneeth Rao" <puneeth_l@roc.co.in>
+Subject: Peculiar problem(s) on MBX board
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Jeff,
+Greetings All,
+         I have a MBX evaluation board with a MPC860T processor. I have
+used 2.4.18 kernel sources,  ppc-patch-2.4.18, cross compiler
+gcc-core-3.3.1 and binutils-2.11.90.0.8. to obtain a zImage on a x86 host
+machine. To download this image to the board i have used TFTP server-client
+technique. But the TFTP client on the board reported a "Transmission
+carrier sense lost error" ( eppcbug error-14). In fact i am unable to ping
+to any machine in my network from the eppcbug prompt.
+         Therefore I obtained image.srec (using powerpc-linux-objcopy) and
+tried to transfer the image through serial port (using lo command at the
+eppcbug prompt and minicom) but eppcbug is reporting a "S-record character
+error" with error char = $0D and the malicious s-record is
+S1F0002015554466723232F. And there is no such record in the image.srec file
+         Here is a snapshot of image.srec
+                 S00F0000707063626F6F742E737265631E
+                 S315FE00000027051956505043426F6F7420312E322EFB
+                 ........
+Upon taking a closer look at the 2nd s-record in the image.srec we can see
+that the malicious s-record reported by eppcbug can be obtained by
+extracting all the alternative characters and clubbing them together.
+         Kindly suggest a way out. TIA
+With regards,
+Puneeth
 
-in message <3FBE9C69.36C74D2F@ghs.com> you wrote:
->
-> > We implemented a workaround once, but I don;t think we checked it  in
-> > into  our  source  tree  because  it  involves  a certail performance
-> > overhead (although it was quite useful during debugging).
-> >
-> > If you're interested I think I can dig it out again.
->
-> I would be very interested in the workaround, if you can dig it out.  It would
-> be very helpful for our development.  Please send it, if you can.
-
-I've put the patch on our FTP server. Please see
-
-	ftp://ftp.denx.de/pub/patches/README.fcc_cache
-	ftp://ftp.denx.de/pub/patches/fcc_cache.patch
-
-Hope it helps.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Quantum particles: The dreams that stuff is made of.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
