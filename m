@@ -1,13 +1,24 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Mon, 6 Jan 2003 12:51:25 -0800
-From: curt brune <curt@acm.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: wireless lan PCMCIA card advice
-Message-ID: <20030106125125.D24490@curtisb.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0556@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'curt brune'" <curt@acm.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: wireless lan PCMCIA card advice
+Date: Mon, 6 Jan 2003 16:00:53 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I've heard of success with the Cisco Aironet 340.
+
+-----Original Message-----
+From: curt brune [mailto:curt@acm.org]
+Sent: Monday, January 06, 2003 3:51 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: wireless lan PCMCIA card advice
+
 
 
 Hello,
@@ -34,5 +45,6 @@ I appreciate your help.  Please CC: me on the replies.
 
 Cheers,
 Curt
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
