@@ -1,79 +1,41 @@
-Message-ID: <83E3831A88E65844B01DB1A73FB66F93140801@CSDNT99.cdcgy.com>
-From: "Dang, James" <James.Dang@gdcanada.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux console on virtual Uart?
-Date: Mon, 3 Mar 2003 16:58:53 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SCC3 UART for MPC850 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 03 Mar 2003 16:46:18 MST."
+             <20030303234618.GA12721@ip68-0-152-218.tc.ph.cox.net>
+Date: Tue, 04 Mar 2003 01:03:30 +0100
+Message-Id: <20030304000335.13A00C6E0C@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I'm porting Denx linux 2.4.4 to my company MPC8260 board. The board doesn't
-have the real UART to be configured as ttyS0. It has a virtual UART (a
-memory location where characters are read/written from/to. Another processor
-will take care of UART translation.)
+In message <20030303234618.GA12721@ip68-0-152-218.tc.ph.cox.net> you wrote:
+>
+> > Sorry, this is one of our patches that never  was  accepted  for  the
+> > official source trees (also including hardware flow control).
+>
+> ... because you never split things out into logical chunks which make
+> life easier on people trying to understand what changed and why.  Our
+> last merge went well I thought, and I'm up for another round if you are.
 
-I haved modified uart.c to provide basic serial i/o functions using the
-virtual uart. When running with NFS root filesystem, I got this:
+It would be too much trouble to separate the  hardware  flow  control
+stuff  from the other port configuration options. I feel it should be
+sufficient to have a set of changes local to one single source file.
 
----------------------------Message------------------------------------------
-modprobe: modprobe: Can't locate module char-major-4
-INIT: version 2.78 booting
-                Welcome to DENX Embedded Linux Environment
-                Press 'I' to enter interactive startup.
-Mounting proc filesystem:                                  [  OK  ]
-Configuring kernel parameters:                             [  OK  ]
-Cannot access the Hardware Clock via any known method.
-Use the --debug option to see the details of our search for an access
-method.
-Setting clock : Wed Dec 31 19:00:20 EST 1969               [  OK  ]
-Activating swap partitions:                                [  OK  ]
-Setting hostname bdevppc01:                                [  OK  ]
-Finding module dependencies:                               [  OK  ]
-Checking filesystems
-                                                           [  OK  ]
-Mounting local filesystems:                                [  OK  ]
-Enabling swap space:                                       [  OK  ]
-INIT: Entering runlevel: 3
-Entering non-interactive startup
-Starting system logger:                                    [  OK  ]
-Starting kernel logger:                                    [  OK  ]
-Starting xinetd:                                           [  OK  ]
+You say it is not sufficent. OK. You are the maintainer, I ain't.
 
-bdevppc01 login: root
-Last login: Wed Dec 31 19:02:17 on console
+It's your decision, and I won't discuss it.
 
----------------------------Message------------------------------------------
 
-There is no shell prompt??????
+Wolfgang Denk
 
-Using telnet, I can look at ps:
----------------------------Message------------------------------------------
-root       161     1  0 19:01 ttyS0    00:00:00 login -- root
-root       162   155  0 19:01 ?        00:00:00 in.telnetd: 172.30.254.69
-root       163   162  1 19:01 ttyp0    00:00:00 login -- root
-root       164   163  2 19:01 ttyp0    00:00:01 -bash
-root       189   161 89 19:02 ttyS0    00:00:27 -bash
----------------------------Message------------------------------------------
-
-When running with ramdisk, I got this:
----------------------------Message------------------------------------------
-bash# ls
-bin         dev         etc         lib         linuxrc     lost+found
-bash# asdf
-init: asdf: command not found
-bash#
----------------------------Message------------------------------------------
-Why "init:" is printed out in "init: asdf: command not found"?. Probably
-some variables didn't get initialized properly?
-
-Does anyone know where is the problem?
-
-thanks in advance
-james
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Most people would like to be delivered  from  temptation  but  would
+like it to keep in touch."                             - Robert Orben
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
