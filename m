@@ -1,46 +1,42 @@
-Date: Tue, 22 Dec 1998 02:11:47 -0800
-Message-Id: <199812221011.CAA09825@dm.cobaltmicro.com>
-From: "David S. Miller" <davem@dm.cobaltmicro.com>
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-CC: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        linux-m68k@lists.linux-m68k.org
-In-reply-to: 
-	<Pine.LNX.4.03.9812221039490.5727-100000@mercator.cs.kuleuven.ac.be>
-	(message from Geert Uytterhoeven on Tue, 22 Dec 1998 11:01:13 +0100
-	(CET))
+From: Arno Griffioen <arno@usn.nl>
+Message-Id: <199812221013.LAA23494@superluminal.usn.nl>
 Subject: Re: TCPv4 checksum errors
-References: <Pine.LNX.4.03.9812221039490.5727-100000@mercator.cs.kuleuven.ac.be>
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be (Geert Uytterhoeven)
+Date: Tue, 22 Dec 1998 11:13:26 +0100 (MET)
+Cc: davem@dm.cobaltmicro.com, Paul.Mackerras@cs.anu.edu.au,
+        linuxppc-dev@lists.linuxppc.org, linux-m68k@lists.linux-m68k.org
+In-Reply-To: <Pine.LNX.4.03.9812221039490.5727-100000@mercator.cs.kuleuven.ac.be> from "Geert Uytterhoeven" at Dec 22, 98 11:01:13 am
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-   Date: Tue, 22 Dec 1998 11:01:13 +0100 (CET)
-   From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+> > BTW, do all of the PPC's which exhibit the behavior use the same
+> > ethernet controller?
+> 
+> Yes, we all have Tulip boards (I think >95% of the PPC users have Tulip
+> boards). And the message on linux-kernel about checksum errors on ARM related
+> to Tulip made me suspicious at well...
 
-   On Tue, 22 Dec 1998, David S. Miller wrote:
-   > My suggestion is that since you can reproduce it, you should add code
-   > next to this printk statement which dumps the entire packet in HEX to
-   > the console.  Then you can see what and who is at fault and where.
-   > If the packet is sufficiently small you can walk the checksum
-   > algorithm by hand and verify it for this test case.
+Suggestion: 
 
-   Which one do I have to dump? skb->h.raw or skb->nh.raw? I guess
-   skb->nh.iph->tot_len bytes at skb->nh.raw?
+Perhaps you should try some tests with an Amiga/PPC machine. That definitely
+doesn't use the Tulip board, but is PPC based. Can't help you there yet
+though as Linux/PPC dies with a machine-check when I try to access 
+the brain-dead ISA NE2000 in my machine.
 
-Look at what the code next to the printk is verifying:
+Should give some clue about either the PPC checksum-computation or
+the ethernet card doing 'nasty things'.
 
-		skb->csum = csum_partial((char *)th, len, 0);
-		if (tcp_v4_check(th,len,skb->nh.iph->saddr,skb->nh.iph->daddr,skb->csum))
+								Bye Arno.
 
-So you need all the bytes from 'th' to 'th + len'.  You also need the
-values of the source and destination addresses from the IP header (at
-skb->nh.iph->{saddr,daddr}).
-
-Good luck.
-
-Later,
-David S. Miller
-davem@dm.cobaltmicro.com
+-- 
+Internet Exchange Europe B.V.Fax: +31-70-3630470 | One disk to rule them all,
+Lange Voorhout 9             Tel: +31-70-3600379 | One disk to bind them,
+2514EA Den Haag +--------------------------------+ One disk to hold the files
+The Netherlands |   * END OF TRANSMISSION *      | And in the darkness grind 'em
+----------------+--------------------------------+------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
