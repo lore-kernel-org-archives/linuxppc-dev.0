@@ -1,62 +1,57 @@
-Date: Mon, 8 May 2000 11:44:47 +0200 (MET DST)
-From: Henning Loeser <Henning.Loeser@Physik.Uni-Marburg.DE>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: AEC6260M PCI-IDE-Card
-Message-ID: <Pine.OSF.4.02.10005081054570.11165-100000@ax1305.physik.uni-marburg.de>
+Date: Mon, 8 May 2000 11:49:59 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+cc: Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: problem with Makefile
+In-Reply-To: <Pine.LNX.3.96.1000507234646.3380B-100000@deepspace.mklinux.org>
+Message-ID: <Pine.LNX.4.10.10005081148230.312-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi I hope someone here can help me with this:
-I got myself a Acard Pci-IDE card for my Powermac 7500 and found myself
-with the problem that the linux 2.2.15  driver suppied by Andre Hedrick
-with his 2.2.15-ide patch doesn't work under LinuxPPC in contrast to the
-x86 machines. :-(
-The problem is, that the card keeps losing its interrupt. The card is
-detected during boot and finds the drive :
+On Sun, 7 May 2000, David A. Gatwood wrote:
+> On Mon, 8 May 2000, Daniel Jacobowitz wrote:
+> > On Mon, May 08, 2000 at 01:26:05PM +0800, Rolf Liu wrote:
+> > >
+> > > current work
+> > > is to translate the Makefile of linux-ppc into a standard one, such as one
+> > > for windows-based
+> > > Makefile,which is meaningful to other standard "make" utilities,including
+> >
+> > There is a standard make.  It's POSIX, I believe.  The linux makefile
+> > is pretty close to it.  Why on earth would you want to use Microsoft or
+> > Borland tools (which are nmake, not make, IIRC) to build a kernel?
+>
+> As a fun exercise?
+>
+> Seriously, though, what would be good would be to modify the makefile to
+> eliminate all gnu extensions, i.e. converting it into a pure lowest-
+> common-denominator makefile (yes, it's probably POSIX).  That would allow
+> it to be built under other OSes, including Windoze, but also *BSD, Darwin,
+> MacOS X, etc.  That having been said, it's a pain in the backside to do
+> that sort of thing, so I wish you lots of luck.  ;-)
 
->AEC6260R: IDE controller on PCI bus 00 dev 78
->AEC6260R: not 100% native mode: will probe irqs later
->AEC6260R: ROM enabled at 0x80800000
->AEC6260: reg49h=0x00 ATA-66 Cable Port0
->     ide2: BM-DMA at 0x0800-0x0807, BIOS settings: hde:pio, hdf:pio
->hde: IBM-DJNA-352030, ATA DISK drive
->ide2 at 0x840-0x847,0x000 on irq 25
->hde: IBM-DJNA-352030, 19470MB w/1966kB Cache, CHS=39560/16/63, UDMA(66)
+WHY?!?
 
-but when doing the partition check I get:
-kernel: hde: lost interrupt
-kernel: ide_dmaproc: chipset supported ide_dma_lostirq func only: 11
-kernel: hde: lost interrupt
-kernel:  hde1ide_dmaproc: chipset supported ide_dma_lostirq func only: 11
-kernel: hde: lost interrupt
-kernel:  hde2 hde3ide_dmaproc: chipset supported ide_dma_lostirq func
-	only: 11
+I once read in a guide about writing makefiles (can dig up the reference if you
+want):
 
-and so on for every partition.
-I compiled the kernel with sharing PCI IDE interrupt support, Generic PCI
-busmaster support the AEC6260 driver AND Builtin PowerMac IDE support with
-PowerMac IDE DMA support. If I let the buitin Ide support out, the kernel
-wont even boot. If I let the sharing interrupt support out, I could not
-use the keyboard ....
+    Don't try to write portable Makefiles, use a portable make (i.e. GNU make)
 
-Can anyone help with this? I'm in contact with Andre but he can't check
-anything on a PowerPC. I'm a complete greenhorn but I'd be willing to
-learn if someone helps. I don't even know where and how to start looking
-what is really going wrong. Is it the PIO stuff ????
-I have tried to compile a 2.3.99pre5 kernel and inculde the card there,
-but that kernel wouldnt even compile. Thats wy I went back to the stable
-kernel sources with the ide.2.2.15.20000504.patch with no real succes so
-far either I admit :-)
+And I agree with this...
 
-Cheers Henning
+Gr{oetje,eeting}s,
 
---------------------------------------------------------------------------
-Henning Loeser					      Fachbereich Physik
-email: henning.loeser@physik.uni-marburg.de	      AG Oberflaechen
-						      Philipps-Uni Marburg
+						Geert
+
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
