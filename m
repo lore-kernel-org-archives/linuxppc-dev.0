@@ -1,36 +1,104 @@
-Date: Sat, 17 Feb 2001 19:27:17 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: K?ri Dav??sson <kd@flaga.is>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc2.5 tree
-Message-ID: <20010217192716.H18493@ftsoj.fsmlabs.com>
-References: <20010217150538.A22215@BigTits.flaga>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010217150538.A22215@BigTits.flaga>; from kd@flaga.is on Sat, Feb 17, 2001 at 03:05:38PM +0000
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A0148B71D@SERVER1>
+From: Subodh Nijsure <SNijsure@SkyStream.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Getting SanDisk CompactDisk working on linux-ppc.
+Date: Sat, 17 Feb 2001 20:05:27 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We upgraded the server and are still bringing services back.  Rsync is on
-the list, but isn't a priority.  For now, I'd suggest using BK.
+I got m8xx_pcmcia.c to "work" with Linux version 2.4.2-pre3 that
+I got from bitkeeper.
 
-} As I understand be reading the mailing list archives, the linuxppc_2_5 tree at
-} bitkeeper.fsmlabs.com is where most of the development for the MPC8xx CPU is
-} happening, especially USB stuff.
-}
-} bitkeeper.fsmlabs.com only seem to export them to the "bitkeeper" tools which
-} mean I am not able to download them. Is there a way to get the linuxppc_2_5
-} tree by any other means, or any other place?
-}
-} The rsync method also seem to be "dead", although the firewall here might
-} (likely) also be blocking of the rsync ports as well as the 500? series of
-} ports. This leaves only ftp, http, and email as a possible transport method.
-}
-} Thanks,
-}
-} K.D.
-}
-}
+When I say m8xx_pcmcia works, cardctl ident shows it as
+a Sandisk device in socket 0, and dump_cis show me attached info.
+
+What I would like to do is mount this device as ide drive, can anybody
+wants to provide pointers to how I can do this?
+
+/Subodh Nijsure
+
+-----------------------------------
+sh-2.04# cardctl ident
+Socket 0:
+  product info: "SunDisk", "SDP", "5/3 0.6"
+  manfid: 0x0045, 0x0401
+  function: 4 (fixed disk)
+sh-2.04# cardctl status
+Socket 0:
+  5V 16-bit PC Card
+  function 0: [ready], [bat dead], [bat low]
+-----------------------------------
+sh-2.04# dump_cis | more
+Socket 0:
+  dev_info
+    fn_specific 700ns, 2kb
+  common_jedec 0xdf 0x01
+  manfid 0x0045, 0x0401
+  vers_1 4.1, "SunDisk", "SDP", "5/3 0.6"
+  funcid fixed_disk [post]
+  disk_interface [ide]
+  disk_features [silicon] [unique] [single]
+    [sleep] [standby] [idle] [low power]
+  config base 0x0200 mask 0x000f last_index 0x07
+  cftable_entry 0x00 [default]
+    [rdybsy] [mwait] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    memory 0x0000-0x07ff @ 0x0000
+  cftable_entry 0x00
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x01 [default]
+    [rdybsy] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    io 0x0000-0x000f [lines=4] [8bit] [16bit]
+    irq mask 0xffff [level] [pulse] [shared]
+  cftable_entry 0x01
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x02 [default]
+    [rdybsy] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    io 0x01f0-0x01f7, 0x03f6-0x03f7 [lines=10] [8bit] [16bit] [range]
+    irq 14 [level] [pulse] [shared]
+  cftable_entry 0x02
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x03 [default]
+    [rdybsy] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    io 0x0170-0x0177, 0x0376-0x0377 [lines=10] [8bit] [16bit] [range]
+    irq 14 [level] [pulse] [shared]
+  cftable_entry 0x03
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x07
+------------------------------
+sh-2.04# cat /proc/interrupts
+           CPU0
+  1:          0   8xx SIU   Edge      cxe
+  2:          0   8xx SIU   Edge      mii
+  3:        481   8xx SIU   Edge      fec
+  5:      11711   8xx SIU   Edge      cpm
+ 13:          0   8xx SIU   Edge      m8xx_pcmcia
+ 15:          0   8xx SIU   Edge      tbint
+BAD:          0
+-------------------------------
+
+sh-2.04# cat /proc/devices
+Character devices:
+  1 mem
+  2 pty
+  3 ttyp
+  4 ttyS
+  5 cua
+ 10 misc
+ 89 i2c
+ 90 mtd
+162 raw
+254 pcmcia
+
+Block devices:
+  1 ramdisk
+ 31 mtdblock
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
