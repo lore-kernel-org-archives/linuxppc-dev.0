@@ -1,54 +1,34 @@
-Date: Wed, 7 Jun 2000 09:59:56 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Lanners <mlan@cpu.lu>
-cc: schmitz@opal.biophys.uni-duesseldorf.de, nicoya@apia.dhs.org,
-        drow@false.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] VRAM detection in controlfb
-In-Reply-To: <200006062158.XAA00842@piglet.grunz.lu>
-Message-ID: <Pine.LNX.4.05.10006070957160.26785-100000@callisto.of.borg>
+To: daenzerm@student.ethz.ch
+Cc: Joseph Garcia <jpgarcia@execpc.com>,
+        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Debian pmud package available
+References: <Pine.LNX.4.10.10006062043470.29453-100000@zirkon.biophys.uni-duesseldorf.de>
+	<393D4D15.7CF12E4E@execpc.com> <393D5429.32BEFB20@relog.ch>
+From: Francois Felix Ingrand <felix@ingrand.net>
+Date: 07 Jun 2000 15:50:07 +0200
+In-Reply-To: Michel Dänzer's message of "Tue, 06 Jun 2000 21:42:33 +0200"
+Message-ID: <x8qhfb51tyo.fsf@alf.laas.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 6 Jun 2000, Michel Lanners wrote:
-> On   6 Jun, this message from Michael Schmitz echoed through cyberspace:
-> >> Anyways, that's the long answer. The short answer is: no, you probably
-> >> don't want to cache the framebuffer.
-> >
-> > Thanks for the long answer, and all those nasty gremlins have actually
-> > been observed long time ago when people started to play with the
-> > framebuffer drivers. At least on m68k, the framebuffer address space was
-> > set non-cacheable right from the start (in head.S). I would hope that
-> > somehow translated to PPC as well :-)
+Michel Dänzer <daenzer@relog.ch> writes:
+
+> > Does Batmon display for Pismo systems?  I could update it to support Pismo
+> > ASAP if I get some input.
 >
-> That's what fbmem.c does in its default mmap(). However, at least for
-> control (and maybe other comparable video implementations as well), you
-> get much better performance on scroll and other fb-to-fb copy
-> operations, without visible inconvenients, when the framebuffer is set
-> to write-through caching.
+> Francois told me it does; haven't tested it myself.
 
-| $ grep ioremap drivers/video/amifb.c
-| 	videomemory = (u_long)ioremap_writethrough(videomemory_phys, videomemorysize);
-
-It does mean that if the accel engine draws something, and the CPU wants to
-chnge that, that there may be a cache incoherency. For amifb that doesn't
-matter since it's unaccelerated.
-
-Summarized: use write-through cachine for unaccelerated hardware, no caching
-for accelerated hardware.
-
-Gr{oetje,eeting}s,
-
-						Geert
+I confirm it does display... and the information displayed seem to be
+"meaningful".
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+"20% de la population mondiale consomme 86% des ressources." Rapport ONU, 1998.
+Professional: http://www.laas.fr/~felix               mailto:felix@laas.fr
+Personal: http://www.ingrand.net/felix                mailto:felix@ingrand.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
