@@ -1,101 +1,54 @@
-From: "Conor O'Gorman" <conor.ogorman@virtualaccess.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: hints on read() - EFAULT problem
-Date: Fri, 9 Feb 2001 16:24:46 -0000
-Message-ID: <NDBBIBBPELJMGDCMPCLAIEMDCHAA.conor.ogorman@virtualaccess.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 9 Feb 2001 16:19:31 -0500
+From: =?ISO-8859-1?Q?S=E9bastien_C=F4t=E9?= <scote1@matrox.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Progress - new problem
+Message-ID: <20010209161931.A30585@dyn-52-73.matrox.com>
+References: <NDBBIBBPELJMGDCMPCLAIEMDCHAA.conor.ogorman@virtualaccess.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <NDBBIBBPELJMGDCMPCLAIEMDCHAA.conor.ogorman@virtualaccess.com>; from conor.ogorman@virtualaccess.com on Fri, Feb 09, 2001 at 11:24:46 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi,
 
-I've got a custom board with an 860, montavista build tools, and kernel
-2.4.0 test2.
+I progressed quite a bit since my last e-mail... I put back KERNELBASE +
+PAGE_OFFSET + KERNELLOAD to 0xc0000000 even though it complicates debugging
+quite a bit.  Now, the kernel goes through create_elf_tables without a
+problem.  The elf file (init) seems to have been loaded correctly.
 
-When running ttcp in receive mode I get an IO error. According to strace
-there is a problem with read()'ing from the socket, see console log below.
+Now, the problem.  When the kernel tries to jump to the first address of
+the executable (0x10000074), I get an Instruction Access Exception and it
+jumps to address 0x400.  I guess this should be ok and the the memory pages
+should then be set up correctly.  However, these pages never seem to be set
+correctly!  The kernel jumps back and forth between the executable
+(0x10000074) and InstructionAccess (0x400), forever it seems.  Now I have
+no idea what could be wrong!
 
-I thought it had something to do with copy_to_user() so I added a printk()
-that shows 'to', 'from' and 'n' vars in '[', ']' brackets. The same straced
-read() with printk output:
+Here is what my BATs point to (I didn't change the default configuration):
+IBAT0 = 0
+IBAT1 = 0
+IBAT2 = C0000000 pointing to 0
+IBAT3 = 0
 
-read(4, [10018000|c0f89852|000005a8]0x10018000, 8192)               = -1
-EFAULT (Bad address)
+DBAT0 = F0000000 pointing to F0000000
+DBAT1 = 80000000 pointing to 80000000
+DBAT2 = C0000000 pointing to 0
+DBAT3 = 0
 
-Any hints, tips on the problem? I note the 'from' kernel address above is
-only short aligned. Is the memory setup bad? I don't get the problem for
-ttcp transmit, but it does showup doing an 'ls -l' on an nfs mounted root
-filesys. But not a simple 'ls'.
+Board is similar to Sandpoint, processor is 7400 running in little-endian.
+Btw, r3 hasn't been filled with PReP at boot, I didn't think it would
+really matter (and since I got this far, I think it didn't).
 
-Thanks
-Conor
+Thanks!
 
+Sébastien Côté
 
-
-console log (probably a mess due to my email client.
--------------------------------------------------------------------
-execve("/bin/ttcp", ["ttcp", "-r", "-s"], [/* 11 vars */]) = 0
-brk(0)                                  = 0x100165d8
-open("/etc/ld.so.preload", O_RDONLY)    = -1 ENOENT (No such file or
-directory)
-open("/etc/ld.so.cache", O_RDONLY)      = -1 ENOENT (No such file or
-directory)
-open("/opt/hardhat/devkit/ppc/8xx/powerpc-hardhat-linux/lib/libc.so.6",
-O_RDONLY) = 3
-fstat(3, {st_mode=S_IFREG|0755, st_size=4193386, ...}) = 0
-read(3, "\177ELF\1\2\1\0\0\0\0\0\0\0\0\0\0\3\0\24\0\0\0\1\0\2&l"..., 4096) =
-4096
-mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
-0x30014000
-mmap(0xfee7000, 1083704, PROT_READ|PROT_EXEC, MAP_PRIVATE, 3, 0) = 0xfee7000
-mprotect(0xffca000, 153912, PROT_NONE)  = 0
-mmap(0xffd7000, 81920, PROT_READ|PROT_WRITE|PROT_EXEC,
-MAP_PRIVATE|MAP_FIXED, 3, 0xe0000) = 0xffd7000
-mmap(0xffeb000, 18744, PROT_READ|PROT_WRITE|PROT_EXEC,
-MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffeb000
-close(3)                                = 0
-getpid()                                = 7
-brk(0)                                  = 0x100165d8
-brk(0x1001c5f0)                         = 0x1001c5f0
-brk(0)                                  = 0x1001c5f0
-brk(0x1001d000)                         = 0x1001d000
-fstat(1, [7ffff518|c061bdf8|00000048]{st_mode=S_IFCHR|0600,
-st_rdev=makedev(5, 1), ...}) = 0
-mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
-0x30015000
-ioctl(1, TCGETS, 0x7ffff418)            = 0
-write(1, "ttcp-r: buflen=8192, nbuf=2048, "..., 62ttcp-r: buflen=8192,
-nbuf=2048, align=16384/0, port=5001  tcp
-) = 62
-socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 3
-write(2, "ttcp-r: socket\n", 15ttcp-r: socket
-)        = 15
-bind(3, {sin_family=AF_UNSPEC, {sa_family=0,
-sa_data="\23\211\0\0\0\0\0\0\0\0\0\0\0\0"}, 16) = 0
-rt_sigaction(SIGPIPE, {0x10000bc0, [], SA_RESTART},
-[7ffffbb8|c061be48|00000014]{SIG_DFL}, 8) = 0
-listen(3, 0)                            = 0
-accept(3, {sin_family=AF_INET, sin_port=htons(1363),
-sin_addr=inet_addr("10.1.1.60")}}, [16]) = 4
-getpeername(4, {sin_family=AF_INET, sin_port=htons(1363),
-sin_addr=inet_addr("10.1.1.60")}}, [16]) = 0
-write(2, "ttcp-r: accept from 10.1.1.60\n", 30ttcp-r: accept from 10.1.1.60
-) = 30
-gettimeofday({4292222560, 448362}, NULL) = 0
-getrusage(RUSAGE_SELF, {ru_utime={0, 30000}, ru_stime={0, 50000}, ...}) = 0
-read(4, [10018000|c0f89852|000005a8]0x10018000, 8192)               = -1
-EFAULT (Bad address)
-write(2, "ttcp-r: ", 8ttcp-r: )                 = 8
-write(2, "IO: Bad address\n", 16IO: Bad address
-)       = 16
-write(2, "errno=14\n", 9errno=14
-)               = 9
-munmap(0x30015000, 4096)                = 0
-exit(1)                                 = ?
--------------------------------------------------------------------
+P.S.:  What do you guys use for debugging?  Is there any debugger out there
+that does address translation (from MMU) to see what instruction gets
+executed when you're at a virtual address?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
