@@ -1,16 +1,20 @@
-Return-Path: <sbajaj@tsi-telsys.com>
-Received: from exchange.tsi-telsys.com (unknown [205.230.130.11])
-	by ozlabs.org (Postfix) with ESMTP id D6E1167A67
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2177967A76
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Mar 2005 04:17:55 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 9 Mar 2005 12:11:26 -0500
-Message-ID: <0007F077BB3476449151699150E8FEA205928C@exchange.tsi-telsys.com>
-From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: PPC 440GX with NS DP83865 phy
+	Thu, 10 Mar 2005 04:17:58 +1100 (EST)
+In-Reply-To: <1110334456.32556.21.camel@gaston>
+References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>
+	<1110334456.32556.21.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <bd227d824fe755c8560aaacff9210d62@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Wed, 9 Mar 2005 11:17:54 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Netdev <netdev@oss.sgi.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: PHY Abstraction Layer II
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,8 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Has anybody used PPC 440GX with NS DP83865 phy? If you have or have any =
-information to set it up, please share.
 
-Thanks,
-Sanjay
+On Mar 8, 2005, at 20:14, Benjamin Herrenschmidt wrote:
+
+> On Tue, 2005-03-08 at 19:47 -0600, Andy Fleming wrote:
+>> I've finally gotten all of ebs's suggestions into the PHY code.  Here
+>> is the new version.  It has the following improvements:
+>>
+>> * All PHYs now determine speed,duplex, etc using the same generic 
+>> code,
+>> rather than PHY-specific registers.
+>
+> Some PHY are doing a better job with PHY specific registers I think ...
+> The gigabit for example isn't standard, and some PHYs sort-of manage to
+> deal with non-autoneg hubs in such a way that the "normal" aneg doesn't
+> succeeds, but the phy specific stuff does work. At least from stuff 
+> I've
+> been told a while ago, I have no direct experience here.
+
+Ah, I should have been a little more clear.  All the currently 
+implemented PHY drivers are just using the generic read_status 
+function.  Different PHYs can assign their read_status function to be 
+PHY-specific
+
+>
+>> * The genphy driver works for gigabit PHYs now, as well.  In theory, 
+>> if
+>> your PHY isn't broken in some way (I've encountered a number that 
+>> are),
+>> you should be able to just use genphy.
+>
+> Isn't the speed reporting of gigabit an implementation specific bit in
+> lots of PHYs ?
+
+Well, it looks like there are some standard bits which say whether the 
+PHY supports gigabit.  I used those.
+
+Andy
