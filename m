@@ -1,55 +1,54 @@
-Date: Thu, 21 Jan 1999 22:05:13 +1100
-Message-Id: <199901211105.WAA06985@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: ranjitd@sco.COM
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.SCO.3.96.990120111039.13973A-100000@mammoth.sco.com>
-	(message from Ranjit Deshpande on Wed, 20 Jan 1999 11:28:21 -0800
-	(PST))
-Subject: Re: PCI-PCI bridges
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.SCO.3.96.990120111039.13973A-100000@mammoth.sco.com>
+Date: Thu, 21 Jan 1999 12:58:11 +0100
+To: Martin Costabel <costabel@wanadoo.fr>, bh40@calva.net,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: pre8(vger) kills button 3 on 1-button mouse
+Message-Id: <19990121125811.027884@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ranjit Deshpande <ranjitd@sco.COM> wrote:
+On Thu, Jan 21, 1999, Martin Costabel <costabel@wanadoo.fr> wrote:
 
-> Specifically the pci_*_config_* routines do not use the bus number when
-> reading from config space. So I went and looked at the 2.1.24 kernel and
-> changed the following in arch/ppc/kernel/pmac_pci.c in the above mentioned
-> routines...
-> 
-> out_le32(bp->cfg_addr, (bus << 16) + (dev_fn << 8) + (offset & ~3) +1);
->                        ^^^^^^^^^^^
-> That seemed to make the kernel see my ethernet card.
+>The latest changes for 2-to-4-button mice on vger in
+>drivers/macintosh/mac_keyb.c (rev 1.24) break the emulation of button 3
+>on my 1-button Apple adb mouse.
+>
+>This happens both in Xpmac, where option_right+click is hard-coded to
+>button 3, and in XF68_FBDev, where I use a patch by Franz Sirl for the
+>adb_buttons kernel command to get the same effect.
+>
+>The reason seems to be that in rev 1.24 option_right gets mapped to
+>option_left even in raw mode (same for ctrl, BTW). I don't understand
+>this from the code, which is too complicated for me, anyway, but from
+>looking at the effect, as witnessed by xev in Xpmac, for example.
+>
+>For the moment, I went back to rev 1.23 which doesn't have this problem.
 
-Your fix is correct.  As to how the (bus << 16) got lost, I don't
-know, it's beyond the event horizon now :-).
+I removed most of my patches to mac_keyb.c before submitting them, I was
+pretty sure I didn't break anything, but I was probably wrong. I'll have
+a look at it as soon as I manage to get this vger tree (today probably)
+and submit a new patch.
 
-> Now the pcibios_fixup code was not fixing the card's interrupt so I looked
-> into that as well. The problem there was that the fixup code searches
-> through the device tree looking for the OF device node at only the fist
-> level. So if this is the arrangement...
-> 
-> /bandit
-> 	/ohare
-> 	/ATY,RAGEII_M
-> 	/pci-bridge
-> 		/pci1011,9 (my ethernet card)
-> 
-> 
-> then the fixup code only looks at the top-level children of bandit(ohare,
-> the ATI card and the pci-bridge) and misses my ethernet card. 
-> 
-> So I changed the code to search children of nodes called "pci-bridge".
+Here, I have rewritten most of the buttons handling in console and
+buttons emulation, but my new version is not ready and was not included
+in the patches I sent to Cort. I just checked my patches, and they should
+not change anything to buttons emulation. I'll test all this later today.
+Thanks for pointing this out.
 
-That sounds reasonable.  A slightly better fix might be to look at the
-device_type property (which is probably also "pci-bridge" or something
-like that) rather than the name, or alternatively at the class-code
-property, which might be better still.
+Ah yes, could you send me a dmesg log ? I would like to soo how your
+mouse was recognized at startup.
 
-Paul.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
