@@ -1,33 +1,33 @@
-Date: Wed, 6 Jan 1999 09:39:13 +1100
-Message-Id: <199901052239.JAA04790@tango.anu.edu.au>
+Date: Wed, 6 Jan 1999 09:41:57 +1100
+Message-Id: <199901052241.JAA04815@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: tas@mindspring.com
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <v04011700b2b76717bf6b@[209.86.156.101]> (tas@mindspring.com)
-Subject: Re: Strange PMAC IDE performance problem
+To: brad@pht.com
+CC: linuxppc-dev@lists.linuxppc.org, p1rabbit@halcyon.com
+In-reply-to: <Pine.LNX.3.96LJ1.1b7.990104192040.452A-100000@cricket> (message
+	from Brad Midgley on Mon, 4 Jan 1999 19:41:15 -0700 (MST))
+Subject: Re: 2.2.0pre2 SCSI problems, more (fwd)
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <v04011700b2b76717bf6b@[209.86.156.101]>
+References: <Pine.LNX.3.96LJ1.1b7.990104192040.452A-100000@cricket>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Timothy A. Seufert <tas@mindspring.com> wrote:
+Brad Midgley <brad@pht.com> wrote:
 
-> Needless to say, the IDE performance figures are far less than those drives
-> are capable of!  Under MacOS they benchmark much higher (for example, the
-> 38451 scores 7780 to 9472 KB/s (8819 avg) sustained read on the FWB
+> i removed all devices from the second bus except for an 80M quantum drive
+> that i used to boot from.  (everyone should be warned that you should boot
+> from a non-mesh device when mesh debugging is on! :) 
+> 
+> a strange thing, and maybe bad news for debugging: the drive is discovered
+> properly by the debugging kernel. maybe it's a timing issue. i hope the
+> logs can tell you something. 
 
-I have noticed this poor performance myself but it's hard to say what
-might be the cause - whether it's some bit that needs to be set
-somewhere in a hardware register, or something about the IDE driver
-that is causing it to waste time somewhere.  One way to start getting
-some information would be to add some statements to the IDE driver to
-read the timebase register to get some timing information about how
-long different parts of the process take.  If it is that the hardware
-is not transferring the bytes very fast, then we need to look for a
-value in a hardware register which is different between macos and
-linux.  I don't think I will be able to get on to it soon but if
-someone else wants to have a go that would be great.
+A timing issue sounds likely, as nothing much has changed in the mesh
+driver (or the rest of the SCSI code AFAIK) lately.  If you set
+mesh_debug_targets back to 0 but still have MESH_DBG defined, it won't
+print all that debugging info but it will still record all the log
+information (which is a relatively lightweight thing to do), and if
+you get the target aborting, it will print the log.
 
 Paul.
 
