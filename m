@@ -1,44 +1,38 @@
-Message-ID: <3B79115A.AA9B5550@inn.ericsson.se>
-Date: Tue, 14 Aug 2001 13:54:02 +0200
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-MIME-Version: 1.0
-To: Larry McVoy <lm@bitmover.com>
-Cc: Gavin Hemphill <hemphill@drea.dnd.ca>,
+Date: Tue, 14 Aug 2001 07:18:31 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC bk repos reorg
-References: <15218.2656.8980.846399@cargo.ozlabs.ibm.com> <20010808211410.J7728@work.bitmover.com> <15218.4778.270562.782105@cargo.ozlabs.ibm.com> <20010808213806.C13789@work.bitmover.com> <15218.7077.297813.862317@cargo.ozlabs.ibm.com> <20010809192852.L13789@work.bitmover.com> <20010810080751.B31136@cpe-24-221-152-185.az.sprintbbd.net> <20010810081659.A13789@work.bitmover.com> <3B77D988.6A9D6C60@drea.dnd.ca> <20010813083553.B4702@work.bitmover.com>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: Occasional crash reports
+In-Reply-To: <20010814094529.3E40EDBA11@atlas.valhalla.net>
+Message-ID: <Pine.A41.3.96LJ1.1b7.1010814071619.95124A-100000@unlserve.unl.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I can't even use the old way from work but I have done some testing with bk
-from home in aticipation of the 4xx updates that has been RSN the last few
-month.
+On Tue, 14 Aug 2001, Iain Sandoe wrote:
 
-The revtool is a really nice tool to find out what has changed and once I
-figured out that I needed to also do a get command everything that I need
-works. BUT one thing I did not like is the fact that a grep -r now catch not
-only the source but also the file in the repository directory. Is there a way
-to work with bk that the source is not in the same place as the bk files?
-
-
-Larry McVoy wrote:
+> > I don't really know, but I can confirm that both 2.2.x and 2.4.x kernels
+> > are unstable on a beige g3 and a bmac equipped b/w g3.  I can crash them
+> > rather easily with regular programs, given a day or two.
 >
-> For now use the old port numbers those should still work while I go poke
-> at this.
->
-> On Mon, Aug 13, 2001 at 10:43:36AM -0300, Gavin Hemphill wrote:
-> > Larry I just tried out the anonymous access using the new syntax and
-> > found that (of course) it won't work through our firewall. I'd had a
-> > hole punched in the firewall to allow pull's etc. but it's tied to
-> > port numbers. Do you have any suggestions on how to handle this with
-> > the reorganized parents.
+> Can you point at which program reliably crashes beige/G3?
 
---
-Kenneth Johansson
-Ericsson Business Innovation AB   Tel: +46 8 404 71 83
-Viderögatan 3                     Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
+It's usually rsync.
+
+> that's what I use as my dev/build machine and it seems to be stable (2.4.x)
+> except under the following circumstance:
+>
+> If I boot using the BootX application - at which point something drops a
+> bomb which almost always ends up in the network stack and shows up as an
+> illegal instruction (usually an FP one).
+
+Ah, yes, we use BootX app here, too.  Version 1.2.2, I think.
+
+
+Takashi Oe
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
