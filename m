@@ -1,95 +1,28 @@
-Message-ID: <BE1C564723B3D21191FD0000F840E39801D8150D@rfcmx2.rfc.comm.harris.com>
-From: "Brown, David (dbrown03)" <DBrown03@harris.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: interference between scc serial and ethernet: more informatio
-	n
-Date: Fri, 5 May 2000 14:52:08 -0400 
+Message-ID: <39132E0D.FACBF9F9@sd-star.com>
+Date: Fri, 05 May 2000 13:24:45 -0700
+From: "Kerry Keal" <kealk@sd-star.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: OT: Job for Motorola MVME 230x Embedded Systems Programer
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Problem found!
-Thank you for the comments and suggestions.
+   Hey, Sorry for the off-topic job posting, but my company (Spectral
+Dynamics) is looking for an embedded systems programer. We are
+located in San Jose, CA. We make real-time vibration control test
+systems that are used for things like earthquake simulation and testing,
+satellite testing and a variety of other product testing. I'm just an
+employee of the company and not part of the management. Currently our
+product uses VxWorks. The engineer that did the embedded systems work is
+leaving. I told my boss, that this would be a great time to switch over
+to a Linux embedded kernel and he seemed to like the idea. If anyone is
+interested please let me know.
 
-The board supports multiple levels of output (RS-232, RS-422, etc) on the
-SCC ports, controlled by Port B pins.  I had initialized the pbpar/pbdir
-backwards for these pins.
+Thanks,
 
-
-> -----Original Message-----
-> From: Brown, David (dbrown03) [mailto:DBrown03@harris.com]
-> Sent: Friday, May 05, 2000 10:17 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: interference between scc serial and ethernet: more
-> information
->
->
->
-> The target is a custom board similar to the EST8XX
-> configuration, with an
-> 860 and an LXT908 PHY.  I ultimately need to run PPP on SCC3.
->  When ethernet
-> receives data, it messes up SCC3's configuration somehow.  I
-> briefly tested
-> with SCC2 and saw the same thing, but I have concentrated on SCC3.
->
-> It's a 50MHz MPC860, identified by 8xxrom as XPC860xxZPnnC1
-> and actually
-> stamped as XPC860ENCZP50C1.  Running at 50MHz.
->
-> Three nodes on the ethernet: the target, the Abatron BDI2000, and the
-> development host.
->
-> Case 1) Linux boots with default parameters, no IP address.
-> I use SCC3
-> serial, no problem.  Then, on the development host, I ping a
-> non-existent
-> address (causing an ARP request broadcast).  After that, the
-> SCC3 serial is
-> not working.  Sometimes, when I write to SCC3, garbled
-> characters come out
-> (like it's the wrong baud rate).  Other times, nothing comes
-> out at all.
->
-> Case 2) Linux boots with IP address parameters.  I use SCC3 serial, no
-> problem.  Then, on the target, I ping a non-existent address.
->  Serial still
-> works fine.  I get "neighbour table overflow" messages.
->
-> Case 3) In enet.c, in cpm_enet_rx(), I commented out code so that all
-> received frames get tossed.  Again, SCC3 serial stops working when the
-> development host pings an unknown address.
->
-> I tried activating kgdb to debug this, but kgdb stops working
-> as soon as the
-> init shell starts.  It seems to be a fight over which process
-> gets the input
-> data.  I'm looking at it with BDM, but that's quite slow
-> since I have to
-> translate memory references.
->
-> I see four potential possibilities.
-> a) A bug in the enet or serial driver.  Not likely, since
-> others report that
-> Ethernet and SCC serial ports work simultaneously for them.
-> b) A hardware problem on my board.  My co-worker says that's
-> unlikely, since
-> his low-level test software exercises Ethernet RX and uses SCC3 as the
-> console.
-> c) A blatant configuration error in my setup of Linux.  Not
-> likely, since
-> Ethernet and Serial each work independently.
-> d) My board violates some assumptions made by Linux and/or
-> the drivers.
-> That seems to me to be the most probable, but I can't think
-> of what it might
-> be.
->
-> Please feel free to throw out random ideas as to what I
-> should look for.
->
+Kerry Keal
+kealk@sd-star.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
