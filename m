@@ -1,58 +1,30 @@
-Date: Wed, 8 Nov 2000 03:24:27 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: Steven Hanley <sjh@wibble.net>
-Cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: how to pass kernel command line arguments?
-Message-ID: <20001108032427.Z2367@plato.local.lan>
-References: <20001108214245.A31388@wibble.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="TX8FgYyhBart40Z+"
-In-Reply-To: <20001108214245.A31388@wibble.net>; from sjh@svana.org on Wed, Nov 08, 2000 at 09:42:45PM +1100
+Date: Wed, 8 Nov 2000 21:35:39 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>
+cc: paulus@linuxcare.com.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
+In-Reply-To: <39F96E14.C06AB6FB@mpifr-bonn.mpg.de>
+Message-ID: <Pine.LNX.4.10.10011082109150.31984-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---TX8FgYyhBart40Z+
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+> The rsync'ed 2.2.18pre17 kernel hangs if I try to wake up my Lombard after a
+> sleep. Sleeping seems to work (the LED binks), but upon wakeup it just stops
+> blinking, and nothing else. No reports in /var/log/messages, I just have to
+> reboot.
 
-On Wed, Nov 08, 2000 at 09:42:45PM +1100, Steven Hanley wrote:
->=20
-> All
->=20
-> Okay I shall be more specific, how do I pass kernel command line arguments
-> (say for example a video=3Dwhatever) to the kernel when booting the kerne=
-l on
-> the hfs floppy disk image that comes with debian potato. Does anyone know?
+To follow up on this: 2.2.18pre18 does not freeze on sleep or wakeup on my
+Lombard (no CD in drive, CD in drive, CD mounted, regardless).
 
-hexeditor /mnt/floppy/.resource/System
+It does freeze, however, when I snooze the machine while using software
+cursor. Seems the software cursor interrupt needs to be stopped before
+turning off the display :-) Question: is software cursor support worth the
+hassle?
 
-there is a resource in there somewhere that has the kernel arguments,
-ive heard its not too hard to find and edit in a hex editor.
-unfortunatly miboot really badly needs a text based configuration file...
+	Michael
 
-> I suspect the .rootinfo may have something to do with the bootup for linu=
-x,
-> though not sure and I dont know where to find docs on this stuff either.
-
-no .rootinfo is a hfs thing, don't mess with it, all you would likely
-end up doing is trashing the filesystem. =20
-
-if you have access to macos and resedit/resourcerer you might find
-those simpler to edit the System file.  (beware that MacOS may make
-the floppy unbootable if you mount it read-write on macos.  (ive heard
-its more forgiving of floppies then disk partitions though, ymmv as
-usual))
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---TX8FgYyhBart40Z+
-Content-Type: application/pgp-signature
-
-
---TX8FgYyhBart40Z+--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
