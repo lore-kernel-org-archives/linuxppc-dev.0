@@ -1,39 +1,27 @@
-Message-ID: <791B3205DB661A42B4BFE5464A7D1D0204B36CFE@chzugexch01.abatos.com>
-From: Graf Alex <alex.graf@siemens.com>
-To: "'emanuel stiebler'" <emu@ecubics.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: AW: cy7c68001 USB2 host
-Date: Fri, 14 Nov 2003 12:13:55 +0100
+Message-ID: <3FB4CFEE.3060604@jonmasters.org>
+Date: Fri, 14 Nov 2003 12:51:58 +0000
+From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [Fwd: ppc4xx Ports]
+References: <3FB416F9.7080303@jonmasters.org> <20031114002023.GA9509@gate.ebshome.net> <3FB423AB.80805@jonmasters.org> <20031114004805.GA9585@gate.ebshome.net>
+In-Reply-To: <20031114004805.GA9585@gate.ebshome.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-What's about isp1362 from Phillips?
-Two Hosts, one Device and OTG. A driver from denx is supporting this chip:
-one host and device.
 
-Cheers
+Eugene Surovegin wrote:
 
-Alex
+| Could you elaborate on that? What bugs are present in current
+| linuxppc-2.4? Why are you reworking PTE stuff?
 
------Ursprüngliche Nachricht-----
-Von: emanuel stiebler [mailto:emu@ecubics.com]
-Gesendet: Freitag, 14. November 2003 00:41
-An: linuxppc-embedded@lists.linuxppc.org
-Betreff: cy7c68001 USB2 host
+As I said before I am not using linuxppc-2.4 tree so I need to fix up
+the stock kernel tree.
 
-
-
-Hi all,
-
-Was thinking about using this cypress chip, but didn't find any drivers
-for it,  :(
-Anybody working on a driver ?
-
-cheers & thanks
+Jon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
