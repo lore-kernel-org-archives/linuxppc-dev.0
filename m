@@ -1,61 +1,32 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20030616140150.78496.qmail@web20010.mail.yahoo.com>
-Date: Mon, 16 Jun 2003 07:01:50 -0700 (PDT)
-From: Obaid Haqqi <big_obi@yahoo.com>
-Subject: Re: EP8260. EST8260, SBC8260
-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>,
-	deepesh@india.tejasnetworks.com, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <000e01c333e0$d7049b00$0700a8c0@eurostudio.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Obaid Haqqi <big_obi@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EP8260. EST8260, SBC8260 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 16 Jun 2003 07:01:50 PDT."
+             <20030616140150.78496.qmail@web20010.mail.yahoo.com>
+Date: Mon, 16 Jun 2003 16:24:55 +0200
+Message-Id: <20030616142500.D041FC5FD7@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The EP8260 and SBC8260 are the same line of products.
-Three are three configurations for the board: M, H,
-and H1.  The SBCxxxx is used to indicate the processor
-used on the board (in this case the MPC8260), the
-EP8260 is the part number for the board design.
-Hope that helps.
+In message <20030616140150.78496.qmail@web20010.mail.yahoo.com> you wrote:
+>
+> The EP8260 and SBC8260 are the same line of products.
 
-Obaid Haqqi
-Embedded Planet
---- "Ing.Gianfranco Morandi"
-<gianfranco.morandi@euro-studio.it> wrote:
->
-> For what is my knowledge,
-> EST8260 and SBC8260 refer to the same board made
-> from EsT (now Wind River).
-> I have never used EP8260.
->
-> I hope this help
->
-> Gianfranco
->
-> ----- Original Message -----
-> From: <deepesh@india.tejasnetworks.com>
-> To: <linuxppc-embedded@lists.linuxppc.org>
-> Sent: Sunday, June 15, 2003 6:34 AM
-> Subject: EP8260. EST8260, SBC8260
->
->
-> >
-> > Please let me know the basic differences in the
-> three boards:
-> >
-> > 1) EP8260
-> > 2) EST8260
-> > 3) SBC8260
-> >
-> > --
-> >
-> > D.Deepesh
-> >
-> >
->
->
->
+Really? I thought the SBC8260 was manufactured by EST / Windriver,
+while the EP8260 was by Embedded Planet?
 
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Gewöhnlich glaubt der Mensch,  wenn er nur Worte hört,  es müsse sich
+dabei doch auch was denken lassen.                 -- Goethe, Faust I
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
