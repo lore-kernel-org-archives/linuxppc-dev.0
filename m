@@ -1,57 +1,46 @@
-Subject: Re: [Linux-ATM-General] Re: ATM driver for 8260 (linux 2.4.x)
-From: James Campbell <jcampbell@omnigon.com>
-To: None Atall <linux_meis@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	linux-atm-general@lists.sourceforge.net
-In-Reply-To: <20020124160735.67756.qmail@web9705.mail.yahoo.com>
-References: <20020124160735.67756.qmail@web9705.mail.yahoo.com>
-Content-Type: text/plain
-Date: 28 Jan 2002 20:03:34 -0800
-Message-Id: <1012277014.1246.0.camel@skoll.omnigon.com>
-Mime-Version: 1.0
+Message-ID: <3C566357.7060307@esd-electronics.com>
+Date: Tue, 29 Jan 2002 09:54:47 +0100
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: I2C support for 405GP
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hello,
 
-Sorry for the long time getting back about the patch.
+is anybody working on the I2C driver for the IBM 405GP ?
+The driver was in the 2.4.2 Kernel from Montavista, but it dissapeared
+from the devel tree a long time ago. I tried to take that old sources
+and merged the i2c stuff into a more recent 2.4 devel kernel. It did not work.
 
-I have the patch ready to distribute, BUT I'm running into some
-problems at work getting it released under the gpl.  As soon as
-this happens, you'll see something from me.
+This leads to some questions:
 
-I'm all for giving back to the community, and I think those here
-will come arround rather soon, I hope.
+1) Is anybody currently workig on this issue ?
+2) Does anybody have a local working i2c driver for the 405 ?
+3) Is there a special reason why the i2c support dissapeared ?
 
-Cheers,
+I read sometime ago on the i2c project site, that they care about the 405
+i2c driver. Is this true ?
 
-James Campbell
+Matthias
 
-On Thu, 2002-01-24 at 08:07, None Atall wrote:
->
->  James, Is this patch for 8260 ATM ready? I am realy
-> looking forward!!
->
->                  D. Meidanis
->
->
-> _______________________________________________
-> Linux-atm-general mailing list
-> Linux-atm-general@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-atm-general
->
 --
-James Campbell          -|-   Embedded Systems Engineer
-jcampbell@omnigon.com   -|-     Omnigon International
-pgp:  C138 0E47 5200 40A3 5D09 682E D53F A137 49AE 7171
-work: +1.760.804.8884 x 332       cell: +1.760.492.1176
---
-"Computer games don't affect kids; I mean if Pac-Man
-affected us as kids, we'd all be running around darkened
-rooms, munching magic pills and listening to repetitive
-electronic music."
-         -Kristian Wilson, Nintendo, Inc. 1989
+-------------------------------------------------------------------------
+
+                             _/_/_/_/   Matthias Fuchs
+                            _/_/_/_/   Dipl.-Ing.
+                           _/_/_/_/   matthias.fuchs@esd-electronics.com
+
+       _/_/_/   _/_/_/_/_/_/_/      esd electronic system design gmbh
+     _/   _/  _/             _/    Vahrenwalder Str. 207
+    _/   _/    _/_/_/   _/   _/   D-30165 Hannover
+    _/             _/  _/   _/   Phone: +49-511-37298-0
+     _/_/_/_/_/_/_/   _/_/_/    Fax:   +49-511-37298-68
+
+-------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
