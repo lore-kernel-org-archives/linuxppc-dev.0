@@ -1,66 +1,59 @@
-From: kd@flaga.is
-Subject: Re: Kernel 2.2.13 network problems
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF7F381384.4DD53729-ON0025683C.0039B947@flaga.is>
-Date: Fri, 3 Dec 1999 10:31:05 +0000
+Date: Fri, 3 Dec 1999 14:42:04 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: ml-linuxvme@vespa.unix-ag.uni-siegen.de
+cc: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        linux-kernel@vger.rutgers.edu
+Subject: [Announce+RFT+RFC] VME for Linux (on some boards at least)
+Message-ID: <Pine.HPP.3.96.990427055644.20020J-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-No, I am using Debian 2.1 i386 with upgraded Glibc to 2.1 as nfs server.
-The problems are only visible with kernel 2.2.13 in the mpc823 board. If I
-am using kernel 2.2.5 everything works fine.
 
-K.D.
+	Hi,
 
-"Software is like sex- the best is for free"
--Linus Torvalds
+I have put patches and tarballs in the following directory:
 
+	ftp://vlab1.iram.es/pub/linux-vme/
 
+this is a driver and more stuff for PPC and Intel machines using Tundra's
+Universe PCI<->VME bridge. There is already a driver for this chip
+floating around but mine is completely different since it also provides
+services to additional kernel drivers to access VME, register interrupt
+handlers, queue DMA opperations etc... A few examples of such drivers are
+available, actually one of my goals was to make writing board specific
+drivers as simple as possible and independant of the physical interface
+used to access the VME bus (there is at least another chip called Alma
+which is similar to the Universe but I don't even have the doc yet).
 
-                                                                                                                                                    
-                    Wolfgang Denk <wd@denx.de>                                                                                                      
-                    Sent by:                                To:     kd@flaga.is                                                                     
-                    owner-linuxppc-embedded@lists.li        cc:     linuxppc-embedded@lists.linuxppc.org                                            
-                    nuxppc.org                              Subject:     Re: Kernel 2.2.13 network problems                                         
-                                                                                                                                                    
-                                                                                                                                                    
-                    12/03/99 10:16 AM                                                                                                               
-                                                                                                                                                    
-                                                                                                                                                    
+However you should note the following:
 
+- people with Motorola MVME2xxx boards should rather look in the linux-2.2
+directory since there are additional specific patches for these boards
+which improve on the default firmware setup (and a specific bootloader).
 
+- documentation is in progress, please bear with me while I finish it in
+the middle of numerous other things...
 
+- I have a couple of machines in production since 2 months ago without any
+problem which can be traced to the VME drivers (there was a bug in the
+application)
 
+- my only test platform is PPC. The driver was checked to work a
+few months ago on an Intel/VME machine but something will certainly be
+broken now. This should be minor however...
 
-In message <OF09A0544A.557A1BF7-ON0025683C.00368333@flaga.is> you write:
->
-> I just recently compiled the 2.2.13 kernel for our custom mpc823 board.
-> Everything seem to work except that the network is really slow and
-> frequently there are nfs timeouts, e.g.
->
-> nfs server x.x.x.x not responding
-> nfs server x.x.x.x o.k.
->
-> Has anyone had similar experience and/or solution?
+- I certainly have forgotten some important facts which I wanted to
+state only five minutes ago, oh well...
 
-I *bet* your NFS server is on a PowerPC system running LinuxPPC.
+	Cheers,
+	Gabriel.
 
-I have the very same problem here with all kinds of embedded 8xx
-systems (823, 850, 860) and all different kernel versions.
+P.S: the proper forum for this is ml-linuxvme, but this list is so silent
+that I decided to post this message to more active lists. Please trim the
+cc: list before replying.
 
-Move the NFS server to another  system,  for  instance  an  Intel  PC
-running Linux, and you'll be perfectly fine.
-
-I have no idea *why* this is happening...
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Bus error -- please leave by the rear door.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
