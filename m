@@ -1,17 +1,19 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15601.mail.cnb.yahoo.com (web15601.mail.cnb.yahoo.com
-	[202.165.102.55]) by ozlabs.org (Postfix) with SMTP id 95BD62BDA0
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp11.clb.oleane.net (smtp11.clb.oleane.net [213.56.31.48])
+	by ozlabs.org (Postfix) with ESMTP id EBE152BDA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 19:27:42 +1000 (EST)
-Message-ID: <20041014092739.6826.qmail@web15601.mail.cnb.yahoo.com>
-Date: Thu, 14 Oct 2004 17:27:39 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Marius Groeger <mgroeger@sysgo.com>
-In-Reply-To: <Pine.LNX.4.61.0410140952570.1661@mag.sysgo.com>
+	Thu, 14 Oct 2004 19:48:06 +1000 (EST)
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: "'Kumar Gala'" <kumar.gala@freescale.com>,
+	"'Dan Malek'" <dan@embeddededge.com>
+Date: Thu, 14 Oct 2004 11:49:18 +0200
+Message-ID: <004401c4b1d3$1ac0df40$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <010190ED-1D8F-11D9-92E7-000393DBC2E8@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Meaning of BSP and LSP
+Subject: RE: MPC8560 problem to launch user application like /sbin/init
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,50 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marius Groeger <mgroeger@sysgo.com> wrote£º
+Hi,
 
-> From what I know, the term BSP was coined as an
-> acronym for "Board Support Package" in pre-Linux 
-> days. To me it is most familiar in 
 
-So that day the meaning of BSP was clear enough.
+> Have you turned on emulation of FP in the kernel?
+No I did not it, but with the FP emulation on, the Linux runs...
+Many thanks for your help.
 
-> "LSP" is a term introduced by MontaVista, AFAIR, so
-> maybe one of the MV folks on this list wants to 
-> elaborate on this?
+> > The console is mapped on SCC1 port.
+> > CCSRBAR is mapped at 0xF8000000 and immr at 0xF8080000.
+> I would suggest using the standard memory map the rest of
+> us use for 8560.  It makes the porting lots easier.
+Sure. But where can I find the standard rules ?
+Are the rules dependent on each demo board like 8560_ads ?
+Do the custom boots respect some rules ?
 
-I also got the term "LSP" from MV. 
- 
-> Bottom line: BSP is an OS/Vendor specific term to
-> capture the software components related to a 
-> specific board. It is a useful handle in 
-> project discussions, provided that all participants
-> use the same notion.
+> I open 2 TLBs on memory and a big TLB for all IOs included CSSRBAR.
+> How do you to this?  The linux ppc kernel already manages all
+> of this mapping for you.
+Right. I let the kernel configure the memory TLBs but I use
+a call to io_block_mapping to open the IO space
+io_block_mapping(0xf0000000, 0xf0000000, 0x10000000, _PAGE_IO);
 
-See what's EP view on "BSP". 
-http://www.embeddedplanet.com/products/bsp_linux.asp
-
-It seems that BSP > = LSP.
-
-Just as Wolfgang said, the meaning  varys in different
-vendors. But at least "LSP" by MV doesn't include
-hardware scheme and boot loader code, I think.
-
-"LSP" is a special term defined by MV. So just to
-follow the meaning as MV does.
-
-Thanks for your nice comment on this topic.
-
-=====
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150ÍòÇúMP3·è¿ñËÑ£¬´øÄú´³ÈëÒôÀÖµîÌÃ
-http://music.yisou.com/
-ÃÀÅ®Ã÷ĞÇÓ¦ÓĞ¾¡ÓĞ£¬ËÑ±éÃÀÍ¼¡¢ÑŞÍ¼ºÍ¿áÍ¼
-http://image.yisou.com
-1G¾ÍÊÇ1000Õ×£¬ÑÅ»¢µçÓÊ×ÔÖúÀ©Èİ£¡
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+Thanks again
+Bye
+Laurent
