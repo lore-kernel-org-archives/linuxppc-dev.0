@@ -1,47 +1,28 @@
-Message-ID: <3A4D37D6.6BAA22C3@mvista.com>
-Date: Fri, 29 Dec 2000 20:18:14 -0500
-From: Dan Malek <dan@mvista.com>
+From: wangxuelong@0451.com
+Content-Type: text/plain
 MIME-Version: 1.0
-To: Ron Bianco <ronb@junction.net>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: A stable linux 2.2.xx for sandpoint-8240 anywhere?
-References: <000901c071ef$85b814d0$4d012ac7@warp-speed>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <D0998769859369.13745@fmail1.hl.cninfo.net>
+Date: Sat, 30 Dec 2000 14:06:30 +0800 (CST)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PPCBOOT Questions
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ron Bianco wrote:
+ Dear Sir or Madam,
+      I am a freshman of the development of embedded system, and it is my honor to contact with you .
+      I'd like to ask you the following questions.
+      1.I have already had a custom PBX board with a embedded CPU named MPC823, and a monitor has already been flashed into a EPROM on the board. In this case, this embedded system can run the monitor normally. Now I get a kernel image corresponding to my PBX board with the format of SRECORD. How can I use the monitor command "netloads" to download the kernel image from a TFTP server to the embedded system through a LAN network?
+      2.I think, the TFTP server is also a BOOTP server, and it should provide NFS function. How can I set this server to play such a important role.
+      Thank you for your reading my letter and thank you for your considering my questions. I’d like to expect to get answers as soon as possible. Thank you very much.
 
-> We do now need something suitable for a product.
+      Best Regards
 
-There are ways......expecting free downloaded experimental software
-probably isn't the best choice to start.
+                            yours sincerely  Micael Balow
 
-> ........  Since then (feb 2000) there have been over
-> 100 sets of patches to the linux kernel.
+----------------------------------------------
+欢迎使用 0451.com 电子邮件系统 http://mail.0451.com
+Thank you for useing 0451.com Email system
 
-Maybe more like 1000, or 10,000.  I think I did the original 8240
-port back in August 1999.  I have added more than 100 patches
-since then.
-
-> ...apply the changes to the stable 2.2.18 kernel,
-
-That would be my suggestion.
-
-> ...... or apply the
-> changes to the almost stable 2.4.0-test12, the totally latest kernel
-> version as of last week.
-
-Acutally, I think it is -test13, but I wouldn't use 2.4 unless you
-needed some of the new features (and most people want them).
-
-> We'll probably wait to see what those are, so as to avoid duplication.
-
-It's basically what is in the 2.2.x brought up to 2.4.  Nothing much.
-
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
