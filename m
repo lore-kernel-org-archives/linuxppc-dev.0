@@ -1,59 +1,55 @@
-Date: Wed, 18 Apr 2001 18:10:02 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Cc: Iain Sandoe <iain@sandoe.co.uk>,
-	Tony Mantler <nicoya@apia.dhs.org>,
-	martin costabel <costabel@wanadoo.fr>,
-	michel =?iso-8859-1?Q?d=E4nzer?= <michdaen@iiic.ethz.ch>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
-In-Reply-To: <5.1.0.14.2.20010418164729.040ef120@mail.munich.netsurf.de>
-Message-ID: <Pine.HPX.4.10.10104181724460.11443-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <a05010409b70362ba0a13@[192.168.240.10]>
+In-Reply-To: <20010418151519.6547@mailhost.mipsys.com>
+References: <a05010406b7033c861041@[192.168.240.10]>
+ <20010418151519.6547@mailhost.mipsys.com>
+Date: Wed, 18 Apr 2001 18:21:44 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Alain RICHARD <alain.richard@equation.fr>
+Subject: Re: benh 2.4.4-pre3, Titanium and AirPort
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 18 Apr 2001, Franz Sirl wrote:
-
-> At 15:39 18.04.2001, Gabriel Paubert wrote:
-> >If somebocy is going to touch the input layer, I would like the raw
-> >keyboard mode to stay raw. Right now in some configuration combinations
-> >there is no difference between raw and medium-raw (used by X). They both
-> >return medium-raw keycodes, I can't get to the scancodes.
+>  >
+>>01:1a.0 CardBus bridge: Texas Instruments PCI1211
+>>          Flags: bus master, medium devsel, latency 16, IRQ 58
+>>          Memory at 80080000 (32-bit, non-prefetchable) [size=4K]
+>>          Bus: primary=01, secondary=02, subordinate=05, sec-latency=32
+>>          I/O window 1: 00000000-00000003
+>>          16-bit legacy interface ports at 1011
 >
-> Which config combinations? Which keys? PMAC, CHRP or PREP? ADB, USB or PS2
-> keyboard?
-
-Can't test for one week (I'm at the telescope until next Tuesday). But
-this affected basically all the keys on a PMAC G4 with standard (latest)
-Apple USB keyboard.
-
-AFAIR compiling with CONFIG_ADB off butchered everything: CONFIG_MAC_HID
-was Y in .config but there was no mac_hid in /proc/sys/dev and the
-keyboard was crazy.
-
-> Additionally note that XF 4.0.99 and later only will use MEDIUMRAW if you
-> give "Option CustomKeycodes".
-
-Didn't know, so X is going to use raw ?
-
-But now raw means cooked ?
-
+>I have the same chip on the Pismo that is recognized by the Yenta driver
 >
-> God, I'll be *really* glad when the 2.5 kernel is started and support for
-> ADB keycodes, the MEDIUMRAW mode and mouse button emulation in the kernel
-> will be gone forever...
+>Ben.
 
-Fine for most of these, but how do you get to the raw scancodes if you
-want them ? I mean raw byte for byte from the hardware, anything else
-cannot be called raw in my opinion.
+ok, i have now tried the yenta module and it works now.
 
-Do we need a new mode for this (crude?) or did I miss the way to get at
-the scancodes ?
+Just some more little problems :
 
-	Gabriel.
+- I am using wireless_tools.21 from Jean Tourrib (?) site and it
+complains about  getting wireless extensions version 0 and needing
+version 11. But iwconfig seems to work and is able to program the
+card.
 
+- at module loading and without options, the driver recognize the
+card as "firmware ID 1F vendor 1 (lucent) version 7.25" and "WEP
+supported, "128"-bit key and then complains about enable to load
+module airport0 and airport1. I was thinking that airport cards where
+binded to airport0 and not eth0 by default and support only 40 bit
+mode ?
+
+- the driver no longer seams to support the various setting as
+options for the module; what is now the recommended way of doing it ?
+
+Regards,
+--
+-------------------------------------------------------
+Alain RICHARD <mailto:alain.richard@equation.fr>
+EQUATION SA <http://www.equation.fr/>
+Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
+Applications client/serveur, ingénierie réseau et Linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
