@@ -1,34 +1,42 @@
-Date: Tue, 2 Apr 2002 23:09:19 -0600
+Date: Tue, 2 Apr 2002 23:12:51 -0600
 From: Troy Benjegerdes <hozer@drgw.net>
 To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Linux-galileo] ev64260 bi_rec patch
-Message-ID: <20020402230919.H6003@altus.drgw.net>
-References: <0204020335.AA02109@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: linuxppc_2_4_alt started
+Message-ID: <20020402231251.I6003@altus.drgw.net>
+References: <0203310558.AA21170@ivan.Harhan.ORG>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0204020335.AA02109@ivan.Harhan.ORG>; from msokolov@ivan.Harhan.ORG on Mon, Apr 01, 2002 at 07:35:50PM -0800
+In-Reply-To: <0203310558.AA21170@ivan.Harhan.ORG>; from msokolov@ivan.Harhan.ORG on Sat, Mar 30, 2002 at 09:58:33PM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Apr 01, 2002 at 07:35:50PM -0800, Michael Sokolov wrote:
-> Paul Mackerras <paulus@samba.org> wrote:
+On Sat, Mar 30, 2002 at 09:58:33PM -0800, Michael Sokolov wrote:
 >
-> > Use the memory pointed to by klimit and increment klimit by the amount
-> > you use.  You should keep klimit aligned on a 4-byte boundary, I think.
+> Linux/PPC developers and users,
 >
-> Yeah, I've already figured this out myself by looking at what you do for OF.
+> Having had no success in getting my work accepted into linuxppc_2_4_devel, I
+> have decided to start my own alternative tree which I have called
+> linuxppc_2_4_alt. The BK URL for anonymous access (should work, but I couldn't
+> really test access from outside) is:
 >
-> I'm working on one really big changeset right now that'll add a
-> CONFIG_GENERIC_PPC32 configuration, have presistent and searchable bi_recs, a
-> new and much cleaner GT-64260 implementation, etc. I'll push it into
-> linuxppc_2_4_alt when it's ready to see the light of day (hopefully tomorrow or
-> Wednesday).
+> bk://helium.Harhan.ORG:5000
+>
+> This tree has linuxppc_2_4_devel as its BK parent. I have had this BK tree for
+> a while but I've just now made it publicly accessible. (The patches in my CVS
+> were generated from this tree with bk export -tpatch between the last cset
+> pulled from 2_4_devel and the very top cset.)
+>
+> I have set it up to post to linuxppc-commit@source.mvista.com on incoming just
+> like the trees at BitMover. This way y'all will now what I'm doing in there and
+> see if you like it. If enough people like it maybe we'll take over. Anyone who
+> likes this tree, wants to do development in it, and wants read/write access
+> should contact me.
 
-Would you mind detailing exactly what's in your 'much cleaner' gt64260
-implementation? Like, do you have an SMP-safe gt ethernet driver
-perchance? ;)
+Oh yeah.. you should read and understand the documentation for 'bk level',
+and set the level of your repository so nobody can accidentally push the
+_alt tree to _devel.
 
 --
 Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
