@@ -1,30 +1,46 @@
-From: "Steve Clarke" <steve.clarke@overturenetworks.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PCMCIA on MBX860
-Date: Sat, 3 Feb 2001 13:34:07 -0500
-Message-ID: <HCELKHHHIOJIDLBGAKBCKECFCAAA.steve.clarke@overturenetworks.com>
+From: Mark Clayton <clayton@shore.net>
+Reply-To: clayton@shore.net
+To: Dave Pegler <dwp@cambridgebroadband.com>
+Subject: Re: ATM driver for 8260
+Date: Sun, 4 Feb 2001 08:59:02 -0500
+Content-Type: text/plain
+Cc: linuxppc-embedded@lists.linuxppc.org, dwp@cambridgebroadband.com
+References: <200102061511.KAA17221@northshore.shore.net> <14976.13620.587588.692077@gargle.gargle.HOWL>
+In-Reply-To: <14976.13620.587588.692077@gargle.gargle.HOWL>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <01020409004700.06493@barharbor>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I would like to get PCMCIA working on an MBX860 running HardHat. There was a
-thread in Nov 2000 on this topic between Paul Ruhland and Matthew Locke.
-Based on this thread, I started with pcmcia-cs-3.1.24.
+I was under the impression that the 8260 and the 860 were very different.
+After looking at the example code from Motorola. I'm not so sure that I
+would be much help in working on it.
 
-However, in 3.1.24 m8xx_pcmcia.c does not have references to the MBX board.
-It supports RPXxxx, ADS and FADS. Paul's email on 11-21-2000 said that he
-made MBX specific changes. Are these changes publicly available? If so, how
-do I get these changes?
+Much thanks,
+Mark
 
-thanks,
-stevec
------------------------------------
-Steve Clarke
-Overture Networks
-(919) 558-2200
-
+On Tue, 06 Feb 2001, Dave Pegler wrote:
+> Mark,
+>
+>    I've been working on a driver for the MPC860SAR (855T / 857 /
+> 862SAR). It supports AAL0, AAL5, CBR and UBR and is integrated into
+> linux ATM version 0.59 (so you get Q.2931, RFC1577, ILMI etc). I use
+> a FADS 860 with a SAR-PHY daughter card (STM-1/STS-3c, E1/T1 and
+> ATM25) as the development platform.
+>
+> Unfortunately its not finished yet and has quite a low throughput. I've not
+> worked on it for about 3 months but hope to do so in the next few weeks.
+>
+> Dave.
+>
+> Mark Clayton writes:
+>  >
+>  > Is anyone aware of a linux driver for the ADS8260.  Or any 8260?
+>  >
+>  > Thanks,
+>  > Mark
+>  >
+>  >
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
