@@ -1,52 +1,89 @@
-Message-ID: <3C5FA008.7030900@pacbell.net>
-Date: Tue, 05 Feb 2002 09:04:08 +0000
-From: Armin <akuster@pacbell.net>
-MIME-Version: 1.0
-To: hollis@austin.ibm.com
-Cc: Tom Rini <trini@kernel.crashing.org>,
+Subject: Re: two aty128 frame buffers?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Jeffery von Ronne <jronne@ics.uci.edu>
+Cc: Kaoru Fukui <k_fukui@highway.ne.jp>,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Correct way to submit a patch?
-References: <3C5E3B8F.5060105@elsoft.ch> <20020204004850.24542@mailhost.mipsys.com> <20020204142503.A20449@lists.linuxppc.org> <20020205161852.GL32707@opus.bloom.county> <20020205162511.GN510@austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <20020204222214.A28746@reepicheep.ics.uci.edu>
+References: <20020204154626.C28199@reepicheep.ics.uci.edu>
+	<200202050524.OAA13555@mail.highway.ne.jp>
+	<20020204222214.A28746@reepicheep.ics.uci.edu>
+Content-Type: multipart/mixed; boundary="=-d7MmHw464XY1evXSr5Dw"
+Date: 05 Feb 2002 10:28:33 +0100
+Message-Id: <1012901313.734.210.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hollis@austin.ibm.com wrote:
+--=-d7MmHw464XY1evXSr5Dw
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, Feb 05, 2002 at 09:18:52AM -0700, Tom Rini wrote:
->
->>On Mon, Feb 04, 2002 at 02:25:03PM -0600, Dave Wolfe wrote:
->>
->>>[ benh@kernel.crashing.org writes: ]
->>>
->>>>The proper way is to send it to this list, eventually CC'ed to one
->>>>of the people in the MAINTAINERS file depending which type of machine
->>>>is affected by it.
->>>>
->>>I would suggest that patches be attached to the email.
->>>
->>Please don't...  I tend to take the Linus approach to this.  I won't
->>ignore attachments like him tho.. :)
->>
->
-> He makes a good point about list archives though... if the patch is inline,
-> you're left copying and pasting out of a web browser, which has all sorts of
-> formatting problems (like indentation, "&lt;", etc).
->
-> If you send as an attachment (not gzipped, just plain text) then most mail
-> readers can read it inline *and* it will be saved in pristin form in the list
-> archives.
->
-> -Hollis
->
+On Die, 2002-02-05 at 07:22, Jeffery von Ronne wrote:
+>=20
+> On Tue, Feb 05, 2002 at 02:21:27PM +0900, Kaoru Fukui wrote:
+> > Add drm in Section Module
+>=20
+> Thanks.  I should have been able to figure that out.
+>=20
+> Unfortunately, that was not my real problem.  I guess I forgot to mention
+> that it crashes with a "signal 11" after the error message; now it crashe=
+s
+> with a signal 11 and no error message.
+
+You need a hack like the attached one.
 
 
-It seams to me that if I want someone else to check in my patch, I
-certainly don't want to make more work for them.  In my experience,
-plain text does not all ways work.
+--=20
+Earthling Michel D=E4nzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
-armin
+--=-d7MmHw464XY1evXSr5Dw
+Content-Disposition: attachment; filename=r128-vgaHW.diff
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1
 
+Index: r128_driver.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+RCS file: /cvs/xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v
+retrieving revision 1.57
+diff -u -r1.57 r128_driver.c
+--- r128_driver.c	2002/01/04 21:22:26	1.57
++++ r128_driver.c	2002/02/05 09:24:32
+@@ -186,6 +186,7 @@
+     "vgaHWGetIndex",
+     "vgaHWLock",
+     "vgaHWRestore",
++    "vgaHWGetIOBase",
+     "vgaHWSave",
+     "vgaHWUnlock",
+     NULL
+@@ -1793,6 +1794,8 @@
+ 	return FALSE;
+     }
+=20
++    vgaHWGetIOBase(VGAHWPTR(pScrn));
++
+     info->PciInfo      =3D xf86GetPciInfoForEntity(info->pEnt->index);
+     info->PciTag       =3D pciTag(info->PciInfo->bus,
+ 				info->PciInfo->device,
+@@ -2755,7 +2758,10 @@
+ 	return;
+     }
+     vgaHWUnlock(hwp);
+-    vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_ALL); /* save mode, fonts, cma=
+p */
++    if (info->VBIOS)
++        vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_ALL); /* save mode, fonts,=
+ cmap */
++    else
++        vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_MODE); /* save mode */
+     vgaHWLock(hwp);
+=20
+     R128SaveMode(pScrn, save);
+
+--=-d7MmHw464XY1evXSr5Dw--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
