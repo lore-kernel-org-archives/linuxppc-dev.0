@@ -1,12 +1,12 @@
-Message-ID: <38570544.476D42C9@ctam.com.au>
-Date: Wed, 15 Dec 1999 14:04:37 +1100
+Message-ID: <3857103E.6608A366@ctam.com.au>
+Date: Wed, 15 Dec 1999 14:51:27 +1100
 From: Brendan Simon <bsimon@ctam.com.au>
 Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
 To: Dan Malek <dan@netx4.com>
 CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: linuxppc embedded boot problems.
-References: <3856C0D7.4E1404C9@ctam.com.au> <385703C2.AA4298E7@netx4.com>
+References: <3856C0D7.4E1404C9@ctam.com.au> <385703C2.AA4298E7@netx4.com> <38570544.476D42C9@ctam.com.au> <385714D8.8AD74656@netx4.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -14,68 +14,43 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Dan Malek wrote:
 
-> Brendan Simon wrote:
+> Considering you are doing your own UPM, the Linux kernel will
+> find lots of timing errors with it.  It enables the MMU and
+> caches very early, so the bus timing will see something new
+> for the first time.  I hope you are peforming the proper cache
+> initialization sequence and setting all of the necessary
+> processor registers in the boot rom.
 >
-> > I have HAD linuxppc (embedded-2.2.5) working on a custom MPC860 board.
-> > By working I mean booting to the bash prompt and being able to view the
-> > initrd filesystem with ls.
->
-> Debug-101.....Back out the changes until you get to the
-> original working version.  That usually helps uncover information
-> necessary to solve the problem.
+> You can disable the caches in arch/ppc/kernel/head.S.  Try that.
 
-Yep.  Did that but still the same result.  I think I am back to the same
-spot but nothing is in revision control at this stage so I can't garauntee
-it.
+I commented out (using #if0 and #endif) the bits of code that enable the
+caches in arch/ppc/kernel/head.S and arch/ppc/mbxboot/head.S.  The kernel
+now boots.  This indicates one or more of the following:
+1) there is something I'm doing wrong which affects the cache setup.
+2) Some of the code has moved in memory which makes it work.
+3) I just got lucky this time.
+I really hope it is number 1).
 
+I now get the attached output.  Notice the "VFS: Mounted root (NFS
+filesystem) readonly." message.  So the kernel things that the root
+filesystem is mounted via NFS and it is ok with it.  But the shell never
+runs.  The root filesystem is EXACTLY the same one I put into initrd and
+that one seems to work.  So maybe the rootnfs stuff is not working properly
+for me.  Is it the ethernet driver I ported to SCC4 ?  If it is, then how
+can the root NFS filesystem be mounted.  Any clues ?
 
-> > .......  I decided to put a whole lot of
-> > printk statements in the enet.c code to see what was happening.
->
-> Bad idea.  Maybe one or two that you keep moving around as you
-> discover information.
-
-Why is it a bad idea.  I just put a few at the entry of each function to see
-what was happening.  I prefix every thing with my initials so that I can
-delete them later.  Is there a limit to printk statements ?
-
-
-> Well, the output above doesn't match this set of headers.  The
-> VMA/LMA are not supposed to be the Flash ROM offsets, they are
-> supposed to be the 0x00100000 addresses where the code
-> really belongs in RAM.  The first stage of the Linux boot will
-> discover it is running at some address other than RAM, and
-> relocate itself to the linked address.
-
-Sorry for the misleading information.  The screen output was from last night
-and I had made some more modifications and compiled the kernel since.
-
-
-> Do not ever change the load/offset addresses in Makefiles.
-> Use or write a program that will take the exact bits and place
-> them into a flash rom.  It couldn't be easier.  The zImage is
-> a perfect bag of bits that can be loaded (almost) anywhere
-> into memory or a flash rom without any modification.
-
-I haven't touched the makefile.  I use a script to massage the zImage and
-zImage.initrd outputs.  It basically is a few powerpc-linux-objcopy commands
-to move sections around to where the image expects them to be and also to
-convert to a hex file so I can program the linear flash SIMMs.
-
-I think the problems I am seeing are more fundamental to the 860 setup.  I
-have a bootloader which essentially initialises the chip selects for ROM and
-DRAM and sets up the UPMA for the DRAM.  There is also some port
-initialisation for SMC1(console) and SCC4(ethernet).  Apart from that the
-bootloader just jumps the start of the application code (the kernel image in
-this case).
-
-What I don't understand is why it starts to boot (ie. uncompresses into
-memory) but then nothing happens.  Are there things that the kernel expects
-to be setup besides the flash/dram memory ?  eg. Interrupt vectors, timers,
-etc.  I'll have a look through the fadsrom code to see if this will shed any
-light on my problems.
-
+Thanks again,
 Brendan Simon.
+
+
+[lots of other stuff removed]
+...
+VFS: Mounted root (NFS filesystem) readonly.
+BJS: INITRD: 1
+BJS: freeing memory
+Freeing unused kernel memory: 32k init
+BJS: memory freed
+BJS: kernel unlocked
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
