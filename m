@@ -1,36 +1,38 @@
-From: "Elan Feingold" <elan@nxnetworks.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: First question
-Date: Fri, 27 Jul 2001 12:58:45 -0500
-Message-ID: <NDBBLJKOJGKDOFBHNPGEMEFBCEAA.elan@nxnetworks.com>
+Date: Fri, 27 Jul 2001 11:07:59 -0700 (PDT)
+From: Paul White <pwhite@networkrobots.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Quick Question on ioremap_base
+Message-ID: <Pine.LNX.4.21.0107271105110.4817-100000@stimpy.networkrobots.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+All,
 
-We are trying to get Linux 2.4 booting on an EST 8260 eval board.  We are
-using Limon 1.5, and we get as far as the kernel trying to decompress with
-the following setup:
+I have a quick question regarding setting the
+ioremap_base and ioremap_bot in arch/ppc/mm/init.c
 
-loaded at:     00000000 0000A27C
-relocated to:  00400000 0040A27C
-board data at: 001FFE00 001FFE2C
-relocated to:  00200100 0020012C
-zimage at:     00007000 0008B3F7
-avail ram:     0040A27C 01000000
+How do you determine this value?  I am setting it
+to an invalid value, because my vmalloc()'s are
+failing after the first one when booting up.
 
-The decompression fails (e.g. "inflate() returned -3") and it seems from
-looking at the numbers that we might be trying to inflate on top of the
-zimage.  We haven't really tweaked any of the numbers, at least not
-purposely, so we're not sure what to change.  Any advice?
+>From the code, I see that:
 
-Best regards,
+Default is set to 0xf8000000, and then,
+the following platforms do this:
 
--elan
+Prep:    0xf0000000
+Chrp:    default
+Pmac:    0xfe000000
+apus:    default
+gemini:  default
+8260:    0xe0000000
+
+Can someone explain how to "decide" this value?
+
+Paul W.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
