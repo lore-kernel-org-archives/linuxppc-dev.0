@@ -1,121 +1,85 @@
-From: "Jason Wohlgemuth" <jsw-embedded@mindspring.com>
-To: "Dan Malek" <dan@netx4.com>, <mporter@mvista.com>
-Cc: <tjroberts@lucent.com>, <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: QUERY: Embedded PowerPC Linux?
-Date: Wed, 24 May 2000 19:54:49 -0400
-Message-ID: <NCBBKJKKGDLPHKDPAFFMAEMCCEAA.jsw-embedded@mindspring.com>
+Message-ID: <003201bfc5e4$95f2dcc0$69f001dc@sjzhu.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: "Magnus Damm" <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Cc: "Dan Malek" <dan@netx4.com>, <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCMCIA support for 860 -- lost interrupt
+Date: Thu, 25 May 2000 08:59:11 +0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <392C0B5D.A87105C@embeddededge.com>
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
-
-I actually modified head.S, not to get linux running, but to reboot the
-system.  In our case, the gpio pin tied to the HRESET line actually reset
-several boards, which would be a bad thing in some cases.  So I modified the
-m8xx_gorom (I think), and messed with the PLPRCR to setup the auto-reset on
-a checkstop, then cleared the DER and set something in the MSR to kick it
-into a checkstop mode upon a machine check, and then caused a machine check
-to reset it.  It was rather convoluted and I didn't really feel all that
-great about it.  Do you think I should go back and do something else in the
-m8xx_restart code inside m8xx_setup.c?  We used to use some code their that
-just jumped to our bootrom's physical start address, but due to AMD's sector
-protection idiosyncrocies, we had to move our bootrom and do some tricky
-chip select changes and memory shadowing to get everything to boot correctly
-and be able to independently sector protect the bootrom's sector; this
-prevented us from jumping to the physical address at a later time.  Other
-than that no changes were made, if I clean up that reset trick and it is
-actually a good idea, rather than a crappy hack (in your opinion), I'll
-clean it up a little and post it.  I probably should have gone to
-ftp.mvista.com and looked what you all are currently doing.
-
-Thanks,
-Jason
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan
-Malek
-Sent: Wednesday, May 24, 2000 1:03 PM
-To: mporter@mvista.com
-Cc: tjroberts@lucent.com; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: QUERY: Embedded PowerPC Linux?
-
-
-
-Matt Porter wrote:
-
-> >Good advice, and that's what I was doing. However -- head.S is
-> >incredibly convuoluted and complicated -- it's like someone insisted on
-> >shaving nanoseconds and bytes everywhere possible, which is silly given
-> >the rest of Linux....
+Damm wrote:
 >
-> head.S is the start of everything.
-
-
-There is nothing that should be modified in kernel/head.S for any
-board/system port.  This file looks convoluted and complicated because
-we are working with limited resources, touching special processor
-registers and changing processor state.  There may be situations where it
-appears we are trying to shave nanoseconds, but this is often due to
-alignment or other processor restrictions.  While the techniques may
-look the same, the reasons are different.
-
-
-> >My other problem is that I do not have any sort of boot ROM, and
-
-> Again, we are talking about kernel/head.S, right?  Well, no.  Linux
-> isn't going to be what you want it to be into you add to it.  The
-
-I will continue to point out that the Linux kernel is not a boot rom.
-You first argue that head.S is too complicated, and then want to make
-it initialize your processor???  I don't get it.  This is not the place
-for processor initialization beyond what is necessary for Linux to
-operate.  There is software in arch/ppc/mbxboot that does a little
-more processor initialization for embedded systems, but that still isn't
-a boot rom.
-
-Further, writing processor initilization functions is very tedious. I
-certainly don't want to be downloading a half megabyte or more of kernel
-just to test a few processor initialization instructions.  When the
-kernel doesn't boot, where do you start?
-
-For example, if you write some minimal boot rom to initialize an 8xx
-or 82xx processor, verify that you can read/write memory, you can boot
-a Linux kernel very quickly.  If you have a boot rom, I can have a Linux
-kernel running in a day or two by changing a couple of lines of code
-in arch/ppc/mbxboot/embed_config.c.  Set up an environment for Linux
-to run, and it does so very easily.
-
-> I have several ports in which I simply set the MSR to a known value, ...
-> .....  I can simply load/boot vmlinux at this point with
-> no problems.
-
-Absolutely.  The code within the Linux kernel is known to work on
-all of these processors.  The more you change it, the less likely this
-is to happen.  Localize your initialization outside of the kernel,
-make it look like something that exists as much as possible, and you
-are running very quickly.
-
-> >I think we need to separate the CPU from the machine....
 >
-> It's being worked on as far as making a framework for non-chrp/pmac/prep
-> 6xx/7xx/74xx ports.  There just hasn't been a real pressing need until
-> lately.
-
-The CPU and system/board are separate.  Some boards imply a particular
-CPU, or vice versa.  You have to specify both for the configuration,
-and depending upon which you ask first, you can reduce the selection
-set for the latter.  Updating the configuration choices is just part
-of adding a new board or processor.
+>Shuangjun Zhu wrote:
+>>
+>1. what board are you trying to use pcmcia with?
 
 
+I'm using a MPC823 FADS board and PCMCIA for ATA/IDE,
 
-	-- Dan
+>2. check and see that m8xx_pcmcia gets your MHz or Hz value correct.
+>   The MHz/Hz value is used by my driver to calculate the number of
+>   waitstates necessary for all pcmcia accesses. So, if that is bad
+>   much stuff will get wierd.
+
+
+I have set the M8XX_BUSFREQ as following in m8xx_pcmcia.c,
+BTW, my MPC823 runs' frequency is 48MHZ, which pcmcia uses the SLOT_B.
+
+#ifdef CONFIG_BD_IS_MHZ
+#define M8XX_BUSFREQ (48 * 1000000)
+#else
+#define M8XX_BUSFREQ (48)
+#endif
+
+
+>> 1. why "lost interrupt"? irq for IDE is 9, PCMCIA_INTERRUPT=13,
+>>    so, which hardware trigger IRQ 9?
+>
+>Well, you have to figure out that one for yourself.
+>I have no idea. Maybe the MHz/Hz stuff above could help you.
+>Check proc/interrupts...
+>
+>The m8xx_pcmcia driver handles 1 (one) interrupt.
+>That interrupt is the status changed interrupt and it tells
+>us if someone has inserted/removed a card and some other stuff.
+>
+>Then - the pcmcia package will figure out what other interrupt
+>the device driver for the card you've inserted (ide, serial, etc)
+>will use. And then that (ide) code will request that irq and use
+>is as if it was any other interrupt. That is the second interrupt.
+
+
+>From the code ide_cs.c in pcmcia package, the m8xx_pcmcia interrupt
+handler will call the ide_event() in ide_cs.c, this function does
+nothing with ide interrupt handler in the kernel.
+
+Here is Dan's ideas
+>See, this is why I changed the function name in the first place.
+>request_irq() assumes a PC-like interrupt structure, which doesn't work
+>on the MPC8xx internal interrupt controller.  You need to add an
+>indirect function call to the 'md' structure that will install the
+>IDE interrupt handler.  When you use the PCMCIA for ATA/IDE, you should
+>call a function that installs the PCMCIA interrupt vector.
+
+In drivers/block/ide-probe.c,
+init_irq() function has installed the IDE interrupt handler of IRQ 9 as
+ide_intr()
+In m8xx_pcmcia.c from the pcmcia package, Damm has installed the PCMCIA
+interrupt
+IRQ 13 as m8xx_interrupt(), so problem is:
+without 8259 controller in FADS board, how the m8xx_interrupt() route the
+interrupt
+event to the ide_intr(). No hardware triger the IRQ 9, no call ide_intr(),
+so the
+kernel think "lost interrupt", I guess.
+
+
+BRs,
+Shuangjun
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
