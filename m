@@ -1,47 +1,45 @@
-Message-ID: <001f01c2fec6$94091c80$1464a8c0@sjeng3>
-From: "El Topo" <ElTopo@myrealbox.com>
-To: <erik.teose@exgate.tek.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <BA0E4392AD99D040885C414D992C24BE03615100@us-bv-m11>
-Subject: Re: ppcboot 2.0.0 + ppclinux2.4.devel, network weirdo
-Date: Wed, 9 Apr 2003 11:33:54 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: erik.teose@exgate.tek.com
+Cc: ElTopo@myrealbox.com, linuxppc-embedded@lists.linuxppc.org,
+	erik.teose@tek.com
+Subject: Re: ppcboot 2.0.0 + ppclinux2.4.devel, network weirdo 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 09 Apr 2003 09:23:14 PDT."
+             <BA0E4392AD99D040885C414D992C24BE03615100@us-bv-m11>
+Date: Wed, 09 Apr 2003 23:14:29 +0200
+Message-Id: <20030409211434.97C20C5877@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+In message <BA0E4392AD99D040885C414D992C24BE03615100@us-bv-m11> you wrote:
+>
 > Are you using kernel code supplied by MontaVista (MV)? I had the same
 > problem;
 > we are using MontaVista 3.0 for the Ebony board, and I had trouble with
 > the interface from u-boot 0.2.0 to the MV kernel. The MV code is very
 > specific to the bootrom supplied by IBM; that bootrom is "custom" to each
-> unique Ebony board, because the 2 MAC addresses are stored at the end of
-the
+> unique Ebony board, because the 2 MAC addresses are stored at the end of the
 > bootrom (that's the "VPD" area). I had to modify 3 MV files to get the MAC
 > address passed in from u-boot to be used by the MV kernel
 > (kernel/arch/ppc/platforms/ebony.c,
 > kernel/include/asm-ppc/ibm440.h, and kernel/include/asm-ppc/ibm4xx.h). I
 > have attached
 > my patches for these files.
->
-> After I got the MAC address to transfer over from u-boot, I had trouble
-with
-> nfs mounting
-> the root filesystem (I did not want to use bootp/dhcp in the nfs mounting
-> process). I had to
-> modify kernel/net/ipv4/ipconfig.c to get this to work (I've attached this
-> patch as well).
->
-> Hope this helps.
->
-> Erik Teose
-> erik.teose@tek.com
 
-Thank you Erik, I will try your patchs today.
+You have always the option to completely ignore such dfaults and  use
+the  mechanisms  available  in  U-Boot,  for example just storing the
+addresses in U-Boot environment variables (like  95%  of  all  boards
+do).
 
-El.
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+1000 pains                                              = 1 Megahertz
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
