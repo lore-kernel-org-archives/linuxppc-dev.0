@@ -1,17 +1,21 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from imagateway.smiths-aerospace.com (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 866E42BDB5
+Return-Path: <joakim.tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 308322BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jan 2005 01:06:28 +1100 (EST)
-Message-ID: <41DAA2D7.5000408@smiths-aerospace.com>
-Date: Tue, 4 Jan 2005 09:06:15 -0500
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+	Wed,  5 Jan 2005 05:26:41 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Wrobel Heinz-r39252" <Heinz.Wrobel@freescale.com>,
+	"'Wolfgang Denk'" <wd@denx.de>
+Date: Tue, 4 Jan 2005 19:26:22 +0100
+Message-ID: <JPEALJAFNGDDLOPNDIEEOEMBCPAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <000401c4f261$dca2c1e0$1269cb0a@bgcw301>
-In-Reply-To: <000401c4f261$dca2c1e0$1269cb0a@bgcw301>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: Linux Kernel boot problem
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <DF02D66C37C26B4C8018BF84F0E37FEC3AB842@zwg18exm01.ea.freescale.net>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: CPU15 errata workaround for 8xx by WD 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,47 +26,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Srivatsan wrote (badly quoted):
-> * *
-> *Well, what are the last readable messages you can find in the buffer?*
-> * *
-> *The last readable message which I see in the log buffer is *
-> * *
-> 
-> *00138BD4: 3C 36 3E 4D 65 6D 6F 72  79 20 42 41 54 20 6D 61  |<6>Memory BAT ma|*
-> *00138BE4: 70 70 69 6E 67 3A 20 42  41 54 32 3D 31 36 4D 62  |pping: BAT2=16Mb|*
-> *00138BF4: 2C 20 42 41 54 33 3D 30  4D 62 2C 20 72 65 73 69  |, BAT3=0Mb, resi|*
-> *00138C04: 64 75 61 6C 3A 20 30 4D  62 0A 00 00 00 00 00 00  |dual: 0Mb.......|*
-> 
-> *Any pointers will surely help me with the problem. *
-> 
-> *I have tried with all serial ports, I find that the porting is done 
-> fine. I checked with the MPC860 porting document available on the web. *
-> 
-> *Any pointers will surely help me. Thanks Mr.Wolfgang and everyone for 
-> sparing me time.*
-> 
-> *Best regards,*
-> *C.R.*Srivatsan
+Hi Heinz 
 
-I don't have a clue, but The Source Knows (TSK).  The following is very 
-generic advice...
+> Wolfgang, Joakim,
+>  
+> > I have to admit that I didn't believe our customer when  he  
+> > reported that  he has problems that were caused by the CPU15 
+> > bug - I never saw this on any other 8xx processor before, and 
+> > as you say  it  has  been mentioned  in  all errata sheets I 
+> > can remember. As far as I can tell it is only the MPC870/885 
+> > duet family of processors where this  CPU15 bug actually 
+> > hits. I have no idea why.
+> 
+> CPU15 is highly timing dependent. Even a single clock difference in the bus interface can make it (dis)appear.
+> It can happen on Duet's as on any other 8xx ... or not.
 
-The "<6>" is a progress stamp put out by the kernel start up code.  Find 
-where it is printed and/or where the BAT mapping message is printed and 
-look what the kernel does next.  Somewhere between "<6>" and where "<7>" 
-would be printed if your kernel didn't crash is where the problem lies. 
-  If the crash location isn't obvious, move the "<7>" back in the code 
-until you see it coming out, which will further narrow down the error area.
+Ahh, better not change any timing then on our boards :)
+I have been running the cpu15 program from Wolfgang for 2 days now and no problem so far.
 
-My totally uneducated guess (TUG) is that you have problems with your 
-BAT configuration.  Compare your memory map to how your BATs are set up 
-by the linux kernel.  Also, verify that EVERY piece of hardware 
-(ESPECIALLY the uart hardware) is mapped properly (probably by a BAT) at 
-this point in time.  My TUG is that you are trying to access a piece of 
-hardware (likely a uart or a blinking LED) that isn't mapped and thus 
-you are getting a memory map fault.  At this point in time, memory map 
-faults are very silent and very deadly.
+> 
+> The simple workaround of invalidating the prev/next page is exactly that. Simple. It works, but for code with page 
+> locality it can hurt performance because you would get excessive reloads. A smarter workaround affecting only pages that 
+> need the workaround is preferrable, if it fits into the MMU table framework.
 
-gvb
-P.S. Sorry for all the bad TLA humor ;-)
+Are it there any know timing patterns that won't show this bug?
+
+> 
+> Heinz
+
+Since you work at Freescale and appear to know 8xx I want to ask this:
+
+Are there any plans on documenting/fixing the buggy cache insns. such dcbz, icbi etc. that
+don't update the DAR register when causing a TLB Miss/Error?
+
+I got this report from Motorola in May 2003:
+
+We have generated the case of dcbx instruction and tlb miss
+in verilog. We see that the DAR is not updated and the root couse is a
+follows:
+
+The load store treats dcbx instructions as a mtspr so it gets the tlb miss
+error but does not update the DAR.
+
+DAR is updated by two kind of errors
+1) During the address phase.
+2) During the data phase.
+
+
+When there is a load store instruction the tlb miss error comes together
+with the address phase. On dcbx instructions it comes one clock after the
+address phase. So the DAR update mechanism does not update the DAR.
+
+
+ Jocke
