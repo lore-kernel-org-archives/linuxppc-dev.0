@@ -1,37 +1,30 @@
-Message-ID: <3910E527.75AEF846@erols.com>
-Date: Wed, 03 May 2000 22:49:11 -0400
-From: Nelson Abramson <pogtal@erols.com>
+Message-Id: <200005040257.WAA03944@shell.faradic.net>
+Date: Wed, 03 May 2000 22:57:37 EDT
+From: jingai <jingai@floatingpenguins.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Re: hfs
+Reply-To: jingai@floatingpenguins.com
 MIME-Version: 1.0
-To: Rob Cascella <rob@schizophrenia.dfjp.com>
-CC: john peter grimes <jpgrimes@rainbow.uchicago.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: KDE 2.0 compilation problems
-References: <200005040057.UAA02407@schizophrenia.dfjp.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rob Cascella wrote:
+> > Does anyone have any ideas as to why it stopped working in the first
+> > place?
+>
+> It has been broken since the introduction of the "new" page cache code
+> about a year ago in early 2.3.x. The official maintainer (A Sun of
+> netatalk fame) seems to be still alive, but nothing in terms of fixing
+> the code came from him for a year. Sometimes some changes show up in the
+> kernel trees, so that the code at least compiles, but it is still
+> broken.
 
-> I don't know if it's related or not, but I've been trying to compile
-> something with g++ and have been getting an error message saying that
-> the compiler couldn't create executables.  I tried recompiling gcc,
-> but it didn't seem to help.  And, now that I think about it, I'd like
-> to try to resolve this issue, so, can anyone help me with this?  I'd
-> appreciate it..
+Maybe I'm talking about something different here, since I haven't really
+been following this thread, but as of an rsync last night, the HFS support
+in Paul's 2.3.99pre6 kernel works fine for me... it *did* quit working from
+2.3.52 to some unknown date, but it does work now, at least for me.
 
-This has come up quite a few times on the user list.  You need to have the full
-range of gcc related files; binutils, glibc, libstdc, cpp, etc.  Search the
-archives for the complete list.
-
-HTH
---Nelson Abramson
-
---
-"Apparently if you play the Windows NT CD backwards you hear satanic messages"
-"You think that's bad, if you play it forwards it installs Windows NT!"
---orlando
-
+-j
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
