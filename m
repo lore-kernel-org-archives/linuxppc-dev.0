@@ -1,48 +1,30 @@
-From: kd@flaga.is
-Subject: Re: zeroing of bss segments
-To: W4OQM@aol.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF1BB5880B.6A5C89DF-ON002568C3.0059B751@flaga.is>
-Date: Sun, 16 Apr 2000 16:22:06 +0000
+Subject: Re: device memory mapping
+To: dean@aiinet.com (Dayton, Dean)
+Date: Mon, 17 Apr 2000 13:03:17 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
+In-Reply-To: <7283DE19D141D111AD0E00A0C95B195502D968E1@mail2.aiinet.com> from "Dayton, Dean" at Apr 14, 2000 04:45:39 PM
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000417030317.470D13C95E@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well, I doupt that the libc is written or will be written in C++.
-The couse was fo all my troubles was that I forgot to remove memset.S, i.e.
-I did not follow the instructions of the patch well enough.
+Dayton, Dean writes:
+> PS: Are there any good HOWTO/guides to writing device drivers on a LinuxPPC
+> port?
 
-Thanks, anyway,
+Most of it is probably architecture-independent, which is a good goal for new
+drivers anyway, so stuff like the Linux Kernel Module Programming Guide might
+help, at:
+    http://metalab.unc.edu/mdw/LDP/lkmpg/mpg.html
 
-K.D.
+There are also some 8xx-specific driver examples that might be helpful listed
+in the HOWTO at:
+    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO-11.html
 
-
-
-
-
-                    W4OQM@aol.com
-                    Sent by:                                To:     linuxppc-embedded@lists.linuxppc.org, kd@flaga.is
-                    owner-linuxppc-embedded@lists.li        cc:
-                    nuxppc.org                              Subject:     Re: zeroing of bss segments
-
-
-                    15.04.2000 14:50
-
-
-
-
-
-
-
-Has anything been added to glibc that was written in C++?  If so, static
-objects may exist that aren't being initialized because constructors aren't
-being called.
-
-Charlie
-
-Charles A. Wells
-c.wells@ieee.org
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
