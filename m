@@ -1,27 +1,36 @@
-From: =?iso-8859-1?B?R+lyYXJkIEd16XZlbA==?= <gguevel@interfaceconcept.com>
-To: "=?iso-8859-1?Q?'J=F6rg_Huwig'?=" <jhuwig@intec-isdn.de>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: source of supply for MAC addresses
-Date: Thu, 6 Mar 2003 12:01:35 +0100
-Message-ID: <000201c2e3cf$c165b9c0$3101a8c0@DOMAIN>
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linux-Support for IBM PPC405EP
+Date: Thu, 6 Mar 2003 12:34:56 +0100
+Message-ID: <EFEAIMDCOOOHIEPHDNFJIEFFFCAA.stefan.roese@esd-electronics.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-reply-to: <NDBBLLJKOLDLFBOALAOJGEPACDAA.jhuwig@intec-isdn.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-To have your own MAC addresses, you must fill a form
-on the following site
-http://standards.ieee.org/regauth/oui/forms/
+Is anybody successfully runnning linux (linuxppc_2_4_devel) on the new
+PPC405EP? I know it's pretty much the PPC405GP(r), but it has 2 Ethernet
+Controllers.
 
-Then you receive all detailed operations.
+I would assume that there will be no problems (at least when not using the
+second ethernet controller). Any comments/experiences?
 
-Bye
-Gérard Guével
+Best regards,
+Stefan Roese
+
+*******************************************
+esd gmbh
+Vahrenwalder Str. 207
+D-30165 Hannover
+Phone: +49-511-37298-0
+Fax:   +49-511-37298-68
+email: stefan.roese@esd-electronics.com
+www:   http://www.esd-electronics.de
+*******************************************
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
