@@ -1,9 +1,10 @@
-Message-ID: <005c01c2054a$e3fb2100$e1a8459b@ntu.edu.sg>
+Message-ID: <008501c20556$544612c0$e1a8459b@ntu.edu.sg>
 From: "shaowei dai" <dshaowei@rfnetech.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <003801c20543$b90a4180$e1a8459b@ntu.edu.sg> <20020527063451.GL16537@zax>
+To: "Sangmoon Kim" <dogoil@etinsys.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <003801c20543$b90a4180$e1a8459b@ntu.edu.sg> <20020527063451.GL16537@zax> <005c01c2054a$e3fb2100$e1a8459b@ntu.edu.sg> <00fe01c20556$614567a0$1a11efcb@industrialDiv.hanasys.co.kr>
 Subject: Re: map iomem in linux_2_4_dev
-Date: Mon, 27 May 2002 14:51:12 +0800
+Date: Mon, 27 May 2002 16:13:05 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,48 +12,37 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, David:
+Hi, Sangmoon:
 
-Thanks for your reply.  When use ioremap,  it seems you can only know the
-virtual address of this mapped address
-at runing time. Then for PCMICA package, how can you pass this virtual
-address when you compile
-that package?  Am i wrong in understanding pcmcia package io memory
-requirement? If i'm wrong, could you give me
-some reference site to learn more?
+Thanks. I got it. We've to use io_block_mapping() followed by ioremap() to
+map the physical address.
 
-regards
-shaowei
+regards.
 
 ----- Original Message -----
-From: "David Gibson" <david@gibson.dropbear.id.au>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Monday, May 27, 2002 2:34 PM
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: "shaowei dai" <dshaowei@rfnetech.com>;
+<linuxppc-embedded@lists.linuxppc.org>
+Sent: Monday, May 27, 2002 4:13 PM
 Subject: Re: map iomem in linux_2_4_dev
 
 
+> Hi, Shaowei:
 >
-> On Mon, May 27, 2002 at 01:59:54PM +0800, shaowei dai wrote:
-> >
-> > Hello, every one:
-> >
-> > I've searched through the achieve, but failed to find stuff about
-mapping
-> > io-memmory in this linux_2_4_dev version.
-> > After check the source code, it seems from 2_4_dev onwards, no need to
-use
-> > ioremap to map io memory. We
-> > should use io_block_mapping() instead.
+> The parameter addr of ioremap is not a virtual address
+> but a kind of physical address.
 >
-> No, you should use ioremap() wherever possible.  Only use
-> io_block_mapping() if for some strange reason you need to specify the
-> virtual address.
+> Let us have a device at 0x78000000.
+> We can change the address to 0xf0000000 by...
+>  io_block_mapping(0xf0000000, 0x78000000, 0x08000000, _PAGE_IO);
+> Than what is the return value of ioremap(0x78000000, 0x08000000)?
+> That is 0xf0000000.
 >
-> --
-> David Gibson | For every complex problem there is a
-> david@gibson.dropbear.id.au | solution which is simple, neat and
-> | wrong.  -- H.L. Mencken
-> http://www.ozlabs.org/people/dgibson
+> The system changes the addresses of devices for various reason.
+> We only know the original address.
+> Than we can use the ioremap to get the changed address.
+>
+> -Sangmoon Kim-
 >
 >
 
