@@ -1,27 +1,33 @@
-Message-ID: <399C704B.CA63A22D@sympatico.ca>
-Date: Thu, 17 Aug 2000 19:07:55 -0400
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-Reply-To: khendricks@ivey.uwo.ca
-MIME-Version: 1.0
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Another signal handling bug?
-References: <Pine.LNX.3.96.1000817193728.8005E-100000@deepspace.mklinux.org>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200008172357.QAA11853@soda.csua.Berkeley.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Enablng Backside Cache on a G4
+Date: Thu, 17 Aug 2000 16:57:15 -0700
+From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi David,
+Hi,
 
-If you are grabbing mutexes in a signal handler, you are obviously in a
-multithreaded environment.  When you set the sa_flags to zero you may prevent
-that thread from recursing in the signal handler but the signal could be delived
-to another thread which in fact has its own signal mask and things but shares
-sigaction strucutres and it could be entering your signal handler.
+I have recently (as of this morning) become the proud owner of a G4
+(AGP).
 
-Just a thought, but something to possibly check out.
+I've been reading through the G4 related threads on linuxppc-dev and
+found the one about enabling the backside cache on a G4.
 
-Kevin
+The last set of messages that I saw seemed to indicate that the
+responsibility for setting up the cache has moved into the kernel from
+the older GrabG3CacheSetting program that needs to be run for G3 based
+machines.
+
+What is the current procedure for setting up the cache on a G4?
+
+And what kernel version should I be running to get the best
+stability/performance out of the machine?
+
+Thanks,
+
+----ranga
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
