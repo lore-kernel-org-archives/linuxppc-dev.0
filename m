@@ -1,27 +1,28 @@
-Date: Fri, 23 Jun 2000 16:35:20 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: "Halfmann, Klaus" <khalfmann@libra.de>
-cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+From: flar@allandria.com
+Message-Id: <200006231723.KAA16477@marcus.allandria.com>
 Subject: Re: Status of hfs support as of 2.4.0-test1-ac21
-In-Reply-To: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de>
-Message-ID: <Pine.LNX.4.10.10006231632470.30966-100000@opal.biophys.uni-duesseldorf.de>
+To: khalfmann@libra.de (Halfmann, Klaus)
+Date: Fri, 23 Jun 2000 10:23:02 -0700 (PDT)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de> from "Halfmann, Klaus" at Jun 23, 2000 11:57:55 AM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->   - hdparm did not always work correctly
->     (I use pmud and it calls hdparm depending on the battery load)
->     Sometimes I got stuck with the message "hda interrupt lost"
->     or similar.
+Halfmann, Klaus wrote:
+> Meanwhile I'll have a look at the hfsutils
+> ( http://www.mars.org/home/rob/proj/hfs/ ) and will start
+> moving them to HFS+.
 
-What sort of machine is that on? The lost interrupt should only happen
-(copiously) on Pismo when the pwrctl script forces a disk shutdown on
-battery low. Having HD requests time out often enough to force a disk
-reset is the only way to power up the disk again there.
+I don't know if you want to look at my code, but I've been working on a
+module for the kernel to do HFS+. I'd be willing to help you out with the
+updates to hfsutils. I'll be putting up new HFS+ code shortly, perhaps
+this weekend if I get a chance.
 
-	Michael
+	Brad Boyer
+	flar@pants.nu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
