@@ -1,41 +1,47 @@
-Date: Mon, 27 Mar 2000 13:34:50 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-cc: Gabriel Paubert <paubert@iram.es>, Benjamin Herrenschmidt <bh40@calva.net>,
+Message-ID: <38DF48EB.9F8286AD@iiic.ethz.ch>
+Date: Mon, 27 Mar 2000 13:41:31 +0200
+From: Michel Dänzer <michdaen@iiic.ethz.ch>
+MIME-Version: 1.0
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Gabriel Paubert <paubert@iram.es>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <Pine.GSO.4.10.10003271230470.11532-100000@dandelion.sonytel.be>
-Message-ID: <Pine.LNX.4.10.10003271332080.32203-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.4.10.10003271147390.31775-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > 00:11.0 VGA compatible controller: ATI Technologies Inc: Unknown device
-> > 4c49 (rev dc)
-> > 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
-> > 	Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-> > 	Latency: 8 min, 32 set, cache line size 08
-> > 	Interrupt: pin A routed to IRQ 24
-> > 	Region 0: Memory at 81000000 (32-bit, non-prefetchable)
-> > 	Region 1: I/O ports at <unassigned>
-> > 	Region 2: Memory at 00010000 (32-bit, non-prefetchable)
->                             ^^^^^^^^
-> Tadaaa, that's why you need to change PCIBIOS_MIN_MEM. I don't think this is a
-> valid address for PCI memory for your box. To me, it looks like PCIBIOS_MIN_MEM
-> must be 0x80000000 for your machine, but one of the PowerMac gurus can tell for
-> sure.
+Michael Schmitz wrote:
 
-Well, all I know is that it works.
+> Currently the X server refuses to start up if the RGB weights don't add up
+> to the screen depth, and depth 32 isn't supported at all. 24 bpp works but
+> it's really slower than 32 bpp before.
 
-And this is my PCIBIOS_MIN_MEM:
+There's now a distinction between 'depth' and 'framebuffer bpp'. There is no
+depth 32.
 
-include/asm/pci.h:#define PCIBIOS_MIN_MEM		0x10000000
+You can set framebuffer bpp with the -fbbpp command line option (there
+certainly is an XF86Config option as well, but I don't remember it). You have
+to add a Display Subsection like this:
 
-Seems it got ignored and the resource allocator picked the next free spot.
+    SubSection "Display"
+        Depth       24
+        fbbpp       32
+        Modes       "1152x864" "1024x768" "640x480"
+        Virtual     1152 864
+    EndSubSection
 
-	Michael
+
+> Plus the X server refuses to cooperate with xscreensaver and consistently
+> kicks me out after 10 minutes.
+
+Hm. Can you build a static server and try to track it down in gdb?
+
+
+Michel
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
