@@ -1,146 +1,93 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Fri, 23 Aug 2002 09:51:33 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA on an MPC860
-Message-ID: <20020823095133.F12271@zambia.cambridgebroadband.com>
-References: <3D64DA41.3000104@cambridgebroadband.com> <3D65EDC0.E16387CD@imc-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset=ISO-8859-1
-In-Reply-To: <3D65EDC0.E16387CD@imc-berlin.de>; from steven.scholz@imc-berlin.de on Fri, Aug 23, 2002 at 09:09:36 +0100
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Kerl, John" <John.Kerl@Avnet.com>
+Subject: RE: MPC857T FEC/MII failure
+Date: Fri, 23 Aug 2002 11:00:51 +0200
+Message-ID: <FCEAKDJJAPHPLJFINDAJCEBDCIAA.Stephan.Linke@epygi.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <C08678384BE7D311B4D70004ACA371050B7635B0@amer22.avnet.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven,
+Hi,
+
+I only whant to mention that we are using 857T with LXT972 and there is no
+problem with the MDIO interface. Except that I don't get the PHY interrupt.
+But That's a different story...
 
 
-Thanks for your reply.  I did try an ethernet card as well.  With that
-I got a different problem -
-after insmodding the client driver I got the following error message:
-	eth1: command 0x5800 did not complete!
+Regards, Stephan
 
-I also got this error whenever I tried to ping.
-
-
-My Kernel IDE config is as follows:
-
-# ATA/IDE/MFM/RLL support
-#
-CONFIG_IDE=y
-
-#
-# IDE, ATA and ATAPI Block devices
-#
-CONFIG_BLK_DEV_IDE=y
-# CONFIG_BLK_DEV_HD_IDE is not set
-# CONFIG_BLK_DEV_HD is not set
-CONFIG_BLK_DEV_IDEDISK=y
-(everything else IDE related is not set)
-
-Here's my Oops:
-
-
-Oops: kernel access of bad area, sig: 11
-NIP: C00C0A0C XER: C000037F LR: C00C0A00 SP: C1763460 REGS: c17633b0
-TRAP: 0300
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 40009E9A, DSISR: 00000409
-TASK = c1762000[117] 'cardmgr' Last syscall: 54 last math 00000000 last
-altivec 00000000
-GPR00: C00C0A00 C1763460 C1762000 00009B78 000000EC 00000000 C01C838C
-C0009E9A GPR08: 00009032 40009E9A C0009E9A C01C8360 53935E95 1002205C
-00000000 100B9E90 GPR16: 100BA770 00000001 007FFF00 00000000 C17636D8
-C1C9D670 00000002 C4040000 GPR24: C4040000 0000010E 00000100 C01C84B8
-00000000 00000000 C01C83C8 000000EC Call backtrace: C00C0A00 C00C0F04
-C00C10EC C00C188C C00C221C C00BBFD4 C00BCAAC C00BCB4C C403F7A4 C403FBE0
-C40031BC C4004808 C403F18C C400F874 C40105B4 C00435C8 C000259C 10002BAC
-100032C0 10004764 0FED9DBC 00000000
-
-Does this look familiar?  :-/
-
-Thanks,
-
-Alex
-
-
-On 2002.08.23 09:09 Steven Scholz wrote:
->
-> Alex,
->
-> actually I had the Card Service running on MPC855/860 systems with
-> Ethernet,
-> WaveLAN and ATA Cards.
->
-> It's a while back so I try to remember realy hard now!
->
-> I had this problem too.
->
-> 1.) Did you try another PC Card, i.e. ethernet?
-> 2.) How are your settings for IDE in your kernel configuration?
-> 3.) I think I remember that I had to change something about the
-> request_irq /
-> request_8xxirq.
->     I think the oops comes because the driver can't request the irq!!!
->
-> Could you please show us you're oops!?
->
-> Steven
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Kerl,
+> John
+> Sent: Donnerstag, 22. August 2002 22:13
+> To: 'linuxppc-embedded@lists.linuxppc.org'
+> Subject: MPC857T FEC/MII failure
 >
 >
-> Alex Zeffertt wrote:
-> >
-> > All,
-> >
-> > Has anybody had any luck getting PCMCIA to work on an MPC860?
-> >
-> > I have a custom MPC860 board, with a single PCMCIA socket connected
-> to Slot B.  This is what I have
-> > so far done:
-> >
-> > 1.
-> > Downloaded pcmcia-cs-3.2.0.tar.gz
-> > 2.
-> > Added board specific definitions in modules/m8xx_pcmcia.c for
-> >                 hardware_enable()
-> >                 hardware_disable()
-> >                 voltage_set()
-> >                 socket_get()
-> > 3.
-> > Cross compiled for the 8xx.
-> > 4.
-> > In my kernel (linux-2.4.4-2001-11-24 from Denx) I added the
-> following lines
-> >                 include/asm-ppc/<board>.h:
-> >                         /* define IO_BASE for pcmcia */
-> >                         #define _IO_BASE 0x80000000
-> >                         #define _IO_BASE_SIZE (1024*64)
-> >                 arch/ppc/mm/init.c:
-> >                         void __init MMU_init(void) {
-> >                         ...
-> >                         ioremap(_IO_BASE,_IO_BASE_SIZE);
-> >
-> >         ...as suggested by Magnus Damm in
-> >
-> http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html
-> >
-> > HOWEVER,
-> >
-> > 5.      When I boot my board with a Flash card in the PCMCIA slot,
-> and I run:
-> >         /etc/rc.d/rc.pcmcia start
-> >         I find that ide_cs.o causes an Oops when it calls
-> ide_register().  "cardctl status"
-> >         and "cardctl ident" work though.
-> >
-> > Can anybody suggest what I'm doing wrong?
-> >
-> > Thanks in advance,
-> >
-> > Alex
-> >
 >
+> Hello,
 >
+> I am experiencing a problem with the MPC857T FEC's MII interface.
+>
+> I want to read MII registers for our PHY (ID 24 on our board).  Per the
+> MPC857T
+> manual:
+>
+> *	I write 0x36 to MII_SPEED (IMMR + 0xe84).  An oscilloscope probe
+> 	on the PHY's MDC pin reveals a 1.235 MHz rate, within spec.
+>
+> *	I write 0x6c060000 to MII_DATA (IMMR + 0xe80).
+> 	This is:
+>
+> 	-	ST=01
+> 	-	OP=10
+> 	-	ID=11000
+> 	-	REG=00001
+> 	-	TA=10
+>
+> The data read back in the second 16 bits of MII_DATA are always 0xffff.
+> This is
+> in fact regardless of the PHY ID (I've tried all 32) or register
+> (I've tried
+> all 32).
+> There are two concomitant symptoms:
+>
+> *	If I put oscilloscope probes on the PHY's MDC and MDIO pins, then
+> look
+> 	at the MDIO pin's values at the rising edges of MDC, I see that the
+> FEC
+> 	has actually written the following:
+>
+> 	-	ST=01
+> 	-	OP=10
+> 	-	ID=11000
+> 	-	REG=00001
+> 	-	TA=11
+>
+> 	which is *not* what I asked it to do.
+>
+> *	If I read back the MII_DATA register, *even though* I wrote
+> 0x6c060000,
+> 	I read back the value 0x6c07ffff.  Note that the second 6 is now a
+> 	7.
+>
+> In short, I formulate a compliant request (TA=10), then the FEC mangles it
+> (TA=11) and drives that out.  It is no wonder the PHY doesn't respond.
+>
+> This problem is observable in our debug monitor using simple peek
+> and poke.
+> Thus, this is more of a PPC question than a Linux question.
+>
+> Has anyone seen anything similar?
+>
+> Thanks.
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
