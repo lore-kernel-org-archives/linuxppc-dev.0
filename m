@@ -1,80 +1,41 @@
-Message-ID: <20000515063333.3612.qmail@web1705.mail.yahoo.com>
-Date: Sun, 14 May 2000 23:33:33 -0700 (PDT)
-From: Gabriel Ricard <g_ricard@yahoo.com>
-Subject: Re: Lombard hard freeze during long compile with mem>64
-To: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 15 May 2000 09:29:16 +0200 (MET DST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: current bk tree
+Message-ID: <Pine.GSO.4.10.10005150925400.4996-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well that certainly is odd. I have setup a loop
-compiling the kernel (without using any -j arguments
-to make to provoke it) and it locked up on the second
-build. It *COULD* very well be a memory problem,
-however, if it is I'd be more inclined to blame it on
-the 64MB that came with the Lombard, rather than the
-128MB Kingston memory module I added. IMHO, Kingston
-makes some of the best RAM out there.
+I managed to compile the current bk tree (+ a few fixes I just checked in) and
+boot it on my LongTrail. Comments:
 
-I do find it interesting that you are not using the
-400MHz model, and (I believe) that those of us having
-the problems are. Am I wrong about this?
+  - The MESH driver doesn't detect any disks anymore, which is bad.
 
-As for overheating, I have never had my fan come on
-while under linux, even after running my powerbook ,
-which gets often used as a desktop, for long periods
-of times. Granted I am not playing quake 3 in
-LinuxPPC... (yet?)
+  - The kernel still detects 3 serial ports:
 
-So, is it a memory issue or a cpu issue?
+      ttyS00 at 0x03f8 (irq = 4) is a 16550A
+      ttyS01 at 0x02f8 (irq = 3) is a 16550A
+      ttyS02 at 0x03e8 (irq = 4) is a 16450
 
+    The last one is bogus. This problem has been there seen quite a while, but
+    seems to be harmless.
 
---- jeramy b smith <ultrapenguin@netscape.net> wrote:
->
-> One of the people having the problem said they could
-> reproduce the hardlock if
-> they recompiled gnomehack several times. Here is
-> some data I have collected.
->
-> Using the vanilla linuxppc 2k kernel I have been
-> doing some lengthy compiles
-> (kde 1.9). One of my package builds went 2.5 hours.
-> I have seen no problems
-> and I have been running the entire time without a
-> reboot. I have compiled all
-> of kde 1.9 and I had to rebuild one of the lengthier
-> packages 3 times.
->
-> I did try to compile gnomehack and it was fun to
-> play afterwards although it
-> segfaulted after about 15 minutes.
->
-> By the way, I did all of my building with full helix
-> gnome running, several
-> rxvts open, netscape running, and while talking in
-> #mklinux with xchat. I also
-> ran gaim for a while during this period.
->
-> I am using a vanilla 2k install with a May build of
-> Franz Sirl's gcc. My
-> lombard is a 300 or 333 with 192 megs of ram.
->
->
-> I am starting to doubt that this is a kernel level
-> issue and I am starting to
-> look at more likly culprits. Perhaps overheating or
-> some other odd problem.
-> Perhaps cheap memory modules.
->
->
->
+I hope to resume working on the PCI allocation stuff soon. I wrote a few
+(untested) patches while I was disabled.
 
+Gr{oetje,eeting}s,
 
-=====
-Gabriel Ricard
-g_ricard@yahoo.com
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
