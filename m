@@ -1,39 +1,55 @@
-To: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hanging Init 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 10 Dec 2002 18:04:31 PST."
-             <0509218DDAD7D6118055006008F6D5F6A1E3A6@postal.viasat.com>
-Date: Wed, 11 Dec 2002 09:49:32 +0100
-Message-Id: <20021211084937.C79DCC613A@atlas.denx.de>
+Date: Wed, 11 Dec 2002 09:57:33 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: Regarding consistent_alloc
+In-reply-to: <NCBBIINEHIPFGJPLBEIFMEOMDPAA.acurtis@directvinternet.com>
+To: acurtis@directvinternet.com,
+	Tom Rini <trini@kernel.crashing.org>,
+	Pantelis Antoniou <panto@intracom.gr>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Paul Mackerras <paulus@au1.ibm.com>, Matt Porter <porter@cox.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLAELIFIAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0509218DDAD7D6118055006008F6D5F6A1E3A6@postal.viasat.com> you wrote:
-> Thanks for the input. I finally got the board up. It was due
-> to the my compilation of busybox with the -nostdlib option and
-> explicitly linking the necessary libs (warning of not finding _start). I
-> also noticed the
-> floating point emulation was off in the kernel.
+>
+>
+> > > 2. I have a requirement to have my drivers loaded as modules.
+> > > m8xx_cpm_hostalloc has a very simplistic implementation, which
+> > > makes it unsuitable for something like that. I have some patches
+> > > that fix both m8xx_cpm_hostalloc and 8xx_cpm_dpalloc by implementing
+> > > a proper heap, with free space management and coalescing.
+> > > What is the proper way to push them, and to whom?
 
-...which is OK. You should not enable it.
+It would be great if the new fucntions could work with micropatch.c as well.
+If the microcode is loaded, then those microcode area should be reserved and
+not used by 8xx_cpm_dpalloc.
 
-> Does anyone have a good explanation of the _start as the entry
-> symbol for an application? This seemed to be my problem when I originally
+> >
+> > <buck passing mode=on>Dan Malek still knows the most about the
+> > 8xx-specific portions of the kernel, so he should really speak up here
+> > when he gets a moment</buck passing>
+>
+> m8xx_cpm_hostalloc(), if it is anything like the 8260 version, enables you
+> to allocation memory from dual-port RAM. (which could be handy and/or
+> required for certain CPM related operations) _va() and _pa() only work for
+> main memory addresses. For all other address ranges the iopa() function must
+> be used. (I hope this is helpful)
 
-This must be the rsult from your build process. I don't see this  wih
-busybox.
+_va() and _pa() used to work for m8xx_cpm_hostalloc() and I like that better. _pa()
+is much cheaper than iopa() and there is no iova()(I think).
 
-Best regards,
+Why was m8xx_cpm_hostalloc() changed to use consistent_alloc()? alloc_bootmem_pages()
+should still work(I am guessing)
 
-Wolfgang Denk
+BTW, m8xx_setup_arch() still calls alloc_bootmem_pages() and
+the new m8xx_cpm_reset() does not take a ptr argument, but m8xx_setup_arch()
+still calls m8xx_cpm_reset() with cpm_page as argument.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Overdrawn?  But I still have checks left!
+ Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
