@@ -1,41 +1,31 @@
-Message-ID: <405090F3.1000900@embeddededge.com>
-Date: Thu, 11 Mar 2004 11:16:51 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
-Cc: Jason McMullan <jason.mcmullan@timesys.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC8560ADS issues
-References: <1078945499.3748.4.camel@veena.timesys> <1079019785.29565.36.camel@chuck.arlut.utexas.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: PPC405GP: Spurious interrupt during handing level triggered
+	interrupts
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: "listmember@orkun.us" <listmember@orkun.us>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <33774.216.110.51.8.1078964058.squirrel@www.orkun.us>
+References: <16763.216.110.51.8.1078873137.squirrel@www.orkun.us>
+	 <1078936213.16427.27.camel@spawn.uab.ericsson.se>
+	 <33774.216.110.51.8.1078964058.squirrel@www.orkun.us>
+Content-Type: text/plain
+Message-Id: <1079025214.16429.32.camel@spawn.uab.ericsson.se>
+Mime-Version: 1.0
+Date: Thu, 11 Mar 2004 18:13:35 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matthew S. McClintock wrote:
+On Thu, 2004-03-11 at 01:14, listmember@orkun.us wrote:
+> Kenneth,
+>
 
-> What version of u-boot are you using? There was a patch around Feb. 24th
-> that fixed some things in the ethernet driver for u-boot. Although since
-> you seem to have the TSEC ports working it seems you have the latest
-> version.
+> However, I think, code could be enhanced to reset the SR bit, "only" for
+> level triggered interrupts and leave edge triggered interrupts alone. This
+> would require looking at UIC0_TR register as well.
 
-The TSECs work, but the FCCs don't.  I spend time here and there debugging
-when I have a chance.
-
-
-> I have not attempted to use the FCC in u-boot but I have it working in
-> Linux, well sort of anyways... it is going extremely slow and I am still
-> investigating that.
-
-Do you keep up to date with the linuxppc trees?  Some of us have been
-pushing lots of CPM updates lately.  We recently updated all of the
-common code for 82xx and 85xx.  If this doesn't work there must be
-some I/O or board configuration that is amiss.
-
-Thanks.
-
-
-	-- Dan
+Yes If you could do a patch for this for level triggered only it would
+be good. I can't see this affecting anything negative so it should be no
+problem getting it integrated.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
