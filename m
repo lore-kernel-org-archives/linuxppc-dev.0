@@ -1,57 +1,44 @@
-From: "Chuck Meade" <chuckmeade@mindspring.com>
-To: "L. Puneeth Rao" <puneeth_l@roc.co.in>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Peculiar problem(s) on MBX board
-Date: Sun, 23 Nov 2003 23:42:36 -0500
-Message-ID: <IIEEICKJLNEPBBDJICNGIEFEEDAA.chuckmeade@mindspring.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <5.2.0.9.0.20031124101121.027949a0@172.16.15.10>
+In-Reply-To: <3FC0A1D3.70706@imc-berlin.de>
+References: <3FC0A1D3.70706@imc-berlin.de>
+Mime-Version: 1.0 (Apple Message framework v606)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Subject: Re: Preemptive Kernel and MPC8xx ???
+Date: Mon, 24 Nov 2003 08:20:45 +0100
+To: Steven Scholz <steven.scholz@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Try running dos2unix on your s-record file.  The char 0xd
-is a <CR>.
+Hi,
 
-Chuck Meade
+Yes I do on 2.4.20 and 2.4.22 from kernel.org. So far all seems
+to work but didn't do any measurements on it.
+(I both use the preempt and low-latency patches)
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of L.
-> Puneeth Rao
-> Sent: Sunday, November 23, 2003 11:42 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Peculiar problem(s) on MBX board
+Jaap-Jan
+
+On 23-nov-03, at 13:02, Steven Scholz wrote:
+
+>
+> Hi there,
+>
+> is somebody actually using the preemptive kernel patches that can be
+> found at
+>
+> http://www.kernel.org/pub/linux/kernel/people/rml/preempt-kernel/v2.4/
+>
+> on MPC8xx boards?
+>
+> If so which kernel version?
+>
+> Thanks a million!
+>
+> Steven
 >
 >
->
-> Greetings All,
->          I have a MBX evaluation board with a MPC860T processor. I have
-> used 2.4.18 kernel sources,  ppc-patch-2.4.18, cross compiler
-> gcc-core-3.3.1 and binutils-2.11.90.0.8. to obtain a zImage on a x86 host
-> machine. To download this image to the board i have used TFTP server-client
-> technique. But the TFTP client on the board reported a "Transmission
-> carrier sense lost error" ( eppcbug error-14). In fact i am unable to ping
-> to any machine in my network from the eppcbug prompt.
->          Therefore I obtained image.srec (using powerpc-linux-objcopy) and
-> tried to transfer the image through serial port (using lo command at the
-> eppcbug prompt and minicom) but eppcbug is reporting a "S-record character
-> error" with error char = $0D and the malicious s-record is
-> S1F0002015554466723232F. And there is no such record in the image.srec file
->          Here is a snapshot of image.srec
->                  S00F0000707063626F6F742E737265631E
->                  S315FE00000027051956505043426F6F7420312E322EFB
->                  ........
-> Upon taking a closer look at the 2nd s-record in the image.srec we can see
-> that the malicious s-record reported by eppcbug can be obtained by
-> extracting all the alternative characters and clubbing them together.
->          Kindly suggest a way out. TIA
-> With regards,
-> Puneeth
->
->
->
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
