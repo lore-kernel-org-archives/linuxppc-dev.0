@@ -1,23 +1,32 @@
-Message-ID: <3BD0D683.5CC51EFA@mvista.com>
-Date: Fri, 19 Oct 2001 21:42:27 -0400
+Message-ID: <3BD0DBAB.8A7B1461@mvista.com>
+Date: Fri, 19 Oct 2001 22:04:27 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Daniel Jacobowitz <drow@mvista.com>
-Cc: Ed.Swarthout@motorola.com, paulus@samba.org,
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ralph Blach <rcblach@raleigh.ibm.com>, paulus@samba.org,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: interesting line in process.c
-References: <15304.11248.720092.645241@cargo.ozlabs.ibm.com> <3BCAF4D2.D41EE8C4@mvista.com> <200110151547.f9FFltD24916@pacific.somerset.sps.mot.com> <3BCB06A7.7A6C0D9F@mvista.com> <20011015134450.A26404@nevyn.them.org>
+Subject: Re: pci_dma_sync_single
+References: <3BCC324C.9EE9C105@raleigh.ibm.com> <20011016140816.2321@smtp.adsl.oleane.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Jacobowitz wrote:
+Benjamin Herrenschmidt wrote:
 
-> I'm willing to do the GDB support code for this if someone else
-> volunteers to do the kernel parts :)
+> Well, the last time we discussed about book E,
 
-I'll take you up on your offer very soon :-).
+I'm kinda planning to roll a whole new book E arch tree so we can
+take advantage of their features without hacking up the traditional
+PowerPC.  There are a variety of options that will be necessary to
+fit a wide range of embedded applications for which they are
+specifically designed.  While we can make Book E fit into the
+traditional PowerPC tree by forcing some fixed rules, it wouldn't
+be fair to their flexibility or performance options.
+
+I've got a couple of things to finish up and would like to start
+discussing this in the next couple of weeks, as more documentation
+and perhaps some hardware arrives on my doorstep.
 
 Thanks.
 
