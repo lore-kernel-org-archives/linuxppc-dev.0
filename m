@@ -1,17 +1,26 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id CD0A867A6F
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2005 09:19:14 +1100 (EST)
-Date: Wed, 16 Mar 2005 15:19:07 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Takeharu KATO <kato.takeharu@jp.fujitsu.com>
-Message-ID: <20050316221907.GB8345@smtp.west.cox.net>
-References: <4236B7E5.8030402@jp.fujitsu.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6F30D67A6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2005 09:28:58 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Takeharu KATO <takeharu1219@ybb.ne.jp>
+In-Reply-To: <42383D85.7050108@ybb.ne.jp>
+References: <20050303124435.GA24233@Redstar.dorchain.net>
+	<4227153C.3030201@gmx.net>	<20050303141832.GU25080@Redstar.dorchain.net>
+	<20050304075703.GA15637@Redstar.dorchain.net>
+	<422FD24F.4070108@jp.fujitsu.com>
+	<20050310072803.GR4017@Redstar.dorchain.net>	<423073A9.70404@ybb.ne.jp>
+	<4231387D.6030204@jp.fujitsu.com>	<1110932285.25201.66.camel@gaston>
+	<4237C319.4050109@jp.fujitsu.com>  <4237C8F0.1010605@jp.fujitsu.com>
+	<1110954539.5272.0.camel@gaston>  <42383D85.7050108@ybb.ne.jp>
+Content-Type: text/plain
+Date: Thu, 17 Mar 2005 09:28:43 +1100
+Message-Id: <1111012124.15509.18.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4236B7E5.8030402@jp.fujitsu.com>
-Cc: linuxppc-dev@ozlabs.org, tmm@tmm.dk
-Subject: Re: [PATCH]  boot time scheduling w hile atomic  fix
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: boot time scheduling hile atomic
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2005 at 07:24:37PM +0900, Takeharu KATO wrote:
-
-[snip]
-> As I mentioned before, it was caused by calling kernel_thread function via
-> trap call.
+On Wed, 2005-03-16 at 23:07 +0900, Takeharu KATO wrote:
+> Hi Benjamin:
 > 
-> So, I've replaced the implementation of kernel_thread with function call like as
-> other architectures.
-> 
-> I tested this patch on PowerPC440GP (ebony evaluation board).
+> I can not figure out why my previous patch is more preferable than
+> later one.
+> Could you explain the reason of that please.
 
-This is a great first start.  But please see
-Documentation/SubmittingPatches and provide a Signed-off-by line and
-resubmit.  Thanks!
+There may be other kernel bits calling syscall, it sounds saner to
+always make sure we don't reschedule when in atomic (though it's dubious
+that it's allowed to do syscalls in atomic regions, let's be safe
+there).
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+In fact, we are thinking about consolidating the syscall return path and
+the normal irq return path like we did on ppc64.
+
+Ben.
