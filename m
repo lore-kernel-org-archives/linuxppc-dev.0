@@ -1,18 +1,25 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id E82FE2BF07
+Return-Path: <ivica@asist-traffic.com>
+Received: from mta1.siol.net (pegasus.siol.net [193.189.160.40])
+	by ozlabs.org (Postfix) with ESMTP id 099DC2BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Dec 2004 05:44:52 +1100 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A6473C0@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'Tom Rini'" <trini@kernel.crashing.org>
-Date: Mon, 20 Dec 2004 13:44:04 -0500
+	Tue, 21 Dec 2004 06:26:06 +1100 (EST)
+Received: from edge1.siol.net ([10.10.10.210]) by mta1.siol.net with ESMTP
+	id <20041220192551.ZOIN10428.mta1.siol.net@edge1.siol.net>
+	for <linuxppc-embedded@ozlabs.org>; Mon, 20 Dec 2004 20:25:51 +0100
+Received: from linux.asist ([193.95.241.43]) by edge1.siol.net with ESMTP
+	id <20041220192547.RIRS29321.edge1.siol.net@linux.asist>
+	for <linuxppc-embedded@ozlabs.org>; Mon, 20 Dec 2004 20:25:47 +0100
+Received: from [192.168.254.58] (unknown [192.168.254.58])
+	by linux.asist (Postfix) with ESMTP id 09403644A9
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 20 Dec 2004 20:25:40 +0100 (CET)
+Message-ID: <41C72733.9030300@asist-traffic.com>
+Date: Mon, 20 Dec 2004 20:25:39 +0100
+From: ivica@asist-traffic.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: etux@embeddedtux.org, LM Sensors <sensors@stimpy.netroedge.com>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: 2.6.10-rc3 for 8xx with I2C config enabled  compiles now ...
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: i2c on mpc5200
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,93 +30,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Tom,
+Hi!
 
-I have made the following configuration being "compilable" on 2.6.10-rc3
-*********** .config ************
-CONFIG_I2C=y
-CONFIG_I2C_CHARDEV=y
+I have a hardware clock (RTC) which is not yet supported in
+the linux kernel. It is RX-8025 module from EPSON and it is
+I2C bus-interface based. Before I start writing support for this
+module I would like to have I2C support working in my kernel.
+Has anybody succeeded in getting I2C supported for MPC5200
+based boards with 2.6 kernels? I'm using the one which maintains
+Sylvain Munaut. If I boot up the kernel with I2C support in it
+I don't get any initialization messages for I2C, only this one line:
+----------------------------------------------------------------------
+eth0: Phy @ 0x0, type LXT971 (0x001378e2)                           
+mice: PS/2 mouse device common for all mice
+i2c /dev entries driver
+NET: Registered protocol family 2
+IP: routing cache hash table of 512 buckets, 4Kbytes
+-----------------------------------------------------------------------
 
-#
-# I2C Algorithms
-#
-CONFIG_I2C_ALGOBIT=y
-.........
-CONFIG_I2C_ALGO8XX=y
+I tried with v various 2.4 kernels but I only had some success with a 
+kernel
+form metrowerks which I got from a colleague. This is it's output.
+--------------------------------------------------------------------------------
+i2c-core.o: i2c core module
+i2c-dev.o: i2c /dev entries driver module
+i2c-core.o: driver i2c-dev dummy driver registered.
+i2c-algo-bit.o: i2c bit algorithm module
+i2c-proc.o version 2.6.1 (20010825)
+devfs_register(ttyS): could not append to parent, err: -17
+devfs_register(ttyS): could not append to parent, err: -17
+devfs_register(cua): could not append to parent, err: -17
+devfs_register(cua): could not append to parent, err: -17
+PORT CONFIG 4
+PORT CONFIG 500044
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+i2c-dev.o: Registered 'Icecube I2C module #2 interface' as minor 0
+i2c-core.o: adapter Icecube I2C module #2 interface registered as adapter 0.
+i2c-algo-5xxx.o: scanning bus Icecube I2C module #2 interface...
+..................................................(0x32).............................(0x50)(0x51)(0x52)(0x53)(0x54)(0x55)(0x56)(0x57).......................................(0x)
+i2c-icecube.o: I2C module #2 installed
+------------------------------------------------------------------------------------
 
-#
-# I2C Hardware Bus support
-#
-..............
-CONFIG_I2C_RPXLITE=y
-............
-#
-# Hardware Sensors Chip support
-#
-CONFIG_I2C_SENSOR=y
-.............
-*********** .config ************
+This kernel has some strange hacks in it and I needed to change some 
+code in order
+for it to compile under gcc. Ok, it works now but I would really like to 
+code the driver
+for RTC module under 2.6 tree and like it is supposed to be done. I like 
+the 2.6 I2C directory tree
+and it all makes more sense to a newb like me. First I need to get those 
+core.o and algo.o
+stuff working. Under the menuconfig in the I2C there is a
+I2C Hardware Bus support  ---> [*] MPC107/824x/85xx/52xx
+'Help' says :
+"If you say yes to this option, support will be included for the
+built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
+MPC85xx family processors. The driver may also work on 52xx
+family processors, though interrupts are known not to work."
 
-by following changes:
+I'm guessing this (drivers/i2c/busses/i2c-mpc.c) is the part I need to 
+work on?
+Of course any input on where should I start would be greatly appreciated.
+Also if anyone has already succeeded in supporting i2c for mpc5200 I 
+would love
+to hear your experience.
 
-1) i2c-algo-8xx.h is copied from 2.4(.26) and placed into
-./include/linux/i2c-algo-8xx.h
-
-2) i2c-algo-8xx.c is copied from 2.4(.26) and placed into
-./drivers/i2c/algos/i2c-algo-8xx.c
-
-3) added into ./drivers/i2c/algos/Makefile 
-   after existing line:
-   obj-$(CONFIG_I2C_ALGOITE)       += i2c-algo-ite.o
-   the following new line:
-   obj-$(CONFIG_I2C_ALGO8XX)       += i2c-algo-8xx.o
-
-4) added into ./include/asm-ppc/commproc.h
-   after existing line:
-   extern void cpm_free_handler(int vec);
-   the following new line:
-   extern const char *cpm_int_name[];
-
-5) in ./drivers/i2c/busses/i2c-rpx.c
-   changed the order of include files: 
-   moving the line:
-   #include <asm/commproc.h>
-   to be above the line:
-   #include <linux/i2c-algo-8xx.h>
-
-   so now includes are in the following order:
-   ...
-#include <linux/config.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/stddef.h>
-#include <linux/i2c.h>
-#include <asm/commproc.h>
-#include <linux/i2c-algo-8xx.h>
-#include <asm/mpc8xx.h>
-   ...
- 
-Thanks,
-Alex 
------Original Message-----
-From: Tom Rini [mailto:trini@kernel.crashing.org]
-Sent: Friday, December 17, 2004 12:09 PM
-To: Povolotsky, Alexander
-Subject: Re: 2.6.10-rc3 for 8xx with I2C config enabled still fails ...
-
-
-On Fri, Dec 17, 2004 at 11:58:30AM -0500, Povolotsky, Alexander wrote:
-
-So, your best bet to get 8xx I2C working is to grab the 'latest' from a
-2.4 tree that has it working, and move it up.  In doing so, you may want
-to kill 'i2c-rpx' and merge it all into the i2c-algo-8xx file.
-So, I've attached the newest i2c-algo-8xx.h I can find.  The rest of the
-code that's in 2.6 is probably good enough.  With this, hopefully you
-can hack things into working (if you need a very simple i2c test
-program, let me know.  I _think_ i have one around that should give you
-the temp info found at least on my old rpxlite).
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Best regards,
+Ivica
