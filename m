@@ -1,28 +1,43 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15304.7969.163728.922055@cargo.ozlabs.ibm.com>
-Date: Sat, 13 Oct 2001 21:01:53 +1000 (EST)
-To: "Joseph P. Garcia" <jpgarcia@execpc.com>
+Subject: Re: boot methods
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: paulus@samba.org
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LIDS on PowerPC
-In-Reply-To: <20011012103935.3c104116.jpgarcia@execpc.com>
-References: <20011012103935.3c104116.jpgarcia@execpc.com>
-Reply-To: paulus@samba.org
+In-Reply-To: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
+References: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 13 Oct 2001 13:01:59 +0200
+Message-Id: <1002970919.7091.1849.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Joseph P. Garcia writes:
+On Fri, 2001-10-12 at 09:32, Paul Mackerras wrote:
+>
+> I would like to make a complete list of the methods people use to boot
+> the PPC/Linux kernel on different platforms.  As a start, here is what
+> I can think of off the top of my head:
+>
+> Powermac:
+> 	vmlinux loaded with BootX
+> 	vmlinux loaded with quik
+> 	vmlinux loaded with yaboot
+> 	vmlinux.coff loaded via OF netboot
+> 	vmlinux.elf-pmac loaded via OF (disk or net boot)
+>
+> RS/6000 CHRP:
+> 	vmlinux loaded with yaboot
+> 	zImage.chrp-rs6k loaded via OF netboot
+>
+> RS/6000 43p-140:
+> 	zImage.prep loaded via OF (floppy or hard disk)
 
-> Specifically, I have an oldworld system, and using BootX or miBoot
-> with a LIDS kernel (with lids runtime enabled or disabled) results
-> in a hang.  The kernel doesn't even get to the "BootX text" screen.
+APUS:
+	vmlinux loaded with boothack (from AmigaOS)
 
-Hmmm, I would be surprised if LIDS was affecting anything that early
-on in the boot process.  Have you successfully built and booted a
-kernel without LIDS?
 
-Paul.
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
