@@ -1,48 +1,51 @@
-Message-ID: <XFMail.20010807093111.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 7 Aug 2001 09:49:38 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: daenzer@debian.org
+Cc: R Shapiro <reshapiro@mediaone.net>, Olaf Hering <olh@suse.de>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: lcd17 kernel patches?
+In-Reply-To: <3B6E8B6E.BED87E1A@iogram.ch>
+Message-ID: <Pine.LNX.4.05.10108070947420.5836-100000@callisto.of.borg>
 MIME-Version: 1.0
-Date: Tue, 07 Aug 2001 09:31:11 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: FW: floating point exception problem on apple PPC
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------FW: <CA256AA1.0019E765.00@d73mta01.au.ibm.com>-----
+On Mon, 6 Aug 2001, Michel Dänzer wrote:
+> R Shapiro wrote:
+> > Olaf Hering writes:
+> >  > The correct fix is either "video=1280x1024-8@60" as kernel arg (that may
+> >  > work)
+> >
+> > OK, I just had time to rebuild 2.4.8-pre3-ben0 with the patch undone.
+> > This video arg with that kernel doesn't solve the problem.  I still
+> > get no video on boot.
+>
+> Wouldn't it have to be video=aty128fb:1280x1024-8@60 anyway, and is the modedb
 
-Date: Tue, 7 Aug 2001 10:10:05 +0530
-Sender: linux-kernel-owner@vger.kernel.org
-From: mdaljeet@in.ibm.com
-To: linux-kernel@vger.kernel.org
-Subject: floating point exception problem on apple PPC
+video=mode specifies the global mode, for all fbdevs that use modedb.
 
-Hi,
+> even used on PPC yet?
 
-I am using SuSE Linux 7.1 with kernel version 2.4.2 on Apple G4 dual
-processor PPC machine.
+That's not the right question :-) Modedb doesn't depend on the architecture,
+but on the driver.
 
-Due to setting of MSR[FE0] and MSR[FE1] bits in the 'FPUnavailable'
-exception handler, a user application that tries to do floating point
-arthemetic with large floating point values gets a SIGFPE signal. By
-setting the FPSCR register with appropriate value in the SIGFPE signal
-handler the program runs fine with the expected values.
+Yes, atyfb was the first one to have modedb. Remember, I have a RAGE II+ in my
+LongTrail :-)
 
-Now, what happens is that when I run such program (that does floating point
-arthemetic with large floating point values) continuously for hours, the
-other applications running on the system sometimes get terminated after
-receiving a SIGFPE signal while my floating point program runs fine. Is
-that due to some kernel problem or loading the FPSCR in the SIGFPE signal
-handler of a process can lead to this problem?
+PowerMac/CHRP has even extra modedb support in macmodes.
 
-regards,
-Daljeet.
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---------------End of forwarded message-------------------------
-
-Bye.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
