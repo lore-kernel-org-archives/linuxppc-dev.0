@@ -1,47 +1,34 @@
-Date: Mon, 19 Apr 1999 13:52:35 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Franz Sirl <Franz.Sirl@munich.netsurf.de>, Tom Rini <tmrini@ntplx.net>,
-        linuxppc-dev@lists.linuxppc.org,
-        Hans-Bernhard Broeker <broeker@physik.rwth-aachen.de>
-Subject: Re: [Patch] linuxppc gnuplot segfaults in save
-In-Reply-To: <3715C58D.1C438D65@wanadoo.fr>
-Message-ID: <Pine.LNX.4.04.9904191342501.9610-100000@narn.local.drgw.net>
+Message-ID: <371BBD46.246D9D0F@ibm.net>
+Date: Mon, 19 Apr 1999 23:33:26 +0000
+From: root <roboj@ibm.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Kernel 2.2.6-ac1 problem
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-There's a problem with the test code posted earlier.. It segfaults on x86
-also..
+I compiled the latest kernel from source and I created vmlinux with no
+problems.  After installing it in my system folder on my mac partition
+and booting linux again, I get I/O errors somewhat randomly.
+The message that is displayed is "No space left on device".  The file
+/var/log/messages conatins the following lines:
 
-int main(int argc, char** argv)
-{
-        char* file_name;                    <-----------
-        strcpy(file_name, argv[1]);         <----------
-        test_fprintf(fopen(file_name, "w"));
-        exit(0);
-}        
+Apr 19 23:23:07 localhost kernel: EXT2-fs error (device ide0(3,4)):
+ext2_new_block: Free blocks count corrupted for block group 13
 
-file_name is initially set to 0x0 on the RedHat 5.1 Intel box, thus
-causeing a segfault. On PPC, the pointer is initially pointing somewhere
-on the stack (in my case to 0x7ffffcf0)
+I had the same problem when compiling and testing the 2.2.5 kernel as
+well, but I found no other references to a similar problem in the
+mailing lists and newsgroups.  Can anyone help or offer advice?
 
-with the following code, it doesn't segfault on the x86 box, and has the
-same crash in _IO_vfprintf on my PPC boxes (glibc-2.1 and glibc-1.99)
+-J. Robokos
 
-int main(int argc, char** argv)
-{
-        test_fprintf(fopen(argv[1], "w"));
-        exit(0);
-}   
-
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+System config:
+Powerbase 603,
+40MB Ram,
+Maxtor IDE hard drive (Master),
+Seagate IDE hard drive (Slave)
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
