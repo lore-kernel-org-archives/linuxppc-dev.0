@@ -1,20 +1,20 @@
-Return-Path: <joakim.tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6A38E2BF0E
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id 3DC6E2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 01:17:25 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Tom Rini" <trini@kernel.crashing.org>
-Date: Wed, 12 Jan 2005 15:17:11 +0100
-Message-ID: <JPEALJAFNGDDLOPNDIEEAEADDAAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <20050112140630.GP3391@smtp.west.cox.net>
-Cc: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
-Subject: RE: [PATCH] Handle I-TLB Error and Miss separately on 8xx
+	Thu, 13 Jan 2005 01:19:04 +1100 (EST)
+Date: Wed, 12 Jan 2005 07:19:02 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050112141902.GQ3391@smtp.west.cox.net>
+References: <1102585377.41b81e218d6df@webmail.televes.com:443>
+	<20050105174838.GF4213@smtp.west.cox.net>
+	<71A72D18-5F4C-11D9-A045-003065F9B7DC@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <71A72D18-5F4C-11D9-A045-003065F9B7DC@embeddededge.com>
+Cc: alebas@televes.com, linuxppc-embedded@ozlabs.org
+Subject: Re: Kernel 2.6.10 running on mpc8272ads
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +25,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> On Wed, Jan 12, 2005 at 08:53:17AM +0100, Joakim Tjernlund wrote:
-> > > As the code stands currently, there is a bug in the 2.4 and 2.6 handling
-> > > of I-TLB Miss and Error exceptions on 8xx.  The problem is that since we
-> > > treat both of them as the same exception when we hit do_page_fault,
-> > > there is a case where we can incorrectly find that a protection fault
-> > > has occured, when it hasn't.  This is because we check bit 4 of SRR1 in
-> > > both cases, but in the case of an I-TLB Miss, this bit is always set,
-> > > and it only indicates a protection fault on an I-TLB Error.
-> > 
-> > Patch looks good to me, but I want to ask when this error
-> > can be triggered in practice?
+On Wed, Jan 05, 2005 at 02:03:11PM -0500, Dan Malek wrote:
 > 
-> It is possible to see this in the real world, as we (<hat=mvista>) found
-> this with a customers app.
+> On Jan 5, 2005, at 12:48 PM, Tom Rini wrote:
+> 
+> >Indeed.  While I had a PQ2FADS for a bit, I had to do that as well.
+> >Kumar, what/why is that needed exactly?  Did I screw up in re-working
+> >the 82xx init stuff and it needs to happen a bit later in boot?
+> 
+> I don't understand the what/why question, but that has never stopped
+> me from providing answers in the past :-)
 
-hmm, this app must have been doing something pretty special. Any idea what
-caused it?
+Ha!
 
- Jocke
+> So, In 2.6, and I think in some of the 2.4 cpm2 stuff, we no longer
+> automatically map any of the hardware IO resources for common
+> access like I used to do in the past.  If you want to access the
+> BCSR, you need to make sure it is ioremap()'ed in your driver before
+> you make the access.  Was that the question, or was it that
+> the BCSR should have been set someplace outside of the
+> driver for the serial port to work?
+
+Actually, I did break it.  When I re-worked the hooks around
+platform_init/ppc_md.setup_arch, I added a call-out from platform_init()
+but not from m82xx_setup_arch(), when I really needed one.  I'll follow
+up with a patch momentarily.
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
