@@ -1,71 +1,62 @@
-Message-Id: <4.2.0.58.20000427130443.00acba10@praesum.com>
-Date: Thu, 27 Apr 2000 13:08:09 -0700
-To: linuxppc-embedded@lists.linuxppc.org
-From: Kent Dahlgren <kent@praesum.com>
-Subject: Re: Video Card with PowerPC initialization Code
-In-Reply-To: <39089B20.D9941BBA@raleigh.ibm.com>
-References: <3905A4C9.7C58472E@raleigh.ibm.com>
- <4.2.0.58.20000427124716.00c06bc0@praesum.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <m12kxVj-001SyaC@bucks>
+From: diekema@bucks.si.com (diekema_jon)
+Subject: Re: Baud rate problems with the EST SBC8260 board
+To: dan@netx4.com (Dan Malek), caret@c-side.com
+Date: Thu, 27 Apr 2000 19:15:55 -0400 (EDT)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3907A22C.D82EF0D1@embeddededge.com> from "Dan Malek" at Apr 26, 2000 10:13:00 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 03:55 PM 4/27/00 -0400, you wrote:
->Kent,
->
->Which ones?
->
->Chip
+> From: Dan Malek <dan@netx4.com>
 
-Try ATI I believe that the only difference between their Mac and PC video
-cards is that the Mac ones have Open Firmware, oh and cost more of course ;-)
+> You probably configured way too much into the kernel.  You have to
+> turn of almost everything but the bare essentials.  Just like the
+> 8xx, do not configure any serial ports, VTs, or things like that.
 
-         http://www.ati.com
+I looked for a default EST8260 configuration file in arch/ppc/configs,
+but didn't find anything.  Could a est8260_defconfig file be created?
+I am look for something that contains a valid MPC8260 Linux configuration
+for the EST SBC8260 board?
 
-Kent
+Dan Malek mentioned that he is using the MontaVista custom ROM (monitor).
+Is this monitor available?  If so, under what terms?  Is the GPL'ed?
+Does MontaVista offer it for sale, or is it part of the MontaVista
+Linux subscription plan?
 
+> How could I possibly use the VxWorks monitor in any product?
 
->Kent Dahlgren wrote:
-> >
-> > At 08:53 AM 4/26/00 +0200, you wrote:
-> >
-> > >On Tue, 25 Apr 2000, Ralph Blach wrote:
-> > >
-> > > > Does anybody know of Video card which has a ROM that has PowerPC
-> > > > initializaiton in it?  If so, what is it?
-> > >
-> > >They don't.
-> > >
-> > >PowerPC desktop systems usually comes with Open Firmware
-> > >(aka. OpenBoot on SPARC) wich requires expansion ROMs to
-> > >be in CPU neutral Forth code, compiled runtime.
-> > >Hence, VGA BIOS does not apply.
-> >
-> > Well there are PCI video cards for the Mac that have Open Firmware
-> > on them. One of those may do it for you. This of course assumes that
-> > you have Open Firmware support on your system. The downside to
-> > Open Firmware is of course that it's big, expensive, and there are no
-> > open source implementations available AFAIK.
-> >
-> > Kent
-> >
-> > _______________________________________________________________
-> >
-> > Praesum Communications                  Phone: (510) 337-0495
-> > Suite 1                                 Fax:   (510) 337-0418
-> > 1134E Ballena Blvd                      email: kent@praesum.com
-> > Alameda, Ca. 94501                      web:   www.praesum.com
-> > _______________________________________________________________
-> >
+EST offers the VxWorks monitor for $1500.  There are no royalties,
+and the source code is provided except for the miiLib and motFccEnd files.
+The VxWorks monitor is able to boot off the network, so it is possible
+to pull down a Linux image and load it.
 
-_______________________________________________________________
+Other than the MontaVista custom ROM and the VxWorks monitor, do you
+know of any other options for a MPC8260 monitor?  At a bare minimum
+we need to:
 
-Praesum Communications                  Phone: (510) 337-0495
-Suite 1                                 Fax:   (510) 337-0418
-1134E Ballena Blvd                      email: kent@praesum.com
-Alameda, Ca. 94501                      web:   www.praesum.com
-_______________________________________________________________
+- Initialize the EST SBC8260 hardware enough to run Linux
+- Automatically transfer control to a configurable address.
+
+Options I have looked at:
+
+- 8xxrom, http://www.solutions4linux.de/powerpc.html
+
+      This has promise, but it needs to be worked for the MPC8260
+
+- Linux Boot Project, http://ppcboot.sourceforge.net/
+
+      The 8xxrom effort is being reborn, but the web site is only a
+      place holder.
+
+- Neil Russell <caret@c-side.com> mentioned in
+  http://lists.linuxppc.org/cgi-bin/wilma/wilma_hiliter/linuxppc-embedded/199911/msg00089.html
+  that he is working on a PPC loader.  I believe that Neil Russell
+  has something that runs on a EST SBC8260 board, but it isn't available
+  under a public license.  I wonder if this changed since limon-1.1 dated
+  3/21/2000?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
