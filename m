@@ -1,195 +1,27 @@
-From: "Rick Hunnicutt" <rhunnicu@getntds.com>
-To: <svacca@valcom.com>,
-	"'LinuxEmbeddedMailList (E-mail)'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Unbuffered char reads from App from stdin (keyboard)
-Date: Fri, 15 Feb 2002 10:41:05 -0800
-Message-ID: <000801c1b650$53e2dca0$8df859c7@get.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <01C1B626.24D9F1C0.svacca@valcom.com>
+From: ghannon@cspi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256B61.00681797.00@pine.cspi.com>
+Date: Fri, 15 Feb 2002 14:03:25 -0500
+Subject: MVME5100 booting from SCSI disk - fixed sort of
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Just do a read on STD_IN (fd of 0) of one char...
+Thanks for the feedback.
 
-#define STD_IN 0
-char ch;
+I was able to flash the board with a working kernel and have it mount the
+root filesystem on the HD.  I have a YDL distribution, and the partitioning
+tools I have are parted and pdisk, but of which didn't like type 41.
+(Perhaps I was trying to create the partition wrong?)
 
-    read(STD_IN, &ch, 1)
+I will eventually try to get fdisk going and see if that can do it on
+another
+disk.   For my current development I'm going to keep it like this.
 
-
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Steven
-> Vacca
-> Sent: Friday, February 15, 2002 10:39 AM
-> To: LinuxEmbeddedMailList (E-mail)
-> Subject: RE: Unbuffered char reads from App from stdin (keyboard)
->
->
->
-> Mark,
->
-> Using some of your unbuf_getch() code inside a while (1)
-> loop, fgetc() still blocks until a '\n', then, with each iteration
-> of the loop, 1 char is returned from the fgetc() until all chars are
-> returned, then fgetc() blocks again.
->
-> Is there a way to get chars without blocking and waiting for
-> the '\n'?
->
-> Thanks,
->
-> ShutEyeThinkin
->
->
->
->
->
-> //************************************************************
-> *************
-> ***********
-> Mark's code:
->
-> Hi,
->
-> I found some examples on groups.google.com that I modified
-> to suite my needs.  Try something like these:
->
-> int
-> unbuf_getch()
-> {
->     FILE    *input;
->     int      selected;
->     struct termios initial_settings;
->     struct termios new_settings;
->
->     if (!isatty(fileno(stdout))) {
->         fprintf(stderr,"You are not a terminal, OK.\n");
->     }
->
->     input = fopen("/dev/tty", "r");
->     if(!input) {
->         fprintf(stderr, "Unable to open /dev/tty\n");
->         exit(1);
->     }
->
->     tcgetattr(fileno(input),&initial_settings);
->     new_settings = initial_settings;
->     new_settings.c_lflag &= ~ICANON;
->     new_settings.c_lflag &= ~ECHO;
->     new_settings.c_cc[VMIN] = 1;
->     new_settings.c_cc[VTIME] = 0;
->     new_settings.c_lflag &= ~ISIG;
->     if(tcsetattr(fileno(input), TCSANOW, &new_settings) != 0) {
->         fprintf(stderr,"could not set attributes\n");
->     }
->     selected = fgetc(input);
->     tcsetattr(fileno(input),TCSANOW,&initial_settings);
->
->     fclose(input);
->     return selected;
-> }
->
-> int
-> kbhit()
-> {
->    int ret, c;
->    fd_set read_file_descr;
->    struct timeval timeout;
->    int debug_flag;
->
->    /* this could be a global */
->    debug_flag = 0;
->
->    /* this macro initializes the file descriptor
-> read_file_descr to to be
-> the empty set */
->    FD_ZERO(&read_file_descr);
->
->    /* this macro adds fileno(stdin) to the file descriptor
-> read_file_descr
-> */
->    FD_SET(fileno(stdin), &read_file_descr);
->
->    timeout.tv_sec = 0;
->    timeout.tv_usec = 100;
->    /* int FD_SETSIZE  macro is maximum number of
-> filedescriptors that fd_set
-> can hold */
->    /* function select waits for specified filedescr. to have
-> a signal */
->    /* last argument struct timeval *timeout */
->    ret = select(1, &read_file_descr, NULL, NULL, &timeout);
->    switch( ret ) /* 0 is timeout, -1 error (in errno), 1 = data */
->    {
->       case -1:
->          if( debug_flag )
->             fprintf(stdout, "select returned -1 error\n");
->          ret = 0;
->          break;
->       case 0:
->          if( debug_flag )
->             fprintf(stdout, "select returned 0 timeout\n");
->          ret = 0;
->          break;
->       case 1:
->          if( debug_flag )
->             fprintf(stdout, "SELECT returned=%d input\n", ret);
->          ret = 1;
->          break;
->       default:
->          if( debug_flag )
->             fprintf(stdout, "select returned=%d invalid\n", ret);
->          break;
->    }
->
->    /* test if user has data.  this'll eat the first non-CR
-> keys pressed */
->    if( FD_ISSET(fileno(stdin), &read_file_descr) )
->    {
->       c = getc(stdin);
->       if( debug_flag )
->          fprintf(stdout, "USER KEY=%d\n", c);
->       FD_CLR(fileno(stdin), &read_file_descr);
->    }
->
->    return ret;
-> }
->
-> Mark
-> --
-> [root@hjinc mclayton] /sbin/insmod stddisclaimer.o
->
->
-> > -----Original Message-----
-> > From: Steven Vacca [mailto:svacca@valcom.com]
-> > Sent: Friday, February 15, 2002 10:10 AM
-> > To: LinuxEmbeddedMailList (E-mail)
-> > Subject: Unbuffered char reads from App from stdin (keyboard)
-> >
-> >
-> >
-> > App and Linux kernel 2.2.13 running on mpc860T.
-> >
-> > I would like to know the best way, from inside my GNU C App,
-> > to sense if there's a keyboard key pressed.  Something
-> > similar to kbhit() in Microsoft C.  I would like to have a
-> particular
-> > thread execute a loop continuously and only when a key
-> > is present, do a getc() or getchar(), or gets(), and the like.
-> >
-> > What is the best way to accomplish this?
-> > Is there a way to make stdin unbuffered?
-> >
-> > Thanks,
-> >
-> > ShutEyeThinkin
-> >
-> >
->
+Thanks again!
+G. Hannon
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
