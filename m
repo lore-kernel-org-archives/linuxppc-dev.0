@@ -1,17 +1,15 @@
-Return-Path: <vijay_padiyar@hotmail.com>
-Received: from hotmail.com (bay1-dav3.bay1.hotmail.com [65.54.244.107])
-	by ozlabs.org (Postfix) with ESMTP id 6288D67A46
+Return-Path: <atit@eisodus.com>
+Received: from smtp1.iitb.ac.in (smtp2.iitb.ac.in [203.197.62.149])
+	by ozlabs.org (Postfix) with SMTP id 6498F67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Feb 2005 15:38:03 +1100 (EST)
-Message-ID: <BAY1-DAV32181D4E594557F8931608B770@phx.gbl>
-From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
-To: "Embedded TUX" <etux@embeddedtux.org>,
-	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
-Date: Fri, 11 Feb 2005 10:07:53 +0530
+	Fri, 11 Feb 2005 17:16:16 +1100 (EST)
+Message-ID: <420C4BEA.2010805@eisodus.com>
+Date: Fri, 11 Feb 2005 11:38:42 +0530
+From: atit <atit@eisodus.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: problem with accessing memory mapped area
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: linux porting on EP852T
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,52 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi there
+I am trying to port linux v2.4 on an embedded planet board. When I load 
+the zImzge.elf in ram  I get following :
+-----------------------------------------------------
+loaded at:  00210000 00282208
+relocated to: 00380000 003F2208
+board data at: 003EF13C 003EF158
+relocated to: 00385304 00385320
+zImage at: 0038581D 003EE563
+avail ram: 003F3000 01000000
 
-I'm running a Linux 2.6.10 kernel with BusyBox 1.0 on an MPC8260 platform.
-My board's memory map is as follows:
-
-SDRAM: 0x00000000 - 0x07FFFFFF (128 MB)
-FLASH: 0xFE000000 - 0xFFFFFFFF (32 MB)
-
-In addition, in the address range 0x30000000-0x300000FF, I have a CPLD
-mapped.
-
-Now, I wish to access the registers of this CPLD. For this, I create a
-module and insert it into the kernel. Now, in my 'init_module' function, I
-map the address range 0x30000000-0x300000FF to cpld_mem:
-
-unsigned char *cpld_mem;
-
-int init_module(void)
-{
-    ...
-    ...
-    cpld_mem =  (unsigned char *) ioremap (0x30000000, 0x100);
-}
-
-Let's say my file operation functions are device_open, device_release,
-device_read, device_write and device_ioctl.
-
-Now, I wish to write to the address 0x30000014. In device_write, I do the
-following:
-
-ssize_t device_write(...)
-{
-    ...
-    printk(KERN_DEBUG "Writing to CPLD");
-    outb(0x00, cpldMem + 0x14);
-}
-
-But when I execute this program on the target, it crashes after displaying
-"Writing to CPLD". Sometimes it says 'Bus error' and some other times I get
-a 'Kernel panic' message and the system reboots.
-
-Where could I be going wrong? I tried with 'writeb()' as well. It gave the
-same results. :-( Am I making some obvious silly mistakes?
-
-Regards
-
-Vijay Padiyar
-
-http://www.vijaypadiyar.eu.tf
+Linux/PPC load: console=ttyS0, 9600 console=tty0 root=/dev/sda2
+Uncomressing Linux...done.
+Now booting the kernel
+a 
+----------------------------------------------------------------
+and then it stops.  What can be the problem. Is there a port available 
+for EP852T.
