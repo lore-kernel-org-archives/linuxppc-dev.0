@@ -1,59 +1,30 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Sun, 16 Nov 2003 23:07:01 -0700
-To: Wolfgang Denk <wd@denx.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC5200 Patches
-Message-ID: <20031117060701.GA26252@zenos.farnsworth.org>
-References: <20031112151824.GC31581@ip68-0-152-218.tc.ph.cox.net> <20031116203318.21D9CC5F59@atlas.denx.de>
+Date: Mon, 17 Nov 2003 08:55:45 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Alan Modra <amodra@bigpond.net.au>,
+	Kumar Gala <kumar.gala@motorola.com>, benh@kernel.crashing.org,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	David Edelsohn <dje@watson.ibm.com>
+Subject: Re: kernel oops due to unaligned access with lswi
+Message-ID: <20031117075545.GA7821@suse.de>
+References: <20031115210449.GA10105@suse.de> <20031115222430.GA13820@suse.de> <200311152230.hAFMUwT32990@makai.watson.ibm.com> <20031115224342.GA16897@suse.de> <200311152259.hAFMxGT27464@makai.watson.ibm.com> <1068977831.681.8.camel@gaston> <3C0F7C71-185D-11D8-976A-000393DBC2E8@motorola.com> <20031116221932.GD14287@bubble.sa.bigpond.net.au> <16312.7017.405972.816440@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031116203318.21D9CC5F59@atlas.denx.de>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <16312.7017.405972.816440@cargo.ozlabs.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Nov 16, 2003 at 08:33:13PM +0000, Wolfgang Denk wrote:
-> Dear Tom & Dale,
->
-> OK, so the discussion has stopped. What's happening now? I  sent  our
-> stuff.  Dale  has  added some modification. We have more works in the
-> queue. I think it makes little sense to  continue  without  a  common
-> code base.
->
-> Can you give any estimates when something will go into a public tree,
-> and what this will be, and which tree?
->
-> If there is any reason for you not to use the  "common"  trees  (like
-> linuxppc_2_4_devel  ?)  yet,  maybe  we  can at least put the current
-> state into a more dedicated tree like
-> bk://source.mvista.com/linuxppc_2_4_mgt5100
->
-> So that we can at least avoid to duplicate efforts while the work  is
-> going on?
+ On Mon, Nov 17, Paul Mackerras wrote:
 
-Hi Wolfgang,
+> Olaf, do we know what the source and destination addresses were?
 
-Have you had a chance to test my merged patch?  Any bug fixes?  I don't
-think it's quite ready for linuxppc_2_4_devel, though it's close.
+source was c0fe4ffa, I cant reproduce it righht now to get the
+destination address.
 
-Per your suggestion above, I created
-bk://source.mvista.com/linuxppc_2_4_mpc5200
+--
+USB is for mice, FireWire is for men!
 
-It incorporates my merged patch with the following changes from the
-discussion in this thread:
-	o s/CONFIG_5XXX/CONFIG_PPC_5xxx/
-	o s/i2c-algo-m5xxx.c/i2c-algo-ppc_5xxx.c/
-	o s/UBoot/U-Boot/
-	o s/M?5[xX][xX][xX]/MPC5xxx/
-	o s/m?5[xX][xX][xX]/mpc5xxx/
-	o changed default CONFIG_MPC5xxx_FLASH_SIZE to 0x1000000
-
-I think the name changes are a definite improvement.  Thanks to all
-for the input.
-
-Please try this new tree and submit patches against it.
-
-Thank you,
--Dale Farnsworth
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
