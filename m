@@ -1,52 +1,35 @@
-Message-Id: <200012121901.UAA00875@piglet.grunz.lu>
-Date: Tue, 12 Dec 2000 20:01:07 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: AW: Sound on an iBook?
-To: iain@sandoe.co.uk
-cc: barrow_dj@yahoo.com, linuxppc-dev@lists.linuxppc.org,
-        schmitz@opal.biophys.uni-duesseldorf.de, khalfmann@libra.de
-In-Reply-To: <200012081959.TAA30962@hyperion.valhalla.net>
+Message-ID: <20001213045523.1673.qmail@kunk.jriver.com>
+Subject: Mace woes solved, NOT!
+To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 12 Dec 2000 22:55:23 -0600 (CST)
+From: Robert E Brose II <bob@kunk.jriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Unfortunatly the mace has taken a turn for the worse again. Turning off
+syncookies made it work longer but it still gets screwed up after a
+while (this has nothing to do with the HW, the machine is on 24/7 and
+the dropping only seems to depend on the number of packets handled by
+the driver and the problem is quite reproducable with other hubs,
+macs, etc and of course, it always works in macos).
 
-On   8 Dec, this message from Iain Sandoe echoed through cyberspace:
-> we are all quite familiar with i2c.
->
-> the new thing here is the particular Apple hardware, registers etc. used to
-> implement the bus interface... another set of stuff we may have to deduce
-> the hard way.
->
-> it's not the cuda - the iBook doesn't have a cuda - AFAIK.  (PMU, I expect).
+I flood pinged the 7500 from a slower machine (486 linux portable) and
+after 800,000 packets or so it started dropping. I stopped the flood
+and went to a simple 1/sec ping and started loosing around 40%. I
+am just guessing but there may be something wrong with collisions or
+missing an interrupt or something.
 
-You might want to look for the aproach Apple used when implementing I2C
-in the planb ASIC (that was in the 7500/8500 machines, back around
-'94-'95). This I2C interface talks to a single chip on the bus (the
-SAA7196 video decoder), and it goes like this: write the target device
-register subaddress into some register, wait a bit, write the data into
-another register, and off it goes into the target device.
+Foo, I though it was working. I'm back to the pci tulip now which
+always works. Hopefully I'll get some time to try other possibilities
+on the mace driver....
 
-There is a third register that monitors the SAA7196's only readable
-register, a status register.
-
-FWIW, register address is at 0x200, data is at 0x204, and status at
-0x208 into planb's address space.
-
-Of course, KeyLargo might work in an entirely different way...
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
