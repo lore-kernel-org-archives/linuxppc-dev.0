@@ -1,55 +1,60 @@
-Message-ID: <3B574C53.4050008@mvista.com>
-Date: Thu, 19 Jul 2001 14:08:35 -0700
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <3B57F6EA.A6CD5001@genetel.co.kr>
+Date: Fri, 20 Jul 2001 18:16:31 +0900
+From: hychon <hychon@genetel.co.kr>
+Reply-To: hychon@genetel.co.kr
 MIME-Version: 1.0
-To: Grant Erickson <erick205@umn.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCI-to-PCMCIA/CardBus, Hardhat Linux 2.4.2, and the 405GP
-References: <Pine.SOL.4.20.0107182123580.21428-100000@garnet.tc.umn.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Return physical address from virtual address ?
+Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Grant Erickson wrote:
+Hi !!
 
-> I am attempting to get a SanDisk or IBM MicroDrive CardFlash interface
-> device working with a Walnut (IBM 405GP Rev. D) platforms and am using
-> MontaVista's 2.4.2-mvista_010329 Linux kernel to do so. The PCI-to-CardBus
-> adapter is a TI1420.
+I am working a HDLC program (not device driver) as Embedded Linux
+system  , that  used  SCC2 on the MPC860T target board .
 
->
-> Are there any tricks or pitfalls to get this working? I haven't been too
-> wildly successful yet using either compiled in or module-based drivers.
+I worked initialzed  SCC2 and allocat memory buffer  with the
+kernel-2.2.13 based on PowerPC arch .
 
+In my program,  I allocated  the BD (Buffer Descriptor)  in  a temporary
+place of DPMEM.
 
-I am not familiar with all the cache coherency issues with PCI in that
-kernel.  It is best to upgrade to the latest 405 kernel from Montavista.
+ RxTxBD = (BDRINGS *)(&IMMR->udata_bd[0x600]);
+      IMMR->PRAM[PAGE2].pg.scc.h.rbase = (UHWORD)&RxTxBD->RxBD[0];   /*
+1 */
+      IMMR->PRAM[PAGE2].pg.scc.h.rbase =
+(UHWORD)0x2E00;                                /* 2 */
 
->
-> Also, the PCMCIA-HOWTO seems fairly explicit that a PCMCIA IDE/ATA drive
-> such as the IBM MicroDrive or SanDisk cannot be used as a boot device (but
-> can be used as a root device w/ initrd). Has anyone out there done
-> otherwise (i.e. built-in drivers, no initrd, w/ a simple root=/dev/hda)?
+ case 1 :  BD state not change and down .the system
+ case 2 :  BD state are change
 
+I think that  the RBASE and TBASE in SCC PARAM is a physical address of
+Buffer Descriptor
 
-Yes with a minor hack to the kernel pcmcia ide-cs driver I believe you
-can get it to work.  The problem is the ide-cs waits for the Cardmgr
-daemon to start before it will recognize the card.
+I want to get a place of BD  in  DPMEM itself  and  retun  as  physical
+address. (as if ,  CPM  get a BD pointer  in commproc.c file )
 
->
-> ANY insight would be greatly appreciated.
->
+Question1) How to get  a place(pointer) of BD  in DPMEM  and give RBASE
+(TBASE)  the physical address ?
 
+ And Buffer are allocated  in a virtual area , by following
+    mem_addr_buf1 = mmap(0,1024,(PROT_READ|PROT_WRITE),MAP_SHARED,
+mem_buf1,0x100000);
+    buf = (unsigned char *)mem_addr_buf1;
 
-I believe there are problems with kernel PCMCIA in hhl-2.4.2.  We
-actually only support the pcmcia-cs package.  Its probably best to start
-w/ the pcmcia-cs package and get that to work.  If it doesn't work, you
-probably are running into the cache issues. The pcmcia-cs package, the
-Microdrive, and that TI controller all work on other PPC platforms.
+ when  I write  buf  as  Buffer addr of BD,  that do not change  Buffer
+(BD) state
 
-If you are a Montavista customer, send the exact error messages you are
-getting to your support contact.
+I think that  don't find the buffer address
+and the Buffer pointer of BD structure was recognized as physical
+address of  the Buffer (buf) .
+
+Question2) How to get a buffer address pointer of BD struct (a place of
+Buffer) from kernel (virtual address) as physical address?
+
+Help me !
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
