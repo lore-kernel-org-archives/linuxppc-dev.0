@@ -1,103 +1,87 @@
-Message-ID: <3C59FDD1.2F290996@mvista.com>
-Date: Thu, 31 Jan 2002 18:30:41 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: trini@mvista.com, linuxppc-dev@lists.linuxppc.org
-Cc: frowand@mvista.com
-Subject: linuxppc_2_4_devel patch for enable_irq()
-Content-Type: multipart/mixed;
- boundary="------------94AFE5FFF82CCB2C18CB5FF0"
+Date: Fri, 1 Feb 2002 00:51:01 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Nathan Scott <nathans@sgi.com>, linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] Extended attributes syscalls for powerpc
+Message-ID: <20020201005101.U14742@plato.local.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------94AFE5FFF82CCB2C18CB5FF0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi Paul,
 
-Tom,
+Linus has merged the Extended attributes API from Andreas Gruenbacher
+and Nathan Scott (SGI) into 2.5.3, and added the i386 syscalls.
 
-I'm attaching a patch for a problem with enable_irq().
+By request of Nathan I have created the attached patch to add the
+syscalls to the powerpc arch.
 
-Comments and feedback from those intimately familiar with the
-PPC interrupt handling infrastructure are encouraged...
+This patch allocates syscalls 208-219, if you have no problems with
+this allocation could you merge this patch with the powerpc 2.5
+kernel tree?  The sooner this can happen the better as Nathan is
+working on getting the userspace utilities fixed to use the official
+API and official syscall numbers, therefore we need the powerpc
+syscall numbers reserved ASAP so the userspace utilities can support
+the powerpc architecture.
+
+TIA
+
+This patch, and a version against the Linus 2.5.3 tree is also
+available at:
+
+http://penguinppc.org/~eb/files/ppc-xattr-syscalls-linus.diff (Linus tree)
+http://penguinppc.org/~eb/files/ppc-xattr-syscalls.diff (linuxppc_2_5 tree)
+
+diff -urN linux-2.5.3-ppc.orig/arch/ppc/kernel/misc.S linux-2.5.3-ppc/arch/ppc/kernel/misc.S
+--- linux-2.5.3-ppc.orig/arch/ppc/kernel/misc.S	Thu Jan 31 21:06:20 2002
++++ linux-2.5.3-ppc/arch/ppc/kernel/misc.S	Fri Feb  1 00:03:59 2002
+@@ -1230,6 +1230,18 @@
+ 	.long sys_madvise	/* 205 */
+ 	.long sys_mincore
+ 	.long sys_gettid
++	.long sys_setxattr
++	.long sys_lsetxattr
++	.long sys_fsetxattr	/* 210 */
++	.long sys_getxattr
++	.long sys_lgetxattr
++	.long sys_fgetxattr
++	.long sys_listxattr
++	.long sys_llistxattr	/* 215 */
++	.long sys_flistxattr
++	.long sys_removexattr
++	.long sys_lremovexattr
++	.long sys_fremovexattr
+ 	.rept NR_syscalls-(.-sys_call_table)/4
+ 		.long sys_ni_syscall
+ 	.endr
+diff -urN linux-2.5.3-ppc.orig/include/asm-ppc/unistd.h linux-2.5.3-ppc/include/asm-ppc/unistd.h
+--- linux-2.5.3-ppc.orig/include/asm-ppc/unistd.h	Thu Jan 31 21:05:44 2002
++++ linux-2.5.3-ppc/include/asm-ppc/unistd.h	Fri Feb  1 00:05:11 2002
+@@ -215,6 +215,18 @@
+ #define __NR_madvise		205
+ #define __NR_mincore		206
+ #define __NR_gettid		207
++#define __NR_setxattr		208
++#define __NR_lsetxattr		209
++#define __NR_fsetxattr		210
++#define __NR_getxattr		211
++#define __NR_lgetxattr		212
++#define __NR_fgetxattr		213
++#define __NR_listxattr		214
++#define __NR_llistxattr		215
++#define __NR_flistxattr		216
++#define __NR_removexattr	217
++#define __NR_lremovexattr	218
++#define __NR_fremovexattr	219
+
+ #define __NR(n)	#n
 
 
-The problem:
 
-  The irq handling code disables external interrupts, but doesn't
-  increment the desc[irq]->depth.
-
-  Code path is:
-
-  do_IRQ()
-    ppc_irq_dispatch_handler()
-      ack_irq()
-        irq_desc[irq].handler->ack(irq)
-        which is ppc405_uic_disable_and_ack()
-
-  disable_irq() and enable_irq() do use the depth field to determine when
-  to actually re-enable the irq.  If enable_irq() is called from within
-  the irq handling path then interrupts for that irq may be enabled even
-  though the irq handling path thinks that it has disabled them.
-
-  I encountered the problem while stress testing an ethernet driver
-  error path.
-
-
-"The solution" (what the attached patch does):
-
-  Add a check for (IRQ_DISABLED|IRQ_INPROGRESS) to ppc405_uic_enable(),
-  like the check in ppc405_uic_end().
-
-
-This solution works because the 4xx is not MP capable (at least not yet).
-I don't think this solution would work for MP systems (<---- note to the
-other PPC processor families, I think the same problem that I fixed for
-405 needs to be fixed for all the other processors) because
-ppc_irq_dispatch_handler() doesn't set IRQ_INPROGRESS if IRQ_PER_CPU.
-
-If anyone cares about the 403 code, it also needs to be fixed to check
-for (IRQ_DISABLED|IRQ_INPROGRESS).  I didn't include that fix in my
-previous 405 irq patch because I don't have a 403 to test with (I meant
-to mention that when I submitted the previous patch, sorry for forgetting).
-
--Frank
 --
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
---------------94AFE5FFF82CCB2C18CB5FF0
-Content-Type: text/plain; charset=us-ascii;
- name="patch_ppc4xx_pic"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch_ppc4xx_pic"
-
---- old_linux/arch/ppc/kernel/ppc4xx_pic.c	Thu Jan 31 15:05:03 2002
-+++ linux/arch/ppc/kernel/ppc4xx_pic.c	Thu Jan 31 14:58:11 2002
-@@ -135,11 +135,14 @@
- {
- 	int bit, word;
-
--	bit = irq & 0x1f;
--	word = irq >> 5;
-+	if (!(irq_desc[irq].status & (IRQ_DISABLED | IRQ_INPROGRESS))) {
-
--	ppc_cached_irq_mask[word] |= 1 << (31 - bit);
--	mtdcr(DCRN_UIC0_ER, ppc_cached_irq_mask[word]);
-+		bit = irq & 0x1f;
-+		word = irq >> 5;
-+
-+		ppc_cached_irq_mask[word] |= 1 << (31 - bit);
-+		mtdcr(DCRN_UIC0_ER, ppc_cached_irq_mask[word]);
-+	}
- }
-
- static void
-
---------------94AFE5FFF82CCB2C18CB5FF0--
-
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
