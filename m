@@ -1,25 +1,23 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <sbd033de.079@tms-pty.com>
-Date: Fri, 19 Oct 2001 14:08:20 +1100
-From: "Jeremy Rosen" <Rosen.Jeremy@tms-pty.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: choosing a card
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20011019042029.91154.qmail@web15001.mail.bjs.yahoo.com>
+Date: Fri, 19 Oct 2001 12:20:29 +0800 (CST)
+From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
+Subject: How to connect ppp protocol to my socket modem?
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks to your advices, we are going to order another development board,
-instead of the FADS that we had so far for testing.
+hello all,
+I have compiled kernel with CONFIG_PPP ,and i have
+added  /dev/ppp into my file system.But i don't how to
+write driver to connect to ppp protocol whith my
+socket modem?
+My borad is using MPC850 with Hardhat Linux 2.4.2.
 
-so the next question is : what board to chose..
+thanks.
+ZhouChang
 
-we want to have a 860T on it...
-is the ADS board O.K ?
-
-thx
-
-Jeremy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
