@@ -1,66 +1,31 @@
-Message-ID: <3B71369C.A19FA1A2@seranoa.com>
-Date: Wed, 08 Aug 2001 08:54:52 -0400
-From: Andrew Dixon <andrew.dixon@seranoa.com>
+Subject: MVista: CDK 1.2 2.2.14 for SBS-K2 (750) Module Support
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF205CEC3C.F52A4B97-ON85256AA2.0049AD5B@raleigh.ibm.com>
+From: "John F Davis" <johndavi@us.ibm.com>
+Date: Wed, 8 Aug 2001 09:10:22 -0400
 MIME-Version: 1.0
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Strange bootpd behavior (server side)
-References: <3B703ADA.9ADAFBAD@carts.com>
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check out the NAG:
-	http://www.linuxdoc.org/LDP/nag2/index.html
-and there are probably a bunch of mail lists for Red Hat Network
-Administration.  I can't recommend one because I use Debian.  (If you
-want to upgrade your server from Dead Rat to Debian though
-debian-user@lists.debian.org is a great list ;)
+Hello
 
-later,
-Andy
+We are trying to build a kernel with loadable modules support using a stock
+mvista CDK 1.2 toolset.  The
+error is that many symbols are not resolved correctly.  If I build without
+module
+support the kernel builds fine.
 
+For what its worth, we noticed that pci_io_base (one of the undefined
+symbols) was defined in the powermac tree.
 
-Kevin Fry wrote:
->
-> I'm having a small problem with our redhat 6.2 bootp server and maybe
-> yous guys can shed some light on it for me.   The problem is that
-> whenever our DSL internet connection is down(which is too much.. I wish
-> cable was available!), the bootpd stops responding to requests.. I can
-> see the requests with tcpdump, but no replys. and when the internet is
-> up sometimes is takes a little bit for the bootpd to respond to
-> requests.
->     I think it's doing DNS resolution and if it can't find a DNS server
-> when the net's down, it just stops working. Does linux automatically do
-> name resolution on every address it gets? If so can i turn this off?
->     Our network is behind a DSL modem/router (Flowpoint 2200) acting as
-> gateway(192.168.254.254), and we have 3 switches after that.
->     A lot of the time the router is finicky with linux even when
-> everything is working.. I know this is a bit off topic, but ANY
-> suggestions are very welcome.
->
-> Here's my routing table..
->
-> Kernel IP routing table
-> Destination     Gateway         Genmask         Flags Metric Ref    Use
-> Iface
-> 192.168.254.13 *                   255.255.255.255 UH    0      0
-> 0 eth0
-> 192.168.254.0   *                   255.255.255.0   U     0
-> 0        0 eth0
-> 127.0.0.0       *                       255.0.0.0       U     0
-> 0        0 lo
-> default    192.168.254.254    0.0.0.0         UG    0      0        0
-> eth0
->
-> Thanks!
-> Kevin Fry
->
+Lastly, does Mvista release different releases or patches for the same
+kernel?  ie., We build 2.2.14 kernels
+with module support on other machines here in the lab.  However, building
+this kernel on a newly installed machine fails.
 
---
-Andrew Dixon
-Software Engineer
-Seranoa Networks
-978.897.3434 x231
+John
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
