@@ -1,22 +1,16 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp2.wanadoo.fr (smtp2.wanadoo.fr [193.252.22.29])
-	by ozlabs.org (Postfix) with ESMTP id 42F5267A46
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2005 04:48:01 +1000 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0208.wanadoo.fr (SMTP Server) with ESMTP id 924491C002B4
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Mar 2005 20:47:58 +0200 (CEST)
-Date: Thu, 31 Mar 2005 20:45:49 +0200
-To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <20050331184549.GA28069@pegasos>
-References: <20050328232355.GA1982@pegasos>
-	<20050331142813.GH25923@smtp.west.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20050331142813.GH25923@smtp.west.cox.net>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
+	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id EB72967A6B
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2005 05:17:16 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 31 Mar 2005 21:17:00 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D25@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Dan Malek" <dan@embeddededge.com>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: PREP sym53c8xx sym53c8xx brokeness due to 2.6.9-rc1-bk1
-	introduced residual data patch ...
+Subject: RE: [PATCH] invalid instructions in kernel mode
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,64 +20,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 31, 2005 at 07:28:13AM -0700, Tom Rini wrote:
-> On Tue, Mar 29, 2005 at 01:23:55AM +0200, Sven Luther wrote:
-> > Hello,
-> > 
-> > I have been investigating the prep breakage of the sym53c8xx driver on my
-> > powerstack II in recent kernels, and traced it to the residual data patch,
-> > or more exactly to the whole prep_pci.c/prep_setup.c patches that where
-> > introduced between 2.6.9-rc1 and 2.6.9-rc1-bk1. I didn't have time to find
-> > more details as the patch is not so small, and seems to do many things, and
-> > linux.bkbits.net seems done right now.
-> > 
-> > Mmm, after a bit more of investigation, the changeset breaking it is :
-> > 
-> > # This is a BitKeeper generated diff -Nru style patch.
-> > #
-> > # ChangeSet
-> > #   2004/08/16 10:35:18-07:00 trini@kernel.crashing.org
-> > #   ppc32: On PReP, use residual data for PCI dev -> IRQ, and use it.
-> > #
-> > #   Signed-off-by: Leigh Brown <leigh@solinno.co.uk>
-> > #   Signed-off-by: Tom Rini <trini@kernel.crashing.org>
-> > #
-> > # include/asm-ppc/residual.h
-> > #   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +7 -0
-> > #   This adds a function to use the residual data to determine the IRQ
-> > #   for a given PCI device, and changes prep_pcibios_fixup() to use it.
-> > #
-> > # arch/ppc/platforms/residual.c
-> > #   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +60 -0
-> > #   This adds a function to use the residual data to determine the IRQ
-> > #   for a given PCI device, and changes prep_pcibios_fixup() to use it.
-> > #
-> > # arch/ppc/platforms/prep_pci.c
-> > #   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +37 -23
-> > #   This adds a function to use the residual data to determine the IRQ
-> > #   for a given PCI device, and changes prep_pcibios_fixup() to use it.
-> > 
-> > Mmm, i guess this makes sense, since it seems the sym53c8xx doesn'y find its
-> > irq anymore or something. Tom Rini, or Leigh Brown, do you have any comments
-> > on this one ? 
-> 
-> Well, we'd need to be certain it's this patch.  If it's this patch, I
-> think Leigh was suggesting at the time that the fix would be to fixup
-> the residual data with the correct information.
+Hi Dan,
 
-I got through all the changesets one by one, and it is most definitively this
-one. i unapply it and it works, i apply it and it breaks.
+Please be aware I am no expert in that field, so bear with me :)
 
-/me went through a couple hours of binary diff in this way monday evening :/
+Dan Malek wrote:
+>> When CPU has no (classic) FPU, and math emulation is disabled,
+>> fp instructions are not allowed in kernel mode.
+>
+>FP Instructions are never allowed in kernel mode regardless of the CPU.
+>However, with math emulation disabled and no FPU, we still emulate
+>FP load/store operations because they are usually hard coded in
+>some of the context save/restore functions of the C library.
 
-> But what also went in were changes to specific irq maps, based on what
-> fixed a given machine for someone else, so one of those changes could
-> also be it.
+What I don't understand, is how the FP load/store operations
+in misc.S can "work" on a system with no FPU and *no* math-emu?
 
-Nope, it is most definitively the patch above which causes the problem.
+>> This bug has been found with crashme (crash01) of LTP, on a e500=20
+>> system.
+>
+>What is the bug?  This patch disables a big feature we have been
+>using for many years.  Please take another look at this.
 
-I believe the new irq setting method is borked somehow.
+Many years? Allow me to doubt it's really used :). I took a better=20
+look, at math-emu/math.c. And then I understood why my previous
+patch should not have disabled cvt_fd et al in misc.S.
 
-Friendly,
+The fact is, with CONFIG_MATH_EMULATION disabled, make does not enter
+the math-emu/ subdir, math.c does not get compiled (so no lfs/etc.
+emulation), and  by the way, nobody even call do_mathemu in
+traps.c because it's always surrounded with #ifdef
+CONFIG_MATH_EMULATION.
+Though, it does work for 8xx thanks to Soft_emulate_8xx, but doesn't
+for other FPU-less cores when CONFIG_MATH_EMULATION is disabled.
 
-Sven Luther
+So here is another patch, which hopefully is a better fix,
+yet find a solution to my problem. Please comment on it,
+as I'm not sure whether ProgramCheckException is right.
+Rem: it looks weird to use FP load/store operations when
+you do know that you don't have a FPU and CONFIG_MATH_EMULATION
+is disabled. Should we do like 8xx, and call directly
+the emulation layer? Could we re-use Soft_emulate_8xx() (made generic
+without the *_8xx_pte) for the 4xx and e500 ?
+
+
+Signed-off-by: Stephane Fillod <fillods@gmail.com>=20
+
+--- linux/arch/ppc/Makefile	26 Mar 2005 03:28:39 -0000	1.1.1.2
++++ linux/arch/ppc/Makefile	31 Mar 2005 18:59:25 -0000
+@@ -55,10 +55,10 @@
+ head-$(CONFIG_POWER4)		+=3D arch/ppc/kernel/idle_power4.o
+=20
+ core-y				+=3D arch/ppc/kernel/ arch/ppc/platforms/
+\
+-				   arch/ppc/mm/ arch/ppc/lib/
+arch/ppc/syslib/
++				   arch/ppc/mm/ arch/ppc/lib/
+arch/ppc/syslib/ \
++				   arch/ppc/math-emu/
+ core-$(CONFIG_4xx)		+=3D arch/ppc/platforms/4xx/
+ core-$(CONFIG_85xx)		+=3D arch/ppc/platforms/85xx/
+-core-$(CONFIG_MATH_EMULATION)	+=3D arch/ppc/math-emu/
+ core-$(CONFIG_XMON)		+=3D arch/ppc/xmon/
+ core-$(CONFIG_APUS)		+=3D arch/ppc/amiga/
+ drivers-$(CONFIG_8xx)		+=3D arch/ppc/8xx_io/
+--- linux/arch/ppc/kernel/traps.c	30 Mar 2005 16:25:07 -0000
+1.3
++++ linux/arch/ppc/kernel/traps.c	31 Mar 2005 18:59:25 -0000
+@@ -540,7 +540,6 @@
+ 	    return;
+ #endif /* CONFIG_ADEOS_CORE */
+=20
+-#ifdef CONFIG_MATH_EMULATION
+ 	/* (reason & REASON_ILLEGAL) would be the obvious thing here,
+ 	 * but there seems to be a hardware bug on the 405GP (RevD)
+ 	 * that means ESR is sometimes set incorrectly - either to
+@@ -552,7 +551,6 @@
+ 		emulate_single_step(regs);
+ 		return;
+ 	}
+-#endif /* CONFIG_MATH_EMULATION */
+=20
+ 	if (reason & REASON_FP) {
+ 		/* IEEE FP exception */
+--- linux/arch/ppc/kernel/process.c	26 Mar 2005 03:28:20 -0000
+1.1.1.2
++++ linux/arch/ppc/kernel/process.c	31 Mar 2005 18:59:25 -0000
+@@ -342,7 +342,7 @@
+ 	printk("\n");
+ #ifdef CONFIG_KALLSYMS
+ 	/*
+-	 * Lookup NIP late so we have the best change of getting the
++	 * Lookup NIP late so we have the best chance of getting the
+ 	 * above info out without failing
+ 	 */
+ 	printk("NIP [%08lx] ", regs->nip);
+
+
+
+Thanks for the reply
+--=20
+Stephane
