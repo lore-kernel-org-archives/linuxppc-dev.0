@@ -1,22 +1,22 @@
-Return-Path: <benny@cellvision.com.cn>
-Received: from out01.east.net (unknown [202.130.225.2])
-	by ozlabs.org (Postfix) with ESMTP id 607062BDB5
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 15:21:06 +1100 (EST)
-Received: from unknown (HELO smtp01.east.net) ([202.130.225.4])
-	(envelope-sender <benny@cellvision.com.cn>)
-	by 0 (qmail-ldap-1.03) with SMTP
-	for <linuxppc-dev@ozlabs.org>; 2 Jan 2005 12:05:00 +0800
-Message-ID: <004a01c4f082$76c652a0$1100a8c0@BENNY>
-From: "Benny Liu" <benny@cellvision.com.cn>
-To: "Sylvain Munaut" <tnt@246tNt.com>
-References: <008c01c4f005$bc1e94c0$1100a8c0@BENNY>
-	<41D721E1.8000007@246tNt.com>
-Date: Sun, 2 Jan 2005 12:21:00 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: isochronous mode of USB audio device on MPC5200
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp10.wanadoo.fr (smtp10.wanadoo.fr [193.252.22.21])
+	by ozlabs.org (Postfix) with ESMTP id 3C1502BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 20:31:41 +1100 (EST)
+Date: Sun, 2 Jan 2005 10:39:09 +0100
+To: Sebastian Heutling <sheutlin@gmx.de>
+Message-ID: <20050102093908.GA25739@pegasos>
+References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
+	<41CF77A9.9040405@gmx.net> <20041231095557.GA16480@pegasos>
+	<1104505249.6794.5.camel@weizen.left.earth>
+	<20041231222808.GB8078@pegasos>
+	<1104623790.10369.14.camel@weizen.left.earth>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1104623790.10369.14.camel@weizen.left.earth>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: linuxppc-dev@ozlabs.org,
+	Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-SGkgU3lsdmFpbiwNCg0KICAgIFlvdSBhcmUgcmlnaHQuDQoNCiAgICBJIGFtIHVzaW5nIHRoZSBs
-YXN0ZWQga2VybmVsIHNvdXJjZSBmcm9tIERlbnggd2ViIHNpdGUsIGtlcm5lbCB2ZXJzaW9uIGlz
-IDIuNC4yNSwgYnV0IHRoZSB0ZCBkZWZpbml0aW9uIGluIHVzYi1vaGNpLmggaXMgc3RpbGwgd3Jv
-bmcuIEkgbW9kaWZpZWQgdGhlIGh3UFNXIGRlZmluaXRpb24sIG5vdyB0aGUgaXNvY2hyb25vdXMg
-bW9kZSBpcyBvay4NCg0KICAgIFRoYW5rIHlvdSB2ZXJ5IG11Y2guDQoNCkJlc3QgUmVnYXJkcywN
-CkJlbm55DQoNCg0KLS0tLS0gT3JpZ2luYWwgTWVzc2FnZSAtLS0tLSANCkZyb206ICJTeWx2YWlu
-IE11bmF1dCIgPHRudEAyNDZ0TnQuY29tPg0KVG86ICJCZW5ueSBMaXUiIDxiZW5ueUBjZWxsdmlz
-aW9uLmNvbS5jbj4NCkNjOiA8bGludXhwcGMtZGV2QG96bGFicy5vcmc+DQpTZW50OiBTdW5kYXks
-IEphbnVhcnkgMDIsIDIwMDUgNjoxOSBBTQ0KU3ViamVjdDogUmU6IGlzb2Nocm9ub3VzIG1vZGUg
-b2YgVVNCIGF1ZGlvIGRldmljZSBvbiBNUEM1MjAwDQoNCg0KPiBIaSBCZW5ueQ0KPiANCj4gDQo+
-IFdoYXQgdmVyc2lvbiBvZiB0aGUga2VybmVsID8NCj4gDQo+IA0KPiBJbiB0aGUgbGFzdCAyLjQg
-SSBidWlsdCAoIHF1aXRlIGEgd2hpbGUgYWdvIC4uLiApIHRoZXJlIHdhcyBhIGZsYXcNCj4gaW4g
-dGhlIGhhbmRsaW5nIG9mIHRoZSBod1BTVyBmaWVsZCBpbiB0aGUgT0hDSSBkcml2ZXIgd2hlbiBv
-biBiaWctZW5kaWFuDQo+IHBsYXRmb3JtLiBTaW5jZSB0aGlzIGZpZWxkIGlzIG9ubHkgdXNlZCBm
-b3QgSXNvY2hyb25vdXMgdGhlIHByb2JsZW0NCj4gZGlkbid0IHNob3cgdXAgYmVmb3JlLg0KPiAN
-Cj4gVGhlIGZpZWxkcyB3ZXJlIGFzc3VtZSBieSB0aGUga2VybmVsIHRvIGJlIGluIHRoaXMgb3Jk
-ZXINCj4gDQo+IGh3UFNXWzBdDQo+IGh3UFNXWzFdDQo+IGh3UFNXWzJdDQo+IGh3UFNXWzNdDQo+
-IC4uLg0KPiANCj4gQnV0IGluIGZhY3Qgc2luY2UgdGhlIGZpZ3VyZSBpbiBvaGNpIHNwZWMgc2hv
-d3MgdGhpcyBhcnJheSBub3QgYXMgYW4NCj4gYXJyYXkgb2YgMTZiaXRzIGZpZWxkcyBidXQgYXMg
-YW4gYXJyYXkgb2YgMzJiaXRzIGludGVnZXIsIGVhY2ggY29udGFpbmluZw0KPiB0d28gaHdQU1db
-XSBpbiBsaXR0bGUgZW5kaWFuIG9yZGVyLCB0aGV5IGVuZGVkIHVwIGltcGxlbWVudGVkIGluIHRo
-ZSBvcmRlcg0KPiANCj4gaHdQU1dbMV0NCj4gaHdQU1dbMF0NCj4gaHdQU1dbM10NCj4gaHdQU1db
-Ml0NCj4gLi4uDQo+IA0KPiAoZnNja2VkIHVwIGlzbid0IGl0ID8gOykNCj4gDQo+IA0KPiBBbmQg
-dGhhdCB3YXMgbm90IHRha2VuIGludG8gYWNjb3VudCAuLi4NCj4gDQo+IA0KPiBJIG5vdGlmaWVk
-IFcuRGVuayBhYm91dCB0aGUgcHJvYmxlbSBhIHdoaWxlIGFnbywgZG9uJ3Qga25vdyBpZiBhbnkN
-Cj4gYWN0aW9uIGhhcyBiZWVuIHRha2VuLg0KPiANCj4gDQo+IA0KPiANCj4gU3lsdmFpbiBNdW5h
-dXQNCj4gDQo+IA0KPiBCZW5ueSBMaXUgd3JvdGU6DQo+IA0KPj4gSGksIGV2ZXJ5b25lLCBoYXBw
-eSBuZXcgeWVhciENCj4+IERpZCBhbnlvbmUgdHJ5IHVzYiBhdWRpbyBkZXZpY2Ugb3Igb3RoZXIg
-aXNvY2hyb25vdXMgbW9kZSB1c2IgZGV2aWNlcw0KPj4gb24gSWNlY3ViZSBib2FyZChNb3Rvcm9s
-YSBNUEM1MjAwKT8NCj4+IEkgdHJpZWQsIGJ1dCBpdCByZXBvcnRzIHRoZSBmb2xsb3dpbmcgbWVz
-c2FnZToNCj4+IC8iaG9zdC91c2Itb2hjaS5jOiBPSENJIFVucmVjb3ZlcmFibGUgRXJyb3IsIGNv
-bnRyb2xsZXIgdXNiLTAgZGlzYWJsZWQiLw0KPj4gQWZ0ZXIgdGhpcyBtZXNzYWdlLCB0aGUgaG9z
-dCBjb250cm9sbGVyIGlzIGRpc2FibGVkLg0KPj4gVGhhbmtzIGEgbG90Lg0KPj4NCj4+LS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tDQo+Pg0KPj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXw0KPj5MaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+PkxpbnV4cHBjLWRldkBvemxh
-YnMub3JnDQo+Pmh0dHBzOi8vb3psYWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWRl
-dg0KPj4NCj4gDQo+
+On Sun, Jan 02, 2005 at 12:56:29AM +0100, Sebastian Heutling wrote:
+> On Fri, 2004-12-31 at 23:28 +0100, Sven Luther wrote:
+> > On Fri, Dec 31, 2004 at 04:00:49PM +0100, Sebastian Heutling wrote:
+> > > On Fri, 2004-12-31 at 10:55 +0100, Sven Luther wrote:
+> > > > On Mon, Dec 27, 2004 at 03:47:05AM +0100, Christian wrote:
+> > > > > Marc Dietrich schrieb:
+> > > > > >Hi all,
+> > > > > >
+> > > > > >I read this thread about booting a PowerStack with newer kernels. 
+> > > > > >Motivated by this, I tried to compile a 2.6.10 kernel on my machine (with 
+> > > > > >sym53c825a onboard). Sadly, the scsi controller always timeouts during 
+> > > > > >initialisation. I 
+> > > > 
+> > > > I also have some strange issues with network support using the standard debian
+> > > > 2.6.8 kernel. ifconfig upping the decchip ethernet on the powerstack freezes
+> > > > the kernel, and i hear reports of problems on IBM PReP hardware too with not
+> > > > working ethernet, altough there is no freeze.
+> > > > 
+> > > > Any idea on this ? 
+> > > 
+> > > Does it contain the IRQ patch? Where does it boot from SCSI or net? What
+> > > PCI-Devices are installed?
+> > 
+> > Probably not, just the standard debian kernel, i donÃ't remember any irq
+> > patches, but there where a bunch of patches from leighbb. it is done
+> 
+> The patch is the one that is included in 2.6.10 which is mentioned above
+> and this thread already has somewhere in the beginning. I attached it
+> below.
+> I haven't had the time yet to test the 2.6.10 kernel. Maybe there is
+> another problem now ...
+
+The one with three lines of modified irq lines from tom rini ? I found it in
+google, but i also saw another bunch of prep changes which got in 2.6.9 i
+think. Since debian is still using 2.6.8 and a bunch of backports, these may
+be relevant, i think.
+
+Also, i think for some reason i was unsubscribed while the list moved to
+ozlab, and lost maybe the start of the thread, thanks for the attachement.
+
+> > netbooting, and the only pci device installed is the cirruss logic graphic
+> > card.
+> 
+> If you use the standard debian kernel - ok, it doesn't work because of
+> wrong IRQs on the PowerstackII (Utah).
+
+Which i will now fix now that i am aware of the problem. There seem to be also
+a problem on IBM prep hardware, may it be related ?
+
+> BTW: The onboard Winbond IDE chip works as well although no connector is
+> provided. You only need a little bit of soldering and adjusting the IRQ
+> of Slot 1 from 0 to 4. :-)
+
+Ah, wondered about that, and saw the slots are not soldered. I wonder why go
+to all the trouble including a IDE chip, but not solder the connectors. Seems
+to me like peanut savings or something.
+
+Friendly,
+
+Sven Luther
+> 
+> 
+> Sebastian Heutling
+> 
+> -- 
+> diff -puN
+> arch/ppc/platforms/prep_pci.c~ppc32-fix-motorola-prep-powerstackii-utah-pci-irq-map arch/ppc/platforms/prep_pci.c
+> ---
+> 25/arch/ppc/platforms/prep_pci.c~ppc32-fix-motorola-prep-powerstackii-utah-pci-irq-map      2004-12-07 01:01:16.000000000 -0800
+> +++ 25-akpm/arch/ppc/platforms/prep_pci.c       2004-12-07
+> 01:01:16.000000000 -0800
+> @@ -49,10 +49,10 @@ static char Utah_pci_IRQ_map[23] __prepd
+>          0,   /* Slot 1  - unused */
+>          5,   /* Slot 2  - SCSI - NCR825A  */
+>          0,   /* Slot 3  - unused */
+> -        1,   /* Slot 4  - Ethernet - DEC2114x */
+> +        3,   /* Slot 4  - Ethernet - DEC2114x */
+>          0,   /* Slot 5  - unused */
+> -        3,   /* Slot 6  - PCI Card slot #1 */
+> -        4,   /* Slot 7  - PCI Card slot #2 */
+> +        2,   /* Slot 6  - PCI Card slot #1 */
+> +        3,   /* Slot 7  - PCI Card slot #2 */
+>          5,   /* Slot 8  - PCI Card slot #3 */
+>          5,   /* Slot 9  - PCI Bridge */
+>               /* added here in case we ever support PCI bridges */
+> 
+> 
+> 
