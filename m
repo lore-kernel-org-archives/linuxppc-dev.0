@@ -1,33 +1,59 @@
-Message-Id: <9907082101.AA30380@marc.watson.ibm.com>
-To: Nicholas Coult <coult@ima.umn.edu>
-Cc: David DeHaven <daved@trestle.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: HINT for LinuxPPC 
-In-Reply-To: Message from Nicholas Coult <coult@ima.umn.edu>
-   of "Thu, 08 Jul 1999 10:51:20 CDT." <Pine.LNX.4.10.9907081049550.6723-100000@pc19.ima.umn.edu>
-Date: Thu, 08 Jul 1999 17:01:52 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <37852989.5F3D914A@fi.infn.it>
+Date: Fri, 09 Jul 1999 00:43:21 +0200
+From: Simone Piccardi <piccardi@fi.infn.it>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: A little trouble for MVME2400 boot from HD
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Nicholas Coult writes:
+Hi,
 
-Nicholas> Yes, I ran the Hint benchmark on my LinuxPPC machine.  My hint benchmark
-Nicholas> page compares the results to a PII/300 running Linux:
+I would like to boot linux on a MVME2400 from a SCSI HD; I set a primary
+partition (it was /dev/sda3, about 3Mb) as 0x041 and made it bootable;
+then and I copied a zImage file on it using dd. 
 
-Nicholas> http://www.ima.umn.edu/~coult/hint.html
+The ioi results for the controller are 
+PPC4-Bug>ioi                                                                    
+I/O Inquiry
+Status:                                                             
+CLUN  DLUN  CNTRL-TYPE  DADDR  DTYPE  RM 
+Inquiry-Data                          
+   1     0  PC8477      0      $00    Y  
+<None>                                
+  10    50  NCR53C825   5      $00    N   SEAGATE  ST39140W        
+1487        
 
-	egcs-1.1.2 does not actually know about the PPC750, so -mcpu=750
-did not actually help.  gcc-2.95 knows about PPC750 scheduling, makes
-better use of indexed addressing, and utilizes the CTR register for loops
-which should improve performance.  Other PowerPC improvement are coming
-down the pike as soon as they can be cleaned up and added to GCC.
+But when I gave:
+PPC4-Bug>pboot 10 50
+3                                                          
 
-	Also, once the new p2 backend contributed to GCC by Cygnus is
-installed and stable, that should provide a better test of PII
-performance. 
+the result was: 
+Booting from: NCR53C825, Controller 10, Drive
+50                                
+Device Name :
+/pci@80000000/pci1000,3@10,0/harddisk@5,0                         
+Loading: Operating
+System                                                       
+                                                                                
+IPL Size Exceeds Free-Available
+Memory:                                         
+IPL Size              =AC444000
+(&-1404813312)                                  
+Free-Available Memory =01F74000
+(&32980992)                                     
 
-David
+I'm missing something on the kernel image preparation? Or I have to use
+another command?
+
+Thank you in advance.
+
+-- 
+Simone Piccardi
+Microsoft is NOT the answer. Microsoft is the Question.
+The answer is: "NO!"
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
