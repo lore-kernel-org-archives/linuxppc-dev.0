@@ -1,42 +1,55 @@
-Date: Fri, 27 Aug 1999 10:33:25 -0400
-From: brad allison <jackal@aol.net>
-To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: no more processes crash
-In-Reply-To: <E11KJ0t-00076W-00@mail2.zrz.tu-berlin.de>
-Message-ID: <Pine.SGI.4.00.9908271030280.15912-100000@osiris.office.aol.com>
+Message-ID: <37C6CA26.49441879@wanadoo.fr>
+Date: Fri, 27 Aug 1999 19:25:58 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Franz Sirl <Franz.Sirl@munich.netsurf.de>
+CC: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
+Subject: Re: vger-2.3.15 on pmac
+References: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Franz Sirl wrote:
 
-On Fri, 27 Aug 1999, Wulf Hofbauer wrote:
+> What's still NOT fixed in 2.3.15 and really annoying for a lot of users is
+> "FB. overflow" aka "macserial: flipbuffer overflow". This was introduced
+> somewhere late 2.1 or early 2.2. I think this one is responsible for some
+> of the hard crashes reported on linuxppc-users under the "Communicator
+> crashes X" thread.
 
-> > I'm not running much.  Just about 10 aterms, netscape and aim.
-> 
-> Are you using LinuxPPC 1999? The utempter package as distributed by LinuxPPC
-> is broken, xterms for example will never terminate (except by kill -9) and
-> will fill up entries in the process table. I don't know if LinuxPPC has a
-> fix for it (I doubt it), but you'll find the fix at www.redhat.com.
+I don't know if it is related, but I had several other hard freezes in
+the
+meantime. One reproducible method is to run xdir (or gftp, works too),
+connect to a remote site, wait until the connection is established,
+choose "quit" from the menu, confirm, and boom! hard freeze. If I don't
+connect to a remote site, there is no freeze. I don't know how to debug
+this, because I don't see any error messages.
 
-Anyone know if there's a fix for this?
+The other kernel panics arrived at the end of the boot process or during
+login. The message was "kernel stack overflow, in swapper task, not
+syncing", many lines of "page fault in interrupt handler, addr=c". The
+kernel addresses given were all init_task_union + offset.
 
-I searched on lists.linuxppc.org for utempter and found no mention of this
-problem.
+Another strange thing, or maybe it is related, are error messages in my
+/var/log/dhcpd.log file:
 
-I found rpm updates for utempter on www.redhat.com for i386, sparc, and
-alpha but not for linuxppc.
+Aug 27 12:04:42 rennes-28 dhcpcd[185]: corrupted UDP msg with
+uh_ulen=312 in_cksum=-2 discarded 
+Aug 27 12:05:37 rennes-28 last message repeated 16 times
+Aug 27 12:06:28 rennes-28 last message repeated 3 times
 
--b
-
-
+Such messages appear irregularly, about every 10 minutes. There is no
+clear relation with the dialog with my dhcp server. Otherwise the net
+traffic over ethrnet/adsl/dhcp seems to work correctly.
+ 
+This happens only with 2.3.15, not with 2.2.12. In the log file I find
+that I had such messages also between June 3 and June 13. I think these
+were the times when I tried 2.3.x kernels.
 
 --
-AOL SAPI 		                        703.265.0908     AIM:jackal242
-http://jackal.fudge.org        `I was never more certain of how far away I was
-from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
-
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
