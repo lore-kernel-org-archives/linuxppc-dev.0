@@ -1,37 +1,50 @@
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-To: "Xavier Grave" <grave@ipno.in2p3.fr>,
-	=?ISO-8859-1?Q?Michel=20D=E4nzer?= <michel@daenzer.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: just compiled a 2.4.19 kernel with smp support...
-Date: Tue, 22 Oct 2002 19:39:59 +0200
-Message-Id: <20021022174000.3855@192.168.4.1>
-In-Reply-To: <200210221537.RAA23935@ipnmail.in2p3.fr>
-References: <200210221537.RAA23935@ipnmail.in2p3.fr>
+Date: Wed, 23 Oct 2002 16:49:07 +0200 (CEST)
+From: Gabriel Paubert <paubert@iram.es>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Compile fixes for linuxppc-2.5
+Message-ID: <Pine.LNX.4.32.0210231642560.19486-100000@gra-vd1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Not necessarily if you're booting with video=ofonly. cat /proc/fb
->[root@ipnnarval ~]# cat /proc/fb
->0 OFfb /pci@f0000000/ATY,PheonixParent@10/
->
->> > I think support for the 9000 have been added to XFree CVS
->> > recently, though that may not yet be in the DRI one (and
->> > so Michel snapshots). The XFree CVS is beeing merged
->> > again into the DRI one now, so this should be fixed soon.
->>
->> Yep, and in the meantime, you could try telling the radeon driver to
->> treat it like a 8500 with the ChipID or Chipset directive.
->What do I need to put ? There is 4 different RADEON 8500 ?
+	Hi all,
 
-Ok, this is offb, so you don't have radeonfb. Another user
-is reporting me that radeonfb doesn't work on your card.
+I just tried my first bleeding edge compile from the linuxppc-2.5
+bk repository. It did not compile without the appened patch. The
+first part looks obviously correct since it was the only usage
+of lcd_on which was not hidden by a CONFIG_PMAC_PBOOK. I'm less
+sure about the second part, it may be due to the fact that I have
+I have an unconventional configuration (no modules), but nevertheless.
 
-I'll see what I can do.
+	Gabriel.
 
-Ben.
+===== drivers/video/aty128fb.c 1.16 vs edited =====
+--- 1.16/drivers/video/aty128fb.c	Mon Aug 19 14:45:44 2002
++++ edited/drivers/video/aty128fb.c	Wed Oct 23 14:54:39 2002
+@@ -2099,8 +2099,10 @@
+ 	struct aty128fb_par *par = data;
+ 	unsigned int reg = aty_ld_le32(LVDS_GEN_CNTL);
+
++#ifdef CONFIG_PMAC_PBOOK
+ 	if (!par->lcd_on)
+ 		on = 0;
++#endif
+ 	reg |= LVDS_BL_MOD_EN | LVDS_BLON;
+ 	if (on && level > BACKLIGHT_OFF) {
+ 		reg |= LVDS_DIGION;
+===== include/sound/initval.h 1.2 vs edited =====
+--- 1.2/include/sound/initval.h	Tue Jun 11 18:30:46 2002
++++ edited/include/sound/initval.h	Wed Oct 23 16:30:48 2002
+@@ -145,6 +145,7 @@
+ #if defined(SNDRV_GET_ID) && !defined(MODULE)
+ #include <linux/ctype.h>
+ #include <linux/init.h>
++#include <linux/slab.h>
+ static int __init get_id(char **str, char **dst)
+ {
+ 	char *s, *d;
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
