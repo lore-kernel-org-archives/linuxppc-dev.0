@@ -1,37 +1,29 @@
-Date: Wed, 21 Nov 2001 10:30:50 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Jan Smith <smith@cendio.se>
-Cc: linuxppc-dev@lists.linuxppc.org, peter@cendio.se
-Subject: Re: Problem with a IBM ServerRAID and it's PCI-bridge
-Message-ID: <20011121103050.A13279@krispykreme>
-References: <vxherpthki.fsf@snoddas.lkpg.cendio.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <vxherpthki.fsf@snoddas.lkpg.cendio.se>
+From: benh@kernel.crashing.org
+To: "David S. Miller" <davem@redhat.com>
+Cc: <anton@samba.org>, <billfink@mindspring.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: GigE Performance Comparison of GMAC and SUNGEM Drivers
+Date: Wed, 21 Nov 2001 01:05:18 +0100
+Message-Id: <20011121000518.8434@mailhost.mipsys.com>
+In-Reply-To: <20011120.115015.10305322.davem@redhat.com>
+References: <20011120.115015.10305322.davem@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>   Well, I think we may get overall better perfs once we have this
+>   fixed, and (David, can you confirm ?), I think jumbo frames can
+>   be supported.
+>
+>No, the GEM chips are broken and don't support jumbo frames.
 
-Hi,
+Ah, ok, I stand corrected. Is this a bug in the chip or a flaw of
+the GEM chip design ? I mean, is there a chance that later revs
+of the chip or eventually the one used by Apple can support it ?
 
-> We are trying to build the ips driver for the IBM ServerRAID 4H
-> card.
+Ben.
 
-The last time I looked, this driver was not endian safe.
-
-> When the kernel is booting do we get some information about some
-> fixup function that are moving the cards I/O-adress from fffc00 to
-> 1fffc00. (Output from dmesg is included below.)
-
-Thats fine, its due to the way io apertures for different host bridges
-are handled. The apertures are mapped in one after the other so that only
-the first one has no offset.
-
-If you have more than one host bridge, you have to add the offset since
-the io ports are all relative to the start of the first host bridge
-aperture.
-
-Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
