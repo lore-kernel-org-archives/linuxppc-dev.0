@@ -1,19 +1,36 @@
-Date: Thu, 23 Aug 2001 18:59:11 -0700
-From: andrew may <acmay@acmay.homeip.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: get_cycles/get_tbl on 405
-Message-ID: <20010823185911.A3291@ecam.san.rr.com>
-Mime-Version: 1.0
+Message-ID: <3B85D758.572A0AD8@mvista.com>
+Date: Fri, 24 Aug 2001 00:26:00 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: "Marti, Felix" <fmarti@desanasystems.com>
+Cc: "'Troy Benjegerdes'" <hozer@drgw.net>,
+	Ralph Blach <rcblach@raleigh.ibm.com>,
+	Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: using the little endian bit 4xx mmu
+References: <1DF71FB881F4D311A6B700C04FA06A1AC437B4@orca.desanasystems.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wanted to do some quick time measurements of some things on a driver
-running of the 405GP and I eneded up using get_tbl(). It seems like
-get_cycles should be the more standard way to get a tick count but
-it seems to return 0. I don't get the __ftr_fixup stuff in timex.h
-so I am not sure what it is trying to do differently from get_tbl.
+"Marti, Felix" wrote:
+>
+> I hacked it in a few hours:
+> in arch/ppc/kernel/head_4xx.S
 
+Ugh....we have discussed this in the past.  What is the advantage
+of using this feature?  All of the existing drivers and I/O macros
+are designed to handle mixing of endian modes depending upon the
+processor and I/O device.  All this does is complicate a standard
+set of programming interfaces that everyone expects to work as they
+have in the past.
+
+The ability to set a feature flag in the PTE and transfer that to
+the TLB isn't a solution to anything.  You are going to have to
+rewrite all of the standard functions, macros, and device drivers
+to utilize this feature, and we haven't seen any benefit to doing this.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
