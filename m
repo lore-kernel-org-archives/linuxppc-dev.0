@@ -1,17 +1,17 @@
 Return-Path: <tnt@246tNt.com>
-Received: from outmx023.isp.belgacom.be (outmx023.isp.belgacom.be
-	[195.238.2.204])
+Received: from outmx020.isp.belgacom.be (outmx020.isp.belgacom.be
+	[195.238.2.201])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4D5E72BDAB
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 21:59:40 +1000 (EST)
-Received: from outmx023.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx023.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id i8EBxWep027946
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 13:59:32 +0200
+	by ozlabs.org (Postfix) with ESMTP id 60C4E2BD71
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 22:00:43 +1000 (EST)
+Received: from outmx020.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx020.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id i8EC0bRt025378
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Sep 2004 14:00:37 +0200
 	(envelope-from <tnt@246tNt.com>)
-Message-ID: <4146DD6B.8070502@246tNt.com>
-Date: Tue, 14 Sep 2004 14:00:43 +0200
+Message-ID: <4146DDA7.1060304@246tNt.com>
+Date: Tue, 14 Sep 2004 14:01:43 +0200
 From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
 References: <4146D833.8040703@246tNt.com>
@@ -20,7 +20,7 @@ Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Andrew Morton <akpm@osdl.org>, Linux PPC Dev <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
 	Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 7/9] Small updates for Freescale MPC52xx
+Subject: [PATCH 8/9] Small updates for Freescale MPC52xx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,65 +33,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 # This is a BitKeeper generated diff -Nru style patch.
 #
 # ChangeSet
-#   2004/09/14 12:03:19+02:00 tnt@246tNt.com
-#   ppc: Update Freescale MPC52xx documentation / maintainer
+#   2004/09/14 12:30:28+02:00 tnt@246tNt.com
+#   ppc: Allow the Freescale MPC52xx to NAP when idle on LITE5200 platform
+#  
+#   NAP allows some powersave. It's provided mainly as an example on how 
+to do it.
+#   However, when a BDI is plugged it causes early crashes so be aware !
 #  
 #   Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 #
-# MAINTAINERS
-#   2004/09/14 12:03:04+02:00 tnt@246tNt.com +8 -0
-#   ppc: Update Freescale MPC52xx documentation / maintainer
+# arch/ppc/platforms/lite5200.c
+#   2004/09/14 12:30:11+02:00 tnt@246tNt.com +7 -0
+#   ppc: Allow the Freescale MPC52xx to NAP when idle on LITE5200 platform
 #
-# Documentation/powerpc/mpc52xx.txt
-#   2004/09/14 12:03:04+02:00 tnt@246tNt.com +1 -10
-#   ppc: Update Freescale MPC52xx documentation / maintainer
-#
-diff -Nru a/Documentation/powerpc/mpc52xx.txt 
-b/Documentation/powerpc/mpc52xx.tx
-t
---- a/Documentation/powerpc/mpc52xx.txt 2004-09-14 12:48:06 +02:00
-+++ b/Documentation/powerpc/mpc52xx.txt 2004-09-14 12:48:06 +02:00
-@@ -1,7 +1,7 @@
- Linux 2.6.x on MPC52xx family
- -----------------------------
+diff -Nru a/arch/ppc/platforms/lite5200.c b/arch/ppc/platforms/lite5200.c
+--- a/arch/ppc/platforms/lite5200.c     2004-09-14 12:48:13 +02:00
++++ b/arch/ppc/platforms/lite5200.c     2004-09-14 12:48:13 +02:00
+@@ -36,6 +36,8 @@
+ #include <asm/mpc52xx.h>
 
--For the latest info, go to http://www.246tNt.com/mpc52xx/state.txt
-+For the latest info, go to http://www.246tNt.com/mpc52xx/
 
- To compile/use :
-
-@@ -37,12 +37,3 @@
-  - Of course, I inspired myself from the 2.4 port. If you think I forgot to
-    mention you/your company in the copyright of some code, I'll correct it
-    ASAP.
-- - The codes wants the MBAR to be set at 0xf0000000 by the bootloader. It's
--   mapped 1:1 with the MMU. If for whatever reason, you want to change 
-this,
--   beware that some code depends on the 0xf0000000 address and other 
-depends
--   on the 1:1 mapping.
-- - Most of the code assumes that port multiplexing, frequency 
-selection, ...
--   has already been done. IMHO this should be done as early as possible, in
--   the bootloader. If for whatever reason you can't do it there, do it 
-in the
--   platform setup code (if U-Boot) or in the arch/ppc/boot/simple/... (if
--   DBug)
-diff -Nru a/MAINTAINERS b/MAINTAINERS
---- a/MAINTAINERS       2004-09-14 12:48:06 +02:00
-+++ b/MAINTAINERS       2004-09-14 12:48:06 +02:00
-@@ -1301,6 +1301,14 @@
- L:     linuxppc-dev@lists.linuxppc.org
- S:     Maintained
-
-+LINUX FOR POWERPC EMBEDDED MPC52XX
-+P:     Sylvain Munaut
-+M:     tnt@246tNt.com
-+W:     http://www.246tNt.com/mpc52xx/
-+W:     http://www.penguinppc.org/
-+L:     linuxppc-embedded@lists.linuxppc.org
-+S:     Maintained
++extern int powersave_nap;
 +
- LINUX FOR POWERPC EMBEDDED PPC4XX
- P:     Matt Porter
- M:     mporter@kernel.crashing.org
+ /* Board data given by U-Boot */
+ bd_t __res;
+ EXPORT_SYMBOL(__res);  /* For modules */
+@@ -123,6 +125,11 @@
+        /* No ISA bus AFAIK */
+        isa_io_base             = 0;
+        isa_mem_base            = 0;
++
++       /* Powersave */
++#ifndef CONFIG_BDI_SWITCH      /* NAP & BDI is a bad combination ... */
++       powersave_nap = 1;      /* We allow this platform to NAP */
++#endif
+
+        /* Setup the ppc_md struct */
+        ppc_md.setup_arch       = lite5200_setup_arch;
