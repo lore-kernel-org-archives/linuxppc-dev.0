@@ -1,31 +1,27 @@
-From: eraineri@axiom-tx.com
-Message-ID: <3A6748FB.42C51F82@axiom-tx.com>
-Date: Thu, 18 Jan 2001 13:50:19 -0600
-Reply-To: eraineri@axiom-tx.com
+Message-ID: <3A6775B0.2108F1DE@relog.ch>
+Date: Fri, 19 Jan 2001 00:01:04 +0100
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: michdaen@iiic.ethz.ch
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: kernel 2.4 SMP on quad PPC
-Content-Type: text/plain; charset=us-ascii
+Subject: Bogus interrupt -1
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
-I have searched the arhives and didn't seem to find what I'm looking
-for.  I currently am in the process of porting linux to a custom PPC
-Quad board.  I downloaded a 2.5 kernel  from FSMlabs in December and
-have had success getting 2 processors to come up.  However, I could not
-get 3 or 4.  I am considering going to the 2.4 latest kernel on the
-FSMlabs bitkeeper site.  I'm wondering if the version of the 2.5 kernel
-I downloaded works with more then duals and also if I should instead
-download the 2.4 kernel and us it?  I know that eventually I am going to
-have to go to 2.4 but I would like to show some success before
-abandoning the 2.5 version I've worked so hard to get.  If I in the
-incorrect mailing list I apologize.  I'm fairly new to the Linux kernel
-development world!
+I have tons of messages like this in my logs:
 
-Thanks for all the help
-Eddy
+Jan 18 23:06:54 pismo kernel: Bogus interrupt -1 from PC = c00065d0
 
+Anyone knows where these (may) come from?
+
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
