@@ -1,71 +1,32 @@
-Date: Mon, 24 May 2004 07:06:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Song Sam <samlinuxppc@yahoo.com.cn>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Module Compiling Problem
-Message-ID: <20040524050640.GA2245@mars.ravnborg.org>
-References: <20040523183459.GA2335@mars.ravnborg.org> <20040524014947.68864.qmail@web15213.mail.bjs.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040524014947.68864.qmail@web15213.mail.bjs.yahoo.com>
+Date: Mon, 24 May 2004 12:22:58 +0500 (GMT+0500)
+From: Venkatesh Savithri Mahesh <vsmahesh@cdotb.ernet.in>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Query about KERNELLOAD. 
+In-Reply-To: <20040524050640.GA2245@mars.ravnborg.org>
+Message-ID: <Pine.OSF.4.21.0405241202110.19979-100000@ws9.cdotb.ernet.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, May 24, 2004 at 09:49:47AM +0800, Song Sam wrote:
-> > When compiling an external module use:
-> > for 2.4:
-> > make -C $ERNELSRC SUBDIRS=$PWD modules
->
-> Uh,$ERNELSRC or $KERNELSRC?
+Hi,
 
-When compiling modules you better use the kbuild infrastructure, and
-then also a kbuild makefile.
-The way to use the kbuild infrastructure is to build your
-modules with the above command, where $KERNELSRC is
-the directory where you have the kernelsrc.
-So you should use something like:
-make -C /home/sam/src/kernel/v2.4.18/ SUBDIRS=$PWD modules
-assuming the src of the kernel is located in
-/home/sam/src/kernel/v2.4.18/
+  I am a novice, please forgive me if this is very trivial.
 
-> [Makefile]
-> CC = ppc_8xx-gcc
->
-> # TOPDIR  := $(shell /bin/pwd)
->
-> FILENAME = myic
->
-> MYPATH  = /workspace/keep/dmt201/kernel
->
-> CPPFLAGS := -D__KERNEL__ -D_REENTRANT
-> -I$(MYPATH)/include
->
-> CFLAGS := $(CPPFLAGS) -Wall -Wstrict-prototypes
-> -Wno-trigraphs -O2 -fomit-frame-pointer \
-> -fno-strict-aliasing -fno-common -g
-> -I$(MYPATH)/arch/ppc -fsigned-char -msoft-float -pipe
-> \
-> -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
->
-> all : $(FILENAME).o
->
-> clean :
->         rm $(FILENAME).o
-> $(FILENAME).o : $(FILENAME).c
->         $(CC) $(CFLAGS) -DMODULE
-> -DKBUILD_BASENAME=$(FILENAME) -c $(FILENAME).c
->
-> Thanks a million for your notes.
+  I am trying to run 2.4.16 kernel on a custom 8260 board with 128MB
+sdram. I am using the TRACE32 JTAG emulator from Lauterbach.
 
-Try with a Makefile like this:
-[Makefile]
-obj-m := myic.o
+  I am unable to load with KERNELLOAD=0xc0000000.
 
-That should do it.
-[Later you can add the clean stuff]
+  When the KERNELLOAD is changed to some other value, say 0x06000000
+kernel gets relocated to 0x0 succesfully but reaches a undef instruction
+after a few instuctions after emtering the MMU_init function.
 
-	Sam
+
+    Please advise me. Thanks for any information.
+
+>> V S Mahesh.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
