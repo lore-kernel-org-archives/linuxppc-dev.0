@@ -1,43 +1,35 @@
-To: "Robert P. J. Day" <rpjday@mindspring.com>
+Message-ID: <4106DC44.5060701@mvista.com>
+Date: Tue, 27 Jul 2004 15:50:44 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: jdomogala@acmepacket.com
 Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: more questions about 8xx microcode patches 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 27 Jul 2004 17:36:26 EDT."
-             <Pine.LNX.4.60.0407271733200.7504@localhost.localdomain>
-Date: Wed, 28 Jul 2004 00:30:28 +0200
-Message-Id: <20040727223033.79CE4C109F@atlas.denx.de>
+Subject: Re: Looking for GT64260 MPSC serial console driver
+References: <NFBBJCNFKLFMBACPKDKCOEMDEDAA.jdomogala@acmepacket.com>
+In-Reply-To: <NFBBJCNFKLFMBACPKDKCOEMDEDAA.jdomogala@acmepacket.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.60.0407271733200.7504@localhost.localdomain> you wrote:
+Jeff Domogala wrote:
+
+>Hello folks.
 >
-> > Hahahahaha!!!!  You don't know how big of a hole you are digging :-)
+>I am looking for a MPSC serial console driver for the Marvell GT-64260.  I
+>have one from an old 2.4 development tree but it looks like it never made it
+>into the linuxppc-2.5 tree.  I would also entertain anyone who could point
+>me in the direction of what needs to be done to port a serial console driver
+>from a 2.4 kernel to the current 2.6 kernel in the linuxppc-2.5 tree.
 >
-> oh, fer shure.  :-)  but given that there are three clear and
-> identifiable patches that exist at the moment, i'll put together a
-> patch that turns them into a submenu and submit it, and you can decide
-> what to do with it.  i'll make sure that the submission doesn't change
-> any of the current functionality, just makes it easier to pick what
-> you want.
 
-Just to add to the complexity: are you aware that the  parameter  RAM
-relocation  may  be  different between 8xx processors? For example it
-seems that on the 866 family  you  can  relocate  PRAM  even  without
-loading any uCode by just writing the correct offset to (for example)
-the spi_rpbase register.
+Mail archives are your friend...
+http://lists.linuxppc.org/linuxppc-embedded/200407/msg00332.html
 
-Best regards,
+I should add that I am currently having problems with that driver on a
+64360 base board.  I hope to have it working "soon".
 
-Wolfgang Denk
+Mark
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Substitute "damn" every time you're inclined to write "very"; your
-editor will delete it and the writing will be just as it should be.
-                - Mark Twain
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
