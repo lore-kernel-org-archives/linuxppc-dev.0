@@ -1,38 +1,33 @@
-Message-ID: <20021005010832.13391.qmail@kunk.jriver.com>
-Subject: Re: usb-storage.o - Unresolved symbol ppc_generic_ide_fix_driveid in
- 2.4.20-pre7-ben0
-In-Reply-To: <20021004120538.12787@192.168.4.1>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 4 Oct 2002 20:08:32 -0500 (CDT)
-From: Robert E Brose II <bob@kunk.jriver.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 5 Oct 2002 19:03:48 -0400 (EDT)
+Message-Id: <200210052303.g95N3mD312030@saturn.cs.uml.edu>
+From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.5.xx
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-User Benjamin Herrenschmidt says:
-> It doeds make a difference, that function is only exported if you have
-> IDE enabled in the .config. However, if you just enable it and redo
-> the make, it may not work, as the actual export table may not be
-> rebuilt properly.
->
-> I suggest you enable IDE, backup .config, make distclean,
-> restore .config, make oldconfig, then make.
-> Ben.
+Anybody with 2.5.xx running? I need the very latest code
+to run on my Mac Cube.
 
-Ben, you are correct. It was the distclean et al.. I forgot about
-that one. Also, if I remove the isd driver it works as well without
-turning the ide drivers on...
+Linus's BitKeeper tree stops compiling when it hits the
+ppc signal code, with some complaint about a lock. With
+that fixed, the build stops in the Mac IDE code with a
+complaint about something missing from a struct.
 
-Thanks a lot..
+So I gave up on that and got the linuxppc-2.5 BitKeeper
+tree instead. Compiling fails for several things, all of
+which I reluctantly disable: ieee1394, Mac serial ports,
+the OpenFirmware framebuffer... and I even fixed an
+include for FASTCALL in include/linux/workqueue.h before
+getting stopped with a link error that appears to be
+video-related. Any fix? I need the aty128fb driver.
 
-Bob
---
-/~\ The ASCII       | Robert E. Brose II    N0QBJ
-\ / Ribbon Campaign | http://www.qbjnet.com/
- X  Help cure       | mailto:bob@qbjnet.com
-/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
+        ld  -Ttext 0xc0000000 -Bstatic -T arch/ppc/vmlinux.lds.s arch/ppc/kernel/head.o  init/built-in.o --start-group  arch/ppc/kernel/built-in.o  arch/ppc/platforms/built-in.o  arch/ppc/mm/built-in.o  arch/ppc/lib/built-in.o kernel/built-in.o mm/built-in.o fs/built-in.o ipc/built-in.o security/built-in.o  lib/lib.a  drivers/built-in.o  sound/built-in.o  net/built-in.o --end-group  -o vmlinux
+drivers/built-in.o(.data+0x2df68): undefined reference to `cfb_fillrect'
+drivers/built-in.o(.data+0x2df6c): undefined reference to `cfb_copyarea'
+drivers/built-in.o(.data+0x2df70): undefined reference to `cfb_imageblit'
+make: *** [vmlinux] Error 1
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
