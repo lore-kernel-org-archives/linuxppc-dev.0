@@ -1,83 +1,50 @@
-Message-ID: <39CDB6CD.62FE8595@PsychiatryKills.com>
-Date: Sun, 24 Sep 2000 03:09:50 -0500
-From: Carl Potter <carl@PsychiatryKills.com>
-Reply-To: carl@PsychiatryKills.com
+Message-ID: <39CE0203.FA1205E9@student.ethz.ch>
+Date: Sun, 24 Sep 2000 15:30:43 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: bh40@calva.net
-CC: mpalczew@u.washington.edu, linuxppc-dev@lists.linuxppc.org,
-        elliptical@linuxstart.com
-Subject: new iBook and booting.
-Content-Type: text/plain; charset=us-ascii
+To: mlan@cpu.lu
+CC: reshapiro@mediaone.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
+References: <200009231708.TAA00731@piglet.grunz.lu>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Ben,
+Michel Lanners wrote:
+>
+> On  23 Sep, this message from Michel Dänzer echoed through cyberspace:
+> >> Also the screen is oddly "wrapped" on the rage II machine with the fbdev
+> >> driver: I can see the full screen but the virtual edge starts about 75%
+> >> in, instead of matching the physical edge, and then wraps around.  I
+> >> don't see this artifact on the rage pro G3.
+> >
+> > This is a known problem, which is also kind of fixed in Ani's tree AFAIK.
+> > I'm currently working with Geert Uytterheuven to get the definite fix.
+>
+> Is this the already-known problem of handling an offset for the screen
+> start within the framebuffer memory?
 
-I thought I'd be slick and buy one of the new and improved 466MHz
-iBooks (NOT Key Lime :) that Apple released a couple of weeks ago
-....and put Linux on it.  Well I've studied and searched my hiney off
-over the past week and for the life of me I just can't get YDL or
-LinuxPPC 2K to boot when 'append = "video=atyXXX"' is used (I've tried
-both atyfb and aty128fb).  I'm getting very close to being certain that
-it's the newness of my iBook that's stopping me.  I have broken down and
-decided to bother you with what might be a valid issue with the new
-iBooks.  Here's some info on the factors involved:
-
-
-Yaboot version 0.8
-
-open firmware prompt says:  Apple PowerBook2,2 3.3f3 BootROM built on
-08/10/00 at 14:42:10
-                            Copyright 1994-2000 Apple Computer, Inc.
-                            All Rights Reserved.
+Yes.
 
 
-observed phenomenon when booting:  (using either 2.2.17pre20-ben3 or
-Mike Palczewski's iBook kernel) with append="video=aty(anything)" on
-either YDL 1.2 or LinuxPPC 2000:
+> Because I'm experiencing this as well with fbdev, and the problem is the
+> same for all Apple non-accelerated framebuffers (control, platinum,
+> valkyrie), AFAICT. So it would be helpful if this problem would get
+> fixed once and for all. FWIW, no propblem with XF3.x.
 
-Welcome to Linux, kernel 2.2.17pre20-ben3
+That's why I'm working with Geert, who wrote the 3.x code :)
 
-started at       :  0x01000000
-linked at        :  0xc0000000
-frame buffer at  :  0x96008000 (phys), 0x96008000 (log)
-MSR              :  0x00003030
-HID0             :  0xc010c0a4
-ICTC             :  0x00000000
-
-booting...
-device tree used 37444 bytes
-Total memory = 64MB; using 256kB for hash table (at c02c0000)
-Linux version 2.2.17pre20-ben3 (benh@sawtooth.wanadoo.fr) (gcc version
-2.95.3 19991030
-(prerelease/franzo/20000625)) #2 Wed Sep 6 01:14:01 CEST 2000
-PCI bus 0 controlled by pci at f0000000
-PCI bus 0 controlled by pci at f2000000
-PCI bus 0 controlled by pci at f4000000
-Uni-N revision: 8, KeyLargo revision: 3
-Registered 1 features controllers(s)
-PMU driver initialized for Core99
-pmac nvram is core99: 1
-PowerMac using OpenPIC irq controller
-OpenPIC Version 1.2 (4 CPUs and 64 IRQ sources) at 80040000
-GMT Delta read from XPRAM: -300 minutes, DST: on
-via_calibrate_decr: decrementer_count = 166440 (998641 ticks)
-Console: colour dummy device 80x25
+I'm currently having problems with the MMIO mapping of his code, will
+investigate. The Vidmem mapping works for me (although it also worked before),
+so any volunteers for testing please line up to me for a patch :)
 
 
-This is the point where the screen freezes, leaving the above message
-perfectly readable, yet the kernel continues to boot normally and mounts
-the drive.  I then have to blind-type my username, password, and issue a
-"shutdown -r now".
+Michel
 
-Any light you might shed on this would be very appreciated.  I think
-Linux on PPC is great stuff and I thank you for making possible what we
-can already do with it.
 
-Take care,
-
-Carl Potter
-
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
