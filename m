@@ -1,111 +1,60 @@
-Date: Thu, 13 Jul 2000 09:15:53 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Lionel TAILLURAT <Lionel.TAILLURAT@ecrin.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: -= MVME 2300 =-
-In-Reply-To: <007701bfec22$aed1c710$a66d34c0@oleane.com>
-Message-ID: <Pine.HPX.4.10.10007130908260.9548-100000@gra-ux1.iram.es>
+Message-ID: <396D6EC3.CAF4201B@centurysys.co.jp>
+Date: Thu, 13 Jul 2000 16:24:51 +0900
+From: Tania Boak <tania@centurysys.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: massin@col.bsf.alcatel.fr
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 12 Jul 2000, Lionel TAILLURAT wrote:
+Hi Raphael
 
->
-> Hi,
->
-> I have some problems using Linux with the MVME 2300.
->
-> I'm using the debian potato for Prep (http://www.debian.org/~porter/).
-> The installation and boot are ok. The problems are  :
->
-> 1- Universe VME driver.
->
-> I have used these drivers :
-> http://lisa2.physik.uni-bonn.de/~hannappe/software/index.html
-> http://www.vmelinux.org/
->
-> - The first could be loaded but when I'm looking at /dev/vme_stat the
-> informations are bad (fffffff ...)
-> - The second don't load and return me an error with PCI_ID
->
-> So I had decided to try the MVME2600 kernel image of Gabriel Paubert, this
-> one don't boot (PC keyb error, there is no keyboard controller on the
-> mvme2300! ).
+I'm interested in the application you mentioned in your message:
 
-The configurations I have are for 2600 with a PMC graphics board, remove
-CONFIG_VT from the setup and it will use a serial console.
-
-BTW use PrePboot for these boards (CONFIG_PREPBOOT) since it gives a nicer
-PCI layout to access the VMEbus...
-
-Please use the patches mvme2600.*.bz2...
-
-> Seeing that, I try to compile a new kernel using the kernel patch created by
-> Gabriel Paubert, and the second second problem appears !
-
-My patches include a VME driver, which I consider of course superior to
-the other ones, sincee it  allows you to load modules for board specific
-drivers (the universe driver exports service to allow you to catch
-interrupts, perform DMA etc...). The other drivers I saw did not (last
-time I looked) were too limited in interrupt processing for my
-applications.
-
->
-> 2- SCSI drivers.
->
-> I'm using a Technobox 2044 PMC (ncr53c875) as SCSI device.
-> The kernel provided by Debian see well my SCSI device.
->
-> When I want to compile a new kernel using the NCR53c8xx driver, this one
-> don't  seem to see my SCSI device ( the scsi driver is compiled in the
-> kernel and not as a module).
->
-> The only message I have is :
-> scsi : 0 hosts.
-> scsi : detected total.
->
-> And I should have that :
-> ...
-> ncr53c8xx: at PCI bus 0, device 16, function 0
-> ncr53c8xx: 53c875 detected
-> ncr53c875-0: rev=0x04, base=0x2ffeee00, io_port=0xfffde00, irq=25
-> ncr53c875-0: NCR clock is 40218KHz, 40218KHz
-> ncr53c875-0: ID 7, Fast-20, Parity Checking
-> ncr53c875-0: on-chip RAM at 0x2ffed000
-> ncr53c875-0: restart (scsi reset).
-> ncr53c875-0: Downloading SCSI SCRIPTS.
-> scsi0 : ncr53c8xx - version 3.2a-2
-> scsi : 1 host.
->   Vendor: IBM       Model: DNES-309170       Rev: SAH0
->   Type:   Direct-Access                      ANSI SCSI revision: 03
-> Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
->   Vendor: IBM       Model: DNES-309170       Rev: SAH0
->   Type:   Direct-Access                      ANSI SCSI revision: 03
-> Detected scsi disk sdb at scsi0, channel 0, id 1, lun 0
-> ncr53c875-0-<0,0>: tagged command queue depth set to 4
-> ncr53c875-0-<1,0>: tagged command queue depth set to 4
-> scsi : detected 2 SCSI disks total.
-> ncr53c875-0-<0,*>: FAST-5 SCSI 5.0 MB/s (200 ns, offset 16)
-> SCSI device sda: hdwr sector= 512 bytes. Sectors= 17916240 [8748 MB] [8.7
-> GB]
-> ncr53c875-0-<1,*>: FAST-5 SCSI 5.0 MB/s (200 ns, offset 16)
-> SCSI device sdb: hdwr sector= 512 bytes. Sectors= 17916240 [8748 MB] [8.7
-> GB]
-> ...
->
-> I had tested differents configurations of the scsi drivers and low SCSI
-> NCR53c8xx driver : No way !
+http://lists.linuxppc.org/listarcs/linuxppc-embedded/199910/msg00028.html
 
 
-My systems work with an SCSI disk (the basic 2600 NCR53c825).
-Did you try to directly boot one of the images I have on my ftp site ?
 
-(If it works, you've got a configuration problem.)
+> I'm using the watchdog timer on a custom board since several months.
+> To
+> prevent a CPU reset during the kernel is uncompressing, i prorammed it
+> to generate a Non Maskable Interrupt instead of system reset. Those
+> NMIs
+> are handled by a special function in the Linux kernel. This function
+> can reset the board, using a specific I/O, when too many NMIs occurred
+> without any watchdog timer (SWSR) servicing.
+>
+> Today, i refresh the timer in my real time application that is
+> launched
+> immediately after the kernel init. This scheme must work for any board
+> launching an appli/real time module after kernel init. For other
+> configurations,
+> Dan's idea seems perfect.
 
-	Gabriel
+I'm trying to find a way to use the on chip watchdog to provide an
+automatic reboot should the software on our custom board go to never
+never land.  At the moment I don't need to provide the /dev/watchdog
+interface, but I may in the future.  Dan's idea about not servicing the
+SWSR while /dev/watchdog is open sounds good for that.  But for now, I
+just need a way to keep the watchdog timer from expiring as long as
+things are working "normally".  I like the idea of using an application
+to write to the SWSR rather than doing it from the timer interrupt in
+the kernel because I can envision cases where interrupts but not much
+else may be working.
+
+But I don't know how to guarantee that the application will be able to
+service the watchdog in any given interval of time.  How do you
+distinguish between the case where the system has stopped working and
+the case where the system is busy but still functioning?
+
+Any help you can give would be appreciated.  If anyone else has an
+opinion as to the best place to service the watchdog in order to provide
+protection from a hung system, I'd love to hear it.
+
+Thanks
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
