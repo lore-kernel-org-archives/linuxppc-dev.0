@@ -1,6 +1,7 @@
-Message-ID: <3CFE4DD0.7FC2E7BF@mvista.com>
-Date: Wed, 05 Jun 2002 12:43:44 -0500
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <3CFE4F42.DDB1D5CE@mvista.com>
+Date: Wed, 05 Jun 2002 10:49:54 -0700
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
 To: Dave Strout <dstrout@linuxfoundary.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
@@ -10,17 +11,6 @@ Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
-
-The version of HardHat Linux that came with your walnut was created to match the
-requirements of the kernel also shipped with Hard Hat Linux.
-
-The current _devel kernel requires a newer version of binutils that understands
-the -m405 architecture.  Either use the kernel shipped w/ Hard Hat Linux, or you
-will need to get a newer tool chain.  (Either build it yourself or purchase it
-from MontaVista...)
-
---Mark
-(Speaking for myself, not MontaVista whom I work for.)
 
 Dave Strout wrote:
 >
@@ -37,9 +27,22 @@ Dave Strout wrote:
 > So, is there a patch I should be applying before building the
 > cross-compile environment, or a specific set of tools somewhere, or what
 > am I missing?
->
-> thanks,
-> dave.
->
+
+I suspect that is a fairly old tool chain that you are using.
+Try modifying arch/ppc/Makefile to use
+
+  -mcpu=403
+
+instead of
+
+  -mcpu=405
+
+If you subscribe to the MontaVista product, the current compiler will
+work properly with linuxppc_2_4_devel.
+
+-Frank
+--
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
