@@ -1,24 +1,20 @@
-Return-Path: <benjamin.collar@siemens.com>
-Received: from goliath.siemens.de (goliath.siemens.de [192.35.17.28])
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 965632BC0F
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CFA6F2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Oct 2004 22:04:48 +1000 (EST)
-Received: from mail1.siemens.de (mail1.siemens.de [139.23.33.14])
-	by goliath.siemens.de (8.12.6/8.12.6) with ESMTP id i9KC4aP6000290
-	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Oct 2004 14:04:36 +0200
-Received: from mhpajh5c (mhpajh5c.mchp.siemens.de [139.23.185.152])
-	by mail1.siemens.de (8.12.6/8.12.6) with ESMTP id i9KC4Zma006371
-	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Oct 2004 14:04:35 +0200
-From: Benjamin Collar <benjamin.collar@siemens.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 20 Oct 2004 14:03:11 +0200
-Message-Id: <1098273791.26876.44.camel@mhpajh5c>
+	Thu, 21 Oct 2004 02:11:51 +1000 (EST)
+Date: Wed, 20 Oct 2004 09:11:48 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: "Lawrence E. Bakst" <ml@iridescent.org>
+Message-ID: <20041020161148.GA17445@gate.ebshome.net>
+References: <p06110435bd9bb541f839@iridescent.org>
 Mime-Version: 1.0
-Subject: Solved: Re: question 1: printk works, outputting to /dev/console
-	and/or/dev/ttyS0 doesn't
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <p06110435bd9bb541f839@iridescent.org>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Is linux-2.5-ocp the current 2.6 4xx code base
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,22 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greetings folks
+On Wed, Oct 20, 2004 at 01:02:21AM -0700, Lawrence E. Bakst wrote:
+> At 4:23 PM -0700 5/14/04, Matt Porter wrote:
+> >There is a tree, bk://source.mvista.com/linux-2.5-ocp, that has most
+> >4xx boards working, but it's 2.6.5.  The core 4xx support is moving into
+> >current 2.6, but it will be a little bit longer until important drivers
+> >like EMAC and IIC are merged into the stock kernel.
+> 
+> Is the linux-2.5-ocp tree still the right place to get 2.6 4xx code or has that code been moved upstream or someplace else?
 
-shamefacedly, I will admit I have no idea what I was doing, and was
-thus---doing it wrong.
+Linux-2.5-ocp is obsolete.
 
-removing CONFIG_SERIAL from the kernel config fixes the problem. Turns
-out arch/ppc/8xx_io/uart.c registers the serial device and later
-drivers/char/serial.c registers the same device, and thus nothing works.
+> To be more specific which tree to a "bk clone" to get the latest stuff for 4xx.
 
-Thanks for the hints that I did receive.
+Use kernel.org's BK tree: bk://linux.bkbits.net/linux-2.5
 
-Ben
-
--- 
-Benjamin Collar
-Siemens AG
-CT SE 2
-Embedded Linux
-089-636-53711
+--
+Eugene
