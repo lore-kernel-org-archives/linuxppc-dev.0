@@ -1,21 +1,21 @@
-Message-ID: <20010409204738.38558.qmail@web9907.mail.yahoo.com>
-Date: Mon, 9 Apr 2001 13:47:38 -0700 (PDT)
-From: Freddy Lugo <wilflugo@yahoo.com>
-Subject: Cyclone PCI-830 port??
+Date: Mon, 09 Apr 2001 17:21:01 -0400
+From: "Sacha J. Bernstein" <sachab@wciatl.com>
 To: linuxppc-embedded@lists.linuxppc.org
+Subject: Journaling Filesystem?
+Message-ID: <733920000.986851261@sacha>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Is there a working journaling filesystem that works with PPC linux?  What
+does everyone alse to do handle the embedded devices that people may just
+walk up and unplug?  I use ReiserFS on x86, but I've heard that it may not
+work with PPC.  I haven't tried to check myself...
 
-     Is there anyone who ported Linux to the Cyclone
-PCI-830 ethernet controller board??
+Thanks!
 
-Thanks,
-Freddy
-
+Sacha
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
