@@ -1,52 +1,43 @@
-Message-Id: <5.1.0.14.0.20010817160247.00ab96e0@spudcentral.com>
-Date: Fri, 17 Aug 2001 16:07:45 -0600
-To: Mark Pilon <mark.pilon@minolta-qms.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Message-Id: <5.1.0.14.0.20010817160848.00abfec0@spudcentral.com>
+Date: Fri, 17 Aug 2001 16:16:45 -0600
+To: Mark Hatle <fray@mvista.com>,
+	Mark Pilon <mark.pilon@minolta-qms.com>
 From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
 Subject: Re: init fails w/ new build of gcc & glibc
-In-Reply-To: <3B7D82D5.DD98A109@minolta-qms.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3B7D9126.D9F7C302@mvista.com>
+References: <3B7D82D5.DD98A109@minolta-qms.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 02:47 PM 8/17/2001 -0600, Mark Pilon wrote:
->running w/ the hhl 1.2 libraries the whole system runs fine;
->
->supplying all of the libraries built under the new glibc causes the
->following when init is spawned:
+At 04:48 PM 8/17/2001 -0500, Mark Hatle wrote:
+>If the answer is that it is standard floating point then you can use the
+>"7xx" or "82xx" tools for your project.  If you want to recompile then
+>you need to recompile the whole system from the compilers up to glibc
+>and all of the apps.  There are two ABIs, one for soft-floating point
+>and one for hard floating point.  They are not run-time compatable.
+
+Mark,
+
+You mentioned these two exclusive ABIs a couple days ago. If you want to compile the toolchain and the kernel correctly to insure run-time compatibility (in my case for 8xx), would you do this
+
+for kernel fp emulation
+compile kernel with CONFIG_MATH_EMULATION=y, (do you use -msoft-float while compiling kernel?)
+then compile the toolchain without -msoft-float
+
+or
+
+for soft-floating point - no kernel emulation
+compile kernel CONFIG_MATH_EMULATION is not set (do you use -msoft-float while compiling kernel?)
+then compile the toolchain with -msoft-float
 
 
-Did you set the prefix to / on the glibc configure line then do a make
-
-install_root=/somelibdirectoryforyournewrootfs
-
-you can do this or...
-
-in your new root filesystem something like this in your /usr/powerpc-linux/lib
-
-ln -s ../../lib lib
-
-
-the glibs have absolute path info in them, so either reconfigure and recompile for
-your rootfs using prefix=/ (make sure you use install_root when you make install) or
-make a link.
-
-Hope this helps.
-
+Very very curious
+Thanks
 Craig
-ps. I'm going down this very road, let's talk.
-
-
-
-___________________________________________________________
-Dr. Craig Hollabaugh                           craig@hollabaugh.com
-304 6th Avenue, P.O. Box 1405
-Ouray, CO 81427-1405                       See my "kitchen sink" resume at
-970 325 0319 home                                  www.hollabaugh.com/resume.html
-970 325 0509 office
-215 882 1880 cell
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
