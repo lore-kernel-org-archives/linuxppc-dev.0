@@ -1,106 +1,88 @@
-Message-ID: <D5E932F578EBD111AC3F00A0C96B1E6F0545CA67@orsmsx31.jf.intel.com>
-From: "Dunlap, Randy" <randy.dunlap@intel.com>
-To: "'Daniel Gonzalez'" <daniel.gonzalez@pandora.be>
-Cc: Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-        linuxppc-dev@lists.linuxppc.org, linux-usb@suse.com
-Subject: RE: [linux-usb] Close to a solution. Please help !
-Date: Mon, 24 Apr 2000 09:06:44 -0700
+Message-ID: <20000424161311.23404.qmail@web1705.mail.yahoo.com>
+Date: Mon, 24 Apr 2000 09:13:11 -0700 (PDT)
+From: Gabriel Ricard <g_ricard@yahoo.com>
+Subject: Re: Lombard hard freeze
+To: Bernhard Reiter <bernhard@intevation.de>, linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Daniel,
+I've had some similar problems, sometimes it bombs
+compiling the kernel, sometimes it locks up for no
+apparent reason while it's running the screen saver
+and hasn't been in use for a while. I haven't a clue
+what is going on...
 
-I don't see anything that is obviously wrong in the
-linux/.config file.
-
-The recent advice from Joseph Fannin looks good.
-Have you tried it?  (except change:
-  alias char-major-8 sd_mod
-to
-  alias block-major-8 sd_mod
-)
-
-Give us a list of modules that are loaded when you connect
-the Zip drive.
-
-Switching to the main linux tree is likely just to give
-you/us a different set of problems, but I'm just guessing
-that based on Brad Hards's comments.
-
-For USB source file comparisons, all of my 2.3.99-pre6-5
-unzipped .c files are dated between Mar. 10 and Apr. 21, 2000.
-None from the Jan.-Feb. timeframe as you listed.
-There have been beaucoups changes in this time, especially
-to the usb-storage driver.
-
-~Randy
-
-
-> -----Original Message-----
-> From: Daniel Gonzalez [mailto:daniel.gonzalez@pandora.be]
-> Sent: Monday, April 24, 2000 2:54 PM
-> To: Dunlap, Randy
-> Cc: Matthew Dharm; Sheldon Easterbrook;
-> linuxppc-dev@lists.linuxppc.org;
-> linux-usb@suse.com
-> Subject: Re: [linux-usb] Close to a solution. Please help !
+--- Bernhard Reiter <bernhard@intevation.de> wrote:
+> Hello Linuxppc developers,
 >
-> > > Well. The sources I have are taken from linuxcare (I
-> think that is Paul's tree,
-> > > isn't?). I am using the devel tree, since I heard that
-> was performing better for the USB subsystem.
-> >
-> >
-> > I'm still confused about what version of the kernel code this is.
-> >
-> > The Linux boot message says 2.3.99-pre6, but the USB code is clearly
-> > MUCH earlier than that.
-> > Could you explain a little of how you came by this code?
-> > I don't want the complete history, just enough to help us
-> > understand what you are trying to use here.
-> >
+> I encounter hard freezes with my lombard G3/400
+> Powerbook.
+> Though I cannot completely rule out hardware
+> problems, it might
+> be the software. The system never stopped running in
+> MacOS 8.6
+> I tried the TechTool Deluxe tests and the Gauge Pro
+> Ram Check
+> under MacOS without revealing any problems.
 >
-> I am using a development tree targeted for the PowerPC
-> community. I suppose this code
-> is periodically merged with the main linux tree, but I do not
-> know how they put together
-> the sources. Maybe I should use the main linux tree ?
+> The freezes occurr randomly when heavy compiling is
+> done.
+> (Like I cannot compile gnomehack 1.0.5 three times,
+> it usually
+> happens in the second compile attempt.) If you want
+> to try
+> ftp://intevation.de/users/bernhard has the .src.rpm
+> right now.
 >
-> The usb sources are:
+> It does not matter if it is cold or warm, X11
+> running or pmud running.
+> I tested Kernel versions 2.2.14 2.2.15-pre3
+> 2.2.15-pre19
+> together with the LinuxPPC 2000 install and the
+> upgraded LinuxPPC 1999
+> install (on two different partitions).
+> I upgraded glibc, binutils and gcc.
 >
-> [root@dhcp-213-224-12-204 usb]# grep \$Id /usr/src/linux/drivers/usb/*
-> 2>/dev/nul
-> /usr/src/linux/drivers/usb/dabusb.c: *  $Id: dabusb.c,v 1.45
-> 2000/01/31
-> 10:23:44 fliegl Exp $
-> /usr/src/linux/drivers/usb/devices.c: * $Id: devices.c,v 1.5
-> 2000/01/11
-> 13:58:21 tom Exp $
-> /usr/src/linux/drivers/usb/devio.c: *  $Id: devio.c,v 1.7
-> 2000/02/01 17:28:48
-> fliegl Exp $
-> /usr/src/linux/drivers/usb/drivers.c: * $Id: drivers.c,v 1.3
-> 2000/01/11
-> 13:58:24 tom Exp $
-> /usr/src/linux/drivers/usb/inode.c: *  $Id: inode.c,v 1.3
-> 2000/01/11 13:58:25
-> tom Exp $
-> /usr/src/linux/drivers/usb/plusb.c: *  $Id: plusb.c,v 1.18
-> 2000/02/14 10:38:58
-> fliegl Exp $
-> /usr/src/linux/drivers/usb/usb-uhci.c: * $Id: usb-uhci.c,v
-> 1.228 2000/04/02
-> 19:55:51 acher Exp $
-> /usr/src/linux/drivers/usb/usb-uhci.h:   $Id: usb-uhci.h,v
-> 1.54 2000/04/02
-> 19:55:53 acher Exp $
-> /usr/src/linux/drivers/usb/usb.c: * $Id: usb.c,v 1.53
-> 2000/01/14 16:19:09 acher
-> Exp $
+> This powerbook has a 10 GB harddisc and 192 Mb ram,
+> so it does not even
+> swap for this compile.
+>
+> Another little detail hints towards a software
+> problem:
+> Even if I give the computer breaks after, let's say
+> the first
+> gnomehack compile, it chances to run through the
+> next one is not higher.
+> It looks like disorder somewhere in the kernel piles
+> up, still it is
+> a matter of time to lock up the machine.
+>
+> I would be glad if someone could help me to track
+> the problem
+> down further. I was told that this is the right
+> place to ask.
+>
+> Regards,
+> 	Bernhard
+> ps.: Please carbon copy relevant replies to me.
+>
+> --
+> Professional Service around Free Software
+>     (intevation.net)
+> The FreeGIS Project				            (freegis.org)
+> Association for a Free Informational Infrastructure
+>           (ffii.org)
+>
+
+> ATTACHMENT part 2 application/pgp-signature
+
+
+=====
+Gabriel Ricard
+g_ricard@yahoo.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
