@@ -1,46 +1,44 @@
-Date: Fri, 18 Jun 1999 15:10:51 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: nicolas.boussekeyt@afoc.alcatel.fr
-cc: linux-kernel@vger.rutgers.edu, linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Compilation Problem with kernel 2.2.9
-In-Reply-To: <"/GUID:QPEp010Ul0xGPlQAQS7cwaA*/G=nicolas/S=boussekeyt/O=afoc/PRMD=acab/ADMD=atlas/C=fr/"@MHS>
-Message-ID: <Pine.LNX.4.10.9906181510240.30522-100000@michelin.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199906181427.KAA06605@linus.mitre.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: debugging ideas wanted
+Date: Fri, 18 Jun 1999 10:27:34 -0400
+From: Charles Frederick Lepple <clepple@linus.mitre.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 18 Jun 1999 nicolas.boussekeyt@afoc.alcatel.fr wrote:
-> I have a problem with my PB G3.
-> When I compile the kernel, I have this message:
-> gcc -D__KERNEL__ -I/usr/src/linux-2_2_9/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__SMP__ -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -c -o pmac_setup.o pmac_setup.c
-> pmac_setup.c: In function `pmac_init':
-> pmac_setup.c:559: `ISA_DMA_THRESHOLD' undeclared (first use this function)
-> pmac_setup.c:559: (Each undeclared identifier is reported only once
-> pmac_setup.c:559: for each function it appears in.)
-> pmac_setup.c:560: `DMA_MODE_READ' undeclared (first use this function)
-> pmac_setup.c:561: `DMA_MODE_WRITE' undeclared (first use this function)
-> make[1]: *** [pmac_setup.o] Error 1  
-> 
-> What can i do to compile the kernel ? 
+I am still in the process of getting LinuxPPC ported to a Dy4
+SVME-177 card, and so far, the card boots to the point where an
+initial console would be opened. The network driver (a variation of
+sonic.c) works enough to get an IP address, and to mount the root
+filesystem over NFS. For debugging output, I have a simple polled
+I/O routine for the serial console. This works nicely before the
+ttyS0 device (on the same serial channel) is opened.
 
-Add
+The problem is that the board locks up hard _after_ the console is
+opened, and I cannot seem to trace exactly where it is dying. The
+general symptoms include a lack of network responsiveness, and an
+all-around unresponsiveness to interrupts (including the
+decrementer, which I hacked to blink the front-panel LED every so
+often a la APUS).
 
-    #include <asm/dma.h>
+This being a VME-based system, I can use another VME card to do
+memory dumps even while the system is hung (the VME bridge doesn't
+seem to care much), but with over a megabyte of code and data to
+sift through, I don't know where to look for any signs of where it
+locked up.
 
-to arch/ppc/kernel/pmac_setup.c.
+So I'm open to suggestions from people who have had to track down
+this kind of weirdness. Specifically, does anyone have any tips to
+pass along about kgdb, xmon and the like? There is an 8530 SCC chip
+on board; if this will talk to xmon, great (all I know about xmon is
+what I can see in the kernel source, so forgive my ignorance on this
+one).
 
-Greetings,
+Thanks in advance,
 
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+--Charles Lepple
+clepple@mitre.org
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
