@@ -1,47 +1,49 @@
-Message-ID: <00512BA4F9D3D311912A009027E9B8F4AC3D67@nt.sixnet.com>
-From: Dave Ellis <DGE@sixnetio.com>
-To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>
-Cc: "'LinuxPPC'" <linuxppc-embedded@lists.linuxppc.org>,
-	"'Dan Malek'" <dan@embeddededge.com>
-Subject: RE: Questions about ARP
-Date: Tue, 12 Aug 2003 10:05:40 -0400
-MIME-Version: 1.0
-Content-Type: text/plain
+To: David Jander <david.jander@protonic.nl>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Memory map with "holes"... 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 12 Aug 2003 14:32:09 +0200."
+             <200308121432.09782.david.jander@protonic.nl>
+Date: Tue, 12 Aug 2003 16:13:27 +0200
+Message-Id: <20030812141332.496E2C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven Scholz wrote:
-
-> Windows is checking for duplicate addresses using ARP packets
-> with source _and_
-> destination address set to the address in question. So of
-> course Linux won't answer it!
+In message <200308121432.09782.david.jander@protonic.nl> you wrote:
 >
-> But I can't find a single word in the RFC2131
-> (http://www.faqs.org/rfcs/rfc2131.html)
-> saying that the
-> Source Address _must_ set to 0.0.0.0!!!!
+> We are designing a board based on the MPC852T (MPC866 serivate), and
+> I want to make sure there is the possibility to mount different-size
+> SDRAM chips on it, so I just connect the two bank-select pins to some
+> higher address lines, leaving some out in between, in order to acomodate
+> for bigger chips in the future. The bottom line is that I will get the
+> memory map split up into 4 segments with vast holes between each segment
+> that are undefined. What do I need to keep in mind regarding linux
+> about this? I suppose it isn't an issue, but I want to be sure I don't
 
-It is actually in RFC1541 "... The client may
-   perform a check on the suggested address to ensure that the address
-   is not already in use.  For example, if the client is on a network
-   that supports ARP, the client may issue an ARP request for the
-   suggested request.  When broadcasting an ARP request for the
-   suggested address, the client must fill in its own hardware address
-   as the sender's hardware address, and 0 as the sender's IP address,
-   to avoid confusing ARP caches in other hosts on the same subnet."
+This is not an issue, as Linux does not care about  the  organization
+of  your  memory.  It  just  expects some amount of contiguous memory
+stating at address 0.
 
-Dave
+> get any trouble later. Any experience with memory holes? I suppose the
+> boot-loader should tell the kernel about the memory-map, in a way just
+> like lilo on an x86 machine, am I right? Does this work the same way on
 
-Dave Ellis
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-SIXNET - "Leading the Industrial Ethernet Revolution"
-331 Ushers Road,   P.O. Box 767, Clifton Park, NY 12065 USA
-Tel +1 (518) 877-5173   Fax +1 (518) 877-8346
-Email me at: dge@sixnetio.com
-Detailed product info: www.sixnetio.com
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+No. There will not be any "holes". It is up  to  your  bootloader  to
+program  the  memory controller of the MPC8xx such that there is just
+one contiguous piece of memory. See U-Boot for example code how to do
+that (including auto-sizing routines and all the rest).
 
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Success in marriage is not so much finding the right person as it  is
+being the right person.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
