@@ -1,23 +1,35 @@
-Message-ID: <3714B863.5904DEE7@brightstareng.com>
-Date: Wed, 14 Apr 1999 11:46:43 -0400
-From: Stuart Adams <sja@brightstareng.com>
+From: list@rzuni1.fh-bingen.de
+Date: Wed, 14 Apr 1999 17:59:22 +0200 (CEST)
+To: mayan <mayan@watson.ibm.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: S3 Virge?
+In-Reply-To: <9904092303.AA35280@mayan.watson.ibm.com>
+Message-ID: <Pine.LNX.3.96.990414175855.6223B-100000@rzuni1.fh-bingen.de>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: TLB miss rate on MPC823/850 processors ???
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-With only 8 instruction TLB's and 8 data TLB's isn't the MPC823/850
-going to spend an excesive amount servicing TLB faults ???
-(With a 4K page size you only have access to 64K of memory without
- faulting)
+hello...
 
-Simply typing "cat /proc/ppc_htab" successively on the console shows
-900-2000 misses just for execting that cat command.
+i'm VERY interested in a S3-X-server, too...
 
--- Stuart
+mart
+
+On Fri, 9 Apr 1999, mayan wrote:
+
+> 
+> 
+> I have a PCI S3Virge card (dev id = 0x8a01). Has anyone got this
+> to work on any linuxppc system? What config parameters did you
+> have to set up to get the driver included?
+> 
+> Thanks!
+> Mayan Moudgill
+> mayan@watson.ibm.com
+> 
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
