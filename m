@@ -1,36 +1,37 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux-Support for IBM PPC405EP
-Date: Thu, 6 Mar 2003 12:34:56 +0100
-Message-ID: <EFEAIMDCOOOHIEPHDNFJIEFFFCAA.stefan.roese@esd-electronics.com>
+Message-ID: <3E674B38.1BB1C51D@cdotd.ernet.in>
+Date: Thu, 06 Mar 2003 06:20:56 -0700
+From: Rahul Dev <rahuld@cdotd.ernet.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: bat programming
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Dear all,
 
-Is anybody successfully runnning linux (linuxppc_2_4_devel) on the new
-PPC405EP? I know it's pretty much the PPC405GP(r), but it has 2 Ethernet
-Controllers.
+     I   am porting  linux2.5 over  ads 8120 board.
+     I  load the kernel (vmlinux) at memory location 0x00  through
+debugger(visionclick).
 
-I would assume that there will be no problems (at least when not using the
-second ethernet controller). Any comments/experiences?
+     My  KERNELBASE=0xc0000000 and the  ram on my board is 16MB.
 
-Best regards,
-Stefan Roese
+     I am having some doubt  regarding the programming of bats in
+function bat_mapin_ram().
+     Here we are mapping  first 8 MB of ram  through  BAT2 and rest  4MB
+of ram through
+     BAT3 and the 4MB of ram remains unmapped.  Why is it so?
+     Also, my kernel goes in panic with the above mentioned bat
+programming.
 
-*******************************************
-esd gmbh
-Vahrenwalder Str. 207
-D-30165 Hannover
-Phone: +49-511-37298-0
-Fax:   +49-511-37298-68
-email: stefan.roese@esd-electronics.com
-www:   http://www.esd-electronics.de
-*******************************************
+     If  i  map the entire 16MB of ram through BAT2  everything works
+fine.  So, should
+     i map the entire ram with  BAT2???
+
+
+    thanx and regards,
+    -rd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
