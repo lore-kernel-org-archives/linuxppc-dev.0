@@ -1,27 +1,29 @@
-Date: Mon, 13 Mar 2000 16:41:33 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Pete Zaitcev <zaitcev@metabyte.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Recommended toolchain?
-In-Reply-To: <200003132020.MAA09309@ns1.metabyte.com>
-Message-ID: <Pine.LNX.3.96L.1000313163928.3704L-100000@unix48.andrew.cmu.edu>
+From: phandel@cise.ufl.edu
+Date: Mon, 13 Mar 2000 17:07:36 -0500 (EST)
+To: "James B. Parker" <pajama1@mindspring.com>
+cc: LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Xfree86 4.0
+In-Reply-To: <B4F2B2E6.152D%pajama1@mindspring.com>
+Message-ID: <Pine.LNX.4.21.0003131705480.27743-100000@adsl-78-160-189.gnv.bellsouth.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 13 Mar 2000, Pete Zaitcev wrote:
->
-> This may be a naive question but I am coming from sparc(32) land
-> where nothing but gcc 2.7.2.x and gcc 2.95.2 is capable of compiling
-> a Linux kernel. So, what is the recommented version of gcc and
-> binutils for ppc kernel?
+On Mon, 13 Mar 2000, James B. Parker wrote:
 
-gcc 2.95.2 is fine. Check the developer release or
-ftp://dev.linuxppc.org/users/fsirl/R5.
+> Actually, I do have a XF86Config file.  After the build/install I ran
+> Xconfigurator (it finally recognized 6mb of vram) and then just skipped the
+> test section.
 
--Hollis
+Xconfigurator & Xautoconfig will not create an XF86Config file that
+XFree86 4.0 can use.  Check out one of Kostas' examples, or send me a note
+and I'll send you mine.
+
+
+Thanks,
+Peter
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
