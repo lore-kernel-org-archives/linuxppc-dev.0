@@ -1,27 +1,42 @@
-Date: Fri, 20 Apr 2001 11:00:01 -0500 (CDT)
-From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: crash/hang/freeze with 2.4.3 or later
-Message-ID: <Pine.GSO.4.10.10104201058510.18930-100000@oddjob.uchicago.edu>
+Subject: Bogus interrupt -1
+From: Lars Brinkhoff <lars@nocrew.org>
+Date: 20 Apr 2001 18:32:02 +0200
+Message-ID: <85itjzilbx.fsf@junk.nocrew.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi everyone,
+I got these messages from benh's 2.4.4-pre1 running SMP:
 
-I keep having some hangs/freezes with kernels later than 2.4.3. This
-basically happens when there is intense disk activity. It always happens
-when there is an slocate cron job. This freeze does not occur with
-2.4.3-pre6.
+  Bogus interrupt -1 from PC = c000781c
+  Bogus interrupt -1 from PC = c0017ba4
+  Bogus interrupt -1 from PC = c0024c90
+  Bogus interrupt -1 from PC = c0017ba4
+  Bogus interrupt -1 from PC = c0017c34
+  Bogus interrupt -1 from PC = c0017ba4
+  Bogus interrupt -1 from PC = c0006e38
+  Bogus interrupt -1 from PC = c0006e38
+  Bogus interrupt -1 from PC = c0006e38
+  Bogus interrupt -1 from PC = c0006e38
+  Bogus interrupt -1 from PC = c0006e38
+  Bogus interrupt -1 from PC = c0006e38
 
-After this hang I have to physically boot the machine and almost always
-the automatic fsck on boot fails.
+According to my System.map:
+c0006e38 = _nmask_and_or_msr + 0x10
+c000781c = _switch_to + 0x184
+c0017ba4 = schedule + 0x1084
+c0017c34 = schedule + 0x1228
+c0024c90 = del_timer_sync + 0x184
 
-I was wondering if there is something wrong with the kernel or my hard drive.
+At first, the first six or so messages appeared, but everything seemed
+fine.  Later, the last messages appeared, and it seemed like one of
+the two processors in my 2001 Dual G4 had wedged.  According to "top",
+there was always at least 50% idle time.
 
-Thanks - Ram
-
+--
+http://lars.nocrew.org/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
