@@ -1,39 +1,32 @@
-Message-ID: <3B78294F.63D4945@iiic.ethz.ch>
-Date: Mon, 13 Aug 2001 21:23:59 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Message-ID: <3B7830E4.2020704@humboldt.co.uk>
+Date: Mon, 13 Aug 2001 20:56:20 +0100
+From: Adrian Cox <adrian@humboldt.co.uk>
 MIME-Version: 1.0
-To: Mike Fedyk <mfedyk@matchmail.com>
-Cc: Michel Lanners <mlan@cpu.lu>, bob@kunk.jriver.com,
-	debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Compiling EIDE patch on PPC
-References: <20010810161714.E28914@mikef-linux.matchmail.com> <200108110647.IAA00781@piglet.grunz.lu> <20010813101939.A21730@mikef-linux.matchmail.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: Edward Swarthout <swarthou@ibmoto.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: assorted kernel patches
+References: <200108131910.f7DJAAd09710@pacific.somerset.sps.mot.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mike Fedyk wrote:
+Edward Swarthout wrote:
 
-> > > Also, there is an include for asm/ide.h in apus_setup.c.  I didn't
-> > > change it because I don't have any prep machines for testing, and for
-> > > some reason it is also including from the m86k arch.
-> >
-> > APUS is not PREP, its some Amiga stuff. Basically, originally 68k-Amigas
-> > upgraded with PPC processors; so no wonder they're a hybrid of m68k and
-> > ppc ;-). I would _guess_ they need the <asm/ide.h> replaced by
-> > <linux/ide.h> too.
->
-> Oops, brain fart.  Did any of those APUS have PCI?
+> 3. Additional 7450 support
+>    - add machine check decodes in traps.c
 
-Yes and no. Not for IDE so far.
+The current code deals with hardware errors inside the processor by
+killing the user mode thread which was unlucky enough to be running at
+the time. So as well as adding decodes in traps.c, you may also want to
+ensure that internal error checking is enabled on 7400/10/50, and that
+the machine is halted once an error is detected. I do have a patch for
+this, but there wasn't a great deal of interest last time I posted it.
+> 6. Add support 8245 cpu/bridge, and mpc107 bridge
 
-> If not, then the change may not be needed.
-
-I don't know offhand, but don't worry, we'll take care of it.
-
-
+The 2_4_devel tree already supports the mpc107. What did you have in mind?
 --
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+Adrian Cox   http://www.humboldt.co.uk/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
