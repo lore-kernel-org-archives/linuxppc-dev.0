@@ -1,35 +1,46 @@
-Message-ID: <398AF755.E10D0C56@student.ethz.ch>
-Date: Fri, 04 Aug 2000 19:03:17 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Tom Gall <gall@rochcivictheatre.org>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Getting things in...  Was: Re: shifts on 64bit ints
+Date: Fri, 4 Aug 2000 19:49:53 +0200
+Message-Id: <20000804174953.16973@mailhost.mipsys.com>
+In-Reply-To: <398AEA0C.329AB669@rochcivictheatre.org>
+References: <398AEA0C.329AB669@rochcivictheatre.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kind of success! (r128 on PPC (Re: LinuxPPC X Server))
-References: <Pine.LNX.4.21.0008031541210.6020-100000@idd-01.imbc.gr> <398ADB57.9ABEDC6F@student.ethz.ch>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer wrote:
+>
+>  I must confess this is one of those areas where I wish we were on CVS
+>instead of BK.
+>
+>  If you want feel free to send your patches my way and I'll be sure
+>that they get in. I can at least test things on my prep, chrp rs6000s
+>and even my power mac.
+>
+>>         linuxppc-dev is not necessarily a patch submission mailinglist.
+>> Until PowerPC Linux development has such a thing, I think that it is
+>> better to coordinate with and directly send patches to someone with
+>> write-access who can apply the patches instead of throwing them up in the
+>> air and hoping that someone catches them.
+>
+>  This can be a good thing or a bad thing tho. I'd rather like to see
+>patches posted to the list. Granted there's some line there where they
+>simply get too big and a link is better. At least with posting to the
+>list everyone has the chance to comment and better yet test them out!
 
-> 16 bit doesn't work neither with fbdev (colors completely off - does
-> aty128fb still use 15 bit in fact?)
+I'm an horribly bad web designer, but one cool thing to do if someone is
+good at it, would be a web-pased patch repository. You send patches with
+a web form (eventually an upload mecanism) along with your  email, a
+comment, etc..., they get assigned a patch number automatically, anybody
+can consult the database, and people with write access to BK can mark
+them (accepted, refused, postponed, ... along with a comment) once they
+have been handled.
 
-fbset -i reveals that it does.
+Any volunteer to design such a site ?
 
+Ben.
 
-Is anyone actively maintaining aty128fb or should I try to fix that as well as
-the panning? Looking at the X r128 driver, it shouldn't be too hard.
-
-
-Michel
-
-
---
-Coming to you live from a finite point in the space-time continuum!
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
