@@ -1,27 +1,30 @@
-Message-ID: <38E21E97.64D20258@iiic.ethz.ch>
-Date: Wed, 29 Mar 2000 17:17:43 +0200
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: Alain RICHARD <alain.richard@equation.fr>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: new XFree86 4.0 rpms
-References: <200003291145.DAA39678@bromo.med.uc.edu> <p04310105b507c981404f@[192.168.240.10]>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Wed, 29 Mar 2000 18:47:18 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: LinuxPPC and Pismo Powerbook
+Message-Id: <20000329184718.027924@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alain RICHARD wrote:
+On Wed, Mar 29, 2000, Olaf Hering <olh@suse.de> wrote:
 
-> I have made a configuration that seems to be working (the screen,
-> resolution and fbdev driver is loading without any error), but the
-> screen is erased and remains black.
+>I had never problems with my faked system folder, I move it around, to
+>CDs, to netatalk servers and where ever I want. This can be a "feature"
+>of OS9 that it doesn't remove the information, I don't know.
+>
+>What makes this blessing so special??
 
-You need to specify a BusID (in your case 'BusID "PCI:0:16:0"') in the Device
-Section for the fbdev driver to work.
+The "blessing" is a combination of two things:
 
+ - The directory ID of the "blessed" folder is written somewhere in the
+disk catalog (I think in the MDB, I don't remember for sure)
 
-Michel
+ - Valid boot blocs are written to bloc 0 and 1 of the volume
 
+OF may still be able to boot if the bootblocs are not present (but miBoot
+can't).
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
