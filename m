@@ -1,39 +1,33 @@
-In-Reply-To: <38062B18.A959825E@mondonet.net>
-Date: Thu, 14 Oct 1999 13:06:16 +0200
-To: Mario Scarpa <m.scarpa@mondonet.net>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Message-Id: <199910141119.NAA09122@opal.biophys.uni-duesseldorf.de>
 Subject: Re: serial on lombard
-Message-Id: <19991014130616.001878@mailhost.mipsys.com>
-Mime-Version: 1.0
+In-Reply-To: <38062B18.A959825E@mondonet.net> from Mario Scarpa at "Oct 14, 1999 12:12:24 pm"
+To: m.scarpa@mondonet.net (Mario Scarpa)
+Date: Thu, 14 Oct 1999 13:19:17 +0200 (CEST)
+Cc: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 14, 1999, Mario Scarpa <m.scarpa@mondonet.net> wrote:
+> alarm(0x2, 0x7ffff7b4, 0, 0x8, 0x7f7f7f7f) = 0
+> open("/dev/ttyS0", O_RDWR|O_NONBLOCK)   = 3
+> --- SIGALRM (Alarm clock) ---
+> alarm(0, 0x1, 0, 0x8, 0x7f7f7f7f)       = 0
+> rt_sigaction(0xe, 0x7ffff698, 0x7ffff728, 0x8) = 0
+> write(2, "minicom: cannot open /dev/ttyS0:"..., 59minicom: cannot open /dev/ttyS0: No such file or directory
+> ) = 59
 
->there's something I cannot get rid of. When I try to
->use minicom to dial with the internal modem of my
->lombard 400MHz I get a "/dev/ttyS0 no such file or dir"
->error; when I try to use setserial or stty on the same
->device everything works ok. I'm using debian potato.
->Attached there 's the 'strace minicom' output: hope this helps.
+The port blocks on open, and you get a timeout. 
 
-This exact same problem happens on my wallstreet. I'm not yet 100% sure,
-but I think this is because minicom sets up some kind of timeout on the
-open call via an alarm signal which fails since the powerbook internal
-modem will block the opening process for about 2.5 second in the open
-call. We added this tempo since the modem is only powered up when the
-port is opened, and it needs approximately this time before beeing able
-to answer commands. This used to cause most connection scripts
-(especially default PPP scripts) to fail.
+The serial port won't open without carrier detected. minicom fails to set
+the port characteristics properly (or the Mac serial driver doesn't honor
+minicom's port settings), and gives a very confusing error message (open
+/dev/ttyS0 timed out would have been more accurate). 
 
-Fixing minicom is in my todolist, I'll try to give it a look next we.
+Set ttyS0 to ignore DCD with stty clocal </dev/ttyS0, perhaps.
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
