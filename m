@@ -1,35 +1,44 @@
-From: Miles Lane <miles.lane@comcast.net>
+Subject: new code for an mpc8xx board (dbox2)
+From: Andreas Oberritter <obi@saftware.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: linuxppc-2.5 (mvista rsync) -- Please push changesets for AGPGART / RadeonFB / Radeon DRI to Linus
-Date: Sat, 2 Aug 2003 18:32:08 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200308021832.08242.miles.lane@comcast.net>
+Content-Type: text/plain
+Message-Id: <1059878529.665.50.camel@localhost>
+Mime-Version: 1.0
+Date: 03 Aug 2003 04:42:09 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-When I build and run a Linus kernel 2.5.72 - 2.6.0-test2 kernel,
-the video gets thrown way out of sync when I start my Radeon
-card with DRI enabled.  The symptom is twofold, the colormap
-is all wrong and all I get is a very blurry, oversized pointer.  The
-sync seems to be way out of whack.  Switching to a VT window
-doesn't help.  In fact, the video in VT windows exhibits the
-same problems.  I have tried switching back and forth repeatedly.
-The only thing that fixes the problem is starting XFreee86 with
-DRI disabled or rebooting.
+I'd like to get support for the dbox2, which is a DVB receiver with an
+mpc823 cpu, into the linux kernel, to make it bootable without
+further patching. Since I am new to submitting kernel patches, I don't
+know who to ask best for inclusion. Benjamin Herrenschmidt pointed me to
+this mailing list.
 
-I have a:
-ATI Technologies Inc Radeon Mobility M7 LW [Radeon Mobility 7500]
+On which kernel tree shall patches be based to get into vanilla 2.4?
 
-Also, if there are other changesets that should be in 2.6.0, this might
-be a good time to get those in, right?
+The current patchset against linux-2.4.22-pre6 can be viewed via webcvs
+at http://cvs.tuxbox.org/cgi-bin/viewcvs.cgi/tuxbox/cdk/Patches/
 
-Thanks!
+I will create a new set as soon as I know which tree to use best.
 
-	Miles
+I'd also like to know if there is a better way to handle edge triggered
+interrupts on 8xx than it is done in
+linux-2.4.22-pre6-dbox2-irq.diff. Should CONFIG_DBOX2 be removed in this
+patch or maybe replaced by CONFIG_8xx?
+
+I think linux-2.4.22-pre6-dbox2-board.diff is a trivial patch and will
+not offend any other boards.
+
+linux-2.4.22-pre6-dbox2-watchdog.diff is needed because the
+bootloader of this board enables the watchdog. Since it is a generic
+implementation for handling an 8xx watchdog, I'd add CONFIG_8xx_WATCHDOG
+for it instead of CONFIG_DBOX2, if no one complains.
+
+Regards,
+Andreas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
