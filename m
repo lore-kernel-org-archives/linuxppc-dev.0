@@ -1,24 +1,20 @@
-Return-Path: <waite@skycomputers.com>
-Received: from sky.skycomputers.com (sky.skycomputers.com [198.4.246.2])
-	by ozlabs.org (Postfix) with ESMTP id 9DC5767A67
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 3D7F667A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Mar 2005 04:57:37 +1100 (EST)
-Received: from dayton (dayton [192.9.200.220])
-	by sky.skycomputers.com (Postfix) with ESMTP id 87D2114F299
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 13:06:02 -0500 (EST)
-From: Brian Waite <waite@skycomputers.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 17 Mar 2005 12:47:16 -0500
-References: <200503170953.02626.waite@skycomputers.com>
-	<4239C1FD.7060308@mvista.com>
-In-Reply-To: <4239C1FD.7060308@mvista.com>
+	Fri, 18 Mar 2005 04:58:02 +1100 (EST)
+Message-ID: <4239C51B.70101@mvista.com>
+Date: Thu, 17 Mar 2005 10:57:47 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1623100.YPrkHYiPxz";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200503171247.20161.waite@skycomputers.com>
-Subject: Re: [PATCH] ppc32: 0/2 add support for Sky Computers HDPU Compute
-	blade
+To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
+References: <42323A97.5070105@mvista.com>
+	<20050317163526.GB10864@wohnheim.fh-wedel.de>
+In-Reply-To: <20050317163526.GB10864@wohnheim.fh-wedel.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 2.6.12] mtd: Remove MTD map file for Chestnut platform.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,45 +25,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart1623100.YPrkHYiPxz
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Jörn Engel wrote:
 
-On Thursday 17 March 2005 12:44, Mark A. Greer wrote:
-> Brian Waite wrote:
->=20
-> >+#define HDPU_INTERNAL_SRAM_BASE               0xfbfc0000
-> >+#define HDPU_INTERNAL_SRAM_SIZE               0x00040000
-> > =20
-> >
-> I haven't gone through in detail yet but one thing I did notice was that=
-=20
-> you don't have the proper SRAM alignment or size.  The SRAM on the=20
-> 64[34]60 is 2MB so it must be aligned on a boundary that's a multiple of=
-=20
-> 2MB.
->=20
-Mark,=20
-	Argh that is a carry over from a bad experiment in consolidating memory sp=
-ace.=20
-I don't use the SRAM for anything so it will not break the code so I will p=
-rovide a patch on top=20
-of the platform patch to fix this if that works for you.
+>On Fri, 11 March 2005 17:40:55 -0700, Mark A. Greer wrote:
+>  
+>
+>>Remove Chestnut mtd map file.
+>>
+>>The chestnut now sets up its MTD map from its platform-specific file so 
+>>the map file drivers/mtd/maps/chestnut.c is no longer needed.  This 
+>>patch removes the file & the Kconfig/Makefile hooks.
+>>
+>>Please apply.
+>>    
+>>
+>
+>Applied to mtd cvs.  It will make its way to Linus eventually...
+>
+>Thanks!
+>  
+>
 
-Thanks
-Brian
+Jörn,
 
---nextPart1623100.YPrkHYiPxz
-Content-Type: application/pgp-signature
+Thanks for looking into this but Andrew has already pushed that through 
+from his end.  (I had posted an earler patch with the map removal in it 
+before I broke it out and sent that part to you and the rest to Andrew 
+again.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
+Sorry for wasting your time.
 
-iD8DBQBCOcKomxLCz0u+Ko8RAvvoAJ0dFQGj0/rqkqKTGwTrwtQI4PeIZACbBPu+
-XOtJgnpwDg0MlCXosKf5PAE=
-=2frV
------END PGP SIGNATURE-----
-
---nextPart1623100.YPrkHYiPxz--
+Mark
