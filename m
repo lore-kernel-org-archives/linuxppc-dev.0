@@ -1,17 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9D5EA67A6F
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2005 20:04:44 +1000 (EST)
-In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D4F0D23@rennsmail02.eu.thmulti.com>
-References: <1CFEB358338412458B21FAA0D78FE86D4F0D23@rennsmail02.eu.thmulti.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <3564f98e15f831085f459002d1607acf@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 1 Apr 2005 04:04:40 -0600
-To: "Fillod Stephane" <stephane.fillod@thomson.net>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] invalid instructions in kernel mode
+Return-Path: <evilninja@gmx.net>
+Received: from mail.gmx.net (pop.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id EA13D67A64
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Apr 2005 11:52:00 +1000 (EST)
+Message-ID: <42509DB9.4090609@gmx.net>
+Date: Mon, 04 Apr 2005 03:51:53 +0200
+From: Christian <evilninja@gmx.net>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+References: <423B788F.7040705@kegel.com>
+In-Reply-To: <423B788F.7040705@kegel.com>
+Content-Type: multipart/mixed; boundary="------------070009010908090506050501"
+Cc: Dan Kegel <dank@kegel.com>
+Subject: Re: gcc4 compile fixes
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,119 +21,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-What is the crash01 test doing that causes this code to get invoked? =20
-is the kernel you are using using build with math emulation on or off?
+This is a multi-part message in MIME format.
+--------------070009010908090506050501
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-- kumar
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Mar 31, 2005, at 11:47 AM, Fillod Stephane wrote:
+Dan Kegel wrote:
+> Howdy all.  I'm trying to bring up gcc-4.0 toolchains
+> using the headers from linux-2.6.11.3, and as a sanity
+> check, I'm trying to build ppc750 and ppc970 kernels, too.
 
-> Hi,
->
-> When CPU has no (classic) FPU, and math emulation is disabled,
->  fp instructions are not allowed in kernel mode.
->  This bug has been found with crashme (crash01) of LTP, on a e500=20
-> system.
->
-> The patch was made against linux 2.6.11.6.
->  A trivial typo fix has been appended.
->
-> Rem: a CONFIG_PPCFPU define could make life easier.
->
->
->
-> Signed-off-by: Stephane Fillod <fillods@gmail.com>
->
-> --- linux/arch/ppc/kernel/align.c=A0=A0=A0=A0=A0=A0 6 Dec 2004 =
-16:18:11 -0000
->  1.1.1.1
->  +++ linux/arch/ppc/kernel/align.c=A0=A0=A0=A0=A0=A0 31 Mar 2005 =
-16:33:25 -0000
->  @@ -333,10 +333,14 @@
->  =A0=A0=A0=A0=A0=A0=A0 }
->  =A0
->  =A0=A0=A0=A0=A0=A0=A0 if (flags & F) {
->  +#if !(defined(CONFIG_4xx) || defined(CONFIG_8xx) ||
->  defined(CONFIG_E500)) || defined(CONFIG_MATH_EMULATION)
-> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_disable();
-> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 if (regs->msr & MSR_FP)
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
-giveup_fpu(current);
-> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_enable();
-> +#else
->  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 return 0;
->  +#endif
->  =A0=A0=A0=A0=A0=A0=A0 }
->  =A0
->  =A0=A0=A0=A0=A0=A0=A0 /* If we read the operand, copy it in, else get =
-register=20
-> values
-> */
->  @@ -366,6 +370,8 @@
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 }
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 break;
->  =A0
->  +#if !(defined(CONFIG_4xx) || defined(CONFIG_8xx) ||
->  defined(CONFIG_E500)) || defined(CONFIG_MATH_EMULATION)
-> +
->  =A0=A0=A0=A0=A0=A0=A0 /* Single-precision FP load and store require =
-conversions...=20
-> */
->  =A0=A0=A0=A0=A0=A0=A0 case LD+F+S:
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_disable();
-> @@ -379,6 +385,7 @@
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 cvt_df(&data.d, &data.f, =
-&current->thread.fpscr);
-> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_enable();
-> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 break;
->  +#endif
->  =A0=A0=A0=A0=A0=A0=A0 }
->  =A0
->  =A0=A0=A0=A0=A0=A0=A0 if (flags & ST) {
->  --- linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0=A0=A0 26 Mar 2005 =
-03:28:36 -0000
->  1.1.1.2
->  +++ linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0=A0=A0 31 Mar 2005 =
-16:33:25 -0000
->  @@ -1096,7 +1096,8 @@
->  =A0 * and exceptions as if the cpu had performed the load or store.
->  =A0 */
->  =A0
->  -#if defined(CONFIG_4xx) || defined(CONFIG_E500)
-> +#if !(defined(CONFIG_4xx) || defined(CONFIG_E500) ||
->  defined(CONFIG_8xx)) ||=A0 defined(CONFIG_MATH_EMULATION)
-> +#if defined(CONFIG_4xx) || defined(CONFIG_E500)
-> =A0_GLOBAL(cvt_fd)
-> =A0=A0=A0=A0=A0=A0=A0 lfs=A0=A0=A0=A0 0,0(r3)
->  =A0=A0=A0=A0=A0=A0=A0 stfd=A0=A0=A0 0,0(r4)
->  @@ -1125,6 +1126,7 @@
->  =A0=A0=A0=A0=A0=A0=A0 stfd=A0=A0=A0 0,-4(r5)
->  =A0=A0=A0=A0=A0=A0=A0 blr
->  =A0#endif
->  +#endif
->  =A0
->  =A0/*
->  =A0 * Create a kernel thread
->  --- linux/arch/ppc/kernel/process.c=A0=A0=A0=A0 26 Mar 2005 03:28:20 =
--0000
->  1.1.1.2
->  +++ linux/arch/ppc/kernel/process.c=A0=A0=A0=A0 31 Mar 2005 16:33:25 =
--0000
->  @@ -342,7 +342,7 @@
->  =A0=A0=A0=A0=A0=A0=A0 printk("\n");
->  =A0#ifdef CONFIG_KALLSYMS
-> =A0=A0=A0=A0=A0=A0=A0 /*
->  -=A0=A0=A0=A0=A0=A0=A0 * Lookup NIP late so we have the best change =
-of getting the
->  +=A0=A0=A0=A0=A0=A0=A0 * Lookup NIP late so we have the best chance =
-of getting the
->  =A0=A0=A0=A0=A0=A0=A0=A0 * above info out without failing
->  =A0=A0=A0=A0=A0=A0=A0=A0 */
->  =A0=A0=A0=A0=A0=A0=A0 printk("NIP [%08lx] ", regs->nip);
->
->
->
-> Best Regards,
->
-> --=20
-> Stephane
+i have tried with vanilla 2.6.11.6 now and compiling for ppc604 still
+fails with the errors you described. they go away with your suggested
+fixes (only had to modify the linenumbers, diff attached, apply with -p0)
+
+oh, not that the kernel compiles now - it seems it just overcame a build
+error out of many :->
+
+now it [1] fails with:
+
+In file included from arch/ppc/kernel/time.c:68:
+include/asm/time.h:61: warning: type qualifiers ignored on function return
+type
+arch/ppc/kernel/time.c:92: error: static declaration of 'time_offset'
+follows non-static declaration
+include/linux/timex.h:236: error: previous declaration of 'time_offset'
+was here
+make[1]: *** [arch/ppc/kernel/time.o] Error 1
+make: *** [arch/ppc/kernel] Error 2
+
+thank you,
+Christian.
+
+[1] building a ppc604(PReP) kernel on i386:
+powerpc-604-linux-gnu-gcc (GCC) 4.0.0 20050305 (prerelease)
+GNU ld version 2.15
+  Supported emulations:
+   elf32ppclinux
+   elf32ppc
+   elf32ppcsim
+- --
+BOFH excuse #345:
+
+Having to manually track the satellite.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+
+iD8DBQFCUJ25C/PVm5+NVoYRArBVAKDU+Zbg2dYxXksrN7eK5jpx+kzmpgCdGgHY
+kxED/GRoU4+1c/NrrGXn4D8=
+=hn4d
+-----END PGP SIGNATURE-----
+
+--------------070009010908090506050501
+Content-Type: text/plain;
+ name="2.6.11.6.gcc4_compile_fixes.diff"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="2.6.11.6.gcc4_compile_fixes.diff"
+
+LS0tIGluY2x1ZGUvYXNtLXBwYzY0L3BhY2EuaC5vcmlnCTIwMDUtMDQtMDQgMDM6Mzk6NDgu
+NTc2OTUxNDY1ICswMjAwCisrKyBpbmNsdWRlL2FzbS1wcGM2NC9wYWNhLmgJMjAwNS0wNC0w
+NCAwMzo0MjoxNy45NzAwOTA1NDkgKzAyMDAKQEAgLTIyLDcgKzIyLDYgQEAKICNpbmNsdWRl
+CTxhc20vaVNlcmllcy9JdExwUmVnU2F2ZS5oPgogI2luY2x1ZGUJPGFzbS9tbXUuaD4KIAot
+ZXh0ZXJuIHN0cnVjdCBwYWNhX3N0cnVjdCBwYWNhW107CiByZWdpc3RlciBzdHJ1Y3QgcGFj
+YV9zdHJ1Y3QgKmxvY2FsX3BhY2EgYXNtKCJyMTMiKTsKICNkZWZpbmUgZ2V0X3BhY2EoKQls
+b2NhbF9wYWNhCiAKQEAgLTExNSw0ICsxMTQsNiBAQAogI2VuZGlmCiB9OwogCitleHRlcm4g
+c3RydWN0IHBhY2Ffc3RydWN0IHBhY2FbXTsKKwogI2VuZGlmIC8qIF9QUEM2NF9QQUNBX0gg
+Ki8KLS0tIGluY2x1ZGUvYXNtLW02OGsvc2V0dXAuaC5vcmlnCTIwMDUtMDQtMDQgMDM6Mzg6
+MzQuMjQ5MzUwMTYwICswMjAwCisrKyBpbmNsdWRlL2FzbS1tNjhrL3NldHVwLmgJMjAwNS0w
+NC0wNCAwMzozOTozMy45NDUyMTEwNzggKzAyMDAKQEAgLTM2MiwxMiArMzYyLDEzIEBACiAj
+aWZuZGVmIF9fQVNTRU1CTFlfXwogZXh0ZXJuIGludCBtNjhrX251bV9tZW1vcnk7CQkvKiAj
+IG9mIG1lbW9yeSBibG9ja3MgZm91bmQgKGFuZCB1c2VkKSAqLwogZXh0ZXJuIGludCBtNjhr
+X3JlYWxudW1fbWVtb3J5OwkJLyogcmVhbCAjIG9mIG1lbW9yeSBibG9ja3MgZm91bmQgKi8K
+LWV4dGVybiBzdHJ1Y3QgbWVtX2luZm8gbTY4a19tZW1vcnlbTlVNX01FTUlORk9dOy8qIG1l
+bW9yeSBkZXNjcmlwdGlvbiAqLwogCiBzdHJ1Y3QgbWVtX2luZm8gewogCXVuc2lnbmVkIGxv
+bmcgYWRkcjsJCS8qIHBoeXNpY2FsIGFkZHJlc3Mgb2YgbWVtb3J5IGNodW5rICovCiAJdW5z
+aWduZWQgbG9uZyBzaXplOwkJLyogbGVuZ3RoIG9mIG1lbW9yeSBjaHVuayAoaW4gYnl0ZXMp
+ICovCiB9OworCitleHRlcm4gc3RydWN0IG1lbV9pbmZvIG02OGtfbWVtb3J5W05VTV9NRU1J
+TkZPXTsgLyogbWVtb3J5IGRlc2NyaXB0aW9uICovCiAjZW5kaWYKIAogI2VuZGlmIC8qIF9f
+S0VSTkVMX18gKi8K
+--------------070009010908090506050501--
