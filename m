@@ -1,132 +1,138 @@
-Message-ID: <B4DFCB7CDE2DD4118F690008C78694160100B68C@tahoe.allegronetworks.com>
-From: Bruce Korb <bkorb@allegronetworks.com>
-To: "'bh40@calva.net'" <bh40@calva.net>,
-	"'acme@conectiva.com.br'" <acme@conectiva.com.br>,
-	"'port-macppc@netbsd.org'" <port-macppc@netbsd.org>,
-	"'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
-	"'support@apple.com'" <support@apple.com>,
-	"'support@broadcom.com'" <support@broadcom.com>
-Cc: "'matt@netbsd.org'" <matt@netbsd.org>,
-	"'tsubai@netbsd.org'" <tsubai@netbsd.org>,
-	"'bkorb@gnu.org'" <bkorb@gnu.org>
-Subject: What's wrong with with the G4's GMAC interface?
-Date: Sat, 21 Apr 2001 11:59:30 -0700
+Date: Sat, 21 Apr 2001 21:37:38 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Samuel Rydh <samuel@ibrium.se>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] gettimeofday stability
+In-Reply-To: <20010421201602.B1115@ibrium.se>
+Message-ID: <Pine.HPX.4.10.10104211923230.2724-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello everyone,
+On Sat, 21 Apr 2001, Samuel Rydh wrote:
 
-There is a significant problem with the GMAC ethernet device
-on Apple's G4 platform.  This note summarizes what I have
-learned of the issue in the past couple of days, a workaround,
-some strange things the Linux driver does that may be related,
-and finally a solicitation for input so we Open Software folks
-can come to a consensus on the "right" fix.
+> > Don't tell me that you fix the TB on each interrupt, please.
+>
+> The MOL user process runs in two modes, mac-mode and normal mode.
+> In mac-mode, the MOL module is in full control of the CPU (including
+> the MMU, DEC and the TB). When an interrupt occurs (or in general,
+> a non-MOL exception), everything is restored to what linux expects
+> before the exception is taken.
 
-The signal processing chip is the Broadcom BCM5201.
+Ouch !!! Playing with the TB on each interrupt (external/decrementer) and
+syscall too (don't forget that filesystems will call do_gettimeofday()
+for timestamps) ?
 
+> That is, TB is restored whenever an interrupt occurs in mac-mode.
+> The TB will estimately loose 0-2 ticks at each switch
+> (depending on the exact moment the clock happens to tick).
 
-1.  The symptom
+Well, this may mean thousands of time per second, it's bad. Anything which
+can cause cumulative errors is not acceptable. It will badly interfere
+with NTP for sure, especially if you have bursts of activity in MOL.
 
-When NetBSD is running on the Apple G4 PowerMac and the GM0
-interface is under heavy load, the system will appear to stop
-dead in its tracks.  Its behavior actually becomes bursty
-and packets are seen out of order.  This was first reported
-on the net as early as March, 2000, some 14 months ago.
+So I'd like to sugest a different solution, it will need an additional
+(perhaps per CPU) global variable, that I shall call tb_error. I'll
+assume that what you wnat to do is to bump the TB forward or backwards by
+a given 64 bit offset (let us ignore the 601 for now, please :-)).
 
-2.  The Problem
+When interrupts are masked tbl+dec is constant and this fact can be used
+to avoid cumulative errors:
 
-Every once in a while when under heavy load, the MII layer
-becomes confused about which entry is next in the circular
-buffer descriptor list.  So, it uses the wrong buffer and
-wakes up the driver.  The driver wakes up, looks at the current
-buffer, sees there is nothing to do and returns.  This keeps
-happening until MII actually fills in the buffer the driver is
-waiting for.  Things then work normally for a little bit, then
-the driver discovers all the old messages and processes them
-in a big batch.  This bursty behavior by the driver also seems
-to have a positive feedback to the MII causing the problem to
-more readily recur.
+1:	mftbl 	y
+	mfdec 	x
+	mftbl 	z		# low 32 bit of timestamp
+	cmpw	y,z
+	bne-	1b
+	mftbu	y
+	mftbl	t
+	add	x,x,z
+	subf	x,tb_error,x	# Theoretical current sum
+	subfc	t,z,t		# This carry manipulation
+	addme	y,y		# needs to be checked!
+	subfc	z,tb_error,z
+	subfze	y,y
+# Now y,z is a corrected 64 bit timestamp, and x is a time independent
+# constant betwen decrementer interrupts.
+	addc	z,z,offsetl	# Bump the timebase and store it.
+	adde	y,y,offsetu
+	li	t,0		# This avoids an accidental carry into
+	mttbl	t		# the MSW between mttbu and the second
+	mttbu	y		# mttbl.
+	mttbl	z
+# Let us measure again the error
+2:	mftbl	z		# The new tbl+dec constant should have
+	mfdec	y		# been bumped by offsetl. But we can
+	mftbl	t		# measure the error, save it and use it
+	cmpw	t,z		# at the next timebase adjustment to
+	bne-	2b		# avoid cumulative errors.
+	add	y,y,z		# New constant
+	subf	x,y,x		# Difference with old constant
+	subf	new_tb_error,offsetl,x
+# save new_tb_error for the next invocation
 
-3.  A Solution
+I think the mftb+mfdec+mftb loop will always work even on the slowest
+processors, because mftb and mfdec are rather fast and it is comparable
+to the recommended mftbl/mftbu/mftbl sequence used to read the full
+timebase.
 
-This solution is based solely on looking at ping traces and
-the NetBSD source code.
+Of course the existence of the 601 will complicate the code (better write
+a different routine, modulo 1e9 arithmetic will be a nightmare). But that
+solution should not have _any_ cumulative error, which are _evil_ and the
+only thing I care about (RTLinux folks might disagree, but then don't mix
+RTLinux and MOL :-)).
 
-At the end of interrupt processing, I perform a test to see
-if any work was done.  If no work was done, then I test for
-anomalous behavior, thus:
+Warning: untested, I just wrote it as is on the fly and that's assembly
+(but with all the carry manipulations and privileged instructions, I have
+the feeling that C would be even less readable ;-)).
 
-    if (sc->sc_rxlast != i) {
-        sc->sc_rxlast = i;
-        return;
-    }
-    for (;;) {
-        i = (i + 1) & (NRXBUF - 1);
-        if (sc->sc_rxlast == i)
-            return;
-        cmd = le32toh(sc->sc_rxlist[i].cmd);
-        if (cmd & GMAC_OWN)
-            continue;
-        log(LOG_ERR,"reset GMAC read hand from %d to %d for %s\n",
-            sc->sc_rxlast, i, sc->sc_dev.dv_xname);
-        sc->sc_rxlast = i;
-        goto again;
-    }
+Possible interface to this routine:
 
-Last night, we put a system under heavy load whereby with the
-original NetBSD running we would have expected the behavior within
-a half hour or so.  Here is the syslog:
+	tb_error = bump_tb(long long offset, int tb_error)
 
-Apr 20 19:04:37 olive-30 /netbsd: reset GMAC read hand from 31 to 1 for gm0
-Apr 20 19:20:49 olive-30 /netbsd: reset GMAC read hand from 13 to 15 for gm0
-Apr 20 20:01:33 olive-30 inetd[1665]: connection from 10.1.5.197, service
-telnet (tcp)
-Apr 20 20:01:47 olive-30 /netbsd: reset GMAC read hand from 11 to 19 for gm0
-Apr 20 21:03:29 olive-30 /netbsd: reset GMAC read hand from 23 to 28 for gm0
-Apr 20 21:04:19 olive-30 inetd[18011]: connection from 10.1.5.197, service
-telnet (tcp)
-Apr 20 21:11:30 olive-30 /netbsd: reset GMAC read hand from 28 to 13 for gm0
-Apr 20 21:22:28 olive-30 /netbsd: sprious interrupt
-Apr 20 21:26:57 olive-30 /netbsd: sprious interrupt
+you just have to assign registers according to the standard API :-)
 
-The event occurred five times over a period of three hours (we started
-around 18:30).  The problem did not recur nearly as quickly or often
-as when the OS waited for the hardware to fill in the expected buffer.
-The behavior (other than the syslog) seemed normal.
+To test it a series of:
+	tb_error = bump_tb(offset, tb_error);
+	tb_error = bump_tb(-offset, tb_error);
 
+(with interrupts disabled, using a small offset to avoid disrupting the
+system) should never give large values for tb_error and the time should
+not start drifting away. Actually tb_error should be a small negative
+integer (or zero), which will vary depending on whether the i-cache is hot
+or not when this code is executed. A small constant offset (well below one
+microsecond) is no problem for timekeeping.
 
-4.  What the Linux driver does:
+> Currently, MOL does not run on SMP due to certain MMU related
+> complications. Much has been done here though, and only minor
+> fixes should be needed in order to get MOL running on
+> SMP.
+>
+> In any case, MOL won't touch TB on SMP since that would
+> desynchronize the timebases which is clearly unacceptable.
 
-    gm->next_rx = i;
-    if (last >= 0) { /* test for any work done */
-        mb();
-        GM_OUT(GM_RX_KICK, last & 0xFFFFFFFC);
-    }
+If the technique I suggest turns out to work (a big if), it should make it
+acceptable even on SMP :-)
 
-The "mb()" macro maps to the "sync" instruction that flushes both the
-data cache and the instruction pipeline.  The "KICK" is the kicker.
-I don't understand it.  "last" is the last successfully processed buffer
-number.  Thus, the "GM_OUT()" macro basically seems to be telling the
-hardware to go back 1 to 4 buffer slots for storing the next
-received transmission.  That seems like it simply cannot be correct,
-but that is certainly the way the code reads!  Can anyone clarify?
-I have no experience using this.
+> Currently this means that the save-session feature will
+> not be available. But as I said, I'll investigate if it is
+> possible to locate and patch out all mftb instructions
+> in MacOS.
 
+Maybe it's not even necessary... And don't forget that some applications
+might also use mftb, or libraries, extensions, whatever...
 
-5.  What does OS X (FreeBSD deriviative) do?
+However, I still think that switching the tb at each interrupt may be
+overkill: we have control of who uses mftb in the kernel. I'm not 100%
+sure, but it is possible that keeping a global (per processor on SMP)
+variable which would be the low order 32 bits of (offset+tb_error) and
+subtracting it from the mftb result whenever the tb is read would make
+modifying the timebase only necessary on context switches.
 
-Someone at Apple?  Anyone?
+	Regards,
+	Gabriel.
 
-
-6.  Is there any way of querying the hardware itself to ask it
-its thoughts on the subject at hand?
-
-Regards,
-	Bruce Korb
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
