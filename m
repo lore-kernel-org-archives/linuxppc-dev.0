@@ -1,9 +1,9 @@
-Date: Fri, 15 Nov 2002 09:17:24 -0700
+Date: Fri, 15 Nov 2002 09:26:48 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Atm account <linux2@cdotd.ernet.in>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Problem in booting PPC with kernel 2.5.44
-Message-ID: <20021115161724.GA13063@opus.bloom.county>
+Message-ID: <20021115162648.GA14054@opus.bloom.county>
 References: <20021114151136.GB14431@opus.bloom.county> <Pine.OSF.4.10.10211151612210.11070-100000@moon.cdotd.ernet.in>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -22,8 +22,7 @@ On Fri, Nov 15, 2002 at 04:24:36PM +0500, Atm account wrote:
 > to?? AFAIK kernel links at 0xc0000000 and the bootloader at
 > 8Mb (PPC based boards).
 
-Did you change the file itself, or did you make use of
-CONFIG_ADVANCED_OPTIONS, is what I'm asking.
+Er, ignore my last email.  Too close to the weekend I suppose. :)
 
 --
 Tom Rini (TR1265)
