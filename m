@@ -1,46 +1,41 @@
-Message-ID: <3BEF9DA6.14AF8E49@iiic.ethz.ch>
-Date: Mon, 12 Nov 2001 11:00:06 +0100
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Reply-To: daenzer@debian.org
-MIME-Version: 1.0
-To: "Jason E. Stewart" <jason@openinformatics.com>
-Cc: Jonas Smedegaard <js@debian.org>, debian@jones.dk,
-	linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Date: Mon, 12 Nov 2001 11:39:07 +0100 (CET)
+From: Jonas Smedegaard <dr@jones.dk>
+Reply-To: Jonas Smedegaard <js@debian.org>
+To: <daenzer@debian.org>
+Cc: "Jason E. Stewart" <jason@openinformatics.com>,
+	<debian@jones.dk>, <linuxppc-dev@lists.linuxppc.org>,
+	<debian-powerpc@lists.debian.org>
 Subject: Re: IrDA-patched binaries
-References: <Pine.LNX.4.33.0111012312360.888-100000@auryn.jones.dk> <87y9lc6h13.fsf@openinformatics.com>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3BEF9DA6.14AF8E49@iiic.ethz.ch>
+Message-ID: <Pine.LNX.4.33.0111121136470.13469-100000@auryn.jones.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Jason E. Stewart" wrote:
->
-> "Jonas Smedegaard" <dr@jones.dk> writes:
->
-> > I have made available kernel and irda-packages with the irda-hacks
-> > added to make .
->
-> I was totally thrilled to see this. Because of reiserfs, I need to
-> compile my own kernel, so I grabbed the patches a couple of weeks
-> ago. I just had time to look at them and it seems that parameters.h
-> has changed a *lot* since this patch was made.
->
-> >From BenH's latest kernel:
->
-> typedef union {
->         char   *c;
->         __u32   i;
->         __u32 *ip;
-> } irda_pv_t;
+On Mon, 12 Nov 2001, Michel Dänzer wrote:
 
-Yup, 2.4.15-pre2 has my better fix. :)
+> "Jason E. Stewart" wrote:
 
-Now we're working on fixing macserial such that the 'cat /dev/ttyS1
-trick' isn't needed anymore...
+> > has changed a *lot* since this patch was made.
 
+> Yup, 2.4.15-pre2 has my better fix. :)
+>
+> Now we're working on fixing macserial such that the 'cat /dev/ttyS1
+> trick' isn't needed anymore...
+
+_That_ was quick response :-)
+
+I have now uploaded BenH as of today to debian.jones.dk, if anyone's
+interested...
+
+ - Jonas
 
 --
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Jonas Smedegaard (+45 40843136)          http://dr.jones.dk/~jonas/
+Spiff ApS (= IT-guide dr. Jones ApS)     http://dr.jones.dk/
+Debian GNU/Linux developer               http://people.debian.org/~js/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
