@@ -1,63 +1,57 @@
-Message-ID: <003201bf82be$25a8a670$0a01010a@gamma>
-From: "Damjan Lampret" <damjan.lampret@arnes.si>
-To: "Dan Malek" <dan@netx4.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <002601bf81dc$184f9480$0a01010a@gamma> <38B9E821.1E486142@netx4.com>
-Subject: Re: Data TLB error exception
-Date: Tue, 29 Feb 2000 15:06:16 +0100
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc with r128
+Date: Thu, 24 Feb 2000 22:19:34 -0500
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <Pine.LNX.4.21.0002241917120.2343-100000@idd-01.imbc.gr> <00022417315801.00485@localhost.localdomain>
+In-Reply-To: <00022417315801.00485@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <00022422322102.01256@localhost.localdomain>
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Damjan Lampret wrote:
->
-> > I am playing with 2.2.13 kernel on custom MPC860 board and I have a
-problem
-> > with DTLB error (1400h) exception. I downloaded my kernel via BDM and it
->
-> BDMs with MMU and caches are a bad combination.  With the exception of
-> KGDB, there are no debuggers that understand the Linux kernel once
-> the MMU is enabled.  The debugger tools normally used with BDMs trap
-> MMU exceptions as a "bad thing" or at least try to invoke some monitor
-> support code that is supposed to reside in the kernel.
->
+Hi Kostas,
 
-I use EST's VisionICE. I use it to download code and to check which
-exceptions occur. Of course I also assumed that debugger is having problems
-with exceptions so I disabled detection in DER but my target still hangs. I
-am quite sure that visionICE is not executing any "monitor support" code.
-Like most debuggers it does not support MMU so I need to add 0xc0000000 to
-all addresses when analyzing kernel code.
+> I have been looking at my mouse problems in XF 3.9.18 and put some debug
+> statements into Xserver/hw/xfree86/input/mouse/mouse.c to look at the raw
+> characters being read from /dev/usbmouse.
 
-> The MMUs and caches work fine on the 8xx processors when running
-Linux/PPC.
-> I have been running them all day, every day, for years and have several
-> products deployed in the field without trouble.
->
+Well I have been looking at xfree86/input/mouse/mouse.c
 
-Yes, apparently there is a problem running target with BDM and caches
-enabled. As I said in my original email when I disabled caches target is
-much more stable (but still hangs after a couple of minutes). Perhaps this
-is still because of a debugger. Although I don't understand how a debugger
-can harm target when target is not in debug mode (when running "real-time").
+The problem was in MouseReadInput().
 
-> If you are using BDMs for downloading Linux, that is all you can do with
-> them.  Once the kernel executes the first few lines of code to enable
+What a HUGE KLUDGE!
 
-I do use it for downloading code.
+This is some of the most whacked code I have ever seen.  Setting up tables with
+wierd parameters just to try and use the exact same routine to handle all mice
+regardless of how many characters they return, whether serial or bus or
+whatever.
 
-> the MMU, you are done.  If you can't disable _all_ debugging from the
-> BDM tool, including show cycles, you can't use it with Linux.
->
+This in just simply incredibly bad coding.  It is unmaintainable since any
+change will have to impact other mice or simply need another bad hack to work
+around it.
 
-You can disable and I did. Target still hangs. What I don't understand is
-why after DTLB error exception. Everytime I get machine check in data access
-exception handler. I'll backtrace it and post my results to the list.
+The code they were using deliberately resulted in out of sync characters after
+the very first call.
 
-regards, Damjan
+I hacked away most of the MouseReadInput() code and now things work as expected.
+
+I will try to clean up my changes and put back most of what I hacked out so
+that they can be integrated into the xfree86 tree in time for xfree 4.0 but
+someone should really simplify it and stop trying to make one routine work for
+every case (the tables simply could have pointed to individual routines).
+
+Kevin
+
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
