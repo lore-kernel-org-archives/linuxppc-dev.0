@@ -1,38 +1,55 @@
-Date: Thu, 27 Apr 2000 16:57:54 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: "W. Taylor Holliday" <wtholliday@ucdavis.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree 4.0 dual monitor on AGP G4
-In-Reply-To: <Pine.LNX.4.21.0004271613030.8585-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.21.0004271656110.8718-100000@idd-01.imbc.gr>
+Message-ID: <39084D22.417A2FC3@aminocom.com>
+Date: Thu, 27 Apr 2000 14:22:26 +0000
+From: Elizabeth Clarke <eclarke@aminocom.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Porter <mmporter@home.com>
+CC: linuxppc-dev@lists.linuxppc.org, linuxpp-embedded@lists.linuxppc.org
+Subject: Re: glibc-2.1.2 cross-compile problem
+References: <20000426002414.912D83C989@elph.research.canon.com.au> <3906FF25.4E9E6AEA@aminocom.com> <20000426120102.E27105@cx258813-a.chnd1.az.home.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 27 Apr 2000, Kostas Gewrgiou wrote:
+Matt Porter wrote:
 
-> Here is a small patch (untested) that changes r128 to use the "fbdev"
+> > /usr/local/src/gcc-2.95.2/gcc/xgcc -B/usr/local/src/gcc-2.95.2/gcc/
+> > -B/usr/local/powerpc-linux/bin/ -c -DHAVE_CONFIG_H -g -O2 -I.
+> > -I./../../include  choose-temp.c
+> > choose-temp.c:29: stdio.h: No such file or directory
+>
+> Are you sure you followed the directions on my site?  You need to
+> configure your build of gcc with "--with-newlib" then link to your
+> kernel headers, then build glibc.
 
- It seems that i forgot my brain at home today, here is the patch for real
-this time
+Yes... after all they are not complex instructions.
 
- Kostas
+I sorted that problem (stdio.h missing) by copying the newlib headers
+into /usr/local/powerpc-linux/include. So it gets past that now. But....
 
---- r128_driver.c	Thu Apr 27 16:09:06 2000
-+++ r128_driver.c-orij	Thu Apr 27 15:54:38 2000
-@@ -1131,8 +1131,7 @@
- 	/* check for linux framebuffer device */
- 	if (!xf86LoadSubModule(pScrn, "fbdevhw")) return FALSE;
- 	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
--	if (!fbdevHWInit(pScrn,NULL,xf86FindOptionValue(info->pEnt->device->options,"fbdev")))
--		return FALSE;
-+	if (!fbdevHWInit(pScrn, info->PciInfo, NULL)) return FALSE;
- 	pScrn->SwitchMode    = fbdevHWSwitchMode;
- 	pScrn->AdjustFrame   = fbdevHWAdjustFrame;
- 	pScrn->EnterVT       = R128EnterVTFBDev;
+/usr/local/src/gcc-2.95.2/gcc/xgcc -B/usr/local/src/gcc-2.95.2/gcc/
+-B/usr/local/powerpc-linux/bin/ -c -g -O2 -I. -I. -D_IO_MTSAFE_IO
+iogetline.c -o pic/iogetline.o
+/usr/local/src/gcc-2.95.2/gcc/xgcc -B/usr/local/src/gcc-2.95.2/gcc/
+-B/usr/local/powerpc-linux/bin/ -c -g -O2 -I. -I. -D_IO_MTSAFE_IO
+iogetline.c
+In file included from iolibio.h:1,
+                 from libioP.h:47,
+                 from iogetline.c:26:
+libio.h:30: _G_config.h: No such file or directory
+make[1]: *** [iogetline.o] Error 1
+make[1]: Leaving directory
+`/usr/local/src/gcc-2.95.2/powerpc-linux/libio'
 
+So now I'm where Graham Stoney was at Date: Thu, 12 Aug 1999 14:34:44
+-0400.
+I *think* it is looking for _G_config.h from my host includes, but it
+simply isn't putting the path on the command line. Which I think it did
+at one point, or at least on of those -I. was -I./../../include.
+Arghh I'm must be going mad, or stupid. Surely its should not be as bad
+as this?
+
+Any help very much appreciated!
+Beth
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
