@@ -1,36 +1,38 @@
-From: linas@austin.ibm.com
-Date: Fri, 2 Apr 2004 11:02:39 -0600
-To: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: General question about caching
-Message-ID: <20040402110239.A58706@forte.austin.ibm.com>
-References: <406D92CF.8040302@gcctech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <406D92CF.8040302@gcctech.com>; from cjohnson@gcctech.com on Fri, Apr 02, 2004 at 11:20:31AM -0500
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Message-ID: <406DA118.8050405@246tNt.com>
+Date: Fri, 02 Apr 2004 19:21:28 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help
+ text)
+References: <20040402165646.DF4F1C10B8@atlas.denx.de>
+In-Reply-To: <20040402165646.DF4F1C10B8@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Apr 02, 2004 at 11:20:31AM -0500, Christopher R. Johnson wrote:
+Wolfgang Denk wrote:
+
+>Let's rather co-operate with Motorola on this instead working against
+>them. At least give them a chance.
 >
-> I have a tight footprint, and no swapping (in fact no disks).  I notice
-> that /proc/meminfo reports:
-...
+>I guess they will show up here soon...
+>
+>
+Ok, as I said by private mail, now that I know they are actively working
+on solving the problem, I'll try to integrate the bestcom code into the
+port I'm working on.
+After all, they are the best placed people to get their hardware work
+nicely ;)
 
-> I only have rom and ram-based file systems, so I believe that disk
-> caching could and maybe should be reduced to use less space.  Can I
+The only things that bothers me in the BestComm API is the name of the
+functions ... I think they should be prefixed with something ... just my
+2 cents.
 
-Why?  What's wrong with the way it is?  Is it impacting performance?
-Thrashing?  I can see a vague argument that its (nearly) pointless
-to cache buffers from ramdisk ... but it would take some work to flesh
-out this argument.
 
-That said, you can play with parameters in /proc/sys/vm although
-none of those directly affect the buffer cache size.  Indirectly,
-setting the flush times to zero might shrink the effective buffer
-cache, though... maybe. And it might hurt performance, maybe ...
-
---linas
+Sylvain Munaut
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
