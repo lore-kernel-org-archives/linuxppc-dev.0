@@ -1,22 +1,19 @@
-Return-Path: <schwab@suse.de>
-Received: from Cantor.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 883B767A78
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 08:49:16 +1100 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1106011958.4533.25.camel@gaston> <je7jmaurl0.fsf@sykes.suse.de>
-	<1106100264.4534.135.camel@gaston>
-From: Andreas Schwab <schwab@suse.de>
-Date: Wed, 19 Jan 2005 22:49:11 +0100
-In-Reply-To: <1106100264.4534.135.camel@gaston> (Benjamin Herrenschmidt's
-	message of "Wed, 19 Jan 2005 13:04:24 +1100")
-Message-ID: <jemzv584yw.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A90C367A70
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 09:45:55 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1106142344.26551.517.camel@hades.cambridge.redhat.com>
+References: <1106011958.4533.25.camel@gaston>
+	<1106142344.26551.517.camel@hades.cambridge.redhat.com>
+Content-Type: text/plain
+Date: Thu, 20 Jan 2005 09:44:18 +1100
+Message-Id: <1106174658.5326.7.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: [PATCH] ppc32: pmac sleep support update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,25 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Wed, 2005-01-19 at 13:45 +0000, David Woodhouse wrote:
+> On Tue, 2005-01-18 at 12:32 +1100, Benjamin Herrenschmidt wrote:
+> > This patch updates the PowerMac sleep support. The ability to sleep is now broken
+> > into 2 different flags, one, "may sleep" is set for all motherboards that we know
+> > how to put to sleep and wakeup. It gets turned into "can sleep" upon a call from
+> > the video driver indicating the ability to wakeup the video card. 
+> 
+> Why do it like this? Drivers already have the ability to veto sleep
+> requests, surely?
 
->> With all your patches applied I'm getting an oops during wakeup inside
->> pci_bus_read_config_word on my iBook/G3.  Call trace: pci_set_master,
->> pci_device_resume, resume_device, dpm_resume, device_resume,
->> pmac_wakeup_devices, pmu_ioctl, sys_ioctl.
->
-> It would be useful to get some more infos, what is the actual oops text
-> (what error), and if you could add some printk's to figure out what is
-> the culprit PCI device, that would be useful as well...
+But they don't, besides, you may just not have a driver for the card
+(that is things like offb don't register as a pci_driver, etc...)
 
-I was unable to reproduce the exact oops I got yesterday.  Now I'm getting
-a heap of oopses scrolling by, ending with a panic due to killing
-interrupt handler, without any way to capture them.
+It's a mecanism that can/will be improved in the future, but for now,
+it suits my needs perfectly.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Ben.
