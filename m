@@ -1,32 +1,32 @@
-Date: Fri, 3 Nov 2000 14:22:15 -0500
-From: Brad Dixon <brad.dixon@gtri.gatech.edu>
+Message-ID: <3A06703F.6D5DBB23@dspace.de>
+Date: Mon, 06 Nov 2000 09:47:59 +0100
+From: Andreas Schreckenberg <ASchreckenberg@dspace.de>
+Reply-To: ASchreckenberg@dspace.de
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: mklibs.sh script for ppc
-Message-ID: <20001103142215.E15852@sen-mail.gtri.gatech.edu>
-Reply-To: brad.dixon@gtri.gatech.edu
-Mime-Version: 1.0
+Subject: Debugger Problems
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello:
+Hi,
 
-I'm tweaking the mklibs.sh library squeezing script from the debian
-distribution to work on PPC targets. While I was working on that I thought
-I should ask if anyone else has already done this before.
+I want to port the Monta Vista Linux Kernel on our
+customspecific board. I want to use the EST Debugger
+from Windriver, but there are some problems with using
+the MMU, specially while debugging the startup code.
+I read the Mailing list and found tips in loading a
+compressed linux zimage with bin2bin and that
+seems to be no problem.
 
-If you did and you don't mind sharing your work I'd love to see your
-script.
+Is there anybody with experience
+in using the EST Debugger with Linuxcode ?
 
-Thanks,
-
-Brad
-
+bye
+Andreas
 --
-Brad Dixon <brad.dixon@gtri.gatech.edu>
-- Electronic Systems Laboratory, Systems Engineering Division
-- Georgia Tech Research Institute, Atlanta, GA
-
+          Life's not fair. But the root password helps ! :-)
+                   http://schrecky.home.pages.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
