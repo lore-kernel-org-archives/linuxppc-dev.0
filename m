@@ -1,33 +1,37 @@
-From: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: kernel drivers and ioctls and mutexes?
+Date: Thu, 29 Nov 2001 11:58:07 +0100
+Message-Id: <20011129105807.1293@mailhost.mipsys.com>
+In-Reply-To: <20011129024133.EGCO16262.tomts14-srv.bellnexxia.net@there>
+References: <20011129024133.EGCO16262.tomts14-srv.bellnexxia.net@there>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15366.5251.141809.744713@gargle.gargle.HOWL>
-Date: Thu, 29 Nov 2001 21:57:07 +1100 (EST)
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: include/asm-ppc/platforms/
-In-Reply-To: <3C04A483.6070206@humboldt.co.uk>
-References: <15363.31192.101536.919771@gargle.gargle.HOWL>
-	<3C2B376F.9070508@embeddededge.com>
-	<15364.32906.728532.676746@gargle.gargle.HOWL>
-	<3C04A483.6070206@humboldt.co.uk>
-Reply-To: paulus@samba.org
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Adrian Cox writes:
+>Can anyone tell me if your need mutexes to prevent problems when ioctls
+>initiated from userland that change dev structure values are used in
+>kernel drivers?
+>
+>For example in NIC modules a broken link can cause nway_start on some
+>cards but a userland ioctl can (asynchronously) cause the same things to
+>happen?  Should I be using mutexes inside the driver to prevent this or is
+>there some synchronization mechanism I am missing here?  Given how nway
+>negotiations are started and given them may take a few seconds to
+>complete, something should shield the nway start routine from being
+>re-entered.
 
-> All my boards now use early_serial_setup() instead of a platform header
-> file. This approach is simple to write, and requires no modifications
-> outside the platform_setup.c file. I'd rather not go back to providing
-> platform specific serial definitions in a header file.
+It depends on your driver, mutexes may or may not be the right solution.
 
-I have just realized again that this is not possible if the serial
-driver is built as a module, since you don't get the chance to call
-early_serial_init between when it is loaded and when rs_init (which is
-the module init function) is called.
+I've implemented ethtool ioctl support in sungem and have done my own
+synchronisation mecanism, basically the ioctl to restart autoneg will
+interrupt any pending autoneg and restart one, there should be no
+re-entrancy, except if I missed a case ;)
 
-Paul.
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
