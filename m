@@ -1,63 +1,55 @@
-Message-ID: <36983326.EA43D05F@jlc.net>
-Date: Sat, 09 Jan 1999 23:57:11 -0500
-From: Dan Malek <dmalek@jlc.net>
+Message-ID: <36988FF6.A4E4AB1B@pop.agri.ch>
+Date: Sun, 10 Jan 1999 12:33:17 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.muc.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MBX860: How to boot with initrd ?
-References: <199901082349.AAA13864@denx.muc.de>
+To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: header confusions 2.1.24vs. 2.1.131
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+Hello,
 
-> ....  But  I  must be missing something, because such an image will
-> not boot; all I see is:
+it comes again, I didn't found a clear solution about my problem. Only a dirty hack.
 
-Hmmm.  I know initrd works because I use it quite often.  All of the
-memory relocation looks OK.  Cort had a good suggestion, can you
-build a kernel that boots using NFS (or at least boots to the point of
-trying to mount the root fs).
+I tried to compile the ACE package from: www.cs.wustl.edu/~schmidt/ACE.html.
+Under R4 I managed it also now under pre-5, but I'm not happy with the solution.
+The problem has to do with the 'fb_set' struct and its member fds_bits. The
+definition of it is in the select.h/ types.h. In R4 there is a definition of
+the struct in <linux/posix_types.h>
+like this:
 
+"typedef struct fd_set {
+"			unsigned long fds_bits [__FDSET_LONGS];
+"} __kernel_fd_set;
 
->         Linux/PPC load: console=tty0 console=ttyS0,9600n8
+in pre-R5 it looks like this (also in <linux/posix_types.h>) :
 
-This looks a little weird.  It should not be necessary and I
-don't know what happens when it is used.
+"typedef struct {  // without the fd_set!!
+"			unsigned long fds_bits [__FDSET_LONGS];
+"} __kernel_fd_set;
 
+Changing the pre-5 definition in the R4 definition doesn't help.
 
-> Any help appreciated...
+When I compile it under pre-5 with the latest egcs 1.1.1.c, I get an error
+which complains about fds_bits is not member of the struct fd_set.
+A look at the corresponding code line shows me, that a operation on fds_bits
+is done.
 
-Look for  'log_buf' in your System.map.  It will have an address
-something like 'c00daa78'.  When you reset the MBX, use the
-EPPC-Bug to dump the memory starting at daa78 (in this example).
-This is the text of the kernel printk until the serial device is
-initialized.  It may hold some clues.
+Modifying this fds_bits into __fds_bits in code works, the compiler is
+satiesfied. (If the code really works is another question.) 
 
-You could also use 'noinitrd' on the command line to determine
-if the problem is related to initrd or something else.
-
-
-> Let's assume that I want to populate the `initrd'  with  exactly  the
-> same  files  as  included  in the `mbxroot.min.tgz' example. [This is
-> what I'm  testing  with,  additionally  I  have  only  added  a  link
-> `/linuxrc' which points to `/bin/sh'].
-
-That should work fine.
+My question, what is going wrong and why do the locations and definitions of
+the header files change from 2.1.24 to 2.1.131?
 
 
-> What might be missing? I'm sure it's just  a  minor  detail,  however
-> critical :-(
+Any hints are welcome
 
-They always are :-).  One wrong bit can screw up everything......
-and you have a 50% change of getting it right :-).
-
-
-    -- Dan
-
-
+Thanks
+Andreas
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
