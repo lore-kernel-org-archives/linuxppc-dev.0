@@ -1,19 +1,21 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15687.15829.736016.163916@argo.ozlabs.ibm.com>
-Date: Wed, 31 Jul 2002 11:31:01 +1000 (EST)
-To: "Ralph Blach" <rcblach@us.ibm.com>
+Date: Wed, 31 Jul 2002 11:39:58 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Ralph Blach <rcblach@us.ibm.com>
 Cc: akuster@dslextreme.com, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Changes to "The plan"
-In-Reply-To: <OFA1123D85.667B22FB-ON85256C06.004182DD@raleigh.ibm.com >
+Message-ID: <20020731013958.GI27711@zax>
 References: <OFA1123D85.667B22FB-ON85256C06.004182DD@raleigh.ibm.com >
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFA1123D85.667B22FB-ON85256C06.004182DD@raleigh.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ralph Blach writes:
-
+On Tue, Jul 30, 2002 at 08:02:42AM -0400, Ralph Blach wrote:
+>
+> Armin
+>
 > It has always been my contention the the 4xx should be organized in the
 > following structure
 > Core
@@ -29,11 +31,22 @@ Ralph Blach writes:
 >       405GP
 >       Board
 >                  Walnut
+>                   .
+>                   .
+>                   .
+>       NPE405L
+>        .
+>        .
+>        .
 
-Wouldn't that make it more difficult to take advantage of the fact
-that (for instance) the MAL and ENET are virtually identical on the
-405GP and the 440GP?
+It's not clear to me what you're proposing.  Are you talking about the
+layout of the Config.in options, the layout of the .c files in various
+directories or the call structure of the platform initialization code?
 
-Paul.
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
