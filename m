@@ -1,28 +1,48 @@
-Date: Thu, 21 Jun 2001 18:16:24 -0400 (EDT)
-Message-Id: <200106212216.f5LMGOT428496@saturn.cs.uml.edu>
-From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
-To: ghurwitz@dyndns.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Using a customg Interrupt Controller
+Reply-To: <yooth@ipone.co.kr>
+From: "Yoo. Jonghoon" <yooth@ipone.co.kr>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: file system for flash memory?
+Date: Fri, 22 Jun 2001 11:17:37 +0900
+Message-ID: <NFBBLHGHILCOPCKBODHAOEPDCAAA.yooth@ipone.co.kr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> The problem could be (and I fear it is but hope it isn't) with atomic
-> functions. I don't know if you've followed the travails of this board, but
-> due to problems in the memory bridge controller, we don't have working
-> lwarx/stwcx. calls, which means that we do not have atomic functions; I
-> have replaced all of the atomic functions with non-atomic versions that
-> should return the same, and as of yet there are no other busmasters on the
-> board, so this should not yet prove a problem.
+Hi,
+my custom board uses one 8-kbytes flash sector to store
+environmet variables, various logs and etc...
+At this time, I modified sbull(simple block device driver
+from 'Linux device driver', O'Reilly) and added flash driver
+routine. and made minix file system on it. the minix file
+system works well, but has the following problems:
 
-You need eieio.
-If in doubt, sprinkle it everywhere.
-Make stuff volatile.
-Make stuff uncachable, or disable the cache for now.
-To be really forceful, use sync instead of eieio.
-Flush and/or invalidate cache lines as needed.
+a. if user once calls write() to write 8kbytes on flash, the
+  minix file system calls write function of device driver
+  for many times - each time writes only 512bytes.
+  minix file system cuts 8kbytes into several 512bytes
+  blocks and *erasse-write the whole flash sector* occurs
+  for each block.
 
-Look up sync and eieio in a PowerPC book.
+b. It has no power-down reliability.
+
+Can anybody recommend other file system suited in
+this case? eg. raw flash which ppcboot does. (I think
+concurrency becomes problem in this one) or jffs.
+I read a few jffs docs. but I think that's suited for system
+using many flash sectors for the file system, not for my
+case which uses one or two sectors. Am I right ?
+
+Thanks in advance.
+
+===============================================
+Yoo. Jonghoon,        IPone inc.
+===============================================
+e-mail : yooth@ipone.co.kr
+tel : 82-2-02-2222-4631
+===============================================
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
