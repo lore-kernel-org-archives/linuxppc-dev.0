@@ -1,29 +1,55 @@
-Date: Tue, 8 Aug 2000 18:54:34 +0200 (CEST)
+Date: Tue, 8 Aug 2000 19:08:25 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Josh Huber <huber@mclx.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
- Server))
-In-Reply-To: <20000808091311.B248@mclx.com>
-Message-ID: <Pine.LNX.4.10.10008081853280.13215-100000@opal.biophys.uni-duesseldorf.de>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Gabriel Paubert <paubert@iram.es>,
+        benjamin herrenschmidt <bh40@calva.net>,
+        martin costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: rtc again...
+In-Reply-To: <200008081431.PAA08490@hyperion.valhalla.net>
+Message-ID: <Pine.LNX.4.10.10008081855220.13215-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> >> (a) Fix up time in the kernel to emulate UTC
+> >> (b) Fix up time in the kernel to emulates Local Time
 > >
-> > Is this XF4.0.1 in `fbdev' mode? If yes, it's a bug in the X server. Setting
-> > the DSP registers is part of the video mode initialization and thus is the
-> > sole responsability of the frame buffer device, when running in `fbdev' mode.
+> > Please also think about people who really run their RTC in UTC, who don't run
+> > MacOS anymore, or who simply don't have a PowerMac.
 >
-> Yes.  The server shows the SAME behavior using the fbdev driver and
-> the ati driver.  Also, as a note, the 3.3.6 XF68FB_Dev server with ati
-> accel also does the same thing!   So there's some code that's getting
-> used by all three that is wrong?
+> It was never my intention to suggest otherwise - as (I'm sure) I'm on record
+> as saying - I've used all of 'em and have no particular favourites or axe to
+> grind :-)
+>
+> I *would* like a working solution for those of us whose machines include
+> pmac and still need MacOS for some jobs.
 
-Both the fbdev and ati driver use the fbdvhw functions to do mode init and
-the like. So it seems the bug is in the kernel driver (sorry Geert).
+So what about setting the kernel internal time to local time including all
+fixups at least on Powermacs (using the data passed by OF or read from
+NVRAM) and to UTC (or more precisely, whatever the RTC is set to) on all
+those where we cannot determine UTC and DST offsets from OF or NVRAM?
+Next, agree on either returning local time or UTC, at any rate a time
+without accounting for GMT and DST offset, via /dev/rtc so user space
+tools won't notice a difference ? I'd vote for UTC format for /dev/rtc.
+
+We do assume the user set up the clock properly (as in: actually bothered
+to set the clock to UTC and define GMT and DST offset as apparently done
+by the MacOS Date&Time control panel), and set hwclock to interpret the
+time as UTC. Or the user set up the clock in local time (no DST offset)
+and set hwclock to interpret the time as local time.
+
+This way
+
+- early log stamps and later ones agree on all those machines that let the
+kernel figure out GMT and DST offset, and are off by at most the DST
+offset if the clock is set to local time,
+
+- we don't need any special case handling in hwclock.
+
+Impossible?
 
 	Michael
 
