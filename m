@@ -1,86 +1,41 @@
-Date: Thu, 15 Nov 2001 20:13:04 -0700
-From: Okehee Goh <ogoh@asu.edu>
-Subject: [Q]Tornado's GCC: compile assembly codes??
- "unresolved expression that must be .."
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <CPEELCODKANPCLBCAGOFIEHECAAA.ogoh@asu.edu>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Message-ID: <3BF4A2D4.5080302@embeddededge.com>
+Date: Fri, 16 Nov 2001 00:23:32 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Cc: Armin Kuster <akuster@mvista.com>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: linuxppc_2_4_devel on walnut
+References: <3BDD855B.8D3FC72F@inn.ericsson.se> <3BE971BC.34591FF1@inn.ericsson.se> <3BEBF4E5.B60BD9E3@inn.ericsson.se> <3BF2A361.5FBB0246@mvista.com> <3BF4041F.A732B099@inn.ericsson.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hello,
- This is Okehee Goh in ASU.
- This is not a question about Linux. I'm really sorry about that.
+Kenneth Johansson wrote:
 
- I'd like to compile assembly codes for target machine, MBX860.
- This assembly codes will not be associated with VxWorks OS.
- As a compiler, I tried to use ccppc(gcc) compiler that comes with TornadoII
-targeting MBX860.
- But it complained with "Error: unresolved expression that must be
-resolved".
- I don't know how to solve this problem.
 
- The following is the command line to compile assembly code "ae3.s".
- The next one includes error message that ccppc generated.
- The third part is "ae3.s"
+> But "time dd if=/dev/zero of=testing bs=1024k count=100" on a nfs mouted fs
+> used to be 18s and is now 21s, a 16% slowdown not that I care much but still
+> quite a large difference.
 
- I will appreciate your help. Thank you so much.
+What versions of kernels/drivers are you comparing?  Do you do this
+back-to-back with the same NFS server, or have you introduced more
+variables into your testing?  This is why specially prepared network
+performance testers are better suited for discussion.
 
-1. <the command line to compile assembly code "ae3.s".>
+Many versions of the 405GP Ethernet driver didn't use (and didn't have)
+cache coherency functions properly.  It was basically lucky, and when
+errors occurred you usually didn't see them because the packets were
+discarded and retransmitted.  Recent versions of the driver now use
+properly mapped and managed cache coherent memory.  When I was making
+the driver changes for the new cache attributes, I was thinking we should
+be experimenting with cached pages and invalidates/flushes traded off
+against uncached pages.  There will certainly be a performance difference.
 
-ccppc -g -mcpu=860 -ansi -nostdinc -fvolatile -fno-builtin -fno-for-scope -P
- -x assembler-with-cpp -I. -IC:/Tornado/target/h -DCPU=PPC860 -c ae3.s
 
-2.<error message that ccppc generated>
-C:\DOCUME~1\ogoh\LOCALS~1\Temp\cca02324.s: Assembler messages:
-C:\DOCUME~1\ogoh\LOCALS~1\Temp\cca02324.s:9: Error: unresolved expression
-that must be resolved
-C:\DOCUME~1\ogoh\LOCALS~1\Temp\cca02324.s:10: Error: unresolved expression
-that must be resolved
-...
 
-3. "ae3.s"
-	.text
-
-	.align		2
-	.globl		main
-main:
-	.long		0
-	.long		0
-	.long		0
-	lis		r7,0x0180
-	addi		r7,r7,0x1000
-	addi		r8,r0,0
-	stw		r8,0(r7)
-	stw		r8,0x1000(r7)
-	stw		r8,0x2000(r7)
-
-	lis		r5,0x0180
-	li		r6,1
-	stw		r6,0(r5)
-
-.L4:
-	lwz		r8,0(r7)
-	addi		r8,r8,1
-	stw		r8,0(r7)
-
-	lwz		r8,0x1000(r7)
-	addi		r8,r8,1
-	stw		r8,0x1000(r7)
-
-	lwz		r8,0x2000(r7)
-	addi		r8,r8,1
-	stw		r8,0x2000(r7)
-
-	b		.L4
- ---------------------------------------
-Real-Time System lab of CSE of ASU
-Tel: 480-219-1346
- ---------------------------------------
-Real-Time System lab of CSE of ASU
-Tel: 480-219-1346
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
