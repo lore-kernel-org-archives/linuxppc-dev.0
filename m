@@ -1,10 +1,9 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9F93@mail.mediatrix.com>
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9F95@mail.mediatrix.com>
 From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Ricardo Scop'" <scop@vanet.com.br>
-Cc: "'Dan Malek'" <dan@embeddededge.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Re[2]: 8260 - Spurious interrupt when calling __sti()
-Date: Wed, 10 Apr 2002 13:16:18 -0400
+To: "'Dan Malek'" <dan@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: 8260 - Spurious interrupt when calling __sti()
+Date: Wed, 10 Apr 2002 14:30:39 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,18 +11,21 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ricardo,
+Dan,
 
-> Even harder to explain is why you're having to put those syncs in
-> __sti, since both my copies of 2.4.16 and 2.4.18-pre9 kernel sources
-> already have them in the code... and with the comment
-> "/* Some chip revs have problems here... */" !!!
+> Ahhhh.....I see now.  It took some time to get the _devel
+> updates into the stable tree.  The spurious interrupt is
+> an artifact of the 8260 code not updated to match Ben's
+> generic PPC changes.
 
-At the left of the comment is 'SYNC', in uppercase.
-According to "include/asm-ppc/ppc_asm.h", which defines the preprocessor
-macro 'SYNC', it means something only if CONFIG_PPC601_SYNC_FIX
-is defined. The comment seems to be old and imprecise.
-After compiling the kernel, I disassembled it, just to be sure... ;-)
+Doh! Yes, sorry. I was referring to the stable tree.
+As I can see by comparing with the _devel tree,
+for the 2.4.18 release,
+is that "ppc8260_pic.c" was correctly updated,
+but not "irq.c". The 'while' loop is absent.
+
+However, this apparent 'out of sync' has nothing to do
+with the fact that the invalid interrupt pops up, right ?
 
 
 --------------------------------------------
@@ -34,6 +36,5 @@ After compiling the kernel, I disassembled it, just to be sure... ;-)
  J1L 2C8  CANADA
  (819)829-8749 x241
 --------------------------------------------
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
