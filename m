@@ -1,39 +1,50 @@
-Date: Tue, 20 Apr 1999 23:26:01 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: David Edelsohn <dje@watson.ibm.com>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Current egcs, binutils and kernel (fwd) 
-In-Reply-To: <199904202114.RAA69332@kitch12.watson.ibm.com>
-Message-ID: <Pine.HPP.3.96.990420231555.20020R-100000@gra-ux1.iram.es>
+Date: Tue, 20 Apr 1999 17:49:56 -0500 (CDT)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: "J. Robokos" <roboj@ibm.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kernel 2.2.6-ac1 problem
+In-Reply-To: <371CC261.AF18E73A@ibm.net>
+Message-ID: <Pine.LNX.3.96.990420174726.26110B-100000@globegate.utm.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, 20 Apr 1999, J. Robokos wrote:
+
+> > We've had similar problems with free block corruption under MkLinux
+> > (2.0.37).  This may be a red herring, but I've only noticed the damage on
+> > the last partition mounted.  You might try mounting a bogus partition
+> > after the others and see if it goes away.  Just a wild thought.  Anyway,
+> > the problem began when someone ported some changes from the current
+> > development sources into the 2.0.xx tree, between 2.0.33 and 2.0.36 (the
+> > former was fine, the latter has the problem.  It might be easier to find
+> > in the context of 2.0.xx since many less things were changing....
+> 
+> I don't think the error is happening on my last partition.  To verify that,
+> I tried compiling a c program and I got an error (after a few tries) saying
+> that ld failed writing to /tmp
+> The last few partitions of my hard drive are listed below:
+> 
+> ...
+>  7:       Apple_UNIX_SVR2 opt                     614400 @ 1823921  (300.0M)
+> 
+>  8:       Apple_UNIX_SVR2 home                    102400 @ 2438321  ( 50.0M)
+> 
+>  9:             Apple_HFS MacOS                 11527935 @ 2540721  (  5.5G)
+> 
+> and the dirctory /tmp is on another partition on the same drive.
+
+No, I mean the last one mounted, generally speaking, the last entry in
+fstab.  It's also possible that these are two different problems.
 
 
-On Tue, 20 Apr 1999, David Edelsohn wrote:
+David
 
-> 	The purpose of my earlier message was to explain what was
-> occurring in rs6000.md and why GCC was calling the function instead of
-> inlining the code.  I thought that some people might actually want to
-> understand *WHY* the function was required and why GCC was behaving as
-> designed. 
-
-Ok, calm down. But I still don't know why GCC does not expand this inline. 
-It's 8 or 10 instructions, without branches so it's not much bigger than a
-call for which you have to set up 3 parameter registers and which may
-destroy many more registers according to the ABI conventions.
-Furthermore if only one of the 2 result registers is needed, it may be
-simplified quite significantly (i'm not sure it's easy to do in current
-GCC to split a variable using 2 registers to remove dead code).
-
-Maybe it's time to add the alternatives in rs6000.md, enabled with a
--minline-longlongshifts option. But I don't yet know enough of GCC to 
-implement it.
-
-	Gabriel. 
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
