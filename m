@@ -1,36 +1,54 @@
-Mime-Version: 1.0
-Message-Id: <v04220800b4572678a8f9@[129.105.9.226]>
-In-Reply-To: <383130B3.FB987AD8@wanadoo.fr>
-References: <v04220800b4568b66a977@[129.105.9.226]>
- <383130B3.FB987AD8@wanadoo.fr>
-Date: Tue, 16 Nov 1999 09:30:19 -0600
-To: Martin Costabel <costabel@wanadoo.fr>
-From: Geoff Hutchison <ghutchis@wso.williams.edu>
-Subject: Re: Building Question
-Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Tue, 16 Nov 1999 07:52:49 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Andreas Tobler <a.tobler@schweiz.ch>
+cc: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel debugging??
+In-Reply-To: <38314D32.91212445@schweiz.ch>
+Message-ID: <Pine.LNX.4.10.9911160749360.21354-100000@shell.unixbox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:23 AM +0100 11/16/99, Martin Costabel wrote:
->Fix the "undefined reference" error.
->You mean "undefined reference" isn't an error on x86?
 
-That's my point--people compiling the *same* code don't get that error.
+andreas,
+	since you're on a powermac and using BootX, you can use
+prom_print() to print debuging info before start_kernel, there after you
+can just use printk().  instead of putting a million prints all over the
+place, you should look at the patches between 2.3.25-2.3.28 and see what
+was changed in ppc/kernel or ppc/mm , i've booted
+2.3.25 on my 7200 but i have had no time lately to try 2.3.28, perhaps
+later today i will work on it.
 
-At 9:27 AM +0100 11/16/99, Wolfgang Denk wrote:
->I'm not really sure, but can you please check how  big  your  code  /
->data  segments  are? The PPC addressing model is limited in range for
->relative addressing - "REL24" indicates that you are overrunning  the
->relacatable range using 24 bit offsets...
 
-I was afraid of that. Thanks. I'll see if I can tweak the linking 
-order and see if that helps a bit. I'll also try gcc -Os and see if 
-that helps.
 
--Geoff Hutchison
-Williams Students Online
-http://wso.williams.edu/
+ani
+
+
+On Tue, 16 Nov 1999, Andreas Tobler wrote:
+
+> 
+> Is there a possibility to debug the kernel, especially in its very early
+> load stage?
+> Is xmon the right tool to do so?
+> My situation is a not booting 2.3.28 kernel. All I know is, that I pass
+> at least the prom_init(). After that the screen stays black with the
+> 'Welcome to kernel 2.3.28' and a few messages about addresses I think.
+> And at the end it says 'booting... '
+> (On a PM7200 and a Wallstreet I)
+> 
+> Any experiences around?
+> 
+> Thanks
+> 
+> Andreas
+> -- 
+> | Andreas Tobler				
+> | CH-8004 Zuerich 							
+> | E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
+> -----------------------------------------------------------
+> 
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
