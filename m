@@ -1,41 +1,47 @@
-Message-ID: <38AD4EB4.8870713@fadata.bg>
-Date: Fri, 18 Feb 2000 14:52:52 +0100
-From: Momchil Velikov <velco@fadata.bg>
+Message-ID: <38AD50A9.B95BEA7F@execpc.com>
+Date: Fri, 18 Feb 2000 08:01:13 -0600
+From: Joseph Garcia <jpgarcia@execpc.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Paul Mackerras <paulus@linuxcare.com>, Cort Dougan <cort@fsmlabs.com>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: insw/outsw/insl/outsl (was: Re: your mail)
-References: <Pine.GSO.4.10.10002181314290.22332-100000@dandelion.sonytel.be>
-Content-Type: text/plain; charset=us-ascii
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: bmac module broken
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
->
-> On Thu, 17 Feb 2000, Paul Mackerras wrote:
-> > Does anyone have any objection if I make insw/outsw/insl/outsl *not*
-> > byte-swap the data?  The reason is that these functions are mostly used
-> > for transferring blocks of data, i.e. arrays of bytes.  I haven't found a
-> > single instance where they are used for transferring arrays of 16 or
-> > 32-bit words.
-> >
-> > This would mean that we wouldn't need the kludge in the ide stuff where we
-> > redefine insw as ide_insw (which doesn't byte-swap).  There is currently a
-> > bug there because insl does still byte-swap, which means that if you set
-> > the -c1 flag with hdparm, you get byte-swapped data. :-(
->
-> Hmm... This is indeed ambiguous. Is e.g. insl() used to (a) read n 32-bit words
-> from (little endian) ISA I/O space, or (b) used to read n*4 bytes from ISA I/O
-> space, using 32-bit accesses?
->
-> What about moving this to linux-kernel? It affects all big endian platforms.
+With the recent mention of making dmasound a module to turn off sound when not
+in use and save power, i wondered about the status of two other chips in the
+pbg3.  Specifically, the bmac, and the mesh.  Bmac panics upon a second install,
+so something is missing in the cleanup i guess.  also, it doesn't power it off.
+borrowing from the sleep code, adding the following lines before freeing
+bmac_devs does turn it off.  i dont know if i need the reset.
 
-How about {ins|outs}_{be|le}{16|32} ?
+    feature_set(bp->node, FEATURE_BMac_reset);
+    udelay(10000);
+    feature_clear(bp->node, FEATURE_BMac_IO_enable);
+    udelay(10000);
 
-Regards,
--velco
+However, it still panics on a second install.  this is similar to the problem
+with dmasound a few months ago.  I think i tried changing the free_irq's second
+parameter to that of the last param in the corresponding request_irq, but it
+didn't work for me.  Ideas/patches?
+
+Also, mesh would be a nice one to modulize.  building the module, it complains
+about kernel version.  modversions are not enabled in this.  i plan on a fix.
+Also, there is no module_init or cleanup in it, but other scsi modules dont
+either.  But like the others, I'd want to be able to rmmod this just so it turns
+off the chip, and later i can reinstall it without a panic.  I'd think the
+powerdown would have to go in the cleanup since the only calls to mesh_power are
+in init(on only) and sleep.  Any tips?
+
+Any other chips that can/should be turned off?  are media bays are off when not
+in use?  Pcmcia?
+
+Thank you for your time.
+
+--
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
