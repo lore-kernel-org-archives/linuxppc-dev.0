@@ -1,27 +1,27 @@
-Date: Fri, 30 May 2003 08:52:19 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: ?????? <jfg@ndsc.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: compiling error when compile kgdb on ppc 74XX
-Message-ID: <20030530155219.GB3299@ip68-0-152-218.tc.ph.cox.net>
-References: <7A7A7A38134E244784EDAC428C538AE90C6FC0@mail.ndsc.com.cn>
-Mime-Version: 1.0
+Message-ID: <3ED797FD.F88A64FC@opersys.com>
+Date: Fri, 30 May 2003 13:42:21 -0400
+From: Karim Yaghmour <karim@opersys.com>
+Reply-To: karim@opersys.com
+MIME-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Embedded Planet SBC860H
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7A7A7A38134E244784EDAC428C538AE90C6FC0@mail.ndsc.com.cn>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 30, 2003 at 09:34:07AM +0800, ?????? wrote:
+I was wondering whether anyone had experience running Linux and
+U-Boot on an Embedded Planet SBC860H? I suppose it ought to be
+quite similar to the RPX boards ... I just don't see an SBC860H
+item in the kernel config or in U-Boot ... so just making sure.
 
->      I am a novice in Linux. I am trying to build kernel 2.4.17 for ppc on i386 using ppc_74xx-gcc cross compiler.  And the version of GCC is 2.96. The configuration compiles fine when I exclude kernel hacking options. Once kgdb option of the kernel hacking options is included, kernel compilation fails with the following:
+Thanks,
 
-2.4.17 on PPC, from kernel.org, only supports KGDB on 8xx.  If you need
-kgdb on a 74xx board, I suggest you check out the linuxppc_2_4_devel
-tree (see http://penguinppc.org/dev/kernel.shtml)
+Karim
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Author, Speaker, Developer, Consultant
+Pushing Embedded and Real-Time Linux Systems Beyond the Limits
+http://www.opersys.com || karim@opersys.com || 514-812-4145
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
