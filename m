@@ -1,49 +1,47 @@
-Date: Tue, 11 Dec 2001 00:35:43 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: unkillable zombies from using gdb and kernel 2.4.15 and higher?
-In-Reply-To: <1008017741.17478.34.camel@pismo>
-Message-ID: <Pine.LNX.4.33.0112110030500.24633-100000@gra-lx1.iram.es>
+Message-ID: <3C158758.5020608@mit.edu>
+Date: Mon, 10 Dec 2001 23:11:04 -0500
+From: Adam C Powell IV <hazelsct@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Why require CONFIG_BOOTX_TEXT for so much of offb?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 10 Dec 2001, Michel [ISO-8859-1] Dänzer wrote:
+Greetings,
 
-> On Mon, 2001-12-10 at 21:20, Gabriel Paubert wrote:
-> >
-> >
-> > On 10 Dec 2001, Michel [ISO-8859-1] Dänzer wrote:
-> >
-> > >
-> > > On Mon, 2001-12-10 at 15:11, Kevin Hendricks wrote:
-> > >
-> > > > So these zombies are ignoring kill -9  signals which I thought was a big
-> > > > no-no?
-> > >
-> > > Zombies are dead, they don't get more dead if you kill them. ;)
-> > >
-> > > AFAIR zombies have died but are waiting for their return value to be
-> > > read out of the process table. I'd like to know myself how that can
-> > > happen when their parents are gone...
-> >
-> > They are reparented to init. One of init tasks is to reap all
-> > processes who lose their parents.
->
-> So how often does it do that? Can it be beaten into submission? :)
+Somewhere between 2.4.8 and 2.4.12, the benh kernel (used by Dan
+Jacobowitz in Debian) wrapped much of offb_init() in
+#ifdef CONFIG_BOOTX_TEXT
 
-I believe init is more or less looping constantly reaping orphaned
-processes, respawning the tty controlling ones (per inittab), and waiting
-for signals for runlevel changes (once system startup is over). But check
-the source...
+As a result of this, the Debian kernel images, which do not set
+CONFIG_BOOTX_TEXT because of oldworld OF problems, cannot open video
+using BootX (unless you specify e.g. video=atyfb...).
 
-It sounds more like a debugging related (ptrace ?) kernel bug.
+So here are my questions:
 
-	Gabriel.
+    * Is there a way around this?
+    * Is the test for BootX at the start of offb_init() somehow
+      insufficient, such that all of this code must be eliminated if
+      non-BootX booting is to work?
+    * Or is there in fact a hard dependency of that code on other stuff
+      provided by CONFIG_BOOTX_TEXT?
+    * Is there some way of separating the two, so a single kernel can
+      work with BootX and with all versions of OpenFirmware?
+    * What's the point of offb without this section of code?
+
+Please CC me in replies, as I'm not subscribed to this list.
+
+Thanks,
+--
+
+-Adam P.
+
+GPG fingerprint: D54D 1AEE B11C CE9B A02B  C5DD 526F 01E8 564E E4B6
+
+Welcome to the best software in the world today cafe!
+<http://lyre.mit.edu/%7Epowell/The_Best_Stuff_In_The_World_Today_Cafe.ogg>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
