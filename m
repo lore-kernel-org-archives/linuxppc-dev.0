@@ -1,42 +1,30 @@
-From: "Christian Kujau" <evil@g-house.de>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: patrick.pelgrims@pandora.be
-Reply-To: evil@g-house.de
-Subject: Re: GCC and Linux for Motorola's MPC8540ADS
-Date: Wed, 21 Apr 2004 19:42:50 +0100
-Message-Id: <20040421174055.M21512@g-house.de>
-In-Reply-To: <000201c42707$ee9764d0$0500a8c0@amdwin2000>
-References: <000201c42707$ee9764d0$0500a8c0@amdwin2000>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
+Subject: Re: help with asm code?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chris Friesen <cfriesen@nortelnetworks.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <40867E82.3010202@nortelnetworks.com>
+References: <4085483B.1090604@nortelnetworks.com>
+	 <1082506664.2077.9.camel@gaston>  <40867E82.3010202@nortelnetworks.com>
+Content-Type: text/plain
+Message-Id: <1082588543.2077.86.camel@gaston>
+Mime-Version: 1.0
+Date: Thu, 22 Apr 2004 09:02:23 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 20 Apr 2004 20:47:29 +0200, Patrick Pelgrims wrote
-> Dears,
+> The code is being called from fast_exception_return, syscall_exit_cont,
+> and restore_user.
 >
-> Who can help me with building the GCC for Motorola's
-> MPC8540ADS ?
+> > How do you know it dies there and not elsewhere ?
 >
-> Is there someone who have already a booting and stable Linux system?
->
-> Who has build its own GCC cross compiler (X86 dev. Machine and
-> PPC target)?
+> If I remove the lbzx/add lines, everything works fine.  With the lbzx
+> line it dies, even if r10 is overwritten right away.
 
-don't know exactly about this MPC8540ADS, but
+You'd have to send me the whole exception code path so I can figure
+out what's up
 
-http://www.kegel.com/crosstool/
-
-helped with my PPC604 (PReP) setup - i'm able to compile ppc binaries
-under x86 now :-)
-
-
---
-BOFH excuse #268:
-
-Neutrino overload on the nameserver
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
