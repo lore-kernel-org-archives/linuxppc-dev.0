@@ -1,40 +1,32 @@
-Message-ID: <001901bff7a3$b093f640$bf0102c8@sc.mcel.mot.com>
-From: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: question on "__shl2i"
-Date: Thu, 27 Jul 2000 16:21:40 +0800
+Date: Thu, 27 Jul 2000 10:59:29 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Joseph Garcia <jpgarcia@execpc.com>
+cc: Stephan Leemburg <pmud-bugs@jvc.nl>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: powerbook hang from post-sleep cdrom access - fix
+In-Reply-To: <397FE132.1690D2DD@execpc.com>
+Message-ID: <Pine.LNX.4.10.10007271058170.18614-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, all,
-I am now currently linking the linux kernel ppc.
-There is a undefined problem,which follows:
+> I think I have a fix to prevent a system hang when trying to access a cdrom
+> after sleeping.  I have a small util "wakebay" that simply does a
+> CDROM_MEDIA_CHANGED ioctl on a specified device.  I added a the line "wakebay
+> /dev/hdc" to PMUD's wakeup script on my PDQ.  This seems to get the desired
+> response from the drive, in that it locks the door and spins the disk when it
+> should, and if its not there, mounted, or otherwise, does nothing.
+>
+> my code can be grabbed from http://www.execpc.com/~jpgarcia
+>
+> Can this be done automatically at the kernel level?
 
->undefined: '__shl2i'
->Referenced from 'block_read'
-I have search through all the source tree, but I can't find the definition ,
-even
-the occurence of the '__shl2i' !!!!!!!
-where does tsuch '__shl2i' come from?
-any suggestion is appreciated!!!!
+Should be called from the IDE notify chain perhaps. See the last function
+in ide-pmac().
 
-BRs
-Rolf Liu
-Software Center Motorola China
-Global Software Division, Motorola,Inc.
-No 2 Dong San Huan Nan Lu (7th Floor)
-Chao Yang District, Beijing 100022, P. R. China
-Email: rolfl@sc.mcel.mot.com
-          A16975@email.mot.com
-Phone: 86-10-65642023            Fax: 86-10-65668458
------------------------------------------------------------------
-[  ] General Business Information
-[  ] Motorola Internal Use Only
-[  ] Motorola Confidential Proprietary
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
