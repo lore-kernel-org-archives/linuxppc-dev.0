@@ -1,18 +1,18 @@
-Return-Path: <clark@esteem.com>
-Received: from mail5.hsphere.cc (mail5.hsphere.cc [216.157.145.25])
-	by ozlabs.org (Postfix) with SMTP id 908CB2BF09
+Return-Path: <mukundjb@esntechnologies.co.in>
+Received: from ns2.astrainfonets.net (unknown [202.125.86.130])
+	by ozlabs.org (Postfix) with ESMTP id 309C22BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Nov 2004 12:05:30 +1100 (EST)
-Message-ID: <4191694C.60305@esteem.com>
-Date: Tue, 09 Nov 2004 17:05:16 -0800
-From: Conn Clark <clark@esteem.com>
+	Wed, 10 Nov 2004 17:04:03 +1100 (EST)
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-References: <20041109195141.82111C1430@atlas.denx.de>
-In-Reply-To: <20041109195141.82111C1430@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Wed, 10 Nov 2004 11:36:44 +0530
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB348111ECD4C@mail.esn.co.in>
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+To: "Eugene Surovegin" <ebs@ebshome.net>,
+	"Rick McBain" <rick.mcbain@logicsense.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How much easier makes owning a BDI2000 things?
+Subject: Linux port for the 440EP processor
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,45 +23,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> In message <4190FE1F.4080105@esteem.com> you wrote:
-> 
->>	Its worth it weight in gold bringing up custom boards the first time 
->>and writing/debuging the boot rom. It allows you to change register 
-> 
-> 
-> ... or when debugging the Linux kernel, device drivers and especially
-> RTAI real-time modules (because you can really freeze the CPU  state,
-> including timers etc.).
-> 
-> 
->>	We haven't used ours much for debugging once things were up and 
->>running(we have fallen back to using printk statements for debugging). 
->>Though it can be used for that and some core kernel developers do use 
->>it. (probably for debugging the printk code of the kernel  ;-)  )
-> 
-> 
-> Seems you never had to deal with any time critical problems, then.
-> 
+Hi Eugene,
 
-	I have, however I used I/O bits and an Oscilliscope ;-)
+I am need of 440EP Processor based Linux port.
+I have some questions for what I am not sure of the answers I have.
 
-> 
-> Best regards,
-> 
-> Wolfgang Denk
-> 
-Best Regards
+Does 440EP processor come under 4xx type?
+Is there a central repository for Linux distributions for 440 series?
+Are there any tools, help Documents that can help build Linux
+distribution for the 440EP Processor?
+In "Linux for PowerPC Embedded Systems HOWTO" Document, the Target
+Hardware's 4xx series points to some site addr & I didn't find any 440
+processor support there?=20
 
--- Conn Clark
+Do I have access to the working 440GP & 440GX in both 2.4 & 2.6
+developed by u? where can I find them?
 
-*****************************************************************
-Give a man a match and you heat him for a moment. Set him on fire
-and you'll heat him for life.
-*****************************************************************
+Thanks for the support in advance.
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+Regards,
+Mukund jampala
 
-Stock Ticker Symbol				ELST
+> -----Original Message-----
+> From: linuxppc-embedded-bounces@ozlabs.org [mailto:linuxppc-embedded-
+> bounces@ozlabs.org] On Behalf Of Eugene Surovegin
+> Sent: Thursday, November 04, 2004 5:58 AM
+> To: Rick McBain
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: Linux port for the AMCC (was IBM) 440EP
+>=20
+> On Wed, Nov 03, 2004 at 03:17:27PM -0800, Rick McBain wrote:
+> > Does anybody have a working distribution for the 440EP? We were
+planning
+> > to use a Timesys port, but we've now been told it doesn't exist
+(after
+> > months of promises it did.).  Our other option is to pay US$25K to
+> > MontaVista, but that seems a tad pricey, and our previous experience
+> > with them is that they delivered us an ARM port which fundamentally
+> > didn't work.
+> >
+>=20
+> Just FYI, 44x port was made by MontaVista.
+>=20
+> Try the following exercise, grep the kernel code and see how much was
+> written for PPC by Timesys and then make your decision.
+>=20
+> FWIW, it should be relatively simple to do 440EP port, we already
+> have working 440GP & 440GX in both 2.4 & 2.6.
+>=20
+> --
+> Eugene.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
