@@ -1,32 +1,56 @@
-Subject: Re: 8xx Microcode patch
+Subject: Linux, I2C_RDWR, stop conditions
 From: Albert ARIBAUD <albert.aribaud@free.fr>
 To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3EFE94E4.90905@austin.rr.com>
-References: 
-	<30C145E544071F4FB8B627789F7910BD328FF3@csy-exchange1.giat.intra>
-	<3EFE94E4.90905@austin.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: 29 Jun 2003 10:53:49 +0200
-Message-Id: <1056876830.2737.7.camel@lilith.aribaud.fr>
+Content-Type: text/plain
+Date: 29 Jun 2003 14:24:45 +0200
+Message-Id: <1056889496.2747.53.camel@lilith.aribaud.fr>
 Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Le dim 29/06/2003 à 09:27, Jeff Hurst a écrit :
->
-> On the MPC860 page (the MPC855T is a family member) at Motorola web site:
-> MPC860MC04  MPC860 Microcode Patch for Relocating I2C/SPI Parameters
-> (03/06/2002)  contains a pdf.  It says 0502 is the last mask needing
-> the microcode.
+Hi all,
 
-Thanks a lot for your answer. I read the pdf, which confirmed that
-microcode only fixes I2C/SCC1 Ethernet as well as SPI/SCC2 Ethernet
-overlay. However this is not my current I2C problem (which I'll state in
-another thread), as my MPC855T has no SCC2 and its SCC1 is in UART mode.
-:(
+I am experiencing an annoying I2C problem, using ELDK 2.0.2 and its 2.4
+kernel, while trying to read an I2C 24C128 eeprom. Its read sequence is
+composed as follows :
+- start condition, slave write of two bytes : high then low part of adr.
+- start condition, slave read of up to 64 bytes.
+- stop condition.
+(notice no stop condition in between: this is a double start).
 
-Thanks again,
+Using either the r360 adapter or the rpx adapter, I tried a cyclic read
+with a while-loop at shell level calling a C program doing the eeprom
+read. This works between a couple and several hundred reads, then stops
+with te following condition : the data read part fails with a short read
+of 1, and from then on i2c transfers find a low SDA.
+
+This looked like chip errata CPM6.I2C (single-byte buffer after failed
+transaction) and CPM7.I2C (I2C receiver locks holding SDA low), however:
+- I use an MPC855T mask rev D.4 which claims all I2C errata fixed;
+- the previous write shows no sign of having failed (so no CPM6.I2C)
+- I have PDIV=00 and FLT=1, so it would rule out CPM7.I2C.
+
+This not an I2C/SPI relocation case either, since SCC1 is used as an
+UART and SCC2 does not exist in the 855T.
+
+However, I have checked i2c drivers in the following code:
+- Linux kernel 2.4.4 provided with ELDK 2.0.2;
+- linux-2.4 CVS from Denx;
+- i2c package v2.7.0 from lm_sensors.
+All versions share the following characteristic in the the I2C_RDWR
+ioctl implementation: i2c-algo-8xx simply concatenates i2c reads and
+writes (thus ending each individual transfer with a stop condition),
+while i2c-algo-pcf and i2c-algo-bit do not send stop conditions until
+after the last transfer.
+
+Am I right in thinking that the correct I2C_RDWD behaviour is that of
+pcf and bit-banging, and that the 8xx implementation is wrong in this
+respect?
+
+And would it explain the behaviour I see with the 24C128 eeprom?
+
+Thanks in advance,
 
 Albert.
 
