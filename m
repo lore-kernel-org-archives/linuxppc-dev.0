@@ -1,55 +1,54 @@
-Message-Id: <4.2.2.20000308153704.00a601f0@mail.kerbango.com>
-Date: Wed, 08 Mar 2000 15:53:16 -0800
-To: Björn Lundberg <bjorn.lundberg@inu.se>,
+Message-ID: <38C7368A.7B28E61E@netx4.com>
+Date: Thu, 09 Mar 2000 00:28:42 -0500
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Steve Calfee <calfee@kerbango.com>
+CC: Bjvrn Lundberg <bjorn.lundberg@inu.se>,
         "linuxppc-embedded@lists.linuxppc.org"
-  <linuxppc-embedded@lists.linuxppc.org>
-From: Steve Calfee <calfee@kerbango.com>
+	<linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: USB driver for MPC850/823
-In-Reply-To: <38C61ED8.E77126FB@inu.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"; format=flowed
+References: <4.2.2.20000308153704.00a601f0@mail.kerbango.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 10:35 AM 3/8/00 +0100, Björn Lundberg wrote:
+Steve Calfee wrote:
 
->The driver is developed under Malek's 2.2.5 for embedded PPC.
->Since the documentation has been a bit poor for the USB host mode, much
->had to be done with trial and error. Some of which is left in the
->source.
->Most changes are in new source files but some changes has been done in
->commproc.c and .h to support RISC timers and more DPRAM (microcode
->alert).
->For some reason I couldn't use USB buffers in SDRAM, only DPRAM!?
->As stated earlier on the list it's developed on an 850, but I haven't
->found anything that says it won't work on an 823.
+> .... The CPM wants to access
+> physical memory addresses. You use a macro __pa for this, but I dont think
+> that works for all cases of user and kernel memory.
 
-I have started looking at your code to try understand some of the
-roadblocks that I have hit. I have ISOC in/out working on the 823 USB. My
-IN and OUT packets are from main system Dram. You dont say what the problem
-was, but if the problem is; the data sent was garbage, not what you
-prepared, the problem may be memory mapping. The CPM wants to access
-physical memory addresses. You use a macro __pa for this, but I dont think
-that works for all cases of user and kernel memory. I grepped and found:
+It will certainly never work for user memory, you should only copyin/out
+user addresses for a variety of reasons.
 
-#define PAGE_OFFSET     0xc0000000
-#define __pa(x)                 ((unsigned long)(x)-PAGE_OFFSET)
+> Look at virt_to_phys(x); but that only does kmalloc'ed memory.
 
-Look at virt_to_phys(x); but that only does kmalloc'ed memory. There seems
-to be many mapping macros/routines but I don't know if one works for ANY
-virtual address to its physical address.
+The virt_to_phys() and __pa() do the same thing.  Both work on kmalloc'ed
+memory.  Neither will work with vmalloc'ed memory.
 
-Does anyone have a pointer to a document that thoroughly describes memory
-mapping, both for the x86 and the ppc?
+When using the CPM on the 8xx, you have to be careful about the cache
+attributes on the pages as the 8xx doesn't have bus snooping to ensure
+coherency.  I use a couple of different methods to get memory allocated
+in the kernel for the CPM, sometimes they are cached and require software
+management, other times not cached.  Depends upon how it is used.
+
+You can use kmalloc() or __get_free_pages() to allocate memory for the
+CPM.  Just make sure kmalloc() gives you something that is properly
+aligned, as some CPM functions have rather large alignment boundaries.
+When allocated in this way, you have to chase down the pte's and modify
+the cache attributes yourself if desired.
+
+> Does anyone have a pointer to a document that thoroughly describes memory
+> mapping, both for the x86 and the ppc?
+
+It would probably be correct only until the next source update.  While
+trying to keep up with the 2.3.xx source tree, I have changed the CPM
+memory interfaces at least three times.  I think we are back where we
+started, at least this week.
 
 
 
-Steve Calfee	--	embedded systems consultant
-calfee@home.com
-cell phone: (510) 468-5837
-Kerbango phone: (408) 517-3355
-home office ph: (510) 657-6039
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
