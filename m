@@ -1,34 +1,33 @@
-Date: Fri, 22 Dec 2000 00:15:46 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Need testers with MESH SCSI
-In-Reply-To: <19341115163822.14429@192.168.1.2>
-Message-ID: <Pine.LNX.4.10.10012220013370.30272-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-Id: <200012220714.IAA00726@piglet.grunz.lu>
+Date: Fri, 22 Dec 2000 08:14:37 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: ethernet issue with lombard
+To: huber@mclx.com
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20001219220143.C6309@missioncriticallinux.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Neither does it change anything for me (Lombard, SCSI Zip and Quantum
-> >VP32210). I've not tried to force any bus resets or something weird
-> >though.
->
-> Well, I didn't change mesh_reset(), only mesh_init(). Since it seem that
+On  19 Dec, this message from Josh Huber echoed through cyberspace:
+> I can kill the network easily with ping -f <ip of local host>
 
-I saw mesh_init called in more than one spot on a quick glance over the
-source and must have incorrectly assumed it's also used on bus or host
-reset.
+Ping _from_ local _to_ local? I believe that doesn't even go to the
+ethernet interface, but is returned right in the IP stack. At least, for
+me, I don't get _any_ sort of network activity when ping -f'ing on local
+IP address....
 
-> it doesn't break working configs but actually fix some non working ones,
-> I'll push it one of these days.
+Michel
 
-In case it wasn't obvious: my setup was working perfectly fine even before
-the patch :-)
-
-	Michael
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
