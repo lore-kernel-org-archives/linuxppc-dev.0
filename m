@@ -1,36 +1,37 @@
-Message-ID: <388853FC.5ECAED85@switchboard.ericsson.se>
-Date: Fri, 21 Jan 2000 13:41:32 +0100
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <3889220B.2BD1CB63@huawei.com.cn>
+Date: Sat, 22 Jan 2000 11:20:43 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: Hans - Dulimarta <dulimart@egr.msu.edu>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: PCMCIA socket driver (was Re: Non NFS boot)
-References: <20000121013945.A4B981B298@elph.research.canon.com.au>
+To: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: gdbserver
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am working on a PCMCIA socket driver for the 8xx series.
+Hello,
 
-I've managed to run a Xircom based ethernetcard and ATA-Flash.
+       Now I want to use gdbserver to debug my test app.
+      Running "gdbserver :6666 ./mytest" on the target (Powerpc 860)
+show a message:
+                    Process ./mytest created :pid=8
+      But I don't know how to run gdb on the host (X86). The README
+doesn't seem to explain
+clearly . It says first running "gdb mytest" on the host and then
+"target remote mytarget:6666".
+But I don't understand something about "gdb mytest" . At this time
+should I run a x86 "gdb" or something like "powerpc-linux-gdb"? And the
+"mytest"? Is it compiled with x86 gcc or cross-compiled with
+"powerpc-linux-gcc"? Really I am very confused at this point:-((
+       Do you have any experience to share with me about how to build
+and run gdbserver?
+Or do you have any other debug tools which can be used in embedded-linux
+environment?
+        The README for gdbserver is written by Stu Grossman and Fred
+Fish.
+        Does someone know their email address?
+Thank you very much:-)
+dony
 
-The following boards will be supported:
-
-BOARD                CPU
-
-RPX CLASSIC LOW FAT  860T
-RPX LITE             850 823
-ADS                  860
-FADS                 860T
-
-This will make it possible to use any ATA-Disk as root fs.
-
-The code will be available as a patch againts pcmcia-cs-3.1.8.tar.gz
-
-Cheers /
-
-Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
