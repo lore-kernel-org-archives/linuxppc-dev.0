@@ -1,70 +1,28 @@
-Date: Tue, 16 Jan 2001 04:17:43 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: up_read/up_write redefinitions in asm/semaphore.h and linux/usbdevice_fs.h
-Message-ID: <20010116041743.A9315@suse.de>
-Mime-Version: 1.0
+Message-ID: <3A63C646.DB18CD0@mvista.com>
+Date: Mon, 15 Jan 2001 22:55:50 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: frowand@mvista.com
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: kernel mapping
+References: <3A63840E.4C724E03@mvista.com> <3A63BAFB.80E3980C@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Frank Rowand wrote:
 
-I have some redefinitions when I compile usbdevfs:
+> I also have the beginnings of simulated BAT mapping for the 405
+> (not quite there, but part way).
 
-gcc -D__KERNEL__ -I/usr/src/linux-2.4.0.SuSE/include -Wall
--Wstrict-prototypes -O2 -fomit-frame-pointer -fno-strict-aliasing
--D__powerpc__ -fsigned-char -msoft-float -pipe -ffixed-r2
--Wno-uninitialized -mmultiple -mstring    -c -o inode.o inode.c
-In file included from inode.c:41:
-/usr/src/linux-2.4.0.SuSE/include/linux/usbdevice_fs.h:173: warning:
-`up_read' redefined
-/usr/src/linux-2.4.0.SuSE/include/asm/semaphore.h:186: warning: this is
-the location of the previous definition
-/usr/src/linux-2.4.0.SuSE/include/linux/usbdevice_fs.h:174: warning:
-`up_write' redefined
+I know.  I'm currently re-writing it all to be generic.  All of
+the 4xx specific pinned entry stuff is gone.  I've been thinking
+about this too long for the 8xx and now have a reason to do it.
+Some of the logic is in the iopa and mm_ptov functions now, which
+will also just work fine on the 6xx/7xx/7xxx.
 
 
-We had this patch in the linuxppc_2_3 tree:
-
-diff -urN linux-2.4.0-ac4/include/linux/usbdevice_fs.h
-linux-2.4.0-ac4-ppc/include/linux/usbdevice_fs.h
---- linux-2.4.0-ac4/include/linux/usbdevice_fs.h        Thu Jan  4
-23:52:32 2001
-+++ linux-2.4.0-ac4-ppc/include/linux/usbdevice_fs.h    Mon Jan  8
-10:44:29 2001
-@@ -166,13 +166,14 @@
-  * sigh. rwsemaphores do not (yet) work from modules
-  */
-
-+#if 0
- #define rw_semaphore semaphore
- #define init_rwsem init_MUTEX
- #define down_read down
- #define down_write down
- #define up_read up
- #define up_write up
--
-+#endif
-
- struct dev_state {
-        struct list_head list;      /* state list */
-
-
-It is gone in linuxppc_2_4 tree.
-
-The USB layer should proably not use these generic names.
-How can we fix that?
-
-
-
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
