@@ -1,32 +1,38 @@
-Message-ID: <3CEE7017A3DBD611BF830060B01B7BAC09F8DA@SELTATOR>
-From: Andreani Luca <landreani@seltatel.it>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: ppc and rtnetlink
-Date: Fri, 25 Oct 2002 11:55:12 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: rekha gvv <rekhagvvc@yahoo.co.in>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ramdisk !!! 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 25 Oct 2002 02:11:52 PDT."
+             <20021025091152.95453.qmail@web8005.mail.in.yahoo.com>
+Date: Fri, 25 Oct 2002 12:05:40 +0200
+Message-Id: <20021025100545.45DA71014C@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear list,
+In message <20021025091152.95453.qmail@web8005.mail.in.yahoo.com> you wrote:
+>
+>       LINUX IS BOOTING ON MY FADS BOARD!!!!!!!!!!
 
-I have a ppc 8245 based system (with hardat 2.1).
-It must works as a router with two network interfaces.
-In order to priorize some kinds of traffic I have to use tc (from iproute2)
-It doesn't works and I see the message:
+Congrats.
 
-statistic truncated
+> Thanks to all who gave me hints!!!!!
+> Now i want to create my own ramdisk image to use in
+> the kernel ..can anybody tell me how to go abt this??
 
-I examined the tc source cod anf found out that this message refers to a
-MACRO provided by rtnetlink.
-Does anybody have ever seen this kind of message?
-Do you know some problem using tc (and iproute) with ppc systems?
+See for example our Simple Embedded Linux Framework at
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
 
-Thanks a lot.
+Best regards,
 
-Luca Andreani
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Quote from the Boss... "I didn't say it was your fault.  I said I was
+going to blame it on you."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
