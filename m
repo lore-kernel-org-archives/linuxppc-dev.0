@@ -1,62 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <40C9B249.4070905@intracom.gr>
-Date: Fri, 11 Jun 2004 16:23:21 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+Date: Fri, 11 Jun 2004 10:35:02 -0300
+Message-Id: <HZ5CEE$AB58D6D6E1D4B27E5EB20145E6922465@bol.com.br>
+Subject: Lite5200 from RS232 to RS485
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-	Meriin Michael-BMM063 <Meriin@motorola.com>,
-	"'Ricardo DIz'" <rdiz@alumni.deec.uc.pt>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: U-Boot and kernel 2.6
-References: <20040611130309.6E605C109F@atlas.denx.de>
-In-Reply-To: <20040611130309.6E605C109F@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+From: "saurosalomoni" <saurosalomoni@bol.com.br>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: iida@ztec.com.br
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+Hello.
 
->In message <40C99182.8050201@intracom.gr> you wrote:
->
->[David Woodhouse:]
->
->
->>>We really need to throw this crap away and start using structured tags
->>>like ARM does.
->>>
->
->Right (or bi_rec's or whatever this might end up being called).
->
->
->>Or we can parse the u-boot environment which is ascii.
->>I already do this...
->>
->
->No, this is IMHO not a good idea. Some of the information that  needs
->to  be  passed to the kernel is not contained in the envrionment, and
->does not belong there.
->
-I'm just talking about augmenting the information provided by bd_t.
+I need to switch between RS232 and RS485 in my Lite5200,
+ but I realized it's a little bit more dificult than I
+thought at first...
+Well,  as far as I'm concerned, I can do that just by
+controling the RTS pin of my ttyS0 device to activate
+the 485 module (is it 100% right?).
 
-And it's not just things that the kernel needs, it can be used to
-pass information to the user-space applications.
+I began trying to control it with TIOCMGET/TIOCMSET
+ioctl(),  but the driver does not support hardware
+handshake.. (tahnx,  Denk)
+So now I think I'll have to write a small driver that
+uses GPIO to handle the proper PSC register.
 
-Reading the environment from flash is not correct because the
-variables might be modified by the boot sequence but not commited.
+MPC5200 Users Manual states that you can set/clear the
+RTS pin with bit 7 of the OutputPort 0 (op0, offset 0x3C).
 
-When I get some breathing time, I'll sent you the patch.
+My questions:
+- Is this information I gathered correct?..
+- Which PSC register I need to use to control ttyS0?
+- If it's easyer to do it by extending an existing
+driver, wich file should I look for?
+- Is there any other way to accomplish that?
 
->
->Best regards,
->
->Wolfgang Denk
->
->
-Regards
-
-Pantelis
+Thanks in advance.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
