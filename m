@@ -1,26 +1,26 @@
-Message-ID: <3E34F6A0.2040209@imc-berlin.de>
-Date: Mon, 27 Jan 2003 10:06:40 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: gcc-3.2 and MPC8xx
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <se351c36.031@mail.frequentis.com>
+Date: Mon, 27 Jan 2003 11:46:38 +0100
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: USB on custom board
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hi!
 
-I read that MontaVista released a 3.0 with gcc 3.2.
+Our company planned a redesign of our board. We use a 860T.
 
-Does it make sense to switch from 2.95.3/4 to gcc 3.2 for MPC8xx PowerPC?
+We think about a USB controller. We take an eye on the SL811HS. Does there exists any working driver? Which kernel version? (At the moment we use the montavista 2.4.2)
 
-Are there any big advantages when building u-boot, kernel, drivers, busybox and
-multithreaded applications?
+And what is about DMA. Is it possible without external components?
 
-Thanks a million,
+thanks for help
 
-Steven
+regards
+Gerhard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
