@@ -1,65 +1,71 @@
-Message-ID: <3B67E741.50A66F26@irisa.fr>
-Date: Wed, 01 Aug 2001 13:25:53 +0200
-From: Romain Dolbeau <dolbeau@irisa.fr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: `planb' doesn't compile on recent BenH kernel.
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 1 Aug 2001 13:45:41 +0200
+From: Olaf Hering <olh@suse.de>
+To: Romain Dolbeau <dolbeau@irisa.fr>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: `planb' doesn't compile on recent BenH kernel.
+Message-ID: <20010801134541.B2050@suse.de>
+References: <3B67E741.50A66F26@irisa.fr>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="5vNYLRcllDrimb99"
+In-Reply-To: <3B67E741.50A66F26@irisa.fr>; from dolbeau@irisa.fr on Wed, Aug 01, 2001 at 01:25:53PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+--5vNYLRcllDrimb99
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-the `planb' module won't comiple on any recent BenH kernel
-(from rsync penguinppc.org::linux-2.4-benh).
+On Wed, Aug 01, Romain Dolbeau wrote:
 
-2.4.6pre3 works fine. No 2.4.7* or 2.4.8* work for me.
-I think some newer 2.4.6pre* didn't work either.
+>
+> Hello,
+>
+> the `planb' module won't comiple on any recent BenH kernel
+> (from rsync penguinppc.org::linux-2.4-benh).
+>
+> 2.4.6pre3 works fine. No 2.4.7* or 2.4.8* work for me.
+> I think some newer 2.4.6pre* didn't work either.
+>
+> Apparently a locking mechanism was changed but
+> not all instance updated:
 
-Apparently a locking mechanism was changed but
-not all instance updated:
+The attached patch allows the compile. Do you have hardware to test? I
+have a 7500 but no video hardware around.
 
-#####
---- linux-2.4.6pre3-benh/drivers/media/video/planb.h    Tue Jun 26
-12:13:27 2001
-+++ linux-2.4.8-pre3-ben0/drivers/media/video/planb.h   Wed Aug  1
-12:07:03 2001
-@@ -174,8 +174,7 @@
-        int     user;
-        unsigned int tab_size;
-        int     maxlines;
--       int lock;
--       wait_queue_head_t lockq;
-+       struct semaphore lock;
-        unsigned int    irq;                    /* interrupt number */
-        volatile unsigned int intr_mask;
-#####
 
-but planb.c still do a ## pb->lock = 0; ## (line 2074).
 
-Here's the compile log:
-
-#####
-make[4]: Entering directory
-`/usr/src/linux-2.4.8-pre3-ben0/drivers/media/video'
-gcc -D__KERNEL__ -I/usr/src/linux-2.4.8-pre3-ben0/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
--fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char
--msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
--DMODULE   -c -o planb.o planb.c
-planb.c: In function `init_planb':
-planb.c:2074: incompatible types in assignment
-planb.c: At top level:
-planb.c:85: warning: `planb_init_done' declared `static' but never
-defined
-#####
-
-TIA
+Gruss Olaf
 
 --
-DOLBEAU Romain               | l'histoire est entierement vraie, puisque
-ENS Cachan / Ker Lann        |     je l'ai imaginee d'un bout a l'autre
-dolbeau@irisa.fr             |           -- Boris Vian
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
+
+--5vNYLRcllDrimb99
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="70__01_00_2.4.6-pre8-fixes"
+
+--- ../tree/linux-2.4.6-pre6/drivers/media/video/planb.c	Thu Jun 28 10:39:31 2001
++++ linux/drivers/media/video/planb.c	Thu Jun 28 12:25:23 2001
+@@ -82,7 +82,6 @@
+ static int planb_open(struct video_device *, int);
+ static void planb_close(struct video_device *);
+ static int planb_ioctl(struct video_device *, unsigned int, void *);
+-static int planb_init_done(struct video_device *);
+ static int planb_mmap(struct video_device *, const char *, unsigned long);
+ static void planb_irq(int, void *, struct pt_regs *);
+ static void release_planb(void);
+@@ -2071,7 +2070,6 @@
+ #endif
+ 	pb->tab_size = PLANB_MAXLINES + 40;
+ 	pb->suspend = 0;
+-	pb->lock = 0;
+ 	init_MUTEX(&pb->lock);
+ 	pb->ch1_cmd = 0;
+ 	pb->ch2_cmd = 0;
+
+--5vNYLRcllDrimb99--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
