@@ -1,34 +1,57 @@
-Message-ID: <399C8861.8824EF7C@mtjones.com>
-Date: Thu, 17 Aug 2000 18:50:41 -0600
-From: "M. Tim Jones" <mtj@mtjones.com>
+Message-ID: <399CBAE0.7EFDF429@embeddededge.com>
+Date: Fri, 18 Aug 2000 00:26:08 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: Joe Green <jgreen@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Doc/Serial problems in HHL 1.2?
-References: <20000818004635.31F73229@elph.research.canon.com.au>
+To: Pravin Pathak <pkpathak@dnrc.bell-labs.com>
+CC: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: What is embedded linux ?
+References: <399B0FCD.A6E0A6BE@dnrc.bell-labs.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
-
-> Joe Green writes:
-> > I don't think we have an 860CLLF LSP, ...
+Pravin Pathak wrote:
 >
-> Umm, I think you do in 1.2:
->     hhl-ppc_8xx-cllf-lsp-2.2.14-1.2.2-3.noarch.rpm
->     hhl-ppc_8xx-cllf-lsp-binaries-2.2.14-1.2.2-3.noarch.rpm
->
-> Regards,
-> Graham
+> Hi All !
+> I have a silly question. How does embedded linux works without disk
+> support ?
 
-This is what I'm using, but the kernel still crashes in
-my_console_write.  I'm about to do a fresh install on a node that's
-never hosted the HHL distro (since my current host has both 1.0 and 1.1
-on it and I want to rule out any conflicts).
+Don't confuse disk with file system......
 
-Tim.
+> I mean from where it loads shell and other application task images
+> without any file system
+> support ?
 
+Don't confuse disk with file system.....
+
+> .... For VxWOrks/pSOS have a single object file. How about Embedded
+> Linux ?
+
+There are both a number of possible file systems (the structure of the
+persistent data) and possible storage devices (the place where the
+data is actually stored).
+
+You can use the standard Linux ext2 file system on a ramdisk or in
+flash, one of the flash file systems that will update flash sectors
+and potentially compress the data, or even a file system on a
+compact flash (or PCMCIA) device.
+
+You can compress a ram disk as part of a flash image, and have it
+automatically uncompressed and loaded into ram when the system boots.
+
+There are many options and your choice depends upon your requirements.
+
+> I am confused on this matter. Or it always need some kind of file
+> support like NFS to boot ?
+
+The NFS is used as a root file system because it is convenient for
+development and also consistent across most platforms because everyone
+supports Ethernet.  It isn't required, but is certainly the fastest
+development path.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
