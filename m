@@ -1,29 +1,22 @@
-Date: Wed, 4 Feb 2004 10:40:17 +0100
+Date: Wed, 4 Feb 2004 11:12:49 +0100
 From: Olaf Hering <olh@suse.de>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Missing isa_ symbols
-Message-ID: <20040204094017.GA7012@suse.de>
-References: <20040203210321.GA19689@lst.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Video For Linux on ppc32 in kernel 2.6
+Message-ID: <20040204101249.GA25776@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20040203210321.GA19689@lst.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Tue, Feb 03, Christoph Hellwig wrote:
+CONFIG_VIDEO_DEV triggers CONFIG_VIDEO_BUF. If compiled as module,
+video-buf.c wants clear_user_page(). This is a define on most archs
+(maps to clear_page()), on ppc32 it is an unexported function. This
+leads to unresolved symbols.
 
->
-> I've recently switched CONFIG_ISA on to compile-test various scsi
-> drivers and get lots of warnings like:
->
-> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol isa_bus_to_virt
-> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol isa_page_to_bus
-> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol isa_virt_to_bus
-> WARNING: /lib/modules/2.6.2-rc3/kernel/drivers/scsi/wd7000.ko needs unknown symbol udelay
-
-Who is using that kind of hardware on ppc32?
+Should clear_user_page() be exported or should
+drivers/media/video/video-buf.c:videobuf_vm_nopage() do something else
+to achive similar results?
 
 --
 USB is for mice, FireWire is for men!
