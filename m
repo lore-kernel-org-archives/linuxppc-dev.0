@@ -1,46 +1,34 @@
-Date: Wed, 13 Oct 1999 08:14:56 +0200
-From: Christophe Lizzi <lizzi@csti.fr>
-Message-Id: <199910130614.IAA29151@devl58>
-To: linuxppc-dev@lists.linuxppc.org, doyle@primenet.com
-Subject: Re: PowerPC function returning long long
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 13 Oct 1999 09:19:45 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: linuxppc-dev@lists.linuxppc.org
+cc: debian-powerpc@lists.debian.org, mysql@lists.mysql.com
+Subject: MySQL at Linux/PPC
+In-Reply-To: <v04205500b4268e121b94@[38.26.1.185]>
+Message-ID: <Pine.LNX.4.10.9910102158200.793-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-> I was playing with the inline assembler and the ppc
-> timebase facility and created the following function -
 
-> Is there a better way to write the return statement?
-> 
-> Is there a register constraint for a long long register
-> (like the "A" constraint for the x86 which returns the
-> 64 bit data in edx:eax)?
+After looking at Bug#: 5732 in RedHat's bugzilla, 
+(http://developer.redhat.com/bugzilla/show_bug.cgi?id=5732)
+i found out why enabling LFS makes a bad mysql binary, quoting from the
+description of the patch bug:
 
-64 bit values are returned in r3:r4.
+   The configure scripts of patch-2.5 detect the LFS support in 
+   glibc-2.1, but due to the lack of a definition of 
+   _GNU_SOURCE, no prototypes for fseeko are declared. That way 
+   the compiler thinks fseeko is taking a 32bit argument for 
+   the offset, when in reality it takes a 64bit offset.
 
-I'm definitively not an asm guru, but the following code works:
+After compiling MySQL with -D_GNU_SOURCE (with LFS enabled) the problems
+went away, i am not sure if defining _LARGEFILE_SOURCE is supposed to give
+the fseeko declarations but if it is then its a bug in the glibc headers.
 
-/*
-  from PowerPC Microprocessor Family: The Programming Environments,
-       section 2.2: PowerPC VEA Register Set - Time Base,
-       IBM Microelectronics - Motorola.
-*/
+  Kostas Gewrgiou.
 
-unsigned long long timebase(void)
-{
-    asm( "isync" );   /* discard prefetched instructions */
-    /* the loop ensures that a consistent pair of values is obtained */
-    asm("loop:"     ); 
-    asm("mftbu 3"   ); /* load r3 from TBU       */
-    asm("mftb  4"   ); /* load r4 from TBL       */
-    asm("mftbu 5"   ); /* load r5 from TBU       */
-    asm("cmpw  5, 3"); /* compare r5 and r3      */
-    asm("bne   loop"); /* loop if carry occured  */
-}
-
---Christophe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
