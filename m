@@ -1,23 +1,26 @@
-Message-ID: <3A22BB86.92419741@nexus-tech.net>
-Date: Mon, 27 Nov 2000 14:52:39 -0500
-From: Kyle Harris <kharris@nexus-tech.net>
+From: "Dan Jankins" <DJankins@communica.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MP8240 UART
+Date: Mon, 27 Nov 2000 15:09:40 -0500
+Message-ID: <NEBBKDMDALNLPJILFLLOCEBFCAAA.DJankins@communica.com>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: fb on mpc823
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi All,  I am a new to PowerPC.  I have downloaded the Sandpoint Doc’s
+including Schematic.  I the Unity X4 schematic  (page 9) has reference to a
+UART (SOUT1, SIN1, RTS1, CTS1) but the MP8240 Data sheet status these line
+are PCI clock.
 
-I'm trying to get a framebuffer device running on an mpc823 board
-(tqm823). I'm a little confused (not unusual :). Which device should
-/dev/fb0 be? fbmem.c opens a device using major 29. But lcd823.c also
-opens a device using major 62. Do I even need all of the standard fb
-stuff? Or can I simply insmod lcd823.o (built to run as a module) and
-get things to work?
+Is there a UART in the MP8240?  If so where can I find information on it.
+Also does Hardhat Linux use this port?
 
-Thanks for any help, Kyle.
+
+
+Thank You
+Daniel R Jankins
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
