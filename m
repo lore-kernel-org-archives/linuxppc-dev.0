@@ -1,51 +1,61 @@
-Message-ID: <4096A47B.8030704@gcctech.com>
-Date: Mon, 03 May 2004 15:58:51 -0400
-From: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Reply-To: cjohnson@gcctech.com
+Message-ID: <20040504063215.79304.qmail@web8202.mail.in.yahoo.com>
+Date: Tue, 4 May 2004 07:32:15 +0100 (BST)
+From: =?iso-8859-1?q?somshekar=20kadam?= <som_kadam@yahoo.co.in>
+Subject: linuxppc 2.6.5 mpc8xx compilation
+To: runet@innovsys.com
+Cc: shchoi@airpoint.co.kr, linuxppc-embedded@lists.linuxppc.org,
+	som_kadam@yahoo.co.in
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: netatalk with appletalk on ppc
-References: <40963D85.6090805@gcctech.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Update - only happens with half-duplex connections.  Apparently the
-"reflected" packets are passed along to the receive driver, even tho its
-source address matches the local interface.
+HI ,
 
-Christopher R. Johnson wrote:
+  Currently i am trying to compile linux-2.6.5 for
+mpc8xx for MBX reference board ,,,
+i have some compilation problems ,, i am not able to
+figure what could be the problem ,, i am not sure
+correct me if i am wrong , is ppc code is completely
+available in linux-2.6.5 verision ,,
 
->
-> Ok, perhaps this should be posted elsewhere, but I figure someone here
-> might have tried this:
->
-> I'm using netatalk - trying to get the atalkd component up.  I've done
-> this in the past with older kernels, but this time I'm on 2.4.23rc1.
-> I'm using the on-chip ethernet support on the 405, and its working
-> great with IP based stuff.  I've tried two different versions of
-> netatalk with identical results.
->
-> When atalkd starts up it does aarp probing to see if it can come up with
-> an Appletalk network address.  The probe is sent out on the wire, but
-> something wierd happens.  the aarp_rcv code gets invoked right away, and
-> when I look at the packet its examing, its the exact packet that was
-> just sent out.  This code sees this as an aarp probe being done by some
-> other network entity (why?  the mac address is mine) and fails the
-> probe.  The aarp code then moves on to another address to try, and the
-> whole thing happens again, forever.  Its definitely going to eth0, and
-> as I mentioned I see the aarp probe go out on the wire.  Running similar
-> code on my intel desktop works fine, the probes happen 10 times, .1
-> seconds apart, no one answers, and the code adopts that Appletalk
-> address (the expected behavior).  I'm trying to wind my way through the
-> net_tx_action and net_rx_action code to see why this is happening, but
-> its slow going.
->
-> Suggestions?
->
->
->
+i dont get errors if i compile for other 7xx 8260 , it
+compiles fine ,,,
 
+i have the error messages like this
+
+
+----------------------------------------------
+make[1]: `arch/ppc/kernel/asm-offsets.s' is up to
+date.
+  CHK     include/asm-ppc/offsets.h
+  CHK     include/linux/compile.h
+dnsdomainname: Unknown host
+  CC      arch/ppc/syslib/m8xx_setup.o
+arch/ppc/syslib/m8xx_setup.c:223:35: macro "mfmsr"
+passed 1 arguments, but takes just 0
+arch/ppc/syslib/m8xx_setup.c: In function
+`m8xx_restart':
+arch/ppc/syslib/m8xx_setup.c:223: error: `mfmsr'
+undeclared (first use in this function)
+arch/ppc/syslib/m8xx_setup.c:223: error: (Each
+undeclared identifier is reported only once
+arch/ppc/syslib/m8xx_setup.c:223: error: for each
+function it appears in.)
+arch/ppc/syslib/m8xx_setup.c:216: warning: unused
+variable `msr'
+make[1]: *** [arch/ppc/syslib/m8xx_setup.o] Error 1
+make: *** [arch/ppc/syslib] Error 2
+-------------------------------------------------
+
+
+Thanks In Advance
+Neelu
+
+
+
+________________________________________________________________________
+Yahoo! India Matrimony: Find your partner online. http://yahoo.shaadi.com/india-matrimony/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
