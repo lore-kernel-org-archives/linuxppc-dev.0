@@ -1,40 +1,51 @@
-Message-ID: <3BE8358D.BFE0C2D2@denise.shiny.it>
-Date: Tue, 06 Nov 2001 20:10:05 +0100
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Derrik Pates <dpates@dsdk12.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: recording audio?
-References: <Pine.LNX.4.33.0110300920370.4960-100000@andromeda.dsdk12.net> <20011030172927.8256@smtp.adsl.oleane.com>
+Date: Tue, 6 Nov 2001 12:40:38 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PATCH K2: remove dead code
+Message-ID: <20011106124038.A16468@cx258813-a.chnd1.az.home.com>
+References: <0111062058.AA03040@ivan.Harhan.ORG>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0111062058.AA03040@ivan.Harhan.ORG>; from msokolov@ivan.Harhan.ORG on Tue, Nov 06, 2001 at 12:58:40PM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Thanks for this and the cpc710.h changes...pushed.
+
+-Matt
+
+On Tue, Nov 06, 2001 at 12:58:40PM -0800, Michael Sokolov wrote:
 >
-> >> hmm, I wasn't even aware that there was an ALSA driver for powermac
-> >> sound hardware.  I'll have to check that out...
-> >
-> >Last I checked, ALSA did not support any of the AWACS family chips in
-> >PowerMac/PowerBook systems at all. There was a comment in a Todo log in
-> >the source that mentioned they intended to do such a driver at some point,
-> >but I don't know that one was ever written.
+> Hi there,
 >
-> SuSE people did, they have drivers for awacs, burgundy, tumbler and daca.
+> Whoever has moved the two tiny shim functions from k2_pic.c into k2_setup.c
+> (mporter according to the logs) has apparently forgotten to delete k2_pic.c,
+> which is now dead code. This patch does so.
+>
+> MS
+>
+> Delete: arch/ppc/kernel/k2_pic.c
+> diff -Nru a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
+> --- a/arch/ppc/kernel/Makefile	Tue Nov  6 12:39:29 2001
+> +++ b/arch/ppc/kernel/Makefile	Tue Nov  6 12:39:29 2001
+> @@ -80,8 +80,8 @@
+>  					indirect_pci.o pci_auto.o todc_time.o
+>  obj-$(CONFIG_GEMINI)		+= gemini_prom.o gemini_pci.o gemini_setup.o \
+>  					open_pic.o
+> -obj-$(CONFIG_K2)		+= k2_setup.o k2_pic.o k2_pci.o i8259.o \
+> -					indirect_pci.o todc_time.o pci_auto.o
+> +obj-$(CONFIG_K2)		+= k2_setup.o k2_pci.o i8259.o indirect_pci.o \
+> +					todc_time.o pci_auto.o
+>  obj-$(CONFIG_LOPEC)		+= lopec_setup.o lopec_pci.o mpc10x_common.o \
+>  					indirect_pci.o pci_auto.o open_pic.o \
+>  					i8259.o todc_time.o
+>
 
->From ALSA history:
-
-2001-05-14 The driver 0.5.11 was released. Changes: IA64 arch support,
-ALi 5451 driver added, AWACS driver added (for PPC), AC'97, PCM OSS
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-emulation, sequencer OSS emulation, AD1816A, ALS4000, AZT2320, CMIPCI,
-CS4236, CS4281, CS461X, ES1968, Maestro 3, NM256, OPL3SA2, SB16,
-SB-AWE, YMFPCI.
-
-I'm downloading it now.
-
-
-Bye.
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
