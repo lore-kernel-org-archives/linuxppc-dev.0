@@ -1,44 +1,64 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: <benh@kernel.crashing.org>,
-	<yellowdog-devel@lists.yellowdoglinux.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: some questions on new dual 1Gig G4's support?
-Date: Mon, 4 Feb 2002 13:27:26 -0500
-References: <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there> <20020204181538.4089@mailhost.mipsys.com>
-In-Reply-To: <20020204181538.4089@mailhost.mipsys.com>
+Message-ID: <3C5EDC64.9050405@cymes.de>
+Date: Mon, 04 Feb 2002 20:09:24 +0100
+From: Matthias Grimm <joker@cymes.de>
 MIME-Version: 1.0
-Message-Id: <20020204182315.PZGJ18463.tomts7-srv.bellnexxia.net@there>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: [PATCH] Superflous code in mac_hid.c
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi Ben,
 
-> No. It's 2 things. First the NAP must be disabled depending on the
-> errata (7450 + L3), but also, neither the 7450 nor the 7455 support
-> DOZE, they can only NAP or do nothing. Worst, on the 7455, it's bad
-> to set HID0:DOZE as it actually has a different meaning.
+The following patch deletes some code lines in mac_hid.c which were from
+my point of view an copy-&-paste artefact from char/pc_keyb.c.
 
-Yes, that is the HIGH_BAT_EN (bit 8) of HID0 which I think we should leave
-as zero to keep the 7455 compatible with the 7450.  I know nothing about
-BAT registers or how to take advantage of block sizes up to 4 Gig, and I
-also do not know if/how we should handle the 4 extra special purpose
-registers (supevisor mode only).  Some sample exception handling code uses
-these extra SPRG registers to hand;le BAT table exceptions to speed things
-up.  Someone who actually knows a whole lot more about the best way to use
-BATs will have to take a look at all of these extra pieces.
+--- drivers/macintosh/mac_hid.c.orig	Thu Feb  4 01:06:49 1904
++++ drivers/macintosh/mac_hid.c	Mon Feb  4 12:10:30 2002
+@@ -363,11 +363,9 @@
 
-> So let's split the can doze & can nap into 2 different features.
+			prev_scancode = 0;
 
-I will do that in cputable.h as you said..
+			return 0;
 
-But what about the SLEEP mode my last e-mail mentioned.  It is a different
-mode from NAP (does no bus snooping) but saves more power.
+		}
+-
+		} else {
++
+		} else
 
-Thanks,
+		prev_scancode = 0;
+-
+			if (scancode == 0x2a || scancode == 0x36)
+-
+				return 0;
+-
+		}
++
 
-Kevin
+	if (e0_keys[scancode])
+
+		*keycode = e0_keys[scancode];
+
+	else {
+----------------
+The code is only nessecary to fix a misbehaviour of a special pc
+keyboard as described in char/pc_keyb.c. I think it's not relevant
+for macintosh computers.
+
+The reason to delete this lines is that two scancodes can't be used.
+I found this problem, as I tried to assign the Keycode 209 to the Fn-Key
+for test purposes. After all translations and mappings the key sequence
+0xe0 0x36 was generated and quashed by this code lines.
+
+This is a low priority and temporary patch (until the new input device is
+fully integrated in the kernel), but temporary solutions mostly have
+incredible livespans. ;-)
+
+Kind regards
+   Matthias Grimm
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
