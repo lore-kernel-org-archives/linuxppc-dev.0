@@ -1,46 +1,123 @@
-In-Reply-To: <001201c489f6$926db540$5201a8c0@GEG2400>
-References: <001201c489f6$926db540$5201a8c0@GEG2400>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <C9701947-F5F7-11D8-B036-000393DBC2E8@freescale.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: MPC8560 boot console (CPM SCC) driver problem
-Date: Tue, 24 Aug 2004 13:02:39 -0500
-To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+Message-ID: <FC3C0DD86B79DF4FA423AF0379A547610155436D@mailguy2.nuvation.com>
+From: Oliver King-Smith <oliver.king-smith@nuvation.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem trying to address custom hardware
+Date: Tue, 24 Aug 2004 16:10:15 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 24, 2004, at 11:22 AM, Gérard Guével wrote:
-
->
-> Hi,
->
-> I download a 2.6.8 Linux kernel to port it to a custom 8560 board
-> similar to MPC8560_ADS board..
->
-> In the arch/ppc/boot directory there is no 85xx_io directory with
-> a CPM uart driver.
->
-> The kernel link waits for some serial basic functions like
-> serial_getc().
->
-> I found the generic ./drivers/serial/cpm_uart driver, but it seems to
-> only
-> be
-> used later when Linux is installed.
->
-> Surely I miss something.
-> How can I have a console for my boot ?
-> Are 8260 cpm2 definitions compatible with 85xx ?
-
-The common boot code in the kernel has not been ported to e500 or 85xx.
-Thus the lack of proper serial support for the 8560.  I would recommend
-using u-boot as the boot loader.  U-boot already has support for the
-8560 and several boards.
-
-- kumar
-
+Hello,
+ 
+I am using a IBM405EP to run Linux.  I am trying to add a CPLD to the
+system that has a few registers I want to read and write from. This
+device is wired physically to respond when it sees
+0x40000000-0x40000010 on the PPC address pins.  So I wrote the
+following program:
+ 
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+ 
+#define CPLD_OFFSET    0x40000000
+ 
+typedef struct{
+        unsigned long register1;
+        int register2;
+}CPLD_REGISTERS;
+ 
+#define CPLD_SIZE      sizeof(CPLD_REGISTERS)
+ 
+int main()
+{
+        int memfd;
+        volatile CPLD_REGISTERS *pCPLD;
+ 
+        memfd = open("/dev/mem", O_RDWR);
+        if (memfd){
+               pCPLD = (CPLD_REGISTERS *) mmap(0,
+                       CPLD_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE,
+                       memfd, CPLD_OFFSET);
+               if( pCPLD>0 )
+               {
+                       int readback;
+                       printf( "CPLD located at virtual address %x\n",
+                               (unsigned long) pCPLD );
+                       pCPLD->register1 = 1;          // !!!CRASH!!!
+...
+                      
+ 
+It maps into a part of virtual space that make
+sense from other setups shown in /proc/#/maps.  (i.e. pCPLD is 0x30150000)
+ 
+The /proc/kmsg gives the following errors
+<4>do_wp_page: bogus page at address 30015000 (page 0xc0d1f01c)
+<4>VM: killing process mmap.out
+ 
+This seems reasonable enough.  So I tried mapping in a page to VM using a
+small driver.  I wrote the following code, and instantiated it with
+insmod.
+ 
+#define MODULE
+#include <linux/module.h>
+ 
+#define CPLD_P_ADDR     0x40000000
+#define CPLD_V_ADDR     0xE8126000
+ 
+typedef struct{
+         unsigned long register1;
+         unsigned long register2;
+}CPLD_REGISTERS;
+ 
+#define CPLD_SIZE       sizeof(CPLD_REGISTERS)
+ 
+volatile CPLD_REGISTERS *pCPLD;
+ 
+int init_module(void)
+{
+         printk( "<1> Hello World\n" );
+         pCPLD = (volatile CPLD_REGISTERS *)ioremap( CPLD_P_ADDR,
+CPLD_SIZE );
+         if( pCPLD>0 )
+         {
+                 printk( "CPLD located at virtual address %x and held at
+%x\n", (unsigned long)pCPLD, (unsigned long)&pCPLD );
+                 pCPLD->register1 = 1; // !!! CRASH !!!
+...
+ 
+And I get a crash again.  The value for pCPLD is in the 0xC3xxxxxx range.
+<1> init_module in cpld_module.c on line 22
+<4>CPLD located at virtual address c3019000 and held at c3017390
+<4>Data machine check in kernel mode.
+<4>Oops: machine check, sig: 7
+<4>NIP: C0014990 XER: 00000000 LR: C3017120 SP: C19ADDE0 REGS: c19add30
+TRAP: 0200    Tainted: P
+<4>MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+<4>TASK = c19ac000[80] 'insmod' Last syscall: 128
+<4>last math 00000000 last altivec 00000000
+<4>PLB0: bear= 0x40000000 acr=   0x00000000 besr=  0x00c00000
+<4>PLB0 to OPB: bear= 0x00000000 besr0= 0x00000000 besr1= 0x00000000
+<4>
+<4>GPR00: 01000000 C19ADDE0 C19AC000 C301724C 00000000 00000001
+00000020 C01F0000
+<4>GPR08: 000035BF C3019000 00000000 C19ADDEC 80042082 1003A0CC
+00000000 00000000
+<4>GPR16: 00000000 00000001 00000000 00000000 00009032 019ADF40
+C19ADEA8 C1C25D00
+<4>GPR24: 0000000B C19ADF0C 1003BA38 C3010000 C3010000 C19ADDE8
+C3010000 C3010000
+<4>Call backtrace:
+<4>C0014AF0 C3017120 C0015D78 C000475C 1003BA38 10003A34 10004F2C
+<4>10008CA8 10008EC8 0FECAC30 00000000
+ 
+If anyone could tell me what I am doing wrong, I would greatly
+appreciate it.
+ 
+Oliver
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
