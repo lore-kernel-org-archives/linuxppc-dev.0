@@ -1,47 +1,103 @@
-Message-Id: <4.2.0.58.20001104202814.009b7180@pplus.shell9.ba.best.com>
-Date: Sat, 04 Nov 2000 20:50:20 -0800
-To: linuxppc-dev@lists.linuxppc.org
-From: Ron Avisa <ravisa@base2software.com>
-Subject: MMU probs in head.S w/821
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <200011050936.KAA00822@piglet.grunz.lu>
+Date: Sun, 5 Nov 2000 10:36:16 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: whacked out 2.2.18pre17?
+To: jeglin@4pi.com
+cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <p04330101b629db91dabb@[192.168.0.1]>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hopefully someone's seen this show,
+On   4 Nov, this message from Stefan Jeglinski echoed through cyberspace:
+>>That's weird. The symptoms you describe are typicall of a kernel beeing
+>>damaged by bus-mastering devices (your 6 PCI cards frighten me ...).
+>
+>
+> Me too :-) FWIW, here they are in order from top to bottom:
+>
+> Adaptec 2940UW
+> Farallon ethernet 10/100
+> OrangeLink firewire/usb combo
+> Matrox Mystique card
+> ixMicro TV card
+> ixMicro Twin Turbo card
 
-Trying to get linux up and running on an 821 on some custom hardware.
-Got ppcboot all set up and happy, and thought linux should happily boot up
-via bootm 2a000000.
+OK, 6 slots, so I suppose this is a 9x00 or compatible box?
 
-The bootm code uncompresses and relocates linux nicely to 0x000000000
-and then jumps to 0x0000000c. Board info is good, starts setting up the mmu,
-sets up an entry for IMMR at recommended 0xF0000000, branches to
-:turn_on_mmu, loads up 0xc00021b8 for return address and msr with MMU enabled,
-hits the rfi and disappears only to show up with a machine exception at 0x220.
+> lspci gives (only):
+>
+> 00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+> 00:0d.0 SCSI storage controller: Adaptec AIC-7881U
+> 00:0e.0 Ethernet controller: Digital Equipment Corporation DECchip
+> 21142/43 (rev 41)
+> 00:0f.0 PCI bridge: Action Tec Electronics Inc: Unknown device 0100 (rev 11)
+> 00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
+> 01:0c.0 FireWire (IEEE 1394): NEC Corporation: Unknown device 00cd (rev 01)
+> 01:0d.0 USB Controller: OPTi Inc. 82C861 (rev 10)
 
-Strangely I did see it actually run once and was able to watch (via
-vision-ice BDM) the
-pc zip around 0xC000xxxx space values before finally crashing.
+Hmm, there's one bus missing here, the one with the Matrox and the
+ixMicro cards. And the accompanying bandit host bridge is missing. You
+might want to try my PCI patches (see:
+http://www.cpu.lu/~mlan/linux/dev/pci.html). The relevant part is this
+here, in arch/ppc/kernel/pmac_pci.c:
 
-I've tried cutting out just the head.S section, making it standalone srec
-format and using
-the LOADS feature of ppcboot and then just running it. strangely enough the
-code seems
-to work when loaded at 0x0 (runs, jumps to infinite loop in virtual
-0xc0002000). Though dies
-when started from 0xC generating machine exceptions or just freezing.
+ pmac_pcibios_fixup(void))
+ {
+        struct pci_dev *dev;
+-
++       int i, has_io, has_mem;
++       unsigned short cmd;
++       struct bridge_data *bp;
++
+        /*
+-        * FIXME: This is broken: We should not assign IRQ's to IRQless
+-        *        devices (look at PCI_INTERRUPT_PIN) and we also should
+-        *        honor the existence of multi-function devices where
+-        *        different functions have different interrupt pins. [mj]
++        * The generic PCI code scans only bus 0 for devices and P2P
++        * bridges. We fix this here based on the array of host
++        * bridges.
++        *
++        * However, we need to treat the bus behind chaos with special
++        * care. chaos doesn't like being poked at while scanning that
++        * bus...
++        *
++        * Comments on everything below to mlan@cpu.lu...
+         */
++       for (bp = bridge_list; bp != NULL; bp = bp->next) {
++               if (bp->bus_number == 0) continue;
++               if (strcmp(bp->node->name, "chaos") != 0)
++                       pci_scan_peer_bridge (bp->bus_number);
++       }
++
+        for(dev=pci_devices; dev; dev=dev->next)
+        {
 
-At this point I'm wondering...
-Vision-ICE BDM might be problematic?
-821 has some strange MMU/cache problems (possibly related to alignment)?
+Mind you, the patch is not complete; but it should make your other PCI
+primary bus appear in lspci's output.
 
-Any ideas or suggestions?
+Ben, Paul, any chance to get this code snippet into 2.2.18? At least,
+then, 9x00 and clones would be supported for their second PCI bus....
+Note that I'm simply avoiding chaos at all.
 
-Thanks,
+Stefan, a final note, if you want to turn multihead, it might be a good
+idea performance-wise to put both of your graphics boards not in the
+same PCI bus... ie one into slots 1-3, and the other in slots 4-6.
 
-Ron
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
