@@ -1,32 +1,46 @@
-From: clark@esteem.com
-Message-Id: <1.5.4.32.20000821165023.006ac670@pop.esteem.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 21 Aug 2000 09:50:23 -0700
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: RE: PPCBoot memory mapping problems
+Subject: Re: Problems using shared library in corss environment
+To: sugenius@doit.ajou.ac.kr (Seong-kyu Ko)
+Date: Tue, 22 Aug 2000 11:34:11 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.21.0008220121070.24904-100000@doit.ajou.ac.kr> from "Seong-kyu Ko" at Aug 22, 2000 01:22:29 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000822013411.88448206@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang wrote:
->
->Maybe we should keep PPCBoot related discussion  out  of  this  list?
->IMHO  it  belongs  to the ppcboot-users@lists.sourceforge.net mailing
->list.
->
+Seong-kyu Ko writes:
+> First, I compile the binutils for powerpc cpu.
+> Second, I build cross compiler with gcc.
+> Third, I compile glibc for powerpc with cross compiler that I made.
+> Last, I re-build cross compiler include glibc for library.
 
-        Sorry,
+OK, sounds good.
 
-        There is no problem with PPCBoot, My problem seems to be our
-emulator. I wasn't sure if it was a problem with the kernel or PPCBoot. My
-gut told me it was more of a kernel related issue so thats why I posted
-here. But it appears that everything is doing what it is suppose to do
-(except our ICE).
+> but I compile shell with shared labrary, it use ld.so.1 and libc.so.6
+> The problem is ld.so.1 can't found libc.so.6
+> The error message is this :
+> 'error in loading shared libraries: libc.so.6: cannot open shared object
+> file: No such file or directory'
 
-        Thanks,
+In order to find libc.so.6 on the host, I found that I needed to edit
+$prefix/powerpc-linux/lib/libc.so to use an absolute path to refer to
+$prefix/powerpc-linux/lib/libc.so.6.  For some reason, gcc wouldn't find it
+otherwise, even when I specified --rpath.
 
-        Conn Clark
+Next, to ensure that the dynamic linker could find libc.so.6 in the right
+place on the target, I edited $prefix/lib/gcc-lib/powerpc-linux/2.95.2/specs
+to add this right after -dynamic-linker:
+    --rpath /lib --rpath-link /opt/gcc-2.95.2/powerpc-linux/lib
 
+Good luck,
+Graham
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
