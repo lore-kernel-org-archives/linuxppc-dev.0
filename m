@@ -1,46 +1,42 @@
-Message-Id: <200005312131.XAA21692@denx.local.net>
-To: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: EST SBC8260 & abatron 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 31 May 2000 16:25:43 EDT."
-             <7283DE19D141D111AD0E00A0C95B195502581D61@mail2.aiinet.com>
-Date: Wed, 31 May 2000 23:31:27 +0200
+Message-ID: <39358E65.145F7EA3@embeddededge.com>
+Date: Wed, 31 May 2000 18:12:53 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Steve Rossi <srossi@ccrl.mot.com>
+CC: Dan Malek <dan@netx4.com>,
+        Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: allocating non-cacheable regions
+References: <39104A07.D997B6C5@ccrl.mot.com> <3910838C.986942D6@embeddededge.com> <39357BC5.A0B3E713@ccrl.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <7283DE19D141D111AD0E00A0C95B195502581D61@mail2.aiinet.com> you wrote:
->
-> I'm having trouble accessing the upper 8MB of the 16MB SDRAM SIMM on this
-> board.
-> I'm wondering if I don't have something configured wrong in my BDI2000
-> config file.
+Steve Rossi wrote:
 
-Although I don't have a 8260 here to test, you could send me your BDI2000
-config file.
+> ....does setting the _PAGE_NO_CACHE flag
+> for a page table entry also invalidate any cached data for that page?
 
-BTW - which firmware version are  you  running?  Abatron  implemented
-some Linux-friendly extensions lately...
+No.  It only ensures uncached behavior when the TLB is loaded.
 
-> Would anyone care to send me one they're using that works?
+> I am observing a write-though behavior when I write to addresses in
+> the _PAGE_NO_CACHE page but when I read from addresses marked
+> as _PAGE_NO_CACHE it appears to be retrieving data from the cache
+> not from memory. Is this expected behavior?
 
-Is a MPC8xx file of any uise to you?
+That's a rhetorical, question, right :-)?  If not....of course that
+isn't correct.
 
-> Also, we're trying to load the linux kernel into this system.
-> How are the folks out there doing that?  Via ftp?  Via a bootloader on the
-> 2MB FLASH
-> chip on the board tied to /CS0?  What exactly?
+> .... How can I make it so that
+> reads as well as writes to a particular page bypass the cache?
 
-Well, why don't you use your BDI2000 to load the image, or to load it
-and burn it to FLASH? You already have a BDI, so use it...
+You need to invalidate the data cache for this address and the TLB
+entry for this address when you set the flag.  Those drivers in your
+example get away with it because the caches/TLB have been invalidated
+and not yet touched at this point.  You also need to ensure you are not
+multiple mapping the same physical address....
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The Gates in my computer are AND, OR and NOT; they are not Bill.
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
