@@ -1,38 +1,37 @@
-To: rekha gvv <rekhagvvc@yahoo.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ramdisk !!! 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 25 Oct 2002 02:11:52 PDT."
-             <20021025091152.95453.qmail@web8005.mail.in.yahoo.com>
-Date: Fri, 25 Oct 2002 12:05:40 +0200
-Message-Id: <20021025100545.45DA71014C@denx.denx.de>
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061B00@exchwenz01.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: "'caixupeng'" <edmoon@huawei.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: who have  ported  linux to  ibm embedded 440GP ?
+Date: Sat, 26 Oct 2002 04:09:29 +1300
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20021025091152.95453.qmail@web8005.mail.in.yahoo.com> you wrote:
->
->       LINUX IS BOOTING ON MY FADS BOARD!!!!!!!!!!
+As you are already used to paying money I suggest paying a consultant a lot
+of MONEY and let him do it for you.  I'll be happy to do the job for the
+right price :):):):):):):):):):):)
 
-Congrats.
 
-> Thanks to all who gave me hints!!!!!
-> Now i want to create my own ramdisk image to use in
-> the kernel ..can anybody tell me how to go abt this??
+Rod
 
-See for example our Simple Embedded Linux Framework at
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
+ -----Original Message-----
+From: 	caixupeng [mailto:edmoon@huawei.com]
+Sent:	Thursday, October 24, 2002 6:05 PM
+To:	linuxppc-embedded@lists.linuxppc.org
+Subject:	who have  ported  linux to  ibm embedded 440GP ?
 
-Best regards,
 
-Wolfgang Denk
+I have a 440GP board (ebony) , and develop a PrPMC board also.
+they are running vxworks, but I want port linux to it .
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Quote from the Boss... "I didn't say it was your fault.  I said I was
-going to blame it on you."
+who can guide me?
+
+by the way , I can't access ppcboot.sourceforge.net.
+Is there another mirror site ?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
