@@ -1,29 +1,38 @@
-Message-ID: <3BA8C207.79FFF7CD@prodys.net>
-Date: Wed, 19 Sep 2001 18:04:24 +0200
-From: Pedro Parrilla <pparrilla@prodys.net>
+Message-ID: <35C119252057D511BB9F0003476BF8A208E59E@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Linux on PPC (Embedded custom board)
+Date: Wed, 19 Sep 2001 09:11:59 -0700
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problems with remote debugging on MBX860
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hello!
+Hi,
 
-    I am debugging  a remote target (Hard Hat Linux on a MBX860) from my
+I need to bring up linux on PPC 750.
 
-host (Red Hat Linux 7.0 on x86 PC) with ppc_8xx_gdb(cross-dev). I got to
-connect both with
-'target extended-remote' directive in the host, and with gdbserver in
-the target, gdb can do STEP,RUN...and the like, but I can't see the
-variables values. If I try to print any local variable GDB response is
-'incomplete type'. I've compiled with ppc_8xx-gcc and the 'g' option and
-I've  loaded the program in GDB with file 'program'...I don't Know what
-more I should do...Any bad
-configuration?
+I have experience with ARM linux, I am new to PPC linux. Can any one point
+me to where I can download the source patches for the latest releases, cross
+compiler from x86 to PPC target.
 
- Thanks.
+I went through archive's and tried using bitkeeper. I got some code cloned
+on to my computer using....
+bk clone bk://ppc.bkserver.net/linuxppc_2_4 /home/siva/ppc/src
 
+One Interesting thing I found was.. all the files are in directory /SCCS and
+also has a prefix "s."  May be this is fine... but I don't understand how to
+take care of things here... How to make sure all the include files are
+available for routines when 'make' is executed, etc. Can some one shed some
+light on this to me. I would be so thankful.
+
+Further, I need a cross compiler... Is there any place where I can download
+the precompiled version and use it for x86 host and PPC target?.
+
+All your hints would be helpful for me. Thanks in advance.
+
+-- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
