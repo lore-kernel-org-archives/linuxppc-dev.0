@@ -1,24 +1,31 @@
-From: Keith Owens <kaos@ocs.com.au>
-To: Gabriel Paubert <paubert@iram.es>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Where does ppc define __start___ksymtab? 
-In-reply-to: Your message of "Thu, 03 Aug 2000 14:01:44 +0200."
-             <Pine.HPX.4.10.10008031350200.9070-100000@gra-ux1.iram.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 03 Aug 2000 22:27:39 +1000
-Message-ID: <31770.965305659@ocs3.ocs-net>
+Message-ID: <39896582.F51504B4@amulet.co.jp>
+Date: Thu, 03 Aug 2000 21:28:50 +0900
+From: Hollis Blanchard <hollis@amulet.co.jp>
+MIME-Version: 1.0
+To: Martin Costabel <costabel@wanadoo.fr>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: initscript logging (was rtc again...)
+References: <200008030957.KAA17120@hyperion.valhalla.net> <39895E55.E7659D16@wanadoo.fr>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Keith Owens wrote
->I'm trying to track down where the extra .bss like data is coming from.
->I will mail the list when I find something.
+Martin Costabel wrote:
+>
+> But then I admit don't understand what the timestamps in log/messages
+> mean. They certainly don't indicate the time when the actions happened.
+> The kernel messages have later timestamps than the rc.sysinit actions.
+> And in 2.4.x the order of these messages is completely different from
+> the one in 2.2.x.
 
-It turned out to be COMMON.  Adding "*(COMMON)" to the .bss definition
-put everything back to the original size.  That just means that
-arch/i386/vmlinux.lds is well tuned already, no orphan sections.
+Actually I was just reading about that at
+http://www.redhat.com/knowledgebase/initscripts. Apparently all the messages
+are buffered by a fake syslogd until root is remounted rw, at which point
+the syslog buffer, the kernel dmesg buffer, and additional init script
+activity is all send to the real syslogd and klogd (and logged to disk) at
+the same time. Understandably, things get mixed up a little.
 
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
