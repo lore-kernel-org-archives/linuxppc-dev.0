@@ -1,51 +1,34 @@
-From: benh@kernel.crashing.org
-To: <linuxppc-dev@lists.linuxppc.org>,
-	Christopher Murtagh <christopher.murtagh@mcgill.ca>
-Subject: Re: SUNGEM config
-Date: Wed, 13 Feb 2002 11:59:51 +0100
-Message-Id: <20020213105951.10807@mailhost.mipsys.com>
-In-Reply-To: <Pine.LNX.4.33.0202121351140.23572-100000@blues.wcg.mcgill.ca>
-References: <Pine.LNX.4.33.0202121351140.23572-100000@blues.wcg.mcgill.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 13 Feb 2002 22:14:50 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Werner Almesberger <wa@almesberger.net>
+Cc: benh@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: performance monitor exceptions
+Message-ID: <20020213111450.GF3886@krispykreme>
+References: <20020211233730.E5079@almesberger.net> <20020212125502.32396@mailhost.mipsys.com> <20020212193317.F5079@almesberger.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020212193317.F5079@almesberger.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+
+> Bingo ! That seems to be the one:
 >
-> Ben,
+> http://www.mot.co.jp/SPS/html/lit/pdf/mpc7410pns_rev0.pdf
 >
-> A while back when the question was asked as to why we should use SUNGEM
->instead of BMAC or GMAC, you said something to the affect that it offers
->config options. I read through the pdf from the kernel config help and it
->mentions a ge.conf file. So, if I got this right, I simply create an
->/etc/ge.conf file and this will allow me to force XBaseT and Auto or
->forced full/half duplex?
-
-I'm not sure what ge.conf is. All I know is that the driver can be
-set to various forced speeds via the ethtool tool, the config file
-thing depends on whatever software package you have I don't know
-about.
-
-> I've been trying it with my iBook2 and 2.4.18pre8 and so far it works
->very well. However, when my iBook is not connected, it keeps on try to
->negotiate an eth0 connection (/var/log/messages):
+>   #5:
+>   Description: Consecutive Performance Monitor, Decrementer,
+>   or Thermal Management Interrupts may become non-recoverable.
 >
->Feb  7 15:42:53 shiva kernel: eth0: switching to forced 10bt
->Feb  7 15:43:14 shiva kernel: eth0: switching to forced 100bt
->Feb  7 15:43:21 shiva kernel: eth0: switching to forced 10bt
->Feb  7 15:43:41 shiva kernel: eth0: switching to forced 100bt
+>   Work-Around: Avoid enabling any combination of
+>   Performance Monitor, Decrementer, or Thermal Management
+>   Interrupts at the same time.
 
-Yes, that's normal. Some hubs/switches won't properly work with
-autoneg, so the kernel has to try forced speeds. The proper way
-to turn that off is to shut down the interface using ifconfig
-(or /etc/init.d/network).
+Thats rather ugly :( BTW I have run kernel profiling off the performance
+monitor exception on ppc64 which has been very useful (it allowed us
+to profile inside interrupt disabled regions)
 
-I know there are some laptop specific tools that monitor the link
-and do the shutdown of the interface when there is no link but I
-don't have any precise pointer at hand.
-
-Ben.
-
+Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
