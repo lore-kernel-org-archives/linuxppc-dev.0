@@ -1,31 +1,54 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20040426180827.269CDC109F@atlas.denx.de>
-Subject: Re: libjpeg
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFBFC4343C.44050622-ON85256E82.006591B5-85256E82.0065E71E@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Mon, 26 Apr 2004 14:33:02 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B87C883@zcard0k8.ca.nortel.com>
+From: "Andrew Williams" <awilliam@nortelnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: FEC support for 8260 in kernel 2.4.25
+Date: Mon, 26 Apr 2004 14:48:59 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > I'm trying to build Qtopia-free 1.7 using ELDK 3.0 and I noticed it
-does
-> > not contain a jpeg library which is required by Qtopia/QPE.  Do you
-know
-> > anyone who've already built that for the ELDK?  Otherwise I'll have to
-> > build it myself.
->
-> Try it out; it should be pretty straightforward.
+-- Fourth Attempt.. hoping to have disabled HTML output in Outlook --
 
-Is there an idiot's guide to run the configure script to generate a
-makefile that uses a cross-compiler instead of the native gcc.  I like to
-build it from my ix86 box.  I'm getting a headache from googling...
+Not just the GPIO pins, be sure to note the different
+clock sources. (Which in the code is clearly labeled as
+"This is board specific", but then goes on to declare
+constant values in the common fcc_enet.c file).
 
-David
+  This bothered me enough that I changed the fcc_enet
+files from:
 
+#define PC_F1RXCLK      ((uint)0x00000800)
+#define PC_F1TXCLK      ((uint)0x00000400)
+#define CMX1_CLK_ROUTE  ((uint)0x3e000000)
+
+to
+
+#ifndef PC_F1RXCLK
+#define PC_F1RXCLK      ((uint)0x00000800)
+#endif
+#ifndef PC_F1TXCLK
+#define PC_F1TXCLK      ((uint)0x00000400)
+#endif
+#ifndef CMX1_CLK_ROUTE
+#define CMX1_CLK_ROUTE  ((uint)0x3e000000)
+#endif
+
+ (repeat for all 3 interfaces)
+
+I know it looks a bit kludgy, but you can now declare board
+specific values in your platform/<platform>.h file, and have these
+override the current default hard coded values. Furthermore this
+change won't break any existing platforms. :o)
+
+One other potential 'gotcha' is if you have different FPSMR values
+depending on the interface. The current code (2.4.22) limits you to
+a single value that applies to all three interfaces. I worked around
+this one, by adding a field to 'fcc_info' for the fpsmr. Then in the
+declaration of 'fcc_ports' I once again used conditional
+compiles to allow FPSMR values in the platforms file to override
+the default FCC_PSMR_ENCRC value.
+
+
+Andrew
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
