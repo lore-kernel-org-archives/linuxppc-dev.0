@@ -1,45 +1,46 @@
-Message-ID: <3DA15DC6.9000808@intracom.gr>
-Date: Mon, 07 Oct 2002 13:11:18 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20021007112640.38961.qmail@web8005.mail.in.yahoo.com>
+Date: Mon, 7 Oct 2002 04:26:40 -0700 (PDT)
+From: rekha gvv <rekhagvvc@yahoo.co.in>
+Subject: boot linux on fads mpc860
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: How to submit support for a new board
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+Hello,
+I am new to this mailing list.
+I am trying to boot linux from Fads MPC860 powerpc
+board I have compiled the linux kernelversion
+linux-2.4.4-2002-03-21 .Also i have put the PPcboot
+1.1.6 into the board.now i dont know how to download
+this linux kernel into this board.Should i do any
+sttings with ppcboot .please do let me know
+i am using the tftpboot command but then
+wheni tell go 100000 it tells
 
-We have a board based on a MPC850SR that I want to submit
-for inclusion to the main tree.
-Currently we work on the stable 2.4.19 branch.
+## starting application at 0x00100000
 
-The thing is that this board in kind of peculiar.
+thenit hangs ..
+i have tried to download the vmlinux file also
+converted that to binary format and also tried but it
+gives the same problem
+one more thing is when i used the BOOTM command
+it used to give
 
-For example there's a driver for the multichannel controller
-so that means that no serial port is available after booting.
-That required to include the netconsole patch by Ingo
-and make it work without being a module.
+##Booting application at 0x00100000
+Bad magic number
 
-Given into account the scarcity of the dual port RAM under
-such conditions I've added support for a malloc like
-interface for DPRAM use, after taking into account
-the uCode patches and any holes left over by the
-enabled peripherals.
-
-As you can see there is no chance in hell of getting
-these included as they are.
-
-How should I go about this given the feature freeze
-for 2.6; but the 2.6 tree is too unstable for us.
-
-Any suggestions?
-
+I dont understand what to do.so kindly please help
 Regards
+Rekha
+rekhagvvc@yahoo.co.in
 
-Pantelis Antoniou
-Intracom S.A. Greece
 
+
+
+Faith Hill - Exclusive Performances, Videos & More
+http://faith.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
