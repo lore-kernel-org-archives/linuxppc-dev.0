@@ -1,44 +1,49 @@
-Subject: Re: [linux-usb-devel] Re: RE : MPC5200Lite PCI & IRQ
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Brownell <david-b@pacbell.net>,
-	Bertrand Baudet <bbaudet@lacie.com>, Greg KH <greg@kroah.com>,
-	linux-usb-devel@lists.sourceforge.net,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1088258564.3007.8.camel@localhost.localdomain>
-References: <5A96167EBCEA8440A48790B5419953AE13C46A@gr-lafayette.lacie.com>
-	 <1087554029.19489.3149.camel@hades.cambridge.redhat.com>
-	 <20040619000118.GB24902@kroah.com>  <40DD8710.8030100@pacbell.net>
-	 <1088258564.3007.8.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 27 Jun 2004 11:09:07 +0100
-Message-Id: <1088330947.4268.8.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Sun, 27 Jun 2004 18:46:20 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: loading the kernel and root FS separately from flash?
+Message-ID: <Pine.LNX.4.60.0406271836300.10210@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, 2004-06-26 at 15:02 +0100, Alan Cox wrote:
-> There are a lot of drivers that assume 0 means no IRQ, including some
-> big x86 non-PC systems. Remember however that dev->irq is an OS private
-> cookie. In the x86 case for example we add 16 to APIC directed
-> interrupts both to split IRQs out and to avoid this problem.
+   what is (hopefully) a simple question, before i invest the time to
+see whether it works.
 
-There aren't _that_ many drivers which have this bug; certainly not
-non-ISA drivers. Even when you consider irq_t to be an OS-private
-cookie, that doesn't excuse this brokenness on the part of drivers --
-they need fixing.
+   currently, i have a modified rpxlite board, with two flash chips,
+each 8M -- one "system" flash, one "user" flash.  the system flash has
+the boot loader (embedded planet's planet core), and the loadable
+kernel+rootfs image.  this bootable image is only 2.5M in size, so
+there's lots of leftover space in that system flash chip.
 
-> So if your board has an IRQ 0 and it is a problem - just change your
-> numbering scheme.
+   with this configuration, it's obviously not possible to update files
+or directories in the bootable image individually -- it's just one big
+zImage.inited image.
 
-That's a workaround, not a fix. Not really Linux style.
+   but is it feasible to redefine the layout of that flash chip and
+take, say, 4M of it and create a JFFS2 filesystem, then put the root
+filesystem in there uncompressed?  (assuming, of course, that the
+rootfs fits in 4M.)  theoretically, then, i could have system flash
+with the bootloader (only a couple hundred K), the bootable kernel (at
+most 2M in our case), then 4M of JFFS2.  that would give me the
+freedom to update the basic root filesystem if i had to.  we could
+boot the kernel as we're doing now, and i'm assuming it wouldn't be
+difficult to have the kernel know to copy the JFFS2-based root
+filesystem into RAM, mount it, and take it from there.
 
-Personally, I think we want to stop even thinking of it as a numbering
-scheme. IRQs are a tree, not a flat array.
+   the current flash layouts are defined in the file
+drivers/mtd/maps/rpxlite.c, and we've set it up so that the other 8M
+"user" flash is associated with /dev/mtdblock/0.  my thought was to
+just define half of system flash as JFFS2, at which point it would be
+accessible as /dev/mtdblock/1 (depending on the definition order, of
+course).
 
---
-dwmw2
+   is this possible?  anyone done it this way, and can tell me what
+pitfalls i have to watch for?  thanks.
 
+rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
