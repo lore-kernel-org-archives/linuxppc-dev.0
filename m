@@ -1,20 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7C912BDA0
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15605.mail.cnb.yahoo.com (web15605.mail.cnb.yahoo.com
+	[202.165.102.59]) by ozlabs.org (Postfix) with SMTP id 94D9D2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Oct 2004 07:18:57 +1000 (EST)
-In-Reply-To: <20041015205903.1653.qmail@web53804.mail.yahoo.com>
-References: <20041015205903.1653.qmail@web53804.mail.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1FB8DAAD-1EF0-11D9-BD1F-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 15 Oct 2004 17:21:05 -0400
-To: annamaya <annamaya@yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Floating point error on a MPC8280 based board
+	Sat, 16 Oct 2004 10:16:54 +1000 (EST)
+Message-ID: <20041016001646.2446.qmail@web15605.mail.cnb.yahoo.com>
+Date: Sat, 16 Oct 2004 08:16:46 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: annamaya <annamaya@yahoo.com>, Dan Malek <dan@embeddededge.com>,
+	Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20041014181059.21986.qmail@web53803.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: Sam Song <samlinuxppc@yahoo.com.cn>, linuxppc-embedded@ozlabs.org
+Subject: Re: Booting Linux using a PlanetCore BootLoader 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,26 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+annamaya <annamaya@yahoo.com> wrote：
+> lists. And yes, forgot to say hi to Wolfgang Denk,
+> another one of my mentors. Hey Denk.
+> 
 
-On Oct 15, 2004, at 4:59 PM, annamaya wrote:
+I also have the same feeling as you. :-)
 
-> When I try to reboot my system on a MPC8280 eval
-> board, I see the floating point error. Does anyone
-> know why is this happening?
+So why not feed back your work to DENX? There is no
+other appropriate public place to receive the 82xx and
+8xx 2.4 patch, I am afraid. 
 
-It's trying to jump to a restart location in the boot rom.
-It fetches a bad instruction that attempts to execute
-as a floating point instruction.
+BTW, I also have a patch against denx 2_4_devel on
+RPXlite, I wonder whether it's acceptable to send the
+patch to this list.
 
-> bash-2.05b# reboot -f
-> Restarting system
-> floating point used in kernel (task=cf458000,
-> pc=ff000104)
+=====
+Best regards,
 
-This program counter is a typical warm restart boot
-rom location.  Change the kernel reboot code to jump
-to the proper place in your boot rom or force a restart
-in some way.
+Sam
 
-
-	-- Dan
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
