@@ -1,64 +1,47 @@
-Mime-Version: 1.0
-Message-Id: <a05001901b5e90799c6e8@[192.168.240.10]>
-Date: Sat, 16 Sep 2000 13:30:45 +0200
+From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+Reply-To: Thomas Graichen <graichen@innominate.de>
+Subject: Re: XFree86 4.0 auf imac dv
+Date: 16 Sep 2000 14:05:33 GMT
+Message-ID: <news2mail-8pvund$d4i$1@mate.bln.innominate.de>
+References: <news2mail-8psnl8$1gb$5@mate.bln.innominate.de>
+Reply-To: thomas.graichen@innominate.de
 To: linuxppc-dev@lists.linuxppc.org
-From: Alain RICHARD <alain.richard@equation.fr>
-Subject: NFSD module bug on ppc patch
-Cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Paul Mackerras <paulus@linuxcare.com.au>
-Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi
+Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de> wrote:
 
-this is a simple patch to a long standing bug : the kernel NFSD
-server is unable to load when compiled as a module and fails with the
-error :
+> does anyone here have XFree86 4 running suscessfully on a imac dv (or
+> blueberry which should be basically the same)? - i ask because i tried
+> the DRI test server from michael daenzer and get problems with the
+> screen: it shows only the left half and also shows this half again
+> on the right side - the mousecursor is moving fine over the full
+> screen btw.
 
-nfssvc: Function not implemented
+> some more details about the setup: latest paulus kernel, XF86Config
+> standard for a r128 card (the card is an 8mb r128 rl) - if you need
+> any more information please let me know ...
 
-This bug is not present on the i386 side.
+> so has anyone else seen this too or has it working on a similar
+> machine ... i just wanted to know this before i start looking
+> deeper
 
-I have tracked the problem in arch/ppc/kernel/misc.S : there was a
-conditional compilation that disables the nfsservctl call in case the
-CONFIG_NFSD is not enabled. In the case of a module, it is disabled
-(and CONFIG_NFSD_MODULE is enabled). But there is no need for such a
-conditional compilation because the sys_nfsservctl is always defined
-in all the cases (no NFSD, NFSD in kernel and NFSD as a module).
+ok - it works with an own built tree of XFree86 4.0.1 plus the
+ppc additions mentioned at linuxppc.org
 
-So the fix is very simple (this is a patch to the current
-ppc.samba.org::linux-pmac-stable 2.2.17 kernel, but a similar patch
-is necessary for the 2.2.18-benh kernel and 2.4.0-test8 devel kernel).
+question: is all the r128 ppc dri stuff in that tree (rsync
+penguinppc.org::xfree86-pmac) too or are there any extra patches
+required to get it working?
 
-Paulus, let me know if you forward this fix to alan cox or if I
-should to it myself.
+a lot of thanks in advance
 
-Regards,
+t
 
-
-[root@sol linux-pmac-stable]# diff -u arch/ppc/kernel/misc.S.orig
-arch/ppc/kernel/misc.S
---- arch/ppc/kernel/misc.S.orig Sat Sep 16 13:16:44 2000
-+++ arch/ppc/kernel/misc.S      Sat Sep 16 13:16:59 2000
-@@ -944,11 +944,7 @@
-         .long sys_getresuid     /* 165 */
-         .long sys_query_module
-         .long sys_poll
--#ifdef CONFIG_NFSD
-         .long sys_nfsservctl
--#else
--       .long sys_ni_syscall
--#endif
-         .long sys_setresgid
-         .long sys_getresgid     /* 170 */
-         .long sys_prctl
 --
--------------------------------------------------------
-Alain RICHARD <mailto:alain.richard@equation.fr>
-EQUATION SA <http://www.equation.fr/>
-Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
-Applications client/serveur, ingénierie réseau et Linux
+thomas.graichen@innominate.de
+technical director                                       innominate AG
+clustering & security                                networking people
+tel: +49.30.308806-13  fax: -77                   http://innominate.de
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
