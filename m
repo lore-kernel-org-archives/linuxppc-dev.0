@@ -1,67 +1,34 @@
-Message-Id: <200005240551.HAA00630@piglet.grunz.lu>
-Date: Wed, 24 May 2000 07:51:06 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: partition size funkiness
-To: ericpeden@homemail.com
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <B550A5BA.464A%ericpeden@homemail.com>
+To: daenzerm@student.ethz.ch
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: memory pb on Pismo... rumors or reality...
+References: <x8qbt1x70gt.fsf@alf.laas.fr> <392AA6CF.69A69F4C@relog.ch>
+From: Francois Felix Ingrand <felix@ingrand.net>
+Date: 24 May 2000 08:54:46 +0200
+In-Reply-To: Michel Dänzer's message of "Tue, 23 May 2000 17:42:07 +0200"
+Message-ID: <x8qd7mcmo95.fsf@alf.laas.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+Michel Dänzer <daenzer@relog.ch> writes:
 
-On  23 May, this message from Eric Peden echoed through cyberspace:
-> I've begun to suspect that my problems are due to the method I used to
-> "re-partition" the drive; I simply used pdisk to re-arrange the partition
-> map, thus doing a non-destructive repartitioning.
+> Francois Felix Ingrand wrote:
+>
+> > I plan to add some mem to my pismo (64->192)... should I fear Linux crashs?
+>
+> I've experienced a hard lockup on Sunday running a self-compiled 2.2.15
+> (rsync'd on Sunday from pmac-stable) on my 400 Mhz Pismo with 64 MB RAM. The
 
-I'm sure that is your problem right there. I bet 1.4 gig was the size of
-your root partition before extending the partition?
+But this is not related to the memory pb... as you have 64 meg only. My
+question was more about the risk of "numerous" chrashes on a machine with 2
+memory banks. (as this was reported here a while ago).
 
-> The cause is different, and of course no solution is offered, but the
-> symptoms are the same. Is partition information stored somewhere other than
-> the partition map? Is df just reading this information incorrectly, or is
-> the extra space on /dev/sda7 truly unusable? Is there some low-level
-> information I could modify to properly reflect the size of root?
-
-Partition information is only stored in the partition map, however no
-partition is usable as-is. You need to create a filesystem on a
-partition before it is usable to any OS (well, in general at least ;-).
-Your problem is that you didn't recreate the filesystem when you made
-your partition larger. It worked for you (sortof...) only because the
-starting block of your partition:
-
-> 7:     Apple_UNIX_SVR2 /                        5529600 @ 2098358 (  2.6G)
-this number:                                                ^^^^^^^
-
-stayed at the same place as one of your previous partitions.
-
-The only solution is to back up your data again, and re-create the
-filesystem on all affected partitions:
-
-mke2fs /dev/sda7 (your new root partition)
-
-If you moved your swap partition as well, you might want to do a:
-
-mkswap /dev/sda8
-
-but I've run successfully without that part.... It can't hurt, though.
-
-Hope this helps, and good luck
-
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+--
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+"Par quelle bizarrerie en arrive-t-on à payer les retraites par capitalisation
+ des américains avec les gains de productivités des salariés français?"
+http://www.ingrand.net/felix                  http://www.laas.fr/~felix
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
