@@ -1,39 +1,58 @@
-Subject: Re: Problems with dma_alloc_coherent()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: Paul Mackerras <paulus@samba.org>,
-	John Whitney <jwhitney-linuxppc@sands-edge.com>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1080977598.7999.791.camel@newt>
-References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com>
-	 <20040401100546.A27472@home.com>
-	 <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com>
-	 <20040401181926.GA3630@gate.ebshome.net> <406C658E.10500@embeddededge.com>
-	 <20040401185956.GB3786@gate.ebshome.net>
-	 <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com>
-	 <20040401191715.GC3786@gate.ebshome.net> <406C8104.9050609@acm.org>
-	 <20040401220018.GA4130@gate.ebshome.net>
-	 <D7F4C570-84C5-11D8-9FF0-000A95A07384@sands-edge.com>
-	 <16493.61242.908659.82167@cargo.ozlabs.ibm.com>
-	 <1080977598.7999.791.camel@newt>
-Content-Type: text/plain
-Message-Id: <1081119379.1285.118.camel@gaston>
-Mime-Version: 1.0
-Date: Mon, 05 Apr 2004 08:56:19 +1000
+Message-ID: <4070F71C.80201@intracom.gr>
+Date: Mon, 05 Apr 2004 09:05:16 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: David Edelsohn <dje@watson.ibm.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: [OT?] Unimplemented instructions on a G5?
+References: <406C1E50.1010806@intracom.gr>  <EC443756-84BA-11D8-89ED-000A95A4DC02@kernel.crashing.org> <200404021549.i32FnZT35302@makai.watson.ibm.com>
+In-Reply-To: <200404021549.i32FnZT35302@makai.watson.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Actually, they are extremely common in the embedded market. On my desk I
-> have three Linux systems with this class of DMA engine: an MPC107/7410,
-> an ARM9 from Cirrus, and an ARM9 from TI. Most system-on-a-chip
-> processors have DMA engines which can move between any two of memory,
-> PCI, and internal peripherals.
+David Edelsohn wrote:
 
-Right, but in this case, those systems also usually don't have an iommu
-and usually provide a simple 1:1 mapping between memory and bus addresses ;)
+>>>The offending instruction is the seemingly harmless:
+>>>
+>>>mcrxr crX
+>>>
+>>>(Move to condition register from XER).
+>>>
+>>>Does anyone have any idea if IBM left this instruction
+>>>unimplemented. Searching the docs I've found nothing.
+>>>
+>>>
+>
+>
+>
+>>>>>>Segher Boessenkool writes:
+>>>>>>
+>>>>>>
+>Segher> Well, the newest PowerPC architecture docs say that it is
+>Segher> an optional insn, i.e., not all cpus might implement it.
+>
+>Segher> I can't say whether the 970 implements it or not.
+>
+>	mcrxr is obsolete and not implemented in PPC970.  Executing the
+>instruction will result in an illegal instruction trap.
+>
+>David
+>
+>
+>
+Well this much is obvious. Where can I find a list
+of these obsolete instructions so that I can
+implement them in the illegal instruction handler?
 
-Ben.
+The IBM documentation for the 970 declares these instructions
+as the previous architecture papers, i.e. as nothing special.
+
+Regards
+
+Pantelis
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
