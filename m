@@ -1,18 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C853C67A6F
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jan 2005 16:49:22 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Mon, 24 Jan 2005 16:48:57 +1100
-Message-Id: <1106545738.5210.23.camel@gaston>
+Return-Path: <ibookdebian@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
+	by ozlabs.org (Postfix) with ESMTP id 3BA1967A95
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jan 2005 21:52:05 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id i8so448298rne
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jan 2005 02:52:04 -0800 (PST)
+Message-ID: <6ecd913805012402451b425320@mail.gmail.com>
+Date: Mon, 24 Jan 2005 11:45:24 +0100
+From: David Medina <ibookdebian@gmail.com>
+To: linuxppc-dev@ozlabs.org
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Sven Luther <luther@gluck.debian.org>
-Subject: [PATCH] ppc32: Add support for Pegasos machines
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Java/eclipse in PPC
+Reply-To: David Medina <ibookdebian@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,311 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
+en_EN: Hello list,
+es_ES: Hola lista,
 
-This patch, mostly from Sven Luther and reworked by me, adds support for
-Pegasos machines to the ppc32 arch. The patch contains all of the arch
-code. I'll send separately a few driver changes as well.
+en_EN: I have a Ibook G4 (the last - 23.01.05) where are installed
+Debian Ubuntu 4.01 to PPC (logical)
+es_ES: Dispongo de un Ibook G4 (el ultimo - 23.01.05) donde corre una
+Debian ubuntu 4.01 para ppc (logicamente).
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+en_EN: I want to install Java and Eclipse to development. The SDK of
+Java is "easy" because can be downloaded to www.ibm.com the version
+"1.4.2 SR1"
+es_ES: Desearia instalar Java y Eclipse para desarrollo. El SDK de
+java esta "sencillo" debido a que se puede descargar facilmente de
+www.ibm.com la version "1.4.2 SR1"
 
+en_EN: But... How i can install eclipse IDE?=BF
+es_ES: Pero... el eclipse como puedo conseguirlo?=BF.
 
-Index: linux-work/arch/ppc/syslib/prom_init.c
-===================================================================
---- linux-work.orig/arch/ppc/syslib/prom_init.c	2005-01-24 11:42:36.000000000 +1100
-+++ linux-work/arch/ppc/syslib/prom_init.c	2005-01-24 15:45:43.000000000 +1100
-@@ -810,6 +810,9 @@
- 	char *p, *d;
-  	unsigned long phys;
- 	void *result[3];
-+	char model[32];
-+	phandle node;
-+	int rc;
- 
-  	/* Default */
-  	phys = (unsigned long) &_stext;
-@@ -866,11 +869,20 @@
- 
- 	klimit = (char *) (mem - offset);
- 
--	/* If we are already running at 0xc0000000, we assume we were
--	 * loaded by an OF bootloader which did set a BAT for us.
--	 * This breaks OF translate so we force phys to be 0.
--	 */
--	if (offset == 0) {
-+	node = call_prom("finddevice", 1, 1, "/");
-+	rc = call_prom("getprop", 4, 1, node, "model", model, sizeof(model));
-+	if (rc > 0 && !strncmp (model, "Pegasos", 7)
-+		&& strncmp (model, "Pegasos2", 8)) {
-+		/* Pegasos 1 has a broken translate method in the OF,
-+		 * and furthermore the BATs are mapped 1:1 so the phys
-+		 * address calculated above is correct, so let's use
-+		 * it directly.
-+		 */
-+	} else if (offset == 0) {
-+		/* If we are already running at 0xc0000000, we assume we were
-+	 	 * loaded by an OF bootloader which did set a BAT for us.
-+	 	 * This breaks OF translate so we force phys to be 0.
-+	 	 */
- 		prom_print("(already at 0xc0000000) phys=0\n");
- 		phys = 0;
- 	} else if ((int) call_prom("getprop", 4, 1, prom_chosen, "mmu",
-Index: linux-work/arch/ppc/platforms/chrp_pci.c
-===================================================================
---- linux-work.orig/arch/ppc/platforms/chrp_pci.c	2005-01-24 11:42:35.000000000 +1100
-+++ linux-work/arch/ppc/platforms/chrp_pci.c	2005-01-24 15:52:23.000000000 +1100
-@@ -97,8 +97,10 @@
- rtas_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		 int len, u32 *val)
- {
-+	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
--		| ((bus->number & 0xff) << 16);
-+		| (((bus->number - hose->first_busno) & 0xff) << 16)
-+		| (hose->index << 24);
-         unsigned long ret = ~0UL;
- 	int rval;
- 
-@@ -111,8 +113,10 @@
- rtas_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		  int len, u32 val)
- {
-+	struct pci_controller *hose = bus->sysdata;
- 	unsigned long addr = (offset & 0xff) | ((devfn & 0xff) << 8)
--		| ((bus->number & 0xff) << 16);
-+		| (((bus->number - hose->first_busno) & 0xff) << 16)
-+		| (hose->index << 24);
- 	int rval;
- 
- 	rval = call_rtas("write-pci-config", 3, 1, NULL, addr, len, val);
-@@ -186,6 +190,22 @@
- 	iounmap(reg);
- }
- 
-+/* Marvell Discovery II based Pegasos 2 */
-+static void __init setup_peg2(struct pci_controller *hose, struct device_node *dev)
-+{
-+	struct device_node *root = find_path_device("/");
-+	struct device_node *rtas;
-+
-+	rtas = of_find_node_by_name (root, "rtas");
-+	if (rtas) {
-+		hose->ops = &rtas_pci_ops;
-+	} else {
-+		printk ("RTAS supporting Pegasos OF not found, please upgrade"
-+			" your firmware\n");
-+	}
-+	pci_assign_all_busses = 1;
-+}
-+
- void __init
- chrp_find_bridges(void)
- {
-@@ -195,7 +215,7 @@
- 	struct pci_controller *hose;
- 	unsigned int *dma;
- 	char *model, *machine;
--	int is_longtrail = 0, is_mot = 0;
-+	int is_longtrail = 0, is_mot = 0, is_pegasos = 0;
- 	struct device_node *root = find_path_device("/");
- 
- 	/*
-@@ -207,6 +227,10 @@
- 	if (machine != NULL) {
- 		is_longtrail = strncmp(machine, "IBM,LongTrail", 13) == 0;
- 		is_mot = strncmp(machine, "MOT", 3) == 0;
-+		if (strncmp(machine, "Pegasos2", 8) == 0)
-+			is_pegasos = 2;
-+		else if (strncmp(machine, "Pegasos", 7) == 0)
-+			is_pegasos = 1;
- 	}
- 	for (dev = root->child; dev != NULL; dev = dev->sibling) {
- 		if (dev->type == NULL || strcmp(dev->type, "pci") != 0)
-@@ -257,6 +281,10 @@
- 			hose->ops = &gg2_pci_ops;
- 			hose->cfg_data = p;
- 			gg2_pci_config_base = p;
-+		} else if (is_pegasos == 1) {
-+			setup_indirect_pci(hose, 0xfec00cf8, 0xfee00cfc);
-+		} else if (is_pegasos == 2) {
-+			setup_peg2(hose, dev);
- 		} else {
- 			printk("No methods for %s (model %s), using RTAS\n",
- 			       dev->full_name, model);
-@@ -275,5 +303,7 @@
- 		}
- 	}
- 
--	ppc_md.pcibios_fixup = chrp_pcibios_fixup;
-+	/* Do not fixup interrupts from OF tree on pegasos */
-+	if (is_pegasos != 0)
-+		ppc_md.pcibios_fixup = chrp_pcibios_fixup;
- }
-Index: linux-work/arch/ppc/platforms/chrp_time.c
-===================================================================
---- linux-work.orig/arch/ppc/platforms/chrp_time.c	2005-01-24 11:42:35.000000000 +1100
-+++ linux-work/arch/ppc/platforms/chrp_time.c	2005-01-24 15:43:37.000000000 +1100
-@@ -41,6 +41,8 @@
- 	int base;
- 
- 	rtcs = find_compatible_devices("rtc", "pnpPNP,b00");
-+	if (rtcs == NULL)
-+		rtcs = find_compatible_devices("rtc", "ds1385-rtc");
- 	if (rtcs == NULL || rtcs->addrs == NULL)
- 		return 0;
- 	base = rtcs->addrs[0].address;
-Index: linux-work/arch/ppc/platforms/chrp_setup.c
-===================================================================
---- linux-work.orig/arch/ppc/platforms/chrp_setup.c	2005-01-24 11:42:35.000000000 +1100
-+++ linux-work/arch/ppc/platforms/chrp_setup.c	2005-01-24 16:01:01.000000000 +1100
-@@ -37,6 +37,7 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/initrd.h>
-+#include <linux/module.h>
- 
- #include <asm/io.h>
- #include <asm/pgtable.h>
-@@ -68,6 +69,9 @@
- extern unsigned long pmac_find_end_of_memory(void);
- extern int of_show_percpuinfo(struct seq_file *, int);
- 
-+int _chrp_type;
-+EXPORT_SYMBOL(_chrp_type);
-+
- /*
-  * XXX this should be in xmon.h, but putting it there means xmon.h
-  * has to include <linux/interrupt.h> (to get irqreturn_t), which
-@@ -214,8 +218,33 @@
- }
- 
- 
--void __init
--chrp_setup_arch(void)
-+static void __init pegasos_set_l2cr(void)
-+{
-+	struct device_node *np;
-+
-+	/* On Pegasos, enable the l2 cache if needed, as the OF forgets it */
-+	if (_chrp_type != _CHRP_Pegasos)
-+		return;
-+
-+	/* Enable L2 cache if needed */
-+	np = find_type_devices("cpu");
-+	if (np != NULL) {
-+		unsigned int *l2cr = (unsigned int *)
-+			get_property (np, "l2cr", NULL);
-+		if (l2cr == NULL) {
-+			printk ("Pegasos l2cr : no cpu l2cr property found\n");
-+			return;
-+		}
-+		if (!((*l2cr) & 0x80000000)) {
-+			printk ("Pegasos l2cr : L2 cache was not active, "
-+				"activating\n");
-+			_set_L2CR(0);
-+			_set_L2CR((*l2cr) | 0x80000000);
-+		}
-+	}
-+}
-+ 
-+void __init chrp_setup_arch(void)
- {
- 	struct device_node *device;
- 
-@@ -232,6 +261,9 @@
- #endif
- 		ROOT_DEV = Root_SDA2; /* sda2 (sda1 is for the kernel) */
- 
-+	/* On pegasos, enable the L2 cache if not already done by OF */
-+	pegasos_set_l2cr();
-+
- 	/* Lookup PCI host bridges */
- 	chrp_find_bridges();
- 
-@@ -402,15 +434,17 @@
- 
- 	chrp_find_openpic();
- 
--	prom_get_irq_senses(init_senses, NUM_8259_INTERRUPTS, NR_IRQS);
--	OpenPIC_InitSenses = init_senses;
--	OpenPIC_NumInitSenses = NR_IRQS - NUM_8259_INTERRUPTS;
--
--	openpic_init(NUM_8259_INTERRUPTS);
--	/* We have a cascade on OpenPIC IRQ 0, Linux IRQ 16 */
--	openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
--			       i8259_irq);
-+	if (OpenPIC_Addr) {
-+		prom_get_irq_senses(init_senses, NUM_8259_INTERRUPTS, NR_IRQS);
-+		OpenPIC_InitSenses = init_senses;
-+		OpenPIC_NumInitSenses = NR_IRQS - NUM_8259_INTERRUPTS;
-+
-+		openpic_init(NUM_8259_INTERRUPTS);
-+		/* We have a cascade on OpenPIC IRQ 0, Linux IRQ 16 */
-+		openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
-+				       i8259_irq);
- 
-+	}
- 	for (i = 0; i < NUM_8259_INTERRUPTS; i++)
- 		irq_desc[i].handler = &i8259_pic;
- 	i8259_init(chrp_int_ack);
-@@ -450,6 +484,9 @@
- chrp_init(unsigned long r3, unsigned long r4, unsigned long r5,
- 	  unsigned long r6, unsigned long r7)
- {
-+	struct device_node *root = find_path_device ("/");
-+	char *machine = NULL;
-+
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/* take care of initrd if we have one */
- 	if ( r6 )
-@@ -464,12 +501,29 @@
- 	DMA_MODE_WRITE = 0x48;
- 	isa_io_base = CHRP_ISA_IO_BASE;		/* default value */
- 
-+	if (root)
-+		machine = get_property(root, "model", NULL);
-+	if (machine && strncmp(machine, "Pegasos", 7) == 0) {
-+		_chrp_type = _CHRP_Pegasos;
-+	} else if (machine && strncmp(machine, "IBM", 3) == 0) {
-+		_chrp_type = _CHRP_IBM;
-+	} else if (machine && strncmp(machine, "MOT", 3) == 0) {
-+		_chrp_type = _CHRP_Motorola;
-+	} else {
-+		/* Let's assume it is an IBM chrp if all else fails */
-+		_chrp_type = _CHRP_IBM;
-+	}
-+
- 	ppc_md.setup_arch     = chrp_setup_arch;
- 	ppc_md.show_percpuinfo = of_show_percpuinfo;
- 	ppc_md.show_cpuinfo   = chrp_show_cpuinfo;
-+
- 	ppc_md.irq_canonicalize = chrp_irq_canonicalize;
- 	ppc_md.init_IRQ       = chrp_init_IRQ;
--	ppc_md.get_irq        = openpic_get_irq;
-+	if (_chrp_type == _CHRP_Pegasos)
-+		ppc_md.get_irq        = i8259_irq;
-+	else
-+		ppc_md.get_irq        = openpic_get_irq;
- 
- 	ppc_md.init           = chrp_init2;
- 
-Index: linux-work/include/asm-ppc/processor.h
-===================================================================
---- linux-work.orig/include/asm-ppc/processor.h	2005-01-24 11:43:03.000000000 +1100
-+++ linux-work/include/asm-ppc/processor.h	2005-01-24 15:39:17.000000000 +1100
-@@ -34,6 +34,7 @@
- /* these are arbitrary */
- #define _CHRP_Motorola	0x04	/* motorola chrp, the cobra */
- #define _CHRP_IBM	0x05	/* IBM chrp, the longtrail and longtrail 2 */
-+#define _CHRP_Pegasos	0x06	/* Genesi/bplan's Pegasos and Pegasos2 */
- 
- #define _GLOBAL(n)\
- 	.stabs __stringify(n:F-1),N_FUN,0,0,n;\
-@@ -54,6 +55,7 @@
- 
- /* what kind of prep workstation we are */
- extern int _prep_type;
-+extern int _chrp_type;
- 
- /*
-  * This is used to identify the board type from a given PReP board
+en_EN: I search in Google and have find two solutions:
+es_ES: Desde luego no pregunto sin antes ir a San Google, y este me ha
+mostrado dos opciones:
+
+en_EN: 1. Compiling since source code:
+es_ES: 1. Compilarlo desde las fuentes descrito en:
+http://download.eclipse.org/downloads/drops/R-3.0.1-200409161125/srcInclude=
+dBuildInstructions.html
+
+en_EN: Compiling only specific parts of eclipse x86
+es_ES: 2. Compilar partes expecificas desde la version oficial del
+eclipse x86 descrito en:
+http://www.rexi.org/linux/eclipse-ppc.html
+
+en_EN: In the first option, this is the output error:
+es_ES: En la primera opcion obtengo este error al hacer el "build -os
+...."
+
+JVMDG217: Dump Handler is Processing Signal 4 - Please Wait.
+JVMDG303: JVM Requesting Java core file
+JVMDG304: Java core file written to
+/home/frodo/eclipse_src/javacore.20050123.123151.6641.txt
+JVMDG215: Dump Handler has Processed Exception Signal 4.
+./build: line 60:  6641 Instrucci=F3n ilegal      ant -buildfile
+build.xml $target -DinstallOs=3D$os -DinstallWs=3D$ws -DinstallArch=3D$arch
+-Dbootclasspath=3D$bootclasspath -DjavacTarget=3D1.2
+
+en_EN: In the second option where recompiling SWT don=B4t create the 3
+.so (only libswt-gtk-3036-so) and although continue with the process
+and eclipse executable was created, where i start eclipse only can see
+bootsplash before that the output error was:
+es_ES: En la segunda opcion al recompilar SWT no se crean los 3 .so
+(solo libswt-gtk-3036.so) y aunque siga con el proceso y se cree el
+ejecutable eclipse, al iniciarlo solo se muestra el bootsplash antes
+de dar el error:
+
+JVMDG217: Dump Handler is Processing Signal 4 - Please Wait.
+JVMDG303: JVM Requesting Java core file
+JVMDG304: Java core file written to
+/home/frodo/eclipse/javacore.20050123.123452.6704.txt
+JVMDG215: Dump Handler has Processed Exception Signal 4.
+
+en_EN: I think that the error is in SDK of ibm.com :(. Can i find the
+solution?=BF
+es_ES: No tengo muchas esperanzas en que alguien encuentre solucion,
+porque creo que el error esta en el SDK de ibm.com.
+
+en_EN: Bye and thanks
+es_ES: Agradeceria todo tipo de ayuda. SALUDOS ;)
