@@ -1,19 +1,20 @@
-Return-Path: <jpl@xiphos.ca>
-Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
-	by ozlabs.org (Postfix) with ESMTP id 155BB67A7A
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 732A267A7D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Apr 2005 02:56:06 +1000 (EST)
-Received: from [216.95.199.148] (account jpl@xiphos.ca HELO [192.168.1.169])
-	by mail.net (CommuniGate Pro SMTP 4.2.8)
-	with ESMTP-TLS id 50947209 for linuxppc-embedded@ozlabs.org;
-	Tue, 05 Apr 2005 11:56:05 -0400
-Message-ID: <4252B50C.2080700@xiphos.ca>
-Date: Tue, 05 Apr 2005 11:55:56 -0400
-From: Joshua Lamorie <jpl@xiphos.ca>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Recommendations: Small Embedded PPC chip with FPU
+	Wed,  6 Apr 2005 02:56:27 +1000 (EST)
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859338@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B859338@ismail.innsys.innovsys.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f476b44c655d9125f95b6d3ddc225576@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 5 Apr 2005 12:56:11 -0400
+To: "Rune Torgersen" <runet@innovsys.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: FCC Ethernet startup crash
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,42 +25,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gidday there,
 
-I am looking for a new PowerPC for some controls applications and I was 
-wondering if anyone on this list might make some recommendations.  I 
-will be fabricating the board, so I'm just interested in the CPU.  
-Currently I'm doing everything on a Virtex-II Pro (PPC 405).
+On Apr 5, 2005, at 12:41 PM, Rune Torgersen wrote:
 
-I'm considering the MPC5200, but I would love to have something in a 
-smaller package.
+> Without calling fcc_restart in the start, I get lots of "eth0: tx queue
+> full!." messages.
 
-Requirements:
-    - Linux support
-    - PowerPC w >= 16k D,I Cache
-    - FPU
-    - Onboard memory controller (SDRAM or DDR)
-    - >= 300 MHz
-    - Industrial temperature (-40 to +85)
-    - package size < 27mmx27mm
-    - everything else is icing
+Do you tftp boot your kernel using the boot rom?  Does the
+boot rom disable the Ethernet before calling the kernel?
 
-Any suggestions welcome.
+Thanks.
 
-I'm sorry if this is somewhat off topic.
 
-Joshua
-
--- 
-
-Xiphos Technologies
-(514) 848-9640 x227
-(514) 848-9644 fax
-
-www.xiplink.com
-_______________________________________________
-The information transmitted is intended only for the
-person or entity to which it is addressed and may contain
-confidential and/or privileged material.  If you have
-received this in error, please contact the sender and delete
-this communication and any copy immediately. Thank you.
+	-- Dan
