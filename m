@@ -1,58 +1,42 @@
 From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15367.28631.770924.535793@argo.ozlabs.ibm.com>
-Date: Fri, 30 Nov 2001 22:39:03 +1100 (EST)
+Message-ID: <15367.29270.548171.448033@argo.ozlabs.ibm.com>
+Date: Fri, 30 Nov 2001 22:49:42 +1100 (EST)
 To: linuxppc-dev@lists.linuxppc.org
-Subject: platform.h
+Subject: platform_serial.h
 Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Here is the code that Keith sent me to create platform.h and
-platform_serial.h.  It took me a while to understand it too. :)
-To make this work we need to make archdep and include/config/MARKER
-depend on platformlinks.
+Currently include/asm-ppc/serial.h has definitions for the 4 standard
+PC serial ports plus other oddball ISA multiport serial adaptors:
+fourport, accent, boca and hub6.
+
+Has anyone *ever* used any of these ISA multiport adaptors on a PPC
+system?  I wouldn't be at all surprised if the answer was no.
+
+I would like to move those extra oddball things out to
+include/asm-ppc/isa-serial.h.  Then I think <asm/serial.h> should
+include <platform_serial.h>, and if that doesn't define
+STD_SERIAL_PORT_DEFNS, define that to be the 4 standard PC serial
+ports.
+
+It boils down to the question of what default serial ports we think a
+platform should get if it doesn't provide a platform_serial.h file:
+
+- none,
+- the four standard PC ports, or
+- the four standard PC ports plus the oddball ones?
+
+If we go for the second option and a platform wants the oddball ones,
+it can #include <asm/isa-serial.h> in its platform_serial.h file.
+
+Note that none of this will affect PCI multiport serial cards at all.
+
+Comments?
 
 Paul.
-
-# h_files:	List of architecture specific platform .h files.
-# suffices:	The standard set of suffices to generate.
-# dir:		The directory to hold the generated files.
-# platform:     The platform that has been selected.  It is extracted by looking
-#               for the magic string in all h_files, converting the filename and
-#               config from each magic string to a sed command, using that sed
-#               command to find matching options in .config then printing the
-#               corresponding platform name.  platform must contain exactly one
-#               string.
-
-# After the platform has been identified, temporary versions of the target files
-# are created from the suffix list, making empty files if necessary.  The result
-# is compared against the existing files which are only updated if anything has
-# changed.
-
-platformlinks:
-	@set -e; \
-	h_files="$(wildcard include/asm-$(ARCH)/platforms/*.h)"; \
-	suffices=".h _serial.h"; \
-	dir="arch/$(ARCH)"; \
-	platform=`grep "^/\\* Copy to platform.h if CONFIG_[^ ]*=y \\*/\$$" $$h_files | \
-		  (echo "/^CONFIG/{h;"; \
-		    sed -e "s%.*/\\([^/.]*\\)\\.h:.*\\(CONFIG_[^ ]*=y\\).*%g; s/^\\2\$$/\\1/p;%"; \
-		    echo "}") | \
-		  sed -nf - .config`; \
-	platform=`echo $$platform`; \
-	if [ -z "$$platform" ]; then echo "No $(ARCH) platform found in .config" >&2; /bin/false; fi; \
-	if expr "$$platform" : ".* " > /dev/null; then echo "Multiple $(ARCH) platforms ($$platform) found in .config" >&2; /bin/false; fi; \
-	for i in $$suffices; do \
-	  output=$$dir/platform$$i; \
-	  tmp_output=$$dir/.tmp_platform$$i; \
-	  input=`echo " $$h_files " | sed -ne "\\:/$$platform$$i :s%.* \\([^ ]*/$$platform$$i\\) .*%\\1%p"`; \
-	  rm -f $$tmp_output; \
-	  [ -z "$$input" ] && touch $$tmp_output || cp $$input $$tmp_output; \
-	  cmp -s $$tmp_output $$output || (echo "Updating $$output for $$platform"; mv $$tmp_output $$output); \
-	  rm -f $$tmp_output; \
-	done;
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
