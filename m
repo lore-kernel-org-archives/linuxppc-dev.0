@@ -1,26 +1,20 @@
-Message-ID: <3CC46961.5D72D252@mvista.com>
-Date: Mon, 22 Apr 2002 15:49:53 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Frank <frannk_m1@yahoo.com>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 22 Apr 02 13:51:22 PDT
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0204222051.AA22231@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: linux kernel with galileo support
-References: <20020422015453.94732.qmail@web13805.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Frank wrote:
+Mark A. Greer <mgreer@mvista.com> wrote:
 
-> How can I get a copy of the Linux kernel with the
-> Galileo gt64260 support...
+> There is a version in the linuxppc_2_4_devel tree and another one in the
+> linux-galileo tree on source.mvista.com.
 
-There is a version in the linuxppc_2_4_devel tree and another one in the
-linux-galileo tree on source.mvista.com.  If you need more info, look at
-the mail archives.
+There is also a third version in my linuxppc_2_4_alt tree also mirrored on
+source.mvista.com.
 
-Mark
-
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
