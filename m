@@ -1,48 +1,28 @@
-Message-Id: <200008031432.QAA09315@denx.local.net>
+Message-Id: <4.3.1.2.20000803192448.00adb470@pop3>
+Date: Thu, 03 Aug 2000 19:37:38 +0200
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Linker help: How to create "hole" in text segment?
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Date: Thu, 03 Aug 2000 16:32:17 +0200
+From: yuval <yuval@jungo.com>
+Subject: Upload an image file
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hello,
+I'm trying to install linux on ppc.
+I've compiled the kernel and trying to take the image (in
+arch/ppc/mbxboot/zImage) and transfer it to the "box", but if I'm using
+objcopy to transform it to srecords, the outcome is a file without the
+compressed linux image and when the gunzip start, it crash.
+if I manually set the image section to be "alloc,load" the section is loaded
+to the srecord file but not in the right offset.
+I did understood that the srecords convert the addressed from the address
+(vma, lma) and not from the offset (the offset is what the make file assign
+to the ZIMAGE_OFFSET). this is also the case when I'm using Ice probe to
+transfer the image.
 
-any linker experts out there?
+Any help would be greatly appreciated.
 
-This is for the PPCBoot project, and the background for  my  question
-is the segmented structure of Flash memory chips:
-
-I need to place some (read-only) data at a fixed address right in the
-middle of the memory region that is intended to hold the text segment
-- i.e, I want my memory map to look like this:
-
-start + 0:	Begin of Text Segment
-...
-start + 32k-1	End of Text Segment (Part 1)
-
-start + 32k	Begin of 16 k RO-Data
-...
-start + 48k -1	End of RO-Data
-
-start + 48k	Begin of Text Segment (Part 2, continued)
-...
-
-
-Ideally, I want the linker to  make  the  code  "flow"  automatically
-around the 16k gap - any hints how that can be arranged?
-
-Thanks in advance,
-
-Wolfgang
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Quote from a recent meeting:   "We are going to continue having these
-meetings everyday until I find out why no work is getting done."
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
