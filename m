@@ -1,23 +1,51 @@
-Message-ID: <000001c2e934$daa14b10$af85efcb@qhavm>
-From: "Q-ha Park" <qhpark@jchyun.com>
-To: "Rakesh Jagota" <j.rakesh@gdatech.co.in>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <84dxcpy4n76soie.130320031130@gda-server>
-Subject: Re: Openbios source code for IBM405 Redwood6(stbx25xx)
-Date: Thu, 13 Mar 2003 16:38:08 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-15"
+Date: Thu, 13 Mar 2003 08:40:54 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: question on howto use invalidate_dcache_range
+In-reply-to: <FCEAKDJJAPHPLJFINDAJCELACOAA.Stephan.Linke@epygi.de>
+To: Stephan Linke <Stephan.Linke@epygi.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLIECAFLAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I am working with IBM 405 based processor board for Settop Box. Can anypne
-> suggest me the link to download the "openbios" source code for the above
-> mentioned board.
+> Hi,
+>
+> in November there was the discussion about Joakims patch to 8xx_io/enet.c.
+> (http://lists.linuxppc.org/linuxppc-embedded/200211/msg00122.html)
+>
+> Since the result of the discussion didn't seam that clear to me I still have a question related to this.
+>
+> After all is it realy neccessary to use invalidate_dcache range before giving the transmit buffer to the DMA?
+>   That's one of Joakims last modifications but what exactly is the reason? It's obvious for the flush command but I
+> couldn't figure
+> out the reason for invalidate.
 
-I believe you should contact your board vendor for the openbios source code. it normally comes witht reference boards. as far as I know, thethere's no publicly available link to download  source code.
+Yes, it is neccessary. When you allocate a new skb buffer it you may get a recently used
+buffer. The TCP/UPD/IP layer(s) may have modified some of the contents in that buffer before
+freeing it. Therefore can the dcache contain dirty(modified) cache lines which belong to the
+buffer. When the CPU needs more dcache, it will flush those dirty cache lines to memory which
+now belong to the CPM. By invalidating the buffer you tell the CPU to free those cachelines
+whithout writeing them to memory.
 
-As an alternative, you can port PPCBOOT to your board, but it would be difficult without the reference code like openbios. it took me like two weeks with the openbios source code...
+> Beside the cache line alignment problem (causing nearby data to be flushed or invalidated) are there any other problems
+> to be taken
+> care of?
+
+There are no cache line alignment problems. There was some concern(expressed by Dan) that
+some vital data at the end of the skb buffer could be invalidated due to bad aligment.
+See http://lists.linuxppc.org/linuxppc-embedded/200302/msg00135.html
+These has been fixed in the skb layer long ago.
+
+The patch has been around for many months now and I have not received any problem
+reports.
+
+ Jocke
+
+> Thanks, Stephan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
