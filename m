@@ -1,59 +1,54 @@
-Message-Id: <200007071016.LAA22162@hyperion.valhalla.net>
-Date: Fri, 07 Jul 2000 11:16:18 +0100
-Subject: Re: Drive Setup (was Multi-boot)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-CC: Hollis Blanchard <hollis@amulet.co.jp>
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-2022-JP"
+Date: Fri, 7 Jul 2000 12:19:55 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Lundkvist <ml@epact.se>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Going from 2.2.12 to 2.2.17pre10
+In-Reply-To: <qpg0pmgtko.fsf@erbium.epact.se>
+Message-ID: <Pine.HPX.4.10.10007071209230.21326-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 07 Jul 2000 Hollis Blanchard wrote:
-> Iain Sandoe wrote:
->>
->> On Fri, Jul 7, 2000 Ethan Benson  wrote:
-> [snip]
->> >
->> > every time i tested it the following occured:
->> >
->> > * drive setup crashed
->> > * the partition tables were corrupt.
->> >
->> > its just good policy to use the native fdisk to create an OS'es
->> > partitions, on intel we must use DOS fdisk to create DOS/Win*
->> > partitions and linux fdisk for linux partitions, same with OpenBSD,
->> > FreeBSD etc.  powerpc is no different.
+On 7 Jul 2000, Michael Lundkvist wrote:
+
+> If I can find a stable version it is an option. And I actually have
+> plenty of time to look. I need a rock-stable system by the end of this
+> year.
+
+Ok, I hoppe 2.4 will be out then...
+
+> I'll try 2.2.17pre10 tonight and see if I have more luck with that.
+
+Well, I'm going to put my patches for 2.2.16 in an untested directory
+then...
+
+> I guess I should talk to Ramix. They have been helpful before.
+> I'll also try to go back to an older version of the
+> CMD646-driver. There are a few timing related setup changes in the
+> newer versions.
+
+This might indeed be the problem. My 2400 are not heavily stressed but
+nevertheless they are stable: one has 52 days and the other 39 days
+uptime. The second one had a strange behaviour when a lightning struck the
+telescope however and had to be powered down before rebooting, hard reset
+through front panel push button would not work (not even reaching PPCBUG
+boot messages).
+
+> > The only accessible place (with adequate lab equipment) are the buffers:
+> > cut the input or the output of the receive buffer and connect it to the
+> > power supply (safer on the input since it can directly be connected to
+> > the buffer power supply while I'm not sure that some versions of the
+> > Universe are not 3.3V only)   .
+> >
 >
-> [snip]
->
->>
->> Someone should tell Apple if there's a problem - they seem to be willing to
->> support (at least) the existence of Linux & other OSs - unlike certain other
->> companie$
->
-> I have never had Drive Setup crash on me, not even once. To try to
-> settle this question (not about stability, but about whether it produces
-> Linux-acceptable partition maps), I've just used Drive Setup's
-> unmodified "Preferred LinuxPPC" setting to partition a disk. The Mac OS
-> is currently installing, and I expect no problems when I install Linux
-> in 5 minutes.
+> OK. Then it looks quite possible. Thanks for the info.
 
-I'm also going to try it when I get round to the G4 multi-boot install ;-)
-Still doing dmasound backport...
+Thee only problem is to locate this damned buffer (just find which one is
+connected to the VME bus SYSRST but there are so many).
 
-will report back.
+	Gabriel.
 
-> The only complaint I have with Drive Setup is that it insists on erasing
-> all partitions on the drive any time you want to make partition changes.
-> Even newbies wondrously appreciating the beautiful Mac OS widgets in
-> their partitioning utility will not want to reformat their entire hard
-> disk.
-
-Yes, we really need a MacOS "Partition Magic" or equivalent.  I wonder if
-anyone on the list knows how to do it ;-)
-
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
