@@ -1,8 +1,7 @@
-Message-Id: <200004040659.CAA16921@shell.faradic.net>
-Date: Tue, 04 Apr 2000 02:59:33 EDT
+Message-Id: <200004040704.DAA18307@shell.faradic.net>
+Date: Tue, 04 Apr 2000 03:04:31 EDT
 From: jingai <jingai@floatingpenguins.com>
-To: "Geert Uytterhoeven <geert@linux-m68k.org>; jingai" <jingai@floatingpenguins.com>
-CC: linuxppc-dev@lists.linuxppc.org
+To: "Timothy A. Seufert" <tas@mindspring.com>; jingai@floatingpenguins.com; linuxppc-dev@lists.linuxppc.org
 Subject: Re: Re: DMA Sound split & Atari800
 Reply-To: jingai@floatingpenguins.com
 MIME-Version: 1.0
@@ -11,33 +10,34 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Mon, 3 Apr 2000, jingai wrote:
-> > I am trying to build Atari800 (the emulator) with sound support, and so
+> At 1:25 AM -0400 4/3/00, jingai wrote:
+> >I am trying to build Atari800 (the emulator) with sound support, and so
 far
-> > I have been successful, except that the output is very 'jittery.'  It
+> >I have been successful, except that the output is very 'jittery.'
 >
-> Did it work before you applied the dmasound split patches?
+> Do you know whether this behavior is unique on Linux for PowerPC?
+> That is, does it also do it on x86?  It may just be a problem with
+> the emulator; emulation of the sound chips on old computers is a
+> tricky job.
 
-Actually, I *believe* it didn't.  I honestly didn't get it to work at all
-before applying the patches (I found the SIGNED_SAMPLES and
-POKEYSND_BIG_ENDIAN defines after patching), but I did later on boot to
-what I *think* was a kernel before the patches... I say "think" because I'm
-not entirely sure I didn't overwrite that kernel with the new patched
-kernel at some point during this whole process.. but I am fairly sure that
-it probably would have worked the same, and that this problem has always
-been there (ie, you didn't introduce it, AFAIK).. so it's either a problem
-with the sound implementation in LinuxPPC or in Atari800... but, since
-Atari800 is primarily developed for the Atari Falcon (m68k, I believe) and
-not x86 (although x86 support is certainly more carefully monitored than
-PPC I'm sure), I'm not entirely sure where the problem lies..
+I am assuming that this is not a problem with the x86 port, since the sound
+support for UNIX is geared towards Linux on x86, and I have yet to read
+such a complaint on the Atari800 mailing list..
 
-.ugh, sorry for the rambling.. I just got off work and it's 3am already so
-you'll have to excuse me.. :)  But, if anyone who does know more about
-kernel hacking than myself would care to make some attempt at building
-Atari800 I would really appreciate it.. I could send the latest sources
-(0.9.9h) plus the required roms to whomever is willing to try.
+> It could also be a bug in the emulator.  For example, it may be
+> assuming that the sound chip has a buffer length similar to whatever
+> is common on x86, causing it to screw up when it's in a different
+> world.
 
-Regards,
-Jonathan
+That's what I am thinking, but as I said, I just haven't had the time to
+delve much into the PPC sound stuff in the kernel... so I was just asking
+for some help.. I may try again this weekend if I don't have to work, but
+then my girlfriend would probably hate me even more :)  I'm already
+spending a good 12-16 hours/day at work... (some advice for everyone:
+never accept a job at a small company that's been around for 15 years, has
+10 software products, and no current developers.. all of this ==
+nightmares, headaches, lack of sleep, etc :)
+
+-j
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
