@@ -1,37 +1,32 @@
-Date: Sun, 12 Sep 1999 20:27:07 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Michel Lanners <mlan@cpu.lu>
-cc: saulngeo@MLE.CO.UK, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: Re: UW SCSI PCI cards
-In-Reply-To: <199909101825.UAA14339@piglet.cpu.lu>
-Message-ID: <Pine.LNX.4.10.9909122025510.12494-100000@mercator.cs.kuleuven.ac.be>
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Need help from someone with SMP machine to track down bug in native threads jdk
+Date: Sun, 12 Sep 1999 14:49:38 -0400
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99091214534501.23575@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 10 Sep 1999, Michel Lanners wrote:
-> On  10 Sep, this message from Saulnier, Geoff (London) echoed through cyberspace:
-> > So, my questions are:
-> >   -  what PCI UW SCSI cards are supported in the final version
-> 
-> Basically all that Linux supports, although some more exotic ones might
-> not work on PowerPC...
+Hi,
 
-FYI, my Sym53c875 board (Dawicontrol DC-2976UW) doesn't have an OF ROM, but it
-works fine with the {sym,ncr}53c8xx drivers. So OF is not a prerequisite,
-unless you want to boot from it as well.
+If anyone has an SMP machine out there and some time to spare, I really need
+some help tracking down a bug in the native threads version of the jdk.  I have
+a short java sample program that seg-faults eventually during heavy thread
+creation on SMP x86 linux boxes.  I would like to see if the same thing happens
+under SMP linux ppc boxes and if so help in tracking it down (I don't have
+access to any SMP machines either on x86 or ppc).
 
-Greetings,
+If interested in helping and speeding the next release of the jdk, please
+e-mail me and let me know:
 
-						Geert
+mailto:khendricks@ivey.uwo.ca
 
---
-Geert Uytterhoeven ----------------- SONY Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Phone +32-2-7248608 Fax +32-2-7242686 ---------------- B-1130 Brussels, Belgium
+Thanks,
+
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
