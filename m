@@ -1,44 +1,63 @@
-Message-Id: <v04003a01b3213f280c3f@[204.22.210.180]>
-In-Reply-To: <Pine.LNX.3.95.990326170718.11329A-100000@drongo.anu.edu.au>
-References: <36FA6863.50817162@business.wm.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 26 Mar 1999 13:51:31 +0000
-To: Nathan Hurst <njh@drongo.anu.edu.au>
-From: "sean o'malley" <somalley@ed.mde.state.mi.us>
-Subject: Re: Apple Job Posting and Good News for LinuxPPC developers
+Date: Fri, 26 Mar 1999 10:26:35 -0500
+From: "Paul J. Schinder" <schinder@pobox.com>
+To: John L Grantham <jgrantha@hannover.sgh-net.de>
 Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MySQL?
+Message-ID: <19990326102635.A3899@pobox.com>
+References: <199903261322.NAA15082@go.hannover.sgh-net.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199903261322.NAA15082@go.hannover.sgh-net.de>; from John L Grantham on Fri, Mar 26, 1999 at 02:22:46PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-It sounded like it was more political and PR based than actual development.
-Im wondering if it would entail a whole department/unit with multiple
-people.  Maybe  a couple of developers to help solve some of the more nasty
-stuff , a pr person to help promote linuxppc and our efforts (judging from
-some of the stuff RHS has been saying he isnt to aware of our project or
-our project status.) and a person to deal with corporate management
-(convincing them to support linuxppc (use, drivers, info, etc) ) and a
-person tracking the development of the project and linux projects in
-general.
+On Fri, Mar 26, 1999 at 02:22:46PM +0100, John L Grantham wrote:
+} 
+} Hi all,
+} 
+} Sorry if this question has been asked before. Is there a PPC-precompiled 
+} version of MySQL available, and if not, will there be one? Has anyone 
+} succeeded in installing MySQL from source with LinuxPPC R4?
 
-It would be nice to have someone that comes from our project.
+Yes, people have succeeded installing from source:
 
+linux% mysqladmin version
+mysqladmin  Ver 7.8 Distrib 3.22.20a, for unknown-linux-gnu on powerpc
+TCX Datakonsult AB, by Monty
 
->On Thu, 25 Mar 1999, Kevin B. Hendricks wrote:
->
->> We should get one of our own into this role and get a leg up on helping
->>apple
->> open up its hardware specs for Linux PPC
->>
->> What do you think?
->
->I'm voting for Paul Mackerras to get the job.. :-)
->(I'm sure he _love_ to spend his time working solely on linuxpmac.. :-)
->
+Server version          3.22.20a-log
+Protocol version        10
+Connection              Localhost via UNIX socket
+UNIX socket             /tmp/mysql.sock
+Uptime:                 3 days 15 hours 17 sec
 
+Threads: 1  Questions: 5  Slow queries: 0  Opens: 6  Flush tables: 1  Open tables: 2
 
+It's as easy as ./configure;make;make install.
 
+But you need an up-to-date R4 glibc and egcs.  Those you can get from
+Gary Thomas' area at ftp.linuxppc.org.  The exact URL has been given
+many times on this list.
+
+} 
+} Hope to hear from you soon... ;-)
+} 
+} TIA,
+} 
+} John
+} 
+} 
+} 
+} John Grantham | Dipl.-Designer (FH)
+}               | Linux am Mac FAQ: http://linux.macnews.de/
+}               | Homepage: http://surf.to/multimedia
+} 
+} 
+
+-- 
+Paul Schinder
+schinder@pobox.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
