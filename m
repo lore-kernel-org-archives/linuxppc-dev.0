@@ -1,63 +1,36 @@
-Date: Mon, 3 Dec 2001 14:16:04 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Martin Costabel <costabel@wanadoo.fr>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Debian GNU/Linux PPC <debian-powerpc@lists.debian.org>
-Subject: Re: [PATCH] Minor changes to control/imstt/platinum/valkyrie/atyfb
-In-Reply-To: <3C0AA2AF.97E7FCB4@wanadoo.fr>
-Message-ID: <Pine.GSO.4.21.0112031415170.5519-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 3 Dec 2001 14:46:14 +0100
+From: "marc. h." <heckmann@hbe.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.16-pre1 (stock) breaks java?
+Message-ID: <20011203144613.B1231@hbe.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2 Dec 2001, Martin Costabel wrote:
-> Paul Mackerras wrote:
-> > Martin Costabel writes:
-> > > For the valkyriefb driver on my Pmac 6400, I can confirm from a first
-> > > short test that it still works. This is with your patch applied to
-> > > today's 2.4.17-pre1-ben0 kernel.
-> >
-> > Do you still have macos on the 6400?  If so can you confirm whether,
->
-> Yes, I still have MacOS 8.6. No 9.x, though.
->
-> > if you set the screen resolution and colour depth in macos, that the
-> > value you have set in macos is the default that linux will use?
->
-> I did some tests with the 2 useful modes of the 6400: 1024x768x8bit at
-> 72Hz (vmode 15, cmode 8) and 800x600x16bit at 60Hz (vmode 10, cmode 16).
->
-> The results, with or without Tom's patch, were the same as they always
-> were:
-> The vmode of MacOS is used by the Linux console; the cmode 16 is not
-> recognized, so instead of vmode 10 16 one always gets vmode 10 8 as
-> default. The log says
->
-> kernel: Monitor sense value = 0x62b, <6>using video mode 10 and color
-> mode 0
+Hi,
 
-<video/macmodes.h>:
+I recently installed 2.4.16-pre1 from the stock tree on my powerbook G3 and it
+seems that it broke the IBM JDK (1.3.0). An strace just shows an endless
+stream of "sched_yield()" with the CPU pegged at almost 100% system time.
 
-| #define CMODE_8                 0       /* 8 bits/pixel */
-| #define CMODE_16                1       /* 16 (actually 15) bits/pixel */
-| #define CMODE_32                2       /* 32 (actually 24) bits/pixel */
+This does not happen with 2.4.15-pre1 (also stock). Another datapoint is that
+it does not seem to break the blackdown JVM.
 
-So please try `cmode 1' instead of `cmode 16'.
+The IBM JDK is available from ftp://ftp.suse.com/pub/suse/ppc/update/7.1/pay2
 
-Gr{oetje,eeting}s,
+I am using glibc-2.2.4 from Mandrake cooker (binary).
 
-						Geert
+It seems that some scheduling changes went into 2.4.15-pre9 (SCHED_FIFO).
+
+Anyone have any ideas? The blackdown JVM has no JIT and is little painful to
+use.
+
+-m
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+	C3C5 9226 3C03 CDF7 2EF1  029F 4CAD FBA4 F5ED 68EB
+	key: http://people.hbesoftware.com/~heckmann/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
