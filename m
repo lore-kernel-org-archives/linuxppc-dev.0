@@ -1,467 +1,151 @@
-Message-ID: <395AC781.EA314718@m2tech.co.nz>
-Date: Thu, 29 Jun 2000 15:50:25 +1200
-From: ben bodley <benb@m2tech.co.nz>
-MIME-Version: 1.0
-To: Wentao Xu <xuwentao@yahoo.com>
-CC: mailing list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: why open("dev/console",O_RDWR,0) get stuck
-References: <20000629032315.6048.qmail@web2102.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii
+From: yama@isd.mci.mei.co.jp
+Message-Id: <200006290359.MAA09991@ms.tokyo.jcom.ne.jp>
+Date: Thu, 29 Jun 2000 12:54:24 +0900
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kernel stuck when decompress initrd
+In-Reply-To: <NEBBLJBIIKANNNOGGKNDGEKJCAAA.jykim@raonet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wentao Xu wrote:
+Hello,
 
-> ben,
-> Thanks for your help. That error does not appear
-> now, after doing what you told me.
-> BTW, can you tell me what toolkit you are using
-> with the ppc401, the one from Monta Vista?
+But,this is not the answer on this problem( kernel stuck when decompress
+initrd)
+I also worry about the same proglem.
+I'm trying to run LINUX 2.2.13 image on our custom board.
+I also found the kernel stopped in flush_window() in drivers/block/rd.c after
+showing following messages on console.
+
+Does anybody advise on this problem?
+
+Regards,
+Seiji Yamazaki
+yama@isd.mci.mei.co.jp
+
+--- message start --------------------------------------------------------
+loaded at:     00800000 00816E18
+board data at: 0081030C 00816D18
+relocated to:  0081030C 00816D18
+zimage at:     0081B000 008859FF
+initrd at:     008859FF 00A5C83C
+relocated to:  00886000 00A5CE3D
+avail ram:     00400000 00800000
+
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+PReP architecture
+Total memory = 32MB; using 0kB for hash table (at 00000000)
+Linux version 2.2.13 (root@pc.tokyo.jcom.ne.jp) (gcc version egcs-2.91.66
+199903
+14 (egcs-1.1.2 release)) #36 Wed May 10 09:23:10 JST 2000
+Boot arguments:
+time_init: decrementer frequency = 1080001500/60 (17MHz)
+Calibrating delay loop... 215.45 BogoMIPS
+Memory: 29380k available (732k kernel code, 708k data, 64k init)
+[c0000000,c2000
+000]
+000]
+Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Setting PCI interrupts for a "Blackhawk (Powerstack)"
+Linux NET4.0 for Linux 2.2
+Based upon Swansea University Computer Society NET3.039
+NET4: Unix domain sockets 1.0 for Linux NET4.0.
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+TCP: Hash tables configured (ehash 32768 bhash 32768)
+Starting kswapd v 1.5
+Serial driver version 4.27 with no serial options enabled
+ttyS00 at 0x03f8 (irq = 4) is a 16550A
+ttyS01 at 0x02f8 (irq = 3) is a 16550A
+pty: 256 Unix98 ptys configured
+RAM disk driver initialized:  16 RAM disks of 4096K size
+loop: registered device at major 7
+PPP: version 2.3.7 (demand dialling)
+TCP compression code copyright 1989 Regents of the University of California
+PPP line discipline registered.
+IP-Config: No network devices available.
+RAMDISK: Compressed image found at block 0
+--- message end --------------------------------------------------------
+
+At 22:15 00/06/21 +0900, you wrote:
 >
-> I have been haunted by the bad PTE error for 2 weeks.
-> I
-> dont know if I shall make some modification of the MMU
-> code before running the 405 code on the redwood 3. Can
-> you give me a hint? Thanks
+> Hello,
 >
-
-my kernel is based on grant ericksons latest patch + some montavisa mods
-+ my mods..
-
-here is my slightly hacked 4xx_tlb.c if you find it of any help... i am
-having some problems with the romeo bus at pres. hence hacking out the
-_PAGE_GUARDED..
-
-/*
- *
- *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
- *    copyright (c) 2000 m2 technology ltd <benb@m2tech.co.nz>
- *
- *    Module name: 4xx_tlb.c
- *
- *    Description:
- *      Routines for manipulating the TLB on PowerPC 400-class
-processors.
- *
- */
-
-#include <linux/mm.h>
-
-#include <asm/processor.h>
-#include <asm/io.h>
-#include <asm/mmu.h>
-#include <asm/pgtable.h>
-#include <asm/system.h>
-
-
-/* Preprocessor Defines */
-
-#if !defined(TRUE) || TRUE != 1
-#define TRUE    1
-#endif
-
-#if !defined(FALSE) | FALSE != 0
-#define FALSE   0
-#endif
-
-
-/* Global Variables */
-
-static int pinned = 0;
-
-
-/* Function Prototypes */
-
-static int PPC4xx_tlb_miss(struct pt_regs *, unsigned long, int);
-
-extern void do_page_fault(struct pt_regs *, unsigned long, unsigned
-long);
-
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-static inline void
-PPC4xx_tlb_write(unsigned long tag, unsigned long data, unsigned int
-index)
-{
-        asm("tlbwe %0,%1,1" : : "r" (data), "r" (index));
-        asm("tlbwe %0,%1,0" : : "r" (tag), "r" (index));
-}
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-void
-PPC4xx_tlb_flush_all(void)
-{
-        int i;
-        unsigned long flags, pid;
-
-        save_flags(flags);
-        cli();
-
-        pid = mfspr(SPRN_PID);
-        mtspr(SPRN_PID, 0);
-
-        for (i = pinned; i < PPC4XX_TLB_SIZE; i++) {
-                PPC4xx_tlb_write(0, 0, i);
-        }
-        asm("sync;isync");
-
-        mtspr(SPRN_PID, pid);
-        restore_flags(flags);
-}
-
-void
-PPC4xx_tlb_flush_page(int pid, unsigned long va)
-{
-        unsigned long flags, opid, tag, i;
-        unsigned int found = 1;
-
-        save_flags(flags);
-        cli();
-
-        opid = mfspr(SPRN_PID);
-
-        /* set our new context as the one we want to flush */
-
-        mtspr(SPRN_PID, pid);
-
-        /* guess at a valid 4k page */
-
-        tag = (va & PAGE_MASK) | TLB_VALID | TLB_PAGESZ(PAGESZ_4K);
-
-        /* Attempt to match the tag to an existing entry in the TLB. */
-
-        asm("tlbsx. %0,0,%2;"
-            "beq 1f;"
-            "li %1,0;1:" : "=r" (i), "=r" (found) : "r" (tag));
-
-        if (found) {
-                /* modify the tag portion to indicate an invalid tlb
-entry */
-
-                asm("tlbre %0,%1,0" : "=r" (tag) : "r" (i));
-                tag &= ~TLB_VALID;
-                asm("tlbwe %0,%1,0" : : "r" (tag), "r" (i));
-
-                /* and now resync the tlb table */
-
-                asm("isync;sync");
-        }
-
-        /* restore old pid (context) */
-
-        mtspr(SPRN_PID, opid);
-        restore_flags(flags);
-}
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-void
-PPC4xx_dtlb_miss(struct pt_regs *regs)
-{
-        unsigned long addr = mfspr(SPRN_DEAR);
-        int write = mfspr(SPRN_ESR) & ESR_DST;
-
-        if (PPC4xx_tlb_miss(regs, addr, write) < 0) {
-                sti();
-                do_page_fault(regs, addr, write);
-                cli();
-                PPC4xx_tlb_miss(regs, addr, write);
-        }
-
-#if 0
-        printk("attempted data access at %08lx from %08lx\n", addr,
-regs->nip);
-#endif
-}
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-void
-PPC4xx_itlb_miss(struct pt_regs *regs)
-{
-        unsigned long addr = regs->nip;
-
-#if 0
-        printk("attempted instruction access at %08lx\n", addr);
-#endif
-
-        if (PPC4xx_tlb_miss(regs, addr, 0) < 0) {
-                sti();
-                do_page_fault(regs, addr, 0);
-                cli();
-                PPC4xx_tlb_miss(regs, addr, 0);
-        }
-}
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-void
-PPC4xx_tlb_pin(unsigned long va, unsigned long pa, int pagesz, int
-cache)
-{
-        unsigned long tag, data;
-        unsigned long opid;
-
-        if (pinned >= PPC4XX_TLB_SIZE)
-                return;
-
-        opid = mfspr(SPRN_PID);
-        mtspr(SPRN_PID, 0);
-
-        data = (pa & TLB_RPN_MASK) | TLB_WR;
-
-        if (cache)
-                data |= (TLB_EX);
-        else
-                data |= (TLB_G | TLB_I);
-
-        tag = (va & TLB_EPN_MASK) | TLB_VALID | pagesz;
-
-        PPC4xx_tlb_write(tag, data, pinned++);
-
-        asm("isync; sync");
-
-        mtspr(SPRN_PID, opid);
-        return;
-}
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-void
-PPC4xx_tlb_unpin(unsigned long va, unsigned long pa, int size)
-{
-        /* XXX - To be implemented. */
-}
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-static inline void
-PPC4xx_tlb_update(unsigned long addr, pte_t *pte)
-{
-        unsigned long data, tag, rand;
-        int i, found = 1;
-
-        /* Construct the hardware TLB entry from the Linux-style PTE */
-
-        tag = tag = (addr & PAGE_MASK) | TLB_VALID |
-TLB_PAGESZ(PAGESZ_4K);
-        data = data = (pte_val(*pte) & PAGE_MASK);
-
-        if (pte_val(*pte) & _PAGE_RW)
-                data |= TLB_WR;
-
-        if (pte_val(*pte) & _PAGE_NO_CACHE)
-                data |= TLB_I | TLB_G;
-        else
-                data |= TLB_EX;
-
-/*        if (pte_val(*pte) & _PAGE_GUARDED)
-                data |= TLB_G; */
-
-        if (pte_val(*pte) & _PAGE_USER)
-                data |= TLB_ZSEL(1);
-
-        /* Attempt to match the new tag to an existing entry in the TLB.
-*/
-
-        asm("tlbsx. %0,0,%2;"
-            "beq 1f;"
-            "li %1,0;1:" : "=r" (i), "=r" (found) : "r" (tag));
-
-        /*
-         * If we found a match for the tag, reuse the entry index and
-update
-         * the tag and data portions. Otherwise, we did not find a
-match. Use
-         * the lower 5 bits of the lower time base register as a
-pseudo-random
-         * index into the TLB and replace the entry at that index.
-         */
-
-        if (found) {
-                PPC4xx_tlb_write(tag, data, i);
-        } else {
-                rand = mfspr(SPRN_TBLO) & (PPC4XX_TLB_SIZE - 1);
-                rand += pinned;
-                if (rand >= PPC4XX_TLB_SIZE)
-                        rand -= pinned;
-
-                PPC4xx_tlb_write(tag, data, rand);
-        }
-
-        asm("isync; sync");
-}
-
-/*
- * ()
- *
- * Description:
- *   This routine...
- *
- * Input(s):
- *
- *
- * Output(s):
- *
- *
- * Returns:
- *
- *
- */
-static int
-PPC4xx_tlb_miss(struct pt_regs *regs, unsigned long addr, int write)
-{
-        unsigned long spid, ospid;
-        struct mm_struct *mm;
-        pgd_t *pgd;
-        pmd_t *pmd;
-        pte_t *pte;
-
-        if (!user_mode(regs) && (addr >= KERNELBASE)) {
-                mm = &init_mm;
-                spid = 0;
-        } else {
-                mm = current->mm;
-                spid = mfspr(SPRN_PID);
-        }
-
-        pgd = pgd_offset(mm, addr);
-        if (pgd_none(*pgd))
-                goto bad;
-
-        pmd = pmd_offset(pgd, addr);
-        if (pmd_none(*pmd))
-                goto bad;
-
-        pte = pte_offset(pmd, addr);
-        if (pte_none(*pte) || !pte_present(*pte))
-                goto bad;
-
-        if (write) {
-                if (!pte_write(*pte))
-                        goto bad;
-
-                set_pte(pte, pte_mkdirty(*pte));
-        }
-        set_pte(pte, pte_mkyoung(*pte));
-
-        ospid = mfspr(SPRN_PID);
-        mtspr(SPRN_PID, spid);
-        PPC4xx_tlb_update(addr, pte);
-        mtspr(SPRN_PID, ospid);
-
-        return (0);
-bad:
-        return (-1);
-}
-
-cheers,
-
-ben
-
---
-/\\------------------------------------------------------------------
-:::::::::::..ben.b..m2technologyltd.nz..64.9.4448307.130..:::::::::::
+> I'm trying to run LINUX 2.3.99 image on SBC8260 boards.
+>
+> The kernel stopped after showing following messages on console.
+> I'm really novice to LINUX, so only debugging way is printk.
+> I found the kernel stopped in flush_window() in drivers/block/rd.c.
+> It is in the middle of gunzip() procedure.
+> Any idea?  Something wrong in the sequence?
+> I'm using vWARE boot rom from EST to boot LINUX.
+> I tried to boot LINUX from FLASH SIMM on the board(it is 0xe0100000),
+> but worse than from RAM. it only shows first boot loader messages.
+>
+> Regards,
+> Jin
+> jykim@raonet.com
+>
+> ========================
+> loaded at:     00400000 0040C274
+> board data at: 00100000 0010002C
+> relocated to:  00200100 0020012C
+> zimage at:     0040D000 0047A105
+> initrd at:     0047B000 00653A15
+> avail ram:     00654000 01000000
+>
+> Linux/PPC load:
+> Uncompressing Linux...done.
+> Now booting the kernel
+> Total memory = 16MB; using 0kB for hash table (at 00000000)
+> Linux version 2.4.0-test1-ac21 (jykim@raonet.com) (gcc version 2.95.2
+19991024 (release)) #176 呪 6杉 21 21:57:00 KST 2000
+> PowerPC Architecture (id:0x810101)
+> Boot arguments: root=/dev/ram
+> On node 0 totalpages: 4096
+> zone(0): 4096 pages.
+> zone(1): 0 pages.
+> zone(2): 0 pages.
+> Kernel command line: root=/dev/ram
+> Calibrating delay loop... 166.30 BogoMIPS
+> Memory: 12824k available (824k kernel code, 464k data, 40k init)
+[c0000000,c1000000]
+> Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
+> Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+> Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
+> kmem_create: Poisoning requested, but con given - bdev_cache
+> Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
+> kmem_create: Poisoning requested, but con given - inode_cache
+> kmem_create: Poisoning requested, but con given - file lock cache
+> POSIX conformance testing by UNIFIX
+> Linux NET4.0 for Linux 2.3
+> Based upon Swansea University Computer Society NET3.039
+> kmem_create: Poisoning requested, but con given - skbuff_head_cache
+> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+> NET4: Linux TCP/IP 1.0 for NET4.0
+> IP Protocols: ICMP, UDP, TCP, IGMP
+> IP: routing cache hash table of 512 buckets, 4Kbytes
+> TCP: Hash tables configured (established 1024 bind 1024)
+> Starting kswapd v1.6
+> CPM UART driver version 0.01
+> ttyS00 at 0x0000 is a SMC
+> ttyS01 at 0x0040 is a SMC
+> ttyS02 at 0x8100 is a SCC
+> ttyS03 at 0x8200 is a SCC
+> pty: 256 Unix98 ptys configured
+> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+> eth0: SCC ENET Version 0.1, 08:00:3e:26:15:59
+> RAMDISK: Compressed image found at block 0
+>
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
