@@ -1,41 +1,26 @@
-Message-Id: <5.1.0.14.2.20021023000428.02230770@mail.attbi.com>
-Date: Wed, 23 Oct 2002 00:04:46 -0700
-To: linuxppc-embedded@lists.linuxppc.org
-From: Eugene Surovegin <ebs@innocent.com>
-Subject: Re: Involking SysRq functions
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <002501c27a66$fcc4bd40$faffa8c0@VISHWANATH>
+From: "Vishwanath" <vishwanath@mistralsoftware.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Monta Vista Linux Supporting Floating Point operations
+Date: Wed, 23 Oct 2002 13:07:06 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 01:47 PM 10/22/2002, you wrote:
->How do you access the SysRq functions, such as kernel backtrace, when
->running the
->serial port with a terminal emulator? (minicom)
+Hi All,
 
-Well, RTFM.
+I am working on 440GP using Monta Vista Linux 2.1. I need floating point
+operation support (for eg. function sqrt() for calculating square root of
+given float variable) on Linux. I didn't find math emualtion on the Linux.
+Can anyone tell me how can I get floating point support ?
 
-Documentation/sysrq.txt:
+Thanks in advance.
 
-    On the serial console (PC style standard serial ports only) -
-            You send a BREAK, then within 5 seconds a command key. Sending
-            BREAK twice is interpreted as a normal BREAK.
-
-
-How to send BREAK from minicom?
-
-# man minicom
-
-/BREAK
-
-you'll find: Ctrl-A F
-
-
-Enjoy.
-
-
-  Eugene Surovegin <mailto:ebs@innocent.com>
+Regards,
+Vishwanath
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
