@@ -1,30 +1,32 @@
-Date: Mon, 8 Jan 2001 14:21:56 -0700
+Date: Mon, 8 Jan 2001 14:22:37 -0700
 From: Cort Dougan <cort@fsmlabs.com>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: diekema_jon <diekema@bucks.si.com>, linuxppc-embedded@lists.linuxppc.org
+To: frowand@mvista.com
+Cc: Wolfgang Denk <wd@denx.de>, Tom Rini <trini@kernel.crashing.org>,
+        diekema_jon <diekema@bucks.si.com>,
+        linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Root keys on bk://bitkeeper.fsmlabs.com:5000 have changed
-Message-ID: <20010108142156.Z8686@hq.fsmlabs.com>
-References: <20010107031314.G13210@hq.fsmlabs.com> <Pine.HPX.4.10.10101081054020.1811-100000@gra-ux1.iram.es>
+Message-ID: <20010108142237.A8686@hq.fsmlabs.com>
+References: <20010106104711.D1400@opus.bloom.county> <200101061940.f06Jdx904796@denx.local.net> <20010107031448.H13210@hq.fsmlabs.com> <3A58CCC6.75B79975@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPX.4.10.10101081054020.1811-100000@gra-ux1.iram.es>; from Gabriel Paubert on Mon, Jan 08, 2001 at 11:03:36AM +0100
+In-Reply-To: <3A58CCC6.75B79975@mvista.com>; from Frank Rowand on Sun, Jan 07, 2001 at 12:08:38PM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-} Nice, I have a copy of the 2.3 tree with my own patches which are quite a
-} long list of changes and merges. Recloning is _not_ an option...
+} Cort Dougan wrote:
+} >
+} > } Is there some place where such decisions are discussed  or  at  least
+} > } announced?
+} >
+} > The closed list for read/write access people to those trees.  I can setup a
+} > mailing list, or send the emails to this (or another) mailing list if
+} > people are actually interested.
 }
-} Fortunately I was still using copy of Linus tree in my own repositories
-} which I maintain personnally as my main development branch. I was
-} seriously considering switching to the fsmlabs bk trees, now it will never
-} happen, ever...
+} Yes please, somewhere.  People are interested....
 
-Changes from 2.2 to 2.3 and from 2.3 to 2.4 will not be effortless changes,
-with or without any revision control.  Each version is a different
-repository and that's not going to change.  I'm happy to see you didn't
-start using the trees before you realized this (and had to put work in on
-maintaining code).  I'm also glad to not have you bring unreasonable
-expectations to our development tree.
+I'll have something setup in a few days for people to subscribe to, then.
+I'll send more info to this list when I have it setup.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
