@@ -1,61 +1,58 @@
-Date: Tue, 20 Apr 1999 07:46:26 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Grant Bayley <gbayley@ausmac.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Apple's "Darwin Streaming Server"
-In-Reply-To: <Pine.LNX.4.04.9904201701350.6655-100000@ausmac.net>
-Message-ID: <Pine.LNX.3.96.990420074520.8298A-100000@newhope.terraplex.com>
+Date: Tue, 20 Apr 1999 15:55:54 +0200 (MET DST)
+From: David De Ridder <s970707@uia.ua.ac.be>
+Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+cc: Gabriel Paubert <paubert@iram.es>
+Subject: MVME zImage works
+Message-ID: <Pine.SO4.4.05.9904201546000.3400-100000@hsins.uia.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
-I've looked at the code. There's a lot of NeXT and MacOSX specific code
-but it should be realitivly simple to port. 
+I just tried to boot the zImage I created on our MVME2306 board, and it
+boots fine. There still is a problem with compiling the Universe module,
+but I'll disregard it here.
 
-Dan
+FTR, what I did was this :
 
-On Tue, 20 Apr 1999, Grant Bayley wrote:
+* take an official (e.g. http://www.linuxhq.com) Linux 2.2.4 source
+  tree
+* download Gabriel's MVME patches (both generic and vme), and applied
+  them both to the source tree. (First generic, then vme).
+* download Gabriel's MVME config.nfsroot
+* ``make mrproper''
+* ``make oldconfig'' using the config.nfsroot
+* ``make zImage''. This goes flawless, with the resulting kernel image
+    in arch/ppc/prepboot/zImage
+* ``make modules'' fails (because of universe.c -- to be solved soon, I
+   hope). The modules missing isn't really a problem since almost
+   everything you need should be in the kernel image.
 
-> 
-> Hi folks,
-> 
-> Having played around with Quicktime 4 this morning and watched the BBC etc
-> across the Internet, I was delighted to see that Apple have opensourced
-> and released the source code for the streaming server itself.
-> 
-> I downloaded it and read the FAQ - only problem is they use the funky
-> NeXTStep-ish Makefile to build the thing and requires "modification of a
-> handful of source files" to compile and run on "platforms other than Mac
-> OS X Server".
-> 
-> I realise this is off topic, but it would be an interesting addition to
-> Linux (and LinuxPPC in particular) to have this available in an
-> easy-to-compile (./configure, anyone  :-) package..
-> 
-> Has anyone started work on porting this?
-> 
-> Grant
-> 
-> ___________________________________________________
-> Grant Bayley
-> - Network Administrator, Batey Kazoo Communications
-> - Administrator, The AusMac Archive
-> http://www.ausmac.net/    gbayley@ausmac.net
-> __________________________________________________
-> 
-> 
-> 
+I've fed this kernel to my TFTP server, rebooted the board, and voila, I
+had my own 2.2.4 kernel, compiled on the board.
 
+(Gabriel, I have another question : I noticed you updated the .config's
+ on your site. Are they for 2.2.4 or for 2.2.6 ?)
 
-Dan
+People who want to try this too, can find all the Web links they need at :
 
-Terra Soft Solutions, Inc.
- email: dburcaw@yellowdoglinux.com
- website: http://www.yellowdoglinux.com/
+ http://win-www.uia.ac.be/u/s970707/thesis/archive.html
 
+Kind regards,
+
++-----------------------------------------------------------------+
+   David 'Septimus' De Ridder     <david.de.ridder@bitsmart.com>
+
+"Watching eyes wait for sadness to rise,
+ true superstitions combine and thicken
+ this poison that reaches my soul,
+ this terror that blackens my soul."
+ - Anne Clark
++-----------------------------------------------------------------+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
