@@ -1,46 +1,61 @@
-Date: Wed, 14 Jul 1999 15:04:38 -0400 (EDT)
-From: Peter Handel <phandel@cise.ufl.edu>
-To: "Charles A. Jolley" <charles.jolley@zeratec.com>
-Cc: Joe Julicher <joe_julicher@macktrucks.com>,
-        "timothy a. seufert" <tas@mindspring.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Serial Ports on USB
-In-Reply-To: <199907141434.JAA30756@www2.tuckeris.com>
-Message-ID: <Pine.GSO.4.05.9907141502430.345-100000@eclipse.cise.ufl.edu>
+Date: Wed, 14 Jul 1999 12:21:48 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+Reply-To: Jeff Rugen <jrugen@primenet.com>
+To: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: X runs on PReP with FBpatch. But......
+In-Reply-To: <199907141454.XAA27695@mail.cc.tohoku.ac.jp>
+Message-ID: <Pine.BSI.3.96.990714121017.6167A-100000@usr01.primenet.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 14 Jul 1999, Charles A. Jolley wrote:
+On Wed, 14 Jul 1999, Kazunori Aoshima wrote:
 
-> > Connected an Amiga 500 and an Apple 2gs.
+> 8.Set color modes and monitor modes.
+>   I set custom, and 1024x768 with 8bit and 16bit mode, 
+>   with 1024x768 Hireflesh mode.
 
-Apple IIGS Forever! :)  I should be back to serving web pages from my
-IIGS shortly.  Too bad GS/TCP probably won't see the light of day
-ever.
+16bit mode won't work yet (at best you'll have really ugly colors, at worst,
+it will be unusable).
 
-> I'll try things out next time I have a chance to go pick up the
-> parts I need to make a cross-over phone cable.
+> 9.Test mode start. If change monirtor modes for Xwindow like,
+>   Push OK.
+> 
+> I don't know after No.9, because SCSI control.drops down and freeze
+> my machine.
 
-You don't need a cross-over phone cable (this isn't ethernet :)   ); a
-regular one will do just fine.
+I have this problem with 2.2.10 even when I just let the machine sit idle
+for a day.  I haven't spent the time to track it down (I've been hoping
+someone more knowledgable about the SCSI system would do it first :-)  ).  I
+have an old 2.2.2 that doesn't have this problem, but no longer have that
+source (though I could probably get it from vger if I really wanted to).
 
+> But, I would like to run Xbh.
+> I could not run Xbh on my R5 environment before.
+> How would I do to run Xbh? Were ther any patches?
 
-Thanks,
-Pete
+I have a version of Xbh for R5 in the same place as the framebuffer patches
+(though Jeff Garzik has a more complete set of patches that incorporates
+what I did).  Xbh is at:
 
--- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
-> > You are perfectly free to believe what you want to, and so am I.
-> Actually, this turns out not to be the case. God does not give us
-> the freedom to believe anything we wish. We are morally obligated to
-> believe the truth. Doing anything else is a sin. You are not free to
-> interpret the Bible anyway you wish. -DFL (Pretty neat, huh?)
+   ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/Xbh-16bit-glibc2x/
+
+However, I haven't had any luck running X of any sort on 2.2.10 -- the
+machine locks up almost immediately when I try to move the mouse.  Gnome
+executables (gnome-session, etc) give me immediate segmentation faults with
+2.2.2, though Xbh works fine with that kernel.  I haven't spent the time to
+see if Gnome is what's causing my problems with 2.2.10, but it is something
+I should probably look at.
+
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
+
+...Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
