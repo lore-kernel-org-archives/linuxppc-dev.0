@@ -1,44 +1,60 @@
-Message-ID: <3E34B111.6050203@embeddededge.com>
-Date: Sun, 26 Jan 2003 23:09:53 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3E34E2CE.3040102@devcom.cz>
+Date: Mon, 27 Jan 2003 08:42:06 +0100
+From: Jan Damborsky <Jan.Damborsky@devcom.cz>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] m8xx_setup.c and PCMCIA
-References: <3E30F363.1020501@imc-berlin.de>	<3E3157BF.7060804@embeddededge.com> <15924.24396.105367.383171@argo.ozlabs.ibm.com>
+To: "Wells, Charles" <Charles.Wells@NielsenMedia.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problem with data cache on MPC823E
+References: <DF2B720CF774D21189EE00805FA7FA220517835A@nmrusdunsx3.nielsenmedia.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Wells, Charles wrote:
 
-> I'm not really here, I'm on vacation, but anyway...
+>Jan,
+>
+>While reviewing your original email, I noticed the following statement.
+>
+>
+>
+>>May be it is because we have floating BI (burst inhibit) CPU singnal.
+>>
+>>
+>
+>My MPC823UM manual (Rev 1, p. 13-36, section 13.4.9.2 BURST INHIBIT SIGNAL)
+>states the following:
+>
+>    "This signal must be pulled up to Vdd with a pullup resistor."
+>
+>This is shown in figure 13-24.  Have you tried adding a pullup resistor?
+>
+I think it is the reason, why our board behaves so erraticaly (we have
+developed our board with
+MPC823UM Revision 0, there is only "should be pulled up", but in
+Revision 1 is "must be pulled up",
+so we have to base our next development on newest documentation - like
+it "must be" always).
+Because when I set BIH bit in OR register, there are no problems. I
+think because there are no bursts.
+But solution of this problem is not so trivial. Because MPC823 is in BGA
+package and BI signal
+is unconnected, the appropriate pin is unreachable. So I am not sure we
+will be successful
+in connecting BI to pullup, may be we will be forced to create new PCB,
+but it is future.
 
-Me, too :-)
+>Also, where did you get your UPM table for DRAM?
 
+We have derived UPM settings from Motorola MPC823ADS documentation,
+and verified them in Motorola graphical software for UPM settings
+visualisation, so I think it is OK.
 
-> What it boils down to is that we have little choice (unless you want
-> to rewrite the pcmcia layer :) but to make inb/outb etc. do what the
-> pcmcia layer is expecting.  That's the reason for the _IO_BASE mapping
-> hacks.
+                                                                Thank
+you for your help very much,
 
-I understand that, I was just concerned about why it was needed and the
-way it was done in this patch.  The PCMCIA has been working quite well
-for many people on the 8xx, so I'm hoping someone that has experience with
-that can take a look at these changes and discuss them.
-
-On processors like the 8xx where you have multiple, separate address
-spaces that can be the targets of inb/outb, you have to be very careful
-how you use the IO_BASE addresses and map those spaces.  Anyone making a
-change that uses this raises a big red flag, because it usually "fixes"
-one configuration and breaks everything else.
-
-Thanks.
-
-
-	-- Dan
+                Jan Damborsky
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
