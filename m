@@ -1,55 +1,40 @@
-Date: Fri, 9 Mar 2001 01:26:01 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Graham Stoney <greyham@research.canon.com.au>
-Cc: "Srinivas Rao.M" <msrao@vxl.co.in>,
-	Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: speed and space Optimization
-In-Reply-To: <20010309104703.B6166@brixi.research.canon.com.au>
-Message-ID: <Pine.HPX.4.10.10103090105250.9166-100000@gra-ux1.iram.es>
+Message-ID: <3AA82575.D6C1CAF2@mvista.com>
+Date: Thu, 08 Mar 2001 19:36:05 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Oliver Brown <obrown@adventnetworks.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EST SBC8260 and Canary CTX-1170
+References: <CD5CA14300A9D54A8D13D58CD3C87B422DD729@advcorp-exc01.advent.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 9 Mar 2001, Graham Stoney wrote:
+Oliver Brown wrote:
 
-> On Thu, Mar 08, 2001 at 04:48:21PM +0100, Gabriel Paubert wrote:
-> > -Os was faster than -O2 which was faster than -O3 for some routines.
->
-> I had similar results benchmarking our application on an 855T: -Os was both
-> smallest and fastest on gcc-2.95.2.  This makes sense since the I-cache on
-> embedded CPUs is relatively small, and tighter/smaller code takes less time
-> to fetch.  The difference between -Os and -O2 in terms of speed and space
-> were only very minor.  -O3 made code larger and slower, by inlining functions
-> and blowing the cache out too much; I'd strongly recommend against using it.
+> I can't generate any traffic on the fast ethernet port.
 
-In my case it was on an FFT on a 603e. The code easily fitted in the cache
-and did not call any other subroutine, so inlining was not an effect and I
-did not see any loop being unrolled. Basically the code was only accessing
-data arrays and performing fmul/fadd and fmadd FPU operations, lots of
-shift and mask for addressing with powers of 2. Even in this case -Os
-turned out to be better, I suspect that this is due to imperfect
-scheduling by the compiler (on a 603e or 750, the rules for retirement are
-fairly restrictive, much more than for issuing: the second retired can
-only be integer or load, so FP followed by store blocks, like FP followed
-by FP and I don't think that gcc takes these rules into account).
+The CTX-1170 worked at one time on the EST board.  Unfortunately,
+I had to make little changes for just about every different 8260
+board I have seen.  Further, my EST boards have all failed in some
+way or another so I can't even test this anymore.
 
-It was just an experiment and had no serious scientific value, but
-IIRC, the higher optimization levels had a tendency to end up grouping all
-the loads at the beginning of the loop, the FP operations in the middle
-and the stores at the end. The compiler might be better now, I don't know.
+Even when it "worked", I had trouble with some 10/100 switches.
 
->
-> My suggestion is that the best starting point is to use -Os.
+> Ppcboot works fine on this setup, so I know that the hardware is
+> working.
 
-Indeed. I often compile my kernels with -Os too. A large part of the
-kernel is straight inline code for which cache footprint is a very
-important consideration. The few routines which have loops with large
-iteration counts have been heaviliy optimized.
+Is this driver available from sourceforge, or is it something you have
+locally?  I would like to look at it and I may see some differences.
 
-	Regards,
-	Gabriel.
+Most of the changes surround the MDIO interface and the software
+"clocking" of the bits on those lines.  The PHYs seem sensitive to
+timing I just can't get right with the software.  I was able to get
+one, or a small subset, working at the same time, but not all of them
+at once.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
