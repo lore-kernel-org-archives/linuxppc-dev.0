@@ -1,52 +1,42 @@
-Date: Wed, 9 May 2001 13:06:34 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Brian Kuschak <brian.kuschak@skystream.com>
-Cc: "'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: dcache BUG()
-In-Reply-To: <B25E2E5A003CD311B61E00902778AF2A02044652@SERVER1>
-Message-ID: <Pine.HPX.4.10.10105091149320.29518-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 09 May 2001 09:44:13 -0400
+From: thewalthamgroup@netscape.net (Mark Phillips)
+To: walser.martin@rw.hirschmann.at
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: what files should be included in initrd
+Mime-Version: 1.0
+Message-ID: <18C697C2.78FCC6BB.C7F6CBA8@netscape.net>
+References: <040944A92C91D211954D00C095EE82680168FF32@POST>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 8 May 2001, Brian Kuschak wrote:
+Walser,
 
-> Yes, I agree.  Like I said it definitely runs longer now than it did before,
-> but unfortunately shows the same symptom.  Here is a little more information
-> that I gleaned last night which may or may not be useful.
+In my opinion, the best source for this is the Bootdisk-Howto, available everywhere (for example http://www.linuxdoc.org/HOWTO/Bootdisk-HOWTO/)
+You should skip the "ldconfig" step.
+You should also refer to Initrd.txt in the Documentation subdirectory of your kernel.
 
-Ok, so you were hitting 2 bugs (or more, shudder).
+Mark Phillips
 
-> I noticed that arch/ppc/kernel/misc.S still had the (old?) assembly
-> functions for doing atomic operations.  They are similar but slighly
-> different to the inline functions in atomic.h.  I ran yesterday for about 4
-> hours with these "alternative" atomic functions, and I did not see the
-> failure.  I'm not sure if this was just a coincidence (the timing changed
-> slightly), or whether it indicates a problem with the inline atomic
-> functions.
-
-Interesting, which compiler are you using? I've been experimenting with my
-own modifications to gcc, in case I hit a problem I often do objdump
---disassemble vmlinux | less and search the instruction in which I'm
-interested. In your case it would be lwarx, but there are probably too
-many occurrences to make the hunt worthwhile.
-
-Note that the semaphore code has been modified over and over again
-recently to make it work (I'm still unable too convince me that it is
-correct, I need to study it more). But the semaphore code should be
-independent of reference count handling.
-
-
-> Sure, I'll post it next time I get it.  (I already cleared the one I got
-> last night).
-
-Thanks,
-
-	Regards,
-	Gabriel.
-
+Walser Martin <walser.martin@rw.hirschmann.at> wrote:
+>
+>
+> Hi,
+>
+> sorry for this question, but it's the first time I try to use linux on my
+> custom board.
+> I'm using PPCBoot and the MontaVista kernel. Both work fine, but I don't
+> know how to make a initrd image.
+>
+> Can someone give me a short overwiew on how to build such an image and what
+> files should be included?
+>
+> thanks
+> Martin
+>
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
