@@ -1,41 +1,47 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <05c901c25976$6fb597a0$450fa8c0@amitesting>
-From: "Michael Meriin" <Michael@KSWaves.com>
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <20020911082854.400C2FA8B@denx.denx.de>
+To: joakim.tjernlund@lumentis.se
+Cc: "Michael Meriin" <Michael@KSWaves.com>,
+	"linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: SPI Driver for 8xx 
-Date: Wed, 11 Sep 2002 11:34:33 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 11 Sep 2002 12:26:20 +0200."
+             <IGEFJKJNHJDCBKALBJLLAEFNFGAA.joakim.tjernlund@lumentis.se>
+Date: Wed, 11 Sep 2002 12:50:33 +0200
+Message-Id: <20020911105038.2375DFA8B@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Wolfgang,
+Dear Jocke,
 
-> > But I failed to get to : http://www.denx.de/re/linux.html :((
->
-> Which sort of error message do you get?
+in message <IGEFJKJNHJDCBKALBJLLAEFNFGAA.joakim.tjernlund@lumentis.se> you wrote:
+> Great, I too need a SPI driver for mpc8xx.
 
-Netscape is unable to locate the server www.denx.de
->
-> Alternate way: go to http://www.denx.de , and click on "Software"
->
-> > I will be happy to get both drivers, because I have to control several
-SPI
-> > devices
-> > and therefore the driver must be complicated ;))
->
-> No, the driver stays as simple as is. You just have to add  separated
-> devices  based  on  how  your  hardware  implements the device select
-> function.
->
-> Wolfgang Denk
+:-)
 
-Regards,
-    Michael Meriin
+> I took a quick look at the cpm_spi.* driver and looks fine to me, but I have a question:
+> The driver turns off interrupts during transmission. The comment in the file
+> says: ... we may need to call it from interrupt handlers.
+>
+> I can not see any call from a interrupt handler in this code. Where is the call(s) from/to
+> interrupt handlers? Or is this just a future extension?
 
+We use the SPI communication inside another device  driver  (for  CAN
+bus).  It is this other driver that will call the SPI I/O function in
+it's interrupt handler.
+
+> I would like to keep the interrupts on, if possible.
+
+Feel free to modify the driver according to your needs. It should not
+be a problem except for special cases like ours.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"If the code and  the  comments  disagree,  then  both  are  probably
+wrong."                                                - Norm Schryer
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
