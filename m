@@ -1,32 +1,48 @@
-Date: Sat, 26 Jun 1999 19:33:35 +0200
+Message-Id: <199906261814.DAA03596@mail.cc.tohoku.ac.jp>
+MIME-Version: 1.0
+Date: Sun, 27 Jun 1999 03:14:30 +0900
+From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
 To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Is there a free impl. of Open Firmware
-Message-Id: <19990626193335.003543@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: [Q] PowerStack installimage
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+Hi.
 
-Does someone knows is there is a free implementation of OF, or at least
-work on one ? if there's no, this would be an interesting project to do ;-)
+Now I make kernel and bootimages for R5.
+I compiled kernel-2.2.1 with prep_fb.patch, and 
+I would like to add zImage to "Linux1999installer.bin" as a 
+"ramdisk.image.gz".
 
-I was mostly thinking about putting a thin OF layer in mac-on-linux in
-order to truely support any OF-based OS and load the new MacOS ROM (so
-MacOS would work on any PPC based machines using the ROM provided by
-Apple) but I'm working on BIOSes for custom design embedded boards with
-various CPUs and in this field, it would be very useful too.
+I make installer without fb_patch, error occurs when booting visual 
+installer, with framebuffer errors. 
+But, with fb_patch, another error, likes "ramdisk is not proper image",
+occurs when change from zImage to visual installer.
+
+I have to change libraries or compilers? 
+Or I should use more newer kernels? If so, how to patch framebuffers?
+
+I would so appreciate if you take me some ideas.
+
+I use these sources:
+ linux-2.2.1
+ prep_fb.patch
+ Linux1999.installer.bin (Rename to "ramdisk.image.gz")
+
+Environment:
+PowerStack MT
+LinuxPPC R4 pure install environment.
 
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+Thanks.
+----------------------
+Kaz Aoshima = PReP station
+Material deveropment, Faculty of engineering, 
+Tohoku University, Japan
+E-mail:aoshimak@mail.cc.tohoku.ac.jp
+#I am appreciate if you could tell me suggestions
+ for my bad English expressions.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
