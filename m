@@ -1,49 +1,45 @@
-Message-Id: <200006110814.KAA00801@piglet.grunz.lu>
-Date: Sun, 11 Jun 2000 10:14:27 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: PATCH: ncr885e PPC patch look ok to you?
-To: jgarzik@mandrakesoft.com
-cc: cort@fsmlabs.com, paulus@linuxcare.com, dan@synergymicro.com,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <394306A3.3D4DFE85@mandrakesoft.com>
+Message-ID: <39437131.F1DD3AE6@wanadoo.fr>
+Date: Sun, 11 Jun 2000 13:00:01 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: Geoff Hutchison <ghutchis@wso.williams.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Possible gcc bug?
+References: <v04220801b568cc2210b4@[129.105.9.193]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Jeff,
+Geoff Hutchison wrote:
 
-Still cleaning up, I see?
+> If I'm being a complete moron and doing something silly, please let
+> me know and I'll eat my words.
 
-On  10 Jun, this message from Jeff Garzik echoed through cyberspace:
-> Does this patch, against 2.4.0-test1-ac13, look ok to you guys?
+I think you do: You are passing over the array bounds. If I remember my
+C basics (which I never really learned either) correctly,
 
-Looks good to my, AFAIKT. Only potential problem I see is the PCI IO
-region access on PPC machines without ISA, where there has to be a
-translation applied. But that will probably be only finally resolved in
-2.5...
+double field[loopX][loopY];
 
-> NOTE:  Maybe a PPC kernel expert can tell me whether pci_enable_device
-> on PPC actually enabled PIO/MMIO regions correctly?  If so, this patch
-> can, in addition to the change above, also remove the "manual" setting
-> of the PIO bit in PCI_COMMAND.
+allows indices running from 0 to loopX-1 and from 0 to loopY-1.
 
-Not that I would call myself a kernel expert, but yes,
-pci_enable_device() works correctly on PPC. So you can remove the manual
-IO enable.
+In your first loop
 
-Cheers
+  /* Initialize arrays */
+  for (x = 0; x <= loopX; x++)
+    for (y = 0; y <= loopY; y++)
+      {
+      	field[x][y] = 0.0;
+	points[maxX * x + y].ptX = x;
+	points[maxX * x + y].ptY = y;
+      }
 
-Michel
+you are clobbering random memory locations that may be different for
+different compiler optimisation levels.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Replace "<=" by "<", and your errors will go away.
 
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
