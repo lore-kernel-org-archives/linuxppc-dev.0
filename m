@@ -1,93 +1,57 @@
-Message-ID: <3D0823D3.4000909@embeddededge.com>
-Date: Thu, 13 Jun 2002 00:47:15 -0400
+Message-ID: <3D08276D.3080502@embeddededge.com>
+Date: Thu, 13 Jun 2002 01:02:37 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@au1.ibm.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: First cut at large page support on 40x
-References: <20020531042153.GD16537@zax>	<3CFC0D3F.9030901@embeddededge.com>	<20020604035947.GH2762@zax>	<3CFCFC20.80101@embeddededge.com>	<15614.37065.549142.218906@argo.ozlabs.ibm.com>	<3CFEE9A3.5060300@embeddededge.com>	<15614.63160.272890.683586@argo.ozlabs.ibm.com>	<3CFF1624.2070808@embeddededge.com>	<20020612035203.GQ25800@zax>	<3D06E702.4000709@embeddededge.com>	<20020612064344.GT25800@zax>	<3D07D80F.9050306@embeddededge.com> <15623.63352.516734.245869@argo.ozlabs.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: get_pteptr()
+References: <20020613040345.GD4228@zax>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+David Gibson wrote:
 
-> I think this deserves some discussion, on a couple of levels, for the
-> sake of the other people who are on this list and following this
-> discussion.
+> get_pteptr() is used in exactly three places:
+> 	- in arch/ppc/8xx_io/commproc.c in the #else side of a #if 1,
+> i.e. not really used at all.
 
-I really don't want to discuss it anymore here, but I'll add just a
-few comments.
+That was one of my earliest cache management hacks, that predated iopa()
+and consistent_alloc().  You can get rid of it.
 
-> .... It is a mindset which highly values
-> simplicity and clarity of code, and in particular being able to
-> understand what a piece of code is doing, in considerable detail, when
-> you read it.
+> 	- in do_page_fault() [arch/ppc/mm/fault.c] for the handling of
+> page execute faults on 40x.  It's use here is arguably incorrect if
+> large page pmds are introduced, although we won't ever get execute
+> faults on large pages, so it doesn't really matter.
 
-I dislike it at the times it costs us features compared to other
-operating systems.  We are caught between being better than a minimal RTOS,
-but really lacking when compared to commercial/mature systems.
-
-> I think this mindset is the reason why we have an efficient and
-> maintainable kernel rather than a microkernel-based system written in
-> C++.
-
-I'm not proposing we do such a thing, although some of the nicest features
-have been implemented in such systems :-)  What we need to do is learn
-about these systems and bring some of the concepts home.
+Hmmmm.....I was always hoping we could use "standard" VM functions to
+find and update PTEs, but I guess that isn't happening.  I would suggest
+just placing a comment around this about the large pages and leave it.
 
 
-> In the context of drivers doing DMA, ......
+> But given that iopa() is pretty much the only user of this function
+> (do_page_fault() should be done slightly differently, I think), there
+> doesn't seem a lot of point.  Why not just eliminate get_pteptr() and
+> walk the page tables explicitly in iopa().
 
-> (1) kernel lowmem
-> (2) other kernel virtual addresses
-> (3) user addresses
->
-> Thinking about this from the driver's perspective, (1) is easy.
- > .... (2) is a little harder
- > ...... And (3) is harder still because the buffer may move
-> or disappear.  In this case we need to pin the buffer as well as
-> handling the fact that it may be physically discontiguous.
+I sometimes use get_pteptr() for debug.  Make sure xmon doesn't use it
+for printing page table information.
 
-So?  All of this has been solved before in other systems.  Just solve
-for (3) and you have everything covered.  This isn't an unusual implementation
-detail.  In this case, the driver simply asks for the S/G list associated
-with the VM range (the triplet I mentioned earlier).  In case (1), there
-is just one entry, in case (2) there could be multiple entries, and in
-case (3) you usually see the non-zero offsets and non-page size lengths.
-The user page locking can be done by the underlying DMA support functions,
-so the driver doesn't care about that.  If you don't have S/G hardware support
-the driver has to break up the transfers, which is really the only complexity.
-This is what other systems have been doing for decades, and it really
-simplifies what the driver has to know (or doesn't need to know :-) about
-the underlying VM implementation.  Of course, it would mean modification of
-existing drivers, so this will never happen :-)  Maybe we could just do it
-in the 4xx OCP stuff as proof of concept :-)
+> [*] Well, apart from removing iopa() entirely, but that's another
+> flamewar^Wdiscussion.
 
-> Given this, I would claim that an abstraction that tries to hide the
-> differences between different kinds of virtual address is one that
-> hides details that are relevant to drivers, and that that is one
-> reason why Linux doesn't have such an abstraction.
-
-What do drivers care about how or where physical memory is allocated and
-mapped to virtual addresses?  All they want is an address that allows DMA :-)
-A driver will only care about this if you force it to do so.
-
-> .....  Instead, when
-> drivers are required to handle physically discontiguous buffers, we
-> make that apparent up front and provide the drivers with the details
-> they need to handle that case efficiently as well as the contiguous
-> case.
-
-Doesn't my description do that?  Seems pretty simple to me, but then
-I'm a computer scientist and not a hacker :-)
-
+Just remove it for 4xx, or put an #ifdef in iopa() to do the arithmetic
+conversion.  It's only used on 4xx and 8xx, and I would like to ensure
+the 8xx still works correctly before we nuke everything.  I would just
+be a little careful to ensure you have run enough PCI cards to verify
+everything is OK.
 
 Thanks.
 
 
 	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
