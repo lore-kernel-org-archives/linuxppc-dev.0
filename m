@@ -1,35 +1,33 @@
-Message-Id: <4.2.0.58.20001125140721.009f2220@shell13.ba.best.com>
-Date: Sat, 25 Nov 2000 14:23:38 -0800
+Date: Sun, 26 Nov 2000 16:42:14 +0100 (CET)
+From: roh <roh@hyte.de>
 To: linuxppc-embedded@lists.linuxppc.org
-From: Ron Avisa <ravisa@base2software.com>
-Subject: strange lockup on PPC860T 
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: linux 2.4.test on a mpc823
+Message-ID: <Pine.LNX.3.96.1001126163451.24412A-100000@killgates.hyte.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-With gracious help of Wolfgang Denk (providing a ramdisk.image) was able to
-bring up a console along with networking etc.
-However I'm seeing some strange lockup happening at 0xC00026a4 which
-corresponds to do_signal_ret() in head.S.
+hi there,
+i'm reading this list for a while but cannor figure out
+if there's a ready-to-run package to get linux running
+on the mpc8xx-developer-board from motorola with an mpc823
 
-micro is a power pc 860T
-I'm using a redhat edk 2.2.13 kernel.
-My board from hell is custom, so I've been making as few changes as
-possible to the mbx build version of the kernel.
-And I'm booting using ppcboot. Bdinfo on ppcboot and mbx build match.
-Aside from I/O changes biggest changes have been disabling of external ints
-and ioremapping to corresponding to this board.
+is there any linux-software to connect to this board?
+the mpcbug software from motorola runs under windows and
+i can't get them to work
 
+if there's a good step-by-step-howto please let me know
 
-currently shifting environment to hardhat for newer kernel.
+one additional question: is the a 'bootloader' aviable for that board?
+my target-system is a ebbedded device with mpc823 8megs flash and 32megs
+ram. can i boot this directly? or must i write a bootloader myself?
 
-Any suggestions on the above problem?
+thank you for answering me and sorry for my bad english
 
-Thanks,
+regards
 
-Ron
-
+joachim 'roh' steiger
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
