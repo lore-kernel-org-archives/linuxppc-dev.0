@@ -1,46 +1,24 @@
-In-Reply-To: <Pine.LNX.3.96.990217172825.19695C-100000@globegate.utm.edu>
-Date: Thu, 18 Feb 1999 12:25:39 +0100
-To: "David A. Gatwood" <marsmail@globegate.utm.edu>,
-        linuxppc-dev@lists.linuxppc.org
+Date: Thu, 18 Feb 1999 14:05:48 +0100
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: [ppc-dev] Re: Restructuring Efforts
-Message-Id: <19990218122539.026672@mail.mipsys.com>
+Subject: E-mail problems
+Message-Id: <19990218140548.010967@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 17, 1999, David A. Gatwood <marsmail@globegate.utm.edu> wrote:
+I've been experiencing some strange problems with my e-mail lately. It
+looks like more and more messages I send are beeing rejected either by
+the destination SMTP server or by my server here, I didn't find the exact
+cause of the problem yet.
 
->Sounds a lot like a bunch of things in BSD-like kernels, where, in
->MkLinux, for instance, interrupt_heathrow.c, interrupt_pdm.c, etc. each
->have a static structure with pointers to their externally visible
->functions, and the main function checks the hardware type and assigns a
->global pointer to point to the static structure for the particular set of
->routines.  Is that what you mean?
+So if you are waiting for an answer of my part, re-send me your e-mail
+and I'll re-answer you from a different account.
 
-Almost ;-)
+Sorry.
 
-This scheme still requires one more pointer dereferencing: one to get to
-the global holding the structure pointer, one to get the structure, one
-to get the function.
-
-I was thinking about filling a static structure with function pointers
-instead (but the "modules" can still export a pointer to a structure, the
-kernel will just copy the pointers in the structure instead of just
-storing a pointer to the structure).
-This way, we have one less indirection.
-If the structure can be stored at a fixed address in kernel virtual space
-(hummm....) then access to the function pointers can be really fast.
-
-Of course, this is really a matter of details, but since those will be
-used in a lot of performance sensitive execution path (interrupts, mm,
-...), such optimisation can make a difference by avoiding unnecessary
-cache misses.
-
-Maybe we could wrap the calls to the functions themselves in macros so
-that we can later change the way the mecanism is implemented.
 
 -- 
            E-Mail: <mailto:bh40@calva.net>
