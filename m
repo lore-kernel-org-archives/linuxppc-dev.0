@@ -1,78 +1,64 @@
-Message-ID: <3B930D22.2C2F88A4@lge.com>
-Date: Mon, 03 Sep 2001 13:54:58 +0900
-From: Sangyong Lee <dobest@lge.com>
+Message-ID: <002801c1346a$553b1e40$2000a8c0@private>
+From: =?ks_c_5601-1987?B?wLG1v7yu?= <manulsan@daintelecom.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to make ramdisk ? 
+Date: Mon, 3 Sep 2001 20:19:43 +0900
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Promise Ultra66 - one more time
-References: <200109010222.TAA05540@krakatoa.gigabitnetworks.com>
-Content-Type: text/plain; charset=EUC-KR
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> 2) My ATA driver only requires the following defines now (given the addresses
->    above). My question is what the values are for these addresses?
->
-> #define CFG_ATA_BASE_ADDR     /* MBAR address (MBAR0?) */
-> #define CFG_ATA_IDE0_OFFSET   /* Offset to Memory base for IDE0 ctrl */
-> #define CFG_ATA_IDE1_OFFSET    /* Offset to Memory base for IDE0 ctrl */
-> /*
->  * Definitions for accessing IDE controller registers
->  */
-> #define CFG_ATA_DATA_OFFSET    /* Offset from IDE0/1 addr for DATA registers*/
-> #define CFG_ATA_REG_OFFSET    /* Offset from IDE0/1 addr for Control regs */
-> #define CFG_ATA_ALT_OFFSET    /* Offset for IDE0/1 alternate regs */
->
-> The BASE_ADDR is one of the MBAR's, I believe this is MBAR0.
-> The DATA, REG, and ALT offsets are the values you add to the BASE_ADDR
-> to get at these registers.
->
-> Second question: Given the MBAR's programmed above, what are the offsets
-> for the standard ATA registers?
->
-> Many thanks in advance; I know this has little todo with Linux or PPCBoot,
-> however, I have sent several emails to Promise Tech Support and they have
-> all but ignored my email messages.
->
->                                 -James
->
+네트워크Hi
 
-There are two standard ATA register sets
-:command block registers, control block registers.
-There are 8 command block registers and 2 control block registers
+I'am trying to Hard Hat linux 1.2  on custom MPC8240 Board
+modifying  Sandpointing8240  SDK.
+I want to use ramdisk  so I did " make  zImage.initrd"
+but there are errors.  followings are error messages
+=================================================================
+.
+.
+mlinux:                 59.5% -- replaced with vmlinux.gz
+make[2]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/images'
+make -C sandpoint zImage.initrd
+make[2]: Entering directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/sandpoint'
+ppc_82xx-ld -T /opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/vmlinux.lds -Ttext 0x00800000 -o zvmlinux.initrd.tmp head.o ../common/misc-common.o ../common/misc-simple.o ../common/ns16550.o ../common/string.o ../lib/zlib.a
+ppc_82xx-objcopy -O elf32-powerpc -R .comment \
+        --add-section=initrd=../images/ramdisk.image.gz \
+        --add-section=image=../images/vmlinux.gz \
+        zvmlinux.initrd.tmp zvmlinux.initrd
+ppc_82xx-objcopy: cannot stat: ../images/ramdisk.image.gz:  no such file or directory
+make[2]: *** [zvmlinux.initrd] Error 1
+make[2]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot/sandpoint'
+make[1]: *** [zImage.initrd] Error 2
+make[1]: Leaving directory `/opt/hardhat/devkit/lsp/motorola-sandpoint/linux-2.4.2_hhl20/arch/ppc/boot'
+make: *** [zImage.initrd] Error 2
+=================================================================
 
-As you know all are 8 bit registers
+Question ]
+    At cimpile time, ramdisk.image.gz is needed .
 
-Command block registers begin at address MBAR0.
-And control block registers begin at address MBAR1.
-You can confirm this from chip manual, I guess.
+   1) How do I make ramdisk.image.gz ?
 
-I've used two E-IDE controller: via and cmd.
-like this.
 
-see below macros.
+Thanks in advance.
+                                                DongSeak Yoon
 
-And you can know  this from ATA spec.
+Question ]
 
-#define IDE_BASE         MBAR0
-#define IDE_CTL_BASE     MBAR1
+   1) Do I have to make ramdisk.image.gz ?
+   2) if so , how can I make it  ?
 
-#define IDE_DATA_REG     (IDE_BASE + 0)     /* Data register           */
-#define IDE_ERROR_REG    (IDE_BASE + 1)     /* Error register          */
-#define IDE_FEATURES_REG (IDE_BASE + 1)     /* Features register       */
-#define IDE_SECCNT_REG   (IDE_BASE + 2)     /* Sector Count            */
-#define IDE_SECTOR_REG   (IDE_BASE + 3)     /* Sector  number          */
-#define IDE_CYLLO_REG    (IDE_BASE + 4)     /* Cylinder low            */
-#define IDE_CYLHI_REG    (IDE_BASE + 5)     /* Cylinder high           */
-#define IDE_DRVHD_REG    (IDE_BASE + 6)     /* Drive/Head              */
-#define IDE_STATUS_REG   (IDE_BASE + 7)     /* Status                  */
-#define IDE_COMMAND_REG  (IDE_BASE + 7)     /* Command                 */
 
-#define IDE_CNTRL_REG    (IDE_CTL_BASE + 2) /* Control (when writing)   */
-#define IDE_ALTSTATUS_REG IDE_CNTRL_REG     /* alternate status(when reading) */
+Thanks in advance.
+                                                DongSeak Yoon
 
-hope this helps to you.
 
+
+
+E-mail  : manulsan@daintelecom.com
+Mobil   : 016-208-9568
+Fax     : 82-2-581-2805
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
