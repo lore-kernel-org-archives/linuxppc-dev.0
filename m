@@ -1,10 +1,10 @@
-Date: Thu, 17 Aug 2000 20:26:00 -0700 (PDT)
+Date: Thu, 17 Aug 2000 20:28:48 -0700 (PDT)
 From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
 To: khendricks@ivey.uwo.ca
 cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Another signal handling bug?
-In-Reply-To: <399C6F3D.1CFE185E@sympatico.ca>
-Message-ID: <Pine.LNX.3.96.1000817201404.8005G-100000@deepspace.mklinux.org>
+In-Reply-To: <399C704B.CA63A22D@sympatico.ca>
+Message-ID: <Pine.LNX.3.96.1000817202736.8005H-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -15,35 +15,19 @@ On Thu, 17 Aug 2000, Kevin B. Hendricks wrote:
 
 > Hi David,
 >
-> > > 2.  You should techically always be calling async signal safe routines
-> > > frominside any signal handlers.  Grabbing a mutex lock is not one of these.
-> >
-> > Wait a sec... how can taking a lock be an atomic operation, but not async
-> > signal safe?  That seems a little odd.
+> If you are grabbing mutexes in a signal handler, you are obviously in a
+> multithreaded environment.  When you set the sa_flags to zero you may prevent
+> that thread from recursing in the signal handler but the signal could be delived
+> to another thread which in fact has its own signal mask and things but shares
+> sigaction strucutres and it could be entering your signal handler.
 >
-> Here is what the pthread_mutex_lock page says:
->
-> ASYNC-SIGNAL SAFETY
->        The mutex functions are not async-signal safe.  What  this
->        means is that they should not be called from a signal han<AD>
->        dler.  In  particular,   calling   pthread_mutex_lock   or
->        pthread_mutex_unlock  from  a  signal handler may deadlock
->        the calling thread.
->
-> You have already experienced the deadlock problem first hand!
+> Just a thought, but something to possibly check out.
 
-Actually, the deadlock was my stupidity.  I took the lock and then
-proceeded to call a function that took the lock, which is a no-no with
-non-debugging locks.  :-)
+Already did.  I thought I said that in the original message, but that's
+probably been lost for some time in everyone's inbox.  ;-)
 
-Well, I'm rewriting the heck out of this thing, adding Yet Another Thread
-(tm) to deal with the signal handling, using nanosleep, which I hope is
-interruptable by an alarm, since using sleep is potentially incompatible
-with the use of setitimer....  Getting really ugly, but hopefully I can
-get all these issues worked out, one way or another.
-
-So anybody know why someone doesn't just write a thread/signal-safe Xlib?
-:-)
+Anyway, the program blocks SIGALRM before it spawns threads, and only
+unmasks it in the desired thread.
 
 
 David
