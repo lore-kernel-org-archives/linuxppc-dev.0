@@ -1,29 +1,41 @@
-Message-ID: <01FAF65DEA16D4119B95009027E78F3102AD492B@il02exm26.comm.mot.com>
-From: Hawkins Jeffrey-CJH016 <Jeffrey.F.Hawkins@motorola.com>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: GCC 2.95.3
-Date: Mon, 12 Nov 2001 19:02:57 -0600
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Mon, 12 Nov 2001 18:31:58 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Jun Sun <jsun@mvista.com>, "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
+	Linux/MIPS Development <linux-mips@oss.sgi.com>,
+	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	rz@linux-m68k.org
+Subject: Re: [RFC] generic MIPS RTC driver
+Message-ID: <20011112183158.C16490@cpe-24-221-152-185.az.sprintbbd.net>
+References: <Pine.GSO.4.21.0111122055010.10720-100000@mullein.sonytel.be> <3BF0371F.8040575B@linux-m68k.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BF0371F.8040575B@linux-m68k.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am looking for the last release of the GCC 2.95.3
-for PowerPC.  From the linuxppc.org FTP Site (under
-F. Sirl's area), I have been able to download the
-2.95.3-v versions of all the GCC RPMs, except for
-the GCC-C++-2.95.3-v.  For this file, I get a File not
-on Server Error ????  I tried other Versions of 2.95.3
-under the F. Sirl Area, as well as, tried getting files
-from the LinuxPPC2000-Q4 and LinuxPPC-STABLE area ---
-no luck getting the GCC-C++ RPM :(....
+On Mon, Nov 12, 2001 at 09:54:55PM +0100, Roman Zippel wrote:
+>
+> Hi,
+>
+> Geert Uytterhoeven wrote:
+>
+> > > Geert, what is the abstraction they used?
+> >
+> > At first sight, we only use get_rtc_time() and mach_hwclk().
+>
+> Over the weekend I changed it into set_rtc_time()/get_rtc_time(), which
+> are now defined in <asm/rtc.h>, so mach_hwclk() is gone in the generic
+> part.
 
-Any help would be appreciated....
+Could you please post a copy of this?  I wanna go and try and get the
+rest of the PPC world going on it, if you didn't do that already.
 
-
-
-Jeff
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
