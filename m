@@ -1,27 +1,39 @@
-Message-ID: <3A956EF9.E532F518@mvista.com>
-Date: Thu, 22 Feb 2001 11:56:41 -0800
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <3A9576FC.6F4B1FAB@mvista.com>
+Date: Thu, 22 Feb 2001 15:30:52 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Subodh Nijsure <subodh@best.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Status of linux-ppc kernel.
-References: <200102221739.JAA03312@shell9.ba.best.com>
+To: Matt Porter <mporter@mvista.com>
+Cc: "tsombakos, mark" <tsombakos_mark@emc.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Booting Sandpoint 8240??
+References: <276737EB1EC5D311AB950090273BEFDD01F4DB3F@elway.lss.emc.com> <20010222083031.A21599@cx258813-a.chnd1.az.home.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Subodh Nijsure wrote:
->
+Matt Porter wrote:
 
-> Also there seem to be few patches like Wolfgang's ethernet patch
-> found on ftp.denx.de or m8xx_pcmcia stuff that hasn't shown up in
-> 2.4.X latest kernel.  Are these things going to get merged into
-> "mainline" sometime and does anybody know probable dates etc.?
+> You don't need to do a thing, all is well. :)
 
-m8xx_pcmcia is a part of the pcmcia-cs tree.  The kernel changes depend
-on where you ioremap memory for pcmcia, which is board dependent.  I
-need to send Dan a kernel patch for the EP boards, but I haven't done it
-yet:(
+Ummmm....I think this should work, but those addresses weren't my
+original intention.  The original "design" was to use 0x00800000
+as the link address, and 0x00900000 as the load address.  The code
+will copy itself down to the 8 Meg location, then uncompress as you
+describe.  I don't know if this is still the case, but the uncompress
+code used to make some assumptions (take some liberties) about using
+the space between the load address and execute address for temporary
+storage.  If you load below the execute address, this address
+arithmetic is screwed up and I'm not sure what would happen.
+
+With the 2.4 kernel you have to allow almost 1.5 Mbytes of space
+from the start of RAM for the kernel to do its work, and not write
+over some boot information (command line or initrd info) that the
+initial bootloader may have dropped into magical memory locations.
+Trying to run a bootloader under the 2M boundary is risky, and it
+won't run in under the 1.5 M boundary.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
