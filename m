@@ -1,16 +1,22 @@
-Return-Path: <darenh@4bridgeworks.com>
-Received: from ntserver4.diluk.co.uk (mailhost.digitalinterfacesltd.com
-	[62.69.87.37]) by ozlabs.org (Postfix) with ESMTP id 8F10F2BC0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 00:59:55 +1000 (EST)
-Message-ID: <C18BA5DDB58DD511BD0700C0DF0DD4502941E7@NTSERVER4>
-From: Daren Hayward <darenh@4bridgeworks.com>
-To: "'jonathan@jonmasters.org'" <jonathan@jonmasters.org>,
-	linuxppc <linuxppc@4bridgeworks.com>
-Date: Thu, 21 Oct 2004 15:59:42 +0100
-MIME-Version: 1.0
+Return-Path: <jangiels@speakeasy.net>
+Received: from mail3.speakeasy.net (mail3.speakeasy.net [216.254.0.203])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E4C4E2BF0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Oct 2004 03:29:12 +1000 (EST)
+From: Jeff Angielski <jangiels@speakeasy.net>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <B9C9EB8C-2378-11D9-9860-003065F9B7DC@embeddededge.com>
+References: <A3240F62EF3C2749B1A25D3BC9548F4148BCF1@ExchWENZ02.wenz.global.vpn>
+	<721875C6-236D-11D9-9860-003065F9B7DC@embeddededge.com>
+	<1098371711.3508.9.camel@nighteyes.localdomain>
+	<B9C9EB8C-2378-11D9-9860-003065F9B7DC@embeddededge.com>
 Content-Type: text/plain
-Cc: Linux PPC Dev <linuxppc-dev@ozlabs.org>
-Subject: RE: Problem with PPC 440 GX Transmit Path
+Message-Id: <1098379749.8619.16.camel@nighteyes.localdomain>
+Mime-Version: 1.0
+Date: Thu, 21 Oct 2004 13:29:09 -0400
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: SCC UART stalling/hanging - progress
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,14 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Perhaps *any* form of useful output or description would be useful.
-> Could you please provide the specific line of debugging that you need
-> to retain at least?
+On Thu, 2004-10-21 at 11:49, Dan Malek wrote:
+> On Oct 21, 2004, at 11:15 AM, Jeff Angielski wrote:
+> 
+> > No flow control.  8N1 at 230kbps on SCC2 in UART mode.
+> 
+> WTF?  Does it work at other baud rates, like 115200?
 
-Amy of the following
+I have seen the SCC stall with 57600 and 115200 as well, but not as
+often.  I have not test anything slower than that.
 
-PKT_DEBUG(("emac_txeob_dev() entry, tx_cnt %d", fep->tx_cnt));
-PKT_DEBUG(("emac_txeob_dev() exit, tx_cnt %d", fep->tx_cnt));
-PKT_DEBUG(("emac_start_xmit() exitn"));
+> If you just transmit out the port and watch on an o'scope
+> or something, does it keep running?  
 
-Daren
+The data on the tx/rx lines on the scope go idle at the same time the
+software thinks the SCCs have gone idle.
+
+> When it fails, how long does it usually run?
+
+Unfortunately I have not discovered any pattern to the madness. 
+Sometimes it works fine for MBs of data and sometimes it stalls after
+only 30k bytes worth of data.  The only thing of note is that it seems
+to happen more often with the faster baud rate.
+
+Jeff Angielski
