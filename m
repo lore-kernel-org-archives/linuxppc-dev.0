@@ -1,24 +1,24 @@
-Message-ID: <39F8689A.5BEAA6F2@emc.com>
-Date: Thu, 26 Oct 2000 13:23:38 -0400
-From: Zhaobin Zhu <zzhu@emc.com>
+Message-ID: <39F86C2D.C242473B@nexus-tech.net>
+Date: Thu, 26 Oct 2000 13:38:53 -0400
+From: Kyle Harris <kharris@nexus-tech.net>
 MIME-Version: 1.0
-CC: linuxppc-emb <linuxppc-embedded@lists.linuxppc.org>
-Subject: Convert srecord file to binary file
-References: <001f01c03f60$982d74a0$0a00010a@airvent.it>
-Content-Type: text/plain; charset=gb2312
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: BDM recommendations
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-Is there an utility under linux/unix to convert srecord file to binary file
-which can be burnt into eprom ?
+I'm looking to purchase a new BDM emulator. Does anyone have
+suggestions. I've been using EST's for several years on the 68xxx
+platform and have been very pleased with it. But, of course, the PPC is
+not supported with my current model and they recommend upgrading to
+visionProbe for support ($$$).
 
-Thanks,
+Thanks for any advice.
 
---
- Zhaobin Zhu
-
+Kyle.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
