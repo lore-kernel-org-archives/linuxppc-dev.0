@@ -1,91 +1,49 @@
-Message-ID: <3F53B03A.6090500@acm.org>
-Date: Mon, 01 Sep 2003 15:46:50 -0500
-From: Corey Minyard <minyard@acm.org>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
+Date: Tue, 2 Sep 2003 12:12:04 +0000
+From: Gabriel Paubert <paubert@iram.es>
+To: Frank Murphy <murphyf+linux-ppc@f-m.fm>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Change to allow signal handlers to set SE and BE bits.
-References: <3F4FB0F3.9090906@acm.org> <16207.61398.896235.148724@nanango.paulus.ozlabs.org>
-In-Reply-To: <16207.61398.896235.148724@nanango.paulus.ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: Linux kernel / USB keyboard scancode problems
+Message-ID: <20030902121204.A28288@mrt-lx1.iram.es>
+References: <200308231409.24503.murphyf+linux-ppc@f-m.fm> <200309011256.40807.murphyf+linux-ppc@f-m.fm> <20030901114602.A28710@mrt-lx1.iram.es> <200309011459.21786.murphyf+linux-ppc@f-m.fm>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200309011459.21786.murphyf+linux-ppc@f-m.fm>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+On Mon, Sep 01, 2003 at 02:59:21PM +0200, Frank Murphy wrote:
+>
+> On Monday 01 September 2003 1:46, Gabriel Paubert wrote:
+> > > Yeah, the keycode/scancode/keysym stuff is a twisty maze. I do have the
+> > > hardware to test these changes, if you have a guess to what they should
+> > > be.
+> >
+> > What keyboard(s) do you have ?
+>
+> I have an original iBook with its built-in US layout keyboard. I also have a
+> "narrow" iMac US keyboard (F1-F12 and no Delete or Insert key). I also have
+> access to a UK Apple Pro Keyboard. This is the one with the F13, F14, & F15
+> keys.
+>
+> > I've only access to my Pismo now, and it obviously does not have the
+> > F13-F15 keys. I shall be back in front on my G4 in a few days.
+> >
+> > I'd first need to know what "showkey -k" and "showkey -s" give for these
+> > 3 keys on your keybord.
+>
+> In the order F13, F14, then F15, with showkey -k, I get 85, 115, and 119.
+> With showkey -s, I get 0x55 0xd5, 0x73 0xf3, and 0x77 0xf7.
 
->Corey Minyard writes:
->
->
->
->>I have a debugger that runs in an application that requires access to
->>the SE and BE bits.  The following patch adds that capability to
->>2.4.21-ben1.  I have tested this, and gdb still seems to correctly step
->>out of signal handlers, and it seems to work for 4xx.  Does this look ok?
->>
->>
->
->Can you explain a bit more about why the process needs to be able to
->single-step itself rather than having another process single-step it
->using ptrace?
->
-Sure.  This is part of an in-application soft real-time
-debugger/patcher.  The idea is that the debugger/patcher is actually
-linked to the application.  ptrace is really to slow and has too much
-overhead to use on a running soft real-time application.  So instead,
-the debugger uses signal to do tracepoints.  A small bytecode script
-runs (actually the same bytecode machine that GDB understands) that
-collects information and then the application continues.  The need to
-single-step actually comes from the fact that you have inserted a trace
-instruction in the code, and thus the instruction that was there must be
-run somehow.  Relative branch instructions are simulated by software,
-other instructions are placed into a thread-local memory and single-stepped.
+What? Exactly the same code for keycodes and scancodes?
 
-The patching part also needs single-stepping.  The patcher does function
-replacement, meaning that it puts a jump to a new function from the old
-function (to allow bugs to be fixed and new features to be added).  It
-needs to be able to tell if a function is executing in the section of
-memory being patched, and single-step it through that section.
+(85=0x55, 115=0x73, 119=0x77)
 
-Someday, in my spare time, I plan to add a function trace capability to
-this, to allow you to watch the flow of execution through a piece of
-code (thus the need for the BE bit).
+	Gabriel
 
->
->It looks like you're using the old trick of sending yourself a signal
->and then modifying the register values stored on the stack.  That
->seems like a bit of a kludge to me.  If there is some reason why you
->would always naturally be in a signal handler anyway at the point
->where you want to single-step, then maybe it is less of a kludge.
->Does your in-process debugger run entirely inside signal handlers?
->(And if it does, how do you cope with the fact that there are lots of
->C library functions you can't use inside signal handlers, including
->printf?)
->
-Well, not exactly that trick.  The signal handling code for the traps is
-the place where this is done.  You are already in a signal handler for
-the trap, so the natural way to single-step is this way.  The signal
-handlers have to be carefully written to not do any C library
-functions.  The only thing they can do is dump data into a shared memory
-buffer.
-
->
->Also... would this have any impact on how you expect setcontext() to
->behave?  Passing the 3rd argument of a "real-time" signal handler to
->setcontext is supposed to have the same effect as returning from the
->handler.
->
-Hmm, I haven't thought of that.  In fact, I haven't ever used that
-function.  Is this a more efficient way of returning from a signal
-without going though the kernel, or does it still go through the
-kernel?  If it doesn't go through the kernel, you obviously can't set
-the MSR bits, but that's not a big concern since this is a specialized
-function.  If it does go through the kernel, then it should work the same.
-
-BTW, i386 allows the TF bit to be set in signal handlers, and I expect
-that some applications use it to do debugging.
-
--Corey
+P.S: I'm going to be a lot less responsive the rest of the week, I'm
+having a few free days right now after having worked all over the
+week-end.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
