@@ -1,50 +1,44 @@
-To: Lokesh Kumar <kumar.lokesh@wrx-us.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cramfs mpc8xx 2.4.18 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 27 Feb 2004 19:03:44 EST."
-             <294FD9D3403A0340BDAC38E48DCEFFDCA751@RES-EXCH>
-Date: Sun, 29 Feb 2004 17:31:51 +0100
-Message-Id: <20040229163156.68274C0655@atlas.denx.de>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 9 Feb 2004 22:16:30 +0000
+From: Gabriel Paubert <paubert@iram.es>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: XServe G5 and Linux ?
+Message-ID: <20040209221630.A21966@mrt-lx3.iram.es>
+References: <20040208180539.GG18479@sunbeam.de.gnumonks.org> <1076299574.887.118.camel@gaston> <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <294FD9D3403A0340BDAC38E48DCEFFDCA751@RES-EXCH> you wrote:
+On Mon, Feb 09, 2004 at 11:36:53AM +0100, Harald Welte wrote:
 >
-> Kernel command line: root=/dev/mtdblock1 rootfstype=cramfs console=ttyS0,9600
-...
-> ok
-> mtdblock_open
-> mtdblock: read on "cramfs" at 0x0, size 0x1000
-> mtdblock: read on "cramfs" at 0x1000, size 0x1000
-> mtdblock: read on "cramfs" at 0x2000, size 0x1000
-> mtdblock: read on "cramfs" at 0x3000, size 0x1000
-> mtdblock_release
+> On Mon, Feb 09, 2004 at 03:06:14PM +1100, Benjamin Herrenschmidt wrote:
+> > On Mon, 2004-02-09 at 05:05, Harald Welte wrote:
+> > >
+> > > I currently have the requirement for some 1U servers running linux,
+> > > but specifically being not x86. So apart from the sparc64 systems,
+> > > there's of course the Apple XServe.
+> > >
+> > > I have a couple of questions though:
+> >
+> > Well, the machine hasn't yet been released, or if it has, I yet
+> > haven't had any feedback of linux running on it.
 >
-> And after this, I do not get the prompt back, and the target hangs. My
-> cramfs rootfilesystem has
+> I see.  It's just that the XServe G5 is sold cheaper than the XServe G4
+> (at least the dealers have a lower price).  That's why I somehow feel
+> reluctand of buying an old machine.
 >
-> /bin, /dev, /etc, /sbin, /lib and /usr/sbin
+> Also, I can positively confirm that we've had a G5 XServe at the 20C3
+> (CCC Chaos Communication Congress) at the end of december.  It was used
+> to relay the A/V streams of the lecture halls into the congress network.
 
-Are you sure? Can you mount the same  filesystem  when  running  with
-root filesystem mounted over NFS or from a ramdisk?
+Wow, even before they were officially announced! I'd express some
+doubts about it. Apple does not let many unannounced machines in
+the wild AFAICT ;-)
 
-Did you remember  that  you  might  need  the  "-r"  option  (reverse
-endian-ness of filesystem) when creating the filesystem?
+	Gabriel
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I distrust all systematisers, and avoid them. The will  to  a  system
-shows a lack of honesty.
-- Friedrich Wilhelm Nietzsche _Götzen-Dämmerung [The Twilight of  the
-Idols]_ ``Maxims and Missiles'' no. 26
-
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
