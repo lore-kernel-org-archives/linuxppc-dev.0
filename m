@@ -1,40 +1,26 @@
-Message-ID: <3BF15F55.AABB383C@mvista.com>
-Date: Tue, 13 Nov 2001 09:58:45 -0800
-From: Jun Sun <jsun@mvista.com>
-MIME-Version: 1.0
-To: Richard Zidlicky <rz@linux-m68k.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	"Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
-	Linux/MIPS Development <linux-mips@oss.sgi.com>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [RFC] generic MIPS RTC driver
-References: <Pine.GSO.4.21.0111122055010.10720-100000@mullein.sonytel.be> <3BF0371F.8040575B@linux-m68k.org> <20011113144240.B669@linux-m68k.org>
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 13 Nov 01 13:45:01 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0111132145.AA21341@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Current linuxppc_2_4_devel breakage
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Richard Zidlicky wrote:
+Hi there,
 
-> Btw the interrupt need not to be hardware, for the Q40 I test
-> a rtc register once per jiffie and generate a "soft interrupt".
-> It could be done generic at least for m68k.
->
+Current linuxppc_2_4_devel is broken on the Adirondack and I presume a bunch of
+other platforms. After making it compile again (after the cpuinfo change), I
+found that it dies as soon as it tries to perform a PCI config cycle in
+find_bridges. Now this is after it has called setup_indirect_pci() to tell it
+how to make these cycles. On the Adirondack I don't currently use a static
+mapping for the CPC710 registers, and when I call setup_indirect_pci I pass it
+physical addresses. setup_indirect_pci does its own ioremaps on both addresses
+(CONFIG_ADDR and CONFIG_DATA), and it always worked before. It doesn't work
+right now, however. Hacking the port to map the CPC710 registers virtual=
+physical with io_block_mapping() in my ppc_md.setup_io_mappings() makes it
+work, so I know the problem is there.
 
-I have written an experiemntal ptimer driver to do just this and potential
-more.  Such a device is useful for real-time programming (e.g., when you try
-to implement a periodic user task).
-
-See http://linux.junsun.net/realtime-linux/preemption-test
-
-The driver is architecture independent (i.e., linux-common code)
-
-Due to the different programming needs behind periodic timers (or user-level
-timer) and RTC operations, my vote for future work is to leave them as two
-separate drivers.  To me, RTC is really just to read/write RTC clock.
-
-Jun
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
