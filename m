@@ -1,39 +1,32 @@
+Message-ID: <3D18F153.50104@broadon.com>
+Date: Tue, 25 Jun 2002 15:40:19 -0700
+From: David Blythe <blythe@broadon.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: cramfs for root filesystem?
-Date: Tue, 25 Jun 2002 15:30:08 -0500
-Message-ID: <45B36A38D959B44CB032DA427A6E10640128142C@cceexc18.americas.cpqcorp.net>
-From: "Cameron, Steve" <Steve.Cameron@hp.com>
-To: "Cameron, Steve" <Steve.Cameron@hp.com>, <ssh@sgi.com>,
-	<blythe@broadon.com>, <linuxppc-embedded@lists.linuxppc.org>
+To: steve.cameron@hp.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cramfs for root filesystem?
+References: <20020625110421.A6712@zuul.cca.cpqcorp.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wrote:
-
+Stephen Cameron wrote:
 > I have tried to fix up the endian-swapping patch for
 > the mkcramfs from sourceforge CVS, circa Mon Jun 24, 2002
 > :pserver:anonymous@cvs.cramfs.sourceforge.net:/cvsroot/cramfs
+>
+>
 
-Well, I missed one thing, at least, so here is
-an additional patch, below. There must be more to it
-still as I haven't yet got it working.  (not sure
-if problem is in mkcramfs or my kernel).
 
--- steve
+If you are going to take that version of mkcramfs, you could just as
+well take the corresponding version of the cramfs fs implemention since
+it hardwires conversion to *little endian* into the kernel
+implementation, or if you really still want a big endian cramfs, just
+usurp all of the endianness macros (e.g., CRAMFS_32(), CRAMFS_16(), etc)
+that were added to the header.
 
-diff -u -r1.2 mkcramfs.c
---- mkcramfs.c	25 Jun 2002 16:12:58 -0000	1.2
-+++ mkcramfs.c	25 Jun 2002 20:09:45 -0000
-@@ -573,6 +573,7 @@
- 				stack_entries++;
- 			}
- 			entry = entry->next;
-+			fix_inode(inode);
- 		}
+	david
 
- 		/*
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
