@@ -2,10 +2,10 @@ From: peter.grubmaier@chello.at
 Reply-To: peter.grubmaier@chello.at
 To: <linuxppc-embedded@lists.linuxppc.org>
 Subject: MPC852 suppor
-Date: Thu, 29 Jan 2004 0:26:20 +0100
+Date: Thu, 29 Jan 2004 0:26:23 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <20040128232620.YHBW2881.viefep19-int.chello.at@localhost>
+Message-Id: <20040128232623.YHCG2881.viefep19-int.chello.at@localhost>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
