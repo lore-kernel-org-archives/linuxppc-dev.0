@@ -1,21 +1,35 @@
-From: DavidHo@nanometrics.ca
-Subject: PCMCIA info
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFEC913DB2.8E60192B-ON85256E55.006FA359-85256E55.007041E1@nanometrics.ca>
-Date: Fri, 12 Mar 2004 15:26:08 -0500
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Date: Fri, 12 Mar 2004 15:32:50 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Caching in the MPC107, linux 2.6
+Message-ID: <20040312223250.GE14472@smtp.west.cox.net>
+References: <1079088369.691.43.camel@newt>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1079088369.691.43.camel@newt>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Can anyone tell me why the PCMCIA ide support is placed in the ide/legacy
-directory?  Is there a problem with the module and does it already have an
-alternative method for this supporting IDE devices e.g. sandisk
-compactFlashes?
+On Fri, Mar 12, 2004 at 10:46:09AM +0000, Adrian Cox wrote:
 
-Thanks,
-David
+>
+> I discovered this problem back in 2002:
+>
+> http://lists.linuxppc.org/results.html?words=caching+mpc107&method=and&sort=score&restrict=linuxppc-embedded
+>
+> The 2.6 kernel requires a fix to use a MPC745x along with a MPC107
+> bridge. My proposed patch is below - any comments?
+>
+> Without this fix or something like it my boards cannot use pcnet32
+> ethernet.
 
+And this is a rev of the mpc107 which is supposed to work with the 745x
+line ?
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
