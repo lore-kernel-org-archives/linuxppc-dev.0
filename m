@@ -1,62 +1,28 @@
-Date: Tue, 13 Jun 2000 00:07:43 +0200 (MET DST)
-From: Karl-Heinz Krempels <charlie@pool.informatik.rwth-aachen.de>
-To: Andrew Weiss <Andrew.Weiss@boxx.net>
-cc: guillaume.laures@noos.fr, Charles E Leiserson Jr <locutus@MIT.EDU>,
-        linuxppc-dev@lists.linuxppc.org
+Message-Id: <200006122355.TAA07284@nerd-xing.mit.edu>
+To: guillaume.laures@noos.fr
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: SMP 
-In-Reply-To: <002701bfd4a2$bcee0850$4401a8c0@boxx.net>
-Message-ID: <Pine.SOL.4.10.10006130007060.22196-100000@remington.informatik.rwth-aachen.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: Your message of "Mon, 12 Jun 2000 23:09:35 +0200."
+             <3945518F.B3185904@noos.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Mon, 12 Jun 2000 19:55:17 -0400
+From: Charles E Leiserson Jr <locutus@MIT.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi *,
+> Unfortunately, it doesn't work. BootX 1.2.2 shows up only one penguin, and I get
+> the same /proc/cpuinfo.
+> I realized that I have this oddity in dmesg :
+>
+> Entering SMP Mode...
+> Processor 1 is stuck.
 
-yeah it works on a UMAX S900, but without USB.
+Ah, this problem.  I had it too with my nPower400.  I got rid of it by shutting down completely, and starting up again (into Linux).  I haven't had that problem since, at least with my kernel...
 
-Charlie.
 
-Karl-Heinz Krempels, Vereinsstrasse 13-15, 52062 Aachen, +49-241-4093691
-Aachen University of Technology , charlie@pool.informatik.rwth-aachen.de
-- In a world without walls and fences,
-  what should we do with windows and gates?
-
-On Mon, 12 Jun 2000, Andrew Weiss wrote:
-
->
-> Weren't those cards the only working example of assymetric
-> multi-processing?.  Would an SMP kernel actually drive them properly?
->
-> Andrew
-> ----------------------------------------------------------------------------
-> --
-> Big Endian Girls make the RISCen world go round
-> ----- Original Message -----
-> From: "Charles E Leiserson Jr" <locutus@MIT.EDU>
-> To: <guillaume.laures@noos.fr>
-> Cc: <linuxppc-dev@lists.linuxppc.org>; <locutus@MIT.EDU>
-> Sent: Monday, June 12, 2000 2:12 PM
-> Subject: Re: SMP
->
->
-> >
-> > You can get a working SMP kernel at
-> ftp://borg.mit.edu/pub/linux/linuxppc/kerne
-> > ls/multiprocessor/ with all of its support files.  It's a bit old
-> (2.2.12),
-> > but it works.
-> >
-> >
-> > - Ricky
-> >
-> >
-> >
->
->
->
->
+					- Ricky
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
