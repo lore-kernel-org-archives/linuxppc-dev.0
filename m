@@ -1,17 +1,28 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 4204767A79
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id 3E8F467A7E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Mar 2005 00:50:00 +1100 (EST)
-From: Jason McMullan <jason.mcmullan@timesys.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-yADiRkcMVxWeNx2MCKxt"
-Date: Wed, 23 Mar 2005 08:49:57 -0500
-Message-Id: <1111585797.2987.81.camel@ad.doubleclick.net>
-Mime-Version: 1.0
-Subject: [PATCH] Updated: CPM2 Cleanup
+	Thu, 24 Mar 2005 01:06:42 +1100 (EST)
+Message-ID: <424177FB.7090101@mrv.com>
+Date: Wed, 23 Mar 2005 09:06:51 -0500
+From: Guillaume Autran <gautran@mrv.com>
+MIME-Version: 1.0
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <EA78B62757AF1E4799828249310AC4CA071D281F@stca206a.bus.sc.rolm.com>
+	<28F2CE72-0BF0-11D9-97DC-003065F9B7DC@embeddededge.com>
+	<20050210150437.GA19134@logos.cnet>
+	<c5f8c158f9254cbb0a8e085cf0fda8de@embeddededge.com>
+	<20050210170658.GA20153@logos.cnet>
+	<20050210170859.GB20153@logos.cnet> <423F4071.1000001@mrv.com>
+	<20050322130426.GE2498@logos.cnet>
+	<f4f476b5e54e9f005dd28082bd5f16fe@embeddededge.com>
+	<20050322175815.GB7846@logos.cnet>
+In-Reply-To: <20050322175815.GB7846@logos.cnet>
+Content-Type: multipart/alternative;
+	boundary="------------040901050208080902080300"
+Cc: "Smith, Craig" <craig.d.smith@siemens.com>, paulus@samba.org,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Linux 2.6.x on 8xx status
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,260 +33,242 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
---=-yADiRkcMVxWeNx2MCKxt
-Content-Type: multipart/mixed; boundary="=-O7pLtiiwknDRhAjCWbYs"
-
-
---=-O7pLtiiwknDRhAjCWbYs
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Here is the CPM2 cleanup patch again, with galak's recommended fixes.
-
-This is versus kernel 2.6.11.4 vanilla
+This is a multi-part message in MIME format.
+--------------040901050208080902080300
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
+
+Marcelo Tosatti wrote:
+
+>On Tue, Mar 22, 2005 at 03:57:08PM -0500, Dan Malek wrote:
+>  
+>
+>>On Mar 22, 2005, at 8:04 AM, Marcelo Tosatti wrote:
+>>
+>>    
+>>
+>>>I'm quite puzzled. Why v2.6 calls the "tlbie" instruction 100-or-so
+>>>less times than v2.4 ?
+>>>      
+>>>
+>
+>That was rather a _factor_ of "100-or-so" less.
+>
+>  
+>
+>>Oh my ...  I'm more worried about the high number of TLB misses
+>>in 2.6 compared to 2.4.  That's really bad.  
+>>    
+>>
+>
+>Newbie question: What prevents the initial kernel map (tuple of 8Mbyte I/D-TLB entries) 
+>and the IMMR 8Mbyte D-TLB entry from getting unmapped by translation pressure,
+>in case CONFIG_PIN_TLB is disabled ? 
+>
+>  
+>
+>>How did you instrument the tlbie measurement? 
+>>    
+>>
+>
+>By a counter at the end of _tlbie function, similar to other counters which 
+>you suggested.
+>
+>  
+>
+>>It could be that 2.4 used lots more 'tlbia' which were replaced by tlbie in 2.6.
+>>    
+>>
+>
+>Dont think thats the case given that v2.4 calls tlbia through flush_tlb_mm() at exit_mmap() 
+>only. And at vmalloc_free which shouldnt be called at all.
+>
+>I just noticed this conditional at switch_mm() (v2.6), which _can_ partly 
+>explain the reduced tlbie's  (its just a guess for now, though):
+>
+>static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+>                             struct task_struct *tsk)
+>{
+>#ifdef CONFIG_ALTIVEC
+>        asm volatile (
+> BEGIN_FTR_SECTION
+>        "dssall;\n"
+>#ifndef CONFIG_POWER4
+>         "sync;\n" /* G4 needs a sync here, G5 apparently not */
+>#endif
+> END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+>         : : );
+>#endif /* CONFIG_ALTIVEC */
+>                                                                                            
+>        tsk->thread.pgdir = next->pgd;
+>                                                                                            
+>        /* No need to flush userspace segments if the mm doesnt change */
+>	if (prev == next) 				<--------------
+>		return;   				<--------------
+>                                                                                            
+>        /* Setup new userspace context */
+>        get_mmu_context(next);
+>        set_context(next->context, next->pgd);
+>}
+>
+>I'm about to disable it and retry.
+>
+>Spent part of the day reading the MMU section of 860 manual, I think I have kind 
+>of a clue how things are supposed to work at the lowlevel now. 
+>
+>I'll continue tracking it down - any help is appreciated.
+>
+>PS: I can't reproduce the invalid TLB crash anymore. i.e. even by removing
+>the _tlbie() at update_mmu_cache() everything is working as expected.
+>
+>How can I reproduce it again? Guillaume, what kernel version are you using?
+>
+>  
+>
+It is very timing dependant. Running 2.6.11, ldconfig crashes in 
+__flush_dcache_icache(...) just after boot time (first time called). 
+Unfortunatly, it only happens every now and then. And of course, never 
+when my BDI2000 is plugged in. :(
+
+I also noticed that with kernel preemption disable, oops are less 
+frequent. Probably does not mean anything anyway...
+
+Guillaume.
 
 
---=-O7pLtiiwknDRhAjCWbYs
-Content-Disposition: attachment; filename=cpu-ppc-cpm2.patch
-Content-Transfer-Encoding: base64
-Content-Type: text/x-patch; name=cpu-ppc-cpm2.patch; charset=ISO-8859-1
-
-IyMjIyBBdXRvLWdlbmVyYXRlZCBwYXRjaCAjIyMjDQpEYXRlOiAgICAgICAgV2VkLCAyMyBNYXIg
-MjAwNSAwODo0NzoxOSAtMDUwMA0KTWFpbnRhaW5lcjogIEphc29uIE1jTXVsbGFuIDxqbWNtdWxs
-YW5AdGltZXN5cy5jb20+DQpTdW1tYXJ5OiAgICAgRnJlZXNjYWxlIENQTTIgZGV2aWNlIEkvTyBw
-cm9jZXNzb3IsIG9uIE1QQzh4eCBhbmQgTVBDOHh4eCBDUFVzDQpTaWduZWQtT2ZmLUJ5OiBKYXNv
-biBNY011bGxhbiA8am1jbXVsbGFuQHRpbWVzeXMuY29tPg0KIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIw0KDQpJbmRleCBvZiBjaGFuZ2VzOg0KDQogYXJjaC9wcGMvcGxhdGZvcm1zLzg1
-eHgvbXBjODU2MF9hZHMuYyB8ICAgIDQgLQ0KIGFyY2gvcHBjL3N5c2xpYi9jcG0yX2NvbW1vbi5j
-ICAgICAgICAgfCAgICA0IC0NCiBhcmNoL3BwYy9zeXNsaWIvY3BtMl9waWMuYyAgICAgICAgICAg
-IHwgICA2NiArKysrKysrKysrKysrKysrKy0tLS0NCiBhcmNoL3BwYy9zeXNsaWIvY3BtMl9waWMu
-aCAgICAgICAgICAgIHwgICAgMyANCiBhcmNoL3BwYy9zeXNsaWIvbTgyNjBfc2V0dXAuYyAgICAg
-ICAgIHwgICAgNSAtDQogaW5jbHVkZS9hc20tcHBjL2NwbTIuaCAgICAgICAgICAgICAgICB8ICAg
-MjMgKysrKysrLQ0KIGluY2x1ZGUvYXNtLXBwYy9pcnEuaCAgICAgICAgICAgICAgICAgfCAgMTA1
-ICsrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0NCiA3IGZpbGVzIGNoYW5nZWQsIDEz
-NSBpbnNlcnRpb25zKCspLCA3NSBkZWxldGlvbnMoLSkNCg0KDQotLS0gbGludXgtb3JpZy9hcmNo
-L3BwYy9wbGF0Zm9ybXMvODV4eC9tcGM4NTYwX2Fkcy5jDQorKysgbGludXgvYXJjaC9wcGMvcGxh
-dGZvcm1zLzg1eHgvbXBjODU2MF9hZHMuYw0KQEAgLTEzNSw3ICsxMzUsNiBAQA0KIHN0YXRpYyB2
-b2lkIF9faW5pdA0KIG1wYzg1NjBfYWRzX2luaXRfSVJRKHZvaWQpDQogew0KLQlpbnQgaTsNCiAJ
-dm9sYXRpbGUgY3BtMl9tYXBfdCAqaW1tYXAgPSBjcG0yX2ltbXI7DQogDQogCS8qIFNldHVwIE9w
-ZW5QSUMgKi8NCkBAIC0xNDUsOCArMTQ0LDcgQEANCiAJaW1tYXAtPmltX2ludGN0bC5pY19zaW1y
-aCA9IDB4MDsNCiAJaW1tYXAtPmltX2ludGN0bC5pY19zaW1ybCA9IDB4MDsNCiANCi0JZm9yIChp
-ID0gQ1BNX0lSUV9PRkZTRVQ7IGkgPCAoTlJfQ1BNX0lOVFMgKyBDUE1fSVJRX09GRlNFVCk7IGkr
-KykNCi0JCWlycV9kZXNjW2ldLmhhbmRsZXIgPSAmY3BtMl9waWM7DQorICAgICAgICBjcG0yX2lu
-aXRfSVJRKCk7DQogDQogCS8qIEluaXRpYWxpemUgdGhlIGRlZmF1bHQgaW50ZXJydXB0IG1hcHBp
-bmcgcHJpb3JpdGllcywNCiAJICogaW4gY2FzZSB0aGUgYm9vdCByb20gY2hhbmdlZCBzb21ldGhp
-bmcgb24gdXMuDQotLS0gbGludXgtb3JpZy9hcmNoL3BwYy9zeXNsaWIvY3BtMl9jb21tb24uYw0K
-KysrIGxpbnV4L2FyY2gvcHBjL3N5c2xpYi9jcG0yX2NvbW1vbi5jDQpAQCAtMzIsMTIgKzMyLDEy
-IEBADQogI2luY2x1ZGUgPGFzbS9yaGVhcC5oPg0KIA0KIHN0YXRpYyB2b2lkIGNwbTJfZHBpbml0
-KHZvaWQpOw0KLWNwbV9jcG0yX3QJKmNwbXA7CQkvKiBQb2ludGVyIHRvIGNvbW0gcHJvY2Vzc29y
-IHNwYWNlICovDQordm9sYXRpbGUgY3BtX2NwbTJfdCAgICAgKmNwbXA7ICAgICAgICAgIC8qIFBv
-aW50ZXIgdG8gY29tbSBwcm9jZXNzb3Igc3BhY2UgKi8NCiANCiAvKiBXZSBhbGxvY2F0ZSB0aGlz
-IGhlcmUgYmVjYXVzZSBpdCBpcyB1c2VkIGFsbW9zdCBleGNsdXNpdmVseSBmb3INCiAgKiB0aGUg
-Y29tbXVuaWNhdGlvbiBwcm9jZXNzb3IgZGV2aWNlcy4NCiAgKi8NCi1jcG0yX21hcF90ICpjcG0y
-X2ltbXI7DQordm9sYXRpbGUgY3BtMl9tYXBfdCAqY3BtMl9pbW1yOw0KIA0KICNkZWZpbmUgQ1BN
-X01BUF9TSVpFCSgweDQwMDAwKQkvKiAyNTZrIC0gdGhlIFBRMyByZXNlcnZlIHRoaXMgYW1vdW50
-DQogCQkJCQkgICBvZiBzcGFjZSBmb3IgQ1BNIGFzIGl0IGlzIGxhcmdlcg0KLS0tIGxpbnV4LW9y
-aWcvYXJjaC9wcGMvc3lzbGliL2NwbTJfcGljLmMNCisrKyBsaW51eC9hcmNoL3BwYy9zeXNsaWIv
-Y3BtMl9waWMuYw0KQEAgLTQ3LDYgKzQ3LDggQEANCiAJaW50CWJpdCwgd29yZDsNCiAJdm9sYXRp
-bGUgdWludAkqc2ltcjsNCiANCisJaXJxX25yIC09IENQTV9JUlFfT0ZGU0VUOw0KKw0KIAliaXQg
-PSBpcnFfdG9fc2l1Yml0W2lycV9ucl07DQogCXdvcmQgPSBpcnFfdG9fc2l1cmVnW2lycV9ucl07
-DQogDQpAQCAtNjAsNiArNjIsOCBAQA0KIAlpbnQJYml0LCB3b3JkOw0KIAl2b2xhdGlsZSB1aW50
-CSpzaW1yOw0KIA0KKwlpcnFfbnIgLT0gQ1BNX0lSUV9PRkZTRVQ7DQorDQogCWJpdCA9IGlycV90
-b19zaXViaXRbaXJxX25yXTsNCiAJd29yZCA9IGlycV90b19zaXVyZWdbaXJxX25yXTsNCiANCkBA
-IC03Myw2ICs3Nyw4IEBADQogCWludAliaXQsIHdvcmQ7DQogCXZvbGF0aWxlIHVpbnQJKnNpbXIs
-ICpzaXBucjsNCiANCisJaXJxX25yIC09IENQTV9JUlFfT0ZGU0VUOw0KKw0KIAliaXQgPSBpcnFf
-dG9fc2l1Yml0W2lycV9ucl07DQogCXdvcmQgPSBpcnFfdG9fc2l1cmVnW2lycV9ucl07DQogDQpA
-QCAtOTEsNiArOTcsNyBAQA0KIAlpZiAoIShpcnFfZGVzY1tpcnFfbnJdLnN0YXR1cyAmIChJUlFf
-RElTQUJMRUR8SVJRX0lOUFJPR1JFU1MpKQ0KIAkJCSYmIGlycV9kZXNjW2lycV9ucl0uYWN0aW9u
-KSB7DQogDQorCQlpcnFfbnIgLT0gQ1BNX0lSUV9PRkZTRVQ7DQogCQliaXQgPSBpcnFfdG9fc2l1
-Yml0W2lycV9ucl07DQogCQl3b3JkID0gaXJxX3RvX3NpdXJlZ1tpcnFfbnJdOw0KIA0KQEAgLTEw
-MCwyMCArMTA3LDIzIEBADQogCX0NCiB9DQogDQotc3RydWN0IGh3X2ludGVycnVwdF90eXBlIGNw
-bTJfcGljID0gew0KLQkiIENQTTIgU0lVICAiLA0KLQlOVUxMLA0KLQlOVUxMLA0KLQljcG0yX3Vu
-bWFza19pcnEsDQotCWNwbTJfbWFza19pcnEsDQotCWNwbTJfbWFza19hbmRfYWNrLA0KLQljcG0y
-X2VuZF9pcnEsDQotCTANCitzdGF0aWMgdW5zaWduZWQgaW50IGNwbTJfc3RhcnR1cF9pcnEodW5z
-aWduZWQgaW50IGlycSkNCit7DQorCWNwbTJfdW5tYXNrX2lycShpcnEpOw0KKwlyZXR1cm4gMDsN
-Cit9DQorDQorc3RhdGljIHN0cnVjdCBod19pbnRlcnJ1cHRfdHlwZSBjcG0yX3BpYyA9IHsNCisJ
-LnR5cGVuYW1lID0gIkNQTTIgU0lVIiwNCisJLnN0YXJ0dXAgPSBjcG0yX3N0YXJ0dXBfaXJxLA0K
-Kwkuc2h1dGRvd24gPSBjcG0yX21hc2tfaXJxLA0KKwkuZW5hYmxlID0gY3BtMl91bm1hc2tfaXJx
-LA0KKwkuZGlzYWJsZSA9IGNwbTJfbWFza19pcnEsDQorCS5hY2sgPSBjcG0yX21hc2tfYW5kX2Fj
-aywNCisJLmVuZCA9IGNwbTJfZW5kX2lycSwNCiB9Ow0KIA0KLQ0KLWludA0KLWNwbTJfZ2V0X2ly
-cShzdHJ1Y3QgcHRfcmVncyAqcmVncykNCitpbnQgY3BtMl9nZXRfaXJxKHN0cnVjdCBwdF9yZWdz
-ICpyZWdzKQ0KIHsNCiAJaW50IGlycTsNCiAgICAgICAgIHVuc2lnbmVkIGxvbmcgYml0czsNCkBA
-IC0xMjUsNSArMTM1LDM1IEBADQogDQogCWlmIChpcnEgPT0gMCkNCiAJCXJldHVybigtMSk7DQot
-CXJldHVybiBpcnE7DQorCXJldHVybiBpcnErQ1BNX0lSUV9PRkZTRVQ7DQorfQ0KKw0KK3ZvaWQg
-Y3BtMl9pbml0X0lSUSh2b2lkKQ0KK3sNCisJaW50IGk7DQorDQorCS8qIENsZWFyIHRoZSBDUE0g
-SVJRIGNvbnRyb2xsZXIsIGluIGNhc2UgaXQgaGFzIGFueSBiaXRzIHNldA0KKwkgKiBmcm9tIHRo
-ZSBib290bG9hZGVyDQorCSAqLw0KKw0KKwkvKiBNYXNrIG91dCBldmVyeXRoaW5nICovDQorCWNw
-bTJfaW1tci0+aW1faW50Y3RsLmljX3NpbXJoID0gMHgwMDAwMDAwMDsNCisJY3BtMl9pbW1yLT5p
-bV9pbnRjdGwuaWNfc2ltcmwgPSAweDAwMDAwMDAwOw0KKwl3bWIoKTsNCisNCisJLyogQWNrIGV2
-ZXJ5dGhpbmcgKi8NCisJY3BtMl9pbW1yLT5pbV9pbnRjdGwuaWNfc2lwbnJoID0gMHhmZmZmZmZm
-ZjsNCisJY3BtMl9pbW1yLT5pbV9pbnRjdGwuaWNfc2lwbnJsID0gMHhmZmZmZmZmZjsNCisJd21i
-KCk7DQorDQorCS8qIER1bW15IHJlYWQgb2YgdGhlIHZlY3RvciAqLw0KKwlpID0gY3BtMl9pbW1y
-LT5pbV9pbnRjdGwuaWNfc2l2ZWM7DQorCXJtYigpOw0KKw0KKwkvKiBFbmFibGUgY2hhaW5pbmcg
-dG8gT3BlblBJQywgYW5kIG1ha2UgZXZlcnl0aGluZyBsZXZlbA0KKwkgKi8NCisJZm9yIChpID0g
-MDsgaSA8IE5SX0NQTV9JTlRTOyBpKyspIHsNCisJCWlycV9kZXNjW2krQ1BNX0lSUV9PRkZTRVRd
-LmhhbmRsZXIgPSAmY3BtMl9waWM7DQorCQlpcnFfZGVzY1tpK0NQTV9JUlFfT0ZGU0VUXS5zdGF0
-dXMgfD0gSVJRX0xFVkVMOw0KKwl9DQogfQ0KLS0tIGxpbnV4LW9yaWcvYXJjaC9wcGMvc3lzbGli
-L2NwbTJfcGljLmgNCisrKyBsaW51eC9hcmNoL3BwYy9zeXNsaWIvY3BtMl9waWMuaA0KQEAgLTEs
-NyArMSw4IEBADQogI2lmbmRlZiBfUFBDX0tFUk5FTF9DUE0yX0gNCiAjZGVmaW5lIF9QUENfS0VS
-TkVMX0NQTTJfSA0KIA0KLWV4dGVybiBzdHJ1Y3QgaHdfaW50ZXJydXB0X3R5cGUgY3BtMl9waWM7
-DQogZXh0ZXJuIGludCBjcG0yX2dldF9pcnEoc3RydWN0IHB0X3JlZ3MgKnJlZ3MpOw0KIA0KK2V4
-dGVybiB2b2lkIGNwbTJfaW5pdF9JUlEodm9pZCk7DQorDQogI2VuZGlmIC8qIF9QUENfS0VSTkVM
-X0NQTTJfSCAqLw0KLS0tIGxpbnV4LW9yaWcvYXJjaC9wcGMvc3lzbGliL204MjYwX3NldHVwLmMN
-CisrKyBsaW51eC9hcmNoL3BwYy9zeXNsaWIvbTgyNjBfc2V0dXAuYw0KQEAgLTE2OCwxMCArMTY4
-LDcgQEANCiBzdGF0aWMgdm9pZCBfX2luaXQNCiBtODI2MF9pbml0X0lSUSh2b2lkKQ0KIHsNCi0J
-aW50IGk7DQotDQotICAgICAgICBmb3IgKCBpID0gMCA7IGkgPCBOUl9TSVVfSU5UUyA7IGkrKyAp
-DQotICAgICAgICAgICAgICAgIGlycV9kZXNjW2ldLmhhbmRsZXIgPSAmY3BtMl9waWM7DQorCWNw
-bTJfaW5pdF9JUlEoKTsNCiANCiAJLyogSW5pdGlhbGl6ZSB0aGUgZGVmYXVsdCBpbnRlcnJ1cHQg
-bWFwcGluZyBwcmlvcml0aWVzLA0KIAkgKiBpbiBjYXNlIHRoZSBib290IHJvbSBjaGFuZ2VkIHNv
-bWV0aGluZyBvbiB1cy4NCi0tLSBsaW51eC1vcmlnL2luY2x1ZGUvYXNtLXBwYy9jcG0yLmgNCisr
-KyBsaW51eC9pbmNsdWRlL2FzbS1wcGMvY3BtMi5oDQpAQCAtNjksMTMgKzY5LDE0IEBADQogI2Rl
-ZmluZSBDUE1fQ1JfSU5JVF9UWAkJKCh1c2hvcnQpMHgwMDAyKQ0KICNkZWZpbmUgQ1BNX0NSX0hV
-TlRfTU9ERQkoKHVzaG9ydCkweDAwMDMpDQogI2RlZmluZSBDUE1fQ1JfU1RPUF9UWAkJKCh1c2hv
-cnQpMHgwMDA0KQ0KKyNkZWZpbmUgQ1BNX0NSX0dSQV9TVE9QX1RYICAgICAgKCh1c2hvcnQpMHgw
-MDA1KQ0KICNkZWZpbmUgQ1BNX0NSX1JFU1RBUlRfVFgJKCh1c2hvcnQpMHgwMDA2KQ0KICNkZWZp
-bmUgQ1BNX0NSX1NFVF9HQUREUgkoKHVzaG9ydCkweDAwMDgpDQogI2RlZmluZSBDUE1fQ1JfU1RB
-UlRfSURNQQkoKHVzaG9ydCkweDAwMDkpDQogI2RlZmluZSBDUE1fQ1JfU1RPUF9JRE1BCSgodXNo
-b3J0KTB4MDAwYikNCiANCiAjZGVmaW5lIG1rX2NyX2NtZChQRywgU0JDLCBNQ04sIE9QKSBcDQot
-CSgoUEcgPDwgMjYpIHwgKFNCQyA8PCAyMSkgfCAoTUNOIDw8IDYpIHwgT1ApDQorCSgoKFBHKSA8
-PCAyNikgfCAoKFNCQykgPDwgMjEpIHwgKChNQ04pIDw8IDYpIHwgKE9QKSkNCiANCiAvKiBEdWFs
-IFBvcnQgUkFNIGFkZHJlc3Nlcy4gIFRoZSBmaXJzdCAxNksgaXMgYXZhaWxhYmxlIGZvciBhbG1v
-c3QNCiAgKiBhbnkgQ1BNIHVzZSwgc28gd2UgcHV0IHRoZSBCRHMgdGhlcmUuICBUaGUgZmlyc3Qg
-MTI4IGJ5dGVzIGFyZQ0KQEAgLTEwNyw3ICsxMDgsNyBAQA0KIC8qIEV4cG9ydCB0aGUgYmFzZSBh
-ZGRyZXNzIG9mIHRoZSBjb21tdW5pY2F0aW9uIHByb2Nlc3NvciByZWdpc3RlcnMNCiAgKiBhbmQg
-ZHVhbCBwb3J0IHJhbS4NCiAgKi8NCi1leHRlcm4JCWNwbV9jcG0yX3QJKmNwbXA7CSAvKiBQb2lu
-dGVyIHRvIGNvbW0gcHJvY2Vzc29yICovDQorZXh0ZXJuIHZvbGF0aWxlCWNwbV9jcG0yX3QJKmNw
-bXA7CSAvKiBQb2ludGVyIHRvIGNvbW0gcHJvY2Vzc29yICovDQogZXh0ZXJuIHVpbnQgY3BtX2Rw
-YWxsb2ModWludCBzaXplLCB1aW50IGFsaWduKTsNCiBleHRlcm4gaW50IGNwbV9kcGZyZWUodWlu
-dCBvZmZzZXQpOw0KIGV4dGVybiB1aW50IGNwbV9kcGFsbG9jX2ZpeGVkKHVpbnQgb2Zmc2V0LCB1
-aW50IHNpemUsIHVpbnQgYWxpZ24pOw0KQEAgLTExNSw3ICsxMTYsMjQgQEANCiBleHRlcm4gdm9p
-ZCAqY3BtX2RwcmFtX2FkZHIodWludCBvZmZzZXQpOw0KIGV4dGVybiB2b2lkIGNwbV9zZXRicmco
-dWludCBicmcsIHVpbnQgcmF0ZSk7DQogZXh0ZXJuIHZvaWQgY3BtMl9mYXN0YnJnKHVpbnQgYnJn
-LCB1aW50IHJhdGUsIGludCBkaXYxNik7DQorZXh0ZXJuIHZvaWQgY3BtMl9yZXNldCh2b2lkKTsN
-CisNCisjaWZkZWYgQ09ORklHX0NQTTINCisjZGVmaW5lIENQTV9DUF9GQ0MobGluZSwgbWNuKQlt
-a19jcl9jbWQoQ1BNX0NSX0ZDQzFfUEFHRSsobGluZSksQ1BNX0NSX0ZDQzFfU0JMT0NLKyhsaW5l
-KSwgbWNuLCAwKQ0KKyNkZWZpbmUgQ1BNX0NQX1NDQyhsaW5lKQlta19jcl9jbWQoQ1BNX0NSX1ND
-QzFfUEFHRSsobGluZSksQ1BNX0NSX1NDQzFfU0JMT0NLKyhsaW5lKSwgMCwgMCkNCisjZGVmaW5l
-IENQTV9DUF9TTUMobGluZSkJbWtfY3JfY21kKENQTV9DUl9TTUMxX1BBR0UrKGxpbmUpLENQTV9D
-Ul9TTUMxX1NCTE9DSysobGluZSksIDAsIDApDQorI2RlZmluZSBDUE1fQ1BfSTJDCQlta19jcl9j
-bWQoQ1BNX0NSX0kyQ19QQUdFLENQTV9DUl9JMkNfU0JMT0NLLCAwLCAwKQ0KIA0KK3N0YXRpYyBp
-bmxpbmUgdm9pZCBjcG1fY3BfY29tbWFuZCh1aW50MzJfdCBpZCwgaW50IG9wKQ0KK3sNCisJY3Bt
-cC0+Y3BfY3BjciA9IGlkIHwgb3AgfCBDUE1fQ1JfRkxHOw0KKw0KKwl3aGlsZSAoY3BtcC0+Y3Bf
-Y3BjciAmIENQTV9DUl9GTEcpOw0KK30NCisjZWxzZQ0KKyNlcnJvciBQbGVhc2UgZGVmaW5lIGNw
-bV9jcF9jb21tYW5kIGFuZCB0aGUgQ1BNX0NQXyogaWRzIHlvdSB3aWxsIG5lZWQuDQorI2VuZGlm
-DQorDQogLyogQnVmZmVyIGRlc2NyaXB0b3JzIHVzZWQgYnkgbWFueSBvZiB0aGUgQ1BNIHByb3Rv
-Y29scy4NCiAqLw0KIHR5cGVkZWYgc3RydWN0IGNwbV9idWZfZGVzYyB7DQpAQCAtMTM1LDYgKzE1
-Myw3IEBADQogI2RlZmluZSBCRF9TQ19CUgkoKHVzaG9ydCkweDAwMjApCS8qIEJyZWFrIHJlY2Vp
-dmVkICovDQogI2RlZmluZSBCRF9TQ19GUgkoKHVzaG9ydCkweDAwMTApCS8qIEZyYW1pbmcgZXJy
-b3IgKi8NCiAjZGVmaW5lIEJEX1NDX1BSCSgodXNob3J0KTB4MDAwOCkJLyogUGFyaXR5IGVycm9y
-ICovDQorI2RlZmluZSBCRF9TQ19OQUsJKCh1c2hvcnQpMHgwMDA0KQkvKiBOQUsgLSBkaWQgbm90
-IHJlc3BvbmQgKi8NCiAjZGVmaW5lIEJEX1NDX09WCSgodXNob3J0KTB4MDAwMikJLyogT3ZlcnJ1
-biAqLw0KICNkZWZpbmUgQkRfU0NfQ0QJKCh1c2hvcnQpMHgwMDAxKQkvKiA/PyAqLw0KIA0KLS0t
-IGxpbnV4LW9yaWcvaW5jbHVkZS9hc20tcHBjL2lycS5oDQorKysgbGludXgvaW5jbHVkZS9hc20t
-cHBjL2lycS5oDQpAQCAtMjU3LDU3ICsyNTcsNjIgQEANCiAgKiAoRG9jdW1lbnQgZXJyYXRhIHVw
-ZGF0ZXMgaGF2ZSBmaXhlZCB0aGlzLi4ubWFrZSBzdXJlIHlvdSBoYXZlIHVwIHRvDQogICogZGF0
-ZSBwcm9jZXNzb3IgZG9jdW1lbnRhdGlvbiAtLSBEYW4pLg0KICAqLw0KLSNkZWZpbmUgTlJfU0lV
-X0lOVFMJNjQNCisNCisjaWZuZGVmIENQTV9JUlFfT0ZGU0VUDQorI2RlZmluZSBDUE1fSVJRX09G
-RlNFVAkwDQorI2VuZGlmDQorDQorI2RlZmluZSBOUl9DUE1fSU5UUwk2NA0KIA0KLSNkZWZpbmUJ
-U0lVX0lOVF9FUlJPUgkJKCh1aW50KTB4MDApDQotI2RlZmluZQlTSVVfSU5UX0kyQwkJKCh1aW50
-KTB4MDEpDQotI2RlZmluZQlTSVVfSU5UX1NQSQkJKCh1aW50KTB4MDIpDQotI2RlZmluZQlTSVVf
-SU5UX1JJU0MJCSgodWludCkweDAzKQ0KLSNkZWZpbmUJU0lVX0lOVF9TTUMxCQkoKHVpbnQpMHgw
-NCkNCi0jZGVmaW5lCVNJVV9JTlRfU01DMgkJKCh1aW50KTB4MDUpDQotI2RlZmluZQlTSVVfSU5U
-X0lETUExCQkoKHVpbnQpMHgwNikNCi0jZGVmaW5lCVNJVV9JTlRfSURNQTIJCSgodWludCkweDA3
-KQ0KLSNkZWZpbmUJU0lVX0lOVF9JRE1BMwkJKCh1aW50KTB4MDgpDQotI2RlZmluZQlTSVVfSU5U
-X0lETUE0CQkoKHVpbnQpMHgwOSkNCi0jZGVmaW5lCVNJVV9JTlRfU0RNQQkJKCh1aW50KTB4MGEp
-DQotI2RlZmluZQlTSVVfSU5UX1RJTUVSMQkJKCh1aW50KTB4MGMpDQotI2RlZmluZQlTSVVfSU5U
-X1RJTUVSMgkJKCh1aW50KTB4MGQpDQotI2RlZmluZQlTSVVfSU5UX1RJTUVSMwkJKCh1aW50KTB4
-MGUpDQotI2RlZmluZQlTSVVfSU5UX1RJTUVSNAkJKCh1aW50KTB4MGYpDQotI2RlZmluZQlTSVVf
-SU5UX1RNQ05UCQkoKHVpbnQpMHgxMCkNCi0jZGVmaW5lCVNJVV9JTlRfUElUCQkoKHVpbnQpMHgx
-MSkNCi0jZGVmaW5lCVNJVV9JTlRfSVJRMQkJKCh1aW50KTB4MTMpDQotI2RlZmluZQlTSVVfSU5U
-X0lSUTIJCSgodWludCkweDE0KQ0KLSNkZWZpbmUJU0lVX0lOVF9JUlEzCQkoKHVpbnQpMHgxNSkN
-Ci0jZGVmaW5lCVNJVV9JTlRfSVJRNAkJKCh1aW50KTB4MTYpDQotI2RlZmluZQlTSVVfSU5UX0lS
-UTUJCSgodWludCkweDE3KQ0KLSNkZWZpbmUJU0lVX0lOVF9JUlE2CQkoKHVpbnQpMHgxOCkNCi0j
-ZGVmaW5lCVNJVV9JTlRfSVJRNwkJKCh1aW50KTB4MTkpDQotI2RlZmluZQlTSVVfSU5UX0ZDQzEJ
-CSgodWludCkweDIwKQ0KLSNkZWZpbmUJU0lVX0lOVF9GQ0MyCQkoKHVpbnQpMHgyMSkNCi0jZGVm
-aW5lCVNJVV9JTlRfRkNDMwkJKCh1aW50KTB4MjIpDQotI2RlZmluZQlTSVVfSU5UX01DQzEJCSgo
-dWludCkweDI0KQ0KLSNkZWZpbmUJU0lVX0lOVF9NQ0MyCQkoKHVpbnQpMHgyNSkNCi0jZGVmaW5l
-CVNJVV9JTlRfU0NDMQkJKCh1aW50KTB4MjgpDQotI2RlZmluZQlTSVVfSU5UX1NDQzIJCSgodWlu
-dCkweDI5KQ0KLSNkZWZpbmUJU0lVX0lOVF9TQ0MzCQkoKHVpbnQpMHgyYSkNCi0jZGVmaW5lCVNJ
-VV9JTlRfU0NDNAkJKCh1aW50KTB4MmIpDQotI2RlZmluZQlTSVVfSU5UX1BDMTUJCSgodWludCkw
-eDMwKQ0KLSNkZWZpbmUJU0lVX0lOVF9QQzE0CQkoKHVpbnQpMHgzMSkNCi0jZGVmaW5lCVNJVV9J
-TlRfUEMxMwkJKCh1aW50KTB4MzIpDQotI2RlZmluZQlTSVVfSU5UX1BDMTIJCSgodWludCkweDMz
-KQ0KLSNkZWZpbmUJU0lVX0lOVF9QQzExCQkoKHVpbnQpMHgzNCkNCi0jZGVmaW5lCVNJVV9JTlRf
-UEMxMAkJKCh1aW50KTB4MzUpDQotI2RlZmluZQlTSVVfSU5UX1BDOQkJKCh1aW50KTB4MzYpDQot
-I2RlZmluZQlTSVVfSU5UX1BDOAkJKCh1aW50KTB4MzcpDQotI2RlZmluZQlTSVVfSU5UX1BDNwkJ
-KCh1aW50KTB4MzgpDQotI2RlZmluZQlTSVVfSU5UX1BDNgkJKCh1aW50KTB4MzkpDQotI2RlZmlu
-ZQlTSVVfSU5UX1BDNQkJKCh1aW50KTB4M2EpDQotI2RlZmluZQlTSVVfSU5UX1BDNAkJKCh1aW50
-KTB4M2IpDQotI2RlZmluZQlTSVVfSU5UX1BDMwkJKCh1aW50KTB4M2MpDQotI2RlZmluZQlTSVVf
-SU5UX1BDMgkJKCh1aW50KTB4M2QpDQotI2RlZmluZQlTSVVfSU5UX1BDMQkJKCh1aW50KTB4M2Up
-DQotI2RlZmluZQlTSVVfSU5UX1BDMAkJKCh1aW50KTB4M2YpDQorI2RlZmluZQlTSVVfSU5UX0VS
-Uk9SCQkoKHVpbnQpMHgwMCArIENQTV9JUlFfT0ZGU0VUKQ0KKyNkZWZpbmUJU0lVX0lOVF9JMkMJ
-CSgodWludCkweDAxICsgQ1BNX0lSUV9PRkZTRVQpDQorI2RlZmluZQlTSVVfSU5UX1NQSQkJKCh1
-aW50KTB4MDIgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfUklTQwkJKCh1aW50
-KTB4MDMgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfU01DMQkJKCh1aW50KTB4
-MDQgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfU01DMgkJKCh1aW50KTB4MDUg
-KyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfSURNQTEJCSgodWludCkweDA2ICsg
-Q1BNX0lSUV9PRkZTRVQpDQorI2RlZmluZQlTSVVfSU5UX0lETUEyCQkoKHVpbnQpMHgwNyArIENQ
-TV9JUlFfT0ZGU0VUKQ0KKyNkZWZpbmUJU0lVX0lOVF9JRE1BMwkJKCh1aW50KTB4MDggKyBDUE1f
-SVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfSURNQTQJCSgodWludCkweDA5ICsgQ1BNX0lS
-UV9PRkZTRVQpDQorI2RlZmluZQlTSVVfSU5UX1NETUEJCSgodWludCkweDBhICsgQ1BNX0lSUV9P
-RkZTRVQpDQorI2RlZmluZQlTSVVfSU5UX1RJTUVSMQkJKCh1aW50KTB4MGMgKyBDUE1fSVJRX09G
-RlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfVElNRVIyCQkoKHVpbnQpMHgwZCArIENQTV9JUlFfT0ZG
-U0VUKQ0KKyNkZWZpbmUJU0lVX0lOVF9USU1FUjMJCSgodWludCkweDBlICsgQ1BNX0lSUV9PRkZT
-RVQpDQorI2RlZmluZQlTSVVfSU5UX1RJTUVSNAkJKCh1aW50KTB4MGYgKyBDUE1fSVJRX09GRlNF
-VCkNCisjZGVmaW5lCVNJVV9JTlRfVE1DTlQJCSgodWludCkweDEwICsgQ1BNX0lSUV9PRkZTRVQp
-DQorI2RlZmluZQlTSVVfSU5UX1BJVAkJKCh1aW50KTB4MTEgKyBDUE1fSVJRX09GRlNFVCkNCisj
-ZGVmaW5lCVNJVV9JTlRfSVJRMQkJKCh1aW50KTB4MTMgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVm
-aW5lCVNJVV9JTlRfSVJRMgkJKCh1aW50KTB4MTQgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5l
-CVNJVV9JTlRfSVJRMwkJKCh1aW50KTB4MTUgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJ
-VV9JTlRfSVJRNAkJKCh1aW50KTB4MTYgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9J
-TlRfSVJRNQkJKCh1aW50KTB4MTcgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRf
-SVJRNgkJKCh1aW50KTB4MTggKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfSVJR
-NwkJKCh1aW50KTB4MTkgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfRkNDMQkJ
-KCh1aW50KTB4MjAgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfRkNDMgkJKCh1
-aW50KTB4MjEgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfRkNDMwkJKCh1aW50
-KTB4MjIgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfTUNDMQkJKCh1aW50KTB4
-MjQgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfTUNDMgkJKCh1aW50KTB4MjUg
-KyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfU0NDMQkJKCh1aW50KTB4MjggKyBD
-UE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfU0NDMgkJKCh1aW50KTB4MjkgKyBDUE1f
-SVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfU0NDMwkJKCh1aW50KTB4MmEgKyBDUE1fSVJR
-X09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfU0NDNAkJKCh1aW50KTB4MmIgKyBDUE1fSVJRX09G
-RlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfUEMxNQkJKCh1aW50KTB4MzAgKyBDUE1fSVJRX09GRlNF
-VCkNCisjZGVmaW5lCVNJVV9JTlRfUEMxNAkJKCh1aW50KTB4MzEgKyBDUE1fSVJRX09GRlNFVCkN
-CisjZGVmaW5lCVNJVV9JTlRfUEMxMwkJKCh1aW50KTB4MzIgKyBDUE1fSVJRX09GRlNFVCkNCisj
-ZGVmaW5lCVNJVV9JTlRfUEMxMgkJKCh1aW50KTB4MzMgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVm
-aW5lCVNJVV9JTlRfUEMxMQkJKCh1aW50KTB4MzQgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5l
-CVNJVV9JTlRfUEMxMAkJKCh1aW50KTB4MzUgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJ
-VV9JTlRfUEM5CQkoKHVpbnQpMHgzNiArIENQTV9JUlFfT0ZGU0VUKQ0KKyNkZWZpbmUJU0lVX0lO
-VF9QQzgJCSgodWludCkweDM3ICsgQ1BNX0lSUV9PRkZTRVQpDQorI2RlZmluZQlTSVVfSU5UX1BD
-NwkJKCh1aW50KTB4MzggKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfUEM2CQko
-KHVpbnQpMHgzOSArIENQTV9JUlFfT0ZGU0VUKQ0KKyNkZWZpbmUJU0lVX0lOVF9QQzUJCSgodWlu
-dCkweDNhICsgQ1BNX0lSUV9PRkZTRVQpDQorI2RlZmluZQlTSVVfSU5UX1BDNAkJKCh1aW50KTB4
-M2IgKyBDUE1fSVJRX09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfUEMzCQkoKHVpbnQpMHgzYyAr
-IENQTV9JUlFfT0ZGU0VUKQ0KKyNkZWZpbmUJU0lVX0lOVF9QQzIJCSgodWludCkweDNkICsgQ1BN
-X0lSUV9PRkZTRVQpDQorI2RlZmluZQlTSVVfSU5UX1BDMQkJKCh1aW50KTB4M2UgKyBDUE1fSVJR
-X09GRlNFVCkNCisjZGVmaW5lCVNJVV9JTlRfUEMwCQkoKHVpbnQpMHgzZiArIENQTV9JUlFfT0ZG
-U0VUKQ0KIA0KICNlbmRpZiAvKiBDT05GSUdfODI2MCAqLw0KIA0K
+-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: gautran@mrv.com
+======================================= 
 
 
---=-O7pLtiiwknDRhAjCWbYs--
+--------------040901050208080902080300
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
---=-yADiRkcMVxWeNx2MCKxt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=us-ascii">
+  <title></title>
+</head>
+<body text="#000000" bgcolor="#ffffff">
+<br>
+<br>
+Marcelo Tosatti wrote:<br>
+<blockquote type="cite" cite="mid20050322175815.GB7846@logos.cnet">
+  <pre wrap="">On Tue, Mar 22, 2005 at 03:57:08PM -0500, Dan Malek wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">On Mar 22, 2005, at 8:04 AM, Marcelo Tosatti wrote:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">I'm quite puzzled. Why v2.6 calls the "tlbie" instruction 100-or-so
+less times than v2.4 ?
+      </pre>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!---->
+That was rather a _factor_ of "100-or-so" less.
 
-iD8DBQBCQXQF8/0vJ5szK6kRAjjjAKDXCRdXyBiSxdQ4Dq6KoR1GQZ1X7QCfTv9i
-Pp+Ve4bK7XNjjDJQvd/ghAU=
-=+dbz
------END PGP SIGNATURE-----
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Oh my ...  I'm more worried about the high number of TLB misses
+in 2.6 compared to 2.4.  That's really bad.  
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Newbie question: What prevents the initial kernel map (tuple of 8Mbyte I/D-TLB entries) 
+and the IMMR 8Mbyte D-TLB entry from getting unmapped by translation pressure,
+in case CONFIG_PIN_TLB is disabled ? 
 
---=-yADiRkcMVxWeNx2MCKxt--
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">How did you instrument the tlbie measurement? 
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+By a counter at the end of _tlbie function, similar to other counters which 
+you suggested.
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">It could be that 2.4 used lots more 'tlbia' which were replaced by tlbie in 2.6.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Dont think thats the case given that v2.4 calls tlbia through flush_tlb_mm() at exit_mmap() 
+only. And at vmalloc_free which shouldnt be called at all.
+
+I just noticed this conditional at switch_mm() (v2.6), which _can_ partly 
+explain the reduced tlbie's  (its just a guess for now, though):
+
+static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+                             struct task_struct *tsk)
+{
+#ifdef CONFIG_ALTIVEC
+        asm volatile (
+ BEGIN_FTR_SECTION
+        "dssall;\n"
+#ifndef CONFIG_POWER4
+         "sync;\n" /* G4 needs a sync here, G5 apparently not */
+#endif
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+         : : );
+#endif /* CONFIG_ALTIVEC */
+                                                                                            
+        tsk-&gt;thread.pgdir = next-&gt;pgd;
+                                                                                            
+        /* No need to flush userspace segments if the mm doesnt change */
+	if (prev == next) 				&lt;--------------
+		return;   				&lt;--------------
+                                                                                            
+        /* Setup new userspace context */
+        get_mmu_context(next);
+        set_context(next-&gt;context, next-&gt;pgd);
+}
+
+I'm about to disable it and retry.
+
+Spent part of the day reading the MMU section of 860 manual, I think I have kind 
+of a clue how things are supposed to work at the lowlevel now. 
+
+I'll continue tracking it down - any help is appreciated.
+
+PS: I can't reproduce the invalid TLB crash anymore. i.e. even by removing
+the _tlbie() at update_mmu_cache() everything is working as expected.
+
+How can I reproduce it again? Guillaume, what kernel version are you using?
+
+  </pre>
+</blockquote>
+It is very timing dependant. Running 2.6.11, ldconfig crashes in
+__flush_dcache_icache(...) just after boot time (first time called).
+Unfortunatly, it only happens every now and then. And of course, never
+when my BDI2000 is plugged in. :(<br>
+<br>
+I also noticed that with kernel preemption disable, oops are less
+frequent. Probably does not mean anything anyway...<br>
+<br>
+Guillaume.<br>
+<br>
+<br>
+<pre class="moz-signature" cols="72">-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: <a class="moz-txt-link-abbreviated" href="mailto:gautran@mrv.com">gautran@mrv.com</a>
+======================================= </pre>
+</body>
+</html>
+
+--------------040901050208080902080300--
