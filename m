@@ -1,86 +1,44 @@
-Message-ID: <01ef01c0a062$a80939f0$5ef1d092@chn.agilent.com>
-From: "kerler" <kerler@mailandnews.com>
-To: "David Edelsohn" <dje@watson.ibm.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <200102261835.NAA26566@mal-ach.watson.ibm.com>
-Subject: Re: dynamic modification exception handler 
-Date: Tue, 27 Feb 2001 10:08:52 +0800
+To: James Goodwin <jamesg@Filanet.com>
+Cc: linux1394-devel@lists.sourceforge.net,
+	linuxppc-dev@lists.linuxppc.org
+Subject: SBP-2 on PPC
+From: Daniel Berlin <dberlin@redhat.com>
+Date: 26 Feb 2001 23:48:03 -0500
+Message-ID: <x7k86cviik.fsf@dynamic-addr-83-177.resnet.rochester.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+More investigation shows that even thought we get a status writeback
+saying we the request went okay, and no errors at all, it never
+actually wrote the login response where we told it.
 
-I add sync between icbi and isync. But the executed codes are still the
-stale codes. Is cache coherence related with address translation of MMU?
+I memset'd the login response to all ff's, rather than all 0's, and
+sure 'nuf, it was still all ff's afterwards.
 
------------method 2----------
-static inline void store_inst(void *p)
-{
-    asm volatile ("dcbst 0,%0; sync; icbi 0,%0; sync; isync" : : "r" (p));
-}
-void mdb_flush_cache (const unsigned int start, const unsigned int len)
-{
-    unsigned int i;
-    for ( i = start ; i <= len + start ; i ++ )
-    {
-        store_inst((void*)start);
-    }
-}
-------------end of method 2------
+Of course, then our command block orb has an address that's wrong,which  is invariably the reason the scsi commands timeout.
 
------ Original Message -----
-From: David Edelsohn <dje@watson.ibm.com>
-To: kerler <kerler@mailandnews.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Sent: Tuesday, February 27, 2001 2:35 AM
-Subject: Re: dynamic modification exception handler
+At first I thought it was probably a bug in my ohci fixes, but looking
+back a few weeks, someone experienced this exact problem using the
+pcilynx driver on a PPC.
 
+So it's not likely to be my fault.
 
->
-> The suggested sequence for 604 and 604-derived processors is:
->
->      dcbst (or dcbf)          ;# flush data block to memory
->      sync                     ;# ensure flush made it to memory
->      icbi                     ;# invalidate block from icache
->      sync                     ;# wait for icbi to be globally performed
->      isync                    ;# refetch instructions
->
-> The dcbst must be performed before the icbi, because otherwise the
-> processor instruction prefetch mechanism could refetch the (stale) block
-> from memory before the dcbst/dcbf has actually been written back to
-> memory.  The sync between them is required for the same reason, because
-> icbi could be performed locally before the dcbst has sent the block to
-> memory.
->
-> The dcbst/sync/icbi sequence can be batched up to amortize the
-> cost of the sync operations, but it should be written so all the dcbst's
-> are performed, then a sync, then all the icbi's:
->
->      mr        r5, r3
->      mtctr     blocks
-> $1:
->      dcbst     r0, r5
->      addi      r5, r5, 32
->      bdnz      $1
->      sync
->      mr        r5, r3
->      mtctr     blocks
-> $2:
->      icbi      r0, r5
->      addi      r5, r5, 32
->      bdnz      $2
->
->      sync
->      isync
->
->
-> David
->
->
+I tried every combination of byte swapping I can think of, with no
+success. I tried fiddling with the flags we pass to allocate memory,
+etc. you name the stupid little variable, i tried it.
 
+The orb offset in the status block we get when it writes back the
+status is correct for the login orb we sent.
+
+Why would it be able to write *that* in our host memory, but not be
+able to write something else in our host memory?
+
+I've copied it to the PPC development list, in case somebody knows
+something I don't.
+
+--Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
