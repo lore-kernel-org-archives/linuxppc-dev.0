@@ -1,32 +1,35 @@
-Date: Fri, 16 Nov 2001 19:16:41 -0700
+Date: Fri, 16 Nov 2001 19:18:29 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Matt Porter <mporter@mvista.com>,
-	t@cpe-24-221-152-185.az.sprintbbd.net,
 	linuxppc-embedded@lists.linuxppc.org,
 	Paul Mackerras <paulus@samba.org>
 Subject: Re: Organisation of 4xx initialization code
-Message-ID: <20011116191641.B9923@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011116164625.K673@zax> <20011116045737.A24130@cx258813-a.chnd1.az.home.com> <20011116085121.D5410@cpe-24-221-152-185.az.sprintbbd.net> <20011116094210.B3473@beef.az.mvista.com> <20011117115044.I12763@zax>
+Message-ID: <20011116191829.C9923@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011116164625.K673@zax> <20011116045737.A24130@cx258813-a.chnd1.az.home.com> <20011116085121.D5410@cpe-24-221-152-185.az.sprintbbd.net> <20011117113541.E12763@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011117115044.I12763@zax>
+In-Reply-To: <20011117113541.E12763@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, Nov 17, 2001 at 11:50:44AM +1100, David Gibson wrote:
-> On Fri, Nov 16, 2001 at 09:42:10AM -0700, Matt Porter wrote:
-> > Leave the 440 out of this, it should never pollute the classic PPC
-> > tree if it's done correctly.
+On Sat, Nov 17, 2001 at 11:35:41AM +1100, David Gibson wrote:
+> On Fri, Nov 16, 2001 at 08:51:21AM -0700, Tom Rini wrote:
+> > But that's just it.  Someone else should probably speak up on this, but
+> > in the 403/405/stb0{3,4}xxx, and possibly 440 when it exists there are
+> > some things which always exist, depending on processor.  Each 750 board
+> > for example can really have almost anything attached to it.  But for a
+> > 405GP, there are known things and some variable things.  I _think_ 4xx
+> > boards vary more like the 8xx ones do, than 750 does.
 >
-> Yes and no.  That's probably true for the processor core, but it's
-> likely to have onboard peripherals which are the same as or very
-> similar to older 4xx designs.  It would be nice if we could share the
-> code for handling these devices.
+> Yes, but how the current code tends to make assumptions about how the
+> onboard devices have been configured by the firmware, and that does
+> vary from board to board.
 
-Right.  Which is why we need to seperate out peripherals from core so
-that it will just work on any new 4xx processor, provided things didn't
-get dramatically changed around.
+Yes, and these assumptions are bugs which need fixing.
+
+'Common' stuff needs to be seperated out more from 'core' stuff.  Feel
+free to post patches for this stuff.
 
 --
 Tom Rini (TR1265)
