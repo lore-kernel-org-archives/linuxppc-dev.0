@@ -1,16 +1,27 @@
-Subject: Re: RAM Disk problems
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BB0E4@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Jaap-Jan Boor'" <jjboor@aimsys.nl>,
+	"Kevin A. Sapp" <Kevin.Sapp@catapult.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <404F26A5.7070807@catapult.com>
-References: <20040309151442.1E311C0655@atlas.denx.de>
-	 <404F26A5.7070807@catapult.com>
-Content-Type: text/plain
-Message-Id: <1078931010.5084.4.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Wed, 10 Mar 2004 16:03:30 +0100
+Subject: RE: RAM Disk problems
+Date: Wed, 10 Mar 2004 10:11:13 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Also you can try an already created ramdisk that is known to work.  You can
+download one from Wolfgang's site.  www.denx.de
+
+-----Original Message-----
+From: Jaap-Jan Boor [mailto:jjboor@aimsys.nl]
+Sent: Wednesday, March 10, 2004 10:04 AM
+To: Kevin A. Sapp
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RAM Disk problems
+
 
 
 Kevin,
@@ -84,7 +95,8 @@ On Wed, 2004-03-10 at 15:31, Kevin A. Sapp wrote:
 > serial_console_setup
 > cons:c00ebc48 str:9600 cons->index:0 Calibrating delay loop... 132.71
 > BogoMIPS
-> Memory: 28828k available (828k kernel code, 288k data, 48k init, 0k highmem)
+> Memory: 28828k available (828k kernel code, 288k data, 48k init, 0k
+highmem)
 > Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
 > Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
 > Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
