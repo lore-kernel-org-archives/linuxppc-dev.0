@@ -1,66 +1,35 @@
-Date: Sat, 21 Jul 2001 11:53:21 +0100
-From: Iain Young <iain@g7iii.junglelink.co.uk>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: process.c Assembler Message Error: unsupported relocation type
-Message-ID: <20010721115321.A484@g7iii.junglelink.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: John Francis <johnfrancsis@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Interfacing user application and interrupt. 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 21 Jul 2001 03:13:45 PDT."
+             <20010721101345.5964.qmail@web20104.mail.yahoo.com>
+Date: Sat, 21 Jul 2001 13:45:31 +0200
+Message-Id: <20010721114536.EAE3010DD2@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+In message <20010721101345.5964.qmail@web20104.mail.yahoo.com> you wrote:
+>
+> I also have ppc linux interrupt handler that correctly
+> detects the interrupt from the device. Now what I am
+> missing is how does the kernel interrupt handler
+> indicate to the user process that  there was an
+> interrupt and user process needs to do its thing....
 
-Hopefully someone can tell me I have made a silly mistake here.
+Either make your user process block in a read / write / ioctl  system
+call,  and  wake  it  from  your  interrupt  handler,  or implement a
+select() / poll() interface, so you don't have to block  waiting  for
+this event alone.
 
-I am attempting to cross compile .2.4.7pre9 from a SPARC to a 403 board.
+Wolfgang Denk
 
-Both the toolchain, and gcc compiled with no problems, and the kernel
-gets most of the way there. It stops at arch/ppc/kernel/process.c,
-with the following output from make:
-
-make CFLAGS="-D__KERNEL__ -I/usr/src/linux-2.4-sparc/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -mcpu=403 " -C  arch/ppc/kernel
-make[1]: Entering directory `/usr/src/linux-2.4-sparc/arch/ppc/kernel'
-powerpc-linux-gcc -D__KERNEL__ -I/usr/src/linux-2.4-sparc/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -mcpu=403    -c -o process.o process.c
-process.c: In function `copy_thread':
-process.c:327: warning: unused variable `msr'
-{standard input}: Assembler messages:
-{standard input}:394: Error: unsupported relocation type
-{standard input}:395: Error: unsupported relocation type
-{standard input}:396: Error: unsupported relocation type
-{standard input}:400: Error: unsupported relocation type
-{standard input}:401: Error: unsupported relocation type
-{standard input}:402: Error: unsupported relocation type
-make[1]: *** [process.o] Error 1
-make[1]: Leaving directory `/usr/src/linux-2.4-sparc/arch/ppc/kernel'
-make: *** [_dir_arch/ppc/kernel] Error 2
-
-powerpc-linux-gcc -v reports:
-
-Reading specs from /usr/local/lib/gcc-lib/powerpc-linux/2.95.3/specs
-gcc version 2.95.3 20010315 (release)
-
-
-while powerpc-linux-as -v reports:
-
-GNU assembler version 2.10.91 (powerpc-linux) using BFD version 2.10.91.0.2
-
-
-My question is have I been silly, and got a compiler/toolchain mismatch ?
-(I was under the impression these were particular versions were OK
-together)
-
-Or is this a known issue ? Or something that has just turned up in 2.4.7pre ?
-(Although I noticed that aarch/ppc/kernel/process.c doesnt seem to have
-been changed in a while.
-
-Any help/assistance would be most gratefully recieved. It is frustrating
-to be so close, yet so far.
-
-
-All the Best
-
-Iain
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+In C we had to code our own bugs, in C++ we can inherit them.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
