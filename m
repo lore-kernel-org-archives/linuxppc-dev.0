@@ -1,66 +1,45 @@
-Message-ID: <39BDAC72.25B84092@astra.ee.iitm.ernet.in>
-Date: Tue, 12 Sep 2000 09:39:22 +0530
-From: Manav Mediratta <manav@astra.ee.iitm.ernet.in>
-MIME-Version: 1.0
+Date: Tue, 12 Sep 2000 09:57:51 +0300
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: [Fwd: RS232-ports on MPC850 FADS. Can they talk?]
-Content-Type: multipart/mixed;
- boundary="------------E7C0FA93AAD5F35EDE0FDB5F"
+Subject: Re: Sandpoint & random crashes?
+Message-ID: <20000912095751.A20541@hectic.net>
+References: <39BD66B9.9A1A362F@mvista.com> <000301c01c4b$6a7ac6d0$4d012ac7@warp-speed>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <000301c01c4b$6a7ac6d0$4d012ac7@warp-speed>; from ronb@junction.net on Mon, Sep 11, 2000 at 04:53:00PM -0700
+From: Alex Shnitman <alexsh@hectic.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------E7C0FA93AAD5F35EDE0FDB5F
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi, Ron!
+
+On Mon, Sep 11, 2000 at 04:53:00PM -0700, you wrote the following:
+
+> Another possible hardware related problem might be that the Dink
+> monitor is not programming the SDRAM controller with the right
+> parameters for that DIMM module ( I assume the sandpoint uses DIMMs
+> ).  I'm not sure if the monitor reads the param data from the
+> module's eeprom or is manually configured and stored in CMOS ram.
+
+It's a SIMM module. Does that make any difference?
+(You can see it at:
+http://www.mot.com/SPS/PowerPC/teksupport/refdesigns/sandpoint.html#7400 )
+
+> Anyway, have you run any memory tests?
+
+No, how do I do that? What memory test applications are there for this
+platform?
 
 
+--
+Alex Shnitman                            | http://www.debian.org
+alexsh@hectic.net, alexsh@linux.org.il   +-----------------------
+http://alexsh.hectic.net    UIN 188956    PGP key on web page
+       E1 F2 7B 6C A0 31 80 28  63 B8 02 BA 65 C7 8B BA
 
---------------E7C0FA93AAD5F35EDE0FDB5F
-Content-Type: message/rfc822
-Content-Disposition: inline
-
-Return-Path: <ankush@ee.iitm.ernet.in>
-Received: from kaveri.ee.iitm.ernet.in (IDENT:root@kaveri.ee.iitm.ernet.in [144.16.251.96])
-	by access.tenet.res.in (8.9.3/8.9.3) with ESMTP id RAA21528
-	for <manav@access.ee.iitm.ernet.in>; Fri, 8 Sep 2000 17:19:35 +0530
-Received: from bharadwaja.ee.iitm.ernet.in (ee97220@bharadwaja.ee.iitm.ernet.in [144.16.244.123])
-	by kaveri.ee.iitm.ernet.in (8.8.7/8.8.7) with ESMTP id RAA29268
-	for <manav@access.ee.iitm.ernet.in>; Fri, 8 Sep 2000 17:18:44 +0530
-Received: from localhost (ee97220@localhost)
-	by bharadwaja.ee.iitm.ernet.in (8.8.7/8.8.5) with ESMTP id RAA02793
-	for <manav@access.ee.iitm.ernet.in>; Fri, 8 Sep 2000 17:19:07 +0530
-X-Authentication-Warning: bharadwaja.ee.iitm.ernet.in: ee97220 owned process doing -bs
-Date: Fri, 8 Sep 2000 17:19:07 +0530 (IST)
-From: Ankush Varma <ankush@ee.iitm.ernet.in>
-To: manav@access.ee.iitm.ernet.in
-Subject: RS232-ports on MPC850 FADS. Can they talk?
-Message-ID: <Pine.LNX.4.04.10009081714001.2769-100000@bharadwaja.ee.iitm.ernet.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Mozilla-Status2: 00000000
-
-Hello there,
-I'm working with the MPC850 fads. I need to check if the RS232 port works.
-So I connected it to hyperterm and ran the RS232 check(T6 using MPCbug).
-Its supposed to be a loopback test but I ran it in open loop just to see
-if something comes up. But I'm gettin' nothing.
-
-Does anybody know why this happens?
-
-Ankush
-
------------------------------------------------------------------------------
-Ankush Varma
-Senior Year Undergraduate Student
-Indian Institute of Technology, Madras, India
-
-email: ankush@ee.iitm.ernet.in,ankushv@hotmail.com,ankush@somethingorother.com
------------------------------------------------------------------------------
-
-
---------------E7C0FA93AAD5F35EDE0FDB5F--
-
+/real/ kernel hackers
+    dd if=/dev/urandom of=/vmlinuz
+and influence the Universal Randomosity Field.
+	-- Gaal Yahas
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
