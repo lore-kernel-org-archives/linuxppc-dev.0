@@ -1,34 +1,46 @@
-To: Jeff Tucker <jeff@jltnet.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Need help booting linux on IBM 405EP eval board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 04 Apr 2004 18:37:03 EDT."
-             <72099343.1081103823@[192.168.2.18]>
-Date: Mon, 05 Apr 2004 01:13:13 +0200
-Message-Id: <20040404231318.68E6FC109A@atlas.denx.de>
+In-Reply-To: <20040402172954.TJGK1910.out010.verizon.net@outgoing.verizon.net>
+References: <20040402172954.TJGK1910.out010.verizon.net@outgoing.verizon.net>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <BD32DDF7-86D0-11D8-BCE9-000A95B15278@aimsys.nl>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Subject: Re: C++ Memory Requirements for PowerQUICC 1
+Date: Mon, 5 Apr 2004 09:13:29 +0200
+To: vze8n24y@verizon.net
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <72099343.1081103823@[192.168.2.18]> you wrote:
+Hi,
+
+It depends on your program and C++ code. You probably mention C++
+libraries
+because of templates. If you use a lot of different types (classes) and
+STL,
+a lot of templates will be instantiated for your types, which can
+quickly increase
+the size of your program(s) (not much unlike to macros in C).
+In addition, if you abstract 'the bit' with class hierarchies, stream
+io, etc.
+instead of using builtin types like 'int' you can create big programs.
+
+Jaap-Jan
+
+On Apr 2, 2004, at 19:29, vze8n24y@verizon.net wrote:
+
 >
-> The exact same kernel boots with the IBM bootloader, including serial
-> console and network access. When I boot using U-Boot, I don't get a console
-> and there's no apparent network activity from the board.
+> Hi:
+>
+> I would like to run C++ on a PowerQUICC I system that has 8 MB of RAM.
+> I was told by a friend that this was not enough memory to run a C++
+> program with the C++ libraries. Does anyone have experience with this?
+>
+> Regards,
+>
+> Bob Davis
+>
+>
 
-How about the log_buf contents?
-
-And did you try attaching a debugger?
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A quarrel is quickly settled when deserted by one party; there is  no
-battle unless there be two.                                  - Seneca
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
