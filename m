@@ -1,49 +1,41 @@
-Date: Mon, 24 Apr 2000 19:17:08 +0200
-From: Bernhard Reiter <bernhard@intevation.de>
-To: Gabriel Ricard <g_ricard@yahoo.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard hard freeze
-Message-ID: <20000424191708.C16557@cheops.usf.Uni-Osnabrueck.DE>
-References: <20000424161311.23404.qmail@web1705.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tsOsTdHNUZQcU9Ye"
-In-Reply-To: <20000424161311.23404.qmail@web1705.mail.yahoo.com>; from g_ricard@yahoo.com on Mon, Apr 24, 2000 at 09:13:11AM -0700
+Date: Mon, 24 Apr 2000 20:10:03 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Chas Williams <chas@cmf.nrl.navy.mil>
+cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org, drow@false.org
+Subject: Re: aty128 and offb and linux-2.3.99pre6 
+In-Reply-To: <200004241516.LAA20279@ginger.cmf.nrl.navy.mil>
+Message-ID: <Pine.LNX.4.10.10004242008100.316-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---tsOsTdHNUZQcU9Ye
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+On Mon, 24 Apr 2000, Chas Williams wrote:
+> In message <200004240651.IAA00313@piglet.grunz.lu>,Michel Lanners writes:
+> >It does work... but it changes the order my fbs are detected. Grrr....
+>
+> i have to agree.  this is fairly annoying since i have 2 rage pro's
+> (one on the agp and one on the pci bus) and the console should be on
+> the agp!
 
-On Mon, Apr 24, 2000 at 09:13:11AM -0700, Gabriel Ricard wrote:
-> I've had some similar problems, sometimes it bombs
-> compiling the kernel, sometimes it locks up for no
-> apparent reason while it's running the screen saver
-> and hasn't been in use for a while. I haven't a clue
-> what is going on...
+Huh? This has nothing to do with the order of 2 RAGE PROs. Atyfb is probed for
+before offb (like it should be) since a long time, and the order is always the
+same.
 
-Sound like exactly like the symtoms of my problem.
-	Bernhard
+Try `video=map:1' to map all your virtual consoles to the second card.
 
---=20
-Professional Service around Free Software                (intevation.net) =
-=20
-The FreeGIS Project				            (freegis.org)
-Association for a Free Informational Infrastructure            (ffii.org)
 
---tsOsTdHNUZQcU9Ye
-Content-Type: application/pgp-signature
+Gr{oetje,eeting}s,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.1 (SunOS)
-Comment: For info see http://www.gnupg.org
+						Geert
 
-iEYEARECAAYFAjkEgZMACgkQh9ag3dpKERaf9gCfaTaAQPRdCV39QPL6XapbcTOD
-0lMAn1r1jW1dyCeNKX2fmfDeDVcrGBDk
-=+r0y
------END PGP SIGNATURE-----
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
---tsOsTdHNUZQcU9Ye--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
