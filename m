@@ -1,39 +1,29 @@
-Message-ID: <3B4F30F4.307C26BD@vnet.ibm.com>
-Date: Fri, 13 Jul 2001 12:33:40 -0500
-From: Todd Inglett <tinglett@vnet.ibm.com>
-MIME-Version: 1.0
-To: tom_gall@vnet.ibm.com
-Cc: leigh@solinno.co.uk, linuxppc-dev@lists.linuxppc.org
+Message-ID: <34295.192.168.1.2.995062780.squirrel@fridge.bcc.co.uk>
+Date: Fri, 13 Jul 2001 23:19:40 +0100 (BST)
 Subject: Re: Booting 43P-140
-References: <38851.193.133.92.239.994925353.squirrel@lbbrown.homeip.net> <3B4DCAAD.72D18C80@vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: tom_gall@vnet.ibm.com, tinglett@vnet.ibm.com
+In-Reply-To: <3B4DCAAD.72D18C80@vnet.ibm.com>
+References: <3B4DCAAD.72D18C80@vnet.ibm.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Reply-To: leigh@solinno.co.uk
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Gall wrote:
-[...snip....]
->   Do you have the latest firmware update on your machine? (It's like TIG99
-> something)
+Thanks Tom and Todd!  Updating to the latest firmware did the trick.
+I can now boot both the SuSE kernel and even my homebrew 2.4.7pre4.
 
-Firmware can be found at
-http://www.rs6000.ibm.com/support/micro/download.html and you'll
-probably want the DOS version so you can install it straight from a
-floppy.  Read the instructions carefully, please! :)  The latest for the
-140 appears to be TIG99292.
+Unfortunately, the SuSE kernel doesn't match the ramdisk on their site
+so I can't load a network card driver to complete the installation.
+I'll have to build my own 2.4.1 kernel and ramdisk to complete the
+SuSE install, unless anyone has any other ideas?
 
-[...snip...]
->   If you do get to the prompt, then type
->
-> 0>  setenv real-base c00000
-> 0>  setenv load-base 200000
-> 0>  boot floppy:,\zimage root=/dev/fd0 load_ramdisk=1 ramdisk_size=128000
+Cheers,
 
-Also try adding console=ttyS0 in case your video adapter is the
-problem.  You'll need a null modem serial cable over to another machine
-running minicom, kermit or such.
+Leigh.
 
---
--todd
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
