@@ -1,95 +1,117 @@
-Message-ID: <3936790D.9BD7680E@lucent.com>
-Date: Thu, 01 Jun 2000 08:54:05 -0600
+To: Dan Malek <dan@netx4.com>,
+        LINUX-PPC <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3936A547.7C34A0BF@lucent.com>
+Date: Thu, 01 Jun 2000 12:02:47 -0600
 From: Steve Tarr <tarr@lucent.com>
 MIME-Version: 1.0
-To: LINUX-PPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Motorola MPC8260-ADS Boot hassel
+Subject: Re: Motorola MPC8260-ADS Boot hassel
+References: <3936790D.9BD7680E@lucent.com> <3936F0F2.DDA90328@embeddededge.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-OK, I' stumped. I'm trying to do a port to Motorola's
-MPC8260 evaluation board using 2.3.99-pre7. Aside from
-hacking the loader and the 8260_io/uart.c to handle
-the console on SCC1, I've done nothing. The following is the
-boot messages:
+Sorry for the confusion. I am not familiar with the
+Linux PANIC messages.
 
-loaded at:     00600000 0060B288
-relocated to:  00400000 0040B288
-board data at: 00407140 00407164
-relocated to:  00200100 00200124
-zimage at:     00606000 00675258
-initrd at:     00675258 0084C0A3
-avail ram:     0084D000 01000000
+1. NIP 0xC0010D90 is in wake_up_process()
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
-Total memory = 16MB; using 0kB for hash table (at 00000000)
-Linux version 2.3.99-pre7 (tarr@norton) (gcc version 2.95.2 19991024
-(release))0
-Boot arguments: root=/dev/ram ip=off
-On node 0 totalpages: 4096
-zone(0): 4096 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Calibrating delay loop... 66.15 BogoMIPS
-Memory: 12884k available (876k kernel code, 364k data, 48k init)
-[c0000000,c100]
-Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.3
-Based upon Swansea University Computer Society NET3.039
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-CPM UART driver version 0.02
-ttyS00 at 0x8000 is a SCC
-ttyS01 at 0x8100 is a SCC
-pty: 256 Unix98 ptys configured
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: registered device at major 7
-loop: enabling 8 loop devices
-RAMDISK: Compressed image found at block 0
-NIP: C0010D90 XER: 20000000 LR: C0010D8C REGS: c085f260 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c085e000[1] 'swapper' Last syscall: 120
-last math 00000000 last altivec 00000000
-GPR00: 00000000 C085F310 C085E000 00000001 00009032 C085F348 C085F368
-01234567
-GPR08: C085E000 C0008540 00000000 C085F358 00000000 FFFFFFFF 00000000
-00000400
-GPR16: 00000000 C0876C00 00007000 00001000 00000100 00001000 0000099C
-C0120000
-GPR24: 00000000 00000000 C085F358 C085F348 C01033E0 C0100000 00000000
-C085F310
-Call backtrace:
-C0005038 C00347AC C0032080 C0032124 C00381C8 C01198BC C0080AA4
-C00814F0 C0081638 C00816C4 C0081BDC C0119A24 C01193B4 C0119794
-C0117AF4 C01137E0 C0113878 C0003A1C C0008C08
-Kernel panic: kernel access of bad area pc c0010d90 lr c0010d8c address
-3C tsk 1Rebooting in 180 seconds..
+>From System.map:
+c0010930 t show_task
+c0010b70 T render_sigset_t
+c0010c78 T show_state
+c0010cec T daemonize
+c0010d50 T wake_up_process
+c0010ebc T get_dma_list
+c0010f30 T request_dma
+c0010f9c T free_dma
+c0011010 T free_uid
+c0011084 T alloc_uid
 
-Based on my simple attempts it appears that I am taking a DSI exception
-on an access to
-0xC010000 which should be a pointer to a struct task_struct.
+2. The wake_up_process() is in sched.c
 
-I noticed in System.map that data does not the first data entry is at
-c0101000 - empty_zero_page
+3. Disasembling sched.o gave me a file offset of 0x1dc0 for
+wake_up_process(). The failing
+   instruction is 0x40 down from the start of wake_up_process().
 
-My guess is that I don't memory properly configured or something like
-that.
-Note: they put the SUNI-Lite and board registers at
-0x04500000-0x04700000.
+    1dc0:   94 21 ff d0     stwu    r1,-48(r1)
+    1dc4:   7c 08 02 a6     mflr    r0
+    1dc8:   bf 81 00 20     stmw    r28,32(r1)
+    1dcc:   90 01 00 34     stw r0,52(r1)
+    1dd0:   7c 3f 0b 78     mr  r31,r1
+    1dd4:   7c 7e 1b 78     mr  r30,r3
+    1dd8:   3f a0 00 00     lis r29,0
+    1ddc:   3b 9d 00 00     addi    r28,r29,0
+    1de0:   81 3c 00 0c     lwz r9,12(r28)
+    1de4:   38 7f 00 08     addi    r3,r31,8
+    1de8:   7d 28 03 a6     mtlr    r9
+    1dec:   4e 80 00 21     blrl
+    1df0:   80 1d 00 00     lwz r0,0(r29)
+    1df4:   7c 08 03 a6     mtlr    r0
+    1df8:   4e 80 00 21     blrl
+    1dfc:   38 00 00 00     li  r0,0
+ >> 1e00:   81 3e 00 3c     lwz r9,60(r30)
+    1e04:   90 1e 00 00     stw r0,0(r30)
+    1e08:   2c 09 00 00     cmpwi   r9,0
+    1e0c:   40 82 00 f8     bne 1f04 <wake_up_process+0x144>
 
-Any thoughts?
+    Note: r30 is loaded from the paramenter passed in, r3.
 
-Thanks --
+4. I made a seemingly foolish assumption that the TRAP: 0300
+   was the exception vector. Hence that it was a DSI exception.
+   Looking at the register dump shows r30 = 0xc0100000. Hence
+   my question.
+
+5. The SUNI-lite is an SDH/ATM framer for the Fiber that uses FCC2. I
+mention the
+   addresses only in so far as I have done anything about them. Again,
+   I am certain the code is fine, I just have a configuration/setup
+problem.
+
+cheers --
+tarr
+
+Dan Malek wrote:
+>
+> Steve Tarr wrote:
+>
+> I haven't tried ramdisks recently......
+>
+> > RAMDISK: Compressed image found at block 0
+> > NIP: C0010D90 XER: 20000000 LR: C0010D8C REGS: c085f260 TRAP: 0300
+>
+> What function is this (0xc0010d90)?  It is hard to help without some
+> basic information like this.
+>
+> > GPR08: C085E000 C0008540 00000000 C085F358 00000000 FFFFFFFF 00000000
+> > 00000400
+>
+> > Kernel panic: kernel access of bad area pc c0010d90 lr c0010d8c address
+> > 3C tsk 1Rebooting in 180 seconds..
+> >
+> > Based on my simple attempts it appears that I am taking a DSI exception
+> > on an access to
+> > 0xC010000......
+>
+> How did you determine this?  The panic message prints the faulting
+> address, which happens to be 0x3c.  GPR8, 9, 10, 11, and 12 are typical
+> sources for intermediate pointers, two of those are zero.  I would
+> guess a NULL pointer to a data structure trying to access the contents
+> at offset 0x3c.
+>
+> > I noticed in System.map that data does not the first data entry.....
+>
+> Next time notice and tell us the function at NIP....much more useful.
+>
+> > Note: they put the SUNI-Lite and board registers at
+> > 0x04500000-0x04700000.
+>
+> Who is they, what's a SUNI-Lite, and does it matter?  Best of all,
+> if you don't like the address you can change it.
+>
+> We need more info.
+>
+>         -- Dan
 
 --
 Steven Tarr
