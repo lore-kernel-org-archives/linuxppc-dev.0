@@ -1,31 +1,30 @@
-Date: Fri, 12 Oct 2001 12:55:08 +0200
-From: "Juergen E. Fischer" <fischer@linux-buechse.de>
-To: Paul Mackerras <paulus@samba.org>
+Date: Fri, 12 Oct 2001 05:09:17 -0700
+From: Matt Porter <mporter@mvista.com>
+To: mod+linuxppc-dev@mclx.com
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: boot methods
-Message-ID: <20011012125508.A23128@linux-buechse.de>
-References: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
+Subject: Re: PPC+southbridge designs
+Message-ID: <20011012050917.A15738@cx258813-a.chnd1.az.home.com>
+References: <200110121337.JAA21171@missioncriticallinux.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200110121337.JAA21171@missioncriticallinux.com>; from mod+linuxppc-dev@mclx.com on Fri, Oct 12, 2001 at 09:37:27AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul,
+On Fri, Oct 12, 2001 at 09:37:27AM -0400, mod+linuxppc-dev@mclx.com wrote:
+>
+> How many existing PPC-based machines incorporate one
+> of those kitchen-sink southbridge chips like the VIA
+> VT82C686B that are normally found in x86-based machines?
 
-On Fri, Oct 12, 2001 at 17:32:34 +1000, Paul Mackerras wrote:
-> RS/6000 43p-140:
-> 	zImage.prep loaded via OF (floppy or hard disk)
-
-and OF netboot (at least on 7043-140).
-
-
-Jürgen
+A lot of them.  Hardware developers for high-end PPC embedded designs
+like them as a way to get UARTs, PIC, and IDE in one dirt-cheap package.
+Software developers hate them because they are evil.
 
 --
-"Well, let's just say, 'if your VCR is still blinking 12:00, you don't
-want Linux'".
-  -- Bruce Perens
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
