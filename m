@@ -1,23 +1,15 @@
-Return-Path: <Christian-Hoffmann@siemens.com>
-Received: from goliath.siemens.de (goliath.siemens.de [192.35.17.28])
-	by ozlabs.org (Postfix) with ESMTP id A28A667A2C
+Return-Path: <krom@dgt.com.pl>
+Received: from dgt-lab.com.pl (unknown [195.117.141.6])
+	by ozlabs.org (Postfix) with ESMTP id E0AB467A2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 23:23:58 +1100 (EST)
-Received: from mail3.siemens.de (mail3.siemens.de [139.25.208.14])
-	by goliath.siemens.de (8.12.6/8.12.6) with ESMTP id j0JBmUsD029366
-	for <linuxppc-embedded@ozlabs.org>; Wed, 19 Jan 2005 12:48:31 +0100
-Received: from WITB202A.wit.siemens.de (witb202a.wit.siemens.de
-	[149.246.229.252])
-	by mail3.siemens.de (8.12.6/8.12.6) with ESMTP id j0JBmTUt013861
-	for <linuxppc-embedded@ozlabs.org>; Wed, 19 Jan 2005 12:48:30 +0100
-Message-ID: <3F294367B36FF842B66CC65102BBA9B236C928@witb202a>
-From: Christian-Hoffmann@siemens.com
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 19 Jan 2005 12:47:05 +0100
+	Thu, 20 Jan 2005 00:45:34 +1100 (EST)
+Message-ID: <41EE5C98.4000607@dgt.com.pl>
+Date: Wed, 19 Jan 2005 14:11:52 +0100
+From: Wojciech Kromer <krom@dgt.com.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: FW: cpm_spi.c under kernel 2.6
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: 8250 FCC in half-duplex mode transmit timed out
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,20 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+hello again,
+after few month of silence, i found this group here :)
+thx for getting it back to live
 
+i have new problem with 8250 FCC in ethernet mode,
+it works fine in FDX, but after some time of heavy transmit all BD-s 
+become busy
 
->  -----Original Message-----
-> From: 	Hoffmann Christian Com ESY HD 652  
-> Sent:	Dienstag, 18. Januar 2005 11:55
-> To:	'linuxppc-dev@ozlabs.org'
-> Subject:	cpm_spi.c under kernel 2.6
-> 
-> hi, 
-> 
-> has anybody already ported the spi driver available in kernel 2.4.24
-> (arch/ppc/8260_io/cpm_spi.c) to kernel 2.6 (2.6.8.1) ?
-> if so, where can i get it ?
-> 
-> regards
-> 
-> christian
+the only way to continue is to reset FCC, but ituation repeats after 
+10-30 seconds
+
+any sollution?
+
+i've tried out CPM11,CPM112 and CPM119 microcode pathes from freescale,
+no success with this stuff
+
+by the way: does anyone know how to apply muiltiple patches at same time?
