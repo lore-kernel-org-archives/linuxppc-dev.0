@@ -1,42 +1,67 @@
-To: Kate Alhola <kate@iti.fi>
-Cc: Stefan Nickl <Stefan.Nickl@kontron.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Lite5200 PCI not working 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 02 Jul 2004 10:55:10 +0300."
-             <40E514DE.6020300@iti.fi>
-Date: Fri, 02 Jul 2004 10:51:39 +0200
-Message-Id: <20040702085145.0A0C9C109F@atlas.denx.de>
+Subject: Re: [PATCH][RFC]Updated MPC I2C driver
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Sylvain Munaut <tnt@246tnt.com>
+Cc: mcclintock@freescale.com,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>,
+	"Kumar K. Gala" <kumar.gala@motorola.com>,
+	Matthew McClintock <mcclintock@motorola.com>
+In-Reply-To: <40E49100.2060501@246tNt.com>
+References: <1088705955.28598.168.camel@localhost>
+	 <1088693987.7555.60.camel@matthew-laptop>
+	 <1088717127.28598.197.camel@localhost>  <40E49100.2060501@246tNt.com>
+Content-Type: text/plain
+Message-Id: <1088759103.936.24.camel@localhost>
+Mime-Version: 1.0
+Date: Fri, 02 Jul 2004 10:05:03 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <40E514DE.6020300@iti.fi> you wrote:
->
-> >This is why we implemented an accelerated X11 driver for the Coral-P.
-> >
-> I should try this new one. With the older one i have some problems with get all required
-> virtual console etc drivers to compiled to kernel to make Xfree 4.4 happy. Ok, now
-> there looks a like to be icecube_5200_CoralP_defconfig
+On Thu, 2004-07-01 at 23:32, Sylvain Munaut wrote:
 
-Yes, this is what we use for testing. It requires  a  USB  mouse  and
-keyboard to make the X11 server happy.
+>  - The FDR computation is completly different. Here is the code I
+> attached the code I used in my I2C driver. Basically, it takes as
+> argument the desired I2C clock rate ( was a module parameter ) and the
+> internal bus frequency and then compute the FDR.
 
-> May be it is worth to try use QT with X11 server instead using embedded qt direct to
-> fb device. In older driver it was anyhow much better to use embedded qt direrctly.
+The 5200 seems to have a different FDR implementation. I could include
+your calculation code if you can tell me where the value of ipb_freq
+should come from.
 
-We have standard versions of Debian  and  YellowDog  running  on  the
-LITE5200, so Qt embedded should be pretty straightforward, too.
+I don't currently do a calculation on the 107, but pick a slow value for
+safety. I'd need more platform specific knowledge to do the calculation,
+as the 107/824x scale from the SDRAM clock, and the 85xx scales from the
+CCB clock.
 
-Best regards,
+>  - During the scan, the first bus is scanned without devices and the
+> error when debug is active is I2C_MAL. From the moment the eeprom is
+> detected, the error code become I2C_NORXACK for the address wihout
+> device. Included dmesg
 
-Wolfgang Denk
+Are you sure that it changes from MAL to NORXACK after seeing a device?
+It looks to me that it returns MAL only on the bus without devices,
+probably due to lack of pull-up resistors.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Make it right before you make it faster.
+>  - The interrupt bit. BTW, on what event should the interrupt be fired ?
+> (I did my test without any interrupts )
+
+To use my driver, just set IE1 and IE2. The other flags are for a
+different approach using DMA to load the TX and RX registers. That would
+give a lower CPU overhead, but would also require a separate driver.
+
+In fact, the reset value of this register is correct. The easiest fix
+may be for platform code to ensure that the register has the correct
+value, in case boot firmware changed it.
+
+> Another remark : The register setup are done at every _start. Couldn't
+> they be done once for all during init ( just after the probe, call a
+> init_hardware functions ).
+
+Yes, the frequency settings could be done once on startup. I might try
+that.
+
+- Adrian Cox
+Humboldt Solutions Ltd.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
