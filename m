@@ -1,32 +1,25 @@
+Message-ID: <3CB6F9B7.16378395@imc-berlin.de>
+Date: Fri, 12 Apr 2002 17:13:59 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: tlbwe, rfci instructions and gcc cross assembler
-Date: Fri, 12 Apr 2002 10:10:39 -0500
-Message-ID: <45B36A38D959B44CB032DA427A6E10640167CFB2@cceexc18.americas.cpqcorp.net>
-From: "Cameron, Steve" <Steve.Cameron@COMPAQ.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
+References: <3CB6A2FE.62FFB14E@imc-berlin.de> <20020412133332.AA7E211258@denx.denx.de> <20020412150803.GO759@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> You did -Wa,m405, not -Wa,-m405.  What tree is this from anyhow, this
-> has been fixed in linuxppc_2_4_devel for awhile now.
+Tom Rini wrote:
 
-Doh!  At least daily, I prove myself to be an idiot.
-Of course it works if I put the dash in there.
+> > Define stable :-(
+> Well, whichever ChangeSet is the merge of someplace:/.../linux_2_4 into
+> someplace:/.../linuxppc_2_4 is the merge into linuxppc_2_4.
 
-I'm using linuxppc_2_4.  I thought that'd be more
-stable than linuxppc_2_4_devel.  Maybe that wasn't
-such a good choice.
+??? Excuse me? :-(
+What did you say?
 
-I'll give linuxppc_2_4_devel a try, since I'm not sure
-how to fix the Makefiles anyway.  (I think
-ASFLAGS = -Wa,-m405, but I'm don't know how to tie it in
-with Config.in.)
-
-Thanks,
--- steve
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
