@@ -1,15 +1,45 @@
-Message-ID: <36D685FD.1E07A1DE@wanadoo.fr>
-Date: Fri, 26 Feb 1999 12:31:09 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: satadru pramanik <satadru@umich.edu>
-CC: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 26 Feb 1999 10:18:58 -0500 (EST)
+From: satadru pramanik <satadru@umich.edu>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.2.2 compilation errors
-References: <Pine.LNX.4.10.9902252258270.32621-200000@beer.pub.umich.edu>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <36D685FD.1E07A1DE@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.9902261014540.1439-100000@beer.pub.umich.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
+
+Thanks again for all of the useful suggestions.  Further along the
+compilation chain, i came across this fatal error with the pmac_ide stuff.
+Luckily, since I have a 7600, w/o ide, i could just disable this, but it
+would be nice to get this working in Linus' tree, since his tree is
+mirrored everywhere.
+-sat.
+---compilation output---
+t/net.a drivers/scsi/scsi.a drivers/cdrom/cdrom.a drivers/sound/sound.a
+drivers/pci/pci.a drivers/macintosh/macintosh.a drivers/video/video.a \
+        /mnt/ibm/sin/src/kernel/linux/lib/lib.a \
+        --end-group \
+        -o vmlinux
+arch/ppc/kernel/kernel.o: In function `find_ide_boot':
+arch/ppc/kernel/kernel.o(.text.init+0x18e2): undefined reference to
+`pmac_ide_count'
+arch/ppc/kernel/kernel.o(.text.init+0x18e6): undefined reference to
+`pmac_ide_count'
+arch/ppc/kernel/kernel.o(.text.init+0x18fe): undefined reference to
+`pmac_ide_node'
+arch/ppc/kernel/kernel.o(.text.init+0x1902): undefined reference to
+`pmac_ide_node'
+arch/ppc/kernel/kernel.o(.text.init+0x1936): undefined reference to
+`pmac_ide_count'
+make: *** [vmlinux] Error 1
+
+
+
+
+On Fri, 26 Feb 1999, Martin Costabel wrote:
 
 This bug was introduced deliberately by Linus.
 It was fixed for ppc yesterday by Paul Mackerras and Gary Thomas.
@@ -68,6 +98,16 @@ satadru pramanik wrote:
 >                  Name: dot.config
 >    dot.config    Type: Plain Text (TEXT/PLAIN)
 >              Encoding: BASE64
+
+
+--=
+satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
+MIS, Student Publications
+"I'm old enough to be living in the future I was warned about."
+  - Myron Krueger
+=--
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
