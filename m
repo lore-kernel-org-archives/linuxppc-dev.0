@@ -1,31 +1,51 @@
-From: phandel@cise.ufl.edu
-Date: Wed, 9 Feb 2000 11:24:47 -0500 (EST)
-To: "D.J. Barrow" <barrow_dj@yahoo.com>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-user@lists.linuxppc.org
-Subject: Speaking of Mozilla -> Bugs fixed!
-In-Reply-To: <20000208222312.1905.qmail@web218.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.21.0002081818200.2577-100000@adsl-78-160-189.gnv.bellsouth.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200002091719.SAA23840@appel.flower>
+To: BenH <bh40@calva.net>
+cc: Dan Bethe <dan_bethe@yahoo.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: the state of the linuxppc-dev community
+Date: Wed, 09 Feb 2000 18:19:27 +0100
+From: Jan Nieuwenhuizen <janneke@gnu.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just tried grabbing the newest source code and compiling it, and both of
-the major bugs (black screen on resize, and crash on click in url field)
-have now been fixed.  I compiled them with CFLAGS = "-O3
--fomit-frame-pointer" and --disable-mailnews --disable-tests
---disable-debug --enable-optimize --enable-x11-shm --enable-strip-libs
+BenH writes:
 
+>  - The primary source for the "current" up-to-date kernel source tree for
+> powermac
+>    is Paul Mackerras rsync tree. It can be retreived with rsync:
+>
+>       rsync -arvz linucare.com.au::linux-pmac-stable <dest_dir>
+>
+>    This tree contains all the latest fixes, features, etc... as long as
+> they are
+>    considered stable.
 
-Thanks,
-Peter
+Similarly, I heard some time ago, that
+
+    rsync -auvz linuxcare.com.au::linux-pmac-devel <dest_dir>
+
+would give me a fairly recent development (2.3.x) kernel.
+Jan 14, and Feb 1, I succeeded in building a kernel (2.3.39) from that,
+jippie!  But since then, I'm getting silly permission errors:
+
+    [root@appel linux]# rsync -auvz linuxcare.com.au::linux-pmac-devel .
+    Welcome to the Linuxcare Australia rsync server
+    For information about Linuxcare see http://linuxcare.com.au/
+
+    receiving file list ... done
+    ./
+    arch/ppc/
+    send_files failed to open Documentation/kernel-docs.txt: Permission denied
+    send_files failed to open Documentation/sound/NM256: Permission denied
+    wrote 123 bytes  read 110685 bytes  4345.41 bytes/sec
+    total size is 71388166  speedup is 644.25
+
+Greetings,
+
+Jan.
 
 --
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+Jan Nieuwenhuizen <janneke@gnu.org> | GNU LilyPond - The music typesetter
+http://www.xs4all.nl/~jantien       | http://www.lilypond.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
