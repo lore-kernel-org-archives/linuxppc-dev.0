@@ -1,34 +1,50 @@
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Matt Porter" <porter@cox.net>
+Cc: "Pantelis Antoniou" <panto@intracom.gr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Regarding consistent_alloc
+Date: Fri, 6 Dec 2002 19:15:15 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLOEJHFIAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: boot flash problem,
-Date: Fri, 6 Dec 2002 12:41:26 -0500
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B99@mail1.mediatrix.com>
-From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-To: "Li Xiangrong" <lixiangrong@china.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+	charset="us-ascii"
+In-Reply-To: <20021206113007.B18257@home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> bdi configuration file:
-> ..
-> WM32    0xFF000100      0xFFE00801      ;BR0
-> WM32    0xFF000104      0xFFC00160      ;OR0 : 2MB, all
+>
+> On Fri, Dec 06, 2002 at 05:08:22PM +0100, Joakim Tjernlund wrote:
+> > >
+> > > On Fri, Dec 06, 2002 at 03:25:48PM +0100, Joakim Tjernlund wrote:
+> > > > If you implement the performance improvement I suggested earlier, I don't think
+> > > > you need them. Another thing with consistent_xxx() is that you can not use
+> > > > __pa() and __va() on addresses returned by the consistent_alloc et. al.
+> > >
+> > > Um, well if you are doing a consistent_alloc() then surely you are
+> > > keeping the dma_handle around which is your physical address.  If you
+> > > want the kernel virtual address then you can apply __va to that.  So,
+> > > you have the cache inhibited mapping in vmalloc space returned to you,
+> > > the physical address provided in dma_handle, and a kernel virtual address
+> > > that can be trivially generated.
+> >
+> > m8xx_cpm_hostalloc() does not keep the DMA handle and __pa() does not work
+> > on addresses returned by m8xx_cpm_hostalloc(). I just found that out the
+> > hard way when upgrading from MV 2.4.2 to linuxppc_2_4_devel 2.4.20. My SPI driver
+>
+> that's a problem with m8xx_cpm_hostalloc() (or how you are using it) if
+> it doesn't keep around the values you need.
+>
 
-If you use a flash of 4MB, then move the base address from 0xFFE00000 to 0xFFC00000.
-Set the base address in BR0 to 0xFFC0, not 0xFFE0.
+Yes and no, someone changed the m8xx_cpm_hostalloc() implementation and now
+it does not behave as it used to. Earlier both __pa(adr) and __va(__pa(adr))
+worked on addresses returned by m8xx_cpm_hostalloc().
 
-Your BDI probably programmed the boot loader at the wrong place.
+I think in it's current form it's useless and should either be changed back to what
+it was or die.
 
-Regards,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+   Jocke
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
