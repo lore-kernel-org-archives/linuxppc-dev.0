@@ -1,16 +1,19 @@
-Return-Path: <annamaya@yahoo.com>
-Received: from web53801.mail.yahoo.com (web53801.mail.yahoo.com
-	[206.190.36.196]) by ozlabs.org (Postfix) with SMTP id EB7FE2BF17
+Return-Path: <wd@denx.de>
+Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
+	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id A59052BF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Jan 2005 09:24:39 +1100 (EST)
-Message-ID: <20050107222437.99118.qmail@web53801.mail.yahoo.com>
-Date: Fri, 7 Jan 2005 14:24:37 -0800 (PST)
-From: annamaya <annamaya@yahoo.com>
-To: cashton@amcc.com, linuxppc-embedded@ozlabs.org
-In-Reply-To: <I9YGNJ02.V3Y@hadar.amcc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: Re: Looking for PowerPC Linux experts in Austin, TX
+	Sat,  8 Jan 2005 09:30:33 +1100 (EST)
+To: Federico Lucifredi <flucifredi@acm.org>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 07 Jan 2005 16:13:45 EST."
+	<41DEFB89.5060404@acm.org>
+Date: Fri, 07 Jan 2005 23:30:07 +0100
+Sender: wd@denx.de
+Message-Id: <20050107223012.8C3A6C14E3@atlas.denx.de>
+Cc: "Linux-ppc \[mailing list\]" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Frame Buffer and Y Cb Cr 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,39 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Charlie,
-
-I live in Austin, TX and work on embedded Linux for a
-local company here. What can I do for you?
-
-
---- Charlie Ashton <cashton@amcc.com> wrote:
-
-> I'm responsible for PowerPC Software at AMCC, who
-> acquired the embedded 405
-> and 440 product lines from IBM.
+In message <41DEFB89.5060404@acm.org> you wrote:
 > 
-> I'm interested in talking with PowerPC Linux experts
-> in the Austin TX area.
-> We have a number of development projects in mind and
-> are looking for advice,
-> opinions and contributions.
-> 
-> Regards,
-> Charlie Ashton
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+>     My trouble is: Linux sends me R G B and the hardware expects Y Cb 
+> Cr. As things work through a memory-mapped file, I am at a loss for an 
+> "intelligent" way to intercept and convert these values.
 
+Have a look at the arch/ppc/8xx_io/viedo* files in our old  linux-2.4
+tree  on the CVS server - this driver is for the video contoller on a
+MPC823 wich needs YCbCr.
 
+Best regards,
 
-		
-__________________________________ 
-Do you Yahoo!? 
-Yahoo! Mail - Easier than ever with enhanced search. Learn more.
-http://info.mail.yahoo.com/mail_250
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Sometimes a feeling is all we humans have to go on.
+	-- Kirk, "A Taste of Armageddon", stardate 3193.9
