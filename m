@@ -1,35 +1,30 @@
-Message-ID: <38171E45.DC552AAF@netx4.com>
-Date: Wed, 27 Oct 1999 11:46:13 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <3817A40D.F62BC2FA@263.net>
+Date: Thu, 28 Oct 1999 09:17:01 +0800
+From: Wang Yong <wung_y@263.net>
+Reply-To: wung_y@263.net
 MIME-Version: 1.0
-To: Nicolas Pohland <pohland@snom.de>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC8BUG crashes on Windows 95/98/NT
-References: <381706D7.FF1D8477@snom.de>
+To: linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
+CC: linux-ce-devel <linuxce-devel@linuxce.org>,
+        linux embedded maillist <linux-embedded@waste.org>
+Subject: Root FS on Flash?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Nicolas Pohland wrote:
+hi,
+	we're now working on porting linux to IBM PPC401D2, a embedded
+controller. here, i have a question: how to make root file system on the
+flash memory? by now, most embedded linux employ NFS as root file
+system.
+this solution is not suitable for us. so we decide to make a root fs,
+such
+as minix, on flash memory.
+	does anyone has any experience on it? is there a embedded linux
+has done it? any comment and suggestion are welcome. thank you.
 
+regards,
+Wang
 
-> Did someone experience also have this problem ?
-
-Yes....
-
-
-> Or have a viable alternative ?
-
-Yes....
-
-
-> Any help would be greatly appreciated.
-
-Go into the e-mail archives and read my past messages.  It has
-helped some people.....and pissed off others.....
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
