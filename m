@@ -1,46 +1,47 @@
-Message-Id: <199908092023.WAA00328@piglet.cpu.lu>
-Date: Mon, 9 Aug 1999 22:23:25 +0200 (CEST)
+Message-Id: <199908092113.XAA00412@piglet.cpu.lu>
+Date: Mon, 9 Aug 1999 23:13:49 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: Paul.Mackerras@cs.anu.edu.au
-cc: paulus@cs.anu.edu.au, drow@false.org, mj@ucw.cz,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <199908090513.PAA09905@tango.anu.edu.au>
+To: drow@false.org
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19990808232621.B352@them.org>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   9 Aug, this message from Paul Mackerras echoed through cyberspace:
->> This fact was already catered for with the definition of outb/inb and
->> friends, which get an offset added to the port. Unfortunately, the
->> PowerMac IDE code undoes this and replaces it with a different
->> mechanism, which in essence removes the offset. Grrr..
+Hi Dan,
+
+I'm getting returned mail (user unknown) on Andre's email address. Do
+you happen to know his new address?
+
+On   8 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
+[Io port mapping funnies]
+>
+> This didn't, oddly, stop my card from working.  It does, however, make
+> me lock up hard if I hdparm -i /dev/hda.
+
+What is your machine? Any IDE devices onboard?
+
+I'm getting lockups myself on hdparm -I and -d1 -X66 (for the Maxtor
+drive) and at drive identification on bootup with a Quantum Fireball.
+Weired....
+
+> Oh, if you didn't pick this up, you can make it ide0/1 instead of
+> ide2/3 by enable CONFIG_BLK_DEV_OFFBOARD.
+
+Yeah, I was just too lazy to enable it, thanks ;-)
+
+>> /dev/hde:
+>>  Timing buffered disk reads:  64 MB in  6.60 seconds = 9.70 MB/sec
+>> Maxtor 91024D4; 10G 7200 RPM, UDMA-2 ie 33 MB/s.
 > 
-> Not any more.  I took that stuff out a few weeks ago so that the
-> CMD646 on the blue&white G3s could work.
+> Eek.  I want that :)
 
-Is that change in vger only? Submitted for 2.2.11?
-
-> Basically the problem is that the IDE driver assumes that you access
-> all IDE controllers via I/O ports.
-
-Not a problem in itself, I guess: it's just that on the PPC, I/O ports
-are not necessarily below 64k in processor-view..
-
-> When you have a controller that
-> has memory-mapped registers, there is a problem.  When you have a
-> system where one IDE controller has I/O ports and another has memory-
-> mapped registers, you have a bigger problem.  The current approach to
-> solving this problem is to map the addresses of the memory-mapped
-> registers into pseudo I/O port numbers (by subtracting _IO_BASE).  If
-> there is a better way, somebody let me know. :-)
-
-I'd vote for making I/O ports a memory addresss like any other, and
-making sure drivers get this address right. See my other post for
-details..
+Yeah, interesting drive, as it is _very_ silent; nothing to do with the
+usual 7200 RPM stuff, plus it is relatively fast. And affordable ;-) 
 
 Michel
 
