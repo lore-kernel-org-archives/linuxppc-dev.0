@@ -1,101 +1,98 @@
-Date: Fri, 18 Jun 2004 14:02:50 +0200
-From: Sebastian Henschel <linux@kodeaffe.de>
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
-Message-ID: <20040618120250.GA8657@fuchi>
-References: <200406051846.50718.toojays@toojays.net> <200406102105.27654.toojays@toojays.net> <1086883926.2977.145.camel@gaston> <200406161204.30453.toojays@toojays.net>
+Date: Fri, 18 Jun 2004 08:29:51 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Martin Habets <errandir_news@mph.eclipse.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] Make install target work
+Message-ID: <20040618152951.GC811@smtp.west.cox.net>
+References: <20040616181652.GA7240@palantir8> <20040616190548.GD24479@smtp.west.cox.net> <20040617113822.GB9175@palantir8> <20040617150358.GI24479@smtp.west.cox.net> <20040618091707.GA15958@palantir8>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="gKMricLos+KVdGMg"
-In-Reply-To: <200406161204.30453.toojays@toojays.net>
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040618091707.GA15958@palantir8>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello john..
+On Fri, Jun 18, 2004 at 10:17:07AM +0100, Martin Habets wrote:
 
-* John Steele Scott <toojays@toojays.net> [2004-06-16 09:24 +0200]:
-
-> On Fri, 11 Jun 2004 01:42 am, Benjamin Herrenschmidt wrote:
-> > > I have made a new patch for this, available from:
-> > > http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040610.patch
+> On Thu, Jun 17, 2004 at 08:03:58AM -0700, Tom Rini wrote:
 > >
-> > Looks good except for some coding style issues ;)
+> > On Thu, Jun 17, 2004 at 12:38:22PM +0100, Martin Habets wrote:
 > >
-> > Use spaces between } and else for example, there's also an if
-> > without a space before the ( and please, name the low level asm
-> > function low_* like the other ones, for consistency.
+> > > On Wed, Jun 16, 2004 at 12:05:48PM -0700, Tom Rini wrote:
+> > > >
+> > > > On Wed, Jun 16, 2004 at 07:16:52PM +0100, Martin Habets wrote:
+> > > >
+> > > > > This patch makes the install target work. After all, it is already
+> > > > > mentioned in the 'make help' output.
+> > > > > The only question is, should it install zImage by default? I always
+> > > > > install vmlinux, so I used that.
+> > > >
+> > > > Given the number of different ways we have to deal with (this really
+> > > > only handles pmac) I'd much rather just have boot/install.sh run either
+> > > > the distribution or user-provided script.
+> > >
+> > > Ehh.. that's exactly what install.sh tries to do! Only if both of these
+> > > do not exist will the bottom part of the code be executed.
+> >
+> > Right.  And it's the bits at the bottom that I don't like.
 >
-> A new patch which addresses these issues is at:
-> http://www.toojays.net/~toojays/misc/7447a_cpufreq_20040616.patch
+> Ok, so you'd like to fail if neither nethod is avaiable (right?). I have no
+> problem with that, but realize that it causes some inconsistent behaviour
+> compared to other architectures.
+
+By fail just:
+echo "No install method found, nothing installed"
+is fine.
+
+> Can you explain why or what you don't like, please?
 >
-> This is functionally identical to the previous patch.
+> > > The distribution provided scripts want an image to install. I agree
+> > > that it is impossible to supply the right image for all systems.
+> > > But maybe it is possible to echance this patch for some systems,
+> > > providing a different image based on config settings?
+> >
+> > Possibly.  But I'm not convinced that the complexity will buy us
+> > anything over the distribution script (which should cover all of the
+> > pmac cases, if not, bug your distribution :)) and the user provided
+> > hook.
+>
+> Yes, covering all cases in the kernel would be overkill, but I did not
+> suggest that.
 
-thanks a lot for your patch, it seems to work, according to info from
-cpufreqd, bogomips and /proc/cpuinfo. though i had to tweak it a little
-bit for the alu powerbook g4 2nd generation 12" aka powerbook6,4:
+I'm talking about the complexity of covering most of the cases, for
+non-pmac.  But..
 
---- arch/ppc/platforms/pmac_cpufreq.c.old	2004-06-18 12:33:37.000000000 +0200
-+++ arch/ppc/platforms/pmac_cpufreq.c	2004-06-18 12:34:32.000000000 +0200
-@@ -411,6 +411,7 @@ static int __init pmac_cpufreq_setup(voi
+> Pushing all this to the distribution script is not right
+> either.
 
- 		/*  Check for 7447A based iBook G4 */
- 		if (machine_is_compatible("PowerBook6,5") ||
-+		    machine_is_compatible("PowerBook6,4") ||
- 		    machine_is_compatible("PowerBook5,4")) {
- 			/* OF only reports the high frequency */
- 			hi_freq = cur_freq;
+I disagree.  Given that the common case is using yaboot, that's not a
+big burden on the distribution.  But if one decides to support grub or
+U-Boot (with the latter being a bit more likely, IMHO, since it's what
+the Pegasos boards use, I believe), it does become a distribution
+problem to know how it set things up so that the user can add new
+kernels, not the kernels responsibility to know where it has to put
+something for a given distribution.
 
-i also added an entry in the "feature"-table for 6,4 and 5,4 (which you
-might have forgotten at this place). the 5,4 is the alu powerbook g4 2nd
-generation 15" which i had worked on two weeks ago (but cannot anymore).
+> That's not much more than a fancy copy script, and keeping it in
+> sync with kernel code (directory and filenames) would be impossible.
 
---- arch/ppc/platforms/pmac_feature.c.orig	2004-06-18 12:28:44.000000000 +0200
-+++ arch/ppc/platforms/pmac_feature.c	2004-06-18 12:32:39.000000000 +0200
-@@ -2135,6 +2135,10 @@ static struct pmac_mb_def pmac_mb_defs[]
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
- 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
- 	},
-+	{	"PowerBook5,4",			"PowerBook G4 15\"",
-+		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
-+		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-+	},
- 	{	"PowerBook6,1",			"PowerBook G4 12\"",
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
- 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-@@ -2147,6 +2151,10 @@ static struct pmac_mb_def pmac_mb_defs[]
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
- 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
- 	},
-+	{	"PowerBook6,4",			"PowerBook G4 12\"",
-+		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
-+		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-+	},
- 	{	"PowerBook6,5",			"iBook G4",
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
- 		PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
+This is rather static information, and I've taken some pains to ensure
+that image names / locations have stayed consistent in 2.$(stable).
 
-since there are several entries for PowerBook G4 12", 15" and there will
-presumably be a new entry to be made for the current generation 17",
-would it be sensible to differentiate the short descriptions a little
-bit more? like:
+> Besides, this kind of logic belongs in the kernel, if anywhere.
+>
+> But there is an intermediate solution, which should satisfy all users:
+> a makefile variable can be overruled by users, e.g.
+> 	make BOOTIMAGE=arch/ppc/boot/images/zImage.prep install
 
-"PowerBook6,4", "PowerBook G4 12\", Alu 2nd Generation"
-"PowerBook5,4", "PowerBook G4 15\", Alu 2nd Generation"
+Actually, Sam Ravnborg introduced a patch, which I think will be
+accepted soon, to add a BOOT_IMAGE variable to the Makefiles, so that
+'make rpm/deb/tarball' will be cleaner.  Once that happens, we can
+revisit the idea of hooking an install script up, for all of the various
+targets.
 
-i personally own a powerbook5,2 which is the first alu generation, could
-that be:
-
-"PowerBook5,2", "PowerBook G4 15\", Alu 1st Generation"
-
-or do the titanium powerbooks g4 also come with the id 5,2?
-
-thanks,
- sebastian
 --
-::: .O.
-::: ..O
-::: OOO
-::: lynx -source http://www.kodeaffe.de/shensche.pub | gpg --import
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
