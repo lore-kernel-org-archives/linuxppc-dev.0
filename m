@@ -1,13 +1,32 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <m15cnZX-001SysC@bucks>
-From: diekema@bucks.si.com (diekema_jon)
-Subject: HOWTO: Creating a root file system < 32 MB
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Fri, 31 Aug 2001 08:38:55 -0400 (EDT)
+From: "Kapil Konde" <kapilkk@yahoo.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: HOWTO: Creating a root file system < 32 MB
+Date: Fri, 31 Aug 2001 18:30:55 +0530
+Message-ID: <GDEHIPAFEMJDKNFDCIEBGEKKCAAA.kapilkk@yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <m15cnZX-001SysC@bucks>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Hi All,
+
+	Can anybody please tell me how do I create a root filesys for my mpx8xx
+target.
+
+Thanks in advance,
+Kapil.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
+diekema_jon
+Sent: Friday, August 31, 2001 6:09 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: HOWTO: Creating a root file system < 32 MB
+
 
 
 HOWTO: Creating a root file system < 32 MB
@@ -181,7 +200,8 @@ dell 405} du -h -s /opt/hardhat/devkit/ppc/82xx/target
 79M     /opt/hardhat/devkit/ppc/82xx/target
 
 9. We are operating a standalone board, not as a server for other
-   networked devices.  We can remove DHCP, gated, ipchains, PVM, etc. (~16MB)
+   networked devices.  We can remove DHCP, gated, ipchains, PVM, etc.
+(~16MB)
 
    We are using PPCBoot to bring up Linux, and it supports DHCP.
    This means that DHCP client support (pump) can also be removed.
@@ -217,7 +237,8 @@ dell 494} du -h -s /opt/hardhat/devkit/ppc/82xx/target
 63M     /opt/hardhat/devkit/ppc/82xx/target
 
 13. The following static libaries can be removed since they are only present
-    in the target root file system.  They don't get referenced from inside of
+    in the target root file system.  They don't get referenced from inside
+of
     /opt/hardhat/devkit/ppc/82xx/powerpc-hardhat-linux/lib/. (~3MB)
 
 -r--r--r--    1 root     root        43688 Aug  8  2000 ./libcom_err.a
