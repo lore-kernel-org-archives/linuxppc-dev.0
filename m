@@ -1,18 +1,18 @@
 Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 61B9867A79
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2C5AC67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Mar 2005 16:46:26 +1100 (EST)
-In-Reply-To: <20050322211839.6A3DCC1510@atlas.denx.de>
-References: <20050322211839.6A3DCC1510@atlas.denx.de>
+	Wed, 23 Mar 2005 16:53:24 +1100 (EST)
+In-Reply-To: <1111523269.2987.58.camel@ad.doubleclick.net>
+References: <1111523269.2987.58.camel@ad.doubleclick.net>
 Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <ba2549a1f7b9f73004d8d6e52415aee4@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9b9c4447ceb975b7b6dd1498ec686e41@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 22 Mar 2005 23:46:22 -0600
-To: Jason McMullan <jason.mcmullan@timesys.com>
-Cc: linuxppc-embedded linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] CPM2 cleanups 
+Date: Tue, 22 Mar 2005 23:53:24 -0600
+To: "Jason McMullan" <jason.mcmullan@timesys.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] CPM2 cleanups
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,43 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jason, why did you bother to implement these functions, they dont=20
-provide any value for us?
+Some additional comments:
 
-It looks like startup() & shutdown() are only used in IRQ probing code=20=
+* Did you actually try setting CPM_IRQ_OFFSET to a non-zero value?  I'm 
+guessing this doesnt work since you are not offset the irq passed into 
+the other functions.  For example, if CPM_IRQ_OFFSET is 64, will 
+cpm2_mask_irq() work?
 
-or code in which enable/disable will be used instead.
+* what is SA_NOTHREAD all about?
 
 - kumar
 
-On Mar 22, 2005, at 3:18 PM, Wolfgang Denk wrote:
+On Mar 22, 2005, at 2:27 PM, Jason McMullan wrote:
 
-> In message <1111523269.2987.58.camel@ad.doubleclick.net> you wrote:
->  >
-> ...
->  > +static unsigned int cpm2_startup_irq(unsigned int irq)
->  > +{=A0
-> > +=A0=A0=A0=A0=A0=A0 cpm2_unmask_irq(irq);
-> > +=A0=A0=A0=A0=A0=A0 return 0;
->  > +}
->  > +
->  > +static void cpm2_shutdown_irq(unsigned int irq)
->  > +{
->  > +=A0=A0=A0=A0=A0=A0 cpm2_mask_irq(irq);
-> > +}
->
-> Why is cpm2_startup_irq() not void like cpm2_shutdown_irq() ?
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --=20
-> Software Engineering:=A0 Embedded and Realtime Systems,=A0 Embedded =
-Linux
->  Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
->  Overflow on /dev/null, please empty the bit bucket.
->  _______________________________________________
+> _______________________________________________
 > Linuxppc-embedded mailing list
 >  Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+> Date: March 22, 2005 2:28:51 PM CST
+> Subject:
+>
+>
+>
+> Date: March 22, 2005 2:28:51 PM CST
+> Subject:
+>
+>
+> <ATT128341.txt><cpu-ppc-cpm2.patch>
+>
+> <signature.asc>
+>
