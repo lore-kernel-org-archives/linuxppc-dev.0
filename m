@@ -1,30 +1,83 @@
-From: =?gb2312?B?tqG68dPA?= <nari_dhy@nari-china.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <001901c34557$315aee60$4a44900a@hydingnb>
-Subject: how to mount CF device in linux
-Date: Tue, 8 Jul 2003 21:45:24 +0800
+Message-ID: <3F0ACE50.90908@tataelxsi.co.in>
+Date: Tue, 08 Jul 2003 19:29:44 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ncurses problem in telnet/serial console.
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
-    I have a IBM Microdrive CF device which is 1GB.
-    I have joined it with a PC Card Adapter provided by IBM and pluged
-it into a PCMCIA slot in my notebook. Under WIN XP, i can explorer
-the device. How can i find this device under linux(redhat7.3) and
-fdisk,format and create fs with it?
-thanks
-best regards!
----
-ding hou yong
-Nanjing Electrical Automation Institute
-Tel: 86-25-3429900-2425
-GSM: 86-(0)13814021009
-FAX: 86-25-3429900-2425
-Email: nari_dhy@nari-china.con
-Http: www.nari-china.com
----
+Hi,
+We have developed a Brouter on mpc8260 running linux with ncurses CUI
+for administrative tasks. ncurses
+Requirement is that when the user telnet to the router or connect to the
+serial port, the CUI should come up, and the usual telnet login prompt
+should not come up.
+libncurses.so.5 is the libray we use.
+What I did is to modify the /etc/xinetd.d/telnet to our program. Our
+telnet file now look like
+
+[root@pandatel12 ~]# cat /mnt/bet_rd/etc/xinetd.d/telnet
+# description: The telnet server serves telnet sessions; it uses \
+#       unencrypted username/password pairs for authentication.
+service telnet
+{
+         flags           = REUSE
+         socket_type     = stream
+         wait            = no
+         user            = root
+         #server         = /usr/sbin/in.telnetd
+         server          = /bin/mdi
+         log_on_failure  += USERID
+         disable         = no
+}
+[root@pandatel12 ~]#
+When we telnet to the port 23, the error we get it
+
+[root@pandatel12 ~]# telnet 10.1.28.44
+Trying 10.1.28.44...
+Connected to 10.1.28.44 (10.1.28.44).
+Escape character is '^]'.
+Error opening terminal: vt100.
+Connection closed by foreign host.
+[root@pandatel12 ~]#
+
+The code is
+
+[root@pandatel12 ~/test]# cat ncursestest.c
+#include <ncurses.h>
+int main()
+{
+         initscr(); /* Start curses mode */
+         printw("Hello World !!!"); /* Print Hello World */
+         refresh(); /* Print it on to the real screen */
+         getch(); /* Wait for user input */
+         getch(); /* Wait for user input */
+         getch(); /* Wait for user input */
+         endwin(); /* End curses mode */
+         return 0;
+}
+[root@pandatel12 ~/test]# gcc -o mdi -lncurses ncursestest.c
+[root@pandatel12 ~/test]#
+
+
+At the same time, if I login to the board (after changing telnet entry
+to in.telnetd) and run the application, it works fine.
+TERMINFO settings are in /etc/profile.
+
+[root@pandatel12 ~]# cat /mnt/bet_rd/etc/profile
+#!/bin/sh
+export TERMINFO=/etc/terminfo
+
+What can be the resaon for this error?
+
+For serial I modified the /etc/inittab, but getting the same error. If I
+can solve the first one, this can also be solved in similar lines I believe.
+
+Thanks for your time,
+Om.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
