@@ -1,31 +1,23 @@
-From: brian.auld@adic.com
-Message-ID: <995FF289C9D69747A09E42992644595405B23678@penguin.adic.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PowerMac vs. Intel for PowerPC Development Host
-Date: Wed, 19 Feb 2003 13:52:58 -0800
+Message-ID: <004f01c2d861$c6cdab30$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+References: <D73A25AA6E54D511AD74009027B1110F3C066A@ORION>
+Subject: lmw and stmw instructions not used copy functions 
+Date: Wed, 19 Feb 2003 22:56:32 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-A while back I wrote an email to this list regarding development kit
-suggestions. Based mainly on feedback from this email, I am currently moving
-in the Intel/ELDK direction.
+Hi
 
-Out of all the feedback I received, only one person suggested developing on
-a PowerMac based Linux box, thus eliminating the need for cross-compiling. I
-have become more interested in this option as some people in our company
-have noted that cross-compiling embedded linux presented problems on past
-projects when it came to building certain 3rd party applications.
+I noticed that the lmw and stmw instructions are not used in copy_page(), clear_page() etc.
+Aren't these instructions faster than a bunch of lwz/stw?
+I assume they are inappropriate for some reason, but I would like to know why.
+Would they work on 8xx?
 
-In the Intel vs. Mac debate for a linux development host for embedded ppc
-development, if money was not an issue, would I get more PowerMac
-recommendations??
-
-Thanks,
-
--- Brian
-
+    Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
