@@ -1,61 +1,59 @@
-Mime-Version: 1.0
-Message-Id: <v04220803b54a84458836@[10.0.0.42]>
-In-Reply-To: <Pine.SOL.3.95.1000518074410.17922A-100000@dana.ucc.nau.edu>
-References: <Pine.SOL.3.95.1000518074410.17922A-100000@dana.ucc.nau.edu>
-Date: Thu, 18 May 2000 22:53:09 -0700
-To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: Pismo status
-Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Fri, 19 May 2000 08:03:22 +0200 (MET DST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Brad Douglas <Brad@NERUO.com>
+cc: Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: [linux-fbdev] Re: macmodes/modedb
+In-Reply-To: <6BAD6986DF8FD211AB8300A0C931D855050F05@MAIL>
+Message-ID: <Pine.GSO.4.10.10005190801530.19668-100000@dandelion.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 7:48 AM -0700 5/18/00, Tim Wojtulewicz wrote:
->On Wed, 17 May 2000, Timothy A. Seufert wrote:
+On Thu, 18 May 2000, Brad Douglas wrote:
+> > From: Geert Uytterhoeven [mailto:geert@linux-m68k.org]
+> > > Another option is to not try and do everything in fb_find_mode().
+> >
+> > You cannot do everything in fb_find_mode() since monitor sense is
+> > a per-monitor issue, not global.
 >
->>
->>  No, it will not.
->>
->>  The PowerPC 750 (G3) and 7400 (G4) can both fire off an interrupt
->>  when the on-die temperature sensor reading rises above a trigger
->>  value (or falls below a second trigger value).  This feature *could*
->>  be used by an operating system to slow down the CPU (through the
->>  instruction cache throttling feature) or halt it to prevent
->>  overheating.  However, there is no hardware feature which can halt
->>  the CPU without software control.
->>
+> As of now, all drivers have a 1:1 relationship with a monitor.  Even the
+> Matrox G400 driver insmods a second driver for the 2nd head.  Should we
+> expect this to change?  I do not believe fbdev is capable of initializing
+> two video cards from a single driver, but I could be wrong -- I have no
+> ability to test.
+
+Yes it is. There are drivers that can handle multiple cards. And you can have
+different cards as well.
+
+> > One possible thing (in each fbdev driver :-(
+> >
+> >     default_mode = NULL;
+> > #ifdef CONFIG_PPC_ALL
+> >     sense = ...;
+> >     default_mode = mac_map_monitor_sense(sense);
+> > #endif
+> >     ... = fb_find_mode(..., default_mode, ...);
 >
->So in other words, without a little bit of help from the OS, the fan won't
->come on when it the temperature hits this trigger value.  The temperature
->would of course, continue to rise.
+> I believe this would be acceptable, but we'll have to change
+> mac_map_monitor_sense() to return fb_videomode instead of VMODE.
+> fb_find_mode() will be unhappy to get an int when it's expecting
+> fb_videomode. ;)
 
-This die temperature sensor has nothing to do with the PowerBook's
-fan.  It's built into all PPC 750 and 7400 CPUs.
+Of course.
 
-Apple could use the die sensor to control the fan, but instead they
-use a sensor on the motherboard of the PowerBook, as the fan is
-really intended to ensure that the ambient temperature inside the
-whole PowerBook doesn't get too hot.  This because there are actually
-things which are much more sensitive to overheating than the CPU,
-like the hard drive.
+Gr{oetje,eeting}s,
 
->Has any code been written for LinuxPPC that will let us monitor this
->sensor?  I know there's a whole lm_sensors package for i386 and the like,
->but is there something like this for us?
+						Geert
 
-For some PowerBooks / PMU versions, I think so.  We will probably get
-full support for things like this when Apple puts it into Darwin/OS X.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
->Yes, I had heard they upgraded the PMU, but I wasn't aware of how much
->they had changed it.  Is it just a matter of knowing some extra bits we
->can switch on and off in the PMU, or is it more than that?
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-Probably more than that, but I don't know anything beyond the basic
-fact that the PMU (both the hardware and its control program) got the
-first major upgrade in years.
-
-   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
