@@ -1,25 +1,34 @@
-Message-ID: <69AB2E42243FD511920200805FE64EAD0E367D@zbr01exm01.spo.br.mot.com>
-From: Borracini Evandro-R45188 <Evandro.Borracini@motorola.com>
-To: "'dmalek@jlc.net'" <dmalek@jlc.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: CS4218 sound driver
-Date: Mon, 7 Jan 2002 11:01:05 -0200 
+Message-ID: <3C39B87E.3A2E399B@chinook.com>
+Date: Mon, 07 Jan 2002 10:02:22 -0500
+From: Peter Desnoyers <pdesnoyers@chinook.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: =?iso-8859-1?Q?K=E1ri=20Dav=ED=F0sson?= <kd@flaga.is>
+Cc: LEROY Christophe <christophe.leroy@c-s.fr>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Kernel Oops when receiving a lot of UDP packets while booting
+References: <EADB10BAC266A14A85ECBF8686A73E31459414@kolkrabbi.flaga.is>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+> I have verified that I am getting packets over the ethernet
+> before the scc_enet_open() is called, I somehow suspect that
+> this might be causing my random crashes.
 
-You wrote the cs4218_tdm sound driver, right?
-I would like to use your cs4218 driver on my MPC823 board but I don't know how to connect an audio codec to the TDM.
+You just kludge it by looking at your 'opened' flag and dropping the
+packet in scc_enet_rx if it's false.  If it stops the crashes, you'll be
+OK until you find a version of the driver that doesn't have this
+problem.
 
-Do you  know ( or does anyone in linuxppc list know) were I can find the hardware schematic  for the cs4218_tdm driver?
+The version of the driver I use does all the hardware initialization in
+scc_enet_init, and then all that scc_enet_open does is call
+netif_start_queue.
 
-Thanks in advance and regards
-
-Evandro
+--
+.....................................................................
+ Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+ Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+ 100 Hayden Ave, Lexington MA 02421
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
