@@ -1,37 +1,51 @@
-Message-ID: <3D10A0AC.409EF92B@imc-berlin.de>
-Date: Wed, 19 Jun 2002 17:18:04 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
+To: Nageswari S <nageswari@sanyo.co.in>
 Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: board specific defines in commproc.h !?!?
-References: <3D0DA9C2.D78C43E5@imc-berlin.de> <3D106922.7026437A@imc-berlin.de> <20020619150520.GA12762@opus.bloom.county>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Serial Mouse Not working 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 19 Jun 2002 20:08:25 +0530."
+             <4A2BA6A2F12BD511AAFA00606730DE9B0A7170@BLREXSR>
+Date: Wed, 19 Jun 2002 17:21:03 +0200
+Message-Id: <20020619152108.CFA9B10301@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Dear Nageswari,
 
-> I'm sort-of supprised it works.
-I told you, it's not that much to do...
-:-)
+in message <4A2BA6A2F12BD511AAFA00606730DE9B0A7170@BLREXSR> you wrote:
+>
+>  I am new to Linux environment. I have a serial mouse connected to my custom
+> PowerPC board. My serial mouse is not working when I conenct it to ttyS0.
+> But I am able to do PPP and serial file transfer over the same port.
 
-> Isn't:
-> ((uint)0x....)
-> in assembly bad?
+Unfortunately you don't provide ANY informatiuon about what  sort  of
+hardware you have, or which kernel version tyou are running.
 
-Hmm. Don't know. Maybe. But these are just DEFINES! So what should that
-be bad?
+> Do I need to enable/configure any settings specifically for the serial mouse
+> to work? I have link a /dev/mouse to /dev/ttyS0.
+>
+> Kindly help me with this..
 
-> I think we need to have all of these defines enclosed with the
-> __ASSEMBLY__ test, but I can go fix that.
+Well, I can only speculate: maybe your board is based on a MPC8xx  or
+MPC82xx  CPU,  and  your  ttyS0  port  is connected to one of the SMC
+interfaces?
 
-At least spd8xx.h and tqm8xx.h don't have any #ifndef __ASSEMBLY__ at
-all!?
+The SMC's on  these  systems  have  no  modem  control  lines,  which
+normally  are used to feed the serial mouse with some power. IIRC the
+RTS and/or DTR lines are used for power sources, so maybe you get  it
+working  by connecting +5V to those lines (careful! I'm a programmer,
+not an electrician - don't blame me when you fry your board :-)
 
-Cheers,
+Hope this helps,
 
-Steven
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Security is mostly a superstition. It does not  exist  in  nature...
+Life is either a daring adventure or nothing."         - Helen Keller
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
