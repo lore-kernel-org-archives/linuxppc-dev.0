@@ -1,29 +1,46 @@
-Date: Mon, 29 Jan 2001 10:29:56 +0000
-Subject: correct use of lock_kernel() - help!  please
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="utf-8"
-Message-Id: <20010129102946.9388A2EFC9@apollo.valhalla.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <brad@turbolinux.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: powerbook doubles as a frying pan
+Date: Mon, 29 Jan 2001 12:01:26 +0100
+Message-Id: <19341224043310.26390@mailhost.mipsys.com>
+In-Reply-To: <200101280019.QAA15270@mail.turbolinux.com>
+References: <200101280019.QAA15270@mail.turbolinux.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>
+>is everyone *totally* sure that activating the fan is entirely handled in
+>hardware? is there no
+>register for controlling the threshold?
 
-In the driver I am working on (dmasound) someone has placed lock/unlock
-_kernel() pairs around whole functions.
+I've seen nothing in Apple's own Darwin OS related to controlling the
+powerbook fan neither. However, they do have code that use the CPU's
+temperature sensors to control the ICTC (instruction cache throttling).
 
-This means that (e.g.) if we release the sound device with a lot of
-un-played samples at a low-ish sample rate...
+Troy have some code that allow to read the temp from /proc. However, it
+looks like a lot of CPUs are so badly calibrated that the information
+returned is almost useless... Maybe that's not the case in CPUs used in
+portables, that's the case in some of the G4s used in dual G4s.
 
-AFACIT we could hold the kernel locked for *several seconds*
+>/proc/cpuinfo does not report the temperature (i'm not sure the hardware
+>can report it).
+>
+>for now, i put it to sleep whenever it gets hot. i suppose i should put
+>sleep statements in
+>anything that is cpu bound to save the machine. also i pull out the pc
+>card if it's not in use to
+>help with ventilation.
+>
+>(what a day i'm having... i just got it back and spent the day trying to
+>find out why java would
+>not run. after examing working- and non-working-strace's i noticed that
+>the date was set to 1904.
+>the java vm will not initialize with a date like that. maybe it's because
+>sun realizes that no
+>java machine was known to be working in the year 1904.)
 
-What do I really need to protect with lock/unlock pairs?
-
-or am I missing something (it wouldn't be the first time ..) ;-?
-
-ciao,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
