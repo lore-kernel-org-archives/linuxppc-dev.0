@@ -1,48 +1,52 @@
-Date: Thu, 15 Feb 2001 12:48:01 -0500
-From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
-To: Anton Blanchard <anton@linuxcare.com.au>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ltrace for ppc
-Message-ID: <20010215124800.A22625@drow.them.org>
-References: <20010214081000.A28509@linuxcare.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010214081000.A28509@linuxcare.com>; from anton@linuxcare.com.au on Wed, Feb 14, 2001 at 08:10:00AM +1100
+From: christopher.murtagh@wcg.mcgill.ca
+Date: Thu, 15 Feb 2001 15:34:19 -0500 (EST)
+To: Dan Malek <dan@mvista.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: mmu_context_overflow
+In-Reply-To: <3A8C11E7.D0CA22F9@mvista.com>
+Message-ID: <Pine.LNX.4.21.0102151523330.3305-100000@saraswati.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 14, 2001 at 08:10:00AM +1100, Anton Blanchard wrote:
+On Thu, 15 Feb 2001, Dan Malek wrote:
+>Geert Uytterhoeven wrote:
+>>
+>> I found this in my kernel message log:
+>>
+>> | mmu_context_overflow
+>>
+>> running 2.4.1 from January 31 on a CHRP LongTrail with 604e.
 >
-> Hi,
->
-> ltrace is a cool little program for tracing library calls. I ported it
-> to ppclinux a while ago but the ltrace maintainer seems to have ignored
-> my patch.
->
-> For anyone interested the patch can be found at:
->
-> http://linuxcare.com.au/anton/patches/ltrace_ppc_patch
->
-> It should apply cleanly to the latest source (I got mine from the debian
-> archive).
+>I'm assuming this occurred just once.  It's really no big deal
+>(except it is a one-time overhead to invalidate all contexts).
+>If it continues to happen, let me know and I'll ask for more
+>system information.
 
-You did?  Wow!  I spent ages trying to do this...
+ I just saw this message for the first time on one of my machines (G4/450)
+as well. I've been getting a lot of 'eth0: transmit timed out, resetting'
+which would freeze the network in kernel 2.2.17 (I'm now running 2.2.18,
+which seems to survive it). My machine is taking on about 120,000 http
+requests per hour though and there doesn't seem to be any effect on the
+performance. Is this something I should worry about?
 
-Oh, looking at your patch I remember what happened.  It's a bloody
-miracle that ltrace works at all on any architecture; the PLT tricks
-that the PPC plays are not at all uncommon, as I recall.  I got
-derailed trying to make it insert breakpoints at the proper time.
+ Any info would be much appreciated.
 
-Thanks for the patch; I'll probably keep bugging the author about
-this...
+Cheers,
 
-Dan
+Chris
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+http://www.mcgill.ca/secretaboutbox/
+--
+
+Christopher Murtagh
+Webmaster / Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
