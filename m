@@ -1,14 +1,34 @@
-Message-ID: <762A181C0D966E459A2EB3B810142C7701514BF0@nmrusdunsx12.nmrlan.net>
+Message-ID: <762A181C0D966E459A2EB3B810142C7701514BF1@nmrusdunsx12.nmrlan.net>
 From: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
 To: "'li'" <slowforce@21cn.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: RE: need a fast byteorder changing routine
-Date: Fri, 18 Jul 2003 09:03:35 -0400
+Date: Fri, 18 Jul 2003 09:24:23 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Li,
+
+If you must do it one word at a time, the following works.
+
+long SwapBytes(long* p)
+{
+  __asm__(" lwbrx 3,0,3");
+}
+
+Charlie
+
+-----Original Message-----
+From: Wells, Charles [mailto:Charles.Wells@nielsenmedia.com]
+Sent: Friday, July 18, 2003 9:04 AM
+To: 'li'
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: need a fast byteorder changing routine
+
 
 
 Li,
@@ -26,5 +46,6 @@ void FixEndian(long* buf, unsigned long num_longs)
 }
 
 Charlie
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
