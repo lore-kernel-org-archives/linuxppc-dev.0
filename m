@@ -1,72 +1,52 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Etsushi Kato <ekato@ees.hokudai.ac.jp>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <paulus@samba.org>
-Subject: Re: tlbia and PPC603
-Date: Thu, 20 Jun 2002 08:36:24 +0200
-Message-Id: <20020620063624.17364@smtp.adsl.oleane.com>
-In-Reply-To: <20020620165750B.ekato@ees.hokudai.ac.jp>
-References: <20020620165750B.ekato@ees.hokudai.ac.jp>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Skip Gaede <sgaede@attbi.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Memory leak
+Date: Thu, 20 Jun 2002 03:52:32 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200206200352.32895.sgaede@attbi.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hi Ben,
->Thank you for your reply.
->
->On Wed, Jun 19, 2002 at 05:51:37AM +0200,
->Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> Try without the ethernet card and switch IDE DMA off and tell me if it is
->> stable, there could be some cache coherency issues with some of the
-chipsets
->> used on these machines.
->
->I was able to use both IDE DMA and ethernet card on
->linux-2.4.13-pre3-ben0 without problems.
+Folks,
 
-Do you still have this kernel source ? My local repository got
-corrupted at some point so I can't go that far in the history.
 
-I would appreciate if you could send me a tarball with at least
-the content of arch/ppc/kernel, arch/ppc/mm and include/asm-ppc
-so I can do some comparisons.
+I'm looking for a recipe on how to track where my memory is
+disappearing to. I am running kernel 2.4.19-pre10-ben0,
+patched for the nubus-pmac platform. I have 40 MB RAM and a
+100 MB swap file on the local hard disk.
 
->Anyway I tried rsync kernel without CONFIG_BLK_DEV_IDEDMA_PMAC_AUTO
->and compiled tulip as modules (and not loaded), but it still dropped
->to xmon randomly.
 
-Ok.
+I am using the MkLinux booter and the kernel with an initrd.
+During the first init, I get an IP address and the path to
+the NFS root. I then do a pivot-root, and run the XFree86
+Server -query 192.168.0.1, where I do an autologon, and
+start up KDE 3.0.1 and Mozilla 1.0 running Choffman's
+browser buster. I also am running the snmp daemon, so I can
+monitor memory use from my server with a perl script.
 
->> Another thing you can try is in set_context(), add an isync on the line
->> that contain the label "3:" as the doc states a context synchronizing
->> instruction should also be used for data sync. before mtsrin.
->
->I changed set_context() and  it might improve stableness somewhat, but
->still dropped to xmon at some occasion.
 
-Hrm...
+When first booted, the kernel takes about 16 MB of memory,
+and after starting the X server, I have about 2000k
+available physical memory, and no swap file usage. Over
+the next 7 hours, I eat up about 20 MB of swap file, and at
+some point the available physical memory drops down to
+about 150k for about an hour and then the system locks up.
+During the same period of time, I can monitor memory use on
+the client on another console, and the amount of memory
+allocated to each process remains fairly stable up until
+lockup.
 
->> Hrm... just in case, try also changing the definition of tlbia macro
->> in ppc_asm.h to put isync's inside the loop, both before and after the
->> tlbie's (add too much is no problem for such a test) and tell me if it
->> has any effect.
->
->With this change combined with set_context() change, crashes
->disappeared during boot time (tested 10 times and all trial
->succeeded).  It is really improvement.  But still sometimes (5 times
->per 10) dropped to xmon while sshd is working by ssh connection from
->other machine.
 
-Can you send me a couple of xmon backtraces with lookup in System.map ?
+I'd like to understand what's going on. Can someone suggest
+what data I ought to be collecting, or perhaps some
+parameters I can tweak to modify the behavior?
 
-Also, please try editing arch/ppc/kernel/ppc_asm.h and change the definition
-of SYNC, SYNC_601 and ISYNC_601 so they unconditionally do the various sync &
-isync's (that is remove the BEGIN_FTR_SECTION and END_FTR_SECTION(...) lines
-from them.
 
-Ben.
+Thanks,
+Skip
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
