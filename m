@@ -1,36 +1,25 @@
-Date: Tue, 20 Aug 2002 10:45:00 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Compile fix for 4xx (linuxppc_2_4_devel)
-Message-ID: <20020820004500.GB998@zax>
-Mime-Version: 1.0
+Message-ID: <20020820033306.23695.qmail@web21006.mail.yahoo.com>
+Date: Mon, 19 Aug 2002 20:33:06 -0700 (PDT)
+From: kas turi <inox_kas@yahoo.com>
+Subject: BD allocation and IDMA driver question
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This fixes compile on 4xx machines, which was broken by the recent
-heartbeat changes.  Please apply.
+Hi
+ I would like to know what is the difference between
+m8260_cpm_hostalloc and m8260_dp_alloc. The FCC driver
+uses the former API and the serial driver uses the
+latter API. When I try to use m8260_cpm_hostalloc to
+allocate buffer descriptor for the SPI driver the
+timesys 2.4 kernel hangs. When I use m8260_dp_alloc
+the SPI driver works.
+  Has anybody developed a IDMA driver for 8260 for 2.4
+kernel?
+  Thanks in advance.
 
-diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c linux-grinch/arch/ppc/kernel/ppc4xx_setup.c
---- /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c	2002-08-05 10:37:17.000000000 +1000
-+++ linux-grinch/arch/ppc/kernel/ppc4xx_setup.c	2002-08-19 15:05:01.000000000 +1000
-@@ -415,7 +415,7 @@
- #ifdef CONFIG_PPC405_WDT
- 	ppc_md.heartbeat = ppc4xx_wdt_heartbeat;
- #endif
--	ppc_md.heartbeat_count = 0;
-+	ppc_md.heartbeat_count[0] = 0;
-
- 	ppc_md.find_end_of_memory = ppc4xx_find_end_of_memory;
- 	ppc_md.setup_io_mappings = m4xx_map_io;
-
-
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
