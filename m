@@ -1,50 +1,56 @@
-Message-ID: <F14441D40E5AD3118886005004607AD10BDD62@mail.libra.de>
-From: "Halfmann, Klaus" <khalfmann@libra.de>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Cc: "'Olaf Hering'" <olh@suse.de>
-Subject: Status of HFS+ Support
-Date: Mon, 31 Jul 2000 08:35:56 +0200
+Date: Mon, 31 Jul 2000 08:48:41 +0200 (CEST)
+From: Thomas Graichen <graichen@innominate.de>
+Reply-To: thomas.graichen@innominate.de
+To: Keith Owens <kaos@melbourne.sgi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SGI XFS on ppc 
+In-Reply-To: <15081.965025257@ocs3.ocs-net>
+Message-ID: <Pine.LNX.4.21.0007310845490.8854-100000@h2o.bln.innominate.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I hope you dont mind me posting this here,
-I can't imagine a better place right now.
+On Mon, 31 Jul 2000, Keith Owens wrote:
 
-In cooperation with Suse (thanks to Olaf Hering and other People at Suse),
-we have set up an CVS repository for the hfsplus stuff.
-Olaf Hering, some Suse internal and I have write access and there is an
-anonymous access,too.
+> Does ppc support modules?  I know that modutils has an obj-ppc.c file
+> but I don't think I have ever seen any ppc bug reports for modutils.
+> If ppc does use modutils then we need lines like this in
+> arch/ppc/vmlinux.lds.
+>
+>   __start___ksymtab = .;        /* Kernel symbol table */
+>   __ksymtab : { *(__ksymtab) }
+>   __stop___ksymtab = .;
+>
+>   __start___kallsyms = .;       /* All kernel symbols */
+>   __kallsyms : { *(__kallsyms) }
+>   __stop___kallsyms = .;
+>
+> The first section is standard for any arch that supports modules but is
+> not in pppc for some reason.  The second section is part of kallsyms.
+> Most of the kallsyms code needs to be wrapped in #ifdef but
+> arch/xxx/vmlinux.lds, include/modules.h and kernel/module.c do not,
+> they are global to provide a standard userspace ABI, independent of
+> kernel options.
 
-The hfsplus tools _shall_ work like the hfsutils (from rob@mars.org)
-once I get so far. Currently Im stuck in grasping the B*-Tree structure
-and it may take a while until I have presentable progress. I can only
-spare some hours at the weekend (and my wife would like to get some time,
-too) or when traveling to work by train.
+i think this is something for the ppc guys ...
 
-Meanwhile everybody interested may help me in some of the following ways:
+> If ppc does not support modules then forget the above update.  However
+> the code in kernel/module.c that refers to kallsyms entries should not
+> be compiled when CONFIG_MODULES=n is set, why is it being compiled?
 
-	Provide HFS+ formatted images with known content.
-	(via mounting a ramdisk in MOL, thanks to BenH for this tip)
+maybe due to the "||" (kernel/modules.c) ?
 
-	Review my code (The code for the allocation bitmap does'nt work,
-	but I dont know why, yet).
+#if defined(CONFIG_MODULES) || defined(CONFIG_KALLSYMS)
 
-	Help pushing this thing foreward.
+t
 
-Whoever is interestet in the anoymous access can mail Olaf Hering or me.
-In case there is overwhelming interest I'll post it here
-I'll be happy to accepts comments and diffs agains the cvs tree.
+--
+thomas.graichen@innominate.de
+technical director                                       innominate AG
+clustering & security                                networking people
+fon: +49.30.308806-13 fax: -77 web: http://innominate.de pgp: /pgp/tgr
 
-Greeting,
-
-|       |                  Klaus Halfmann       khalfmann@libra.de
-|       |				  			(aka Hasi)
-|    i  | --.  r---  -- |  Libra Software GmbH  Tel +49 (0)621 41997-0
-|    |  b-- |  |    a-- |  Erzbergerstr. 17     Fax +49 (0)621 41997-30
-L--- |  --- |  |    .---.  68165 Mannheim
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
