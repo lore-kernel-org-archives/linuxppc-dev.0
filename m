@@ -1,37 +1,72 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Given <dg@tao-group.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: iMac / ATI Rage 128 Pro TR
-Date: Fri, 14 Dec 2001 14:26:48 +0100
-Message-Id: <20011214132648.25744@smtp.adsl.oleane.com>
-In-Reply-To: <E16Erwf-0000bT-00@rhodium.tao.co.uk>
-References: <E16Erwf-0000bT-00@rhodium.tao.co.uk>
+Message-ID: <3C1A006C.9060201@gatekeeper.informatik.fh-dortmund.de>
+Date: Fri, 14 Dec 2001 14:36:44 +0100
+From: Ralf Weidemann <linuxppc@gatekeeper.informatik.fh-dortmund.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.17-pre8-ben0: should pcmcia work ?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->We've just replaced our elderly PowerMac 8200/120 with a nice iMac. Ten times
->the memory, five times the processor speed, twenty times the disk space, and
->a tiny fraction of the grief.
->
->Unfortunately, it uses a rather odd video card, a Rage Pro TR (id 1002.5452).
->The kernel does not support this, so I'm stuck with the Open Firmware driver
->at 800x600x8. I've tried modifying the kernel so that it's treated as any
->other Rage Pro, but the kernel seg faults.
->
->Now, the reason why I'm posting here is that the Debian kernel I originally
->booted from *did* support it. It claimed to be 2.2.0-pmac. Does anyone know
->if an equivalent patch is available for a 2.4-series kernel (which we have to
->use for development reasons)? Alternatively, is there anywhere I haven't
->found yet that I should be looking?
->
->(Oh, yes. And does anyone know how to work out what revision an iMac is? It's
->dark blue with a CDROM, if that's any help.)
+Hi all,
 
-Are you sure this isn't a Rage 128 Pro ? It's driven by aty128fb
+I installed the kernel-pcmcia-cs (3.1.27-10b) package from YDL 2.1 and tried
+to set the "PCIC" option in /etc/sysconfig/pcmcia to "tcic" and "i82365", but
+both did not work on my tibook. Must I use another socket driver or is some-
+thing broken ?
 
-Ben.
+Thanks
+Ralf
+
+[root@tibook /root]# cat /etc/sysconfig/pcmcia
+PCMCIA=yes
+PCIC=tcic
+PCIC_OPTS=do_scan=0
+CORE_OPTS=
+CARDMGR_OPTS=-f
+
+[root@tibook /root]# cat /proc/cpuinfo
+cpu
+	: 7410, altivec supported
+temperature 	: 51-53 C (uncalibrated)
+clock
+	: 500MHz
+revision
+: 17.3 (pvr 800c 1103)
+bogomips
+: 996.14
+machine
+	: PowerBook3,2
+motherboard
+: PowerBook3,2 MacRISC2 MacRISC Power Macintosh
+L2 cache	: 1024K unified
+memory
+	: 512MB
+pmac-generation
+: NewWorld
+
+
+[root@tibook /root]# /etc/init.d/pcmcia start
+Starting PCMCIA services: modules/lib/modules/2.4.17-pre8-ben0/pcmcia/i82365.o: init_module: No
+such device
+Hint: insmod errors can be caused by incorrect module parameters, including invalid IO or IRQ
+parameters
+/lib/modules/2.4.17-pre8-ben0/pcmcia/ds.o: init_module: Operation not permitted
+Hint: insmod errors can be caused by incorrect module parameters, including invalid IO or IRQ
+parameters
+  cardmgr.
+
+
+[root@tibook /root]# /etc/init.d/pcmcia start
+Starting PCMCIA services: modules/lib/modules/2.4.17-pre8-ben0/pcmcia/tcic.o: init_module: No such
+device
+Hint: insmod errors can be caused by incorrect module parameters, including invalid IO or IRQ
+parameters
+/lib/modules/2.4.17-pre8-ben0/pcmcia/ds.o: init_module: Operation not permitted
+Hint: insmod errors can be caused by incorrect module parameters, including invalid IO or IRQ
+parameters
+  cardmgr.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
