@@ -1,52 +1,45 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20010430211516.24155.qmail@web9901.mail.yahoo.com>
-Date: Mon, 30 Apr 2001 14:15:16 -0700 (PDT)
-From: Freddy Lugo <wilflugo@yahoo.com>
-Subject: Image download problem with gdb and DBI
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Freddy Lugo <wilflugo@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Image download problem with gdb and DBI 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 30 Apr 2001 14:15:16 PDT."
+             <20010430211516.24155.qmail@web9901.mail.yahoo.com>
+Date: Mon, 30 Apr 2001 23:46:22 +0200
+Message-Id: <20010430214627.AF7E02814D@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <20010430211516.24155.qmail@web9901.mail.yahoo.com> you wrote:
+>
+> So the image area is not downloaded, I am assuming
+> this is the cause of the error.
 
-When I tried to download the kernel image it gives me
-the "bad gzipped data" error, I know that this is
-caused because the image is not there or the
-bootloader has an invalid address.
+At least it's part of the problem. Another problem might  be  missing
+hardware  initialization  and  parameter  passing.  Usually I let the
+firmware initialize the box and load the linux kernel...
 
-When I perform a "load" on gdb the output is:
+> What I am doing wrong??
+>
+> Does the image (vmlinux) should be downloaded apart
+> from the bootloader?  How I told gdb or bdi2000 to
 
->Loading section .text, size 0x742c lma 0x800000
->Loading section .rodata, size 0x175c lma 0x807430
->Loading section .data, size 0x1b6c lma 0x809000
->Start address 0x800000 , load size 42740
->Transfer rate: 170960 bits/sec, 502 bytes/write.
+No.
 
-So the image area is not downloaded, I am assuming
-this is the cause of the error.
+> download the image area?  Is there is a common recipe
 
-This are the steps I am executing:
-- start gdb using arch/ppc/boot/zvmlinux
-- set gdb to work with a remote target (bdi2000)
-- load the program (produced the above messages)
-- run the program
+The BDI2000 understands  the  Linux  image  format.  Use  the  "load"
+command  (with the telnet interface) and the "image" format type (see
+section 3.2.3 Part [HOST] of the BDI2000 manual).
 
-Other info:
-custom board running on a MPC750
+Wolfgang Denk
 
-What I am doing wrong??
-
-Does the image (vmlinux) should be downloaded apart
-from the bootloader?  How I told gdb or bdi2000 to
-download the image area?  Is there is a common recipe
-for this procedure?
-
-Thanks in advance,
-
-Freddy Lugo
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The only way to get rid of a temptation is to yield to it.
+                                                        - Oscar Wilde
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
