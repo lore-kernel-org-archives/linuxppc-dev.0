@@ -1,18 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 8404767A5C
+Return-Path: <annamaya@yahoo.com>
+Received: from web53804.mail.yahoo.com (web53804.mail.yahoo.com
+	[206.190.36.199]) by ozlabs.org (Postfix) with SMTP id 60B3F67A66
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Jan 2005 02:31:50 +1100 (EST)
-In-Reply-To: <41EF94DB.4090604@anagramm.de>
-References: <41EF94DB.4090604@anagramm.de>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <611DB920-6AF8-11D9-A0BF-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 20 Jan 2005 09:31:39 -0600
-To: "Clemens Koller" <clemens.koller@anagramm.de>
+	Fri, 21 Jan 2005 02:47:11 +1100 (EST)
+Message-ID: <20050120154704.62155.qmail@web53804.mail.yahoo.com>
+Date: Thu, 20 Jan 2005 07:47:04 -0800 (PST)
+From: annamaya <annamaya@yahoo.com>
+To: Hans Schillstrom <hans.schillstrom@pwav.com>
+In-Reply-To: <1106218826.7900.405.camel@hawk.allgon.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Instruction Cache Parity Error / 2.6.10 on MPC8540
+Subject: Re: Input to the timerclk on the MPC8280
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,73 +22,123 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Clemens,
+Thanks a lot for the reply. I have some more questions
+on this. When and where in U-Boot do you set the value
+of BRGC1? Can I do this somewhere in board_init() or
+do I have to do it earlier, like in cpu_init? And I
+will have to set the values in the DIV16 and CD to
+produce an output of 4Mhz or 32Khz. Is that correct?
 
-I dont think there is really and debug to do with this.  If this is=20
-happening consistently it suppose to be an faulty part.  What rev of=20
-the silicon do you have (PVR, SVR)?
+BTW, how was this ever done on the MPC8260? I dont see
+any code in U-Boot for an 8260 board that does sothing
+similar?
 
-- kumar
+--- Hans Schillstrom <hans.schillstrom@pwav.com>
+wrote:
 
-On Jan 20, 2005, at 5:24 AM, Clemens Koller wrote:
+> Hi,
+> I have the same problem on MPC8270,
+> and solved it two parts in u-boot:
+> - Setup you PC[26] to somtething else than TMCLK ex.
+> g,p. I/O
+>     then you an automatic selecttion of BRG1 as
+> source.
+>     
+> - Write a proper value in BRGC1 and make sure that 
+>     bit 16-17 is 0 for selection of CPM as clock
+> source.
+> 
+> and then you have to "move around the brgs" in
+> (2.6.10)
+> drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> 
+> I moved smc 1&2 to brg7 & 8
+> scc1 to brg2 etc
+> scc4 ext clk (48MHz for USB)
+> 
+> void smc1_lineif(struct uart_cpm_port *pinfo)
+> {
+> 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
+> 
+> 	/* SMC1 is only on port D */
+> 	io->iop_ppard |= 0x00c00000;
+> 	io->iop_pdird |= 0x00400000;
+> 	io->iop_pdird &= ~0x00800000;
+> 	io->iop_psord &= ~0x00c00000;
+> #ifndef CONFIG_RCB8270
+> 	/* Wire BRG1 to SMC1 */
+> 	cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
+> 	pinfo->brg = 1;
+> #else
+>         /* Wire BRG7 to SMC1 */
+>         cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
+>         cpm2_immr->im_cpmux.cmx_smr |= 0x10;  /* BRG
+> 7 */
+>         pinfo->brg = 7;
+> #endif
+> }
+> 
+> I guess you can do it in many ways ...
+> 
+> Any one that knows why SMC1 & SMC2 gets the same BRG
+> as SCC1 & SCC2
+> 
+> Regards
+> /Hans
+>  
+> On Wed, 2005-01-19 at 23:08, annamaya wrote:
+> > I've asked this question on this forum before but
+> it
+> > did not get answered. I tried asking the same
+> question
+> > in the U-Boot forum with no results. So, I am
+> going to
+> > try this again.
+> > 
+> > According to section 4.1.2 on Page 4-4 in the
+> MPC8280
+> > User's Manual, one should be able to use a
+> combination
+> > of  external clocks on Port C pins 25, 26, 27 and
+> 29,
+> > the CPM cloak and BRG1 to generate a 32KHz or a
+> 4MHz
+> > clock. I am unable to find  any code in u-boot or
+> any
+> > other place that initializes any of these pins to
+> be
+> > external clocks. And as for BRG1, I believe it is
+> > being used for the SMC clock.
+> > 
+> > I am unable to understand how this is done. Can we
+> > have a timerclk input WITHOUT an external clock
+> > signal? Can I just use the CPM clock to generate
+> this?
+> > How is this being done in U-Boot now?
+> > 
+> > Thanks much for your help. I really need an answer
+> to
+> > this. 
+> > 
+> > 
+> > 		
+> > __________________________________ 
+> > Do you Yahoo!? 
+> > Yahoo! Mail - now with 250MB free storage. Learn
+> more.
+> > http://info.mail.yahoo.com/mail_250
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> >
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
 
-> Hello,
->
-> Well, I made good progress with Kernel 2.6.10 on my target (PM854,
->  Microsys) which is very similar to the MPC8540_ads configuration.
->  But now, after working for several minutes, I ran into the following
->  Oops:
->
-> -----8<-------------------------------------------------------------
->  root@PM854:~/openssh-3.9p1$ Machine check in kernel mode.
->  Caused by (from MCSR=3D40000000): Instruction Cache Parity Error
->  Oops: machine check, sig: 7 [#1]
->  PREEMPT
->  NIP: C00054F8 LR: C01F8348 SP: C0263E70 REGS: c0232f50 TRAP: 0202=A0=A0=
-=A0=20
-> Not
-> tainted
->  MSR: 00021000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
->  TASK =3D c0233720[0] 'swapper' THREAD: c0262000
->  Last syscall: 120
->  GPR00: C01F8348 C0263E70 C0233720 C0233720 C054C400 00000000 00000351
-> 00000000
->  GPR08: 00000000 00000003 C054C400 0000473A 0000AE53 00000000 10000700
-> 007FFF93
->  GPR16: 00000000 00000001 007FFF00 C02B0000 C02C0000 C0233884 3B9ACA00
-> C02B5C78
->  GPR24: 000000F4 C02B5C78 C0233720 C054C400 C02AED00 00000000 00000000
-> C0263E90
->  NIP [c00054f8] __switch_to+0x14/0x9c
-> LR [c01f8348] schedule+0x318/0x704
-> Call trace:
->  =A0 [c01f8348] schedule+0x318/0x704
-> =A0 [c00026c8] resume_kernel+0x38/0x5c
-> =A0 [c00039f8] cpu_idle+0x28/0x40
-> =A0 [c0001afc] rest_init+0x28/0x38
-> =A0 [c0264804] start_kernel+0x16c/0x1a4
-> =A0 [c0000364] skpinv+0x294/0x2d0
-> Kernel panic - not syncing: Attempted to kill the idle task!
->  =A0 <0>Rebooting in 180 seconds..
->  -----8<-------------------------------------------------------------
->
-> Does this look familiar to anybody? Any ideas where to start
->  debugging?
->
-> Best greets,
->
-> Clemens Koller
-> _______________________________
-> R&D Imaging Devices
->  Anagramm GmbH
->  Rupert-Mayer-Str. 45/1
->  81379 Muenchen
->  Germany
->
-> http://www.anagramm.de
-> Phone: +49-89-741518-50
->  Fax: +49-89-741518-19
->  _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Yahoo! Mail - Easier than ever with enhanced search. Learn more.
+http://info.mail.yahoo.com/mail_250
