@@ -1,40 +1,47 @@
-Date: Mon, 14 May 2001 11:28:59 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Eli Chen <eli@routefree.com>
-Cc: Brian Kuschak <brian.kuschak@skystream.com>,
-	"'Dan Malek'" <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-In-Reply-To: <07ab01c0da7e$8d645070$4b00000a@foolio1>
-Message-ID: <Pine.HPX.4.10.10105141118120.29518-100000@gra-ux1.iram.es>
+Message-ID: <003601c0dc62$dbce25c0$8021690a@huawei.com>
+From: "machael thailer" <dony.he@huawei.com>
+To: "Hideo Noda" <Hideo_Noda@mutoh.co.jp>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <3ADE42E8.6552066B@mutoh.co.jp>
+Subject: Re: PPC405GPWalnutPciBusMaster
+Date: Mon, 14 May 2001 18:44:31 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 11 May 2001, Eli Chen wrote:
+Now I have the same problem as you meet before.
+Have you find a good solutions?
+Thank you very mcuh.
 
-> No luck here.  I checked the patched kernel running Brian's test after an
-> hour and it had frozen up, with one de_put message.
+machael
 
-Do you have a stack trace or something similar ?
-
-Does my patch increase the time to failure ?
-
-I've not yet got anything better than these messages without any context
-(stack trace, etc). I'd prefer to have them with symbols, but even with
-only register contents it would be better than nothing.
-
-I'm currently thinking of ways to catch the occurrences of the problem.
-The difficuly is that brute force debugging likely won't work on what
-looks like a subtle timing problem. So I need a non-invasive check, and
-that's far from trivial.
-
-Along with the stack trace, please include as many details as possible on
-your system.
-
-	Regards,
-	Gabriel.
+>
+> Hi,
+>
+> I am trying to install Intel eepro100 onto WalnutPPC405GP.
+> Basic PCI settings seem good but no frame is transmitted.
+> The environment is WalnutPPC305GP with HardHatLinux 2.4.2 from
+> MonraVista.
+>
+> I can read or write eepro configuration registers and other control
+> registers via PCI memory space.
+> But Bus Master operations do not seem functional. I am confirmed that
+> MASTER operation bit in eepro100 is enabled.
+> I think some more settings are needed for PPC405GP built-in PCI control
+> registers and/or Walnut board jumpers/dipswitches.
+>
+> Has anyone tried PCI cards with BUS MASTER operations for Walnut
+> PPC405GP?
+>
+> Thanks in advance,
+>
+> Hideo
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
