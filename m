@@ -1,61 +1,43 @@
-Message-ID: <21A8AE56EBB6D411A4520060973D360101A9F95F@PEPINTERCOM>
-From: Claus Gindhart <Claus.Gindhart@kontron.com>
-To: "'Omanakuttan'" <omanakuttan@tataelxsi.co.in>,
-	Graf Alex <alex.graf@siemens.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: AW: parse error before `{', stray '\' in program
-Date: Thu, 10 Apr 2003 14:31:59 +0200
+Message-ID: <83E3831A88E65844B01DB1A73FB66F93140829@CSDNT99.cdcgy.com>
+From: "Dang, James" <James.Dang@gdcanada.com>
+To: "'greggiraud@netcourrier.com'" <greggiraud@netcourrier.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8260ADS
+Date: Thu, 10 Apr 2003 09:42:00 -0600
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yet another proposal:
+PPCBoot, when comes up, will relocate IMMR from CFG_DEFAULT_IMMR to
+CFG_IMMR. The CFG_DEFAULT_IMMR value must match your HRCW setting for your
+processor. Therefore, when ppcboot transfers control to linux, linux kernel
+needs to know where is the new IMMR location. That's why ppcboot CFG_IMMR
+and linux IMAP_ADDR have to be the same.
 
-Install a CVS-Server somewhere on a Linux machine.
-When You check out Your sources to Windows, You have \r\n
-When You check out Your sources to Linux, You have \n
+For your BCSR and others, use ioremap().
 
-So You can edit on every platform with the native end-of-line
-format. And, anyway, it gives you a lot of advantages
-in concurrent programming.
+James Dang
 
-I am not a fan of the dos2unix, and unix2dos tools.
-dos2unix is o.k., but unix2dos can also create files
-with \r\r\n line feeds, if you use it unintentionally
-twice on the same file. If you dont want CVS, i wuld
-recommend UltraEdit for editing and DOS/UNIX and
-vice versa conversion.
+-----Original Message-----
+From: greggiraud@netcourrier.com [mailto:greggiraud@netcourrier.com]
+Sent: Thursday, April 10, 2003 11:20 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: James.Dang@gdcanada.com
+Subject: MPC8260ADS
 
+So you said that for my MPC8260ADS (I am using a MPC8266ADS, it is the
+same...) board, I had to put My IMMR to 0xF0000000 on
+ppcboot/include/configs/mpc8260ads.h, instead of 0x04700000. Moreover you
+said that for my kernel IMAP register had to be the same (0xF0000000)
 
-> -----Original Message-----
-> From: Omanakuttan [mailto:omanakuttan@tataelxsi.co.in]
-> Sent: Donnerstag, 10. April 2003 14:23
-> To: Graf Alex
-> Cc: 'linuxppc-embedded@lists.linuxppc.org'
-> Subject: Re: AW: parse error before `{', stray '\' in program
->
->
->
-> > I would use Unix file formats if i can!
-> > The problem is: We have developers on Windows. They are
-> working with the
-> > same library as we are. Visual Studio produce this f...
-> <cr><lf> or ^M or
-> > \r\n. And we are generatin code from Rose. This cause the
-> same problems.
-> > Visual Studio has no problems with \n, but if someone save
-> the file with
-> > Visual Studio, the problem occurs. (The same is with Rose)
-> > gcc 3.2 on host has no problem with this <cr><lf>. Is there
-> allready a cross
-> > compiler (ppc_8xx-gcc) with verision 3.2? Or how difficult
-> is it to build a
-> > new compiler?
-> Why don't you use dos2unix command ?
->
->
->
+OK but why?
+Moreover the MPC8260ADS has BCSR registers mapped at 0x04500000...
+So I won't be able to use them?
+
+I know that internal registers can be moved with the IMMR register. But what
+about the BCSR and the others registers?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
