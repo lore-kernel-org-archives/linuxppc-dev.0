@@ -1,81 +1,46 @@
-Date: Fri, 14 Sep 2001 16:05:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Board names for 4xx
-Message-ID: <20010914160504.H3851@zax>
-References: <20010914144403.G3851@zax>
-Mime-Version: 1.0
+Message-ID: <3BA19E71.F4A82D9B@india.infogain.com>
+Date: Fri, 14 Sep 2001 11:36:41 +0530
+From: ashish anand <ashisha@india.infogain.com>
+MIME-Version: 1.0
+To: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: "Kernel logical address"  vs "Physical"
+References: <6B546A602AD2D211BFF00008C7A42889041D6BE3@hrtades2.atea.be>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010914144403.G3851@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Sep 14, 2001 at 02:44:03PM +1000, David Gibson wrote:
+> Thank you for your reply! I am afraid that I am still confused...
 >
-> The patch below allows publishing the type of board the kernel is
-> running on in /proc/cpuinfo (under "machine") for 4xx machines.  It
-> displays Walnut boards as "IBM Walnut" and (currently) all others
-> simply as "4xx".  Adding other boards is trivial - just a #define in
-> the relevant header file.  It also eliminates a warning in
-> ppc4xx_setup.c
-
-Oops.  The patch below does the same thing, only not broken (forgot a
-file the first time around).
-
-diff -urN ../linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c linux-bungo/arch/ppc/kernel/ppc4xx_setup.c
---- ../linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c	Mon Sep 10 11:57:26 2001
-+++ linux-bungo/arch/ppc/kernel/ppc4xx_setup.c	Wed Sep 12 16:33:15 2001
-@@ -86,7 +86,7 @@
- #endif
-
- #define BOOT_WDT_DEFAULT_PERIOD		120	/* 2 minutes */
--extern board_setup_arch(void);
-+extern void board_setup_arch(void);
-
- void __init
- ppc4xx_setup_arch(void)
-@@ -165,6 +165,8 @@
- 	int len = 0;
- 	bd_t *bip = (bd_t *)__res;
-
-+	len += sprintf(len + buffer,
-+		       "machine\t: %s\n", PPC4xx_MACHINE_NAME);
- #ifdef CONFIG_STB03xxx
- 	len += sprintf(len + buffer,
- 			"plb bus clock\t: %dMHz\n",
-diff -urN ../linuxppc_2_4_devel/include/asm-ppc/ppc4xx.h linux-bungo/include/asm-ppc/ppc4xx.h
---- ../linuxppc_2_4_devel/include/asm-ppc/ppc4xx.h	Thu Aug 16 04:45:34 2001
-+++ linux-bungo/include/asm-ppc/ppc4xx.h	Wed Sep 12 16:30:11 2001
-@@ -26,6 +26,10 @@
- #include <asm/walnut.h>
- #endif
-
-+#ifndef PPC4xx_MACHINE_NAME
-+#define PPC4xx_MACHINE_NAME	"4xx"
-+#endif
-+
- /* IO_BASE is for PCI I/O.
-  * ISA not supported, just here to resolve copilation.
-  */
-diff -urN ../linuxppc_2_4_devel/include/asm-ppc/walnut.h linux-bungo/include/asm-ppc/walnut.h
---- ../linuxppc_2_4_devel/include/asm-ppc/walnut.h	Thu Aug 16 04:45:34 2001
-+++ linux-bungo/include/asm-ppc/walnut.h	Wed Sep 12 16:29:23 2001
-@@ -78,6 +78,7 @@
- /* Generic 4xx type
- */
- #define _MACH_4xx (_MACH_walnut)
-+#define PPC4xx_MACHINE_NAME	"IBM Walnut"
-
- #endif /* __WALNUT_H__ */
- #endif /* __KERNEL__ */
+> You say "actually when you refer to address mentioned 0xFA400000 in driver
+> this address is already virtual address". The address 0xFA40000 is an
+> address that I found in the documentation of the hardware vendor (Embedded
+> Planet, the board is an CLLF_BW32), where there is no reference to any OS.
+> The table containing the chip select mappings mentions that the "Control and
+> Status register" is mapped at FA40. So I assume that 0xfA400000 is a pure
+> physical address. Or is this a false assumption?
+>
+> When I write "char *p=0xFA40000;" it works.
+> When I write "char *p=0xFA40000; p = ioremap(p,1);" I get another pointer
+> and it works as well... I suppose this could not work when 0xFA40000 was not
+> a physical address. When I use p=__va(p); or p=pa(p); it crashes
 
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+documentation is alright.
+your documentation says that address 0xF4A00000 is a PHYSICAL address mapped for
+ LED.but you will not be able to use this adress from processor without ioremapping.
+in mmu of processor thee should be entry for virtual ----> physical addreses.
 
+initially this is not , after using ioremap it is created there.
+
+in your case you are getting virtual address = physical addres , probably because of
+ioremap_base in the implementation of ioremap.
+your physical address is above ioremap_base.
+hence physical = virtual.
+
+now path of your transaction from processor -> host bridge -> LED is clear.
+this is all about your confusion.
+I don't have any idea about your specific board.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
