@@ -1,38 +1,31 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3DF510E2.1060102@redswitch.com>
-Date: Mon, 09 Dec 2002 13:53:38 -0800
-From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
-MIME-Version: 1.0
+Date: Tue, 10 Dec 2002 18:54:39 +1100
+From: Erik Christiansen <erik@dd.nec.com.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Which kernel tree should I keep up with?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Boot Loader
+Message-ID: <20021210075438.GC803@dd.nec.com.au>
+References: <20021209060509.GA5743@dd.nec.com.au> <20021209074352.78A33C6267@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20021209074352.78A33C6267@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Embedded Linux PPC Gurus,
+On Mon, Dec 09, 2002 at 08:43:47AM +0100, Wolfgang Denk wrote:
+>
+> No.  You  should  not  spend  time  on  a  project  which  has   been
+> discontinued. Just download the latest (top of tree) version from the
+> U-Boot CVS server.
 
-Someone else might have asked such a question before and there seemed to
-be no answer so far. Recently I am in the similar situation where I want
-to upgrade my linux system.
+Wolfgang,
 
-I'm using Linux distribution from DENX (basically 2.4.4). It's stable
-and has lots of features that official kernel tree dosn't have until
-recently I encountered a maybe weird probelm on mtd devices (its mtd
-code is not uptodate). This forced me to upgrade mtd code first.
-Unfornately the lates mtd code is no longer compatible with linux
-kernels whose version are less than 2.4.11. :( I guess there should be
-some effort to make mtd code backward compatible. So I'm thinking to
-upgrade the kernel to the latest one. Problem is that there seemed to be
-several choices which I don't know how to choose.
+   Thank you for setting me straight.
 
-One choice is of course the official release from www.kernel.org.
-Another is from bkbits.net or mvista.com. Which one is better for
-embedded linux PPC system? When www.kernel.org release a new version, do
-bkbits.net and mvista.com encompass it in their trees? Thanks for your
-advices.
+   Reading the "U-Boot Porting Guide", it looks like time to order in
+plenty of pizza.
 
-- Shawn.
+Regards,
+Erik
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
