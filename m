@@ -1,55 +1,36 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: SMC Console not responding
-Date: Mon, 15 Apr 2002 17:16:19 -0500
-Message-ID: <D3A72C5007329A4F991C0DD87202259F096B05@sekhmet.ad.newisys.com>
-From: "Navin Boppuri" <navin.boppuri@newisys.com>
-To: <dnevil@snmc.com>, <linuxppc-embedded@lists.linuxppc.org>
+To: dnevil@snmc.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SMC Console not responding 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 15 Apr 2002 16:09:54 CDT."
+             <1079.206.104.177.96.1018904994.squirrel@nevil.org>
+Date: Tue, 16 Apr 2002 01:09:50 +0200
+Message-Id: <20020415230955.7259911258@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check and see if you've disabled the flow control in your terminal program. I've noticed this happen if you have the flow control enabled.
+In message <1079.206.104.177.96.1018904994.squirrel@nevil.org> you wrote:
+>
+> I just finished porting Linux 2.4.18 to a custom MPC860-based board.
+> Everything works fine except input to the console.
+...
+> Just to answer the obvious, I have performed the following:
+...
+> 3. cd /dev, ln -sfn ttyS0 console
 
-Navin.
+This is your problem. Instead, run:
 
------Original Message-----
-From: Daris A Nevil [mailto:dnevil@snmc.com]
-Sent: Monday, April 15, 2002 4:10 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SMC Console not responding
+	mknod /dev/console c 5 1
 
-
-
-Hello All,
-
-I just finished porting Linux 2.4.18 to a custom MPC860-based board.
-Everything works fine except input to the console.
-
-I have setup the console on the SMC1 port.  I use PPCBoot as the
-bootloader. PPCBoot works fine for both console input and output on SMC1.
-I can see the kernel boot messages, and I can even see the prompt from SASH
-(but not BASH).  However, any typed characters (input) are not seen by the
-console.
-
-Is there a known problem with the 8xx_io/uart.c file in 2.4.18, or has
-something changed in linux/init/main.c?
-
-Just to answer the obvious, I have performed the following:
-
-1. Compiled with CONFIG_CONS_SMC1 and CONFIG_SERIAL_CONSOLE
-2. mknod /dev/ttyS0 c 4 64
-3. cd /dev, ln -sfn ttyS0 console
-4. The linux/init/main.c file seems to open the device "/dev/console" just
-fine.  It also finds the initial application (either SASH or BASH).
-
-
-Thanks,
-Daris Nevil
-SNMC
+Wolfgang Denk
 
 --
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The one who says it cannot be done should never interrupt the one who
+is doing it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
