@@ -1,64 +1,49 @@
-Subject: RE: Module support for 8260 in 2.4(.1) kernel
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 20 Apr 2001 16:34:41 -0500
-Message-ID: <CD5CA14300A9D54A8D13D58CD3C87B422DD734@advcorp-exc01.advent.com>
-From: "Oliver Brown" <obrown@adventnetworks.com>
-To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: "linuxppc-embedded List" <linuxppc-embedded@lists.linuxppc.org>
+Date: Sat, 21 Apr 2001 11:38:33 +0800
+From: byf <byfmail@yeah.net>
+To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Cc: embeded powerpc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re:  Can I use RiscWatch to load ppcboot?
+Mime-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
+Message-Id: <20010421033908.F402B1C766C79@smtp2.yeah.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I tried to export the __udelay() in the ppc_ksyms.c but the kernel will
-not build:
+Hello,
 
-	....../arch/ppc/kernel/setup.c:448 undefined reference to
-'__udelay'
+I have can load ppcboot to ram and run it.
+How can I boot from sram when reset?
 
-I'm guessing that because __delay is an inline function it can't be
-exported.
-
-Regards,
-Oliver Brown
-
------Original Message-----
-From: Tom Rini [mailto:trini@kernel.crashing.org]
-Sent: Friday, April 20, 2001 2:03 PM
-To: Oliver Brown
-Cc: linuxppc-embedded List
-Subject: Re: Module support for 8260 in 2.4(.1) kernel
+Thank you!
 
 
-On Fri, Apr 20, 2001 at 01:51:00PM -0500, Oliver Brown wrote:
-
-> I am working on loadable driver modules for the 8260. I had to make
-the
-> changes below to the ppc_ksyms.c file to export the symbols in needed.
+ÔÚ 2001-04-20 12:18:00 ÄúÐ´µÀ£º
+>byf wrote:
 >
-> The problems I am having are
-> 1. The udelay marco is not exportable. Is there a substitute? For now
-I
-> am using __delay() which is not a constant delay.
-
-Er, you should be able to at least kludge around this and use __udelay
-which skips the macro (which just does sanity checks).
-
-> 2. The m8260_cpm_hostalloc() and m8260_cpm_dpalloc do not have
-deallocs.
-> I can load my module, but I can't unload it.
+>> Hello,
+>>
+>> I am working for walnut 405GP, it has a ROM Monitor and RiscWatch.
+>> now I want to use PPCBoot to overwrite ROM Monitor,
+>> Can I use RiscWatch to load PPCBoot to flash or to ram and run it?
+>>
 >
-> I've added an init_module and cleanup_module to the fcc_enet.c from
-> (bitkeeper 2.5 tree). Also, I had to replace all of the udelay()'s
-with
-> __delay()'s. And I've diabled the MDIO PHY support.
+>yes. I use the onboard SRAM walnut has a switch that exchange the flash and
+>sram address. So once you load it you can actually reset the machine and it
+>will boot just like you had programmed a real flash just don't tun the power
+>off :)
+>
+>--
+>Kenneth Johansson
+>Ericsson Business Innovation AB   Tel: +46 8 404 71 83
+>Viderögatan 3                     Fax: +46 8 404 72 72
+>164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
 
-Er, what tree is this vs exactly?  Also, can you send a unified diff
-next time?
+                    ÖÂ
+Àñ£¡
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+            byf
+            byfmail@yeah.net
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
