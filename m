@@ -1,20 +1,17 @@
-Message-ID: <3E5CE502.4050307@devcom.cz>
-Date: Wed, 26 Feb 2003 17:02:10 +0100
+Message-ID: <3E5CE518.7030001@devcom.cz>
+Date: Wed, 26 Feb 2003 17:02:32 +0100
 From: Jan Damborsky <jan.damborsky@devcom.cz>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: X windows for Linux PPC embedded
-References: <20030224214813.6D2FAC6E0C@atlas.denx.de>
+References: <301A812E6528D511A8F70008C71E578601D3401F@AP-BANG-M02>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+g.ramakrishna@exgate.tek.com wrote:
 
- >In message <3E5A528A.4020805@devcom.cz> you wrote:
- >
- >
  >>I would like to ask, if there is some project
  >>for porting X windows system to Embedded
  >>PPC Linux. I use board with MPC823E with
@@ -26,26 +23,24 @@ Wolfgang Denk wrote:
  >>
  >>
  >
- >There is nothing much to "port". Just use a system with  as  much  as
- >possible RAM, and a local harddisk, so you can enable swap space, and
- >run the standard "make" procedure on the target (native!).
  >
- >I once looked into this trying to find out if you could prepare X11R6
- >for cross compilation, but found it too difficult  /  not  worth  the
- >effort.  I  ran  a  build  on  a  MPC860P  with 64 MB RAM and a 20 GB
- >harddisk attached to the PCMCIA slot. It took  _ages_  (>  48  hours,
- >IIRC)  but  except  for  some  minor issues the build went through. I
- >think this was in the  age  of  HHL  1.2  JE,  so  any  decent  build
- >environment should work fine, too.
+ >There is nothing much to port.  Few months back I had cross-compiled TinyX
+ >successfully for a MPC860 board on x86 platform.
+ >Except the proprietary touch screen interface(we added this ourself),
+ >everything else worked fine on the target framebuffer device.  But I
+haven't
+ >tried the complete X.
+ >I hope this information is useful for you.
  >
- >
- >Best regards,
- >
- >Wolfgang Denk
+ > regards,
+ >Ramakrishna, G
  >
  >
  >
-Thank you for information,  HANYS
+Thank you for your information. We have 32M of DRAM, 16M of FLASH on board.
+Do you think it is sufficient for make tinyX working?
+
+                 HANYS
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
