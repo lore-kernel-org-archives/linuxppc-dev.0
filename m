@@ -1,57 +1,54 @@
-Message-ID: <3936F0F2.DDA90328@embeddededge.com>
-Date: Thu, 01 Jun 2000 19:25:38 -0400
+Message-ID: <393704B5.6B809CE6@embeddededge.com>
+Date: Thu, 01 Jun 2000 20:49:57 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
 To: Steve Tarr <tarr@lucent.com>
 CC: LINUX-PPC <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Motorola MPC8260-ADS Boot hassel
-References: <3936790D.9BD7680E@lucent.com>
+References: <3936790D.9BD7680E@lucent.com> <3936F0F2.DDA90328@embeddededge.com> <3936A547.7C34A0BF@lucent.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Steve Tarr wrote:
-
-I haven't tried ramdisks recently......
-
-
-> RAMDISK: Compressed image found at block 0
-> NIP: C0010D90 XER: 20000000 LR: C0010D8C REGS: c085f260 TRAP: 0300
-
-What function is this (0xc0010d90)?  It is hard to help without some
-basic information like this.
-
-
-
-> GPR08: C085E000 C0008540 00000000 C085F358 00000000 FFFFFFFF 00000000
-> 00000400
-
-> Kernel panic: kernel access of bad area pc c0010d90 lr c0010d8c address
-> 3C tsk 1Rebooting in 180 seconds..
 >
-> Based on my simple attempts it appears that I am taking a DSI exception
-> on an access to
-> 0xC010000......
+> Sorry for the confusion. I am not familiar with the
+> Linux PANIC messages.
 
-How did you determine this?  The panic message prints the faulting
-address, which happens to be 0x3c.  GPR8, 9, 10, 11, and 12 are typical
-sources for intermediate pointers, two of those are zero.  I would
-guess a NULL pointer to a data structure trying to access the contents
-at offset 0x3c.
+You will be soon :-).
 
-> I noticed in System.map that data does not the first data entry.....
+> 1. NIP 0xC0010D90 is in wake_up_process()
 
-Next time notice and tell us the function at NIP....much more useful.
+> 3. Disasembling sched.o gave me a file offset of 0x1dc0 for
+> wake_up_process(). The failing
 
-> Note: they put the SUNI-Lite and board registers at
-> 0x04500000-0x04700000.
-
-Who is they, what's a SUNI-Lite, and does it matter?  Best of all,
-if you don't like the address you can change it.
+Thanks, this was good and it all makes sense now......
 
 
-We need more info.
+>     1dd4:   7c 7e 1b 78     mr  r30,r3
+
+>  >> 1e00:   81 3e 00 3c     lwz r9,60(r30)
+
+>     Note: r30 is loaded from the paramenter passed in, r3.
+
+Yep.
+
+> 4. I made a seemingly foolish assumption that the TRAP: 0300
+>    was the exception vector. Hence that it was a DSI exception.
+
+Not foolish, that's correct.
+
+>    Looking at the register dump shows r30 = 0xc0100000. Hence
+>    my question.
+
+Mistake.  R30 is zero.  Null pointer.  Decimal 60 is the offset 0x3c.
+The wake_up_process() was passed a NULL task pointer.  Track it down
+through the stack backtrace.
+
+> 5. The SUNI-lite is an SDH/ATM framer for the Fiber that uses FCC2.
+
+Cool.  That shouldn't be causing any trouble at this point.
 
 
 	-- Dan
