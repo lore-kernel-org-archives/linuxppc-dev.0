@@ -1,14 +1,44 @@
-Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB3FF@tx14exm05.ftw.mot.com>
-From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
-To: "'Flavio Pereira'" <fpereira@azisa.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+From: "Joe Hamman" <joe.hamman@embeddedspecialties.com>
+To: "Yu Bo-BOYU1" <Bo.Yu@motorola.com>,
+	"'Flavio Pereira'" <fpereira@azisa.com>
+Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: 8260 configuration
-Date: Wed, 2 Oct 2002 13:10:21 -0500 
+Date: Wed, 2 Oct 2002 16:40:12 -0500
+Message-ID: <NMEIJMCBHBKCBBLADFDICEOKCBAA.joe.hamman@embeddedspecialties.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <0B0A39652BB0D411BCCF00508B9512EC08AEB3FF@tx14exm05.ftw.mot.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+To debug Linux with the visionICE or visionPROBE you need to tell the tool
+that the MMU is translating.  Here are the commands I use:
+
+BKM>CF MMU LINUX
+BKM>CF MMUA C0000000 0 FF000000
+
+Use the CF MMUL to list the translation table entries in the tool.
+
+Convert the .elf file to generate a symbol file (.ab), set the source path
+in the debugger, and you can debug all the code through init().
+
+You can try to get WindRiver to help, but they're not too keen on helping
+non-vxWorks customers.
+
+Joe
+
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Yu
+Bo-BOYU1
+Sent: Wednesday, October 02, 2002 1:10 PM
+To: 'Flavio Pereira'
+Cc: linuxppc embedded
+Subject: RE: 8260 configuration
+
 
 
 Thanks for your info.
