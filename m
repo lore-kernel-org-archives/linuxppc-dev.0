@@ -1,34 +1,33 @@
-Date: Tue, 16 Sep 2003 14:18:42 -0400
-Subject: rsync file permissions
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-From: Mark Guertin <mguertin@macdiscussion.com>
-To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <41275CE1-E85F-11D7-A8BC-000A95A0560C@us.ibm.com>
-Message-Id: <3425C332-E872-11D7-AF0B-000A958557FC@macdiscussion.com>
+Date: Tue, 16 Sep 2003 13:54:40 -0500 (CDT)
+Message-Id: <200309161854.h8GIseaF011976@sullivan.realtime.net>
+To: Tom Rini <trini@kernel.crashing.org>,
+	Scott Anderson <scott_anderson@mvista.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: boot udelay asm fix
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey All
+Hi Tom, Scott
 
-I noticed that again the rsync module for linuxppc-2.2 has a couple
-file permission problems from source.mvista.com.  Tom fixed this a
-little while back, but it's popped up again ... maybe in pushing from
-bk -> rsync ?  This problem seems to have only come back on the latest
-update.
+A feature of the assembler is to not check our instruction selection.
+Looks like this one gets the rounding wrong without the fix.  Patch
+against marcello 2.4 head, but is needed on all trees.
 
-Here's a snip from the logfile of the ppckernel builder from the
-rsync...
+milton
 
-send_files failed to open Documentation/kernel-docs.txt: Permission
-denied
-send_files failed to open Documentation/proc.txt: Permission denied
-
-Not a show stopper, but I hate to make tarballs and distribute
-incomplete code, especially when it's the docs ;)
-
-Gerk
-
+===== arch/ppc/boot/common/util.S 1.5 vs edited =====
+--- 1.5/arch/ppc/boot/common/util.S	Mon Sep 15 10:45:58 2003
++++ edited/arch/ppc/boot/common/util.S	Tue Sep 16 13:29:43 2003
+@@ -198,7 +198,7 @@
+ 	 *  timebase_period_ns defaults to 60 (16.6MHz) */
+ 	lis	r5,timebase_period_ns@ha
+ 	lwz	r5,timebase_period_ns@l(r5)
+-	addi	r4,r4,r5
++	add	r4,r4,r5
+ 	addi	r4,r4,-1
+ 	divw	r4,r4,r5	/* BUS ticks */
+ 1:	mftbu	r5
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
