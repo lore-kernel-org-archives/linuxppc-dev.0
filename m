@@ -1,36 +1,31 @@
-Date: Sat, 15 May 1999 22:47:23 -0400 (EDT)
-From: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Frame buffer weirdness?
-In-Reply-To: <Pine.LNX.4.05.9905151905520.651-100000@pc.wackyland.com>
-Message-ID: <Pine.LNX.3.96.990515224035.20651B-100000@net178019.hcv.com>
+Message-ID: <373E5B31.79E6A0AD@wanadoo.fr>
+Date: Sun, 16 May 1999 07:44:17 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+Reply-To: costabel@wanadoo.fr
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Frame buffer weirdness?
+References: <Pine.LNX.3.96.990515174202.20309D-100000@net178019.hcv.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 15 May 1999, Tom Rini wrote:
-
-> On Sat, 15 May 1999, Kevin Hendrickson wrote:
+Kevin Hendrickson wrote:
 > 
-> > I have noticed that certain versions of XFree/Gnome from linuxppc-pre-R5
-> > in the past did not display these problems (some even worked in 16 and 32
-> > bits,) but I have erased them with each update of ftp.linuxppc.org, so I
-> > can't go back to them.
-> 
-> Did you change kernels as well at the time?
+> OK, I've been noticing this problem ever since I moved to linuxppc-pre-R5.
+[..]
+> So any ideas on either of these problems? I haven't checked out dev rel
+> 1.0 yet. Is it any different/better?
 
-I always used whatever kernel rpms where current on ftp.linuxppc.org in
-the linuxppc-pre-R5 directories at the time. I'm currently using
-kernel-pmac-2.2.6-15a.
+Can't help you with your problems which seem to be video driver config
+related, but DR-1.0 won't help, I guess. Its versions of the programs
+(XFree and gnome) you were talking about are the same as you have
+installed.
 
-Kevin Hendrickson
-*--------+---------+---------+---------+---------+---------+---------+-*
-Kevin Hendrickson          "On the internet, no one knows you're a dog."
-hndrcksn@net178019.hcv.com   "Why, oh why, didn't I take the BLUE pill?"   
-hndrcksn@braincraft.com   _DreaD_    http://net178019.hcv.com/~hndrcksn/ 
-
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
