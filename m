@@ -1,47 +1,64 @@
+Date: Mon, 28 Oct 2002 19:38:43 -0800 (PST)
+From: Paul White <pwhite@bivio.net>
+To: Jim Potter <jrp@wvi.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: NFS client-side components question
+In-Reply-To: <3DBDD68C.CD41E51D@wvi.com>
+Message-ID: <Pine.LNX.4.21.0210281936170.26340-100000@stimpy.bivio.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: about the micro monitor source 
-Date: Mon, 28 Oct 2002 18:57:37 -0800
-Message-ID: <7D036BD3216A084DB1BD9D62BCEAF2901A95A1@mail1irv.inside.istor.com>
-From: "Ken Chou" <kchou@istor.com>
-To: "chete" <chete@21cn.com>, <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Chete,
+Jim,
 
-Have you considered PPCBoot?
+It sounds like its trying to use portmap for locking purposes.  Try
+using a -o nolock argument to your mount call, as it sounds like you
+don't have the port mapper installed or running on your ram disk.
+This is what we had to do with ours, and it works great.
 
-http://ppcboot.sourceforge.net/
+Here's what we do:
 
+mount -t nfs -o nolock $SERVER:/home/log /log
 
-Ken Chou
+Hope this helps..
 
-> -----Original Message-----
-> From: chete [mailto:chete@21cn.com]
-> Sent: Monday, October 28, 2002 6:33 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: about the micro monitor source
+Paul
+
+On Mon, 28 Oct 2002, Jim Potter wrote:
+
 >
+> I'm developing a moderate sized ramdisk image to be used on an embedded
+> project, and I'm having trouble getting all of the NFS client-side file
+> dependencies sorted out on the ramdisk.  I'm using YDL installed on
+> powermacs for my hosts & servers (not cross-hosted from x86 boxes).  The
+> NFS mounts work fine when mounted from another powermac or when the
+> embedded system is Root-On-NFS booted (both of which have a full YDL
+> install).
 >
-> HI!  all
-> 	I am developing a MPC8245 board .because lacking money I cann't
-> afford  to buy the commercial  bootloader for my custom-built board,so
-I
-> have downloaded the CSB_umon source
-> (http://www.cogcomp.com/csb_umon_10_5_2002.zip) for the CS821 board(
-It
-> uses the MPC8245 as his main  processor).Compare to his father
-umon(micro
-> monitor) source downloaded from the lucent, there  no  /common/CPU
-> directory.is anyon who is the the Cogent Computer Systems' customer
-can
-> share it too me?
-> Thanks a lot for your cooperation.
-> Best regards
-> chete
+> The problem is that when the embedded system is booted to ramdisk, and
+> then an NFS mount of the server is attempted;  the mount command goes
+> away, and eventually a "portmap: server localhost not responding, timed
+> out" message pops up.  The NFS server box is listed in the /etc/hosts
+> file.
+>
+> My ramdisk image has been built by taking various components from a YDL
+> install;  this is so that the target embedded environment (ramdisk) has
+> compatibility with customer's lab machines (typically YDL boxes).  It's
+> my opinion that I have missed something on the client-side when
+> assembling the ramdisk image.  Does anyone know where I can find a
+> listing of the dependencies within the various NFS client components
+> (mount, nfs, rpc, libs, etc)?  Thanks, everyone.
+>
+> --
+> Sincerely,
+>
+> Jim Potter
+> 45th Parallel Processing
+>
+>   Firefighting: Bustin' ours, Savin' yours.
+>
 >
 >
 
