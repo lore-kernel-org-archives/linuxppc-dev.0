@@ -1,80 +1,75 @@
-Message-ID: <40C88A1B.4020102@g-house.de>
-Date: Thu, 10 Jun 2004 18:19:39 +0200
-From: Christian <evil@g-house.de>
-MIME-Version: 1.0
+Message-ID: <1798.80.7.99.14.1086885931.squirrel@www.solinno.co.uk>
+Date: Thu, 10 Jun 2004 17:45:31 +0100 (BST)
+Subject: [RFC][PATCH 0/9] Support for old IBM PReP boxes
+From: "Leigh Brown" <leigh@solinno.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] fix missing option in binutils version check
-Content-Type: multipart/mixed;
- boundary="------------020605080409010006080000"
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------020605080409010006080000
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-On Sat, Jun 05, Olaf Hering wrote:
- >> pomegranate:~# echo dssall | /usr/bin/as -o /tmp/x
- >> {standard input}: Assembler messages:
- >> {standard input}:1: Error: Unrecognized opcode: `dssall'
- >> pomegranate:~# /usr/bin/as -v
- >> GNU assembler version 2.15.91.0.1 (powerpc-suse-linux) using BFD
- >> version 2.15.91.0.1 20040527 (SuSE Linux)
- >>
- >>
- >> *** 2.6 kernels no longer buildcorrectly with old versions of binutils.
- >> *** Please upgrade your binutils to 2.12.1 or newer
- >> make: *** [checkbin] Error 1
- >> make: Target `all' not remade because of errors.
- >
- > I talked to Alan, and -many is the correct fix.
- >
+I've finally tidied up these patches enough that they are ready for
+review.  I still need to do a bit of regression testing with this
+updated collection, but I can be doing that while people chew on
+them.
 
-seeing your new patch now which indeed exports "as" with this needed
-option i seem to understand now. somehow i was unable to apply your
-patch, so i patched by hand / made a new patch:
+The main thrust of the patches is to add code to use residual data
+instead of hard-coded tables in the machine setup.  Here's a summary:
 
-evil@sheep:/usr/src/linux-2.6$ cat ../as-dssall.diff | patch -p1 -s \
---dry-run
-patch: **** malformed patch at line 6: ifdef CONFIG_6xx
+005-have-residual-data.diff
 
-Thank you,
-Christian.
---
-BOFH excuse #377:
+Introduce have_residual_data() function and change existing code to
+use it.  This is mainly to make my additions look a bit prettier.
 
-Someone hooked the twisted pair wires into the answering machine.
+020-ibm_prep_statusled.diff
 
---------------020605080409010006080000
-Content-Type: text/x-diff;
- name="as-dssall.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="as-dssall.diff"
+This allows use of the IBM status LED if it's found in the residual
+data, plus a couple of other bells and whistles.
 
---- linux-2.6/arch/ppc/Makefile.orig	2004-06-10 18:07:35.000000000 +0200
-+++ linux-2.6/arch/ppc/Makefile	2004-06-10 18:10:24.000000000 +0200
-@@ -86,7 +86,7 @@
+040-residual-pcidev.diff
 
- ifdef CONFIG_6xx
- # Ensure this is binutils 2.12.1 (or 2.12.90.0.7) or later
--NEW_AS	:= $(shell echo dssall | $(AS) -o /dev/null >/dev/null 2>&1 ; echo $$?)
-+NEW_AS := $(shell echo dssall | $(AS) -many -o /dev/null >/dev/null 2>&1 ; echo $$?)
- GOODVER	:= 2.12.1
- else
- NEW_AS	:= 0
-@@ -94,7 +94,7 @@
+This adds a function to use the residual data to determine the IRQ
+for a given PCI device, and changes prep_pcibios_fixup() to use it.
 
- ifneq ($(NEW_AS),0)
- checkbin:
--	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build'
-+	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build '
- 	@echo 'correctly with old versions of binutils.'
- 	@echo '*** Please upgrade your binutils to ${GOODVER} or newer'
- 	@false
+045-residual-irqmask.diff
 
---------------020605080409010006080000--
+This adds a function to determine the 8259 level/edge mask word.
+With this function we can now (in theory) support any IBM PReP
+machine.  We therefore add a little bit more code to fallback
+to using residual data if we don't recognise the machine.
+
+050-residual-isapic-addr.diff
+
+This adds a function to use the residual data to determine the
+address to pass to i8259_init().
+
+055-host-bridge.diff
+
+This adds support for the "PCIBridgeRS6K" bridge type in residual
+data to prep_find_bridges() - this is for the 7043-240, iirc.
+
+060-old-openpic.diff
+
+Some older E20/E30 machines have a very old implementation of the
+OpenPIC which trips up the existing ibm_prep_init() function.  This
+adds support for it.  It also changes the OPENPIC_VEC_SPURIOUS
+constant to work around the buggy OpenPIC in those machines.
+
+070-non-zero-cpu.diff
+
+Some 7043-240's and possibly 7025-F40's seem to be able to boot
+from the second CPU.  This adds support to open_pic.c to allow for
+that.
+
+080-shorter-planar-id.diff
+
+Not the most important of the patches, but there you go.
+
+Cheers,
+
+Leigh.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
