@@ -1,10 +1,8 @@
-Message-ID: <B164B53F5BD6D511888D009027732E1A024A23@ntserver.act.domain>
-From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-To: "'John W. Linville'" <linville@lvl7.com>,
-	Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: BDI2000 breakpoints in dynamically loaded modules
-Date: Thu, 24 Jan 2002 09:06:26 +1100
+Message-ID: <638AA0336D7ED411928700D0B7B0D75BB32413@mail2.aiinet.com>
+From: "Gessner, Matt" <mattg@aiinet.com>
+To: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: BDI2000 and failed MMU translations
+Date: Wed, 23 Jan 2002 17:08:22 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,22 +10,18 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Just a guess...when you do the "add-symbol-file", do you specify the
-> address for the .text (and possibly other) section(s)?  If you don't,
-> I'm not sure what it will default to be, but it will almost
-> certainly be
-> wrong.
->
-> When you do the insmod, use the -m parameter and redirect the
-> output to
-> the file.  Near the top of that file it will tell you where the .text
-> section starts.
->
+Hi, all.
 
+Seeing this is topical right now...
 
-Yes, I specify the address.
-If I do not, I will not be able to set a breakpoint.
+I get a LOT of failed MMU translations reported.
+Is this b/c I have something misconfigured?
+I'm running 2.4.18 out of bk on an 860P.
 
-Rudolf
+TIA,
+
+Regards,
+
+Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
