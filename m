@@ -1,18 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
-	by ozlabs.org (Postfix) with ESMTP id 9184C67A67
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2005 01:33:14 +1100 (EST)
-Date: Thu, 10 Mar 2005 07:33:12 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050310143312.GO3098@smtp.west.cox.net>
-References: <20050310082639.GA19275@gate.ebshome.net>
-	<d10a9ba3f7ed768cff5f439840c96aec@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d10a9ba3f7ed768cff5f439840c96aec@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: build failure for 2.6.11-mm2
+Return-Path: <takeharu1219@ybb.ne.jp>
+Received: from ybbsmtp10.mail.mci.yahoo.co.jp (ybbsmtp10.mail.mci.yahoo.co.jp
+	[210.80.241.184]) by ozlabs.org (Postfix) with SMTP id 8B4C467A6E
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Mar 2005 03:27:17 +1100 (EST)
+Message-ID: <423073A9.70404@ybb.ne.jp>
+Date: Fri, 11 Mar 2005 01:19:53 +0900
+From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+MIME-Version: 1.0
+To: Joerg Dorchain <joerg@dorchain.net>
+References: <20050303124435.GA24233@Redstar.dorchain.net>	<4227153C.3030201@gmx.net>	<20050303141832.GU25080@Redstar.dorchain.net>	<20050304075703.GA15637@Redstar.dorchain.net>	<422FD24F.4070108@jp.fujitsu.com>
+	<20050310072803.GR4017@Redstar.dorchain.net>
+In-Reply-To: <20050310072803.GR4017@Redstar.dorchain.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: boot time scheduling hile atomic
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 10, 2005 at 08:06:04AM -0600, Kumar Gala wrote:
+Hi Joerg:
 
-> right, but if you look back in the pervious -mm builds that past, they 
-> also did not have mkImage but still succeeded.
+> I came to the same idea. This explains as well why the i386 party does
+> not notice the effect, as their first interrupt happen later (different
+> HZ value)
 > 
-> It appear some change is now report the lack of mkImage as a build 
-> error.  If this is desired behavior, should we maybe look at having a 
-> copy of its source in the kernel tree?
+As far as I know, current HZ value for PPC is 1000
+as same as i386 family.
 
-I think what's happened, but I haven't verified is that Andrew took an
-incorrect patch to make 'mkuboot.sh', which invokes mkimage to produce a
-uImage, fail if mkimage isn't found.  This isn't right.  The problem the
-patch was trying to fix is that mkuboot.sh will say that it made a
-uImage, even if mkimage isn't found.
+Please see following:
+
+-- include/asm-i386/param.h
+   1 #ifndef _ASMi386_PARAM_H
+   2 #define _ASMi386_PARAM_H
+   3
+   4 #ifdef __KERNEL__
+   5 # define HZ             1000            /* Internal kernel timer 
+frequency */
+-- include/asm-i386/param.h
+
+-- include/asm-ppc/param.h
+
+   1 #ifndef _ASM_PPC_PARAM_H
+   2 #define _ASM_PPC_PARAM_H
+   3
+   4 #ifdef __KERNEL__
+   5 #define HZ              1000            /* internal timer frequency */
+   6 #define USER_HZ         100             /* for user interfaces in 
+"ticks" */
+-- include/asm-ppc/param.h
+
+FYI, Kernel preemption ought not to be taken place at this point,
+because preemption count is a positive number.
+
+According to my observation, the problem occur on second call of
+proc_root_init.But I could not who call it.
+IIRC,the value of LR(link register) pointed at the start of BSS.
+
+Regards,
+
+
 
 -- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Takeharu KATO
