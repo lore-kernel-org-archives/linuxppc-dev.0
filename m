@@ -1,49 +1,47 @@
-Message-ID: <3C45B92A.8030701@embeddededge.com>
-Date: Wed, 16 Jan 2002 12:32:26 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <01C19E9C.E9608C30.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: FW: Lookin' for best fec.c ver. for linux 2.2.13, mpc860T, LXT971 PHY
+Date: Wed, 16 Jan 2002 14:48:50 -0500
 MIME-Version: 1.0
-To: Sarnath Kannan <sparc64@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC850 EmbPlat / Intro Please
-References: <20020116064237.14891.qmail@mailweb17.rediffmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sarnath Kannan wrote:
+To re-phrase:
 
->  If any1 of you could give me a short concise
-> description of the MPC850/823/Embedded planet board,
+It looks extremely hairy trying to integrate fec.c from
+LinuxPPC-2.4.7, set to work with the LXT971,
+to mpc8xx-2.2.13.
 
-It's a production board with processor, memory and I/O
-connectors.  Their intention is to make it cost effective
-for people to design these into systems rather than have
-you spend time designing your own processor/memory complex.
-Basically, design an I/O card and you are done.  There are
-many success stories doing this.  The boards have a proprietary,
-but consistent form factor so you can switch among a number of
-their different configurations as you may need over the life
-of a product.  They will also custom build and sell designs.
-These boards have copyright and proprietary technology, so
-people that buy a few for development boards and then copy it
-into their own design could technically be held liable for
-infringement on this design.
+or,
 
-> .... Can any1 of you
-> throw light upon issues involving enabling linux
-> on EmbPlanet ?
+Would it be better to modify the original fec.c in
+mpc8xx-2.2.13 so that it works with the LXT971,
+instead of the LXT970.  If I go this route, how reliable
+is that version?
 
-Linux has run on these boards for years without trouble, and
-is deployed in many products using these boards.  You can pick
-up the sources from the usual PowerPC repositories, and ready to
-run kits from MontaVista.
+Steven
 
 
-Have fun!
+-----Original Message-----
+From:	Steven Vacca [SMTP:svacca@valcom.com]
+Sent:	Wednesday, January 16, 2002 11:01 AM
+To:	LinuxEmbeddedMailList (E-mail)
+Subject:	Lookin' for best fec.c ver. for linux 2.2.13, mpc860T, LXT971 PHY
 
 
-	-- Dan
+I have RedHat linux mpc8xx-2.2.13 running on an mpc860T with
+the MII interfaced to an LXT971 PHY chip.
 
+What would be the best version of fec.c to use in this case.
+Or, what would be the best approach to modifying a version
+of fec.c.
+
+Thanks,
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
