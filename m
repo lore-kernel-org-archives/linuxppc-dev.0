@@ -1,43 +1,113 @@
-Message-ID: <64110.213.107.143.172.1029538547.squirrel@www.solinno.co.uk>
-Date: Fri, 16 Aug 2002 23:55:47 +0100 (BST)
-Subject: [RFC][PATCH] Allow PReP boot loader to use OF calls
+Message-ID: <64113.213.107.143.172.1029538743.squirrel@www.solinno.co.uk>
+Date: Fri, 16 Aug 2002 23:59:03 +0100 (BST)
+Subject: Re: [RFC][PATCH] Allow PReP boot loader to use OF calls
 From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <linuxppc-dev@lists.linuxppc.org>
-Cc: <trini@kernel.crashing.org>
+To: <leigh@solinno.co.uk>
+In-Reply-To: <64110.213.107.143.172.1029538547.squirrel@www.solinno.co.uk>
+References: <64110.213.107.143.172.1029538547.squirrel@www.solinno.co.uk>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <trini@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/mixed; boundary="----=_20020816235903_44689"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+------=_20020816235903_44689
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-This patch, which applies on top of my OF boot loader changes patches,
-allows the PReP boot loader to use OF calls again.  I've implemented
-it slightly differently to the previous way, and I'll try to explain
-my rationale.
+Well, if I had a penny...
 
-The 140 (and presumably all PReP+OF boxes) comes up with machine check
-exceptions allowed and the exception table pointing to ram.  Presumablythis is so that of functions can use interrupts and what not.  If a
-machine check or any other exception occurs on a prep+of box, the firmware
-will catch it and give you a nice easy to debug error message, and you can
-dump the registers and so on.  I get quite a few "hung trying to boot"
-reports so this would help me enormously.
+> This patch, which applies on top of my OF boot loader changes patches,
+> allows the PReP boot loader to use OF calls again.  I've implemented it
+> slightly differently to the previous way, and I'll try to explain my
+> rationale.
+>
+> The 140 (and presumably all PReP+OF boxes) comes up with machine check
+> exceptions allowed and the exception table pointing to ram.
+> Presumablythis is so that of functions can use interrupts and what not.
+>  If a machine check or any other exception occurs on a prep+of box, the
+> firmware will catch it and give you a nice easy to debug error message,
+> and you can dump the registers and so on.  I get quite a few "hung
+> trying to boot" reports so this would help me enormously.
+>
+> So, we want to keep this state as long as possible.  To achieve this, I
+> just don't set it if we have OF (as opposed to switching it back and
+> forward as was done the old way).  We absolutely must point the
+> exception table to the ROM before we overwrite it so I do that just
+> before the gunzip starts.
 
-So, we want to keep this state as long as possible.  To achieve this, I
-just don't set it if we have OF (as opposed to switching it back and
-forward as was done the old way).  We absolutely must point the exception
-table to the ROM before we overwrite it so I do that just before the
-gunzip starts.
 
-I have tested the patch on a prep+of box (140) and prep (no of) box (e30),
-and  it appears to work fine.
 
-Comments will be gratefully received.
+------=_20020816235903_44689
+Content-Type: application/octet-stream; name="prep-allow-of.diff"
+Content-Disposition: attachment; filename="prep-allow-of.diff"
+Content-Transfer-Encoding: base64
 
-Cheers,
+ZGlmZiAtdXJOIC14IGNvbmZpZyAtWCAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBjXzJfNF9k
+ZXZlbC1wcmV2L2FyY2gvcHBjL2Jvb3QvcHJlcC9NYWtlZmlsZSBsaW51eHBwY18yXzRfZGV2ZWwt
+ZmIvYXJjaC9wcGMvYm9vdC9wcmVwL01ha2VmaWxlCi0tLSBsaW51eHBwY18yXzRfZGV2ZWwtcHJl
+di9hcmNoL3BwYy9ib290L3ByZXAvTWFrZWZpbGUJU2F0IEF1ZyAgMyAwNzo1Nzo1MiAyMDAyCisr
+KyBsaW51eHBwY18yXzRfZGV2ZWwtZmIvYXJjaC9wcGMvYm9vdC9wcmVwL01ha2VmaWxlCU1vbiBB
+dWcgMTIgMTI6MDg6MDggMjAwMgpAQCAtMjgsNyArMjgsNyBAQAogCQkJCQkuLi9jb21tb24vbWlz
+Yy1jb21tb24ubyBcCgkJCQkJLi4vY29tbW9uL21wYzEweF9tZW1vcnkubwogT0JKQ09QWV9BUkdT
+CQkJPSAtTyBlbGYzMi1wb3dlcnBjCi1MSUJTIAkJCQk9IC4uL2xpYi96bGliLmEKK0xJQlMgCQkJ
+CT0gLi4vbGliL3psaWIuYSAuLi9vZjEyNzUvb2YxMjc1LmEKIAogb2JqLSQoQ09ORklHX1NFUklB
+TF9DT05TT0xFKQkrPSAuLi9jb21tb24vbnMxNjU1MC5vCiBvYmotJChDT05GSUdfVkdBX0NPTlNP
+TEUpCSs9IHZyZXNldC5vIGtiZC5vCmRpZmYgLXVyTiAteCBjb25maWcgLVggL2hvbWUvbGVpZ2gv
+LmRpZmZleCBsaW51eHBwY18yXzRfZGV2ZWwtcHJldi9hcmNoL3BwYy9ib290L3ByZXAvaGVhZC5T
+IGxpbnV4cHBjXzJfNF9kZXZlbC1mYi9hcmNoL3BwYy9ib290L3ByZXAvaGVhZC5TCi0tLSBsaW51
+eHBwY18yXzRfZGV2ZWwtcHJldi9hcmNoL3BwYy9ib290L3ByZXAvaGVhZC5TCVNhdCBBdWcgIDMg
+MjE6NTA6MDkgMjAwMgorKysgbGludXhwcGNfMl80X2RldmVsLWZiL2FyY2gvcHBjL2Jvb3QvcHJl
+cC9oZWFkLlMJRnJpIEF1ZyAxNiAyMjowOToxNyAyMDAyCkBAIC00NCwxMCArNDQsMjggQEAKIAlp
+c3luYwogCiAJbXIJcjExLHIzCQkvKiBTYXZlIHBvaW50ZXIgdG8gcmVzaWR1YWwvYm9hcmQgZGF0
+YSAqLworLyoKKyAqIFNhdmUgdGhlIE9GIHBvaW50ZXIgdG8gcjI1LCBidXQgb25seSBpZiB0aGUg
+ZW50cnkgcG9pbnQgaXMgaW4gYSBzYW5lCisgKiBsb2NhdGlvbjsgaWYgbm90IHdlIHN0b3JlIDAu
+ICBJZiB0aGVyZSBpcyBubyBlbnRyeSBwb2ludCwgb3IgaXQgaXMKKyAqIGludmFsaWQsIHdlIGVz
+dGFibGlzaCB0aGUgZGVmYXVsdCBNU1IgdmFsdWUgaW1tZWRpYXRlbHkuICBPdGhlcndpc2UsCisg
+KiB3ZSBkZWZlciBkb2luZyB0aGF0LCB0byBhbGxvdyBPRiBmdW5jdGlvbnMgdG8gYmUgY2FsbGVk
+LCB1bnRpbCB3ZQorICogYmVnaW4gdW5jb21wcmVzc2luZyB0aGUga2VybmVsLgorICovCisJbGlz
+CXIzLDB4ZmZmCQkvKiByMyA9IDB4MGZmZmZmZmYgKi8KKwlvcmkJcjMscjMsMHhmZmZmCisKKwlz
+dWJjCXIzLHIzLHI1CQkvKiByMyA9IChyNSA8PSByMykgPyB+MCA6IDAgKi8KKwlzdWJmZQlyMyxy
+MyxyMworCW5hbmQJcjMscjMscjMKIAotCS8qIEVzdGFibGlzaCBkZWZhdWx0IE1TUiB2YWx1ZSAq
+LwotCWxpCXIzLE1TUl9JUHxNU1JfRlAKKwlhbmQuCXI1LHI1LHIzCQkvKiByNSB3aWxsIGJlIGNs
+ZWFyZWQgaWYgKHI1ID4gcjMpICovCisJYm5lKwloYXZlT0YKKworCWxpCXIzLE1TUl9JUHxNU1Jf
+RlAJLyogTm90IE9GOiBzZXQgTVNSIGltbWVkaWF0ZWx5ICovCiAJbXRtc3IJcjMKKwlpc3luYwor
+aGF2ZU9GOgorCW1yCXIyNSxyNQogCiAJLyogY29tcHV0ZSB0aGUgc2l6ZSBvZiB0aGUgd2hvbGUg
+aW1hZ2UgaW4gd29yZHMuICovCiAJbGlzCXI0LGNtZF9idWZAaApAQCAtMTIxLDYgKzEzOSw3IEBA
+CiAJbXIJcjQscjcJCQkvKiBQcm9ncmFtIGxlbmd0aCAqLwogCW1yCXI1LHI2CQkJLyogQ2hlY2tz
+dW0gKi8KIAltcglyNixyMTEJCQkvKiBSZXNpZHVhbCBkYXRhICovCisJbXIJcjcscjI1CQkJLyog
+T0YgcG9pbnRlciAqLwogCWJsCWRlY29tcHJlc3Nfa2VybmVsCiAKIAkvKgpkaWZmIC11ck4gLXgg
+Y29uZmlnIC1YIC9ob21lL2xlaWdoLy5kaWZmZXggbGludXhwcGNfMl80X2RldmVsLXByZXYvYXJj
+aC9wcGMvYm9vdC9wcmVwL21pc2MuYyBsaW51eHBwY18yXzRfZGV2ZWwtZmIvYXJjaC9wcGMvYm9v
+dC9wcmVwL21pc2MuYwotLS0gbGludXhwcGNfMl80X2RldmVsLXByZXYvYXJjaC9wcGMvYm9vdC9w
+cmVwL21pc2MuYwlTYXQgQXVnICAzIDIxOjUwOjA5IDIwMDIKKysrIGxpbnV4cHBjXzJfNF9kZXZl
+bC1mYi9hcmNoL3BwYy9ib290L3ByZXAvbWlzYy5jCUZyaSBBdWcgMTYgMjI6NDE6MjMgMjAwMgpA
+QCAtNjcsNiArNjcsMTUgQEAKIGV4dGVybiB2b2lkIHNlcmlhbF9maXh1cHModm9pZCk7CiBleHRl
+cm4gdW5zaWduZWQgbG9uZyBtcGMxMHhfZ2V0X21lbV9zaXplKGludCBtZW1fbWFwKTsKIAorc3Rh
+dGljIGlubGluZSB2b2xhdGlsZSB2b2lkCitfcHV0X01TUih1bnNpZ25lZCBpbnQgbXNyKQorewor
+CV9fYXNtX18gdm9sYXRpbGUoIlxuIgorIgltdG1zcgklMFxuIgorIglpc3luYyIKKwk6IDogInIi
+IChtc3IpKTsKK30KKwogdm9pZAogd3JpdGVsKHVuc2lnbmVkIGludCB2YWwsIHVuc2lnbmVkIGlu
+dCBhZGRyZXNzKQogewpAQCAtMTEwLDcgKzExOSw3IEBACiAKIHVuc2lnbmVkIGxvbmcKIGRlY29t
+cHJlc3Nfa2VybmVsKHVuc2lnbmVkIGxvbmcgbG9hZF9hZGRyLCBpbnQgbnVtX3dvcmRzLCB1bnNp
+Z25lZCBsb25nIGNrc3VtLAotCQkgIFJFU0lEVUFMICpyZXNpZHVhbCkKKwkJICBSRVNJRFVBTCAq
+cmVzaWR1YWwsIHZvaWQgKk9GX2ludGVyZmFjZSkKIHsKIAlpbnQgdGltZXIgPSAwOwogCWV4dGVy
+biB1bnNpZ25lZCBsb25nIHN0YXJ0OwpAQCAtMTIxLDYgKzEzMCwxMCBAQAogCWludCBzdGFydF9t
+dWx0aSA9IDA7CiAJdW5zaWduZWQgaW50IHBjaV92aWRkaWQsIHBjaV9kaWQsIHR1bGlwX3BjaV9i
+YXNlLCB0dWxpcF9iYXNlOwogCisJLyogSWYgd2UgaGF2ZSBPcGVuIEZpcm13YXJlLCBpbml0aWFs
+aXNlIGl0IG5vdyAqLworCWlmIChPRl9pbnRlcmZhY2UpCisJCW9maW5pdChPRl9pbnRlcmZhY2Up
+OworCiAJc2VyaWFsX2ZpeHVwcygpOwogI2lmIGRlZmluZWQoQ09ORklHX1NFUklBTF9DT05TT0xF
+KQogCWNvbV9wb3J0ID0gc2VyaWFsX2luaXQoMCwgTlVMTCk7CkBAIC0yODIsNiArMjk3LDE2IEBA
+CiAJKmNwID0gMDsKIAlwdXRzKCJcblVuY29tcHJlc3NpbmcgTGludXguLi4iKTsKIAorCS8qIAor
+CSAqIElmIHdlIGhhdmUgT0YsIHRoZW4gd2UgaGF2ZSBkZWZlcnJlZCBzZXR0aW5nIHRoZSBNU1Iu
+CisJICogV2UgbXVzdCBzZXQgaXQgaXQgbm93IGJlY2F1c2Ugd2UgYXJlIGFib3V0IHRvIG92ZXJ3
+cml0ZQorCSAqIHRoZSBleGNlcHRpb24gdGFibGUuICBUaGUgbmV3IE1TUiB2YWx1ZSB3aWxsIGRp
+c2FibGUKKwkgKiBtYWNoaW5lIGNoZWNrIGV4Y2VwdGlvbnMgYW5kIHBvaW50IHRoZSBleGNlcHRp
+b24gdGFibGUKKwkgKiB0byB0aGUgUk9NLgorCSAqLworCWlmIChPRl9pbnRlcmZhY2UpCisJCV9w
+dXRfTVNSKE1TUl9JUHxNU1JfRlApOworCiAJZ3VuemlwKDAsIDB4NDAwMDAwLCB6aW1hZ2Vfc3Rh
+cnQsICZ6aW1hZ2Vfc2l6ZSk7CiAJcHV0cygiZG9uZS5cbiIpOwogCg==
 
-Leigh.
+------=_20020816235903_44689--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
