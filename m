@@ -1,43 +1,36 @@
-To: David Ashley <dash@xdr.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 25 Feb 2002 14:29:39 PST."
-             <200202252229.g1PMTdQ02395@xdr.com>
-Date: Mon, 25 Feb 2002 23:41:24 +0100
-Message-Id: <20020225224129.40BF9109E3@denx.denx.de>
+Date: Tue, 26 Feb 2002 10:19:17 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EP405 PCI interrupt mapping
+Message-ID: <20020225231917.GD9850@zax>
+References: <20020225014743.GD15788@zax> <3C7A8B4D.8050900@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C7A8B4D.8050900@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200202252229.g1PMTdQ02395@xdr.com> you wrote:
+On Mon, Feb 25, 2002 at 11:06:53AM -0800, Matthew Locke wrote:
 >
-> There is an issue here where I'm trying to give you or whoever is interested
-> in this thread a test program to run that will demonstrate the problem.
-> I don't actually bang the SMC or CPM or whatever, I am trying to do
-> perfectly valid stuff with a user level program accessing io space of
-> pci devices. There is no kernel level code accessing the device I'm trying
-> to work with. It makes absolutely no difference where the mmap goes to, as
-> long as it is not normal system ram.
+> David Gibson wrote:
+>
+> >Is the current PCI interrupt mapping stuff for the EP405
+> >(i.e. ppc405_map_irq() in ep405.c) expected to work, or has it just
+> >been copied from walnut and never updated for ep405?  It looks bogus
+> >to me.
+> >
+>
+> I just copied it from the walnut.  I didn't get that far. I was told you
+> were going to make it all work;)
 
-Did you ever check the address returned from the mmap() call?  Is  it
-always the same, or in the same range, or does it actually look as if
-you were leaking mmap()ed memory even though you unmapped it?
-
-Which errno is returned when mmap() fails?
-
-
-
-Wolfgang Denk
+Fair enough.  I'll get onto that then shall I :-)
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-How many seconds are there in a year? If I tell you there are 3.155 x
-10^7, you won't even try to remember it. On the other hand, who could
-forget that, to within half a percent, pi seconds is  a  nanocentury.
-                                               -- Tom Duff, Bell Labs
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
