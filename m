@@ -1,26 +1,42 @@
-Message-Id: <200004121242.IAA08006@p2.parker.boston.ma.us>
-To: Patrick Lerda <Lerda@microprocess.com>
-cc: "'linux-kernel@vger.rutgers.edu'" <linux-kernel@vger.rutgers.edu>,
-        "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: linux 2.3.99-pre5 OOPS on NFS code (PowerP C740) (Work with 2 .3.99-pre3) 
-In-reply-to: Your message of "Wed, 12 Apr 2000 11:59:31 +0200."
-             <17B78BDF120BD411B70100500422FC63079F4F@IIS000>
-Date: Wed, 12 Apr 2000 08:42:13 -0400
-From: Brad Parker <brad@parker.boston.ma.us>
+In-Reply-To: <Pine.LNX.3.96.1000411215343.219D-100000@deepspace.mklinux.org>
+Date: Wed, 12 Apr 2000 14:44:23 +0200
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Problems with Ethernet on PowerBook Wallstreet G3
+Message-Id: <20000412144423.023044@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Patrick Lerda wrote:
+On Tue, Apr 11, 2000, David A. Gatwood <dgatwood@deepspace.mklinux.org> wrote:
+
+>> * Ethernet is extremely slow when SENDING data.  While  incoming  FTP
+>>   traffic  reaches  800...900  kB/s  (which  seems  ok  on  a 10 mbps
+>>   network), outgoing traffic makes only 40...50 kB/s.
 >
->I've tried  linux 2.3.99-pre5 on my PPC740 box, and it crashs
->when the kernel mount the NFS partion to boot on. Linux 2.3.99-pre3
->works well... the NIP indicate a crash in 'xdr_decode_fhstatus.'
+>Interesting.  The MkLinux driver exhibits the same symptoms.  Hmm... I
+>wonder....  Do a side by side code comparison, and they're basically the
+>same driver...  *coughs*  You might want to have a look at Darwin's
+>drivers and see if they shed any light on this.  Unless of course, that's
+>just another clone....  I won't even ask....
+>
+>There are apparently occasional issues of outgoing packets getting hosed.
+>Probably a DMA bug somewhere, if I were guessing, but....  I seem to
+>recall the data being off by a byte in one direction or the other (i.e. a
+>byte getting dropped or added), but I could be remembering wrong.  It has
+>been a very long time since I heard anyone mention this bug -- as in two
+>years, at least.
 
-I posted diffs for this to the list several days ago.  Someone added
-some code in the xdr decode but never tested it.  it's not the fix,
-but If you remove the memset in that routine the crash will go away...
+The Darwin bmac driver contains interesting comments about chip bugs that
+cause Tx packets to get corrupted in some conditions (and possibly other
+issues). I didn't have time to look more closely, but for those
+interested, the new kernel in Darwin CVS is the module System/xnu (not
+System/kernel, this is the old kernel).
 
--brad
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
