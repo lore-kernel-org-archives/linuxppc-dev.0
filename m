@@ -1,97 +1,66 @@
-Subject: Re: Large TLBs on 40x
-From: Josh Boyer <jwboyer@charter.net>
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040810073502.A32095@home.com>
-References: <20040804093937.B12758@home.com>
-	 <285BFD4E-E638-11D8-852B-003065F9B7DC@embeddededge.com>
-	 <1092104488.2974.2.camel@c68.115.86.108.roc.mn.charter.com>
-	 <2D5216A6-EA93-11D8-899E-003065F9B7DC@embeddededge.com>
-	 <20040810073502.A32095@home.com>
-Content-Type: text/plain
-Message-Id: <1092232201.32005.4.camel@c68.115.86.108.roc.mn.charter.com>
-Mime-Version: 1.0
-Date: Wed, 11 Aug 2004 08:50:03 -0500
+To: "lew kenny" <zsuly@hotmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: an error about "relocation truncated" 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 11 Aug 2004 09:23:37 +0800."
+             <BAY13-F16VKixJfhENB00038ac8@hotmail.com>
+Date: Wed, 11 Aug 2004 17:14:49 +0200
+Message-Id: <20040811151454.82599C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2004-08-10 at 09:35, Matt Porter wrote:
-> On Tue, Aug 10, 2004 at 02:04:44AM -0400, Dan Malek wrote:
-> >
-> > On Aug 9, 2004, at 10:21 PM, Josh Boyer wrote:
-> >
-> > > I have some boards I could test such a patch on.  Or is it a case of
-> > > "this isn't trivial to do"?
-> >
-> > Ummmmm.....what are we talking about here?
-> >
-> > Both MPC8xx, and IBM40x have configuration options for
-> > pinning some (small) amount of kernel space.  You can choose
-> > to enable this if you wish, I don't think it is normally enabled.
-> > I've never found a benchmark that proved either was better,
-> > but I left the code there for others to experiment with.
+In message <BAY13-F16VKixJfhENB00038ac8@hotmail.com> you wrote:
 >
-> PPC40x no longer has this in 2.6. It has been deprecated by the dynamic
-> large tlb support. He's looking for an option (like nobats) to cause
-> kernel lowmem to not be mapped by large page entries.
->
-> So, to answer the original question, I would suggest a patch
-> that that uses a 'noltlb' cmdline option, then skips the PPC40x
-> large page mapping in 4xx_mmu.c based on that. See the code
-> that implements 'nobats' for an example.
+> I'm porting the PPCboot2.0 to my ppc850 board.I just modified the Makefile,
 
-Hm...  like this?  Against 2.6.8-rc4.
+PPCBoot is a dead project. Porting it to new boards  is  a  waste  of
+time. Please use the successor project U-Boot instead.
 
-thx,
-josh
+Also, please  post  U-Boot  related  questions  to  the  u-boot-users
+mailing list. They are off topic here.
 
+> config file,and the flash's code and head file with the template of board
+> c2mon. But after I compile the code, there are some "relocation truncated"
+> errors.
 
-diff -Naur -x '*.swp' linux-2.6.orig/arch/ppc/mm/4xx_mmu.c linux-2.6/arch/ppc/mm/4xx_mmu.c
---- linux-2.6.orig/arch/ppc/mm/4xx_mmu.c	2004-06-16 00:18:37.000000000 -0500
-+++ linux-2.6/arch/ppc/mm/4xx_mmu.c	2004-08-11 08:25:11.000000000 -0500
-@@ -52,6 +52,7 @@
- #include <asm/setup.h>
- #include "mmu_decl.h"
+No. The primary error is here:
 
-+extern int __map_without_ltlbs;
- /*
-  * MMU_init_hw does the chip-specific initialization of the MMU hardware.
-  */
-@@ -102,6 +103,10 @@
- 	p = PPC_MEMSTART;
- 	s = 0;
+> lib_ppc/libppc.a(board.o): In function `board_init_r':
+> /root/project/ppcboot-2.0.0/lib_ppc/board.c:896: undefined reference to
+> `ide_init'
 
-+	if (__map_without_ltlbs) {
-+		return s;
-+	}
-+
- 	while (s <= (total_lowmem - LARGE_PAGE_SIZE_16M)) {
- 		pmd_t *pmdp;
- 		unsigned long val = p | _PMD_SIZE_16M | _PAGE_HWEXEC | _PAGE_HWWRITE;
-diff -Naur -x '*.swp' linux-2.6.orig/arch/ppc/mm/init.c linux-2.6/arch/ppc/mm/init.c
---- linux-2.6.orig/arch/ppc/mm/init.c	2004-08-11 08:03:55.000000000 -0500
-+++ linux-2.6/arch/ppc/mm/init.c	2004-08-11 08:11:24.000000000 -0500
-@@ -104,6 +104,7 @@
-  * -- Cort
-  */
- int __map_without_bats;
-+int __map_without_ltlbs;
+You understand what "undefined reference" means?
 
- /* max amount of RAM to use */
- unsigned long __max_memory;
-@@ -204,6 +205,10 @@
- 		__map_without_bats = 1;
- 	}
+> At first, I think it may be caused by a low version number ompiler. Then I
 
-+	if (strstr(cmd_line, "noltlb")) {
-+		__map_without_ltlbs = 1;
-+	}
-+
- 	/* Look for mem= option on command line */
- 	if (strstr(cmd_line, "mem=")) {
- 		char *p, *q;
+Undefined references have little to do with the compiler version.
 
+> changed the compiler to the last ELDK. But there are some new errors.
+...
+> {standard input}:4998: Error: Relocation cannot be done when using
+> -mrelocatable
+...
+> I doubt that there maybe are some ploblems in the "ppcboot.lds". I am not
+> sure of it, and I have no idea how to change it. It will be very
+> appreciated if anyone give me some ideas.
+
+Instead of spreading wild speculations you should start  reading  the
+documentation, especially this section in the FAQ:
+
+http://www.denx.de/twiki/bin/view/DULG/RelocationCannotBeDoneWhenUsingMrelocatable
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If I don't document something, it's usually either for a good reason,
+or a bad reason.  In this case it's a good reason.  :-)
+                 - Larry Wall in <1992Jan17.005405.16806@netlabs.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
