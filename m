@@ -1,19 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id 9D5F32BDB5
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4D5B82BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Jan 2005 04:47:37 +1100 (EST)
-Date: Fri, 14 Jan 2005 10:47:35 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Message-ID: <20050114174734.GB28724@smtp.west.cox.net>
-References: <JPEALJAFNGDDLOPNDIEEAECDDAAA.joakim.tjernlund@lumentis.se>
-	<JPEALJAFNGDDLOPNDIEEGECEDAAA.joakim.tjernlund@lumentis.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <JPEALJAFNGDDLOPNDIEEGECEDAAA.joakim.tjernlund@lumentis.se>
-Cc: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] Handle I-TLB Error and Miss separately on 8xx
+	Sat, 15 Jan 2005 04:50:55 +1100 (EST)
+In-Reply-To: <20050114161609.37891.qmail@web53805.mail.yahoo.com>
+References: <20050114161609.37891.qmail@web53805.mail.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <CAEA499A-6654-11D9-9846-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Fri, 14 Jan 2005 12:50:35 -0500
+To: annamaya <annamaya@yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: ELDK on a PowerPC host machine? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,60 +25,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 14, 2005 at 06:38:35PM +0100, Joakim Tjernlund wrote:
-> > > -----Original Message-----
-> > > From: Tom Rini [mailto:trini@kernel.crashing.org]
-> > > On Wed, Jan 12, 2005 at 08:15:08AM -0700, Tom Rini wrote:
-> > > > On Wed, Jan 12, 2005 at 03:17:11PM +0100, Joakim Tjernlund wrote:
-> > > > > > On Wed, Jan 12, 2005 at 08:53:17AM +0100, Joakim Tjernlund wrote:
-> > > [snip]
-> > > > > > > Patch looks good to me, but I want to ask when this error
-> > > > > > > can be triggered in practice?
-> > > > > > 
-> > > > > > It is possible to see this in the real world, as we (<hat=mvista>) found
-> > > > > > this with a customers app.
-> > > > > 
-> > > > > hmm, this app must have been doing something pretty special. Any idea what
-> > > > > caused it?
-> > > > 
-> > > > Only vaugely.  I'll poke the folks who did the investigation to see if
-> > > > they recall (the app is quite large) and follow up with details, I hope.
-> > > 
-> > > First, we couldn't get this issue to happen w/ anything but the custom
-> > > app.  It would generate a lot of I-TLB Error exceptions, with bit 1 of
-> > > SRR1 set, and these went fine, the I-TLB got updated, and execution
-> > > continued.  But then at some point, and we aren't sure why exactly, an
-> > > 0x1100 is generated, and we crash.  We don't know what went and caused
-> > > an 0x1100 to be generated instead of an 0x1300 (my wild-ass-guess is the
-> > > code jumped very very far ahead).
-> > 
-> > To me this looks like you entered the I-TLB Miss handler with a NULL pte which
-> > is something that never happens in my system, don't know why this is so but I am
-> > guessing that the kernel populates all instruction pte's at exec time. On the
-> > other hand I don't understand why there are so many I-TLB errors, is that normal?
-> > 
-> > Does the app modify its own code or construct a code trampoline which it jumps to? Not
-> > sure how that would be handled by the kernel w.r.t NULL pte's
-> > 
-> >  Jocke
-> 
-> I think I have figured this out. The first TLB misses that happen at app startup is Data
-> TLB misses. These will then hit the NULL L1 entry and end up in do_page_fault() which
-> will populate the L1 entry. But when you have a very large app that spans more than one
-> L1 entry (16 MB I think) it may happen that you will have I-TLB Miss first one of the
-> L1 entrys which will make the I-TLB handler bail out to do_page_fault() and the app
-> craches(SEGV).
 
-Yes, that sounds like it.  Thanks.
+On Jan 14, 2005, at 11:16 AM, annamaya wrote:
 
-> Your patch will fix this. 
-> I havn't seen it go in yet, will you submit the patch to Linus/Marcelo?
+> Thanks for the reply Wolfgang. Can you give me a hint
+> on the kind of work that is required to make this work
+> for the PPC host?
 
-I was hoping Marcelo would pick this up since I thought he was on the
-list.  I'll re-poke him.  For 2.6, the app in question crashes
-differently, prior to hitting this bug, but I do want to get it pushed
-out.  I've just been swamped lately.
+I do all of my development on PowerPC hosts because
+I don't have anything else.  I regularly build compiler
+tools to work in a "cross" environment, mainly to ensure
+consistency of target binaries and libraries.  I'd be happy
+to work with anyone that wants to rebuild ELDK for
+YDL 3.x hosts.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+If someone wants to use MVL 3.1 in such an environment,
+we can discuss that, too.
+
+Of course, if you have a PowerPC host, you can just cheat
+in most cases and use the host tools.  This won't work for
+such things and 8xx or 85xx SPE, but it would get you
+started.
+
+	-- Dan
