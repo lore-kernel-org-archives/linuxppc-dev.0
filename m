@@ -1,28 +1,47 @@
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16134.1372.970689.841218@cargo.ozlabs.ibm.com>
-Date: Sat, 5 Jul 2003 08:53:16 +1000
+Message-ID: <16134.4102.899233.25492@cargo.ozlabs.ibm.com>
+Date: Sat, 5 Jul 2003 09:38:46 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Jasper Spaans <jasper@vs19.net>
-Cc: benh@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: cleanup of linux-2.5/drivers/block/swim3.c
-In-Reply-To: <20030704104616.GA29229@spaans.vs19.net>
-References: <20030704104616.GA29229@spaans.vs19.net>
+To: joakim.tjernlund@lumentis.se
+Cc: "Linuxppc-Dev@Lists. Linuxppc. Org" <linuxppc-dev@lists.linuxppc.org>,
+	Jorn Engel <joern@wohnheim.fh-wedel.de>
+Subject: RE: memmove broken
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLOEPGFNAA.joakim.tjernlund@lumentis.se>
+References: <16133.19178.764449.966821@cargo.ozlabs.ibm.com>
+	<IGEFJKJNHJDCBKALBJLLOEPGFNAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jasper Spaans writes:
+Joakim Tjernlund writes:
 
-> Attached is a patch which should solve compilation issues related to the new
-> irqhandler interface, and the deprecation of cli()/sti() for the
-> swim3-driver.
+> Currenly this works, but it is PPC specific:
+> static inline void memcpy_update(Byte **dest, Byte **src, size_t *n)
+> {
+>   if(*dest - *src <= 8){ /* memcpy on PPC will do 8 bytes in a chunk */
+>     **dest = **src;
+>     --(*n);
+>     do {
+>       *++(*dest) = *++(*src);
+>     } while (--(*n));
+>     (*dest)++;  (*src)++;
+>   } else {
+>     memcpy(*dest, *src, *n);
+>     *dest += *n;
+>     *src += *n;
+>     *n = 0;
+>   }
 
-Have you audited the driver with respect to changes in the block
-device layer?  I haven't, but I think it needs to be done.  It's
-possible that the necessary changes have already been done but I'm not
-sure.  And I don't want to send Linus a patch that would change it
-from broken and non-compiling to broken but compiling.
+Why is it an issue?  Is the performance of the byte-by-byte loop
+really a limiting factor for you?
+
+In general the behaviour of memcpy with overlapping regions is very
+implementation-dependent.  If we use the code above then that would
+place constraints on what we can do in memcpy - and very non-obvious
+constraints at that.  For example if we decided to use altivec loads
+and stores in memcpy, it would then do 16 or 32 bytes in a chunk and
+thus break zlib again.
 
 Paul.
 
