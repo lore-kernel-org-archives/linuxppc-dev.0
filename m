@@ -1,44 +1,29 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id DB5CD67A7B
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jan 2005 19:51:29 +1100 (EST)
-Received: from linux.local (linux.prtnl [192.168.1.97])
-	by protonic.prtnl (Postfix) with ESMTP id 6DF4A403F
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jan 2005 09:51:29 +0100 (CET)
-From: David Jander <david.jander@protonic.nl>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Mon, 31 Jan 2005 09:51:24 +0100
+Return-Path: <cfriesen@nortel.com>
+Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
+	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id 4485767AB0
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Feb 2005 11:28:06 +1100 (EST)
+Message-ID: <41FECA18.50609@nortelnetworks.com>
+Date: Mon, 31 Jan 2005 18:15:20 -0600
+From: Chris Friesen <cfriesen@nortel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200501310951.24600.david.jander@protonic.nl>
-Subject: The RS485 driver problem...
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+To: linuxppc-dev@ozlabs.org,
+	Linux kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: question on symbol exports
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It appears that in 2.6.9 the ppc64 version of flush_tlb_page() depends 
+on two symbols which are not currently exported: the function 
+__flush_tlb_pending(), and the per-cpu variable ppc64_tlb_batch.
 
-Hi,
+Is there any particular reason why modules should not be allowed to 
+flush the tlb, or is this an oversight?
 
-If you want to connect a RS485 transceiver to a normal UART, you always have 
-the problem of dealing with enabling/disabling transmitter and recveiver. I 
-have seen hardware that misuses RS-232 hardware handshaking lines (RTS/CTS) 
-for this purpose. What I have not been able to find is a linux driver or 
-software solution to this problem.
-
-Has anybody used the CPM uarts (or even a standard 16C550 uart) for this 
-purpose? How?
-
-Greetings,
-
--- 
-David Jander
-Protonic Holland.
+Chris
