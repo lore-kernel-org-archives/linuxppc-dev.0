@@ -1,31 +1,28 @@
-Message-ID: <3CFEF5FC.6050301@embeddededge.com>
-Date: Thu, 06 Jun 2002 01:41:16 -0400
-From: Dan Malek <dan@embeddededge.com>
+From: benh@kernel.crashing.org
+To: Christopher Murtagh <christopher.murtagh@mcgill.ca>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SMP/HIGHMEM/7450 status ?
+Date: Thu, 6 Jun 2002 08:08:12 +0200
+Message-Id: <20020606060812.19068@mailhost.mipsys.com>
+In-Reply-To: <Pine.LNX.4.33.0206061217470.20358-100000@blues.wcg.mcgill.ca>
+References: <Pine.LNX.4.33.0206061217470.20358-100000@blues.wcg.mcgill.ca>
 MIME-Version: 1.0
-To: acurtis@onz.com
-Cc: Ppc Developers <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 8260 Network Performance update
-References: <NCBBIINEHIPFGJPLBEIFOEDMDIAA.acurtis@onz.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Allen Curtis wrote:
+>>Well... It sorta works until you put really high load on it, then
+>>usually, a CPU locks up in an unrecoverable way. We haven't yet been
+>>able to find a workaround.
+>
+> Ouch. Thanks for the speedy response Ben. This doesn't look so good for
+>Terra Soft if they want to be an OEM for the Xserve.
 
-> Does this help to identify the problem and a possible solution? Additional
-> tests recommendations?
+Xserve uses 7455 (like newer dual G4s), which doesn't seem to exhibit the
+problem.
 
-If you are writing a custom application, don't forget that you can set
-several socket options (the most popular are the buffer sizes) that will
-have an effect on the link performance if you know something about the
-link parameters.  You could try increasing the number of receive buffers
-in the Ethernet driver, and I guess we should modify the driver to DMA
-directly into skbufs.  I would be surprised if either of these last two
-would increase the performance, but I've been surprised by a few things lately :-).
-
-
-	-- Dan
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
