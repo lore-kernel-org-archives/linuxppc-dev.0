@@ -1,64 +1,52 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Tue, 21 Oct 2003 12:47:27 -0700
-From: Ron Bianco <ronb@lcsaudio.com>
-Subject: Kernel choices for 824x with ext3 FS
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <000101c3980c$2811a3a0$4d00a8c0@warp-speed>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+To: Ron Bianco <ronb@lcsaudio.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Kernel choices for 824x with ext3 FS 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 21 Oct 2003 12:47:27 PDT."
+             <000101c3980c$2811a3a0$4d00a8c0@warp-speed>
+Date: Tue, 21 Oct 2003 22:10:37 +0200
+Message-Id: <20031021201042.534DAC59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings,
+Dear Ron,
 
-I've been scouting out kernel alternatives for porting to our custom 8240 board.
-We've been running a port of 2.3.16 for a few years now, but need to upgrade for
-a couple of reasons.
-I've been looking at Denx's 2.4.4 port, linuxppc 2.5, linux 2.4.22 and the
-latest 2.6.0-test trees.
+in message <000101c3980c$2811a3a0$4d00a8c0@warp-speed> you wrote:
+>
+> I've been looking at Denx's 2.4.4 port, linuxppc 2.5, linux 2.4.22 and the
+> latest 2.6.0-test trees.
 
-BTW, many thanks to Wolfgang Denk for making available the ELDK and his ( and
-others ) embedded PPC specific work!
+You can also use our linuxppc_2_4_devel tree from CVS (version 2.4.20)
 
-Unfortunately we can't use 2.4.4 as ext3 FS support is not present.
-FYI, we may also have a need to use RTAI.
+> BTW, many thanks to Wolfgang Denk for making available the ELDK and his ( and
+> others ) embedded PPC specific work!
 
-I am looking for some advice on which tree to use as a starting point for a new
-embedded ppc port.
-It is desirable to use the most up to date, yet robust for ppc, kernel possible
-and this is somewhat awkward timing vis a vis the status of the 2.6.0 kernel.
-But most pertinent ppc related patches seem to be included in 2.6.0 now along
-with other enhancements, such as reduced latency, that are not present in
-2.4.22.   So it is a bit of a quandary for me, and perhaps for others as well.
+You are welcome :-)
 
-A short? hardware overview:
-The board is a bare bones design used strictly for scsi ( symbios 53c895 ),
-ethernet ( intel 82559 ), and interfaces to our custom backplane in a digital
-audio matrix mixer.  The board's flash chip and boot sequence are controlled by
-the system's main DSP board.
-The backplane interface is via a 16k word dual port RAM and the firmware images
-are transferred to SDRAM during startup thru it.
-A rather unique situation and it is complicated by the fact that the board has
-no UART.  In hindsight a very dumb omission, but this was worked around by
-hacking a dummy serial port buffer scheme.
-Anyway, it's been working well, and we've managed to cope with the rather large
-linux 2.3.x interrupt latency variance in our custom device driver that handles
-the backplane interface.   A driver improvement to use the 8240 DMA units helped
-too, but there is still a 166 usec. interrupt and the driver can only cope with
-getting behind up to 3 interrupts.
-We used raw access to the scsi disks with a primitve 'FS' for audio storage and
-had done some hacks to the driver set to enable auto switching quickly to a
-backup drive if the active drive failed.  The system can be powered down at any
-time, which precluded using a non-journalled FS.
+> Unfortunately we can't use 2.4.4 as ext3 FS support is not present.
+> FYI, we may also have a need to use RTAI.
 
-But now we have new product specifications that requires the use of a journaling
-FS and hardware RAID level 1, and I wish to take the opportunity to improve the
-interrupt latency situation too.
+We use our linuxppc_2_4_devel tree to validate the PowerPC port of RTAI.
 
-Any comments appreciated.
+> It is desirable to use the most up to date, yet robust for ppc, kernel possible
+> and this is somewhat awkward timing vis a vis the status of the 2.6.0 kernel.
+> But most pertinent ppc related patches seem to be included in 2.6.0 now along
+> with other enhancements, such as reduced latency, that are not present in
+> 2.4.22.   So it is a bit of a quandary for me, and perhaps for others as well.
 
-regards, Ron
+I think our 2.4.20 tree is pretty stable; this is one reason we don't
+support more recent versions yet.
 
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Nothing ever becomes real until it is experienced.       - John Keats
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
