@@ -1,26 +1,25 @@
-Message-Id: <9908131500.AA35672@marc.watson.ibm.com>
-To: "Christopher A. Shepherd" <cshepher@hardrock.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: OF netbooting 
-In-Reply-To: Message from "Christopher A. Shepherd" <cshepher@hardrock.com>
-   of "Fri, 13 Aug 1999 09:56:56 EDT." <199908131356.JAA08439@ns.hardrock.com>
-Date: Fri, 13 Aug 1999 11:00:03 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-Id: <v04003a01b3da00b8cde8@[204.22.210.180]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 13 Aug 1999 11:15:59 -0600
+To: linuxppc-dev@lists.linuxppc.org
+From: "sean o'malley" <somalley@cdp.mde.state.mi.us>
+Subject: Printing via lpr from Mac to LinuxPPC
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Christopher A Shepherd" writes:
+Has anyone gotten LinuxPPC to be a print server for the lpr print queue
+using the apple laserwriter software to the linuxpcc box than to a printer?
+I tried once a while back with Linux x86 but I gave up when after a couple
+of weeks of not getting it to work. If so, how did you get it to work?
 
-Christopher> I built a special kernel by just assembling this and linking it into
-Christopher> the kernel. Won't be able to test it until I get back home though. Could it
-Christopher> really be this simple?
+I would be more than willing to write up some docs on how to do this if I
+can get it to work...
 
-	Mostly.  See my earlier notes giving the full details about
-exactly what OF expects.  The .note section needs to be referenced by a
-PT_NOTE in the program header pointing to the note segment.
+Sean
 
-David
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
