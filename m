@@ -1,77 +1,83 @@
-Message-Id: <20011008000445.Postino-003420@smtp01.highway.ne.jp>
-Date: Mon, 8 Oct 2001 00:04:45 +0900
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: still no luck with Radeon or Adaptec SCSI controller in 2.4.X
-In-Reply-To: <v03110700b7e6165a1f85@[64.230.145.122]>
-References: <v03110700b7e6165a1f85@[64.230.145.122]>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <paulus@samba.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	<linuxppc-commit@source.mvista.com>
+Subject: Re: Page aging, _PAGE_ACESSED, & R/C bits
+Date: Sun, 7 Oct 2001 17:34:01 +0200
+Message-Id: <20011007153401.16899@smtp.wanadoo.fr>
+In-Reply-To: <20011007130734.8038@smtp.wanadoo.fr>
+References: <20011007130734.8038@smtp.wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
-Subject: still no luck with Radeon or Adaptec SCSI controller in 2.4.X
-Date: Sun, 7 Oct 2001 10:38:19 -0400
-
+>Hi Paulus !
 >
-> Hi,
+>According to people I discussed with on #kernel, the page aging of the
+>linux VM will not work correctly if we don't set PAGE_ACCESSED when
+>a page is... accessed.
 >
-> I just built and tried the latest 2.4.11 kernel of Ben's and still can't
-> get the Radeon or the AIC-7XXX Adaptec SCSI PCI card (from Apple) to work.
-
+>AFAIK, That bit is only test&cleared once in try_to_swap_out
+>(except if I missed something).
 >
-> Has that older driver been removed?  Does anyone know the e-mail address
-of
-> the maintainer that I could contact directly (Justin T. Gibbs)?
+>Do you think it would make sense (or it would suck perfs too badly)
+>to do a hash lookup and copy the HPTE "R" bit to the linux PTE
+>PAGE_ACCESSED from ptep_test_and_clear_youg() ?
 >
-> Any ideas welcome!
+>That would improve page aging behaviour, but I'm not sure I have
+>an idea about the performance impact.
 
-HI!
+Ok, after discussing a bit more with "vm aware people", it appear
+that:
 
-I doen't have Radeon but Adaptec scsi works WELL on Ben's-2.4.10.
-Yet, I don't try 2.4.11.
-Ben's 2.4.10 has already radeonfb-0.1.0 by Ani.
+ - ptep_test_and_clear_young() is not a critical code path, and
+the overhead of doing the hash lookup to retreive the accessed bit
+should be ok compared to the overall better VM behaviour (correct
+page aging) if implementing that trick. I've done a test
+implementation (with and without ktraps :), I still need to test it
+a bit, I will post a patch here for comments. I had to slightly
+modify the prototype of ptep_test_and_clear_young() to get the
+MM context and the virtual address, but that shouldn't be a problem
+to get accepted.
 
-The 2.4.10 is at
+ - I also looked at the ptep_test_and_clear_dirty() case. It appear
+that we rely on flush_tlb_page() beeing called just after it. That
+works, but that also mean that we'll re-fault on the page as soon
+as it's re-used. If implementing ptep_test_and_clear_dirty() the
+same way as for the referenced bit (that is walking the hash),
+we can avoid the flush and the fault (*), but that also mean we will
+walk the hash table on each call, while the current code will walk
+it (for flushing) only when the dirty bit was actually set.
+I can't decide which one is the best here.
 
-ftp://sv.linuxjp.org/pub/PPC/kernel-2.4.x.Ben/
+(*) That would also require some subtle change to the interaction
+between the generic code of the arch, as in this case, we should
+avoid the next flush_tlb_page(). An easy hack would be to have a
+per-cpu flag telling us to ignore the next call to flush_tlb_page
+and set it whenever we return 1 from ptep_test_and_clear_dirty.
+Hackish but would work.
 
-Kaoru
-----------my dmesg ----------------------
-Total memory = 320MB; using 1024kB for hash table (at c0400000)
-Linux version 2.4.10-B0c (root@g4mpKFUKUI) (gcc version 3.0.2 20011003 (prerelease))
- #1 Fri Oct 5 21:19:12 JST 2001
-Found a Paddington mac-io controller, rev: 0, mapped at 0xfdc80000
-PowerMac motherboard: Blue&White G3
-Found Grackle (MPC106) PCI host bridge at 0x80000000. Firmware bus number:
-0->1
-On node 0 totalpages: 81920
-zone(0): 81920 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/sda7
+One issue here is that it's almost impossible to really bench the
+VM. So you have to rely on user reports and imagination to figure
+out what is best. According to people like Rik van Riel, the
+ptep_test_and_clear_young() thing would really be a good thing
+for us to implement. I don't know for the dirty bit one.
 
-<snip>
+The case of CPUs with no hash table is different. For now, we can
+survive by just setting PAGE_ACCESSED when faulting a TLB in. It's
+not perfect, we could actually go look into the TLB for the referenced
+bit the same way I go look into the hash table, but it may not be
+work it. The point here is that ptep_test_and_clear_young() is
+a rare and already slow code path, it's called when the system is
+already swapping, possibly badly, and so adding a few overhead there
+to make overall choice of which pages to swap out better is worth it.
 
-ide-floppy driver 0.97.sv
-SCSI subsystem driver Revision: 1.00
-scsi0 : Adaptec AIC7XXX EISA/VLB/PCI SCSI HBA DRIVER, Rev 6.2.1
-        <Adaptec 2940B Ultra2 SCSI adapter>
-        aic7890/91: Ultra2 Wide Channel A, SCSI Id=7, 32/255 SCBs
+Any comments ?
 
-  Vendor: IBM       Model: DDRS-39130D       Rev: DC2A
-  Type:   Direct-Access                      ANSI SCSI revision: 02
-scsi0:0:0:0: Tagged Queuing enabled.  Depth 253
-scsi1 : SCSI host adapter emulation for IDE ATAPI devices
-scsi2 : MESH
-Attached scsi disk sda at scsi0, channel 0, id 0, lun 0
-(scsi0:A:0): 80.000MB/s transfers (40.000MHz, offset 15, 16bit)
-SCSI device sda: 17850000 512-byte hdwr sectors (9139 MB)
- /dev/scsi/host0/bus0/target0/lun0: [mac] p1 p2 p3 p4 p5 p6 p7 p8 p9 p10
+Regards,
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
