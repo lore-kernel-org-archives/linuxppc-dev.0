@@ -1,27 +1,34 @@
-Message-ID: <388C210F.CFA33DBF@mpifr-bonn.mpg.de>
-Date: Mon, 24 Jan 2000 10:53:19 +0100
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Message-Id: <200001241446.XAA11963@mail.cc.tohoku.ac.jp>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-CC: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>,
-        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: gcc 2.95/PPC bug
-References: <4.2.2.20000121163453.03db3200@mail.munich.netsurf.de>
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 24 Jan 2000 23:45:58 +0900
+From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
+To: linuxppc-workstation@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Debian PReP installer small CD-image.
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
-> >Is this a known (and hopefully already fixed ;-) bug, or should it go
-> >directly to gcc-bugs@gcc.gnu.org?
->
-> I believe this is fixed in my current gcc-2.95.2 RPM-set available on
-> <ftp://devel.linuxppc.org/users/fsirl/>.
+Hi there,
 
-It is fixed, thanks a lot!
+I make a small ISO image for Debian PReP installer.
+This is small, PReP bootable, 20MB ISO9660 image
+that contains only base2_2.tgz and installer files
+for PRePs.
 
-Yours, Albrecht.
+If you burn the image on CD-R, you could install
+Debian/powerpc base system more easy, from bootup
+to finish base install.
 
+Now I am testing with the installer.
+Wait a moment till upload, please.
+
+Best regards.
+----------------------
+Kaz Aoshima = PReP station
+Material deveropment, Faculty of engineering,
+Tohoku University, Japan
+E-mail:aoshimak@mail.cc.tohoku.ac.jp
+#I would appreciate if you could give me suggestions
+ for my impolite English expressions.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
