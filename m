@@ -1,39 +1,59 @@
-Message-Id: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com>
-Date: Thu, 26 Aug 1999 18:25:19 +0200
-To: Martin Costabel <costabel@wanadoo.fr>
-From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
-Subject: Re: vger-2.3.15 on pmac
-Cc: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
-In-Reply-To: <37C4FD7C.BBEC0F1@wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <37C56A75.95058049@wanadoo.fr>
+Date: Thu, 26 Aug 1999 18:25:25 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: vger-2.3.15 and ADB_MOUSE
+References: <37C4FD7C.BBEC0F1@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 10:40 26.08.99 , Martin Costabel wrote:
->In a second post, I'll have some questions about things that don't yet
->work. I hope this is the right forum for this. I didn't see many
->discussions on kernel development for the PPC like on the linux-kernel
->list.
+Trying to make the vger kernel 2.3.15 work on my Pmac 6400, I found how
+to make my screen work and how to make the kernel read the partition map
+on my HDs (see my previous post). So now it boots.
 
-You'll probably talking about the problems with adbmouse. I have a patch 
-for this one. I have also a fixed version of my Xpmac-style 3-mousebutton 
-emulation with the "buttons locked before 1st use" problem. I'll forward 
-this stuff to Paul later today when I'm home.
+It does not, however, start a driver for my adb-mouse. Therefore gpm and
+also X don't work. Does anyone know if this is a configuration problem
+or is it known that the adbmouse driver is still broken in 2.3.15?
 
-What's still NOT fixed in 2.3.15 and really annoying for a lot of users is 
-"FB. overflow" aka "macserial: flipbuffer overflow". This was introduced 
-somewhere late 2.1 or early 2.2. I think this one is responsible for some 
-of the hard crashes reported on linuxppc-users under the "Communicator 
-crashes X" thread.
+I had to patch drivers/char/Makefile in order to compile
+drivers/char/busmouse. otherwise there were undefined symbols (see patch
+below).
 
-Another problem probably worth a look is the near to zero serial/PPP 
-performance during heavy disk activity. One could argue this is a problem 
-with my slow 7200/75, but I don't have similar problems under MacOS...
+The other thing I can see is seriously broken is hfs. But there I guess
+we'll have to wait until Adrian Sun finishes his thesis :-) Anyway, I
+was pleasantly surprised to see that hfsutils work without hfs support
+compiled into the kernel. So I was able to hcopy -r vmlinux to my MacOS
+system folder and reboot with BootX without first passing by an older
+kernel.
 
-Franz.
+--
+Martin
+Index: drivers/char/Makefile
+===================================================================
+RCS file: /cvs/linux/linux/drivers/char/Makefile,v
+retrieving revision 1.98
+diff -u -r1.98 Makefile
+--- drivers/char/Makefile       1999/08/08 01:35:10     1.98
++++ drivers/char/Makefile       1999/08/25 18:49:37
+@@ -198,11 +198,11 @@
+   endif
+ endif
+ 
+-ifeq ($(CONFIG_MOUSE),y)
++ifeq ($(CONFIG_BUSMOUSE),y)
+ M = y
+ OX_OBJS += busmouse.o
+ else
+-  ifeq ($(CONFIG_MOUSE),m)
++  ifeq ($(CONFIG_BUSMOUSE),m)
+   MM = m
+   MX_OBJS += busmouse.o
+   endif
 
+===================================================================
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
