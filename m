@@ -1,22 +1,18 @@
-Return-Path: <bdonadt@arabellasw.com>
-Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EED5967A70
+Return-Path: <walt.wimer@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 3F84D67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 01:59:40 +1000 (EST)
-From: "Bruce Donadt" <bdonadt@arabellasw.com>
-To: "Autran, Guillaume" <gautran@mrv.com>,
-	"'Marcelo Tosatti '" <marcelo.tosatti@cyclades.com>
-Date: Mon, 28 Mar 2005 10:57:33 -0500
-Message-ID: <NEBBIHDFOLIPIPJAKJAMMELCGEAA.bdonadt@arabellasw.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <19EE6EC66973A5408FBE4CB7772F6F0A210598@ltnmail.xyplex.com>
-Cc: 'linuxppc-embedded ' <linuxppc-embedded@ozlabs.org>
-Subject: RE: MPC885 CryptoApi support.
-Reply-To: bdonadt@arabellasw.com
+	Tue, 29 Mar 2005 02:07:02 +1000 (EST)
+From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+To: Mike Rapoport <mike@compulab.co.il>
+In-Reply-To: <42467D8A.8050606@compulab.co.il>
+References: <42467D8A.8050606@compulab.co.il>
+Content-Type: text/plain
+Date: Mon, 28 Mar 2005 11:06:59 -0500
+Message-Id: <1112026020.25896.8.camel@excalibur.timesys.com>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Problem running Linux 2.6.11 on MPC8272ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,58 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Guillaume and Marcelo:
 
-My post on this list about Arabella's support for the PQ1 and PQ2 on board
-security device as well as the enhancements we have made to CryptoApi and
-IPsec was meant to be just a quick note to those interested that there is a
-solution available although it is a commercial solution. I am reluctant to
-continue a discussion about a commercial offering in this forum. You may
-feel free to contact me directly with further questions.
+Hi Mike,
 
-To answer the original question. The code is provided under a GPL license to
-companies that purchase a subscription to the Arabella Linux distribution.
-We have invested many man months in developing a commercial grade security
-solution for the PowerQUICCs and all of it has been written from the ground
-up. You are correct when you say that none of this is included in our "free"
-evaluation kit.
+I had the same "hang" experience.  The file arch/ppc/platforms/pq2ads.c
+contains the following function:
 
-Best Regards,
-
-Bruce
-
------Original Message-----
-From: Autran, Guillaume [mailto:gautran@mrv.com]
-Sent: Monday, March 28, 2005 10:34 AM
-To: 'Marcelo Tosatti '; 'Bruce Donadt '
-Cc: 'linuxppc-embedded '
-Subject: RE: MPC885 CryptoApi support.
+  void __init
+  m82xx_board_setup(void)
+  {
+  	/* Enable the 2nd UART port */
+  	*(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
+  }
 
 
-Not sure. It seems that not all of the Linux kernel source they modified is
-freely available. The "free" evaluation kit only contains an old version of
-2.4.x kernel and definitely, no support for the MPC885 SEC-Lite.
-So, unless they rewrote the all thing, I don't understand how it could be...
+I had to ifdef-out the assignment statement above.  It appears that the
+definition for BCSR_ADDR in the kernel code differs from what U-Boot is
+using, and that area of memory isn't properly mapped into the kernel
+address space this early in the boot sequence.  As a result, I was
+getting an Oops() before the console was even enabled (I could see the
+Oops message by examining the kernel's printk log buffer using a
+BDI-2000 hardware debugger).
 
 
 
------Original Message-----
-From: Marcelo Tosatti
-To: Bruce Donadt
-Cc: Autran, Guillaume; linuxppc-embedded
-Sent: 03/24/2005 6:39 AM
-Subject: Re: MPC885 CryptoApi support.
+Good luck,
 
-On Mon, Mar 21, 2005 at 03:54:39PM -0500, Bruce Donadt wrote:
-> Guillaume:
->
-> Arabella Software provides asynchronous 2.6 kernel CryptoApi support
-for the
-> MPC885 as well as the PowerQUICC II devices as part of our
-commercially
-> supported Linux distribution. If you would be interested in a
-commercial
-> open source offering, please feel free to contact me and I can provide
-> further detail.
+Walt Wimer
+TimeSys Corporation
 
-These drivers are not GPL, then?
+
+
+
+On Sun, 2005-03-27 at 11:31 +0200, Mike Rapoport wrote:
+> Hi,
+> I'm trying to bring up the Linux 2.6.11 on MPC8272ADS and it seem to 
+> hang up at the very beginning.
+> I use ads8272_defconfig and then enable console on SCC:
+> 
+> CONFIG_SERIAL_CPM=y
+> CONFIG_SERIAL_CPM_CONSOLE=y
+> CONFIG_SERIAL_CPM_SCC1=y
+> 
+> 
+> when I boot the kernel from the u-boot the system hangs up right after 
+> the kernel decompression.
+> 
