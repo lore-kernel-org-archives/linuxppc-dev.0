@@ -1,42 +1,48 @@
-From: John Steele Scott <toojays@toojays.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: nearly-working support for cpufreq on 2004 iBook G4 with 7447A cpu
-Date: Mon, 31 May 2004 18:07:32 +0930
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Christiaan Welvaart <cjw@daneel.dyndns.org>
-References: <200405302331.35357.toojays@toojays.net> <200405311003.21439.toojays@toojays.net> <1085975390.1930.31.camel@gaston>
-In-Reply-To: <1085975390.1930.31.camel@gaston>
+Message-ID: <294FD9D3403A0340BDAC38E48DCEFFDCA812@RES-EXCH>
+From: Lokesh Kumar <kumar.lokesh@wrx-us.com>
+To: "'Wolfgang Denk'" <wd@denx.de>, lokesh kumar <lokesh67@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: i2c m41t11 or m41t81 driver 
+Date: Fri, 30 Apr 2004 13:22:54 -0400
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200405311807.59356.toojays@toojays.net>
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+How do i get access to this tree?
+
+Lokesh
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Friday, April 30, 2004 11:47 AM
+To: lokesh kumar
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: i2c m41t11 or m41t81 driver
 
 
 
-On Mon, 31 May 2004 01:19 pm, Benjamin Herrenschmidt wrote:
-> Ok, that's weird, I don't see the same kind of clock chip on i2c as
-> the previous model had... Can you check the exact dividers programmed
-> on the CPU and redo the calculation based on the bus frequency ?
+In message <20040430131858.74454.qmail@web50009.mail.yahoo.com> you wrote:
+>
+> Is there a driver for m41t11 or m41t81 on i2c for
+> mpc8xx,  for 2.4.18 kernel?
 
-Okay.
+Not for 2.4.18, but we have a m41t11 driver in our linuxppc_2_4_devel
+tree (2.4.25).
 
-At boot: HID1=80414c80 => PLL_CFG=10100, i.e. 4:1 core multiplier
+Best regards,
 
-After clearing DFS, HID1=80018c80 => PLL_CFG=11000, i.e. 8:1 core multiplier
+Wolfgang Denk
 
-I decoded the PLL values using the table on page 31 of Moto's MPC7447AEC.pdf.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+PROGRAM - n.  A magic spell cast over a computer  allowing it to turn
+one's input into error messages.
+v. tr. - To engage in a pastime similar to banging one's head against
+a wall, but with fewer opportunities for reward.
 
-bash-2.05b$ cat /proc/device-tree/clock-frequency  | xxd
-0000000: 07ef 4679                                ..Fy
-bash-2.05b$ python -c 'print "%d" % 0x07ef4679'
-133121657
 
-Looks sensible to me. Does it give you any clues?
-
-cheers,
-
-John
-
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
