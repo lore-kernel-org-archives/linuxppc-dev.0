@@ -1,22 +1,19 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from relay01s.ntr.oleane.net (relay01s.ntr.oleane.net [194.2.8.82])
-	by ozlabs.org (Postfix) with ESMTP id 615042BDF2
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id E25722BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Nov 2004 07:51:58 +1100 (EST)
-Received: from smtp1.clb.oleane.net (smtp1.clb.oleane.net [213.56.31.17])
-	by relay01s.ntr.oleane.net with ESMTP id iAPA9ogx012097
-	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Nov 2004 11:10:08 +0100
-Received: from GEG2400 ([62.160.30.216]) (authenticated)
-	by smtp1.clb.oleane.net with ESMTP id iAP9ujvo005094
-	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Nov 2004 10:56:47 +0100
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 25 Nov 2004 10:59:28 +0100
-Message-ID: <000001c4d2d5$758dc9b0$5201a8c0@GEG2400>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Questions about PCI resources in Linux 2.4.25 for MPC8260
+	Fri, 26 Nov 2004 10:58:49 +1100 (EST)
+To: ivica@asist-traffic.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 25 Nov 2004 16:24:32 +0100."
+	<41A5F930.3080104@asist-traffic.com>
+Date: Thu, 25 Nov 2004 23:58:05 +0100
+Sender: wd@denx.de
+Message-Id: <20041125225810.A5B02C1430@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200 toolchain test 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,33 +24,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dear Ivica,
 
-Hi,
+in message <41A5F930.3080104@asist-traffic.com> you wrote:
+> 
+> I have a MPC5200 based custom board with preloaded u-boot.
+> My job is to create some sort of development environment, build
+> linux kernel and userland environment and in the end test the hardware
+> before larger series are built.
 
-I ported a MPC8260 custom LSP from Linux 2.4.18 to Linux 2.4.25 and
-I discovered something strange in the last kernel.
+May I ask why you want to start from scratch? Is it  for  educational
+purposes?  Otherwise  you  could  just  use  existing and well-tested
+toolchains  like  our  ELDK   which   isavailable   for   free   (see
+http://www.denx.de/ELDK.html);  of course you can also use the ELDK's
+build environment to rebuild everything from scratch  if  you  really
+want  to  be  sure  that you can recompile everything without need to
+rely on any external resources.
 
-In the file arch/ppc/kernel/setup.c, the function "setup_arch" runs this new
-code :
+> So far I managed to create GNU toolchain for it with crostool from
+> Dan Kegel. Everything was built without any problems. Of course,
+> I wanted to test this toolchain so I wanted to compile a simple
+> hello_world program load it into the memory of my MPC5200 board
+> and run it. So far I've failed. I admit. I don't know how to compile
+> a program to run without the OS. But I have some clues. I think it
 
-    code_resource.start   = virt_to_bus((void *)PAGE_OFFSET);
-    code_resource.end    = virt_to_bus(&_etext)-1;
-    data_resource.start   = virt_to_bus(&_etext);
-    data_resource.end    = virt_to_bus(&_edata)-1;
-    request_resource(&iomem_resource, &code_resource);
-    request_resource(&iomem_resource, &data_resource);
+There is some pretty extensive documentation in our DULG about how to
+use U-Boot and Linux in Embedded systems; have a look at
+http://www.denx.de/twiki/bin/view/DULG/Manual
 
-This code seems to reserve PCI resources for the kernel code and data.
+> Anyhow I want to do this before I compile kernel. Since I'm talking
+> about the kernel let me ask you what kernel you suggest for MPC5200?
+> The latest 2.6.10-rc or the one Sylvain Munaut is maintaining?
 
-Has anybody an idea why these resources are added and needed ?
-To detect future PCI conflicts ? To preserve from external PCI accesses ?
+Alternatively, you could  use  the  stable  2.4.25  kernel  from  the
+linuxppc_2_4_devel tree on our CVS server; for details see the DULG.
 
-If the board sdram is not mapped on PCI at 0x00000000, these resources
-generate problems when scanning pci bus and discovering sdram space
-in own pci bridge header space.
+> Next ... I would like to create a development environment that is totally
+> "closed" from my system and I want all the crosstools in it. This way
+> I could ensure none of my native tools are conflicting with cross 
+> development.
 
-Is there a new rule to set sdram board to 0x00000000 instead of 0x80000000
-while enumerating PCI.
+The ELDK installs all files and tools in  a  single  directory.  This
+should  be  an  excellent  base  for  crating a sandboxed environment
+(although I have to admit that I don't understand which benefits this
+might give you).
 
-Thanks for your ideas.
- Laurent
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+There is a biblical analogy I'd like to draw here.   Casts are to C++
+Programmers what the apple was to Eve.         - Scott Douglas Meyers
