@@ -1,35 +1,35 @@
-Subject: Re: Kernel 2.4.21-ben2 does not boot on Rev 1 Xserve
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Atro.Tossavainen@Helsinki.FI
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200307071146.h67BkHj02191@kruuna.Helsinki.FI>
-References: <200307071146.h67BkHj02191@kruuna.Helsinki.FI>
-Content-Type: text/plain
-Message-Id: <1057581605.11707.15.camel@gaston>
-Mime-Version: 1.0
-Date: 07 Jul 2003 14:40:05 +0200
+Message-ID: <005501c34487$7bcafc40$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "J?rn Engel" <joern@wohnheim.fh-wedel.de>
+Cc: "Paul Mackerras" <paulus@samba.org>,
+	"Linuxppc-Dev@Lists. Linuxppc. Org" <linuxppc-dev@lists.linuxppc.org>
+References: <16133.19178.764449.966821@cargo.ozlabs.ibm.com> <IGEFJKJNHJDCBKALBJLLOEPGFNAA.joakim.tjernlund@lumentis.se> <16134.4102.899233.25492@cargo.ozlabs.ibm.com> <20030705072119.GA32363@wohnheim.fh-wedel.de> <16134.52251.943207.814024@cargo.ozlabs.ibm.com> <20030705170145.GA29928@wohnheim.fh-wedel.de> <003301c34473$0f88d7a0$020120b0@jockeXP> <20030707120606.GC7104@wohnheim.fh-wedel.de>
+Subject: Re: memmove broken
+Date: Mon, 7 Jul 2003 14:58:33 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-07-07 at 13:46, Atro Tossavainen wrote:
-> Hello,
+> On Mon, 7 July 2003 12:32:21 +0200, Joakim Tjernlund wrote:
+> >
+> > > Agreed.  And even then, I don't want to submit it before 2.7.
+> >
+> > Why? Just look at 2.4 and you will find much boulder stuff going
+> > in there than this.
 >
-> I tried to upgrade the kernel on our Xserve to 2.4.21-ben2 which I just
-> downloaded from source.mvista.com with rsync.
+> Other people's bad example is no justification for my misbehaviour. ;)
 >
-> The bootup messages scroll by quite quickly, but if I'm not mistaken,
-> the IDE driver announced the following:
->
-> PDC20270: neither IDE port enabled (BIOS)
->
-> and fails to boot because it can't see the disks.
+> This patch doesn't fix anything that is wrong, and it doesn't add
+> functionality that isn't there right now.
+[SNIP]
 
-Did you enable CONFIG_PDC202XX_FORCE ? (Also called
-"Special FastTrack Feature"). This option is needed for the Promise
-controller on the Xserve motherboard.
+Nor does most of you zlib patches either, but most of them are in 2.5.
+Point being, this is not a major change(so far). If nothing wrong is found and
+it is noticeably faster, I think it should go into 2.5.
 
-Ben.
-
+ Jocke
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
