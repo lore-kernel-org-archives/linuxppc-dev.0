@@ -1,31 +1,64 @@
-From: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
+Message-ID: <3AD7FAF8.44670189@disca.upv.es>
+Date: Sat, 14 Apr 2001 09:23:36 +0200
+From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15287.32258.397730.448586@igor.jsc.nasa.gov>
-Date: Sun, 30 Sep 2001 15:18:10 -0500
-To: linuxppc-dev@lists.linuxppc.org
-Subject: flush_tlbs bug in arch/ppc/kernel/head.S ?
-Reply-To: jeffrey.d.kowing1@jsc.nasa.gov
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: libc.so.6 error but not in Montavista
+Content-Type: text/plain; charset=iso-8859-1
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In arch/ppc/kernel/head.S (for linuxppc_2_4) the "blt" branch in the
-flush_tlbs procedure doesn't seem right.  If the intent is to
-invalidate TLBs with effective addresses from 0x0000_0000 -
-0x0400_0000, then the "blt" should be a "bgt".  Am I crazy/stupid ???
+I am trying to build a ramdisk for a TQM823L module using the LinuxPPC
+(2.4.4) and CDK provided by DENX.
 
-flush_tlbs:
-	lis	r20, 0x40
-1:	addic.	r20, r20, -0x1000
-	tlbie	r20
-	blt	1b    <--------- Shouldn't this be bgt ???
-	sync
-	blr
+I have built the CDK withouth any problems and so the ramdisk.
+But when I try to boot the system, I obtain the following error:
+....
+EXT2-fs warning: checktime reached, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 52k init
+init: error in loading shared libraries: libc.so.6: cannot open shared
+object fi
+le: No such file or directory
+Kernel panic: Attempted to kill init!
+Rebooting in 180 seconds..
 
+I have been searching the lists for a solution but it seems that people
+with the same problem were using the Montavista version, not the DENX
+one.
+The proposed solution for Montavista is:
+--------
+If your shared libraries are (as usual) in the "/lib" directory, add the
+following option to the GCC command line when linking your binary:
+-Wl,-R/lib
+--------
+In fact, I don't know where to add this option.
+
+The /lib/libc.so in the ramdisk shows the following code:
+---------------------
+/* GNU ld script
+   Use the shared library, but some functions are only in
+   the static library, so try that secondarily.  */
+GROUP ( /LinuxPPC/CDK/lib/libc.so.6 /LinuxPPC/CDK/lib/libc_nonshared.a )
+---------------------
+I think that this isn't right.
+
+Any help would be great.
 
 --
-Jeff Kowing
-jeffrey.d.kowing1@jsc.nasa.gov
+----------------------------------------------------------------------
+| David de Andrés Martínez   | Fault Tolerant Systems research Group |
+|                            |                                       |
+| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
+| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
+|                            | Fax: +34 96 387.75.79                 |
+-------Address--------------------------------------------------------
+|                 DISCA-EUI                                          |
+|                 Universidad Politécnica de Valencia                |
+|                 Campus de Vera #14                                 |
+|                 Valencia E-46021                                   |
+|                 Spain                                              |
+----------------------------------------------------------------------
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
