@@ -1,48 +1,41 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A42889041D6BE5@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "'ashish anand'" <ashisha@india.infogain.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: "Kernel logical address"  vs "Physical"
-Date: Fri, 14 Sep 2001 14:13:53 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 14 Sep 2001 05:54:05 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Xavier Grave <grave@ipno.in2p3.fr>
+Cc: embarque ppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: driver for the mvme5100
+Message-ID: <20010914055405.A12955@cx258813-a.chnd1.az.home.com>
+References: <20010914100154.A7161@ipnpcu5.in2p3.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010914100154.A7161@ipnpcu5.in2p3.fr>; from grave@ipno.in2p3.fr on Fri, Sep 14, 2001 at 10:01:54AM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks!
-
------Original Message-----
-From: ashish anand [mailto:ashisha@india.infogain.com]
-Sent: vrijdag 14 september 2001 8:50
-To: Goddeeris Frederic; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: "Kernel logical address" vs "Physical"
-
-
-Goddeeris Frederic wrote:
+On Fri, Sep 14, 2001 at 10:01:54AM +0200, Xavier Grave wrote:
+> in the driver there is two code lines :
+> pci_read_config_dword(carte.pci,PCI_BASE_ADDRESS_0,&tmp);
+> carte.bus_delta = carte.pci->resource[0].start - tmp;
+> on the mvme2303 it gives 0xc000 0000 which is the prep offset.
+> on the mvme5100 it gives 0. Since the mvme5100 is chrp-like I wait
+> for a 0x4000000 value or something different from zero ?
 >
-> So the key is that by address is above ioremap_base. That I initially got
-> away with not using ioremap is a coincidence? Right?
->
-> Where could I find a complete discussion of how all this is organized? The
-> documents I find are or very vague, or explain a small issue and suppose
-you
-> have already solid knowledge about it.
+> Does anybody have an idea ?
 
-ioremap_base is not unique for every board.
-but 0xfaxxxxxx is above ioremap_base for most of situations.
-you have to go for high level browsing of memory initialisation codes
-in your source tree and do web surfing.
-i don't have any idea if it is orgainsed comprehensively in one place.
-you serach in your source tree where the address range containing
-0xf4axxxxxxhas been
-ioremapped.
+That's what you should expect to see.  In Linux a PCI mem resource
+is defined as an ioremapable token.  It may or may not be a PCI or
+processor bus address.  In the case of a PReP memory map, PCI bus
+addresses are translated in a non-1:1 fashion.  So an offset of
+0xc0000000 is correct for the difference between the actual BAR
+value and the corresponding Linux resource value.  In the case
+of a CHRP memory map, PCI bus addresses are 1:1 with processor
+bus addresses (like most developers like to assume..x86).  In
+this case the mem resource start will be the same as the actual
+memory BAR value.
 
-on some plateform like SPARC there is "vitual io" there you might not need
-to ioremap
-sort of interface for the address range in that "virtual io window" as there
-is a entry built already for  virtual --> physical ...anybody should correct
-me if i am wrong here..
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
