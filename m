@@ -1,36 +1,33 @@
-Message-ID: <3E63C905.5000306@embeddededge.com>
-Date: Mon, 03 Mar 2003 16:28:37 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
-References: <IGEFJKJNHJDCBKALBJLLOEKGFKAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 3 Mar 2003 15:12:05 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Jean-Denis Boyer <jdboyer@mediatrix.com>,
+	Dan Malek <dan@embeddededge.com>
+Cc: Ibon Gotxi Garcia <igotxi@jazzfree.com>,
+	Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Question about modules
+Message-ID: <20030303221205.GA12414@ip68-0-152-218.tc.ph.cox.net>
+References: <2702075D4DE2B043BF5EB82E9CFAD45B093BC7@mail1.mediatrix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2702075D4DE2B043BF5EB82E9CFAD45B093BC7@mail1.mediatrix.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+On Fri, Feb 28, 2003 at 01:27:26PM -0500, Jean-Denis Boyer wrote:
 
-> I have been playing with the copy_page() function in arch/ppc/kernel/misc.S
-> and gained about 30% speed up for my mpc860, rev D4 MHz.
+> > Everything works, till I try to insmod it: I get m8xx_cpm_alloc and
+> > m8xx_cpm_hostalloc as unresolved symbols.
+>
+> In commproc.c, add the following line:
+>   EXPORT_SYMBOL(m8xx_cpm_hostalloc);
 
-Have you found the discussion in linuxppc-dev about the work Paul has done
-on this in general for PowerPC?  It may help avoid repeating some work and
-provide some guidance.....
+I'll bite... Dan is there a good reason this isn't exported?  Google
+shows nothing to me :)
 
-And don't forget....many applications aren't heavily 'copy-centric' and it
-may be beneficial to not blow away the caches in those cases.  That is, if
-you apply systems engineering methods to your testing instead of just focusing
-on such a low level detail, you may discover you are wasting your time and
-from an overall system application you may be providing little benefit or
-even a overall degradation in system performance.
-
-Thanks.
-
-
-	-- Dan
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
