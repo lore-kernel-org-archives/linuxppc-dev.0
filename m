@@ -1,41 +1,38 @@
-Message-ID: <366FFC59.32C325A7@airways.com>
-Date: Thu, 10 Dec 1998 09:52:41 -0700
-From: "D. Lance Robinson" <lancer@airways.com>
-Reply-To: lancer@airways.com
+Date: Thu, 10 Dec 1998 10:11:27 -0700 (MST)
+From: john s anderson <jacobs@azstarnet.com>
+To: nathan ingersoll <ningerso@d.umn.edu>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kernel 2.1.131
+In-Reply-To: <Pine.SO4.4.02.9812100917210.132-100000@ub.d.umn.edu>
+Message-ID: <Pine.GSO.3.96.981210100912.21507C-100000@andromeda.azstarnet.com>
 MIME-Version: 1.0
-To: linux-scsi@vger.rutgers.edu
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Diamond Fireport 40 (Sym875)
-References: <Pine.LNX.4.03.9811252309520.23541-100000@mercator.cs.kuleuven.ac.be>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
->...
-> I borrowed a FirePort 40 from a friend for testing.
-> 
-...
-> The Viking was the last drive on the chain. I tried playing with the
-> termination jumper (read: what I thought was the termination jumper, left my
-> specs somewhere else :-(, but to no avail. I connected a borrowed CD-Writer
-> (PLEXTOR CD-R PX-R412C Rev 1.04) with correct termination to the end of the
-> chain to make sure it was no termination problem, but that didn't help.
-> 
-> Then I removed the Viking from the chain, and everything worked fine. Could it
-> be that the cable was too long to use FAST-20 transfers with the Viking? It was
-> about 75 cm long.
-> 
+On Thu, 10 Dec 1998, nathan ingersoll wrote:
 
-Geert,
+> Has anyone successfully compiled and used the 2.1.131 kernel from
+> ftp.kernel.org? I downloaded it and compiled it without error, but when I
+> try to boot all I get is a black screen with the line "Welcome to Linux
+> kernel 2.1.131" or something like that. Nothing happens after this. I did
+> forget to compile and install the modules, but I don't think that would
+> cause the system to hang right off the bat. Any ideas on the problem?
 
-You still probably have a termination problem. You say that the CD-R
-works fine. This is a narrow device and only terminates the narrow
-signals. The best thing is to use a wide active terminator at the end of
-the cable.
+I have no ideas on the problem, but I can confirm that a 2.1.131 kernal,
+without modules properly installed, will boot my 7500.
 
-<>< Lance.
+In fact, it's fairly functional (I used it for ~1 day, before I got a
+chance to reboot and move files on the MacOS side.), so that's not your
+problem.
+
+HTH,
+john.
+jacobs@azstarnet.com
+www.treefort.org/~jacobs
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
