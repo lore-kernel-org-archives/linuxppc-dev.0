@@ -1,56 +1,83 @@
-Date: Thu, 10 Jan 2002 12:58:48 -0600 (CST)
-From: Kumar Gala <kumar.gala@motorola.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Cagney <ac131313@cygnus.com>,
-	Kumar Gala <Kumar.Gala@motorola.com>,
-	<linuxppc-dev@lists.linuxppc.org>,
-	Daniel Jacobowitz <drow@mvista.com>,
-	Kevin Buettner <kevinb@redhat.com>, <gdb@sources.redhat.com>,
-	<ezannoni@cygnus.com>, <fsirl@kernel.crashing.org>
-Subject: Re: AltiVec register ptrace support
-In-Reply-To: <15389.3566.531070.447917@argo.ozlabs.ibm.com>
-Message-ID: <Pine.GSO.4.40.0201101254250.25917-100000@softail.somerset.sps.mot.com>
+From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
+Message-Id: <200201122139.g0CLdK5376343@saturn.cs.uml.edu>
+Subject: Re: No cache control on ppc??
+To: langausd@fachschaft.informatik.uni-stuttgart.de (Siggi Langauf)
+Date: Sat, 12 Jan 2002 16:39:20 -0500 (EST)
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.21.0201121753510.11140-100000@darkwing.informatik.uni-stuttgart.de> from "Siggi Langauf" at Jan 12, 2002 06:10:42 PM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul,
+> On i586 (or newer) machines with AGP, the X server can set some MTRR
+> ranges. AFAIUI, these tell the (CPU-internal) cache controller not to
+> cache video memory (which wouln't make any sense, as that is used
+> write-only).
 
-Can you please make a decision regarding which version (or both) of the
-AltiVec ptrace support should go into the kernel.
+It would make sense. You could fill up cache lines in the CPU,
+then force a write-out all at once. You could then free the
+cache line for future use.
 
-The two patches are available here:
+> I haven't found anything similar in powerpc kernels, so I assume
+> there is nothing like this. Is that correct? If so, is that a
+> hardware restriction? Does the hardware do this automagically?
 
-http://lists.linuxppc.org/linuxppc-dev/200112/msg00107.html
+Oh come on... You get:
 
-The change is holding up altivec support for gdb.
+1. 4 cache-control bits per page table entry
+2. instructions to manipulate cache lines
+3. prefetch instructions (on "G4" chips: MPC7400, MPC7410...)
+4. some TLB control that might be useful
+5. 8 data BAT registers, allowing 4 super-size (256 MB) pages
+6. 64-bit FPU (and 128-bit AltiVec) registers for memory copy
 
-Thanks
+BTW, some of the above is good for RAID, IP checksums...
 
-- kumar
+The serious problem is Apple's crappy 100 MHz bus. You'll have a
+hard time moving much beyond 700 MiB/s I think. Supercomputer? Not.
+I'm getting 351 in plus 351 out with 16 doubles on a Mac Cube.
 
-On Mon, 17 Dec 2001, Paul Mackerras wrote:
+Another problem is lack of OS support. You can't set mmap()
+flags to indicate: cached, coherency not enforced, unguarded,
+and no writeback. This is what you need. It would be nice to
+get the BAT registers too, since user space does a lot more
+memory access than the kernel does.
 
-> Andrew Cagney writes:
->
-> > The Linux/PPC kernel supports PEEK/POKE for fetching registers.  The
-> > proposed Kernel interface _consistently_ extends that interface using
-> > the exact same mechanims to obtain the altivec regiters.  All the
-> > required changes for this have been posted and have been demonstrated to
-> > work.
-> >
-> > Separate to that, it has been _proposed_ that the PPC ptrace() interface
-> > be changed so that get/set reg for all register classes be added
-> > (incomplete patch posted).  Isn't this separate to the problem at hand?
->
-> If we are going to add a get/set reg interface for the altivec vector
-> registers, I would rather not extend the peek/poke interface to do
-> that as well.
->
-> Paul.
->
+I don't know very much about MPEG, but something like this
+would be a reasonable plan I guess:
 
+Get some nice memory to use. Maybe 32 MiB, BAT mapped, with
+all the attributes mentioned above. Flush all the cache lines
+out -- you MUST if you have non-coherent memory, and it's a
+nice idea anyway. Repeat before every use of the memory.
+
+Get your video data, using raw IO. You'd really be asking
+for several frames ahead of course.
+
+Bite off a small chunk of the image. Pulling a number out of
+my ass, I'll say 128x128 pixels and 4 frames deep. This fits
+nicely into my 1 MB L2 cache. Go with 64x64 for the MPC7410.
+
+Prefetch your data. If you have AltiVec, use AltiVec prefetch.
+
+Do the decryption on that little chunk. Do the various motion
+compensation things and inter-frame stuff on that little chunk.
+You can process this tile in multiple frames to get better
+cache usage. That is, you are doing work for future frames.
+
+Now you may either
+
+a. write back your cache, then start video DMA + color transform
+b. do color transform interleaved with writing to video memory
+
+Scaling goes there too, if you must. You might limit scaling
+to small integer ratios, and pad/crop as needed to reach the
+exact size desired.
+
+Assuming you don't use DMA: make sure the video memory has the
+same attributes as everything else, and use explicit cache
+write-back instructions to push out the data.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
