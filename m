@@ -1,56 +1,36 @@
-From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
-Message-Id: <200106291829.f5TITNs464375@saturn.cs.uml.edu>
-Subject: Re: giving up the FPU, MSR[FE0], MSR[FE1], and the FPSCR
-To: fray@mvista.com (Mark Hatle)
-Date: Fri, 29 Jun 2001 14:29:23 -0400 (EDT)
-Cc: acahalan@cs.uml.edu (Albert D. Cahalan),
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3B3C9BC6.9AD7C208@mvista.com> from "Mark Hatle" at Jun 29, 2001 10:16:22 AM
-MIME-Version: 1.0
+Date: Fri, 29 Jun 2001 13:09:26 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michel Lanners <mlan@cpu.lu>
+Cc: linuxppc-commit@ppcbk.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Cleanups of arch/ppc/boot/Makefile
+Message-ID: <20010629130926.B19846@opus.bloom.county>
+References: <200106290629.IAA01327@piglet.grunz.lu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200106290629.IAA01327@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mark Hatle writes:
-> [Albert Cahalan]
->> [somebody]
-
->>> [about lazy FP save/restore]
->>
->> It is a bad idea, because gcc now uses FP registers to copy structs.
->> Every program can be an FP program now, so why add complexity and
->> keep taking traps?
+On Fri, Jun 29, 2001 at 08:29:51AM +0200, Michel Lanners wrote:
+> On  28 Jun, this message from Tom Rini echoed through cyberspace:
+> > Hey all.  After talking to paulus a bit, arch/ppc/boot/Makefile needs some
+> > cleaning and fixing.
+> [snip]
 >
-> One thing to keep in mind, GCC is perfectly capable of compiling without
-> using floating point.  I routinely use code that has no floating point
-> compiled in (including glibc).  If you build a system with -msoft-float
-> (libraries through the apps) then the FPU never gets enabled and your
-> context switching is faster.  (Is this measurable?  I'm not sure.
-> But..) The system "seems" to preform better.
+> +subdir-$(CONFIG_PRPMC750)	+= pp3 lib images common
+> +tools-$(CONFIG_PRPMC750)	:= mkbugboot mkprep
+> +subdir-$(CONFIG_MCPN765)	+= pp3 lib images common
+> +tools-$(CONFIG_MCPN750)		:= mkbugboot mkprep
+>                     ^^^
+> Is this right? Shouldn't that be CONFIG_MCPN765?
 
-Maybe your gcc can't take advantage of FP registers for non-FP uses.
+Oops, mental goof.  Thanks.   Thats the other thing, I did this on an
+ibook during class, so it's only been tested on CONFIG_ALL_PPC, with the
+rest eyeballed for now :)  Thats another reason I didn't commit it.. :)
 
-Your non-FP code might seem a wee bit better, but your FP code
-ends up taking faults. Then with all the extra code, we end up
-with extra problems -- for example the original poster's trouble.
-
-> Lazy FPU initialization IMHO is a good thing for single purpose
-> (embedded?) systems that are on a high end CPU, but do not need
-> floating point.  One example could be a signal processing system
-> that uses altivec and integer math heavily, but no floating point.
-
-That is almost exactly the sort of system I work with.
-AltiVec is used for signal processing, though with "float" data.
-
-FP registers are still useful, for struct copies and for the
-occasional standard C library function.
-
-I suppose, if one does want lazy FP save/restore, that it ought
-to be done with a per-process flag to prevent frequent faults.
-When switching to an FP process, restore the registers. From time
-to time take away the FP registers to deal with processes that
-only use them once in a great while or only at startup. Maybe
-take away FP after 1, 2, 4, 8, 16... ticks of use.
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
