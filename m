@@ -1,41 +1,40 @@
-Date: Sun, 28 May 2000 14:03:09 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Robert Thompson <rothomp3@vt.edu>
-cc: linuxppc-dev@lists.linuxppc.org, Stephan Leemburg <stephan@jvc.nl>
-Subject: Re: Debian pmud package available
-In-Reply-To: <B555F58A.7D5%rothomp3@vt.edu>
-Message-ID: <Pine.LNX.4.10.10005281352260.21987-100000@zirkon.biophys.uni-duesseldorf.de>
+Date: Sun, 28 May 2000 15:20:30 +0200 (MET DST)
+From: Henning Loeser <Henning.Loeser@Physik.Uni-Marburg.DE>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ide_dmaproc - YaBoot
+In-Reply-To: <200005261837.UAA00662@piglet.grunz.lu>
+Message-ID: <Pine.OSF.4.02.10005281508190.24780-100000@ax1305.physik.uni-marburg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >> Where can I get the RPMS or tar files.
-> >
-> > http://www3.jvc.nl/linuxppc/
-> >
-> >
-> OK, so, I got the source, applied the patch I found, and built it. Well, I
-> tried to... it failed because pmu.h redeclared something that was in some
-> system header of the same name... I commented out the thing in pmu.h
+On Fri, 26 May 2000, Michel Lanners wrote:
+> Ohhhh, the lost interrupt problem... That was reported quite often
+> recently. Anyone know what the fix is/was? It never ocured on my system,
+> so I didn't bother... You might want to look through the list archives
+> for the solution. Although, I wonder whether it wasn't specifically on
+> the G4 systems when booted with the wrong booter, i.e. not relevant
+> here...
+What I found seems to have been related to not using yaboot. As I have a
+'old 7500' with MacOS8.1 I thought BootX would be just fine. But maybe
+not. Can I use yaboot on my machine? The WebPages are not very clear on
+that part. BenH's site states that yaboot is onbly for 'NewWorld' macs,
+but Eric's FAQ states that yaboot is for 'NewWorld' macs, but users of
+earlier machines should consider switching if they encounter odd problems
+...
 
-That's OK, I had to do the same when building with 2.2.15 kernel headers.
-Debian ships with 2.2.10 (at least the pre-release version I installed had
-2.2.10 headers) so I left it that way. Stephan apparently didn't compile
-pmud with 2.2.15 headers either. If it was a simple #define we could work
-around it, but it defines an additional element in the PMU version enum
-and I don't know how to test for that (short of mucking with configure
-tricks, of course). Just ignore it for now.
+Well I do encounter strange Problems ...
 
-If the Debian powerpc release kernel is 2.2.15 I'll take care of that in
-the Debian package. What you got was Stephan's LinuxPPC package, I can't
-update that one, obviously.
+So should I go through the hassel of installing yaboot?
 
-CC: to Stephan (no idea if he's on the list), please contact him for
-further questions.
+Henning
 
-	Michael
+--------------------------------------------------------------------------
+Henning Loeser					      Fachbereich Physik
+email: henning.loeser@physik.uni-marburg.de	      AG Oberflaechen
+						      Philipps-Uni Marburg
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
