@@ -1,86 +1,52 @@
-Message-ID: <BF2D59E60824D311A5F800A0C9AC13F355FEB5@xover.hjinc.com>
-From: "Clayton, Mark" <mclayton@hjinc.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Linux w/ Motorola 860ADS target
-Date: Thu, 10 Feb 2000 13:23:04 -0500
+Date: Fri, 11 Feb 2000 12:44:18 +0100 (MET)
+From: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: On-Chip-Debugging for MPC 860 ?
+In-Reply-To: <200002092058.VAA24849@denx.local.net>
+Message-ID: <Pine.GSO.4.21.0002111115480.20126-100000@samson.hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hi everyone,
+I am new to this whole stuff. I'm a student working on diploma thesis.
 
-Is there a difference between the 860ADS and the 860FADS?
+My goal is to have linux running on MBX board -WITHOUT- EPPC-Bug, booting
+diskless out of the flash-ROM and having a ramdisk and a flash-filesystem.
 
-Thanks,
-Mark
+I use a intel-linux-host and some days before got some LinuxPPC tools from
+Wolfgang Denk including working GNU cross-compiler and root filesystem
+which seem to be really helpful.
 
->
->
-> "Todd_Tomaino"@vnci.net wrote:
-> >
-> > Hello,
->
-> Hi!
->
-> > I am brand new to Linux as well as the list.  I am
-> interested in using
-> > Linux with the 860ADS demo board as a target.
->
-> That is a pretty good board. But watch out for the ZIF socket!
-> I've got two boards: One PILOT and one REV-B. Only the REV-B works.
->
-> > Could anyone suggest a
-> > version of Linux that is well suited for this purpose.
->
-> ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/mpc8xx-2.2.13.tgz
->
-> That version has not much ADS860 support, but I've made a patch
-> that is floating around. Check previous messages!
->
-> You also need to apply a low-memory patch if you
-> want to be able to do something.
-> Check the archives there too.
->
-> This site has info about booting and stuff.
->
-> http://www.s4l.de/powerpc.html
->
-> You will probably need 8xxrom to boot your board.
->
-> > Also, drivers for
-> > the PCMCIA interface would be a real plus.
->
-> Well, that's me!
->
-> I am actually running Linux on a ADS860 right now, trying out
-> my PCMCIA socket driver for the mpc8xx series.
->
-> Most things work, but I have not released the driver yet.
-> I plan doing so next week or so.
->
-> The driver will be as a patch against David Hinds pcmcia-cs package.
->
-> > In looking around under the
-> > search criteria for "Linux PPC" I am seeing versions such
-> as Black Lab,
-> > Yellow Dog, Debian, etc.  These appear to be geared more
-> towards desktop
-> > power pc units.  Is it possible to use one of these for an embedded
-> > application??
->
-> If you patch and replace glibc it should be possible.
-> You probably need heaps of memory, though.
->
-> We crosscompile the programs we need.
->
-> Good luck /
->
-> Magnus
->
-> > best regards,
-> >
-> > Todd
+I will need some help in the next months ... My first question is:
+
+How to make use of MPC's BDM (with a linux host), if possible via GDB ?
+I know that I need an adapter cable for the parallel port.
+Actually I have three of them:
+
+* a so-called "EBDI-Lite" from Motorola
+* a "CPU32"-cable which was used for debugging the 68360 with GDB
+* a very simple cable according to the suggestions of sergey drashnikov
+(found in graham stoneys mailing from Jan 27th, which I found really
+helpful. Graham, what is the URL for your HOWTO ?)
+
+I also know that I need some patches for the GDB. I have tested two
+variants so far:
+
+* Patches working for 68360 from Greg Ungerer. They look professional but
+there is no support for the 860 BDM, maybe I could adopt them.
+* Patches from Sergey Drashnikov for 860 who are very "quick and
+dirty" and didn't work out of the box (he tested under FreeBSD only).
+
+What would you suggest to do ? Is there any "ready-to-use"-solution ? I
+know that there are some commercial tools for Windows (Metrowerks, EST)
+but what about linux ?  I thought about adopting the GDB-BDM patches for
+360 to 860, but I cannot evaluate how much work it is.
+
+Any suggestions welcome. Thanks.
+Tobias
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
