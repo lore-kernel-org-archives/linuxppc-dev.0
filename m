@@ -1,44 +1,46 @@
-Message-ID: <37BBAAC5.E156BD06@switchboard.ericsson.se>
-Date: Thu, 19 Aug 1999 08:57:09 +0200
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Date: Thu, 19 Aug 1999 09:56:30 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Brad Boyer <flar@marcus.pants.nu>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Fwd: Latest version of CPU emulator] (fwd)
+In-Reply-To: <199908181746.KAA03079@marcus.pants.nu>
+Message-ID: <Pine.HPX.4.10.9908190921590.27955-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: How to enable data cache for MPC860
-References: <035401bee95c$46cc26c0$68f102de@sjzhu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
->   I have a MPC860 board, which there are some memory space like VRAM or ISA.
-> I donot know how to enable data cache for DRAM, and will not effect
-> the accessing VRAM and ISA.
 
-You will need to use the mmu and use page tables that describes the IO
-regions
-as non-cacheable, and the dram tables as cacheable.
-using the mmu will probably increase the performance because the cpu can
-use
-speculative instruction fetch.
+On Wed, 18 Aug 1999, Brad Boyer wrote:
 
-have a look in head.S in the linux kernel source.
-you will see how the cache is turned on and tables are reserved.
-and finnaly is the mmu turned on.
+> 
+> Geert Uytterhoeven wrote:
+> > Perhaps Gabriel's 486SX emulator can be included as an optimization?
+> 
+> I doubt it, from what I know of both emulators.  The one that was submitted
+> for Wine is protected mode only, and Gabriel's is real mode only.  I
+> imagine the ideas and some of the code from Gabriel's emulator could
+> be adapted to this use, but it definitely couldn't be used without
+> some major changes.  It might be a good place to start, tho.
 
-please note that the cache should be invalidated, which not is done in
-the
-linux source code. it should be done in the bootcode that runs before
-linux.
-have a look in the manual.
+Actually adding protected mode (segmentation) is not that complex,
+but adding paging (like Bochs) would be an enormous task I'm not ready to 
+undertake. Adding the FPU is feasible but not a simple job (MMX is easy).
 
-i think motorola has some example code too if you look around at their
-website.
+My goal was the smallest possible emulator to interpret BIOS ROM and
+that's how it has stayed until now. It is reasonably fast (around 6 MIPS
+on a 200 MHz 603e) only because it entirely fits into L1 cache (except
+plain 603). I could improve the speed slightly (20-30%), at some cost in
+size, at least I believe so.
 
-cheers /
+Still the best thing in my code is how the flags are emulated IMHO.
 
-magnus
+	Regards,
+	Gabriel.
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
