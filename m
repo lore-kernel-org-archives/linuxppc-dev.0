@@ -1,39 +1,41 @@
-Date: Wed, 25 Aug 2004 16:05:25 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Oliver King-Smith <oliver.king-smith@nuvation.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem trying to address custom hardware
-Message-ID: <20040825160525.F9986@home.com>
-References: <FC3C0DD86B79DF4FA423AF0379A5476101554372@mailguy2.nuvation.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <FC3C0DD86B79DF4FA423AF0379A5476101554372@mailguy2.nuvation.com>; from oliver.king-smith@nuvation.com on Wed, Aug 25, 2004 at 03:29:20PM -0700
+To: Balajee Premraj <balajee_78@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Uboot SMC2 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 25 Aug 2004 13:33:19 PDT."
+             <20040825203319.91070.qmail@web40707.mail.yahoo.com>
+Date: Thu, 26 Aug 2004 02:07:10 +0200
+Message-Id: <20040826000715.01756C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Aug 25, 2004 at 03:29:20PM -0700, Oliver King-Smith wrote:
+In message <20040825203319.91070.qmail@web40707.mail.yahoo.com> you wrote:
 >
-> Things are working much better.  Both the driver and the main code work
-> without crashing now.
->
-> > Others addressed your core problem, but you should know that this
-> > mmap request won't produce the desired result. You need MAP_SHARED
-> > since MAP_PRIVATE will result in a COW when you attempt to modify
-> > your register.
->
-> I am not sure I understand why this needs to be MAP_SHARED (it sure does
-> though).  Is there a good resource I can read to understand this a bit
-> better?
+> I am trying to use uboot to boot my target board based
+> on MPC8260 whose serial is defined on SMC2.
 
-The mmap(2) manpage explains the difference pretty well.  MAP_PRIVATE
-indicates that any modification are local to the process. So, as
-soon as you write to it, it makes a copy of the page for your process
-to modify. MAP_SHARED indicates that any modifications are seen by
-any processes that also map the region.
+This is off topic here. U-Boot related questions are discussed on the
+u-boot-users mailing list, not here.
 
-googling will probably yield many threads on lkml on this topic.
+> I changed the config and tried boot it.I get all the
+> uboot messages on the console but it would not accept
+> any input.
 
--Matt
+Check  your  terminal  emulator  settings  (flow  control?)  and  the
+hardware.  There  is  no  difference in the U-Boot driver for SMC1 or
+SMC2, and it works fine on several other boards.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Love is an ideal thing, marriage a real thing; a  confusion  of  the
+real with the ideal never goes unpunished."                  - Goethe
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
