@@ -1,36 +1,46 @@
-Date: Fri, 29 Jun 2001 13:09:26 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: linuxppc-commit@ppcbk.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Cleanups of arch/ppc/boot/Makefile
-Message-ID: <20010629130926.B19846@opus.bloom.county>
-References: <200106290629.IAA01327@piglet.grunz.lu>
-Mime-Version: 1.0
+Message-ID: <3B3CED10.D05BBE56@mvista.com>
+Date: Fri, 29 Jun 2001 16:03:12 -0500
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: "Albert D. Cahalan" <acahalan@cs.uml.edu>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: giving up the FPU, MSR[FE0], MSR[FE1], and the FPSCR
+References: <3B3C9BC6.9AD7C208@mvista.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200106290629.IAA01327@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jun 29, 2001 at 08:29:51AM +0200, Michel Lanners wrote:
-> On  28 Jun, this message from Tom Rini echoed through cyberspace:
-> > Hey all.  After talking to paulus a bit, arch/ppc/boot/Makefile needs some
-> > cleaning and fixing.
-> [snip]
->
-> +subdir-$(CONFIG_PRPMC750)	+= pp3 lib images common
-> +tools-$(CONFIG_PRPMC750)	:= mkbugboot mkprep
-> +subdir-$(CONFIG_MCPN765)	+= pp3 lib images common
-> +tools-$(CONFIG_MCPN750)		:= mkbugboot mkprep
->                     ^^^
-> Is this right? Shouldn't that be CONFIG_MCPN765?
+>> Lazy FPU initialization IMHO is a good thing for single purpose
+>> (embedded?) systems that are on a high end CPU, but do not need floating
+>> point.  One example could be a signal processing system that uses
+>> altivec and integer math heavily, but no floating point.
 
-Oops, mental goof.  Thanks.   Thats the other thing, I did this on an
-ibook during class, so it's only been tested on CONFIG_ALL_PPC, with the
-rest eyeballed for now :)  Thats another reason I didn't commit it.. :)
+>Your non-FP code might seem a wee bit better, but your FP code
+>ends up taking faults. Then with all the extra code, we end up
+>with extra problems -- for example the original poster's trouble.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Maybe I missed something here, but my understanding is that if you in
+SMP lazy initialization never happens.  And if you are single CPU you
+take _ONE_ fault per process.
+
+One FP fault per process seems very minor to me, (unless of course you
+are spawning a hell of a lot of process, but most likely the process
+spawn time would outweigh the single fault.)
+
+>I suppose, if one does want lazy FP save/restore, that it ought
+>to be done with a per-process flag to prevent frequent faults.
+>When switching to an FP process, restore the registers. From time
+>to time take away the FP registers to deal with processes that
+>only use them once in a great while or only at startup. Maybe
+>take away FP after 1, 2, 4, 8, 16... ticks of use.
+
+That might be of some value, but I'd be concerned that instead of 1
+fault per process we could run in to a lot of faults, or into a
+situation where each process would need some type of a counter to detect
+faults.  (Probably messy...)
+
+--Mark Hatle
+MontaVista Software, Inc.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
