@@ -1,24 +1,40 @@
-Message-ID: <3EFABFF4.9010707@esd-electronics.com>
-Date: Thu, 26 Jun 2003 11:42:12 +0200
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20030626111559.21943.qmail@web41805.mail.yahoo.com>
+Date: Thu, 26 Jun 2003 04:15:59 -0700 (PDT)
+From: Cedric Aubert <cedric_aubert@yahoo.fr>
+Reply-To: cedric_aubert@yahoo.fr
+Subject: Denx linuxdevel
+To: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-To: Conn Clark <clark@esteem.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: (Sudo off topic)Simple cheap IDE intrerface for IBM 405
-References: <3EF8CDF4.3050700@esteem.com>
-In-Reply-To: <3EF8CDF4.3050700@esteem.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Conn,
+Hi,
 
-we attached a CompactFlash socket to the 405's external bus on our CPCI405
-CompactPCI board. The board is directly supported by the linuxppc_2_4_devel tree.
-The tree includes a driver for simple memorymapped CompactFlash cards.
+Does the current cvs tree of linuxdev on denx past to
+2.4.21 ???
 
-Matthias
+I don't have access to cvs here.
+
+Thanks a lot
+
+Cedric
+
+---
+AUBERT Cedric
+SDEL Controle Commande
+Service R&D
+rue Nungesser & Coli
+44860 St Aignan de Grand Lieu
+
+Tel : +33 (0)2 40 84 50 00
+Poste : 5109
+Fax : +33 (0)2 40 84 51 10
+
+E-mail : cedric_aubert@yahoo.fr
+Web : http://www.controle-commande.sdel.fr
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
