@@ -1,40 +1,46 @@
-Message-Id: <200110090238.f992cCY63439@aslan.scsiguy.com>
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15298.34193.467121.221740@cargo.ozlabs.ibm.com>
+Date: Tue, 9 Oct 2001 15:05:21 +1000 (EST)
 To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	yellowdog-devel@lists.yellowdoglinux.com
-Subject: Re: no luck with Adaptec SCSI controller in 2.4.X 
-In-Reply-To: Your message of "Sun, 07 Oct 2001 12:07:12 EDT."
-             <v03110701b7e62baebe04@[64.230.151.19]>
-Date: Mon, 08 Oct 2001 20:38:12 -0600
-From: "Justin T. Gibbs" <gibbs@scsiguy.com>
+Cc: <yellowdog-devel@lists.yellowdoglinux.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: do we need -fPIC for X11R6 modules
+In-Reply-To: <20011009005252.QEEA29786.tomts9-srv.bellnexxia.net@there>
+References: <Pine.BSF.4.32.0110061833480.59459-100000@shell.unixbox.com>
+	<20011009005252.QEEA29786.tomts9-srv.bellnexxia.net@there>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hi,
->
->Sorry to bother you, I am trying to move from the 2.2.19 kernel to
->Ben Herrenschmidt's latest 2.4.11 kernel on a ppc linux B+W G3 machine
->(same error occurs on 2.4.6, and 2.4.8 kernels too).
+Kevin B. Hendricks writes:
 
-...
+> Quick question.  Should we be building X11R6 modules with -fPIC?  When I
+> try, the resulting modules generate lots of unresolved symbols (like
+> "fixup", etc).
 
->error messages:
->
->aic7xxx_abort returns 8194
+I assume you mean XFree86 modules?
 
-You need to boot with "aic7xxx=verbose" for the driver to output
-data that will help me track down your problem.  My first guess
-is an interrupt routing problem, but verbose messages will allow
-me to tell for sure.
+> What exactly are X11R6 modules?  Are they shared libraries?  If so, they
+> should be built using -fPIC?  If they are not shared libraries, how are
+> they "loaded" and "linked" in?
 
->>SCSI subsystem driver Revision: 1.00
->>scsi0 : Adaptec AIC7XXX EISA/VLB/PCI SCSI HBA DRIVER, Rev 6.2.1
+No, they are ordinary object files, which get loaded and linked into
+the running XFree86 server process using linker code that is included
+in the XFree86 server.  That is, the server mallocs some memory, reads
+in the text and data and other stuff, processes the relocations, and
+puts the symbols into its internal symbol table.
 
-The latest is 6.2.3, but I don't believe there are any fixes since
-6.2.1 that will help your particular problem.
+That means that for code in XFree86 to call a procedure in a module,
+it has to do an explicit "lookup symbol" function call to get the
+address of the procedure and then an indirect function call.
 
---
-Justin
+So no, we don't want -fPIC.  That introduces a whole new and different
+set of relocations into the object file and I would be surprised if
+the XFree86 loader knew how to deal with them.
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
