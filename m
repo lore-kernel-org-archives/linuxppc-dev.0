@@ -1,63 +1,35 @@
-Message-ID: <39744BAA.6E5984DA@wanadoo.fr>
-Date: Tue, 18 Jul 2000 14:20:58 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+From: rodgersg@us.ibm.com
+Subject: PowerPC Linux BOF and Conference Call Friday July 21
+To: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
+Cc: rodgersg@us.ibm.com, ajh@achilles.net
+Date: Tue, 18 Jul 2000 10:32:36 -0400
+Message-ID: <OFE31DFA08.8F24374D-ON85256920.004CD3D3@pok.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: strace doesn't work on 2.4.0-testX
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+To:  arch/ppc developers
 
-now that the 2.4.0-testX kernel series seems to stabilize (famous last
-words...), I am trying to understand some of the basic showstoppers. One
-of them is the impossibility to use the loop device for mounting files
-as filesystems, for example ramdisk images.
+I will be running the PowerPC Linux Birds Of a Feather meeting at the Linux
+Symposium in Ottawa on Friday July 21 from 4:30-6:00PM (East Coast USA).
+The meeting will be immediately after Paul Mackerras talk on ppp and Andrew
+Tridgell's talk on rsync.    If you are going to the symposium, please look
+for details there.   If you would like to join via teleconference and do
+not already have the teleconference numbers, please send me your name and
+your topic of interest and I will send you the passcode.    Please do not
+forward or post the passcode or the teleconference will get jammed.
+Also, do not request the passcode if you are going to be in Ottawa;  we
+don't want you joining from another pub :-)
 
-I would like to know whether this is a problem with mount (since one
-cannot mount hfs CDs either) or with the loop device which used to be
-broken for a long time. In order to see anything, I am trying to use
-strace.
+For more information on the symposium please visit.
 
-The problem is that strace stopped working somewhere between
-2.4.0-test1-ac18 and -ac21 (I have both kernels and verified just
-moments ago). It still doesn't work with 2.4.0-test5-pre2. Is this a
-known problem or am I doing something wrong? I haven't seen anything on
-the linux-kernel list (in the l-k archives, the last message with a
-similar subject is from 1996), so it could be a ppc-related problem.
+http://www.linuxsymposium.org/2000
 
-What strace is doing now looks like:
+Thank you.
 
-[root@chezmoi /tmp]# strace mount -o loop ramdisk.image
-/mnt/ram1
-execve("/bin/mount", ["mount", "-o", "loop", "ramdisk.image",
-"/mnt/ram1"], [/* 29 vars */]) = 0
-memlock: Invalid argument
-Couldn't lock into memory, exiting.
+Greg Rodgers (rodgersg@us.ibm.com)
 
-That is, it just repeats the command and gives the output. In pre-ac18,
-there were 48 lines, looking like
-
-execve("/bin/mount", ["mount", "-o", "loop", "ramdisk.image",
-"/mnt/ram1"], [/*
-25 vars */]) = 0
-brk(0)                                  = 0x10022470
-open("/etc/ld.so.preload", O_RDONLY)    = -1 ENOENT (No such file or
-directory)
-[and so on, up to:]
-write(2, "memlock: Invalid argument\n", 26memlock: Invalid argument
-) = 26
-write(2, "Couldn\'t lock into memory, exiti"..., 36Couldn't lock into
-memory, ex
-iting.
-) = 36
-exit(1)                                 = ?
-
-Any ideas?
-
---
-Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
