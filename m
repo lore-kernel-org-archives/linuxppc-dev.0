@@ -1,36 +1,56 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Giuliano Pochini <pochini@shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030824174408.520f2cb3.pochini@shiny.it>
-References: <20030824092456.3c36fa5b.pochini@shiny.it>
-	 <1061714789.753.12.camel@gaston> <20030824174408.520f2cb3.pochini@shiny.it>
-Message-Id: <1061740217.31688.33.camel@gaston>
+Date: Sun, 24 Aug 2003 21:44:34 +0200
+From: Vojtech Pavlik <vojtech@ucw.cz>
+To: Jocelyn Mayer <jma@netgem.com>
+Cc: Linux PPC <linuxppc-dev@lists.linuxppc.org>,
+	linux-usb-devel@lists.sourceforge.net, vojtech@suse.cz
+Subject: Re: [PATCH] Fix compilation problem with 2.6.0-test2 on PPC
+Message-ID: <20030824194434.GA32724@ucw.cz>
+References: <1060114295.1914.6988.camel@jma1.dev.netgem.com>
 Mime-Version: 1.0
-Date: Sun, 24 Aug 2003 17:50:17 +0200
-Subject: Re: Random crashes
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1060114295.1914.6988.camel@jma1.dev.netgem.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2003-08-24 at 17:44, Giuliano Pochini wrote:
-> On Sun, 24 Aug 2003 10:46:29 +0200
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, Aug 05, 2003 at 10:11:36PM +0200, Jocelyn Mayer wrote:
+> Hi,
 >
-> > > I'm having random crashes on a dualG4 windtunnel and v2.4.22p6. Is there
-> > > any known issue ?
-> >
-> > What do you mean by random crash ? Lockups ? Panics ? See anything in
-> > console or logs ? Is this new to this kernel ?
+> There is a compilation issue in driver/input/evdev.c
+> due to the fact a "complex" expression is used as an argument
+> for an inline assembly construction (get_user)
+> The fix I done is to use a temporary variable to get the argument
+> and then use this variable for get_user.
 >
-> Random... lockups, oopses, sig11... but nothing useful because is happens
-> in random places. Ok, so the answer is no. Maybe the hw is faulty. It's
-> the only kernel I used on this mac.
+> --
+> Jocelyn Mayer <jma@netgem.com>
 
-Strange. I haven't been reported such problems. Can you try an older kernel
-just in case ? Could also be bad ram...
+> --- evdev.c.orig	Mon Jun 16 06:39:02 2003
+> +++ evdev.c	Thu Jul 31 02:41:35 2003
+> @@ -208,7 +208,7 @@
+>  	struct evdev *evdev = list->evdev;
+>  	struct input_dev *dev = evdev->handle.dev;
+>  	struct input_absinfo abs;
+> -	int i, t, u;
+> +	int i, t, u, v;
+>
+>  	if (!evdev->exist) return -ENODEV;
+>
+> @@ -240,7 +240,8 @@
+>  			if (get_user(t, ((int *) arg) + 0)) return -EFAULT;
+>  			if (t < 0 || t > dev->keycodemax || !dev->keycodesize) return -EINVAL;
+>  			u = INPUT_KEYCODE(dev, t);
+> -			if (get_user(INPUT_KEYCODE(dev, t), ((int *) arg) + 1)) return -EFAULT;
+> +                        v = INPUT_KEYCODE(dev, t);
+> +			if (get_user(v, ((int *) arg) + 1)) return -EFAULT;
+>
+>  			for (i = 0; i < dev->keycodemax; i++)
+>  				if(INPUT_KEYCODE(dev, t) == u) break;
 
-Ben.
+Thanks, similar patch applied.
 
+--
+Vojtech Pavlik
+SuSE Labs, SuSE CR
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
