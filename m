@@ -1,27 +1,55 @@
-Date: Sat, 31 Jul 1999 12:48:57 +0200
-To: Adrian Cox <apc@agelectronics.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: embedded PowerPC porting coordination [was Re: Motorola Web Site]
-Message-ID: <19990731124856.F18628@isis.isis.de>
-References: <199907290636.IAA07134@denx.muc.de> <37A19963.AE7DBE66@mitre.org> <37A2BA72.6478427F@agelectronics.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <37A2BA72.6478427F@agelectronics.co.uk>; from Adrian Cox on Sat, Jul 31, 1999 at 09:57:22AM +0100
-From: Hartmut.Koptein@t-online.de (Hartmut Koptein)
+Date: Sat, 31 Jul 1999 15:57:46 +0200 (CEST)
+From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
+Reply-To: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Ethan Benson <erbenson@alaska.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Open Firmware booting on a Blue G3
+In-Reply-To: <v04210106b3c7ff057f2a@[192.168.0.1]>
+Message-ID: <Pine.LNX.4.10.9907311531450.420-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, 30 Jul 1999, Ethan Benson wrote:
+>   puetzk6715@uni.edu mentioned that OF has filesystem support, so quik 
+> would not be needed and OF could be configured to boot the kernel 
+> directly.  I responded that this approach would require a separate 
+> ISO, HFS, HFS+, or FAT filesystem either in a /boot partition or the 
+> entire root partition would have to be formatted in those formats.  I 
+> mentioned that I do not like the idea of having to maintain non ext2 
+> filesystems to support my kernel. I also mentioned the following 
+> arguments for retaining and improving quik:
 
-> Another thing to consider - linuxppc-dev is already a mix of PPC kernel
-> development, and linuxppc distribution userspace issues. I've ported
-> 2.2.10 to my embedded board, but I'm using a Debian userspace.
+I have a FAT /boot partition on my CHRP box for this purpose.
 
-Please forward me your patches. 
+> At 16:16 -0800 28/7/99, Ethan Benson wrote:
+> >well one reason that would be good to have quik around is quik makes 
+> >setting up kernel images much easier then mucking around in OF 
+> >(something people seem to have a problem with given all the 
+> >slobbering over BootX) and quik could be given the same security and 
+> >password controls that LILO has, with OF being totally unprotectable 
+> >it is difficult to prevent someone from booting linux into single 
+> >user mode, if the only way to enter single user mode was by passing 
+> >'single' at the quik prompt then quik can be set to ask a passwd 
+> >when arguments are given (just like restricted lilo)
 
-Thanks,
+Decent OF implementations allow to set a password.
 
-  Hartmut
+The question arise whether even the latest Apple implementations of OF are
+decent. Do they have a decent `see' implementation these days?
+I could completely reverse engineer my OF by using `see', if I'd want to...
+
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
