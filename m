@@ -1,25 +1,50 @@
-Date: Thu, 21 Feb 2002 16:56:21 -0800
-From: andrew may <acmay@acmay.homeip.net>
-To: =?iso-8859-1?Q?David_M=FCller_=28ELSOFT_AG=29?= <d.mueller@elsoft.ch>
-Cc: andrew may <acmay@acmay.homeip.net>, Armin <akuster@pacbell.net>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405 MII-PHY communication problem (was: Re: PPC405gp enet Soft Reset)
-Message-ID: <20020221165621.A21452@ecam.san.rr.com>
-References: <20020207191741.A26185@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com> <20020208103557.A27732@ecam.san.rr.com> <3C63AE1A.7000907@pacbell.net> <20020208120140.B27732@ecam.san.rr.com> <3C67B119.4080702@elsoft.ch> <20020211164906.A1822@ecam.san.rr.com> <3C6A25BC.7010704@elsoft.ch> <3C723F98.7050402@elsoft.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <3C723F98.7050402@elsoft.ch>
+From: "Dustin Byford" <dustin@firein.net>
+Subject: Re: custom mpc8240 student project (long)
+To: "Ron Bianco" <ronb@junction.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 21 Feb 2002 20:07:16 -0500
+Message-ID: <web-8960974@zipmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Feb 19, 2002 at 01:05:44PM +0100, David Müller (ELSOFT AG) wrote:
-> Hi
->
-> The problem with the even-numbered PHY register addresses seems to be
-> caused by a too weak or totally missing pullup resistor on the MDIO line.
+Thank you all for the suggestions.  The BDI was simply too
+ much for the school to spend on a small group of people.
+  I did however contact Macraigor Systems and explain my
+ situation.  They have donated a wiggler so it looks like
+ I'm in business, thanks to Macraigor!
 
-Yep, that seems to solve it here as, well. The phy wants a 1.5k pull up.
+On Thu, 21 Feb 2002 14:40:05 -0800
+ "Ron Bianco" <ronb@junction.net> wrote:
+>
+> My $.02:
+>
+> Why don't you just use a regular old EPROM to hold your
+>  ppcboot monitor image.?
+
+Haven't quite decided on the ROM exactly, still waiting on
+ samples from AMD but a regular EPROM sounds like good idea
+ for now.
+
+> You're planning to run at a very low clock speed on your
+>  wire-wrapped board.
+> Ugh!
+> Better check the 8240 datasheet, there may be lower
+>  limits to what's allowed.
+
+>From the hardware spec it looks like the PLL can be
+ configured to 33Mhz/pci 33mhz/memory 100Mhz cpu.
+  Hopefully the wirewrap can handle this.
+
+>
+> Good luck, Ron
+
+It is starting to sound like I'm really going to need luck,
+ so thanks.
+
+
+     --Dustin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
