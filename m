@@ -1,58 +1,42 @@
-Message-Id: <200302261329.OAA20902@hzsms01.nl.lucent.com>
-Date: Wed, 26 Feb 2003 14:29:54 +0100 (MET)
-From: Jaap-Jan Boor <jjboor@lucent.com>
-Reply-To: Jaap-Jan Boor <jjboor@lucent.com>
-Subject: Re: MTD problem for Intel Flash
-To: rshen@udtech.com.cn
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3E5CDF99.3080708@koffie.nl>
+Date: Wed, 26 Feb 2003 16:39:05 +0100
+From: Segher Boessenkool <segher@koffie.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Possible bug in flush_dcache_all on 440GP
+References: <5.1.0.14.2.20030225185928.00ac3198@mail.zultys.com>
+In-Reply-To: <5.1.0.14.2.20030225185928.00ac3198@mail.zultys.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Shenrong,
+Eugene Surovegin wrote:
 
-I have the same problem. I solved it by making a rather ugly
-patch. I changed the 8xx reset vector code to first put flash
-in Ready state (reset the flash state machine by writing 0x5050)
+> I believe there is a bug in flush_dcache_all implementation for not cache
+> coherent processors.
+>
+> This function uses simple algorithm to force dcache flush by reading
+> "enough" data to completely reload the cache:
 
-Jaap-Jan
+[snip]
 
->
-> Hi,
->
-> I met a problem when using JFFS2/MTD with Intel CFI Flash.I mount
-> JFFS2 fs on a MTD partition and copy a file to JFFS2 fs, then umount
-> the JFFS2 fs and reboot the system. The bootloader(PPCBoot) crashes
-> around the first instruction. I check the Flash with BDI, and find the Flash
-> in
-> the Status state(i.e. 0x00800080). The Intel CFI Flash is supported in file
-> cfi_cmdset_0001.c. After the read/write/erase operations, the Flash is not
-> reset to Ready state(what I think is for increasing the performance). This
-> doesn't
-> happen with AMD CFI Flash(impled in cfi_cmdset_0002.c). Even the umount
-> operation(with cfi_intelext_sync() called ) won't reset the Flash to Ready
-> state.
-> So run from Flash after reboot won't success except Hard reset.
->
-> I think the Flash should be reset to Ready state at least in
-> cfi_intelext_sync(), which
-> will be called whenever the MTD partition is closed. Maybe I have missed
-> sth.
-> Any ideas? Thanks.
->
-> Shenrong
->
->
->
+So you're saying it doesn't use an LRU replacement algorithm
+but a FIFO one?
 
----
-J.G.J. Boor
-Lucent Technologies Nederland b.v.	Room:  BE-525
-Optical Networking Group TMS Data 	Phone: +31 (0)35 687 4721
-Larenseweg 50, P.O. Box 1168, 		Fax:   +31 (0)35 687 5976
-1200 BD, Hilversum, The Netherlands	mailto:jjboor@lucent.com
+> 1) Use twice as much memory than the cache size. This solution is not very
+> efficient,
+>    but it doesn't add _any_ special requirements to the memory we use to
+> reload the
+>    cache with.
+
+That doesn't work correctly, either, in that case.  You have to
+read the same memory region twice, not read a twice as big region
+once.
+
+
+Segher
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
