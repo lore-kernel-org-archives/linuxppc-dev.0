@@ -1,47 +1,50 @@
-Message-Id: <200204190817.RAA27670@mail.highway.ne.jp>
-Date: Fri, 19 Apr 2002 17:14:38 +0900 (JST)
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: asm info
-To: pochini@shiny.it
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <XFMail.20020419093710.pochini@shiny.it>
+Date: Fri, 19 Apr 2002 12:07:53 +0200 (CEST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Dan Brennan <dmb8@optonline.net>
+Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: as question
+In-Reply-To: <3CBF29F4.B00B75B6@optonline.net>
+Message-ID: <Pine.LNX.4.33.0204191204450.16060-100000@gra-lx1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 19 Apr, Giuliano Pochini wrote:
+On Thu, 18 Apr 2002, Dan Brennan wrote:
+
 >
-> I want to write some small functions/peices of code in
-> ppc assembly. I have ppc user manuals and the ABI, but
-> I don't know the syntax. I need to know how to code asm
-> inside the C source, and I need to know how to write a
-> .S file to assemble and link with C object files. Where
-> can I find the docs ?  Does gcc support Altivec ?
+> In arch/ppc/kernel/head.S the following code segment exists:
+>
+> turn_on_mmu:
+>         mfmsr   r0
+>         ori     r0,r0,MSR_DR|MSR_IR
+>         mtspr   SRR1,r0
+>         lis     r0,start_here@h
+>         ori     r0,r0,start_here@l
+>         mtspr   SRR0,r0
+>         SYNC
+> 	RFI
+>
+> However, when I do objdump on head.o this is what appears:
+>
+> 00000088 <turn_on_mmu>:
+>       88:       7c 00 00 a6     mfmsr   r0
+>       8c:       60 00 00 30     ori     r0,r0,48
+>       90:       7c 1b 03 a6     mtsrr1  r0
+>       94:       3c 00 00 00     lis     r0,0
+>       98:       60 00 00 00     nop
+>       9c:       7c 1a 03 a6     mtsrr0  r0
+>       a0:       4c 00 00 64     rfi
+>
+> It appears that the code which loads the address of the label start_here
+> does not get assembled correctly. Is this observation correct?
 
-Hi!
+No, the code is not yet linked. Hint: add --reloc to the objdump command
+to see what instructions will be modified by the linker.
 
- ftp://ppc.linux.or.jp/pub/users/fukui
-
-There are newer binutils and gcc-3.1.pre.
-Those have Altivec instruction.
-gcc-3.1 will be switch to altivec with -maltivec.
-
-But If you want to altivec code,
-It need the source which is written by altivec register.
-See www.altivec.org about altivec.
-
-Anyway, Try to write simple c source.
-Then
-
-gcc -S simple.c
-
-You get simple.s
-
-The simple.s is written by asmppc.
-
-Kaoru
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
