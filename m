@@ -1,16 +1,19 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id E4FC32BEA0
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id 157832BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Nov 2004 22:25:44 +1100 (EST)
-Message-ID: <1100777521.419c88313395f@webmail.televes.com:443>
-Date: Thu, 18 Nov 2004 12:32:01 +0100
-From: alebas@televes.com
-To: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
+	Fri, 19 Nov 2004 02:07:56 +1100 (EST)
+Received: from ltnmail.xyplex.com (ltnmail.xyplex.com [140.179.176.25])
+	by mailman.xyplex.com (8.9.3+Sun/8.9.3) with ESMTP id KAA09754
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 Nov 2004 10:10:32 -0500 (EST)
+Message-ID: <419CBB67.1070301@mrv.com>
+Date: Thu, 18 Nov 2004 10:10:31 -0500
+From: Guillaume Autran <gautran@mrv.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
-Subject: mpc8272ads lowboot ... I got it
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: kernel 2.6.10-rc2 - Embedded MPC8xx - processor option gone !?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,22 +24,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Does anyone know why the option "8xx" in the "Processor Type" screen of 
+the menuconfig is gone ?
 
-Hi all,
-
-Wooouh, this morning I was sleeping.
-I have post the mail to the wrong list and with the wrong Subject (sorry
-to those in the linuxppc-embedded list).
-
-Well, I finally got uboot-lowboot working. The problem was in the CS6PC
-bits (24-25) in the HRCW (i think these are the same than CS10PC bits in
-the PQ2ADS). This must be configured as CS6 (00), not as BCTL1 (01).
-
-So, the HRCW for lowboot in the MPC8272ADS i have used is 0x0E_74_B2_0A.
-
-Now it works great. Thanks Gerald.
-
-Will the patch finally include the different HRCWs? At least, this
-should be documented, shouldn't it?
-
-Alex
+-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: gautran@mrv.com
+======================================= 
