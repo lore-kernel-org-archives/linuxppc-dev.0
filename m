@@ -1,23 +1,28 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Henry Worth <haworth@ncal.verio.com>, <linuxppc-dev@lists.linuxppc.org>
+Message-Id: <200008242356.AAA30017@hyperion.valhalla.net>
+Date: Fri, 25 Aug 2000 00:56:49 +0100
 Subject: Re: [RFC] DMAsound 2.4.0-tx => 2.2.17 back-port.
-Date: Fri, 25 Aug 2000 00:26:49 +0100
-Message-Id: <19031231222033.32301@192.168.1.10>
-In-Reply-To: <Pine.SOL.4.10.10008241833460.15454-100000@ncal.verio.com>
-References: <Pine.SOL.4.10.10008241833460.15454-100000@ncal.verio.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Henry Worth <haworth@ncal.verio.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Opps, yes that fixes the problem, except for the LE case. BTW,
->I couldn't find the awacs stuff in my last darwin xnu download,
->has it moved out of the xnu projects, or did I just get lost?
+> I couldn't find the awacs stuff in my last darwin xnu download,
+> has it moved out of the xnu projects, or did I just get lost?
 
-It's now a loadable kernel module, you can find it in the IO branch of
-the CVS instead of System
+They moved the stuff around a while back.
 
-Ben.
+All the audio stuff is now under a module called "IO" at the top level of
+the darwin cvs tree.
+
+The audio driver directories under xnu are currently empty (although someone
+on the darwin-dev posted a question a couple of days back about when they
+would be filled in).
+
+HTH
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
