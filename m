@@ -1,51 +1,49 @@
-From: Jeff Kowing <jeffrey.d.kowing@nasa.gov>
-MIME-Version: 1.0
+Date: Tue, 15 Jul 2003 11:43:37 -0400
+From: Kent Borg <kentborg@borg.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ptrace Problem
+Message-ID: <20030715114337.A12505@borg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16148.6373.869623.908659@igor.jsc.nasa.gov>
-Date: Tue, 15 Jul 2003 10:08:21 -0500
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: DENX ELDK Kernel
-In-Reply-To: <3F140928.60403@imc-berlin.de>
-References: <20030715135119.5782CC6D82@atlas.denx.de>
-	<3F140928.60403@imc-berlin.de>
-Reply-To: jeffrey.d.kowing@nasa.gov
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> 10 of 10 points :-)
+I am trying to get ptrace() working correctly so I can use gdbserver
+so we can debug with more power than printf()'s.
 
-I'm on a role, so I'll try again against my better judgement.
+The kernel is 2.4.21-rc1 with stuff done to it to support some
+hardware that is under development (the chip has a 603-style core).
 
-Steven Scholz writes:
- > If I'd built the ELDK from scratch and used Linux-2.4.20 include files
- > to build "glibc (and all the rest of the target ELDK apps)" I should
- > build my "applications against the newer Linux kernel"! Shouldn't I?
+I can fire up gdbserver, I can attach to it with a gdb on my host.  I
+can watch the little ptrace transactions go by and (after eliminating
+some false leads) they all do seem to be doing sensible things.  But
+when I try an "si", everything seems OK upto the _switch at which
+point the kernel SIGSTOPs on a 0x0 instruction at the first
+instruction of my application (or is it the second instruction?--I am
+not sure, the address complained about is first+4, maybe one worked).
 
-Yes, you are correct.  The rule is to always build user space
-applications against the same Linux include files that were used to
-build glibc.
+Once this happens my Abatron BDI-2000 is somehow hosed and can no
+longer write to memory.  My next download takes all the time I would
+expect, but the results are all 0x0 unless I first powercycle the
+Abatron.
 
-If, on the other hand, you are compiling a kernel module, then you
-need to build it against the actual Linux kernel version you are
-running.
+The kernel seems to otherwise be working quite well.  As this is new
+hardware, I cannot state that it is certainly working correctly.
 
- >
- > And in general: shouldn't I used a glibc that "matches" the kernel
- > version?
+Obviously I suspect that something is wrong with how some memory
+management data structure is set up when the ptrace calls are being
+made by gdbserver, but I am not smart enough to have a clear idea of
+what to look for.  (I don't want to get lost in walking page tables
+and tracing TBL faulting and whatnot for another week--not if I don't
+have to.)  I have tried changing from our previous gdb and gdbserver
+to the Denx versions with same results.
 
-I think that is the "safest" way of doing things, but apparently not
-usually necessary.  People upgrade their kernels all the time on their
-native platforms without rebuilding their glibc. I believe some effort
-is made to maintain binary compatiblity between glibc and the kernel -
-but I'm sure it is not guaranteed.
+Suggestions?
 
-Regards,
-Jeff
 
---
-Jeff Kowing <jeffrey.d.kowing@nasa.gov>
-All opinions expressed are my own and not of my employer.
+Thanks,
+
+-kb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
