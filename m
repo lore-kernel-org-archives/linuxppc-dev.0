@@ -1,10 +1,10 @@
-Message-ID: <003301c0717d$27f5e150$4a1f76d8@washington>
+Message-ID: <004301c07193$94ccb9f0$4a1f76d8@washington>
 From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
-To: "Chris Hallinan" <clh@net1plus.com>
+To: "Navin Boppuri" <nboppuri@trinetcommunication.com>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <NEBBKJPFOLJNBMFNKBIIEEMHCEAA.clh@net1plus.com>
+References: <NEBBKJPFOLJNBMFNKBIIEEMHCEAA.clh@net1plus.com> <003301c0717d$27f5e150$4a1f76d8@washington>
 Subject: Re: Neighbour Table Overflow on NFS Server
-Date: Fri, 29 Dec 2000 09:53:12 -0000
+Date: Fri, 29 Dec 2000 12:33:43 -0000
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,122 +12,142 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello again,
+Hello,
 
-I forgot to mention something. I sniffed the ethernet packets on the NFS
-Server machine. I see that a request comes in from my custom board to the
-NFS to the correct IP of the server. The HW Address of the board shows up
-correctly, but the HW Address of the Server in the request shows up an 0.
+I seem to have solved my problem. I was working on some driver and while I
+was setting up the interrupt stuff, I set up a wrong Interrupt Level, which,
+I guess, was being used by the ethernet driver . This messed up the ethernet
+driver and so the problems. I apologize to everyone for this. I appreciate
+all the answers. I am totally new at writing drivers and hence, the hiccups.
 
-ARP:
-Request from:
-211.111.21.41 -->  08:09:87:l0:73:16      // ethernet info of the custom
-board
-211.111.21.43 -->  00:00:00:00:00:00     // ethernet info of the nfs server
+Sincerely,
+Navin Boppuri
 
-Does this look like some ARP problem? I am not sure about that since my TFTP
-request for the zImage works just fine and the arp tables in the server show
-up the board info correctly.
-
-Any ideas?
-
------ Original Message -----
-From: "Chris Hallinan" <clh@net1plus.com>
-To: <nboppuri@trinetcommunication.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, December 29, 2000 12:46 PM
-Subject: RE: Neighbour Table Overflow on NFS Server
 
 
 >
-> Can't say I know exactly what it means (internally to the
-> kernel/driver) but we ALWAYS get this message when the
-> Ethernet cable is disconnected.  I would suspect physical
-> connections: check your cable,hub, etc.  In our experience,
-> it seems to indicate that the Ethernet driver is incapable
-> of completing transmit operations.
+> Hello again,
 >
-> -Chris Hallinan
+> I forgot to mention something. I sniffed the ethernet packets on the NFS
+> Server machine. I see that a request comes in from my custom board to the
+> NFS to the correct IP of the server. The HW Address of the board shows up
+> correctly, but the HW Address of the Server in the request shows up an 0.
 >
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf
-> Of Mark S. Mathews
-> Sent: Friday, December 29, 2000 1:03 AM
-> To: Cal Erickson
-> Cc: Navin Boppuri; linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Neighbour Table Overflow on NFS Server
+> ARP:
+> Request from:
+> 211.111.21.41 -->  08:09:87:l0:73:16      // ethernet info of the custom
+> board
+> 211.111.21.43 -->  00:00:00:00:00:00     // ethernet info of the nfs
+server
 >
+> Does this look like some ARP problem? I am not sure about that since my
+TFTP
+> request for the zImage works just fine and the arp tables in the server
+show
+> up the board info correctly.
 >
-> I may be completely off-base here, but I seem to recall
-> getting some of
-> these a long time ago.  At the time I think it was cause by
-> a lack of a
-> loopback device and routes.
+> Any ideas?
 >
-> -Mark
+> ----- Original Message -----
+> From: "Chris Hallinan" <clh@net1plus.com>
+> To: <nboppuri@trinetcommunication.com>
+> Cc: <linuxppc-embedded@lists.linuxppc.org>
+> Sent: Friday, December 29, 2000 12:46 PM
+> Subject: RE: Neighbour Table Overflow on NFS Server
 >
-> On Thu, 28 Dec 2000, Cal Erickson wrote:
 >
 > >
-> > Navin,
-> >  The message "neighbour table overflow" is the result of
-> some
-> > changes to the IP stack software in Linux version 2.2.x +.
-> This
-> > simply means that you are unable to connect to your NFS
-> > server.  It may be related to the driver, but it may also
-> be
-> > related to other issues, such as NFS server not running or
-> > incorrectly installed, no physical connectivity to NFS
-> server,
-> > etc.  Check the configuration of your NFS server and IP
-> > network before diving into the driver.
+> > Can't say I know exactly what it means (internally to the
+> > kernel/driver) but we ALWAYS get this message when the
+> > Ethernet cable is disconnected.  I would suspect physical
+> > connections: check your cable,hub, etc.  In our experience,
+> > it seems to indicate that the Ethernet driver is incapable
+> > of completing transmit operations.
 > >
-> > Cal Erickson
+> > -Chris Hallinan
 > >
-> > Navin Boppuri wrote:
+> > -----Original Message-----
+> > From: owner-linuxppc-embedded@lists.linuxppc.org
+> > [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf
+> > Of Mark S. Mathews
+> > Sent: Friday, December 29, 2000 1:03 AM
+> > To: Cal Erickson
+> > Cc: Navin Boppuri; linuxppc-embedded@lists.linuxppc.org
+> > Subject: Re: Neighbour Table Overflow on NFS Server
 > >
-> > > Hello,
+> >
+> > I may be completely off-base here, but I seem to recall
+> > getting some of
+> > these a long time ago.  At the time I think it was cause by
+> > a lack of a
+> > loopback device and routes.
+> >
+> > -Mark
+> >
+> > On Thu, 28 Dec 2000, Cal Erickson wrote:
+> >
 > > >
-> > > I have been debugging my custom 823 board. I have an NFS
-> Server setup on
-> > > which my kernel on the board mounts. I have using this
-> server without any
-> > > problems for more than a month. All of the sudden, my
-> NFS Server complains
-> > > of "Neighbour Table overflow" . The NFS Server was not
-> modified, nor
-> > > restarted. The error also says that the Server returned
-> error -5.  Can
-> > > someone suggest any remedy for this problem?
+> > > Navin,
+> > >  The message "neighbour table overflow" is the result of
+> > some
+> > > changes to the IP stack software in Linux version 2.2.x +.
+> > This
+> > > simply means that you are unable to connect to your NFS
+> > > server.  It may be related to the driver, but it may also
+> > be
+> > > related to other issues, such as NFS server not running or
+> > > incorrectly installed, no physical connectivity to NFS
+> > server,
+> > > etc.  Check the configuration of your NFS server and IP
+> > > network before diving into the driver.
 > > >
-> > > Sincerely,
-> > > Navin Boppuri
+> > > Cal Erickson
+> > >
+> > > Navin Boppuri wrote:
+> > >
+> > > > Hello,
+> > > >
+> > > > I have been debugging my custom 823 board. I have an NFS
+> > Server setup on
+> > > > which my kernel on the board mounts. I have using this
+> > server without any
+> > > > problems for more than a month. All of the sudden, my
+> > NFS Server complains
+> > > > of "Neighbour Table overflow" . The NFS Server was not
+> > modified, nor
+> > > > restarted. The error also says that the Server returned
+> > error -5.  Can
+> > > > someone suggest any remedy for this problem?
+> > > >
+> > > > Sincerely,
+> > > > Navin Boppuri
+> > > >
+> > >
+> > > --
+> > >
+> > ============================================================
+> > ===============
+> > > Cal Erickson                 MontaVista Software Inc.
+> > > Linux Consultant             1237 E. Arques Ave.
+> > > Phone (408) 328-0304         Sunnyvale CA 94085
+> > > Fax   (408) 328-9204         web http://www.mvista.com
+> > >
+> > ============================================================
+> > ===============
+> > >
+> > >
 > > >
 > >
-> > --
 > >
-> ============================================================
-> ===============
-> > Cal Erickson                 MontaVista Software Inc.
-> > Linux Consultant             1237 E. Arques Ave.
-> > Phone (408) 328-0304         Sunnyvale CA 94085
-> > Fax   (408) 328-9204         web http://www.mvista.com
+> > Mark S. Mathews
 > >
-> ============================================================
-> ===============
+> > AbsoluteValue Systems      Web:    http://www.linux-wlan.com
+> > P.O. Box 941149            e-mail: mark@linux-wlan.com
+> > Maitland, FL 32794-1149    Phone:  407.644.8582
+> > USA                        Fax:    407.539.1294
 > >
 > >
 > >
->
->
-> Mark S. Mathews
->
-> AbsoluteValue Systems      Web:    http://www.linux-wlan.com
-> P.O. Box 941149            e-mail: mark@linux-wlan.com
-> Maitland, FL 32794-1149    Phone:  407.644.8582
-> USA                        Fax:    407.539.1294
 >
 >
 >
