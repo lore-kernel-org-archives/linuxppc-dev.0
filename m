@@ -1,96 +1,47 @@
-Message-Id: <m0znjja-0000WVC@tri-yann.crf.canon.fr>
-Date: Wed, 9 Dec 1998 14:32:54 +0100 (CET)
-From: "VALETTE Eric" <valette@crf.canon.fr>
-To: paubert@iram.es
-CC: cort@persephone.cs.nmt.edu, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.HPP.3.96.981209114400.17076a-100000@gra-ux1.iram.es>
-	(message from Gabriel Paubert on Wed, 9 Dec 1998 11:47:48 +0100 (MET))
-Subject: Re: Incomplete (potentially broken) Raven Chipset support for PREP machines.
-References: <Pine.HPP.3.96.981209114400.17076a-100000@gra-ux1.iram.es>
+Date: Wed, 9 Dec 1998 09:09:44 -0600 (CST)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Nathan Hurst <njh@cs.monash.edu.au>
+cc: Laurent Vivier <Laurent.Vivier@frec.bull.fr>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Floppy driver
+In-Reply-To: <Pine.LNX.3.96.981124080712.8148C-100000@central>
+Message-ID: <Pine.LNX.3.96.981209090751.24614A-100000@globegate.utm.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Gabriel" == Gabriel Paubert <paubert@iram.es> writes:
+On Tue, 24 Nov 1998, Nathan Hurst wrote:
 
-Gabriel> To quote Linus: there ain't such thing as interrupt priority (I disagree
-Gabriel> for RT, and while trying to measure interrupt latency on VME, I've found
-Gabriel> nasty occasional long delays). 
+> On Mon, 23 Nov 1998, Laurent Vivier wrote:
+> 
+> A working driver exists at:
+> /usr/src/linux/drivers/block/swim3.c
+> 
+> As for for 'documentation' good luck!  I don't think apple has published
+> anything on this.
 
-Being the guy that have specified and architectured Chorus Interrupt handling
-I also disagree.
-
->> 3) handle multi-function devices?
-
-Gabriel> Hopefully my patch works for multifunction devices too.
-
->> 4) Change the IRQ for PCI devices... (writting the PCI configuration
->> register is not sufficeint. You must also enable the interrupt in the
->> raven registers),
-
-Gabriel> This is done when doing request_irq.
-
-NO!. The actual code do nothing at RAVEN MPIC interrupt controller level.
-It works because the cascade mode is not used (M bit of the RAVEN MPIC 
-global configuration register Page 2-73 of the mcp750a/pg1  manual).
-
-extract of motorola doc : 
-
-M bit : 0 => pass through
-        1 cascade mode
-
-"CASCADE MODE. Allows cascading of an external 8259 pair connected 
-to the first interrupt source input pin (0). In the pass through mode, 
-interrupt source 0 is passed directly through to the processor 0 INT pin. 
-RavenMPIC is essentially disabled. In the mixed mode, 8259 interrupts 
-are delivered using the priority and distribution mechanism of RavenMPIC. 
-The Vector/Priority and Destination registers for interrupt source 0 are 
-used to control the delivery mode for all 8259 generated interrupt sources.
-
-Basically anything that comes from ISA/PCI  go first through the 
-
-	  8259_emulation = > raven => processor.
+Documentation... the best that I can think of (still not a lot) is the
+code comments from MkLinux's driver.  Of course, it's spread out over
+about 19 files.... :-)
 
 
-NOTE : there is no MPC106/MPC105 and I cannot figure what the following 
-supposed code for routing the interrupts does...
+Later,
+David
 
------------------
-	unsigned char *ibc_pirq = (unsigned char *)0x80800860;   <===== Can find anything on RAVEN...
-	unsigned char *ibc_pcicon = (unsigned char *)0x80800840;  <==== that lloks like this
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
-	....
+-----BEGIN GEEK CODE BLOCK-----
+Version 3.1
+GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
+P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
+M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
+b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
+------END GEEK CODE BLOCK------
 
-	/* Set up mapping from slots */
-	for (i = 1;  i <= 4;  i++)
-	{
-		ibc_pirq[i-1] = Motherboard_routes[i];
-	}
-	/* Enable PCI interrupts */
-	*ibc_pcicon |= 0x20;
-
------------------
-
-Gabriel> Note that if you have an initrd image, please send me. Eitehr I have
-Gabriel> managed to destriy them all, or they have disappeared from vger. But 
-Gabriel> I want to add initrd support to my bootloader.
-
-You mean a ramdisk image??? Sure I have one but in order to use it you must
-change you RAMDISK configuration to have 8192 instead of 4096 1K block...
-Putting it on your ftp server is convenient?
-
-
-
-
--- 
-   __                 
-  /  `                   	Eric Valette
- /--   __  o _.          	Canon CRF
-(___, / (_(_(__         	Rue de la touche lambert
-				35517 Cesson-Sevigne  Cedex
-				FRANCE
-Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
-E-mail: valette@crf.canon.fr
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
