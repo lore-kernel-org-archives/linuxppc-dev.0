@@ -1,14 +1,41 @@
-Message-ID: <3F7B38AE.4020406@embeddededge.com>
-Date: Wed, 01 Oct 2003 16:27:26 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Kent Borg <kentborg@borg.org>
+Message-ID: <2965658600EF2F41A0BEE2200DC0EE510499B0A7@ca1xpr01.kla-tencor.com>
+From: "Howard, Marc" <Marc.Howard@kla-tencor.com>
+To: "'Dan Malek'" <dan@embeddededge.com>,
+	Kent Borg <kentborg@borg.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where to Put Ethernet MAC Addresses?
-References: <20031001153209.D688@borg.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: RE: Where to Put Ethernet MAC Addresses?
+Date: Wed, 1 Oct 2003 13:43:43 -0700 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I personally favor the "roll your own MAC address from the serial number"
+approach but it does have the drawback that you must have unique serial #'s
+on the boards.  If the serial numbers are entered (or not entered) by lazy
+humans you could potentially have two devices with the same MAC address on a
+network.  I also select as the first 3 bytes of the MAC address the address
+assigned to a defunct company and the lower 3 bytes derived from the serial
+number.
+
+Another approach is to use a Dallas Semiconductor (now Maxim) 1-wire
+interface part.  They all have unique 48 bit addresses lasered in them to
+support the 1 wire protocol.  If you use one of their parts as a RTC or
+temperature sensor or whatever you can get a unique MAC address for free.
+On the other hand that 1 wire protocol is a pain in a running real-time
+system if you're driving it from software and a GPIO pin.
+
+Marc W. Howard
+
+-----Original Message-----
+From: Dan Malek [mailto:dan@embeddededge.com]
+Sent: Wednesday, October 01, 2003 1:27 PM
+To: Kent Borg
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Where to Put Ethernet MAC Addresses?
+
 
 
 Kent Borg wrote:
