@@ -1,159 +1,185 @@
 From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
 To: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>, frank@jrware.com,
         linuxppc-dev@lists.linuxppc.org
-Message-Id: <v03110701b5c18e322a3b@[129.100.29.243]>
-In-Reply-To: <399B647A.A09F337@motorola.com>
-References: <200008161925.MAA00373@tallis.jrware.com>
+Message-Id: <v03110702b5c193385889@[129.100.29.243]>
+In-Reply-To: <v03110701b5c18e322a3b@[129.100.29.243]>
+References: <399B647A.A09F337@motorola.com>
+ <200008161925.MAA00373@tallis.jrware.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 17 Aug 2000 08:43:19 -0400
+Date: Thu, 17 Aug 2000 09:05:44 -0400
 Subject: Re: Signal mask restore anomaly
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Check you kernel source in arch/ppc/kernel/signal.c and in do_signal() make
+sure there is a break after the call to handle_signal() as shown in the
+code snippet below.
 
-This bug was fixed in 2.2.14pre9 and later kernels.  Please upgrade or diff
-/arch/ppc/kernel/signal.c to see the fix.
+               /* Whee!  Actually deliver the signal.  */
+                handle_signal(signr, ka, &info, oldset, regs, &newsp, frame);
+                break;
+
+If the break exists, then the problem is someplace else.  If not, add it
+and your troubles should go away (he said hopefully!).
 
 Kevin
 
 
-
-
-At 00:05 -0400 8/17/00, Jeffrey Hawkins wrote:
->Frank,
+At 08:43 -0400 8/17/00, Hendricks, Kevin wrote:
+>Hi,
 >
->I am able to reproduce the same failures on a 2.2.13
->PPC Kernel, with GCC 2.95.3-2c and GLIBC 2.1.3-15d.
->Ran same test code on Solaris with correct operation.
+>This bug was fixed in 2.2.14pre9 and later kernels.  Please upgrade or diff
+>/arch/ppc/kernel/signal.c to see the fix.
 >
->The failure is definitely a MASK restoration problem.
->Since, one can recover from the problem by UNBLOCKING
->the SIGINT.
->
->I believe the problem may be an interaction between the
->Terminal I/O related SIGNALS being used (SIGTSTP and
->SIGINT) and the use of the STDIO Library calls (printf
->and getch).  By replacing the SIGTSTP and SIGINT signals
->with SIGUSR1 and SIGUSR2, everything worked correctly
->(tested via "kill" command from a separate terminal
->window).
->
->Looking at the GLIBC Bug Database, I didn't see any bugs
->which seem to correspond to this failure mechanism.  Most
->of the SIGNALS bugs seem to be related THREADS.
->
->Looks like it is time submit a bug report to GNU....
->
->Jeff
+>Kevin
 >
 >
->Frank Jas wrote:
+>
+>
+>At 00:05 -0400 8/17/00, Jeffrey Hawkins wrote:
+>>Frank,
 >>
->> Under certain circumstances, a signal blocked while a
->> signal handler is executing will not be restored.
+>>I am able to reproduce the same failures on a 2.2.13
+>>PPC Kernel, with GCC 2.95.3-2c and GLIBC 2.1.3-15d.
+>>Ran same test code on Solaris with correct operation.
 >>
->> This is my kernel info:
+>>The failure is definitely a MASK restoration problem.
+>>Since, one can recover from the problem by UNBLOCKING
+>>the SIGINT.
 >>
->> Linux 2.2.6-15apmac #1 Mon May 31 03:54:09 EDT 1999 ppc unknown
+>>I believe the problem may be an interaction between the
+>>Terminal I/O related SIGNALS being used (SIGTSTP and
+>>SIGINT) and the use of the STDIO Library calls (printf
+>>and getch).  By replacing the SIGTSTP and SIGINT signals
+>>with SIGUSR1 and SIGUSR2, everything worked correctly
+>>(tested via "kill" command from a separate terminal
+>>window).
 >>
->> The behavior does not occur under Intel versions (2.2.5-15smp).
+>>Looking at the GLIBC Bug Database, I didn't see any bugs
+>>which seem to correspond to this failure mechanism.  Most
+>>of the SIGNALS bugs seem to be related THREADS.
 >>
->> Below is a program that tests out the use of signal masks
->> with sigaction().  It sets up a handler for SIGINT and
->> SIGTSTP.  The handler for SIGTSTP adds SIGINT to
->> the signal mask for that handler.  So while the SIGTSTP
->> handler is executing, occurences of SIGINT will be
->> blocked until the handler returns.  SIGTSTP will also
->> be blocked.
+>>Looks like it is time submit a bug report to GNU....
 >>
->> #define _POSIX_SOURCE 1
->> #define _GNU_SOURCE 1
+>>Jeff
 >>
->> #include <signal.h>
->> #include <errno.h>
->> #include <stdio.h>
 >>
->> void on_intr (signum)
->>         int signum ;
->> {
->>         printf("\n    Interrupted with signal %d. \n", signum) ;
->> }
+>>Frank Jas wrote:
+>>>
+>>> Under certain circumstances, a signal blocked while a
+>>> signal handler is executing will not be restored.
+>>>
+>>> This is my kernel info:
+>>>
+>>> Linux 2.2.6-15apmac #1 Mon May 31 03:54:09 EDT 1999 ppc unknown
+>>>
+>>> The behavior does not occur under Intel versions (2.2.5-15smp).
+>>>
+>>> Below is a program that tests out the use of signal masks
+>>> with sigaction().  It sets up a handler for SIGINT and
+>>> SIGTSTP.  The handler for SIGTSTP adds SIGINT to
+>>> the signal mask for that handler.  So while the SIGTSTP
+>>> handler is executing, occurences of SIGINT will be
+>>> blocked until the handler returns.  SIGTSTP will also
+>>> be blocked.
+>>>
+>>> #define _POSIX_SOURCE 1
+>>> #define _GNU_SOURCE 1
+>>>
+>>> #include <signal.h>
+>>> #include <errno.h>
+>>> #include <stdio.h>
+>>>
+>>> void on_intr (signum)
+>>>         int signum ;
+>>> {
+>>>         printf("\n    Interrupted with signal %d. \n", signum) ;
+>>> }
+>>>
+>>> void on_tstp (signum)
+>>>         int signum;
+>>> {
+>>>         printf ("\n     Handler for SIGTSTP wants text or ^C or ^Z: ") ;
+>>>         getchar () ;
+>>> }
+>>>
+>>> void main ()
+>>> {
+>>>         struct sigaction  new_intr_action;
+>>>         struct sigaction  new_tstp_action;
+>>>         int    c ;
+>>>
+>>>         sigemptyset (&new_intr_action.sa_mask);
+>>>         new_intr_action.sa_handler = on_intr;
+>>>         new_intr_action.sa_flags   = SA_RESTART;
+>>>
+>>>         sigaction  (SIGINT, &new_intr_action, 0);
+>>>
+>>>         sigemptyset (&new_tstp_action.sa_mask);
+>>>         sigaddset   (&new_tstp_action.sa_mask, SIGINT);
+>>>         new_tstp_action.sa_handler = on_tstp;
+>>>         new_tstp_action.sa_flags   = SA_RESTART;
+>>>
+>>>         sigaction  (SIGTSTP, &new_tstp_action, 0);
+>>>
+>>>         printf("Starting main input loop enter text or ^Z or ^C:\n") ;
+>>>
+>>>         while ((c = getchar ()) != EOF) {
+>>>                 putchar (c);
+>>>         }
+>>> }
+>>>
+>>> The following execution sequence leads to the anomalous behavior.
+>>>
+>>> Trigger the SIGTSTP handler with a ^Z
+>>> While executing the handler, deliver a ^Z and ^C
+>>> Hit return to return from the handler.
+>>> Another instance of the SIGTSTP handler should execute.
+>>> Hit return to return from that instance of the handler.
+>>> Notice that the SIGINT handler does not execute and should have.
+>>> Any subsequent SIGINT are apparently blocked.
+>>>
+>>> Apparently the nested occurence of SIGTSTP effected the restore
+>>> of the SIGINT mask, and the handling of the pending SIGINT.
+>>>
+>>> The same behavior will result using 'kill' from another window
+>>> to send the signals.
+>>>
+>>> Please let me know if this is not the appropriate venue for this
+>>> post.
+>>>
+>>> Frank Jas
+>>>
 >>
->> void on_tstp (signum)
->>         int signum;
->> {
->>         printf ("\n     Handler for SIGTSTP wants text or ^C or ^Z: ") ;
->>         getchar () ;
->> }
+>>--
+>>********************************************************
 >>
->> void main ()
->> {
->>         struct sigaction  new_intr_action;
->>         struct sigaction  new_tstp_action;
->>         int    c ;
+>>Jeffrey Hawkins
 >>
->>         sigemptyset (&new_intr_action.sa_mask);
->>         new_intr_action.sa_handler = on_intr;
->>         new_intr_action.sa_flags   = SA_RESTART;
+>>Senior Staff Software Engineer
+>>Motorola Wireless Data Solutions Engineering
 >>
->>         sigaction  (SIGINT, &new_intr_action, 0);
+>>Address: DEPT:  DQ525
+>>         MS:    IL-02-1055A
+>>         1301 East Algonquin Road
+>>         Schaumburg, IL 60196
 >>
->>         sigemptyset (&new_tstp_action.sa_mask);
->>         sigaddset   (&new_tstp_action.sa_mask, SIGINT);
->>         new_tstp_action.sa_handler = on_tstp;
->>         new_tstp_action.sa_flags   = SA_RESTART;
+>>Phone:   (847)576-7463
+>>FAX:     (847)576-7737
 >>
->>         sigaction  (SIGTSTP, &new_tstp_action, 0);
+>>********************************************************
 >>
->>         printf("Starting main input loop enter text or ^Z or ^C:\n") ;
->>
->>         while ((c = getchar ()) != EOF) {
->>                 putchar (c);
->>         }
->> }
->>
->> The following execution sequence leads to the anomalous behavior.
->>
->> Trigger the SIGTSTP handler with a ^Z
->> While executing the handler, deliver a ^Z and ^C
->> Hit return to return from the handler.
->> Another instance of the SIGTSTP handler should execute.
->> Hit return to return from that instance of the handler.
->> Notice that the SIGINT handler does not execute and should have.
->> Any subsequent SIGINT are apparently blocked.
->>
->> Apparently the nested occurence of SIGTSTP effected the restore
->> of the SIGINT mask, and the handling of the pending SIGINT.
->>
->> The same behavior will result using 'kill' from another window
->> to send the signals.
->>
->> Please let me know if this is not the appropriate venue for this
->> post.
->>
->> Frank Jas
->>
+>
 >
 >--
->********************************************************
+>Kevin B. Hendricks, Associate Professor of Operations and Information
+>Technology
+>Richard Ivey School of Business, University of Western Ontario
+>London, Ontario  N6A-3K7  CANADA
+>khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 >
->Jeffrey Hawkins
->
->Senior Staff Software Engineer
->Motorola Wireless Data Solutions Engineering
->
->Address: DEPT:  DQ525
->         MS:    IL-02-1055A
->         1301 East Algonquin Road
->         Schaumburg, IL 60196
->
->Phone:   (847)576-7463
->FAX:     (847)576-7737
->
->********************************************************
 >
 
 
