@@ -1,42 +1,45 @@
-Date: Wed, 16 Aug 2000 10:51:31 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: David Riley <oscar@the-rileys.net>
-cc: jlquinn@us.ibm.com, tom_gall@vnet.ibm.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI Buses
-In-Reply-To: <39999677.4790E775@the-rileys.net>
-Message-ID: <Pine.HPX.4.10.10008161029090.8448-100000@gra-ux1.iram.es>
+Message-ID: <399A5D88.1535C44C@relog.ch>
+Date: Wed, 16 Aug 2000 11:23:20 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+CC: MkLinux Setup List <mklinux-setup@public.lists.apple.com>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Xlib Question
+References: <Pine.LNX.3.96.1000815163648.21337B-100000@deepspace.mklinux.org>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 15 Aug 2000, David Riley wrote:
+"David A. Gatwood" wrote:
 
-> On a side note, does anyone know if Linux properly supports the 64-bit PCI
-> slots in the Blue G3's and G4's?  The only cards I know of that use them are
-> several SCSI cards and TotalImpact cards.
+> When I'm running a multithreaded app with heavy signal load,
 
->From a software point of view 64 bit PCI is indistinguishable from 32 bit.
-Actually MVME boards have a 64 bit PCI host bridge, although only the VME
-bridge (Tundra's Universe) is a 64 bit device. The software just does not
-care. PIO transfers of 32 bit or less (in practice all on a 32 bit
-processor) will use standard PCI bus protocol for reads; writes may be
-merged under some conditions by the processor or the host bridge as
-explained for example in the PPC750 or CPC710 (IBM) doc. Still these
-operations are often short (with the exception of graphics adapter memory
-accesses) and the benefit of 64 bit transfers versus a short burst of 32
-bit transfers is minimal.
+...like Netscape? :)
 
-DMA operations on the other hand benefit a lot from 64 bit transfers,
-since well designed adapters will have large FIFOs and generate bursts of
-several tens of transfers at which point the overhead of setting up the
-operation becomes small. In practice this almost halves the bus
-utilization.
+> xlib messages stop being delivered from xlib to the program, resulting in
+> XNextEvent stalling.  Most of the time, if you click somewhere in that
+> window, those events all get delivered at once, sometimes twenty or thirty
+> at a time.
+
+I've noticed that Netscape often stalls up/downloads to/from the roaming
+access server. When I click into the window, it continues. Is that the problem
+you are seeing as well?
+
+It happens to me on both powerpc and i386, with both 2.2 and 2.4 kernels, and
+I use 3.3.x X libraries.
+
+This makes me suspect the 4.0.1 server (I don't remember it happening with
+4.0), are you using that as well?
 
 
-	Regards,
-	Gabriel
+Michel
 
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
