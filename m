@@ -1,52 +1,165 @@
-Date: Thu, 23 Nov 2000 21:42:58 -0500
-From: Josh Huber <huber@debian.org>
-To: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: apmd and other archs
-Message-ID: <20001123213412.A30917@missioncriticallinux.com>
-References: <20001122143042.A28078@worldvisions.ca> <Pine.LNX.4.10.10011230936470.22746-100000@opal.biophys.uni-duesseldorf.de> <20001123020959.A11952@worldvisions.ca> <3A1CF40F.5A509ACB@relog.ch>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="V0207lvV8h4k8FAm"
-In-Reply-To: <3A1CF40F.5A509ACB@relog.ch>; from daenzer@relog.ch on Thu, Nov 23, 2000 at 11:40:15AM +0100
+Message-Id: <200011240729.IAA00640@piglet.grunz.lu>
+Date: Fri, 24 Nov 2000 08:29:33 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: chaos PCI config access for 2.4 kernels
+To: Benjamin Herrenschmidt <bh40@calva.net>,
+        Paul Mackerras <paulus@linuxcare.com.au>
+cc: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1804289383-975050978=:638"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---V0207lvV8h4k8FAm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--134458388-1804289383-975050978=:638
+Content-Type: TEXT/plain; charset=us-ascii
 
-On Thu, Nov 23, 2000 at 11:40:15AM +0100, Michel wrote:
-> Avery Pennarun wrote:
->
-> > Is this a typo?  Why is status information in /etc?
->
-> Because it's from pmud, which can't create /proc entries.
+Hi all,
 
-I think his problem was with the fact that it's in /etc, when it
-should be in /var.
+Below is a patch that fills in the missing parts for chaos host bridge
+PCI config accesses.
 
-> > It's always better, IMHO, to keep Linux userspace as similar as possible
-> > between different architectures.  If pmud has features that apmd doesn't
-> > have, or vice versa, I would rather merge them than keep them separate.  In
-> > the process, we might as well work on making the kernel interfaces similar
-> > too.  That's the whole _point_ of the kernel.
->
-> I agree there.
+The patch is against Paul's devel tree rsync'ed last night. It does
+compile witout warnings, but I've been unable to verify its operation
+since Paul's kernels continue to refuse booting on my machine.
 
-Yes, I've thought this would be a good idea for a while
-now...Definately think it's a good idea. hmm...
+The patch however was working on the same basis in benh's 2.5 kernel,
+and detected both control and planb on my chaos, without blowing
+everything up ;-)
 
---
-Josh Huber                                   | huber@debian.org |
-                                             | Debian Developer |
-1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+Whoever has a machine with a chaos hostbridge (7300/7500/7600/8500/8600)
+please test, and report back!
 
---V0207lvV8h4k8FAm
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Cheers, and happy testing ;-)
+
+Michel
+
+PS If anyone's interested, I have the patch also for benh's 2.5 kernel..
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
+--134458388-1804289383-975050978=:638
+Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Disposition: attachment; filename="2.4-paulus-chaos.diff"
+
+--- /mnt/r4/usr/src/linux-2.4.paul/arch/ppc/kernel/pmac_pci.c	Wed Nov 22 01:30:11 2000
++++ linux-2.4.0-test11/arch/ppc/kernel/pmac_pci.c	Fri Nov 24 00:46:16 2000
+@@ -30,6 +30,7 @@
+ #undef DEBUG
+
+ static void add_bridges(struct device_node *dev);
++static int chaos_validate_dev(struct pci_dev *dev);
+
+ /* XXX Could be per-controller, but I don't think we risk anything by
+  * assuming we won't have both UniNorth and Bandit */
+@@ -93,12 +94,17 @@
+ }
+
+ /*
+- * Apple MacRISC (UniNorth, Bandit) PCI controllers.
++ * Apple MacRISC (UniNorth, Bandit, Chaos) PCI controllers.
+  *
+  * The "Bandit" version is present in all early PCI PowerMacs,
+  * and up to the first ones using Grackle. Some machines may
+  * have 2 bandit controllers (2 PCI busses).
+  *
++ * "Chaos" is used in some "Bandit"-type machines as a bridge
++ * for the separate display bus. It is accessed the same
++ * way as bandit, but cannot be probed for devices. It therefore
++ * has its own config access functions.
++ *
+  * The "UniNorth" version is present in all Core99 machines
+  * (iBook, G4, new IMacs, and all the recent Apple machines).
+  * It contains 3 controllers in one ASIC.
+@@ -196,44 +202,30 @@
+  * based on what we find in OF device tree
+  */
+
+-static int chaos_config_read_byte(struct pci_dev *dev, int offset, u8 *val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-static int chaos_config_read_word(struct pci_dev *dev, int offset, u16 *val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-static int chaos_config_read_dword(struct pci_dev *dev, int offset, u32 *val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-static int chaos_config_write_byte(struct pci_dev *dev, int offset, u8 val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-static int chaos_config_write_word(struct pci_dev *dev, int offset, u16 val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
++#define CHAOS_PCI_OP(rw, size, type, op, op2)				    \
++static int __pmac							    \
++chaos_##rw##_config_##size(struct pci_dev *dev, int off, type val)	    \
++{									    \
++	if (chaos_validate_dev(dev) != PCIBIOS_SUCCESSFUL)		    \
++		return PCIBIOS_DEVICE_NOT_FOUND;			    \
++	return macrisc_##rw##_config_##size(dev, off, val);		    \
+ }
+
+-static int chaos_config_write_dword(struct pci_dev *dev, int offset, u32 val)
+-{
+-	return PCIBIOS_DEVICE_NOT_FOUND;
+-}
++CHAOS_PCI_OP(read, byte, u8 *, in_8, x)
++CHAOS_PCI_OP(read, word, u16 *, in_le16, x)
++CHAOS_PCI_OP(read, dword, u32 *, in_le32, x)
++CHAOS_PCI_OP(write, byte, u8, out_8, in_8)
++CHAOS_PCI_OP(write, word, u16, out_le16, in_le16)
++CHAOS_PCI_OP(write, dword, u32, out_le32, in_le32)
+
+ static struct pci_ops chaos_pci_ops =
+ {
+-	chaos_config_read_byte,
+-	chaos_config_read_word,
+-	chaos_config_read_dword,
+-	chaos_config_write_byte,
+-	chaos_config_write_word,
+-	chaos_config_write_dword
++	chaos_read_config_byte,
++	chaos_read_config_word,
++	chaos_read_config_dword,
++	chaos_write_config_byte,
++	chaos_write_config_word,
++	chaos_write_config_dword
+ };
 
 
---V0207lvV8h4k8FAm--
+@@ -284,6 +276,17 @@
+ 	out_le32((volatile unsigned int *)bp->cfg_data, magic);
+ 	printk(KERN_INFO "Cache coherency enabled for bandit/PSX at %08lx\n",
+ 	       bp->io_base_phys);
++}
++
++
++/*
++ * Verifiy that a specific (bus, dev_fn) exists on chaos
++ */
++static int chaos_validate_dev(struct pci_dev *dev)
++{
++	if(pci_device_to_OF_node(dev) == 0)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++	return PCIBIOS_SUCCESSFUL;
+ }
+
+
+
+--134458388-1804289383-975050978=:638--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
