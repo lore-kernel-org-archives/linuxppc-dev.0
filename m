@@ -1,18 +1,33 @@
-Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 085932BDB5
+Return-Path: <srivatsan@deccanetworld.com>
+Received: from gatekeeper.deccanetworld.com (mail.deccanetworld.com
+	[203.196.146.50])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 98C172BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Dec 2004 20:51:46 +1100 (EST)
-To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-Type: multipart/mixed ;
-	boundary="==_Exmh_-7310224810"
-Date: Tue, 28 Dec 2004 10:51:14 +0100
-Sender: wd@denx.de
-Message-Id: <20041228095119.F07EDC1430@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: simple bootloader 2.6.10-rc3 8xx 
+	Tue, 28 Dec 2004 16:57:38 +1100 (EST)
+Received: from gatekeeper.deccanetworld.com (localhost [127.0.0.1])
+	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
+	ESMTP id iBS5jJbJ027043
+	for <linuxppc-embedded@ozlabs.org>; Tue, 28 Dec 2004 11:15:19 +0530
+Received: from mail.deccanetworld.com (server.deccanetworld.com [192.168.1.32])
+	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
+	ESMTP id iBS5jFRq026687
+	for <linuxppc-embedded@ozlabs.org>; Tue, 28 Dec 2004 11:15:17 +0530
+Received: (from root@localhost)
+	by mail.deccanetworld.com (8.11.0/8.11.0) id iBS6Db814672
+	for linuxppc-embedded@ozlabs.org; Tue, 28 Dec 2004 11:43:37 +0530
+Received: from bgcw301 ([10.203.105.18])
+	by mail.deccanetworld.com (8.11.0/8.11.0) with ESMTP id iBS6DaY14585
+	for <linuxppc-embedded@ozlabs.org>; Tue, 28 Dec 2004 11:43:36 +0530
+From: "Srivatsan" <srivatsan@deccanetworld.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 28 Dec 2004 11:22:49 +0530
+Message-ID: <000601c4eca1$786596f0$1269cb0a@bgcw301>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0007_01C4ECCF.92201CE0"
+Subject: Linux Kernel boot problem 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,334 +38,2271 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart MIME message.
+This is a multi-part message in MIME format.
 
---==_Exmh_-7310224810
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 8bit
-In-reply-to: Your message of "Mon, 27 Dec 2004 22:52:30 EST."
-	<313680C9A886D511A06000204840E1CF0A64741E@whq-msgusr-02.pit.comms.marconi.com>
+------=_NextPart_000_0007_01C4ECCF.92201CE0
+Content-Type: text/plain;
+Content-Transfer-Encoding: 7bit
 
-Dear Alex,
-
-in message <313680C9A886D511A06000204840E1CF0A64741E@whq-msgusr-02.pit.comms.marconi.com> you wrote:
->  
-> >Moving things around in the kernel sometimes 
-> >makes this go away but really its just hidden.
-> >In my case it would explode in zlib_inflate also.  Putting some output 
-> >in the routine would move it ...
-> 
-> Yes that is exactly what I have observed (but I did'nt have the correct
-> explanation for it) 
-
-I think Paul may be right  with  his  suspicion;  it  sounds  like  a
-manifestation  of the CPU15 problem (but it could also be incorrectly
-initialized SDRAMs which fail  during  heavy  load  with  burst  mode
-accesses, or one more instability of the 2.6 kernel on 8xx systems).
-
-Note that all our work relating to this problem was done on  the  2.4
-kernel  base,  and  I  make no claims that it might actually help for
-your 2.6 problems.
-
-> Could this code be used for 2.6 ?
-
-The patch does not apply cleanly as is to the 2.6 tree, but it should
-be simple enough to port.
-
-> Could someone point me to it, please ?
-
-It's in the linuxppc_2_4_devel tree on our CVS server.
-
-Please  find  attached  the  patch  to  the  2.4  kernel  tree  which
-implements  the  workaround,  and  a  test  application  to  reliably
-reproduce the CPU15 errata. It usually takes  1-10  minutes  for  the
-application to crash, if the workaround is disabled:
-
-	bash-2.05b# date; ./cpu15 ; date
-	Thu Aug  2 02:02:42 MEST 2001
-	Illegal instruction
-	Thu Aug  2 02:02:54 MEST 2001
-	bash-2.05b# date; ./cpu15 ; date
-	Thu Aug  2 02:02:58 MEST 2001
-	Illegal instruction
-	Thu Aug  2 02:03:48 MEST 2001
-	bash-2.05b# date; ./cpu15 ; date
-	Thu Aug  2 02:03:54 MEST 2001
-	Illegal instruction
-	Thu Aug  2 02:03:57 MEST 2001
-	bash-2.05b# date; ./cpu15 ; date
-	Thu Aug  2 02:04:07 MEST 2001
-	Illegal instruction
-	Thu Aug  2 02:04:16 MEST 2001
-	bash-2.05b#
-
-We noticed that some background activitly, like logging in/out to the
-target via 'telnet', while the application is running over the serial
-console, additionally speeds up the crash.
-
-You can use this command to enable the workaround at run-time (it  is
-disabled by default):
-
-	bash# sysctl -w kernel.8xx_cpu15=1
-
-Please note that for the h/w problem  to  show  up,  the  instruction
-cache  has  to  be enabled.
-
-Hope this helps.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Wish not to seem, but to be, the best."                  - Aeschylus
-
-
---==_Exmh_-7310224810
-Content-Type: application/octet-stream ; name="patch"
-Content-Description: patch
-Content-Disposition: attachment; filename="patch"
-
-CVS Root: :pserver:anonymous@www.denx.de:/cvsroot
-CVS Module: linuxppc_2_4_devel
-PatchSet: 295 
-Date: 2004/08/25 16:16:30
-Log: Implement work-around for CPU15 Silicon Errata on MPC8xx processors.
-Signed-off-by: Wolfgang Denk <wd@denx.de>
-  
-Index: arch/ppc/8xx_io/Config.in
-===================================================================
-RCS file: /cvsroot/linuxppc_2_4_devel/arch/ppc/8xx_io/Config.in,v
-retrieving revision 1.8
-retrieving revision 1.9
-diff -u -r1.8 -r1.9
---- arch/ppc/8xx_io/Config.in	11 Mar 2004 22:43:31 -0000	1.8
-+++ arch/ppc/8xx_io/Config.in	25 Aug 2004 15:16:30 -0000	1.9
-@@ -7,6 +7,7 @@
- comment 'Generic MPC8xx Options'
- bool 'Copy-Back Data Cache (else Writethrough)' CONFIG_8xx_COPYBACK
- bool 'CPU6 Silicon Errata (860 Pre Rev. C)' CONFIG_8xx_CPU6
-+bool 'CPU15 Silicon Errata' CONFIG_8xx_CPU15
- bool 'I2C/SPI Microcode Patch' CONFIG_UCODE_PATCH
- if [ "$CONFIG_UCODE_PATCH" = "y" ]; then
-   bool '  Use MPC850-specific microcode patch' CONFIG_MPC850_UCODE_PATCH
-Index: arch/ppc/kernel/head_8xx.S
-===================================================================
-RCS file: /cvsroot/linuxppc_2_4_devel/arch/ppc/kernel/head_8xx.S,v
-retrieving revision 1.6
-retrieving revision 1.7
-diff -u -r1.6 -r1.7
---- arch/ppc/kernel/head_8xx.S	30 Oct 2003 00:32:14 -0000	1.6
-+++ arch/ppc/kernel/head_8xx.S	25 Aug 2004 15:16:30 -0000	1.7
-@@ -324,6 +324,19 @@
- 	stw	r3, 12(r0)
- 	lwz	r3, 12(r0)
- #endif
-+#ifdef CONFIG_8xx_CPU15
-+	lis	r21, cpu15_fix@h
-+	ori	r21, r21, cpu15_fix@l
-+	tophys(r21,r21)
-+	lwz	r21, 0(r21)		/* value of cpu15 variable */
-+	cmpwi	r21, 0
-+	beq	4f
-+	subi	r21, r20, 0x1000	/* EA of prev page */
-+	tlbie	r21
-+	addi	r21, r20, 0x1000	/* EA of next page */
-+	tlbie	r21
-+4:
-+#endif
- 	mtspr	MD_EPN, r20	/* Have to use MD_EPN for walk, MI_EPN can't */
- 	mfspr	r20, M_TWB	/* Get level 1 table entry address */
+Hi all,
  
-Index: include/linux/sysctl.h
-===================================================================
-RCS file: /cvsroot/linuxppc_2_4_devel/include/linux/sysctl.h,v
-retrieving revision 1.8
-retrieving revision 1.9
-diff -u -r1.8 -r1.9
---- include/linux/sysctl.h	11 Mar 2004 22:44:32 -0000	1.8
-+++ include/linux/sysctl.h	25 Aug 2004 15:16:30 -0000	1.9
-@@ -128,6 +128,7 @@
- 	KERN_PPC_L3CR=57,       /* l3cr register on PPC */
- 	KERN_EXCEPTION_TRACE=58, /* boolean: exception trace */
-  	KERN_CORE_SETUID=59,	/* int: set to allow core dumps of setuid apps */
-+ 	KERN_8XX_CPU15=60,	/* boolean: patch cpu15 errata on mpc8xx cpu */
- };
+    We are having a Rattler MPC8280 board. We are using Linux Kernel
+2.4.21 and the configuration used for building the Linux Kernel is as
+given under. 
+ 
+When the Kernel is booted, it prints the following
+Uncompressing Linux.......done
+Now booting the kernel
+ 
+The kernel hangs(or not detecting the console) after printing the above
+messages. Any pointers would be of great help to us.
+ 
+With thanks,
+C.R.Srivatsan
+ 
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_HAVE_DEC_LOCK=y
+ 
+#
+# Code maturity level options
+#
+CONFIG_EXPERIMENTAL=y
+# CONFIG_ADVANCED_OPTIONS is not set
+ 
+#
+# Loadable module support
+#
+CONFIG_MODULES=y
+CONFIG_MODVERSIONS=y
+CONFIG_KMOD=y
+ 
+#
+# Platform support
+#
+CONFIG_PPC=y
+CONFIG_PPC32=y
+CONFIG_6xx=y
+# CONFIG_40x is not set
+# CONFIG_440 is not set
+# CONFIG_POWER3 is not set
+# CONFIG_8xx is not set
+CONFIG_8260=y
+CONFIG_PPC_STD_MMU=y
+CONFIG_SERIAL_CONSOLE=y
+# CONFIG_ADS8260 is not set
+# CONFIG_EST8260 is not set
+# CONFIG_SBS8260 is not set
+# CONFIG_RPX6 is not set
+CONFIG_AM_RATTLER=y
+# CONFIG_TQM8260 is not set
+# CONFIG_WILLOW is not set
+# CONFIG_SMP is not set
+CONFIG_REDBOOT=y
+CONFIG_EMBEDDEDBOOT=y
+ 
+#
+# General setup
+#
+# CONFIG_HIGHMEM is not set
+# CONFIG_ISA is not set
+# CONFIG_EISA is not set
+# CONFIG_SBUS is not set
+# CONFIG_MCA is not set
+# CONFIG_PCI is not set
+# CONFIG_8260_PCI9 is not set
+# CONFIG_PC_KEYBOARD is not set
+CONFIG_NET=y
+# CONFIG_SYSCTL is not set
+# CONFIG_SYSVIPC is not set
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_KCORE_ELF is not set
+# CONFIG_BINFMT_ELF is not set
+# CONFIG_KERNEL_ELF is not set
+# CONFIG_BINFMT_MISC is not set
+# CONFIG_HOTPLUG is not set
+# CONFIG_PCMCIA is not set
+ 
+#
+# Memory Technology Devices (MTD)
+#
+CONFIG_MTD=y
+# CONFIG_MTD_DEBUG is not set
+CONFIG_MTD_PARTITIONS=y
+CONFIG_MTD_CONCAT=y
+# CONFIG_MTD_REDBOOT_PARTS is not set
+# CONFIG_MTD_CMDLINE_PARTS is not set
+CONFIG_MTD_CHAR=y
+CONFIG_MTD_BLOCK=y
+# CONFIG_FTL is not set
+# CONFIG_NFTL is not set
+ 
+# Block devices
+#
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_DEV_XD is not set
+# CONFIG_PARIDE is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_CISS_SCSI_TAPE is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_LOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_SIZE=4096
+# CONFIG_BLK_DEV_INITRD is not set
+# CONFIG_BLK_STATS is not set
+ 
+#
+# Networking options
+#
+# CONFIG_PACKET is not set
+# CONFIG_NETLINK_DEV is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_FILTER is not set
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_PNP=y
+# CONFIG_IP_PNP_DHCP is not set
+CONFIG_IP_PNP_BOOTP=y
+CONFIG_IP_PNP_RARP=y
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+# CONFIG_INET_ECN is not set
+CONFIG_SYN_COOKIES=y
+# CONFIG_IPV6 is not set
+# CONFIG_KHTTPD is not set
+# CONFIG_ATM is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+ 
+#
+# Network device support
+#
+CONFIG_NETDEVICES=y
+ 
+#
+# Ethernet (10 or 100Mbit)
+#
+CONFIG_NET_ETHERNET=y
+# CONFIG_MACE is not set
+# CONFIG_BMAC is not set
+# CONFIG_GMAC is not set
+# CONFIG_SUNLANCE is not set
+# CONFIG_SUNBMAC is not set
+# CONFIG_SUNQE is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_LANCE is not set
+# CONFIG_NET_VENDOR_SMC is not set
+# CONFIG_NET_VENDOR_RACAL is not set
+# CONFIG_NET_ISA is not set
+# CONFIG_NET_PCI is not set
+# CONFIG_NET_POCKET is not set
+ 
+#
+# File systems
+#
+# CONFIG_QUOTA is not set
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_REISERFS_CHECK is not set
+# CONFIG_REISERFS_PROC_INFO is not set
+# CONFIG_ADFS_FS is not set
+# CONFIG_ADFS_FS_RW is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BEFS_DEBUG is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EXT3_FS is not set
+# CONFIG_JBD is not set
+# CONFIG_JBD_DEBUG is not set
+# CONFIG_FAT_FS is not set
+# CONFIG_MSDOS_FS is not set
+# CONFIG_UMSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_EFS_FS is not set
+CONFIG_JFFS_FS=y
+CONFIG_JFFS_FS_VERBOSE=0
+# CONFIG_JFFS_PROC_FS is not set
+CONFIG_JFFS2_FS=y
+CONFIG_JFFS2_FS_DEBUG=0
+# CONFIG_CRAMFS is not set
+CONFIG_TMPFS=y
+CONFIG_RAMFS=y
+# CONFIG_ISO9660_FS is not set
+# CONFIG_JOLIET is not set
+# CONFIG_ZISOFS is not set
+# CONFIG_JFS_FS is not set
+# CONFIG_JFS_DEBUG is not set
+# CONFIG_JFS_STATISTICS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_NTFS_FS is not set
+# CONFIG_NTFS_RW is not set
+# CONFIG_HPFS_FS is not set
+CONFIG_PROC_FS=y
+# CONFIG_DEVFS_FS is not set
+# CONFIG_DEVFS_MOUNT is not set
+# CONFIG_DEVFS_DEBUG is not set
+# CONFIG_DEVPTS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_QNX4FS_RW is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_EXT2_FS=y
+# CONFIG_SYSV_FS is not set
+# CONFIG_UDF_FS is not set
+# CONFIG_UDF_RW is not set
+# CONFIG_UFS_FS is not set
+# CONFIG_UFS_FS_WRITE is not set
+ 
+#
+# Network File Systems
+#
+# CONFIG_CODA_FS is not set
+# CONFIG_INTERMEZZO_FS is not set
+CONFIG_NFS_FS=y
+# CONFIG_NFS_V3 is not set
+CONFIG_ROOT_NFS=y
+# CONFIG_NFSD is not set
+# CONFIG_NFSD_V3 is not set
+# CONFIG_NFSD_TCP is not set
+# CONFIG_SUNRPC is not set
+# CONFIG_LOCKD is not set
+# CONFIG_SMB_FS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_NCPFS_PACKET_SIGNING is not set
+# CONFIG_NCPFS_IOCTL_LOCKING is not set
+# CONFIG_NCPFS_STRONG is not set
+# CONFIG_NCPFS_NFS_NS is not set
+# CONFIG_NCPFS_OS2_NS is not set
+# CONFIG_NCPFS_SMALLDOS is not set
+# CONFIG_NCPFS_NLS is not set
+# CONFIG_NCPFS_EXTRAS is not set
+# CONFIG_ZISOFS_FS is not set
+ 
+#
+# MPC8260 CPM Options
+#
+CONFIG_SCC_CONSOLE=y
+# CONFIG_SCC_ENET is not set
+CONFIG_FEC_ENET=y
+CONFIG_FCC1_ENET=y
+CONFIG_FCC2_ENET=y
+# CONFIG_FCC3_ENET is not set
+# CONFIG_USE_MDIO is not set
+ 
+#
+# Library routines
+#
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
  
  
-Index: kernel/sysctl.c
-===================================================================
-RCS file: /cvsroot/linuxppc_2_4_devel/kernel/sysctl.c,v
-retrieving revision 1.8
-retrieving revision 1.9
-diff -u -r1.8 -r1.9
---- kernel/sysctl.c	15 Nov 2003 01:37:12 -0000	1.8
-+++ kernel/sysctl.c	25 Aug 2004 15:16:30 -0000	1.9
-@@ -150,6 +150,10 @@
- static void unregister_proc_table(ctl_table *, struct proc_dir_entry *);
- #endif
- 
-+#ifdef CONFIG_8xx_CPU15
-+int cpu15_fix = 0;	/* disabled by default */
-+#endif
-+
- /* The default sysctl tables: */
- 
- static ctl_table root_table[] = {
-@@ -273,6 +277,10 @@
- 	{KERN_EXCEPTION_TRACE,"exception-trace",
- 	 &exception_trace,sizeof(int),0644,NULL,&proc_dointvec},
- #endif	
-+#ifdef CONFIG_8xx_CPU15
-+	{KERN_8XX_CPU15, "8xx_cpu15", &cpu15_fix, sizeof(int),
-+	 0644, NULL, &proc_dointvec},
-+#endif
- 	{0}
- };
- 
 
---==_Exmh_-7310224810
-Content-Type: application/octet-stream ; name="cpu15.c"
-Content-Description: cpu15.c
-Content-Disposition: attachment; filename="cpu15.c"
 
-#include <sys/mman.h>
-#include <fcntl.h>
+********************************DISCLAIMER**********************************
 
-#define MOV(r, val) \
-		"lis	%%"#r", "#val"@h\n" \
-		"ori	%%"#r", %%"#r", "#val"@l\n"
+This e-mail and any attachment is for authorised use by the intended
+recipient(s) only. It may contain proprietary material, confidential
+information and/or be subject to legal privilege of Deccanet Designs Ltd.
+If you have received this message in error, please notify the originator
+immediately. If you are not the intended recipient, you are notified that
+you are strictly prohibited from retaining, using, copying, altering or
+disclosing the contents of this message.
 
-int data = 1;	/* read 1 from memory */
-void *buffer;	/* buffer for code copy */
+****************************************************************************
+------=_NextPart_000_0007_01C4ECCF.92201CE0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-void test(int copy_code, int offset)
-{
-	asm(
-		"mflr	%%r20\n"			/* save lr */
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-		MOV(r24, buffer)
-		"lwz	%%r24, 0(%%r24)\n"		/* save buffer address to r24 */
-		MOV(r22, page0)
-		MOV(r21, page2)
-		"sub	%%r23, %%r21, %%r22\n"		/* page0 code size */
-		"addi	%%r21, %%r24, 0x1000\n"		/* page1 */
-		"sub	%%r25, %%r21, %%r23\n"		/* save code at end of page0 to r25 */
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
 
-		"cmpwi	%1, 0\n"
-		"beq	start\n"			/* jump if code_copy == 0 */
 
-		"mr	%%r21, %%r25\n"
-		"bl	copy\n"				/* copy page0 code */
-		
-		MOV(r22, page2)
-		MOV(r21, copy)
-		"sub	%%r23, %%r21, %%r22\n"		/* page2 code size */
-		"addi	%%r21, %%r24, 0x2000\n"		/* page2 */
-		"bl	copy\n"				/* copy page2 code */
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 10">
+<meta name=3DOriginator content=3D"Microsoft Word 10">
+<link rel=3DFile-List href=3D"cid:filelist.xml@01C4ECCF.8ED42630">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PersonName"/>
+<!--[if gte mso 9]><xml>
+ <o:OfficeDocumentSettings>
+  <o:DoNotRelyOnCSS/>
+ </o:OfficeDocumentSettings>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:DocumentKind>DocumentEmail</w:DocumentKind>
+  <w:EnvelopeVis/>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	mso-style-noshow:yes;
+	mso-ansi-font-size:10.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	color:navy;}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 77.95pt 1.0in 77.95pt;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */=20
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]-->
+</head>
 
-		MOV(r23, 0x10000 / 16)			/* buffer size / cache line size */
-		"mtctr	%%r23\n"
-		"mr	%%r21, %%r24\n"
-	"5:\n"
-		"dcbst	0, %%r21\n"
-		"sync\n"				/* wait for dcbst to complete on bus */
-		"icbi	0, %%r21\n"
-		"sync\n"				/* wait for icbi to complete on bus */
-		"addi	%%r21, %%r21, 16\n"		/* next cache line */
-		"bdnz	5b\n"
-		"isync\n"
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
+style=3D'tab-interval:.5in'>
 
-		"b	end\n"
+<div class=3DSection1>
 
-	"start:\n"
-		"bl	4f\n"				/* get current pc */
-	"4:\n"
-		"mflr	%%r26\n"
-		"addi	%%r26, %%r26, end-4b\n"		/* save end address to r26 */
-		"mtlr	%%r25\n"
-		"blr\n"					/* jump to page0 code */
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>Hi all,<o:p></o:p></span></font></b></p>
 
-	"page0:\n"
-		/* load first cache line at page2 */
-		"addi	%%r21, %%r24, 0x2000+touch-page2\n"
-		"mtlr	%%r21\n"
-		"blr\n"					/* jump to touch */
-	"1:\n"
-		/* invalidate first cache line at page1 */
-		"li	%%r23, 0x1000\n"
-		"icbi	%%r24, %%r23\n"
-		/* trying to make branch address unresolved long enough */
-		"addi	%%r21, %%r24, 0x2000-20\n"
-		"sub	%%r21, %%r21, %0\n"		/* add offset */
-		"li	%%r23, 20\n"			/* cycle 20 times */
-		"mtctr	%%r23\n"
-		MOV(r22, data)
-	"2:\n"
-		"sync\n"
-		"lwz	%%r23, 0(%%r22)\n"		/* add content of data i.e 1 */
-		"add	%%r21, %%r21, %%r23\n"
-		"bdnz	2b\n"
-		"mtlr	%%r21\n"
-		"blr\n"					/* jump to end of page1 */
-	"page2:\n"
-		"b	3f\n"				/* invalid or wrong instruction may occur */
-		"lwz	%%r0, 0(%%r0)\n"		/* give SIGSEGV */
-	"touch:\n"
-		"addi	%%r21, %%r25, 1b-page0\n"
-		"mtlr	%%r21\n"
-		"blr\n"					/* jump back to page0 i.e 1b */
-	"3:\n"
-		"mtlr	%%r26\n"
-		"blr\n"					/* jump to end */
-		/* memcpy(r21, r22, r23) */
-	"copy:\n"
-		"mtctr	%%r23\n"
-		"subi	%%r22, %%r22, 1\n"
-		"subi	%%r21, %%r21, 1\n"
-	"6:\n"
-		"lbzu	%%r23, 1(%%r22)\n"
-		"stbu	%%r23, 1(%%r21)\n"
-		"bdnz	6b\n"
-		"blr\n"
-	"end:\n"
-		"mtlr	%%r20\n"			/* restore lr */
-		: "=r" (offset)
-		: "r" (copy_code), "r" (offset)
-	);
-}
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
 
-int main(int argc, char *argv[])
-{
-	int i, fd;
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><span
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>We are having a =
+Rattler
+MPC8280 board. We are using Linux Kernel 2.4.2</span></font></b><font
+color=3Dnavy><span =
+style=3D'color:navy;font-weight:normal;mso-bidi-font-weight:
+bold'>1</span></font><font color=3Dblack><span =
+style=3D'color:black;font-weight:
+normal;mso-bidi-font-weight:bold'> and the configuration used for =
+building the
+Linux Kernel is as given under. <o:p></o:p></span></font></p>
 
-	nice(10);
-	fd = open("cpu15.log", O_CREAT | O_TRUNC | O_RDWR, 0666);
-	buffer = mmap(0, 0x10000, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
 
-	/* fill buffer with bad instructions */
-	for (i = 0; i < 0x10000 / 4; i++)
-#if 0
-		((int*)buffer)[i] = 0x80000000;	/* lwz r0, 0(r0) - give SIGSEGV */
-#else
-		((int*)buffer)[i] = 0x7c0003a6;	/* mtspr 0, r0   - give SIGILL */
-#endif
-	/* fill cache line at end of page1 with nop */
-	for (i = 0; i < 4; i++)
-		((int*)((int)buffer + 0x1ff0))[i] = 0x60000000; /* nop */
-		
-	/* copy code to buffer */
-	test(1, 0);
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>When the Kernel is booted, =
+it
+prints the following<o:p></o:p></span></font></b></p>
 
-	for (i = 0; ; i++) {
-		test(0, ((i & 3) << 2) + 4); /* offset 4...16 */
-		if (i % 1000000 == 0)
-			write(fd, ".", 1);
-	}
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>Uncompressing =
+Linux.......done<o:p></o:p></span></font></b></p>
 
-	return 0;
-}
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>Now booting the =
+kernel<o:p></o:p></span></font></b></p>
 
---==_Exmh_-7310224810--
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>The kernel hangs(or not =
+detecting
+the console) after printing the above messages. Any pointers would be of =
+great
+help to us.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>With =
+thanks,<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>C.R.Srivatsan<o:p></o:p></s=
+pan></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_RWSEM_XCHGADD_ALGORI=
+THM=3Dy<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_HAVE_DEC_LOCK=3Dy<o:=
+p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Code maturity level =
+options<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_EXPERIMENTAL=3Dy<o:p=
+></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ADVANCED_OPTIONS =
+is not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Loadable module =
+support<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_MODULES=3Dy<o:p></o:=
+p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_MODVERSIONS=3Dy<o:p>=
+</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_KMOD=3Dy<o:p></o:p><=
+/span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Platform =
+support<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_PPC=3Dy<o:p></o:p></=
+span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_PPC32=3Dy<o:p></o:p>=
+</span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_6xx=3Dy<o:p></o:p></=
+span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_40x is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_440 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_POWER3 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_8xx is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_8260=3Dy<o:p></o:p><=
+/span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_PPC_STD_MMU=3Dy<o:p>=
+</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_SERIAL_CONSOLE=3Dy<o=
+:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ADS8260 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_EST8260 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SBS8260 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_RPX6 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_AM_RATTLER=3Dy<o:p><=
+/o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_TQM8260 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_WILLOW is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SMP is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_REDBOOT=3Dy<o:p></o:=
+p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_EMBEDDEDBOOT=3Dy<o:p=
+></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># General =
+setup<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_HIGHMEM is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ISA is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_EISA is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SBUS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_MCA is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_PCI is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_8260_PCI9 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_PC_KEYBOARD is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_NET=3Dy<o:p></o:p></=
+span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SYSCTL is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SYSVIPC is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BSD_PROCESS_ACCT =
+is not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># =
+CONFIG_</span></font></b><st1:PersonName><font
+ color=3Dblack><span =
+style=3D'color:black;font-weight:normal;mso-bidi-font-weight:
+ bold'>KC</span></font></st1:PersonName><font color=3Dblack><span
+style=3D'color:black;font-weight:normal;mso-bidi-font-weight:bold'>ORE_EL=
+F is not
+set<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BINFMT_ELF is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_KERNEL_ELF is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BINFMT_MISC is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_HOTPLUG is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_PCMCIA is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Memory Technology =
+Devices (MTD)<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_MTD=3Dy<o:p></o:p></=
+span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_MTD_DEBUG is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_MTD_PARTITIONS=3Dy<o=
+:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_MTD_CONCAT=3Dy<o:p><=
+/o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_MTD_REDBOOT_PARTS =
+is not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_MTD_CMDLINE_PARTS =
+is not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_MTD_CHAR=3Dy<o:p></o=
+:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_MTD_BLOCK=3Dy<o:p></=
+o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_FTL is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NFTL is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Block =
+devices<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_DEV_FD is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_DEV_XD is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_PARIDE is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_CPQ_DA is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_CPQ_CISS_DA =
+is not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_CISS_SCSI_TAPE is =
+not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_DEV_DAC960 is =
+not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_DEV_UMEM is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_DEV_LOOP is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_DEV_NBD is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_BLK_DEV_RAM=3Dy<o:p>=
+</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_BLK_DEV_RAM_SIZE=3D4=
+096<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_DEV_INITRD is =
+not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BLK_STATS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Networking =
+options<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_PACKET is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NETLINK_DEV is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NETFILTER is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_FILTER is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_UNIX=3Dy<o:p></o:p><=
+/span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_INET=3Dy<o:p></o:p><=
+/span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_IP_MULTICAST=3Dy<o:p=
+></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># =
+CONFIG_IP_ADVANCED_ROUTER is
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_IP_PNP=3Dy<o:p></o:p=
+></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_IP_PNP_DHCP is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_IP_PNP_BOOTP=3Dy<o:p=
+></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_IP_PNP_RARP=3Dy<o:p>=
+</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_IPIP is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_IPGRE is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_IP_MROUTE is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ARPD is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_INET_ECN is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_SYN_COOKIES=3Dy<o:p>=
+</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_IPV6 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_KHTTPD is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ATM is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_VLAN_8021Q is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_IPX is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ATALK is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Network device =
+support<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_NETDEVICES=3Dy<o:p><=
+/o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Ethernet (10 or =
+100Mbit)<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_NET_ETHERNET=3Dy<o:p=
+></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_MACE is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BMAC is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_GMAC is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SUNLANCE is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SUNBMAC is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SUNQE is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SUNGEM is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_VENDOR_3COM =
+is not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_LANCE is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_VENDOR_SMC is =
+not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_VENDOR_RACAL =
+is not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_ISA is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_PCI is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NET_POCKET is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># File =
+systems<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_QUOTA is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_AUTOFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_AUTOFS4_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_REISERFS_FS is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_REISERFS_CHECK is =
+not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># =
+CONFIG_REISERFS_PROC_INFO is
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ADFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ADFS_FS_RW is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_AFFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_HFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BEFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BEFS_DEBUG is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_BFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_EXT3_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_JBD is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_JBD_DEBUG is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_FAT_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_MSDOS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_UMSDOS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_VFAT_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_EFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_JFFS_FS=3Dy<o:p></o:=
+p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_JFFS_FS_VERBOSE=3D0<=
+o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_JFFS_PROC_FS is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_JFFS2_FS=3Dy<o:p></o=
+:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_JFFS2_FS_DEBUG=3D0<o=
+:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_CRAMFS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_TMPFS=3Dy<o:p></o:p>=
+</span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_RAMFS=3Dy<o:p></o:p>=
+</span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ISO9660_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_JOLIET is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ZISOFS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_JFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_JFS_DEBUG is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_JFS_STATISTICS is =
+not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_MINIX_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_VXFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NTFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NTFS_RW is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_HPFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_PROC_FS=3Dy<o:p></o:=
+p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_DEVFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_DEVFS_MOUNT is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_DEVFS_DEBUG is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_DEVPTS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_QNX4FS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_QNX4FS_RW is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ROMFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_EXT2_FS=3Dy<o:p></o:=
+p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SYSV_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_UDF_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_UDF_RW is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_UFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_UFS_FS_WRITE is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Network File =
+Systems<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_CODA_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_INTERMEZZO_FS is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_NFS_FS=3Dy<o:p></o:p=
+></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NFS_V3 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_ROOT_NFS=3Dy<o:p></o=
+:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NFSD is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NFSD_V3 is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NFSD_TCP is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SUNRPC is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_LOCKD is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SMB_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NCP_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># =
+CONFIG_NCPFS_PACKET_SIGNING is
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># =
+CONFIG_NCPFS_IOCTL_LOCKING is
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NCPFS_STRONG is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NCPFS_NFS_NS is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NCPFS_OS2_NS is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NCPFS_SMALLDOS is =
+not
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NCPFS_NLS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_NCPFS_EXTRAS is =
+not set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_ZISOFS_FS is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># MPC8260 CPM =
+Options<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_SCC_CONSOLE=3Dy<o:p>=
+</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_SCC_ENET is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_FEC_ENET=3Dy<o:p></o=
+:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_FCC1_ENET=3Dy<o:p></=
+o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_FCC2_ENET=3Dy<o:p></=
+o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_FCC3_ENET is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># CONFIG_USE_MDIO is not =
+set<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'># Library =
+routines<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>#<o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_ZLIB_INFLATE=3Dy<o:p=
+></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'>CONFIG_ZLIB_DEFLATE=3Dy<o:p=
+></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dblack face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;color:black;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
+
+</div>
+
+
+<PRE>
+
+********************************DISCLAIMER**********************************
+
+This e-mail and any attachment is for authorised use by the intended
+recipient(s) only. It may contain proprietary material, confidential
+information and/or be subject to legal privilege of Deccanet Designs Ltd.
+If you have received this message in error, please notify the originator
+immediately. If you are not the intended recipient, you are notified that
+you are strictly prohibited from retaining, using, copying, altering or
+disclosing the contents of this message.
+
+****************************************************************************
+</pre>
+</body>
+
+</html>
+
+------=_NextPart_000_0007_01C4ECCF.92201CE0--
