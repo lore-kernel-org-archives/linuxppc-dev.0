@@ -1,30 +1,26 @@
-Content-Type: text/plain
+Message-ID: <35C119252057D511BB9F0003476BF8A298BD5B@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: GT64260 serial driver...
+Date: Tue, 8 Jan 2002 12:30:05 -0800 
 MIME-Version: 1.0
-Message-ID: <4E979891888697.27385@webmail4.inner-21cn.com>
-Date: Tue, 8 Jan 2002 11:13:02 +0800 (CST)
-From: "yah" <hay8888@21cn.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: 
-Subject: hhnet on MCP750
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,all.
-    I use hhnet (from mvista HHL1.2) on MCP750 to communicate with other CPU board. When I build it in the kernel, and boot, it said " hhnet_drawb: Chip control 1 configuration invalid". What's wrong? I add "mem=127M " in kernel line.
-    Any advice will be appreciated.
+Hi,
 
-Regards,
-Amy
-----------------------------------------------
-国内收费邮箱谁最强，首次权威评测见分晓
-http://news.21cn.com/domestic/21CN/2001-11-19/550568.html
-买企业邮箱，获赠域名
-http://mail.21cn.com/corporation/010.html
-21cn带您走进目标之旅，享受商旅乐趣
-http://travel.21cn.com/agency/aimtrip/aimtrip.html
-收费邮箱真能大行其道，给我一个理由
-http://mail.21cn.com/bijiao/index2-7.html
+I am looking for a regular serial driver for use as console that can work
+with GT-64260 chipset from Galileo (Marvell).
 
+We have to use the internal UART (MPSC) for serial communication on our
+custom board.
+
+Can some one shed some light on this and give me pointers on where to start.
+
+Thanks,
+-- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
