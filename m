@@ -1,37 +1,35 @@
-Date: Fri, 3 Dec 1999 20:13:09 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: David Edelsohn <dje@watson.ibm.com>
-cc: "David W. Patmore" <dwp@bluesteelnet.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: endian-swapping
-In-Reply-To: <9912040050.AA54380@marc.watson.ibm.com>
-Message-ID: <Pine.LNX.3.96L.991203200537.7714B-100000@unix47.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <9912040156.AA54326@marc.watson.ibm.com>
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+Cc: "David W. Patmore" <dwp@bluesteelnet.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: endian-swapping 
+In-Reply-To: Message from Hollis R Blanchard <hollis+@andrew.cmu.edu>
+   of "Fri, 03 Dec 1999 20:13:09 EST." <Pine.LNX.3.96L.991203200537.7714B-100000@unix47.andrew.cmu.edu>
+Date: Fri, 03 Dec 1999 20:56:23 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 3 Dec 1999, David Edelsohn wrote:
-> 
-> 	Linux already provides macros like le16_to_cpu(), etc. for this. 
+>>>>> Hollis R Blanchard writes:
 
-For the sake of someone (like me) who doesn't know how to use these, can you
-give an example? Just a snippet like
+Hollis> On Fri, 3 Dec 1999, David Edelsohn wrote:
+>> 
+>> Linux already provides macros like le16_to_cpu(), etc. for this. 
 
-#include <endian.h>
+Hollis> For the sake of someone (like me) who doesn't know how to use these, can you
+Hollis> give an example?
 
-#ifdef __BIG_ENDIAN
-    cpu_to_le16(blah);
-#endif
+	See drivers/net/pcnet32.c for one example of its use.  There are
+no #ifdef's like NetBSD uses.  le16_to_cpu() is a no-op on LE machines, so
+one uses it directly like 
 
-I don't know which headers are supposed to be used for this. endian.h, for
-example, does a #define __BIG_ENDIAN 4321, so __BIG_ENDIAN should *always* be
-defined... so that doesn't seem like the right header to include... but lots
-of drivers do that exact #ifdef test.
+short x = le16_to_cpu(dev_flag);
 
-Also, the macros are in which header? I'm having trouble finding them too...
+Hollis> Also, the macros are in which header? I'm having trouble finding them too...
 
--Hollis
+	The macros seem to be included via <asm/bitops.h> which then
+include <linux/byteorder/big_endian.h> (for example).
 
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
