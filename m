@@ -1,41 +1,38 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <linuxppc-dev@lists.linuxppc.org>,
-	<yellowdog-devel@lists.yellowdoglinux.com>,
-	"Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-Subject: Re: question: "disabling IRQ 54 defensively?"
-Date: Sun, 17 Feb 2002 22:53:40 +0100
-Message-Id: <20020217215340.10006@smtp.wanadoo.fr>
-In-Reply-To: <20020217203742.VCID12383.tomts9-srv.bellnexxia.net@there>
-References: <20020217203742.VCID12383.tomts9-srv.bellnexxia.net@there>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 17 Feb 2002 16:19:20 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+	linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.yellowdoglinux.com,
+	"Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: question on best way to install other ide drives?
+Message-ID: <20020217231920.GD15858@opus.bloom.county>
+References: <p05101401b895b9cbee49@[10.0.0.42]> <20020217215204.4646@smtp.wanadoo.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020217215204.4646@smtp.wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Sun, Feb 17, 2002 at 10:52:04PM +0100, Benjamin Herrenschmidt wrote:
 >
->Later on I see the following:
+> >
+> >(A).  IDE does not do a terribly good job of sharing bus bandwidth
+> >between two active devices, so the ideal case for performance is one
+> >IDE bus per device.
+> >
+> >That said, you'll never be impacted if your workload never attempts
+> >to exercise both the slave and master at the same time.
 >
->ide0 "blah" on irq 19
->ide1 "blah" on irq 20
->ide2 0x440-0x447, 0x432 on irq 54
->ide3 0x420-0x427, 0x412 on irq 54
->
->Should I be worried here?  What does the disabling IRQ 54 defensively mean?
->
->Is it wrong to have two ide devices with the ssame irq?  Are they just
->sharing it?
+> iirc, the sonet has 2 busses.
 
-They are just charing it, nothing wrong
+Yes, but unless you stress the master and slave at the same time, you'll
+never notice.  I bash hda and hdd on my G4 all the time and it never
+seems to be 'slow'.
 
->Any info would be greatly appreciated.
-
-The message means that the IRQ was detected as beeing shared and so disabled
-during IDE probe. This is normal behaviour and is done to avoid the machine
-locking up under some cicumstances, for example with PCMCIA ATA cards that
-share their interrupt with the cardbus controller.
-
-Ben.
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
