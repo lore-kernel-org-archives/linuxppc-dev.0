@@ -1,59 +1,28 @@
-Message-ID: <1069059216.3fb88c900b316@pop-mail.india.tejasnetworks.com>
-Date: Mon, 17 Nov 2003 14:23:36 +0530
-From: Anil Giri <anil@india.tejasnetworks.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SDRAM mirroring problem
+Message-ID: <000f01c3ad19$16bc9070$3d40000a@wisdom>
+From: "Srinivasa Hebbar" <sshebbar@yahoo.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: bash: Segmentation fault on 8280
+Date: Mon, 17 Nov 2003 20:12:46 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Resending this as i didn;t get any response.....
+Dear All,
 
------ Forwarded message from Anil Giri <anil@india.tejasnetworks.com> -----
+We have 2 identical custom board with MPC-8260 and MPC-8280 CPUs.
+The bash (Came with denx CD) works fine on MPC-8260 board.
+But the same bash program encounters a "Segmentation Fault"
+on 8280 based custom board.
 
-Hi,
-  My board uses SAMSUNG K4S511632M SDRAM in 8M * 16 bit * 4 banks configuration
-(13 rows & 10 columns).Two such chips are used to get 128 MB and uses CS1 for
-chip select.My board uses MPC852T processor.
+We are using ppc_82xx-gcc compiler to build the linux.
+The linux version is denx-2.4.20
 
-MPC to SDRAM configuration is as follows:
-======================
-A29 :A0
-A28 :A1
-A27 :A2
-A26 :A3
-A25 :A4
-A24 :A5
-A23 :A6
-A22 :A7
-A21 :A8
-A20 :A9
-GPL_A0 : A10
-A18 :A11
-A17 :A12
+Any help is highly appreciated.
 
-A6 :BA0
-A5 :BA1
-GPL_A3 :CAS
-GPL_A2 :RAS
-GPL_A5 :WE
-=====================
-My problem is that when i write some word in first RAM chip is mirrored
-in the other RAM chip.And Effectivly i m able to use only 64 MB of RAM.
-What could be the problem???
-Following SDRAM settings are used
-
-IMMR:0xff000000
-OR1: 0xf8000e00
-BR1: 0x00000081
-MSTAT:0x00000400
-MAMR: 0x80a06114
-MAR: 0x88
-MCR:0x80002105
-
-Thanks in advance...
--Anil
+Regards,
+S. Hebbar.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
