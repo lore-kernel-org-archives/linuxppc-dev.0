@@ -1,39 +1,54 @@
-Message-ID: <00933BFA237CD2119B3400409543582704A27F@MEV01>
-From: Ian Abbott <abbotti@mev.co.uk>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: A few bugfixes
-Date: Thu, 2 Nov 2000 18:24:39 -0000 
+Message-ID: <3A01E424.7FDD26BC@mvista.com>
+Date: Thu, 02 Nov 2000 14:01:08 -0800
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain
+To: John Jones <john@iigi.net>
+CC: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ld.so.1
+References: <3A01AEB4.B49D209B@iigi.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"epicom" wrote:
+John,
+Try checking in /lib of the host system. Even though binutils
+creates files for the target, it runs and requires host software
+not target software.
 
->  I have found several bugs in versions 2.4.0-test*, I don't
-> know if they
-> exist
-> in 2.2.* versions, but it is posible.
+Cal
 
-The first two (of three) do.
+John Jones wrote:
 
-The first one:
-> >>  return(((unsigned long)(pte_val(*pte)) & PAGE_MASK) | (address &
-> ~(PAGE_MASK-1)));
-
-is logically wrong but I think it is a harmless bug.
-
-> In the wish to have been useful to improve the PPC port of
-> the linux kernel:
+> I am trying to install the rpm:  hhl-ppc_8xx-binutils-2.10.0.12-1 and I
+> am getting the error:
 >
+> ld.so.1 is needed by hhl-ppc_8xx-binutils
 >
-> Luis Recuerda,
-
-Thanks, Luis!
+> I checked the .../target/lib and that file (link) is there.
+>
+> Anyone know what I should do?
+>
+> Thanks.
+>
+> -John
+>
+> --
+> <Help further Linux by signing the Linux Driver Petition:
+> http://www.libranet.com/petition.html>
+>
 
 --
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>             )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587              )=-
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Customer Support Engineer    490 Potrero Avenue
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
+Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
+web http://www.mvista.com    support e-mail: support@mvista.com
+eCode: http://cal@work.com.ecode.com
+===========================================================================
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
