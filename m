@@ -1,79 +1,40 @@
-To: Jerry Van Baren <vanbaren_gerald@si.com>
-Cc: "Kwansuk Kim" <kskim@neowave.co.kr>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: omitted kernel sections 
-In-reply-to: Your message of "Mon, 26 Jun 2000 08:48:36 -0400"
-             <4.3.2.20000626080626.00b482e0@falcon.si.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <39577443.7FBC6ACD@lucent.com>
+Date: Mon, 26 Jun 2000 09:18:27 -0600
+From: Steven Tarr <tarr@lucent.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 27 Jun 2000 00:40:38 +1000
-Message-ID: <20179.962030438@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+To: Kwansuk Kim <kskim@neowave.co.kr>
+Subject: Re: omitted kernel sections
+References: <20179.962030438@msa.cmst.csiro.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 26 Jun 2000 08:48:36 -0400, Jerry Van Baren <vanbaren_gerald@si.com> writes:
->* It isn't how everybody uses the load: everybody just strips the elf
->header (pastes on a proprietary(?) header) and uses it as as a raw
->binary image
+I offer our solution to the problem as an additional data point. I added a command
 
-Here's one example of how people use the load ...
+to the boot rom code that downloads a file to any supplied address via tftp then
 
-I use the "libbfd" library (generated when you build the binutils usually)
-to read the ELF headers of the image file ("zImage.initrd" in my case) and
-determine the entry point of the image, then I wrap the whole thing in my
-own (open, non-proprietary :-) header which contains various stuff (e.g.
-checksums), and the entry point.
+jumps to that address plus 0x1000. The offset of 0x1000 is to get over the
 
-My boot loader then can simply use the entry point in the header to begin
-execution of the image, either directly where it is stored (e.g. in flash)
-or after storing/relocating it. The assumption is that the image (whatever
-it is) is either location independent or will relocate the appropriate bits
-as required. Fortunately, the mbxboot stuff does the latter.
+ELF header. In this case, I leave the the LINUX build environment alone
 
-This scheme has the advantage that the entry point could be set different
-to the real entry point in the ELF file - for what that's worth, I can't think
-of any use for that at the moment (you might have two text sections and
-have to choose one? I dont know), but my goal was to try to be object format
-independent in the boot loader (and so I had to create yet another object
-format :-) - learning the entry point is dependent on the object format,
-and is best done on the host.
+and still get a quick boot turnaround.
 
-So, I don't strip the ELF header, but I do paste on my own header and use
-the image as a raw binary image - except that I know the entry point (as an
-offset from the start of the image). But I don't do any of this as part of
-the kernel build, I have a simple tool that does it when I want to "download"
-the image to the target.
+The commercial BDM/JTAG debuggers are almost worthless after the MMU
 
-For the record, I support Dan's view - the way it is now, is very simple,
-and has worked fine for a long time. To me, it looks like the tools you
-are using are broken (or at least lacking certain features, namely the
-ability to load arbitrary sections from the ELF image into memory - which
-doesn't surprise me, because the JTAG stuff you mention sounds proprietary
-commercial stuff, and you always run into bugs/lack of features that you
-can't fix when you use software you haven't go the source for - sorry for
-the soapbox - you probably don't need me to tell you :-). The "loading" of
-the image (and stuff to support that) should be done outside of the kernel
-build area.
+is enabled. Only in a "after the fact" case are they of any use. We, collectively,
 
-In fact, it could be argued that the *boot directories don't belong in the
-kernel build area either, because there is no connection between the code
-in the *boot directories and the kernel code - they are separate things.
-They don't share any code (at least in the mbxboot case) - the boot stuff
-treats the kernel image (and ramdisk image, if it exists) as blobs of bytes,
-it really should be in a separate development tree (I suppose one connection
-is the way arguments/bootinfo/etc are passed to the kernel, however I would
-argue that this is only an interface).
+need to continue to bellyache to the vendors about the short coming.......
 
-But historically (and not just with linux), the boot stuff has always been
-in there for convenience so thats not going to change, just because I get
-pedantic. But at least we can keep it as simple as possible. I'll shut-up
-now (I wonder if anyone has actually read this far - I hope it wasn't a waste
-of time for you - it was good for me *pant* *pant* :-) Cheers!
-								Murray...
+cheers --
+
+tarr
+
 --
-Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
+Steve Tarr
+tarr@lucent.com
+303-538-4056
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
