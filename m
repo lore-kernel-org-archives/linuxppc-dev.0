@@ -1,37 +1,31 @@
-Message-ID: <3B97B8B9.115B1569@mvista.com>
-Date: Thu, 06 Sep 2001 13:56:09 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <20010906175743.3218.qmail@web20103.mail.yahoo.com>
+Date: Thu, 6 Sep 2001 10:57:43 -0700 (PDT)
+From: John Francis <johnfrancsis@yahoo.com>
+Subject: IDMA freezes but with periodic printk() things work...
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Mark Hatle <fray@mvista.com>
-Cc: Navin Boppuri <navin.boppuri@newisys.com>,
-	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Ctrl-C does not work
-References: <3A494DE356A49A40B37442E1E0D9F3B506343E@ptah.ad.newisys.com> <3B97984C.CCE09FE7@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Hatle wrote:
+Hello,
 
-> .....  There is a problem with the
-> way the serial consoles are started on CDK 1.0 and 1.2, it was left up
-> to the serial driver to turn on or off the control-c activation.
+I am faced with very strange problem.
 
-It actually has to do with the way tty process groups are created and
-signals are managed.  If you boot _any_ Linux kernel using something
-like 'init=/bin/sh', ctl-C doesn't work because the process in slot 1
-(normally init) is treated with special signal handling by the kernel.
+I have IDMA channel 1 that I am using to send
+ethernet packets to external device. What I have seen
+is if I try to transmit large amount of data at really
+fast rate things IDMA transfer simply stops. However
+if I do printk() after say every 10000 byte transfer
+IDMA tranfer code works for days.
 
-> .... login has a patch that ensures that the
-> control-c stuff is enabled.
+Has anybody seen this kind of behaviour before? What
+are the possible reasons this might happen?
 
-Huh?  All you need to do is properly start up an interactive
-session from init to get process group signal handling.  This is
-just standard Linux userland stuff documented in a variety of places.
+Any hints!!
 
+John
 
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
