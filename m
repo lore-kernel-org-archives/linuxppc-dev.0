@@ -1,20 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 39BD62BDEB
+Return-Path: <praveen.mehrotra@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.203])
+	by ozlabs.org (Postfix) with ESMTP id 2784D2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Nov 2004 11:27:38 +1100 (EST)
-Date: Wed, 3 Nov 2004 16:27:34 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Rick McBain <rick.mcbain@logicsense.com>
-Message-ID: <20041104002734.GA4063@gate.ebshome.net>
-References: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>
+	Thu,  4 Nov 2004 13:15:41 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id y7so237663rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 03 Nov 2004 18:15:39 -0800 (PST)
+Message-ID: <a2ea557e041103180817107b9e@mail.gmail.com>
+Date: Wed, 3 Nov 2004 18:08:59 -0800
+From: Praveen Mehrotra <praveen.mehrotra@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux port for the AMCC (was IBM) 440EP
+Content-Type: text/plain; charset=US-ASCII
+Subject: Critical Interrupt on 405EP
+Reply-To: Praveen Mehrotra <praveen.mehrotra@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 03, 2004 at 03:17:27PM -0800, Rick McBain wrote:
-> Does anybody have a working distribution for the 440EP? We were planning
-> to use a Timesys port, but we've now been told it doesn't exist (after
-> months of promises it did.).  Our other option is to pay US$25K to
-> MontaVista, but that seems a tad pricey, and our previous experience
-> with them is that they delivered us an ARM port which fundamentally
-> didn't work.
-> 
+Hello,
 
-Just FYI, 44x port was made by MontaVista.
+I'm running 2.4.20 kernel on a 405EP board and am interested in using
+critical interrupt for one of the devices. I've almost got it working,
+except that after several minutes (ranging from 10-30) of operation 
+kernel crash occurs.
 
-Try the following exercise, grep the kernel code and see how much was 
-written for PPC by Timesys and then make your decision.
+Has anyone got the critical interrupt on 405EP working for 2.4.x
+kernels ? I can post details specific to changes I made if someone has
+experience regarding this.
 
-FWIW, it should be relatively simple to do 440EP port, we already 
-have working 440GP & 440GX in both 2.4 & 2.6.
-
---
-Eugene.
+Thanks,
+Praveen
