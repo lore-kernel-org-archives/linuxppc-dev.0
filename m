@@ -1,19 +1,16 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 0859B2BDA2
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 02:41:50 +1000 (EST)
-Date: Fri, 24 Sep 2004 09:41:46 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20040924164146.GG2107@smtp.west.cox.net>
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 85A552BDA2
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 02:49:01 +1000 (EST)
+Date: Fri, 24 Sep 2004 09:48:58 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Stephen Rothwell <sfr@ozlabs.org>
+Message-ID: <20040924094858.A4823@home.com>
 References: <20040923164655.0472a8b9.sfr@ozlabs.org>
-	<20040923233035.GH27238@smtp.west.cox.net>
-	<36b714c80409231731257ca5d0@mail.gmail.com>
-	<29D00F8B-0DC8-11D9-A0FB-000A95A0560C@penguinppc.org>
-	<DA7E9084-0DED-11D9-A74B-003065F9B7DC@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DA7E9084-0DED-11D9-A74B-003065F9B7DC@embeddededge.com>
+In-Reply-To: <20040923164655.0472a8b9.sfr@ozlabs.org>;
+	from sfr@ozlabs.org on Thu, Sep 23, 2004 at 04:46:55PM +1000
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: New mailing list specifically for embedded PowerPC development
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,34 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 24, 2004 at 01:52:00AM -0400, Dan Malek wrote:
-
+On Thu, Sep 23, 2004 at 04:46:55PM +1000, Stephen Rothwell wrote:
+> Hi all,
 > 
-> On Sep 23, 2004, at 9:22 PM, Hollis Blanchard wrote:
+> After some representations, I have created linuxppc-embedded@ozlabs.org
+> for the discussion of all things to do with the development of Linux on
+> embedded PowerPC platforms.
 > 
-> >I think ultimately the problem is that the embedded list ends up 
-> >generating a *lot* of traffic, and that traffic ends up drowning out 
-> >non-embedded topics.
-> 
-> This was the reason the list was created years ago.  People got tired
-> of reading my comments and few people were involved in embedded
-> development at that time :-)  People with no interest in embedded didn't
-> want to hear about it.
+> General Linux on PowerPC development discussions should, of course, remain
+> on this list.
 
-I would dare say that a few years ago the embedded side was a bit
-smaller than today :)
+I need further guidelines on utilization of these lists.  If embedded
+discussions are on linuxppc-embedded and general development discussions
+are on linuxppc-dev, then where do pmac-specific discussions belong?
+They certainly don't belong on linuxppc-dev since that is a specific
+class of machines that not everybody has interest in and generates
+a lot of traffic.
 
-> I don't know why anyone would care if they have to subscribe to
-> multiple lists to get the information they need.  There isn't any need
-> to cross post and I don't think this is done very much or at all.  There
-> have been a few times early in the -embedded days that I have taken
-> topics from the embedded list to the -dev list, but this isn't necessary
-> any more because the interested parties are on both.
+Also, where do I post patches?  I typically try to copy lkml and
+linuxppc-dev.  Can we establish that all patches go to linuxppc-dev
+regardless of general/embedded/pmac? If not, it seems we'll have
+to divide patches up into the generic portion that affects everybody
+for linuxppc-dev and then the embedded/pmac portion to go elsewhere.
+That would be real waste and make it difficult to follow a patch
+set if it were split among lists with differing subscriber bases.
 
-Well, it's not exactly obvious to new people why exactly the 'dev' list
-isn't for embedded development.  It also helps foster the notion that
-'those embedded folks just go off and do their own thing'.
+Of course, if we send patches to linuxppc-dev for embedded/pmac specific
+items, then that guarantees the generation of discussion outside the
+stated scope of the list when people have objection/concerns about a
+patch.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+I personally feel that the split is unnecessary, but obviously others
+had strong feelings so I'm not going to needlessly object any longer.
+The most important thing at this point is to provide a bit more detail
+on the lists...and probably add a linuxppc-pmac list. :)
+
+-Matt
