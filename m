@@ -1,50 +1,38 @@
-Message-ID: <371F76F4.27B2850D@fi.infn.it>
-Date: Thu, 22 Apr 1999 21:22:28 +0200
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: MVME2306 : kernel 2.2.6 SUCCESS !
-References: <Pine.HPP.3.96.990421181843.20020c-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199904221923.OAA26620@lists.linuxppc.org>
+Date: Thu, 22 Apr 1999 15:23:02 -0400
+From: "Williams, Murray Todd" <murray_williams@merck.com>
+Subject: Wacom Intuos Graphics Tablet and the USB iMac
+To: "'linuxppc-user@lists.linuxppc.org'" <linuxppc-user@lists.linuxppc.org>,
+        "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+MIME-version: 1.0
+Content-type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
-> 
-> :-( You should include linux/string.h instead of string.h.
-> 
->         Gabriel.
-Hi, 
-I made the correction you suggested, and that time make zImage compiled
-well the routine, but then it stopped a bit further when doing vmlinuz
-and zImage.
-This was due to these two lines:
+I've noticed that there is a pretty functinal driver for XFree86 (Xinput)
+for the Wacom Intuos graphics tablet, which is basically a generic serial
+device.  ( http://www.levien.com/free/linux_intuos.html ) and I also see
+that Wacom describes how to get the serial-port (PC) Intuos to work on an
+iMac (USB) via a simple USB-to-serial converter.  (
+http://www.wacom.com/productsupport/usb.html )
 
-ld -o zImage $(OBJECTS) --just-symbols=$(TOPDIR)/vmlinux
+So here's the question: I know that right now we only have USB mice and
+keyboards working on the iMac.  Does anyone know how easy or hard it would
+be to get a standard serial device on the USB interface to map to a port
+(e.g. /dev/ttyS1 or something) so that I could try to compile the Xinput
+driver on an iMac?
 
-objcopy $(TOPDIR)/vmlinux vmlinux -O binary -R .comment -S
+On the surface, this sounds like a simple thing, but I know absolutely
+nothing about Mac serial devices (/dev/ttySx) or the USB standards.
 
-in /home/ppc/linux/arch/ppc/prepboot/Makefile
+Any thoughts?
 
-That just don't work on my PC, because in this way the makefile is using
-the intel tools, I modified in: 
+Murray Todd Williams
+murray_williams@merck.com
 
-$(CROSS_COMPILE)ld -o zImage $(OBJECTS) --just-symbols=$(TOPDIR)/vmlinux
-
-$(CROSS_COMPILE)objcopy $(TOPDIR)/vmlinux vmlinux -O binary -R .comment
--S
-
-and everything went fine. So now I can start to do check with your
-images.
-
-Many thanks for all the help
-
--- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
+P.S. If you're reading this on the linuxppc-dev list, e-mail a response to
+me directly.  I haven't put myself on that mailing list (yet).
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
