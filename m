@@ -1,43 +1,85 @@
-Message-ID: <3B37AEEC.80402@mvista.com>
-Date: Mon, 25 Jun 2001 14:36:44 -0700
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <00c401c0fe17$1ffc3860$150101c0@teletron.co.kr>
+From: =?ks_c_5601-1987?B?wPy5zrHU?= <apices@intizen.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linux Booting again - MPC8260
+Date: Tue, 26 Jun 2001 17:08:03 +0900
 MIME-Version: 1.0
-To: Kumar Gala <galak@ibmoto.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: software FP support?
-References: <Pine.GSO.4.05.10106251633130.22421-100000@softail.somerset.sps.mot.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Our (montavista) toolchain is built with softfloat.  Btw, our 2.0
-Journeyman release is available on our ftp site (includes glibc-2.2.3).
-  start with our website to find out how to download it.
-http://www.mvista.com
+Hi machael,
+Thanks for your help.
 
-Kumar Gala wrote:
+I asked about Linux Booting of MPC8260 a few day ago.
+The problem is following code.
 
-> I was wondering what the current state of software floating point support
-> was in the PowerPC embedded world.
->
-> I am trying to build a glibc with soft-fp to get a /bin/sh that does not
-> setup the fpu state.  I was wondering if someone has already gone through
-> this trouble or how people have been handling this.
->
-> I know that the kernel has support for soft-fp handling which would allow
-> userland and libc to still use FP code but that seems expensive.
->
-> Any information would be helpful.
->
-> thanks
->
->  - kumar
->
->
->
->
->
+start_here:
+        ...
+        bl identify_machine
+        bl MMU_init
+        lis r4,2f@h
+        ori r4,r4,2f@l
+        tophys(r4,r4)
+        li r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+        FIX_SRR1(r3,r5)
+        mtspr SRR0,r4
+        mtspr SRR1,r3
+        SYNC
+        RFI              /* halt after the rfi instruction ? */
 
+2:
+   /* Here I add my debuging codes,
+      GPIO - Port A4 output ON.
+      but it outputs nothing. */
+
+        sync
+        tlbia
+        sync
+
+And I received answer.
+
+>Check those codes(setbat) in MMU_init() to make sure it is same as your
+>custom board:
+
+>case _MACH_8260:
+>    setbat(...);
+>    setbat(...);
+>    ioremap_base=...;
+>break;
+
+I tried following cases.
+
+    setbat(0, 0xf0000000, 0xf0000000, 0x10000000, IO_PAGE);
+    ioremap_base = 0xf0000000;
+
+    setbat(0, 0xf0000000, 0xf0000000, 0x20000, IO_PAGE);
+    ioremap_base = 0xf0000000;
+
+    setbat(0, 0xf0000000, 0xf0000000, 0x10000000, IO_PAGE);
+    setbat(1, 0xe0000000, 0xe0000000, 0x10000000, IO_PAGE);
+    ioremap_base = 0xe0000000;
+
+    setbat(0, 0xf0000000, 0xf0000000, 0x20000, IO_PAGE);
+    setbat(1, 0xe0000000, 0xe0000000, 0x10000000, IO_PAGE);
+    ioremap_base = 0xe0000000;
+
+
+- My Custom Board Info.
+    CPU    : MPC8260 (Rev 01, Mask A.1 1K22A-XC) at 198 MHz
+    DRAM  : 64 MB  (Base Address 0)
+    FLASH : 512 KB (Base Address 0xFFF00000)
+    IMMR   : 0xF0000000
+      - I changed H/W configuration value 0xFF000000 -> 0xF0000000 in ppcboot.
+    No more I/O space for custom board.
+
+Linux port is frist try to me.
+I have no more solution.
+Please let me know if you have any ideas.
+Thank you.
+
+min-gyu Jeon.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
