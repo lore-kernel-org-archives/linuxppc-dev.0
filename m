@@ -1,59 +1,56 @@
-Message-ID: <3E652B8C.8080602@embeddededge.com>
-Date: Tue, 04 Mar 2003 17:41:16 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
-References: <IGEFJKJNHJDCBKALBJLLEEMPFKAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 4 Mar 2003 16:08:49 -0700
+To: Dan Malek <dan@embeddededge.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
+Message-ID: <20030304230849.GB4683@rover.farnsworth.org>
+References: <20030304191644.GA4524@rover.farnsworth.org> <3E64FD53.3030107@embeddededge.com> <20030304201302.GA4683@rover.farnsworth.org> <3E650AAF.7060804@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3E650AAF.7060804@embeddededge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+On Tue, Mar 04, 2003 at 08:21:03PM +0000, Dan Malek wrote:
+> Well, one option that may be the easiest is to just change all
+> of the linux head.S files to have the three nops again.  When we
+> split these file apart a while back, we just removed everything that
+> wasn't necessary.  Just put a note in those files why they are
+> present.  They don't cost anything since these are exception vector
+> locations or temporary storage locations for special purposes.
 
-> I can't find any further info about this bug/workaround. There is nothing in
-> linux that indicates that the workaround is dependant on any revision.
+What about this approach?
 
-That's because we couldn't determine which ones in particular may be
-broken.  Remember there are several different sources of cores, the 823/850
-core is different from the 860 core.  We don't distinguish among these
-in the kernel.
+The problem is that on some systems, the cpu 1 runs at
+__secondary_hold before cpu 0 runs at _start and __secondary_hold
+overwrites the nop at 0x4.
 
-> Further, dcbi and dcbz are pretty similar in behavior w.r.t TLB error so
-> I suspect that if this works for dcbi it also works for dcbz, only
-> on kernel addresses though.
+If we branch around the the the word at 0x4, the kernel can start
+at 0 and we don't need to modify the other head.S files.
 
-Maybe.
+The following patch works on my SMP system.
 
-> Maybe user space also can be fixed with instruction decoding
+Thanks,
+-Dale
 
-No, user space has always been "fixed" by providing a unique version
-of C libraries for the 8xx.  This has to be done for more reasons
-than just the cache instructions.  It also includes supporting a
-different sized cache line for dynamic relocation and often the
-performance advantage of using soft-float instead of kernel emulated
-floating point.  It's also perfectly suited for the IBM 403, BTW :-)
+===== head.S 1.80 vs edited =====
+--- 1.80/arch/ppc/kernel/head.S	Thu Feb 27 12:40:15 2003
++++ edited/head.S	Tue Mar  4 15:52:24 2003
+@@ -88,8 +88,13 @@
+ 	 * but we're always started by some kind of bootloader now.
+ 	 *  -- Cort
+ 	 */
+-	nop	/* used by __secondary_hold on prep (mtx) and chrp smp */
+-	nop	/* used by __secondary_hold on prep (mtx) and chrp smp */
++	/*
++	 * The first two words are used by __secondary_hold on SMP systems.
++	 * The second word may be overwritten before the first cpu runs
++	 * here, so we branch around it.
++	 */
++	b	__start
++	nop
+ 	nop
 
-> as Daniel said even if it's ugly. Then you would not have to worry about
-> apps/libs using dcbz, at least it would work but perhaps the performance sucks
-
-I'm trying to discourage you guys from wasting time here.  These are
-all known problems that have been solved.  If we want to use this processor
-we have to accept some limitations and get on with using it. :-)  People
-have been successfully deploying products for years using Linux and 8xx.
-Leave the cache instructions alone.  :-)
-
-This discussion has been moved to a very low priority in my mailbox.
-Don't expect timely or any further replies, and please don't be sending me
-any dcbz kernel patches! :-)
-
-Thanks.
-
-
-	-- Dan
-
+ /* PMAC
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
