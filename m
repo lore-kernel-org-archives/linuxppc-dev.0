@@ -1,11 +1,11 @@
-Message-ID: <40DC0B11.5000302@ru.mvista.com>
-Date: Fri, 25 Jun 2004 15:22:57 +0400
-From: Yuri Frolov <yfrolov@ru.mvista.com>
+Message-ID: <40DC1669.5060808@dev.rtsoft.ru>
+Date: Fri, 25 Jun 2004 16:11:21 +0400
+From: Yuri Frolov <yfrolov@dev.rtsoft.ru>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Unsuccessfull system call interseption. Please, help to correct it
+Subject: Unsuccessfull system call interception. Please, help to correct it
  or make a suggestion.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
@@ -134,7 +134,7 @@ BDI2000 help):
 The investigation has shown that the reason for fault is the
 addi    r3,r1,STACK_FRAME_OVERHEAD;     /* Put pointer to registers into
 r3 */  \
-instruction whitch follows direcly after the macro:
+instruction whitch follows directly after the macro:
 #define TRACE_REAL_ASM_SYSCALL_ENTRY
 
 Definitly I can't just get rid of it (trace_real_syscall_entry really
