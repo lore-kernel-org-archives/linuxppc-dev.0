@@ -1,54 +1,126 @@
-Message-ID: <EFB813091B18D511BD3600508B644F820A617F00@tx14exm06.ftw.mot.com>
-From: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
-To: "'David Gardiner'" <daveg@sonartech.com.au>,
-	Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Question on the fs choice
-Date: Fri, 21 May 2004 09:55:45 -0500
+Message-ID: <40AE288A.5040803@ru.mvista.com>
+Date: Fri, 21 May 2004 20:04:26 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Shamile Khan <shamile@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Xilinx EMAC - cannot ping
+References: <20040519232252.10109.qmail@web11604.mail.yahoo.com>
+In-Reply-To: <20040519232252.10109.qmail@web11604.mail.yahoo.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David,
+Hi Shamile,
 
-Thank you for your brief report.
+ >           TX packets:7 errors:0 dropped:0 overruns:0
+...
+ > 4) interrupts
+ > bash-2.05# cat /proc/interrupts
+ >            CPU0
+ >  30:       8046     Xilinx INTC  Level  serial
+ >  31:          7     Xilinx INTC  Level  eth0
+ > BAD:          0
+ >
+ > 5) Running ethereal on host which I am pinging to, I can
+ > see ARP requests from my linux target sent to the host but
+ > nothing is sent back to target.
+ >
 
-You're getting quite a number of errors. Let's attack'em one by one.
-This is your CF card type:
-> hde: SanDisk SDCFB-512, CFA DISK drive
+ From the diagnostic results cited above it looks like the
+problem is in your host: the tagret sends 7 ARP requests
+which are decoded correctly (I assume this because neither
+you nor you host complain about ARP requests contents), but
+host doesn't respond to them.
 
-SDCFB-512 cards are equipped with the 100 series internal controller and are
-not DMA capable.
-I think you should try to turn DMA off for your CF card. Not sure if you can
-selectively specify such support for individual IDE devices, though (you may
-still want it for your hard drives if you have any in that system) -
-CONFIG_BLK_DEV_IDEDMA.
-As far as SanDisk cards are concerned, only cards equipped with 201
-controller fully support DMA transfers (SDCFB-512-201-00, SDCFB-512-201-80).
+I would check the ARP requests contents and then your host settings.
 
-> Partition check:
- /dev/ide/host2/bus0/target0/lun0
-The partition on your CF card should get detected as hde1 or p1. The fact
-that you're getting the absolute path tells me that either you don't have
-hde, hde1, hde2..entries created at /dev on your root file system or you're
-not running DEVFS. At the beginning, try to enable DEVFS in your kernel.
+Best regards,
+Andrei
 
-> hde: dma_intr: error=0x04 { DriveStatusError }
-> hde: dma_intr: status=0x51 { DriveReady SeekComplete Error }
-> hde: dma_intr: error=0x04 { DriveStatusError }
-> hde: dma_intr: status=0x51 { DriveReady SeekComplete Error }
-> hde: dma_intr: error=0x04 { DriveStatusError }
-> hde: dma_intr: status=0x51 { DriveReady SeekComplete Error }
-> hde: dma_intr: error=0x04 { DriveStatusError }
-
-Compact flash cards are relatively slow in comparison with e.g. hard drives.
-You may want to play with the timeout at ide.h file for pending on READY,
-DRQ, BUSY bits.
-
-Regards,
-Adam
+Shamile Khan wrote:
+> Hi,
+>
+> I have a Memec FG456 evaluation board with P160 module. I
+> am using Xilinx ethernet core (with default configuration
+> in mhs file) and the open source linux driver for Xilinx
+> EMAC. It seems that the ethernet device is detected
+> correctly but I cannot seem to ping any machine in my
+> network. I can ping myself though. Here are some diagnostic
+> results.
+>
+> 1) insmod the driver
+> bash-2.05# insmod a.out
+> eth0: Xilinx EMAC #0 at 0xFEFE8000 mapped to 0xC3008000,
+> irq=31
+>
+> 2)  ifconfig
+> bash-2.05# ifconfig eth0 192.168.0.55
+> bash-2.05# ifconfig -a
+> eth0      Link encap:Ethernet  HWaddr 00:60:08:27:11:7B
+>           inet addr:192.168.0.55  Bcast:192.168.0.255
+> Mask:255.255.255.0
+>           inet6 addr: fe80::260:8ff:fe27:117b/10 Scope:Link
+>           UP BROADCAST RUNNING  MTU:1500  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0
+> frame:0
+>           TX packets:7 errors:0 dropped:0 overruns:0
+> carrier:0
+>           collisions:0 txqueuelen:100
+>           RX bytes:0 (0.0 b)  TX bytes:414 (414.0 b)
+>           Interrupt:31
+>
+> lo        Link encap:Local Loopback
+>           LOOPBACK  MTU:16436  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0
+> frame:0
+>           TX packets:0 errors:0 dropped:0 overruns:0
+> carrier:0
+>           collisions:0 txqueuelen:0
+>           RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+>
+> sit0      Link encap:IPv6-in-IPv4
+>           NOARP  MTU:1480  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0
+> frame:0
+>           TX packets:0 errors:0 dropped:0 overruns:0
+> carrier:0
+>           collisions:0 txqueuelen:0
+>           RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+>
+> 3) bash-2.05# mii-tool -v
+> eth0: negotiated 100baseTx-FD flow-control, link ok
+>   product info: vendor 00:10:18, model 30 rev 4
+>   basic mode:   autonegotiation enabled
+>   basic status: autonegotiation complete, link ok
+>   capabilities: 100baseTx-FD 100baseTx-HD 10baseT-FD
+> 10baseT-HD
+>   advertising:  100baseTx-FD 100baseTx-HD 10baseT-FD
+> 10baseT-HD flow-control  link partner: 100baseTx-FD
+> 100baseTx-HD 10baseT-FD 10baseT-HD flow-control
+>
+> 4) interrupts
+> bash-2.05# cat /proc/interrupts
+>            CPU0
+>  30:       8046     Xilinx INTC  Level  serial
+>  31:          7     Xilinx INTC  Level  eth0
+> BAD:          0
+>
+> 5) Running ethereal on host which I am pinging to, I can
+> see ARP requests from my linux target sent to the host but
+> nothing is sent back to target.
+>
+> Any ideas on the source of the problem?
+>
+> Regards,
+> Shamile
+>
+>
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
