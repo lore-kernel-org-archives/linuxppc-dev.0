@@ -1,28 +1,31 @@
-Message-ID: <004001c4362d$82953020$0300a8c0@BIGSHOT>
-Reply-To: "John Zhan" <zhanz@fel.com.cn>
-From: "John Zhan" <zhanz@fel.com.cn>
-To: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8245:PCI unstable
-Date: Mon, 10 May 2004 09:24:16 +0800
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20040510074900.31620.qmail@web12308.mail.yahoo.com>
+Date: Mon, 10 May 2004 00:49:00 -0700 (PDT)
+From: srinivas jandhyala <jandhyala_99@yahoo.com>
+Subject: u-boot on MPC5200 in loop 
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,folks,
-I am working on a custom board based on XPC8245LZU333B, 2 ethernet adapters (DP83816) were used on the PCI bus.
-Of cause with Linux.
-The 100base-tx of the board was connect to LAN and perform a data transfer . The transfer just like ping some host or pinged by some host.The transfer can keep for some time. But Linux maybe crash occasionally. the duration from the start of the transfer to the Linux crash maybe some dozens of minutes or hours.
-My Linux port from mvista 2.4.26 sandpoint.
-I noticed  that  XPC8245LZU333B's PCI host can't support  Type 2 Fast back-to-back transactions, but I am not sure if this cause the problem?
-If the drivers should be updated to avoid PCI Fast back-to-back transactions in 8245 systems? If anything else should be taken into account to make the PCI stable?
+Hi,
 
-Any clues are greatly appreciated.
+I am trying to bringup Linux on MPC5200 LITE
+evalutaion board with u-boot in LOWBOOT mode. I was
+able to boot linux kernel running u-boot from RAM.
+When I tried to use u-boot from flash in lowboot mode
+I see the following ouput on my console repeatedly.
+Any help is appreciated. Thanks in advance.
 
-Best Regards.
---
-John.
+U-Boot 1.1.0 (May 10 2004 - 08:02:56)
+
+CPU:   MPC5200 (JTAG ID 0001101d) at 396 MHz
+       Bus 132 MHz, IPB 66 MHz, PCI 33 MHz
+Board: Motorola MPC5200 (IceCube)
+I2C:   85 kHz, ready
+DRAM:
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
