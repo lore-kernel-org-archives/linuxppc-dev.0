@@ -1,65 +1,100 @@
-From: ckrobins@rockwellcollins.com
-Subject: SCSI Host Adapter configuration question
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Fri, 19 Oct 2001 14:02:42 -0500
-Message-ID: <OFC683C7DD.17A98E05-ON86256AEA.00647739@collins.rockwell.com>
+Message-ID: <3BD087D8.B9672791@midrivers.com>
+Date: Fri, 19 Oct 2001 14:06:48 -0600
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset="us-ascii"
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: debugging ppc4xx VM, part 2
+References: <20011019192616.EC18510CD6@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Can a SYM53C825a SCSI host adapter be configured to talk to a wide SCSI
-disk drive using a narrow SCSI interconnect.
+Wolfgang Denk wrote:
+>
+> In message <3BD0616A.B5FE43C0@midrivers.com> you wrote:
+> >
+> > however, if I step or next, gdb never comes back; if I break out
+> > and 'where' it looks like I've taken a fault ...
+> >
+> > I think I've set everything up for mmu support in the bdi --
+> > there was 1 statement in the user's manual to:
+> > 'If not automatically done by the kernel, setup the page table pointers
+> > for the BDI.' -- I don't know from this what to check or what to do.
+>
+> Well, did you (a) follow the description in the  BDI2000  manual  and
+> initialize  the  page  table  pointer  manually, or (b) did you use a
+> kernel which has the necessary extension to do it automagically?
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+> ######## This message was made from 100% recycled electrons. ########
+>
 
-I have a Motorola MVME-3604 processor card with the MVME-712M transition
-      module attached.    The primary SCSI host
-adapter chip for the '3604 is a SYM53C825A and its SCSI interface is routed
-      to the '712 module as a narrow SCSI bus
-terminating with a 50-pin Centronics connector.
+yes.
 
-I am trying to add an external SCSI disk to this system as a second
-      filesystem - the card boots from a ramdisk.
+it looks like I've either got a gdb/bdi problem or a kernel build
+problem:
 
-I have tried 3 different external SCSI disks with this and 2 of the 3 fail
-      because of a SCSI parity error.
+in start_kernel() I've added a call gdb_spin() which simply spins,
+waiting for a var to be set != 0 by gdb -- it gives me time to start
+gdb and break in.  I can step / next in this function, returning to
+start_kernel().
 
-The 2 disks that generate SCSI parity errors are a Seagate ST32550W and a
-      Seagate ST318405LW
-The disk that doesn't generate SCSI parity errors is a Seagate ST34371N
+the next call is:
+printk(linux_banner);
 
-After checking these on Seagate's website, I find that the disk that works
-      has a narrow SCSI interface (the N suffix) and
-the two that don't are wide SCSI interfaces.
+-- if I si twice, rc becomes set w/ a pointer to the format string
+which looks reasonable.
 
-I have checked the cabling and terminations carefully and have, where it
-      was possible, used the same cables and
-terminations in both the working and non-working setups.
+the 3'rd si is the bl      0xc0012da4 <printk>
+-- when I si to enter this func, and 'where' I get:
+(gdb) where
+#0  printk (fmt=0x32f050 <Address 0x32f050 out of bounds>) at printk.c:255
+#1  0xc0002330 in start_here ()
 
-My SCSI driver is the sym53c8xx ver 1.3g and the linux distribution is
-      2.2.12 modified with Gabriel Paubert's patches for
-the MVME2604 (the 3604's predecessor)
+-- no mention of the call from start_here() to start_kernel() -- and
+printk's format ptr has become unreasonable.
 
-This paragraph is speculation on my part - if it doesn't work this way
-      please don't be afraid to set me straight.  -  I believe
-that the autoconfiguration being done at boot is assuming that if my disk
-      has a wide SCSI interface and my host
-adapter can support a wide SCSI bus, then it should configure for wide
-      SCSI.    Problem is, the interconnection is only
-8 bit, not 16, and I can imagine that a parity error is easy to get if you
-      can only read half of the bus.     The narrow SCSI
-disk would cause the host adapter to configure for narrow SCSI and
-      therefore the parity test would pass.
+tools & environment:
+hhl-20 gdb for ppc405, ppc compiler which I've built; the target is
+a custom mercury-based controller (405+FPU) and the abatron software
+has been changed to work w/ this processor, but not heavily tested.
+the rev of the 405-core used in the mercury is akin to a 405GP rev. C
+which has some issues of its own.
 
-Here's the question:
+the kernel is hhl-2.0 [2.4.2] for ppc405 which I'm attempting to get
+running on this target.
 
-Can I change the driver's parameters to force it to configure a narrow SCSI
-      bus regardless of the disk's interface type?
+["other than that, Mrs. Lincoln, how did you like the play?"]
 
-Thanks for your help
+has anyone seen anything like this kind of stack foulup w/
+a simple bl?
 
-Regards,
-Craig Robinson  (ckrobins@rockwellcollins.com)
+I've used this debugger quite a bit w/o trouble debugging the boot/diags
+package in real mode -- mmu off, no addr translation.
 
+Mark
+
+
+has anyone seen a probl
+Mark
+
+
+
+
+
+--
+Mark Pilon
+
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
+
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
