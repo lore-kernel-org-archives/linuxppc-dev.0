@@ -1,20 +1,19 @@
-Return-Path: <jangiels@speakeasy.net>
-Received: from mail1.speakeasy.net (mail1.speakeasy.net [216.254.0.201])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F0B5D2BD6A
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2004 03:28:36 +1000 (EST)
-Received: from dsl017-104-254.spk0.dsl.speakeasy.net (HELO [192.168.0.10])
-	(jangiels@[69.17.104.254]) (envelope-sender <jangiels@speakeasy.net>)
-	by mail1.speakeasy.net (qmail-ldap-1.03) with SMTP
-	for <linuxppc-dev@ozlabs.org>; 11 Oct 2004 17:21:54 -0000
-From: Jeff Angielski <jangiels@speakeasy.net>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1097515329.8508.66.camel@nighteyes.localdomain>
-Mime-Version: 1.0
-Date: Mon, 11 Oct 2004 13:22:09 -0400
-Subject: Creating rootfs
+	by ozlabs.org (Postfix) with ESMTP id E76522BDB8
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Oct 2004 04:40:24 +1000 (EST)
+In-Reply-To: <1097515329.8508.66.camel@nighteyes.localdomain>
+References: <1097515329.8508.66.camel@nighteyes.localdomain>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <547E0D34-1BB5-11D9-909B-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 11 Oct 2004 14:42:40 -0400
+To: Jeff Angielski <jangiels@speakeasy.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: Creating rootfs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +24,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-So how are people creating the rootfs for their embedded target these
-days?  Busybox?  PTX?  Strip down some existing filesystem?
+On Oct 11, 2004, at 1:22 PM, Jeff Angielski wrote:
 
-I have an opportunity to start "fresh" with our current rootfs and could
-not find anything definitive when google-ing for solutions.  So I am
-curious to hear what the rest of the community is using.
+> So how are people creating the rootfs for their embedded target these
+> days?  Busybox?  PTX?  Strip down some existing filesystem?
+
+Those are the solutions, choose whatever works best for you.
+Some commercial distributions have tools for creating a file
+system that meets the requirements of the applications.
+
+> I have an opportunity to start "fresh" with our current rootfs and 
+> could
+> not find anything definitive when google-ing for solutions.
+
+The methods are as you described above.  The results are as
+varied as the embedded systems upon which they are used.
 
 
-Jeff Angielski
+	-- Dan
