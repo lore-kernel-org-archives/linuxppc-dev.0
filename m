@@ -1,21 +1,23 @@
-Message-ID: <01BE8765.F48BC580@james.acutescan.com>
-From: James Kang <james@acutescan.com>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: looking linux engineer for MPC860
-Date: Thu, 15 Apr 1999 17:32:33 -0700
+Message-ID: <37169C34.558710D9@icu.ac.kr>
+Date: Fri, 16 Apr 1999 11:11:01 +0900
+From: =?iso-8859-1?Q?=B1=E8=BB=F3=B9=FC?= <ksb@ns.icu.ac.kr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: About linux porting on MPC 750...
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We are looking for contract S/W engineer who develop Linux OS and device driver for MPC860 based embedded system urgently.
-If you are interested in, Please send me your resume to james@acutescan.com.
-We are Milpitas, CA based company.
+My team is going to port Linux on Motorola YellowKnife board composing
+of a PPC 750 ,  MPC 106 PCI bus, and some other hardware. I want to know
 
-Regards.
+whether my work is possible. If it is possible, how can I do this? Or
+where can I find the source?
 
-James Kang
+My team and I are beginners in Linux porting. Please send your comment
+to me.
+Thank you.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
