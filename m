@@ -1,57 +1,46 @@
-Date: Thu, 6 Jan 2000 11:51:08 -0500 (EST)
-From: Naoki Takebayashi <ntakebay@bio.indiana.edu>
-To: linuxppc-dev@lists.linuxppc.org
-cc: ttsig@mindspring.com
-Subject: Re: Does 2.2.14 Break SMP for PPC?
-Message-ID: <Pine.SOL.4.10.10001061137170.262-100000@sunflower.bio.indiana.edu>
+Message-ID: <3874C8D8.835DBC64@pop.agri.ch>
+Date: Thu, 06 Jan 2000 17:55:00 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: remote debugging?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
->From: Tom Sightler <ttsig@mindspring.com>
->Subject: Does 2.2.14 Break SMP for PPC?
->Should SMP be working in 2.2.14?  If so, does anyone else have any
->suggestions on what may be wrong?  I really have no pressing need to
->upgrade to 2.2.14 right away since 2.2.13 with SMP has been running very
->stable, but I always like to keep my kernels updated and these machines
+I try to remote debugging a kernel.
+Configuration as follows:
 
-I also had the same problem.  After updating to 2.2.14, the secondary
-processor get stuck during the boot time and smp become disabled.  After
-looking at the patch files, I noticed there is a small change in
-linux/arch/ppc/kernel/head.S. There are three lines added in the beginning
-of the secondary CPU initialization.
+pm7200 Linux <------ serial cable------> PowerBook MacOS ZTerm
 
->From patch-2.2.14:
+the physical Link is ok, when cat'ing a file to /dev/ttyS1 I get it on
+the ZTerm window.
 
-@@ -245,13 +233,16 @@
-        bl      prom_init
-        .globl  __secondary_start
- __secondary_start:
--/*
-- * Use the first pair of BAT registers to map the 1st 16MB
-+/* Switch MMU off, clear BATs and flush TLB */
-+       bl      mmu_off
-+       bl      clear_bats
-+       bl      flush_tlbs
-+
-+/* Use the first pair of BAT registers to map the 1st 16MB
-  * of RAM to KERNELBASE.  From this point on we can't safely
-  * call OF any more.
-  */
-        lis     r11,KERNELBASE@h
+But when I boot with BootX I add the kernel args 'console=/dev/ttyS1' in
+the corresponding field.
 
-Well, I don't know PPC assembly, but I commented out the three "bl ... "
-lines.  Then the 2nd CPU stack message went away and SMP was enabled.
-However it it really unstable, though.  So the problem with 2.2.14 SMP
-seems to be around here.  Probably someone who knows PPC assembly can
-help here...
+The first stage text I see on the pm7200, afterwards Tux comes up and no
+booting messages are seen either on the pm7200 (what I expect) nor on
+the ZTerm window. (what I don't expect).
 
-Naoki Takebayashi     <ntakebay@bio.indiana.edu>
---- Dept. of Biology, Indiana University, Jordan Hall 142
---- 1001 E. Third St. Bloomington, IN 47405-3700 USA
+The serial settings are as described in the xmon.txt 38400N81
+The kernel is compiled with xmon included, the one I test boots and is a
+2214pre18. It's only to find out how 'remote' works.
+
+Any ideas/experiences?
+
+Thanks in advance,
+
+Andreas
+-- 
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail:   a.tobler@schweiz.ch
+-----------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
