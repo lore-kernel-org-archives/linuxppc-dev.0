@@ -1,41 +1,40 @@
-Message-Id: <199907131750.CAA18581@mail.cc.tohoku.ac.jp>
-MIME-Version: 1.0
-Date: Wed, 14 Jul 1999 02:51:30 +0900
-From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: Your message of "Tue, 13 Jul 1999 09:59:46 -0700 (MST)"
- 	<Pine.LNX.3.96.990713095257.19708A-100000@liberty.chnd1.az.home.com>
-References: 
- <Pine.LNX.3.96.990713095257.19708A-100000@liberty.chnd1.az.home.com>
+Date: Tue, 13 Jul 1999 11:25:05 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: A little trouble for MVME2400 boot from HD
+In-Reply-To: <199907131750.CAA18581@mail.cc.tohoku.ac.jp>
+Message-ID: <Pine.LNX.3.96.990713111941.19708B-200000@liberty.chnd1.az.home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi.
+On Wed, 14 Jul 1999, Kazunori Aoshima wrote:
+> >Wow, that IPL Size is huge...no wonder BUG is upset.  The only time I've
+> >seen this is when I've hacked up the PReP header info to make bootable
+> >CD's.  
+> 
+> Is there some useful tools that makes ISOimages bootable?
+> Or some pathces for "mkisofs" is?
 
-Return for :
-Matt Porter <mmporter@home.com> 
-@ " Re: A little trouble for MVME2400 boot from HD "
-date: Tue, 13 Jul 1999 09:59:46 -0700 (MST) >>>
+How about a patch to mkhybrid?  I was just writing a script to automate
+this when somebody passed me Troy B.'s patch to mkhybrid (which is the
+correct place to put this support).  It supports multiple boot images (up
+to four) with no problem.  Note: do not give it a symlink to your boot
+image!  It screws the absolute offset calculation which cost me many hours
+before I realized what was happening.  Also, there is a bug which causes
+fwrite to fail on certain sized smaller isofs's (haven't found the exact
+pattern yet).
 
->On Fri, 9 Jul 1999, Simone Piccardi wrote:
->
->Wow, that IPL Size is huge...no wonder BUG is upset.  The only time I've
->seen this is when I've hacked up the PReP header info to make bootable
->CD's.  
+I've attach the patch to this message.
 
-Is there some useful tools that makes ISOimages bootable?
-Or some pathces for "mkisofs" is?
+[ deleted because it's too big; ask Matt to put it on an ftp site if you
+want it -- dw ]
 
-Best regards.
-----------------------
-Kaz Aoshima = PReP station
-Material deveropment, Faculty of engineering, 
-Tohoku University, Japan
-E-mail:aoshimak@mail.cc.tohoku.ac.jp
-#I am appreciate if you could tell me suggestions
- for my bad English expressions.
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
