@@ -1,39 +1,26 @@
-Date: Wed, 23 Aug 2000 15:18:23 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michel Lanners <mlan@cpu.lu>
-cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4 hangs on 2.4 kernel (was: Re: Control fb problem on 8500)
-In-Reply-To: <200008191415.QAA00716@piglet.grunz.lu>
-Message-ID: <Pine.LNX.4.21.0008231516001.19621-100000@idd-01.imbc.gr>
+Date: Wed, 23 Aug 2000 15:50:26 +0200 (CEST)
+From: Ronald Wahl <rwa@peppercon.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: allocating uncachable memory
+Message-ID: <Pine.LNX.4.21.0008231540530.12497-100000@goliath.issistance.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 19 Aug 2000, Michel Lanners wrote:
+Hi,
 
->
-> On  19 Aug, this message from Benjamin Herrenschmidt echoed through cyberspace:
-> >>My XFree 4.0 goes into an infinite loop eating CPU time when I boot a
-> >>2.4.0 kernel. Xpmac does work, but with the artifact described in my
-> >>previous mail.
-> >
-> > I have this exact same problem with XF4 on my Pismo (r128) with any 2.4.
-> > The X server dies in this infinite loop and a black screen. Theo only way
-> > I found to get the screen back is to telnet into the box, kill -9 the X
-> > server, and launch Xpmac. This seems to restore the console system into a
-> > working state.
->
-> Ahh, so that problem is not control-specific.
->
-> > I don't know what's up yet.
->
-  I had the same problem, for me it went away after i disabled xfs
-i didn't had any time yet to check whats going on (i am in vacations)
-but i'll try to see whats wrong once i am back.
+I'm writing a driver for a PCI controller in a PPC system. That driver
+"exports" a bit of local ram into the PCI space. Now if some PCI device is
+writing into this memory the local system won't notice it in all cases
+since this memory is cached. How can i allocate uncached memory in linux?
+Or if this does not work how can I remap it as non-cachable. I already
+tried ioremap_nocache but this does not work for real memory. It would be
+nice if someone could give me a short code fragment...
 
- Kostas
+thanx,
+ron
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
