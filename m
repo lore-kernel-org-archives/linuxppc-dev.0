@@ -1,17 +1,20 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp7.clb.oleane.net (smtp7.clb.oleane.net [213.56.31.27])
-	by ozlabs.org (Postfix) with ESMTP id E601B67A2C
+Return-Path: <jakob.viketoft@bitsim.com>
+Received: from amsfep15-int.chello.nl (amsfep15-int.chello.nl [213.46.243.28])
+	by ozlabs.org (Postfix) with ESMTP id 9E2FB67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Feb 2005 20:31:31 +1100 (EST)
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 3 Feb 2005 10:35:25 +0100
-Message-ID: <000701c509d3$b2d99300$5201a8c0@GEG2400>
+	Thu,  3 Feb 2005 21:28:08 +1100 (EST)
+Received: from [192.168.0.27] (really [80.216.174.242])
+	by amsfep13-int.chello.nl
+	(InterMail vM.6.01.03.04 201-2131-111-106-20040729) with ESMTP
+	id <20050203100928.MSLB11192.amsfep13-int.chello.nl@[192.168.0.27]>
+	for <linuxppc-embedded@ozlabs.org>; Thu, 3 Feb 2005 11:09:28 +0100
+Message-ID: <4201F956.1050702@bitsim.com>
+Date: Thu, 03 Feb 2005 11:13:42 +0100
+From: Jakob Viketoft <jakob.viketoft@bitsim.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20050202184143.GC17450@tuxdriver.com>
-Subject: RE: MPC8560 TCP/IP Offloading (SDP)
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Linux on Virtex-II Pro P20 development board...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello everyone!
 
-Hi,
+I've just started trying to get the Linux (2.6.8.1) kernel to run on the 
+above mentioned board (or, specifically, a PPC405 on the Xilinx 
+Virtex-II Pro 2VP20). I just figured I'd ask around and see if any of 
+you have got this board running and then what kernel modifications where 
+necessary and IP blocks (from the development kit) you've used. At the 
+moment I'm primarily interested in the PPC and a serial port, later on 
+the TP port will be useful as well.
 
-> TOE is not a popular topic in the Linux networking community.
-> Actually, it is a popular topic for discussion, but not a popular
-> solution for implementation.  I guess the point is that there is no
-> TOE code for Linux, at least not in any official sense.
-> That said, this is the first I've heard of SDP.  Can you point me to
-> where I can get more information?
+I've previously ported the 2.4.x kernel to Cirrus Logic EP7312 (ARM) 
+chip, but that was some years ago and with the new kernel, chip and 
+structure of the PPC arch of the kernel I'm a bit disoriented. Any help 
+would be greatly appreciated!
 
-Thanks for the point of view.
-It seems that SDP concept comes from Microsoft Sockets Direct Technology
-and be used on Intel Infiniband architecture.
-
-The following sites seem to be interesting entry points 
-(advice from a newbie on this subject :-)):
-http://infiniband.sourceforge.net/archive/LinuxSAS_SDP.htm
-http://www.microsoft.com/mscorp/ip/standards/
-
-Laurent
+Regards,
+	/Jakob
