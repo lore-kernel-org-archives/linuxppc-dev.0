@@ -1,69 +1,114 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: <wd@denx.de>
-Cc: "'Mailing List: linuxppc-dev'" <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: A question on kernel clock: 
-Date: Tue, 30 Dec 2003 18:45:42 +0800
-Message-ID: <000501c3cec2$130dbab0$b702a8c0@newrock2>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20031230102235.32DD9C12DD@atlas.denx.de>
+	charset="Windows-1252"
+Subject: RE: Oops on core dumping
+Date: Tue, 30 Dec 2003 11:05:02 -0500
+Message-ID: <3D848382FB72E249812901444C6BDB1D1D189F@exchange.timesys.com>
+From: "Whitney, John" <John.Whitney@timesys.com>
+To: "Vincent Bernat" <bernat@free.fr>,
+	<linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Wolfgang,
+Vincent,
 
-Thanks very much and Happy New year to you and your family!
+This looks like the same problem (application core dumps, caused in dump_fpu()) that I posted a patch for last week.  Look in the archives for my solution.  (basically, dump_fpu() is getting a NULL "regs" argument, and then referencing off of it.)
 
-I'm sorry for my simple question description.
+John Whitney
 
-The processor I mentioned is MPC82xx. Now, I have kernel from kernel.org
-run on the board. But, my "nsleep()" is not exactly. So, I want to
-realize the timer mechanism of Linux used.
-
-(1) which timer is used for nsleep?
-
-(2) can udelay() be changed to be preempted by other process?
-
-(3) which is good choice for Kernel timeslice?
-
-Additional, could we develop a bootloader like vxworks' bootloader? (
-vxworks bootloader is a little vxworks, I think.)
-
-John
 
 -----Original Message-----
-From: wd@denx.de [mailto:wd@denx.de]
-Sent: Tuesday, December 30, 2003 6:23 PM
-Subject: Re: A question on kernel clock:
+From:	Vincent Bernat [mailto:bernat@free.fr]
+Sent:	Tue 12/30/2003 4:17 AM
+To:	linuxppc-dev@lists.linuxppc.org
+Cc:
+Subject:	Oops on core dumping
 
-in message <000301c3ce9e$ff345440$b702a8c0@newrock2> you wrote:
->
-> A question on kernel clock:
 
-I wish you would explain in a bit more detail what you are talking
-about...
+Hello !
 
-> Normally, which is kernel clock source? Can we use any one of
+I am trying to get a dump for an application (vlc) that got a sig kill
+each time I try  to use it. When setting   to limit for the core  dump
+size to something different of 0 (8 MB or 88 MB), I get an oops :
 
-Normally the kernel clock source is a quartz oscillator.
+Oops: kernel access of bad area, sig: 11 [#1]
+NIP: C0008FDC LR: C00803B4 SP: C1995CC0 REGS: c1995c10 TRAP: 0301    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000084, DSISR: 40000000
+TASK = c3273540[14134] 'vlc' Last syscall: 125
+GPR00: C00803B4 C1995CC0 C3273540 00000000 D616C118 00000001 0000010C D616C008
+GPR08: 00000000 0000010C 00000000 00000000 175C8940
+Call trace:
+ [c00803b4] elf_dump_thread_status+0xbc/0x130
+ [c0080568] elf_core_dump+0x140/0x75c
+ [c006354c] do_coredump+0x1d8/0x1f4
+ [c002b63c] get_signal_to_deliver+0x244/0x314
+ [c000a4b0] do_signal+0x30/0x24c
+ [c0006098] do_user_signal+0x74/0xc4
+Oops: kernel access of bad area, sig: 11 [#2]
+NIP: C0008FDC LR: C00803B4 SP: D4663CC0 REGS: d4663c10 TRAP: 0301    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000084, DSISR: 40000000
+TASK = c79179e0[14223] 'vlc' Last syscall: 119
+GPR00: C00803B4 D4663CC0 C79179E0 00000000 D154B918 00000001 0000010C D154B808
+GPR08: 00000000 0000010C 00000000 00000000 15651298
+Call trace:
+ [c00803b4] elf_dump_thread_status+0xbc/0x130
+ [c0080568] elf_core_dump+0x140/0x75c
+ [c006354c] do_coredump+0x1d8/0x1f4
+ [c002b63c] get_signal_to_deliver+0x244/0x314
+ [c000a4b0] do_signal+0x30/0x24c
+ [c0006098] do_user_signal+0x74/0xc4
+Oops: kernel access of bad area, sig: 11 [#3]
+NIP: C0008FDC LR: C00803B4 SP: CB4CDCC0 REGS: cb4cdc10 TRAP: 0301    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000084, DSISR: 40000000
+TASK = c92110a0[14251] 'vlc' Last syscall: 119
+GPR00: C00803B4 CB4CDCC0 C92110A0 00000000 C6041D18 00000001 0000010C C6041C08
+GPR08: 00000000 0000010C 00000000 00000000 158395E8
+Call trace:
+ [c00803b4] elf_dump_thread_status+0xbc/0x130
+ [c0080568] elf_core_dump+0x140/0x75c
+ [c006354c] do_coredump+0x1d8/0x1f4
+ [c002b63c] get_signal_to_deliver+0x244/0x314
+ [c000a4b0] do_signal+0x30/0x24c
+ [c0006098] do_user_signal+0x74/0xc4
+Oops: kernel access of bad area, sig: 11 [#4]
+NIP: C0008FDC LR: C00803B4 SP: C73EFCC0 REGS: c73efc10 TRAP: 0301    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000084, DSISR: 40000000
+TASK = c768e0e0[14282] 'vlc' Last syscall: 37
+GPR00: C00803B4 C73EFCC0 C768E0E0 00000000 D154B118 00000001 0000010C D154B008
+GPR08: 00000000 0000010C 00000000 00000000 138C1F40
+Call trace:
+ [c00803b4] elf_dump_thread_status+0xbc/0x130
+ [c0080568] elf_core_dump+0x140/0x75c
+ [c006354c] do_coredump+0x1d8/0x1f4
+ [c002b63c] get_signal_to_deliver+0x244/0x314
+ [c000a4b0] do_signal+0x30/0x24c
+ [c0006098] do_user_signal+0x74/0xc4
+Oops: kernel access of bad area, sig: 11 [#5]
+NIP: C0008FDC LR: C00803B4 SP: CB613CC0 REGS: cb613c10 TRAP: 0301    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000084, DSISR: 40000000
+TASK = c7941ae0[14338] 'vlc' Last syscall: 119
+GPR00: C00803B4 CB613CC0 C7941AE0 00000000 C6041118 00000001 0000010C C6041008
+GPR08: 00000000 0000010C 00000000 00000000 124BBC78
+Call trace:
+ [c00803b4] elf_dump_thread_status+0xbc/0x130
+ [c0080568] elf_core_dump+0x140/0x75c
+ [c006354c] do_coredump+0x1d8/0x1f4
+ [c002b63c] get_signal_to_deliver+0x244/0x314
+ [c000a4b0] do_signal+0x30/0x24c
+ [c0006098] do_user_signal+0x74/0xc4
 
-Or what do you mean? "clock source" can mean different things to
-different people and may be different on differenrt processors.
+(one for each attempt)
 
-The kernel uses the decrementer for the system tick.
+The kernel is a 2.6.0-ben2.
+--
+die_if_kernel("Whee... Hello Mr. Penguin", current->tss.kregs);
+	2.2.16 /usr/src/linux/arch/sparc/kernel/traps.c
 
-> BRG1-8? Can we use bus clock? Which is good for choice?
-
-Use BRG1-8? On which processor? What for?
-
-Good for choice? On which hardware? For which purpose?
-
-> Can anyone give me some suggestions?
-
-Yes: please ask more specific questions.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
