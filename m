@@ -1,40 +1,29 @@
-To: Amit.Lubovsky@infineon.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: u-boot mbx860 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 30 Sep 2003 18:36:17 +0200."
-             <AD2F581BD7340A4C908AF1AFB066EA3B0E4839@ntah901e.savan.com>
-Date: Tue, 30 Sep 2003 23:50:33 +0200
-Message-Id: <20030930215038.C3CB2C59E4@atlas.denx.de>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 30 Sep 2003 16:08:28 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Stefan Berndtsson <stefan@nocrew.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: linuxppc-2.5
+Message-ID: <20030930230828.GA12343@ip68-0-152-218.tc.ph.cox.net>
+References: <873ceeuge4.fsf@hades.nocrew.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <873ceeuge4.fsf@hades.nocrew.org>
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Amit,
+On Tue, Sep 30, 2003 at 11:15:47PM +0200, Stefan Berndtsson wrote:
 
-in message <AD2F581BD7340A4C908AF1AFB066EA3B0E4839@ntah901e.savan.com> you wrote:
->
-> Data Size:    1333838 Bytes = 1302.58 kB = 1.27 MB
-----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> linux-2.6.0-test5, rsynced from source.mvista.com::linuxppc-2.5 (is there
+> a more recently updated source than that?) doesn't seem to have a working
+> sleep-mode in an ibook2 (late 2001, 600MHz, M3/R128).
 
-> => tftp 20000 ppc.img
-
-0x20000 = 128 kB. There is not enough room to copy 1.27 MB.
-
-Try:
-
-	=> tftp 200000 ppc.img
-
-
-Best regards,
-
-Wolfgang Denk
+It's as up to date as the bk tree as no one has pulled -test6 into it
+yet.  The rsync trees on source.mvista.com lag ~1 hour (or less) behind
+the bitkeeper versions of the trees.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Beware of programmers carrying screwdrivers."      - Chip Salzenberg
+Tom Rini
+http://gate.crashing.org/~trini/
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
