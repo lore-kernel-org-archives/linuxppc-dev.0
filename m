@@ -1,75 +1,93 @@
-Message-Id: <37D8F922.67F18F1F@ssl.co.uk>
-Date: Fri, 10 Sep 1999 13:27:14 +0100
-From: Sacha Varma <sacha@ssl.co.uk>
+Date: Fri, 10 Sep 1999 16:31:33 +0200
+From: Maurice DIAMANTINI <diam@pmdiam.ensta.fr>
+To: Franz Sirl <Franz.Sirl@munich.netsurf.de>, linuxppc-dev@lists.linuxppc.org
+Cc: Maurice DIAMANTINI <diam@pmdiam.ensta.fr>
+Subject: Re: bug glibc strlen() or tcl8.2
+Message-ID: <19990910163126.A19797@pmdiam.ensta.fr>
+References: <19990909164200.A17615@pmdiam.ensta.fr> <4.2.0.58.19990909192900.00af6450@mail.lauterbach.com>
 Mime-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec
-References: <19990910135935.015493@mailhost.mipsys.com>
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4.2.0.58.19990909192900.00af6450@mail.lauterbach.com>; from Franz Sirl on jeu, sep 09, 1999 at 07:35:41 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-> 
-> On Fri, Sep 10, 1999, Sacha Varma <sacha@ssl.co.uk> wrote:
-> 
-> >In the meantime to learn more about Altivec I've been working on a 
-> >library to emulate the instructions [...] (It'll
-> >be C++ I'm afraid - the vector types lend themselves nicely to a
-> >template class, and a lot of the vec_* instructions are
-> >overloaded).
-> 
-> If your library can be turned into plain C, then we should be able 
-> to implement the same emulation mecanism in Linux, but is it really
-> interesting ? It will be way too slow to be useful for anything but
-> developers prototyping Altivec code on G3s.
-
-The main reason I'm doing it is to learn about what's available in Altivec. But
-I guess it would also be useful (some of these are pretty far-fetched but hey)
-for:
-
-1. (as you say) People who don't yet have a G4
-We outside the US are subject to its export laws. Who knows when we'll see them
-here in the UK.
-
-2. Those who don't yet have an Altivec compiler
-I don't want to develop under MacOS (MPW, MrC) and, as a hobbyist, can't justify
-$375 for CodeWarrior, and I don't have the knowledge to patch up gcc and the
-Linux kernel.
-
-3. People who want code that's optimised for G4 but also builds on G3
-You could use the altivec API when coding and then have a header (as I do) with:
-
-  #ifndef __VEC__
-    /* software emulation */
-  #else
-    /* use native instructions */
-  #endif
-
-Granted, maybe my library - which isn't written with performance considerations
-in mind - will be much slower than ditching the altivec API and re-writing your
-code, but the principle seems sound: portability with virtually no code changes.
-
-4. People who like the Altivec API
-Maybe you dig the Altivec API but code for another platform. You could even dive
-in and replace the core of the library with MMX or whatever where possible.
-
-5. People who want to know what a particular instruction does
-They could browse the library source code. I'm not saying that my library will
-be correct (I admit I don't fully understand what some of the instructions do,
-e.g. the saturated ones) but hopefully it would eventually be. And the code
-might be clearer than the sometimes terse descriptions in the Altivec
-documentation.
-
-6. If Altivec is extended in the a future incarnation
-Ok I'm clutching at straws here, but maybe new instructions will be added down
-the line; if a library exists which is easily extended, people would be able to
-get start using them pretty much right away.
+    Vous disiez:
+    > 
+    > >I'm unable to execute tcl8.2 on linuxppc R5. Although it compile and
+    > >and run very simply on intel box, solaris, ... but not on linuxppc
+    > > ...
+    > >The programm compils OK, but get a core dump at the first execution
+    > >of a tcl command (in fact at the "make test")
+    > ...
+    > >     memcpy ((VOID *) &tmpArgList, (VOID *) &argList, sizeof \
+    >                                                (tmpArgList));
+    >       ^^^^^^^^
+    > This is unportable in combination with va_list. Try:
+    >        __va_copy (tmpArgList, argList);
+     
+    Danke Franz,
+    
+    But when I modify the code (from the true tcl distrib):
+    (I do'nt thes function which aren't part of the tcl distrib.
+    
+            // string = va_arg(tmpArgList, char *);
+            string = __va_arg(tmpArgList, argList);
+    
+    then "make clean" then "make test" but I get:
+    
+    cc -c -O -D__NO_STRING_INLINES -D__NO_MATH_INLINES  -fPIC
+    -I/home/diam/local/src/tcl/unix/../generic
+    -I/home/diam/local/src/tcl/unix -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1
+    -DHAVE_GETCWD=1 -DHAVE_OPENDIR=1 -DHAVE_STRSTR=1 -DHAVE_STRTOL=1
+    -DHAVE_TMPNAM=1 -DHAVE_WAITPID=1 -DHAVE_UNISTD_H=1
+    -DHAVE_SYS_PARAM_H=1 -DUSE_TERMIOS=1 -DHAVE_SYS_TIME_H=1
+    -DTIME_WITH_SYS_TIME=1 -DHAVE_TM_ZONE=1 -DHAVE_TM_GMTOFF=1
+    -DHAVE_TIMEZONE_VAR=1 -DHAVE_ST_BLKSIZE=1 -DSTDC_HEADERS=1
+    -DNEED_MATHERR=1 -DRETSIGTYPE=void -D__CHAR_UNSIGNED__=1
+    -DHAVE_SIGNED_CHAR=1 -DHAVE_SYS_IOCTL_H=1
+    -DTCL_SHLIB_EXT=\".so\"
+    /home/diam/local/src/tcl/unix/../generic/tclResult.c 
+    /home/diam/local/src/tcl/unix/../generic/tclResult.c: \
+        In function `Tcl_AppendResultVA':
+    /home/diam/local/src/tcl/unix/../generic/tclResult.c:488:\
+        incompatible types in assignment
+    make: *** [tclResult.o] Error 1
 
 
---
-sacha varma : system simulation ltd : sacha@ssl.co.uk
+    
+    Sorry but I'm not very clever in system! I just need to be able
+    to compil a standard distrib for tcl...
+    Anybody there has tried to compil tcl/tk last version?
+    
+    (available from http://www.scriptics.com/products/tcltk/8.2.html)
+    
+    
+    When I read this html page :
+    
+         Supported Platforms 
+    
+         Tcl/Tk 8.2 is compatible with most releases of the
+         following operating systems: 
+    
+              Windows 95 and 98 
+              Windows NT 
+              Solaris and SunOS 
+              Linux 
+              HP-UX 
+              SGI 
+              IRIX 
+              Digital Unix 
+              AIX 
+              SCO Unix 
+              NetBSD, FreeBSD, BSDi 
+              Most other Unix-like operating systems 
+              Macintosh (68K and Power Mac) 
+    
+    but not linuppc :-((
+
+-- 
+Maurice DIAMANTINI   | Ecole Nationale Superieure de Techniques Avancees
+mailto:diam@ensta.fr | 32 Boulevard Victor 75739 PARIS Cedex 15 - France
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
