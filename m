@@ -1,39 +1,45 @@
-Date: Wed, 12 Mar 2003 19:13:58 +0100
-From: Olaf Hering <olh@suse.de>
-To: mikpe@csd.uu.se
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.24 boot hang fix for old-world PowerMac 4400
-Message-ID: <20030312181358.GA27959@suse.de>
-References: <15983.28808.122462.515758@gargle.gargle.HOWL>
+Subject: 4xx users: Big merge party now
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Paul Mackerras <paulus@samba.org>, Matt Porter <porter@cox.net>
+Content-Type: text/plain
+Message-Id: <1047493719.789.29.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15983.28808.122462.515758@gargle.gargle.HOWL>
+Date: 12 Mar 2003 19:28:39 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Wed, Mar 12, mikpe@csd.uu.se wrote:
+All interested 4xx users, especially board maintainers, here's
+what's going on with 4xx now.
 
-> and vmlinux.coff aborts with a CLAIM error at boot) which is
+I rewrote the core OCP stuff. It's much more like 2.5 (actually,
+some changes I did will be pushed to 2.5 as well, like static
+indexes). It's documented in the source. I hope it should clean
+some of the worst horrors with #ifdef's and previous ocp_dev
+confusion (was it a device or a driver ?)
 
-known bug.
+HOWEVER, I only ported ibm405gp.c to the new table format, please
+use it as an example to port other CPUs. I also only ported the
+EMAC driver to the new core. It's actually a mostly rewritten
+driver with working PHY support and other niceties.
 
---- linux-2.4.20-pre11/arch/ppc/boot/ld.script  Sun Oct 27 19:21:01 2002
-+++ linux-2.4.20-pre11..7200/arch/ppc/boot/ld.script    Sun Oct 27 18:13:02 2002
-@@ -39,7 +39,7 @@ SECTIONS
-   PROVIDE (etext = .);
+Also, please use what I did for EMAC and MAL channel mapping as
+an example on how to avoid hard-coding numbers with #ifdef's and
+feel free to add some similar 'additions' structures for other
+OCP drivers. (In 2.5, the additions might be filled differently
+in the future)
 
-   /* Read-write section, merged into data segment: */
--  . = ALIGN(8);
-+  . = ALIGN(0x1000);
-   .data    :
-   {
-     *(.data)
+The tree is at ppc.bkbits.net/linuxppc-2.4, it's a clone of
+Marcelo's linux-2.4, NOT of linuxppc_2_4_devel, the intend is
+to push that to marcelo as soon as enough board maintainers will
+have tested & fixed the remaining CPU OCP tables and drivers.
 
-should work ok with 2.4.12 and older at least.
+I'm of course open to comments :)
 
---
-A: No.
-Q: Should I include quotations after my reply?
+Have fun !
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
