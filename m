@@ -1,87 +1,76 @@
-Date: Mon, 15 Dec 2003 10:01:12 +0100
-From: Harald Welte <laforge@gnumonks.org>
-To: prism54-devel@prism54.org
-Cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
-	binutils@sources.redhat.com
-Subject: 'unknown ADD relocation' in prism54.ko with 2.6.0-test11 on ppc
-Message-ID: <20031215090112.GA11929@obroa-skai.de.gnumonks.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3FDDA552.7030007@intracom.gr>
+Date: Mon, 15 Dec 2003 14:13:06 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Dan Malek <dan@embeddededge.com>, org@stop.crashing.org,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: 8xx drivers for 2.6
+References: <20031211191854.GK23731@stop.crashing.org> <3FD8C932.60205@embeddededge.com> <20031211212529.GL23731@stop.crashing.org>
+In-Reply-To: <20031211212529.GL23731@stop.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+Tom Rini wrote:
 
-I've tried to build the prism54 driver with a 2.6.0-test11 kernel
-(linuxppc-25bh tree from source.mvista.com yesterday) in combination
-with the http://prism54.org/pub/linux/snapshot/tars/2003-12/prism54-cvs20031214.tar.bz2
+>On Thu, Dec 11, 2003 at 02:44:50PM -0500, Dan Malek wrote:
+>
+>
+>>Tom Rini wrote:
+>>
+>>
+>>
+>>>Ok. I've gone and ported the 8xx serial driver, and other misc 8xx
+>>>things up to what 2.6 wants them to be, as well as a few of the
+>>>simpler changes to head_8xx.S.
+>>>
+>>>
+>>Thanks. So, does the kernel at least compile now? :-)
+>>
+>>
+>
+>Compiles, links, boots and happily dies inside of head_8xx.S :)
+>
+>
+>
+>>>...and in 2.6 having request_8xxirq becomes much uglier because of
+>>>the irqreturn_t stuff
+>>>
+>>>
+>>I'm finally going to update this. I've got a pretty good implemenation
+>>of the cascaded controller stuff for the 8560, once I get this
+>>debugged I'll port it here.
+>>
+>>
+>
+>Sounds like a plan.
+>
+>>>Dan, if you have _anything_ done for head_8xx.S can you please post
+>>>it?
+>>>
+>>Yeah, maybe I can do some debug now, too.
+>>
+>
+>Hopefully :)
+>
+>--
+>Tom Rini
+>http://gate.crashing.org/~trini/
+>
+>
+>
+>
+>
+That sounds nice.
 
-The driver compiles fine, but when I try to load the resulting
-prism54.ko (http://gnumonks.org/ftp/pub/tmp/prism54-reloc/prism54.ko), I end
-up with an error message in dmesg:
+Any chance to push the changes to the linuxppc-2.5 tree for us poor saps?
+It doesn't have to work or anything, just give us something to work...
 
-prism54: unknown ADD relocation: 0
+Regards
 
-As it turned out, arch/ppc/kernel/module.c:apply_relocate_add() is
-printing that error message.  Judging from the elf.h file, relocation
-type 0 is R_PPC_NONE.
+Pantelis
 
-further looking at the output of 'objdump -r prism54.ko', I can see
-several entries in the [.stab] section, containing R_PPC_NONE
-relocations.   The first one is at 00004c44, see the following excerpt:
-
-/lib/modules/2.6.0-test11/kernel/drivers/net/wireless/prism54/prism54.ko: file format elf32-powerpc
-
-RELOCATION RECORDS FOR [.stab]:
-OFFSET   TYPE              VALUE
-00000014 R_PPC_ADDR32      .text
-00000020 R_PPC_ADDR32      .text
-00003914 R_PPC_ADDR32      init_wds
-00003938 R_PPC_ADDR32      display_buffer
-00003a04 R_PPC_ADDR32      print_frame
-00003ab8 R_PPC_ADDR32      string_to_macaddress
-00003c2c R_PPC_ADDR32      .text+0x000001ac
-00003c38 R_PPC_ADDR32      .text+0x000001ac
-00003c44 R_PPC_ADDR32      .text+0x000001ac
-00003c44 R_PPC_NONE        *ABS*
-00005864 R_PPC_ADDR32      islpci_eth_cleanup_transmit
-
-The full output of objdump -r can be found at
-http://gnumonks.org/ftp/pub/tmp/prism54-reloc/prism54.ko-broken-objdump_r.txt
-
-Those *ABS* symbols are not present in the two soource files (prism54.o
-and prism54.mod.o).
-
-If I strip the debug information by manually executing
-ld -s -r -o drivers/net/wireless/prism54/prism54.ko drivers/net/wireless/prism54/prism54.o drivers/net/wireless/prism54/prism54.mod.o
-
-I get a resulting prism54.ko without a [.stab] section and thus without
-any R_PPC_NONE relocations.
-
-My system is a G4 TiBook IV, running debian testing with gcc-3.0.4 and
-ld from binutils-2.14.90.0.7.
-
-I'm now not rally sure what the real cause of the problem is.  I haven't
-found any other module in the kernel that would produce R_PPC_NONE
-symbols.  But I also cannot find anything special in the prism54 driver
-source that could be the cause.
-
-I suspect it's either a problem in the linker itself, or a problem with
-KBUILD using the linker in a wrong way [that would produce undesired
-relocations].
-
-Does anybody have any idea where to continue looking for the problem?
-
-Please Cc' me in your replies, since I don't read all of the Cc'ed
-mailinglists.
-
-TIA,
-
---
-- Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
-============================================================================
-Programming is like sex: One mistake and you have to support it your lifeti=
-me
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
