@@ -1,43 +1,42 @@
-Message-ID: <40D02781.506@246tNt.com>
-Date: Wed, 16 Jun 2004 12:57:05 +0200
-From: Sylvain Munaut <tnt@246tnt.com>
+Message-ID: <4118282C375DF64EA700135193EEB8CAAFF502@ACUSH02>
+From: "Dixon, Myron @ GNS" <Myron.Dixon@L-3com.com>
+To: MuthuGanesh M <muthuganeshm@myw.ltindia.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: PPC tool chain + uClibc
+Date: Wed, 16 Jun 2004 09:39:08 -0400
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?I=F1igo_Lopez_Barranco?= <ilopez@albatros-sl.es>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC5200 PCI questions
-References: <42A622EB18325843894BB8E1040E3DF502274E@sinaexchf>
-In-Reply-To: <42A622EB18325843894BB8E1040E3DF502274E@sinaexchf>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Iñigo Lopez Barranco wrote:
-
- > Hi. Is it possible, with the present version of BestComm, to use
- > DMA for IDE and PCI at the same time?
-
-I don't really know how PCI DMA works in linux ? Is there generic hook
-that must be implemented somewhere in the kernel and then are called
-by all the drivers ?
-
- > As is not possible to use IDE DMA and the integrated FEC at this
- > moment, I'm thinking of using the integrated ATA controller in the
- > MPC5200 with DMA for an IDE disk and the PCI controller to
- > interface to a PCI to ethernet transceiver in a custom board. Is
- > this possible? Any recommended transceiver to use with linux and
- > the MPC5200?. Also, I would like to know if there is a known to
- > work PCI ethernet card (10/100 if possible) for use with the
- > Lite5200 kit, supported by linux. Thanks in advance.
-
-I've just plugged a intel eepro100, and it's recognized. I can also
-ping & telnet & ftp small files, but it freeze ( just the transfer )
-for larger files ... Since I have the same behavior in the bootloader,
-that may be a hardware issue ...
+-----Original Message-----
+From: MuthuGanesh M [mailto:muthuganeshm@myw.ltindia.com]
+Sent: Thursday, 10 June, 2004 12:54 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PPC tool chain + uClibc
 
 
 
-Sylvain Munaut
+hello,
+
+Atlast i can succesfully run this combination for PPC8xx
+
+Eldk tool chain + uClibc 0.9.16  + busybox-1.00-pre3 +utelnetd
+
+(telnetd of busybox is not working with thic combi)
+
+with shared library support.
+
+is there any known problem in using this combination.
+Kindly advice me regarding the above
+
+I had the same problem with busybox's telenetd.  However,
+I did find that utelnetd from the following link solved
+my problem.		http://www.pengutronix.de/software/utelnetd_en.html
+
+Muthuganesh.M
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
