@@ -1,26 +1,19 @@
-Message-ID: <3B7349A0.E288BF8C@fiberlogic.com>
-Date: Fri, 10 Aug 2001 10:40:32 +0800
-From: "Lin, Nan-Hung" <carl@fiberlogic.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Where to find the library optimizer ?
-Content-Type: text/plain; charset=big5
+Message-Id: <sb739cb6.097@mail.frequentis.com>
+Date: Fri, 10 Aug 2001 08:34:34 +0200
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PCMCIA - MPC860T
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi!
 
-Where could I find a library optimizer to strip-out
-the unneeded codes from the library files ?
+I want to get run my pcmcia port with a flash disk (SANDISK). Well pcmcia works fine (expect connect - reconnet,but this isn't important for me yet). I also added the IDE stuff, I can compile everthing and boot, but how I have to mount the disk (maybe a silly question, but I don't have any more ideas...)
 
-Or, where could I find the documentation (about structures
-of libraries and executable binary file ...etc.) for
-writing such a tool ?
-
-Thanks for answers.
-
-------------------------------------------------------
-Lin, Nan-Hung                      carl@fiberlogic.com
+thanks in advance
+Gerhard
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
