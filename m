@@ -1,34 +1,48 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Etsushi Kato <ekato@ees.hokudai.ac.jp>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <paulus@samba.org>
-Subject: Re: tlbia and PPC603
-Date: Wed, 19 Jun 2002 05:51:37 +0200
-Message-Id: <20020619035137.12068@smtp.wanadoo.fr>
-In-Reply-To: <20020620150906H.ekato@ees.hokudai.ac.jp>
-References: <20020620150906H.ekato@ees.hokudai.ac.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 19 Jun 2002 20:17:32 +0900
+From: Etsushi Kato <ekato@ees.hokudai.ac.jp>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: tlbia and PPC603
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20020619201733E.ekato@ees.hokudai.ac.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I also tested your latest rsync tree.  With the same test, the kernel
->also dropped to xmon 8 times, and worked stable 2 times.
->
->
->Even the situation have improved with isync, I'm becoming not sure
->about _tlbia is the problem.  Does anyone know other things causing
->problem on PPC603 Macintosh??
->
->I tested this on UMAX C500 (144M RAM, 240MHz 603ev, DEC21140 ether card).
+Hi all,
 
-Try without the ethernet card and switch IDE DMA off and tell me if it is
-stable, there could be some cache coherency issues with some of the chipsets
-used on these machines.
+Does _tlbia in arch/ppc/kernel/misc.S work fine on PPC603 Machintosh??
 
-Another thing you can try is in set_context(), add an isync on the line
-that contain the label "3:" as the doc states a context synchronizing
-instruction should also be used for data sync. before mtsrin.
 
+I've experienced instability (random crash) on UMAX C500 with benH
+and bk kernel since last November.  Several users of PCI Performa also
+reported this symptom as well, like
+http://lists.linuxppc.org/linuxppc-user/200205/msg00061.html and
+http://lists.linuxppc.org/linuxppc-user/200203/msg00027.html.
+
+
+My Macintosh are very old, two Nubus Mac (PM6100AV, Performa6200), and
+one oldworld PCI Mac (UMAX C500).  And I would like to use linux on
+these machines.  Recently, I've updated Nubus-Pmac patch to current
+PowerPC Linux tree (2.4.19-pre10).  In this process, I found this
+instability also occur on Performa6200 (PPC603) but not in PM6100AV
+(PPC601 and also with G3 upgrade card).  Performa6200 sometimes went
+to xmon randomly and crashed at local_flush_tlb_mm().  And sometimes
+just showing segmentation fault or illegal instruction error.  Then I
+suspect _tlbia() is causing the crash, so I experimentally added
+"isync" just after "sync" in _GLOBAL(_tlbia) in
+arch/ppc/kernel/misc.S.
+
+It appears this change made Performa6200 stable.  Also I tested this
+change on UMAX C500 with linux-2.4.19-pre10, and UMAX C500 also became
+stable.
+
+I'm not sure adding "isync" is good choice, but it seems some problem
+can be solved this.
+
+Cheers,
+--
+Etsushi Kato
+ekato@ees.hokudai.ac.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
