@@ -1,34 +1,41 @@
-Date: Mon, 25 Sep 2000 20:05:51 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-Subject: Re: Linux keycodes and left cursor on Pismo
-To: Henry Worth <haworth@ncal.verio.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-id: <39CF93FF.E18E3CBC@student.ethz.ch>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <Pine.SOL.4.10.10009251358270.21969-100000@ncal.verio.com>
+Date: Mon, 25 Sep 2000 14:26:17 -0400
+Subject: ybin, nvsetenv and MacOS X
+From: johnathan spectre <jspectre@lords.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B5F51108.2280%jspectre@lords.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Henry Worth wrote:
+Thanks to Ethan Benson's help I have ybin up and running, updating nvsetenv
+(available at
+ftp://www.penguinppc.org/users/hollis/pmac-utils-2.0-2.src.rpm) let me use
+nvsetenv with a PowerBook G3 (Firewire). ybin will now properly set OF's
+boot variables so I don't have to.
 
-> Serach on keymap around the late-June through Aug. period. I don't
-> think any of them specifically addressed your left key problem, but
-> rather the need for new, and as of then non-existent, keymaps to use
-> the Linux keycodes mode.
+I now have one problem left. The triple-booter works fine for MacOS 9 and
+Linuxppc (via yaboot), but when I try to boot MacOS X I have the following
+problem...
 
-Debian has i386 keymaps which work with Linux keycodes, but thanks anyway.
+After an install of ybin (I've reinstalled it a few times) selecting "x"
+will result in some disk activity the first time I press "x". Then return me
+to ybin's boot menu.
 
-Martin's suggestion about the keycode clashing with Sysrq sounds promising.
-I'll report back tonight.
+Pressing "x" every time after boots me into my MacOS 9 partition as if I
+pressed "m" or let the system boot to default (it doesn't cycle after that
+first time).
 
+I'm wondering if ybin hasn't been updated to MacOS X Beta yet or is
+something wrong? OS X is installed on partition 16 on my system and boots
+fine if I use Apple's boot disk app to set it as the boot volume.
 
-Michel
+Additionally, I tried "boot hd:16,\\:tbxi" which is what I thought the boot
+menu was trying to do. I get an error message and nothing happens (I might
+be wrong though, I'm still learning what these scripts do).
 
+Any help? Suggestions? Thanks!
 
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
