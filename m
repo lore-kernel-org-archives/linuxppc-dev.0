@@ -1,37 +1,36 @@
-From: Dave Pegler <dwp@cambridgebroadband.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14976.13620.587588.692077@gargle.gargle.HOWL>
-Date: Tue, 6 Feb 2001 17:32:36 +0000 (GMT)
-To: Mark Clayton <clayton@shore.net>
-Cc: linuxppc-embedded@lists.linuxppc.org, dwp@cambridgebroadband.com
-Subject: ATM driver for 8260
-In-Reply-To: <200102061511.KAA17221@northshore.shore.net>
-References: <200102061511.KAA17221@northshore.shore.net>
+From: bkuschak@yahoo.com
+Date: Tue, 6 Feb 2001 10:33:37 -0800 (PST)
+Message-Id: <200102061833.f16IXbT21311@lara.pathlink.com>
+Subject: 60 second CPU load spike
+To: linuxppc-embedded@lists.linuxppc.org
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark,
+Hello,
 
-   I've been working on a driver for the MPC860SAR (855T / 857 /
-862SAR). It supports AAL0, AAL5, CBR and UBR and is integrated into
-linux ATM version 0.59 (so you get Q.2931, RFC1577, ILMI etc). I use
-a FADS 860 with a SAR-PHY daughter card (STM-1/STS-3c, E1/T1 and
-ATM25) as the development platform.
+I was hoping someone might be able to provide a few hints or insights regarding
+a problem I am trying to track down.  I've noticed that something in our system
+is spiking the CPU load exactly every 60 seconds.  When the system is heavily
+loaded by packet processing, this spike causes the CPU to go to about 100% (from
+80%) for approximately 2-3 seconds.  This causes packet drops at either the
+hardware or the netif_rx() backlog queue.  Here is some more information:
 
-Unfortunately its not finished yet and has quite a low throughput. I've not
-worked on it for about 3 months but hope to do so in the next few weeks.
+- no other processes running except init, getty, sh, kswapd, kupdate, kflushd,
+wdt (watchdog)
+- kernel instrumentation shows one 60-second timer (wdt), but it is not
+coincident with the spike
+- happens with ethernet IP-forwarding
+- profiling data inconclusive
+- using MontaVista's 2.4 kernel on PowerPC405
 
-Dave.
+I noticed 60 second periodic tasks such as route-related garbage collection,
+etc, and changed these periods in /proc, without any effect.  I would like to
+find out what is causing these spikes and eliminate the problem.  Any comments
+would be appreciated.
 
-Mark Clayton writes:
- >
- > Is anyone aware of a linux driver for the ADS8260.  Or any 8260?
- >
- > Thanks,
- > Mark
- >
- >
+Thanks,
+Brian
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
