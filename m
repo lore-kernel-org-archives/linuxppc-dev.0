@@ -1,33 +1,38 @@
-Date: Tue, 23 Dec 2003 16:50:49 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Ashwin Bihari <raz0redge@hotmail.com>
+From: "Ashwin Bihari" <raz0redge@hotmail.com>
+To: mporter@kernel.crashing.org
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Intial ramdisk and kernel
-Message-ID: <20031223165049.A26159@home.com>
-References: <BAY9-F52DvaPK7835U4000107f3@hotmail.com>
+Date: Tue, 23 Dec 2003 18:58:01 -0500
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BAY9-F52DvaPK7835U4000107f3@hotmail.com>; from raz0redge@hotmail.com on Tue, Dec 23, 2003 at 04:54:42PM -0500
+Content-Type: text/plain; format=flowed
+Message-ID: <BAY9-F24HxekU9Cwu2I000aa743@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Dec 23, 2003 at 04:54:42PM -0500, Ashwin Bihari wrote:
-> >From my reading these lists and other forums, it seems that with the PPC
-> platform, I have to compile the INITRD into the kernel, how do I go about
-> doing this???
+>With the stock firmware on a PrPMC800, yes, you have to attach the
+>ramdisk to the kernel.  You do this by copying the compressed ramdisk
+>image to arch/ppc/boot/images/ramdisk.image.gz.  Then do a
+>'make zImage.initrd'.  That will deposit a zImage+initrd image into
+>arch/ppc/boot/images/.
+
+Matt,
+
+Ahh OK. Thank you for the details.
+
+>If you have a U-boot port to your board then you can be a lot more
+>flexible since it can load a kernel image and ramdisk separately.
 >
-> I'm using a PrPMC800 based installation. Any and all help appreciated.
+>-Matt
 
-With the stock firmware on a PrPMC800, yes, you have to attach the
-ramdisk to the kernel.  You do this by copying the compressed ramdisk
-image to arch/ppc/boot/images/ramdisk.image.gz.  Then do a
-'make zImage.initrd'.  That will deposit a zImage+initrd image into
-arch/ppc/boot/images/.
+We are using PPCBug actually. Not sure if you're familiar with it's
+capabilities in comparison to U-boot in ramdisk booting ability.
 
-If you have a U-boot port to your board then you can be a lot more
-flexible since it can load a kernel image and ramdisk separately.
+~ Ashwin
 
--Matt
+_________________________________________________________________
+Make your home warm and cozy this winter with tips from MSN House & Home.
+http://special.msn.com/home/warmhome.armx
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
