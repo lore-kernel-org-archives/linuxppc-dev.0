@@ -1,8 +1,9 @@
-Message-ID: <00b201c0bd79$c4fa3bc0$8021690a@huawei.com>
-From: "machael" <dony.he@huawei.com.cn>
+Message-ID: <001001c0bd86$c54562a0$de0fa8c0@mystore>
+From: "jerry" <jerry.nguyen@serialsystem.com.sg>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Timeout when pinging with larger packages...
-Date: Thu, 5 Apr 2001 10:40:25 +0800
+References: <20010404155419.8B369281DB@denx.denx.de>
+Subject: how to get the physival address
+Date: Thu, 5 Apr 2001 12:13:29 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,19 +11,32 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi All,
 
-        Now I can run linuxppc-2.4.3-pre4 (from ftp.denx.de) on my
-8260-based custom board sucessfully .
-       I met a strange problem when ping this target board. When pinging the
-board from my host using "ping -f  MyBoardIP " ,   it works normally. But if
-I ping using "ping -s 200 MyBoardIP", then I can receive no respondence but
-"TIMEOUT". Why?
-       Do you have such similar problems? What may be the problem?
+I have a silly question but seem I can not figure out the answer myself. I
+try write a driver, in which I define a array like"
 
-       Thank you very much!
+file : dummy.o
 
-       machael
+unsigned  char buffer_array[4096];
+
+....
+
+bdp->cbd_bufaddr  =  __pa(buffer_array);
+
+
+my problem is: I try to get the physical address of buffer array, but the
+_pa did not return correct address.
+
+I try to print out:  buffer_array = 0xC4056220
+                        _pa(buffer_array) = 0x4056220
+
+But my RAM only 16M = 0x100000
+
+My question is: how to get the physical address of buffer_array.
+
+Thank for any answer
+Jerry
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
