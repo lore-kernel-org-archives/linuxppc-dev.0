@@ -1,40 +1,27 @@
-Message-ID: <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
-Date: Thu, 24 Jun 2004 16:55:27 +0300 (EEST)
-From: Mikko Alutoin <mikko.alutoin@luukku.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: On the MPC85xx development boards
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <40DAE16F.40708@ztec.com.br>
+Date: Thu, 24 Jun 2004 11:13:03 -0300
+From: iida <iida@ztec.com.br>
+MIME-Version: 1.0
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: how to make a 2k sample AD
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi folks!
+i am using a ADS7830(a 8bit, 8 chanel A/D converter)
+in i2c interface( thanks for making this possible, Denk)in 2.4.25-denx
+in a mpc5200 and i want make a 2k sample.
+How can i control this sample rate in linux ?
+How do i change the clock in i2c interface( the ADS7830 suport 3(100
+khz, 400khz and 3.4 Mhz)?
+--
+Atenciosamente,
+Renato Iida
 
-I would be happy to receive some comments on pros & cons of different development boards for MPC85xx cause I'm in the process of selecting one.
-The final design will be using MPC8560 to implement a 1 Gbps Ethernet card for a router. ATM support will be needed later on.
-The development environment includes a Linux PC and Abatron BDI2000 emulator.
-
-Here are the boards that I am aware of:
-
-1)	MPC8560ADS by Motorola
-2)	CW8540DSEVAL by Motorola
-3)	SBC8560 by Windriver
-4)	Silicon Tx GP3 8560
-5)	MPC8540 RDK by GDATech
-
-Are these boards all there is?
-
-I am under the impression that 1, 2, 4 and 5 (but not 3) come with a Linux BSP included? Is this correct?
-
-Being the lazy person that I am, I'm trying to minimize the work to get Linux up and running on the board. I wonder which board/package gives me least headache? Are there any pitfalls that I should know about?
-
-Let us assume that the final product will not be based on a commercial Embedded Linux distro, but a custom 2.6 kernel with busybox & uclibc. Should that effect the choice in any way?
-
-Forgive me if the questions seem a bit foolish. The bottom line is that I have not used any kind of development boards in the past and I would like to receive some insight on which one of the above to choose.
-
-Cheers,
-Mikko
-
+Ztec - Z Tecnologia em Comunicação - Engenharia
+Qualidade, Eficiência e Segurança
+Fone: +55 61 322-2544   FAX:+55 61 224-7171
+www.ztec.com.br
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
