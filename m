@@ -1,139 +1,74 @@
-Date: Fri, 3 Mar 2000 19:44:59 -0600
-From: Grant Erickson <grant@borg.umn.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: HELP: Power Mac G3 PCI Strangeness in 2.2 and 2.3
-Message-ID: <Pine.SGI.4.21.0003031924100.31240-100000@brule.borg.umn.edu>
+Message-Id: <200003041016.LAA00502@piglet.grunz.lu>
+Date: Sat, 4 Mar 2000 11:16:19 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: PCI I/O address problems on B&W G3
+To: tas@mindspring.com
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04220801b4daa2e26f84@[10.0.0.42]>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am working on a driver for a really simple, but custom, PCI chip
-installed into one of the slots on my Power Macintosh G3 which is giving
-me no end to troubles. The driver and the card work fine in a passel of
-i386-based Linux machines (w/ the Linux PCI driver code modified to detect
-the odd 0xFFFF/0x0000 VID/DID combo).
+Hi Tim,
 
-With this chip, I can read, modify and write the PCI configuration
-register on both a Power Mac and on an i386 machine. A sample dump of the
-PCI registers at the time my driver is loaded:
+A few more details on this issue (I've already responded to a later
+mail in this thread, but I'm still struggling with my 3-weeks
+800-message backlog ;-)
 
--------------------------------------------------
-Off.  PCI Register Name                Value
-----  -------------------------------- ----------
-0x00  Vendor ID                        0x    ffff
-0x02  Device ID                        0x       0
-0x04  Command                          0x       2
-0x06  Status                           0x     280
-0x08  Revision ID                      0x       0
-0x09  Program Interface                0x       0
-0x0a  Device Class                     0x       0
-0x0c  Cache Line Size                  0x       0
-0x0d  Primary Latency Timer            0x       0
-0x0e  Header Type                      0x       0
-0x0f  Built-in Self Test               0x       0
-0x10  Base Address 0                   0xfffc0000
-0x14  Base Address 1                   0x       0
-0x18  Base Address 2                   0x       0
-0x1c  Base Address 3                   0x       0
-0x20  Base Address 4                   0x       0
-0x24  Base Address 5                   0x       0
-0x28  Cardbus CIS Pointer              0x       0
-0x2c  Subsystem Vendor ID              0x       0
-0x2e  Subsystem ID                     0x       0
-0x30  Expansion ROM Address            0x       0
-0x3c  Interrupt Line                   0x       0
-0x3d  Interrupt Pin                    0x       0
-0x3e  Minimum Grant                    0x       0
-0x3f  Maximum Latency                  0x       0
+On  24 Feb, this message from Timothy A. Seufert echoed through cyberspace:
+> I'm having a problem with the assignment of I/O addresses to devices.
+> Multiple PCI devices end with the same I/O port address base,
+> presumably because OF didn't fully initialize them.  I am using
+> Michael Lanner's PCI patch (applied to kernel 2.2.15-pre5 from cvs a
+> while back).  After reading the patch, it looks like it only tries to
+> correct base addresses for being behind a bridge, so I don't think it
+> is either helping or hurting.
 
->From /proc/pci:
+My patch corrects base addresses because the _host_ bridge isn't
+address-transparent for IO regions. Memory regions are always
+untranslated, and PCI-to-PCI bridges in Macs (as far as I've read
+Apple's doc) don't do any address translation.
 
-  Bus  0, device  20, function  0:
-    Class 0000: PCI device ffff:0000 (rev 0).
-      Non-prefetchable 32 bit memory at 0xfffc0000 [0xffffffff].
+I've made the patch because I use a PCI IDE controller, and I was
+annoyed by the fact that the PMac IDE code applies that translation for
+PCI IO addresses in it's IO access macros. I think this translation
+should be handled by PCI fixup code. Plus, you sometimes don't even
+have a single translation, if you have multiple host bridges (that's
+the case as well for UNI-North machines, even though all buses are PCI
+0).
 
-However, once I enable memory space access, request a memory region, and
-remap the address, I fail to get the correct first base register from the
-device (should be 0x00000103)
+> So it would seem to me that we need some kind of a scheme for
+> allocating I/O port base addresses if OF didn't do it.  I'm vaguely
+> familiar with the concepts behind PCI address space allocation,
+> having looked at it from the hardware design POV a while back, but
+> I'm not familiar enough with the kernel code yet to tackle this
+> problem (or to even be sure that I'm on the right track here).
 
-The output from my test code:
+That should be handled by the new, 2.3 PCI code with dynamic resurce
+allocation. I've just discovered that part, however, and am not at all
+familiar with it. I'm RTFS'ing...
 
-Found: Bus 0, Slot 20, Function 0, Vendor 0xffff, Device 0x0
-PCI Base 0 addr = 0xfffc0000
-resource[0].start = 0xfffc0000
-Banging on Vendor and Device IDs...
-Vendor and Device IDs match!
-Chip remapped @ 0xc39dd000
-Banging on chip ID...
-Chip ID: 0x5504c00f @ 0xc39dd000
-Bad chip ID!
+> PCI: Correcting IOaddress 0 on device 01:18, now fe000001.
+> PCI: Enabling I/O for device 01:18
+> PCI: setting IRQ 25 on device 01:20.
+> PCI: Correcting IOaddress 0 on device 01:20, now fe000001.
+> PCI: Correcting IOaddress 0 on device 01:21, now fe000001.
+> PCI: setting IRQ 28 on device 01:30.
 
-If I hook things up to a logic analyzer I can see the VID/DID loop
-working; however, once I map in memory access space, nothing goes out on
-the bus.
+This is OF not initialising the IO spaces, and my patch not checking
+for unassigned IO regions.
 
-Looking at other PCI devices in the system and the remapped address,
-things look suspect. However, after looking at other drivers, I don't see
-what I'm missing. Any certain gotchas I should look for?
+Michel
 
-A brief summary of my code:
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-{
-        int i;
-        struct pci_dev *dp;
-        u_short data;
-        unsigned long addr, res_start, res_size;
-        struct resource *rp;
-        unsigned long chip;
-
-        dp = pci_find_device(0xFFFF, 0x0000, NULL);
-
-        if (dp == NULL)
-                return (-1);
-
-        rp = &dp->resource[0];
-        if (rp->flags & IORESOURCE_IO)
-                rp = &dp->resource[1];
-        addr = rp->start;
-
-        if (!addr)
-                return (-EFAULT);
-
-        res_start = rp->start;
-        res_size = rp->end - rp->start + 1;
-
-        if (!request_mem_region(res_start, res_size, "chip")) {
-                return (-ENOMEM);
-        }
-
-        for (i = 0; i < 10000000; i++) {
-                pci_read_config_word(dp, PCI_VENDOR_ID, &data);
-                if (data != 0xFFFF)
-                        break;
-                pci_read_config_word(dp, PCI_DEVICE_ID, &data);
-                if (data != 0x0000)
-                        break;
-        }
-
-        pci_read_config_word(dp, PCI_COMMAND, &data);
-        if (!(data & PCI_COMMAND_MEMORY)) {
-                data |= PCI_COMMAND_MEMORY;
-                pci_write_config_word(dp, PCI_COMMAND, data);
-        }
-
-        chip = (unsigned long)ioremap(res_start, res_size);
-
-        for (i = 0; i < 100000000; i++)
-                readl(chip);
-
-	if (readl(chip) != 0x00000103)
-		printk("Bad Chip ID!\n");
-
-        release_mem_region(res_start, res_size);
-
-        return (-1);
-}
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
