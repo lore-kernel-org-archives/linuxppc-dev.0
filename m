@@ -1,22 +1,15 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Anton Blanchard <anton@samba.org>
-Date: Sat, 5 Feb 2005 12:04:34 +0100
-References: <20050204072254.GA17565@austin.ibm.com>
-	<200502050122.27254.arnd@arndb.de>
-	<20050205013426.GC11318@krispykreme.ozlabs.ibm.com>
-In-Reply-To: <20050205013426.GC11318@krispykreme.ozlabs.ibm.com>
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Message-ID: <313680C9A886D511A06000204840E1CF0A6475F1@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>,
+	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>,
+	"'etux@embeddedtux.org'" <etux@embeddedtux.org>
+Date: Sat, 5 Feb 2005 12:30:06 -0500 
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=pgp-sha1; boundary="Boundary-02=_GhKBCJkznSZL9xB";
-	charset="iso-8859-15"
-Message-Id: <200502051204.38965.arnd@arndb.de>
-Cc: Andrew Morton <akpm@osdl.org>, Tom Rini <trini@kernel.crashing.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: [PATCH] PPC/PPC64: Introduce CPU_HAS_FEATURE() macro
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Subject: question re usage of  interruptible_sleep_on( ) function call  in
+	cpm_iic_tryaddress( ) function (in i2c-algo-8xx.c)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +19,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello,
+>  
+> I have MPC880 microprocessor based board with single 24C02 I2C EEPROM,
+> connected to the I2C bus.
+> 
+> Currently booting of the board hangs in the I2C driver after invocation of
+> interruptible_sleep_on( )
+ function call  in cpm_iic_tryaddress( ) function (in i2c-algo-8xx.c file).
 
---Boundary-02=_GhKBCJkznSZL9xB
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Is it appropriate to use the interruptible_sleep_on( ) function at the
+kernel booting stage ?
+ (I personally do not think so - since such usage prevents further kernel
+booting - as observed).
+What should be done in this code to avoid slleping ?
 
-On S=FCnnavend 05 Februar 2005 02:34, Anton Blanchard wrote:
-> Interesting :) However we already get bug reports with the current
-> CONFIG_POWER4_ONLY option. I worry about adding more options that users
-> could get wrong unless there is a noticeable improvement in performance.
->=20
-The patch that I posted doesn't add any new user selectable options,
-it only limits the supported CPUs to the ones that are available on
-the supported platforms. If you select powermac or maple, the only
-supported CPU will be PowerPC970, so the C compiler can optimize away
-all runtime checks for CPU features.
+I presume that the usage of the interruptible_sleep_on( ) function would be
+appropriate if the 
+I2C would be configured as a module (after the kernel booting is completed)
+?
+Follow up question:  is it really expected to do I2C initialization ONLY as
+a module after the kernel booting ?
+(is it documented anyplace ?) 
 
-I don't expect much noticeable performance advantage from the patch,
-but it allows to make some of the source code nicer. E.g. you can
-replace every instance of '#ifdef CONFIG_ALTIVEC' with 'if=20
-(CPU_FTR_POSSIBLE & CPU_FTR_ALTIVEC)' or an inline function wrapping
-that.
+> The (end of) log buffer shows following:
+> ....
+> <6>i2c /dev entries driver.
+> <7>device class 'i2c-dev': registering.
+> <7>bus i2c:add driver dev_driver.
+> <7>i2c-core: driver dev_driver registered
+> <6>i2c-rpx: i2c MPC8xx driver.
+> <7>DEV: registering device: ID ='i2c-0'.
+> <7>CLASS: registering class device: ID= 'i2c-0'.
+> <7>i2c_adapter i2c-0:Registered as minor 0.
+> <7>CLASS:registering class device: ID = 'i2c-0'
+> <7>i2c_adapter i2c-0: registered as adapter #0.
+> <4>cpm_iic_init() - iip=fa203c80.
+> <4>cpm_iic_init[132] Install ISR for IRQ 16.
+> <6>CPM interrupt c0105d90 replacing c01f7a8c.
+> <3>request_irq() returned -22  for CPM vector 32.
+> <6> i2c-algo-8xx.o: scanning bus m8xx........
+> <4>cpm_iic_tryaddress(cpm=c019b9f8,addr=0).
+> <4>iip fa203c80, dp_addr 0x800.
+> <4>iic_tbase 2048, r_tbase 2048
+> <4>about to sleep
+> .ABOVE LINE IS THE LAST ENTRY IN THE LOG BUFFER - THE BOOT HANGS
+> THEREAFTER ... 
+> 
+Here is the fragment of the cpm_iic_tryaddress( ) function in
+i2c-algo-8xx.c,
+where the problem takes place:
+.... 
+//      save_flags(flags); cli();
+        i2c->i2c_i2cer = 0xff;
+        i2c->i2c_i2cmr = 0x13;  /* Enable some interupts */
+        i2c->i2c_i2mod = 1;     /* Enable */
+        i2c->i2c_i2com = 0x81;  /* Start master */
+//      restore_flags(flags);
 
-	Arnd <><
+        if (cpm_debug > 1) printk("about to sleep\n");
 
---Boundary-02=_GhKBCJkznSZL9xB
-Content-Type: application/pgp-signature
-Content-Description: signature
+        /* wait for IIC transfer */
+interruptible_sleep_on(&iic_wait);
+if (signal_pending(current))
+        return -EIO;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
+if (cpm_debug > 1) printk("back from sleep\n");
 
-iD8DBQBCBKhG5t5GS2LDRf4RAkKbAKCXDT1IwF5F2WqcSsZl0FgZfgpTKACeL/gW
-J5uKZEdOgtvSb/m5klF+ZGQ=
-=iDSe
------END PGP SIGNATURE-----
+if (tbdf->cbd_sc & BD_SC_NAK) {
+        if (cpm_debug > 1) printk("IIC try; no ack\n");
+        return 0;
+}
 
---Boundary-02=_GhKBCJkznSZL9xB--
+if (tbdf->cbd_sc & BD_SC_READY) {
+        printk("IIC try; complete but tbuf ready\n");
+}
+
+return 1;
+
+........
+> Thanks,
+> Best Regards,
+> Alex 
+> 
+> 
