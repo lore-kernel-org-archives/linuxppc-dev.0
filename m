@@ -1,70 +1,75 @@
-Return-Path: <jonathan@jonmasters.org>
-Received: from smtp.mailbox.co.uk (smtp.mailbox.net.uk [195.82.125.32])
-	by ozlabs.org (Postfix) with ESMTP id E1A8E67A6F
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 31 Mar 2005 23:12:27 +1000 (EST)
-Message-ID: <424BEECD.8020303@jonmasters.org>
-Date: Thu, 31 Mar 2005 13:36:29 +0100
-From: Jon Masters <jonathan@jonmasters.org>
-MIME-Version: 1.0
-To: jakob.viketoft@bitsim.se
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tnt@246tNt.com, akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
-Subject: Platform bus/ppc sys model - [Fwd: bi_recs and u-boot ppcboot.h]
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id B965D67A6C
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2005 00:28:26 +1000 (EST)
+Date: Thu, 31 Mar 2005 07:28:13 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Message-ID: <20050331142813.GH25923@smtp.west.cox.net>
+References: <20050328232355.GA1982@pegasos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050328232355.GA1982@pegasos>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: PREP sym53c8xx sym53c8xx brokeness due to 2.6.9-rc1-bk1
+	introduced residual data patch ...
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, Mar 29, 2005 at 01:23:55AM +0200, Sven Luther wrote:
+> Hello,
+> 
+> I have been investigating the prep breakage of the sym53c8xx driver on my
+> powerstack II in recent kernels, and traced it to the residual data patch,
+> or more exactly to the whole prep_pci.c/prep_setup.c patches that where
+> introduced between 2.6.9-rc1 and 2.6.9-rc1-bk1. I didn't have time to find
+> more details as the patch is not so small, and seems to do many things, and
+> linux.bkbits.net seems done right now.
+> 
+> Mmm, after a bit more of investigation, the changeset breaking it is :
+> 
+> # This is a BitKeeper generated diff -Nru style patch.
+> #
+> # ChangeSet
+> #   2004/08/16 10:35:18-07:00 trini@kernel.crashing.org
+> #   ppc32: On PReP, use residual data for PCI dev -> IRQ, and use it.
+> #
+> #   Signed-off-by: Leigh Brown <leigh@solinno.co.uk>
+> #   Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+> #
+> # include/asm-ppc/residual.h
+> #   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +7 -0
+> #   This adds a function to use the residual data to determine the IRQ
+> #   for a given PCI device, and changes prep_pcibios_fixup() to use it.
+> #
+> # arch/ppc/platforms/residual.c
+> #   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +60 -0
+> #   This adds a function to use the residual data to determine the IRQ
+> #   for a given PCI device, and changes prep_pcibios_fixup() to use it.
+> #
+> # arch/ppc/platforms/prep_pci.c
+> #   2004/08/16 10:35:09-07:00 trini@kernel.crashing.org +37 -23
+> #   This adds a function to use the residual data to determine the IRQ
+> #   for a given PCI device, and changes prep_pcibios_fixup() to use it.
+> 
+> Mmm, i guess this makes sense, since it seems the sym53c8xx doesn'y find its
+> irq anymore or something. Tom Rini, or Leigh Brown, do you have any comments
+> on this one ? 
 
-Hi all,
+Well, we'd need to be certain it's this patch.  If it's this patch, I
+think Leigh was suggesting at the time that the fix would be to fixup
+the residual data with the correct information.
 
-I hope Wolfgang doesn't mind me forwarding this :-) This is what I have
-some limited time for at the moment - but work takes priority!
+But what also went in were changes to specific irq maps, based on what
+fixed a given machine for someone else, so one of those changes could
+also be it.
 
-Cheers,
-
-Jon.
-
-- -------- Original Message --------
-Subject: bi_recs and u-boot ppcboot.h
-Date: Fri, 11 Mar 2005 03:00:18 +0000
-From: Jon Masters <jonathan@jonmasters.org>
-Organization: World Organi[sz]ation Of Broken Dreams
-To: Wolfgang Denk <wd@denx.de>
-
-Hi Wolfgang,
-
-I'm looking at this bi_recs replacement again. Do you have any
-particular objection to me extending bd_info (at the end, only if
-CONFIG_FAKEOFTREE is selected) to add a pointer to a BLOB of fake OF
-device tree?
-
-Assuming not, I'm going to try to figure out how to do this in u-boot.
-Do you have a ppc405 board online at the moment with a BDI2000 OOI? I
-can't see one on pollux or xpert at the moment - if you've got one spare
-that can be made available at some point, please let me know.
-
-( basically, I've got ppcboot on an old CPCI405 here but it's not
-trivial to fix if I break it and I don't know much about whether u-boot
-supports chaining in to a new u-boot loaded from within itself...but it
-probably does, I guess. Bah, it's late, I'm rambling...).
-
-Cheers,
-
-Jon.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
-
-iD8DBQFCS+7NeTyyexZHHxERAsVkAJ9WK/eHANzVdMTiPVRneHVuitt5FgCeOJCE
-Oxf9aVCY4OG5+2kgmJfGgAw=
-=BF/h
------END PGP SIGNATURE-----
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
