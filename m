@@ -1,41 +1,34 @@
-To: eric_mariacher@fr.ibm.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where can I find a glibc-2.1/sysdeps/unix/fork.S working for powerpc?
-References: <C125685F.00384643.00@d07mta01.fr.ibm.com>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 10 Jan 2000 11:07:05 +0100
-In-Reply-To: eric_mariacher@fr.ibm.com's message of "Fri, 7 Jan 2000 10:59:08 +0100"
-Message-ID: <kfyg0w69r5i.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+Message-ID: <3879D04D.D0FB5CFE@switchboard.ericsson.se>
+Date: Mon, 10 Jan 2000 13:27:58 +0100
+From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
+To: Ruedi Hofer <ruedi.hofer@ascom.ch>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Antwort: Re: Loading the Kernel on a FADS
+References: <38798A2F.457B1077@ascom.ch>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-eric_mariacher@fr.ibm.com writes:
-
-> Hi everybody,
+> Not that I understand the above problem any better, but I see where it
+> crashes more clearly now.
 > 
->      I am trying to get linux working on a board featuring a MPC860. I am
-> currently following instructions given at
-> http://members.home.com/mmporter/linux/cross/ to install a cross-compiler for
-> powerpc on my PC. There seems to be fork.S files for every platform existing
-> except for PowerPC.
-> 
-> Can anyone help me?
+> > It always crashes when it jumps into a string function from the
+> > lib 'string'. (e.g. strchr)
+>
+> Any ideas??
 
-Hi,
+I think someone messed with PGSZ settings in main.c...
+I changed it back to 4096 and things started to work again.
 
-Whatever problem you are trying to solve you are completely on the wrong
-track. You have no reason to worry about the fork() implementation if you
-are using glibc on Linux.
+I don't really know why.
 
-If you are having problems I suggest you start by upgrading to glibc 2.1.2,
-and continue by reading:
-http://lists.linuxppc.org/listarcs/linuxppc-embedded/199909/msg00000.html
+It would be good if someone sat down and had a thought 
+about what is going on... 
+ 
+Hope it helps /
 
-//Marcus
--- 
-Signature under construction, please come back later.
+Magnus Damm
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
