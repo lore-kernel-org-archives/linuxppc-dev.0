@@ -1,36 +1,49 @@
-Message-Id: <200008041525.LAA30014@mal-ach.watson.ibm.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Takashi Oe <toe@unlserve.unl.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
-        Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org,
-        Iain Sandoe <iain@sandoe.co.uk>
-Subject: Re: rtc again... 
-In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
-   of "Fri, 04 Aug 2000 10:55:36 +0200." <Pine.HPX.4.10.10008041038130.9070-100000@gra-ux1.iram.es>
-Date: Fri, 04 Aug 2000 11:25:06 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <398AE12A.523F3CFE@ivey.uwo.ca>
+Date: Fri, 04 Aug 2000 11:28:42 -0400
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+MIME-Version: 1.0
+To: David Edelsohn <dje@watson.ibm.com>
+CC: Gabriel Paubert <paubert@iram.es>, Takashi Oe <toe@unlserve.unl.edu>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        Thomas Graichen <graichen@innominate.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: shifts on 64bit ints
+References: <200008041518.LAA25218@mal-ach.watson.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Gabriel Paubert writes:
+Hi,
 
-Gabriel> What I need to know from people with an SMP machine:
+But if they are not cc'd to the linuxppc-dev list then we do need some sort of
+CHANGELOG process going on.  None of the rsync trees seem to do any versioning.
 
-Gabriel> - are the timebases synchronized ? Or is there a way to synchronize them ?
+Possibly we should have our own kernel mailing lists for patches and things.
 
-	On RS/6000 CHRP (RS/6000 Platform Architecture), RTAS provides
-freeze-time-base and thaw-time-base calls which signal all of the
-processors inan SMP complex to stop and start the TB.  I do not know of
-any functionality within the PowerPC architecture which would allow
-processors to coordinate their TBs without some external intervention.
+Kevin
 
-	Normally AIX boot freezes the TB, zeroes the TB on each processor,
-and then starts the timebase synchronized.  Because the functionality is
-part of RTAS, this can be done at any time.  I do not know what PreP SMP
-systems do and I know that Apple discourages use of RTAS because it is not
-intended to work.
-
-David
-
+David Edelsohn wrote:
+>
+> >>>>> Gabriel Paubert writes:
+>
+> Gabriel> I plan to send a lot of small obvious bugfixes in the next 3-4 weeks, the
+> Gabriel> diffs between  my tree and the official one now run in the megabyte range,
+> Gabriel> and this is too much (would the BitKeeper tree accept the VME patches and
+> Gabriel> PrePboot BTW ?)
+>
+> Gabriel> What I would for one like to see is that people that write a patch that
+> Gabriel> may affect other machines than their own first publish it on this list and
+> Gabriel> wait a couple of days for comment and test results before pushing it to
+> Gabriel> the official source tree, somewhat like what happens on gcc-patches.
+>
+>         linuxppc-dev is not necessarily a patch submission mailinglist.
+> Until PowerPC Linux development has such a thing, I think that it is
+> better to coordinate with and directly send patches to someone with
+> write-access who can apply the patches instead of throwing them up in the
+> air and hoping that someone catches them.
+>
+> David
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
