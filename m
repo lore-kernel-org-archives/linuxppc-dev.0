@@ -1,29 +1,31 @@
-Date: Wed, 9 Dec 1998 01:25:21 -0700 (MST)
+Date: Wed, 9 Dec 1998 02:05:52 -0700 (MST)
 From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Troy Benjegerdes <hozer@drgw.net>
-cc: Dan Malek <dmalek@jlc.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP RTC vs Decrementer accuracy...
-In-Reply-To: <Pine.LNX.4.04.9812090128220.13527-100000@narn.local.drgw.net>
-Message-ID: <Pine.LNX.3.96.981209012238.14552A-100000@persephone.cs.nmt.edu>
+To: Matt Porter <mmporter@home.com>
+cc: Alois Fertl <alois_fertl@muenchen.europe.mcd.mot.com>,
+        VALETTE Eric <valette@crf.canon.fr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux-2.1.129 boot on MCP750
+In-Reply-To: <Pine.LNX.3.96.981123134306.1805A-100000@liberty.chnd1.az.home.com>
+Message-ID: <Pine.LNX.3.96.981209020440.14818A-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-No, this would tend to make it slower if anything.
+You can change the address that ppcbug loads the image to.  I pointed mine
+at the end of memory to keep it out of the way.  The boot code for prep is
+very delicate right now due to the many many addresses that boards load
+the image at so anything that can make it easier (such as moving the
+address the kernel is loaded at) I want to take advantage of.
 
-}Okay, would this cause the clock to be fast? (mine was about 45 minutes
-}fast) (And, is it feasable to make it 'impossible' to miss a decr?)
-
-Rebooting a lot would affect it.  Are you running the code that sync's the
-rtc with the system clock every 11 minutes?  If so, turning it off and
-seeing which clock was accurate after a while would be a useful
-experiment.
-
-}I have also rebooted the machine quite a bit.. This may also be the
-}reason.
-
+}> There is a problem in boot/misc.c which manifests only
+}> if netboot is used. Current ppcbug netboots at 0x5000 and
+}> this forces decompress to overwrite its own source.
+}
+}Can you elaborate on which versions of ppcbug this is a problem with and
+}in what cases?  I have been booting the kernel on MVME23/26/27/36xx and an
+}MCP750 without seeing this problem...maybe cause my MCP750 has an older
+}rev of ppcbug.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
