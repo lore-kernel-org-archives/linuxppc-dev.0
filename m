@@ -1,24 +1,23 @@
-Date: Sun, 11 Jun 2000 15:36:37 -0400
-From: Alain Birtz <abz@videotron.ca>
-Subject: What is asmlinkage ?
+Date: Sun, 11 Jun 2000 20:12:35 -0700
+From: Jag <agrajag@linuxpower.org>
 To: linuxppc-dev@lists.linuxppc.org
-Reply-to: abz@videotron.ca
-Message-id: <3943EA46.F7B10185@videotron.ca>
-MIME-version: 1.0
-Content-type: text/plain; x-mac-creator=4D4F5353; x-mac-type=54455854; charset=us-ascii
+Subject: Re: What is asmlinkage ?
+Message-ID: <20000611201234.J8893@kotako.icecast.org>
+References: <3943EA46.F7B10185@videotron.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3943EA46.F7B10185@videotron.ca>; from abz@videotron.ca on Sun, Jun 11, 2000 at 03:36:37PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In /linux/shm.h there are many "asmlinkage" declaration like
+On Sun, 11 Jun 2000, Alain Birtz wrote:
 
-asmlinkage int sys_shmat();
+>
+> In /linux/shm.h there are many "asmlinkage" declaration like
+>
+> asmlinkage int sys_shmat();
 
-The source code for it is /linux/ipc/shm.c (and object file is
-/linux/ipc/shm.o)
-I wish to use sys_shmat() in a module: how can I do this ?
-
-Thank you.
-
+asmlinkage is #define'd in /usr/include/linux/linkage.h
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
