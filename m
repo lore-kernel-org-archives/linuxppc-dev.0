@@ -1,69 +1,90 @@
-Date: Wed, 12 Jul 2000 12:21:46 +0200 (MET DST)
+Date: Wed, 12 Jul 2000 12:41:37 +0200 (MET DST)
 From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-Reply-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ANN] Dmasound backport to 2.2.17pre7/10 patch
-In-Reply-To: <20000711165125.12731@mailhost.mipsys.com>
-Message-ID: <Pine.SOL.3.95.1000712114903.21439A-100000@juliet>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Keycodes for the new input layer
+In-Reply-To: <00071122442101.00729@enzo.bigblue.local>
+Message-ID: <Pine.SOL.3.95.1000712122230.21439C-100000@juliet>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 Jul 2000, Benjamin Herrenschmidt wrote:
+On Tue, 11 Jul 2000, Franz Sirl wrote:
 
+> On Tue, 11 Jul 2000, Derek Homeier wrote:
+> > One more cheers to the backport of the new USB input layer! Finally, I'm
+> > able to use the trackpad and the usbmouse with wheel simultaneously in X,
+> > and together with gpm. I have a couple of minor problems with the
+> > configuration of the keys on my 101 Powerbook (Lombard), though:
 > >
-> >What's more strange, the crashes even seem to affect OF, especially when
-> >I tried to boot with yaboot. Afterwards, I noticed the Mac didn't find
-> >the boot volume and searched for a while til it found my MacOS system
-> >folder. I discovered that all OF boot vars had been set back to defaults,
-> >maybe PRAM had been zapped completely, because also the function keys
-> had been
-> >set back to Brightness/Volume keys etc.
-> >This happened several times after a crash, does anyone know how to avoid
-> >this?
+> > How do I figure out the keycodes for the "keypad"-enter key (between the
+> > spacebar and the right option key, marked with a '_^')? I like this one
+> > best for mousebutton emulation and mapped button 3 to kp_enter and
+> > button 2 to fn-kp_enter. These had console keycodes 58 and 110.
+> > With the new kernel, button 2 defaults to the fn-key alone (which makes
+> > it useless for anything else) and, I think, option.
+> > The only "enter" or "return" keys defined in input.h are KEY_ENTER=28 and
+> > KEY_KPENTER=96, but when I print 96 to
+> > /proc/sys/dev/mac_hid/mouse_button3_keycode, button 3 is emulated by the
+> > fn-return combination (which is also marked by '_^').
+> > I recall that this other enter key seemed to be lost already in previous
+> > 2.3 kernels, but I'd really like to get it back. Currently, this enter and
+> > fn-enter are performing like the standard return key and no key at all,
+> > respectively.
+> > Another thing that puzzles me is that I can print 100 (KEY_RIGHTALT) to
+> > mouse_button3_keycode. The left and right option keys on the PB keyboard
+> > are indistinguishable, but with this setting, fn-opt is working as mouse-3,
+> > and opt is still working normally. If fn-opt is not mapped to mouse-3,
+> > however, it always gives the same keycodes as opt, so I found no way yet
+> > to make it a regular right_alt or AltGr key. Is there a way to make it
+> > generate a different keycode?
 >
-> Can you resync and tell me what's up ?
+> Hmm, what kernel are you using? the binary on Ben's page or a selfcompiled
+> one? Old mode (kernel_sends_linux_keycodes==0) or new mode
+> (kernel_sends_linux_keycodes==0)?
 >
-> If you still get the crash, then copy me the xmon report again and send
-> me the System.map of the kernel you compiled.
+> The Fn key is not really handled right now and probably requires more kernel
+> support for the key combos not handled in HW. Anyone has a list of these
+> combos?
 >
-No crash on startup with yesterday's rsync, neither with mol- nor with
-dma-patch. The dma-patch indeed seems to help with xmms, I didn't notice
-any drop-outs this time.
+That was with Ben's precompiled kernel, but I have just rsynced the
+2.2.17pre10-ben1 sources. The only differences are that the mouse buttons
+now are not emulated by anything by default (at least I could not find any
+key), the Fn key is not reported as an input event any longer (used to
+be xkb-code 80 with xev), and the second Enter is not recognized at all,
+neither w/ nor w/o Fn pressed. kernel_sends_linux_keycodes==1 does not
+change anything for the mousebuttons, but annoyingly sets META to Option
+(and of course resets the console map to US).
+                                              _
+I have to correct the keycodes I gave for the ^ key:
+  _
+  ^: 	52, xkb keycode 60 (keysym 0x0, NoSymbol), same_screen YES,
+    	XLookupString gives 0 characters:  ""
+    _
+ Fn-^:	110, xkb keycode 118 (keysym 0xff8d, KP_Enter), same_screen YES,
+"   XLookupString gives 1 characters:  "
 
-_But_ after some hours of sleep, the machine would not wake up properly.
-First, the backlight didn't switch on. I tried the usual tricks of playing
-with the brightness control, but to no effect. The machine was running at
-first, as I could tell from the usual disk activity caused by slocate.
-I also could dimly see the desktop, but at that point it finally seemed
-to be frozen, because console switching didn't do anything.
-I then shut the lid to put it to sleep again -- successfully, but when I
-tried to wake it up once more, it immediately switched off.
-After the restart, same symptoms: my ofboot script did not work, it searched
-for a bootable volume for a while and rebooted into MacOS.
-I have to add that I experienced something similar once with the precompiled
-2.2.17pre9-benh1 kernel. In that case, there seemed to be problems with
-the pmu while the machine was still running, because wmapm and gkrell
-would not start up. I issued a snooze to check if pmud was running, with
-basically the same effects: sleep, no wakeup, power-off.
-That time, I tried to boot back into linux with yaboot by setting back
-the OF variables first, but the kernel failed to boot, immediately shutting
-off the power again. I just could see a message about something like
-"PMU not properly initialized with this kernel..." briefly flashing up.
-After rebooting into MacOS, everything seemed to be back in a proper
-state.
-I did not extensively test all kernel versions yet, but I put the PB
-to sleep very briefly with the 2.2.17pre10-benh1+mol-patch yesterday,
-and had no problems then. The kernel that would not wake up to day
-was 2.2.17pre10-benh1 + mol-patch + dma-patch, but as I said, it was
-after a much longer period of sleep. The battery was fully charged
-however.
-I am a bit worried if this might rather be a hardware problem, but I've
-never seen anything like this in MacOS (I've put it to sleep from MacOS
-this morning, to check this out again).
+ RET:	36, xkb keycode 44 (keysym 0xff0d, Return), same_screen YES,
+"   XLookupString gives 1 characters:  "
+
+ Fn-RET: 72, xkb keycode 84 (keysym 0xff8d, KP_Enter), same_screen YES,
+"   XLookupString gives 1 characters:  "
+
+Both Opt and Fn-Opt are 58 (xkb 66).
+(with 2.2.17pre9-benh1)
+With  2.2.17pre10-benh1, syslog reports:
+
+Jul 12 02:12:45 miranda kernel: Unhandled ADB key (scancode 0x34) pressed.
+Jul 12 02:12:45 miranda kernel: Unhandled ADB key (scancode 0x34) released.
+     _
+when ^ is pressed, and
+
+Jul 12 02:12:46 miranda kernel: Unhandled ADB key (scancode 0x6e) pressed.
+Jul 12 02:12:46 miranda kernel: Unhandled ADB key (scancode 0x6e) released.
+       _
+for Fn-^.
 
 Thanks,
 							Derek
