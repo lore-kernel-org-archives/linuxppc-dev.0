@@ -1,16 +1,28 @@
-Message-ID: <40328BEC.6010903@lucent.com>
-Date: Tue, 17 Feb 2004 14:47:24 -0700
-From: Mike Welliington <wellington@lucent.com>
+Subject: RE: 2.6 kernel ppc tree
 MIME-Version: 1.0
-To: Rod Boyce <rod_boyce@stratexnet.com>
-Cc: Lokesh Kumar <kumar.lokesh@wrx-us.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.6 kernel ppc tree
-References: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn>
-In-Reply-To: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 18 Feb 2004 10:55:16 +1300
+Message-ID: <A3240F62EF3C2749B1A25D3BC9548F41030A00@ExchWENZ02.wenz.global.vpn>
+From: "Rod Boyce" <rod_boyce@stratexnet.com>
+To: "Mike Welliington" <wellington@lucent.com>
+Cc: "Lokesh Kumar" <kumar.lokesh@wrx-us.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I downloaded it from www.kernel.org I was very surprised how far I got but there you go.
+
+Regards,
+Rod Boyce
+
+-----Original Message-----
+From: Mike Welliington [mailto:wellington@lucent.com]
+Sent: Wednesday, February 18, 2004 10:47 AM
+To: Rod Boyce
+Cc: Lokesh Kumar; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.6 kernel ppc tree
 
 
 Rod -
