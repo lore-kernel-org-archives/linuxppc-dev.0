@@ -1,43 +1,28 @@
-Date: Thu, 9 Mar 2000 08:33:59 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sean Harding <sharding@dogcow.org>
-cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: compiler optimization? something else?
-In-Reply-To: <Pine.GSO.4.05.10003081359150.17227-100000@ophelia.dogcow.org>
-Message-ID: <Pine.LNX.4.05.10003090827380.4093-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <v04220801b4ed062277c8@[10.0.0.42]>
+In-Reply-To: <B4EC4FBE.497%jween@som.llu.edu>
+References: <B4EC4FBE.497%jween@som.llu.edu>
+Date: Wed, 8 Mar 2000 23:55:32 -0800
+To: "Jon Erick Ween" <jween@som.llu.edu>, <linuxppc-dev@lists.linuxppc.org>
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: atyfb/aty128fb on lombard
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 8 Mar 2000, Sean Harding wrote:
-> On Wed, 8 Mar 2000, David Edelsohn wrote:
-> (FWIW, another metric...It took 41 minutes to compile a kernel on the
-> powermac. It took just over 6 minutes on my PII 350 desktop. The pentium
-> was compressing an mp3 at the same time).
+At 6:43 PM -0800 3/8/00, Jon Erick Ween wrote:
 
-I assume the PPC compiled a PPC kernel and the ia32 compiled an ia32 kernel?
-Then your benchmark is irrelevant since it hides the complexity difference for
-generating good code between ia32 and PPC.
-Please redo the timings cross-compiling a PPC kernel on the ia32 or
-cross-compiling an ia32 kernel on the PPC.
+>Also, the system at bootup seems seems to think there is a rage pro chip on
+>board rather than a rage128 and assigns a mach64 frame buffer. Is this
+>supposed to be this way?
 
-BTW, if you do timings for integer wavelet transforms, you'll find out that the
-PPC is about as fast (or faster) than the PII 350. For this particular case my
-200 MHz 604e outperformed all PCs and Suns I had access to at the university
-(SMP doesn't count).
+The video chip in the 101 PowerBook G3 (aka "Lombard") _is_ a Rage
+Pro (mach64) derivative.
 
-Gr{oetje,eeting}s,
+The new 102 PowerBook G3 (aka "Pismo") introduced very recently is
+the only PowerBook which has a Rage 128.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
