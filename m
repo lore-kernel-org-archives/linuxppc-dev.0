@@ -1,39 +1,43 @@
-To: Brian Hawley <bhawley@luminex.com>
-Cc: Gerhard Jaeger <g.jaeger@sysgo.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ebony Board, PPC440GP and NFS panics 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 19 May 2004 09:13:59 PDT."
-             <4.2.2.20040519091201.05090ce0@bhawley.mailhost.luminex.com>
-Date: Wed, 19 May 2004 19:59:15 +0200
-Message-Id: <20040519175920.37BA5C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Differing PCI layouts trigger porting driver problem [Was: Memory layout question]
+Date: Wed, 19 May 2004 13:33:06 -0500
+Message-ID: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCC@FTWMLVEM02.e2k.ad.ge.com>
+From: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+To: <okorpil@fh-landshut.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <4.2.2.20040519091201.05090ce0@bhawley.mailhost.luminex.com> you wrote:
->
-...
-> come out.  We think that is because linux is thinking the MAC address is
-> ff:ff:ff:ff:ff:ff instead of what
-> it really is.  u-boot doesn't seem to have a problem getting the MAC
-> address out of the ebony board, but
-> this linux kernel seems to.
+-- snip --
 
-U-Boot passes the MAC address to the Linux kernel, so if your  kernel
-is  configured  for use with U-Boot, then it will pick up the correct
-MAC address. Maybe it is not?
+> I guess the correct new order would be:
+> allocate_resource(&iomem_resource, ... ) to obtain a range of
+> physical addresses, ioremap_nocache that physical start address to
+> obtain virtual addresses for the ->virt pointer in the master
+> window structure (now done in vme_master_window_map() I think),
+> and then use virt_to_bus () to obtain the address to store in the
+> master window base register. Then the driver should work both on
+> (nearly) arbitrary setups for x86 and PPC.
 
-Best regards,
+That sounds about right. This type of issue is sprinkled throughout.
+I'm on a tight deadline for another project, but I will refer you
+to another developer who is currently working on a maintenance release
+of that driver. I'll see if we can add porting to PPC to the scope
+of the next release.
 
-Wolfgang Denk
+BTW, I am the original developer, so all bugs can be blamed on me!
+If you need help digging through the driver code, just let me know.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-No one may kill a man.  Not for any purpose.  It cannot be condoned.
-	-- Kirk, "Spock's Brain", stardate 5431.6
+> Of course I have to try that out first (I'm still home now),
+> and let you know if that produced any results. Did VMIC run into
+> similar problems when trying to run the driver module on the
+> VMIVME7050 (750FX/GX IBM PowerPC board)?
+
+We have not started that port yet, but I'm sure we will run into
+the same issue.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
