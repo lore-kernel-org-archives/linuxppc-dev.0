@@ -1,26 +1,22 @@
-Message-ID: <369A7A24.50B2690F@pop.agri.ch>
-Date: Mon, 11 Jan 1999 23:24:37 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Date: Mon, 11 Jan 1999 18:28:42 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Paul Mackerras <paulus@cs.anu.edu.au>,
+        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        Dan Malek <dmalek@jlc.net>, bh40@calva.net
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: new irq.c
+Message-ID: <Pine.LNX.3.96.990111182245.1184A-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
-To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: compiling option _USE_XOPEN
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+I've tested it pretty well.  You guys want to check it out for me?
+Comments?
 
-I found an option in the header file <bits/types.h> 
-it is called _USE_XOPEN. Can ANYBODY give me a hint about it??? please.
+I haven't finished cleaning up the chrp stuff yet.
 
-I was looking to man pages, maybe the wrong ones. No success.
-
-Thanks in advance
-
-Andreas
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
