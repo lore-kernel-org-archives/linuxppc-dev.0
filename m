@@ -1,65 +1,65 @@
-Date: Thu, 9 Aug 2001 18:32:17 -0400 (EDT)
+Date: Thu, 9 Aug 2001 18:49:02 -0400 (EDT)
 From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-To: Adrian Cox <adrian@humboldt.co.uk>
+To: Daris A Nevil <dnevil@snmc.com>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: I want to break softirq.c to fix broken hardware
-In-Reply-To: <3B72D188.4080902@humboldt.co.uk>
-Message-ID: <Pine.LNX.4.33.0108091826180.11077-100000@localhost.localdomain>
+Subject: Re: Non-cacheable memory
+In-Reply-To: <3B7034A0.C55D871F@snmc.com>
+Message-ID: <Pine.LNX.4.33.0108091838380.11077-100000@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 9 Aug 2001, Adrian Cox wrote:
+On Tue, 7 Aug 2001, Daris A Nevil wrote:
 
+> Gus, Tom,
 >
-> Justin (Gus) Hurwitz wrote:
+> Here is the procedure I used to allocate pages and mark them as non-cached in
+> the 2.2.5 kernel (SNMC's QSLinux):
 >
->  > #else
->  >         __asm__ __volatile__("\n\
->  > 1:      lwzx    %0,0,%3\n\
->  >         add     %0,%2,%0\n\
->  >         stwx    %0,0,%3"
->  >         : "=&r" (t), "=m" (v->counter)
->  >         : "r" (a), "r" (v), "m" (v->counter)
->  >         : "cc");
->  > #endif /* CONFIG_NO_ATOMICS */
+>     mem_addr = __get_free_page(GFP_KERNEL);
+>     pte = va_to_pe(&init_task, mem_addr);
+>     pte_val(*pte) |= _PAGE_NO_CACHE;
+>     flush_tlb_page(current->mm_mmap, mem_addr);
 >
-> Last time this came up I pointed out that lwarx/stwcx are for locking
-> against interrupts as well as against other CPUs. You don't seem to have
-> anything in your atomic routine to prevent interrupts occurring between
-> the load and the store.
+> I used these pages for SCC buffer descriptors, so they were never returned to
+> the system. I'm not sure if this is the preferred way, but it certainly works.
+> I have not tried this in the 2.4 kernel yet.  The functions __get_free_page()
+> and flush_tlb_page() do exist in 2.4.4, but I could not locate va_to_pe()  (I
+> think that was a macro in 2.2.5).
 >
-> --
-> Adrian Cox   http://www.humboldt.co.uk/
+> You may also want to look at the file linux/asm/pgalloc.h, esp. the functions
+> get_pgd_slow() and get_pgd_fast().
 
-Indeed- you are right (and that is, I'm 99% sure, the cause of the crash
-when it happens).
+Indeed, that does look quite like what I would expect to do. But, trust my
+luck, it didn't work. I'm on a 2.4 kernel (a few weeks old from the devel
+tree (2.4.7-pre6?). Here's how my code looks:
 
-I presume that it would be terrible ineffecient to turn off interrupts
-throughout all of the tasklet_hi_action() function (though they are off
-for most of it). Since this is the only function that I have ever had a
-crash in, I would rather not add local_irq_disable()/local_irq_enable() to
-each of the atomic functions, as that seems to be ineffecient overkill
-(though it might be the proper thing to do?).
+        dev->mem_start = (int)__get_free_pages(GFP_KERNEL, 0);
+#ifndef CONFIG_NO_DCACHE
+        {
+        /* This is where code goes to set the above allocated memory as
+        *  non-cacheable. These lines DO NOT WORK right now. */
 
-Right now I am compiling a kernel with local_irq_disable()/local_irq_enable()
-around the
-if (!atomic_read(&t->count)) {
-                        if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
-                                BUG();
-                        t->func(t->data);
-                        tasklet_unlock(t);
-                        continue;
-                }
-statement. Hopefully that will work.
+        pte_t *pte = va_to_pte(dev->mem_start);
+        pte_val(*pte) |= _PAGE_NO_CACHE;
+        flush_tlb_page(init_mm.mmap, dev->mem_start);
+        }
+#endif
 
-When I get this working, would it be worthwhile to send a patch to the
-list? I don't know if anyone else needs this kind of fix. If others would
-like it, I'll try to do this a more generically "right" way.
 
-Thanks again,
+Notes: CONFIG_NO_DCACHE is an option I added which disables the L1 cache
+(no cache means no need for uncached memory :) Also, va_to_pte is in
+arch/ppc/mm/fault.c, and is ifdef'd with a CONFIG_8xx. I altered that
+ifdef to also include the function for my board.
+
+I might also need to set the addresses 0x10710000 and 0x10718000 to be
+non-cacheable (for MMIO with the chip). Would those addresses be in the
+page table? And if not, thoughts on how to un-cache those areas (which are
+each only a few bytes)?
+
+Thanks,
 --Gus
 
 
