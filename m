@@ -1,42 +1,65 @@
 To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: access memory mapped registers 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 09 Jan 2003 16:27:47 PST."
-             <885489B3B89FB6449F93E525DF78777F064541@srvnt506.ALLOPTIC.COM>
-Date: Fri, 10 Jan 2003 02:12:49 +0100
-Message-Id: <20030110011254.76017C608E@atlas.denx.de>
+In-reply-to: Your message of "Thu, 09 Jan 2003 16:46:45 PST."
+             <885489B3B89FB6449F93E525DF78777F064542@srvnt506.ALLOPTIC.COM>
+Date: Fri, 10 Jan 2003 02:20:23 +0100
+Message-Id: <20030110012028.3831EC608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <885489B3B89FB6449F93E525DF78777F064541@srvnt506.ALLOPTIC.COM> you wrote:
+In message <885489B3B89FB6449F93E525DF78777F064542@srvnt506.ALLOPTIC.COM> you wrote:
 >
-> Given that, do you know what is the convention if I need to address the GPIO
-> pins in
-> the 860?   I have some FPGA which require me to download the FPGA code
-> and they are controlled via JTAG from my GPIO pins out of 860.  I can use
-> mmap to map the ppc 860 internal memory (the quick dirty way just to see if
-> works), or is there a driver already provided which will allow me to control
-> the GPIO pins from user application?
+> I can see if I mmap the internal 860 CPU registers, and screw up that, I
+> will
+> definitely screw up the system, and require it to be reboot.  BUt if the
+> hardware we are mapping is outside the CPU internal memory and outside the
+> RAM,
+> shouldn't the failure be limited to the user application only then?
 
-There is no such driver, and there cannot be any such generic driver,
-as the usage of the port pins is different for  each  board.  And  it
-would  be  a  very  bad idea to allow any user to mess with important
-things. You can even ruin hardware that way.
+No. For example, assume there is a port pin  which  is  meant  as  an
+input,  and  the  signal  is  driven from external hardware. Now your
+application program by mistake re-programs this pin  as  output.  You
+may smoke your board this way.
 
-Do yourself a favour and write a device driver that does  what  needs
-to be done.
+> only the memory regions that is mapped to the ethernet switching chip,
+> even if I screw up on the hardware setup, shouldn't my kernel still be
+> protected?  At most, the application faults and I should be able to restart
+> the application without rebooting the system?
 
-Best regards,
+There is a simple rule: if you open backdoors in a secure system  the
+result  is  an insecure system. Write clean code.
+
+
+There is many things you have to keep in mind:
+
+* Functionality: you cannot process interrupts in user space
+
+* Performance: how do you synchronize your accesses to the  hardware?
+
+* Communication: How do you know when data has been processed, or has
+  become available, or stable, or ...?
+
+* Tricky things: What will the caches in  your  system  do  when  the
+  application  accesses  the  hardware?  How will you address memory?
+  Remember that there are systems where  a  32  bit  address  is  not
+  sufficient any more...
+
+etc. etc.
+
+Write clean code.
+
+
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There is nothing in this world constant but inconstancy.      - Swift
+Life is a game. Money is how we keep score.              - Ted Turner
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
