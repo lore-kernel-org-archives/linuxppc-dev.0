@@ -1,51 +1,62 @@
-Message-Id: <199902240714.IAA00361@piglet.cpu.lu>
-Date: Wed, 24 Feb 1999 08:14:18 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: egcs-1.1.1-1c bug (was Re: major ksyms problem)
-To: thomassr@erols.com
-cc: nester@erols.com, Franz.Sirl@munich.netsurf.de,
-        mklinux-development-system@public.lists.apple.com,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.05.9902231559510.6465-100000@localhost.erols.com>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+From: Dirk Feuchter <dirk@belchen.iwr.uni-heidelberg.de>
+Message-Id: <199902241526.QAA02827@belchen.iwr.uni-heidelberg.de>
+Subject: 3 Button Mouas with LinuxPPC on MAcs
+To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 24 Feb 1999 16:26:10 MET
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  23 Feb, this message from Tom Vier echoed through cyberspace:
-[snip]
->> >egcs-1.1.1-1c failed using -O0, -O2, and -O3 with all combinations of
->> >-mcpu=601, -mcpu=604, and -fno-schedule-insns. -fpic did work, however
->> >it addes an offset table symbol that makes insmod complain.
->> >> > Feb 21 09:36:18 zero insmod: /lib/modules/2.0.37-osfmach3/net/bsd_comp.o:
->> >> > Unhandled relocation of type 26 for .L343
->> 
->> Is "Unhandled relocation of type 26" the behaviour for standard compilation
->> or for -fpic? You can't compile a kernel/modules with -fpic and expect
->> modutils still to work, modutils only handles the minimum necessary
->> relocation types.
 
-Just to make sure we all talk about the same things, there was an issue
-with relocation of kernel modules some time ago when we moved to a
-newer version of egcs, which needed a newer version of modutils to be
-able to handle that new relocation.
+Hello,
 
-The modutils version to use is 2.1.121. If nowhere else, you can find a
-binary on my site (see below).
+we are an institute of the university of Heidelberg.
+We are using Apple Macintoshs  G3 with ADB-Bus
+We want to work with LINUXPPC in future
+and partly are doing so with DR4.
 
-Now, I may be completely off track, and this problem now is something
-completely different ;-)
+Of course we want to use 3buttonmice on the LinuxPPC MAcs.
+but they are very expensive !!!
 
-Michel
+The MacPointProMouse is  about 38.99 english pounds =51 $
+by an english distributor
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+The Contour Mac ADB Mouse is available in Germany for 239 DM == 111 $
+by an German distributor
+
+The Kensington 4 Button Bouse, but thats not we want is availabel  for 70$
+by an German distributor$
+
+This is very expensive , especially if you need 10 such mice !
+and a PC mouse is about 10 $
+Besides shipping charge is not cheap.
+
+Before spending a lot of money the question is:
+WiIl the 3 Button Mouse work  with LinuxPPC?
+
+We want three button mice instead of 
+using
+left and right arrows
+
+Besides we tried soldering  our own adapter using wire and tin-solder
+So we made    a kind of adapter   from RS422 (serial MacInterface)
+to RS232 a PC mouse 
+For MacOS we succeeded using a control panel called <Serial Mouse>
+But for LinuxPPC several problems occured ==> no satisfying  solution
+
+How did you solve the problem
+Which 3Buttonmouse do you use
+Wherer did you buy it?
+
+
+Hoping for answers,
+
+Dirk
+
+
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
