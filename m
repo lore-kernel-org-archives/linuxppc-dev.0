@@ -1,18 +1,19 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp09.mail.mci.yahoo.co.jp (ybbsmtp09.mail.mci.yahoo.co.jp
-	[210.80.241.183]) by ozlabs.org (Postfix) with SMTP id 5380067A67
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2005 01:07:03 +1100 (EST)
-Message-ID: <42383D85.7050108@ybb.ne.jp>
-Date: Wed, 16 Mar 2005 23:07:01 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20050303124435.GA24233@Redstar.dorchain.net>	<4227153C.3030201@gmx.net>	<20050303141832.GU25080@Redstar.dorchain.net>	<20050304075703.GA15637@Redstar.dorchain.net>	<422FD24F.4070108@jp.fujitsu.com>	<20050310072803.GR4017@Redstar.dorchain.net>	<423073A9.70404@ybb.ne.jp>	<4231387D.6030204@jp.fujitsu.com>	<1110932285.25201.66.camel@gaston>	<4237C319.4050109@jp.fujitsu.com>
-	<4237C8F0.1010605@jp.fujitsu.com> <1110954539.5272.0.camel@gaston>
-In-Reply-To: <1110954539.5272.0.camel@gaston>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 71A4D67A6B
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Mar 2005 04:54:34 +1100 (EST)
+In-Reply-To: <4e44f753c3a197eff3b584f24a239f06@freescale.com>
+References: <4e44f753c3a197eff3b584f24a239f06@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a6c94966dfd580730c9b435c0d95deef@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 16 Mar 2005 12:12:28 -0500
+To: Kumar Gala <kumar.gala@freescale.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: boot time scheduling hile atomic
+Subject: Re: building ppc_htab?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Benjamin:
 
-I can not figure out why my previous patch is more preferable than
-later one.
-Could you explain the reason of that please.
+On Mar 16, 2005, at 1:57 AM, Kumar Gala wrote:
 
-Regards,
+> Is there any reason not to make the following change so we build 
+> ppc_htab only on PPC STD MMU?  This would also require fixing up 
+> fs/proc/proc_misc.c.
 
->>
->>http://ozlabs.org/ppc32-patches/
->>
->>It changes the implementation of kernel_thread function
->>to be performed with function call.
-> 
-> 
-> I prefer your previous patch. Paul hacked it a bit and will commit his
-> modified version.
-> 
-> Ben.
-> 
+Does it actually build properly this way?  There used to be 
+functions/variables
+defined there, needed for linking resolution at least.  There were also 
+some
+generally called functions, that usually didn't do anything unless 
+there was
+a hash table used.  If that is fixed up, then this is fine :-)
 
--- 
-Takeharu KATO
+Thanks.
+
+
+	-- Dan
