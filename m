@@ -1,26 +1,29 @@
-Message-ID: <3B4087A8.702@galileo.co.il>
-Date: Mon, 02 Jul 2001 17:39:36 +0300
-From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Message-ID: <3B409EE3.9CFCD22B@laposte.net>
+Date: Mon, 02 Jul 2001 16:18:43 +0000
+From: ibm405gp <ibm405.linux@laposte.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: linux SMP
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: ?Loading and debugging a linux kernel on a walnut board with a BDI2000
+References: <B25E2E5A003CD311B61E00902778AF2A02637685@SERVER1>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+
 
-Does any one know of a document how to develope an SMP kernel on PowerPC
-based platform ?
+Does anyone try to load an debug a linuk kernel with a BDI2000 on a
+Walnut board (IBM 405GP).
+My "vmlinuz-walnut" file generated with "make zImage" (with mvista
+toolschain) seems invalid for
+the bdi2000 but it works fine with 1.15 ROM Monitor
 
-And if any one can please explain the boot process ?
-I have CPU #0 initializing the whole system then CPU #1 is given bus
-grant and executes code from the eeprom which is basically only
-branching to address 0x0 ! Is this enough ? what CPU #1 should do next ?
+BDI>load
+Loading vmlinuz-walnut , please wait ....
+# Invalid program file format
 
-Regards,
-Rabeeh
+Thanks for your help.
 
+Phil
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
