@@ -1,37 +1,60 @@
-From: "Steve Boorman" <steveb@baydel.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Fri, 16 Jul 2004 15:49:50 +0100
-Subject: Re: PPC440 Kernel Stack overflow
-Reply-To: Steve Boorman <steveb@baydel.com>
-Message-ID: <40F7F91E.18124.2F5883@localhost>
+Subject: Re: Context Switch in Real Time  Linux Vs VxWorks (or any other
+	RTOS)
+From: Gary Thomas <gary@mlbassoc.com>
+To: okorpil@fh-landshut.de
+Cc: arun@ossi.co.in,
+	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <40F77AA3.8030703@fh-landshut.de>
+References: <000001c46af2$642f7c40$e100a8c0@arunprasad>
+	 <40F77AA3.8030703@fh-landshut.de>
+Content-Type: text/plain
+Message-Id: <1089990598.22193.6417.camel@hermes>
+Mime-Version: 1.0
+Date: Fri, 16 Jul 2004 09:09:58 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark,
+On Fri, 2004-07-16 at 00:50, Oliver Korpilla wrote:
+> Arun Prasad Velu wrote:
+> >
+> >I am in the process of analyzing the feasibility of migrating an
+> >existing VxWorks system (MPC860 target) to Linux (RTOS).
+> >
+> >I'd like to compare the features of Linux and VxWorks with respect to
+> >the Real Time capabilities. I am little concerned about Linux's Context
+> >Switching.
+> >
+> >I'd like to get your opinion on this. Even if I want to move to Linux,
+> >I'll have to convince my management. So, any pointers on comparison of
+> >Linux Vs VxWorks with respect to Real Time capabilities would be highly
+> >appreciated.
+>
+> I hardly guess context switching will be your main problem, because the
+> stock Linux kernel does not support hard realtime!
+>
+> You either have to use RTAI (free kernel modification that requires
+> drivers to be rewritten for realtime), RTLinux (nearly the same,
+> non-free, patented) or modified Linux kernels from TimeSys or MontaVista
+> (who both add real-time capabilities in a more stock-Linux-compliant way).
+>
+> Depending on your target, eCos (a free embedded operating system with a
+> focus on minimal code) may be the better choice for you, especially if
+> your platform is already supported.
 
-Thanks for your comments, you are basically confirming what I
-suspected, that accessing regions of memory outside the allocated
-stack area are not trapped. It looks like the Kernel stack pointer is
-just compared when context switches occur, and only then reported if
-out of range.
+Thanks for the plug :-)  [n.b. I am one of the main eCos developers]
+FYI, look to http://sources.redhat.com/ecos for details.
 
-> I'm curious about your watchdog - a true watchdog should hard reset
-> your board if not serviced.  So you've really got a high priority
-> interrupt I guess, which is probably not much use, (as you're
-> finding out).  If it were an NMI you could at least write some code
-> that would jump to the reset vector or something like that.
+>
+> Be warned: Not all PowerPC processors are supported in eCos (last time I
+> checked 74xx and 7xx were missing).
 
-The watch-dog we use is built into the PPC440GP. The first time it
-expires it generates a critical interrupt, the second time, if still
-enabled, will cause a hardware reset if that function is enabled.
-Whilst tracking down our original bug we didn't want the hardware
-reset to occur as it would definitely loose any debug information
-that may still be left in memory, hence we run it with reset
-disabled.
+Ah, but they are simple to add (and have been, but not necessarily
+public) as they are effectively PPC60x processors with some differences.
 
-Regards,
-Steve Boorman
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
