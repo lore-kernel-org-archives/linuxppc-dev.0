@@ -1,44 +1,42 @@
-Date: Wed, 26 Apr 2000 19:23:09 +0200
-From: Bernhard Reiter <bernhard@intevation.de>
-To: Mario Scarpa <m.scarpa@mondonet.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard hard freeze
-Message-ID: <20000426192309.A8102@cheops.usf.Uni-Osnabrueck.DE>
-References: <20000424161311.23404.qmail@web1705.mail.yahoo.com>
-	<20000424191708.C16557@cheops.usf.Uni-Osnabrueck.DE>
-	<39058B20.7D29A470@mondonet.net>
-	<20000425144459.E22219@cheops.usf.Uni-Osnabrueck.DE>
-	<390594BF.97FD809E@mondonet.net>
-	<20000426142256.J2544@cheops.usf.Uni-Osnabrueck.DE>
-	<3906E33F.89D2E839@mondonet.net>
+Message-Id: <v03110700b52cddca8e45@[129.100.29.243]>
+In-Reply-To: <00042613142600.25418@khendricks_mac>
+References: <v03110700b52cb98e15b9@[129.100.29.243]>
+ <v03110700b52c8481fb7e@[209.183.131.177]>
+ <v03110700b52cb98e15b9@[129.100.29.243]>
 Mime-Version: 1.0
-In-Reply-To: <3906E33F.89D2E839@mondonet.net>; from m.scarpa@mondonet.net on Wed, Apr 26, 2000 at 11:38:23AM -0100
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 26 Apr 2000 13:57:26 -0400
+To: Giovanna Ambrosini <ambrosini@lightning.ch>
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: patch: POSIX.1b signals for ppc
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 26, 2000 at 11:38:23AM -0100, Mario Scarpa wrote:
-> > The first diagostic of the problem is, that it is a usb problem.
->
-> I would say the _very first_ ;-)
+Hi Giovanna,
 
-Yes, unfortunatly it froze again even running the kernel withou usb.
-All in all the bug seems to be harder to recreate today then
-yesterday. (Maybe it is date related.)
+>I will try to exercise the SA_SIGINFO info in some signal handlers to make
+>sure
+>things are working okay.
 
-> I noticed another interesting thing: the freeze almost always
-> happened whit heavy network activity. All the tries to reproduce
-> the problem failed for now (as usual, when you dload something
-> not useful ;)). Will keep on trying.
+Seems to be working fine!  The additional debug info is a big help.
 
-This is not good. Is there somebody out there, who could
-use an external debugger to find out, what is going on?
-I do not know enough about hardware related issues here.
+That only leaves the ucontext stuff to test yet which is what I really need
+since it allows stack overflow checking to be done on an exception basis
+(i.e when it occurs) and not before every and every access which should
+speed up the jdk interpreter significantly.
 
-	Bernhard
+Thanks,
+
+Kevin
+
 --
-Professional Service around Free Software                (intevation.net)
-The FreeGIS Project				            (freegis.org)
-Association for a Free Informational Infrastructure            (ffii.org)
+Kevin B. Hendricks, Associate Professor of Operations and Information
+Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
