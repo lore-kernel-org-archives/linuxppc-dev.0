@@ -1,33 +1,27 @@
-Message-Id: <5.1.0.14.2.20030223150050.02b93d60@mail.ebshome.net>
-Date: Sun, 23 Feb 2003 15:05:12 -0800
-To: brian.auld@adic.com
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: Kernel Preemption patch
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <995FF289C9D69747A09E42992644595405B23680@penguin.adic.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+From: "okisoftxman" <okisoftxman@hotmail.com>
+To: "linux-emb" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Callebaut, Benoit" <benoit.callebaut@barco.com>
+Subject: problem about RAM assigned
+Date: Mon, 24 Feb 2003 12:10:56 +0900
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-ID: <OE23ugEzUfctANq8qTF0000e377@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 02:28 PM 2/23/2003, brian.auld@adic.com wrote:
->Has anyone successfully applied and run the linux kernel preemption patch on
->a 2.4.20 kernel. I have the following:
->
->- Latest Denx kernel (2_4_devel) running on 440GP ebony
->- 'preempt-kernel-rml-2.4.20-1.patch' applied to my kernel source
->   (I manually corrected a couple of fails and double checked a few
->    'successfully applied with fuzz' instances when applying the patch).
+Hi,
+    I have some problem about allocate RAM on MBX860 board.Who can tell me
+,Thank you.
+1.when we power-up the system and PPCBOOT run successfully,I find there are
+some codes in the top of the RAM(the address about 0x0--0x2000).I guess it
+is the PPCBOOT's code.But my "PPCBOOT.BIN"in FLASH is about 150kbytes,and
+the size is bigger than the codes in RAM,why?
 
-Please, search mailing list archives.
-There was some discussion about RML patches about a month ago.
-
-In particular, there were some bugs/typos in PPC part.
-Also I had problems on 440GP, and corrected them by using MVL 2.1 tree, not
-RML patches.
-
-Eugene.
-
+2.Someone told me that after LINUX booted,PPCBOOT is invalid and the RAM
+will relocate.But as I known,some functions of PPCBOOT (e.g.FLASH WRITE
+,SDRAM control)is most important and there is no similar functions in
+LINUX.If PPCBOOT will be invalid and relocate RAM,LINUX how to control these
+function(e.g.flash write,SDRAM control)?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
