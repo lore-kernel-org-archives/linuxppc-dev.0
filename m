@@ -1,51 +1,77 @@
-Message-ID: <20010926203225.8705.qmail@kunk.jriver.com>
-Subject: Re: Stock 2.4.10 kernel on RS6K 7248
-In-Reply-To: <20010926082455.A434@austin.ibm.com> "from hollis@austin.ibm.com
- at Sep 26, 2001 08:24:55 am"
-To: hollis@austin.ibm.com
-Date: Wed, 26 Sep 2001 15:32:25 -0500 (CDT)
-From: Robert E Brose II <bob@kunk.jriver.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 27 Sep 2001 00:55:41 +0200
+From: Stefan Pfetzing <dreamind@dreamind.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Dmasound for iBook2
+Message-ID: <20010927005541.A10663@server>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="LQksG6bCIzRHxTLp"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-User hollis@austin.ibm.com says:
-> On Tue, Sep 25, 2001 at 11:59:43PM -0500, Robert E Brose II wrote:
-> >
-> > 1) When booting the 2.4.10 kernel as opposed to the 2.2.18 kernel, the
-> > virtual consoles have the character and attribute REVERSED so there is
-> > junk on the screen when one first switches. Subsequent characters
-> > displayed work properly however. 2.4.10 is using the VGA console
-> > driver in this case because the frame buffer driver wasn't
-> > compiled in.
->
-> This problem has been fixed in a large video driver patch that Geert posted a
-> month or two ago.
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Ok, I'll dig that out. I WAS impressed that all the other fixes made it
-into the stock kernel source.
+Hi,
 
-> > 2) A little more problematic, I'd like to run X on this (it IS a
-> > workstation).
-> [snip]
->
-> I don't know... isn't it a requirement that you can run X before you can call
-> it a workstation? ;)
+i recently tested the Dmasound patch for the ibook2, which is now in benh's
+tree. I noticed that the volume got really loud even if at approx 10%...
+Hope this little patch solves that, for me it does.
 
-Touche, it WAS a workstation when it was running AIX ;)
+bye
 
-> At any rate, I don't think anyone except you has tried to hack 2.2's e15fb
-> into 2.4...
+dreamind
 
-Then I'll keep hacking :)
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="dmasound_for_ibook2_volume_fix.patch"
 
-Bob
---
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+diff -urN linux-benh.orig/drivers/sound/dmasound/tas3001c.c linux-benh/drivers/sound/dmasound/tas3001c.c
+--- linux-benh.orig/drivers/sound/dmasound/tas3001c.c	Mon Sep 24 22:24:31 2001
++++ linux-benh/drivers/sound/dmasound/tas3001c.c	Tue Sep 25 02:09:10 2001
+@@ -52,11 +52,13 @@
+ #define VOL_MAX ((1<<20) - 1)
+
+ void tumbler_get_volume(uint * left_vol, uint  *right_vol) {
+-  *left_vol = cur_left_vol>>4;
+-  *right_vol = cur_right_vol>>4;
++  *left_vol = cur_left_vol;
++  *right_vol = cur_right_vol;
+ }
+
+ int tumbler_set_volume(uint left_vol, uint right_vol) {
++  uint left_vol_pers = left_vol;
++  uint right_vol_pers = right_vol;
+   unsigned char block[6];
+
+   if (! tumbler_client) {
+@@ -64,8 +66,11 @@
+     return -1;
+   }
+
+-  left_vol<<=4;
+-  right_vol<<=4;
++  left_vol>>=6;
++  right_vol>>=6;
++
++  left_vol*=left_vol;
++  right_vol*=right_vol;
+
+   if (left_vol > VOL_MAX)
+     left_vol = VOL_MAX;
+@@ -85,8 +90,8 @@
+     printk("tumbler: failed to set volume \n");
+     return -1;
+   } else {
+-    cur_left_vol = left_vol;
+-    cur_right_vol = right_vol;
++    cur_left_vol = left_vol_pers;
++    cur_right_vol = right_vol_pers;
+   }
+
+   return 0;
+
+--LQksG6bCIzRHxTLp--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
