@@ -1,41 +1,24 @@
-Message-Id: <20000221082920.Postino-031840@smtp01.highway.ne.jp>
-Date: Mon, 21 Feb 2000 08:29:20 +0900
-To: Paul Mackerras <paulus@linuxcare.com>
-CC: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: 2.3.45 on B&W G3
-In-Reply-To: <00021919234100.02600@argo.linuxcare.com.au>
-References: <38AE510D.D8CD0B4@wanadoo.fr>
- <00021919234100.02600@argo.linuxcare.com.au>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: New GCC package to fix "internal compiler error in add_pending_init" bug with linux-2.3.47
+Date: Mon, 21 Feb 2000 01:37:00 +0100
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@linuxcare.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <00022101443200.01407@enzo.bigblue.local>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+Hi,
 
-I have a success kernel-2.3.45 using yaboot
-it's great.
+I've made gcc rev. 1i, fixing the ICE in compiling 2.3.47. It contains the
+official fix backported to gcc-2.95.2.
 
-Thanks
-Kaoru
+You can download from the usual place:
 
-From: Paul Mackerras <paulus@linuxcare.com>
-To: Martin Costabel <costabel@wanadoo.fr>
-Subject: Re: 2.3.45 on B&W G3
-Date: Sat, 19 Feb 2000 19:22:18 +1100
-Cc: Kaoru Fukui <k_fukui@highway.ne.jp>, linuxppc-dev@lists.linuxppc.org
+ftp://devel.linuxppc.org/users/fsirl/R5/RPMS/ppc/
 
-> On Sat, 19 Feb 2000, Martin Costabel wrote:
->
-> > When I rsync your kernel tree, it seems to me I also get your .config
-> > file. And the one you attached is not the 2.2.15 one, by accident?
->
-> Oops, yes it is, sorry.  My mistake.
->
-> When you rsync the linux-pmac-devel tree you do get the .config that I
-> use.  Here it is anyway.
-
+Franz.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
