@@ -1,52 +1,55 @@
-Message-ID: <20000320100508.5947.qmail@web110.yahoomail.com>
-Date: Mon, 20 Mar 2000 02:05:08 -0800 (PST)
-From: Michel "D?nzer" <mdaenzer@yahoo.com>
-Reply-To: michdaen@iiic.ethz.ch
-Subject: Re: XFree4 w rage128
-To: georges Harrisson <georges.harrisson@caramail.com>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 20 Mar 2000 11:09:03 +0100 (MET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Michel Lanners <mlan@cpu.lu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: dmasound split
+In-Reply-To: <Pine.LNX.4.10.10003201042240.3507-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.GSO.4.10.10003201107330.17246-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---- georges Harrisson <georges.harrisson@caramail.com> wrote:
-> I am sorry to ask a question that must have been answered
-> in the billions of messages talking from XFree 4, but is it
-> possible to run it actually with the r128 driver ?
+On Mon, 20 Mar 2000, Michael Schmitz wrote:
+> > > No comments whether it works on PowerMac and Atari?
+> > > I'd like to let this go in 2.4.0, since a driver for the Q40 is soon to be
+> > > added.
+> >
+> > With all the latest patches applied:
+> >
+> > 1. compiled-in doesn't work; it seems the low-level parts are not
+> > initialised:
+> >
+> > Mar 19 08:54:33 piglet kernel: kmod: failed to exec  -s -k sound-slot-0, errno = 2
+> > Mar 19 08:54:33 piglet kernel: kmod: failed to exec  -s -k sound-service-0-6, errno = 2
+>
+> Funny enough, this is solved on my Lombard by modprobe dmasound_core &&
+> modprobe dmasound_awacs. The modules are still around from an eariler
+> build with modularized dmasound, and still load OK. I'd say the kernel
+> never tries to initialize the compiled in dmasound so the module can still
+> register its hooks.
+>
+> The Makefile seems OK, and the following dmasound symbols appear in the
+> symtab:
+>
+> c01bfabc T dmasound_init
+>
+> Anything missing, Geert?
 
-Yes.
+Isn't this the problem where dmasound_init() is no longer called? I forgot to
+update the #ifdef CONFIG_DMASOUND since I never tried it builtin.
 
+I received a patch to call it on #ifdef CONFIG_DMASOUND_*.
 
-> On my BW G3, when I launch X I get hundred of lines like
-> :
-> (W) r128: resolution deleted (XXX x XXX)
-> (E) r128: no available mode found
-> No screen found
+Gr{oetje,eeting}s,
 
-You either haven't specified valid modes for your monitor or the correct
-horizontal and vertical frequency ranges.
+						Geert
 
-
-> I am running on anthony's aty128fb.
-
-Do you use Option "UseFBDev" ?
-
-
-> When I use offb, it goes a step further and crashes with a segmentation
-> fault.
-
-I wouldn't expect that to work anyway...
-
-
-> What is wrong with it? What are the necessary patches for
-> XF4 to work on PPC?
-
-None except the cache flush patch by Kostas Gewrgiou and Kevin Hendricks.
-
-
-Michel
+--
+Geert Uytterhoeven ------------- Sony Software Development Center Europe (SDCE)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Voice +32-2-7248638 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
