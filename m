@@ -1,20 +1,33 @@
-Message-Id: <200201210254.KAA09054@isdn.iscas.ac.cn>
-Date: Mon, 21 Jan 2002 10:59:44 +0800
-From: weiwu <weiwu@isdn.iscas.ac.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: How tu run M8xxhci.c?
-Mime-Version: 1.0
-Content-Type: text/plain;
-      charset="GB2312"
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74F871337@NTCORREO>
+From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Debugging with gdb problem
+Date: Mon, 21 Jan 2002 10:39:38 +0100
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-My linux kernel is 2.2.14.So I copy all of USB of 2.4.4 to my kernel.
-And I down the m8xxhci.c from RPX Lite DW.
-I donn't know the next what can I do?
-How to run m8xxhci.c
+Hi everibody:
 
-Thanks for reply!
+	I want to start debugging our applications with gdb and gdbserver,
+but it does not work.
+	The gdbserver says:
+		chroot /nfs gdbserver 10.0.17.20:2345 sample
+		Process sample created; pid = 28
+		getprotobyname: No such file or directory.
+		Exiting
+	And the gdb says:
+		chroot /nfs gdbserver 10.0.17.20:2345 sample
+		Process sample created; pid = 28
+		getprotobyname: No such file or directory.
+		Exiting
+
+	I am using busibox. It would be a problem of the busibox shell?How
+can y solve the problem?
+
+	Thanks for your help.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
