@@ -1,15 +1,27 @@
-To: "Joao Vicente" <joao.vicente@spectel.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 10 Oct 2003 12:07:02 BST."
-             <DEF39A0710293E489D45B10E06645CBD0243B232@dub-msx1.spectelcorp.com>
-Date: Fri, 10 Oct 2003 15:00:58 +0200
-Message-Id: <20031010130103.EE3F1C59E4@atlas.denx.de>
+Subject: RE: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Fri, 10 Oct 2003 15:24:15 +0100
+Message-ID: <DEF39A0710293E489D45B10E06645CBD0243B254@dub-msx1.spectelcorp.com>
+From: "Joao Vicente" <joao.vicente@spectel.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+OK
+
+Does that mean that I cannot debug the source until after the MMU is turned on?
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Friday, October 10, 2003 2:01 PM
+To: Joao Vicente
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a
+custom MPC8260 board
 
 
 Dear Joao,
