@@ -1,41 +1,36 @@
-Date: Tue, 17 Jul 2001 10:27:30 -0400
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Clock drift on an iBook2
-Message-ID: <20010717102730.B22214@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="S1BNGpv0yoYahz37"
+Date: Tue, 17 Jul 2001 16:40:24 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 - buttons, temperature, ictc
+In-Reply-To: <20010717101901.21603@smtp.adsl.oleane.com>
+Message-ID: <Pine.LNX.4.33.0107171622010.27602-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---S1BNGpv0yoYahz37
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> >With 2.5 even CONFIG_PMAC_BACKLIGHT in adbhid.c will go away and you _have_
+> >to use the event devices then, so you better start using them _now_. Taking
+> >kernel bloating shortcuts is not the way to go IMHO.
+>
+> Right, all this belongs to userland. I might include part of this
+> patch in 2.4 so we have the feature working now, but for 2.5, I'd
+> rather use the event devices for both backlight and volume, and
+> have pmud handle them.
 
-Hi,
-I have a new iBook2 and I'm having *severe* clock drift problems -- on
-the order of several seconds gained per minute.  I'd like to get this
-taken care of, and it seems to be a linux problem as OSX appears to
-have a stable clock.
+Why pmud? For backlight I kind of see how you'd get that notion. But
+volume?
 
-I'm running BenH's 2.4.7-pre6 right now, but I also saw it on 2.4.6.
+I admit to zero knowledge about the event device stuff but if it's
+anything like register_event(fd, handler, event_code) or select instead of
+having a hander registered I'd rather have some sort of event daemon
+handle all this. That way, users could even customize the thing to get
+particular functions mapped to keys :-)
 
-Is this a known problem?  If not, what can I do to help get this fixed?
-Ethan
+	Michael
 
---=20
-If I've told you once, I've told you once
-And once is all that you needed.
-		-- The Refreshments, "Carefree"
-
---S1BNGpv0yoYahz37
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---S1BNGpv0yoYahz37--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
