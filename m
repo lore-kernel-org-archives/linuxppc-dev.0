@@ -1,136 +1,142 @@
-Message-ID: <3E4D2E56.9010602@mvista.com>
-Date: Fri, 14 Feb 2003 10:58:46 -0700
+Message-ID: <3E4D3804.4080503@mvista.com>
+Date: Fri, 14 Feb 2003 11:40:04 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: linuxppc_2_4_devel patch for ev64260
+Subject: linuxppc_2_4_devel patch for 745x cache invalidate (in bootwrapper)
 Content-Type: multipart/mixed;
- boundary="------------040106000208000003000807"
+ boundary="------------000802020703010304000308"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------040106000208000003000807
-Content-Type: text/plain; charset=us-ascii; format=flowed
+--------------000802020703010304000308
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-The attached patch contains some minor fixups for the ev64260 port.
+There are some differences in the L2CR register between the 75x/74x0 and
+the 745x processors that weren't accounted for in the arch/ppc/boot/...
+bootwrapper code.  Also, there was no bootwrapper code to turn off L3
+cache on 745x processors.
 
-Please apply this patch if there are no objections.
+The attached patch does the following:
+a) Modify arch/ppc/boot/common/util.S:_setup_L2CR to poll on the proper
+bit when doing an L2 global invalidate.  On 75x & 74x0 processors, that
+means polling the L2IP bit; on 745x processors, that means polling on
+the L2I bit.  BTW, the code is already correct in arch/ppc/kernel/l2cr.S.
+b) Add arch/ppc/boot/common/util.S:_setup_l3CR routine which turns off
+L3 cache and does a global invalidate on it.
+c) Modify arch/ppc/boot/simple/head.S:start_ to call _setup_L3CR if
+running on a 745x processor.  This is #ifdef'd out for all platforms
+except CONFIG_FORCE, CONFIG_K2, CONFIG_EV64260, and CONFIG_PAL4--the
+#ifdef was already there.
+
+This patch has been successfully tested on a few platforms inside
+MontaVista.  However, those of you that use the bootwrapper on 745x
+platforms may want to test it as well.  If you do test it, please
+respond to this email with your results.  If there are no responses by
+mid-week next week, say, I will assume the patch is fine and ask that it
+get applied to the public linuxppc_2_4_devel source.
 
 Thanks,
 
 Mark
 
---------------040106000208000003000807
-Content-Type: text/plain; name="ev64260.patch"
+--------------000802020703010304000308
+Content-Type: text/plain;
+ name="745x.patch"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="ev64260.patch"
+Content-Disposition: inline;
+ filename="745x.patch"
 
-===== arch/ppc/configs/ev64260_defconfig 1.10 vs edited =====
---- 1.10/arch/ppc/configs/ev64260_defconfig	Tue Jan 14 09:08:28 2003
-+++ edited/arch/ppc/configs/ev64260_defconfig	Thu Feb 13 17:49:59 2003
-@@ -107,6 +107,7 @@
- # CONFIG_MTD_PARTITIONS is not set
- # CONFIG_MTD_CONCAT is not set
- # CONFIG_MTD_REDBOOT_PARTS is not set
-+# CONFIG_MTD_CMDLINE_PARTS is not set
+===== arch/ppc/boot/common/util.S 1.10 vs edited =====
+--- 1.10/arch/ppc/boot/common/util.S	Wed Feb 12 13:34:20 2003
++++ edited/arch/ppc/boot/common/util.S	Fri Feb 14 10:01:45 2003
+@@ -100,7 +100,7 @@
+ 	isync
+ 	mfspr	r8,L2CR
+ 	rlwinm	r8,r8,0,1,31
+-	oris	r8,r8,0x0020
++	oris	r8,r8,L2CR_L2I@h
+ 	sync
+ 	isync
+ 	mtspr	L2CR,r8
+@@ -108,14 +108,51 @@
+ 	isync
 
- #
- # User Modules And Translation Layers
-@@ -125,6 +126,7 @@
- # CONFIG_MTD_CFI_ADV_OPTIONS is not set
- CONFIG_MTD_CFI_INTELEXT=y
- # CONFIG_MTD_CFI_AMDSTD is not set
-+# CONFIG_MTD_CFI_STAA is not set
- # CONFIG_MTD_RAM is not set
- # CONFIG_MTD_ROM is not set
- # CONFIG_MTD_ABSENT is not set
-@@ -141,6 +143,7 @@
- CONFIG_MTD_PHYSMAP_LEN=02000000
- CONFIG_MTD_PHYSMAP_BUSWIDTH=4
- # CONFIG_MTD_PCI is not set
-+# CONFIG_MTD_PCMCIA is not set
+ 	/* Wait for the invalidation to complete */
+-1:	mfspr	r8,L2CR
+-	rlwinm.	r9,r8,0,31,31
++	mfspr   r8,PVR
++	srwi    r8,r8,16
++	cmplwi  r8,(PVR_7450 >> 16)
++	bne     2f
++
++1:	mfspr	r8,L2CR		/* On 745x, poll L2I bit (bit 10) */
++	rlwinm.	r9,r8,0,10,10
+ 	bne	1b
++	b	3f
++
++2:      mfspr   r8,L2CR		/* On 75x & 74x0, poll L2IP bit (bit 31) */
++	rlwinm. r9,r8,0,31,31
++	bne     2b
 
- #
- # Self-contained MTD device drivers
-@@ -340,6 +343,7 @@
- CONFIG_GT64260_ETH=y
- CONFIG_NET_PCI=y
- # CONFIG_PCNET32 is not set
-+# CONFIG_AMD8111_ETH is not set
- # CONFIG_ADAPTEC_STARFIRE is not set
- # CONFIG_APRICOT is not set
- # CONFIG_CS89x0 is not set
-@@ -490,6 +494,11 @@
- # Input core support is needed for joysticks
- #
- # CONFIG_QIC02_TAPE is not set
-+# CONFIG_IPMI_HANDLER is not set
-+# CONFIG_IPMI_PANIC_EVENT is not set
-+# CONFIG_IPMI_DEVICE_INTERFACE is not set
-+# CONFIG_IPMI_KCS is not set
-+# CONFIG_IPMI_WATCHDOG is not set
-
- #
- # Watchdog Cards
-===== arch/ppc/platforms/ev64260_setup.c 1.17 vs edited =====
---- 1.17/arch/ppc/platforms/ev64260_setup.c	Tue Jan 14 09:14:54 2003
-+++ edited/arch/ppc/platforms/ev64260_setup.c	Thu Feb 13 16:29:31 2003
-@@ -21,6 +21,8 @@
-  * Note: I have not been able to get *all* PCI slots to work reliably
-  *	at 66 MHz.  I recommend setting jumpers J15 & J16 to short pins 1&2
-  *	so that 33 MHz is used. --MAG
-+ * Note: The 750CXe and 7450 are not stable with a 125MHz or 133MHz TCLK/SYSCLK.
-+ * 	At 100MHz, they are solid.
-  */
- #include <linux/config.h>
-
-@@ -75,18 +77,8 @@
- 	if (ppcboot_bd_valid) {
- 		speed = ppcboot_bd.bi_busfreq;
- 	}
--	else switch (PVR_VER(mfspr(PVR))) {
--		case PVR_VER(PVR_750):
--			speed = 100000000;
--			break;
--		case PVR_VER(PVR_7450):
--			speed = 125000000;
--			break;
--		default:
--			printk("Bus speed unknown for this processor module\n");
--			printk("Processor PVR_VER(pvr): 0x%x\n",
--							PVR_VER(mfspr(PVR)));
--			speed = 100000000;
-+	else {
-+		speed = 100000000; /* XXX Only 100MHz is stable */
- 	}
-
- 	return speed;
-@@ -575,8 +567,7 @@
- 	seq_printf(m, "vendor\t\t: " BOARD_VENDOR "\n");
- 	seq_printf(m, "machine\t\t: " BOARD_MACHINE "\n");
-
--	seq_printf(m, "PVID\t\t: 0x%x, vendor: %s\n",
--			pvid,
-+	seq_printf(m, "cpu vendor\t: %s\n",
- 			((pvid & (1<<15)) || IS_PVR_750CX(pvid))
- 			    ? "IBM" : "Motorola" );
- 	seq_printf(m, "cpu MHz\t\t: %d\n", ev64260_get_cpu_speed()/1000/1000);
-===== drivers/net/Makefile 1.47 vs edited =====
---- 1.47/drivers/net/Makefile	Wed Jan 29 07:41:56 2003
-+++ edited/drivers/net/Makefile	Wed Feb 12 17:58:40 2003
-@@ -147,7 +147,7 @@
- obj-$(CONFIG_LNE390) += lne390.o 8390.o
- obj-$(CONFIG_NE3210) += ne3210.o 8390.o
- obj-$(CONFIG_NET_SB1250_MAC) += sb1250-mac.o
--obj-$(CONFIG_GT64260_ETH) += gt64260_eth.o
-+obj-$(CONFIG_GT64260_ETH) += gt64260_eth.o mii.o
- obj-$(CONFIG_NPNET) += npnet.o
- obj-$(CONFIG_ARCTIC_ENET) += arctic_enet.o 8390.o
+-	rlwinm	r8,r8,0,11,9		/* Turn off L2I bit */
++3:	rlwinm	r8,r8,0,11,9	/* Turn off L2I bit */
+ 	sync
+ 	isync
+ 	mtspr	L2CR,r8
++	sync
++	isync
++	blr
++
++	.globl	_setup_L3CR
++_setup_L3CR:
++	/* Invalidate/disable L3 cache */
++	sync
++	isync
++	mfspr	r8,L3CR
++	rlwinm	r8,r8,0,1,31
++	ori	r8,r8,L3CR_L3I@l
++	sync
++	isync
++	mtspr	L3CR,r8
++	sync
++	isync
++
++	/* Wait for the invalidation to complete */
++1:	mfspr	r8,L3CR
++	rlwinm.	r9,r8,0,21,21
++	bne	1b
++
++	rlwinm	r8,r8,0,22,20		/* Turn off L3I bit */
++	sync
++	isync
++	mtspr	L3CR,r8
+ 	sync
+ 	isync
+ 	blr
+===== arch/ppc/boot/simple/head.S 1.7 vs edited =====
+--- 1.7/arch/ppc/boot/simple/head.S	Tue Jan 14 08:45:33 2003
++++ edited/arch/ppc/boot/simple/head.S	Thu Feb 13 17:20:30 2003
+@@ -76,6 +76,14 @@
+ #if defined(CONFIG_FORCE) || defined(CONFIG_K2)		\
+ 	|| defined(CONFIG_EV64260) || defined(CONFIG_PAL4)
+ 	bl	_setup_L2CR
++
++	/* If 745x, turn off L3CR as well */
++	mfspr	r8,PVR
++	srwi	r8,r8,16
++	cmplwi	r8,(PVR_7450 >> 16)
++	bne	1f
++	bl	_setup_L3CR
++1:
+ #endif
+ #endif
 
 
---------------040106000208000003000807--
+--------------000802020703010304000308--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
