@@ -1,9 +1,9 @@
-From: g.ramakrishna@exgate.tek.com
-Message-ID: <301A812E6528D511A8F70008C71E578616C939@AP-BANG-M02>
-To: wd@denx.de
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Can not boot linux-2.4.4 using ppcboot-1.0.4 
-Date: Mon, 24 Sep 2001 06:14:53 -0700
+Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FA83@AMWMAIL>
+From: Cindy Peters <cinpet@adaptivemicro.com>
+To: "'Wolfgang Denk'" <wd@denx.de>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Upgrading to kernel 2.4.6 with old init program 
+Date: Mon, 24 Sep 2001 09:33:16 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,62 +11,47 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Wolfgang,
+Thanks for your help. The new ld.so.1 fixed the problem. I am thinking that
+I should rebuild the code with the latest libraries so that we don't have to
+have both versions available. Is there an ftp site where I can get the
+sources for all of the executables that you need in a ramdisk?
 
-I had already changed the board info in the kernel according to
-include/ppcboot.h
-of ppcboot-1.0.4. It still fails to start the kernel. It stops at "rfi"
-instruction in "turn_on_mmu" in the file "arch/ppc/kernel/head_8xx.S"
+Thanks again,
 
-	turn_on_mmu:
-      	  mfmsr   r0
-	        ori     r0,r0,MSR_DR|MSR_IR
-      	  mtspr   SRR1,r0
-	        lis     r0,start_here@h
-      	  ori     r0,r0,start_here@l
-	        mtspr   SRR0,r0
-      	  SYNC
-	        rfi                             /* enables MMU */
-
-I had earlier tried booting the 2.2.13 kernel. It had booted successfully
-by just changing the board info.
-I am using the same IMMR value in both ppcboot and the linux kernel. Will
-this give
-some problems ?
-
-Thanks & Regards,
-Ramakrishna, G
-
-
-
+Cindy Peters
+Adaptive Micro-ware, Inc.
 
 -----Original Message-----
 From: Wolfgang Denk [mailto:wd@denx.de]
-Sent: Sunday, September 23, 2001 11:30 PM
-To: Ramakrishna, G
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can not boot linux-2.4.4 using ppcboot-1.0.4
+Sent: Sunday, September 23, 2001 1:01 PM
+To: Cindy Peters
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: Upgrading to kernel 2.4.6 with old init program
 
 
-In message <301A812E6528D511A8F70008C71E578616C92E@AP-BANG-M02> you wrote:
+In message <41EDEC3C1B88D51186EB00A0C9CFADF702FA81@AMWMAIL> you wrote:
 >
-> I am trying to boot Linux-2.4.4 kernel using ppcboot-1.0.4.
-> It hangs after printing "## Transferring control to Linux (at address
-> 00000000) ..."
+> I am upgrading my Linux kernel from 2.2.13 to 2.4.6 on an MPC823. When the
+> kernel startup process gets to running the sbin/init program I am getting
+a
+> usage error for ld.so and then a kernel panic. It looks like it is
+> attempting to run ld.so. I am still using an old ramdisk with old versions
+> of executables that ran successfully on Linux 2.2.13. Have the file
+formats
+> changed somehow? Do I need to get the source for the executables and
+rebuild
+> them with the latest libraries? If so, where can I get them?
 
-This is a FAQ. See the PPCBoot mailing list archive.
-
-The usual reason is that you missed to adapt your board  header  file
-used  in  the  LInux  kernel  to  match the definition of the bd_info
-structure as passed by PPCBoot. Usually  you  can  just  delete  this
-definition  from  your  board header file and include <asm/ppcboot.h>
-instead.
+This souns as if you are still running code based on  libc-1.99.  You
+need a modified version of /lib/ld.so.1 then. There is one on our FTP
+server,  AFAIR  in  ftp://ftp.denx.de/pub/LinuxPPC/usr/src/ld.so* (or
+maybe in the "patches" directory?).
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I'd rather be led to hell than managed to heaven.
+Nothing ever becomes real until it is experienced.       - John Keats
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
