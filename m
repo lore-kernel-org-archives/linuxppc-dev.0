@@ -1,46 +1,51 @@
-Date: Wed, 11 Jun 2003 08:39:53 -0400
-From: Kent Borg <kentborg@borg.org>
-To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Why ack interrupt before calling handler?
-Message-ID: <20030611083953.A26856@borg.org>
-References: <20030606142939.B15725@borg.org> <1055327622.26152.70.camel@spawn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1055327622.26152.70.camel@spawn>; from kenneth.johansson@etx.ericsson.se on Wed, Jun 11, 2003 at 12:33:42PM +0200
+From: Christophe.LINDHEIMER@fr.thalesgroup.com
+Message-ID: <D96E2AFA0DF3D211B139009027454948034CBDF7@helios.gnv.tcc.thomson-csf.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: jjboor@sun023.aimsys.nl
+Subject: About MTD.
+Date: Wed, 11 Jun 2003 14:45:37 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jun 11, 2003 at 12:33:42PM +0200, Kenneth Johansson wrote:
-> I don't know what code you are looking at but generally you want to
-> first ack to avoid the race condition that would otherwise be present if
-> you first run your interrupt routine then ack. How would you know that
-> it was in fact not a new interrupt condition that you have not taken
-> care of you just removed.
+Hi.
 
-In my case I have a level-triggered interrupt that is latched by the
-hardware.
+I am trying to use MTD on my board.
 
-So the first ack tells the interrupt controller to forget about it,
-but as the interrupting hardware has not yet been serviced, the
-level-triggered interrupt is still being asserted, so that ack becomes
-a nop.
+I have two flash AMD LV160BB that are configured in 16 bits.
 
-Now the specific handler gets called, it deals with the specifics of
-the situation, removing the cause of the interrupt, and returns.
+They are in parallel so I have got a 32 bits bus wide.
 
-Finally the interrupt end gets called, which acks and enables the
-interrupt.  This ack actually does something for me.
+Each flash is 2 Mo . So the total is 4 Mo.
 
-I am thinking that the general purpose PPC code does the early
-ack for edge-triggered circumstances.  For latched level-triggered
-cases there is no harm in the extra early ack.
+My flash starts at @ : 0x04000000.
 
+So in the configuration for Linux I set
+	CFI : yes
+	Start @ : 0x04000000
+	Size : 0x00400000
+	Bus Width : 4
 
-Thanks,
+The result at the boot is :
 
--kb, the Kent whose nose has been closely in that code because he has
-been chasing a spurious interrupt problem.
+physmap flash device: 400000 at 4000000
+ Amd/Fujitsu Extended Query Table v1.0 at 0x0040
+number of JEDEC chips: 1
+0: offset=0x0,size=0x8000,blocks=1
+1: offset=0x8000,size=0x4000,blocks=2
+2: offset=0x10000,size=0x10000,blocks=1
+3: offset=0x20000,size=0x20000,blocks=31
+mtd: Giving out device 0 to Physically mapped flash
+
+Is it correct ?
+Why is there only one JEDEC Chip detected ?
+
+Regards
+
+Chris
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
