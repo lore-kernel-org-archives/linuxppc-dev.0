@@ -1,41 +1,36 @@
-Date: Thu, 13 Jul 2000 17:34:19 -0400 (EDT)
-From: Donald Cowart <dcowart@acld.lib.fl.us>
-To: Josh Huber <huber@mclinux.com>
-cc: Olaf Hering <olh@suse.de>,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: > 512 MB of ram on G4?
-In-Reply-To: <20000713150406.B1379@mclx.com>
-Message-ID: <Pine.LNX.4.20.0007131729350.29175-100000@bookworm.acld.lib.fl.us>
+Date: Thu, 13 Jul 2000 18:26:04 -0500 (CDT)
+From: Grant Erickson <erick205@tc.umn.edu>
+To: linuxppc-users@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: [ACTION]: Rational Purify for Linux/PPC
+Message-Id: <Pine.SOL.4.20.0007131816430.18347-100000@garnet.tc.umn.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Actually MacOS limits the amount availible to running apps as 999M.  I was
-purchasing a G4 and read that on Apple's Website.  It was a while ago
-and I don't remember if it was for OS9 or 8.X, though.
+I just got off the phone with Deborah (1-800-728-1212 x76620), a sales
+representative at Rational Software--makers of Purify. I had called to
+inquire about the availability of Purify for Linux/PPC.
 
-Donald Cowart  (dcowart@acld.lib.fl.us)
-Network Manager
-Alachua County Library District
-Gainesville, FL
+She did confirm that Rational did have plans "in progress" to support
+Linux on IA32, IA64 and possibly SPARC. The IA32 release is close to
+completion (July/August). Unfortunately, when I asked her about Linux/PPC
+she neither knew what the PowerPC was or that Linux even ran on it.
+Unfortunate.
 
-On Thu, 13 Jul 2000, Josh Huber wrote:
+However, she consulted the product development and engineering resources,
+and came back with the response that there were no plans at this time or
+in the near future to support Linux/PPC due to perceived lack of demand.
 
-> > No, 768MB is the maximum on chrp (B50), the newer PowerMacs can handle
-> > only that 703M. I have no reports about oldworlds.
->
-> one would think that this is a linux limitation then?  Apple's store sells
-> G4s with 1.5G, so one would hope that at least macos could handle it.  For
-> some reason I doubt it can, but why would they sell machines with that much
-> memory?
->
-> --
-> Josh
-> 6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
-> 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
->
+So, if you or your company see the value of Purify for Linux/PPC (or AIX
+for that matter), please call Deborah or e-mail Rational requesting
+support for it. It seemed to work for RealPlayer 7.0, maybe it'll work
+here (although porting Purify is a lot more work I imagine).
+
+Thanks,
+
+Grant Erickson
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
