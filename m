@@ -1,35 +1,55 @@
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: IPV4 conformance and bit DF configuration
-Date: Thu, 4 Mar 2004 15:09:56 -0500
-Message-ID: <AB5AF73EAF23304EA1B932174137CED70E709F@m5tmail.m5t.com>
-From: "Jean-Denis Boyer" <jdboyer@m5t.com>
-To: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: uncached user space mapping with mmap() ???
+Date: Fri, 5 Mar 2004 12:02:34 +1300
+Message-ID: <A3240F62EF3C2749B1A25D3BC9548F4103EED2@ExchWENZ02.wenz.global.vpn>
+From: "Richard Williams" <richard_williams@stratexnet.com>
+To: "Dan Malek" <dan@embeddededge.com>,
+	"Steven Scholz" <steven.scholz@imc-berlin.de>
+Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gérard,
+Hi,
 
-> I want to set the DF (Don't Fragment bit) in an UDP socket
-> without accessing
-> the IP header.
-> I don't find a setsockopt function to do it like for TOS or TTL.
+>> How could I do this on an MPC8xx?
+>
+>Open /dev/mem and just map the physical address of your
+>registers.  You don't even need your own driver.  If you
+>are mapping outside of the range of real memory, the mem
+>driver will automatically give you uncached access.
 
-There is a socket option for this: IP_PMTU_DISCOVER.
-Have a look at the manual page ip(7).
+I just tried this using pread but it wont let me seek to memory locations >= 0x80000000. perror returns "Invalid argument". The seek offset is a signed long int which indicates that it was intended to be limited to less then 0x80000000.
+
+How do you access 3rd and 4th GB memory?
+
+Richard
 
 
-Salutations,
---------------------------------------------
- Jean-Denis Boyer, Eng.
- M5T Centre d'Excellence en Télécoms Inc.
- 4283 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-3972 x241
---------------------------------------------
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan
+Malek
+Sent: Friday, March 05, 2004 6:00 AM
+To: Steven Scholz
+Cc: LinuxPPC
+Subject: Re: uncached user space mapping with mmap() ???
+
+
+
+Steven Scholz wrote:
+
+> How could I do this on an MPC8xx?
+
+Open /dev/mem and just map the physical address of your
+registers.  You don't even need your own driver.  If you
+are mapping outside of the range of real memory, the mem
+driver will automatically give you uncached access.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
