@@ -1,69 +1,61 @@
-Date: Wed, 28 Apr 1999 08:47:29 -0400
-From: "Paul J. Schinder" <schinder@pobox.com>
-To: Satadru Pramanik <satadru@umich.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Rel 5 ssh?
-Message-ID: <19990428084728.A6499@pobox.com>
-References: <Pine.LNX.4.10.9904280104180.19702-100000@beer.pub.umich.edu> <19990428080649.A5927@pobox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19990428080649.A5927@pobox.com>; from Paul J. Schinder on Wed, Apr 28, 1999 at 08:07:00AM -0400
+From: Frodo Looijaard <frodol@dds.nl>
+Message-Id: <199904281409.QAA01267@arda.frodo.local>
+Subject: Re: Support for Hydra i2c
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be (Geert Uytterhoeven)
+Date: Wed, 28 Apr 1999 16:09:05 +0200 (CEST)
+Cc: lm78@stimpy.netroedge.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9904281104050.12292-300000@mercator.cs.kuleuven.ac.be> from "Geert Uytterhoeven" at Apr 28, 99 11:20:36 am
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 28, 1999 at 08:07:00AM -0400, Paul J. Schinder wrote:
-} On Wed, Apr 28, 1999 at 01:05:57AM -0400, Satadru Pramanik wrote:
-} } 
-} } I've tried to rebuild the ssh-1.2.6 src.rpm under glibc2.1, and I get
-} } these errors:
-} } gcc -pipe -c -I.  -I./gmp-2.0.2-ssh-2 -DHAVE_CONFIG_H
-} } -DHOST_KEY_FILE=\"/etc/ssh/ssh_host_key\"
-} } -DHOST_CONFIG_FILE=\"/etc/ssh/ssh_config\"
-} } -DSERVER_CONFIG_FILE=\"/etc/ssh/sshd_config\"
-} } -DSSH_PROGRAM=\"/usr/bin/ssh1\" -DETCDIR=\"/etc/ssh\"
-} } -DPIDDIR=\"/var/run\" -DSSH_BINDIR=\"/usr/bin\"
-} } -DTIS_MAP_FILE=\"/etc/ssh/sshd_tis.map\" -O2 -fsigned-char
-} } -I/usr/X11R6/include login.c
-} } login.c: In function `record_login':
-} } login.c:437: structure has no member named `ut_syslen'
-} } login.c:441: structure has no member named `e_termination'
-} } login.c:442: structure has no member named `e_exit'
-} } login.c:454: `WTMPX_FILE' undeclared (first use in this function)
-} } login.c:454: (Each undeclared identifier is reported only once
-} } login.c:454: for each function it appears in.)
-} } make: *** [login.o] Error 1
-} } Bad exit status from /var/tmp/rpm-tmp.85594 (%build)
-} 
-} There's a patched RPM for 1.2.26 at Yellow Dog
-} <ftp://ftp.yellowdoglinux.com/>.  I don't remember the exact location;
-} you'll have to hunt around.  It works.
+Geert Uytterhoeven wrote:
+> 
+> The attached patch adds support for the i2c interface on the Apple `Hydra' Mac
+> I/O, found on CHRP PPC motherboards. The patch is relative to the anon CVS
+> version of yesterday evening.
 
-Whoops.  Having had a few minutes to track this down, my memory was
-playing tricks.  It's not a patched rpm, it's an rpm of patches, with
-a script to apply them to 1.2.26.  In
-/pub/yellowdog/updates/champion-1.0/RPMS/install-ssh-0.6-1.noarch.rpm
+Congratulations! You are the first to add support for a non-Intel 
+architecture. I am very excited by your contribution! To be honest, I did
+not even know the PPC architecture had an I2C interface. Very nice indeed!
 
+I will merge your code in later today, and if necessary I will send you some
+feedback on it. You may want CVS write access; it will make maintaining 
+everything a lot easier for all of us. Phil is the one who needs to make 
+an account for you; he also manages the mailing list, which might be 
+interesting to you too. Phil, can you contact Geert for this?
+ 
+>   - prog/dump/isadump.c
+> 
+>       o glibc 2.1 doesn't have <sys/perm.h>
+>       o make it compile on PPC (ISA I/O is memory mapped, but it doesn't work
+> 	anyway because different types of PPC boxes have ISA I/O space at
+> 	different addresses :-(
+>       o fix a typo (datareg -> addrreg)
 
-} 
-} } 
-} } 
-} } Any thoughts?  Does anybody know how to fix this?  The sshd from this
-} } install can't allocate ptys either.
-} } 
-} } --=
-} } satadru pramanik `satadru@umich.edu' www.umich.edu/~satadru
-} } Online Editor, The Michigan Daily
-} } Yugoslavia declares 'peace' in Kosovo; NATO Airstrikes
-} } continue
-} } -CNN Interactive, 04/08/99
-} } =--
-} } 
-} } 
+This was a very Intel-centered program :=). On Intel PCs, we often have
+some hardware sensors attached to the ISA bus. We will have to find out
+whether this is the case with PPCs too.
+ 
+> The only things on my i2c bus are 2 SPD EEPROMS. I attached the output of the
+> decode-dimms Perl script. It looks a bit weird though. 
+
+Again, you need to talk to Phil. He wrote the EEPROM decode routines.
+
+I am very curious whether anybody on the PPC has hardware monitoring sensors
+attached. People, the sensors-detect script should work for you, but don't
+try to do the ISA probing (you are asked whether you want it or not).
+
+Good luck,
+  Frodo
 
 -- 
-Paul Schinder
-schinder@pobox.com
+Frodo Looijaard <frodol@dds.nl>  PGP key and more: http://huizen.dds.nl/~frodol
+  At my homepage you will also find a guide for installing glibc under Linux.
+  New: Linux hardware monitoring kernel modules (LM78/79/80, Winbond etc.)
+  
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
