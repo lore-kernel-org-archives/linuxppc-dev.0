@@ -1,48 +1,63 @@
-Date: Sun, 19 Sep 1999 01:45:57 +0200
+Message-ID: <37E4532D.45BA7203@insu.com>
+Date: Sat, 18 Sep 1999 23:06:21 -0400
+From: "Francis J. Lacoste" <francis@insu.com>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: miBoot 1.0d3
-Message-Id: <19990919014557.023075@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: 2.2.X MACE driver broken on the PowerMac 7200.
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-HI !
+Hi,
 
-miBoot 1.0d3 is online at http://calvaweb.calvacom.fr/bh40/test.html
+I just upgraded to LinuxPPC R5 from something that 
+approximates R3. (Kernel 2.1.24) I didn't really upgrade, 
+but more start from scratch.  The builtin ethernet
+card (MACE as you know) was working fine before the 
+upgrade since I did a backup over the LAN to my main Intel
+linux box before the upgrade. 
 
-I booted successfully Paul's latest 2.2.12 with a normal xcoff zImage, it
-should also work with plain images (vmlinux, usually too large for a
-floppy), zImage with initrd, and plain vmlinux compressed with -vf9
-option. I didn't test zImage with initrd. (Note that the image is
-decompressed by miBoot, the decompression "header" is bypassed.
+I wasn't able to use NFS or FTP for the upgrade, but resort
+to a CDROM install. After the install, I realized that the
+ethernet card wasn't working properly.  DHCP works fine
+but nothing else works. If can grab an IP any time I want
+with pump, but ping doesn't work. 
 
-The kernel file name is currently stored in resource STR# 128.
+If I look at ifconfig, I see that there are a lot of dropped
+packets plus some errors and some frames errors. I tried this
+with kernel 2.2.6 and 2.2.12 both with booting with Open Firmware
+or booting with BootX. 
 
-next on my list:
+I have no networking problem in MacOS. 
 
- - get rid of the Apple boot blocs (write my own). Note that in theory,
-using the 68k bootblocs, it may be possible to boot from an ext2
-partition (using a first stage loader with a "map" like we do with OF)
+One other person has contacted me with an identical problem.
 
- - add some kind of gui to choose the root volume, options, and to be
-able to change the video resolution when using video=ofonly (by calling
-the ROM video driver).
+I also know that the card transmits the packets fine since
+I see them  reach the Intel box when I run tcpdump on that
+one. So it seems like its a receive problem.
 
-Another issue is that I have currently no way to exit from miBoot. If I
-fail to boot Linux, I exit to the caller, the disk is ejected, but the
-machine doesn't try another disk to boot from. It may ne possible, it may
-not, I'll have to disassemble more of MacOS ROM in order to figure this
-out. I'd like to have a choice to boot MacOS, especially when miBoot is
-on a hard disk partition.  (I can still change the PRAM value and reboot).
+I looked into the MACE driver source code, but there is not
+any changelog, so I have no clue as where this may have break.
+
+Does anyone knows what have changed between 2.1.24 and 2.2.X 
+in the MACE driver (or in other part of the kernel) that may
+have broken the receive part of the driver. 
+
+I am willing to help debug this driver, but I will need some
+pointer and clue since I am no expert kernel hacker.  And I
+am much less familiar with the PPC port. Where
+do I start to look ?  
+
+Thanks for your insights.
 
 
+P.S. Since I am not subscribed to the linuxppc-dev list, could
+you please CC me replies.
 
 -- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
+Francis J. Lacoste		     iNsu Innovations Inc.	
+Vice-Président développement 	      Tél.: (514) 336-5544
+francis.lacoste@iNsu.COM	      Fax.: (514) 336-8128
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
