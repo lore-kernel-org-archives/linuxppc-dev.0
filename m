@@ -1,36 +1,35 @@
-Date: Wed, 31 May 2000 09:02:15 -0400
-From: Josh Huber <huberj@wpi.edu>
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Lite-On ethernet controller
-Message-ID: <20000531090215.A652@mclinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: Michel Dänzer <daenzerm@student.ethz.ch>,
+        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Debian pmud package available
+References: <Pine.LNX.4.10.10005261124590.25198-100000@opal.biophys.uni-duesseldorf.de>
+From: Francois Felix Ingrand <felix@ingrand.net>
+Date: 31 May 2000 15:20:09 +0200
+In-Reply-To: Michael Schmitz's message of "Fri, 26 May 2000 11:25:34 +0200 (CEST)"
+Message-ID: <x8qog5mhn5i.fsf@alf.laas.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have what appears to be a Lite-On ethernet controller, which is supported
-by the tulip driver. What it really is, is a Asante FriendlyNET card. I had
-heard that the card works in 2.2.14+, but I'm having trouble getting it to
-work in later kernels (devel).
+Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de> writes:
 
-Because of the network driver interface change, I can't try out the newest
-tulip driver in 2.4pre.  Does anyone know of forward-ported tulip drivers?
+> > Sorry to step in this thread, but I am interested in having those
+> > power management capabilities on my Pismo too. I use LinuxPPC 2000
+> > (2.2.15pre19)
+> >
+> > Where can I get the RPMS or tar files.
+>
+> http://www3.jvc.nl/linuxppc/
 
-The particular error I'm seeing only happens with moderate load -- pings and
-other light traffic work 100%.
+I already installed this version on my pismo. As far as I can tell, it only
+supports battery charge level on this powerbook model. Am I right?
 
-Error information:
-NETDEV WATCHDOG: eth1: transmit timed out
-Transmit timed out, status e4660000, CSR12 000050ca, resetting...
-
-Device information:
-tulip driver output:
-eth1: Lite-On PNIC-II rev 37 at 0x1c00, 00:00:94:C5:EF:FF, IRQ 30.
-lspci -vv output attached because it's too wide.
-
-Any ideas?
-
-Josh
+--
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ "Renault, 97: le chômage pour Vilvorde, 98: 5 milliards, 99: 9 milliards pour
+  les actionnaires, dont 60% pour les fonds de pension américains."
+http://www.ingrand.net/felix                   http://www.laas.fr/~felix
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
