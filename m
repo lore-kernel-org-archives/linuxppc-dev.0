@@ -1,35 +1,31 @@
-Date: Tue, 10 Oct 2000 22:08:07 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Dan Malek <dan@mvista.com>
-cc: clark@esteem.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hanging in the Delay loop
-In-Reply-To: <39E36918.6E96FDF7@mvista.com>
-Message-ID: <Pine.HPX.4.10.10010102202210.16113-100000@gra-ux1.iram.es>
+Message-ID: <39E3915B.528A90FF@emc.com>
+Date: Tue, 10 Oct 2000 17:59:55 -0400
+From: Zhaobin Zhu <zzhu@emc.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: exchanges file in minicom
+References: <Pine.HPX.4.10.10010102202210.16113-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 10 Oct 2000, Dan Malek wrote:
+Hi,
 
-> Gabriel Paubert wrote:
->
-> > .... The main use is
-> > SMP timebase synchronization but it is important.
->
-> I'll just make one little suggestion, based upon lots of years
-> of multiprocessor development.  Find a software implementation that
-> doesn't require synchronized clocks local to each processor, and
-> then be grateful for the performance enhancement when you can have
-> synchronized clocks.
+I boot linux over IDE disk.
+The only connection between host and target is RS232 which is used
+to download and as console(minicom).
 
-I can't figure how an implementation which works without synchronized
-clocks will not allow to trivially synchronize the timebases.
-Of course I mean an implementation with good precision.
+After kernel is running on target, how can I send/receive files between
+host(minicom/linux) and target ?
 
-	Regards,
-	Gabriel.
+For ascii file, I can use "cat  < /dev/ttyS0" on target, and
+"ascii-xfr .." on host. How about Binary files ?
+
+Thanks,
+--
+ Zhaobin Zhu
+ zzhu@emc.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
