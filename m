@@ -1,52 +1,49 @@
-Message-ID: <3F33BC10.8060407@imc-berlin.de>
-Date: Fri, 08 Aug 2003 17:04:48 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3F33EADE.4010908@embeddededge.com>
+Date: Fri, 08 Aug 2003 14:24:30 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Questions about ARP
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Questions about ARP
+References: <3F33BC10.8060407@imc-berlin.de>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Steven Scholz wrote:
 
-Microsoft uses "Automatic Private IP Addressing" to grab an IP address
-if a DHCP request fails.
+> But when I connect my MPC8xx board with Linux it seems that Linux is
+> not responding to the ARP requests done by the Windows machine.
+> Result: Both machine end up with the same IP address.
 
-In the section "Resolving IP Conflicts" in
-http://www.winnetmag.com/Articles/Index.cfm?ArticleID=7464
-it says
+Fortunately, Linux isn't Windows......you are going to find lots of
+Windows "standard" protocols that aren't documented nor supported by
+anyone else.
 
-How does the client know the IP address it's using isn't in use by
-another machine? It uses a gratuitous Address Resolution Protocol
-(ARP) to resolve potential conflicts. Let’s say the first client that
-boots up wants to assign itself an IP address of 169.254.10.20. It
-sends out a gratuitous ARP, but no one answers, so it keeps the
-address ... Next, a third client boots up and picks 169.254.10.20, the
-same address the first client chose. The first client tells the third
-client that it's already using that IP address, so the third client
-tries a different IP address and keeps it if there's no conflict.
+> Did I miss something?
 
-I can see this behaviour if I connect an embedded DOS TCP/IP device to
-a Windows XP computer (using a cross-linked twisted pair) and force
-the IP of the DOS device to be the same as the one that the Windows XP
-computer is going to claim. Fair enough.
+Well, Microsoft did.....there is RFC2131 that describes how you are
+supposed to use an ARP to respond to a duplicate IPv4 used on the
+network.  It is commonly used to ensure you don't have systems
+manually configured or not honoring leases when DHCP is handing out
+dynamic IP addresses.  Everyone else seems to implement this properly.
 
-But when I connect my MPC8xx board with Linux it seems that Linux is
-not responding to the ARP requests done by the Windows machine.
-Result: Both machine end up with the same IP address.
+> I did not find an kernel option saying something about ARP...
 
-Did I miss something?
-I did not find an kernel option saying something about ARP...
+That's because it implements the standard protocols by default.
 
-Any ideas?
+> Any ideas?
 
-Could someone maybe try this as well? Please?
+Run DHCP or properly manually configure your Linux system.  I don't
+know how old your Linux kernel is for the 8xx, but this support for
+RFC2131 has been in Linux for a very long time.
 
-Thanks a million,
 
-Steven
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
