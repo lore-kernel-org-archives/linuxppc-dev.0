@@ -1,33 +1,28 @@
-Date: Fri, 15 Sep 2000 12:49:12 +0200 (CEST)
+Date: Fri, 15 Sep 2000 15:07:18 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
-        Paul Mackerras <paulus@linuxcare.com.au>, mlan@cpu.lu,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: zeroing pages in the idle task?
-In-Reply-To: <Pine.A41.3.96LJ1.1b7.1000914213033.93706B-100000@unlserve.unl.edu>
-Message-ID: <Pine.LNX.4.10.10009151248020.378-100000@cassiopeia.home>
+To: "Halfmann, Klaus" <khalfmann@libra.de>
+cc: "'linux-fsdevel@vger.kernel.org '" <linux-fsdevel@vger.kernel.org>,
+        "'linuxppc-dev@lists.linuxppc.org '" <linuxppc-dev@lists.linuxppc.org>,
+        "'flar@allandria.com '" <flar@allandria.com>,
+        "'Olaf Hering'" <olh@suse.de>
+Subject: Re: Status of HFS+ support
+In-Reply-To: <F14441D40E5AD3118886005004607AD10BDDA5@MAIL1>
+Message-ID: <Pine.LNX.4.10.10009151505490.378-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 14 Sep 2000, Takashi Oe wrote:
-> On Wed, 13 Sep 2000, Geert Uytterhoeven wrote:
-> > On the m68k, we have some code to guestimate the CPU clock based on the
-> > BogoMIPS (see get_cpuinfo() in arch/m68k/kernel/setup.c). Since we didn't care
-> > about the overhead incurred by interrupt processing, it's not that accurate
-> > though (I get 24.8 MHz on my 25 MHz 68040).
+On Fri, 15 Sep 2000, Halfmann, Klaus wrote:
+> Today I can announce a bit of progress:
 >
-> That thought had occured to me.  Only problem is that the relationship
-> between bogomips and cpu clock speed depends on, well, CPU.  For 601, it's
-> one to one, and, for 604, two to one, and so on.  I don't know the ratios
-> for 603, G3, or G4.
+> The following tools currently work (readonly):
+>
+> hpmount ,hpumount, hpls, hpcd, hpcopy.
 
-It's the same on m68k. Originally I had the ratios for 68040 only (and for
-68000, which didn't matter at that time), but very soon I found them out for
-other CPUs. All you need is a few testers :-)
+No hpfsck (or even a hpvalidate)? Having a tool to _verify_ (I'm not speaking
+about correcting yet) the correctness of a filesystem is very interesting.
 
 Gr{oetje,eeting}s,
 
