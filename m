@@ -1,12 +1,12 @@
-Return-Path: <kumar.gala@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-To: inuxppc-embedded List <linuxppc-embedded@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Message-Id: <763172b681a90bedd188013a1b028f4a@freescale.com>
-Content-Type: multipart/mixed; boundary=Apple-Mail-1-1024011133
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 8 Mar 2005 18:21:53 -0600
-Subject: Request for testing: [PATCH] remove SPR short-hand defines
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 9 Mar 2005 12:03:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc64-dev <linuxppc64-dev@ozlabs.org>
+Message-Id: <20050309120343.0c22eb0f.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [RFC][PATCH] combining header files
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,430 +16,937 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
---Apple-Mail-1-1024011133
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
+I would just like to start a discussion about consolidating (some of) the
+ppc and ppc64 header files.  As a starting point (am I am not saying that
+this is the right way to go) the following patch replaces (semantically)
+equivalent ppc64 headers files by just including the asm-ppc file.
 
-All,
+We *could* use this method to make the journey incremental until there
+are no nontrivial files left in asm-ppc64 ....
 
-Can you please take a whirl at testing this patch.  I think I got all 
-the cases in which we used SPR short-hand defines and replaced them 
-with SPRN_<FOO> for ppc32.
+Diffstat looks like:
+ asm-ppc/ipc.h         |    2
+ asm-ppc64/ioctl.h     |   75 ---------------
+ asm-ppc64/ioctls.h    |  115 ------------------------
+ asm-ppc64/ipc.h       |   35 -------
+ asm-ppc64/mman.h      |   53 -----------
+ asm-ppc64/param.h     |   30 ------
+ asm-ppc64/parport.h   |   19 ----
+ asm-ppc64/poll.h      |   33 ------
+ asm-ppc64/string.h    |   36 -------
+ asm-ppc64/termbits.h  |  194 -----------------------------------------
+ asm-ppc64/termios.h   |  236 --------------------------------------------------
+ asm-ppc64/unaligned.h |   22 ----
+ 12 files changed, 12 insertions(+), 838 deletions(-)
 
-Let me know if you have any issues (I've done simple build tests on 
-4xx, 8xx, 82xx, 85xx, and pmac)
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks
-
-- kumar
-
-
---Apple-Mail-1-1024011133
-Content-Transfer-Encoding: base64
-Content-Type: application/x-gzip; x-unix-mode=0644;
-	name="spr-remove-shorthand.patch.gz"
-Content-Disposition: attachment;
-	filename=spr-remove-shorthand.patch.gz
-
-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
-
---Apple-Mail-1-1024011133--
+diff -ruNp linus/include/asm-ppc/ipc.h linus-headers/include/asm-ppc/ipc.h
+--- linus/include/asm-ppc/ipc.h	2003-09-24 10:56:02.000000000 +1000
++++ linus-headers/include/asm-ppc/ipc.h	2005-03-09 11:54:36.000000000 +1100
+@@ -4,7 +4,7 @@
+ /*
+  * These are used to wrap system calls on PowerPC.
+  *
+- * See arch/ppc/kernel/syscalls.c for ugly details..
++ * See arch/ppc{,64}/kernel/syscalls.c for ugly details..
+  */
+ struct ipc_kludge {
+ 	struct msgbuf __user *msgp;
+diff -ruNp linus/include/asm-ppc64/ioctl.h linus-headers/include/asm-ppc64/ioctl.h
+--- linus/include/asm-ppc64/ioctl.h	2003-12-31 09:39:13.000000000 +1100
++++ linus-headers/include/asm-ppc64/ioctl.h	2005-03-09 01:10:54.000000000 +1100
+@@ -1,74 +1 @@
+-#ifndef _PPC64_IOCTL_H
+-#define _PPC64_IOCTL_H
+-
+-
+-/*
+- * This was copied from the alpha as it's a bit cleaner there.
+- *                         -- Cort
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#define _IOC_NRBITS	8
+-#define _IOC_TYPEBITS	8
+-#define _IOC_SIZEBITS	13
+-#define _IOC_DIRBITS	3
+-
+-#define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)
+-#define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)
+-#define _IOC_SIZEMASK	((1 << _IOC_SIZEBITS)-1)
+-#define _IOC_DIRMASK	((1 << _IOC_DIRBITS)-1)
+-
+-#define _IOC_NRSHIFT	0
+-#define _IOC_TYPESHIFT	(_IOC_NRSHIFT+_IOC_NRBITS)
+-#define _IOC_SIZESHIFT	(_IOC_TYPESHIFT+_IOC_TYPEBITS)
+-#define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)
+-
+-/*
+- * Direction bits _IOC_NONE could be 0, but OSF/1 gives it a bit.
+- * And this turns out useful to catch old ioctl numbers in header
+- * files for us.
+- */
+-#define _IOC_NONE	1U
+-#define _IOC_READ	2U
+-#define _IOC_WRITE	4U
+-
+-#define _IOC(dir,type,nr,size) \
+-	(((dir)  << _IOC_DIRSHIFT) | \
+-	 ((type) << _IOC_TYPESHIFT) | \
+-	 ((nr)   << _IOC_NRSHIFT) | \
+-	 ((size) << _IOC_SIZESHIFT))
+-
+-/* provoke compile error for invalid uses of size argument */
+-extern unsigned int __invalid_size_argument_for_IOC;
+-#define _IOC_TYPECHECK(t) \
+-       ((sizeof(t) == sizeof(t[1]) && \
+-         sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
+-         sizeof(t) : __invalid_size_argument_for_IOC)
+-
+-/* used to create numbers */
+-#define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
+-#define _IOR(type,nr,size)	_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
+-#define _IOW(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
+-#define _IOWR(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
+-#define _IOR_BAD(type,nr,size)	_IOC(_IOC_READ,(type),(nr),sizeof(size))
+-#define _IOW_BAD(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),sizeof(size))
+-#define _IOWR_BAD(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),sizeof(size))
+-
+-/* used to decode them.. */
+-#define _IOC_DIR(nr)		(((nr) >> _IOC_DIRSHIFT) & _IOC_DIRMASK)
+-#define _IOC_TYPE(nr)		(((nr) >> _IOC_TYPESHIFT) & _IOC_TYPEMASK)
+-#define _IOC_NR(nr)		(((nr) >> _IOC_NRSHIFT) & _IOC_NRMASK)
+-#define _IOC_SIZE(nr)		(((nr) >> _IOC_SIZESHIFT) & _IOC_SIZEMASK)
+-
+-/* various drivers, such as the pcmcia stuff, need these... */
+-#define IOC_IN		(_IOC_WRITE << _IOC_DIRSHIFT)
+-#define IOC_OUT		(_IOC_READ << _IOC_DIRSHIFT)
+-#define IOC_INOUT	((_IOC_WRITE|_IOC_READ) << _IOC_DIRSHIFT)
+-#define IOCSIZE_MASK	(_IOC_SIZEMASK << _IOC_SIZESHIFT)
+-#define IOCSIZE_SHIFT	(_IOC_SIZESHIFT)
+-
+-#endif /* _PPC64_IOCTL_H */
++#include <asm-ppc/ioctl.h>
+diff -ruNp linus/include/asm-ppc64/ioctls.h linus-headers/include/asm-ppc64/ioctls.h
+--- linus/include/asm-ppc64/ioctls.h	2003-04-03 08:55:29.000000000 +1000
++++ linus-headers/include/asm-ppc64/ioctls.h	2005-03-09 01:13:05.000000000 +1100
+@@ -1,114 +1 @@
+-#ifndef _ASM_PPC64_IOCTLS_H
+-#define _ASM_PPC64_IOCTLS_H
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <asm/ioctl.h>
+-
+-#define FIOCLEX		_IO('f', 1)
+-#define FIONCLEX	_IO('f', 2)
+-#define FIOASYNC	_IOW('f', 125, int)
+-#define FIONBIO		_IOW('f', 126, int)
+-#define FIONREAD	_IOR('f', 127, int)
+-#define TIOCINQ		FIONREAD
+-#define FIOQSIZE        _IOR('f', 128, loff_t)
+-
+-#define TIOCGETP	_IOR('t', 8, struct sgttyb)
+-#define TIOCSETP	_IOW('t', 9, struct sgttyb)
+-#define TIOCSETN	_IOW('t', 10, struct sgttyb)	/* TIOCSETP wo flush */
+-
+-#define TIOCSETC	_IOW('t', 17, struct tchars)
+-#define TIOCGETC	_IOR('t', 18, struct tchars)
+-#define TCGETS		_IOR('t', 19, struct termios)
+-#define TCSETS		_IOW('t', 20, struct termios)
+-#define TCSETSW		_IOW('t', 21, struct termios)
+-#define TCSETSF		_IOW('t', 22, struct termios)
+-
+-#define TCGETA		_IOR('t', 23, struct termio)
+-#define TCSETA		_IOW('t', 24, struct termio)
+-#define TCSETAW		_IOW('t', 25, struct termio)
+-#define TCSETAF		_IOW('t', 28, struct termio)
+-
+-#define TCSBRK		_IO('t', 29)
+-#define TCXONC		_IO('t', 30)
+-#define TCFLSH		_IO('t', 31)
+-
+-#define TIOCSWINSZ	_IOW('t', 103, struct winsize)
+-#define TIOCGWINSZ	_IOR('t', 104, struct winsize)
+-#define	TIOCSTART	_IO('t', 110)		/* start output, like ^Q */
+-#define	TIOCSTOP	_IO('t', 111)		/* stop output, like ^S */
+-#define TIOCOUTQ        _IOR('t', 115, int)     /* output queue size */
+-
+-#define TIOCGLTC	_IOR('t', 116, struct ltchars)
+-#define TIOCSLTC	_IOW('t', 117, struct ltchars)
+-#define TIOCSPGRP	_IOW('t', 118, int)
+-#define TIOCGPGRP	_IOR('t', 119, int)
+-
+-#define TIOCEXCL	0x540C
+-#define TIOCNXCL	0x540D
+-#define TIOCSCTTY	0x540E
+-
+-#define TIOCSTI		0x5412
+-#define TIOCMGET	0x5415
+-#define TIOCMBIS	0x5416
+-#define TIOCMBIC	0x5417
+-#define TIOCMSET	0x5418
+-# define TIOCM_LE	0x001
+-# define TIOCM_DTR	0x002
+-# define TIOCM_RTS	0x004
+-# define TIOCM_ST	0x008
+-# define TIOCM_SR	0x010
+-# define TIOCM_CTS	0x020
+-# define TIOCM_CAR	0x040
+-# define TIOCM_RNG	0x080
+-# define TIOCM_DSR	0x100
+-# define TIOCM_CD	TIOCM_CAR
+-# define TIOCM_RI	TIOCM_RNG
+-
+-#define TIOCGSOFTCAR	0x5419
+-#define TIOCSSOFTCAR	0x541A
+-#define TIOCLINUX	0x541C
+-#define TIOCCONS	0x541D
+-#define TIOCGSERIAL	0x541E
+-#define TIOCSSERIAL	0x541F
+-#define TIOCPKT		0x5420
+-# define TIOCPKT_DATA		 0
+-# define TIOCPKT_FLUSHREAD	 1
+-# define TIOCPKT_FLUSHWRITE	 2
+-# define TIOCPKT_STOP		 4
+-# define TIOCPKT_START		 8
+-# define TIOCPKT_NOSTOP		16
+-# define TIOCPKT_DOSTOP		32
+-
+-
+-#define TIOCNOTTY	0x5422
+-#define TIOCSETD	0x5423
+-#define TIOCGETD	0x5424
+-#define TCSBRKP		0x5425	/* Needed for POSIX tcsendbreak() */
+-#define TIOCSBRK	0x5427  /* BSD compatibility */
+-#define TIOCCBRK	0x5428  /* BSD compatibility */
+-#define TIOCGSID	0x5429  /* Return the session ID of FD */
+-#define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
+-#define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
+-
+-#define TIOCSERCONFIG	0x5453
+-#define TIOCSERGWILD	0x5454
+-#define TIOCSERSWILD	0x5455
+-#define TIOCGLCKTRMIOS	0x5456
+-#define TIOCSLCKTRMIOS	0x5457
+-#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
+-#define TIOCSERGETLSR   0x5459 /* Get line status register */
+-  /* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
+-# define TIOCSER_TEMT    0x01	/* Transmitter physically empty */
+-#define TIOCSERGETMULTI 0x545A /* Get multiport config  */
+-#define TIOCSERSETMULTI 0x545B /* Set multiport config */
+-
+-#define TIOCMIWAIT	0x545C	/* wait for a change on serial input line(s) */
+-#define TIOCGICOUNT	0x545D	/* read serial port inline interrupt counts */
+-
+-#endif /* _ASM_PPC64_IOCTLS_H */
++#include <asm-ppc/ioctls.h>
+diff -ruNp linus/include/asm-ppc64/ipc.h linus-headers/include/asm-ppc64/ipc.h
+--- linus/include/asm-ppc64/ipc.h	2004-05-30 11:50:26.000000000 +1000
++++ linus-headers/include/asm-ppc64/ipc.h	2005-03-09 01:15:40.000000000 +1100
+@@ -1,34 +1 @@
+-#ifndef __PPC64_IPC_H__
+-#define __PPC64_IPC_H__
+-
+-/* 
+- * These are used to wrap system calls on PowerPC.
+- *
+- * See arch/ppc64/kernel/syscalls.c for ugly details..
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-struct ipc_kludge {
+-	struct msgbuf __user *msgp;
+-	long msgtyp;
+-};
+-
+-#define SEMOP		 1
+-#define SEMGET		 2
+-#define SEMCTL		 3
+-#define SEMTIMEDOP	 4
+-#define MSGSND		11
+-#define MSGRCV		12
+-#define MSGGET		13
+-#define MSGCTL		14
+-#define SHMAT		21
+-#define SHMDT		22
+-#define SHMGET		23
+-#define SHMCTL		24
+-
+-#define IPCCALL(version,op)	((version)<<16 | (op))
+-
+-#endif /* __PPC64_IPC_H__ */
++#include <asm-ppc/ipc.h>
+diff -ruNp linus/include/asm-ppc64/mman.h linus-headers/include/asm-ppc64/mman.h
+--- linus/include/asm-ppc64/mman.h	2003-09-26 07:54:24.000000000 +1000
++++ linus-headers/include/asm-ppc64/mman.h	2005-03-09 01:25:14.000000000 +1100
+@@ -1,52 +1 @@
+-#ifndef __PPC64_MMAN_H__
+-#define __PPC64_MMAN_H__
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#define PROT_READ	0x1		/* page can be read */
+-#define PROT_WRITE	0x2		/* page can be written */
+-#define PROT_EXEC	0x4		/* page can be executed */
+-#define PROT_SEM	0x8		/* page may be used for atomic ops */
+-#define PROT_NONE	0x0		/* page can not be accessed */
+-#define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
+-#define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
+-
+-#define MAP_SHARED	0x01		/* Share changes */
+-#define MAP_PRIVATE	0x02		/* Changes are private */
+-#define MAP_TYPE	0x0f		/* Mask for type of mapping */
+-#define MAP_FIXED	0x10		/* Interpret addr exactly */
+-#define MAP_ANONYMOUS	0x20		/* don't use a file */
+-#define MAP_RENAME      MAP_ANONYMOUS   /* In SunOS terminology */
+-#define MAP_NORESERVE   0x40            /* don't reserve swap pages */
+-#define MAP_LOCKED	0x80
+-
+-#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
+-#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
+-#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
+-
+-#define MS_ASYNC	1		/* sync memory asynchronously */
+-#define MS_INVALIDATE	2		/* invalidate the caches */
+-#define MS_SYNC		4		/* synchronous memory sync */
+-
+-#define MCL_CURRENT     0x2000          /* lock all currently mapped pages */
+-#define MCL_FUTURE      0x4000          /* lock all additions to address space */
+-
+-#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+-#define MAP_NONBLOCK	0x10000		/* do not block on IO */
+-
+-#define MADV_NORMAL	0x0		/* default page-in behavior */
+-#define MADV_RANDOM	0x1		/* page-in minimum required */
+-#define MADV_SEQUENTIAL	0x2		/* read-ahead aggressively */
+-#define MADV_WILLNEED	0x3		/* pre-fault pages */
+-#define MADV_DONTNEED	0x4		/* discard these pages */
+-
+-/* compatibility flags */
+-#define MAP_ANON	MAP_ANONYMOUS
+-#define MAP_FILE	0
+-
+-#endif /* __PPC64_MMAN_H__ */
++#include <asm-ppc/mman.h>
+diff -ruNp linus/include/asm-ppc64/param.h linus-headers/include/asm-ppc64/param.h
+--- linus/include/asm-ppc64/param.h	2004-02-23 12:05:19.000000000 +1100
++++ linus-headers/include/asm-ppc64/param.h	2005-03-09 01:38:01.000000000 +1100
+@@ -1,29 +1 @@
+-#ifndef _ASM_PPC64_PARAM_H
+-#define _ASM_PPC64_PARAM_H
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#ifdef __KERNEL__
+-# define HZ		1000		/* Internal kernel timer frequency */
+-# define USER_HZ	100		/* .. some user interfaces are in "ticks" */
+-# define CLOCKS_PER_SEC	(USER_HZ)	/* like times() */
+-#endif
+-
+-#ifndef HZ
+-#define HZ 100
+-#endif
+-
+-#define EXEC_PAGESIZE	4096
+-
+-#ifndef NOGROUP
+-#define NOGROUP		(-1)
+-#endif
+-
+-#define MAXHOSTNAMELEN	64	/* max length of hostname */
+-
+-#endif /* _ASM_PPC64_PARAM_H */
++#include <asm-ppc/param.h>
+diff -ruNp linus/include/asm-ppc64/parport.h linus-headers/include/asm-ppc64/parport.h
+--- linus/include/asm-ppc64/parport.h	2002-02-14 23:14:36.000000000 +1100
++++ linus-headers/include/asm-ppc64/parport.h	2005-03-09 01:40:11.000000000 +1100
+@@ -1,18 +1 @@
+-/*
+- * parport.h: platform-specific PC-style parport initialisation
+- *
+- * Copyright (C) 1999, 2000  Tim Waugh <tim@cyberelk.demon.co.uk>
+- *
+- * This file should only be included by drivers/parport/parport_pc.c.
+- */
+-
+-#ifndef _ASM_PPC64_PARPORT_H
+-#define _ASM_PPC64_PARPORT_H
+-
+-static int __devinit parport_pc_find_isa_ports (int autoirq, int autodma);
+-static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
+-{
+-	return parport_pc_find_isa_ports (autoirq, autodma);
+-}
+-
+-#endif /* !(_ASM_PPC_PARPORT_H) */
++#include <asm-ppc/parport.h>
+diff -ruNp linus/include/asm-ppc64/poll.h linus-headers/include/asm-ppc64/poll.h
+--- linus/include/asm-ppc64/poll.h	2002-11-01 05:18:30.000000000 +1100
++++ linus-headers/include/asm-ppc64/poll.h	2005-03-09 01:45:19.000000000 +1100
+@@ -1,32 +1 @@
+-#ifndef __PPC64_POLL_H
+-#define __PPC64_POLL_H
+-
+-/*
+- * Copyright (C) 2001 PPC64 Team, IBM Corp
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#define POLLIN		0x0001
+-#define POLLPRI		0x0002
+-#define POLLOUT		0x0004
+-#define POLLERR		0x0008
+-#define POLLHUP		0x0010
+-#define POLLNVAL	0x0020
+-#define POLLRDNORM	0x0040
+-#define POLLRDBAND	0x0080
+-#define POLLWRNORM	0x0100
+-#define POLLWRBAND	0x0200
+-#define POLLMSG		0x0400
+-#define POLLREMOVE	0x1000
+-
+-struct pollfd {
+-	int fd;
+-	short events;
+-	short revents;
+-};
+-
+-#endif /* __PPC64_POLL_H */
++#include <asm-ppc/poll.h>
+diff -ruNp linus/include/asm-ppc64/string.h linus-headers/include/asm-ppc64/string.h
+--- linus/include/asm-ppc64/string.h	2005-01-29 06:05:47.000000000 +1100
++++ linus-headers/include/asm-ppc64/string.h	2005-03-09 02:01:45.000000000 +1100
+@@ -1,35 +1 @@
+-#ifndef _PPC64_STRING_H_
+-#define _PPC64_STRING_H_
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#define __HAVE_ARCH_STRCPY
+-#define __HAVE_ARCH_STRNCPY
+-#define __HAVE_ARCH_STRLEN
+-#define __HAVE_ARCH_STRCMP
+-#define __HAVE_ARCH_STRCAT
+-#define __HAVE_ARCH_MEMSET
+-#define __HAVE_ARCH_MEMCPY
+-#define __HAVE_ARCH_MEMMOVE
+-#define __HAVE_ARCH_MEMCMP
+-#define __HAVE_ARCH_MEMCHR
+-
+-extern int strcasecmp(const char *, const char *);
+-extern int strncasecmp(const char *, const char *, int);
+-extern char * strcpy(char *,const char *);
+-extern char * strncpy(char *,const char *, __kernel_size_t);
+-extern __kernel_size_t strlen(const char *);
+-extern int strcmp(const char *,const char *);
+-extern char * strcat(char *, const char *);
+-extern void * memset(void *,int,__kernel_size_t);
+-extern void * memcpy(void *,const void *,__kernel_size_t);
+-extern void * memmove(void *,const void *,__kernel_size_t);
+-extern int memcmp(const void *,const void *,__kernel_size_t);
+-extern void * memchr(const void *,int,__kernel_size_t);
+-
+-#endif /* _PPC64_STRING_H_ */
++#include <asm-ppc/string.h>
+diff -ruNp linus/include/asm-ppc64/termbits.h linus-headers/include/asm-ppc64/termbits.h
+--- linus/include/asm-ppc64/termbits.h	2004-05-11 07:53:05.000000000 +1000
++++ linus-headers/include/asm-ppc64/termbits.h	2005-03-09 02:04:35.000000000 +1100
+@@ -1,193 +1 @@
+-#ifndef _PPC64_TERMBITS_H
+-#define _PPC64_TERMBITS_H
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/posix_types.h>
+-
+-typedef unsigned char	cc_t;
+-typedef unsigned int	speed_t;
+-typedef unsigned int	tcflag_t;
+-
+-/*
+- * termios type and macro definitions.  Be careful about adding stuff
+- * to this file since it's used in GNU libc and there are strict rules
+- * concerning namespace pollution.
+- */
+-
+-#define NCCS 19
+-struct termios {
+-	tcflag_t c_iflag;		/* input mode flags */
+-	tcflag_t c_oflag;		/* output mode flags */
+-	tcflag_t c_cflag;		/* control mode flags */
+-	tcflag_t c_lflag;		/* local mode flags */
+-	cc_t c_cc[NCCS];		/* control characters */
+-	cc_t c_line;			/* line discipline (== c_cc[19]) */
+-	speed_t c_ispeed;		/* input speed */
+-	speed_t c_ospeed;		/* output speed */
+-};
+-
+-/* c_cc characters */
+-#define VINTR 	         0
+-#define VQUIT 	         1
+-#define VERASE 	         2
+-#define VKILL	         3
+-#define VEOF	         4
+-#define VMIN	         5
+-#define VEOL	         6
+-#define VTIME	         7
+-#define VEOL2	         8
+-#define VSWTC	         9
+-#define VWERASE 	10
+-#define VREPRINT	11
+-#define VSUSP 		12
+-#define VSTART		13
+-#define VSTOP		14
+-#define VLNEXT		15
+-#define VDISCARD	16
+-
+-/* c_iflag bits */
+-#define IGNBRK	0000001
+-#define BRKINT	0000002
+-#define IGNPAR	0000004
+-#define PARMRK	0000010
+-#define INPCK	0000020
+-#define ISTRIP	0000040
+-#define INLCR	0000100
+-#define IGNCR	0000200
+-#define ICRNL	0000400
+-#define IXON	0001000
+-#define IXOFF	0002000
+-#define IXANY	0004000
+-#define IUCLC	0010000
+-#define IMAXBEL	0020000
+-#define	IUTF8	0040000
+-
+-/* c_oflag bits */
+-#define OPOST	0000001
+-#define ONLCR	0000002
+-#define OLCUC	0000004
+-
+-#define OCRNL	0000010
+-#define ONOCR	0000020
+-#define ONLRET	0000040
+-
+-#define OFILL	00000100
+-#define OFDEL	00000200
+-#define NLDLY	00001400
+-#define   NL0	00000000
+-#define   NL1	00000400
+-#define   NL2	00001000
+-#define   NL3	00001400
+-#define TABDLY	00006000
+-#define   TAB0	00000000
+-#define   TAB1	00002000
+-#define   TAB2	00004000
+-#define   TAB3	00006000
+-#define   XTABS	00006000	/* required by POSIX to == TAB3 */
+-#define CRDLY	00030000
+-#define   CR0	00000000
+-#define   CR1	00010000
+-#define   CR2	00020000
+-#define   CR3	00030000
+-#define FFDLY	00040000
+-#define   FF0	00000000
+-#define   FF1	00040000
+-#define BSDLY	00100000
+-#define   BS0	00000000
+-#define   BS1	00100000
+-#define VTDLY	00200000
+-#define   VT0	00000000
+-#define   VT1	00200000
+-
+-/* c_cflag bit meaning */
+-#define CBAUD	0000377
+-#define  B0	0000000		/* hang up */
+-#define  B50	0000001
+-#define  B75	0000002
+-#define  B110	0000003
+-#define  B134	0000004
+-#define  B150	0000005
+-#define  B200	0000006
+-#define  B300	0000007
+-#define  B600	0000010
+-#define  B1200	0000011
+-#define  B1800	0000012
+-#define  B2400	0000013
+-#define  B4800	0000014
+-#define  B9600	0000015
+-#define  B19200	0000016
+-#define  B38400	0000017
+-#define  EXTA   B19200
+-#define  EXTB   B38400
+-#define  CBAUDEX 0000000
+-#define  B57600   00020
+-#define  B115200  00021
+-#define  B230400  00022
+-#define  B460800  00023
+-#define  B500000  00024
+-#define  B576000  00025
+-#define  B921600  00026
+-#define B1000000  00027
+-#define B1152000  00030
+-#define B1500000  00031
+-#define B2000000  00032
+-#define B2500000  00033
+-#define B3000000  00034
+-#define B3500000  00035
+-#define B4000000  00036
+-
+-#define CSIZE	00001400
+-#define   CS5	00000000
+-#define   CS6	00000400
+-#define   CS7	00001000
+-#define   CS8	00001400
+-
+-#define CSTOPB	00002000
+-#define CREAD	00004000
+-#define PARENB	00010000
+-#define PARODD	00020000
+-#define HUPCL	00040000
+-
+-#define CLOCAL	00100000
+-#define CRTSCTS	  020000000000		/* flow control */
+-
+-/* c_lflag bits */
+-#define ISIG	0x00000080
+-#define ICANON	0x00000100
+-#define XCASE	0x00004000
+-#define ECHO	0x00000008
+-#define ECHOE	0x00000002
+-#define ECHOK	0x00000004
+-#define ECHONL	0x00000010
+-#define NOFLSH	0x80000000
+-#define TOSTOP	0x00400000
+-#define ECHOCTL	0x00000040
+-#define ECHOPRT	0x00000020
+-#define ECHOKE	0x00000001
+-#define FLUSHO	0x00800000
+-#define PENDIN	0x20000000
+-#define IEXTEN	0x00000400
+-
+-/* Values for the ACTION argument to `tcflow'.  */
+-#define	TCOOFF		0
+-#define	TCOON		1
+-#define	TCIOFF		2
+-#define	TCION		3
+-
+-/* Values for the QUEUE_SELECTOR argument to `tcflush'.  */
+-#define	TCIFLUSH	0
+-#define	TCOFLUSH	1
+-#define	TCIOFLUSH	2
+-
+-/* Values for the OPTIONAL_ACTIONS argument to `tcsetattr'.  */
+-#define	TCSANOW		0
+-#define	TCSADRAIN	1
+-#define	TCSAFLUSH	2
+-
+-#endif /* _PPC64_TERMBITS_H */
++#include <asm-ppc/termbits.h>
+diff -ruNp linus/include/asm-ppc64/termios.h linus-headers/include/asm-ppc64/termios.h
+--- linus/include/asm-ppc64/termios.h	2003-04-03 08:55:29.000000000 +1000
++++ linus-headers/include/asm-ppc64/termios.h	2005-03-09 02:13:20.000000000 +1100
+@@ -1,235 +1 @@
+-#ifndef _PPC64_TERMIOS_H
+-#define _PPC64_TERMIOS_H
+-
+-/*
+- * Liberally adapted from alpha/termios.h.  In particular, the c_cc[]
+- * fields have been reordered so that termio & termios share the
+- * common subset in the same order (for brain dead programs that don't
+- * know or care about the differences).
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <asm/ioctls.h>
+-#include <asm/termbits.h>
+-
+-struct sgttyb {
+-	char	sg_ispeed;
+-	char	sg_ospeed;
+-	char	sg_erase;
+-	char	sg_kill;
+-	short	sg_flags;
+-};
+-
+-struct tchars {
+-	char	t_intrc;
+-	char	t_quitc;
+-	char	t_startc;
+-	char	t_stopc;
+-	char	t_eofc;
+-	char	t_brkc;
+-};
+-
+-struct ltchars {
+-	char	t_suspc;
+-	char	t_dsuspc;
+-	char	t_rprntc;
+-	char	t_flushc;
+-	char	t_werasc;
+-	char	t_lnextc;
+-};
+-
+-struct winsize {
+-	unsigned short ws_row;
+-	unsigned short ws_col;
+-	unsigned short ws_xpixel;
+-	unsigned short ws_ypixel;
+-};
+-
+-#define NCC 10
+-struct termio {
+-	unsigned short c_iflag;		/* input mode flags */
+-	unsigned short c_oflag;		/* output mode flags */
+-	unsigned short c_cflag;		/* control mode flags */
+-	unsigned short c_lflag;		/* local mode flags */
+-	unsigned char c_line;		/* line discipline */
+-	unsigned char c_cc[NCC];	/* control characters */
+-};
+-
+-/* c_cc characters */
+-#define _VINTR	0
+-#define _VQUIT	1
+-#define _VERASE	2
+-#define _VKILL	3
+-#define _VEOF	4
+-#define _VMIN	5
+-#define _VEOL	6
+-#define _VTIME	7
+-#define _VEOL2	8
+-#define _VSWTC	9
+-
+-/* line disciplines */
+-#define N_TTY		0
+-#define N_SLIP		1
+-#define N_MOUSE		2
+-#define N_PPP		3
+-#define N_STRIP		4
+-#define N_AX25		5
+-#define N_X25		6	/* X.25 async */
+-#define N_6PACK		7
+-#define N_MASC		8	/* Reserved for Mobitex module <kaz@cafe.net> */
+-#define N_R3964		9	/* Reserved for Simatic R3964 module */
+-#define N_PROFIBUS_FDL	10	/* Reserved for Profibus <Dave@mvhi.com> */
+-#define N_IRDA		11	/* Linux IrDa - http://www.cs.uit.no/~dagb/irda/irda.html */
+-#define N_SMSBLOCK	12	/* SMS block mode - for talking to GSM data cards about SMS messages */
+-#define N_HDLC		13	/* synchronous HDLC */
+-#define N_SYNC_PPP	14
+-
+-#ifdef __KERNEL__
+-/*                   ^C  ^\ del  ^U  ^D   1   0   0   0   0  ^W  ^R  ^Z  ^Q  ^S  ^V  ^U  */
+-#define INIT_C_CC "\003\034\177\025\004\001\000\000\000\000\027\022\032\021\023\026\025" 
+-#endif
+-
+-#define FIOCLEX		_IO('f', 1)
+-#define FIONCLEX	_IO('f', 2)
+-#define FIOASYNC	_IOW('f', 125, int)
+-#define FIONBIO		_IOW('f', 126, int)
+-#define FIONREAD	_IOR('f', 127, int)
+-#define TIOCINQ		FIONREAD
+-
+-#define TIOCGETP	_IOR('t', 8, struct sgttyb)
+-#define TIOCSETP	_IOW('t', 9, struct sgttyb)
+-#define TIOCSETN	_IOW('t', 10, struct sgttyb)	/* TIOCSETP wo flush */
+-
+-#define TIOCSETC	_IOW('t', 17, struct tchars)
+-#define TIOCGETC	_IOR('t', 18, struct tchars)
+-#define TCGETS		_IOR('t', 19, struct termios)
+-#define TCSETS		_IOW('t', 20, struct termios)
+-#define TCSETSW		_IOW('t', 21, struct termios)
+-#define TCSETSF		_IOW('t', 22, struct termios)
+-
+-#define TCGETA		_IOR('t', 23, struct termio)
+-#define TCSETA		_IOW('t', 24, struct termio)
+-#define TCSETAW		_IOW('t', 25, struct termio)
+-#define TCSETAF		_IOW('t', 28, struct termio)
+-
+-#define TCSBRK		_IO('t', 29)
+-#define TCXONC		_IO('t', 30)
+-#define TCFLSH		_IO('t', 31)
+-
+-#define TIOCSWINSZ	_IOW('t', 103, struct winsize)
+-#define TIOCGWINSZ	_IOR('t', 104, struct winsize)
+-#define	TIOCSTART	_IO('t', 110)		/* start output, like ^Q */
+-#define	TIOCSTOP	_IO('t', 111)		/* stop output, like ^S */
+-#define TIOCOUTQ        _IOR('t', 115, int)     /* output queue size */
+-
+-#define TIOCGLTC	_IOR('t', 116, struct ltchars)
+-#define TIOCSLTC	_IOW('t', 117, struct ltchars)
+-#define TIOCSPGRP	_IOW('t', 118, int)
+-#define TIOCGPGRP	_IOR('t', 119, int)
+-
+-#define TIOCEXCL	0x540C
+-#define TIOCNXCL	0x540D
+-#define TIOCSCTTY	0x540E
+-
+-#define TIOCSTI		0x5412
+-#define TIOCMGET	0x5415
+-#define TIOCMBIS	0x5416
+-#define TIOCMBIC	0x5417
+-#define TIOCMSET	0x5418
+-#define TIOCGSOFTCAR	0x5419
+-#define TIOCSSOFTCAR	0x541A
+-#define TIOCLINUX	0x541C
+-#define TIOCCONS	0x541D
+-#define TIOCGSERIAL	0x541E
+-#define TIOCSSERIAL	0x541F
+-#define TIOCPKT		0x5420
+-
+-#define TIOCNOTTY	0x5422
+-#define TIOCSETD	0x5423
+-#define TIOCGETD	0x5424
+-#define TCSBRKP		0x5425	/* Needed for POSIX tcsendbreak() */
+-
+-#define TIOCSERCONFIG	0x5453
+-#define TIOCSERGWILD	0x5454
+-#define TIOCSERSWILD	0x5455
+-#define TIOCGLCKTRMIOS	0x5456
+-#define TIOCSLCKTRMIOS	0x5457
+-#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
+-#define TIOCSERGETLSR   0x5459 /* Get line status register */
+-#define TIOCSERGETMULTI 0x545A /* Get multiport config  */
+-#define TIOCSERSETMULTI 0x545B /* Set multiport config */
+-
+-#define TIOCMIWAIT	0x545C	/* wait for a change on serial input line(s) */
+-#define TIOCGICOUNT	0x545D	/* read serial port inline interrupt counts */
+-
+-/* Used for packet mode */
+-#define TIOCPKT_DATA		 0
+-#define TIOCPKT_FLUSHREAD	 1
+-#define TIOCPKT_FLUSHWRITE	 2
+-#define TIOCPKT_STOP		 4
+-#define TIOCPKT_START		 8
+-#define TIOCPKT_NOSTOP		16
+-#define TIOCPKT_DOSTOP		32
+-
+-/* modem lines */
+-#define TIOCM_LE	0x001
+-#define TIOCM_DTR	0x002
+-#define TIOCM_RTS	0x004
+-#define TIOCM_ST	0x008
+-#define TIOCM_SR	0x010
+-#define TIOCM_CTS	0x020
+-#define TIOCM_CAR	0x040
+-#define TIOCM_RNG	0x080
+-#define TIOCM_DSR	0x100
+-#define TIOCM_CD	TIOCM_CAR
+-#define TIOCM_RI	TIOCM_RNG
+-#define TIOCM_OUT1	0x2000
+-#define TIOCM_OUT2	0x4000
+-#define TIOCM_LOOP	0x8000
+-
+-/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
+-#define TIOCSER_TEMT    0x01	/* Transmitter physically empty */
+-
+-#ifdef __KERNEL__
+-
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	(termios)->x = (0xffff0000 & (termios)->x) | __tmp; \
+-}
+-
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
+-
+-#endif	/* __KERNEL__ */
+-
+-#endif	/* _PPC64_TERMIOS_H */
++#include <asm-ppc/termios.h>
+diff -ruNp linus/include/asm-ppc64/unaligned.h linus-headers/include/asm-ppc64/unaligned.h
+--- linus/include/asm-ppc64/unaligned.h	2002-02-14 23:14:36.000000000 +1100
++++ linus-headers/include/asm-ppc64/unaligned.h	2005-03-09 02:16:30.000000000 +1100
+@@ -1,21 +1 @@
+-#ifndef __PPC64_UNALIGNED_H
+-#define __PPC64_UNALIGNED_H
+-
+-/*
+- * The PowerPC can do unaligned accesses itself in big endian mode. 
+- *
+- * The strange macros are there to make sure these can't
+- * be misused in a way that makes them not work on other
+- * architectures where unaligned accesses aren't as simple.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#define get_unaligned(ptr) (*(ptr))
+-
+-#define put_unaligned(val, ptr) ((void)( *(ptr) = (val) ))
+-
+-#endif /* __PPC64_UNALIGNED_H */
++#include <asm-ppc/unaligned.h>
