@@ -1,18 +1,46 @@
-To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
+Message-ID: <885489B3B89FB6449F93E525DF78777F064537@srvnt506.ALLOPTIC.COM>
+From: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
+To: "'Wolfgang Denk'" <wd@denx.de>,
+	"Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
 Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: BDI-2000 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 08 Jan 2003 12:12:12 PST."
-             <885489B3B89FB6449F93E525DF78777F064533@srvnt506.ALLOPTIC.COM>
-Date: Thu, 09 Jan 2003 01:09:09 +0100
-Message-Id: <20030109000914.86A54C608E@atlas.denx.de>
+Date: Wed, 8 Jan 2003 16:21:51 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <885489B3B89FB6449F93E525DF78777F064533@srvnt506.ALLOPTIC.COM> you wrote:
+Thanks Wolfgang,
+
+You are right, my ethernet mac address was not passed in properly.
+Furthermore, I had
+too many ethernet device configured for this board.  Should be only one
+ethernet devices.
+Once I fixed the problem, my linux kernel is now up and running on the
+custom board.
+
+Thanks for all those who help.
+
+As to the PPC native gdb, i don't see it in my distribution from timeSys.
+Do you
+have a suggestion as to where can i get a copy?
+
+Thanks
+
+Cecilia
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Wednesday, January 08, 2003 4:09 PM
+To: Muaddi, Cecilia
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: BDI-2000
+
+
+In message <885489B3B89FB6449F93E525DF78777F064533@srvnt506.ALLOPTIC.COM>
+you wrote:
 >
 > So, after changed the kernel address to 0xc0000000 the kernel did
 > bootup with the following dump:
@@ -28,7 +56,8 @@ Ummm... does not look like valid MAC addresses to me.
 
 errno=101 -- Network is unreachable
 
-> Looks like my IP has some problem.  I will like to use the BDI with the ddd
+> Looks like my IP has some problem.  I will like to use the BDI with the
+ddd
 
 It's more that your MAC address is bogus.
 
@@ -51,16 +80,5 @@ version of GDB, either natively or a cross-GDB?
 The problem is that "gdb" will start the native GDB, which  does  not
 work on PowerPC systems. You have to specify the name of your PowerPC
 Cross-GDB.
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You don't have to stay up nights to succeed; you have to  stay  awake
-days.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
