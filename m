@@ -1,58 +1,48 @@
-Message-ID: <396DFF7E.5741A903@mvista.com>
-Date: Thu, 13 Jul 2000 12:42:22 -0500
-From: Jim Lewis <jlewis@mvista.com>
+Message-ID: <002901bfed05$5b73d340$29e58aa4@crusman>
+From: "Crusman" <Crusman@wanadoo.fr>
+To: <paubert@iram.es>
+Cc: "ppc_mailing" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: -= MVME 2300 =-
+Date: Thu, 13 Jul 2000 22:03:00 +0200
 MIME-Version: 1.0
-To: Steven Tarr <tarr@lucent.com>
-CC: "Dan A. Dickey" <ddickey@charter.net>, Kwansuk Kim <kskim@neowave.co.kr>,
-        LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: network toolsl don't still work...
-References: <NEBBKFENMLEDKDHMEHPJKEPECAAA.kskim@neowave.co.kr> <396D3C79.2332C112@charter.net> <396DD286.EF20C9F5@lucent.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steven,
-If you strip libnss_files.so-2.1.3, it is about 40K. That is still more than 10 lines of
-code, but it is lots better than 240K!
+>The configurations I have are for 2600 with a PMC graphics board, remove
+>CONFIG_VT from the setup and it will use a serial console.
+>
+>BTW use PrePboot for these boards (CONFIG_PREPBOOT) since it gives a nicer
+>PCI layout to access the VMEbus...
+>
+>Please use the patches mvme2600.*.bz2...
 
--Jim
-Steven Tarr wrote:
+I have tested the patches but the new kernel don't see the scsi device...so
+I can't try it anyway !
 
-> Mr. Dickey ---
->
-> Please have an ice cream cone on me!  I thank you.
->
-> cheers --
-> tarr
->
-> NOTE  - libnss_files.so-2.1.3 and its various links need to be included in the
-> libraries....
->
-> NOTE2 -  So, I have to add a library of >240K   so that I can get a simple network
-> (ping)
->                        application to function! The original function
-> getprotobyname() was 10 lines of C code.
->
-> "Dan A. Dickey" wrote:
->
-> > Kwansuk Kim wrote:
-> > >
-> > > Thanks for you cooperation.
-> > >
-> > > When I make soft link from /lib to /opt/.../lib, bash can read the library files.
-> > >
-> > > But ping program doesn't work yet.
-> >
-> > Check /etc/nsswitch.conf
-> >         -Dan
-> >
->
-> --
-> Steve Tarr
-> tarr@lucent.com
-> 303-538-4056
->
 
+>My systems work with an SCSI disk (the basic 2600 NCR53c825).
+>Did you try to directly boot one of the images I have on my ftp site ?
+>
+>(If it works, you've got a configuration problem.)
+>
+> Gabriel
+
+Yes, I have tested your kernel, but there is a message ( PC keyb error... or
+something like this) wich lock the kernel during the boot ! It's probably
+due to the Virtual Terminal support in the kernel !
+I always use the "console=ttyS0,9600" kernel option.
+
+In short :
+
+- I can't use your kernel because of the PC_key error !
+- I can't patch & build a new kernel because this new kernel don't see my
+SCSI PMC !
+
+What can I do ?
+
+Lionel
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
