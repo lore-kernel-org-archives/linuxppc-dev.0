@@ -1,15 +1,40 @@
-Subject: Unpacking the mvista kernel RPMs
-To: pavel_roskin@geocities.com (Pavel Roskin)
-Date: Mon, 10 Apr 2000 13:14:55 +1000 (EST)
-Cc: jason_wohlgemuth@gilbarco.com (Wohlgemuth Jason),
-        linuxppc-embedded@lists.linuxppc.org ('linuxppc-embedded@lists.linuxppc.org')
-In-Reply-To: <Pine.LNX.4.21.0004071011570.19406-100000@sunapee.transcept.com> from "Pavel Roskin" at Apr 07, 2000 11:20:52 AM
+From: "Jason Wohlgemuth" <jsw-embedded@mindspring.com>
+To: "Graham Stoney" <greyham@research.canon.com.au>,
+        "Pavel Roskin" <pavel_roskin@geocities.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Unpacking the mvista kernel RPMs
+Date: Sun, 9 Apr 2000 23:25:29 -0400
+Message-ID: <NCBBKJKKGDLPHKDPAFFMKEPJCDAA.jsw-embedded@mindspring.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000410031456.0B51D3C960@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20000410031456.0B51D3C960@elph.research.canon.com.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Graham,
+
+If you just want to get the files out try this:
+
+work within a temp directory
+
+rpm2cpio < kernel.rpm > kernel.cpio
+cpio --make-directories --extract --verbose < kernel.cpio
+
+Enjoy,
+
+Jason
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Graham
+Stoney
+Sent: Sunday, April 09, 2000 11:15 PM
+To: Pavel Roskin
+Cc: Wohlgemuth Jason; 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Unpacking the mvista kernel RPMs
+
 
 
 Pavel Roskin writes:
@@ -30,5 +55,6 @@ make my life easier, but...
 
 Thanks,
 Graham
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
