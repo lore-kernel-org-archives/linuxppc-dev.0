@@ -1,51 +1,38 @@
-Date: Thu, 8 Jul 1999 11:55:06 -0400 (EDT)
-From: Peter Handel <phandel@cise.ufl.edu>
-To: Albrecht Dreﬂ <ad@MPIfR-Bonn.MPG.de>
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-user@lists.linuxppc.org,
-        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>,
-        Linux/Powermac <linux-pmac@samba.anu.edu.au>
-Subject: Re: linux-pmac 2.2.10: media bay panics on PBG3
-In-Reply-To: <3784BDFA.B302AEA7@mpifr-bonn.mpg.de>
-Message-ID: <Pine.GSO.4.05.9907081145280.1822-100000@eclipse.cise.ufl.edu>
+Date: Thu, 8 Jul 1999 09:25:07 -0700 (MST)
+From: Matt Porter <mporter@phx.mcd.mot.com>
+To: valette@crf.canon.fr
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PREP IDE support is broken
+In-Reply-To: <Pine.LNX.3.96.990708091154.18399B-100000@liberty.chnd1.az.home.com>
+Message-ID: <Pine.LNX.4.10.9907080916040.21213-100000@fwrsl-11.phx.mcd.mot.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 8 Jul 1999, Albrecht [iso-8859-1] Dreﬂ wrote:
+On Thu, 8 Jul 1999, Eric Vallete wrote:
 
-> o compiling linux-2.2.10 from kernel.org WITH EXACTLY THE SAME .config, the
->   media bay works fine, but the nfs server dies with the nfssrv error.
-> 
-> ?????????Where are the inconsistencies???????
+> Do anyone used PREP boards using IDE disk!!! I do.
+> Months ago soemone from Moto posted a mail fixing IDE
+> support. With the introduction of machine dependendent
+> function pointers for ide byte handling, someone broke 
+> it again.
 
-Looks like it's time to bust out "diff" ... You could write a quick
-/bin/sh script that does something like:
+Yes, we are using CF IDE disks on an MCP750.  Right now we just have some
+hacks for supporting the edge/level changes and are working on some clean
+code.
 
-for DFILE in `find /usr/src/linux-1 -name \* -print`; do
-  diff $DFILE /usr/src/linux-2/$DFILE # > $DFILE.diff
-done
+I was just looking yesterday at what is the best way to clean up
+prep_pci.c so that we can have a machine type available elsewhere as you
+mention.  I want to move the machine detection code so it's running
+earlier and just have a function to call for the PReP machine type.
+Ultimately, I'd like to see board-specific items isolated in separate
+files for a more modular architecture.
 
-(uncomment the > $DFILE.diff if you want the diffs in a file instead
-of to stdout)
-
-...although I bet they're just different ac releases of 2.2.10.
-
-
-Thanks,
-Pete
-
--- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
-> > You are perfectly free to believe what you want to, and so am I.
-> Actually, this turns out not to be the case. God does not give us
-> the freedom to believe anything we wish. We are morally obligated to
-> believe the truth. Doing anything else is a sin. You are not free to
-> interpret the Bible anyway you wish. -DFL (Pretty neat, huh?)
+--
+Matt Porter                                       Motorola Computer Group
+matt_porter@mcg.mot.com                           CIBU Linux Support
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
