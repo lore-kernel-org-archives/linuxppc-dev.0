@@ -1,38 +1,35 @@
-Message-Id: <5.0.2.1.0.20010627091411.00a56b90@pop.gmx.de>
-Date: Wed, 27 Jun 2001 09:17:12 +0800
-To: Matthew Locke <mlocke@mvista.com>
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: Re: Segmentation fault while dynamic linking
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3B38C289.7050008@mvista.com>
-References: <5.0.2.1.0.20010626172652.00a69210@pop.gmx.de>
+Message-ID: <20010627013301.19777.qmail@venus.postmark.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+From: Rajneesh Kumar <rajneesh@postmark.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Setup for IBM 405GP board on HHL
+Date: Wed, 27 Jun 2001 01:33:01 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 10:12 AM 6/26/2001 -0700, Matthew Locke wrote:
->>My configuration: Kernel 2.4.4, glibc 2.2.2, bash 2.05, FADS, MPC855T
->
->who's toolchain are you using?  glibc 2.2.x has a cacheline size bug for
->the smaller cacheline ppc processors.  Our toolchain has a fix for it.
->grab our HHL 2.0 Journeyman edition and give it a try. http://www.mvista.com
+Hi there,
 
-binutils 2.11.2
-gcc 2.95.3
-glibc 2.2.2
+I have stepped in the Linux world and now going to develop the device
+driver for the IBM 405GP based board on Hard Hat Linux from
+MontaVista. Now I am using the x86 based Red Hat Linux 6.2. I want to
+know if someone can let me plan the setup for the development of the
+device driver. I mean please let me know what development environment
+I need and also what tools I need to have to streamline my
+development. Also if someone can suggest me the up to the point
+literature for the specific board and how to write the device driver
+for the board.
 
-Everything unpatched and downloaded from ftp.gnu.org.
+Please help me as I have very little time with me and I dont have any
+idea about the development environment. Shall I go in for the
+Development Kit from Embedded Planets or the GNU cross compilation is
+sufficient and finally how can I transfer the code to the board's
+memory.
 
-I've read in the mailing list, that the glibc needs to be patched. But I've
-found that the most changes are already made at glibc2.2.2, so I assumed it
-should work.
+Please let me know as much as you can.
 
-The kernel is 2.4.4 from ftp.denx.de, patched by a patch posted from Dave
-Ellis.
-
-Ok, I try the mvista glibc.
-
+Thanks and regards
+Rajneesh
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
