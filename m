@@ -1,14 +1,23 @@
-Return-Path: <ebs@ebshome.net>
-Date: Wed, 9 Feb 2005 09:11:49 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Marco Schramel <Schramel.Linux@go.bartec.de>
-Message-ID: <20050209171149.GA10316@gate.ebshome.net>
-References: <200502091710.25227.Schramel.Linux@go.bartec.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200502091710.25227.Schramel.Linux@go.bartec.de>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: true ide
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.189]) by ozlabs.org (Postfix) with ESMTP id A8DE367AC1
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 10 Feb 2005 04:45:35 +1100 (EST)
+Received: from [212.227.126.209] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1Cyvu9-0004s0-00
+	for linuxppc-embedded@ozlabs.org; Wed, 09 Feb 2005 18:45:33 +0100
+Received: from [84.154.121.20] (helo=[192.168.1.10])
+	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
+	id 1Cyvu8-0006Ko-00
+	for linuxppc-embedded@ozlabs.org; Wed, 09 Feb 2005 18:45:32 +0100
+Message-ID: <420A4CF3.5090902@anagramm.de>
+Date: Wed, 09 Feb 2005 18:48:35 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Are the I2C drivers on MPC8540 Kernel 2.6.10 working?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,69 +28,102 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 09, 2005 at 05:10:25PM +0100, Marco Schramel wrote:
-> on my custom board i can access my compact flash card through true ide interface. My UPM's work und the taskfile is ready to use.
-> How i tell my kernel (denx 2.4.25) to use my taskfile for ide access?
-> How can i register the compact flash as hard drive in linux ??
+Hello,
 
-Here is an example code for CF attached to the external bus on PPC4xx:
+My questions:
+Is I2C and the Real Time Clock stuff working for the MPC8540
+in Kernel 2.6.10?
+Are there any hidden bugs/traps/features I need to tweak?
+Does anybody work successfully with the I2C in
+this configuration?
 
----------------------------------------------------------------------
-static void cf_ide_insw(unsigned long port, void *addr, u32 count){
-    _insw((volatile u16*)port, addr, count);
-}
+My problems:
+I try to get a I2C Philips PCF8563 Real Time Clock working which
+is connected to the I2C of my MPC8540 processor.
+The chip should be sw-compatible with the Epson RTC8564 component
+(according to the datasheets), so I tried to enable the MPC85xx
+I2C bus, the EPSON RTC8564 and the Kernel RTC support.
+I tried several configs - compiled i2c into the kernel or as a
+modules to load and unload them with debug=1
 
-static void cf_ide_outsw(unsigned long port, void *addr, u32 count){
-    _outsw((volatile u16*)port, addr, count);
-}
+I cannot access /dev/misc/rtc with the hwclock (latest version=2.23):
+-----8<------------------------------------
+hwclock -w
+hwclock: ioctl() (RTC_SET_TIME) to /dev/misc/rtc to set time failed, 
+errno = Invalid argument (22).
+-----8<------------------------------------
 
-void __init cf_ide_probe(void){
+Now I try to work with the modules and try to track down
+the problem:
 
-	/* Find an empty slot */
-	while (idx < MAX_HWIFS && ide_hwifs[idx].io_ports[IDE_DATA_OFFSET])
-		++idx;
+after a modprobe rtc8564:
+-----8<------------------------------------
+i2c_adapter i2c-0: examining adapter
+i2c-core: driver unregistered: RTC8564
+i2c-core: driver RTC8564 registered.
+i2c_adapter i2c-0: found normal i2c entry for adapter 0, addr 51
+i2c_adapter i2c-0: master_xfer: with 1 msgs.
+Doing write 0 bytes to 0x51 - 1 of 1 messages
+rtc8564_attach: client=c02c1e00
+rtc8564_attach: client.id=61440
+i2c_adapter i2c-0: master_xfer: with 1 msgs.
+Doing write 2 bytes to 0x51 - 1 of 1 messages
+I2C: No RXAK
+rtc8564: cant init ctrl1
+i2c-core: unregister_driver - looking for clients.
+i2c_adapter i2c-0: examining adapter
+i2c-core: driver unregistered: RTC8564
+i2c_adapter i2c-0: adapter unregistered
+i2c-core: driver RTC8564 registered.
+-----8<------------------------------------
+Module                  Size  Used by
+rtc8564                 6660  0
+i2c_core               25264  1 rtc8564
+-----8<------------------------------------
 
-	if (idx == MAX_HWIFS){
-		printk(KERN_ERR"Cannot find empty IDE hwif slot\n");
-                return;
-        }
+and after a modprobe i2c-mpc I get:
+-----8<------------------------------------
+i2c_adapter i2c-0: found normal i2c entry for adapter 0, addr 51
+i2c_adapter i2c-0: master_xfer: with 1 msgs.
+Doing write 0 bytes to 0x51 - 1 of 1 messages
+rtc8564_attach: client=c02c1200
+rtc8564_attach: client.id=61440
+i2c_adapter i2c-0: master_xfer: with 1 msgs.
+Doing write 2 bytes to 0x51 - 1 of 1 messages
+I2C: No RXAK
+rtc8564: cant init ctrl1
+i2c_adapter i2c-0: registered as adapter #0
+-----8<------------------------------------
+Module                  Size  Used by
+i2c_mpc                 5376  0
+rtc8564                 6660  0
+i2c_core               25264  2 i2c_mpc,rtc8564
+-----8<------------------------------------
 
-	hwif = &ide_hwifs[idx];
-        hw = &hwif->hw;
-        hw->io_ports[IDE_DATA_OFFSET]    = cf_taskfile_main_kva;
-        hw->io_ports[IDE_ERROR_OFFSET]   = cf_taskfile_main_kva + 3;
-        hw->io_ports[IDE_NSECTOR_OFFSET] = cf_taskfile_main_kva + 5;
-        hw->io_ports[IDE_SECTOR_OFFSET]  = cf_taskfile_main_kva + 7;
-        hw->io_ports[IDE_LCYL_OFFSET]    = cf_taskfile_main_kva + 9;
-        hw->io_ports[IDE_HCYL_OFFSET]    = cf_taskfile_main_kva + 0xb;
-        hw->io_ports[IDE_SELECT_OFFSET]  = cf_taskfile_main_kva + 0xd;
-        hw->io_ports[IDE_STATUS_OFFSET]  = cf_taskfile_main_kva + 0xf;
-        hw->io_ports[IDE_CONTROL_OFFSET] = cf_taskfile_alt_kva + 0xd;
-        memcpy(hwif->io_ports, hw->io_ports, sizeof(hwif->io_ports));
-        hwif->irq = hw->irq = CF_IRQ;
-        hwif->noprobe = 0;
+So, the output looks basically fine, except of the
 
-        /* Don't probe second drive */
-        hwif->drives[1].noprobe = 1;
+I2C: No RXAK
+rtc8564: cant init ctrl1
 
-        default_hwif_mmiops(hwif);
+Which means that I don't get an ACK from my RTC.
+I connected an oscilloscope to the I2C - there
+is a lot of traffic. So I believe that the problem
+is more on the protocol side?
 
-        /* Override 16-bit string ops to do byte-swapping */
-        hwif->OUTSW = cf_ide_outsw;
-        hwif->INSW = cf_ide_insw;
-}
--------------------------------------------------------------------
+Does somebody have any suggestions before I dig into
+the code?
+Thank you in advance!
 
-Some comments: cf_task_main_kva - ioremmaped main taskfile (main chip 
-select), cf_task_file_atl_kva - ioremapped alternative taskfile 
-(second chip select). In my case board support code sets up those. 
-CF_IRQ - interrupt request from CF.
+Best greets,
 
-Also, note that actual offset for each taskfile register depends on 
-how you wired CF to the CPU, it may be different in your case, so use 
-this code as an _example_.
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-I call cf_ide_probe() from drivers/ide/ide.c::probe_for_hwifs.
-
---
-Eugene
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
