@@ -1,42 +1,63 @@
-Date: Fri, 28 Jul 2000 20:47:50 -0400 (EDT)
-From: James Simmons <jsimmons@acsu.buffalo.edu>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Takashi Oe <toe@unlserve.unl.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: [linux-fbdev] Re: [ANN] IRQ Latency tool 0.1.3 release.
-In-Reply-To: <Pine.LNX.4.10.10007281606400.423-100000@cassiopeia.home>
-Message-ID: <Pine.LNX.4.10.10007282043200.681-100000@maxwell.futurevision.com>
+Message-ID: <3982B587.31F515D4@gmx.de>
+Date: Sat, 29 Jul 2000 12:44:23 +0200
+From: Matthias Pfisterer <Matthias.Pfisterer@gmx.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: internal speakers on Pismo
+References: <3981F1F7.9314DAD3@gmx.de> <20000728221634.5701@192.168.1.10>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Would it be difficult to make the lock per fbdev thing?  If the
-> > CPU/accelerator clash is the only reason for the global lock, we can
-> > certainly remove that for hardware which doesn't have that kind of
-> > problem, can't we?
+Hi,
+
+Benjamin Herrenschmidt wrote:
 >
-> There could indeed be separate locks per fbdev. But the global console lock
-> (console_lock) would still be there. It is needed because the console subsystem
-> is not re-entrant (yet). Since fbdev is called from the console subsystem, it
-> runs under the same lock (i.e. with interrupts disabled).
+> Ok, I got it working here too. I've pushed changes in my rsync tree
+> (dmasound 2.2, I'll take care of 2.4 later, I'll send you patches, Iain).
+>
+> Basically, clearing the additional registers is not what made it work as
+> I originally expected ! What made it work was _not_ to enable the
+> parallel port output.
 
-I will be testing for re-entrant ability next week with code I have in
-CVS. Their should be a semaphore for each struct console. Also their
-should be a semaphore for each VT where on semephore is shared between the
-VT console and struct console. Why a semephore. Eventually we will run
-into hardware that runs only by interrupts. So a hardware independent why
-to lock the console system is needed.
+Huh? Are you shure about this? I tried this first (not setting these two
+bits, but leaving the additional registers alone) and it didn't work.
+Well, I haven't tried only setting the new registers but enable parallel
+output. Perhaps I should.
 
-Q: Why did they deprecate a.out support in linux?
-A: Because a nasty coff is bad for your elf.
+ However, it is needed on some machines. So what I
+> did was to enable it conditionally in a way similar to what Darwin does.
+> I also fixed up detection of screamer chips.
 
-James Simmons  [jsimmons@linux-fbdev.org]               ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
+> Oddly, the master volume doesn't work (but the speaker volume does).
+
+I have no problems with this. I can use both independently from each
+other. What exactely is the behaviour for you?
+
+> Also, Apple code has some weird thing: They detect two different device-
+> id's for new iMacs (DV/SE). One is an inverted version. But they only
+> enable the parallel output one of them. I don't know if it's normal or if
+> it's actually a bug in their code. I did the same thing but left the case
+> of normal iMacDV in comments, so users of this machine can try and see if
+> it helps. I suspect that like other iMacs, there's an I2C amplifier/SRS
+> module that needs to be setup too, but I'm not completely sure.
+>
+> Ben.
+
+--
+Matthias Pfisterer	<mailto:Matthias.Pfisterer@gmx.de>
+
+        Share your knowledge.
+        It's a way to achieve immortality.
+
+                 (from a nepalese mantra)
+
+Java Sound Examples:
+http://rupert.informatik.uni-stuttgart.de/~pfistere/jsexamples/
+Tritonus, the open source implementation of the Java Sound API:
+http://tritonus.sourceforge.net/
+--------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
