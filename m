@@ -1,65 +1,36 @@
-Date: Sun, 25 Jun 2000 22:29:07 -0700 (PDT)
-From: Andre Hedrick <andre@linux-ide.org>
-To: Michel Lanners <mlan@cpu.lu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ide_delay_50ms() freezing on PPC?
-In-Reply-To: <200006251813.UAA00680@piglet.grunz.lu>
-Message-ID: <Pine.LNX.4.10.10006252228210.22378-100000@master.linux-ide.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <a04320401b57cb5cfa010@[192.168.0.3]>
+In-Reply-To: <3952661E.19D08DC9@relog.ch>
+References: <a04320400b5781534d79b@[192.168.0.3]>
+ <3952661E.19D08DC9@relog.ch>
+Date: Mon, 26 Jun 2000 02:25:44 -0500
+To: daenzerm@student.ethz.ch
+From: Adam Lebsack <lebsack@mac.com>
+Subject: Re: XF86Config 4.0
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Okay,
-
-Then we need braoder stubs.
-Got a suggestion?
-
-On Sun, 25 Jun 2000, Michel Lanners wrote:
-
-> Hi all,
+At 9:16 PM +0200 6/22/00, Michel Dänzer wrote:
+>Adam Lebsack wrote:
+>>
+>>  What is the status on xf86config for 4.0?  Is anybody working on
+>>  this?  It would be nice to be on par with the x86 world when
+>>  configuring X.
 >
-> The latest 2.4.0 kernels don't boot on my machine anymore. They just
-> freeze in detecting the Promise Ultra66 IDE controller, specifically in
-> ide_delay_50ms(). Here is the code:
+>There is a new tool in the works, it's called xf86cfg, it's written in perl
+>and should be working in 4.0.1 which should be out in a few weeks' time.
 >
-> void ide_delay_50ms (void)
-> {
-> #ifndef CONFIG_BLK_DEV_IDECS
->         unsigned long timeout = jiffies + ((HZ + 19)/20) + 1;
->         while (0 < (signed long)(timeout - jiffies));
-> #else
->         __set_current_state(TASK_UNINTERRUPTIBLE);
->         schedule_timeout(HZ/20);
-> #endif /* CONFIG_BLK_DEV_IDECS */
-> }
->
-> CONFIG_BLK_DEV_IDECS is support for PCMCIA IDE devices, which is not
-> configured in my kernel. So that function hangs if using the 'manual'
-> delay. Everything is OK if I force it to use schedule_timeout(), which
-> by the way was always the case until a few kernels ago.
->
-> So, why does the 'manual' way hang? (I suppose interrupts are not
-> disabled at this point, are they?)
->
-> And why can we only use schedule_timeout() if compiling with
-> CONFIG_BLK_DEV_IDECS?
->
-> Thanks
->
-> Michel
->
-> -------------------------------------------------------------------------
-> Michel Lanners                 |  " Read Philosophy.  Study Art.
-> 23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-> L-1710 Luxembourg              |
-> email   mlan@cpu.lu            |
-> http://www.cpu.lu/~mlan        |                     Learn Always. "
+>It will be graphical and should work on all platforms :)
 >
 
-Andre Hedrick
-The Linux ATA/IDE guy
 
+How can I become involved in its development?  Is it in CVS?
+
+thanks again,
+
+Adam
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
