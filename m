@@ -1,67 +1,68 @@
-Date: Mon, 27 Mar 2000 18:55:37 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Gabriel Paubert <paubert@iram.es>, Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <Pine.GSO.4.10.10003271353080.11532-100000@dandelion.sonytel.be>
-Message-ID: <Pine.LNX.4.10.10003271850230.1727-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <20000327170802.25561.qmail@web1703.mail.yahoo.com>
+Date: Mon, 27 Mar 2000 09:08:02 -0800 (PST)
+From: Gabriel Ricard <g_ricard@yahoo.com>
+Subject: Re: PCI address collisions on 2.3.x kernels?
+To: Robert Shaw <rshawppc@netscape.net>, linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Well, all I know is that it works.
+I got the same thing. Not sure why, but it looked like
+a lot of the PCI devices were stepping on each other.
+I only booted 2.3.* a couple of times but I never had
+problems with it finding my drives. Then again, I
+don't have IDE in the machine I was booting it on.
+
+Did you copy your old .config to the new kernel src
+dir and run make oldconfig? Or just choose the same
+options? Are you sure you had the correct IDE support
+built in?
+
+--- Robert Shaw <rshawppc@netscape.net> wrote:
 >
-> Ever tried writing to it? :-) For your own safety, please don't! But you can
-> try reading the CHIP_ID register.
-
-I should still have code around to do that, in the atyfb driver. Anyway,
-this is what I found in arch/ppc/kernel/pci.c:
-
-int pci_assign_resource(struct pci_dev *dev, int i)
-{
-	struct resource *r = &dev->resource[i];
-	struct resource *pr = pci_find_parent_resource(dev, r);
-	unsigned long size = r->end + 1;
-	u32 new, check;
-
-	if (!pr) {
-	 	printk(KERN_ERR "PCI: Cannot find parent resource for device %s\n", dev->slot_name);
-	 	return -EINVAL;
-	}
-	if (r->flags & IORESOURCE_IO) {
-	        if (allocate_resource(pr, r, size, 0x100, ~0, size, NULL, NULL)) {
-	         	printk(KERN_ERR "PCI: Allocation of I/O region %s/%d (%ld bytes) failed\n", de
-	         	return -EBUSY;
-	        }
-	} else {
-	 	if (allocate_resource(pr, r, size, 0x10000, ~0, size, NULL, NULL)) {
-	 	 	printk(KERN_ERR "PCI: Allocation of memory region %s/%d (%ld bytes) failed\n",
-	 	 	return -EBUSY;
-	 	}
-	}
-
-See the 0x10000 above? Exactly what I get.
-
-pci_assign_resource() is duplicated (sort of) in drivers/pci/setup-res.c
-where the correct PCIBIOS_MIN_* limits are applied. That function calls
-pcibios_update_resource() to do the actual bit twiddling. Is 2.3.48 too
-dated for your patch to apply?
-
-> > And this is my PCIBIOS_MIN_MEM:
-> >
-> > include/asm/pci.h:#define PCIBIOS_MIN_MEM		0x10000000
-> >
-> > Seems it got ignored and the resource allocator picked the next free spot.
+> I've been trying for over a week now to compile the
+> 2.3.x series kernel on my
+> B&W G3 machine. Everytime I get this annoying "PCI
+> address collision" error
+> right at the start (after the penguin graphic
+> appears). It goes past this and
+> behaves like it's booting ok, but then it tries to
+> access the IDE buses and
+> fails to find anything and I get the infamous
+> "Rebooting in 180 seconds..."
+> message.
 >
-> Weird, mine got assigned to 0xc0000000, which is what I expect.
+> Can someone please help!! I'm stumped as to why this
+> is happening. Has anyone
+> else seen this? I don't think its a config problem,
+> as I'm using the same
+> settings I always have that work for the latest
+> 2.2.15pre14 kernel in the
+> stable tree.
+>
+> I think if I can get rid of the "PCI address
+> collision" errors, that my IDE
+> bus will get recognized properly.
+>
+> Any ideas? Please!
+>
+> TIA.
+>
+>
+> -Robert
+>  mailto:rshaw@linuxppc.org
+>  icq:45688313
+>  http://www.linuxppc.org/BlueG3/
+>
+>
+>
+>
 
-Seems pci_assign_resource is no longer in the arch/ppc/kernel section in
-your source. Or your linker picks up the other one.
-
-	Michael
+=====
+Gabriel Ricard
+g_ricard@yahoo.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
