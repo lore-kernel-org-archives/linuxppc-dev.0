@@ -1,32 +1,39 @@
-Message-ID: <3BF3E2D5.932B0E4B@mvista.com>
-Date: Thu, 15 Nov 2001 09:44:21 -0600
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: Alda Sanomiya <sanomiya@us.ibm.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Error in loading shared libraries: invalid ELF header
-References: <OF31327F98.5BC0D876-ON85256B05.004B0D9F@pok.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <E62DBC698514D511A1AC0003470C1314EE2B88@EXCHANGE>
+From: Keith Outwater <Keith_Outwater@mvis.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Problems building ppc cross compiler under RH7.2 x86 - SOLVED
+Date: Thu, 15 Nov 2001 08:42:59 -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It looks to me that you are attempting to boot off of a hard disk.  One
-of two things (I would guess the first):
+Greetings all -
 
-1) Your disk partition is damaged due to an improper reboot
+My thanks to Kevin Williams and Evandro Borracini for their suggestions on
+fixing my cross compiler build problem.
 
-2) You have the wrong libc.so.6 (i.e. one for x86)
+The problem was solved by doing two things:
+1. Edit the file <path where you put glibc>/lib/libc.so  as follows:
 
-> EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-> VFS: Mounted root (ext2 filesystem).
-> Freeing unused kernel memory: 176k init 4k openfirmware
-> init: error in loading shared libraries: libc.so.6: invalid ELF header
-> Kernel panic: Attempted to kill init!
+from:
+GROUP ( /lib/libc.so.6.1 /lib/libc_nonshared.a )
+to:
+GROUP ( <path where you put glibc>/lib/libc.so.6.1 <path where you put
+glibc>/lib/libc_nonshared.a ) (Evandro)
 
-The EXT2-fs warning message above seems to indicate the ext2 partition
-is at the least not clean, at the worst corrupt.
+That fixed the c cross compiler build.
 
---Mark
+
+2. Apply a patch tp gcc from http://gcc.gnu.org/install/glibc-2.2.patch
+(Kevin)
+That fixed the c++ cross compiler build.
+
+
+I will forward this information to the maintainer of the cross compiler
+mini-howto.
+
+
+Thanks!
+Keith
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
