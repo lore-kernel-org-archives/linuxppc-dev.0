@@ -1,48 +1,48 @@
-Message-Id: <m0zsV1o-001C7HC@shell.rmi.net>
-From: tph@rmi.net (Tom Harrington)
-Subject: Re: TurboMouse fix
-To: jacobs@azstarnet.com (john s jacobs anderson)
-Date: Tue, 22 Dec 1998 09:51:23 -0700 (MST)
-Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.3.96.981221225654.1012A-100000@lazarus> from "john s jacobs anderson" at Dec 21, 98 11:03:14 pm
+Message-ID: <367FD398.A09DAA04@phx.mcd.mot.com>
+Date: Tue, 22 Dec 1998 10:15:05 -0700
+From: Johnnie Peters <jpeters@phx.mcd.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Creating a serial install CD
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> system: 7500 chasis with 166 MHz 604 card, 2.1.127 kernel. Kensington
-> TurboMouse 4.0 (the 2 button kind), window maker 0.20.3
-> 
-> (do you need to know anything else? sorry, I'm still a wet behind the
-> ears...)
-> 
-> exported mail to ~, trimmed file in pico, then `cc mousehack.c`.
-> 
-> gives :
-> /tmp/cca082751.o: In function `sethandler':
-> /tmp/cca082751.o(.text+0x148): undefined reference to `ADB-WRITEREG'
-> (same error repeated at (.text+0x1dc) in function `moveadb'
->                         (.text+0x26c) in function `initreg2'
->                         (.text+0x364) in function `setreg2'
-> collect2: ld returned 1 exit status
-> 
-> ack! what now? I'm drooling at the thought of a functional 2 button mouse,
-> and if it only ends up working with v5.0 TurboMice, Santa might have to
-> make a late delivery...
+I am trying to create a R4 install set that will install with a serial
+console.  I mounted the
+ramdisk, changed the link for the console, unmounted it and reziped it.
+I then built a new
+zImage.initrd and dd'ed it to a floppy.  I can successfully boot and use
+this to install from a
+serial port.
 
-Hmm, maybe something in your header files?  ADB_WRITEREG is defined (on
-my system) in /usr/include/asm/adb_mouse.h.  Look for this file and see 
-what's there.
+The next step is to modify the R4 CD to correctly set /dev/console and
+/etc/inittab.  I seem
+to have done the initscripts rpm correctly but the dev rpm fails to
+install and all I get is script
+failed.  On a system I currently have running I cd to the
+/usr/src/redhat/RPMS directory and
+do "rpm -ihv --force dev-2.5.4.1b.ppc.rpm" and it runs fine.  I have
+verified that it has
+installed the /etc/inittab that I have changed.
 
-I'm surprised it complains about "ADB-WRITEREG" when the code uses
-"ADB_WRITEREG".  You didn't happen to "fix" this while trimming the
-file in pico, did you?
+I did a sum -r on this file and the file where I have the files from the
+CD.
 
-I really don't know if mousehack is useful (or even necessary) with a v4.0
-TurboMouse.  I assume you've tried the "mousemode" command?
+What do I need to do to get the install to use the new file?  Is there a
+check sum file somewhere
+or something like that I need to change?  Getting this working will be a
+great benefit to
+be as I will no longer need to remove a disk from a VME system hook it
+to a Utah or
+Blackhawk where I have VGA monitors.
 
-Tom
+Thanks for any help
+
+Johnnie
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
