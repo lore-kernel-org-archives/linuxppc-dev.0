@@ -1,166 +1,104 @@
-Message-ID: <01C1943D.CDC39F30.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problem w/driver writing to User Space (Solved!)
-Date: Thu, 3 Jan 2002 10:02:49 -0500
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A02BBDAA6@SERVER1>
+From: Brian Kuschak <brian.kuschak@skystream.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Corrupted ramdisk image
+Date: Thu, 3 Jan 2002 12:28:01 -0800 
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks David for explaining the solution so succinctly!
+I'm upgrading from 2.4.3 to 2.4.17 (rsync from mvista) on a Walnut-variant
+board.  The initrd seems to be getting corrupted.  The kernel crashes during
+the decompress or prints "crc error" or "invalid compressed format"
+messages.  I have allocated enough space by using the 'ramdisk=32000'
+command line option.  The same ramdisk works fine on a 2.4.3 kernel.
 
-<You do the ioremap in kernel space, so the resultant
-  address can't be used as an address to put_user.
-  Just treat it as a pointer directly.>
-
-This works!  I understand now where I was confused.
-
-"YeeeeHaaaaaahhh!!!"
-     /
-  \O/
-   \/	<---- Steven
- _/\_
-
-
-
------Original Message-----
-From:	Steven Vacca [SMTP:svacca@valcom.com]
-Sent:	Wednesday, January 02, 2002 12:55 PM
-To:	LinuxEmbeddedMailList (E-mail)
-Subject:	Problem w/driver writing to User Space
-
-I have written a test driver which, via ioctl() calls
-from the app, toggles an LED attached to a PLX PCI
-Bridge chip on an mpc860-based board.  The physical addr
-of the PLX chip is 0x2000.0000.  The LED, though,
-does not respond.
-
-If I temporarily (just as a test) comment-out the
-set_fs(USER_DS) call in start_thread(), then the LED is
-toggled properly.  So the mechanism for the app controlling
-the LED via the driver is in place.
-
-I am obviously having some Kernel-to-User Space problem.
-
-I use ioremap(0x2000.0000,0x4000), called in chr_dev_init() just
-prior to calling execve("/sbin/init") to start up the app, to get a
-virtual ptr for the driver to use to access the PLX chip, and thus
-the LED. The virtual ptr returned is 0xc400.0000.  This ioremap()
-call is made long after the kernel VM init.
-
-In response to ioctl() calls from the app, the driver uses put_user()
-and get_user() to write and read from the PLX chip using the
-virtual ptr returned from ioremap(), which is what they were
-designed to do.
-
-I would very much appreciate someone scanning thru the following
-code sequence (modified for readability) to see what is out of place.
-
-
-
-
-init()
-  do_basic_setup()
-     device_setup()
-        chr_dev_init()
-           led_init()			//Register the LED driver.
-  (then execve("/sbin/init");)  	//Get app going.
-
-
-
-
-In driver file led.c, located in /drivers/char:
-
-
-UINT_8* plxPtr;	   		//Virtual ptr to PLX chip base addr.
-
-//The LED driver file operations structure.
-static struct file_operations  led_fops =
-  {
-  NULL,                         //lseek
-  NULL,                         //read
-  NULL,                         //write
-  NULL,                         //readdir
-  NULL,                         //poll
-  led_ioctl,                     //ioctl
-  NULL,	                        //mmap
-  led_open,                   //open
-  NULL,	                       //flush
-  NULL,	                       //release
-  };
-
-
-
-
-INT_32  led_init(void)
-{
-  register_chrdev(LED_MAJOR,"led",&led_fops);	//MAJOR = 240.
-  plxPtr = ioremap((UINT_32) 0x20000000,0x4000);
-  return(0);
-}
-
-
-
-
-static int led_open(struct inode* inode,
-                           struct file*     file)
-{
-  //Verify the virtual ptr returned from ioremap().
-  printk("led_open(): plxPtr = %08x\n",(UINT_32) plxPtr);
-  return(0);
-}
-
-
-
-
-static INT_32  led_ioctl(struct inode* inode,
-                                  struct file*     file,
-                                  UINT_32       cmd,
-                                  ULONG_32   arg)
-{
-  switch (cmd)
-    {
-    case LED_ON:
-
-       plxUser0Write(0);           //Turn LED ON.
-       break;
-
-    case LED_OFF:
-
-       plxUser0Write(1);          //Turn LED OFF.
-       break;
-    }
-
-  return(0);
-}
-
-
-
-
-//Turn LED ON or OFF.
-void  plxUser0Write(UINT_8 ledState)
-{
-  UINT_32  regVal;
-
-
-  get_user(regVal,(UINT_32*) (plxPtr + PCI9054_EEPROM_CTRL_STAT));
-
-  if (ledState == 0)
-    put_user(regVal & ~(1 << 16),(UINT_32*) (plxPtr +
-PCI9054_EEPROM_CTRL_STAT));
-  else
-    put_user(regVal | (1 << 16),(UINT_32*) (plxPtr +
-PCI9054_EEPROM_CTRL_STAT));
-}
-
-
+I've used my BDI to dump the initrd image back onto my workstation, and
+gunzip also complains about the file format.  So it really is getting
+corrupted.  The beginning of the file looks ok in a hex editor.  Also the
+loader addresses look ok, no overlaps.  Any ideas?
 
 Thanks,
+Brian
 
-Steven
 
+loaded at:     00500000 00B72890
+relocated to:  00400000 00A72890
+board data at: 00A6F7C0 00A6F800
+relocated to:  00A6F780 00A6F7C0
+zimage at:     00405200 004B16F2
+initrd at:     004B2000 00A6EF0C
+avail ram:     00A73000 04000000
+
+Linux/PPC load: console=ttyS0,9600 root=/dev/ram rw ramdisk=32000
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.4.17-rc2 (root@special-k) (gcc version 2.95.2 19991030
+(2.95.3 prerelease/franzo)) #58 Thu Jan 3 11:43:31 PST 2002
+On node 0 totalpages: 16384
+zone(0): 16384 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: console=ttyS0,9600 root=/dev/ram rw ramdisk=32000
+Console: colour dummy device 80x25
+Calibrating delay loop... 199.88 BogoMIPS
+Memory: 56700k available (1160k kernel code, 460k data, 220k init, 0k
+highmem)
+Dentry-cache hash table entries: 8192 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 4096 (order: 3, 32768 bytes)
+Mount-cache hash table entries: 1024 (order: 1, 8192 bytes)
+Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Memory resource not set for host bridge 0
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+devfs: v1.7 (20011216) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: boot_options: 0x0
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ
+SERIAL_PCI enabled
+ttyS00 at 0xef600300x (irq = 0) is a 16550A
+ttyS01 at 0xef600400x (irq = 1) is a 16550A
+block: 128 slots per queue, batch=32
+RAMDISK driver initialized: 16 RAM disks of 32000K size 1024 blocksize
+loop: loaded (max 8 devices)
+PPP generic driver version 2.4.1
+PPP Deflate Compression module registered
+eth0: Phy @ 0x10, type DP83843 (0x20005c10)
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind 4096)
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+ramdisk start = 0xc04b2000, end = 0xc0a6ef0c, bytes = 6016780
+Oops: kernel access of bad area, sig: 11
+NIP: C0095AC8 XER: 20000000 LR: C0095998 SP: C04A51A0 REGS: c04a50e0 TRAP:
+0800    Not tainted
+MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c04a4000[1] 'swapper' Last syscall: 120
+last math 00000000 last altivec 00000000
+PLB0: bear= 0xef6003ff acr=   0x00000000 besr=  0x00000000
+PLB0 to OPB: bear= 0x0ef60303 besr0= 0x00000000 besr1= 0x00000000
+
+GPR00: C04A56C0 C04A51A0 C04A4000 C0AF7A28 00000001 00000319 C04A56C8
+0000000B
+GPR08: C04A56B0 40473098 00000003 00000101 C0AF7A24 30000000 0000000C
+00000030
+GPR16: 00000001 C01A0000 0000031A 00000001 0000000C 00000004 00000000
+00000009
+GPR24: 00000008 00000319 00000004 00000009 00000101 C013329A 00000673
+00000400
+Call backtrace:
+C0095998 C0096A6C C0096C5C C0096CE8 C00971F4 C0170EAC C0170824
+C0170C1C C00025A8 C00026E8 C0004F78
+Kernel panic: Attempted to kill init!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
