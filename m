@@ -1,20 +1,18 @@
-Return-Path: <sheutlin@gmx.de>
-Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 2F3DE2BDB5
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 01:43:00 +1100 (EST)
-From: Sebastian Heutling <sheutlin@gmx.de>
-To: Marc Dietrich <marvin24@gmx.de>
-In-Reply-To: <200501041504.57588.marvin24@gmx.de>
-References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
-	<200501031326.34477.marvin24@gmx.de> <41DA7E7A.3070901@gmx.de>
-	<200501041504.57588.marvin24@gmx.de>
-Content-Type: text/plain
-Date: Tue, 04 Jan 2005 15:42:54 +0100
-Message-Id: <1104849774.6164.19.camel@weizen.left.earth>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <evilninja@gmx.net>
+Received: from mail.gmx.net (pop.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id CDA722BF24
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 02:08:49 +1100 (EST)
+Message-ID: <41DAB17E.2080706@gmx.net>
+Date: Tue, 04 Jan 2005 16:08:46 +0100
+From: Christian <evilninja@gmx.net>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+References: <41D9FB86.1060407@gmx.net>
+	<200501041423.34061.marc.dietrich@ap.physik.uni-giessen.de>
+In-Reply-To: <200501041423.34061.marc.dietrich@ap.physik.uni-giessen.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
 Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
-Reply-To: sheutlin@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,78 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-01-04 at 15:04 +0100, Marc Dietrich wrote:
-> Hallo Sebastian,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Marc Dietrich schrieb:
 > 
-> Am Dienstag, 4. Januar 2005 12:31 schrieben Sie:
-> > Hello Marc,
-> >
-> > Marc Dietrich wrote:
-> > >Hi Christian,
-> >
-> > Erm ... I'm Sebastian ;-)
+> So you are using netboot and it seems that when having a root-fs via nfs _no_ 
+> disk driver is initialized even if it is compiled in (acording to your 
+> config). Funny, didn't know that.
 > 
-> ah! - sorry Sebastian, to many confusion in the last time...
 
-Hehe :)
+whoops! so, the 2.6.10-rc3 bootlog shows indeed no scsi-initialization -
+i'll boot a proper scsi-enabled config then and upload another bootlog ;-)
 
+- --
+BOFH excuse #401:
 
-> 
-> > I am using a 2.6.8 (I was too lazy to patch & compile a 2.6.9 and wanted
-> > to test 2.6.10 when it's (the sources) in debian/unstable).
-> >
-> > >Can you put a working zImage.prep somewhere on the web (<1.44 MB, so I can
-> > >write it to a floppy disk)?
-> >
-> > I will do that and tell you later where you can download it.
-> 
-> This may no longer be necessary, but see below.
-> 
-> Acording to your log, your scsi drive also fails later, but boots from ide 
-> (how did you managed to install the ide disks?).
+Sales staff sold a product we don't offer.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
 
-Yep, it fails later but it doesn't boot from IDE. The SCSI disk is
-recognized correctly and the system is on the SCSI drive. The IDE disks
-only contain data. It fails later that is right but it still works after
-failure.
-Making IDE work was easy. A friend soldered the connectors and then I
-passed "ide0=ide0=0x1f0,0x3f6,14" as kernel parameter to make channel 0
-work. Later on after, discovering what was wrong with 2.6 kernels, I
-enabled the correct interrupt in the appropriate table in prep_pci.c.
-
-> 
-> I posted a message to linux-scsi describing this problem. I guess the sym2 
-> driver never worked on the PReP machines. I tried it also with 2.4 kernels. 
-> 
-> So to summerize it: No one has a working Powerstack with 2.6 kernel and 
-> booting from SCSI. I hope there will be some input from the scsi list.
-
-As said above, it does really work although I have to admit there is a
-problem with PCI or IRQ handling in general. You can also see in my log
-that one of the ethernet devices has problems every now and then. All in
-all it is sort of functional.
-You can also try to remove every additional PCI device except the gfx
-card and see what happens. I had to remove an additional SCSI host
-controller in order to avoid problems with other PCI devices (mostly it
-was one of the ethernet devices which lost an interrupt).
-But I share your thoughts that there is something wrong with the sym2
-driver.
-
-
-> 
-> > >How does your boot.log looks like?
-> >
-> > Attached it.
-> > Note that I use a Matrox MilleniumII gfx card and XFree4 runs fine
-> > (without any crash) since I got a 2.6 kernel running (although I am not
-> > using XFree because I use the Powerstack as a router/server which has no
-> > Monitor).
-> 
-> Yeah - I search so many times for a Millenium card on eBay. Now I got one for 
-> EUR 1.00 but  it is in Germany, while I'm in France now for holidays :-(
-> I also have a P9100 here, but it is not supported (yet?) under linux...
-
-:(
-
-
-Sebastian
+iD8DBQFB2rF+C/PVm5+NVoYRAjkRAKCiSC6zSmw6Rvhy5RAbUtw4yFKvJgCfTMnA
+IIfoTniXDIT/YvsORjexf38=
+=vX/q
+-----END PGP SIGNATURE-----
