@@ -1,35 +1,26 @@
-To: "leeyang" <leeyang@ycig.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+To: Philip.Lougher@zarlink.com
+Cc: "leeyang" <leeyang@ycig.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	owner-linuxppc-embedded@lists.linuxppc.org
 Subject: Re: ELDK 2.0 released 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 06 Nov 2002 17:46:56 +0800."
-             <001d01c28579$7216d070$cc00a8c0@ycigrnd.ycig.com>
-Date: Wed, 06 Nov 2002 19:17:41 +0100
-Message-Id: <20021106181746.2B21C10160@denx.denx.de>
+In-reply-to: Your message of "Wed, 06 Nov 2002 13:13:26 GMT."
+             <OFA0FF1C92.032E9ADC-ON80256C69.004861BF@zarlink.com>
+Date: Wed, 06 Nov 2002 19:18:38 +0100
+Message-Id: <20021106181843.D2A8610160@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <001d01c28579$7216d070$cc00a8c0@ycigrnd.ycig.com> you wrote:
-> I use the follwoing command line to install
-> without root account
-> ./install -d /eldk2.0.2 ppc_8xx
-> ....
-> warning:user wd does not exist, using root
-> .....
-
-Yes, I'm sorry, but I mistakenly ran the final build under my own id,
-which was  not  noticed  here  because  I  have  an  account  on  all
-machines...
-
-> and it ends up successfully.
+In message <OFA0FF1C92.032E9ADC-ON80256C69.004861BF@zarlink.com> you wrote:
 >
-> Does it affect works?
+> wd is probably Wolfgang Denk's login name. Therefore it won't matter.
 
-No, it has absolutely no  consequences.  The  tools  will  work  fine
-anyway.
+You are right in the first part, but it _does_ matter, as  it  points
+out  a gap in our quality insurance which was not detected before the
+final release :-(
 
 Best regards,
 
