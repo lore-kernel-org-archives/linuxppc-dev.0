@@ -1,82 +1,57 @@
-Message-ID: <3F4D3E2D.2080704@kegel.com>
-Date: Wed, 27 Aug 2003 16:26:37 -0700
-From: Dan Kegel <dank@kegel.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: crosstool-0.22: fixes for arm, sh4, and gcc-3.4
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: K-computing RTAI benchmark cross-compile
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1062060226.25974.5.camel@toni>
+Mime-Version: 1.0
+Date: Thu, 28 Aug 2003 10:43:47 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-crosstool is a set of scripts for building and testing cross-compilers
-based on gcc/glibc/linux.
+Hi all,
 
-A new release is ready, and can be downloaded from
-      http://kegel.com/crosstool
+I'm trying to cross-compile the benchmark for RTAI, made by K-computing,
+to ppc (EP405 board with IBM PPC 405GP cpu).
+I use the ELDK compiler-set (which is working perfect, I compiled kernel
+and rtai with it without any problem).
 
-Changelog:
-0.22 26 Aug 2003 "towards userspace -- and beyond!"
+But when I try to compile the benchmark, I get these errors:
 
-      glibc-2.2.5 and glibc-2.3.2 now build on arm with gcc-3.3.x thanks to
-      glibc-2.2.5-patches/dl-machine-arm.patch,
-      glibc-2.2.5-patches/arm-asm-clobber.patch, and
-      glibc-2.3.2-patches/arm-asm-clobber.patch
+ppc_4xx-gcc -O -Wall -c timer_test.c
+/tmp/ccUWN8MR.s: Assembler messages:
+/tmp/ccUWN8MR.s:136: Error: Unrecognized opcode: `pushl'
+/tmp/ccUWN8MR.s:137: Error: Unrecognized opcode: `pushl'
+/tmp/ccUWN8MR.s:138: Error: Unrecognized opcode: `rdtsc'
+/tmp/ccUWN8MR.s:139: Error: Unrecognized opcode: `movl'
+/tmp/ccUWN8MR.s:140: Error: Unrecognized opcode: `movl'
+/tmp/ccUWN8MR.s:141: Error: Unrecognized opcode: `popl'
+/tmp/ccUWN8MR.s:142: Error: Unrecognized opcode: `popl'
+/tmp/ccUWN8MR.s:351: Error: Unrecognized opcode: `pushl'
+/tmp/ccUWN8MR.s:352: Error: Unrecognized opcode: `pushl'
+/tmp/ccUWN8MR.s:353: Error: Unrecognized opcode: `rdtsc'
+/tmp/ccUWN8MR.s:354: Error: Unrecognized opcode: `movl'
+/tmp/ccUWN8MR.s:355: Error: Unrecognized opcode: `movl'
+/tmp/ccUWN8MR.s:356: Error: Unrecognized opcode: `popl'
+/tmp/ccUWN8MR.s:357: Error: Unrecognized opcode: `popl'
+make: *** [timer_test.o] Fout 1
 
-      crosstest.sh now invokes the gcc-3.4-20030813 libstdc++ testsuite properly.
+I assume it's some problem with wrong functions or so, but I really
+don't know where to look.
 
-      crosstool.sh and crosstest.sh now work even if PATH contains a space
-      (as it often does on Cygwin).
+PS: The RTAI-dir and Linux-dir are correclty changed in the Makefile.
 
-      doc/crosstool-howto.html now mentions the need for gcc-3.2 or higher to
-      compile a recent toolchain
+Anybody a clue how to solve this? Or are there other PPC RTAI benchmarks
+available?
 
-      doc/crosstool-howto.html now suggests setting tcp_tw_recycle both
-      locally and on target to allow lots of rsh sessions, and has a harsher
-      test for whether rsh is in fact configured to allow lots of sessions.
-      doc/chroot-login-howto.html now has instructions for configuring xinetd
-      to allow lots of rsh sessions.  (Hmm, seems like the rsh configuration
-      doc should be in one place, not in two... fixme)  Thanks to Michael
-      LeBlanc for xinetd config info.
-
-      Deleted glibc-2.3.2-patches/sh-fpscr-libc-kludge.patch, and
-      added back to sh4.dat the line GLIBC_CONFIGPARMS="no-z-defs=yes",
-      to fix the following gcc tests that fail with that patch:
-       20000605-1.c 20020411-1.c 930603-1.c complex-6.c conversion.c gofast.c
-       ieee/{20010114-2.c, inf-1.c, rbug.c}
-      (no-z-defs is only needed for gcc-3.4-*/glibc-2.3.2, but shouldn't hurt older versions.).
-      This means I can't run my old binaries on sh4, but that's ok.
-
-      all.sh now takes an optional --builduserspace flag.
-      If this is set, all.sh uses ptx.sh to build busybox, and crosstest.sh
-      uses this busybox instead of the target's normal shell.
-      This is useful if you can't run the target's normal shell with
-      the new toolchain.
-      (e.g. when the target's old /bin/sh is linked against a newer glibc,
-      or when the target's old /bin/sh and libc used a different shared
-      library interface).
-      Thanks to Pengutronix for PTXdist.
-      I plan to use it to build things like ncurses and libreadline
-      in the next release; ncurses-5.3 already builds, but I commented that
-      line out of ptx.config as it's not needed for testing toolchains.
-      Eventually crosstool and PTXdist may merge somehow.
-      Caution: if you use --builduserspace, you must install the graphviz package (see
-      http://www.research.att.com/sw/tools/graphviz/), else the
-      build will fail in ptx.sh with 'dot: command not found'.
-      This is a usability problem with ptxdist; it shouldn't require graphviz by default.
-
-      Discovered why the libstdc++ 27_io testcases fail when run remotely:
-      it's a bug in the testcase driver, which needs to use dejagnu's remote
-      file operations during test setup and evaluation.  Updated http://gcc.gnu.org/PR11610
-
-      Likewise, the testcase g++-bprob-1 fails when run remotely due
-      to a similar bug in the testcase driver.  Filed http://gcc.gnu.org/PR12055
-
-
+Regards,
 --
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
