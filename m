@@ -1,46 +1,51 @@
-Message-ID: <39659E42.28063140@student.ethz.ch>
-Date: Fri, 07 Jul 2000 11:09:22 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Message-ID: <39659EB2.D4C095A6@amulet.co.jp>
+Date: Fri, 07 Jul 2000 18:11:14 +0900
+From: Hollis Blanchard <hollis@amulet.co.jp>
 MIME-Version: 1.0
-To: Gwyn Judd <b.judd@xtra.co.nz>
-CC: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: X still locks up
-References: <20000707142631.B804@thislove.dyndns.org>
-Content-Type: text/plain; charset=iso-8859-1
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org, Ethan Benson <erbenson@alaska.net>
+Subject: Re: Drive Setup (was Multi-boot)
+References: <200007070846.JAA05142@hyperion.valhalla.net>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gwyn Judd wrote:
+Iain Sandoe wrote:
 >
-> Here is an update on the status:
+> On Fri, Jul 7, 2000 Ethan Benson  wrote:
+[snip]
+> >
+> > every time i tested it the following occured:
+> >
+> > * drive setup crashed
+> > * the partition tables were corrupt.
+> >
+> > its just good policy to use the native fdisk to create an OS'es
+> > partitions, on intel we must use DOS fdisk to create DOS/Win*
+> > partitions and linux fdisk for linux partitions, same with OpenBSD,
+> > FreeBSD etc.  powerpc is no different.
+
+[snip]
+
 >
-> 1) I tried installing the Xpmac.rev10 server that someone recommened in
-> the hope that that would fix the problem. Unfortunately it didn't as
-> five minutes ago the system locked up yet again. This seems to suggest
-> it may be kernel related rather than X related.
->
-> 2) I recompiled my kernel wth the "Magic Sysrq" support in it. This
-> seems to work more or less as designed. However when the system locked
-> up as before the "magic sysrq" key did not work at all meaning I had to
-> reboot without being able to shut down properly. This suggests to me
-> that the kernel had itself crashed.
->
-> 3) When I rebooted there was no kernel panic in the logs. This has me
-> puzzled. I suppose it could have crashed and not had it written out to
-> disk in time. On the otherhand this has happened before and each time
-> there is no panic.
+> Someone should tell Apple if there's a problem - they seem to be willing to
+> support (at least) the existence of Linux & other OSs - unlike certain other
+> companie$
 
-All these things may also indicate a hardware lockup - let's not hope so...
+I have never had Drive Setup crash on me, not even once. To try to
+settle this question (not about stability, but about whether it produces
+Linux-acceptable partition maps), I've just used Drive Setup's
+unmodified "Preferred LinuxPPC" setting to partition a disk. The Mac OS
+is currently installing, and I expect no problems when I install Linux
+in 5 minutes.
 
+The only complaint I have with Drive Setup is that it insists on erasing
+all partitions on the drive any time you want to make partition changes.
+Even newbies wondrously appreciating the beautiful Mac OS widgets in
+their partitioning utility will not want to reformat their entire hard
+disk.
 
-Michel
-
-
---
-The computer revolution is over. The computers won.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
