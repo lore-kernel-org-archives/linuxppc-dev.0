@@ -1,43 +1,33 @@
-Message-ID: <3873C4A3.72079612@ctam.com.au>
-Date: Thu, 06 Jan 2000 09:24:36 +1100
-From: Brendan J Simon <Brendan.Simon@ctam.com.au>
-Reply-To: Brendan.Simon@ctam.com.au
+Message-ID: <3873C65B.54932D84@execpc.com>
+Date: Wed, 05 Jan 2000 16:31:55 -0600
+From: Joseph Garcia <jpgarcia@execpc.com>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC860 patches for glibc
-References: <38727B8B.2FBD0B8@ctam.com.au> <00010501374800.22517@enzo.bigblue.local> <3872D1EA.DF497905@ctam.com.au> <3872E8B5.F088FE57@fadata.bg> <3872ECED.6E46EBF6@ctam.com.au> <38733D74.93A9F24E@switchboard.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+To: Naoki Takebayashi <ntakebay@bio.indiana.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: enhanced RTC and SMP on PowerMac
+References: <Pine.SOL.4.10.10001051648140.262-100000@sunflower.bio.indiana.edu>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kenneth Johansson wrote:
+Naoki Takebayashi wrote:
+> 
+> Is enhanced RTC supposed to work on PowerMac?  When I compile with
+> CONFIG_RTC, the kernel doesn't boot up and dies when it hits the following
+> line:
+> 
+>    /* Initialize periodic freq. to CMOS reset default, which is 1024Hz */
+>    CMOS_WRITE(((CMOS_READ(RTC_FREQ_SELECT) & 0xF0) | 0x06), RTC_FREQ_SELECT);
 
-> Brendan J Simon wrote:
->
-> > Momchil 'Velco' Velikov wrote:
-> >
-> >
-> > I removed the -shared argument and the executable now looks a lot better interms of the vaddr and
-> > program headers etc.  I used "powerpc-linux-gcc -Wall -mcpu=860 -fpic -o bjs1 bjs1.c".  I tried
-> > with -fPIC, -fpic and without either.  The program still does not run however.  The output of
-> > objdump -p  is below.
-> > Does this look OK ?
-> > Any suggestions for debugging the code or the shared libraries ?
-> >
->
-> Have you patched your glibc source so it can work on 860 ??
+I have the same problem.  I dont think it should work.  (CMOS on a ppc?)
 
-I didn't realise there were 860 patches for glibc.
-Where can I get these patches from ?
-What do they do ?
+I have noticed that the 'clock' program seems to access the rtc.  Assuming it
+is, it may have the code we want to put in the kernel.
 
-I just ran configure and make with CC="powerpc-linux-gcc -mcpu=860" or CFLAGS=-mcpu=860.  I can't
-remember which.
-
-Thanks,
-Brendan Simon.
-
+-- 
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
