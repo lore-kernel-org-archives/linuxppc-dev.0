@@ -1,31 +1,38 @@
-Message-ID: <389703FC.A78E9811@netx4.com>
-Date: Tue, 01 Feb 2000 11:04:12 -0500
+Message-ID: <389704A9.444FA736@netx4.com>
+Date: Tue, 01 Feb 2000 11:07:05 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Raphael Bossek <raphael.bossek@gmx.de>
+To: Brendan.Simon@ctam.com.au
 CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA-IDE for mpc8xx-linux-2.2.13
-References: <11497.949395129@www14.gmx.net>
+Subject: Re: mpc8xx-2.2.13 kernel hangs during boot.
+References: <200002010035.BAA26304@denx.local.net> <3896CEA3.EBA97957@ctam.com.au> <38968BC0.6FD6E801@netx4.com> <38976797.F621D0A9@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Raphael Bossek wrote:
+Brendan John Simon wrote:
 
 
-> i really need this patch and if someone done it allready (it does not have
-> to be perfect) so please let me know !!!
+> The memory controller is setup in my boot loader.  It knows nothing about VMA, only
+> PMA.
 
-This kernel already has a hack in the m8xx_setup.c function to
-use a PCMCIA ATA device.  All you need to do is enable basic IDE
-and select the  IDE disk driver.  Don't get carried away and enable
-too much stuff.
+This has nothing to do with the 8xx memory controller.  It is the
+way the Linux kernel maps its virtual space.
 
-You have to initialize the PCMCIA (especially the power stuff)
-according to your board.  There are two patches missing from
-the asm-ppc/ide.h file for interrupt routing when using the
-PCMCIA.  I will send those to you personally.
+
+> I am happy with this but am not sure what the DRAM address should be.
+> Should I map CS1 and CS2 to 0x00000000 or 0xC0000000 ?
+
+DRAM should map to 0.
+
+> ...  I sounds
+> like I will probably need it to access my peripherals from within linux.  Is this
+> correct ?
+
+Yes.  It is simply the kernel memory mapping function, similar
+to what mmap() does in a user application.
+
 
 
 	-- Dan
