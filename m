@@ -1,57 +1,87 @@
-Date: Sun, 25 Apr 1999 14:13:35 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Reply-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Sean Harding <sharding@oregon.uoregon.edu>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: platinumfb in 16 bit?
-In-Reply-To: <Pine.SGI.4.10.9904241618570.78856-200000@gutenberg.uoregon.edu>
-Message-ID: <Pine.LNX.3.96L.990425140416.2193G-100000@unix45.andrew.cmu.edu>
+Message-ID: <XFMail.990425173806.hcaley@loomer.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed;
+ boundary="_=XFMail.1.3.p0.Linux:990425173806:426=_"
+Date: Sun, 25 Apr 1999 17:38:06 -0700 (PDT)
+From: Batmensch <hcaley@loomer.com>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Linpack Benchmarks on PB G3 Series 300mhz
+Cc: hcaley@loomer.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 24 Apr 1999, Sean Harding wrote:
+This message is in MIME format
+--_=XFMail.1.3.p0.Linux:990425173806:426=_
+Content-Type: text/plain; charset=us-ascii
 
-> On Sat, 24 Apr 1999, Hollis R Blanchard wrote:
-> 
-> > I don't suppose I could beg/plead someone into fixing platinumfb for 16 bit
-> > color? The problem has been around for while (I posted about it a while ago,
-> 
-> Try the attached file. That's what I've been using, and it works fine. I
-> submitted this change long ago and apparently it never made it in. I'm not
-> entirely sure that it's correct, so it would be nice to know if it works
-> for others too.
+Here are my linpack benchmarks on my PB G3 Series 300 mhz.
 
-This worked perfectly. This is great. Is this patch going to get into the
-official kernel soon?
+Hugh
 
-For those of you who missed it:
-- before patch, screwed up palette in 16 bit (but 8 bit works)
-- after patch, good palette in 16 bit (and 8 bit still works)
-[this only affects platinumfb]
 
-$ diff platinumfb.c platinumfb.c-2.2.6 
-434c434
-<       /*int scale;*/
----
->       int scale;
-447c447
-<       /*scale = (info->current_par.cmode == CMODE_16) ? 3 : 0;*/
----
->       scale = (info->current_par.cmode == CMODE_16) ? 3 : 0;
-450,452c450,452
-<       out_8(&cmap_regs->lut, red);    /* send one color channel at    */
-<       out_8(&cmap_regs->lut, green);  /* a time...                    */
-<       out_8(&cmap_regs->lut, blue);
----
->       out_8(&cmap_regs->lut, red<<scale);     /* send one color channel at*/
->       out_8(&cmap_regs->lut, green<<scale);   /* a time...            */
->       out_8(&cmap_regs->lut, blue<<scale);
+----------------------------------
+E-Mail: Batmensch <hcaley@loomer.com>
+Date: 25-Apr-99
+Time: 17:34:41
 
--Hollis
+This message was sent by XFMail
+----------------------------------
 
+--_=XFMail.1.3.p0.Linux:990425173806:426=_
+Content-Disposition: attachment; filename="info"
+Content-Description: info
+Content-Type: text/plain; charset=us-ascii; name=info; SizeOnDisk=1532
+Content-Transfer-Encoding: 7bit
+
+Linux hughmac 2.2.6-6bpmac #2 Wed Apr 21 21:02:56 PDT 1999 ppc unknown
+LINPACK benchmark, Double precision.
+Machine precision:  15 digits.
+Array size 100 X 100.
+Average rolled and unrolled performance:
+
+    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS
+----------------------------------------------------
+     256   0.75  69.33%   2.67%  28.00%  83753.086
+     512   1.51  69.54%   2.65%  27.81%  82984.709
+    1024   3.02  74.83%   5.63%  19.54%  74447.188
+    2048   6.02  73.42%   5.48%  21.10%  76171.228
+    4096  12.05  73.78%   4.15%  22.07%  77063.543
+
+Enter array size (q to quit) [200]:  200
+Memory required:  315K.
+
+
+LINPACK benchmark, Double precision.
+Machine precision:  15 digits.
+Array size 200 X 200.
+Average rolled and unrolled performance:
+
+    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS
+----------------------------------------------------
+      32   0.69  81.16%   4.35%  14.49%  74485.876
+      64   1.38  84.78%   3.62%  11.59%  72043.716
+     128   2.77  84.84%   2.89%  12.27%  72340.192
+     256   5.52  85.87%   2.72%  11.41%  71896.387
+     512  11.06  84.63%   3.44%  11.93%  72191.650
+
+Enter array size (q to quit) [200]:  1000
+Memory required:  7824K.
+
+
+LINPACK benchmark, Double precision.
+Machine precision:  15 digits.
+Array size 1000 X 1000.
+Average rolled and unrolled performance:
+
+    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS
+----------------------------------------------------
+       1   5.80  96.72%   0.69%   2.59%  29675.516
+       2  11.53  97.48%   0.69%   1.82%  29623.086
+
+
+--_=XFMail.1.3.p0.Linux:990425173806:426=_--
+End of MIME message
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
