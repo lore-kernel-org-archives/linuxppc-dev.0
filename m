@@ -1,32 +1,25 @@
-Message-ID: <6DF87017DA95D611AC6000606730DE9B0EC0CC@BLREXSR>
-From: Nageswari S <nageswari@sanyo.co.in>
+Subject: graphic controller in SVGA mode
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: USB Host Controller Problem
-Date: Thu, 14 Nov 2002 12:52:56 +0530
+From: "Laurent Mohin" <laurent.mohin@acterna.com>
+Date: Thu, 14 Nov 2002 09:28:34 +0100
+Message-ID: <OF68382382.DE55804D-ONC1256C71.002DF056@eng.eni.wago.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hello all,
 
-I have a custom PowerPC baord based on IBM 405 core with "No PCI".
+I'm currently using an EPSON S1D13506 graphic controller connected to a
+405GP to manage an LCD panel in SVGA mode (800x600) in 16 bit per pixel.
+It appears that the EPSON chip is a bit tight to manage such a controller
+and it takes me around 300 ms to redisplay a new screen.
 
-I have my USB Host controller (OHCI) based with HC registers from
-0xef601200.
+Who is using another controller to manage an LCD panel with this
+resolution? (my target price is under 25$)
 
-When I access these address locations, I am getting kernel panic with
-machine check interuupt.
-
-Is there any special setting to enable IO address range.
-
-Any help or suggestion will be very helpful...
-
-Thank you,
-Regards,
-Nageswari
+Laurent
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
