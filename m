@@ -1,55 +1,112 @@
-From: benh@kernel.crashing.org
-To: <msokolov@ivan.Harhan.ORG>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	"Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: EV-64260-BP & GT64260 bi_recs
-Date: Tue, 26 Mar 2002 22:52:35 +0100
-Message-Id: <20020326215235.21322@mailhost.mipsys.com>
-In-Reply-To: <0203270237.AA03006@ivan.Harhan.ORG>
-References: <0203270237.AA03006@ivan.Harhan.ORG>
+Message-ID: <3CA1031D.C072B4D6@mvista.com>
+Date: Tue, 26 Mar 2002 18:24:13 -0500
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Val Henson <val@nmt.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+References: <20020322210103.C3363@boardwalk> <20020324122048.8670@smtp.wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->It would set a very bad example if it is implemented. In your proposal the
->records containing the GT-64260 Ethernet information have no indication
->in them
->whatsoever that they are for GT-64260 and not some other Ethernet. If
-you make
->the gt64260_eth driver call a function to grab all bi_recs of this kind, the
->next engineer who designs a board with other hard-wired Ethernet
-interfaces on
->it besides the GT-64260 (like an MPC8260 + GT-64260 system) will be simply
->stuck out of luck as the gt64260_eth driver will unceremoniously grab all
->records for all Ethernets and there will be no way to tell which MAC address
->belongs to each Ethernet.
+Ben, et. al.,
 
-Yah, this is why BI_DEV_TYPE should be GT64260_xxxx
+Sorry for dropping out the last few days, I've been very busy with other things.
 
-We have several choices here for the design, I'm not sure which is best, so
-please speak up:
+I've skimmed the email but I'll admit I didn't read them all in depth.  I've made
+an example of actual bi_rec's using the ev64260 to see if my skimming worked :)
+In the example, I used a BI_STRUCT to pass in  the mac addr for the 3 embedded
+enet ctlrs on the gt64260.  I used the DEV_TYPE + DEV_CLASS concept but made an
+"EMBEDDED" DEV_TYPE to go along with DEV_PCI so we don't have to add a new one
+for each embedded ctlr.  The square brackets are only there to make it easier to
+follow.  I'm assuming that every bi_rec is responsible for padding out to a
+4-byte boundary.  Is that what I'm supposed to do?
 
-When dealing with combo-chips like the GT or PPC 4xx/8xx etc..., we can
-either:
+Please let me know if I'm on the right track.  If so, we--the ev64260 people--can
+flesh out some more bi_rec's and implement them.
 
- - define one BI_DEV_TYPE per chip (BI_DEV_TYPE_GT64260, ...). The actual
-device within the GT64260 (ethernet in our case) is referenced via the
-BI_DEV_CLASS (ethernet), BI_DEV_ID beeing optionally there in case a
-given device in the chip exist in more than one instance.
+Mark
+--
+Example for ev64260:
+--------------------
 
- - define one BI_DEV_TYPE per chip (same as above), and define a BI_DEV_ID
-containing both function and the index (for example 'ETH0') thus we don't
-need BI_DEV_CLASS.
+[0] tag: BI_CMD_LINE
+    size: 36                            (4 + 4 + 26 chars + 2 pad)
+    data: "console=ttyS0,115200 ip=on"
+    pad: 2
 
- - define a specific BI_DEV_TYPE for each function (that is
-BI_DEV_TYPE_GT64260_ETH), BI_DEV_ID is only an index.
+[1] tag: BI_MEMSIZE
+    size: 12
+    data: 33554432                      (32 MB)
 
-I tend to prefer solution 2)
+[2] tag: BI_GT64260_BASE
+    size: 12
+    data: fc000000
 
-Ben.
+[3] tag: BI_STRUCT                      (embedded enet cltr 0)
+    size: 76                            (12 + 3*12 + 25 + 3 == 76)
+    data: BI_DEVICE
+
+    [3.0] tag: BI_DEV_TYPE
+          size: 12
+          data: BI_DEV_EMBEDDED
+
+    [3.1] tag: BI_DEV_CLASS
+          size: 12
+          data: BI_CLASS_ENET
+
+    [3.2] tag: BI_DEV_ID
+          size: 12
+          data: 0                       (1st enet device)
+
+    [3.3] tag: BI_MAC_ADDR
+          size: 25
+          data: aa:bb:cc:dd:ee:ff       (ascii)
+    pad: 3
+
+[4] tag: BI_STRUCT
+    size: 76
+    data: BI_DEVICE
+
+    [4.0] tag: BI_DEV_TYPE
+          size: 12
+          data: BI_DEV_EMBEDDED
+
+    [4.1] tag: BI_DEV_CLASS
+          size: 12
+          data: BI_CLASS_ENET
+
+    [4.2] tag: BI_DEV_ID
+          size: 12
+          data: 1                       (2nd enet device)
+
+    [4.3] tag: BI_MAC_ADDR
+          size: 25
+          data: gg:hh:ii:jj:kk:ll       (ascii)
+    pad: 3
+
+[5] tag: BI_STRUCT
+    size: 76
+    data: BI_DEVICE
+
+    [5.0] tag: BI_DEV_TYPE
+          size: 12
+          data: BI_DEV_EMBEDDED
+
+    [5.1] tag: BI_DEV_CLASS
+          size: 12
+          data: BI_CLASS_ENET
+
+    [5.2] tag: BI_DEV_ID
+          size: 12
+          data: 2                       (3rd enet device)
+
+    [5.3] tag: BI_MAC_ADDR
+          size: 25
+          data: mm:nn:oo:pp:qq:rr       (ascii)
+    pad: 3
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
