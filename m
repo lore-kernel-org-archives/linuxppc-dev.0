@@ -1,36 +1,46 @@
-Date: Thu, 15 Apr 1999 10:15:47 -0500 (CDT)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Brendan Simon <brendan@dgs.monash.edu.au>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-user <linuxppc-user@lists.linuxppc.org>
-Subject: Re: LinuxPPC: Which kernel source for MPC860 ?
-In-Reply-To: <3715C876.49597E1A@dgs.monash.edu.au>
-Message-ID: <Pine.LNX.3.96.990415101043.6235B-100000@globegate.utm.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+From: Alexander Larsson <alex@signum.se>
+Subject: Re: Booting Linux from Flash
+Date: 15 Apr 1999 18:06:32 +0200
+Message-ID: <w1g16198c7.fsf@tammy.signum.se>
+References: <01BE8665.A0E7B070.john.vanloon@oregonchain.com> <37156C34.C1DEE82F@dgs.monash.edu.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 15 Apr 1999, Brendan Simon wrote:
+brendan@dgs.monash.edu.au (Brendan Simon) writes:
 
-> I assume I need a C library.  Which C library is the best for my
-> purposes ?  Lib5 or Lib6 ?  Do I need both ?
+> I would certainly like to get a flash filesystem driver.  I'm not sure if it
+> is the same thing you are talking about.
+> 
+> I want to boot linux on an powerpc embedded system which has no hard disk.  I
+> do not want to use lilo.  I imagine that I would have write a simple
+> bootloader to get the kernel booting.  I want to store the kernel at a known
+> location in Flash and store a boot image at a known location in Flash.  I then
+> want to execute the kernel somehow (jump to appropriate address) and pass to
+> it any parameters required to let it place the boot image in a ram disk.  I
+> think the kernel lives in the file system so it's a bit of a chicken and egg
+> problem as far as I can see.  Is the kernel that is booting stored in the boot
+> image.  If so I guess the boot image has to be uncompressed.  The root
+> filesystem can be a compressed image though.
 
-As a general rule, un*x kernel sources are self-contained, i.e. all
-necessary library sources are included in the kernel source itself, partly
-because it has to be statically linked, and partly to prevent bugs caused
-by people compiling with a version of libc or whatever that doesn't match
-the kernel sources.  You _might_ need some header files for types or
-something (I'm not sure), but other than that....
+The way I'm doing it is i just place the bootcode and a zImage at place in the
+flash-mem where the machine boots. Then i just set up the machine and copy the
+zImage down to ram and jump to it.
 
+You could probably get it to read a compressed fs image from flash and mount it
+as a ram-disk by either using some initrd hacking or doing some kernel startup
+modifications.
 
-Later,
-David
+> Anyone know where I should start with regards to bootloaders or how to get the
+> kernel booting if I have the kernel and bootimage in Flash somewhere.  Note
+> the Flash is just memory mapped on a SIMM.  There is no IDE driver or
+> filesystem on it.  Do I need a Flash device driver ??
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+No, you don't need a Flash device driver unless you want to write to the flash.
+
+/ Alex
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
