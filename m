@@ -1,33 +1,43 @@
-Message-ID: <36CB7CF1.B53636AB@iwate-u.ac.jp>
-Date: Thu, 18 Feb 1999 12:37:37 +1000
-From: Piotr Muszynski <u0295020@iwate-u.ac.jp>
+Date: Thu, 18 Feb 1999 03:47:35 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Douglas Godfrey <dvdoug@tiac.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Restructuring Efforts
+In-Reply-To: <v04003a03b2f0f1315fa4@[205.161.35.44]>
+Message-ID: <Pine.HPP.3.96.990218032415.482P-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: scsi drivers (Quantum Fireball problem)
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
 
-There's strong evidence to suspect that new kernels (after maybe
-2.1.127/2.1.131) don't recognize specifically QuantumFireball 1.2GB HD,
-the standard disk in PMacs 7200/7500 and perhaps 7600.
-There are many people using these disks that have difficulties with new
-kernels because of this problem.
-I imagine it would be impossible to install r5 on original,  single-disk
-PM7200/7500.
 
-Is there anyone working on that?  If not,  I look for someone that knows
-linuxppc's scsi drivers to help me isolate the trouble.  I have
-PM7500/601/100 with QuantumFireball holding HFS (BootX) and IBM with
-HFS/ext2,  running r4.
+On Wed, 17 Feb 1999, Douglas Godfrey wrote:
 
-piotru
+> This sounds like a case for snail mail. If someone at one of the mirror
+> sites has a CD-ROM burner and can burn a CD from the current CVS tree
+> once a month. $5.00 plus $2.00 shipping and handling for a CD is probably
+> less than the Phone connection time charges to download the new updates
+> at 20 bytes/sec.
 
-ps I know with today prices it's easy to change drives,  but ...
+I'm on the education/research network so I don't pay for the connection. 
+And I often download between 3 and 5am like now when I'm up at the
+telescope, it's so much faster (up to 100kB/s). 
 
+I don't know why but I feel like discriminated when the net approaches its
+saturation level :-). Strange enough, I have reasonably fast connection to
+the rest of Europe but the U.S. during daytime is simply hopeless (and the
+U.K. too, but traceroute enlighetened me once showing that the shortest
+path between Holland and London goes through New York and Washington, and
+that my notions of geography were hopelessly antiquated ;-))
+
+However, my main point is that I am not going back to using vger under any
+circumstances (hmmm... if there were an incentive of a few million bucks,
+I might reconsider my position ;-))
+
+	Regards,
+	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
