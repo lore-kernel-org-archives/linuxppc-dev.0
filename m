@@ -1,37 +1,39 @@
-Date: Mon, 7 May 2001 14:30:47 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@mvista.com>
-Cc: Eli Chen <eli@routefree.com>, brian.kuschak@skystream.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-Message-ID: <20010507143047.B1118@opus.bloom.county>
+Message-ID: <032e01c0d73f$58022160$4b00000a@foolio1>
+From: "Eli Chen" <eli@routefree.com>
+To: "Dan Malek" <dan@mvista.com>
+Cc: <brian.kuschak@skystream.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 References: <027b01c0d728$9a702b80$4b00000a@foolio1> <3AF710DC.37209810@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3AF710DC.37209810@mvista.com>; from dan@mvista.com on Mon, May 07, 2001 at 05:17:16PM -0400
+Subject: Re: dcache BUG()
+Date: Mon, 7 May 2001 14:47:42 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, May 07, 2001 at 05:17:16PM -0400, Dan Malek wrote:
+> What version of silicon do you have, and what platform are you using?
 
-> > ...  This is really just a work around for us until we find out what
-> > is the real problem.
->
-> Is there some simple test I can use to trigger this problem?  It
-> would be nice if you could try a "newer" kernel from FSM Labs.  This
-> was originally in the linuxppc_2_5 tree, and we are merging/changing
-> trees at the moment.  I don't remember the URL......TOM, can you
-> provide some insight?
+I am using the 405GP core, rev D.  My tree is based off of the February 26th
+source from MontaVista.
 
-Er, 2_5 isn't unavailable yet.  bk://source.mvista.com/linuxppc_2_5 (mirror)
-or bk://bitkeeper.fsmlabs.com:5005 (master).  But 2_5 is 'dead' in the sense
-that stuff is being moved to a new tree.  The new tree should be a lot more
-populated (with new 6xx/7xx/74xx, 8xx, 82xx and some 4xx) stuff after my
-finals (And I've got 2 tomorrow, so adios. :))
+> Is there some simple test I can use to trigger this problem?
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Besides Brian's one-liner test, you can try flood pinging your 405GP.  I
+have been consistently receiving these error messages after letting it run a
+while:
+
+Freeing alive device (cxxxxxxx), ethx
+
+and
+
+Attempt to release alive inet socket cxxxxxxx
+
+I have also occasionaly received other messages, which I have yet to receive
+after changing atomic.h.
+
+Eli
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
