@@ -1,11 +1,11 @@
-Message-ID: <007701c1bf2f$da283200$1a11efcb@industrialDiv.hanasys.co.kr>
+Message-ID: <008701c1bf30$72709200$1a11efcb@industrialDiv.hanasys.co.kr>
 Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
 From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: "Subhachandra Chandra" <Subhachandra.Chandra@cosinecom.com>,
-	"'linuxppc-embedded '" <linuxppc-embedded@lists.linuxppc.org>
-References: <69BCCDDC980B4641BFC908D7BF95F1842A4B89@exchsrv-eng>
+To: <linuxppc-embedded@lists.linuxppc.org>,
+	"Claus Gindhart" <Claus.Gindhart@pep.de>
+References: <21A8AE56EBB6D411A4520060973D360179DD48@pepintercom.pep.de>
 Subject: Re: execve system call question
-Date: Wed, 27 Feb 2002 10:41:18 +0900
+Date: Wed, 27 Feb 2002 10:45:00 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
@@ -13,14 +13,19 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-RE: execve system call questionHi Subhachandra Chandra.
+Hi Claus Gindhart
 
-> It could be that your ld.so* does not have execute >permissions. The 2.4.2 and 2.4.4 kernels did not care >about this but the 2.4.17 cares about it. I do not know >when the actual switchover happened.  Since you are >doing NFS there may be other files which have incorrect >permissions.
+> I assume, that Your code is stuck inside the init process.
+> There is an easy to way to find out, if my assumption is right.
+> - Use a sash (Statically linked standalone shell) and replace /sbin/init
+> with the executable.
+> - If You get a prompt now, the execve works o.k, the hangup is inside init
+>
+> The further proceeding depends on the result of the above test.
+>
 
-ld.so* has execute permission.
-I will try 2.4.2 then.
+I tried other thing like /bin/bash and 'hello world' things. but it didnot worked.
 
-Thank you.
-
+Thank you!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
