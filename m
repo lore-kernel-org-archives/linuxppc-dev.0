@@ -1,36 +1,116 @@
-Date: Wed, 26 Mar 2003 18:09:21 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: dcbz works on 862 everywhere!
-In-reply-to: <3E81C5AA.80206@embeddededge.com>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>,
-	strauman@SLAC.Stanford.EDU
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLOEHKFLAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <20030326172709.74531.qmail@web41206.mail.yahoo.com>
+Date: Wed, 26 Mar 2003 09:27:09 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: Re: Flash File System
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3E816D42.AD351615@lucent.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Joakim Tjernlund wrote:
->
-> > I am still intrested in trying copy-on-write but I can't figure out
-> > how. Is it a big job? Any pointers?
->
-> The 8xx properly implements copy-on-write now.  I don't remember when
-> I updated this, maybe somewhere in the mid 2.3.xxx timeframe.  All of
-> the processor specific MM functions have to be changed, it isn't
-> something that is likely going to be a configuration option. due to
-> all of the common #define, macros, and page table functions.  It
-> does remove three instructions and a branch from the TLBmiss handler :-)
+Hi Jaap Jan,
 
-Ahh, that explanins why I had such a hard time trying to find
-where it didn't do copy-on-write :-)
+Thanks for your reply. What do you mean by 'works out
+of the box with denx'? I see the code you referred to
+but not sure how to use it. I still have some
+concerns. Like,
 
- Thanks
-         Jocke
+1. How can i initially store the image into flash? My
+flash chip is on the board.
+2. How can i boot linux from flash?
+
+3. Currently i have a 32MB SDRAM along with flash. I
+have tools to download linux image into SDRAM. Even if
+i go with MTD/JFFS, my concern is unless linux runs
+flash can not be accessed and vice versa.
+
+4. Lets say, i download linux into a safe place in
+SDRAM, boot it and then access flash thru MTD/JFFS and
+store linux image into flash. Even in this case, what
+all i need to take care of for making my flash a boot
+device.
+
+Any detailed documentation is appreciated.
+
+Thanks,
+Prakash
+
+
+
+
+--- Jaap-Jan Boor <jjboor@lucent.com> wrote:
+> Hi,
+>
+> I use strata flash with MTD and JFSS2 as file system
+> on top of it. Works out of the box with denx' eldk
+> kernel and
+> toolchain. I've provided my own flash map but you
+> can also use an existing one (look e.g. in
+> linux/drivers/mtd/maps)
+>
+> Jaap-Jan
+>
+> Wolfgang Denk wrote:
+> >
+> > In message
+> <20030326070131.88176.qmail@web41202.mail.yahoo.com>
+> you wrote:
+> > >
+> > > I have a 32MB Intel Strata flash on my PPC405
+> based
+> > > custom board. I need to create access
+> routines/APIs to
+> > > access the flash. I was thinking of creating a
+> Flash
+> > > File System and mount it as a device in Linux
+> > > environment.
+> > >
+> > > Are there any off the shelf FFS packages
+> available?
+> > > Generally, how the flash is used?
+> >
+> > Use the MTD layer.
+> >
+> > > I am working with micro-monitor to use its Tiny
+> File
+> > > System on flash support and eventually mount
+> into
+> > > linux. Did anyone use this combination before?
+> >
+> > I think you cannot do this. AFAIK the TFS code is
+> not available under
+> > a GPL compatible license which prevents it from
+> being linked with the
+> > Linux kernel code.
+> >
+> > Best regards,
+> >
+> > Wolfgang Denk
+> >
+> > --
+> > Software Engineering:  Embedded and Realtime
+> Systems,  Embedded Linux
+> > Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88
+>  Email: wd@denx.de
+> > There is is no reason for any individual to have a
+> computer in  their
+> > home.      -- Ken Olsen (President of Digital
+> Equipment Corporation),
+> >               Convention of the World Future
+> Society, in Boston, 1977
+> >
+>
+> --
+> J.G.J. Boor
+> Room:  BE-525
+> Lucent Technologies Nederland b.v.
+> Phone: +31 35 687 4721
+> Optical Networking Group TMS Data
+> Fax:   +31 35 687 5976
+> P.O. Box 1168, 1200 BD, Hilversum, The Netherlands
+mailto:jjboor@lucent.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
