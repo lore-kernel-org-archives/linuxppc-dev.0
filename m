@@ -1,30 +1,30 @@
-Date: Tue, 27 Jan 2004 20:40:22 +0100
-From: David Kimdon <david@kimdon.org>
-To: Christian Kujau <evil@g-house.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linux-2.4-benh compiling error
-Message-ID: <20040127194022.GA646@kimdon.org>
-References: <4016760E.50009@g-house.de>
+Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
+	Patrick Mochel <mochel@digitalimplant.org>,
+	Nigel Cunningham <ncunningham@users.sourceforge.net>,
+	ncunningham@clear.net.nz,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.44.0401271400530.5220-100000@zirkon.biophys.uni-duesseldorf.de>
+References: 
+	 <Pine.LNX.4.44.0401271400530.5220-100000@zirkon.biophys.uni-duesseldorf.de>
+Content-Type: text/plain
+Message-Id: <1075238892.17953.201.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4016760E.50009@g-house.de>
+Date: Wed, 28 Jan 2004 08:40:00 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 27, 2004 at 03:30:38PM +0100, Christian Kujau wrote:
->
->
-> hi,
->
-> i was about to compile linux-2.4-benh (fresh tree fetched via rsync)
-> when errors occured:
+> Battery requests might have been underway; pmud is running. If I read
+> pmu_suspend() right, pending battery requests should result in pmu_suspend
+> waiting for them to finish?
 
-I don't know what your build system is, but I had the same error on
-Debian unstable, the bug (and a patch) is here:
+Normally yes... pmud isn't running at this point (all processes are frozen)
 
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=228852
+Ben.
 
--David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
