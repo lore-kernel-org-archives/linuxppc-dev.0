@@ -1,57 +1,41 @@
-From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: BDI kernel debug
-Date: Wed, 7 Jul 2004 07:01:16 +0200
-Cc: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
-References: <20040706181831.52416C109F@atlas.denx.de>
-In-Reply-To: <20040706181831.52416C109F@atlas.denx.de>
+From: vunnam.rao@wipro.com
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200407070701.16632.Schramel.Linux@go.bartec.de>
+	charset="us-ascii"
+Subject: QMC
+Date: Wed, 7 Jul 2004 12:33:20 +0530
+Message-ID: <D3C8905000DE1C42BC5378A14C7FD15F01234597@hyd-lax-msg.wipro.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi Gurus,
 
->
-> > Are there some options in the kernel or in the gdb to set ?
->
-> Did you enable CONFIG_DEBUG_KERNEL in your kernel configuration?
+We have developed a QMC driver for MPC860P and the TX is working fine.
+We are getting interrupts for Tx, But, the RX we are not yet all getting
+any interrupt.
 
-Yes it is enabled, furthermore the "Include BDI-2000 user context switcher" is set and compiler options "Additional compile arguments: "-g -ggdb -fno-schedule-insns -fno-schedule-insns2" are set
+I am using the functionality for providing GCI(2 bits/D-channel, and a
+total of 8 such channels) support through SCC3 port of the MPC860P. The
+configuration of TSA Ram, and QMC Global/Specific parameters have been
+correctly done. Though I receive TX interrupts, I am not able to receive
+any RX Interrupts. This is strange because I can even see incoming
+physical data on the Rx port through a Logic Analyzer.
 
-> Did you read the FAQ section of the DULG, especially
-> http://www.denx.de/twiki/bin/view/DULG/HowToDebugLinuxExceptions
-> and
-> http://www.denx.de/twiki/bin/view/DULG/HowToSingleStepThroughRFIInstruction
+I do not get any data in the receive buffers at all. The QMC
+initialization has been done in line with the example code provided from
+Motorola at:
+https://e-www.motorola.com/webapp/Download?colCode=MPC860COD05&prodCode=
+MPC860&nodeId=03C1TR046708718657&appType=license&location=psp
 
-In my case i try to step through m8260_setup_arch() function to debug m8260_find_bridges() for pci support. Is there the MMU already on ?
-I think it is.
+I tried with loopback, but to no success.
+The basic doubt here is do we need any microcode for QMC on MPC860P.
 
-When the bdi runs through the code the most time it comes to the __delay() function. Then i try  "step" or "next" and it often hangs forever.
-
-> Best regards,
->
-> Wolfgang Denk
-Thank you for your reply.
+Thanks in advance!!!
 
 Best regards,
-Marco
 
-
-
----------
-Marco Schramel
-R&D
-Bartec GmbH
-Schulstr. 30
-94239 Gotteszell, Germany
-www.bartec.de
-Marco.Schramel@go.bartec.de
-Phone:  +49 (0)9929/301332
-Fax:    +49 (0)9929/301112
-
+Kondala
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
