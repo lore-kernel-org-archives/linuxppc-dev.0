@@ -1,25 +1,32 @@
-Message-ID: <378E6BBE.E5C76CB6@broadlink.com>
-Date: Thu, 15 Jul 1999 16:16:14 -0700
-From: Scott Wood <scott@broadlink.com>
-MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: pcmcia-cs on RPX (MPC850)?
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v0401011ab3b41fd01347@power.elec.kitami-it.ac.jp>
+In-Reply-To: <19990715184120.A7216@drow.res.cmu.edu>
+References: <99071600025900.06989@ns1102.munich.netsurf.de>; from Franz
+ Sirl on Thu, Jul 15, 1999 at 11:57:13PM +0200
+ <4.2.0.58.19990715163648.05778290@mail.lauterbach.com>
+ <99071600025900.06989@ns1102.munich.netsurf.de>
+Date: Fri, 16 Jul 1999 08:31:28 +0900
+To: linuxppc-dev@lists.linuxppc.org
+From: "T.Ueda" <ueda@power.elec.kitami-it.ac.jp>
+Subject: Solved! Fortran call from C on LinuxPPC-R5
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anyone know if there is a version of pcmcia-cs that works on the RPX Lite (MPC850 CPU)?  I have tried compiling sources (ver.
-3.0.9) but it generates an error that no bus architectures are defined (MPC850 has neither ISA nor PCI, has own Processor & I/O
-busses and PCMCIA in the chip).
+Thanks all,
+The problem has been solved!
+
+I had an easy mistake, prototype declaration.
+I have added:
+> int f2_(int *x);
+> float f22_(int *x);
+> void f3_(int *x, int *y);
+> void f33_(int *x, float *y);
+
+Tac@Japan
 
 
--- 
-+---------------------+----------------------+
-|     Scott Wood      |   Systems  Engineer  |
-|=====================+======================|
-|           BroadLink Communications         |
-+--------------------------------------------+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
