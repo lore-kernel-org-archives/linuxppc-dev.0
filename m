@@ -1,48 +1,54 @@
-Message-ID: <C08678384BE7D311B4D70004ACA371050B763521@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Roland Dreier'" <roland@topspin.com>,
-	"Kerl, John" <John.Kerl@Avnet.com>
+To: "Kerl, John" <John.Kerl@Avnet.com>
 Cc: "'Jerry Van Baren'" <vanbaren_gerald@si.com>,
 	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
 	"'laitingwai@yahoo.com'" <laitingwai@yahoo.com>
-Subject: RE: Can I run linux without a file system?
-Date: Fri, 21 Jun 2002 14:27:11 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: Can I run linux without a file system? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 21 Jun 2002 14:17:29 PDT."
+             <C08678384BE7D311B4D70004ACA371050B76351E@amer22.avnet.com>
+Date: Fri, 21 Jun 2002 23:28:49 +0200
+Message-Id: <20020621212854.C6F551030A@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-cp -a --- well, you learn something every day.
-Guess I can go home now. :)
+Dear Karl,
 
-Thx.
+in message <C08678384BE7D311B4D70004ACA371050B76351E@amer22.avnet.com> you wrote:
+>
+> My filesystem is 5.7 MB uncompressed.  And, for me
+> (sorry Wolfgang!) I think that *is* minimal.  Well,
+> not "minimal" in the sense of "as small as humanly
+> possible", but at least "miniature" -- compared to
+> more than 1000 MB for my desktop Linux host.  Our board
+> isn't big: it has 16 MB of flash & 64 MB of RAM,
+> can serve up telnet sessions & web pages, etc., and
+
+Well, that's about what SELF contains -  which  takes  about  2.2  MB
+uncompressed, 830 kB compressed.
+
+> *	One doesn't just make a zip or .tgz file; rather,
+> 	one must must make a filesystem structure per se,
+> 	that Linux on the PPC board can mount.
+
+There are patches out there that can load a .tgz file into a  ramdisk
+upon boot, so instead a ramdisk image you can load a tarball.
+
+> *	I could bulk-copy (cp -R) from $xroot to the
+> 	filesystem image, *but* you can't cp around the
+> 	files in /dev.  The script below is hackish
+
+You can. RTFM. Pay attention to options like '-a' or '-R'.
 
 
------Original Message-----
-From: Roland Dreier [mailto:roland@topspin.com]
-Sent: Friday, June 21, 2002 2:26 PM
-To: Kerl, John
-Cc: 'Jerry Van Baren'; 'linuxppc-embedded@lists.linuxppc.org';
-'laitingwai@yahoo.com'
-Subject: Re: Can I run linux without a file system?
-Importance: High
+Wolfgang Denk
 
-
->>>>> "John" == John Kerl <Kerl> writes:
-
-    John> * I could bulk-copy (cp -R) from $xroot to the filesystem
-    John> image, *but* you can't cp around the files in /dev.  The
-    John> script below is hackish in that I list out all the
-    John> subdirectories in $xroot except /dev and copy them, then
-    John> populate /dev using the mkdevs script (included after
-    John> mkramdisk).  (It would be more elegant to use find with grep
-    John> -v /dev.)
-
-cp -a works like cp -R except it will copy /dev and symlinks properly.
-
-Best,
-  Roland
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"If you can, help others. If you can't, at least don't hurt  others."
+- the Dalai Lama
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
