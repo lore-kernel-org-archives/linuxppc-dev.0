@@ -1,48 +1,34 @@
-Subject: Re: New TiPB - PCMCIA settings
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: George Staikos <staikos@kde.org>,
+Date: Tue, 19 Nov 2002 17:48:15 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: "Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1037695549.3241.479.camel@thor>
-References: <1037695549.3241.479.camel@thor>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 19 Nov 2002 10:18:13 +0100
-Message-Id: <1037697493.1624.140.camel@zion>
-Mime-Version: 1.0
+Subject: RE: Unexpected sleep on old iBook
+In-Reply-To: <2C5637A6A7CE844EA3C0A94565479F5275A2E2@dest-as20-002.int.bauer-partner.com>
+Message-ID: <Pine.LNX.4.33.0211191743560.11419-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2002-11-19 at 09:45, Michel Dänzer wrote:
->
-> On Die, 2002-11-19 at 00:29, George Staikos wrote:
+> > The kernel will never trigger a sleep by itself. Only
+> > pmud or pbbuttonsd may. You will want to look at those logs or
+> > track an eventual bug in there.
 > >
-> > What doesn't work right now:
-> > - dmasound is aweful (lots of clicking and sounds bad)
+> > Ben.
 >
-> With a current benh kernel? Do the latest TiBooks have different sound
-> hardware again?
+> OK, I'll have a look at the pmud code and come back later.
 
-According to the device-tree, it seems to be a snapper (tas3004),
-maybe we don't set some i2s registers properly, I don't know.
-The device-tree also imply that it supports 2 sample rates,
-it's possible that the sample rate or format on i2s side doesn't
-match what is configured in the texas chip.
+Please try running pmud with the -s or -S flag (signal init on power low)
+and take note of the battery power level readings. I suspect the kernel
+does return erroneous power readings on occasion, causing pmud to trigger
+sleep. I've not been able to reproduce this on my Lombard Powerbook -
+other users (iBook IIRC) report the battery power suddenly dropping to
+zero from as much as 80%. I'm currently trying to collect more information
+on this new feature.
 
-> > - video issues in XFree86 and fbdev, along with sleeping
-> >     - closing the screen causes lots of garbling on the screen.
->
-> Sleep doesn't even work with the 7500 Mobility yet, let alone the 9000
-> Mobility. Otherwise, people have reported moderate success with radeonfb
-> from the current benh tree and my DRI snapshot Debian packages.
-
-The remaining problem seem to be the same as desktop r9000's with ADC
-connector, that is a palette issue. According to Ani, the DACs are
-physical (that is, regardless of CRTC1 or 2 usage, the DACs for each
-output is fixed, and we may not be configuring the palette in the
-proper one).
-
-Ben.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
