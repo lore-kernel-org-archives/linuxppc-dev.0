@@ -1,43 +1,36 @@
-Subject: Re: [PATCH] ibm ocp gpio
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-To: andrew may <acmay@acmay.homeip.net>
-Cc: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>,
-	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Armin Kuster <akuster@mvista.com>
-In-Reply-To: <20020521090819.G9190@ecam.san.rr.com>
-References: <20020520182657.B17318@ecam.san.rr.com>
-	<3CEA0F45.BDBBA25@etx.ericsson.se>  <20020521090819.G9190@ecam.san.rr.com>
-Content-Type: text/plain
-Date: 21 May 2002 18:28:41 +0200
-Message-Id: <1021998521.7266.46.camel@swb11>
+Date: Tue, 21 May 2002 10:03:40 -0700
+From: Matt Porter <porter@cox.net>
+To: "Curry, Diane" <dcurry@infiniswitch.com>
+Cc: "Linuxppc Newsgroup (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 405GP TLBHI "E" field
+Message-ID: <20020521100340.A17617@home.com>
+References: <3D296C067098F149B11A8F4FC37C054606F4E8@EXVS1.ops.infiniswitch.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D296C067098F149B11A8F4FC37C054606F4E8@EXVS1.ops.infiniswitch.com>; from dcurry@infiniswitch.com on Tue, May 21, 2002 at 10:04:21AM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2002-05-21 at 18:08, andrew may wrote:
+On Tue, May 21, 2002 at 10:04:21AM -0400, Curry, Diane wrote:
+>
+> Hello,
+>   I'm running 2.4.14pre3 on a custom ppc405GP board that has a little-endian device
+> on the peripheral bus.  I've modified the finish_tlb_load code path to recognize the
+> physical address of the device and set the "E" bit in the tlb entry for the page.
+> The driver and device work fine using this feature, but what I did in finish_tlb_load
+> is not a reasonable solution.  Is there a kernel interface callable from a driver
+> that can be used to specify the endianness of a memory range, and set the "E"
+> bit appropriately?  If not, are there any plans to implement this capability?
 
-> Well no it doesn't need to be in the driver, but you then are forced with
-> having every other driver doing there own timer to turn off the bit rather
-> than having one timer take care of them all. And do you really want to
+There are no plans (that I've ever heard of) to implement E bit support
+because it has no value in Linux.  Use read*/write* to access your little
+endian device.  PPC has lwbrx/stwbrx for a reason...use them...they are
+included for free.
 
-Well I don't think that would be a problem and if we are talking led's
-its not going to happen more than a few time a second you have to see
-the thing flash. I don't want more code in the kernel than absolutely
-necessary all it takes is one bug.
-
-If you really want to make something that can't be done other than in
-the driver it's some type of streaming mode and then you have to have
-timers to control the speed. Think any card that needs to program sram
-based FPGA it would probably go many times faster than todays interface.
-
-
-
+Regards,
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
-
+Matt Porter
+porter@cox.net
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
