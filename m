@@ -1,32 +1,27 @@
-To: Meriin Michael-BMM063 <Meriin@motorola.com>
-Cc: Estevam Fabio-R49496 <Fabio.Estevam@freescale.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Internal Address multiplexing for MCP852 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 01 Jun 2004 10:28:33 +0300."
-             <0F48024310E5D6118D200002B3A440DB08B07A20@zil01exm08.mcil.comm.mot.com>
-Date: Tue, 01 Jun 2004 14:25:19 +0200
-Message-Id: <20040601122524.61482C109F@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <40BC902D.7080804@ztec.com.br>
+Date: Tue, 01 Jun 2004 11:18:21 -0300
+From: iida <iida@ztec.com.br>
+MIME-Version: 1.0
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: driver SPI for MPC5200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <0F48024310E5D6118D200002B3A440DB08B07A20@zil01exm08.mcil.comm.mot.com> you wrote:
-> It is original code from u-boot-1.1.0,
-
-...which means it's obsolete.
-
-
-Best regards,
-
-Wolfgang Denk
+i am tring to find a driver SPI for MPC5200.
+In  linuxppc-2.4.25-denx
+there is cpm_spi.c in arch/ppc/8260_io
+It can be used in mpc5200 ?
+Or what i have to modify to use in mpc5200
+Thanks
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"The algorithm to do that is extremely nasty. You might want  to  mug
-someone with it."                   - M. Devine, Computer Science 340
+Atenciosamente,
+Renato Iida
+Z Tecnologia em Comunicação
+www.ztec.com.br
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
