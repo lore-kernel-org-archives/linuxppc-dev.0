@@ -1,26 +1,30 @@
-Date: Thu, 22 Jul 2004 12:48:10 +0200
-From: Guido Guenther <agx@sigxcpu.org>
-To: Rob Weir <rweir@ertius.org>
+Subject: Re: pmdisk infrastructure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guido Guenther <agx@sigxcpu.org>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pmdisk oops(?) on g4 ibook
-Message-ID: <20040722104810.GB11423@bogon.ms20.nix>
-References: <20040701041703.GH27929@ooder.ertius.org> <20040716074152.GC3698@bogon.ms20.nix> <20040716082310.GB4608@ooder.ertius.org> <20040716092003.GE3698@bogon.ms20.nix> <20040716094049.GC4608@ooder.ertius.org>
+In-Reply-To: <20040712065951.GB9536@bogon.ms20.nix>
+References: <20040712065951.GB9536@bogon.ms20.nix>
+Content-Type: text/plain
+Message-Id: <1090506345.2003.31.camel@gaston>
 Mime-Version: 1.0
-In-Reply-To: <20040716094049.GC4608@ooder.ertius.org>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 22 Jul 2004 10:25:46 -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jul 16, 2004 at 07:40:49PM +1000, Rob Weir wrote:
-> I do a dist-upgrade against sid every few days, but I haven't changed
-> the kernel in weeks. Hm...I'm using your 2.6.7-rc3 pmdisk patch
-> against 2.6.7 itself, maybe I should just update to your 2.6.7 one and
-> 2.6.8-rcX before bothering you further...
+On Mon, 2004-07-12 at 02:59, Guido Guenther wrote:
+> Hi,
+> the attached patch adds the infrastructure needed for pmdisk on ppc.
+> Most of it was done by Benjamin with some modifications by me. These are
+> the parts that don't affect anything else. The full patch is here:
+>  http://honk.physik.uni-konstanz.de/~agx/linux-ppc/kernel/pmdisk-2.6.7.diff
+> Patch is against 2.6.7 but applies without problems against 2.6.7-bk20.
+> Please apply,
+>  -- Guido
 
-Just for completeness: we tracked this down do be CONFIG_PREEMPT
-related. Without that it works fine on 2.6.8-rc2.
-Cheers,
- -- Guido
+Your URL doesn't work ...
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
