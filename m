@@ -1,31 +1,83 @@
-Subject: Re: Error in compiling 2.4.18 kernel for PPC
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-To: gopi@india.tejasnetworks.com
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	anil@india.tejasnetworks.com
-In-Reply-To: 
-	<Pine.LNX.4.21.0304290542560.27871-100000@localhost.localdomain>
-References: <Pine.LNX.4.21.0304290542560.27871-100000@localhost.localdomain>
-Content-Type: text/plain
-Date: 29 Apr 2003 15:50:54 +0530
-Message-Id: <1051611654.9742.16.camel@omyx>
-Mime-Version: 1.0
+Message-ID: <001401c30e45$ba674c10$370da8c0@aman>
+From: "Aman" <aman@mistralsoftware.com>
+To: "Aman" <aman@mistralsoftware.com>,
+	"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+References: <004e01c30db8$10b3d3b0$370da8c0@aman>
+Subject: Re: Shell prompt - Problem Solved
+Date: Tue, 29 Apr 2003 17:21:53 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Seems like you did not do an mrproper before starting cross compilation.
-try that.
+Hi All
 
-On Tue, 2003-04-29 at 11:22, gopi@india.tejasnetworks.com wrote:
+The echoing of received characters  got disabled, when I disable the shell
+prompt. I used the command "stty echo -F /dev/ttyS0" to enable the echo of
+the received characters
+
+Regards
+Aman
+
+----- Original Message -----
+From: "Aman" <aman@mistralsoftware.com>
+To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Tuesday, April 29, 2003 12:27 AM
+Subject: Shell prompt - Command not visible
+
+
 >
->   We are trying to compile kernel 2.4.18 for ppc(&mbxboard) with
-> gcc(cross compiler version 2.95.2)
+> Hi All
 >
-> Compilation breaks with the following error.
-> -----------------------------------------------
-> In file included from /opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/linux/mm.h:4,
->                  from /opt/hardhat/devkit/ppc/8xx/lib/gcc-lib/powerpc-hardhat-linux/2.95.2/../../../../powerpc-hardhat-linux/include/asm/pgtable.h:7,
+> To enable/ disable the shell prompt in linuxppc for IBM 440GP, I wrote two
+> script files. They are as follows
+>
+> /**********************************************************************/
+> /* enable_cli.sh: This script is to enable the shell prompt */
+>
+> grep -v 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
+> /dev/console' /etc/inittab > inittab.tmp
+> echo 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
+/dev/console'
+> >> inittab.tmp
+> mv inittab.tmp /etc/inittab
+> init q
+> /**********************************************************************/
+> /*disable_cli.sh: This script is to disable the shell prompt */
+>
+> grep -v 'sh:123:respawn:/bin/sh < /dev/console > /dev/console 2>
+> /dev/console' /etc/inittab > inittab.tmp
+> mv inittab.tmp /etc/inittab
+> init q
+> /**********************************************************************/
+>
+> To enable shell prompt ,  I give the command "sh enable_cli.sh, to disable
+> the shell prompt "sh disable_cli.sh"
+>
+> First time things work fine ie enable/disable shell prompt.When enabled,
+in
+> the shell prompt I can execute the command from the shell prompt. If I
+> disable the shell prompt and enable for the second time, I get the prompt
+> and I can execute command in the prompt, however the commands I type on
+the
+> prompt is not visible.
+> I type the enter key continuously I get the shell prompt like this
+> sh-2.05a#  sh-2.05a#   sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a#
+sh-2.05a#
+> sh-2.05a# sh-2.05a# sh-2.05a#  sh-2.05a#   sh-2.05a#  sh-2.05a#  sh-2.05a#
+> sh-2.05a#  sh-2.05a#  sh-2.05a# sh-2.05a# sh-2.05a#  sh-2.05a#   sh-2.05a#
+> sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a#  sh-2.05a# sh-2.05a#
+>
+> Can anybody help me in solving this issue
+>
+> Regards
+> Aman
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
