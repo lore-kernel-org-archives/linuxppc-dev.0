@@ -1,26 +1,31 @@
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: "'Mailing List: linuxppc-dev'" <linuxppc-dev@lists.linuxppc.org>
-Subject: about small dhcp client/server and http client/server
-Date: Wed, 31 Dec 2003 10:44:50 +0800
-Message-ID: <000101c3cf48$15322a70$b702a8c0@newrock2>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-reply-to: <20031230184951.94F07C12DD@atlas.denx.de>
+Subject: RE: Oops on core dumping
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Whitney, John" <John.Whitney@timesys.com>
+Cc: Vincent Bernat <bernat@free.fr>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Paul Mackerras <paulus@samba.org>
+In-Reply-To: <3D848382FB72E249812901444C6BDB1D1D189F@exchange.timesys.com>
+References: <3D848382FB72E249812901444C6BDB1D1D189F@exchange.timesys.com>
+Content-Type: text/plain
+Message-Id: <1072840969.730.3.camel@gaston>
+Mime-Version: 1.0
+Date: Wed, 31 Dec 2003 14:22:50 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi All,
+On Wed, 2003-12-31 at 03:05, Whitney, John wrote:
+> Vincent,
+>
+> This looks like the same problem (application core dumps, caused in dump_fpu()) that I posted a patch for last week.  Look in the archives for my solution.  (basically, dump_fpu() is getting a NULL "regs" argument, and then referencing off of it.)
 
-I searched small dhcp client/server and http client/server on www.google.com. so many information to be chose. udhcp,dhcpcd-1.3.22-pl4, .... boa, wget,....
+As you may have seen in my comment, this doesn't work on SMP as
+last_task_used_math isn't used there.
 
-But, does anybody give me some suggestion which is good for choice? My system is run Linux kernel 2.4 based on MPC8260.
+I suppose we could unconditionally use "current" in this case
+though...
 
-I think udhcp and boa may be good for embedded system. How do you think?
+Ben.
 
-Best Regards,
-John
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
