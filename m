@@ -1,33 +1,38 @@
-Message-Id: <200008032302.TAA29224@mal-ach.watson.ibm.com>
-To: Thomas Graichen <graichen@innominate.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: shifts on 64bit ints 
-In-Reply-To: Message from Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-   of "03 Aug 2000 22:38:06 GMT." <news2mail-8mcs8e$kdj$2@mate.bln.innominate.de>
-Date: Thu, 03 Aug 2000 19:02:31 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Thu, 3 Aug 2000 18:33:18 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org,
+        Iain Sandoe <iain@sandoe.co.uk>
+Subject: Re: rtc again...
+In-Reply-To: <Pine.HPX.4.10.10008031133480.9070-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000803182949.650C-100000@ofey.earthlink.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	First, I would suggest that you use a printf format like "%08x"
-for better legibility.
+On Thu, 3 Aug 2000, Gabriel Paubert wrote:
 
-	Second, I tried your example with gcc-2.95.2 on PowerPC AIX
-gcc-2.95.2 on PowrePC Linux, and a recent development snapshot of GCC with
-various optimization levels (you did not specify what options you used to
-compile the testcase) and I consistently saw the following output:
+> ===== arch/ppc/kernel/pmac_time.c 1.2 vs 1.5 =====
+> --- 1.2/arch/ppc/kernel/pmac_time.c	Mon Jun 19 19:59:36 2000
+> +++ 1.5/arch/ppc/kernel/pmac_time.c	Mon Jul 31 11:28:27 2000
+[...]
+>  int pmac_set_rtc_time(unsigned long nowtime)
+>  {
+> -	return 0;
+> +#ifdef CONFIG_ADB
+> +	struct adb_request req;
+> +#endif
+> +	nowtime += RTC_OFFSET - sys_tz.tz_minuteswest * 60;
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This needs to be changed to
 
-Mask 29 is 0x0000000020000000 - 0xffffffffdfffffff
-Mask 30 is 0x0000000040000000 - 0xffffffffbfffffff
-Mask 31 is 0x0000000080000000 - 0xffffffff7fffffff
-Mask 32 is 0x0000000100000000 - 0xfffffffeffffffff
-Mask 33 is 0x0000000200000000 - 0xfffffffdffffffff
-Mask 34 is 0x0000000400000000 - 0xfffffffbffffffff
++	nowtime += RTC_OFFSET - sys_tz.tz_minuteswest * 60 + (sys_tz.tz_dsttime? 3600: 0);
 
-	You appear to have a problem, but it is local to your system
-(could be toolchain or C library as well).
 
-David
+Takashi Oe
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
