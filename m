@@ -1,37 +1,53 @@
-From: Cort Dougan <cort@fsmlabs.com>
-Date: Sun, 15 Dec 2002 17:41:20 -0700
+Date: Mon, 16 Dec 2002 12:43:36 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@samba.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
+Cc: Cort Dougan <cort@fsmlabs.com>,
+	Tom Rini <trini@kernel.crashing.org>,
 	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Support for Arctic platform (405LP based)
-Message-ID: <20021215174120.E30568@duath.fsmlabs.com>
+Message-ID: <20021216014336.GF4981@zax.zax>
 References: <20021213043628.GI21319@zax.zax> <20021212215126.V23952@duath.fsmlabs.com> <20021213151808.GI19456@opus.bloom.county> <20021215121526.M30941@duath.fsmlabs.com> <15869.5023.549830.146265@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15869.5023.549830.146265@argo.ozlabs.ibm.com>; from paulus@samba.org on Mon, Dec 16, 2002 at 10:43:27AM +1100
+In-Reply-To: <15869.5023.549830.146265@argo.ozlabs.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-} Now that Marcelo is using BK, what I would really like to do is to
-} kill both the linuxppc_2_4 and linuxppc_2_4_devel trees and move to a
-} tree that is a child of Marcelo's linux-2.4 tree.
+On Mon, Dec 16, 2002 at 10:43:27AM +1100, Paul Mackerras wrote:
+>
+> Cort Dougan writes:
+>
+> > How about killing the _2_4_devel tree?  When I created it I want it to be a
+> > playground for stabilizing then moving things over to 2_4 failry quickly.
+> > It seems to have become the defacto "want board X, you better use
+> > _2_4_devel" tree.
+>
+> Now that Marcelo is using BK, what I would really like to do is to
+> kill both the linuxppc_2_4 and linuxppc_2_4_devel trees and move to a
+> tree that is a child of Marcelo's linux-2.4 tree.
+>
+> > When I went looking for a working 4xx tree recently I had to write a script
+> > that would go through the last year of changesets in _2_4 and _2_4_devel
+> > and try to build them then stick the result into a file.  That ran for 7
+> > days on a 2.0Ghz Dual x86.  Then, that only gave me a list of building
+> > trees.  Knowing that there's only 1 tree would be much easier!
+>
+> 4xx in particular is a problem because I'm not convinced about the
+> approach that has been taken for some of the 4xx infrastructure.  The
+> ocp stuff seems a lot more complicated than it needs to be, for
+> instance.  There is no particular reason that I can see why the 8xx
+> stuff in 2_4_devel shouldn't go to Marcelo for 2.4.21.
 
-I've been moving patches from the _2_4 and _2_4_devel ppc trees over to the
-marcelo tree.  I've love to see the switch so I don't have to do that!
+Well, it sounds as if linuxppc_2_4_devel is the place to commit the
+Arctic2 code.  Killing that tree off, by whatever means, sounds like a
+very good idea, but not actually something that committing my code
+elsewhere would help to accomplish.
 
-} 4xx in particular is a problem because I'm not convinced about the
-} approach that has been taken for some of the 4xx infrastructure.  The
-} ocp stuff seems a lot more complicated than it needs to be, for
-} instance.  There is no particular reason that I can see why the 8xx
-} stuff in 2_4_devel shouldn't go to Marcelo for 2.4.21.
-
-How about a linuxppc_2_4 that is a child of Marcelo's.  Then a
-linuxppc_2_4_4xx (and what have you) that is a child of the linuxppc_2_4
-tree?  It would make integration much much easier.  Right now the
-diff between _2_4 and _2_4_devel seems to be non-monotonically increasing.
-I think it would be hard to arrest that growth without switching to a
-Macelo based tree.
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
