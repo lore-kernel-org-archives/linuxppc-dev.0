@@ -1,48 +1,18 @@
-Subject: Re: Max swap size ?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.33.0112041131460.28164-100000@blues.wcg.mcgill.ca>
-References: <Pine.LNX.4.33.0112041131460.28164-100000@blues.wcg.mcgill.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 04 Dec 2001 19:37:23 +0100
-Message-Id: <1007491043.21631.28.camel@pismo>
-Mime-Version: 1.0
+Message-Id: <200112041857.NAA05795@missioncriticallinux.com>
+From: mod+linuxppc-dev@MissionCriticalLinux.com
+To: linuxppc-dev@lists.linuxppc.org
+Subject: GEVB serial.c botch in current sources
+Date: Tue, 04 Dec 2001 13:57:57 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2001-12-04 at 17:35, Christopher Murtagh wrote:
->
->  Thanks for the replies.
->
-> On 4 Dec 2001, Michel Dänzer wrote:
-> >That used to be the case before kernel 2.2 IIRC. Nowadays the limit is
-> >in the gigabytes. FWIW I'm using a 400 meg swap partition without
-> >problems.
->
->  Ok, well that's good to hear.
->
-> >Are you sure it only hit swap then? I can't remember ever seeing active
-> >but completely unused swap space, even when RAM usage was low.
-> >
-> >The bottom line is yes, you likely have another problem.
->
->  This isn't though.. :-(
->
-> Mem:  1024100K av,  774636K used,  249464K free,  0K shrd,  179708K  buff
-> Swap:  524280K av,       0K used,  524280K free             490400K  cached
->
->  this is what my machine is like at the moment. So, from what you are
-> saying, my problem lies elsewhere (ie. is not swap *size*), but is likely
-> swap related?
+The build breaks thus when config'd for Galileo EVB:
 
-Or maybe it's related to the huge amount of RAM you have, but others
-will know better.
+gcc -D__KERNEL__ -I/usr/src/linuxppc2.4.17pre1.20011203/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring    -c -o serial.o serial.c
+In file included from /usr/src/linuxppc2.4.17pre1.20011203/include/asm/serial.h:15,
+                 from serial.c:183:
+/usr/src/linuxppc2.4.17pre1.20011203/include/asm/platforms/ev64260_serial.h:20: ../../arch/ppc/platforms/ev64260.h: No such file or directory
 
-
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
