@@ -1,8 +1,8 @@
-Message-ID: <004701c11341$43e704a0$8021690a@huawei.com>
-From: "machael thailer" <dony.he@huawei.com>
+From: "Naushit Sakarvadia" <Naushit_Sakarvadia@quintum.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: About system calls question...
-Date: Mon, 23 Jul 2001 14:32:36 +0800
+Subject: 8 Bit Mem read with gdb
+Date: Mon, 23 Jul 2001 11:10:13 -0500
+Message-ID: <000d01c11391$f519d0e0$7802a8c0@QUINTUMCHI.COM>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,38 +10,25 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a question about how to use system calls...
-I notice that in init/main.c=>init() functions:
+Hello All,
 
-init(void * unused)
-{
-    ....
-if (open("/dev/console", O_RDWR, 0) < 0)
-  printk("Warning: unable to open an initial console.\n");
+This is regarding PowerPC 8260 gdb.
 
- (void) dup(0);
- (void) dup(0);
+My question is how do I tell gdb to read a byte only  while reading
+0xfff00100..0xfff00500 address range.
+While  checking mem I use  "x /b  0xfff00100" and it works fine , but while
+I do unassamble from this address it tries to read a word from this
+location, and as a result the first byte is repeated 4 times.It is 8 bit
+wide flash mem,so
+you cant read a word at a time.
 
- /*
-  * We try each of these until one succeeds.
-  *
-  * The Bourne shell can be used instead of init if we are
-  * trying to recover a really broken machine.
-  */
+So I want to tell gdb to do byte wide reading while doing unassambling and
+all other operations.
 
- if (execute_command)
-  execve(execute_command,argv_init,envp_init);
- execve("/sbin/init",argv_init,envp_init);
-......
-}
+Please reply me personally, I am not on gdb mailing list.
 
-My question is since "open" "dup" and "execve" are system calls, they should
-be called  only in user process instead of in kernel space.
-
-Why can they be used in this way here?
-Thanks in advance!
-
-machael thailer
+Thanks
+Naushit
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
