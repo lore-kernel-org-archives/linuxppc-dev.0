@@ -1,34 +1,39 @@
-Message-Id: <20010401213009.Postino-020381@smtp01.highway.ne.jp>
-Date: Sun, 1 Apr 2001 21:30:09 +0900
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: Fwd: CPU features
-In-Reply-To: <20010331171433.11295@smtp.wanadoo.fr>
-References: <20010401003513.Postino-002933@smtp01.highway.ne.jp>
- <20010331171433.11295@smtp.wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15047.10057.566972.215778@ipa.ne.mediaone.net>
+Date: Sun, 1 Apr 2001 09:04:09 -0400
+From: R Shapiro <reshapiro@mediaone.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: new aic7xxx driver DOES NOT WORK with cdrecord
+In-Reply-To: <20010331171414.19066@smtp.wanadoo.fr>
+References: <15045.61890.58237.453470@ipa.ne.mediaone.net>
+	<20010331171414.19066@smtp.wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Benjamin Herrenschmidt writes:
+ > The new driver is written & maintained by Justin T. Gibbs
 
-> Please tell me if the dual G4 kicks properly the other CPU as
-> I changed the way it's done but didn't have a chance to test my
-> new code yet.
 
-I tried your tree as SMP-kernel which has also spin_lock problem.
-All recent kernel sources have spin_lock problem.
+I just got a reply from him:
 
-When I used the patch,The kernel boot stop displaying
-at "smp_core99_kick_cpu".
+ > The version in 2.4.3 is, unfortunately, a bit old.  Linus didn't
+ > bother to apply the patches I recommended.
 
-The patch here is
-http://lists.linuxppc.org/listarcs/linuxppc-dev/200103/msg00259.html
 
-Kaoru
+
+The current version of this driver is 6.1.8.  The version in
+ppc.linuxcare.com::linux-pmac-devel seems to be 6.1.5, which I'm
+assuming is the same as in the kernel.org 2.4.3.  I'll be trying 6.1.8
+later today.  It's available from
+
+ http://people.freebsd.org/~gibbs/linux/
+
+
+--
+reshapiro@mediaone.net
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
