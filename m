@@ -1,61 +1,37 @@
-Message-ID: <394BB209.E711286D@embeddededge.com>
-Date: Sat, 17 Jun 2000 13:14:49 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <004f01bfd926$d25edc40$dc52df8d@oslo>
+From: "SangTae Ha" <stha@postech.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to initialize SMC2 for another console port  ?
+Date: Sun, 18 Jun 2000 22:12:14 +0900
 MIME-Version: 1.0
-To: john zhan <r3587@sina.com>
-CC: hugh.mcdonald@nokia.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SCC used for WAN connection
-References: <4FC68B779807D31191B10008C7731C4D579921@meeis01nok> <023901bfd7f1$96254ba0$d0c809c0@p2kasvr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-john zhan wrote:
+Hi all.
 
-> me too.  in fact,   also, I need generic x.25 running on it.
+Since my team have purchased HIOX board for RPXLite, me and my friend working on HIOX SMC2 port on linux.
 
-So, write it.
+My question is ...
 
+Are there any code for using HIOX SMC2 port as a secondary RS232 serial port (/dev/ttyS1) on linux?
 
->
-> >    What is needed is a new version of 8xx_io/uart.c that sets up and drives
+I tried to set BCSR register, But I couldn't get the output (/dev/ttyS1).
 
-No, what you want is an SCC synchronous driver. Period.  Don't put
-stuff like this in the uart driver, it is a big enough mess the
-way it is.  I am close to having a really configurable uart driver,
-so you can select what SCC/SMCs you want.  The uart driver is a uart
-driver, not an SCC driver.
+/* uart.c */
 
-We will probably have to create some other functions for managing the
-baud rate generators, but for synchronous I/O that clock should be
-provided externally.
+#if 1
+        /* This enables HIOX Extension Board, I think */
+         *((uint *)0xfac00000) = ((uint)0x380F3C00);
 
-> > other possible solutions....
-> I think we can  work together .
-> If you like,let's discuss it later , privately.
+#endif
 
-I would strongly suggest not going off and making a big mess, then
-sending me a patch and hope it gets applied to the kernel sources.
+We use MontaVista linux-2.2.13-7.
 
-I have done lots of synchronous SCC, HDLC, and other things as custom
-proprietary drivers for many customers.  Typically, the driver does
-very little, just buffers the data for mmap()'ed applications that
-do the real work.  I will see if I can provide some framework from
-past work I have done, but some of these folks are quite protective
-of this.
+Thanks in advance.
 
-These drivers are not hard to write, and you can use examples from
-Motorola's NetComm site to get started.  You may need to do some
-uncached memory buffering tricks in Linux or just use cache management
-functions to ensure cache coherency.
-
-Don't use old silicon, like before Rev. C 860.  Most of these functions
-don't work as advertised on SCC3 and SCC4, only on SCC1 and SCC2.  Make
-sure you pay close attention to the external hardware, as clock and
-data transition edges are criticaly to this working correctly.
-
-
-	-- Dan
+Have a nice day.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
