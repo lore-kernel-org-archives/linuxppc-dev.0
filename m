@@ -1,30 +1,56 @@
-Message-ID: <3C5AC401.6030607@embeddededge.com>
-Date: Fri, 01 Feb 2002 11:36:17 -0500
-From: Dan Malek <dan@embeddededge.com>
+From: "Bob Piatek" <bobtek@fishcamp.com>
+To: "'GOTZON ASTONDOA'" <gastondoa@fagorautomation.es>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Can not load modules
+Date: Fri, 1 Feb 2002 09:09:04 -0800
+Message-ID: <000501c1ab43$26e64bf0$a2341204@P4>
 MIME-Version: 1.0
-To: Peter Desnoyers <pdesnoyers@chinook.com>
-Cc: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: FEC driver multicast patch
-References: <6B546A602AD2D211BFF00008C7A4288905843FC6@hrtades2.atea.be> <3C5ABCAC.9090102@embeddededge.com> <3C5AC192.E0500B87@chinook.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <CA78D1B723D8D411AF0300508BDCF74F8C1366@NTCORREO>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Peter Desnoyers wrote:
+I had a similar problem.  It turned out to be my development system
+(yellowdoglinux) had a problem with the modutils package.  I loaded the
+latest version of modutils from:
+
+ftp://ftp.fi.kernel.org/pub/linux/utils/kernel/modutils/v2.4/
 
 
-> I think he took your suggestion to heart.  fec_mulicast_calc_crc(char
-> *pAddr) is a straightforward software implementation of the bit-by-bit
-> CRC32 algorithm.
+That fixed it.
 
-Apologies.  I just quickly looked at and assumed it was still using SCCs.
+Bob
 
-Thanks.
+fishcamp engineering
+105 W. Clark Ave
+Orcutt, CA  93455
+TEL: 805-937-6365
+FAX: 805-937-6252
 
 
-	-- Dan
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf Of GOTZON
+ASTONDOA
+Sent: Friday, February 01, 2002 6:21 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Can not load modules
+
+
+
+  Hi,
+
+   In trying to instal a module on my embedded linuxPPC based custom
+board.
+It is a simple hello world module.
+   When i do insmod it says:
+
+		insmod: unresolved symbols printk
+
+   Can anybody help me?
+   Tahnk you very much in advance.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
