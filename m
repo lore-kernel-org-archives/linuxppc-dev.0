@@ -1,30 +1,43 @@
-From: Ryan Nielsen <ran@krazynet.com>
-Date: Thu, 19 Aug 1999 20:47:26 -0700
-To: Michel Lanners <mlan@cpu.lu>
-Cc: mj@ucw.cz, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Various PMac PCI patches
-Message-ID: <19990819204726.A82@gondolin.asf>
-References: <199908082034.WAA02973@piglet.cpu.lu>
+Date: Fri, 20 Aug 1999 01:04:45 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: string.h conflicting types warnings
+Message-ID: <19990820010445.A7322@them.org>
+References: <Pine.LNX.3.96.990819141202.8759P-100000@liberty.chnd1.az.home.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199908082034.WAA02973@piglet.cpu.lu>; from Michel Lanners on Sun, Aug 08, 1999 at 10:34:15 +0200
+In-Reply-To: <Pine.LNX.3.96.990819141202.8759P-100000@liberty.chnd1.az.home.com>; from Matt Porter on Thu, Aug 19, 1999 at 02:12:33PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
-> 2. I've hacked pmac_pcibios_fixup with a few changes:
+On Thu, Aug 19, 1999 at 02:12:33PM -0700, Matt Porter wrote:
 > 
-> - It now checks for PCI buses other than the first one, on all bridges.
-> This should help on the 7x00/8x00 machines (bandit and chaos host
-> bridges) as well as on the 9x00 (two bandit bridges; second bus would
-> be invisible up to now). If anyone has a 9x00, can  you test if this
-> works? For me it only detects one of two devices on bus 1....
- 
-It detects two out of two on mi 9600.
+> Hi,
+>                      
+> I'm working on a standalone driver and have been running into these
+> warnings lately.  Whilst compiling Mac-on-Linux I also got these
+> warnings as well.  Searching around I only found some netbsd folks
+> gettings these same warnings.  Anyone have an idea where this comes from? 
 
-isa_io_base is set to the address of bus 0 !
-so inl() and friends use wrong address for cards on bus 1.
+> /usr/include/linux/string.h:31: warning: conflicting types for built-in
+> function `memset'
+
+Easy.  Anything that is including linux/string.h should be a module -
+otherwise it needs to rearrange its choice of include files.  Any
+module should use the settings from the kernel makefiles, which
+include:
+ -mmultiple -mstring -ffixed-r2 -fno-builtins
+
+It's that last one you really want.
+
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
