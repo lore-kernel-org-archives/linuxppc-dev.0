@@ -1,41 +1,55 @@
-Date: Wed, 9 Apr 2003 08:22:23 -0700
-From: Matt Porter <porter@cox.net>
-To: luca gambazzi <luca.gambazzi@epfl.ch>
-Cc: Matt Porter <porter@cox.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on Force Computers CPCI-3750 eth drivers
-Message-ID: <20030409082223.C24217@home.com>
-References: <1049880169.3724.16.camel@shampoo.epfl.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1049880169.3724.16.camel@shampoo.epfl.ch>; from luca.gambazzi@epfl.ch on Wed, Apr 09, 2003 at 11:22:49AM +0200
+Message-ID: <036301c2fead$7d3aad70$3000a8c0@primag>
+From: "Mark Powell" <medp@primagraphics.co.uk>
+To: "Binh Nguyen" <binh@us.ibm.com>,
+	<linuxppc-embedded@lists.linuxppc.org>,
+	<linuxppc-users@lists.linuxppc.org>
+References: <OFA4C6E054.A1AC76DA-ON87256D02.00711FB1@us.ibm.com> <20030408233356.GC13256@zax> <20030408172421.A22476@home.com>
+Subject: Re: Ethernet Driver Needed for IBM PPC 405 (Codename Walnut)
+Date: Wed, 9 Apr 2003 16:34:20 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Apr 09, 2003 at 11:22:49AM +0200, luca gambazzi wrote:
-> Hi Matt
+On Wednesday, April 09, 2003 at 1:24 AM, Matt Porter wrote:
 >
-> I'm booting with the pcore kernel.
+> On Wed, Apr 09, 2003 at 09:33:56AM +1000, David Gibson wrote:
+> >
+> > On Tue, Apr 08, 2003 at 04:45:47PM -0400, Binh Nguyen wrote:
+> > >
+> > > I heard that some one has written an ethernet driver for the IBM PPC
+405
+> > > board for Linux some time ago.  The author  has seen  performance
+> > > improvement because the driver services interrupts in a better way.
+If
+> > > some one has a copy of the driver, would you please send it to
+> > > binh@us.ibm.com.  Also any tips on how to install the driver is
+> > > appreciated.  Thanks very much.
+> >
+> > The driver is included in the linuxppc_2_4_devel and linuxppc-2.4
+> > kernel trees.  You probably want to be using one of those trees in any
+> > case.
 >
-> the pcore_find_bridges function in pcore_pci.c recognize my card as a
-> 6750, but the 3750 uses a 21150 bridge and not a 21154.
+> He might be referring to a post here (in the last 6 months or so)
+> where the poster mentioned writing a replacement EMAC driver that
+> had better performance than the standard driver.  I can't seem to
+> locate the post at the moment, but perhaps somebody else remembers
+> and can find it in the archives.
 >
-> Do you know where can i find documentation to solve this problem?
-> and where I have to modify?
 
-Oh, I should have mentioned the shotgun alternative to waiting on docs
-from Force.  Assume that the 3750 uses cascade irqs 9-12 for all pci
-interrupts just like the 6750.  Try changing the 6750 tulip map_irq
-entry to be 9,11,12 and see if any work.
+Was it this one:
+"RE: Network performance loss when migrating to 2.4.18 on Walnut 4 05GP"
+http://lists.linuxppc.org/linuxppc-embedded/200303/msg00079.html
 
-BTW, saw your list of devices in the /proc/pci dump.  Looks like a
-fun project. :)
+I tried the patch mentioned (against MontaVista 2.1) and found a few %
+improvement, not as much as I was hoping.
 
-Regards,
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Mark Powell, Senior Software Engineer, Primagraphics Limited
+New Cambridge House, Litlington, nr.Royston, Herts, SG8 0SS, UK
+Tel. +44 1763 852222, Fax. 853324, http://www.primagraphics.co.uk
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
