@@ -1,16 +1,17 @@
-Return-Path: <Marc.Dietrich@ap.physik.uni-giessen.de>
-Received: from merkurneu.hrz.uni-giessen.de (merkurneu.hrz.uni-giessen.de
-	[134.176.2.3]) by ozlabs.org (Postfix) with ESMTP id 528862BDB5
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 01:08:08 +1100 (EST)
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-To: Christian <evilninja@gmx.net>
-Date: Tue, 4 Jan 2005 14:23:33 +0100
-References: <41D9FB86.1060407@gmx.net>
-In-Reply-To: <41D9FB86.1060407@gmx.net>
+Return-Path: <marvin24@gmx.de>
+Received: from mail.gmx.net (imap.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 33EDC2BDB5
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 01:09:27 +1100 (EST)
+From: Marc Dietrich <marvin24@gmx.de>
+To: Sebastian Heutling <sheutlin@gmx.de>
+Date: Tue, 4 Jan 2005 15:04:56 +0100
+References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
+	<200501031326.34477.marvin24@gmx.de> <41DA7E7A.3070901@gmx.de>
+In-Reply-To: <41DA7E7A.3070901@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Message-Id: <200501041423.34061.marc.dietrich@ap.physik.uni-giessen.de>
+Message-Id: <200501041504.57588.marvin24@gmx.de>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,58 +24,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Hallo Christian,
+Hallo Sebastian,
 
-thanks for your info. I was also a little confused by all these configs and 
-images ...
+Am Dienstag, 4. Januar 2005 12:31 schrieben Sie:
+> Hello Marc,
+>
+> Marc Dietrich wrote:
+> >Hi Christian,
+>
+> Erm ... I'm Sebastian ;-)
 
-So you are using netboot and it seems that when having a root-fs via nfs _no_ 
-disk driver is initialized even if it is compiled in (acording to your 
-config). Funny, didn't know that.
+ah! - sorry Sebastian, to many confusion in the last time...
 
-Sebastian just send me a mail with his bootlog, and later also some zImage url 
-I hope. He is running a 2.6.8 kernel and his kernel (scsi: sym2 2.1.18j) 
-seems to detect the hard disk but fails later due to the same scsi timeouts. 
-Luckily, he managed to install 2 IDE disks...
+> I am using a 2.6.8 (I was too lazy to patch & compile a 2.6.9 and wanted
+> to test 2.6.10 when it's (the sources) in debian/unstable).
+>
+> >Can you put a working zImage.prep somewhere on the web (<1.44 MB, so I can
+> >write it to a floppy disk)?
+>
+> I will do that and tell you later where you can download it.
+
+This may no longer be necessary, but see below.
+
+Acording to your log, your scsi drive also fails later, but boots from ide 
+(how did you managed to install the ide disks?).
+
+I posted a message to linux-scsi describing this problem. I guess the sym2 
+driver never worked on the PReP machines. I tried it also with 2.4 kernels. 
+
+So to summerize it: No one has a working Powerstack with 2.6 kernel and 
+booting from SCSI. I hope there will be some input from the scsi list.
+
+> >How does your boot.log looks like?
+>
+> Attached it.
+> Note that I use a Matrox MilleniumII gfx card and XFree4 runs fine
+> (without any crash) since I got a 2.6 kernel running (although I am not
+> using XFree because I use the Powerstack as a router/server which has no
+> Monitor).
+
+Yeah - I search so many times for a Millenium card on eBay. Now I got one for 
+EUR 1.00 but  it is in Germany, while I'm in France now for holidays :-(
+I also have a P9100 here, but it is not supported (yet?) under linux...
 
 Greetings
 
 Marc
-
-Am Dienstag, 4. Januar 2005 03:12 schrieben Sie:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> > anymore. but i'm building PReP kernel everyday, results and a config-file
-> > is here:
-> >
-> > http://www.nerdbynature.de/bits/sheep/latest-kernel/
->
-> sorry, it should read:
->
-> http://www.nerdbynature.de/bits/hal/daily/
->
-> > yes, i'll upload working zImage.prep + .config here:
-> >
-> > http://www.nerdbynature.de/bits/sheep/prep/
->
-> and: http://www.nerdbynature.de/bits/hal/daily/results/
->
-> >>>How does your boot.log looks like?
->
-> will show up in http://www.nerdbynature.de/bits/hal/daily/boot/
->
-> sorry for the confusion,
-> Christian.
-> - --
-> BOFH excuse #57:
->
-> Groundskeepers stole the root password
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.2.5 (GNU/Linux)
-> Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
->
-> iD8DBQFB2fuGC/PVm5+NVoYRAiCxAKC8B1L+FVw/5CoG3y7IpFVxpqzrgACfVSK7
-> gXQcGiHCfHg3vEabXHtaZaU=
-> =2cwH
-> -----END PGP SIGNATURE-----
