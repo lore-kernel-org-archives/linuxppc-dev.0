@@ -1,73 +1,127 @@
-Mime-Version: 1.0
-Message-Id: <p04330100b63b9e07574a@[192.168.0.1]>
-In-Reply-To: <200011060712.IAA00775@piglet.grunz.lu>
-References: <200011060712.IAA00775@piglet.grunz.lu>
-Date: Fri, 17 Nov 2000 22:12:31 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: whacked out 2.2.18pre21?
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-Id: <200011181831.TAA00710@piglet.grunz.lu>
+Date: Sat, 18 Nov 2000 19:31:35 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: controlfb and X (fixed)
+To: bob@kunk.jriver.com, bh40@calva.net,
+        Paul Mackerras <paulus@linuxcare.com.au>
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20001107212230.7256.qmail@kunk.jriver.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1804289383-974572302=:708"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Last week I called this "whacked out 2.2.18pre17?"
+--134458388-1804289383-974572302=:708
+Content-Type: TEXT/plain; charset=us-ascii
 
-I'm the one with the 6 cards in the PowerTowerPro, who can compile
-2.2.18preX (linux-pmac-stable from penguinppc.org or
-ppc.linuxcare.com or ppc.samba.org) but not boot it without a kernel
-panic. I know that some think I should remove cards, but I've been
-able to narrow things down a bit, and no longer do I think I have a
-BootX problem, and I'm not so sure this is a PCI issue (although
-maybe still).
+Hi all,
 
-Upgrading to BootX 1.2.2 didn't make a difference in any boot issues.
+Some time ago, there were reports of crashes with controlfb and 2.4
+kernels, while starting XF4.0.
 
-Always compiling the kernel for both video cards (imstt and matrox)
-finally allowed BootX to pay attn to its no-video checkbox. Problem
-solved.
+I've taken a look, and it seems that indeed the mmap code recently added
+to controlfb is to blame.
 
-Compiling without the "early BootX text" switch (or whatever that is)
-eliminated all my freezes at "booting..." Problem solved.
+Below is the patch that fixes the hanging box while starting X for me.
+It seems while implementing mmap() for 2.4 kernels in controlfb, I
+forgot to copy 2 lines :-((
 
-Next I will start removing cards :-(, but I am highly suspicious of
-the code involving the 2940UW card in the box. The -only- drives I
-have are 2 9G atlases connected to the 2940. All 2.2.17 kernels I've
-tried work fine. OTOH, every linux-pmac-stable 2.2.18preX kernel
-panics just as it is beginning to register (poll? discover?) the SCSI
-devices, at the same place where 2.2.17 properly recognizes the 2
-drives and the 2940.
+Ben and Paul, could you apply this patch to all your 2.4 / 2.5 trees? It
+also fixes the 7_spaces_instead_of_tab problem in the mmap() code ;-)
 
-I have the pertinent debug info (backtrace, other registers,
-System.map). Can I just post them here? I've never tried analyzing
-one of these things. From what little sense I can make of it, it sure
-looks like the panic has something to do with the aic7xxx code, or
-related code. Roughly speaking, just after the fd0 (floppy) message
-appears in the boot, I get :
+Cheers, happy hacking, and sorry for this bug :-)
 
-Machine check in kernel mode
-Caused by (from srr1): Unknown values in srr1
-<debug info>
-[kernel panic]
+Michel
 
-I'm compiling the kernel with default settings, other than including
-the matrox driver. How might I compile the kernel differently w.r.t.
-aic7xxx to try to nail this one down, if at all?
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Once during the 2.2.17 linux-pmac-stable series, I got exactly this
-srr1 error. I waited a couple of days and rsynced again and it was
-gone. I always assumed that was due to some obscure bug creeping in
-and then back out again. I feel in my bones this is the same
-situation. I've written to Paul a couple of times about this, but I'm
-sure to be low on his radar. Meanwhile, I rsync and try again each
-day, without luck. BTW, I've tried this same troublesome 2.2.18
-kernel on similar PowerTowerPro that I use and it works fine. That
-PTP doesn't have a 2940 card in it, but it doesn't have all the PCI
-slots filled either.
+--134458388-1804289383-974572302=:708
+Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Disposition: attachment; filename="2.4-control-mmap-fix.diff"
 
-Any and all ideas welcome.
+--- /mnt/r4/usr/src/linux-2.4.paul/drivers/video/controlfb.c	Thu Oct 19 03:36:07 2000
++++ linux-2.4.0-test10/drivers/video/controlfb.c	Sat Nov 18 19:23:10 2000
+@@ -338,38 +343,41 @@
+ static int control_mmap(struct fb_info *info, struct file *file,
+                        struct vm_area_struct *vma)
+ {
+-       struct fb_ops *fb = info->fbops;
+-       struct fb_fix_screeninfo fix;
+-       struct fb_var_screeninfo var;
+-       unsigned long off, start;
+-       u32 len;
+-
+-       fb->fb_get_fix(&fix, PROC_CONSOLE(info), info);
+-       off = vma->vm_pgoff << PAGE_SHIFT;
+-
+-       /* frame buffer memory */
+-       start = fix.smem_start;
+-       len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.smem_len);
+-       if (off >= len) {
+-               /* memory mapped io */
+-               off -= len;
+-               fb->fb_get_var(&var, PROC_CONSOLE(info), info);
+-               if (var.accel_flags)
+-                       return -EINVAL;
+-               start = fix.mmio_start;
+-               len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.mmio_len);
+-               pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE|_PAGE_GUARDED;
+-       } else {
+-               /* framebuffer */
+-               pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
+-       }
+-       start &= PAGE_MASK;
+-       vma->vm_pgoff = off >> PAGE_SHIFT;
+-       if (io_remap_page_range(vma->vm_start, off,
+-           vma->vm_end - vma->vm_start, vma->vm_page_prot))
+-               return -EAGAIN;
++	struct fb_ops *fb = info->fbops;
++	struct fb_fix_screeninfo fix;
++	struct fb_var_screeninfo var;
++	unsigned long off, start;
++	u32 len;
+
+-       return 0;
++	fb->fb_get_fix(&fix, PROC_CONSOLE(info), info);
++	off = vma->vm_pgoff << PAGE_SHIFT;
++
++	/* frame buffer memory */
++	start = fix.smem_start;
++	len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.smem_len);
++	if (off >= len) {
++		/* memory mapped io */
++		off -= len;
++		fb->fb_get_var(&var, PROC_CONSOLE(info), info);
++		if (var.accel_flags)
++			return -EINVAL;
++		start = fix.mmio_start;
++		len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.mmio_len);
++		pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE|_PAGE_GUARDED;
++	} else {
++		/* framebuffer */
++		pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
++	}
++	start &= PAGE_MASK;
++	if ((vma->vm_end - vma->vm_start + off) > len)
++		return -EINVAL;
++	off += start;
++	vma->vm_pgoff = off >> PAGE_SHIFT;
++	if (io_remap_page_range(vma->vm_start, off,
++	    vma->vm_end - vma->vm_start, vma->vm_page_prot))
++		return -EAGAIN;
++
++	return 0;
+ }
 
 
-Stefan Jeglinski
+
+--134458388-1804289383-974572302=:708--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
