@@ -1,33 +1,33 @@
-Message-Id: <9903292349.AA49680@marc.watson.ibm.com>
-To: Dave Weis <djweis@plconline.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: modifying boot loader 
-In-Reply-To: Message from Dave Weis <djweis@plconline.com>
-   of "Mon, 29 Mar 1999 17:38:36 CST." <Pine.LNX.3.95.990329173630.305A-100000@catbert.desm.plconline.com>
-Date: Mon, 29 Mar 1999 18:49:23 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Mon, 29 Mar 1999 18:59:34 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: cort@ppc.kernel.org, Piotr Muszynski <u0295020@iwate-u.ac.jp>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: vger 2.2.5 kernel breaks (on scsi?)
+In-Reply-To: <36FF53A7.5FB500AC@iwate-u.ac.jp>
+Message-ID: <Pine.LNX.4.10.9903291740220.16395-100000@p07-42.hartford.dialin.ntplx.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Dave Weis writes:
+On Mon, 29 Mar 1999, Piotr Muszynski wrote:
 
-Dave> linuxppc on a mca based rs6000. any pointers? :-) i have figured out that
-Dave> when you hit start on the kernel, either r3 or r4 will point to an ipl_cb.
-Dave> can you disclose if the boot loader looks for the symbol named start or
-Dave> address 0x24?
+> Vger sources as of ca. 10 hours before,  compiled with default or custom
+> config,  PowerMac7500/601,  MESH,  BootX, R4.
+> On boot the kernel repetitively resets scsi.  Had to cut that sad
+> spectacle and come back to 2.2.4.
+> Any thoughts (I keep compiler playfield in case someone might wish to
+> look for clues)?
 
-	Are you sure the machine in question actually is a PowerPC system
-as opposed to a POWER architecture RS/6000.  LinuxPPC will not run on
-POWER architecture as LinuxPPC uses PowerPC instructions and memory
-management is different.
+I'm getting this as well on my 7500 (CONFIG_PMAC, not CONFIG_ALL_PPC).
+The problem seems to stem from the "smarter ioremap" as reverting
+arch/ppc/mm/init.c to 1.152 allows me to boot again.
 
-	The pre-PREP / pre-CHRP RS/6000 loaders are extremely simplistic,
-but I do not know the details.  If it understands XCOFF, then it might
-look at the entry point for the "application" in the header to know the
-starting address.
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
-David
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
