@@ -1,49 +1,46 @@
-Date: Mon, 14 Feb 2000 19:10:49 -0500 (EST)
-From: Pavel Roskin <pavel_roskin@geocities.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: OPOST problem solved
-Message-ID: <Pine.LNX.4.21.0002141854440.1963-100000@sunapee.transcept.com>
+Message-ID: <38A94B33.D06D64A8@huawei.com.cn>
+Date: Tue, 15 Feb 2000 20:48:51 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: fadsrom questions...
+References: <38A229CE.2472651F@grn.georet.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hello,
 
-I have finally solved the misterious problem with console applications not
-working on the serial console.
+     This is a strange question...
+     Since "puts()" in  mbxboot/misc.c cannot work properly (it cannot print
+messages via serial port correctly), I steal part of codes from vsprintf.c of
+fadsrom,  replacing puts() with printf().
+Under the following old cross-compile environment, I can cross-compile my
+kernel and run it on target correctly.
+[binutils 2.9.1.0.19a]
+[egcs-1.1.2]
+[glibc-2.1 glibc-crypt-2.1 glibc-linuxthread-2.1]
 
-When OPOST is not set in tty->termios->c_oflag then drivers/char/n_tty.c
-uses binary `write' for the data. The data are marked as "unsafe" using
-the "from_user" flag.
+When I upgrade my cross-compile environment to the following and recompile my
+kernel, some errors occur:
+[binutils 2.9.5.0.22]
+[gcc-2.95.2]
+[gcc-core-2.95.2]
+[glibc-2.1.2 glibc-crypt-2.1.2 glibc-linuxthread-2.1.2]
 
-But arch/ppc/8xx_io/uart.c fails to check user-originated data correctly.
-copy_from_user() returns 0 for success and non-zero for failure, but
-rs_8xx_write() expects it to return the number of characters actually
-written.
+Error:
+In function 'vsprintf' (in vsprintf.c of fadsrom):
+undefined reference to "__va_arg_type_violation".
 
-The patch below fixes the problem. Now I have Midnight Commander running
-on the serial console of RPX/Lite!
-
-Regards,
-Pavel Roskin
-
-=== cut here ===
-diff -u -r1.2 uart.c
---- arch/ppc/8xx_io/uart.c	2000/01/24 21:27:13	1.2
-+++ arch/ppc/8xx_io/uart.c	2000/02/14 23:50:25
-@@ -970,8 +970,7 @@
- 		}
-
- 		if (from_user) {
--			if (c !=
--			    copy_from_user(__va(bdp->cbd_bufaddr), buf, c)) {
-+			if (copy_from_user(__va(bdp->cbd_bufaddr), buf, c)) {
- 				if (!ret)
- 					ret = -EFAULT;
- 				break;
-=== cut here ===
+I trace this problem and find that it calls "va_arg()" which is defined in
+"stdarg.h" (under "/usr/local/lib/gcc-lib/powerpc-linux/2.95.2/include"). The
+"stdarg.h" includes "va-ppc.h", and the "va-ppc.h" itself defines "
+__va_arg_type_violation". I guess it is the link problem but don't know how to
+solve it.
+Does anyone know what's the problem?
+Thanks very much.
+dony
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
