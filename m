@@ -1,29 +1,64 @@
-Message-Id: <200005031134.e43BYFD20999@smtp.kensingtonlabs.com>
-From: "Kenneth Porter" <kenneth_porter@kensingtonlabs.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 03 May 2000 04:34:14 -0700
-Reply-To: "Kenneth Porter" <kenneth_porter@kensingtonlabs.com>
-In-Reply-To: <7E8519F1A7C0D211B0D200A0C93AA60F02986BF5@ntmail.iskratel.si>
+Message-ID: <BE1C564723B3D21191FD0000F840E39801D814ED@rfcmx2.rfc.comm.harris.com>
+From: "Brown, David (dbrown03)" <DBrown03@harris.com>
+To: "'Dan Malek'" <dan@netx4.com>,
+        "Brown, David (dbrown03)"
+	 <DBrown03@harris.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Interference between SCC serial and ethernet
+Date: Wed, 3 May 2000 08:43:26 -0400 
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: Re: register file for FADS8xx
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 3 May 2000 12:00:08 +0200, Langus Matevz    RDHW_EXT wrote:
+Okay, since SCC serial and ethernet are known to work simultaneously, I'll
+be looking for problems in my board configuration or in the board itself.
+We have used the board for a few years, the Ethernet portion is being
+exercised for the first time by me.
 
-> I would like to know, if anyone has .reg file (MPC8xx registers' values) for
-> FADS8xx running 860T at 50 MHz for EST VisionClick. Please let me know, if
-> so.
+I'm not expecting help on this .. it's the kind of problem that's hard to
+diagnose/debug over a mailing list.  I boot up with root=/dev/ram ip=...,
+and Ethernet gets setup and enabled at boot.  Then I use the SCC serial
+ports, and they work fine.  Then I ping the board over Ethernet, and the SCC
+serial ports don't work anymore.
 
-Same question, but for MPC823FADS. Of course, I expect there to be more
-than one based on what features one is using.
+If I do find software problems in the kernel, I'll certainly report them,
+but I'm now expecting to find something wrong with the board or something
+wrong with my configuration.
+--
+Dave Brown <dbrown03@harris.com>
 
-Kenneth Porter
-Kensington Laboratories, Inc.
-mailto:kenneth_porter@kensingtonlabs.com
-http://www.kensingtonlabs.com
+-----Original Message-----
+From: Dan Malek [mailto:dan@netx4.com]
+Sent: Tuesday, May 02, 2000 6:09 PM
+To: Brown, David (dbrown03)
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Interference between SCC serial and ethernet
 
+
+"Brown, David (dbrown03)" wrote:
+>
+> I have the MontaVista 2.2.13 kernel running on my board.
+
+I need a little help here :-).....I assume it is a 860 class processor,
+but what about the board?  There are implementation specific considerations
+for the I/O port configurations.  You didn't happen to use some of
+the I/O ports for Ethernet control that multiplex to the others?
+
+> The SCC serial ports work fine for me, until I use Ethernet.
+
+How do you boot the system not using Ethernet, then enable it?  Do
+you mean running to different kernel configurations?
+
+
+> ... Has anyone used SCC serial ports and SCC Ethernet simultaneously?
+
+Yes, even multiple Ethernet and multiple SCCs.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
