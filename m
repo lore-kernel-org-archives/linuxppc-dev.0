@@ -1,43 +1,45 @@
-Message-ID: <3C0ECCD7.8060308@acm.org>
-Date: Wed, 05 Dec 2001 19:41:43 -0600
-From: Corey Minyard <minyard@acm.org>
-MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 5 Dec 2001 20:38:23 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Corey Minyard <minyard@acm.org>
+Cc: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: Changes to PPC Linux required for GCC 3.1
-References: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com> <3C0E48D2.6000409@acm.org> <200112052146.16467@enzo.bigblue.local>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <20011206033823.GE17651@cpe-24-221-152-185.az.sprintbbd.net>
+References: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com> <3C0E48D2.6000409@acm.org> <20011205173728.GB27936@cpe-24-221-152-185.az.sprintbbd.net> <3C0EC2E2.4020208@acm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C0EC2E2.4020208@acm.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
+On Wed, Dec 05, 2001 at 06:59:14PM -0600, Corey Minyard wrote:
+>
+> Tom Rini wrote:
+>
+> >
+> >I think the reason this wasn't applied is that Paul said something about
+> >thiws being horriyingly ugly.  Corey, can you post a patch that changes
+> >RELOC(x) into a function and nothing else? :)
+>
+> My original patch has the function.
 
->On Wednesday 05 December 2001 17:18, Corey Minyard wrote:
->
->>Franz Sirl wrote:
->>
->>>Ah, I see, I only saw this problem in aty128fb. I'll add the fix to
->>>the linuxconsole CVS for 2.5.x.
->>>
->>What about 2.4?  I'm sure people will want to compile 2.4 with gcc 3.x.
->>
->
->That has to go thru the usual channels.
->
-And that is ....?
+Your patch had other fixes too tho.
 
->
->Nope, probably I should add one, cause I don't have time to continue with a
->divdi3_32 pattern anytime soon :-(.
->
-It would be pretty easy to copy it from libgcc2.  You don't want to do
-this by hand, it's big and nasty in C, in assembly it would be a
-nightmare.  You would have to do some license massaging, though, because
-libgcc2.c is GPL with special provisions.  I can look at gcc, but it's
-hard to tell how long something like that takes to find.
+> I prefer the macro, it may be a
+> little uglier but it removes a dependency between the include file and
+> the source.
 
--Corey
+Er, say what?  The macro is in the include file now...
 
+> It needs to be commented though, the reason for it's
+> wierdness is not really clear.
+
+Well, that is somewhat true.  But the early boot stuffs are somewhat
+mysterious from time to time anyways :)
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
