@@ -1,30 +1,64 @@
-Date: Wed, 1 Sep 1999 12:48:48 +0200
-From: Hubert Figuiere <hub@point-barre.fr>
-To: Paul.Mackerras@cs.anu.edu.au
+From: Michel Lanners <mlan@mcp.cpu.lu>
+Message-Id: <199909011613.SAA02982@mcp.cpu.lu>
+Subject: Re: vger-2.3.16 on pmac
+To: costabel@wanadoo.fr (Martin Costabel)
+Date: Wed, 01 Sep 1999 18:13:16 METDST
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
-Message-ID: <19990901124848.E1711@rhodan.businessobjects.com>
-References: <v03130301b3f116a864e2@[192.168.1.1]> <v03130300b3f1774818a8@[192.168.1.1]> <37CBFD6B.DB0182B6@wanadoo.fr> <199909010007.KAA17780@tango.anu.edu.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199909010007.KAA17780@tango.anu.edu.au>
+In-Reply-To: <37CD0CE1.9A2BC014@wanadoo.fr>; from "Martin Costabel" at Sep 01, 99 1:24 pm
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-According to Paul Mackerras <paulus@cs.anu.edu.au>:
+Hi martin,
 
-> It's not a good long-term solution but I needed something so I could
-> use the PC-card modem on my 3400. :-)
+> I had, however, to apply one hack to make my ethernet card work: The new
+> (certainly not quite finished) pci code gives it a wrong IRQ number. And
+> this is something I would like to understand: 
+> 
+> There are 2 different IRQs for a given PCI card. If I do a 'lspci -v', I
+> get the one that is actually used and shows up in /proc/interrupts and
+> also in the boot messages, like for me
 
-I don't understand why: my PCCard modem has always worked [*] on a 
-Linus' 2.2.1 home build kernel... on a PowerBook 3400c.
+The one is the interrupt number in the PCI config register on the device,
+which is plain bogus (as I understand it). The other IRQ, in your case 25,
+is assigned by OpenBugware upon system boot, and reported in the device tree's
+properties (can't remenber which one right now; have a look at
+/proc/device-tree).
 
+> If I do a 'lspci -v -b', I get another one, in this case IRQ160. This
+> one is also in the memory at /proc/bus/pci/devices, or in 'lspci -vx',
+> where I see a0=160.
 
+i.e. in PCI config space. That's the (unchanged) bogus value.
 
-Hub
+> This, at least, was the situation before 2.3.15-final. Now the unpatched
+> 2.3.15-final or 2.3.16-final (with trivial patches to make it compile)
+> give me a boot message with IRQ160 and 'lspci -v' and 'lspci -v -b' both
+> give the same value 160. This is not a valid interrupt number, and of
+> course the card does not work.
 
-[*] at least as badly as under MacOS.
+That means that the patch I made for the PCI fixup code isn't in those
+versions. I'm not at my machine right now; once at home, I'll see if I
+get a chance to put it on my web page.
+
+> My question is: At what place in the kernel is (or used to be) the
+> bus-centered IRQ160 translated into the cpu-centered IRQ25?
+
+There's no translation per se; it's done in the pci_bios_fixup() routine
+in arch/ppc/kernel/pmac_pci.c.
+
+> My hack was to put some 'if (irq == 160) irq=25;' somewhere in
+> pmac_setup.c, like in chrp_setup.c, where IRQ2 is translated into IRQ9.
+> This works (I am writing this using it) and it shows that there is
+> really not much wrong otherwise with the pci code (at least not for the
+> devices in my machine).
+
+That's not the best place for the fix, but the effect is the same ;-).
+
+Michel
+
+-----------------------------------
+.signature left at home
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
