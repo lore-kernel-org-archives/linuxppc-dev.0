@@ -1,42 +1,40 @@
-Date: Tue, 15 Jul 2003 16:45:58 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Darin.Johnson@nokia.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [RFC] consistent_sync and non L1 cache line aligned buffers
-Message-ID: <20030715164557.A8616@home.com>
+Message-Id: <5.1.0.14.2.20030715164431.03826b28@mail.ebshome.net>
+Date: Tue, 15 Jul 2003 16:50:22 -0700
+To: Paul Mackerras <paulus@samba.org>
+From: Eugene Surovegin <ebs@ebshome.net>
+Subject: RE: [RFC] consistent_sync and non L1 cache line aligned buffers
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <16148.36759.265625.268038@nanango.paulus.ozlabs.org>
 References: <F0B628F30F48064289D8CCC1EE21B7A80C48A8@mvebe001.americas.nokia.com>
+ <F0B628F30F48064289D8CCC1EE21B7A80C48A8@mvebe001.americas.nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F0B628F30F48064289D8CCC1EE21B7A80C48A8@mvebe001.americas.nokia.com>; from Darin.Johnson@nokia.com on Tue, Jul 15, 2003 at 04:04:24PM -0700
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jul 15, 2003 at 04:04:24PM -0700, Darin.Johnson@nokia.com wrote:
+At 04:34 PM 7/15/2003, Paul Mackerras wrote:
+>If you think about it, you will see that if you are doing DMA to an
+>unaligned buffer, and some other unrelated part of the kernel is
+>accessing another part of the cache line, you are in trouble no matter
+>what sequence of cache flushes/invalidates/whatever you do.
 >
-> > IMHO, the easiest solution is
-> > alignment of buffers.....plus it's likely to be a performance
-> > improvement.
+>In other words, the driver MUST own the entire extent of all the cache
+>lines that overlap the DMA buffer.  There really is no other solution
+>on cache-incoherent machines, assuming you want to allow DMA to
+>proceed in parallel with the CPU executing other arbitrary code, which
+>is really the whole point of DMA.
 >
-> True, it's the easiest solution for the kernel developer, but
-> requires more work from driver authors.  Which is ok, *if* it's
-> well documented and everyone knows buffers must be aligned,
-> and that's the problem.  I think some people implicitly understand
-> these issues, and assume that everyone else thinks the same way.
+>How to achieve that has been the subject of much debate.  It's clear
+>that tweaks to consistent_sync won't do it, though.
 
-What more do you expect than the "What memory is DMA'able?" section
-in Documentation/DMA-mapping.txt?
+So, at least adding an assertion to consistent_sync would be useful
+debugging feature.
 
-It's there to refer the developers to. Some maintainers have bugs
-in their drivers/subsystems.  They just need a patch from the people
-that depend on the bug fix.
+E.g. we already have BUG() in consistent_alloc when it called from
+interrupt context :)
 
-I know you are now focusing on some 8xx buffer issue but the original
-issue was surrounding generic SCSI subsystem bugs.
+Eugene
 
-Regards,
---
-Matt Porter
-mporter@kernel.crashing.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
