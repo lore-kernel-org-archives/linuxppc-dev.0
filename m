@@ -1,41 +1,38 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "David Updegraff" <dave@cray.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 405GPr
-Date: Mon, 10 Jun 2002 16:23:41 +0200
-Message-ID: <EFEAIMDCOOOHIEPHDNFJIENAEAAA.stefan.roese@esd-electronics.com>
+Message-ID: <3D04D6C0.9090202@embeddededge.com>
+Date: Mon, 10 Jun 2002 12:41:36 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <3D04A571.4020309@cray.com>
+To: Christian Schroeder <christian.schroeder@imms.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC850 USB
+References: <1023715551.3d04a8dfbc9c4@imp.imms.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David,
+Christian Schroeder wrote:
 
-> We got one in I made some "proof of concept" changes to PPCBOOT/LinuxPPC
-> to make it boot ok.. have not played with the extra clocking
-> register strap values though; we just plopped it into our
-> 405GP socket and ran @200 Mhz.  Worked...
+> does anybody know, if the mpc850 (Mask rev. A, XPC850xxZTA) works
+> as a usb hostcontroller or do I need at least mask rev. B ?
 
-Good news :-).
+Well, "works" is a relative term.  The USB interfaces on these parts
+were never really designed to be host controllers.  Depending upon
+the application and the amount of software you want to write, you
+can make them work.  There are some closed product, Rev. A parts using
+the USB as a host controller.
 
-> I noticed that the PVR on the unit we got was a bit different:
-> ibm specs said
-> 	0x50910950
-> ..but I got
-> 	0x50910951
->
-> Is there a doc. somewhere that tells us what the ranges of PVRs
-> for this chip can legitimately be?
+Motorola listened to us (complaining :-), and did make some changes in
+the Rev. B parts to reduce the software overhead, in particular the SOF
+timing and the lower speed bus.  If you want to support a generic host
+interface, you will have to use these parts along with the proper hardware
+modifications outlined in their application notes.  There is Linux support
+for these parts with these modifications.
 
-The data sheet only mentions 0x50910950, but the errata refers to pvr
-0x50910951 (Revision B?). What revision is printed on your ppc? Our chips
-are labeled: 405GPr3BB266 (Rev B.).
+Have fun!
 
-Ciao,
-Stefan.
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
