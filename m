@@ -1,66 +1,58 @@
-Message-ID: <389734F9.55CF7C4A@snom.de>
-Date: Tue, 01 Feb 2000 20:33:13 +0100
-From: Nicolas-Peter Pohland <pohland@snom.de>
+Message-ID: <38976797.F621D0A9@ctam.com.au>
+Date: Wed, 02 Feb 2000 10:09:11 +1100
+From: Brendan John Simon <Brendan.Simon@ctam.com.au>
+Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-To: Brendan.Simon@ctam.com.au
-CC: LiuTao <tliu@ict.ac.cn>,
-        "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mpc8xx-2.2.13: Now booting the kernel
-References: <38910239.BFB31D0E@ctam.com.au> <3891367F.1F7C44C9@ict.ac.cn> <3894FE7F.523331D9@ctam.com.au>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mpc8xx-2.2.13 kernel hangs during boot.
+References: <200002010035.BAA26304@denx.local.net> <3896CEA3.EBA97957@ctam.com.au> <38968BC0.6FD6E801@netx4.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brendan J Simon wrote:
+Dan Malek wrote:
+
+> Brendan John Simon wrote:
 >
-> LiuTao wrote:
+> > Sorry about my ignornace but why can't I use the address range
+> > 0x80000000-0xBFFFFFFF for my peripherals ?
+> > Is 0xC0000000-0xFFFFFFFF ok ?  What address range would be recommended ?
 >
-> > Hi Brendan:
-> >
-> > mpc8xx-2.2.13 still doesn't run on my board. I use emulator(EST tool)
-> > to debug the system through JTAG port. I download the zImage to the
-> > board, then run it. Something displayed on serial port:
-> > loaded at:     00800000 0080B1C8
-> > board data at: 00800158 00800180
-> > relocated to:  007F0100 007F0128
-> > zimage at:     00830263 0088A2B1
-> > avail ram:     0088B000 01000000
-> >
-> > Linux/PPC load:
-> > Uncompressing Linux...done.
-> > Now booting the kernel
-> >
-> > Now, the program has unziped the image section(vmlinux) to 0x0,
-> > then jump to 0x0 to enter the linux kernel. Then the program
-> > call identify_machine() in head.S. Here, the problem happened.
-> > Because the content in location of identify_machine() is not
-> > correct. I don't know the reason. Maybe unzip has problem?
-> > I sent help main to the maillist, but nobody give me any
-> > suggestions.
-> > My board is customed too. What kind of debug tool are you using
-> > to debug linux on your board?
+> I posted this before.....I hope this matches previous messages :-).
+>
+> If you map (i.e. ioremap()) physical memory prior to the
+> kernel VM initialization, the mapping is 1:1 virtual to physical.
+> This happens in mm/init.c for things like the IMMR and some
+> other board control registers.  In this case, mapping below
+> something like 0xd0000000 causes problems with VM collision in
+> kernel or user process space.
+>
+> After the kernel VM is initialized, you can ioremap() any
+> physical space, as the mapping isn't 1:1.
 
-Hi guys,
+The memory controller is setup in my boot loader.  It knows nothing about VMA, only
+PMA.
+I currently have CS0 mapped to 0xFF800000 for flash, CS1/2 mapped to 0x00000000 and
+CS4 to 0x80000000 for DRAM.
+Both Dan and Wolfgang have suggested that all peripherals should be at 0xD0000000
+and above.  I am happy with this but am not sure what the DRAM address should be.
+Should I map CS1 and CS2 to 0x00000000 or 0xC0000000 ?
 
-I do not have the original message so pardon me for responding to this
-one.
-I had a similar problem at this location:
+I have not changed any code in the linux source tree with regards to memory
+mapping.  ie. not use of ioremap as I do not use any of the peripherals yet.  I've
+got a very vague idea of what ioremap() does and will read more on it.  I sounds
+like I will probably need it to access my peripherals from within linux.  Is this
+correct ?
 
-1. There were different versions of where the uncompressed kernel is
-started from.
-Once it was done directly from address 0 and the other time the content
-of
-location 0 was used. Make sure the arch/ppc/kernel and arch/ppc/mbxboot
-directories
-match regarding this point.
 
-2. Make sure that the DER reg is set to 0 when using an emulator.
-Especially
-an ADI board for the FADS. For example "rms der 0".
+> At this stage, nothing beats a simple rom monitor that can display
+> memory after a processor reset.
 
-I hope this helps,
-Nicolas
+I'll look into adding this support to my bootloader.
+
+Thanks,
+Brendan Simon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
