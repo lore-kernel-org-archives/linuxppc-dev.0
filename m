@@ -1,27 +1,27 @@
-From: ghannon@cspi.com
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256B61.00681797.00@pine.cspi.com>
-Date: Fri, 15 Feb 2002 14:03:25 -0500
-Subject: MVME5100 booting from SCSI disk - fixed sort of
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3C6D6145.5070503@embeddededge.com>
+Date: Fri, 15 Feb 2002 14:28:05 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Andr=E9s?= Chamorro <achamoro@yahoo.es>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Litle LCD on MBX860
+References: <20020215135417.62312.qmail@web14003.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the feedback.
+Andrés Chamorro wrote:
 
-I was able to flash the board with a working kernel and have it mount the
-root filesystem on the HD.  I have a YDL distribution, and the partitioning
-tools I have are parted and pdisk, but of which didn't like type 41.
-(Perhaps I was trying to create the partition wrong?)
+> I want to conect a litle LCD on MBX860. I want to use
+> microwindows, too.
 
-I will eventually try to get fdisk going and see if that can do it on
-another
-disk.   For my current development I'm going to keep it like this.
+You aren't going to connect an LCD to the MBX860 and see anything.
+There isn't any LCD controller on the 860.  You need an 823 or
+some external graphics controller.
 
-Thanks again!
-G. Hannon
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
