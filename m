@@ -1,30 +1,29 @@
-Message-ID: <3E315EFC.7080600@imc-berlin.de>
-Date: Fri, 24 Jan 2003 16:42:52 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23620@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problems installing DENX ELDK
+Date: Fri, 24 Jan 2003 08:11:45 -0800
 MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] m8xx_setup.c and PCMCIA
-References: <3E30F363.1020501@imc-berlin.de> <3E3157BF.7060804@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+I am trying to setup my tool-chain for embedded PPC development. I am
+considering different approaches, one of them using DENX's ELDK.
 
+Regarding the DENX option, I'm not getting very far as after having run the
+"get -R eldk-ppc-linux-x86" command as per the installation instructions, I
+find that underlying files in the, for example, "tools" directory do not
+exist. I therefore cannot proceed with the installation.
 
-> Well, _almost_ isn't good enough :-)
-Fair enough!
+Have others had problems downloading and installing (vers 2.0.2) of this
+kit? I also found that the directory structure within 'eldk-linux-ppc-x86'
+directory is not consistent with what's in the document.
 
-> I hope some of the more PCMCIA literate folks speak up here, because I
-> think placing IO_BASE into the mix, and certainly io_block_mapping it
-> is quite wrong.  It may be necessary for your board, but it certainly
-> isn't something that is going to work on many others.  All you need is
-> an 860 with a Tundra PCI bridge and all of these patches will fail to work.
+Thanks
 
-Well, that's why "&& !defined(CONFIG_PCI)"... Or?
-
-Steven
+-- Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
