@@ -1,33 +1,27 @@
-From: Der Herr Hofrat <der.herr@hofr.at>
-Message-Id: <200110241902.f9OJ27U30968@hofr.at>
-Subject: Re: microcodepatch
-In-Reply-To: <EADB10BAC266A14A85ECBF8686A73E3145934F@kolkrabbi.flaga.is> from
- =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= at "Oct 24, 2001 06:50:20 pm"
-To: =?ISO-8859-1?Q?K=E1ri_Dav=ED=F0sson?= <kd@flaga.is>
-Date: Wed, 24 Oct 2001 21:02:07 +0200 (CEST)
-Cc: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 24 Oct 2001 20:02:10 +0100
+From: Iain Young <iain@g7iii.junglelink.co.uk>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Motorola LOPEC 1U Board
+Message-ID: <20011024200210.A774@g7iii.junglelink.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> Hi,
->
-> Are there any known issues regarding the I2C patch and the ethernet
-> driver?
->
-> If I disable the microcode patch everything works fine, except the I2C
-> stuff.
->
-> I am using the linuxppc_2_4_devel tree ported to our custom board with
-> ehternet on SCC2.
->
-> Regards,
->
-there might be - the dual-ported RAM of the CPM is quite limited and the micro-code goes in there - might be that the BD's for the SCC/ethernet are overlapping ??
+Hi,
 
-hofrat
+I'm considering running Linux 2.4.x on the Motorola LOPEC 1U Board.
+Does anyone have any experience with this board ? Any hints or
+tips ? Or gotchas for that matter ?
+
+
+All the Best
+
+Iain
+
+PS: If anyone knows of someone selling these boards in the UK, I'd
+be really gratefull - I can find a few Motorola resellers, but
+none seem to offer the LOPEC board.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
