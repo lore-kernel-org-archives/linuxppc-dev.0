@@ -1,51 +1,76 @@
-Message-ID: <39659EB2.D4C095A6@amulet.co.jp>
-Date: Fri, 07 Jul 2000 18:11:14 +0900
-From: Hollis Blanchard <hollis@amulet.co.jp>
+Date: Fri, 7 Jul 2000 11:21:33 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Lundkvist <ml@epact.se>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Going from 2.2.12 to 2.2.17pre10
+In-Reply-To: <qpn1jugvzk.fsf@erbium.epact.se>
+Message-ID: <Pine.HPX.4.10.10007071106130.21326-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: linuxppc-dev@lists.linuxppc.org, Ethan Benson <erbenson@alaska.net>
-Subject: Re: Drive Setup (was Multi-boot)
-References: <200007070846.JAA05142@hyperion.valhalla.net>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+On 7 Jul 2000, Michael Lundkvist wrote:
+
+> I have to be able to create a standalone system so network boot is not
+> an option.
+
+Sigh, and falshing the kernel neither I suppose...
+
+> Maybe I'll look in to creating a driver for the bootloader. When I get
+> some spare time....
+
+> How portable is something like Grub? Maybe that could be a way to go.
+
+I was under the impression that it was very x86 focussed (but maybe I'm
+mixing things up with OpenBIOS).
+
+> > Note that thiss was for 2.2.12, as I said I've not booted 2.2.16 so I did
+> > not put the patches on my ftp site (that's the only QA I do :-)).
+> >
 >
-> On Fri, Jul 7, 2000 Ethan Benson  wrote:
-[snip]
-> >
-> > every time i tested it the following occured:
-> >
-> > * drive setup crashed
-> > * the partition tables were corrupt.
-> >
-> > its just good policy to use the native fdisk to create an OS'es
-> > partitions, on intel we must use DOS fdisk to create DOS/Win*
-> > partitions and linux fdisk for linux partitions, same with OpenBSD,
-> > FreeBSD etc.  powerpc is no different.
+> OK. 2.2.12 is not interesting. I don't want do reinstall again... :)
 
-[snip]
+Fine, but 2.2.16 is claimed to have other problems (look at Alan's release
+notes for each 2.2.17-pre).
 
->
-> Someone should tell Apple if there's a problem - they seem to be willing to
-> support (at least) the existence of Linux & other OSs - unlike certain other
-> companie$
+> I have tried two MVME-2400 boards but I haven't had time to do any
+> systematic testing. It always crashes in find_buffer in fs/buffer.c
+> during moderate to heavy disk activity. I'm starting to suspect that
+> the CMD646 isn't being setup correctly since it feels like the system
+> was more stable after a cold reboot. I'll have to test it a bit more.
 
-I have never had Drive Setup crash on me, not even once. To try to
-settle this question (not about stability, but about whether it produces
-Linux-acceptable partition maps), I've just used Drive Setup's
-unmodified "Preferred LinuxPPC" setting to partition a disk. The Mac OS
-is currently installing, and I expect no problems when I install Linux
-in 5 minutes.
+Ok, that's likely the cause. SCSI (NCR) disk access is rock solid here on
+MVME2600.
 
-The only complaint I have with Drive Setup is that it insists on erasing
-all partitions on the drive any time you want to make partition changes.
-Even newbies wondrously appreciating the beautiful Mac OS widgets in
-their partitioning utility will not want to reformat their entire hard
-disk.
+> You're probably right that it's easier modify the backplane.
 
--Hollis
+No, it's not the backplane, it's the implementation in the MVME boards:
+
+
+PCI bus <-> Universe <-> Layer of buffers <-> VME connectors
+
+The PCI bus is probably largely buried inside the PCB layers.
+The Universe is a BGA.
+The VME bus has only one (bidirectional) reset signal.
+
+However there are 2 VME reset signal buffer, one inwards and one outwards
+for 2 pins of the Universe (VME reset in and VME reset out).
+
+	Universe       Buffers       VME connector
+
+	VXSYSRST-------|>o--+
+                            |--------SYSRST*
+	VRSYSRST#------<|---+
+
+The only accessible place (with adequate lab equipment) are the buffers:
+cut the input or the output of the receive buffer and connect it to the
+power supply (safer on the input since it can directly be connected to
+the buffer power supply while I'm not sure that some versions of the
+Universe are not 3.3V only)   .
+
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
