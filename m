@@ -1,59 +1,53 @@
-Message-ID: <37DD34C2.55571353@jlc.net>
-Date: Mon, 13 Sep 1999 13:30:42 -0400
+Message-ID: <37DD3784.F85402CD@jlc.net>
+Date: Mon, 13 Sep 1999 13:42:28 -0400
 From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: bsimon@ctam.com.au
+To: Richard Hendricks <ra6353@email.sps.mot.com>
 CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: LinuxPPC: porting to new platforms
-References: <37DC6656.2A40D04D@ctam.com.au> <37DC7E94.946FBA49@jlc.net> <37DC8FE8.E1ED6636@ctam.com.au>
+Subject: Re: LinuxPPC with BDM
+References: <37DC9380.D0A6BA3F@ctam.com.au> <37DD0BE1.5DA876F@email.sps.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brendan Simon wrote:
-
-> ..... I do not want to
-> waste any more time getting things working on other boards.
-
-Well, that was kind of my point.  Get a board that already runs
-Linux/PPC and you are done.  At least you get to see how it looks.
+Richard Hendricks wrote:
+> 
+> The BDM runs into problems when the underlying operating system uses the
+> MMUs to implement a page table.
 
 
-> 2) The ADS board that I have access to is a loan to us (at no cost).
+That's the biggest one.  Also, all of the BDMs I have used make
+assumptions about the target environment.  Things like some
+monitor support and debug register settings also get in the way.
+
+Motorola's mpc8bug is the only BDM I have found that would let
+me download and run....no debug mind you, just get out of the way
+and run the code.  You have to make sure all of the debug is
+disbled before you let it go.
 
 
-They will cost you.....lots.  I couldn't believe how much time I
-invested just so I could develop the FEC driver.....
+> > I have been using the BDM to download kernels and running them from RAM
+> > (stepping through the code, etc).  Could this be the cause of the
+> > strange behaviour I've seen on the ADS boards ?
 
 
-> I can imagine.  There seems to be a LOT happening in the LinuxPPC world.
-
-Although now is a good time for updates....I could break it
-quite badly and no one would notice :-).
-
-The other reason I post the tar images is most of the requests
-for Linux on these processors comes from companies behind firewalls
-that can't access CVS.
+Yep.  You can only disable all debugging and let it go.
 
 
-> ....  What is the
-> latest with regards to silicon bugs in the 82XX series ?  What revision have
-> you been working with ?
+> ...  Unfortunately it will
+> > only run on a Windows machine due to the wigglers.dll which is
+> > required.
 
-I am running with some pretty early versions.  I am also hearing
-the stories but haven't found anything on my side....and can't find
-anyone using the processor to admit to bugs either.  The 82xx
-processors are a big complexity step for embedded processors, much
-more than the 8xx.  Things that have looked like bugs to me turn
-up to be configuration errors.....lots of registers to get set
-correctly.
 
-Right now I am working on the Sandpoint board.  I have the kernel
-basically booting, and I am sorting out the PCI and interrupt
-controller stuff.  It's one of those kind-of-CHRP, but not really
-configurations.  The 8260 is a completely different beast from
-the 8240.  More like a souped up 8xx.
+
+I am working with a company right now developing some embedded
+tools hosted on a Linux/PPC (possibly Linux/x86) that includes
+a BDM interface.  More interesting though is the Cygnus InSight and
+GDB server I have running for application development.  People
+forget that it is the application that makes the difference.
+Porting and compiling a kernel these days is not a challenge like
+getting a real embedded product to market.
 
 
 
