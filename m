@@ -1,35 +1,34 @@
-Message-Id: <200101111947.f0BJlVq16522@denx.local.net>
-To: Huy Vu <huy.vu@ipoptical.com>
-cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PPCBoot for EST8260 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 11 Jan 2001 09:05:21 EST."
-             <F7B644B6C3C7D41191F700B0D06888190AAB15@optic3.ipoptical.com>
-Date: Thu, 11 Jan 2001 20:47:31 +0100
+Message-ID: <003b01bfbc02$88afc3c0$4a1f76d8@washington>
+From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: UART configuration problems
+Date: Fri, 12 Jan 2001 19:06:00 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hello everyone,
 
-in message <F7B644B6C3C7D41191F700B0D06888190AAB15@optic3.ipoptical.com> you wrote:
->
-> Just wondering if anyone ported PPCBoot to EST8260 board yet?
+I am trying to interface a MAX3100 uart to an SPI controller on the MPC823.
+I have a functional SPI driver running. The transmit part of the UART works
+just fine. I am able to transmit characters at 9600 8N1 baud. The problem
+arises when I do a receive. The uart documentation says that the internal
+fifo is 8 word long. But I notice that the FIFO is able to store only 8
+characters. For example, if I transmit the characters
+            abcdefghijklmnopqrstuvwxyz
 
-There are several people working with  8260  based  systems,  so  the
-basic  support  is  available. Some people showed interest in the EST
-SBC8260; for instance, Russ Berg <russb@trinexus.com> started by  end
-of November on a port, but I haven't seen any code yet.
+The uart shows only "yz" in its buffers. The other 24 characters are lost. I
+noticed that 8 charaters are written in the buffer. It first writes
+"abcdefgh" and then overwrites that with "ijklmnop" and so on. The uart
+generates an irq interrupt whenever there is incoming data. I do not see why
+the buffer is not big enough.
 
-Wolfgang Denk
+Can someone give me some insight into this problem? What do I need to do to
+correct this?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"The question of whether a computer can think is no more  interesting
-than the question of whether a submarine can swim"
-- Edsgar W.  Dijkstra
+Navin.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
