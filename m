@@ -1,86 +1,40 @@
-Date: Tue, 1 May 2001 11:59:43 -0400 (EDT)
-From: Jamie Guinan <guinan@bluebutton.com>
-Reply-To: guinan@bluebutton.com
-To: "N.Suresh" <nsuresh@cdotb.ernet.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Booting problem on MBX board
-In-Reply-To: <3AEE84D8.74170E06@cdotb.ernet.in>
-Message-ID: <Pine.LNX.4.21.0105011146240.8926-100000@gemini.home.net>
+Message-ID: <20010501161200.93146.qmail@web9901.mail.yahoo.com>
+Date: Tue, 1 May 2001 09:12:00 -0700 (PDT)
+From: Freddy Lugo <wilflugo@yahoo.com>
+Subject: Re: Image download problem with gdb and DBI 
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20010430214627.AF7E02814D@denx.denx.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 1 May 2001, N.Suresh wrote:
+> At least it's part of the problem. Another problem
+> might  be  missing
+> hardware  initialization  and  parameter  passing.
+> Usually I let the
+> firmware initialize the box and load the linux
+> kernel...
 
-> Hi,
->
->     I am trying to compile and MPC8xx-2.2.13 on MBX board (MBX860-005B).
->
->     I am able to compile and generate zImage which i am downloading thru
->
->     <cut>
->
->     EPPC-Bug>pl 20 0
->
->       loaded at:     00210000 0021B1D8
->       relocated to:  00100000 0010B1D8
->       board data at: 003F4558 003F4580
->       relocated to:  00200100 00200128
->       zimage at:     00216000 00271893
->       initrd at:     00271893 00273E7D
->       avail ram:     00274000 00400000
->
->       Linux/PPC load:
->       Uncompressing Linux...done.
->       Now booting the kernel
+The FORMAT was already set to IMAGE on the bdi2000.
+Also I tried to make an autoload (LOAD AUTO) from the
+BDI and still the image is not downloaded or could not
+be found.  On the gdb, the load doesn't download the
+image.
 
-[ Its been a while... ]
+I let the MPC750 used the standard initialization
+provided on boot/head.S.
 
-That looks good so far.   The next thing you want to see is
-the Linux banner "Linux version ...".
+Since the kernel image is not found yet, the MMU is
+not set (AFAIK), what other initialization could be
+needed in order to permit the image download?
 
-I would not change KERNELLOAD.
+Sorry for all the bothering.  I checked the list but I
+didn't find information on the issue.
 
-Are you using any additional ram?  I had an additional DIMM on my
-board, and I had to hack arch/ppc/mbxboot/head.S to set up BR2/OR2
-because EPPC-Bug didn't recognize my DIMM.
-
-You should be using the Monta Vista tools.  You might want to
-compare your .config to mine,
-
-  http://www.bluebutton.com/proj/mbxlinux/dot.config
-
-Make sure you have your bootp and NFS (for root fs) servers ready when
-the board finally boots.
-
--Jamie
-
->
->     </cut>
->
->     and the system hangs.. i tried to change the KERNELLOAD and then also
->
->      it is not working.
->
->     Any idea what's happening?
->
->     ( I have seen the mail archive and Jamie Guinen has told it is working
->
->     with EPPC-Bug).
->
->     thanx in advance,
->
->     bye
->
-> -----------------***************************************----------------
->                                 N.SURESH
->                             Research Engineer,
->                   Centre For Development of Telematics,
->                            71/1,Sneha Complex,
->                             Bangalore-560052
-> -----------------***************************************----------------
+Thanks,
+Freddy Lugo
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
