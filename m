@@ -1,33 +1,41 @@
-Date: Wed, 15 Jan 2003 15:48:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Booting Linux from an already running linux
-Message-ID: <20030115224857.GB21424@opus.bloom.county>
-References: <8CD0F4AF-23B1-11D7-98E2-0003931C2BFA@control.lth.se>
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20030116044911.1234.qmail@web41201.mail.yahoo.com>
+Date: Wed, 15 Jan 2003 20:49:11 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: Ramdisk details; execve("/bin/sh") output
+To: Frederic Soulier <soulier@aztec-radiomedia.com>
+Cc: "PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <014101c2bc70$dc57b610$9900010a@aztec.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8CD0F4AF-23B1-11D7-98E2-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jan 09, 2003 at 10:05:50AM +0100, Anders Blomdell wrote:
->
-> Now that I have a Linux running with networking on a PrPMC800 running as
-> NON-MONARCH, I wonder if anybody knows about a program that can start a
-> fresh linux kernel from the filesystem. The reason I need this, is that the
-> PrPMC800 PPC-Bug does not support network booting for NON-MONARCH operation
-> (neither have I found any alternative that does), and downloading megabytes
-> over the serial line is not very tempting.
+Hi FOlks,
 
-The other option here, is to put a kernel into FLASH.  Google around
-for bugboot, but IIRC, it's just a matter of 'make zImage', and then
-normal mojo for writing a binary into the FLASH to boot, ensuring you
-use zImage.bugboot, not zImage.prpmc800, or whatever.
+I have couple of questions on ramdisk operation.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+1. How can i see the contents of a ramdisk? I
+downloaded one from denx and i want to see what is in
+there?
+2. In ${LINUX_ROOT}/init/main.c -> init(), after
+prepare_namespace (which basically does the inintrd
+mount), open syscall on '/dev/console' fails. But
+still control goes further and executes
+'execve("/bin/sh")'. My question is where does the
+output of /bin/sh execution goes? Not to my dumb
+terminal? I see nothing. Infact my dumb terminal just
+stops there. No kernel panic. Any clues?
+
+Note: In my case i do not have enough infrastructure
+to have the  standard NS16550 is working. So i have to
+port some other driver as my serial driver. ANything
+related to this?
+
+
+Thanks,
+Prakash
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
