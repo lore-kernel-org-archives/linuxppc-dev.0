@@ -1,21 +1,24 @@
-Return-Path: <andid@gmx.net>
-Received: from mncltd.com (p15112080.pureserver.info [217.160.169.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2F3A567A73
+Return-Path: <markus.westergren@biologigrand.ac>
+Received: from www.biologigrand.ac (licentiaten.umea.hsb.se [212.32.155.2])
+	by ozlabs.org (Postfix) with ESMTP id 423A167A73
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Feb 2005 20:28:44 +1100 (EST)
-Message-ID: <421706C5.50200@gmx.net>
-Date: Sat, 19 Feb 2005 10:28:37 +0100
-From: Andre' Draszik <andid@gmx.net>
+	Sun, 20 Feb 2005 20:49:52 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by www.biologigrand.ac (Postfix on SuSE Linux eMail Server 3.0) with
+	ESMTP id 051BF5C967C for <linuxppc-embedded@ozlabs.org>;
+	Sun, 20 Feb 2005 10:49:49 +0100 (CET)
+Received: from 220a.licentiaten.umea.hsb.se (220a.licentiaten.umea.hsb.se
+	[212.32.155.230])
+	by www.biologigrand.ac (Postfix on SuSE Linux eMail Server 3.0) with
+	ESMTP id E05555C9669 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 20 Feb 2005 10:49:47 +0100 (CET)
+Date: Sun, 20 Feb 2005 10:49:50 +0100 (CET)
+From: Markus Westergren <markus.westergren@biologigrand.ac>
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <Pine.LNX.4.50.0502201034520.25626-100000@220a.licentiaten.umea.hsb.se>
 MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-References: <4206ED97.2060506@gmx.net> <20050216161432.B31885@cox.net>
-	<4213F112.2060606@gmx.net> <20050217103527.A5230@cox.net>
-In-Reply-To: <20050217103527.A5230@cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] PPC4xx ocp ide rewrite/cleanup
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Cross-compile kernel modules
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,33 +31,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-Matt Porter wrote:
-> Ok, this one looks good save a few minor things that need done:
+I'm trying to get loadable kernel modules support on a Adder development board.
+The kernel is cross-compiled on an regular PC and boots fine but I can't insert
+any modules into the running kernel, all I get is undefined reference for all
+functions called by the module. I use the kernel module utilities (insmod,
+lsmod, modprobe) supplied by BusyBox to manage the modules on the Adder board.
 
-i will address these as soon as i have time again, i.e. on wednesday.
+What am I doning wrong? Do I need to perform any aditional steps when
+cross-compiling kernel modules? My cross-compile toolchain have no depmod so I
+have no modules.dep file. But I only need it if a module depend on other
+modules, right?
 
-> 1) Rename from ibm_ocp_ide.[c|h] to ibm_stb_ide.[c|h] We want
->    rid of "ocp" in the file names since eventually 4xx will
->    convert to platform devices.
+/Markus
 
-is diff -N appropriate for that and convenient for you? as said, i'm using 
-the rsync mirror only, no bitkeeper.
-
-> 2) Remove the #if 0'ed code...if it's not used it doesn't belong
->    in there.
-
-ok.
-
-> 3) Run Lindent on the driver.
-
-ok.
-Shall I send the new patch against the one I already sent or against the 
-unpatched tree?
-
-> What systems have you tested on?
-
-On two different custom built boards both based on the redwood5 reference 
-design.
-
-
-a.
+-----------------
+Markus Westergren
+Biologigrand 17
+907 32 Umea
+SWEDEN
