@@ -1,54 +1,57 @@
-Date: Wed, 24 Oct 2001 15:12:55 -0700
-From: Dan Cox <danc@mvista.com>
-To: Iain Young <iain@g7iii.junglelink.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Motorola LOPEC 1U Board
-Message-ID: <20011024151255.A11765@merlin.hawlab.org>
-Reply-To: danc@mvista.com
-References: <20011024200210.A774@g7iii.junglelink.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-In-Reply-To: <20011024200210.A774@g7iii.junglelink.co.uk>; from iain@g7iii.junglelink.co.uk on Wed, Oct 24, 2001 at 12:02:10 -0700
+Date: Wed, 24 Oct 2001 15:46:33 -0700
+From: Okehee Goh <ogoh@asu.edu>
+Subject: MMU in MBX860
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <CPEELCODKANPCLBCAGOFKEBKCAAA.ogoh@asu.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 2001.10.24 12:02 Iain Young wrote:
->
-> Hi,
->
-> I'm considering running Linux 2.4.x on the Motorola LOPEC 1U Board.
-> Does anyone have any experience with this board ? Any hints or
-> tips ? Or gotchas for that matter ?
->
->
-> All the Best
->
-> Iain
->
-> PS: If anyone knows of someone selling these boards in the UK, I'd
-> be really gratefull - I can find a few Motorola resellers, but
-> none seem to offer the LOPEC board.
->
->
->
+ Hi,
+ This question is about MMU of MBX860 using MPC860 rather than LinuxPPC.
+ I'm sorry to send not proper question to this board. Thank you so much if
+you let me know proper and also active group.
 
-Iain
+ My question:
+ In MPC860, is there any way for supervisor mode's kernel to access all
+memory space
+  whether its ASID matches with M_CASID even though some of memory space is
+  configured to check ASID?
 
-Yep.  A LoPEC port is in the 2.4 devel tree.
+ I appreciate any help.
 
-No real gotchas.  Although it's an ATX board, definitely use a 1U case, since
-the PCI slot doesn't line up to the slots on regular PC cases (unless you
-hacksaw
-the back off).
+ My situation:
+  I'm porting a microkernel into MBX860 using MPC860.
+ For memory protection, this uses MMU even though address translation is not
+necessary.
+ Only one global memory address page table managed by kernel includes all
+page table information for
+  all application tasks for performance.
+ It is possible by allocating memory space into each of application tasks.
+ The requirements is that kernel in Privilege state can access all the
+memory space
+  but application task's access is restricted to the a memory space
+allocated to itself.
+ I think that the access violation between applications can be checked by
+using ASID.
+ So, I assign each ASID for memory space for applications and kernel.
+ But I guess when ASID checking is enabled, kernel also can't access other
+application's
+  memory space because its ASID is different with others' ASID.
 
-It's a pretty neat board, actually.  With a supported framebuffer, you could
-probably
-even use it for a desktop box (USB, IDE/SCSI).
+ Thank you so much.
 
---
-Dan Cox
-MontaVista Software
+ Okehee Goh
+
+
+
+
+
+ ---------------------------------------
+Real-Time System lab of CSE of ASU
+Tel: 480-219-1346
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
