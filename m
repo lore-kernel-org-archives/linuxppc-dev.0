@@ -1,41 +1,54 @@
-Date: Fri, 10 Mar 2000 20:21:26 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-cc: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
-   cwithr128
-In-Reply-To: <v03110700b4eeeb194579@[129.100.29.243]>
-Message-ID: <Pine.LNX.4.10.10003101940550.9648-100000@opal.biophys.uni-duesseldorf.de>
+Date: Fri, 10 Mar 2000 11:39:26 -0800 (PST)
+From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+To: Gabriel Paubert <paubert@iram.es>
+cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        Michel Danzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp  cwith r128
+In-Reply-To: <Pine.HPX.4.10.10003101341450.22162-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.3.96.1000310113001.26527B-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Hi Kostas,
->
-> >> So we should probably get some official patch out there that includes a few
-> >> elements:
-> >>
-> >
-> >  What do you mean by official ? The next xfree86 update will have
-> >this fix what more official do you suggest ?
-> >
-> >> 1. Either:
-> >>        - user defined cache line size during compile
-> >>    or:
-> >>        - flush a cache range in address increments of 8
-> >>
-> >> to handle the variable line cache size
->
-> I am confused.  Now that XF 4.0 is out, will quick snapshots continue to be
-> released?
+On Fri, 10 Mar 2000, Gabriel Paubert wrote:
 
-One would sure hope so. The 4.0 X server dies horribly during device
-configuration on my Lombard. After feeding it a hand-crafted XF86Config,
-it just hangs the machine.
+> On Thu, 9 Mar 2000, David A. Gatwood wrote:
+>
+> > > So 601's have no problems with sync and isync, just eieio?  AFAIK, there is
+> > > some code snippet in the kernel that somehow works around a 601 problem
+> > > with one of the synchronization instructions but I don't remember which one
+> > > right off hand.
+> >
+> > There's a bug on certain cards in x100-land that makes them crash on
+> > sync() and eieio().  isync() is irrelevant on a 601, since there's not a
+> > separate instruction cache.
+>
+> What do you mean with x100 ? Is it a series of PMAC models ? sync and
+> eieio perform an address-only bus broadcast that should be terminated by
+> the host bridge but never to the PCI bus so they can't crash HW. Is the
+> host bridge/memory controller really that buggy ?
 
-	Michael
+NuBus, not PCI.  There's no bridge involved.  If the value in whichever
+register, when shifted appropriately, results in a value within the NuBus
+range, the address-only transaction causes problems, specifically the
+system just locks up solid.  Only happens with certain cards.
+
+
+> And isync is not irrelevant on any processor since a) it flushes the
+> instruction queue and b) it ensures that the effect of all previous
+> instructions on machine state is taken into account before the next
+> instruction executes (that's important if you change context by changing
+> segment registers or modify some MSR bits).
+
+My reference manual is in another city, so I can't look this up, but I'm
+pretty sure isync is either a no-op or is mapped onto another instruction
+for the 601.
+
+
+David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
