@@ -1,56 +1,37 @@
-Message-Id: <200101102333.f0ANXmj19544@denx.local.net>
-To: Dan Malek <dan@mvista.com>
-cc: "Gessner, Matt" <mattg@aiinet.com>,
-        "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 860P FEC and fec driver from 2.3? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 10 Jan 2001 17:40:05 EST."
-             <3A5CE4C5.E59163A1@mvista.com>
-Date: Thu, 11 Jan 2001 00:33:48 +0100
+Message-ID: <007b01c07b69$aa98ff70$0664a8c0@centurysys.co.jp>
+From: "Glenn Toshi Martin" <glenn@centurysys.co.jp>
+To: <linuxppc-embedded@lists.linuxppc.org>
+References: <3A5C823A.6353DCE2@home.se>
+Subject: 405GP f_dentry panics
+Date: Thu, 11 Jan 2001 09:58:52 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3A5CE4C5.E59163A1@mvista.com> you wrote:
->
-> "Gessner, Matt" wrote:
-> >
-> > Do this work?  I've got someone here who's got the LXT970 PHY
-> > and the thing doesn't work with the driver from 2.3 I've got.
-> > Has it changed?
+Hi all,
 
-It probably does not work with 2.3.x code; but then  -  I  never  got
-lucky with any 2.3 code :-(
+We have a custom 405GP board and the "Walnut" board. We are using the
+2.4-test2 (Version released Nov 26 2000) kernel supplied via the Montavista
+web site. Our custom board has an IDE harddisk while the Walnut board uses
+NFS. We are experiencing f_dentry = 0 problems when untarring a 750 MB file
+(This seems to lead to memory corruption and hence kernel panics). The
+problem is more pronounced when using the IDE but nevertheless occurs when
+using the Walnut board over NFS. This appears to be a known problem, but
+would like to know whether the problem can be fixed, and if so what is
+required to fix it? Or is there a better workaround to the ones currently
+available?
+We have another problem that may relate to the above. During the untar
+process of large files including the one mentioned above, we get a file
+system error "Could not write to file: bad file descriptor" every now and
+then (both NFS and IDE, more frequently on the IDE). Could anyone shed light
+on this problem?
 
-> There have been some changes through the course of 2.3 and 2.4.
-> I think Wolfgang Denk finally fixed the FEC driver so it can be
-> use in 2.4.  Some of the software modifications were driver
-> interface related, and I made a couple because the MII pin
-> configuration changed with > Rev. C of the parts.
+Thanks
 
-Right. See our version of the sources in
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src
+Glenn
 
-Works fine in a couple of systems based on 860T and 860P  CPUs,  with
-Level One 970 and 9880 and similar PHY's.
-
-If your hardware does autoconfiguration you can omit most of the  PHY
-recognistion  stuff;  otherwise enable it, but then you must assign a
-PHY interrupt.
-
-> The 860P certainly works, I use one almost every day for some
-> kind of network activity.
-
-Me too (in an ISDN router).
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"If that makes any sense to you, you have a big problem."
-                                  -- C. Durance, Computer Science 234
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
