@@ -1,47 +1,47 @@
-Date: Sat, 8 Mar 2003 12:21:36 -0600
-From: Nathan Ingersoll <ningerso@ruralcenter.org>
-To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Runtime Altivec detection
-Message-ID: <20030308182135.GA31349@ruralcenter.org>
-References: <20030307210257.7b094f55.billfink@mindspring.com> <200303072011.54069.hollis@austin.ibm.com> <20030308030440.39fcdc90.billfink@mindspring.com>
+From: Albert Cahalan <albert@users.sourceforge.net>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: damm@opensource.se, hollis@austin.ibm.com,
+	benh@kernel.crashing.org, ningerso@ruralcenter.org
+Content-Type: text/plain
+Date: 08 Mar 2003 23:01:47 -0500
+Message-Id: <1047182509.1900.246.camel@cube>
 Mime-Version: 1.0
-In-Reply-To: <20030308030440.39fcdc90.billfink@mindspring.com>
-Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Mar 08, 2003 at 03:04:40AM -0500, Bill Fink wrote:
->
-> There's also a practical consideration.  For example, in the xine case,
-> the test for Altivec support is done in the xine library package, whereas
-> the main() program is in a separate package, namely the xine UI, of which
-> there are actually several available UIs.  Now if there was a getaux
-> function similar to the getenv function, this would make matters a lot
-> simpler.
->
-> So while the current xine code may be somewhat ugly, it does work and
-> is pretty easy to implement within a library.
+For those of you needing to get at ELF note info
+to determine CPU features and other things, here
+is the code procps-3.1.x has been using. You'll
+need the appropriate ID code; here I use AT_CLKTCK
+to determine USER_HZ. Pass the ID code into this
+function, and you get back the ELF note value.
 
-One issue I saw with the xine code, is if it's in a library, you may want
-to use sigaction to save the previous handler, since the app may set it's
-own signal handler.
+//////////////////////////////////////////////////////////////////////////
+#ifndef AT_CLKTCK
+#define AT_CLKTCK       17    // frequency of times()
+#endif
 
-While somewhat ugly, it should be relatively OS independant, and it
-could also be used in a callback type fashion for testing instruction
-availability on a variety of platforms. The code I linked to in my
-original post is an example of this. It could be called with
-cpu_detect(mmx_test); on x86, cpu_detect(altivec_test); on ppc, or
-cpu_detect(vis_test) on sparc, etc.
+#define ERROR_CODE 42  // choose something better!
 
-Thanks for all the ideas folks, looks like I'll have to consider the
-different approaches, or use a combination.
+extern char** environ;
 
---
-------------------------------------------------------------------------
-| Nathan Ingersoll           \\ Computer Systems & Network Coordinator |
-| ningerso@ruralcenter.org    \\ http://www.ruralcenter.org            |
-| http://ningerso.atmos.org/   \\ Minnesota Center for Rural Health    |
-------------------------------------------------------------------------
+// for ELF executables, notes are pushed before environment and args
+static unsigned long find_elf_note(unsigned long findme){
+  unsigned long *ep = (unsigned long *)environ;
+  while(*ep++);
+  while(*ep){
+    if(ep[0]==findme) return ep[1];
+    ep+=2;
+  }
+  return ERROR_CODE;
+}
+
+// Usage:
+// Hertz = find_elf_note(AT_CLKTCK);
+
+////////////////////////////////////////////////////////////////////////
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
