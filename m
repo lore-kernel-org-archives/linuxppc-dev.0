@@ -1,15 +1,30 @@
-Return-Path: <sudheer_sanna@yahoo.com>
-Received: from web41708.mail.yahoo.com (web41708.mail.yahoo.com
-	[66.218.93.125]) by ozlabs.org (Postfix) with SMTP id 5E89A67A6E
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8F06C67A7E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Mar 2005 07:44:37 +1100 (EST)
-Message-ID: <20050323203754.86736.qmail@web41708.mail.yahoo.com>
-Date: Wed, 23 Mar 2005 12:37:54 -0800 (PST)
-From: jagadeesh reddy <sudheer_sanna@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-294513614-1111610274=:86607"
-Subject: Kernel panic: Attempted to kill init!
+	Thu, 24 Mar 2005 08:11:32 +1100 (EST)
+Date: Wed, 23 Mar 2005 13:05:44 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050323160544.GB5305@logos.cnet>
+References: <c5f8c158f9254cbb0a8e085cf0fda8de@embeddededge.com>
+	<20050210170658.GA20153@logos.cnet>
+	<20050210170859.GB20153@logos.cnet> <423F4071.1000001@mrv.com>
+	<20050322130426.GE2498@logos.cnet>
+	<f4f476b5e54e9f005dd28082bd5f16fe@embeddededge.com>
+	<20050322175815.GB7846@logos.cnet>
+	<ab78e7b7625e4293bf29fded17f589c2@embeddededge.com>
+	<20050323102501.GF7846@logos.cnet>
+	<f8d4fefc4fc282e699ee279e92c3c2ef@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f8d4fefc4fc282e699ee279e92c3c2ef@embeddededge.com>
+Cc: "Smith, Craig" <craig.d.smith@siemens.com>, paulus@samba.org,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Linux 2.6.x on 8xx status
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,45 +35,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-294513614-1111610274=:86607
-Content-Type: text/plain; charset=us-ascii
+On Wed, Mar 23, 2005 at 11:12:11AM -0500, Dan Malek wrote:
+> 
+> On Mar 23, 2005, at 5:25 AM, Marcelo Tosatti wrote:
+> 
+> >You misunderstood: get_mmu_context() _wont_ be called if the mm 
+> >structures
+> >are the same.
+> 
+> I understood.  At most, get_mmu_context() will only do a 'tlbia'
+> instruction, I didn't see your reason for thinking this would have
+> an effect on the tlbie usage.
 
-Hi Linuxppc-embedded , 
+OK. That is not a good reason, indeed.
 
-Iam trying to run powerpc linux on xilinx ML310 FPGA board, everything is fine..am using montavista preview kit and recently I have added gigabyte ethernet driver(XGemac) to the kernel and when I try to run new image on target I get following error. My experience is not sufficient enough to predict why such error is happened. 
+> >>Well, that's interesting.  It's likely to only happen on an 860 
+> >>variant
+> >>that
+> >>has the large TLB.
+> >
+> >For what reasoning?
+> 
+> My initial debugging seemed to indicate a stale TLB entry.  With
+> the larger TLB this is more likely to happen.  The bug was never
+> seen on the 823/850 with smaller TLBs.
+> 
+> I have a new 8xx board now, so I'll have to start working on these
+> issues as well.
 
-XGemac: Device instance 0 found 
-Instruction machine check in kernel mode. 
-Oops: machine check, sig: 7 
-NIP: C00D0D58 XER: 20000000 LR: C00D0D4C SP: C0335F20 REGS: c0335e70 
-TRAP: 0200 Not tainted 
-MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11 
-TASK = c0334000[1] 'swapper' Last syscall: 120 
-last math 00000000 last altivec 00000000 
-GPR00: 0000000A C0335F20 C0334000 00000006 00000170 C9011100 C08E0B0C 
-C9011000 
-GPR08: 11111111 C900F000 00000000 00000006 44000042 00000000 00000000 00000000 
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 
-GPR24: 00000000 00000000 00000000 C01636E4 C08E0960 00000000 C0180000 C08E0A08 
-Call backtrace: 
-C00D0D4C C00D0960 C0175904 C0175C84 C016C634 C000244C C0006C9C 
-Kernel panic: Attempted to kill init! 
-<0>Rebooting in 180 seconds.. 
-
-what does " Oops: machine check, sig: 7 " mean .does any one worked with xilinx gigabyte ethernet. thanks a lot...... 
-
-jaggu
-
-		
----------------------------------
-Do you Yahoo!?
- Yahoo! Small Business - Try our new resources site! 
---0-294513614-1111610274=:86607
-Content-Type: text/html; charset=us-ascii
-
-<DIV><SPAN class=postbody>Hi Linuxppc-embedded&nbsp;, </SPAN></DIV>
-<DIV><SPAN class=postbody><BR>Iam trying to run powerpc linux on xilinx ML310 FPGA board, everything is fine..am using montavista preview kit and recently I have added gigabyte ethernet driver(XGemac) to the kernel and when I try to run new image on target I get following error. My experience is not sufficient enough to predict why such error is happened. <BR><BR>XGemac: Device instance 0 found <BR>Instruction machine check in kernel mode. <BR>Oops: machine check, sig: 7 <BR>NIP: C00D0D58 XER: 20000000 LR: C00D0D4C SP: C0335F20 REGS: c0335e70 <BR>TRAP: 0200 Not tainted <BR>MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11 <BR>TASK = c0334000[1] 'swapper' Last syscall: 120 <BR>last math 00000000 last altivec 00000000 <BR>GPR00: 0000000A C0335F20 C0334000 00000006 00000170 C9011100 C08E0B0C <BR>C9011000 <BR>GPR08: 11111111 C900F000 00000000 00000006 44000042 00000000 00000000 00000000 <BR>GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 <BR>GPR24: 00000000
- 00000000 00000000 C01636E4 C08E0960 00000000 C0180000 C08E0A08 <BR>Call backtrace: <BR>C00D0D4C C00D0960 C0175904 C0175C84 C016C634 C000244C C0006C9C <BR>Kernel panic: Attempted to kill init! <BR>&lt;0&gt;Rebooting in 180 seconds.. <BR><BR>what does " Oops: machine check, sig: 7 " mean .does any one worked with xilinx gigabyte ethernet. thanks a lot...... <BR><BR>jaggu</SPAN></DIV><p>
-		<hr size=1>Do you Yahoo!?<br> 
-Yahoo! Small Business - <a href="http://us.rd.yahoo.com/evt=31637/*http://smallbusiness.yahoo.com/resources/">Try our new resources site!</a> 
---0-294513614-1111610274=:86607--
+OK!
