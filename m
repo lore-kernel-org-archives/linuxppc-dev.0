@@ -1,18 +1,19 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 5A97867A2C
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jan 2005 20:15:26 +1100 (EST)
-Date: Fri, 21 Jan 2005 10:14:55 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1106266338.18397.21.camel@gaston>
-Message-ID: <Pine.GSO.4.61.0501211013330.1075@waterleaf.sonytel.be>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D555067A45
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jan 2005 20:44:58 +1100 (EST)
+Date: Fri, 21 Jan 2005 10:44:38 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <20050121094438.GA18682@lst.de>
 References: <41EC29A8.1040703@mvista.com> <1106259956.18397.10.camel@gaston>
 	<41F0449C.5020603@mvista.com> <1106265672.5387.14.camel@gaston>
-	<41F04849.70506@mvista.com> <1106266338.18397.21.camel@gaston>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<41F04849.70506@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <41F04849.70506@mvista.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,23 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 21 Jan 2005, Benjamin Herrenschmidt wrote:
-> On Thu, 2005-01-20 at 17:09 -0700, Mark A. Greer wrote:
-> > Yes but as I wrote, I don't have time right now.
+On Thu, Jan 20, 2005 at 05:09:45PM -0700, Mark A. Greer wrote:
+> >In any case, as I wrote, the proper solution is to update genrtc to
+> >define rtc_ops so that you get both a) and b), it shouldn't be hard to
+> >update the archs using it.
+> > 
+> >
 > 
->  ... which is exactly my rant ... embedded companies never have time
-> to do the right thing...
+> Yes but as I wrote, I don't have time right now.
 
-Because they have strict (paid for) deadlines, unlike the `we do it for
-fun'-crowd led by Linus ;-)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+You could have easily implemented it in the time you wasted arguing
+here.
