@@ -1,44 +1,55 @@
-Date: Mon, 25 Sep 2000 14:24:09 -0700
-From: Geoff Keating <geoffk@cygnus.com>
-Message-Id: <200009252124.OAA25434@geoffk.org>
-To: Franz.Sirl-kernel@lauterbach.com
-CC: drepper@cygnus.com, libc-alpha@sources.redhat.com,
-        linuxppc-dev@lists.linuxppc.org
-In-reply-to: <5.0.0.19.2.20000925110119.01fe1df0@mail.lauterbach.com> (message
-	from Franz Sirl on Mon, 25 Sep 2000 11:10:45 +0200)
-Subject: Re: [RFC] IPC64 with glibc-2.2 and linux-2.4
-References: <Franz Sirl's message of "Sun, 24 Sep 2000 21:50:44 +0200">
- <00092421504403.01070@enzo.bigblue.local> <5.0.0.19.2.20000925110119.01fe1df0@mail.lauterbach.com>
+Date: Mon, 25 Sep 2000 14:54:11 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Guillaume Laures <guillaume.laures@noos.fr>
+Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: MacOS X and yaboot wars.
+Message-ID: <20000925145411.G1928@plato.local.lan>
+References: <20000921214002.N30638@plato.local.lan> <19340817093546.32417@mailhost.mipsys.com> <20000922175444.P30638@plato.local.lan> <39CFE49F.DB1E05EE@noos.fr>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="oXNgvKVxGWJ0RPMJ"
+In-Reply-To: <39CFE49F.DB1E05EE@noos.fr>; from guillaume.laures@noos.fr on Mon, Sep 25, 2000 at 11:49:51PM +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Date: Mon, 25 Sep 2000 11:10:45 +0200
-> From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-> Cc: libc-alpha@sources.redhat.com, linuxppc-dev@lists.linuxppc.org
+--oXNgvKVxGWJ0RPMJ
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-> Yeah, I know. But it's no problem for me to push this change into the
-> kernel after some people (including you :-)) have agreed to the principle
-> of the patch.
+On Mon, Sep 25, 2000 at 11:49:51PM +0000, Guillaume Laures wrote:
+>=20
+> Yes it does.
+> Another weird thing is that it mounts the bootstrap partition.
+> But it doesn't unbless anything. And triple-boot works perfectly.
+> I just had to mess around with partition # (and btw I seem to have 3 free
+> partition disappear).
 
-I too agree with the principle of the patch.  There's no reason to
-limit this quantity to 16 bits.
+you should be able to reorder this so your bootstrap partition is first.
 
-> What about 'seq'? Can I safely bump it to 32bit for userspace in the final
-> patch? I see no need for the kernel and userspace being different here, but
-> all other archs are limiting it to 16bit, so there may be a reason...
+[snip]
 
-I can't see any particular reason.
+>=20
+> It's a 27G disk...
+> May be I'll change "Apple_Bootstrap" to "Apple_Boot" ?
 
-Did you test it?  There are four combinations to check:
+i wouldn't then MOSX will think that its it owns this partition and
+who know what it will do to it then.  if its Apple_Bootstrap its less
+likely apple will destroy it randomly since OSX does not know what it
+is.
 
-new application/new kernel
-old application/new kernel  (to test symbol versioning)
-new application/old kernel  (test translation of old structure to new)
-old application/old kernel  (this should Just Work if the above cases work)
-			    (but of course you should still check it :-) )
+i very much doubt they reorder the partition table at every boot so
+using the `r' command in mac-fdisk should allow you to reorder the
+table so Apple_Bootstrap is first.
 
---
-- Geoffrey Keating <geoffk@cygnus.com>
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--oXNgvKVxGWJ0RPMJ
+Content-Type: application/pgp-signature
+
+
+--oXNgvKVxGWJ0RPMJ--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
