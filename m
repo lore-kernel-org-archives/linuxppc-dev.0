@@ -1,82 +1,99 @@
-Message-ID: <39CCC5AB.C1C2E8B2@student.ethz.ch>
-Date: Sat, 23 Sep 2000 17:00:59 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: R Shapiro <reshapiro@mediaone.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
-References: <14796.42915.582391.766766@ipa.ne.mediaone.net>
 Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <14796.52485.753924.552345@ipa.ne.mediaone.net>
+Date: Sat, 23 Sep 2000 11:32:21 -0400
+From: R Shapiro <reshapiro@mediaone.net>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
+In-Reply-To: <39CCC5AB.C1C2E8B2@student.ethz.ch>
+References: <14796.42915.582391.766766@ipa.ne.mediaone.net>
+	<39CCC5AB.C1C2E8B2@student.ethz.ch>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-R Shapiro schrieb:
+Michel Dänzer writes:
+ > > Specifics: with the ati driver selected, xf throws away my mode def,
+ > > since it thinks (incorrectly) that there isn't enough vram,
+ >
+ > Does it probe the correct amount of VRAM? Do you use Option "UseFBDev" ?
 
-> Specifics: with the ati driver selected, xf throws away my mode def,
-> since it thinks (incorrectly) that there isn't enough vram,
+The xf probe says 2MB, but in fact I have 4MB.  The dmesg line says:
 
-Does it probe the correct amount of VRAM? Do you use Option "UseFBDev" ?
-
-> and then quits since it can't find any valid modes. In both cases I'm
-> running 4.0.1 from Franz Sirl's linuxppc page.
-
-While we're at it, can you please send me the URL of those?
-
-> I also tried 4.0.0 from the Howarth page and got exactly the same results.
-
-I think they're too old to work with Mach based ATI chips.
-
-> I haven't tried compiling xf myself but I'm perfectly willing to do so if
-> that's likely to help (eg if there are some known ati patches missing from
-> the Sirl rpms).
-
-I thought they contained the necessary stuff from Ani Joshi's rsync tree. If
-you try to build yourself, you absolutely need that.
+atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 4M SGRAM, 14.31818
+MHz XTAL, 230 MHz PLL, 75 Mhz MCLK
 
 
-> The rev. a machine is running 2.2.15pre3 from the 2000 cd, booted via
-> BootX with "no video driver" checked.
-
-I don't think this can work with the ati driver, it needs atyfb.
-
-
-> The rev. b machine is running a 2.2.16 kernel compiled from kernel.org
-> sources, booted directly from OF.  Both are started with kernel args
-> video=atyfb:vmode:20,cmode:16.
->
-> I can run xf 4.0.x using the fbdev driver, more or less, with an
-> otherwise identical XF86Config, though xf with fbdev is noticably
-> slower than Xpmac.rev10.
-
-No big surprise as the fbdev driver doesn't have any hardware acceleration.
+I tried both UseFBDev on and off.  It didn't seem to make any
+difference.  Btw, which is correct setting if I'm not using the fbdev
+driver?
 
 
-> Also the screen is oddly "wrapped" on the rage II machine with the fbdev
-> driver: I can see the full screen but the virtual edge starts about 75% in,
-> instead of matching the physical edge, and then wraps around.  I don't see
-> this artifact on the rage pro G3.
-
-This is a known problem, which is also kind of fixed in Ani's tree AFAIK. I'm
-currently working with Geert Uytterheuven to get the definite fix.
+ > > and then quits since it can't find any valid modes. In both cases I'm
+ > > running 4.0.1 from Franz Sirl's linuxppc page.
+ >
+ > While we're at it, can you please send me the URL of those?
 
 
-> Eventually I want to get multiple monitors going.  I already have what
-> I think is a valid config file for it, but I'm guessing I'll never be
-> able to do it with fbdev.
-
-That should work if you have multiple framebuffer devices. Use
-
-    Option	"fbdev" "/dev/fb1"
-
-for the second one etc.
+ ftp://devel.linuxppc.org/users/fsirl/xf4/RPMS/
 
 
-Michel
+ > I thought they contained the necessary stuff from Ani Joshi's rsync tree. If
+ > you try to build yourself, you absolutely need that.
 
+I just rebuilt it myself, with the rsync xfree, on the G4.  The
+rebuilt version works fine there (I'm using it now) with the r128
+driver.  I won't be able to test the newly built ati driver on the G3s
+until Monday.  Can I just move that driver to the drivers diretory of
+the current installation on the two G3s, or do I need to do a complete
+rebuild/reinstall on each of them?
+
+
+ > > The rev. a machine is running 2.2.15pre3 from the 2000 cd, booted via
+ > > BootX with "no video driver" checked.
+ >
+ > I don't think this can work with the ati driver, it needs atyfb.
+
+OK, I'll uncheck that box.  What about the "force video" BootX option
+-- on or off?  I did try all four combinations of these two and never
+got anything to work with ati.  Unchecking the box seemed to confuse
+MOL on the console, so I left it checked.
+
+
+
+ > > I can run xf 4.0.x using the fbdev driver, more or less, with an
+ > > otherwise identical XF86Config, though xf with fbdev is noticably
+ > > slower than Xpmac.rev10.
+ >
+ > No big surprise as the fbdev driver doesn't have any hardware acceleration.
+
+
+That's what I figured.  If I can get it going properly, and get it to
+support multiple monitors (especially xinerama mode - that would be
+ideal), I'm happy to live with the slight decrease in speed.  But of
+course real ati support would be nicer....
+
+ >
+ > That should work if you have multiple framebuffer devices. Use
+ >
+ >     Option	"fbdev" "/dev/fb1"
+ >
+ > for the second one etc.
+
+Ah ha, I didn't think of that.  I'll make the change in the Device
+entries.
+
+Speaking of configs, I have a Device entry and a Screen entry for each
+physical display but they're all sharing the same Monitor entry (all
+three physical monitors are identical).   It that likely to work?
+
+
+
+Many thanks for the quick and thorough reply.
 
 --
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+reshapiro@mediaone.net
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
