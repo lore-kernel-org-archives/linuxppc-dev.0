@@ -1,39 +1,70 @@
-Message-Id: <v04003a03b7cffac9bde2@[24.70.162.28]>
-In-Reply-To: <3BAA363B.5010400@mc.com>
-References: <20010920171002.37DCA2B54A@marcus.pants.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 20 Sep 2001 15:01:52 -0500
-To: Mark Salisbury <mbs@mc.com>
-From: Tony Mantler <nicoya@apia.dhs.org>
+Message-ID: <3BAA4F46.1020002@mc.com>
+Date: Thu, 20 Sep 2001 16:19:18 -0400
+From: Mark Salisbury <mbs@mc.com>
+MIME-Version: 1.0
+To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: ppc LE questions (seeking help hand info pointers)
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+References: <20010920171002.37DCA2B54A@marcus.pants.nu>	<3BAA363B.5010400@mc.com> <8xlmj9psnw.fsf@s62.informatik.uni-bremen.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 1:32 PM -0500 9/20/01, Mark Salisbury wrote:
-[...]
->when dealing w/ direct mapped, shared memory, uniformity of endian-ness
->makes many multicomputer problems easier to solve.(not to mention easier
->for the customer to program...)
-[...]
+Holger Bettag wrote:
 
-Endian-safe code isn't terribly difficult to write. The PPC even has some
-very nice little-endian load and store operations which are easily
-accessable in big-endian mode, and obviously don't carry any of the baggage
-of running in le mode.
+> Mark Salisbury <mbs@mc.com> writes:
+>
+> [... linux in ppc little endian mode ...]
+>
+>>well, this is in the context of a multi-CPU type (x86/ppc, sparc/ppc,
+>>ppc/ppc, mips/ppc) shared memory multicomputer.
+>>
+>>when dealing w/ direct mapped, shared memory, uniformity of endian-ness
+>>makes many multicomputer problems easier to solve.(not to mention easier
+>>for the customer to program...)
+>>
+>>
+> You are aware that a PPC in little endian mode is merely tricking with the
+> low order address bits, but does not actually lay out its data in a little
+> endian fashion in physical memory?
+>
 
-Not to flame or anything, but "my customers are lazy and don't want to
-write portable code" isn't a very good reason to change the kernel.
+not according to section 3.1 of the motorola ppc "green book"
+
+according to that it is a sort of munged le representation,
+
+which thanks to a "one trick pony" PCI bridge looks like standard LE to
+the PCI based  x86 host.
+
+understand please that what I am proposing is a config option. as a
+sub-architecture port.  it would not affect any code that it didn't
+absolutely need to, and would only be compiled if sombody selected that
+particular config.
+
+I am _NOT_ suggesting running pmacs in LE mode.
+
+as in:
+ppc---
+      |-- PREP
+      |-- CHRP
+      |-- MAC
+      |-- MERCURY ---
+                    |-- Big Endian
+                    |-- Little Endian
 
 
-Cheers - Tony 'Nicoya' Mantler :)
+
+
 
 
 --
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+/*------------------------------------------------**
+**   Mark Salisbury | Mercury Computer Systems    **
+**   mbs@mc.com     | System OS - Kernel Team     **
+**------------------------------------------------**
+**         Infinite Justice is niether.           **
+**------------------------------------------------*/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
