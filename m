@@ -1,35 +1,29 @@
-Date: Tue, 2 Dec 2003 20:54:27 +0100
-From: Peter Vandenabeele <peter.vandenabeele@mind.be>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [CFP] 2nd EMBEDDED SYSTEMS and OPERATING SYSTEMS track at FOSDEM 2004
-Message-ID: <20031202205427.T8703@mind.be>
-Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
-References: <Pine.GSO.4.21.0312021326050.25508-100000@waterleaf.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0312021326050.25508-100000@waterleaf.sonytel.be>; from Geert.Uytterhoeven@sonycom.com on Tue, Dec 02, 2003 at 01:26:57PM +0100
+Date: Wed, 3 Dec 2003 04:44:16 -0500 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: userspace testing an ati fb driver
+Message-ID: <Pine.LNX.4.50L0.0312030435240.3077-100000@rosencrantz.pok.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: random <eger-temp_addy-1071049257.71afe9@theboonies.us>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Dec 02, 2003 at 01:26:57PM +0100, Geert Uytterhoeven wrote:
->
-> Please find below the Call For Papers for the
->
->   2nd Embedded Systems and Operating Systems track at FOSDEM
->
-> 21-22 February 2004, Brussels.
+On my Powerbook, /proc/iomem lists 0xb0000000-0xb000ffff as the location
+of the programming registers for my ATI Radeon R250 Lf.
 
-Sorry, we made a mistake in the CFP. The deadline was incorrectly
-set as 18 December 2004. It should be 18 December 2003.
+This seems to be the same spot XFree86 finds in its log:
+(II) RADEON(0): MMIO registers at 0xb0000000
 
-Peter
+I've been trying to mimic the XFree86 fb accel code to make a Linux 2.6 fb
+port, but i've had little luck. To try to pare down the new code, I've
+written a userspace program which will open "/dev/mem" and then mmap in
+this file starting at '0xb0000000' going for 0x10000 bytes.  Poking at the
+"registers" there seems to have no effect; reading from these "registers"
+(for example, to verify the engine idling) indicates that I'm perhaps
+reading from the wrong place in memory, i.e. the engine never indicates
+that it's idle.  Any ideas?
 
-[...]
-> Authors are requested to submit their abstracts online to
-> embedded@fosdem.org before 18/12/2004. Notification of receipt
-                             ^^^^^^^^^^
-			     18/12/2003
+-eger david
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
