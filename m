@@ -1,50 +1,50 @@
-Message-Id: <200007261838.TAA21891@hyperion.valhalla.net>
-Date: Wed, 26 Jul 2000 19:38:27 +0100
-Subject: Re: sound again [was: Re: xf4 bug report]
+Message-Id: <200007261841.TAA22154@hyperion.valhalla.net>
+Date: Wed, 26 Jul 2000 19:42:03 +0100
+Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Benjamin Herrenschmidt <bh40@calva.net>,
-        Topi Kanerva <tkanerva@ees2.oulu.fi>, linuxppc-dev@lists.linuxppc.org,
-        daenzerm@student.ethz.ch, SteffenH@hyperion-software.de,
-        geert@linux-m68k.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
+On  Wed, Jul 26, 2000, Geert Uytterhoeven wrote:
+> On Tue, 25 Jul 2000, Benjamin Herrenschmidt wrote:
+>> >> I still haven't found the "hard-block" that is effecting the overall audio
+>> >> latency performance... ah well, back to the drawing board...
+>> >
+>> >Do you have IDE? The IDE driver turned out to be the major interrupt messing
+>> >problem on m68k, since it can disable interrupts for quite a while.
+>>
+>> We have some great IRQ blockers in Linux currently. IDE is one,
+>> especially in PIO mode where it disables IRQs by default during
+>> transferts (AFAIK), but I think also in the fbdevs where, I think, a
+>> bunch of lenghtly things like scrolling are done with IRQs disabled.
+>
+>> I don't know how the fbdev case can be improved, I beleive James has some
+>> plans about that for 2.5...
+>
+> There's indeed a global lock on the console, to prevent multiple accesses to
+> the console at once. This solves some problems, one being that some graphics
+> hardware crashes when both the CPU and the graphics accelerator touch the
+video
+> RAM at the same time.
+>
+> Interrupts in fbdev would be nice for some high-end hardware, which can
+> trigger an interrupt when a bunch of graphics processing was done.
 
-I'd say that a summary of today's (most interesting) thread is...
+but, unless the test code is c**p, that is not what's causing my problem...
 
-That:
+on the x86 (over on the linux-audio-dev list) they've come to the conclusion
+that the spikes are caused by APM introduced at 2.2.16.
 
-(a) There's no real difference in behaviour between the back-port and the
-2.2.17preXX monolithic dmasound module.
+I'm not very aware of whether this is an issue on ppc (I though APM was an
+x86-specific feature).
 
-(b) The finger of blame is still pointing where I suspected (i.e. the mixer
-abstraction).
-
-OK -
-
-1/  Is there an "official" maintainer?
-
-2/  If not, is there anyone else (other than me) who wants to volunteer to
-get to the bottom of it?
-
-3/ Is there any reason to work on the 2.2.17preXX monolithic version or can
-we continue with the 2.4.0-testxx with conditionals? (my preference as it
-will transport directly to 2.4.0).
-
-FYI: there is another party working on the I2C bus to bring support to the
-iBook etc. - I've already made contact but he wants to get things going
-before merging...
-
-I *am* willing to have a go at doing a further split & debug job (certainly
-on the pmac stuff).  Is there any news as to whether the code is OK of the
-other platforms?
-
-Thanks everyone for your input & an exciting read after a long and tiring
-day out of the office :-)
+please correct me if I'm wrong..
 
 Iain.
 
