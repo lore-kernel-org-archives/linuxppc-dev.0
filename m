@@ -1,79 +1,49 @@
-Message-ID: <382076B7.B14665A2@univ-rennes1.fr>
-Date: Wed, 03 Nov 1999 17:53:59 +0000
-From: Martin Costabel <Martin.Costabel@univ-rennes1.fr>
-Reply-To: costabel@wanadoo.fr
-MIME-Version: 1.0
-To: Daniel Jacobowitz <drow@false.org>,
-        Wolfgang Haeuptli <whaeuptli@bluewin.ch>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: compile-error: stdin is not a constant
-References: <99110313351500.00438@localhost.localdomain> <19991103103617.A26462@drow.res.cmu.edu>
+Date: Wed, 3 Nov 1999 13:42:12 -0700
+From: Cort Dougan <cort@ppc.kernel.org>
+To: Andreas <a.tobler@schweiz.ch>
+Cc: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.3.25 builds
+Message-ID: <19991103134212.A28448@chimaera.ppc.kernel.org>
+References: <381F63A2.BE4A2AD7@schweiz.ch>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <381F63A2.BE4A2AD7@schweiz.ch>; from Andreas on Tue, Nov 02, 1999 at 11:20:22PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Jacobowitz wrote:
-> 
-> On Wed, Nov 03, 1999 at 01:25:44PM +0100, Wolfgang Haeuptli wrote:
-> >
-> > Hello people
-> >
-> > sorry for the (probably) basic question...
-> >
-> > Since I installed R5, some programs (that used to compile OK on R4)
-> > complain about :
-> >
-> > initializer element for 'foo' is not constant
-> >
-> > while compiling constructs like:
-> >
-> > FILE *foo = stdin;   (or FILE *foo = {(FILE *) stdin};  )
-> 
-> Because it isn't a constant any more.
-> 
-> >
-> > when I replaced this line with: FILE *foo = STDIN_FILENO;
+The next release should build for PPC.  There were some swap changes that
+had to be cleaned up.  The Linus 2.3.x trees are now nearly up-to-date with
+my tree so it shouldn't be released with ppc broken as often now.
 
-Maybe this will work (1):
-
-FILE *foo = (FILE *) STDIN_FILENO;
-
-> > ( defined in unistd.h), compilation works, but the resulting program
-> > segfaults...
-> 
-> Which should generate one hell of a warning, since STDIN_FILENO is a
-> small number, not a struct FILE *.
-> 
-> You need to initialize the variable early in main() or something along
-> those lines, or you can declare a constructor using __attribute__,
-> although I do not remember the syntax (search list archives).
-
-In a similar situation, I learned from Tom Rini that the correct way
-would be (2)
-
-static file *file ;
-static void file_construct (void) __attribute__((constructor));
-static void file_construct (void) { file = stdin; }
-
-This might be in the list archives somewhere. I had a similar problem
-with stdout when compiling Scilab. I used Tom's version (2), and it
-worked, but I saw that the Scilab people in a later version used the
-shorter version (1), and this seems to work, too. 
-
-More precisely, they just added the "|| defined(__GNUC__)" in the
-following code:
-
-#if defined(__CYGWIN32__) || defined(__MINGW32__) || defined(__GNUC__)
-static FILE *file= (FILE *) 0;
-#define FPRINTF(x) ( file != (FILE*) 0) ?  fprintf x  : 0 
-#else 
-static FILE *file= stdout ;
-#define FPRINTF(x) fprintf x  
-#endif
-
-
---
-Martin
+} Hi all,
+} sitting here and try to build a 2.3.25 for PPC. No success. The same
+} with 2.3.23/24. 2.3.23 worked except I had horrible amounts of Ram (2GB
+} iso 80MB). Was to late to figure out the 2.3.24 the 2.3.25 was already
+} out. So I tried this one.
+} In the beginning not much luck, got some steps further when applying the
+} fbmem patch mentioned on this list the earlier the day. (ramdisk support
+} was disabled from beginning).
+} Later I struggled about pieces in memory.c; pte is not member of.... Ok,
+} I found some hints, but as a newbie I saw that there are too many things
+} included. Diff showed me too many things changed. So, Paul, Cort, are
+} you already aware of?
+} 
+} Another major question I have, what is the 'deciding fact' for releasing
+} a new dev kernel? Only one or two/three arch's working? I noticed that a
+} few people had also problems building 2.3.25. ( Intel camp) Or, is it
+} only the number count? (25 is better than 24?)
+} Sorry, this is a bit cynic. But on the 2.2.x I see that there are up to
+} at least xy pre's before a new Kernel is released.
+} 
+} This mail is NOT meant as a blame, but I don't know how to treat such
+} quick changes on the kernel side. Do I have to wait for a working kernel
+} x steps behind the offical kernel?
+} Yeah, I know I don't have to, I should contribute .... If I can....
+} As said, what is the aim of releasing kernels in such short time stamps?
+} 
+} Regards & thanks for Linux (I still prefer it to MacOS9)
+} 
+} Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
