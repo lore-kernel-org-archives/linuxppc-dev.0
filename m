@@ -1,50 +1,42 @@
-Message-Id: <5.1.0.14.2.20020613160339.02e4cbd0@pop.prodigy.net>
-Date: Thu, 13 Jun 2002 16:07:15 -0700
-To: Dan Malek <dan@embeddededge.com>
-From: Eugene Surovegin <ebs@innocent.com>
-Subject: [PATCH] pci_alloc_consistent in an interrupt context, part 2
-Cc: Tom Rini <trini@kernel.crashing.org>,
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15625.11286.524300.137708@argo.ozlabs.ibm.com>
+Date: Fri, 14 Jun 2002 09:34:46 +1000 (EST)
+To: Eugene Surovegin <ebs@innocent.com>
+Cc: Dan Malek <dan@embeddededge.com>,
 	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3D0912F4.4020300@embeddededge.com>
+Subject: Re: [PATCH] pci_alloc_consistent in an interrupt context
+In-Reply-To: <5.1.0.14.2.20020613151628.02e439e8@pop.prodigy.net>
 References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com>
- <20020613205824.GX13541@opus.bloom.county>
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="=====================_277061203==_"
+	<20020613205824.GX13541@opus.bloom.county>
+	<5.1.0.14.2.20020613151628.02e439e8@pop.prodigy.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=====================_277061203==_
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Eugene Surovegin writes:
 
-Hi!
+> I don't think that we should use gfp passed to consisten_alloc as a
+> parameter for get_vm_area().
+>
+> This is gfp for _memory_ itself and may contain GFP_DMA for example. I
+> didn't want to allocate
+> struct vm_area from DMA pool in that case.
+>
+> May be the better solution is to mask out GFP_KERNEL or GFP_ATOMIC from gfp
+> and use it.
+>
+> What do you think?
 
-Here is an addition to my first patch.
+Maybe the best answer is to change get_vm_area to use
 
-Instead of using gfp which was passed to consistent_alloc,
-I use a modified version with masked out zone modifiers (like __GFP_DMA).
+	(in_interrupt()? GFP_ATOMIC: GFP_KERNEL)
 
-Thanks,
+instead of GFP_KERNEL in the kmalloc call, and eliminate the need to
+add the extra parameter.  I'll run that past davem and see what he
+thinks.
 
-Eugene
---=====================_277061203==_
-Content-Type: application/octet-stream; name="consistent_alloc_2.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="consistent_alloc_2.patch"
-
-PT09PT0gY2FjaGVtYXAuYyAxLjE0IHZzIDEuMTUgPT09PT0KLS0tIDEuMTQvYXJjaC9wcGMvbW0v
-Y2FjaGVtYXAuYwlUaHUgSnVuIDEzIDExOjQ3OjQxIDIwMDIKKysrIDEuMTUvYXJjaC9wcGMvbW0v
-Y2FjaGVtYXAuYwlUaHUgSnVuIDEzIDE2OjAwOjE1IDIwMDIKQEAgLTg4LDggKzg4LDEwIEBACiAJ
-aW52YWxpZGF0ZV9kY2FjaGVfcmFuZ2UocGFnZSwgcGFnZSArIHNpemUpOwogCiAJLyogQWxsb2Nh
-dGUgc29tZSBjb21tb24gdmlydHVhbCBzcGFjZSB0byBtYXAgdGhlIG5ldyBwYWdlcy4KKwkgICBN
-YXNrIG91dCB6b25lIG1vZGlmaWVycyBmcm9tIGdmcDsgd2UgZG9uJ3Qgd2FudCAKKwkgICB0byBy
-ZXN0cmljdCB2bV9zdHJ1Y3QgYWxsb2NhdGlvbiB0byBETUEgb3IgaGlnaCBtZW1vcnkgcG9vbCBv
-bmx5CiAJKi8KLQlhcmVhID0gZ2V0X3ZtX2FyZWEoc2l6ZSwgVk1fQUxMT0MsIEdGUF9BVE9NSUMp
-OworCWFyZWEgPSBnZXRfdm1fYXJlYShzaXplLCBWTV9BTExPQywgZ2ZwICYgfihfX0dGUF9ETUEg
-fCBfX0dGUF9ISUdITUVNKSk7CiAJaWYgKGFyZWEgPT0gMCkgewogCQlmcmVlX3BhZ2VzKHBhZ2Us
-IG9yZGVyKTsKIAkJcmV0dXJuIE5VTEw7Cg==
---=====================_277061203==_--
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
