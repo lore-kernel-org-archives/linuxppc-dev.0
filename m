@@ -1,40 +1,32 @@
-Date: Tue, 27 Mar 2001 17:35:31 -0600 (CST)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: "Michael R. Zucca" <mrz5149@acm.org>, phandel@cise.ufl.edu,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Sound stoppage
-In-Reply-To: <20010327213129.672B0DBA03@atlas.valhalla.net>
-Message-ID: <Pine.A41.3.96LJ1.1b7.1010327165548.84494A-100000@unlserve.unl.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 27 Mar 2001 17:22:12 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Takashi Oe <toe@unlserve.unl.edu>
+Cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: aci7xxxx build fails 2.4.3-p{3..8}
+Message-ID: <20010327172212.H29571@opus.bloom.county>
+References: <20010327202214.1A68ADBA52@atlas.valhalla.net> <Pine.A41.3.96LJ1.1b7.1010327150111.85236C-100000@unlserve.unl.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.A41.3.96LJ1.1b7.1010327150111.85236C-100000@unlserve.unl.edu>; from toe@unlserve.unl.edu on Tue, Mar 27, 2001 at 03:03:21PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 27 Mar 2001, Iain Sandoe wrote:
-
-> I wish I knew whether it would resume... it's not clear from the
-> documentation I've got... (the IBM stuff).
-
-It may be implementation dependent.  MACE driver stops tx dma and resumes
-afterwards, so tx side of dbdma on MACE must support it.
-
-I have no idea if how AWACS' tx dbdma behaves, but it may be necessary to
-make the write to control register multi-step or something, i.e., clear
-RUN [in order to clear DEAD bit] and wait until RUN bit is cleared by hw,
-then set RUN|WAKE..
-
-> If it would, then we could save all this hassle completely...
+On Tue, Mar 27, 2001 at 03:03:21PM -0600, Takashi Oe wrote:
 >
-> BTW: I don't *think* it does because one of my testers tried a similar
-> method to the one you proposed and said it chopped up/repeated sound.
+> On Tue, 27 Mar 2001, Iain Sandoe wrote:
+>
+> > `/usr/src/linuxppc_2_4/drivers/scsi/aic7xxx/aicasm'
+> > gcc -I/usr/include -ldb1 aicasm_gram.c aicasm_scan.c aicasm.c
+> > aicasm_symbol.c -o aicasm
+>
+> Missing a "-I."?
 
-Hmm, I think it has to be either "chopped up" or "repeated" not both..  As
-far as dbdma is concerned, those two are quite different effects.
+Yes.  I was wondering how the hell this worked on other arches..
+Hopefully the next preN will have the latest driver..
 
-
-Takashi Oe
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
