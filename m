@@ -1,41 +1,28 @@
-Message-Id: <se75cb10.022@mail.frequentis.com>
-Date: Mon, 17 Mar 2003 13:17:36 +0100
-From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-To: <linuxppc-embedded@lists.linuxppc.org>, <gue@rettung.at>
-Subject: Re: linux on dsp-board as ELF?
+Date: Mon, 17 Mar 2003 06:02:01 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Guenther SOMMER <gue@rettung.at>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linuxppc on dsp-board
+Message-ID: <20030317130201.GA23106@ip68-0-152-218.tc.ph.cox.net>
+References: <3E725ACA.7080301@rettung.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3E725ACA.7080301@rettung.at>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Günther!
+On Fri, Mar 14, 2003 at 11:42:18PM +0100, Guenther SOMMER wrote:
 
-Our Company produce PPC boards since 1996, since 2001 (I think) we have linux on it.
-So from history we have also an own bootstrapper, that only wait for data from the serial line and write the data into the RAM, Afterwards the adress where to jump will be transmitted.
-Of course it detect also if an application is stored in flash.
+> it's a dsp-board with some dsp on board an a motorola 860 processor. the
+> board itself has 32mb sdram and 8 mb flash. the board has a bootloader
+> integrated, which configures the mpcs and start a simple "boot-aplication".
 
-So we wrote a small programm which write a RAM region into flash, After this programm we append the linux Image (mbx file). So the whole data will be stored in RAM, and afterwards it will be copy the real linux kernel into flash.
-The rest of initializion we do in the boot files of linux (arch/ppc/boot/mbx).
+It sounds like you would want the code inside of arch/ppc/boot/, with a
+more or less empty 'embed_config' function.
 
-But in the mbx file after the first 64kByte strat the real application (jump in), we cut the first 64kbyte.
-
-Hope this helps a little bit
-
-Have fun
-
-Gerhard
-
->>> Guenther SOMMER <gue@rettung.at> 03/16/03 12:03am >>>
-
-hmm, i've not a great knowledge with ELF.
-
-my board-firmware has the possibility to download a image to the sdram
-as ELF-file... a linux zImage is also a ELF-file... but the kernel will
-give the wrong parameters if i will download it, or is there a
-workaround possible?
-
-greetings, guenther sommer.
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
