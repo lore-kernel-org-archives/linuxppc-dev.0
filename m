@@ -1,15 +1,40 @@
-Message-ID: <C08678384BE7D311B4D70004ACA371050B7635BA@amer22.avnet.com>
+Message-ID: <C08678384BE7D311B4D70004ACA371050B7635BB@amer22.avnet.com>
 From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Dr. Craig Hollabaugh'" <craig@hollabaugh.com>,
-	Marius Groeger <mag@sysgo.de>, John Fisher <John.Fisher@nec.com.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
+To: "Kerl, John" <John.Kerl@Avnet.com>,
+	"'Dr. Craig Hollabaugh'" <craig@hollabaugh.com>,
+	"'Marius Groeger'" <mag@sysgo.de>,
+	"'John Fisher'" <John.Fisher@nec.com.au>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: cygwin and embedded linux
-Date: Thu, 22 Aug 2002 16:48:59 -0700
+Date: Thu, 22 Aug 2002 16:50:16 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Oops, should have written:
+
+When starting to do Linux/PPC cross-development about
+a year ago (my current workplace is an NT shop) I
+experimented with cygwin, for some of the same reasons
+as the original poster describes.  & I found that cygwin
+was roughly 20x slower than Linux running on the same class
+of PC (!).  I could pop the Red Hat CD in the drive and install
+the actual OS, & have it up & running in half an hour
+-- less time than it took to complete a single,
+moderately complex compile job on cygwin.  I soon found that
+                   ^^^^^^^^^^^^^^^^^^^^^
+cygwin wasn't saving me any time at all.
+
+
+-----Original Message-----
+From: Kerl, John
+Sent: Thursday, August 22, 2002 4:49 PM
+To: 'Dr. Craig Hollabaugh'; Marius Groeger; John Fisher
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: cygwin and embedded linux
 
 
 When starting to do Linux/PPC cross-development about
