@@ -1,43 +1,26 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3BD43622.A1D260B6@esd-electronics.com>
-Date: Mon, 22 Oct 2001 17:07:14 +0200
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: filesystem for battery-buffered SRAM
+Date: Mon, 22 Oct 2001 09:33:22 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] CS8952 Support for ppc405_phy.c
+Message-ID: <20011022093322.I4933@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BD42D9E.7040300@elsoft.ch>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BD42D9E.7040300@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Mon, Oct 22, 2001 at 04:30:54PM +0200, David M?ller (ELSOFT AG) wrote:
 
-I have to setup an embedded Linux box that uses 1MB of battery buffered
-SRAM to store nonvolatile data.
-This memory is directly mapped into addressspace and needs no magic
-things to read or write to it.
+> The attached patch adds support for the Cirrus CS8952 (CrystalLAN) PHY
+> to ppc405_phy.c
 
-What might be the best choice for a filesystem and how can I setup a
-ramdisk
-at a special memory location ?
-Is MTD able to access normal RAM devices (no FLASH, but SRAM) ?
-
-Matthias
-
+Applied, Thanks.
 
 --
---------------------------------------------------------------------------
-
-                             _/_/_/_/   Matthias Fuchs
-                            _/_/_/_/   Dipl.-Ing.
-                           _/_/_/_/   matthias.fuchs@esd-electronics.com
-
-       _/_/_/   _/_/_/_/_/_/_/      esd electronic system design gmbh
-     _/   _/  _/             _/    Vahrenwalder Str. 207
-    _/   _/    _/_/_/   _/   _/   D-30165 Hannover
-    _/             _/  _/   _/   Phone: +49-511-37298-0
-     _/_/_/_/_/_/_/   _/_/_/    Fax:   +49-511-37298-68
-
---------------------------------------------------------------------------
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
