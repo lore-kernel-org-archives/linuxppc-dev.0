@@ -1,33 +1,45 @@
-In-Reply-To: <1093483666.3777.1579.camel@imladris.demon.co.uk>
-References: <Pine.LNX.4.60.0408241141110.6489@localhost.localdomain> <000f01c48a95$e18e5c20$0301a8c0@chuck2> <FE902A72-F6AB-11D8-918A-003065F9B7DC@embeddededge.com> <001a01c48abe$0fccb5f0$0301a8c0@chuck2> <60394D06-F6B8-11D8-918A-003065F9B7DC@embeddededge.com> <1093483666.3777.1579.camel@imladris.demon.co.uk>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <54EAA5E6-F712-11D8-89B4-003065F9B7DC@embeddededge.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Mark Chambers <markc@mail.com>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: value of XIP?  and whether it works with 2.6 kernel?
-Date: Wed, 25 Aug 2004 23:45:11 -0400
-To: David Woodhouse <dwmw2@infradead.org>
+To: linuxppc-embedded@lists.linuxppc.org
+From: =?ISO-8859-1?Q?Stefan_St=FCrke?= <sst@pandatel.com>
+Subject: Re: m8xx hang in reboot
+Date: Thu, 26 Aug 2004 08:40:57 +0200
+Message-ID: <cgk0lp$5dk$1@sea.gmane.org>
+References: <Pine.LNX.4.61.0408251615540.9890@chef.linux-wlan.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <Pine.LNX.4.61.0408251615540.9890@chef.linux-wlan.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 25, 2004, at 9:27 PM, David Woodhouse wrote:
+Mark S. Mathews wrote:
+>
+> Hey Folks,
+>
+> I've got an mpc850 based setup running 2.4.27 that, under certain
+> circumstances, hangs in the the m8xx_restart() function (instead of
+> rebooting) when I issue the usermode reboot cmd.
+>
+> I've traced all through the path and confirmed that yes, it is hanging in
+> this function.  ;-)
 
-> It's a little bit harder than that if you want to actually write to the
-> same flash chip you're running from. :)
+Maybe you can have a look at your boot flash when you enter the
+m8xx_restart() function. I had a similar problem and found that
+my boot flash was in read status state in that moment, so it was
+impossible to fetch the correct programm code after reset.
 
-Many of the "modern" parts will let you do that.  Load a buffer,
-start the update, come back later to check it.  The MTD may
-need some updates to do that, but I'm sure you're up for it :-)
-Software upgrade of embedded systems is a totally different
-discussion.  Having multiple images that you need to choose
-based upon validity, dates, failure to boot previously, etc. are
-all things that significantly increase the boot time. :-)
+HTH,
+Stefan
 
-	-- Dan
+--
+PANDATEL AG
+Bayernstrasse 33
+30855 Langenhagen
+Germany
+
+Tel.: +49 (0)511 978199-15
+Fax.: +49 (0)511 978199-77
+mailto:sst-news2003@pandatel.com
+www.pandatel.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
