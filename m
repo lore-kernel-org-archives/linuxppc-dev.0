@@ -1,56 +1,41 @@
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 8 Mar 1999 08:13:48 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: platinumfb problems
+In-Reply-To: <Pine.LNX.4.03.9903081025140.8012-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.3.96L.990308080845.1015A-100000@unix48.andrew.cmu.edu>
 MIME-Version: 1.0
-Message-ID: <XFMail.990308075819.hcaley@loomer.com>
-In-Reply-To: <199903080559.XAA25812@lists.linuxppc.org>
-Date: Mon, 08 Mar 1999 07:58:36 -0500 (EST)
-From: Batmensch <hcaley@loomer.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: RE: PBG3Series and pre-R5:a lot further
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I tried this XF86Config on my PB G3 Series, and although it starts up, it is
-still running in Open Firmware (non-accelerated mode).
+On Mon, 8 Mar 1999, Geert Uytterhoeven wrote:
 
-Did you try running fbset -i while the Xserver is up?
-
-I could be wrong, but it seems to me I remember reading somewhere that you
-can't run XF68_FBDev in accelerated mode when the console is running Ofb.
-
-Xpmac is much faster than Ofb; try moving an open window around.
-
-Hugh
-
-On 08-Mar-99 Linux PPC Developer Digest wrote:
-> Date: Sun, 07 Mar 1999 23:17:48 +0100
-> From: "G. =?iso-8859-1?Q?Laur=E8s?=" <laures@hp1.esiea.fr>
-> Subject: Re: PBG3Series and pre-R5: a lot further
+>   - To pass options to a specific frame buffer device:
 > 
-> Finally, I got it !
-> XFBDev on PBG3 series, now the TFT screams ! I never though it would be
-> that good.
-> 
-> So it turns out that it was the lack of valid video mode that prevented
-> XFBDev to work properly (actually, to display properly). Now I have the
-> following /etc/XF86Config :
-> 
-># /etc/XF86Config
-># makes XF68_FBDev emulate Xpmac by using the current video mode
-># and the mac mouse. be sure to compile macintosh mouse
-># support into your kernel and to create /dev/adbmouse.
-># major=10 minor=10
-># (Courtesy Brad Midgley <brad@pht.com>)
-> 
-> Section "Files"
+> 	video=fbdev:opt1:val1
+> 	video=fbdev:opt1:val1,opt2:val2
+> 	video=fbdev:opt1:val1,opt2:val2,opt3:val3
 
-----------------------------------
-E-Mail: Batmensch <hcaley@loomer.com>
-Date: 08-Mar-99
-Time: 07:51:55
+That's too bad. That means I'd remembered correctly.
 
-This message was sent by XFMail
-----------------------------------
+Using the cmdline "root=/dev/sdb5 video=platinumfb:vmode:17,cmode:8" (from
+/proc/cmdline), Linux starts in screwed up palette mode, which would seem to
+indicate 16bit color (I'm running X great in 8bit, but trying to use 16bit
+makes for an annoying palette).
+
+It seems that with platinumfb, 16bit color is wrong in both console and X.
+'vmode 17 8' in console and 'startx -- -depth 8' make the colors sane again.
+
+>From /var/log/dmesg:
+Monitor sense value = 0x60b, using video mode 17 and color mode 1.
+
+Color mode 1, eh?
+
+-Hollis
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
