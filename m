@@ -1,15 +1,18 @@
-Return-Path: <jakob.viketoft@bitsim.se>
-Received: from amsfep20-int.chello.nl (amsfep20-int.chello.nl [213.46.243.18])
-	by ozlabs.org (Postfix) with ESMTP id 9EC2267A64
+Return-Path: <hxie@centecnetworks.com>
+Received: from mail.centecnetworks.com (unknown [222.92.63.19])
+	by ozlabs.org (Postfix) with ESMTP id 106C067A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Mar 2005 18:00:07 +1000 (EST)
-Message-ID: <424A5C89.2030504@bitsim.se>
-Date: Wed, 30 Mar 2005 10:00:09 +0200
-From: Jakob Viketoft <jakob.viketoft@bitsim.se>
+	Wed, 30 Mar 2005 19:17:45 +1000 (EST)
+Received: from [10.10.25.198] ([222.92.63.20]) (authenticated)
+	by mail.centecnetworks.com (8.10.2/8.10.2) with ESMTP id j2T9GtM30330
+	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Mar 2005 17:17:04 +0800
+Message-ID: <424A6EBC.3010304@centecnetworks.com>
+Date: Wed, 30 Mar 2005 17:17:48 +0800
+From: Anchor <hxie@centecnetworks.com>
 MIME-Version: 1.0
-To: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+To: inuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Platform bus/ppc sys model...
+Subject: PSIM  help
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,24 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello everyone!
+Hi erverbody:
 
-This is a mail I sent to Kumar Gala, but as he rightly pointed out that 
-more people might benefit from the information and contribute to it, I 
-send it to the list instead.
+     I want build a PPC simulaiton system use PSIM, and I don't know how 
+to build a device tree file,
+because I only want build com, memory, nvram, 4*nic, the cpu type is 
+MPC8245. please give me a
+hand, give a sample file or a user guide to how to build it.
 
-Is there some good documentation about how to use the platform bus / ppc
-sys model or is it only possible to read and try to understand the code
-for the freescale devices?
+so many thanks!!
 
-Specifically, how do you make the kernel aware of a certain device and
-what else is required? Do I have to "connect" the device and the driver
-or will the new model find this out automagically? I'm looking at adding 
-the usual serials, emacs etc...
-
-Lastly, I suppose this will be the way all platforms should connect
-their boards with the devices "from now on", right?
-
-Cheers!
-
-	/Jakob
+anchor xie
+03-30-2005
