@@ -1,28 +1,29 @@
-Message-ID: <3C13A6C4.ACFAF274@denise.shiny.it>
-Date: Sun, 09 Dec 2001 19:00:36 +0100
-From: Giuliano Pochini <pochini@denise.shiny.it>
+Date: Sun, 9 Dec 2001 19:00:46 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
+In-Reply-To: <3C126A90.C9768C76@folkwang-hochschule.de>
+Message-ID: <Pine.LNX.4.33.0112091857500.6246-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Byte order in sound drivers
-References: <20011202095651.24942@smtp.wanadoo.fr> <20011202171724.10074@smtp.wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >It depends on the HW you have. Most recent machines don't do HW
-> >byteswap, and so accept only big-endian samples. The way this is
-> >implemented in our driver currently is a bit weird though, the
-> >setformat ioctl won't fail when trying to set an LE format, but
-> >it will set the equivalent BE format. So the application is
-> >expected to read back the format to figure out what had to be
-> >done.
+> is there any bulletproof method to capture kernel messages on a
+> pismo when it goes bang ?
+> has somebody used the modem port as a serial console ? i have a
+> spare modem lying around, perhaps it might be worth trying...
 
-Same thing with some SoundBlasters. That's why there is a mess with
-audio andianess.
+You should be able to use the modem port as serial console - just use some
+terminal emulator or dialer to initiate the connection after the machine
+has come up (something as basic as cu will do, as long as you can quit it
+without the modem hanging up). Two modems connected with a piece of wire,
+one initiating the connection the other answering, is enough.
 
-
-Bye.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
