@@ -1,48 +1,36 @@
-Date: Sat, 30 Jan 1999 15:24:20 +0100 (CET)
-From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: iMac: sound?
-Message-ID: <Pine.LNX.4.05.9901301512490.313-100000@macintoy.masq.in-berlin.de>
+Message-Id: <199901301505.QAA14745@porto.ens-lyon.fr>
+From: Loic Prylli <Loic.Prylli@ens-lyon.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Date: Sat, 30 Jan 1999 16:05:36 +0100 (MET)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: bug in arch/ppc/mm/init.c
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-  Hi !
+Hello,
 
-Is the existing Amiga/PowerMac DMAsound driver supported to work on the
-iMac too?  Simply insmoding it seems not to work, I get these messages in
-the syslog:
+The init function of some drivers use ioremap, which may call
+MMU_get_page (if the target zone cross a 4Mbyte/s bounday(. But
+MMU_get_page is marked as an initfunc, so it is no longer
+present->panic.
 
-	AWACS: error, status = 4f00d0
-	DMA sound driver: Interrupt initialization failed
 
-In /proc/device-tree/pci/mac-io/davbus/sound I've found:
+Here one possible solution:
 
-$ for a in *; do echo "$a: `cat $a`"; done | tee ~/y
-#input-channels: 
-#output-channels: 
-compatible: burgundy
-device-id: 
-device_type: sound
-input-encoding-types: 16bit-BE-signed-linear
-input-frame-rates: 
-model: 343S0177
-name: sound
-output-encoding-types: 16bit-BE-signed-linear
-output-frame-rates: 
-sample-frame-size: 
-sample-precisions: 
-sub-frame: 
-vendor-id: 
-
-Any hints?  Is there a change to make sound work with some tweaking in 
-dmasound.c or this something completely different?
-
-  Gerd
-
+--- arch/ppc/mm/init.c~ Thu Jan  7 21:06:57 1999
++++ arch/ppc/mm/init.c  Sat Jan 30 16:01:17 1999
+@@ -883,7 +883,7 @@
+        }           
+ }
+ 
+-__initfunc(static void *MMU_get_page(void))
++static void *MMU_get_page(void)
+ {
+        void *p;
+ 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
