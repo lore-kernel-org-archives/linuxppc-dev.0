@@ -1,41 +1,33 @@
-Message-ID: <3B714D74.F5AF49D1@aps.anl.gov>
-Date: Wed, 08 Aug 2001 09:32:20 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
-MIME-Version: 1.0
-To: "Karaaslan, Utku" <UKaraasl@drs.ca>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: A Question on Physical Memory Access from Applications
-References: <47EE8DCFB8C6D311A23700508B8BAD5903DAF7@THEBRAIN2>
+Date: Wed, 8 Aug 2001 08:53:17 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: John F Davis <johndavi@us.ibm.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MVista: CDK 1.2 2.2.14 for SBS-K2 (750) Module Support
+Message-ID: <20010808085317.N2399@cpe-24-221-152-185.az.sprintbbd.net>
+References: <OF205CEC3C.F52A4B97-ON85256AA2.0049AD5B@raleigh.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF205CEC3C.F52A4B97-ON85256AA2.0049AD5B@raleigh.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Karaaslan, Utku" wrote:
->
-> I have a problem: we've got a number of ADA applications which are
-> using direct memory access to certain hardware registers. Under
-> VxWorks, this is not a problem as it lacks kernelspace/userspace
-> separation. Under Linux, I know I can do direct memory access (through
-> /dev/mem), but in this case I want to use the applications as they are,
-> with no change to the ADA code. Is there any way to do physical memory
-> access transparently wrt the application? Many thanks in advance.
+On Wed, Aug 08, 2001 at 09:10:22AM -0400, John F Davis wrote:
 
-If you don't mind inserting some code into the application startup then
-you could probably do something with mmap(), either with /dev/mem or
-(safer) by writing your own kernel driver for the relevent hardware that
-supports mmap()ing just the relevent physical range into user-space (and
-makes it non-cacheable).  It might be possible to use LD_PRELOAD to do
-this at startup without changing the application at all, although I
-suspect you might have to make some changes to get the address of the
-mmapped region - I'm not sure that you could guarantee to place it where
-you want in virtual memory.
+> We are trying to build a kernel with loadable modules support using a stock
+> mvista CDK 1.2 toolset.  The
+> error is that many symbols are not resolved correctly.  If I build without
+> module
+> support the kernel builds fine.
 
-HTH,
+The very short answer is modules don't work (which you've noticed), and if
+you don't have a compelling reason to stay on CDKit 1.2, please upgrade
+to 2.0, which won't have this problem.  The slightly longer answer is,
+i think, the K2 build didn't link in ppc_ksyms.o when built w/ module
+support.  I _think_.
 
-- Andrew
 --
-The world is such a cheerful place when viewed from upside-down
-It makes a rise of every fall, a smile of every frown
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
