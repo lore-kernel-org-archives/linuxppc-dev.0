@@ -1,11 +1,11 @@
-Message-ID: <008701c1bf30$72709200$1a11efcb@industrialDiv.hanasys.co.kr>
+Message-ID: <008801c1bf30$d6642fb0$1a11efcb@industrialDiv.hanasys.co.kr>
 Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
 From: "Sangmoon Kim" <dogoil@etinsys.com>
 To: <linuxppc-embedded@lists.linuxppc.org>,
-	"Claus Gindhart" <Claus.Gindhart@pep.de>
-References: <21A8AE56EBB6D411A4520060973D360179DD48@pepintercom.pep.de>
+	"Kerl, John" <John.Kerl@Avnet.com>
+References: <C08678384BE7D311B4D70004ACA371050B7632EC@amer22.avnet.com>
 Subject: Re: execve system call question
-Date: Wed, 27 Feb 2002 10:45:00 +0900
+Date: Wed, 27 Feb 2002 10:48:20 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
@@ -13,18 +13,14 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Claus Gindhart
+Hi Kerl, John
 
-> I assume, that Your code is stuck inside the init process.
-> There is an easy to way to find out, if my assumption is right.
-> - Use a sash (Statically linked standalone shell) and replace /sbin/init
-> with the executable.
-> - If You get a prompt now, the execve works o.k, the hangup is inside init
->
-> The further proceeding depends on the result of the above test.
->
+> I found on this mailing list that the IMMR must be located
+> *above* 0xc0000000.  For example, 0xf0000000.
 
-I tried other thing like /bin/bash and 'hello world' things. but it didnot worked.
+The MPC755 doesn't have IMMR.
+If it means all the I/O should be located above 0xf0000000 please let me know.
+My board has a serial port at 0x78000000.
 
 Thank you!
 
