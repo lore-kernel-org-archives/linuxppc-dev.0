@@ -1,46 +1,36 @@
-Message-ID: <3A6C8044.32DEF5CE@relog.ch>
-Date: Mon, 22 Jan 2001 19:47:32 +0100
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: michdaen@iiic.ethz.ch
-MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+Date: Mon, 22 Jan 2001 19:54:48 +0100 (MET)
+From: Roman Zippel <zippel@fh-brandenburg.de>
+To: michdaen@iiic.ethz.ch
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Jeff Hartmann <jhartmann@valinux.com>,
         Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
         dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
 Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-References: <3A686DFE.9030308@valinux.com> <19341214104258.22601@mailhost.mipsys.com> <3A68FC06.7BEEA13D@iiic.ethz.ch> <3A691166.DC6DCD81@iiic.ethz.ch> <3A6C6EEC.D1A84557@mvista.com> <3A6C7143.E49ADF33@relog.ch> <3A6C7DB4.516E2897@mvista.com>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3A6C7970.2E3E88CA@relog.ch>
+Message-ID: <Pine.GSO.4.10.10101221945230.19978-100000@zeus.fh-brandenburg.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Hi,
+
+On Mon, 22 Jan 2001, Michel Dänzer wrote:
+
+> > There is no pte table and so there is nothing mapped at that address, you
+> > can use (pgd|pmd|pte)_present() to test for that.
 >
-> Michel Dänzer wrote:
->
-> > No, that's not the problem, pagelist is struct page ** :-/ (and pagelist
-> > is allocated)
->
-> Then, what the heck were you trying to print out with that
-> piece of code,
+> You are saying we should use *_present() to check each of these before using
+> *_offset to get the pointer? And what if *_present() is false?
 
-The printk's are only for debugging purposes ;)
+It depends what you what you want to do. If you just want to do a reverse
+lookup, yes, you have to check the value with *_present.
+But you can also map something at that address, then you had to use
+*_alloc(), but leave that better to ioremap/vmalloc. (Look for map_page in
+arch/ppc/mm/init.c for how it can be done.)
 
-> and who further down the food chain uses the page struct?
+bye, Roman
 
-The DRM.
-
-
-I think Roman's suggestion is very promising; There's something very
-interesting in arch/ppc/mm/fault.c .
-
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
