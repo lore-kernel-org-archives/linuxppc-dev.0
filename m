@@ -1,56 +1,39 @@
-To: IGOR LURI <iluri@fagorautomation.es>
-Cc: =?ISO-8859-1?Q?EMBEDDED_LINUXPPC_=28Correo_electr=F3nico=29?= <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Direct IDE on PCMCIA port 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 23 Jul 2002 16:22:24 +0200."
-             <CA78D1B723D8D411AF0300508BDCF74F3F6D37@NTCORREO>
-Date: Tue, 23 Jul 2002 17:20:56 +0200
-Message-Id: <20020723152101.6930210875@denx.denx.de>
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B11@mail1.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'Dan Malek'" <dan@embeddededge.com>
+Cc: Pavel Bartusek <pba@sysgo.de>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: MDIO clock speed computation
+Date: Tue, 23 Jul 2002 11:47:26 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Igor,
+Dan,
 
-in message <CA78D1B723D8D411AF0300508BDCF74F3F6D37@NTCORREO> you wrote:
+> try this (since the problem is the divisor register truncation):
 >
-> We have a custom board based on mpc823 with Linux 2.4.4 from Denx Software
-> Engineering and we want to initialize the PCMCIA interface as True IDE mode.
+> (((((bd->bi_intfreq + 500000) / 2500000) + 1) / 2 ) & 0x3F ) << 1;
 
-Forget about this terminology. It's only marketing.  Driverwise,  the
-PCMCIA  interface  of the typical PCCard Adapters for CF medial looks
-like an IDE controller anyway.
+This is bad :-(
+With a frequency of 46.5MHz, you get a MII clock of 2.58MHz.
 
->  We want to use "MPC8xx Direct IDE support on PCMCIA port" option of the
+Why adding 500000 (0.5MHz) to the internal clock in this computation?
+We usually do that to round up (or down) to the nearest integer.
+But we do NOT want to round down, or the divisor (MII_SPEED) will be too
+low.
+We want to round up to the nearest integer when divided by 2*2.5MHz.
 
-Are you sure? Probably you  what  you  really  want  to  use  is  the
-8xx_PCCARD option - this is what we use on most boards with CF.
-
-> kernel to acces a Compact Flash or a PC IDE HardDisk. To use this option,
-> the firmware has to initialize the PCMCIA interface.
-
-PPCboot does this fine on a couple of boards.
-
-> I have seen in the PPCBoot source code a function called "ide_init" that
-> initialize PCMCIA interface as a common memory space . The Compact Flash can
-> work as a common memory space but a PC IDE HarDisk only supports True IDE
-> mode.
-
-No. The Code as present in PPCBoot works with real IDE  devices  (ATA
-or ATAPI interfaces) and with CF etc.
-
-> Someone knows how can we initialize PCMCIA registers to acces a disk
-> (Compact Flash or IDE HarDisk) in True IDE mode?
-
-What's wrong with the PPCBoot way? It works...
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-God made the integers; all else is the work of Man.       - Kronecker
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., System Architect
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
