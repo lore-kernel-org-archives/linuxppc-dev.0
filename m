@@ -1,64 +1,64 @@
-Date: Fri, 5 Nov 1999 09:42:17 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: Cort Dougan <cort@ppc.kernel.org>,
-        David Monro <davidm@amberdata.demon.co.uk>,
-        linuxppc-workstation@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: IRQ problems on IBM 850
-In-Reply-To: <Pine.LNX.3.96L.991104145520.4298C-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.HPX.4.10.9911050931010.2724-100000@gra-ux1.iram.es>
+Message-Id: <m11jkpn-001Sw7C@bucks>
+From: diekema@bucks.si.com (diekema_jon)
+Subject: Trying to find out the current state of Linux on a MPC 8260
+To: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 5 Nov 1999 09:59:23 -0500 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+	* I am starting the work of bringing up Linux kernel on the EST
+	Corporation, http://www.estc.com/, SBC 8260 product.
 
+	Ultimately, we will have a custom board that contains a MPC
+	8240/8260 but the hardware development won't be real for a long
+	time.
 
-On Thu, 4 Nov 1999, Hollis R Blanchard wrote:
+	I would like to leverage off of the work of others doing the 82XX
+	Linux ports.  I have a number of basic questions, that I could use
+	some help with:
 
-> The spinlock patch doesn't appear to have any affect on the situation. Still
-> lots of "hda - lost interrupt"'s.
+	1) Where are the CVS archives that capture the PPC kernel
+	   development activity located?  Do they support anonymous
+	   access?  If not, what do I need to do to gain access as a named
+	   user?
 
-Now I might start to understand why.
+	   I have used anonymous CVS access to cvs.on.openprojects.net
+	   before, but I am not sure that this is best choice.
+	   http://cvs.on.openprojects.net/ doesn't give me any hints.
 
-> 
-> A normal (no disk activity) /proc/interrupts:
-> 1:     1321     i8259   keyboard
-> 2:        0     i8259   82c59 secondary cascade
-> 5:        1     i8259   Crystal audio controller
-> 13:   82733     i8259   ide0
-> 15:   30749     i8259   PCnet/PCI II 79C970A
-> BAD:      1
-> 8259 IMR/ISR/IRR = 5f99/0000/0001
-> 
-> When "lost interrupts" are occuring (the keyboard does still function Gabriel,
-> my mistake), the last line consistantly looks like:
-> 
-> 8259 IMR/ISR/IRR = 5f99/0000/a001
-> 
-> The 'a' indicates that interrupts have come in on irq's 13 & 15, which would
-> be ide0 and the ethernet controller. So it seems Cort's memory is correct. (In
-> your output, is irq 6 '0x0040' the floppy drive you mention?)
+	   Example:
+	
+	   setenv CVSROOT ":pserver:anonymous@cvs.on.openprojects.net:/cvs/linux"
+	   cvs login
+	   cvs -z 3 checkout linux
+	   cvs logout
 
-Using interrupt 13 is strange, to say the least. It was reserved for FPU
-errors on x86 processors. In your case obviously the interrupts are
-expected (since you have a timeout) but have stayed masked for some
-reason. We have to find where this happens. Some code paths might have an
-unbalanced enable/disable_irq but I suspect that it will be hard to find.
+	2) Has anybody gotten Linux kernel to run on the EST Corp. SBC 8260
+	   board?  Or, is anybody is the process of doing this?
 
-Perhaps we should add some debugging code (again bloating
-/proc/interrupts :-)) giving the address of the caller of the last
-{en,dis}able_irq for every interrupt (just add 2 fields to each interrupt
-struct ({dis,en}abled_by) set to builtin_return_address in
-{dis,en}able_irq. Then print those addresses in /proc/interrupts. Can you
-write such a patch or should I do it myself ?
+	3) Has anybody gotten Linux to run on the 8240/8260?  If so,
+	   are there some hints or recipes available?
 
-And yes, irq 6 is the floppy drive, although I've no floppy connected. But
-the controller is here. 
+	   Date: Mon, 13 Sep 1999 00:33:24 -0400
+	   From: Dan Malek <dmalek@jlc.net>
+	   Subject: Re: LinuxPPC: porting to new platforms
 
-	Gabriel.
+	   Dan Malek reports
 
+	   "I am nearly ready to post the first 8240 and 8260 changes.
+	   The 8260 is an extension of the 8xx stuff today.  The 8xx is
+	   somewhat changed to accomodate this, and will be in the 2.3.x
+	   kernels."
+
+	   Has this been done?  If so, where can I get the source?
+
+	4) What is best way to get in touch with embedded MPC 82xx
+	   developers?
+
+	   linuxppc-embedded@lists.linuxppc.org
+	   linuxppc-dev@lists.linuxppc.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
