@@ -1,12 +1,12 @@
 Return-Path: <jchapman@katalix.com>
-Received: from ptb-relay02.plus.net (ptb-relay02.plus.net [212.159.14.213])
+Received: from ptb-relay03.plus.net (ptb-relay03.plus.net [212.159.14.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D3D9267A67
+	by ozlabs.org (Postfix) with ESMTP id AD5F367A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Mar 2005 09:06:32 +1100 (EST)
-Message-ID: <42278A60.1070803@katalix.com>
-Date: Thu, 03 Mar 2005 22:06:24 +0000
+	Fri,  4 Mar 2005 09:50:26 +1100 (EST)
+Message-ID: <422794A9.1070306@katalix.com>
+Date: Thu, 03 Mar 2005 22:50:17 +0000
 From: James Chapman <jchapman@katalix.com>
 MIME-Version: 1.0
 To: "Mark A. Greer" <mgreer@mvista.com>
@@ -14,7 +14,7 @@ References: <42235B0A.3070302@katalix.com> <422384CA.6090004@mvista.com>
 	<4223977C.4070502@katalix.com> <42239A2D.8070205@mvista.com>
 	<4224C285.6000409@katalix.com> <42275039.7000702@mvista.com>
 In-Reply-To: <42275039.7000702@mvista.com>
-Content-Type: multipart/mixed; boundary="------------080806040107060108090506"
+Content-Type: multipart/mixed; boundary="------------070206010104060204070202"
 Cc: linuxppc-embedded@ozlabs.org
 Subject: [PATCH 2.6.11-rc5] ppc32: add Radstone PPC7D platform support
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,12 +28,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------080806040107060108090506
+--------------070206010104060204070202
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
---------------080806040107060108090506
+--------------070206010104060204070202
 Content-Type: text/plain;
  name="ppc7d.patch"
 Content-Transfer-Encoding: 7bit
@@ -42,11 +42,11 @@ Content-Disposition: inline;
 
 ppc32: add Radstone PPC7D platform support
 
-Signed-off-by: James Chapman <jchapman@katalix.com>
-
 Radstone PPC7D are ppc7447A VME boards with Marvell Discovery-II,
 dual GigE, dual PMC, 6 serial ports, keyboard/mouse, USB and optional
 SCSI/VGA. This patch adds support for the PPC7D platform.
+
+Signed-off-by: James Chapman <jchapman@katalix.com>
 
 Index: linux-2.6/arch/ppc/boot/simple/misc-radstone_ppc7d.c
 ===================================================================
@@ -2885,4 +2885,4 @@ Index: linux-2.6/include/asm-ppc/serial.h
  
  /*
 
---------------080806040107060108090506--
+--------------070206010104060204070202--
