@@ -1,16 +1,54 @@
-Date: Tue, 1 Oct 2002 23:54:43 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 2 Oct 2002 10:06:45 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Tim Moloney <moloney@mrsl.com>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+	Eugene Surovegin <ebs@innocent.com>
 Subject: Re: Location for Linux kernel module support files
-Message-ID: <20021002075443.GB26324@plato.local.lan>
-References: <5.1.0.14.2.20021001100707.02dbfb50@mail.attbi.com> <3D99F21B.5090408@mrsl.com>
-Mime-Version: 1.0
 In-Reply-To: <3D99F21B.5090408@mrsl.com>
+Message-ID: <Pine.GSO.4.21.0210021005150.10060-100000@vervain.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Oct 01, 2002 at 03:06:03PM -0400, Tim Moloney wrote:
+On Tue, 1 Oct 2002, Tim Moloney wrote:
+> Tim Moloney wrote:
+> > The file the device driver needs is an FPGA program file that
+> > - is data that I don't want compiled into the driver wasting space
+> > - will initially be specified when the driver is loaded via rc script
+> > - that can be reloaded by a program to customize it for a particular
+> >   application
+> >
+> > I know that this isn't a a typical situation and I have only seen one
+> > other device driver like this.  It is a 1553 driver that creates a
+> > /usr/lib/<module_name> directory for its configuration file.  Is there
+> > a better location?
+>
+> Eugene Surovegin wrote:
+> > For similar situation (I also need to load FPGA on our custom board) I just
+> > coded
+> > a simple "char" device (e.g. /dev/fpga).
+> > User mode program or simple script writes into this device and
+> > the driver sends this data to the PLD chip.
+> >
+> > For debugging I use something like
+> >     # cp fpga.bin /dev/fpga
+> >
+> > With this design driver itself doesn't have any knowledge about particular
+> > location of
+> > the FPGA program.
+>
+> Geert Uytterhoeven wrote:
+>  > So your kernel driver should create a /proc entry where the rc script
+>  > can write the FPGA program file to after insmod.
+>  >
+>  > If the FPGA program file is to be reloaded by the application, it can
+>  > just write the new data to the same /proc entry.
+>
+> I do something like this now but neither of these answer *where* to put
+> the file that is being copied to the /proc entry.
+>
 > I want to distribute a standard FPGA program file with the module and
 > have it loaded at system boot time.  I can create an rc script to copy
 > this file to the /proc entry.  I can package the module, rc script, and
@@ -24,27 +62,17 @@ On Tue, Oct 01, 2002 at 03:06:03PM -0400, Tim Moloney wrote:
 > happened enough that people had found a reasonable location for support
 > files.
 
-http://www.pathname.com/fhs/
+IC. I think it should be in /usr/lib/<your-package-name>/.
 
-if its not a configuration file which is intended to be edited by the
-admin then it does NOT belong in /etc.  if its a architecture specific
-file, but not a command executable then it belongs in /usr/lib unless
-its required before filesystems are mounted in which cases it belongs
-in /lib.
+Gr{oetje,eeting}s,
 
-if its a architecture independent, non-executable file then it belongs
-in /usr/share
-
-the /lib /usr/lib and /usr/share cases indicate a subdirectory since
-its not a actual shared library.
-
-your Makefile make install step should install things in
-/usr/local/lib or /usr/local/share (agian unless this is required to
-get filesystems mounted, in that case it has to go in /lib).  debian
-packages or rpms would install things under /usr/lib.
+						Geert
 
 --
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
