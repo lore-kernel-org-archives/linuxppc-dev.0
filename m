@@ -1,40 +1,34 @@
-Subject: Re: how to mount CF device in linux
-From: Craig Hollabaugh <craig@hollabaugh.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <001901c34557$315aee60$4a44900a@hydingnb>
-References: <001901c34557$315aee60$4a44900a@hydingnb>
-Content-Type: text/plain; charset=UTF-8
-Date: 08 Jul 2003 09:53:30 -0600
-Message-Id: <1057679611.870.22.camel@gibson>
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20030708171911.26511.qmail@web40911.mail.yahoo.com>
+Date: Tue, 8 Jul 2003 10:19:11 -0700 (PDT)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: bdi problem with 4xx
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2003-07-08 at 07:45, 丁厚永 wrote:
->
->     I have a IBM Microdrive CF device which is 1GB.
->     I have joined it with a PC Card Adapter provided by IBM and pluged
-> it into a PCMCIA slot in my notebook. Under WIN XP, i can explorer
-> the device. How can i find this device under linux(redhat7.3) and
-> fdisk,format and create fs with it?
+On the BDI, after issuing 'reset' to a 440GX or 440GP
+eval board.
 
-Did the kernel find the device during bootup, use dmesg to look at the
-boot messages?
+- CONFIG: loading configuration file passed
+- CONFIG: loading register definition passed
+- TARGET: processing user reset request
+- TARGET: reseting target passed
+- TARGET: processing target startup ....
+*** TARGET: processing target startup failed
+# PPC: timeout while waiting for freeze
+- TARGET: target will be restarted in 10 sec
+BDI>
 
-As root, use mount, like
+Even a minimal configuration file has the same
+problem.  I'm waiting to hear back from Abatron, but
+maybe someone here knows the solution??
 
-mount -t msdos /dev/xxx /mnt
+Thanks,
+Brian
 
-where xxx is the device the kernel found. msdos might not be correct,
-replace msdos with the filesystem type you installed on the card.
-
-Craig
-
---
-------------------------------------------------------------
-Dr. Craig Hollabaugh, craig@hollabaugh.com
-Author of Embedded Linux: Hardware, Software and Interfacing
-www.embeddedlinuxinterfacing.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
