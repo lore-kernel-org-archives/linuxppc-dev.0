@@ -1,110 +1,61 @@
-From: rdiz@alumni.deec.uc.pt
-Message-ID: <4786.62.48.238.11.1085678078.squirrel@alumni.deec.uc.pt>
-Date: Thu, 27 May 2004 18:14:38 +0100 (WEST)
-Subject: Re: Compiling kernel 2.6.7-rc1 for 8xx
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+To: Christopher E Cordahi <chris@nanometrics.ca>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Random EMT crashes 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 May 2004 13:13:06 EDT."
+             <OF831E5D0B.E0575821-ON85256EA1.005CAC65-85256EA1.005E95B8@nanometrics.ca>
+Date: Thu, 27 May 2004 20:38:55 +0200
+Message-Id: <20040527183900.10913C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I don't know what kind of search I did before, but I found now some recent
-relevant posts about it. Thanks.
+Dear Christopher,
 
-BTW, do I have to use BitKeeper to download the 2.5 kernel tree?
+in message <OF831E5D0B.E0575821-ON85256EA1.005CAC65-85256EA1.005E95B8@nanometrics.ca> you wrote:
+>
+> When I run Qt/Embedded applications on my DENX 2.4.24 kernel, on a
+> MPC852T processor the application tends to randomly crash with EMT trap.
 
-Thanks again for posting so fast,
-Regards,
-Ricardo Diz
+Are you sure that your memory is OK? Problems  like  this  are  very,
+very  often  caused by incorrect initialization of the SDRAMs on your
+system - they appear to be working fine, but  actually  they  aren;t.
+Check  especially  burst accesses. Remember that it is NOT sufficient
+to set up the UPM tables, you must also  perform  the  required  chip
+initialization sequence as described in the SDRAM manual.
 
-> The 2.6 kernel has not been ported to 8xx yet.  If you look back over the
-> past few days on this list you'll see that a lot of work is being done
-> right
-> now on the 2.5 kernel, so hopefully we'll have 2.6 soon.  But for now if
-> you
-> need a reliable kernel you need to stick with 2.4
->
-> Mark Chambers
->
-> ----- Original Message -----
-> From: <rdiz@alumni.deec.uc.pt>
-> To: <linuxppc-embedded@lists.linuxppc.org>
-> Sent: Thursday, May 27, 2004 11:19 AM
-> Subject: Compiling kernel 2.6.7-rc1 for 8xx
->
->
->>
->> Hi there,
->>
->> I'm trying to compile kernel 2.6.7-rc1 for a Motorola 860T misc board.
->> As
->> of now, I've also tried compiling 2.6.6, 2.6.5, the latest BenH 2.6
->> Development kernel and the latest Yellow Dog's latest kernel. All came
->> down to compile errors, and I'm now focusing on solving the problem for
->> 2.6.7-rc1.
->>
->> So, I'm getting errors when the compilation reaches file
->> arch/ppc/8xx_io/uart.c . Here is some of the output:
->>
->> --------------------
->> arch/ppc/8xx_io/uart.c:86: warning: type defaults to `int' in
->> declaration
->> of `DECLARE_TASK_QUEUE'
->> arch/ppc/8xx_io/uart.c:86: warning: parameter names (without types) in
->> function declaration
->> arch/ppc/8xx_io/uart.c: In function `serial_console_device':
->> arch/ppc/8xx_io/uart.c:149: storage class specified for parameter
-> `rs_table'
->> arch/ppc/8xx_io/uart.c:149: parameter `rs_table' is initialized
->> arch/ppc/8xx_io/uart.c:151: warning: braces around scalar initializer
->> arch/ppc/8xx_io/uart.c:151: warning: (near initialization for
->> `rs_table')
->> arch/ppc/8xx_io/uart.c:151: warning: excess elements in scalar
->> initializer
->>
->> ...
->>
->> arch/ppc/8xx_io/uart.c:185: field `tqueue' has incomplete type
->> arch/ppc/8xx_io/uart.c:186: field `tqueue_hangup' has incomplete type
->> arch/ppc/8xx_io/uart.c:202: warning: structure defined inside parms
->> arch/ppc/8xx_io/uart.c:202: storage class specified for parameter
->> `ser_info_t'
->> arch/ppc/8xx_io/uart.c:204: storage class specified for parameter
-> `sercons'
->> arch/ppc/8xx_io/uart.c:204: parameter `sercons' is initialized
->> arch/ppc/8xx_io/uart.c:213: parse error before `*'
->> arch/ppc/8xx_io/uart.c:213: storage class specified for parameter
->> `change_speed'
->> arch/ppc/8xx_io/uart.c:213: warning: function declaration isn't a
-> prototype
->> arch/ppc/8xx_io/uart.c:214: storage class specified for parameter
->> `rs_8xx_wait_until_sent'
->> arch/ppc/8xx_io/uart.c:216: parse error before `*'
->> arch/ppc/8xx_io/uart.c:218: storage class specified for parameter
->> `serial_paranoia_check'
->> --------------------
->>
->> I subtracted some lines (...) that show warnings in the struct rs_table,
->> as there was one already declared (I didn't found it). When I compare
->> the
->> uart.c file for 8xx with the one for 8260, I find that this structure is
->> the same, and no errors were found when compiling for it.
->>
->> I'm trying to follow the errors, but I didn't found a link between the
->> structure rs_table and serial_console_device (where these warnings
->> start).
->>
->> Has anyone sucessfully compiled the kernel for 8xx PowerPC yet?
->>
->> Any help would be apreciated,
->> Regards,
->> Ricardo Diz
->>
->>
->>
->
->
+> Running gdb on the target causes problems with several drivers,
 
+And probably any other application  that  uses  lots  of  memory  and
+causes  otherwise  heavy load and/or network traffinc will fail, too.
+This fortifys my suspicion.
+
+> I've tried running gdbserver on the target, but I can't get it to run.
+
+Why not? The dbserver as included with our ELDK  works  fine  on  all
+systems we tested.
+
+> I've read http://www.denx.de/twiki/bin/view/DULG/DebuggingApplication
+> guessing as to how to correct a few of the errors on the page.
+> (should CROSS_COMPILE include the hyphen, the commands require it
+> to be "ppc_8xx-", but the root directory is "/opt/eldk/ppc_8xx")
+
+I see. Yes, this is a bit misleading. Thanks for pointing out.
+
+> Any suggestions where I should look or how to get more information
+
+Check your SDRAM initialization.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A conservative is a man with two perfectly good legs  who  has  never
+learned to walk.                              - Franklin D. Roosevelt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
