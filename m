@@ -1,40 +1,30 @@
-Message-ID: <3F842077.6090504@tataelxsi.co.in>
-Date: Wed, 08 Oct 2003 20:04:31 +0530
-From: Omanakuttan <omanakuttan@tataelxsi.co.in>
+Message-ID: <006e01c38dae$c4df2490$0202a8c0@homevl9biy3v7e>
+From: "Jacky Lam" <jackylam@astri.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: ES1371 on Walnut Platform
+Date: Wed, 8 Oct 2003 23:13:45 +0800
 MIME-Version: 1.0
-To: Andreas Oberritter <obi@saftware.de>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: driver for CyberPro 5202 Display Processor
-References: <3F8408FB.4040501@tataelxsi.co.in> <1065618226.844.23.camel@shiva.eth.saftware.de>
-In-Reply-To: <1065618226.844.23.camel@shiva.eth.saftware.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Andreas Oberritter wrote:
-> On Wed, 2003-10-08 at 14:54, Omanakuttan wrote:
->
->>A google search on cyberpro 5202 chipset drivers on linux  did not
->>produce any significant result. I may have to write the drivers for
->>this, so any input is welcome. Any help/hints on other cyberpro 50xx
->>chipsets are also welcome.
->
->
-> Have a look at linux/drivers/video/cyber2000fb.c
->
->
+Dear all,
 
-Yes I have already gone through. Seems like it requires quite large
-amount of hacking to support cyberpro 5202 chipset. It directly supports
-Intergraphics CyberPro 2000, 2010 and 5000 frame buffer device, but the
-extent of support for 5202 is something for me to see after going
-through the data sheet and comparing it with these chipset's data sheets
+    I tried to bring up a ES1371 audio card on Walnut evaluation board. It
+is recognized successfully and the content of registers are dumped and find
+to be the same as that found on PC. But it doesn't work because I can't
+receive any interrupt from the card to show the completion of DMA transfer.
 
-Any further input is welcome.
+    Up to this point, I have no idea how to continue. Now, I can only trace
+about the PCI related code to see if it is the cause. Does anyone have the
+same or similar problem met before? Any suggestions are welcome.
 
-Thank you very much.
-Om.
+    Thanks.
+
+Best regards,
+Jacky
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
