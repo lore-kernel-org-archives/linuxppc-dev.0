@@ -1,52 +1,26 @@
-Message-ID: <3BA77FA8.E317D5B8@mvista.com>
-Date: Tue, 18 Sep 2001 10:08:56 -0700
-From: Armin Kuster <akuster@mvista.com>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Got Time
+Date: Tue, 18 Sep 2001 10:51:43 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Armin Kuster <akuster@mvista.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Got Time
+Message-ID: <20010918105143.E31595@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BA77FA8.E317D5B8@mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BA77FA8.E317D5B8@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- here is a patch that returns the ability to enable the realtime clock
-on the 4xx
+On Tue, Sep 18, 2001 at 10:08:56AM -0700, Armin Kuster wrote:
 
-Summary:
-arch/ppc/config.in			<- changed logic to allow RTC when 4xx
-arch/ppc/kernel/ppc4xx_setup.c		<- removed ds1743.h header , again
+>  here is a patch that returns the ability to enable the realtime clock
+> on the 4xx
 
+Close enough.  We can just remove the CONFIG_4xx check totally.
 
-patch.
-
-diff -ruN linuxppc_2_4_devel/arch/ppc/config.in
-linuxppc_2_4_devel_dev/arch/ppc/config.in
---- linuxppc_2_4_devel/arch/ppc/config.in	Tue Sep 18 07:44:32 2001
-+++ linuxppc_2_4_devel_dev/arch/ppc/config.in	Tue Sep 18 09:41:17 2001
-@@ -279,7 +279,7 @@
-
- source drivers/parport/Config.in
-
--if [ "$CONFIG_4xx" != "y" -a "$CONFIG_PPC_ISERIES" != "y" ]; then
-+if [ "$CONFIG_4xx" = "y" -a "$CONFIG_PPC_ISERIES" != "y" ]; then
-   if [ "$CONFIG_APUS" != "y" ]; then
-     tristate 'Support for /dev/rtc' CONFIG_PPC_RTC
-   else
-diff -ruN linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c
-linuxppc_2_4_devel_dev/arch/ppc/kernel/ppc4xx_setup.c
---- linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c	Tue Sep 18
-07:45:37 2001
-+++ linuxppc_2_4_devel_dev/arch/ppc/kernel/ppc4xx_setup.c	Tue Sep 18
-09:47:42 2001
-@@ -46,7 +46,6 @@
- #include <asm/time.h>
-
- #ifdef CONFIG_PPC_RTC
--#include <asm/ds1743.h>
- #include "todc.h"
- #endif
-
-
--- armin
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
