@@ -1,39 +1,35 @@
-Message-Id: <199901152240.QAA07784@lists.linuxppc.org>
-Date: Fri, 15 Jan 1999 17:40:47 -0500 (EST)
-From: "Jim Somerville" <somer@nortelnetworks.com>
-Reply-To: "Jim Somerville" <somer@nortelnetworks.com>
-Subject: Re: MCP750 and CPX2000 System Scsi Woes
-To: Gabriel Paubert <paubert@iram.es>
-cc: linuxppc-dev@lists.linuxppc.org, valette@crf.canon.fr,
-        "Corey Minyard" <minyard@nortelnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 15 Jan 1999 18:33:14 -0500
+From: Michael Meissner <meissner@cygnus.com>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+Cc: Michael Meissner <meissner@cygnus.com>,
+        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
+        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
+        gdt@cygnus.com
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+Message-ID: <19990115183314.A6917@tiktok.cygnus.com>
+References: <19990115165805.A28318@tiktok.cygnus.com> <Pine.LNX.3.96.990115150135.11410A-100000@persephone.cs.nmt.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96.990115150135.11410A-100000@persephone.cs.nmt.edu>; from Cort Dougan on Fri, Jan 15, 1999 at 03:04:30PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message "Re: MCP750 and CPX2000 System Scsi Woes", 
-"Gabriel Paubert" <paubert@iram.es> writes:
->Not very surprising, which is the actual interrupt used for SCSI
->(it should be in the doc and in the residual data).
->
->Tell me if the zImage-2.2.0-pre5 on ftp://vcorr1.iram.es/pub/ works
->better. Early boot messages will be different and it will try to use
->the OpenPIC (that's the image running on my MVME2600 right now).
->I'm completely reorganizing my source code and patches, hopefully
->I'll be able to make it available during the week-end. 
+On Fri, Jan 15, 1999 at 03:04:30PM -0700, Cort Dougan wrote:
+> His gets it from the OF.  There's no OF code used in the prep bootloader
+> in the current kernels.
+> 
+> Are you netbooting or floppy booting?
+> 
+> }Also, Gary Thomas's 2.0.32 kernel seemed to have no problem in sizing memory,
+> }so I presume it is able to pick up the residual data.
 
-Gabriel, it worked!  SCSI devices were found successfully.  It died at the
-end trying to mount the non-existent root partition.  If you have a
-ramdisk image that contains an installer, it would be appreciated.  :-)
-I'll look for your source on Monday.
+Floppy booting, and I've also tried installing it in /dev/sda1. 
 
-Thanks again,
-
--Jim
-
-
-
+-- 
+Michael Meissner, Cygnus Solutions (Massachusetts office)
+4th floor, 955 Massachusetts Avenue, Cambridge, MA 02139, USA
+meissner@cygnus.com,	617-354-5416 (office),	617-354-7161 (fax)
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
