@@ -1,62 +1,71 @@
-Subject: spurious hangups on serial console
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: multipart/mixed; boundary="=-8nqMcqzIW/R59xg/cF65"
-Message-Id: <1067283179.1034.44.camel@jarjar.hsv.redhat.com>
-Mime-Version: 1.0
-Date: 27 Oct 2003 13:32:59 -0600
+Subject: RE: Problems bring up NFS mount on MPC8270 board
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C39D5A.58262262"
+Date: Tue, 28 Oct 2003 08:49:44 -0500
+Message-ID: <AB5AF73EAF23304EA1B932174137CED70E6F16@m5tmail.m5t.com>
+From: "Jean-Denis Boyer" <jdboyer@m5t.com>
+To: "Joe Birch" <jbirch@mangrovesystems.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-8nqMcqzIW/R59xg/cF65
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+This is a multi-part message in MIME format.
 
- I have been investigating a situation where the login prompt begins to
-fail on a serial console. What I have discovered is that there is an
-unexpected call to the serial driver's hangup() routine, between the
-login prompt and the password prompt.
- I traced this to do_tty_hangup() (called from sys_vhangup), and I see
-that it attempts to avoid calling the driver's hangup() routine for the
-console device. The test for the console doesn't account for serial
-console. The attached patch adds a check for ttyS0 if serial console is
-configured.
- I only see this problem only recent kernels, and I don't know what
-changed to make it start happening. Perhaps someone else has a better
-idea?
-
---Guy
+------_=_NextPart_001_01C39D5A.58262262
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
+The 8270 has a new core revision (Hip7) which have a new PVR:
 
---=-8nqMcqzIW/R59xg/cF65
-Content-Disposition: attachment; filename=serial_hangup.diff
-Content-Type: text/plain; name=serial_hangup.diff; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+  Hip3: 0x0081xxxx
+  Hip4: 0x8081xxxx
+  Hip7: 0x8082xxxx
 
---- v2.4.23-pre8/drivers/char/tty_io.c.orig	2003-10-27 13:22:19.000000000 -0600
-+++ v2.4.23-pre8/drivers/char/tty_io.c	2003-10-27 13:23:49.000000000 -0600
-@@ -109,6 +109,7 @@ extern void con_init_devfs (void);
- extern void disable_early_printk(void);
+It is probably not recognized has a 603e core, but a generic PPC (which =
+will not work).
 
- #define CONSOLE_DEV MKDEV(TTY_MAJOR,0)
-+#define SERIAL_CONSOLE_DEV MKDEV(TTY_MAJOR,64)
- #define TTY_DEV MKDEV(TTYAUX_MAJOR,0)
- #define SYSCONS_DEV MKDEV(TTYAUX_MAJOR,1)
- #define PTMX_DEV MKDEV(TTYAUX_MAJOR,2)
-@@ -461,6 +462,9 @@ void do_tty_hangup(void *data)
- 	for (l = tty->tty_files.next; l != &tty->tty_files; l = l->next) {
- 		struct file * filp = list_entry(l, struct file, f_list);
- 		if (filp->f_dentry->d_inode->i_rdev == CONSOLE_DEV ||
-+#ifdef CONFIG_SERIAL_CONSOLE
-+		    filp->f_dentry->d_inode->i_rdev == SERIAL_CONSOLE_DEV ||
-+#endif
- 		    filp->f_dentry->d_inode->i_rdev == SYSCONS_DEV) {
- 			cons_filp = filp;
- 			continue;
+May I suggest the patch in attachement (for =
+'arch/ppc/kernel/cputable.c'). It will correctly recognize the three cpu =
+revisions, and report the chosen one in '/proc/cpuinfo'.
 
---=-8nqMcqzIW/R59xg/cF65--
+Regards,
 
+--------------------------------------------
+ Jean-Denis Boyer, Eng.
+ M5T Centre d'Excellence en T=E9l=E9com Inc.
+ 4283 Garlock Street
+ Sherbrooke (Qu=E9bec)
+ J1L 2C8  CANADA
+ (819)829-3972 x241
+--------------------------------------------
+
+------_=_NextPart_001_01C39D5A.58262262
+Content-Type: application/octet-stream;
+	name="cputable.patch"
+Content-Transfer-Encoding: base64
+Content-Description: cputable.patch
+Content-Disposition: attachment;
+	filename="cputable.patch"
+
+LS0tIEtlcm5lbC5vcmlnL2FyY2gvcHBjL2tlcm5lbC9jcHV0YWJsZS5jCU1vbiBTZXAgMjIgMDQ6
+MTI6MjAgMjAwMworKysgS2VybmVsL2FyY2gvcHBjL2tlcm5lbC9jcHV0YWJsZS5jCU1vbiBPY3Qg
+MjcgMDk6NTU6MTUgMjAwMwpAQCAtMjk0LDcgKzI5NCwyMSBAQAogCV9fc2V0dXBfY3B1Xzc0NXgK
+ICAgICB9LAogICAgIHsJLyogODJ4eCAoODI0MCwgODI0NSwgODI2MCBhcmUgYWxsIDYwM2UgY29y
+ZXMpICovCi0JMHg3ZmZmMDAwMCwgMHgwMDgxMDAwMCwgIjgyeHgiLAorCTB4ZmZmZjAwMDAsIDB4
+MDA4MTAwMDAsICI4Mnh4IChIaXAzKSIsCisJQ1BVX0ZUUl9TUExJVF9JRF9DQUNIRSB8IENQVV9G
+VFJfQ0FOX0RPWkUgfCBDUFVfRlRSX1VTRV9UQiwKKwlDT01NT05fUFBDLAorCTMyLCAzMiwKKwlf
+X3NldHVwX2NwdV82MDMKKyAgICB9LAorICAgIHsJLyogODJ4eCAoSGlwNCA2MDNlIGNvcmVzKSAq
+LworCTB4ZmZmZjAwMDAsIDB4ODA4MTAwMDAsICI4Mnh4IChIaXA0KSIsCisJQ1BVX0ZUUl9TUExJ
+VF9JRF9DQUNIRSB8IENQVV9GVFJfQ0FOX0RPWkUgfCBDUFVfRlRSX1VTRV9UQiwKKwlDT01NT05f
+UFBDLAorCTMyLCAzMiwKKwlfX3NldHVwX2NwdV82MDMKKyAgICB9LAorICAgIHsgICAvKiA4Mnh4
+IChIaXA3IDYwM2UgY29yZXMpICovCisJMHhmZmZmMDAwMCwgMHg4MDgyMDAwMCwgIjgyeHggKEhp
+cDcpIiwKIAlDUFVfRlRSX1NQTElUX0lEX0NBQ0hFIHwgQ1BVX0ZUUl9DQU5fRE9aRSB8IENQVV9G
+VFJfVVNFX1RCLAogCUNPTU1PTl9QUEMsCiAJMzIsIDMyLAo=
+
+------_=_NextPart_001_01C39D5A.58262262--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
