@@ -1,34 +1,33 @@
-Message-ID: <39B5546F.A1A9857@wanadoo.fr>
-Date: Tue, 05 Sep 2000 22:15:43 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <39B56579.9AEED836@student.ethz.ch>
+Date: Tue, 05 Sep 2000 23:28:25 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Kaoru Fukui <k_fukui@highway.ne.jp>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: copy_to_user_ret in 2.4.0-test8
-References: <20000906044141.Postino-015892@smtp01.highway.ne.jp>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: TCP problems in 2.4
+References: <39B4B5A4.502388B@relog.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kaoru Fukui wrote:
+Michel Dänzer wrote:
 >
-> Hi!
+> I rsynced bitkeeper test 8 a few days ago and the same TCP problems I had
+> experienced with pmac-devel are still there.
 >
-> I tried to compile today's linux-2.4.0-test8.
-> rtc.c has copy_to_user_ret untill,
-> but new uaccess.h hasn't copy_to_user_ret.
-> So I couldn't compile today's 2.4.0-test8.
+> I suspect it's the TCP congestion notification, will try without that, has
+> anyone tried it?
 
-Yes. While this one is easy to fix (see drivers/sbus/char/rtc.c), you
-should probably be grateful that it didn't work :-) I got it to compile
-and boot, and it destroyed 3MB worth of personal mail. There are reports
-by others on the linux kernel list about similar experiences. It is
-possible that the fix is a simple swap of "1" and "0" in
-fs/ext2/inode.c:all_zeroes(), but until this is confirmed, I for my part
-will stay at a safe distance from this version.
+That seems to be the case, it works here with a different ISDN router. I'll
+try at the other place with this feature disabled and report success or
+failure (just in case anyone is interested :)
+
+
+Michel
+
 
 --
-Martin
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
