@@ -1,30 +1,27 @@
-Message-ID: <3CC550C8.F7AB6F1A@imc-berlin.de>
-Date: Tue, 23 Apr 2002 14:17:12 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <8D4C69676E66D511A1CB00508BBBB192011C9EFD@ranmx1.ran.harris.com>
+From: "Fend, Matthias" <mfend@harris.com>
+To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: pcmcia + isdn + m8xx
+Date: Tue, 23 Apr 2002 09:20:51 -0400
 MIME-Version: 1.0
-To: Thomas Lange <thomas@corelatus.com>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8xx IDMA and console garbage
-References: <3CC5477E.4955821A@imc-berlin.de> <3CC54AC4.49A243C9@corelatus.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thomas Lange wrote:
->
-> I also played around with IDMA and noticed the
-> same thing.
->
-> Serial works ok if you put idma priority below
-> SMC priority. Never investigated further...
+hello everybody
 
-Thanks a million.
+pcmcia services are now working :)
+(it was a hardware problem - thanks all)
 
-That helped. But why? :-(
+has anyone used a pcmcia-isdn network adapter on a m8xx ?
 
-Cheers,
+at the moment w're trying to port the hisax module (with Fritz Card A1 PCMCIA
+support) - but without the desired success...
 
-Steven
+has anyone some experience with this ?
+
+thank you
+matthias
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
