@@ -1,55 +1,47 @@
-Message-Id: <200208130028.g7D0SN916108@panix3.panix.com>
-Subject: Looking for IBM Fire Coral PCI/ISA bridge information
+Date: Tue, 13 Aug 2002 08:34:03 -0700
+From: Matt Porter <porter@cox.net>
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Mon, 12 Aug 2002 20:28:23 -0400 (EDT)
-From: "Jochen Roth" <jochen@panix.com>
-MIME-Version: 1.0
+Subject: Re: First steps to OCP device model integration
+Message-ID: <20020813083403.A30884@home.com>
+References: <20020809042605.GC23642@zax>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020809042605.GC23642@zax>; from david@gibson.dropbear.id.au on Fri, Aug 09, 2002 at 02:26:05PM +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+On Fri, Aug 09, 2002 at 02:26:05PM +1000, David Gibson wrote:
+>
+> THe patch below implements the first steps in transitioning the
+> handling of 4xx OCP devices to the unfied device model (in 2.5).  So
+> far the code just registers an ocp bus and registers each device
+> described in core_ocp on that bus.  The next step is to convert the
+> actual device drivers so that that they register with the unified
+> driver tree rather than through the old ocp_register() mechanism.
 
-I am bringing up 2.4.19 on an older 603ev platform, using the
-IBM 27-82660 host bridge and a PCI/ISA bridge identified by
-the kernel pci name database as 'IBM Fire Coral (rev 3)'.
+Hi David,
 
-I have pdf files for the 82660 bridge chip set from the IBM
-web site, but I have not found any data on the PCI/ISA bridge.
-The PCI ID is vendor=0x1014, device=0x000A.
-
-Some more information:
-
-init-2.04# cat /proc/pci
-PCI devices found:
-  Bus  0, device  11, function  0:
-    ISA bridge: IBM Fire Coral (rev 3).
-      I/O at 0x100040 [0x100047].
-  Bus  0, device  12, function  0:
-[...]
-
-init-2.04# hexdump /proc/bus/pci/00/0b.0
-0000000 1410 0a00 4701 0004 0300 0106 0000 0000
-0000010 4100 1000 0000 0000 0000 0000 0000 0000
-0000020 0000 0000 0000 0000 0000 0000 0000 0000
-0000030 0000 0000 0000 0000 0000 0000 ff00 0000
-0000040 0000 0000 0000 0000 0000 0000 0000 0000
-0000050 0001 0000 0000 0000 0000 0000 0000 0000
-0000060 0000 0000 0000 0000 0000 0000 0000 0000
-*
-0000100
-
-(The hexdump output is BE interpretation shorts of LE data.)
-
-Looking at the circuit board I would assume that the PCI/ISA
-bridge is in a chip with Texas Instruments markings. I don't
-have the board in front of me right now, but I will look up
-the markings if that helps identify the chip. Googling for
-any of the strings and sub-strings did not yield anything...
+I don't have any concerns about your patch as a starting point,
+but I'd like to talk about where we are going with driverfs
+integration of proprietary on-chip buses (4xx and other SoCs).
+This "first steps" patch shows you registering OCP as a bus
+with a name of "Onchip Peripheral Bus".  This seems to trivialize
+the bus hierarchy on 4xx and part of the point of driverfs is
+to see where devices are located in the physical bus structure
+(since management of them may vary based on their location).
+I would expect to see "PLB", "OPB", and "ExtBus" registered
+for 4xx for correctness.  They may all use the same bus ops
+in a reference board implementation (not making use of the EBC
+in most cases), but somebody could have some FPGA-based peripherals
+hanging from the EBC which require board-specific PM ops and thus
+it would be desirable to see and manage at least the External Bus
+separately in driverfs.
 
 Regards,
-Jochen
-
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
