@@ -1,37 +1,35 @@
-From: phandel@cise.ufl.edu
-Date: Tue, 25 Jul 2000 23:36:48 -0700 (PDT)
-To: "William H. Schultz" <whschult@uncc.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Current status on Voodoo3 support?
-In-Reply-To: <397E49E9.482279C7@uncc.edu>
-Message-ID: <Pine.LNX.4.21.0007252322590.27022-100000@handel3.apple.com>
+Message-ID: <397EB684.592827BD@relog.ch>
+Date: Wed, 26 Jul 2000 11:59:32 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: sound again [was: Re: xf4 bug report]
+References: <yam8242.1826.146779528@mail.lf-online.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 25 Jul 2000, William H. Schultz wrote:
+Steffen Haeuser wrote:
 
-> I was just wondering where I can find information on the status of
-> Voodoo3 support.  I noticed with my latest rsync of the 2.4.x kernel
-> that DRI support finally compiles--but the voodoo3 module still doesn't
-> compile.  Having no experience at all in coding drivers, is there
-> anything I can do to help out?
+> Just wanted to tell that after putting earphones to the Mac, the sound
+> comes. Appearently it is only the internal speaker which does not work.
 
-For now, I'd recommend using the 2.4.x driver (tdfxfb.c) in 2.2.
-I've put together a patch that should apply cleanly to the 2.2.1{6,7}
-kernels, and it is located here:
+Just for the record:
 
-http://www.cise.ufl.edu/~phandel/linux/patch/
-
-Download and apply the Config.in, Makefile.in, and fbmem.c patches.  If
-you have a 2.3.x or 2.4.x tdfxfb.c, you can patch it with the
-tdfx_tdfxfb.c.diff patch, or else just grab the already-patched tdfxfb.c
-and put it in linux/drivers/video.
+My Pismo shows the same behaviour, the 'compatible' file in /proc/device-tree
+says 'screamerawacs'.
 
 
-Thanks,
-Peter
+Michel
+
+
+--
+0 and 1. Now what could be so hard about that?
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
