@@ -1,33 +1,33 @@
-Date: Thu, 30 Mar 2000 19:19:56 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Paul Mackerras <paulus@linuxcare.com>,
-        Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: adb_buttons kernel argument
-In-Reply-To: <38E367DE.E740FCCD@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.10003301834110.2052-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <38E3998D.44D79AFB@wanadoo.fr>
+Date: Thu, 30 Mar 2000 20:14:37 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+CC: Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: adb_buttons kernel argument
+References: <Pine.LNX.4.10.10003301834110.2052-100000@opal.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Could you please describe what adb_buttons=2,xx,yy does different than
-> > adb_buttons=xx,yy (2.2 style) would do?
-> > Please keep in mind that the adb mouse code is shared with the m68k Mac
-> > port. I'm sure people there would like to get a heads-up about changes to
-> > the syntax too.
->
-> It defines key_xx + mouseclick as middle button and key_yy + mouseclick
-> as right button. This is one of the two default bindings of Xpmac, which
-> has Opt_left+click and Opt_right+click as buttons 2 and 3. I use
-> adb_buttons=2,58,124 to get the same also in the console (with gpm) and
-> in XF_FBDev.
+Michael Schmitz wrote:
 
-OK, that's indeed not covered by the standard adb_buttons syntax. Funny
-binding - how do you get a left+right button press in Xpmac?
+> OK, that's indeed not covered by the standard adb_buttons syntax. Funny
+> binding - how do you get a left+right button press in Xpmac?
 
-	Michael
+Standard Xpmac:
+button 2 (middle): emulated by Opt + 2 and also by LeftOption  +
+mouseclick
+button 3 (right) : emulated by Opt + 3 and also by RightOption +
+mouseclick
 
+This supposes, of course, that you have a keyboard that has 2 Option
+keys (keycodes called LALT and RALT). And that the handler of your
+keyboard is set to 3 and not to 2 (left=right) nor to 5 (no modifiers,
+at least for me).
+
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
