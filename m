@@ -1,58 +1,60 @@
-Date: Wed, 17 May 2000 13:36:47 -0400 (EDT)
-From: Worth <haworth@ncal.verio.com>
-To: Sergio Brandano <sb@dcs.qmw.ac.uk>
-cc: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>, linuxppc-dev@lists.linuxppc.org,
-        debian-powerpc@lists.debian.org
-Subject: Re: Pismo status 
-In-Reply-To: <200005171514.QAA00462@copper.dcs.qmw.ac.uk>
-Message-ID: <Pine.SOL.4.10.10005171219570.17780-100000@ncal.verio.com>
+Message-ID: <20000517190442.12740.qmail@web1705.mail.yahoo.com>
+Date: Wed, 17 May 2000 12:04:42 -0700 (PDT)
+From: Gabriel Ricard <g_ricard@yahoo.com>
+Subject: Re: Lombard hard freeze (update: mem>64MB)
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 May 2000, Sergio Brandano wrote:
+I was doing some transfers like that as well,
+(downloading ISOs and the like.. heh) and never had
+any problems. I don't think this is a network issue
+really.
 
+It seems that those with 3xxMHz CPUs don't have the
+same problems that those with the 400MHz CPUs do. Is
+this correct? I'm also wondering if there were just
+some bad SODIMMs that made it into the Lombards and
+that's causing the problems...
+
+--- jeramy b smith <ultrapenguin@netscape.net> wrote:
 >
-> > What should happen is that the OS should realize that the processor
-> > is getting too warm, and turn on the fan before that limit is
-> > reached.
+> > > I'm experiencing (seldom) freezes with this
+> config when I have
+> > > some heavy network activity and,
+> I don't have any ethernet problems except for a
+> dropped frame when trying to
+> retrieve a dhcp address. Aside from that, I can do
+> ultra-high 500kbps+
+> sustained network activity with no problems.
 >
->  ... relying on the OS for cooling the CPU?
->  What is the advantage of doing it?
->  What happened to good-old control theory?
 >
->  Sergio
+> > Well with 64MB I never had freeses to far.
+> >
+> > Chris told me that he has a 333Mhz lombard.
+> > I have the 400 Mhz model, maybe this makes a
+> difference which is
+> > more problematic when the clock speed it higher.
+> >
+> > Jeramy, what speed does your lombard run on?
+> > 	Bernhard
 >
+> 333mhz/192MB of memory. Current uptime:
+> 11:01am  up 14:52,  3 users,  load average: 0.07,
+> 0.09, 0.04
+>
+>
+> -Jeramy
 >
 >
 
-It's unlikely that the OS is involved in controlling the fan. To
-depend upon the OS would be a very stupid design, as what would
-happen if it goes into la-la land in a processor-intensive infinite
-loop...? The PMU is a uproc with it's own firmware and should be
-managing the fan, provided the fan isn't simply controlled
-by a thermo-switch. However, there is no documentation to that
-effect, but I haven't found any sign of fan control in the
-Darwin drivers (which added some Core99 support in the last
-update).
 
-Others have complained of the fan being on all the time, my PB2K
-500 seems to have its on quite often and it never gets anywhere near
-as hot as it gets idling in MacOS (which can get hot enough to
-cause sweaty palms when typing).
-
-It is very important that you leave the screen up when the
-system is on. Convection through the keyboard is a major part
-of that case's cooling design, which is why MacOS does not give
-you the option of not going into sleep when it is closed (Apple has
-released a tech note on that). Also use hdparm to keep the disks
-from running more than necessary, they generate a lot of heat,
-particularly the DVD.
-
-Beyond that, until Apple releases some definitive documentation --
-yah, right -- you pays your money and you takes your chances...
+=====
+Gabriel Ricard
+g_ricard@yahoo.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
