@@ -1,31 +1,37 @@
-Message-ID: <38341D34.F5CD1482@netx4.com>
-Date: Thu, 18 Nov 1999 10:37:24 -0500
+Message-ID: <38341E81.1B5730E0@netx4.com>
+Date: Thu, 18 Nov 1999 10:42:57 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Ron Fredericks <ronf@Lynx.COM>
+To: "Orjan Gustavsson" <orjan@switchcore.com>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux driver support for 860 PowerQUICC and 8260 PowerQUICC II  devices?
-References: <199911180439.UAA00333@lynx.Lynx.COM>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Compiling for the FADS, yet again...
+References: <45AFD48D077ED211BB4700A0C9DCE8FD012EDC@monza.broadswitch.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ron Fredericks wrote:
+Örjan Gustavsson wrote:
 
 
-> Does anyone know if there is a public Linux driver for PowerQUICC devices?
+> Which version of the kernel should I get?
 
-Yep.  I wrote them for the SMC, SCC, Ethernet, FEC.  There are
-some experimental versions around for I2C and SPI, along with
-microcode patches.  There is probably some other stuff around
-in there as well that I accidently let slip out.....
+Use the 2.2.13 tar image from ppc.kernel.org.  I do not (yet)
+have 2.2.x updated with 8xx changes.  The 2.3.xx kernel has
+almost everything.  When I am finished with the 82xx, I will
+make another update there, as it affects some of the 8xx code.
 
 
-> Strategic Alliance Manager ....Lynx Real-Time Systems
+> (I have tried to change .config directly, but it does not helped much)
 
-So, you want to take advantage of "free" software in your
-proprietary OS.....how nice :-).
+You have to make corresponding changes in include/linux/autoconf.h.
+
+
+> Will there be better support for the FADS, or is it a doomed project?
+
+
+I have received a few FADS patches that I will get into CVS with
+my next update, maybe over the holidays.
 
 
 
