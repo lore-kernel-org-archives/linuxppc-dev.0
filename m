@@ -1,33 +1,118 @@
-Message-ID: <367A328E.9ED@post.uni-bielefeld.de>
-Date: Fri, 18 Dec 1998 11:46:39 +0100
-From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
-Reply-To: jenschrr@post.uni-bielefeld.de
+Message-Id: <199812181217.NAA21363@kieray1>
+Date: Fri, 18 Dec 1998 13:17:10 +0100 (MET)
+From: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
+Reply-To: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
+Subject: Re:Problems starting up system on a MPC823FADS
+To: linuxppc-dev@lists.linuxppc.org
+Cc: helmut.buchsbaum@siemens.at
 MIME-Version: 1.0
-To: Bryan Christianson <bryanc@ihug.co.nz>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Porting  a driver from x86 to LinucPPC
-References: <l03130300b29d351e3bbc@[172.16.10.14]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bryan Christianson wrote:
-> 
-> I'm trying to port a device driver from x86 to linuxppc. I am running into
-> problems with big/little endian-ness.
-> 
-> The device is a PCI card. Do I need to explicitly translate the data
-> between big-endian and little-endian or will the io routines (outl, inl and
-> inw) take care of this for me? On x86 I didn't even think about this issue,
-> but now I have a feeling that maybe I should have.
+>I try to get a linux system up and running on a Motorola MPC823FADS
+ 
+I'm currently running linux on MPC860ADS and the MBX.
 
-I just fixed the NE2000 driver for this.
+MBX: 
+Works fine. 
+I've succeeded loading linux from my floppydrive (yea!) and via ethernet. 
 
-inl/outl will fix PCI's liddle-endianess to host-endianness. There is
-some documentation in include/asm/io.h.
+MPC860ADS:
+I use MPC8BUG to set up some registers and load vmlinux.
+today it runs linux from initrd. I've mounted nfs and it works fine.
+But nfs as root doesn't.
 
-Jens
+I added some debug printouts to open() and nfs read() and compared 
+nfs with initrd.
+
+initrd:
+
+VFS: Mounted root (ext2 filesystem).
+open file '/dev/console' returns 0x00000000
+open file '/etc/ld.so.preload' returns 0xfffffffe
+open file '/etc/ld.so.cache' returns 0xfffffffe
+open file '/lib/libtermcap.so.2' returns 0x00000003
+open file '/lib/libc.so.6' returns 0x00000003
+open file '/etc/nsswitch.conf' returns 0xfffffffe
+open file '/lib/libnss_compat.so.1' returns 0xfffffffe
+open file '/usr/lib/libnss_compat.so.1' returns 0xfffffffe
+open file '/lib/libnss_files.so.1' returns 0xfffffffe
+open file '/usr/lib/libnss_files.so.1' returns 0xfffffffe
+open file '//.bashrc' returns 0xfffffffe
+open file '//.bash_history' returns 0xfffffffe
+open file '/etc/termcap' returns 0xfffffffe
+bash#
+
+nfs:
+
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 36k init 28k prep
+open file '/dev/console' returns 0x00000000
+nfs: read(bin/sh, 128@0)
+nfs: read(bin/sh, 160@52)
+nfs: read(bin/sh, 13@244)
+nfs: read(lib/ld.so.1, 128@0)
+nfs: read(lib/ld.so.1, 96@52)
+open file '/etc/ld.so.preload' returns 0xfffffffe
+open file '/etc/ld.so.cache' returns 0xfffffffe
+open file '/lib/libtermcap.so.2' returns 0x00000003
+open file '/lib/libc.so.6' returns 0x00000003
+open file '/etc/nsswitch.conf' returns 0xfffffffe
+open file '/lib/libnss_compat.so.1' returns 0xfffffffe
+open file '/usr/lib/libnss_compat.so.1' returns 0xfffffffe
+open file '/lib/libnss_files.so.1' returns 0xfffffffe
+open file '/usr/lib/libnss_files.so.1' returns 0xfffffffe
+open file '' returns 0xfffffffe
+open file '/usr/local/bin/' returns 0x00000003
+reading 80 bytes from handle 0x00000003 - returned 4294967275
+reading 1024 bytes from handle 0x00000003 - returned 4294967275
+
+[nothing more]
+
+>I switched from gcc-2.8.1 to egcs-1.1b as a cross compiler (x86 -->
+>PPC), but without any success. 
+
+I think I've got the same problem as you have.
+
+I use egcs-2.91.57. It generates code that works on my MBX-board.
+
+I've read the mbx-documentation several times, and I don't think
+it tells us everything about the register-setups.
+
+My guess is that our boot-code/script doesn't initialize everything.
+Or the ethernetdriver assumes more than the ethernetaddress.
+
+>Probably one of you can give me even the slightest hint, 
+>how I could get any futher!
+
+I know that Dan Malek has released his boot-code for the FADS.
+Have a look in ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
+
+Let me know if you find out anything about the nfs-root problem!
+
+Another thing:
+
+There seem to be quit a lot of people around hacking embedded linux.
+
+Why not create a board.h file?
+
+board.h:
+
+#if defined(CONFIG_MBX)
+#include <mbx.h>
+#elif defined(CONFIG_FADS)
+#include <fads.h>
+#elif defined(CONFIG_ADS)
+#include <ads.h>
+#else
+#error "No board"
+#endif
+
+Cheers /
+
+Magnus
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
