@@ -1,44 +1,52 @@
-Subject: Re: glibc........ memory limitations.... ideas?
-To: kd@flaga.is
-Date: Thu, 21 Oct 1999 13:22:19 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <OFFBA23814.6BE68D05-ON00256810.0052B029@flaga.is> from "kd@flaga.is" at Oct 20, 99 03:16:38 pm
+Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 21 Oct 1999 13:49:41 +1000 (EST)
+In-Reply-To: <003e01bf1a9e$59f44980$0201a8c0@home> from "Jeff Millar" at Oct 19, 99 09:56:38 pm
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Message-Id: <19991021032219.963EF262@elph.research.canon.com.au>
+Message-Id: <19991021034941.C067A659@elph.research.canon.com.au>
 From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi K.D.,
+> From: Dan Malek <dan@netx4.com>
+> To: Graham Stoney <greyham@research.canon.com.au>
+> Cc: Dan Malek <dan@penguin.netx4.com>;
+> <linuxppc-embedded@lists.linuxppc.org>
+> Sent: Tuesday, October 19, 1999 3:51 PM
+> Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
+> 
+> > Graham Stoney wrote:
+> > > .... The watchdog can't
+> > > be disabled/reenabled, and its maximum period is only a couple of
+> seconds;
+> > > there's no guarantee that the kernel will have booted and loaded the
+> > > application by then, so the watchdog is likely to go off during the boot
+> > > process. I think this probably puts my plans to use it on hold for
+> now...
+> >
+> > Maybe not.  I was thinking about this (when I should have been doing
+> > other things :-) earlier today.  What we could do when the internal
+> > watchdog is configured is to service it during the Linux timer
+> > interrupt when an application doesn't have it "enabled".  This
+> > doesn't provide a watchdog service, just ensures it doesn't
+> > unexpectedly expire.  When an application decides it wants the
+> > watchdog, we don't service it in the timer ISR.
+> >
+> > We would have to litter the boot code with some service calls,
+> > like when you wait at the Linux boot prompt, and make sure
+> > you can uncompress and enable timer interrupts before the next
+> > expiration.  Beyond that, we wouldn't have to look for any
+> > watchdog service points in the kernel.
 
-kd@flaga.is writes:
-> A statically linked application (with glibc) is arround 300KB (250KB
-> -450KB).  which means that I can stuff maybe 3-4 statically linked
-> applications in the flash.
+Our email & file server died big time yesterday, so I only saw this this
+morning, and co-incidentally had exactly the same idea. To the user app,
+/dev/watchdog still looks much like the interface in watchdog.txt.
 
-I've also been looking into this. In my case, I'm developing a POSIX threaded
-Embedded C++ application in a minimal environment, which makes no use of the
-standard C++ library. I do need a C library though, possibly a subset of glibc.
-In theory, I should be able to build the entire library, then statically link
-to only drag in what I need; however, the most trivial C program ends up at
-about 200Kb with glibc 2.1.2. I filed a bug report on this, which you can see
-at:
-    http://www-gnats.gnu.org:8080/cgi-bin/wwwgnats.pl/full/1399
+Sounds pretty good to me!
 
-Looking at the symbol table from the resulting executable, there's _lots_ of
-unnecessary baggage. I'd say that given the widespread presence of dynamic
-linking, the glibc maintainers have perhaps paid less attention to structuring
-the library so that statically linked executables are minimal size. The normal
-C runtime startup code to execute main() has not historically required 200kb!
-
-I suspect we can do much, much better than this, by seeing what is causing so
-much code to be pulled in unnecessarily. Glibc is not intended to be light
-weight, but I think a little work to make it more pay-only-for-what-you-use
-could make a big impact.
-
-Regards,
+Thanks,
 Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
