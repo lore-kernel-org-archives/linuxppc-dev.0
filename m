@@ -1,30 +1,36 @@
-Subject: Re: [PATCH] cpufreq support for 7447A on 2004 iBooks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: John Steele Scott <toojays@toojays.net>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Christiaan Welvaart <cjw@daneel.dyndns.org>, cpufreq@www.linux.org.uk
-In-Reply-To: <200406051846.50718.toojays@toojays.net>
-References: <200406051846.50718.toojays@toojays.net>
-Content-Type: text/plain
-Message-Id: <1086452473.12664.36.camel@gaston>
-Mime-Version: 1.0
-Date: Sat, 05 Jun 2004 11:21:14 -0500
+Message-ID: <015501c44b82$03086510$b1710c0a@eueijkmdapsnr>
+Reply-To: "Margery Rohman" <margeryrohmanywmcavkv@usa.com>
+From: "Margery Rohman" <margeryrohmanywmcavkv@usa.com>
+To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: read this bulletin if you prescribe to effexor, paxil, or propecia
+Date: Sat, 05 Jun 2004 23:52:04 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2004-06-05 at 04:15, John Steele Scott wrote:
->
-> Okay, thanks to some tips from Benjamin Herrenschmidt, I now have a patch
-> against 2.6.6 which lets you control dynamic frequency scaling on the latest
-> model iBook G4. I imagine that this same method would apply to the new
-> PowerBooks as well.
+Now you can order generic versions of popular medications without the high
+pricing.
 
-I suggest you also look at the latest Darwin code Apple released, more
-sepecifically AppleMacRISC2PE. There is some new bits including something
-about tweaking a bus delay when changing the frequency on these models.
+Americans are switching to overseas pharmacies to save even more money on
+common products such as lipitor,celebrex, etc.
 
-Ben.
+Order online and avoid embarassing doctor consultations or phone
+interviews.
 
+Sincerely,
+Marcie Gathings
+
+http://rd.yahoo.com/Jnxcs/Aoerqn/*http://www.lowcostgeneric.com
+
+
+
+
+
+
+If you have no interest in generic medications, select below:
+http://g.msn.com/0US!s9.Flh/MY.Subw?http://lowcostgeneric.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
