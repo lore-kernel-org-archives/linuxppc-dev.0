@@ -1,32 +1,70 @@
-Date: Mon, 12 Aug 2002 09:34:30 -0500
-From: Peter Bergner <bergner@borg.umn.edu>
-To: Paul Mackerras <paulus@au1.ibm.com>
-Cc: Mike Corrigan <mikejc@us.ibm.com>,
-	Anton Blanchard <anton@samba.org>,
-	linuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: FP save/restore code in ppc32/ppc64 kernels
-Message-ID: <20020812143430.GA35003@congo.borg.umn.edu>
-References: <OFD0ACCC08.6A2BB8EC-ON86256C0F.004C0678@us.ibm.com> <15698.61945.251112.661796@argo.ozlabs.ibm.com> <20020808210927.A870681@brule.borg.umn.edu> <15703.8116.483898.162119@argo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15703.8116.483898.162119@argo.ozlabs.ibm.com>
+Message-ID: <3D5990D8.7010001@dslextreme.com>
+Date: Tue, 13 Aug 2002 16:06:00 -0700
+From: akuster <akuster@dslextreme.com>
+Reply-To: akuster@dslextreme.com
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: OCP Version 2 ( or "the other bus interface" tobi)
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
-:> It might be a good idea to clear the fpscr after saving it out to
-:> the thread struct though...
-:
-: Exactly.  We don't.  If we did then we could do as you say and it
-: would work on SMP.  We could do that as long as we are sure we won't
-: ever want to do a UP kernel on ppc64...
+-- Draft version 0.1 --
 
-Or we could force the UP kernel to act like the SMP kernel and not
-use lazy save.  How big of a "win" is lazy save on UP kernels?
-I will also note that UP kernels haven't worked for nearly 2 years
-on PPC64.
+Well here is a high level view of what I think bus support should be for
+  processors that have re-usable funtional blocks such as the 4xx
+family.  I wanted to get this out since providing the details is taking
+me too long.  I do have a few questions and trade-offs that should to be
+discused.  This interface can go beyond just ocp such as for external
+devices.  Once the high level is done, then I can fill in the blanks for
+the detail and get that out and possible code segments.
 
-Peter
+
+
+The biggest changes are Power Management, bus hiarchy and the new driver
+model support.
+
+There are three areas that are affected; Arhcitecture, core and drivers.
+
+Architecure: provide flexability for each architecture to do any setup
+priory invoking bus scanning such as ocp_init() that each arch defines,
+and changes to the core_ocp to add define devices as a bridge, host or
+normal device and what ever elase is needed.
+
+Core: addition of bus scan technology , power management and
+infustructure for new driver model.
+
+1) how do we want to determine what device is on what bus?
+	a) add a size for each device in the core_ocp[] and for any device
+between the addr and size are on that bus
+
+	b) Use order in the core_ocp[] to determine bus order and which device is
+associated to which bus. ie devices between bridges are on a particular bus
+
+	c) hardcode bus association in core_ocp[], ie added a bus_num field
+
+2) change the device stuct so that is no longer contains an entire copy
+of each devices core_ocp data.
+	a) index
+	b) pointer
+
+3) Model how PCI did their pm call backs
+
+
+Drivers: They need to be ported to support the driver model including
+power managment call backs and for any other changes that happen in the
+core.
+
+
+We need to add in additional support beyond what ocp currently has
+primary since there are more than 1 bus in any 4xx and if we want to
+truely support pm then we need to deal with _all_ buses which is why I
+think its more than ocp.
+
+Feedback, comments , ideas and arrows
+
+armin
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
