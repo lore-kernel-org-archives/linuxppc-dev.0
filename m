@@ -1,40 +1,35 @@
-Date: Fri, 19 Oct 2001 16:07:33 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Geoff Wyche <GWyche@DATUM.com>
+Message-ID: <3BD0E1BD.7927133@mvista.com>
+Date: Fri, 19 Oct 2001 22:30:21 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Neil Wilson <NWILSON@Airspan.com>
 Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8xx + serial console on SCC
-Message-ID: <20011019160733.G10163@cpe-24-221-152-185.az.sprintbbd.net>
-References: <607BF0A2B4F3D411A09500508BC225427E8329@mailctx.datum.com>
-Mime-Version: 1.0
+Subject: Re: Sandpoint X3 + network
+References: <E69FF45ADA3BD511A25900047623CC4F12AB2E@jupiter>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <607BF0A2B4F3D411A09500508BC225427E8329@mailctx.datum.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Oct 19, 2001 at 01:08:34PM -0700, Geoff Wyche wrote:
->
-> Hello all,
->
-> > Yes, we've tested this configuration once when we were re-working the
-> > UART driver for hardware-handshake support, configurable buffer sizes
-> > etc.
-> > We tested all 6 channels ( 2 x SMC, 4 x SCC) on a IP860 board.
->
-> I think I've found a bug related to SCCs and serial console IO.
-> Looks like this might have crept in as a result of two transposed lines.
-> A patch showing the difference is included at the end of this post.
+Neil Wilson wrote:
 
-Grr, I hate reading diff -c's.  If I'm reading it right, you say it
-should be:
-sccp->scc_gsmrl &= ~(UART_SCCM_TX | UART_SCCM_RX);
-#ifdef CONFIG_SERIAL_CONSOLE
-...
+> Whilst I am trying to look at this problem I was wondering if anyone else
+> has seen similar or even better knows why & has a cure.
 
-Right?
+I have seen the problem for all too long and don't yet have a cure.
+When speaking to folks at Motorola, it appears they are having more
+success than I when the Sandpoint X3 is configured for legacy X2 mode.
+If you can determine how to do that successfully (I found it easier to
+use the default X3 mode than figure out the switches :-), build a kernel
+for the X2 and see how it works.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Due to the pipeline differences in the 7450, I suspect there are some
+sync's or eieio's missing, but I haven't had the time to finish all
+of the 7450 work.
+
+Thanks.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
