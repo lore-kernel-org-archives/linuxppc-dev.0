@@ -1,31 +1,127 @@
-Message-Id: <200211190608.AAA15597@lists.linuxppc.org>
-Date: Tue, 19 Nov 2002 14:14:55 +0800
-From: "Li Xiangrong" <lixiangrong@china.com>
-To: "mlocke@mvista.com" <mlocke@mvista.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: pcmcia problem
+Message-Id: <200211190911.DAA16251@lists.linuxppc.org>
+From: "=?GB2312?Q?=D3=DA=E6=BA?=" <yuj@mail.ndsc.com.cn>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: ppc-bug
 Mime-Version: 1.0
 Content-Type: text/plain
+Date: Tue, 19 Nov 2002 17:13:5 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, mlocke,
-    I am now porting the hhl to a custom board with pcmcia. However, I have trouble dealing with pcmcia and i write the mail for ur help.
-	I configed the kernel with pcmcia module and then I compiled the kernel. I ported the kernel on my board and inserted the pcmcia card(a intel series 2+ flash card). Having started the cardmgr, i checked the stab of socket and got information that 'anonymous memory'.I checked the schematics of Powerpc 860 and pcmcia socket carefully and confirmed that the hardware platform is ok. Surely the problem happens on the drivers(or illegal kernel configuration).
-	I checked in the maillist of ppclinux-embedded and got tips there. People discussed the same issue before. From the maillist, I got that:
-		1. hhl should be patched: there's 2 hhl patch for pcmcia:'hhl-8xx_pcmcia-3.1.19.patch'and 'hhl-8xx-kernel_pcmcia.patch' .
-		2. a conf file should be changed.'/etc/sysconfig/pcmcia' should be changed the i82365 to m8xx_pcmica.
-	 I then checked the target system but found no sysconfig under the directory of /etc. And I can not find the patches on my hhl disk or on the monta vista zone. My question is :
-	1. Are these two patches indispensable? Since I have configed the kernel with pcmcia support, must I re-install these 2 patches?
-	2. How can I get these 2 patches? I have checked the disk and the hhl zone with no results. Where r they?
-	Any suggestion is appreciated.
+hi!
+   montavista said :
 
+  The following lists information about the LSP support level, the board versions tested, the firmware tested, and board features supported. Board versions and firmware not tested are not supported at this time.
+  #The Motorola LoPEC LSP is supported for development and deployment with Pro 2.1.
+  #The board version tested was Motorola LoPEC version 1.0.
+  #The firmware tested was PPC1-Bug.
 
-Best regards.
+While,motorola said there is no different version of motorola lopec 7410.And the version of ppcbug is always ppc5-bug.
 
-Li Xiangrong
-lixiangrong@china.com
-2002-11-19
+>  I'm porting mvista linux 2.1 for the motorola lopec mpc7410 board.And
+> I noticed that there are some differences between the board version
+> described by mvista and motorola.Also,the version of PPCBug is
+> different.I'm wondering why?
+>  Here is my board starting information:
+> ///////////
+> Copyright Motorola Inc. 1988 - 2001, All Rights Reserved
+>
+> PPC5 Debugger/Diagnostics Release Version 1.3 - 04/27/2001 RM01
+> COLD Start
+>
+>> Local Memory Found =20000000 (&536870912)
+>
+> MPU Clock Speed =400Mhz
+>
+> BUS Clock Speed =100Mhz
+>>
+> Reset Vector Location  : ROM Bank B
+> Mezzanine Configuration: Single-MPU
+> Current 60X-Bus Master : MPU0
+> Idle MPU(s)            : NONE
+>
+> L2Cache:       2048KB, 200Mhz
+> System Memory: 512MB, ECC Enabled (ECC-Memory Detected)
+>>
+> PPC5-Bug>CNFG
+> Board (PWA) Serial Number = "6016204     "
+> Board Identifier          = "LoPEC-P011      "
+> Artwork (PWA) Identifier  = "01-W3646F11B    "
+> MPU Clock Speed           = "400"
+> BUS Clock Speed           = "100"
+> Ethernet Address          = 0001AF0996C8
+> Primary SCSI Identifier   = "07"
+> System Serial Number      = "0               "
+> System Identifier         = "0                              "
+> License Identifier        = "6016204  "
+> //////////////////
+>
+> When I port the mvista linux v2.1(motorola lopec 74xx lsp),the
+>> starting information is showed below:
+>
+> //////////////
+>> Copyright Motorola Inc. 1988 - 2001, All Rights Reserved
+>
+> PPC5 Debugger/Diagnostics Release Version 1.3 - 04/27/2001 RM01
+> COLD Start
+>>
+> Local Memory Found =20000000 (&536870912)
+>
+> MPU Clock Speed =400Mhz
+>
+> BUS Clock Speed =100Mhz
+>>
+> Reset Vector Location  : ROM Bank B
+> Mezzanine Configuration: Single-MPU
+> Current 60X-Bus Master : MPU0
+> Idle MPU(s)            : NONE
+>
+>> L2Cache:       2048KB, 200Mhz
+> Initializing System Memory (DRAM)...
+> L2Cache:       2048KB, 200Mhz
+> System Memory: 512MB, ECC Enabled (ECC-Memory Detected)
+>
+>
+> SelfTest/Boots about to Begin... Press <BREAK> at anytime to Abort ALL
+>
+>> NetBoot about to Begin... Press <ESC> to Bypass, <SPC> to Continue
+>
+> Network Booting from: I82559, Controller 0, Device 0
+> Device Name: /pci@fec00000/pci8086,1209@e,0:0,0
+> Loading: vmlinuz-motorola-lopec
+>
+>> Client IP Address      = 192.168.201.3
+> Server IP Address      = 192.168.201.1
+> Gateway IP Address     = 0.0.0.0
+> Subnet IP Address Mask = 255.255.255.0
+> Boot File Name         = vmlinuz-motorola-lopec
+> Argument File Name     =
+>
+> Network Boot File load in progress... To abort hit <BREAK>
+>
+> Bytes Received =&784800, Bytes Loaded =&784800
+> Bytes/Second   =&392400, Elapsed Time =2 Second(s)
+>
+> Residual-Data Located at: $1FED16DC
+>> loaded at:     00005400 000C65BC
+> relocated to:  00800000 008C11BC
+>> zimage at:     00805A00 008BD53E
+> avail ram:     00400000 00800000
+>
+> Linux/PPC load: ip=on
+>> Uncompressing Linux...done.
+> Now booting the kernel
+>
+> ///////////////////////////////////////////////////////////////////////////
+>>
+> After  "Now booting the kernel",there is nothing put on the screen.I
+> don't know why?Can you help me?
+
+= = = = = = = = = = = = = = = = = = = =
+
+　　　　　　
+　　　　　　　　yuj@mail.ndsc.com.cn
+　　　　　　　　　　2002-11-15
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
