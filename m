@@ -1,89 +1,44 @@
-Message-ID: <002101c27ea6$ee3ad860$0200a8c0@telia.com>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Stephan Linke" <Stephan.Linke@epygi.de>
-Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <FCEAKDJJAPHPLJFINDAJCEHFCKAA.Stephan.Linke@epygi.de>
-Subject: Re: [PATCH] arch/ppc/8xx_io/enet.c, version 2
-Date: Mon, 28 Oct 2002 18:24:54 +0100
+Message-ID: <3DBDD68C.CD41E51D@wvi.com>
+Date: Mon, 28 Oct 2002 16:30:04 -0800
+From: Jim Potter <jrp@wvi.com>
+Reply-To: jrp@wvi.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: NFS client-side components question
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Stephan
+I'm developing a moderate sized ramdisk image to be used on an embedded
+project, and I'm having trouble getting all of the NFS client-side file
+dependencies sorted out on the ramdisk.  I'm using YDL installed on
+powermacs for my hosts & servers (not cross-hosted from x86 boxes).  The
+NFS mounts work fine when mounted from another powermac or when the
+embedded system is Root-On-NFS booted (both of which have a full YDL
+install).
 
-> Hi Jocke,
->
-> I just had a look at the code. So far it is running fine. on my board. :)
-> Following question:
-> In scc-enet_rx you use invalidate_dcache_range() for the skb data area.
-> Why don't you do the same in scc_enet_init() for the first set of skb's?
-> Isn't it required too at this place.
+The problem is that when the embedded system is booted to ramdisk, and
+then an NFS mount of the server is attempted;  the mount command goes
+away, and eventually a "portmap: server localhost not responding, timed
+out" message pops up.  The NFS server box is listed in the /etc/hosts
+file.
 
-Thanks for trying this!
+My ramdisk image has been built by taking various components from a YDL
+install;  this is so that the target embedded environment (ramdisk) has
+compatibility with customer's lab machines (typically YDL boxes).  It's
+my opinion that I have missed something on the client-side when
+assembling the ramdisk image.  Does anyone know where I can find a
+listing of the dependencies within the various NFS client components
+(mount, nfs, rpc, libs, etc)?  Thanks, everyone.
 
-I did this in my first version, but in my second version I moved the
-invalidate_dcache_range() to AFTER the ethernet frame had been received.
+--
+Sincerely,
 
-invalidate_dcache_range() can either be called when you add the buffer to the
-HW(BD) or after you have received a packet but before you try to use it. Doing it
-after has one advantage, you know the packet len and therefore you only need
-to invalidate "packet len" bytes.
+Jim Potter
+45th Parallel Processing
 
-In my tree I also removed the "sync" instruction in  invalidate_dcache_range()
-because I don't think it's needed. My contact at Motorola thinks so too.
-I have been running without the sync instruction for 2-3 weeks and
-has yet to see any problems. Would be intresting to hear if others
-can try this out and if it gives any performance improvement.
-
-            Jocke
->
-> Thanks, Stephan
->
-> > -----Original Message-----
-> > From: owner-linuxppc-embedded@lists.linuxppc.org
-> > [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Joakim
-> > Tjernlund
-> > Sent: Donnerstag, 24. Oktober 2002 16:24
-> > To: linuxppc-embedded@lists.linuxppc.org
-> > Cc: scop@digitel.com.br; thomas@corelatus.com
-> > Subject: [PATCH] arch/ppc/8xx_io/enet.c, version 2
-> >
-> >
-> >
-> > Hi
-> >
-> > This is the second version of my patch that removes the expensive
-> > memcpy of
-> > received
-> > ethernet frames in interrupt context.
-> >
-> > I have 1 report(from Ricardo Scop) of 20% increase in
-> > packets/second, packet
-> > size 1500 when
-> > applied to 8260 FEC(needs to be applied manually). But min packet size
-> > decreased with 10 %.
-> > This version should fix the 10% decrease case.
-> >
-> > This patch could be adapted 8xx_io/fec.c and 8260_io/enet.c and
-> > 8260/fcc_enet.c with little effort.
-> >
-> > Better fix a bug in set_multicast_list(), move the dmi list forward when
-> >     walking it(dmi = dmi->next;)
-> >
-> > New stuff:
-> >    - Configrable: copy small packets or pass them directly, see
-> > COPY_SMALL_FRAMES in code.
-> >    - Collision reporting fix form Thomas Lange.
-> >    - Don't pass receive frames which has error upwards.
-> >    - Report RX_OV errors as fifo errors, not crc errors.
-> >
-> > Please test and report any problems and performace improvements.
-> >
-> >         Jocke
-> >
+  Firefighting: Bustin' ours, Savin' yours.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
