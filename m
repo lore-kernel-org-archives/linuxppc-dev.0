@@ -1,17 +1,15 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id BDA2A2BDEB
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53510.mail.yahoo.com (web53510.mail.yahoo.com
+	[206.190.37.71]) by ozlabs.org (Postfix) with SMTP id 8383A2BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Nov 2004 07:17:01 +1100 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 16 Nov 2004 13:16:54 -0700
-To: roger blofeld <blofeldus@yahoo.com>
-Message-ID: <20041116201654.GA3088@xyzzy>
-References: <20041115173402.GA22661@xyzzy>
-	<20041116182609.68313.qmail@web53502.mail.yahoo.com>
-Mime-Version: 1.0
+	Wed, 17 Nov 2004 08:28:16 +1100 (EST)
+Message-ID: <20041116212814.592.qmail@web53510.mail.yahoo.com>
+Date: Tue, 16 Nov 2004 13:28:13 -0800 (PST)
+From: roger blofeld <blofeldus@yahoo.com>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <20041116201654.GA3088@xyzzy>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20041116182609.68313.qmail@web53502.mail.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Lite5200 FEC Driver on linux 2.6 broken? (again)
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,12 +22,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 16, 2004 at 10:26:09AM -0800, roger blofeld wrote:
-> Retransmissions from the lite5200 work OK now, but the occasional ACK
-> packet is sent from the lite5200 with a bad checksum causing
-> retransmissions. Perhaps another patch would fix this problem too?
+--- Dale Farnsworth <dale@farnsworth.org> wrote:
 
-I too have seen occasional errors, but I don't think it's a software
-issue.
+> On Tue, Nov 16, 2004 at 10:26:09AM -0800, roger blofeld wrote:
+> > Retransmissions from the lite5200 work OK now, but the occasional
+> ACK
+> > packet is sent from the lite5200 with a bad checksum causing
+> > retransmissions. Perhaps another patch would fix this problem too?
+> 
+> I too have seen occasional errors, but I don't think it's a software
+> issue.
+> 
+> -Dale
+> 
+One more clue to what is happening: Whenever a packet is transmitted
+with a bad checksum, the tail end of the data is in error. For example,
+a packet of 0x442 bytes (0x42 header, 0x400 data) is corrupt from byte
+0x360 on. Corruption always happens at a multiple of 0x10 from the
+start of the packet. If it is software, perhaps we don't wait long
+enough for DMA completion, or DMA signals completion too soon? Or maybe
+the buffer is re-used or stomped on? Seems like too large of a
+corruption to be due to cache.
+-roger
 
--Dale
+
+		
+__________________________________ 
+Do you Yahoo!? 
+The all-new My Yahoo! - Get yours free! 
+http://my.yahoo.com 
+ 
