@@ -1,27 +1,36 @@
-Date: Wed, 9 Dec 1998 01:23:04 -0600 (CST)
+Date: Wed, 9 Dec 1998 01:30:02 -0600 (CST)
 From: Troy Benjegerdes <hozer@drgw.net>
-To: wesman@gladstone.uoregon.edu
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: status of multiprocessor support?
-In-Reply-To: <Pine.BSF.4.00.9812071701060.21522-100000@azrael.uoregon.edu>
-Message-ID: <Pine.LNX.4.04.9812090122030.13527-100000@narn.local.drgw.net>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+cc: Dan Malek <dmalek@jlc.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PReP RTC vs Decrementer accuracy...
+In-Reply-To: <Pine.LNX.3.96.981208165142.11398A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.LNX.4.04.9812090128220.13527-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Dec 1998, Wesley Horner wrote:
+On Tue, 8 Dec 1998, Cort Dougan wrote:
+
+> The hardware is more stable, of course, but we can miss when handling it.
+> Take a look at the decrementer code - I think it's possible to miss a decr
+> when resetting it.  That could explain drift.
+
+Okay, would this cause the clock to be fast? (mine was about 45 minutes
+fast) (And, is it feasable to make it 'impossible' to miss a decr?)
+
+I have also rebooted the machine quite a bit.. This may also be the
+reason.
 
 > 
-> I am thinking about picking up a duel 604e/200 for Linuxppc and BeOS but I
-> am worried that BeOS will be the only one to see any benefit.  Has anybody
-> gotten linuxppc working on two processors yet.  If so what was required.
+> }Nope, not even close.  If you convert rtc drift specifications and
+> }processor oscillator drift specifications to a common reference (like
+> }PPM) you will see processor oscillators are significantly better
+> 
+> 
 
-is this a Mac or some other board? I'll be working on SMP for the Motorola
-MTX in a few weeks.
-
-Mac SMP is partially/mostly supported, AFAIK
+Basically, I want to know the right way to do this before fixing it.
 
 --------------------------------------------------------------------------
 | Troy Benjegerdes    |    troybenj@iastate.edu    |    hozer@drgw.net   |
