@@ -1,49 +1,60 @@
-Message-Id: <200002030826.JAA27945@denx.local.net>
-To: greyham@research.canon.com.au (Graham Stoney)
-cc: alan@packetengines.com (Alan Mimms),
-        linuxppc-embedded@lists.linuxppc.org (Linux PPC Embedded)
-Subject: Re: Using LinuxPPC executables on 8xx processors
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 03 Feb 2000 16:25:32 +1100."
-             <20000203052532.A3A581B568@elph.research.canon.com.au>
-Date: Thu, 03 Feb 2000 09:26:21 +0100
+Message-ID: <38994521.CD0878F5@digigram.com>
+Date: Thu, 03 Feb 2000 10:06:41 +0100
+From: Olivier DERVYN <dervyn@digigram.com>
+MIME-Version: 1.0
+To: Linux PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linux PPC on Sandpoint or YellowKnife board with 750
+Content-Type: multipart/mixed;
+ boundary="------------801D627E75B896E0D9492656"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20000203052532.A3A581B568@elph.research.canon.com.au>
-Graham Stoney writes:
->
-> I believe you just answered your own question: You can indeed use dynamically
-> linked LinuxPPC executables directly on MPC8xx targets. However, you need
-> to rebuild the shared library they link against at runtime as Wolfgang
-> describes. Note that memset.S and dl-machine.c are in the shared library, and
-> not in the dynamically linked executables.
-
-Well, in fact even the original (for instance LinuxPPC  R4)  binaries
-*and*  libraries run pretty stable on the MPC8xx system once you have
-the FPU emulation working. It seems that the cache line problem  does
-not  show  up most of the time. So if you are running a test environ-
-ment, where you occassionally need this tool or another, you may just
-ignore this for a while.
-
-However, for a production system which must run stable I recommend to
-recompile the included libs and bins with (1) the the cache line size
-adjusted and (2) soft-float (or - even better -avoid FP suff at all).
+Il s'agit d'un message multivolet au format MIME.
+--------------801D627E75B896E0D9492656
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
 
-Finally: credit where credit is due. All I did was  putting  together
-some  scripts to build the tools and libs - but most of the patches I
-include where contributed by other people here on the list.
+I am a novice in Linux Embedded. I search information to
+use it on Motorola board.
 
-Wolfgang Denk
+Does anyone have successfully cross-compiled linux for MOTOROLA
+Sandpoint board or a PPC linux binary kernel can be used on this
+board ?
+
+Does anyone have information to do it ?
+
+Thanks very much
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Living on Earth may be expensive, but it includes an annual free trip
-around the Sun.
+Cordialement,
+
+Olivier DERVYN
+--------------801D627E75B896E0D9492656
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="dervyn.vcf"
+Content-Description: Carte pour Olivier DERVYN
+Content-Disposition: attachment;
+ filename="dervyn.vcf"
+Content-Transfer-Encoding: 7bit
+
+begin:vcard
+n:DERVYN;Olivier
+tel;fax:04 76 52 18 44
+tel;work:04 76 52 55 09
+x-mozilla-html:FALSE
+url:http://www.digigram.com
+org:DIGIGRAM;Département R&D
+version:2.1
+email;internet:dervyn@digigram.com
+title:Chef de projet / Project manager
+adr;quoted-printable:;;Parc de Pr=E9 Milliet=0D=0A;Montbonnot;;38330;France
+note;quoted-printable:DIGIGRAM=0D=0AParc de Pr=E9 Milliet=0D=0A38330 Montbonnot=0D=0AFRANCE
+fn:Olivier DERVYN
+end:vcard
+
+--------------801D627E75B896E0D9492656--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
