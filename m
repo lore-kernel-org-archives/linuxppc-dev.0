@@ -1,35 +1,26 @@
-Date: Mon, 26 Apr 2004 14:22:20 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andrew Williams <awilliam@nortelnetworks.com>
+Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B87CB13@zcard0k8.ca.nortel.com>
+From: "Andrew Williams" <awilliam@nortelnetworks.com>
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: FW: Code Clean-Up
-Message-ID: <20040426212220.GH19246@smtp.west.cox.net>
-References: <E380A44D523BD5118EAE0002A52CE5C40B87C888@zcard0k8.ca.nortel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E380A44D523BD5118EAE0002A52CE5C40B87C888@zcard0k8.ca.nortel.com>
+Subject: RE: FW: Code Clean-Up
+Date: Mon, 26 Apr 2004 17:48:10 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Apr 26, 2004 at 02:50:24PM -0400, Andrew Williams wrote:
+No I have no specific code segment in mind.
+(perhaps kernel/time.c?)
 
-> What's the current view/policy on code cleanup?
-> Eg. immap_8260.h vs 8xx_immap.h
->
->   Furthermore each unit that accesses the immap, has to conditionaly select
-> the target platform header file.
->
-> I'm proposing a single immap.h file, that conditionaly selects either
-> immap_8260.h, or 8xx_immap.h (possibly renamed to immap_8xx.h).
->
->   Do people want to see this type of restructure/patch?
+I was actually looking forward to 8260 vs 8270
+which have very similar immaps. Do we want to clutter
+the 8260_immap with conditional compiles specific to the
+8280 series (70/75/80), or create a new immap_8270.h.
 
-Do you have code which works on both 82xx (or looking at 'newer' code in
-2.4, soon to be in 2.6, 'cpm2' which is 82xx/85xx) and 8xx ?
+I'm just curious as to what the "consensus" is surrounding
+this type of change. No sense posting patches that don't
+fit others views of the architecture.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Andrew
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
