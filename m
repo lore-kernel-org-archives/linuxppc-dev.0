@@ -1,28 +1,24 @@
-Date: Wed, 3 Jul 2002 16:42:15 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: duey <jduey@ccc-dcs.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Walnut config in kernel tree
-Message-ID: <20020703234215.GB697@opus.bloom.county>
-References: <20020704001909.69DBF38D22@server.weathercom.com>
+Subject: MTD on the EP405
+From: Daniel Merritt <dmerritt@microlab.uccb.ca>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Date: 04 Jul 2002 13:43:44 -0300
+Message-Id: <1025801024.7134.8.camel@debian>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020704001909.69DBF38D22@server.weathercom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jul 03, 2002 at 06:01:45PM +0000, duey wrote:
+Hello,
 
-> Has the make target to config the kernel tree for the walnut board changed?
-> I just cloned the latest tree from the mvista mirror and when I did a 'make
-> walnut_config' I got a 'no rule to make target' error message.
+     I've compiled 2.4.18 for the PPC EP405 board, and have included AMD
+flash support in the MTD options, but I'm not seeing any indication that
+the kernel is picking them up, even with the mtd verbosity set to 3.
+Should the kernel be echoing something if it finds the flash? Is the
+EP405 supported?
 
-Did you do a 'bk -r get -q' first?  I'm not sure if the target will work
-if arch/ppc/configs/<name>_defconfig isn't checked out.
+Thank you for your time,
+Daniel Merritt
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
