@@ -1,22 +1,23 @@
-Message-ID: <20040221235307.56947.qmail@web11610.mail.yahoo.com>
-Date: Sat, 21 Feb 2004 15:53:07 -0800 (PST)
-From: Shamile Khan <shamile@yahoo.com>
-Subject: Xilinx ML300 PCI
-To: linuxppc-embedded@lists.linuxppc.org
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20040223035319.45320.qmail@web15205.mail.bjs.yahoo.com>
+Date: Mon, 23 Feb 2004 11:53:19 +0800 (CST)
+From: =?gb2312?q?song=20sam?= <samsongshzu@yahoo.com.cn>
+Subject: Comments on Embedded World 2004 exhibition
+To: "PPC Linux Mailing List (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-Our custom board utilizes Xilinx's PCI Core inside the
-Virtex II chip. I looked at the kernel sources in
-linuxppc_2_4_devel tree and I see support for PCI. Is this
-support for Xilinx PCI core or an external PCI chip.
+Could any lucky ones who attended Embedded World 2004
+exhibition make a comment on this event? Or give some
+nice information on it?
 
-Thanks,
-Shamile
+Thanks in advance!
+
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
