@@ -1,49 +1,38 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3DF510E2.1060102@redswitch.com>
+Date: Mon, 09 Dec 2002 13:53:38 -0800
+From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: boot flash problem,
-Date: Mon, 9 Dec 2002 16:42:29 -0500
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B9B@mail1.mediatrix.com>
-From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-To: "Li Xiangrong" <lixiangrong@china.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Which kernel tree should I keep up with?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Both time, i set the base address 0xffe00000, which
-> means i can use a flash of 2M words here.
+Hi Embedded Linux PPC Gurus,
 
-I don't think so.
+Someone else might have asked such a question before and there seemed to
+be no answer so far. Recently I am in the similar situation where I want
+to upgrade my linux system.
 
-The 32-bits address bus of the PPC is still
-on a byte boundary, not on a word of 16 bits.
+I'm using Linux distribution from DENX (basically 2.4.4). It's stable
+and has lots of features that official kernel tree dosn't have until
+recently I encountered a maybe weird probelm on mtd devices (its mtd
+code is not uptodate). This forced me to upgrade mtd code first.
+Unfornately the lates mtd code is no longer compatible with linux
+kernels whose version are less than 2.4.11. :( I guess there should be
+some effort to make mtd code backward compatible. So I'm thinking to
+upgrade the kernel to the latest one. Problem is that there seemed to be
+several choices which I don't know how to choose.
 
-A 16-bits flash means the GPCM reads 16 bits at a time from
-the data bus, and outputs addresses aligned on 16 bits.
-Then you wire PPC:A30 to Flash:A0, PPC:A29 to Flash:A1, and so on,
-leaving PPC:A31 unconnected.
+One choice is of course the official release from www.kernel.org.
+Another is from bkbits.net or mvista.com. Which one is better for
+embedded linux PPC system? When www.kernel.org release a new version, do
+bkbits.net and mvista.com encompass it in their trees? Thanks for your
+advices.
 
-Here, both flashes you specified are 16-bits wide,
-so I understand the connections were compatible
-between the 16MBits and the 32MBits,
-with one more address line PPC:A10 wired to Flash:A20.
+- Shawn.
 
-If you have a flash of 32Mbits (4MBytes), even if it has a port
-size of 8, 16 or 32 bits wide, you will address it from your code
-(running on the PPC) using an address range of 4MBytes also.
-
-Thus, its base address should be at 0xFFC00000,
-both in BDI and (very important) in the boot loader also.
-
-Good luck,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
