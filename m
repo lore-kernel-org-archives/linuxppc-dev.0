@@ -1,61 +1,66 @@
-Date: Thu, 08 May 2003 09:53:36 -0700
-From: Peter Ryser <Peter.Ryser@xilinx.com>
-Subject: Re: advice please: virtex pro 2
-To: James Don <JDon@spacebridge.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3EBA8B90.36E24A3E@xilinx.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <DB0585C9F6F9D411BE8F00D0B7896A4CC065FE@SNCMAIL>
+Message-ID: <3EBA99D6.39389096@opersys.com>
+Date: Thu, 08 May 2003 13:54:30 -0400
+From: Karim Yaghmour <karim@opersys.com>
+Reply-To: karim@opersys.com
+MIME-Version: 1.0
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: [ANNOUNCE] embedded book / embeddedTUX.org
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-James,
+Hello,
 
-> 1.) Is it just as "easy" as an MPC860 or MPC8260 based platform ?
+For some time now I have been working on putting together
+documentation to help developers use Linux in embedded
+systems without requiring the purchase of any product or
+the use of any pre-packaged distribution:
+http://www.oreilly.com/catalog/belinuxsys/
+The approach I've documented requires only that you have
+an Internet connection to download the various packages
+straight from the source. The complete procedure to obtain
+a functional embedded system based on those packages is
+detailed in the book.
 
-Once you have a board with a bitstream for the FPGA (for example ML300 as it
-ships) the development environment on Virtex-II Pro doesn't look different for
-a SW person than on any other microprocessor based board.
+The book covers the use of many different hardware platforms,
+including the PPC, and does not focus on any single
+architecture. Among other things, the configuration,
+installation, and use of U-Boot on a PPC platform is amply
+covered.
 
-Building the board itself is the same amount of work as for other chips.
+In order to further increase the level of technical
+discussion around the use of Linux in embedded systems and
+provide up-to-date information, I've also set up a web site
+and a mailing list at:
+http://www.embeddedtux.org/
+As the site states, hype and other marketing-related material
+aren't welcome on embeddedTUX.org. I think many will agree
+that there has been enough of that already on the subject of
+"embedded Linux."
 
-Building the bitstream for the FPGA definitely is an additional step. However,
-the EDK web page has some example designs that get you started in a short
-amount of time.
+My intent with writing the book and building the site was
+to bridge the gap that exists between embedded systems
+developers that use open source and free software packages,
+and the open source and free software community that produces
+these packages. My hope is that we will see mainstream
+embedded developers make more contributions to the open
+source and free software packages they use in building
+embedded Linux systems. Ultimately, this will ensure Linux
+remains the best choice for an embedded OS.
 
-> 2.) Is there any big caveats I should now about for debugging bring up?
+[There is, of course, more detail to these ideas than I
+can fit in an email. I invite you to take a look at the
+book and the site if you're interested.]
 
-If you keep the design close to the ML300 design (schematics available) you
-will be able to use the Linux kernel for ML300 and by just configuring the
-kernel bring the board up in a short amount of time.
+HTH,
 
-> 3.) Does anybody know about vxworks 'support' for this as well?
+Karim
 
-Not the appropriate list - I know - but VxWorks support exists as well.
-
-> 4.) Is debugging support with BDI, vision ICE, etc there yet for this
-> board? Is it just good old JTAG or something different?
-
-Yes, it is standard JTAG. So far, any external debuggers I've used that claim
-support for 405GP have worked out of the box on Virtex-II Pro (BDI2000,
-RiscWatch, VisionProbe, VisionICE, Lauterbach, ...).
-
-> 5.) Is this chip even mature yet?
-
-It's in production. We have Virtex-II Pro based systems here at Xilinx that run
-(uptime) Linux under load (web server, streaming MP3, etc.) for more than sixty
-days.
-
-- Peter
-
-------
-PS: some links for things mentioned in the text
-- ML300: http://www.xilinx.com/ml300
-- EDK: http://www.xilinx.com/edk
-- Linux on Virtex-II Pro:
-http://www.mvista.com/partners/semiconductor/xilinx.html
-
+===================================================
+                 Karim Yaghmour
+               karim@opersys.com
+      Embedded and Real-Time Linux Expert
+===================================================
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
