@@ -1,113 +1,69 @@
-Subject: Re: how to compile linux modules
-To: "ysmsun" <youshouming@163.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <OF09758596.F9C3EDF6-ON86256DFD.00572941-86256DFD.005A49E7@us.ibm.com>
-From: Ryan Arnold <ryanarn@us.ibm.com>
-Date: Mon, 15 Dec 2003 10:26:10 -0600
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Date: Wed, 17 Dec 2003 10:51:39 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Lee Braiden <jel@ntlworld.com>,
+	Sven Luther <sven.luther@wanadoo.fr>,
+	debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Would setting the CONFIG_RTC option break the powerpc kernel on your machine ?
+Message-ID: <20031217095139.GC2283@iliana>
+References: <20031216105656.GA5291@iliana> <1071642293.753.414.camel@gaston> <200312170717.36564.jel@ntlworld.com> <1071646057.6370.482.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1071646057.6370.482.camel@gaston>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alright, I'll try to help.
+BTW, should this discussion not be moved to linuxppc mailing lists ?
 
-First of all I'm not sure what type of system you are on but I'll write
-this email assuming that you are on a 64 bit POWER architecture machine.
+On Wed, Dec 17, 2003 at 06:27:37PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2003-12-17 at 18:17, Lee Braiden wrote:
+> > On Wednesday 17 Dec 2003 6:24 am, Benjamin Herrenschmidt wrote:
+> > > CONFIG_RTC will definitely break a pmac
+> >
+> > I think I heard something about clock/timer problems on PPC a long time ago,
+> > but could never track down an issue.  Wouldn't it be best to remove RTC on
+> > PPC or document the problem with a (read help) or something?
+> >
+> > Is the PPC RTC (as opposed to GENERIC_RTC) stuff automatically in there, or
+> > something?  Or is it this PPC_RTC that's broken?
+>
+> Well... CONFIG_RTC enables the "PC style" RTC driver that taps IO ports
+> to look for an RTC chip of the kind found in x86 machines. Such a chip
+> doesn't exist on powermac and this random IO port tapping can actually
+> crash the machine.
 
-Question: Is your driver being built for 2.4 or for 2.6 or both?  If you
-are building for 2.6 there are some extra steps you may need to take when
-setting up the driver initialization code.  Please check out
-"http://lwn.net/Articles/driver-porting/" for tips on porting drivers to
-2.6.
+And i guess that this PC style RTC is found on the southbridge, right ?
+Let me check the VIA docs. Yep, it indeed is there, and i doubt that
+there is another clock on the system. Not sure though.
 
-Question:  Is this going to be a kernel module that you want built out of
-the kernel tree?  For the sake of this email I'll assume that it is.
+> CONFIG_PPC_RTC/CONFIG_GENERIC_RTC is a different driver that provides
+> the /dev/rtc interface but relies on hooks provided by the platform
+> code for actually getting/setting the RTC content. The PowerMac platform
+> provides hooks for the different kind of RTC chips found on Macs (that
+> is basically  access to the RTC via via-cuda or via-pmu). CHRP or
 
-The first thing you need to do is  to make sure that you add a line like to
-the Makefile in the directory where the file will reside.  For instance for
-the console driver called hvc_console you'll see the following line in
-drivers/char/Makefile:
+Mmm, these are external via chips on mac hardware used for clocks ?
 
-obj-$(CONFIG_HVC_CONSOLE)       += hvc_console.o
+> PReP machines should provide their own hooks, it's possible that what
+> CHRP provides doesn't work properly on the Pegasos, in which case we'd
+> have to fix this.
 
-If you want the kernel's make system to allow you to enable the driver as a
-built in driver or a module you need add an entry to the device directory's
-Kconfig file like the following is done to driver/char/Kconfig for
-hvc_console.
+Another solution would be to :
 
-config HVC_CONSOLE
-        bool "pSeries Hypervisor Virtual Console support"
-        depends on PPC_PSERIES
-        help
-          pSeries machines when partitioned support a hypervisor virtual
-          console. This driver allows each pSeries partition to have a
-console
-          which is accessed via the HMC.
+  1) build a pegasos specific config with CONFIG_RTC, but not the other
+  two. <= Not good, since it would mean over one hour compil more, and
+  one more binary packages. Already like that the ftp-masters are not
+  happy.
 
-You'll notice that "bool" precedes the label for the device driver.  Using
-"bool" in this place will allow the driver to be selected as only compiled
-in or not configured.  If you want the third option of "module" then you
-need to replace "bool" with "tristate" for your own device.
+  2) build all RTC stuff as modules, and let userland choose the one it
+  needs.
 
-To build you may have to use a cross compiler.  Please make sure you have a
-working toolchain and compiler on your build machine.  You can check out
-linuxppc64.org for information on attaining these.
+  3) have CONFIG_RTC check the subarch or something and not work if it
+  recognize hardware it doesn't know about or something.
 
-Next, do the following from the base kernel directory:
+Friendly,
 
-make mrproper
-make menuconfig
-make CROSS_COMPILE=powerpc64-linux- -j4
-make modules CROSS_COMPILE=powerpc64-linux- -j4
-
-Once you run "make" it will build your driver into a .o and when you run
-"make modules" it will make a .ko for you kernel module.  This .ko will be
-located in the driver directory where you created the file.  Now when you
-put this module on a system make sure the system is running the kernel that
-you built it against to avoid issues with missing symbols.
-
-Put the kernel on the system, reboot, put on the .ko and insmod <your
-driver>.ko.
-
-In order to insert, build, and execute module operations for 2.6 your
-system may need the new module utilities installed.  You can get these from
-"http://www.kernel.org/pub/linux/kernel/people/rusty/modules/".  You'll
-know you need them if insmod complains about unrecognized symbols.
-
-Ryan S. Arnold
-IBM Linux Technology Center (LTC)
-POWER Linux Virtual I/O
-Rochester, Minnesota, USA
-Dept. 8DNA
-ryanarn@us.ibm.com
-
-
-
-
-                      "ysmsun"
-                      <youshouming@163.com>             To:       <linuxppc-dev@lists.linuxppc.org>
-                      Sent by:                          cc:
-                      owner-linuxppc-dev@lists.l        Subject:  how to compile linux modules
-                      inuxppc.org
-
-
-                      12/12/2003 10:37 PM
-
-
-
-
-
-
-
-hello:
-    now ,i must write some driver program module .but when i try some
-module which is from some books ,it always don.t work well.I guess maybe
-because of compiling command. When i try to read some MAKEFILE files to
-get the compiling command ,i found it so complex .maybe someone could
-give me some advice ,some expierence...wish your help thanks ....
-
-previous happy christamas!!!!
-
+Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
