@@ -1,33 +1,52 @@
-Date: Tue, 24 Aug 1999 11:05:26 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Dave Weis <djweis@plconline.com>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, Tony Mantler <eek@escape.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Performa 5200
-In-Reply-To: <Pine.LNX.4.10.9908240826490.24794-100000@catbert.desm.plconline.com>
-Message-ID: <Pine.LNX.3.96.990824110317.26367J-100000@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.3.96.990824104012.26367B-100000@mvista.com>
+Date: Tue, 24 Aug 1999 20:21:52 +0200
+To: "David A. Gatwood" <dgatwood@mvista.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: BootX enhancement request
+Message-Id: <19990824202152.007307@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Aug 1999, Dave Weis wrote:
+On Tue, Aug 24, 1999, David A. Gatwood <dgatwood@mvista.com> wrote:
 
-> Depending on how in to the 68k boxes you are, the impression I got is that
-> the memory structure is very similar to the 68ks of the same shape/era. I
-> tried it on my wife's 6114CD and it hung with just the desktop background
-> visible. Mix and match some of the mac68k code and you should be done in
-> no time :-) haha
+>That's not _entirely_ true.  The hardware itself relies on the nvram
+>setting in order to determine the initial startup mode before it starts
+>loading MacOS.  That's why you can do tricks with newer versions of MacOS
+>like have the preferences set to 1024x768 and the pram/nvram set to
+>640x480 and have it switch half-way into booting. (Makes it nice for
+>MkLinux on x100's where you have to be in 8-bit color, but don't want to
+>run MacOS that way.)  The Monitors & Sound CP does set the nvram value, at
+>least on some machines, unless it changed quite recently, but you
+>sometimes have to delete its prefs files to convince it to do so.
 
-It's a nasty mismatch.  It's basically a Quadra 630, but with Valkyrie for
-video, a few other small changes, and an added PPC to 68k bus bridge that
-probably needs to have at least minimal support, and a bunch of other
-oddities.  Hmmm.  That brings up another place where the code could be
-going wrong.
+Yes, you are right. But the fact remains that video drivers are free to
+store this in any proprietary format they want and I had some trouble
+getting this to work with iMacs and blue G3s. Also, this nvram setting is
+limited to those "official" mode values, but the driver is free to
+implement completely different modes, and there's also some support for
+DCC slowly appearing in MacOS. I don't think we can rely reliably on this
+nvram value.
 
+What I could eventually do is to add code to BootX that asks the driver
+about the current mode (the driver should be able to return me all sorts
+of informations, including some, but not all, of the timings) and build a
+kernel command line with those. We should find something generic since
+I'm not sure I can easily find out which kind of driver to use on the
+command line (atyfb, platinumfb, controlfb, ...)
 
-David
+I have plans to extend BootX so that i can also setup OF environement
+variables for quik-based booting. It would be able to setup those infos
+there too. I'll look into this as soon as I have a new hard drive for my
+8500 (the old one joined my pile of dead HDs last week, I'll soon be able
+to make some kind of modern art with all those HDs ;-).
+
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
