@@ -1,45 +1,49 @@
-Message-ID: <3C893DC4.6050806@cymes.de>
-Date: Fri, 08 Mar 2002 23:40:04 +0100
-From: Matthias Grimm <joker@cymes.de>
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Cc: "Joseph P. Garcia" <jpgarcia@execpc.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: pbbuttons, need some help
-References: <20020307134140.56d70400.jpgarcia@execpc.com> <20020308123301.27605@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Sat, 9 Mar 2002 10:43:28 +0100
+From: Harald Welte <laforge@gnumonks.org>
+To: <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.18-ben0 on G4 SMP: do_IRQ waiting for irq lock
+Message-ID: <20020309104328.F6936@sunbeam.de.gnumonks.org>
+References: <20020308090750.W6936@sunbeam.de.gnumonks.org> <20020308183409.25542@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020308183409.25542@mailhost.mipsys.com>; from benh@kernel.crashing.org on Fri, Mar 08, 2002 at 07:34:09PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-benh@kernel.crashing.org wrote:
+On Fri, Mar 08, 2002 at 07:34:09PM +0100, benh@kernel.crashing.org wrote:
+> Could be a driver bug showing up, difficult to say. The problem definitely
+> doesn't happen here (dual G4 450Mhz, 2x7400 CPU with highmem). The fact that
+> the IRQ lock can be held by the other CPU is normal though, both CPUs don't
+> take external IRQs but decrementer ones for example happen on both.
+>
+> That said, I don't know what is causing your problem.
 
-Hi,
+I've now managed to get the kernel running - so far without any crashes for
+one day.
 
-> Note that OHare in /proc/pmu is still known to be flawky as it seems
-> not all OHare based pbooks need the same formula. But at least it will
-> be fixed one day and I prefer indeed keeping that tricky code in a
-> single location. I do have some code to merge one of these days fixing
-> calculation for the 2400 for example.
+The problem seemed connected with the cups daemon.  If I don't start (or use)
+any part of the cups (common unix printing system), it runs fine.
 
+I don't know what cups is trying to do, since there are no local printers
+configured.  Everything it is supposed to do is to submit remote printjobs
+to my printer server.
 
-Yes, I am convinced. I will do it like Jeramy in gkrellm-pmud so I would
-benefit from any of your future changes.
+As of drivers, the only hardware driver (apart from standard pmu, aty128fb,
+sungem) I'm using is tulip for a 21x4x network board.
 
+But the problems are not related with this network interface, since I'm
+heavily using it for NFS, etc.  I've also tried to pingflood the machine
+on both network interfaces - no problem.
 
-> Well, the daemon will still be needed to get the "special" keys on OHare
-> based powerbooks as I think those don't come via ADB.
+> Ben.
 
-
-Good point. The PMU has two command regarding the volume and brightness
-buttons. Do you have any information about this commands? I think they
-are for machines that wouldn't send this keys via the keyboard as you
-explained in one of our first emails. Would there be a chance to use
-those commands to get the keys also on Powerbooks that don't support the
-button device? That would extend the usability of pbbuttons on older
-Powerbooks.
-
-   Matthias
-
+--
+Live long and prosper
+- Harald Welte / laforge@gnumonks.org               http://www.gnumonks.org/
+============================================================================
+GCS/E/IT d- s-: a-- C+++ UL++++$ P+++ L++++$ E--- W- N++ o? K- w--- O- M+
+V-- PS++ PE-- Y++ PGP++ t+ 5-- !X !R tv-- b+++ !DI !D G+ e* h--- r++ y+(*)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
