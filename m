@@ -1,40 +1,56 @@
-Date: Mon, 10 Nov 2003 14:00:50 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: MPC5200 Patches
-Message-ID: <20031110210050.GF8584@ip68-0-152-218.tc.ph.cox.net>
-References: <20031110190207.GA12163@zenos.farnsworth.org> <20031110204652.F11E4C5F59@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031110204652.F11E4C5F59@atlas.denx.de>
+Message-ID: <3FB01392.60500@g-house.de>
+Date: Mon, 10 Nov 2003 23:39:14 +0100
+From: Christian <evil@g-house.de>
+MIME-Version: 1.0
+To: linas@austin.ibm.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc32 lockups with 2.6
+References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com>
+In-Reply-To: <20031110125044.A22030@forte.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 10, 2003 at 09:46:47PM +0100, Wolfgang Denk wrote:
-> In message <20031110190207.GA12163@zenos.farnsworth.org> you wrote:
-> >
-> > On Fri, Nov 07, 2003 at 10:20:20PM +0000, Wolfgang Denk wrote:
-[snip]
-> > > For me the main issue is that MPC5200 support makes it into the
-> > > official kernel trees as fast as possible.
-> >
-> > Agreed, with reasonable quality.
->
-> It has been my impression that the  strategy  is  to  get  things  in
-> quickly, and to fix them later?
+linas@austin.ibm.com wrote:
+> I'd suggest getting the KDB kernel patches, and then poking around to
+> see what the system was doing when it locked up.
 
-As 2.4.23-rc1 just came out, this will not make 2.4.23.  And I suspect
-that Marcelo will have a settling out period of at least one week if
-there's to be no -rc2 (and I suspect that there'll be at least 2
-2.4.24-pre releases before he'd reject something like this).  So we have
-a little bit of time to work things out into the best shape that can be
-before we submit to Marcelo.
+kdb, hm, i'll see if i can handle this. would some output from gdb help too?
+
+
+> What were the stack traces? does it always lock up in the same routine?
+
+the debugger will show, as nothing else showed up and even SysReq was
+not working anymore.
+
+> What line of code was it
+> executiing when it did that?
+
+last snippet of the "strace ifconfig eth1 192.168.1.1":
+
+ioctl(4, 0x8916, 0x7ffffd78)            = -1 ENODEV (No such device)
+dup(2)                                  = 5
+fcntl64(5, F_GETFL)                     = 0x2 (flags O_RDWR)
+fstat64(5, {st_mode=S_IFCHR|0600, st_rdev=makedev(5, 1), ...}) = 0
+ioctl(5, TCGETS, {B38400 opost isig icanon echo ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+= 0x30016000
+_llseek(5, 0, 0x7ffffb68, SEEK_CUR)     = -1 ESPIPE (Illegal seek)
+write(5, "SIOCSIFADDR: No such device\n", 28) = 28
+close(5)                                = 0
+munmap(0x30016000, 4096)                = 0
+ioctl(4, 0x8913, 0x7ffffc98)            = -1 ENODEV (No such device)
+write(2, "eth1: ERROR while getting interf"..., 58) = 58
+exit(-1)                                = ?
+
+Thanks,
+Christian.
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+BOFH excuse #231:
+
+We had to turn off that service to comply with the CDA Bill.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
