@@ -1,61 +1,47 @@
-Date: Mon, 4 Mar 2002 07:54:51 +0100
-From: Andreas Liebe <liebe@hrz.tu-darmstadt.DE>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: hychon@genetel.co.kr
-Subject: Re: eth0 : time out ....error
-Message-ID: <20020304075451.B19932@hrz.tu-darmstadt.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3C838533.6050603@pacbell.net>
+Date: Mon, 04 Mar 2002 14:31:15 +0000
+From: Armin <akuster@pacbell.net>
+MIME-Version: 1.0
+To: andrew may <acmay@acmay.homeip.net>
+Cc: John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] ocp enet
+References: <Pine.LNX.4.30.0202271525500.15001-200000@hill.cs.ucr.edu> <3C7D0AB9.5070801@pacbell.net> <20020304131703.A15551@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-I've had exactly the same problems. Probably you're using a kernel < 2.4.11.
-Try this tiny from 2.4.11 which did it for me:
-
-------------------------------------------------------------------------
-*** arch/ppc/8xx_io/fec.c       Sat Mar  2 12:50:33 2002
---- arch/ppc/8xx_io/fec.c-orig  Thu Dec 20 22:31:30 2001
-***************
-*** 416,425 ****
-                bdp++;
-        }
-
-!       if (bdp->cbd_sc & BD_ENET_TX_READY) {
-                netif_stop_queue(dev);
--               fep->tx_full = 1;
--       }
-
-        fep->cur_tx = (cbd_t *)bdp;
-
---- 416,423 ----
-                bdp++;
-        }
-
-!       if (bdp->cbd_sc & BD_ENET_TX_READY)
-                netif_stop_queue(dev);
-
-        fep->cur_tx = (cbd_t *)bdp;
-
-------------------------------------------------------------------------
-
- -Andreas
+andrew may wrote:
+> On Wed, Feb 27, 2002 at 04:35:05PM +0000, Armin wrote:
+>
+>>Thanks,
+>>
+>>I want to try in on a few boards I have before it goes in.
+>>
+>>--armin
+>>
+>
+> Have you gotten a chance to try it yet? The testing I have
+> done has not shown any problems and I have been able to test
+> just about all of the cases. Boards with/without the correct
+> pull-ups. Remove the correct phy-id from the table. Booting
+> without a link.
+>
+> Here is another patch that for the driver. It removes some
+> cut and paste code from the rx interupts and breaks the work
+> into rx_clean and rx_fill functions. rx_fill is also called from
+> open.
+>
 
 
-On Thu, 28 Feb 2002 10:14:39 +0900 you wrote:
-> I have the problem when I get/recevie data of over 100 kbytes size
-> If I send a small size data , it's trance success
-> but big size data is fail and print following messages
-> ...
-> NETDEV WATCHDOG: eth0: transmit timed out
-> eth0: transmit timed out.
-> Ring data dump: cur_tx c1f70078, dirty_tx c1f70078 cur_rx: c1f70038
-> tx: 8 buffers
---
-Andreas Liebe/Darmstadt University of Technology/+49 6151 16-3150/3050(FAX)
+Yes I have.
 
-Wer denkt, was andere denken sei richtig, denkt nicht (unbekannt)
+I added history info and sent it to Tom to check in.
+
+I will look into this patch and will try it after Tom gets done.
+
+armin
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
