@@ -1,35 +1,43 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Martin Costabel <costabel@wanadoo.fr>, <linuxppc-dev@lists.linuxppc.org>,
-        Iain Sandoe <iain@sandoe.co.uk>
-Subject: Re: rtc again...
-Date: Thu, 3 Aug 2000 11:30:49 +0200
-Message-Id: <20000803093049.3478@mailhost.mipsys.com>
-In-Reply-To: <398934C7.663E6BD9@wanadoo.fr>
-References: <398934C7.663E6BD9@wanadoo.fr>
+Date: Thu, 3 Aug 2000 11:33:51 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Tom Gall <gall@rochcivictheatre.org>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CONFIG_PPC != Mac
+In-Reply-To: <3988C944.74A6FC45@rochcivictheatre.org>
+Message-ID: <Pine.LNX.4.10.10008031130470.12417-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I am using it as module both for 2.2.17-bk and for 2.4.0-test5. They
->don't give the same time, and I think it is the one in 2.4.0 that is
->right. I am at GMT+2:00, and the time in 2.2.17 is 2 hours early. When I
->change /etc/sysconfig/clock from "UTC=false" to "UTC=true", both times
->shift by 2 hours, but the discrepancy remains.
+> > While I also enjoyed the flexibility on m68k, some of it was paid for in
+> > terms of increased complexity in head.S and entry.S (and especially head.S
+> > wasn't a bit pretty). I'm not sure how your trouble with the embedded
+> > systems can be solved, we kept separate head.S versions for Macs and other
+> > machines for a while as well because things just got too confusing. Maybe
+> > we need to keep separate versions for embedded and other systems here?
 >
->The following patch for bitkeeper linuxppc_2_2 fixes this problem for
->me. It brings 2.2.17pre13 in line with 2.4.0-test5 (and MacOS). I cannot
->test the VIAPMU part, so maybe there the offset is necessary, but for
->the VIACUDA part, it seems wrong.
+> Hi All,
+>
+>   I think we don't want to get too carried away with pulling things
+> apart here. Afterall I think we'd all like to be able to continue to
+> pick up a distro with a bootable kernel that works over a wide variety
+> of machines instead of 10 different kernels to choose from depending on
+> which box you've got.
 
-You patch reverts a fix I made some time ago. Basially, what probably
-happens is that your RTC is in UTC time, not in local time. The Mac RTC
-is supposed to be in local time, the offset corrects the kernel time on
-boot to account for this. Previously, without that fix, the kernel used
-to boot with a bogus UTC time until userland fixes it.
+That's exactly what won't work now. A kernel built for PowerMac won't work
+on embedded systems or APUS, and maybe not even on PReP or CHRP.
 
-Ben.
+>   Now obvoiusly I'm going a little overboard here but hopefully you
+> might see what I'm saying. Granted embedded boxes aren't going to care
+> about booting from the install cd but I think the rest of us sure do!
+
+I don't see where we would conflict, all I said was maybe keep embedded
+separate. By all means unify the rest if at all possible.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
