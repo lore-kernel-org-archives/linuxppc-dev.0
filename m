@@ -1,48 +1,88 @@
-Message-Id: <200106291744.f5THia810339@stimpy.networkrobots.com>
-Date: Fri, 29 Jun 2001 10:48:45 -0700
-To: Dan Malek <dan@mvista.com>, jtm@smoothsmoothie.com
+Message-Id: <200106291749.f5THnQ810464@stimpy.networkrobots.com>
+Date: Fri, 29 Jun 2001 10:53:35 -0700
+To: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
 From: Paul White <pwhite@networkrobots.com>
 Subject: Re: (allocating non-cachable memory) (or More on the i82596)
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3B3C30CD.34B20F02@mvista.com>
-References: <20010626160844.A20988@shamus.smoothsmoothie.com>
+In-Reply-To: <Pine.LNX.3.95.1010629042746.5292E-100000@november.bhjjh.er
+ ols.com>
+References: <200106290009.f5T09C823337@stimpy.networkrobots.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Btw...Where are these "consistent_alloc()" functions?  I've not seen theses
-anywhere.
+Justin,
 
-I also can't imagine how they would possibly work on any CPU using BATs.
-Since the BAT is setup as cacheable space, you can't just take a "chunk"
-of it and make it non-cacheable.  Not possible.
+I seen in a previous e-mail that you are using a 4xx proccessor.  I'm assuming
+that this processor only has 16 bytes cache lines.  When you went through the
+code I sent you, did you change it to only zero out 16 bytes instead of 32?
 
-Now, yes, for the 4xx and 8xx proccessors that don't use BATs, I would
-assume that when you do one of these "non-cache" allocs, it would
-simply allocate you a batch of 4k pages, and set them as Caching
-Inhibited.
+Also, Make sure in your CPU book that dcbz is the only instruction that
+can't be done when data cache is disabled.
 
-Is there something I'm missing here?
+You also may want to check arch/ppc/kernel/align.c to make sure it still
+simply "returns" from an alignment excepetion caused by a dcbz.  My
+tree (base line 2.4.4) has it.  Otherwise, you may want to grep your
+code (in the arch/ppc/*, and in include/asm/*) for any other occurences
+of dcbz.  Any at bootup time must be replaced with assembly instructions
+to zero out the memory locations,  but ones that will happen during runtime
+should be OK if your alignment handler ignores them.
+
+Again, be sure to check your CPU manual.  Maybe the 4xx CPU handles
+the data cache instructions differently from the 7410.
+
+Also..  Make absolutely sure you made the right changes in the
+arch/ppc/mm/init.c file as well.
+
+SInce its crapping out uncompressing the ramdisk, I am assuming
+that the copy_pages or copy_tofrom_user stuff isn't working right
+(Maybe you still have it zero'ing out 32 bytes instead of 16?)
 
 Paul W.
 
-At 03:39 AM 6/29/2001 -0400, Dan Malek wrote:
+
+At 05:16 AM 6/29/2001 -0400, Justin (Gus) Hurwitz wrote:
+>On Thu, 28 Jun 2001, Paul White wrote:
 >
->jtm@smoothsmoothie.com wrote:
+>>
+>> Justin,
+>>
+>> I was able to get Data cache disabled today, after playing around with it
+>> for a while.
+>>
+>> There were several things I had to do.  Now, I don't recall what CPU you
+>> are using, so I'll just tell you what I found with mine.
+>>
+>> First off, I'm using the 7410, which has 32 byte cache lines.  Note that
+the
+>> 8xx and such have 16 byte cache lines.  In my manual, under "Enabling
+>> and Disabling Data Cache", it states that the dcbz instruction will
+cause an
+>> alignment exception, and that all others are nop'd.  So the first thing
+I did,
+>> was search for dcbz throughout my code, and I found two files that had
+>> several matches:
 >
->> .... The buffer memory will get filled
->> via DMA, and therefore must not be cached.
+>I went through and made the same set of changes that you did- I am on a
+>603e, so I would expect the L1 cache behaviour to be about the same.
+>Indeed, the kernel does boot properly, up until id decompresses the
+>ramdisk. I am getting a crc error decompressing the ramdisk, however-
+>presumably because of a problem with the caches. I'd like to set the MMU
+>to caching inhibited to tighten up the processor's load and store
+>ordering. I think that I only need to set this in the pte entries- the
+>errors are only occuring after the MMU has been brought up. Irony of
+>ironies, I know how to do this with the BATs, but not in the PTEs. It
+>looks like there is a field in the PTE struct (in asm/mmu.h), but I can't
+>find where that structure is initialised. It looks like, from my
+>meandering through the kernel's memory management code that this might wee
+>be a good step towards allowing chunks of non cachable memory to be
+>allocated.
 >
->Huh????  The 8260 is cache coherent, you don't need to do that.
+>Thoughts?
 >
->For processors that are not cache coherent (4xx and 8xx), there
->are standard 'consistent_alloc()' functions available.
->
->
->	-- Dan
->
+>--Gus
 >
 -------------------------------------------------------------
 Network Robots, Inc.         /--\               Paul H. White
