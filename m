@@ -1,53 +1,45 @@
-To: "Stuart Vivian" <stuartvivian@domo.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux 2_4_devel kernel hangs after control transferred from u-boot 
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Cross compiling : problem linking 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Oct 2003 14:29:18 BST."
-             <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local>
-Date: Thu, 02 Oct 2003 15:43:40 +0200
-Message-Id: <20031002134345.71B61C59E4@atlas.denx.de>
+In-reply-to: Your message of "Thu, 02 Oct 2003 16:24:07 +0200."
+             <1065104646.13376.8.camel@toni>
+Date: Thu, 02 Oct 2003 17:01:44 +0200
+Message-Id: <20031002150149.4E451C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local> you wrote:
+In message <1065104646.13376.8.camel@toni> you wrote:
 >
-> I am trying to get a linux kernel to build and run on a Cogent CSB272
-> (IBM PPC 405GP processor) running a U-boot 0.4.0 bootloader. I can tftp
-> a uImage into ram and it passes check, but when I run bootm it
-> uncompresses the kernel and hangs after it starts executing the kernel
-> at address 0x00000000.
+> > Without more information (i. e. what sort of code this is and how you
+> > intend it to run - stdandalone, in kernel or in user context)  nobody
+> > can help you.
+>
+> Final goal is a kernel module, but now I'm writing a test program in
+> user space (standalone, dynamic compiled).
 
-This is a FAQ. See
-http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
+These are two completely different issues.
 
-> I was given a hardhat vmlinux elf file that I can package to a uImage
-> and run (although it stops at the Calibrating Delay loop... Stage, but
+> Code is quite simple (but I'm unsure about the correctness, due to the
+> fact that my C knowledge has collapsed since I didn't use it anymore
+> last 2 years):
+>
+> #include <stdlib.h>
+> #include <stdio.h>
+> #include <unistd.h>
+> #include <asm/io.h>
 
-Probably the same problem - bad parameters (clock frequencies) passed
-to the kernel.
+You're including a kernel header file here. You must not do this. The
+functions / macros you're looking for are not available in user space
+(for example, outb is #defined only when __KERNEL__ is defined  which
+is never the case for user space applications.)
 
-> that's another issue). I need to be able to recompile a kernel for the
-> board and downloaded linuxppc_2_4_devel from mvista. This compiles fine
-> and produces a new vmlinux. I've started off by using the walnut 405
-> config file to build the kernel, since they're pretty similar.
+> So somewhere, there is a linker problem.
 
-Ummm... you better make sure it really matches your board. Similar is
-not enough.
-
-> Any ideas where to start debugging this? I'm relatively new in embedded
-> stuff and linux in general, so it might be something simple, but don't
-> know where to start. Have a BDI2000 but no gdb driver yet, so can't put
-> in breakpoints etc.
-
-??? Can't parse that.
-
-You can use the BDI's telnet interface to set breakpoints,  too.  And
-you  don;t know any special "gdb driver", as any plain GDB will allow
-you to connect to the BDI which "speaks" GDB remote protocol over the
-network.
+No, it's a misunderstanding on your side. You cannot run kernel  code
+in user space or vice versa.
 
 
 Best regards,
@@ -57,6 +49,8 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Why should we subsidize intellectual curiosity?" - Ronald Reagan
+I have yet to add the ESP-driver to the kernel to read  the  mind  of
+the user...                                       - Linus Torvalds in
+      <Pine.LNX.3.91.960426110644.24860I-100000@linux.cs.Helsinki.FI>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
