@@ -1,87 +1,73 @@
-Message-ID: <3FA5698A.9000905@g-house.de>
-Date: Sun, 02 Nov 2003 21:31:06 +0100
-From: Christian Kujau <evil@g-house.de>
-MIME-Version: 1.0
+Message-ID: <20031103033529.24416.qmail@kunk.qbjnet.com>
+Subject: IRQS on 6 Slot Macs
 To: linuxppc-dev@lists.linuxppc.org
-Subject: ppc32 lockups with 2.6
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Sun, 2 Nov 2003 21:35:29 -0600 (CST)
+From: Robert E Brose II <bob@kunk.qbjnet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-moin,
+In trying to get OpenGL working on a YDL 3.0 system with kernel 2.4.22-ben2
+and XFree86-4.3.0-2.1e,  I get a warning on X initialization:
 
-i have problems with my ppc32 (PReP) machine and 2.6.0-test* kernels.
-since this is some kind of home "server", i did not test any ealier
-versions, but 2.6.0-test{7|8|9}. all show the same behaviour, somewhere
-during the bootup, the machine just freezes. i found out, that upon
-configuring my thernet devices the lockups occur.
+(II) R128(0): [drm] failure adding irq handler, there is a device already using
+that irq
 
-so, i have 2 network cards, both are working under 2.4 with the 3c59x
-(eth0) and tulip (eth1, it's an on-board 21140).
+Digging into it more, I'm having a hard time understanding why there is a
+problem and how the interrupts are allocated on a S900 (w/G3 card).
 
-loading the drivers by using insmod / modprobe succeeds, the driver
-registers, some messages are printed.
 
-e.g.
+With the folowing configuration:
+Slot 1:
+00:0d.0 VGA compatible controller: ATI Technologies Inc Rage 128 RE/SG (prog-if 00 [VGA])
+        Flags: bus master, stepping, medium devsel, latency 32, IRQ 23
+Slot 2:
+00:0e.0 Ethernet controller: Digital Equipment Corporation DECchip 21142/43 (rev 21)
+        Flags: bus master, medium devsel, latency 32, IRQ 24
+Slot 3:
+01:00.0 SCSI storage controller: LSI Logic / Symbios Logic 53c875 (rev 04)
+        Flags: bus master, medium devsel, latency 32, IRQ 25
+Slot 4:
+01:01.0 Communication controller: Comtrol Corporation RocketPort 8 Intf (rev 02)
+        Flags: medium devsel, IRQ 25
+Slot 5:
+01:02.0 FireWire (IEEE 1394): Texas Instruments FireWire Controller (rev 01) (pr
+og-if 10 [OHCI])
+        Flags: bus master, medium devsel, latency 32, IRQ 25
+Slot 6:
+01:03.0 USB Controller: Lucent Microelectronics USS-312 USB Controller (rev 10)
+(prog-if 10 [OHCI])
+        Flags: bus master, medium devsel, latency 32, IRQ 25
 
-Linux Tulip driver version 1.1.13 (May 11, 2002)
-PCI: Enabling device 0000:00:04.0 (0000 -> 0003)
-tulip0:  EEPROM default media type Autosense.
-tulip0:  Index #0 - Media AUI (#2) described by a 21140 non-MII (0) block.
-tulip0:  Index #1 - Media MII (#11) described by a 21140 MII PHY (1) block.
-tulip0:  MII transceiver #8 config 3100 status 786b advertising 01e1.
-eth0: Digital DS21140 Tulip rev 34 at 0x1800, 08:00:3E:29:0B:B6, IRQ 9.
+and /proc/interrupts
 
-or
+  2:          0   PMAC-PIC  Edge      MACE-txdma
+  3:      77087   PMAC-PIC  Edge      MACE-rxdma
+  8:        345   PMAC-PIC  Edge      Built-in Sound out
+  9:          0   PMAC-PIC  Edge      Built-in Sound in
+ 13:         71   PMAC-PIC  Edge      MESH
+ 14:      77840   PMAC-PIC  Edge      MACE
+ 17:          0   PMAC-PIC  Edge      Built-in Sound misc
+ 18:       4352   PMAC-PIC  Edge      ADB
+ 19:          0   PMAC-PIC  Edge      SWIM3
+ 24:      21259   PMAC-PIC  Level     eth0
+ 25:   72922493   PMAC-PIC  Level     sym53c8xx, usb-ohci, ohci1394
 
-3c59x: Donald Becker and others. www.scyld.com/network/vortex.html
-See Documentation/networking/vortex.txt
-0000:00:06.0: 3Com PCI 3c905C Tornado at 0x1000. Vers LK1.1.19
-  00:01:02:f1:83:37, IRQ 11
-   product code 464a rev 00.13 date 11-12-00
-   Internal config register is 1800000, transceivers 0xa.
-   8K byte-wide RAM 5:3 Rx:Tx split, autoselect/Autonegotiate interface.
-   MII transceiver found at address 24, status 782d.
-   Enabling bus-master transmits and whole-frame receives.
-0000:00:06.0: scatter/gather enabled. h/w checksums enabled
 
-"ifconfig eth0" gives then an unconfigured eth0, ok. but using "ifconfig
-eth0 192.168.1.1" results in a lockup. no oops printed, no SysReq anymore.
 
-i tried with the "tulip" modul first, and could "strace" the ifconfig,
-until it freezes.
+A couple of things right off, the rage128 appears to be the only thing on
+irq 23 however 23 doesn't show up in /proc/interrupts meaning, I suppose,
+that it's not using the interrupt. So why does the drm complain?
 
-    http://nerdbynature.de/bits/sheep/network/ifc-tulip.log
+How come everything from slots 3-6 says it's on the same interrupt (25)?
 
-the 3c59x module however acted somehow differently: upon using "ifconfig
-eth0 192.168.1.1" the screen filled with strange chars in some pattern,
-i've never seen before on a linux box (no, i was clean :-)) (ok, the
-pattern is probably not important, but it's on [1] anyway) then, the
-system locked up too.
-
-as you can see (http://nerdbynature.de/bits/sheep/network/config) i have
-then compiled some debug options into the kernel, i loaded the 3c59x
-module with "debug=6". also, i want to say that this is not my first
-build of a 2.6 kernel, i have a i386 running pretty stable with 2.6 for
-weeks now; some time ago i used to have an Alpha (AXP) with 2.5.x
-running 24x7.
-
-please let me know, i have forgotten something or where to look further.
-i will be glad to help with running tests and the like.
-
-i don't suspect hw errors here, because both cards are happy working
-under 2.4.
-
-some details about the PrEP machine:
-[1] http://nerdbynature.de/bits/
-
-Thank you,
-Christian.
-
+Bob
 --
-BOFH excuse #396:
-
-Mail server hit by UniSpammer.
+/~\ The ASCII       | Robert E. Brose II    N0QBJ
+\ / Ribbon Campaign | http://www.qbjnet.com/
+ X  Help cure       | mailto:bob@qbjnet.com
+/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
