@@ -1,6 +1,6 @@
-Message-Id: <200007081254.NAA19941@hyperion.valhalla.net>
-Date: Sat, 08 Jul 2000 13:54:37 +0100
-Subject: xmon via ethernet.
+Message-Id: <200007081623.RAA32155@hyperion.valhalla.net>
+Date: Sat, 08 Jul 2000 17:23:20 +0100
+Subject: Sys Call Numbers
 From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
@@ -9,20 +9,20 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi list,
+Hello,
 
-I seem to remember reading somewhere that it was possible to use xmon via
-ethernet.
+I did a patch to allow Jun Sun's IRQ Latency testing code to be used on
+2.2.17pre7 et. al.
 
-Having just had a problem that couldn't be readily solved by serial cables
-(which the G4 doesn't have anyway :)  I'd like to try this out.
+Today I came to apply it to Ben H's pre10 - to find that the sysCall number
+Jun had used was no longer 'available' (listed as MacOnLinux use).
 
-I didn't find any reference in Linux/Documentation or in the HOW-TOs from
-LinuxPPC Q3.
+Is this just a 'hazard' or is there some way of knowing where to allocate a
+syscall number.
 
-Any ideas where to look?
+(It's not a big point - there's only one #define to change - but, then
+again....)
 
-TIA,
 Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
