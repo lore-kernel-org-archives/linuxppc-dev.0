@@ -1,58 +1,48 @@
-Message-ID: <3D56DC75.7080808@dslextreme.com>
-Date: Sun, 11 Aug 2002 14:51:49 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com, akuster@dslextreme.com
-MIME-Version: 1.0
-To: paulus@samba.org
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: First steps to OCP device model integration
-References: <20020809042605.GC23642@zax>	<3D541AE9.40007@dslextreme.com> <15700.52122.899541.683630@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Mon, 12 Aug 2002 10:42:04 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Beech LCD patch
+Message-ID: <20020812004204.GN23642@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
- > akuster writes:
- >
- >
- >>I object seriously.
- >>
- >>  Some of what you have might be useful.:) OCP is not just for 4xx.  In
- >>fact the name may need to change.  I have been working on overhalling
- >>this interface and testing the ideas before having a review of the
- >>changes.  I am on the hook to Paul and others to get this out in the
- >>open to discuss and am not ready.  So if you could just relax and wait I
- >>would appriciate it.  I would rather see the 2.5 kernel boot on a few
- >>4xx boards
- >>
- >
- > Two points:
- >
- > - Integrating the OCP stuff into the unified device model (driverfs
- >   etc.) in 2.5 is essential.
+Could somebody please commit the following patch to
+linuxppc_2_4_devel.  It fixes a bug in the Beech/405LP LCD driver.
+I'd commit it myself, except me doing a push seems to break the tree
+at the moment.
 
-completely agree
+diff -ruN linux.orig/drivers/video/ibmlcdfb.c linux/drivers/video/ibmlcdfb.c
+--- linux.orig/drivers/video/ibmlcdfb.c	Fri Aug  9 19:16:04 2002
++++ linux/drivers/video/ibmlcdfb.c	Fri Aug  9 19:15:51 2002
+@@ -1218,7 +1218,8 @@
+ 	int ncolors;
+ 	const struct ibmlcdfb_info *info = (struct ibmlcdfb_info *) inf;
 
- >
- > - I really want to have some open discussions about ideas, structures
- >   etc. for OCP support *before* you have everything fully worked out. :)
- >
+-	ncolors = 1 << bpp_from_par(info->gen.info.par);
++	ncolors = bpp_from_par(info->gen.info.par);
++
+ 	if (regno >= ncolors)
+ 		return -EINVAL;
 
-The discussions will start soon ;)  I never have a complete
-implimentation done before I present but I do tinker with code and
-validate my hypothisis to weed out the lame stuff. I am sure you would
-rather see a bit more meat to my ideas than if my only statement was one
-such are your #1 point above. :)  You will just need to wait even though
-my employer is gracious and allows me to work in the community during
-work hours.
+@@ -1249,7 +1250,8 @@
+ 	int ncolors;
+ 	struct ibmlcdfb_info *info = (struct ibmlcdfb_info *) inf;
 
- > Regards,
- > Paul.
+-	ncolors = 1 << bpp_from_par(info->gen.info.par);
++	ncolors = bpp_from_par(info->gen.info.par);
++
+ 	if (regno >= ncolors)
+ 		return -EINVAL;
 
 
-Armin
 
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
