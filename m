@@ -1,32 +1,35 @@
-Message-Id: <9902151742.AA37298@marc.watson.ibm.com>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: your mail 
-In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
-   of "Mon, 15 Feb 1999 15:18:01 +0100." <Pine.HPP.3.96.990215145041.5352j-100000@gra-ux1.iram.es>
-Date: Mon, 15 Feb 1999 12:42:55 -0500
+Message-Id: <9902151757.AA75924@marc.watson.ibm.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: bootstrap stuffs 
+In-Reply-To: Message from Benjamin Herrenschmidt <bh40@calva.net>
+   of "Sun, 14 Feb 1999 19:58:05 +0100." <19990214195805.018190@smtp.calvacom.fr>
+Date: Mon, 15 Feb 1999 12:57:34 -0500
 From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Gabriel Paubert writes:
+>>>>> Benjamin Herrenschmidt writes:
 
-Gabriel> Ok, better like this. Unfortunately for rlwinm and friends, gas allows you
-Gabriel> to replace the last 2 parameters by a single value (bit mask), for
-Gabriel> example: rlwinm r3,r4,0, 0x00ffff00, but it does not work if you have the
-Gabriel> complementary mask (ones, zeros, ones) so you can't type rlwinm
-Gabriel> r0,r0,0,~MSR_EE. Note that gcc/egcs would generate the code with the
-Gabriel> rlwinm instruction. Anybody wants to tweak binutils to allow this ?
+Benjamin> On Sun, Feb 14, 1999, David Edelsohn <dje@watson.ibm.com> wrote:
+>> For correctness, "sync" must be used, but for best performance,
+>> "sync" should be used sparingly, only when necessary.
 
-	I think that this already was discovered and fixed in the
-development sources.  From the ChangeLog:
+Benjamin> Ok thanks. In this specific case (jump to bootstrap), I don't really care
+Benjamin> about the performance loss introduced by a sync, I'll keep one just after
+Benjamin> the mtmsr to make sure that the interrupt switch is fully done before I
+Benjamin> hack with srr0 and the MMU.
 
-Wed Aug 12 14:00:38 1998  Ian Lance Taylor  <ian@cygnus.com>
+	"isync" is used to discard instruction pre-fetch and ensure that
+all previous instructions have occurred.  isync is not necessary for your
+situation either.
 
-        From Peter Thiemann <thiemann@informatik.uni-tuebingen.de>:
-        * ppc-opc.c (insert_mbe): Handle wrapping bitmasks.
-        (extract_mbe): Likewise.
+	As Gabriel correctly explained, a "sync" instruction may be
+necessary before interrupts are enabled if some off-chip operation, like
+modifying an interrupt controller on the bus, was performed.  That is
+because of the bus operations which need to complete before interrupts can
+be enabled, not because of the enabling itself.
 
 David
 
