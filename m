@@ -1,39 +1,27 @@
-To: Ralph Siemsen <rsiemsen@rossvideo.com>
-Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Init hangs 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 06 Aug 2004 07:22:33 EDT."
-             <411369F9.5060506@rossvideo.com>
-Date: Fri, 06 Aug 2004 14:46:34 +0200
-Message-Id: <20040806124639.3E765C109F@atlas.denx.de>
+Message-ID: <411383AA.9030002@rossvideo.com>
+Date: Fri, 06 Aug 2004 09:12:10 -0400
+From: Ralph Siemsen <rsiemsen@rossvideo.com>
+MIME-Version: 1.0
+To: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Init hangs
+References: <20040806124639.3E765C109F@atlas.denx.de>
+In-Reply-To: <20040806124639.3E765C109F@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <411369F9.5060506@rossvideo.com> you wrote:
->
-> This could also be a floating point issue.  Most code compiled against
-> libc will try to "reset" the floating point state upon startup.  This
-> will cause a fault if you do not have a kernel floating point emulator
+Wolfgang Denk wrote:
 
-No, this has nothing to do with it.
+> No, this has nothing to do with it.
 
-First, Marco wrote that he is working on a 8270 processor which has a
-FPU, so FP issues should not play a role here.
+I stand corrected ;)  Thanks Dan and Wolfgang.  I'm still a ppc newbie,
+not yet familiar with all of the different sub-architecture features and
+options, sorry :(
 
-Second, he mentioned that he was using the ELDK which takes  care  of
-using soft-float on processors without a MMU.
+I had "init troubles" on the 44x and it had turned out to be FP issue
+(my init for testing is actually busybox, so it kind of makes sense).
 
-
-Thanks.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The following statement is not true.  The previous statement is true.
+-Ralph
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
