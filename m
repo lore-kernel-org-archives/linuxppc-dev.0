@@ -1,43 +1,30 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <paulus@samba.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	Stefan Jeglinski <jeglin@4pi.com>
-Subject: Re: 2.4.13-pre5 crash when mounting proc
-Date: Sun, 21 Oct 2001 20:58:12 +0200
-Message-Id: <20011021185812.24126@smtp.wanadoo.fr>
-In-Reply-To: <15314.48871.176187.508759@cargo.ozlabs.ibm.com>
-References: <15314.48871.176187.508759@cargo.ozlabs.ibm.com>
+Message-ID: <20011021224211.561.qmail@web13105.mail.yahoo.com>
+Date: Sun, 21 Oct 2001 15:42:11 -0700 (PDT)
+From: Dave Ray <g4tinker@yahoo.com>
+Subject: idebus=133 ?
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> On boot, when it gets to "mounting proc
->> filesystem," I get a break into the mon debugger, but I have no
->> keyboard response (so no backtrace). The info I can copy is:
->
->You have an ADB keyboard, no?  I am surprised the keyboard doesn't
->respond.
+It's my understanding the Mac G4 towers run at a bus
+speed of 133 MHz. However the kernel argument for
+idebus=xx apparently only allows values up to 66. Is
+this intentional?
 
-Could be async probing not beeing complete. I could push the adb_sync
-kernel arg to the bk trees, at least _devel.
+I checked where this was is the kernel source and
+manually changed the limit from 66 to to 133 to see
+what happens. The machine boots fine with no errors.
+The file is: drivers/ide/ide.c. On lines 3159 and 3162
+I simply changed "66" to "133". Then I boot with
+"idebus=133".
 
->> vector: 300 at pc = c02432fc lr = c00544e0 msr = b032 sp = c5dc3ef0
->>
->> plus some more that I'm not sure will help much. For this output
->> alone, should I include System.map also?
->
->Yes, or alternatively find out where those pc and lr addresses are in
->the System.map list and tell us the nearest symbols and their values.
->
->> Is this a known problem?
->
->Not to me...
+Is the 66 limit intentional or should it be changed to
+133?
 
-Not to me neither but I'm still running pre3.
-
-Ben.
+-Dave
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
