@@ -1,83 +1,117 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC8xx USB host mode
-Message-ID: <1022759888.3cf613d09d1f7@imp.imms.de>
-Date: Thu, 30 May 2002 13:58:08 +0200 (MEST)
-From: Christian Schroeder <christian.schroeder@imms.de>
+Message-ID: <3CF64E9C.60303@mvista.com>
+Date: Thu, 30 May 2002 09:09:00 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dan Malek <dan@embeddededge.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: LMBench and CONFIG_PIN_TLB
+References: <20020529030838.GZ16537@zax>	<3CF4E842.3070207@embeddededge.com> <15605.24191.948013.249297@argo.ozlabs.ibm.com> <3CF581BE.8020207@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Dan Malek wrote:
 
-I try to enable the USB host controller on a mpc823 (TQM832L-Board).
-The CPU is a mpc823e (PPC823EZTnnB2)
+>
+> Paul Mackerras wrote:
+>
+>
+>> I suspect we are all confusing two things here: (1) having pinned TLB
+>> entries and (2) using large-page TLB entries for the kernel.
+>
+>
+> I wasn't confusing them :-).  I know that large page sizes are
+> beneficial.
+> Someday I hope to finish the code that allows large page sizes in the
+> Linux page tables, so we can just load them.
+>
+>> We could have (2) without pinning any TLB entries but it would take
+>> more code in the TLB miss handler to do that.
+>
+>
+> Only on the 4xx.  I have code for the 8xx that loads them using the
+> standard lookup.  Unfortunately, I have found something that isn't quite
+> stable with the large page sizes, but I don't know what it is.
+>
+>
+>> ....  It is an interesting
+>> question whether the benefit of having the 64th TLB slot available for
+>> applications would outweigh the cost of the slightly slower TLB
+>> misses.
+>
+>
+> Removing the entry will increase the TLB miss rate by 1/64 * 100 percent,
+> or a little over 1.5%, right?  Any application that is thrashing the TLB
+> cache by removing one entry is running on luck anyway, so we can't
+> consider
+> those.  When you have applications using lots of CPU in user space (which
+> is usually a good thing :-), increased TLB misses will add up.
+>
+>> .... My feeling is that it would be a close-run thing either way.
+>
+>
+> So, if you have a product that runs better one way or the other, just
+> select the option that suits your needs.  If the 4xx didn't require the
+> extra code in the miss handler to fangle the PTE, large pages without
+> pinning would clearly be the way to go (that's why it's an easy decision
+> on 8xx and I'm using it for testing).
+>
+>> Were you using any large-page TLB entries at all?
+>
+>
+> Yes, but the problem was taking the tlb hit to get the first couple of
+> pages loaded and hitting the hardware register in time.  It was a hack
+> from the first line of code :-)  If you are going to pin a kernel entry,
+> you may as well map the whole space.  I don't think it would even work
+> if we were loading large pages out of the PTE tables.
+>
+>> .... Tom Rini mentioned the other day that some 8xx processors
+>> only have 8 (I assume he meant 8 data + 8 instruction).
+>
+>
+> Yes, there are a number of variants now that have everything from 8 to
+> 64 I believe.  It was just easier to pick out the 860 (which always has
+> lots of entries) for testing purposes.
+>
+> The 8xx also has hardware support for pinning entries that basically
+> emulates BATs.  It doesn't require any software changes except for
+> the initial programming of the MMU control and loading of the pinned
+> entries.
+>
+>> .... David's suggestion was purely in the context of the 405
+>> processor, which has 64.
+>
+>
+> There is an option to enable it, so just enable it by default.  What
+> do you gain by removing the option, except the possibility to prevent
+> someone from using it when it may be to their benefit?  It certainly
+> isn't a proven modification, as there may be some latent bugs associated
+> with dual mapping pages that may be covered by the large page and
+> some other mapping (I think this is the problem I see on the 8xx).
 
-1. I collected and read all information from the web and this mailing
-   list.
-2. I got Brad Parkers's m8xxhci driver rev. 2 from heeltoe.com
-3. I did some modifications in the driver source.
-   - USE_TIMER1_FOR_SOF
-   - USE_PA4_CLK4
-4. I disabled the POLL_FOR_HUB code
 
-If I boot the target, all seems ok.
+btw, there are bugs with it.  Starting several processes with init or
+even telnetd will expose the bug.
 
-
-If I connect a usb keyboard to the target, I get theese messages
-(the keyboard contains a usb 5 port hub):
-
-hub.c: USB new device connect on bus1/1, assigned device number 7
-hub.c: USB hub found
-hub.c: 5 ports detected
-hub.c: USB new device connect on bus1/1/4, assigned device number 8
-usb.c: USB device driver not accepting new addres=8 (error=-110)
-usb.c: USB new device connect on bus 1/1/4 assigned device number 9
-input0: USB HIDBP Keyboard 046a:0001 on on usb1:9.0
-
-If I press the keyboard - nothing occurs ...
-I dont't know, why the driver needs two tries to recognize the keyboard.
-The TQM823L-Board uses a Philips USB Transceiver and I did not insert
-the delay gates between the mpc and the transceiver. If I remove the
-keyboard, the following messages occur:
-
-usb.c: USB disconnect on device 7
-usb.c: USB disconnect on device 9
-rh_port_enable(0)
-
-If I connect a Thunderbird 4-Port USB HUB, the following messages occur:
-
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 10
-usb.c: USB device not responding, giving up (error=-110)
-
-or
-
-rh_port_reset(1)
-hub.c: USB new device connect on bus1/1, assigned device number 2
-hub.c: USB hub found
-hub.c: 4 ports detected
-hub.c: Unable to get hub status (err=-110)
-hub.c: hub configuration failed for device #2
-usb.c: USB device 2 (vend/prod 0x3eb/0x3301) is not claimed by any active driver
-
-Now - does the driver work or not or partially and do I need to insert
-the delay gates between mpc an usb transceiver ?
-
-Thanks for any answers.
-Christian Schroeder
-
-Dr.-Ing. Christian Schroeder
-Institut fuer Mikroelektronik- und Mechatronik-Systeme
-Langewiesener Strasse 22
-98693 Ilmenau
-Telefon: +49 3677 678315
-Telefax: +49 3677 678337
-Mobil:   +49 173 5789172
-e-mail:  christian.schroeder@imms.de
-www:     http://www.imms.de/~christi/cs.html
-pgp:     finger christi@finger.imms.de
+>
+>
+>> ....  (actually, why is there the "860
+>> only" comment in there?)
+>
+>
+> Because the MMU control registers are slightly different among the 8xx
+> processor variants, and I only wrote the code to work with the 860 :-)
+>
+> Thanks.
+>
+>
+>     -- Dan
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
