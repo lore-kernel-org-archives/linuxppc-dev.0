@@ -1,53 +1,133 @@
-Message-ID: <3D530222.7040303@redswitch.com>
-Date: Thu, 08 Aug 2002 16:43:30 -0700
-From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
-MIME-Version: 1.0
-To: linux-mtd@lists.infradead.org,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: MTD/JFFS2 on Intel 28F160F3
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Fri, 9 Aug 2002 14:26:05 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: First steps to OCP device model integration
+Message-ID: <20020809042605.GC23642@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi *,
+THe patch below implements the first steps in transitioning the
+handling of 4xx OCP devices to the unfied device model (in 2.5).  So
+far the code just registers an ocp bus and registers each device
+described in core_ocp on that bus.  The next step is to convert the
+actual device drivers so that that they register with the unified
+driver tree rather than through the old ocp_register() mechanism.
 
-I'm trying to enable MTD and JFFS2 on an Intel 28F160F3 chip but have
-some problems.
+I will commit this shortly unless there are serious objections.
 
-The basic problem is what the physical start address of flash mapping
-is? While on PPCBoot, I got flash information using command 'flinfo'.
-The start address is FFE00000. Is this address the one used to configure
-CFI flash device in physical memeory map? I tried using this address but
-  'physmap' couldn't find flash device.
+diff -urN /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/ocp.c linux-bluefish/drivers/ocp/ocp.c
+--- /home/dgibson/kernel/linuxppc-2.5/drivers/ocp/ocp.c	2002-08-09 11:28:27.000000000 +1000
++++ linux-bluefish/drivers/ocp/ocp.c	2002-08-09 13:55:08.000000000 +1000
+@@ -69,6 +69,8 @@
+ #include <linux/miscdevice.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
++#include <linux/device.h>
++#include <linux/init.h>
+ #include <asm/io.h>
+ #include <asm/ocp.h>
+ #include <asm/errno.h>
+@@ -388,3 +390,58 @@
+ EXPORT_SYMBOL(ocp_free_dev);
+ EXPORT_SYMBOL(ocp_register);
+ EXPORT_SYMBOL(ocp_unregister);
++
++/* Unified device model OCP interface */
++
++static int ocp_bus_match(struct device * dev, struct device_driver * drv)
++{
++	struct ocp_device *odev = to_ocp_dev(dev);
++	struct ocp_driver *odrv = to_ocp_driver(drv);
++
++	return (odrv->type == odev->def.type);
++}
++
++struct bus_type ocp_bus_type = {
++	name:	"ocp",
++	match:	ocp_bus_match,
++};
++
++static struct device ocp_bus = {
++       name:           "IBM4xx On-Chip Peripheral Bus",
++       bus_id:         "ocp",
++};
++
++static int __init ocp_bus_init(void)
++{
++	int i;
++
++	printk(KERN_DEBUG "OCP: Registering OCP bus and devices\n");
++
++	if (bus_register(&ocp_bus_type) != 0)
++		panic("Couldn't register OCP bus type\n");
++	if (device_register(&ocp_bus) != 0)
++		panic("Couldn't register OCP bus\n");
++
++	for (i = 0; core_ocp[i].type != OCP_NULL_TYPE; i++) {
++		enum ocp_type type = core_ocp[i].type;
++		struct ocp_device *odev;
++
++		odev = kmalloc(sizeof(*odev), GFP_KERNEL);
++		if (! odev)
++			panic("unable to allocate memory for ocp_device\n");
++		memset(odev, 0, sizeof(*odev));
++
++		memcpy(&odev->def, &core_ocp[i], sizeof(struct ocp_def));
++
++		odev->dev.bus = &ocp_bus_type;
++		odev->dev.parent = &ocp_bus;
++		strcpy(odev->dev.name, ocp_type_info[type].desc);
++		sprintf(odev->dev.bus_id, "%d:%s", i, ocp_type_info[type].name);
++
++		device_register(&odev->dev);
++	}
++
++	return 0;
++}
++
++postcore_initcall(ocp_bus_init);
+diff -urN /home/dgibson/kernel/linuxppc-2.5/include/asm-ppc/ocp.h linux-bluefish/include/asm-ppc/ocp.h
+--- /home/dgibson/kernel/linuxppc-2.5/include/asm-ppc/ocp.h	2002-08-08 11:20:50.000000000 +1000
++++ linux-bluefish/include/asm-ppc/ocp.h	2002-08-09 14:00:46.000000000 +1000
+@@ -51,6 +51,7 @@
 
------------------clip-----------------------------------------
-root@ib8sw:~# modprobe -a physmap
-physmap flash device: 100000 at ffe00000
-CFI: Found no Physically mapped flash device at location zero
------------------clip-----------------------------------------
------------------clip-----------------------------------------
-=> flinfo
+ #include <linux/list.h>
+ #include <linux/config.h>
++#include <linux/device.h>
 
-Bank # 1: INTEL 28F160F3 (16 Mbit, top boot sector)
-   Size: 2 MB in 39 Sectors
-   Sector Start Addresses:
-     FFE00000      FFE10000      FFE20000      FFE30000      FFE40000
-     FFE50000      FFE60000      FFE70000      FFE80000      FFE90000
-     FFEA0000      FFEB0000      FFEC0000      FFED0000      FFEE0000
-     FFEF0000      FFF00000 (RO) FFF10000 (RO) FFF20000 (RO) FFF30000 (RO)
-     FFF40000      FFF50000      FFF60000      FFF70000      FFF80000
-     FFF90000      FFFA0000      FFFB0000      FFFC0000      FFFD0000
-     FFFE0000      FFFF0000      FFFF2000      FFFF4000      FFFF6000
-     FFFF8000      FFFFA000      FFFFC000      FFFFE000
-=>
------------------clip-----------------------------------------
+ #include <asm/mmu.h>		/* For phys_addr_t */
 
-I haven't dived into the routine 'do_cfi_probe()' yet since I'm not sure
-if the start address I specified is correct. Any help is greatly
-appreciated.
+@@ -158,5 +159,21 @@
+ extern int ocp_get_irq(int type, int dev_num);
+ extern int ocp_get_pm(int type, int dev_num);
 
-- Shawn.
++/* Unified device model OCP interface */
++
++struct ocp_device {
++	struct ocp_def def;
++	struct device dev;
++};
++
++struct ocp_driver {
++	enum ocp_type type;
++	struct device_driver driver;
++};
++
++#define	to_ocp_dev(n) container_of(n, struct ocp_device, dev)
++#define	to_ocp_driver(n) container_of(n, struct ocp_driver, driver)
++
++
+ #endif				/* __OCP_H__ */
+ #endif				/* __KERNEL__ */
 
+
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
