@@ -1,55 +1,50 @@
-Message-ID: <3AAFCF65.CAC8E623@mvista.com>
-Date: Wed, 14 Mar 2001 12:07:01 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: "Curry, Diane" <dcurry@infiniswitch.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IDE interface driver on the 405gp
-References: <FF6CF34C346E724596A2FB5CAAB2C49707F906@voyager.ops.infiniswitch.com>
+Date: Wed, 14 Mar 2001 14:53:58 -0800
+From: andrew may <acmay@mace.penguinpowered.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Frank Rowand <frank_rowand@mvista.com>
+Subject: Walnut 405GP and a 3com 905
+Message-ID: <20010314145358.B5558@ecam.san.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Curry, Diane" wrote:
->
-> Hello -
->   I'm running an IBM 405GP rev D walnut and Monta Vista's 2.4.2 port.  I
-> have a
-> PCI-to-PCMCIA adapter, a PCMCIA card reader/writer and an IBM
-> Microdrive.  I've
-> got a root filesystem on the Microdrive and a kernel image built with an
-> initial ram disk.
-> The kernel boots with the initrd image, my linuxrc scripts loads the
-> pcmcia modules and
-> switches roots to the microdrive.  This is all working fine, but I'm
-> questioning what I did
-> to get it working (it seemed too easy).  All of the changes, except some
-> endian issues
-> which I addressed in the pcmcia i82365.c module, were to ppc4xx_setup.c.
-> Essentially
-> all I did was initialize the ppc_ide_md structure with function names
-> and provide the
-> corresponding functions (using m8xx_setup.c as a reference).  If anyone
-> could tell me
-> whether this seems reasonable, I'd really appreciate it.  Thanks  in
-> advance.
->
-> Diane Curry
-> dcurry@Infiniswitch.com
+Anyone try to use a 3com NIC card on the Walnut board?
 
-Sounds reasonable.
+I can load the module but when I try to bring up the
+interface I get a stream of bus errors.
 
-Which PCI-to-PCMCIA adapter are you using?  (Can you cat /proc/pci or
-do a lspci -v?)
+eth1: using NWAY autonegotiation
+eth1: Host error, FIFO diagnostic register 0000.
+eth1: PCI bus error, bus status 80000020
+eth1: using NWAY autonegotiation
+eth1: Host error, FIFO diagnostic register 0000.
+eth1: PCI bus error, bus status 80000020
+eth1: using NWAY autonegotiation
+eth1: Host error, FIFO diagnostic register 0000.
 
-I meant to include this stuff in the latest kernel, but forget to.  It
-will be in the next version.
+I am using the 2.4.2 version of the Walnut kernel dated
+Mar 1 on the ftp site.
 
--Frank
+There are changes to the 3com driver in the pre patches
+but I have not tried it yet.
+
+Most docs say this is a hardware failure so I might want
+to change the PCI slot I am using.
+
+Has anyone successfully used a PCI network card in the
+Walnut board.
+
+If it is just a driver bug I do not want to spend time
+fixing it, I would just want to get a card that works.
+
+I just want to do some perf testing on board itself.
+
+Thanks
+
 --
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Andrew May
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
