@@ -1,35 +1,43 @@
-Message-ID: <000701c160c3$1465f540$23d9b5d4@jocke>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: <kd@flaga.is>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE:CPM interrupts raised to early? (was More I2C stuff,) 
-Date: Mon, 29 Oct 2001 22:45:51 +0100
+Message-ID: <3BDDD5E1.5040504@ixiacom.com>
+Date: Mon, 29 Oct 2001 14:19:13 -0800
+From: Bryan Rittmeyer <bryan@ixiacom.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org, akuster@mvista.com
+Subject: Re: http_load causes 405GP kernel panic w/ linux_2_4_devel
+References: <3BD77667.2060406@ixiacom.com> <3BD790A3.D4AF4852@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Kari
+Dan Malek wrote:
+>>Looks like linux_2_4_devel is very unstable under high TCP/IP loads
+>>and low amounts of memory on the Walnut.
+>
+> Yeah, that's why it's called a _development_ tree.  If you want to
+> play around here, the purpose is for you to help us fix the bugs.
 
-This rings a bell in my mind. There is(was?) a line early in the irq routine
-where i2cmod(?) is disabled(there is a comment that states that this is
-due to some chip errata).
+yep, fair enough.
 
-First a commeted this line and my I2C was starting to work. Later
-I moved it to someplace directly after IRQ context and now my I2C is
-working fine. Do you know what this "chip errata" referes to? I could
-not find any reference to this in any Motorola doc.
+> When you find a solution, post a patch and we'll all take a look
+> at it.  If you are willing to help out, that's great, but we all have
+> plenty to do so just expecting someone else to look at it and fix
+> it for you isn't going to be very satisfying :-).
 
-If you want, I can send you my version of the i2c-algo-8xx.c driver(I am at
-home
-now and don't have access to the driver now)
+I am certainly going to investigate it myself, but I thought posting a
+public bug report might be useful for other users/developers, even
+before I have a fix.
 
-   Regards
-               Joakim Tjernlund
-PS.
-      I am also using motorola I2C microcode patch
+Anyway, I'll send the patch your way as soon as I have one.
+
+Thanks,
+
+-Bryan
+
+--
+Bryan Rittmeyer
+mailto:bryan@ixiacom.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
