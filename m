@@ -1,37 +1,37 @@
-Message-ID: <XFMail.990317144315.gthomas@cygnus.co.uk>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <36EF6F70.61C452E0@schweiz.ch>
-Date: Wed, 17 Mar 1999 14:43:15 -0000 (GMT)
-From: Gary Thomas <gthomas@cygnus.co.uk>
-To: Andreas Tobler <a.tobler@schweiz.ch>
-Subject: RE: egcs-1.1.2-RPM
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        linux ppc <linuxppc-user@lists.linuxppc.org>
+Date: Wed, 17 Mar 1999 16:25:18 +0100
+To: linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Apple Open Source: the drivers
+Message-Id: <19990317162518.010351@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Ok, I finally found where the driver are hidden: In the kernel archive,
+in bsd/dev/ppc. They are mostly objective C drivers. Among other things,
+there are drivers for the PowerMac ATA with apparently all the timing
+stuffs, and for the CMD646 controller in the blue G3.
 
-On 17-Mar-99 Andreas Tobler wrote:
-> 
-> Hi,
-> 
-> maybe a dump question, is anybody working on a RPM for
-> egcs-1.1.2-glibc1.99? And or egcs-1.1.2-glibc-2.1.
-> If not can I try it by adapting a RPM from a earlier release? I never
-> made a RPM from scratch, I only modified them.
-> 
-> Yesterday, I built egcs-1.1.2 under R4.1. It worked out of the box?! Now
-> I have to compare the test results. I can't believe it, before I had so
-> many troubles building an egcs directly from egcs.cygnus.com.
-> 
-> A last question, what are the minimal requirements to build egcs under
-> pre-R5. Means glibc etc.
-> 
+There's a PMU driver with apparently up-to-date command length tables and
+lots of comments about the commands ;-) An interesting thing that I've
+not seen in the LinuxPPC driver: When sending read commands to
+non-existing devices, the PMU may never answer, and so there's need for
+some kind of timeout. I didn't find infos about putting the PowerBook to
+sleep, maybe MacOS X Server cannot sleep...
 
-If you're willing to wait, I was planning on doing this later this week.
+Finally, the MESH driver is a piece of anthology, but I'll let interested
+people discover it by themselves ;-)
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
