@@ -1,35 +1,18 @@
-Message-ID: <3DEF9E82.7A1E9254@synergymicro.com>
-Date: Thu, 05 Dec 2002 10:44:18 -0800
-From: Dave Wilhardt <wilhardt@synergymicro.com>
-Reply-To: wilhardt@synergymicro.com
-MIME-Version: 1.0
+Date: Thu, 5 Dec 2002 12:17:33 -0700
+From: Matt Porter <porter@cox.net>
 To: Stefano Bodini <s.bodini@comcast.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Frozen ! any idea ?
+Message-ID: <20021205121733.A14807@home.com>
 References: <5.1.0.14.0.20021205132823.00a3aac0@pop3.norton.antivirus>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5.1.0.14.0.20021205132823.00a3aac0@pop3.norton.antivirus>; from s.bodini@comcast.net on Thu, Dec 05, 2002 at 01:28:31PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You might try disabling minicom's hardware and software flow control.  Been
-there...
-
-- Dave
-
-Stefano Bodini wrote:
-
-> Hi all ... just my little testimonial about the problem.
-> Well, Linux and the little board were always working.
-> The freeze actually was minicom on the host, used to "speak" to the console !!!
-> I don't know why minicom freeze after 1 minute but sure I will not use it
-> anymore !
->
-> So Linux is working well on the board.
->
-> Now I have to solve the problem to have the kernel running if compiled with
-> the gdbserver option enabled.
->
+On Thu, Dec 05, 2002 at 01:28:31PM -0500, Stefano Bodini wrote:
 > In order to try to debug something I enabled the KDGB in the kernel
 > (following the instructions on the MontaVista documentation).
 >
@@ -50,12 +33,15 @@ Stefano Bodini wrote:
 > That's it.
 > Stops. No warning, no errors .. just stops.
 > I'm sure this is not a minicom problem this time ... any ideas ?
->
-> Many many thanks in advance
->
-> C'ya
->         Steve
->
 
+There is an early default breakpoint set when you enable KGDB on
+PPC.  You've hit it and need to be communicating with the in-kernel
+stub to continue.
+
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
