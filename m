@@ -1,38 +1,40 @@
-Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-	Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
-	Patrick Mochel <mochel@digitalimplant.org>,
-	Nigel Cunningham <ncunningham@users.sourceforge.net>,
-	ncunningham@clear.net.nz,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.44.0401291029360.2221-100000@opal.biophys.uni-duesseldorf.de>
-References: 
-	 <Pine.LNX.4.44.0401291029360.2221-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain
-Message-Id: <1075378209.1241.34.camel@gaston>
+Date: Fri, 30 Jan 2004 16:35:12 -0800
+From: Greg KH <greg@kroah.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christoph Hellwig <hch@lst.de>,
+	Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	sensors@stimpy.netroedge.com,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH 2.6] Hydra i2c
+Message-ID: <20040131003512.GD10465@kroah.com>
+References: <Pine.LNX.4.58.0401181323130.653@callisto> <20040118124957.GA7585@lst.de> <Pine.GSO.4.58.0401251200580.20527@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Date: Thu, 29 Jan 2004 23:10:09 +1100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.GSO.4.58.0401251200580.20527@waterleaf.sonytel.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2004-01-29 at 20:30, Michael Schmitz wrote:
-> > > OK. I put a mdelay(100) between the PMU_SYSTEM_READY request and the
-> > > pmu_suspend() call in pmu_sys_resume and it seems to work so far. Side
-> > > note: if you are saving a large system and have multiple swap files, play
-> > > with swap priorities to make sure the pages are swapped out to the file
-> > > _not_ used for suspend.
-> >
-> > Hrm... Remove the PMU_SYSTEM_READY, it's a bug to call it on a 101...
-> > And it's not needed anyway.
+On Sun, Jan 25, 2004 at 12:22:02PM +0100, Geert Uytterhoeven wrote:
 >
-> I'm trying a if (pmu_kind != 3) around that call - should it rather be <= 3 ?
+> Here's a new version, incorporating these comments, and making a few more
+> changes:
+>   - Use struct definition in <asm/hydra.h> instead of #defined offset
+>   - Remove flushes are register writes, they are no longer needed
+>   - Use pci_resource_start() instead of dev->resource[].start
+>   - ioremap() the whole resource instead of the first 256 bytes
+>   - Check for errors returned by ioremap() and i2c_bit_add_bus()
+>   - Add resource management
+>   - Call iounmap() in hydra_remove() instead of in i2c_hydra_exit()
+>   - Let I2C_HYDRA depend on I2C and select I2C_ALGOBIT instead of depending on
+>     I2C_ALGOBIT
 
-Just remove it for you tests. Only KEYLARGO based PMUs have this call
+Looks good, I've added this to my tree and will send it on in the next
+round of i2c patches.
 
-Ben.
+thanks,
 
+greg k-h
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
