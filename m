@@ -1,29 +1,29 @@
-Message-ID: <00933BFA237CD2119B3400409543582704A290@MEV01>
-From: Ian Abbott <abbotti@mev.co.uk>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: [i2c] Do I need ucode relocation patch?
-Date: Mon, 4 Dec 2000 19:29:44 -0000 
-MIME-Version: 1.0
+From: Joe Green <jgreen@mvista.com>
+To: Kyle Harris <kharris@nexus-tech.net>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: lcd823.c color macros
+Date: Mon, 4 Dec 2000 14:22:21 -0800
 Content-Type: text/plain
+References: <3A2BEAB0.3056A043@nexus-tech.net>
+In-Reply-To: <3A2BEAB0.3056A043@nexus-tech.net>
+MIME-Version: 1.0
+Message-Id: <00120414244202.00900@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-On Monday, December 04, 2000 5:15 PM you wrote:
-
-> I'm using SCC1 as ethernet and SMC1 as ttyS0.
+On Mon, 04 Dec 2000, Kyle Harris wrote:
+> I don't think the following 2 macros (defined in lcd823.c) work for 8
+> bit color (bit_code = 3).
 >
-> Do I need ucode relocation patch to work with i2c bus?
+> #define NBITS(bit_code)     (1 << (bit_code))
+> #define NCOLORS(bit_code)   (1 << NBITS(bit_code))
 
-Yes. This is because the size of the parameter area for SCC1 ethernet is
-bigger than the area allocated it, so they overlap the usual I2C
-parameter area. (There is a similar conflict between SCC2 ethernet and
-SPI.) The relocation patch moves the I2C and SPI parameters to a new
-parameter area.
+Maybe I'm being thick here, but doesn't NBITS(3) = 8 and
+NCOLORS(3) = 256?  What's the problem?
 
-Be aware that the CPM I2C commands for initializing RX and TX buffer
-parameters, etc. do not work when using the relocation patch.
+--
+Joe Green <jgreen@mvista.com>
+MontaVista Software, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
