@@ -1,57 +1,39 @@
-Message-ID: <001701c28e91$8ab64b80$0200a8c0@telia.com>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Tim Seufert" <tas@mindspring.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <FA8676EA-FA77-11D6-AE66-003065F22EAA@mindspring.com>
+Date: Sun, 17 Nov 2002 17:27:45 -0800
 Subject: Re: csum_partial() and csum_partial_copy_generic() in badly optimized?
-Date: Mon, 18 Nov 2002 00:32:06 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v548)
+Cc: <linuxppc-dev@lists.linuxppc.org>
+To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+From: Tim Seufert <tas@mindspring.com>
+In-Reply-To: <001701c28e91$8ab64b80$0200a8c0@telia.com>
+Message-Id: <F0E56D1E-FA94-11D6-9841-003065F22EAA@mindspring.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Sunday, November 17, 2002, at 07:17  AM, Joakim Tjernlund wrote:
+On Sunday, November 17, 2002, at 03:32  PM, Joakim Tjernlund wrote:
+
+>> Not used.  CTR cannot be specified as the source or destination of
+>> most
+>> instructions.  In order to access its contents you have to use special
+>> instructions that move between it and a normal general purpose
+>> register.
 >
-> >> CTR and the instructions which operate on it
-> >> (such as bdnz) were put into the PPC architecture mainly as an
-> >> optimization opportunity for loops where the loop variable is not used
-> >> inside the loop body.
-> >
-> > loop variable not USED or loop variable not MODIFIED?
+> OK, so how about if I modify the crc32 loop:
 >
-> Not used.  CTR cannot be specified as the source or destination of most
-> instructions.  In order to access its contents you have to use special
-> instructions that move between it and a normal general purpose register.
-
-OK, so how about if I modify the crc32 loop:
-
-unsigned char * end = data +len;
-while(data < end) {
-        result = (result << 8 | *data++) ^ crctab[result >> 24];
-}
-
-will that be possible to optimze in with something similar as bdnz also?
-
+> unsigned char * end = data +len;
+> while(data < end) {
+>         result = (result << 8 | *data++) ^ crctab[result >> 24];
+> }
 >
-> >> Here's a summary of when gcc will compile
-> >> that crc32 loop with use of CTR and bdnz (note that -O3 or above
-> >> automatically turn on -funroll-loops, so I saw no point in testing
-> >> those levels):
-> >>
-> >>            -O1    -O2    -O1 -funroll-loops    -O2 -funroll-loops
-> >> 2.95.4    no     no     no                    no
-> >> 3.1       no     yes    yes                   yes
-> >
-> > hmm, looks like I should upgrade gcc to 3.1 or possibly 3.2. However
-> > I think that gcc >=3.0 has changed the ABI for C++, which is bad for
-> > me.
->
-> Sooner or later you're going to want to, though.  :)
+> will that be possible to optimze in with something similar as bdnz
+> also?
 
-Yes, but upgrading our customers will be a pain :-(
+Nope.  If the pointer was put into the CTR register, it would have to
+be copied back out with an extra instruction in order to be
+dereferenced.  Also, I'm fairly sure there is no way to compare CTR to
+anything but zero, so loops really need to be of the form "while
+(counter--)" to use it.
 
-       Jocke
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
