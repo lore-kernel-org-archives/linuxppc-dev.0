@@ -1,38 +1,39 @@
-Message-ID: <3C2B4A0A.3E86336E@chinook.com>
-Date: Thu, 27 Dec 2001 11:19:22 -0500
-From: Peter Desnoyers <pdesnoyers@chinook.com>
-MIME-Version: 1.0
-To: Liu HongXun-a16975 <a16975@motorola.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: The relationship between hhl 2.0 and FEC driver-- the diagnostic
- information
-References: <01139FC052A0D411900B00508B9535FC047BC38F@ZCH07EXM04.corp.mot.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 27 Dec 2001 19:09:47 -0800
+From: David Ashley <dash@xdr.com>
+Message-Id: <200112280309.fBS39lG00172@dave.home>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: eth0: transmit timed out
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This looks like a problem I was having - the new version of the fec
-driver fixes it.  I've back-ported the changes to hhl2.0, if you're
-interested.
-
-I was only seeing the problem when retrieving large files via FTP - NFS
-and TFTP both seemed to work fine.
-
-Liu HongXun-a16975 wrote:
+>Hello,
 >
-> Here is the dump information:
-> NETDEV WATCHDOG: eth0: transmit timed out
-> eth0: transmit timed out.
-> Ring data dump: cur_tx c0453040, dirty_tx c0453040 cur_rx: c0453000
->  tx: 8 buffers
->   c0453040: 9c00 002a 019d8b92
->   c0453048: 9c00 002a 019d8c12
+>It seems that the kernel cannot send on ethernet.
+>(transmit timed out).
+>What can be the source of such a problem ?
+>
+>Thanks
+>
+>C. Leroy
+>
+>
+>
+>eth0: CPM ENET Version 0.2 on SCC1, 08:00:3e:01:00:17
 
---
-.....................................................................
- Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
- Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
- 100 Hayden Ave, Lexington MA 02421
+
+I was getting similiar messages on the fcc_enet.c driver from hhl 2.4.2
+after I turned on bridge support (2 ethernet ports in the box) and
+didn't have anything plugged into the other adapter. The solutions then
+were to
+1) Ignore the errors
+2) Modify the driver so it doesn't make so much noise
+3) Plug something into the port.
+
+I don't know whether this applies to your situation though. BTW I
+opted for #2.
+
+-Dave
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
