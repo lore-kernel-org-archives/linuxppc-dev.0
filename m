@@ -1,28 +1,30 @@
-Mime-Version: 1.0
-Message-Id: <p04330106b7cfb5d83e49@[63.220.231.138]>
-In-Reply-To: <p04330104b7cfaa0a7830@[63.220.231.138]>
-References: <200109200500.AAA17467@lists.linuxppc.org>
- <20010920.201024.730567552.t-matsuu@protein.osaka-u.ac.jp>
- <20010920201330.Postino-024975@smtp01.highway.ne.jp>
- <p04330104b7cfaa0a7830@[63.220.231.138]>
-Date: Thu, 20 Sep 2001 11:09:20 -0400
-To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: Re: 2.4.10-pre12 sysrq.c compile error
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <linuxppc-dev@lists.linuxppc.org>,
+	Debian PowerPC <debian-powerpc@lists.debian.org>
+Cc: <dan@debian.org>
+Subject: [ANN] yaboot maintainer change
+Date: Thu, 20 Sep 2001 17:09:39 +0200
+Message-Id: <20010920150939.32251@smtp.adsl.oleane.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->There's an inconsistency here that first appeared straightforward to
->me but now I'm not sure of the changes that are needed.
+Hi all !
 
+The maintenance of yaboot releases & packaging will now be handled by
+Ethan Benson. He should shortly release 1.3 (which is the same as 1.2.5
+code wise for those who caught it), the version bump is here to avoid
+confusion with versions I released.
 
-Sorry, I should note that to build this kernel I'm using
-gcc-2.95.2-1i and accompanying parts (and I have glibc-2.1.3-5a, but
-I would think that irrelevant). Could the compiler be an issue?
+The archives of older versions on my page will remain, users should
+however now get their versions from Ethan, I'll let him explain that all.
 
+I still maintain the actual code for yaboot and the yaboot source rsync
+repository, so you can still feed me with bug reports ;)
 
-Stefan Jeglinski
+Regards,
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
