@@ -1,37 +1,28 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Support for Marvell's GT-64260 system controller
-From: Josh Huber <huber@mclx.com>
-Date: 27 Jun 2001 16:47:13 -0400
-Message-ID: <87d77pbqge.fsf@mclinux.com>
+Message-ID: <3B3A576B.6D2968A8@linux-m68k.org>
+Date: Thu, 28 Jun 2001 00:00:11 +0200
+From: Roman Zippel <zippel@linux-m68k.org>
 MIME-Version: 1.0
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: paulus@samba.org, linuxppc-commit@ppcbk.mvista.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: rearrangements in linuxppc_2_4_devel
+References: <15161.33091.788459.48900@cargo.ozlabs.ibm.com>	<3B39C8AA.5000605@humboldt.co.uk> <15161.54515.559935.629883@cargo.ozlabs.ibm.com> <3B39E532.7040202@humboldt.co.uk>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Over here at Mission Critical we've been working on ports for both
-ppcboot and the kernel to the GT-64260 (Discovery) system controller.
+Hi,
 
-This is just a heads-up, since we're to the point of usability and
-have made the sources available for download via our Open Source
-Software web site:
+Adrian Cox wrote:
 
-http://oss.mclx.com/projects/marvell/
+> Looking at the makefile, APUS links with setup.c. So it's going to link
+> with our standard parse_bootinfo, which doesn't take any arguments. I
+> suspect APUS needs a bit more work to integrate it into the 2_4_devel tree.
 
->From there you can grab the 1.0.1 version of ppcboot, Linux kernel
-sources and a sample root filesystem (based on Debian GNU/Linux).  The
-changes required have already made it into the stock version of
-ppcboot, and I hear that the kernel source changes are on their way
-in.
+Yes, APUS currently calls its own parse_bootinfo() (amiga/bootinfo.c) in
+apus_init().
 
-This code has been known to run on the Marvell Evaluation Board
-(EVB-64260), modifications will (of course) be necessary to support a
-custom board.
-
-Have a nice day,
-
---
-Josh Huber
-
+bye, Roman
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
