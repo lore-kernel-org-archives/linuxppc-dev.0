@@ -1,23 +1,24 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B814813561F@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: mm_ptov() in pgtable.c
-Date: Wed, 7 May 2003 14:37:52 -0700 
+Message-ID: <3EB9E12F.5010604@tataelxsi.co.in>
+Date: Thu, 08 May 2003 10:16:39 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: problem in /proc entries.
+References: <3EB9373C.5040208@tataelxsi.co.in>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Omanakuttan wrote:
+>
+> Hi,
+> We cannot read any entry from /proc.
+The vi with busybox cannot read proc entries.
+cat works fine.
 
-Does anyone know why we have mm_ptov() in
-arch/ppc/mm/pgtable.c, since we already
-have __va?  Is there a Really Good Reason,
-historical accident, legacy from other
-architectures, ... ?
+Thanks,
+Om.
 
-Thanks.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
