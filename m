@@ -1,76 +1,38 @@
-Message-ID: <39A83AE4.851C566C@denise.shiny.it>
-Date: Sat, 26 Aug 2000 17:47:16 -0400
-From: Giuliano Pochini <pochini@denise.shiny.it>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <paulus@linuxcare.com.au>
+Subject: Re: Patches for 2.4.0-test7
+Date: Sun, 27 Aug 2000 00:36:03 +0200
+Message-Id: <20000826223603.5117@192.168.1.10>
+In-Reply-To: <39A8379C.E4EBB33A@wanadoo.fr>
+References: <39A8379C.E4EBB33A@wanadoo.fr>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.0-test7 doesn't compile - patch
-Content-Type: multipart/mixed;
- boundary="------------3A15C6D5258034DEE5985398"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------3A15C6D5258034DEE5985398
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+>
+>I wouldn't mind changing the keymaps, but I really would like to use the
+>same keymaps for 2.2.x kernels, for 2.4.0-test kernels with
+>CONFIG_ADB_KEYBOARD and with CONFIG_INPUT_ADBHID.
 
+Well, my kernel for now are the only 2.2 to contain the new stuff and
+support for linux keycodes. It's currently a different implementation
+than the one in 2.4. I beleive that at a given point in the future, we'll
+inherit from the 2.4 version in our 2.2 kernels via the USB backport.
 
-2.4.0-test7 doesn't compile due to new flock stuff and - obviously - PowerPC
-tree hasn't been updated. The attached file is needed to compile per ppc.
+>Yes, it is still there, I just verified. There must be some difference
+>between Paul's kernel and the bitkeeper tree that causes this. Here is
+>another strange observation:
+>
+>I type "printenv", and LD_LIBARY_PATH is listed with the other env
+>variables (with "env", it does not get listed). Now I use the newly
+>recovered strace (see below) to try to understand what printenv does
+>differently from env. Well, "strace printenv" does not show
+>LD_LIBARY_PATH any more!
 
-
-Bye.
---------------3A15C6D5258034DEE5985398
-Content-Type: application/octet-stream;
- name="fcntl.h"
-Content-Disposition: attachment;
- filename="fcntl.h"
-Content-Transfer-Encoding: base64
-
-I2lmbmRlZiBfUFBDX0ZDTlRMX0gKI2RlZmluZSBfUFBDX0ZDTlRMX0gKCi8qIG9wZW4vZmNu
-dGwgLSBPX1NZTkMgaXMgb25seSBpbXBsZW1lbnRlZCBvbiBibG9ja3MgZGV2aWNlcyBhbmQg
-b24gZmlsZXMKICAgbG9jYXRlZCBvbiBhbiBleHQyIGZpbGUgc3lzdGVtICovCiNkZWZpbmUg
-T19BQ0NNT0RFCSAgIDAwMDMKI2RlZmluZSBPX1JET05MWQkgICAgIDAwCiNkZWZpbmUgT19X
-Uk9OTFkJICAgICAwMQojZGVmaW5lIE9fUkRXUgkJICAgICAwMgojZGVmaW5lIE9fQ1JFQVQJ
-CSAgIDAxMDAJLyogbm90IGZjbnRsICovCiNkZWZpbmUgT19FWENMCQkgICAwMjAwCS8qIG5v
-dCBmY250bCAqLwojZGVmaW5lIE9fTk9DVFRZCSAgIDA0MDAJLyogbm90IGZjbnRsICovCiNk
-ZWZpbmUgT19UUlVOQwkJICAwMTAwMAkvKiBub3QgZmNudGwgKi8KI2RlZmluZSBPX0FQUEVO
-RAkgIDAyMDAwCiNkZWZpbmUgT19OT05CTE9DSwkgIDA0MDAwCiNkZWZpbmUgT19OREVMQVkJ
-T19OT05CTE9DSwojZGVmaW5lIE9fU1lOQwkJIDAxMDAwMAojZGVmaW5lIEZBU1lOQwkJIDAy
-MDAwMAkvKiBmY250bCwgZm9yIEJTRCBjb21wYXRpYmlsaXR5ICovCiNkZWZpbmUgT19ESVJF
-Q1RPUlkgICAgICAwNDAwMDAJLyogbXVzdCBiZSBhIGRpcmVjdG9yeSAqLwojZGVmaW5lIE9f
-Tk9GT0xMT1cgICAgICAwMTAwMDAwCS8qIGRvbid0IGZvbGxvdyBsaW5rcyAqLwojZGVmaW5l
-IE9fTEFSR0VGSUxFICAgICAwMjAwMDAwCiNkZWZpbmUgT19ESVJFQ1QJMDQwMDAwMAkvKiBk
-aXJlY3QgZGlzayBhY2Nlc3MgaGludCAtIGN1cnJlbnRseSBpZ25vcmVkICovCgojZGVmaW5l
-IEZfRFVQRkQJCTAJLyogZHVwICovCiNkZWZpbmUgRl9HRVRGRAkJMQkvKiBnZXQgY2xvc2Vf
-b25fZXhlYyAqLwojZGVmaW5lIEZfU0VURkQJCTIJLyogc2V0L2NsZWFyIGNsb3NlX29uX2V4
-ZWMgKi8KI2RlZmluZSBGX0dFVEZMCQkzCS8qIGdldCBmaWxlLT5mX2ZsYWdzICovCiNkZWZp
-bmUgRl9TRVRGTAkJNAkvKiBzZXQgZmlsZS0+Zl9mbGFncyAqLwojZGVmaW5lIEZfR0VUTEsJ
-CTUKI2RlZmluZSBGX1NFVExLCQk2CiNkZWZpbmUgRl9TRVRMS1cJNwoKI2RlZmluZSBGX1NF
-VE9XTgk4CS8qICBmb3Igc29ja2V0cy4gKi8KI2RlZmluZSBGX0dFVE9XTgk5CS8qICBmb3Ig
-c29ja2V0cy4gKi8KI2RlZmluZSBGX1NFVFNJRwkxMAkvKiAgZm9yIHNvY2tldHMuICovCiNk
-ZWZpbmUgRl9HRVRTSUcJMTEJLyogIGZvciBzb2NrZXRzLiAqLwoKI2RlZmluZSBGX0dFVExL
-NjQJMTIJLyogIHVzaW5nICdzdHJ1Y3QgZmxvY2s2NCcgKi8KI2RlZmluZSBGX1NFVExLNjQJ
-MTMKI2RlZmluZSBGX1NFVExLVzY0CTE0CgovKiBmb3IgRl9bR0VUfFNFVF1GTCAqLwojZGVm
-aW5lIEZEX0NMT0VYRUMJMQkvKiBhY3R1YWxseSBhbnl0aGluZyB3aXRoIGxvdyBiaXQgc2V0
-IGdvZXMgKi8KCi8qIGZvciBwb3NpeCBmY250bCgpIGFuZCBsb2NrZigpICovCiNkZWZpbmUg
-Rl9SRExDSwkJMAojZGVmaW5lIEZfV1JMQ0sJCTEKI2RlZmluZSBGX1VOTENLCQkyCgovKiBm
-b3Igb2xkIGltcGxlbWVudGF0aW9uIG9mIGJzZCBmbG9jayAoKSAqLwojZGVmaW5lIEZfRVhM
-Q0sJCTQJLyogb3IgMyAqLwojZGVmaW5lIEZfU0hMQ0sJCTgJLyogb3IgNCAqLwoKLyogb3Bl
-cmF0aW9ucyBmb3IgYnNkIGZsb2NrKCksIGFsc28gdXNlZCBieSB0aGUga2VybmVsIGltcGxl
-bWVudGF0aW9uICovCiNkZWZpbmUgTE9DS19TSAkJMQkvKiBzaGFyZWQgbG9jayAqLwojZGVm
-aW5lIExPQ0tfRVgJCTIJLyogZXhjbHVzaXZlIGxvY2sgKi8KI2RlZmluZSBMT0NLX05CCQk0
-CS8qIG9yJ2Qgd2l0aCBvbmUgb2YgdGhlIGFib3ZlIHRvIHByZXZlbnQKCQkJCSAgIGJsb2Nr
-aW5nICovCiNkZWZpbmUgTE9DS19VTgkJOAkvKiByZW1vdmUgbG9jayAqLwoKI2lmZGVmIF9f
-S0VSTkVMX18KI2RlZmluZSBGX1BPU0lYCQkxCiNkZWZpbmUgRl9GTE9DSwkJMgojZGVmaW5l
-IEZfQlJPS0VOCTQJLyogYnJva2VuIGZsb2NrKCkgZW11bGF0aW9uICovCiNlbmRpZiAvKiBf
-X0tFUk5FTF9fICovCgpzdHJ1Y3QgZmxvY2sgewoJc2hvcnQgbF90eXBlOwoJc2hvcnQgbF93
-aGVuY2U7CglvZmZfdCBsX3N0YXJ0OwoJb2ZmX3QgbF9sZW47CglwaWRfdCBsX3BpZDsKfTsK
-CnN0cnVjdCBmbG9jazY0IHsKCXNob3J0ICBsX3R5cGU7CglzaG9ydCAgbF93aGVuY2U7Cgls
-b2ZmX3QgbF9zdGFydDsKCWxvZmZfdCBsX2xlbjsKCXBpZF90ICBsX3BpZDsKfTsKCiNlbmRp
-Zgo=
---------------3A15C6D5258034DEE5985398--
-
+Ok, I'll look if I see something, but we are in parts of the kernel here
+that I don't know very well. Paul, any idea ?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
