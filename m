@@ -1,42 +1,58 @@
-Message-Id: <5.1.0.14.2.20020205141523.01d9f650@falcon.si.com>
-Date: Tue, 05 Feb 2002 14:23:27 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: 8260 Software Watchdog Timer and Linux Apps
-In-Reply-To: <000301c1ae75$8bd2f6f0$7d0110ac@Seranoa.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <020c01c1ae90$d47efbe0$0900a8c0@Domain.invalid>
+From: "murali nagarajan" <muralin@gdatech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problems running PING, Telnet 
+Date: Tue, 5 Feb 2002 14:02:32 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-8260 UM Section 4.3.2.8 (p. 4-35) "SYPCR can be read at any time but can be
-written only once after system reset."  The SWTC (count) is in the SYPCR,
-as well as the SWP (prescaler) and SWE (enable).
+Hello,
 
-You can load it once.  After that you either live with it or take a reset
-(at which time you are free to load it once again :-).
+We have a custom designed board G4 MPC7450 with GT64260 Galileo controller.
+We have been able to port the Linux on this board. But we do have some
+issues for which I will appreciate if some one could help me.
 
-Note that it starts out life enabled and set with a maximum count.  If you
-want it disabled, you have to explicitly do that.
+Implementation details:
+-----------------------
+We have used Mission Critical Linux 2.4.5-Pre 5 (derived from debian distro)
+and PPCBoot 1.0.4 as our base versions. I used the file system meant for NFS
+mount from the mission critical linux web site. We made necessary
+modifications to the software to work on our custom design.
 
-gvb
+I am able to boot Linux successfully with a NFS mounted file system and a
+Ramdisk (I could test upto 128MB size) based file system. But this was
+possible only when I bypassed the /sbin/init and run the "Bash" shell
+directly. I made changes to init/main.c to run the shell directly after
+successful opening of the /dev/console. Bypassing of /sbin/init at boot time
+is inevitable until we integrate a MPSC port based serial console driver
+with our linux system. We have a crude one (emulates the low level UART
+functions using MPSC) that just works.
+
+We have the following difficulties:
+                                   ----------
+- PING command does not work
+  The erro message I get is   "ping: unknown protocol icmp"
+
+- Telnet program does not work which tells me that the service is unknown.
+   The error message I get is "telnet: tcp/telnet: unknown service"
+
+What can be the issue? I suspect if any of the boot script is not done. I
+ran manually /etc/init.d/rcS and /etc/rc3.d/* (my inittab says run level 3)
+from the bash prompt. This did not help to solve my above problem.
+
+I assume that TCP/IP is fine because I have performed NFS mount of the root
+file system and can access all the files. The booted OS seems to be stable
+as I have run some complex Linux applications and also able to build new
+Linux images.
 
 
-At 01:47 PM 2/5/2002 -0500, barry.fisher wrote:
-
->Hello Everyone:
->In reading the 8260 documentation, it appears that once the 8260
->Software Watchdog timer is enabled, it cannot be disabled. Does anyone
->know whether the watchdog timer count(SWTC) can be loaded with a
->different value prior to the watchdog timer service sequence of 0x556C,
->0xAA39? Thanks in advance.
->Regards,
->Barry O. Fisher
->Seranoa Networks
->Email: barry.fisher@seranoa.com
->
->
+With best regards,
+Murali
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
