@@ -1,53 +1,52 @@
-Message-ID: <20040416061853.85230.qmail@web15207.mail.bjs.yahoo.com>
-Date: Fri, 16 Apr 2004 14:18:53 +0800 (CST)
-From: =?gb2312?q?Song=20Sam?= <samlinuxppc@yahoo.com.cn>
-Subject: Re: Any hints on custom keyboard driver?
-To: Brad Boyer <flar@allandria.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040415163601.GA19251@pants.nu>
-MIME-Version: 1.0
-Content-Type: text/plain
+Date: Fri, 16 Apr 2004 10:56:41 +0200
+To: linuxppc-dev@lists.linuxppc.org
+Subject: zImage.chrp broken in 2.6.5, patch provided, please someone apply it.
+Message-ID: <20040416085641.GA21264@pegasos>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="mP3DRpeJDSE+ciuQ"
+From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Boyer <flar@allandria.com> wrote:
-> > 1. Should I use input.o as interactive interface to communicate with
-> > kernel & user space for convenience?
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 
-> If you want to use this keyboard for your console, then the easiest
-> way would be to create an input layer driver.
+Hello,
 
-Thanks for your hints.So,the data flow related my
-custom keyboard driver module could be like this:
+Find here attached a patch to enable zImage.chrp to work again (and
+probably zImage.chrp-rs6k too). This was broken in 2.6.5, when akpm
+introduced the ld.script dependency, without fixing the cmd_gen-chrp
+to not take $^ to link, but the individual objects, as done for the
+pmac case.
 
-My_custom_keyboard device -> mykeyboard.o -> input.o
+I hope i did the right fix.
 
--> keybdev.o -> LINUX kernel
+Friendly,
 
-> I think USB and ADB are the only keyboard drivers using the input
-> layer in 2.4, but just about everything is using it in 2.6.
+Sven Luther
 
-That's also a puzzle for me.Use input layer for my
-custom keyboard in 2.4 or not and how?Could I take 2.6
-PC keyboard driver as a reference for my custom
-keyboard driver?
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: attachment; filename="Makefile.diff"
 
-> > 2. Is there any clue on how to code a standard input driver?Or any
-> > reference in this aspect?
+--- arch/ppc/boot/openfirmware/Makefile.orig	2004-04-16 10:49:09.675252096 +0200
++++ arch/ppc/boot/openfirmware/Makefile	2004-04-16 10:52:02.941911560 +0200
+@@ -123,10 +123,10 @@
+ 	$(call cmd,gen-elf-pmac)
 
-> There is some documentation in the kernel source. Take a look at the
-> stuff in Documentation/input/.
+ quiet_cmd_gen-chrp = CHRP    $@
+-      cmd_gen-chrp = $(LD) $(CHRP_LD_ARGS) -o $@ $^ && \
++      cmd_gen-chrp = $(LD) $(CHRP_LD_ARGS) -o $@ $(CHRPOBJS) $(LIBS) $< && \
+ 			$(OBJCOPY) $@ $@ -R .comment $(del-ramdisk-sec)
 
-I have studied some stuff in Documentation/input
-several days but still have some troubles for these
-simplified demo.Also,I searched "linux keyboard
-driver" in google but no luck.Anyway,this is my first
-time to code a custom driver.I hope this one isn't
-hard more than I can chew.
+-$(images)/zImage.chrp: $(CHRPOBJS) $(obj)/image.o $(LIBS) $(boot)/ld.script
++$(images)/zImage.chrp: $(obj)/image.o $(CHRPOBJS) $(LIBS) $(boot)/ld.script
+ 	$(call cmd,gen-chrp)
+ $(images)/zImage.initrd.chrp: $(CHRPOBJS) $(obj)/image.initrd.o $(LIBS) $(boot)/ld.script
+ 	$(call cmd,gen-chrp)
 
-Thanks a lot for your nice advice!
-
-Sam
+--mP3DRpeJDSE+ciuQ--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
