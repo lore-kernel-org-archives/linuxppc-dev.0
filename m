@@ -1,38 +1,27 @@
-Date: Tue, 25 Feb 2003 21:14:52 -0700
+Date: Tue, 25 Feb 2003 21:18:43 -0700
 From: Matt Porter <porter@cox.net>
-To: brian.auld@adic.com
-Cc: porter@cox.net, linuxppc-embedded@lists.linuxppc.org
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Kernel Preemption patch
-Message-ID: <20030225211452.A11988@home.com>
-References: <995FF289C9D69747A09E42992644595405B2368A@penguin.adic.com>
+Message-ID: <20030225211843.B11988@home.com>
+References: <995FF289C9D69747A09E42992644595405B23686@penguin.adic.com> <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <995FF289C9D69747A09E42992644595405B2368A@penguin.adic.com>; from brian.auld@adic.com on Tue, Feb 25, 2003 at 06:32:29AM -0800
+In-Reply-To: <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>; from ebs@ebshome.net on Mon, Feb 24, 2003 at 02:29:18PM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Feb 25, 2003 at 06:32:29AM -0800, brian.auld@adic.com wrote:
-> I would presume others interested in the information you posted below would
-> have the same questions:
->
-> (1) penguinppc.org patch page??
->     - I don't remember, and couldn't find when double-checking, a link
->       for patches at this url.
+On Mon, Feb 24, 2003 at 02:29:18PM -0800, Eugene Surovegin wrote:
+> I can make a patch for 2.4.19 PPC devel tree snapshot with all those
+> patches and my fixes if you want.
 
-http://penguinppc.org/dev/
+Thanks.  I placed Eugene's patch at ftp://source.mvista.com/pub/linuxppc/
 
-> (2) source.mvista.com (440GP mmap patch)
->     - I ncftp'ed to this location, and did not find any patches that
->       were for the 440, including the mmap patch you mentioned. Is
->       there a README somewhere that talks about this?
+There should be a pointer from penguinppc.org to this site in the
+near future.  Hopefully, that will make it more noticeable.
 
-It's mentioned in the changeset comments in the trees.
-
->       Or, is this the pub/linuxppc/bigphys_remap... patch?
-
-Yes...that's the "mmap" patch.
-
+Regards,
 --
 Matt Porter
 porter@cox.net
