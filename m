@@ -1,59 +1,51 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: howarth@bromo.med.uc.edu (Jack Howarth)
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc with r128
-Date: Fri, 3 Mar 2000 17:14:23 -0500
-Content-Type: text/plain
-References: <200003031924.LAA72531@bromo.med.uc.edu>
-In-Reply-To: <200003031924.LAA72531@bromo.med.uc.edu>
-Cc: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Message-Id: <00030317250700.01446@localhost.localdomain>
+Date: Fri, 3 Mar 2000 14:33:47 -0800
+From: Greg KH <greg@kroah.com>
+To: Brad Parker <brad@parker.boston.ma.us>
+Cc: Gabriel Ricard <g_ricard@yahoo.com>, linuxppc-dev@lists.linuxppc.org,
+        linux-usb@suse.com
+Subject: Re: [linux-usb] Re: USB Device Driver Development Resources
+Message-ID: <20000303143347.D21458@kroah.com>
+References: <20000303180757.9695.qmail@web1704.mail.yahoo.com> <200003032108.QAA25344@p2.parker.boston.ma.us>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200003032108.QAA25344@p2.parker.boston.ma.us>; from brad@parker.boston.ma.us on Fri, Mar 03, 2000 at 04:08:39PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Jack,
+On Fri, Mar 03, 2000 at 04:08:39PM -0500, Brad Parker wrote:
+>
+> Gabriel Ricard wrote:
+> ...
+> >I'm looking to write a device driver for my Keyspan
+> >USB -> Mac Serial adapter so I can attempt to use my
+> >DeLorme GPS device under Linux (another step to aid me
+> >in eliminating my need for MacOS). I think I posted to
+> >this mailing list a while back asking for info, I'm
+> >not sure.
+>
+> I want to do the same.  I contacted Keyspan and they said "huh -
+> interesting" and I've heard nothing since.  That was 2-3 weeks ago.
+>
+> The 2 port keyspan fob I have (USA28X) uses the Anchor EXUSB chip.
+> This means it needs code downloaded to it.  My hope was that Keyspan
+> would release a binary image (srecs) of their code load and we could
+> include it in the Linux driver.  This assumes they use a standard USB
+> interface to the serial ports...
 
->     I am not sure if this may become a problem but be aware that the
-> usb code from linux-pmac-devel is broken on the Sawtooth G4's and the
-> newer portables. So you may want to be careful when you backport any
-> of that into the linux-pmac-stable tree.
+There is no "standard" way to interface USB to serial. Every vendor does
+it differently. You can thank Microsoft for that big problem (it's a
+long story, ask me if you're curious.)
 
-Actually, I won't actually backport anything from 2.3.X.  The problem is that
-the XFree 4.0 Xservers expect bit 3 to always be set in the first character
-read from the input buffer of the mouse doing IMPS/2 otherwise it assumes
-something got out of sync and throws that character out.
+But there is a person working on a Linux driver for this device without
+the help of Keyspan. His name is Brian Warner, and hopefully there will
+be some code for you to play with soon (right Brian? :)
 
-So to make XF 4.0 work with linuxpmac 2.2.X kernels all we have to do in "or" in
-0x8 (to set bit 3) on the first character so that it correctly does IMPS/2
-(2.3.X already has this fix in place).
+He is writing his own AnchorChip code for the device and the driver will
+download it to the converter, eliminating the need to reverse engineer
+Keyspan's vendor specific protocol. A very cool hack.
 
---- drivers/usb/mouse.c.prev    Fri Mar  3 17:18:37 2000
-+++ drivers/usb/mouse.c Fri Mar  3 17:19:56 2000
-@@ -183,6 +183,7 @@
-                switch (state) {
-                case 0: { /* buttons and sign */
-                        int buttons = mouse->buttons;
-+                        buttons = buttons | 0x08; // set bit 3 to fit imps/2
-                        mouse->buttons = 0;
-                        if (mouse->dx < 0)
-                                buttons |= 0x10;
-
-
-I still need to recompile and check this with an unpatched XFree 4.0 Xserver
-but this should do the trick.
-
-Thanks,
-
-Kevin
-
- --
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
-
+greg k-h
+greg@kroah.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
