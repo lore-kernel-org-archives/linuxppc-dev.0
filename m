@@ -1,29 +1,32 @@
 From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14837.27948.882957.344247@argo.linuxcare.com.au>
-Date: Tue, 24 Oct 2000 22:06:20 +1100 (EST)
-To: toa@pop.agri.ch
+Message-ID: <14837.28240.588096.139146@argo.linuxcare.com.au>
+Date: Tue, 24 Oct 2000 22:11:12 +1100 (EST)
+To: Martin Costabel <costabel@wanadoo.fr>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.2.18-pre17 candidate
-In-Reply-To: <39F53B02.B3E5CAF4@pop.agri.ch>
+In-Reply-To: <39F552C8.91856B0C@wanadoo.fr>
 References: <14837.11341.207379.903189@argo.linuxcare.com.au>
-	<39F53B02.B3E5CAF4@pop.agri.ch>
+	<39F552C8.91856B0C@wanadoo.fr>
 Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andreas Tobler writes:
+Martin Costabel writes:
 
-> My menuconfig breaks with the msg 'MCmenu36: command not found report it
-> to ......'. On the quick it's not very helpful I know.
-> I also wondered why 'Mac device drivers' is the last entry in the
-> menuconfig, no sound, nor Kernel hacking.
+> First of all, you don't use CONFIG_MAGIC_SYSRQ, do you? If you do, you
 
-Oops, missed an endmenu in arch/ppc/config.in.  Try rsyncing again
-now.
+Not usually, no.  How did you guess?  :-)
 
+> Having fixed the corresponding 6 or 8 files, compilation went through to
+> the end, but in the final "ld ... -o vmlinux", there were dozens of
+> undefined symbols, like:
+
+Could you send me a copy of your .config?
+
+Thanks,
 Paul.
 
 --
