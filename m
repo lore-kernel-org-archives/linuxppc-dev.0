@@ -1,48 +1,25 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <jingai@floatingpenguins.com>
-Cc: David Edelsohn <dje@watson.ibm.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Re: Status of PCI-PCI bridge on UMAX S900
-Date: Fri, 5 Jan 2001 15:24:33 +0100
-Message-Id: <19341130075617.28501@mailhost.mipsys.com>
-In-Reply-To: <200101051258.GAA21989@lists.linuxppc.org>
-References: <200101051258.GAA21989@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200101051455.f05Et0v06700@ashley.ivey.uwo.ca>
+Date: Fri, 5 Jan 2001 09:55:00 -0500
+Reply-To: khendricks@ivey.uwo.ca
+Content-Type: text/plain;
+	charset=us-ascii
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-Version: 1.0 (Apple Message framework v337)
+Subject: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->My guess would be probably, to be thorough.  But I'm no kernel
->expert, so anyone else have any comments?
->
->Although (again just guessing), I don't think many (if any) systems
->will have more than one PCI controller, or more than one bridge
->chip for that matter...
+Hi,
 
-The best solution is probably to cleanup the current parsing mecanism in
-prom.c to clearly separate the 3 cases:
+I have not kept up with 2.4.0 development at all.  I see that Linus has officially released 2.4.0.  Alan has also release 2.4.0-ac1.  What is the status of ppc support in either of these kernels?
 
- - Real OF with interrupt tree (CHRP, newworld mac booting via OF). This
-one is already more or less separate.
+Did Linus ever accept the ppc patches people has sent?  Should a stick with the Alan's kernel for now or is there some other place to download a more ppc specific kernel from?
 
- - OldWorld macs (booted either via OF or BootX/miBoot)
+Thanks,
 
- - Newworld macs booted via BootX/miBoot
-
-
-Only the second case should iterate the AAPL,interrupts parents, and in
-this case, all parents should be iterated up to the top of the tree in
-case of cascaded bridges. For now, your patch may be enough, I'll look
-into cleaning all that up myself. The only "tricky" case is NewWorld macs
-booted via BootX/miBoot. Those machine should use the OF interrupt tree.
-Unfortunately, MacOS screws it up (we no longer have access to the
-phandle's, and so can't follow the interrupt-parent links). So we rely on
-other types of infos left by MacOS, but those seem to occasionally be
-different on older newworld macs and core99 machines.
-
-
-Ben.
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
