@@ -1,34 +1,42 @@
-Subject: Re: Scaling registers on r128
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <3BEF952D.9000306@humboldt.co.uk>
-References: <3BEF952D.9000306@humboldt.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 22 Nov 2001 02:42:53 +0100
-Message-Id: <1006393373.24727.23.camel@pismo>
-Mime-Version: 1.0
+Date: Wed, 21 Nov 2001 23:31:21 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: benh@kernel.crashing.org
+Cc: Marcus Metzler <mocm@metzlerbros.de>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Again with the firewire
+In-Reply-To: <20011121182716.31026@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.40.0111212318540.10065-100000@andromeda.dsdk12.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2001-11-12 at 10:23, Adrian Cox wrote:
+On Wed, 21 Nov 2001 benh@kernel.crashing.org wrote:
 
-> The attached patch turns on the panel scaling registers of the R128.
-> I've run this on my iBook2, and I've been able to display 640x480 and
-> 800x600 modes on the panel successfully.
+> Note that working firewire for pismo/tipb exist in my rsync tree
+> or in the linux1394 CVS. Linus and bk _devel aren't up-to-date yet.
 
-So have I, but they both flicker noticeably, and there is corruption in
-X with the server built-in modes, but not with modes generated with
-fbset -x. Both effects are only slightly noticeable in 800x600 but more
-so in 640x480.
+Well, I've just successfully loaded the 'ohci1394' driver on this iBook. I
+don't have any actual FireWire devices available to plug into it right
+_now_, but this is a step in the right direction, in that it didn't
+proceed to hang up the PMU and shut the unit down. Maybe on Friday I'll
+scoot out to work and plug in the 12x FireWire CD burner we have laying
+around, and see if I can burn something. (Or at least read something -
+that'd be progress.) (This is with 2.4.15-pre6-ben0, but I would presume
+-pre7-ben0 would be the same story, but I haven't tried it yet.
 
-Nice work though!
+I don't know what yoou changed, Ben, but I would say this is a major step
+in the right direction. If it now proceeds to work right, then the only
+remaining area of contention on this iBook with Linux will be DRI/AGP.
+(Not really major to me, so for all practical purposes, that'd be
+everything I care about.)
 
+Hell, I'm tempted to make the half-hour trip to work, get the burner,
+bring it back, and try it, even given the late hour. :)
 
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
