@@ -1,66 +1,72 @@
-Message-ID: <39289DA5.F0A5B8FF@da-san.com>
-Date: Mon, 22 May 2000 11:38:29 +0900
-From: Seungdong Lee <sdlee@da-san.com>
-MIME-Version: 1.0
-To: Marcus Sundberg <marcus@cendio.se>
-CC: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8240 BogoMIPS
-References: <39263EA0.69C60AA9@da-san.com> <3926CD15.441C87AB@embeddededge.com> <vehfbtasi8.fsf@lipta.cendio.se>
-Content-Type: text/plain; charset=EUC-KR
+Message-Id: <200005220447.GAA13376@denx.local.net>
+To: Brent <bimhoff@ns1.planetspork.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MBX boot problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 21 May 2000 18:28:35 MDT."
+             <Pine.GSO.4.05.10005211739380.9894-100000@ns1.planetspork.com>
+Date: Mon, 22 May 2000 06:47:14 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marcus Sundberg wrote:
+In message <Pine.GSO.4.05.10005211739380.9894-100000@ns1.planetspork.com> you wrote:
+>
+> So I've searched the archives and read the readme's, and it still won't
+> boot. :)
 
-> Dan Malek <dan@netx4.com> writes:
->
-> > Seungdong Lee wrote:
-> > > BogoMIPS value of my board is currently 131.89.
-> > > My board is configured to run in 200MHz system clock.
-> >
-> > I have not booted my 8240 for a while, and I don't remember the number.
-> > I have another 8240 showing up soon, so I will be back on that before
-> > long and will pay attention to this.  For some reason, I do remember that
-> > with caches disabled this number is _really_ small, like 13 or 18 or
-> > something.
->
-> I'm not very familiar with 82x0 processors, but doesn't 8240 use a
-> 603-core? When I worked with a 603ev running at 200 MHz I got
-> something like 133 BogoMIPS, so then the above value would be correct.
->
+Well, let's see...
 
-Good information.
-But, why it is 133 BogoMIPS?
-I still think that the correct value is 400.
+> At this point, things go bad.  I've tried two things. 1) hitting enter and
+> letting things fall as they may.  This didn't work since there seemed to
+> be a problem with it dropping the middle digit of the first octet of the
+> src/dst IP addresses in the boot args.  2)  explicitly defining the boot
+> arguments with appropriate settings.
 
->
-> > I wouldn't use BogoMIPS for any kind of benchmark.  There have been
-> > plenty of discussions on mailing lists (including linuxppc lists) to
-> > indicate this abosolute number doesn't mean much.  I have many PowerPC
-> > systems running Linux, from 8xx embedded though 7400/G4 systems.  I
-> > certainly can't predict what this number "should" be.
->
-> The BogoMIPS can be used for rough sanity-checks when comparing
-> processors with identical cores and different clocks. For anything
-> else it's completely useless. And excelent example is that a
-> Pentium CPU gives a BogoMIPS value of about 1xclock, while a Pentium
-> MMX CPU gives about 2xclock, even though their real-life performance
-> is practicly the same.
->
+Graham Stoney commented on # 2, so I'll give a try on # 1 :-)
 
-Maybe it is because of the difference in superscalar architecture.
+There  once  was  a   bug   with   the   IP   address   handling   in
+arch/ppc/mbxboot/misc.c   ;   if   you   can   find   a  place  where
+"nfsaddrs_string" you should be able to figure out how to replace the
+existing code with the following snippet:
 
--- Seungdong Lee
+		...
+		dp = nfsaddrs_string;		/* nfsaddrs=x.x.x.x:y.y.y.y	*/
+		while (*dp) {
+			putc(*cp++ = *dp++);
+		}
+		/* add IP addresses as <my_ip>:<serv_ip> */
+		for (i=0; i<4; ++i, ++byte) {
+			unsigned char outbuf[4];	/* 3 digits + '\0' */
+			unsigned char *optr = &outbuf[sizeof(outbuf)-1];
 
->
-> //Marcus
-> --
-> -------------------------------+-----------------------------------
->         Marcus Sundberg        |       Phone: +46 707 452062
->   Embedded Systems Consultant  |      Email: marcus@cendio.se
->        Cendio Systems AB       |       http://www.cendio.com
->
+			*optr = '\0';
 
+			do {
+				*--optr = (*byte % 10) + '0';
+				*byte /= 10;
+			} while (*byte);
+
+			while (*optr) {
+				putc (*cp++ = *optr++);
+			}
+
+			if (i<3) {
+				putc(*cp++ = '.');
+			}
+		}
+		putc(*cp++ = ':');
+		...
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Today's robots are very primitive, capable of understanding  only  a
+few  simple  instructions  such  as 'go left', 'go right', and 'build
+car'."                                                  - John Sladek
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
