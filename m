@@ -1,24 +1,29 @@
-Message-ID: <3D16DEA1.8C9B3315@taikebj.com.cn>
-Date: Mon, 24 Jun 2002 16:56:02 +0800
-From: caokai <tk19@taikebj.com.cn>
+Date: 24 Jun 2002 15:15:14 -0000
+Message-ID: <20020624151514.4835.qmail@webmail16.rediffmail.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Is the pci interrupt number fixed?
-Content-Type: text/plain; charset=us-ascii
+From: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
+Reply-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: init problem 
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,all:
-  I have a mpc8245 board with an internel intel 82559er ethernet adapter
-.
-  I am tring to porting 2.4.17 linux(Montavista Linux 2.1) on this
-board. I met a thing that I can't understand.Why my ethernet adapter can
-only use a interrupt 18 (assign in arch/ppc/platforms/sandpoint_pci.c)?
-Anything else interrupt number can't work on this board.Is it normal?
-   Can sombody give me some advice?
+hi,
+
+    i have created ramdisk image my kernel is able to detect the
+ramdisk when init is run ,its saying
+  attempting to kill init rebooting in 180 sec
+
+is it problem of some missing  library
 regards
-caokai
+somshekar
+
+_________________________________________________________
+There is always a better job for you at Monsterindia.com.
+Go now http://monsterindia.com/rediffin/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
