@@ -1,29 +1,26 @@
-Message-Id: <200011151433.JAA93259@p2.parker.boston.ma.us>
-To: Ian Abbott <abbotti@mev.co.uk>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: I2C problems 
-In-reply-to: Your message of "Wed, 08 Nov 2000 15:38:51 GMT."
-             <00933BFA237CD2119B3400409543582704A282@MEV01>
-Date: Wed, 15 Nov 2000 09:33:28 -0500
-From: Brad Parker <brad@parker.boston.ma.us>
+Message-ID: <3A12A26A.74AADEA6@agelectronics.co.uk>
+Date: Wed, 15 Nov 2000 14:49:14 +0000
+From: Adrian Cox <apc@agelectronics.co.uk>
+MIME-Version: 1.0
+To: Alex Shnitman <alexsh@hectic.net>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dink32 downloads
+References: <3A1291D5.71286AA7@agelectronics.co.uk> <20001115165231.C27345@hectic.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-fyi: I created a working i2c driver for the 8xx family for Dan a week
-or two ago.  It's in the 2_5 tree as I recall.  It's integrated with
-the existing i2c code and should work reasonably well.
+Alex Shnitman wrote:
+>
+> Hi, Adrian!
 
--brad
+> (You have to
+> make sure the file has Unix-style newlines, though.)
 
-Ian Abbott wrote:
->
->Hi folks,
->
->I've been working on a 'Simon Vogl' type I2C driver for MPC8xx (i.e. the
->new I2C interface in the 2.4.0 kernels) based on the work by Dan Malek,
->Kim Jorgensen and Dan Winkler.
->
->My driver only works in master mode. So far I have only been testing it
+Thanks. That was my problem all along. It turns out that
+powerpc-eabi-objcopy -O srec puts DOS style newlines in the output.
+
+- Adrian Cox, AG Electronics
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
