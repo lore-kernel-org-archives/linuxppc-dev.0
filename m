@@ -1,20 +1,19 @@
-Return-Path: <jonathan@jonmasters.org>
-Received: from smtp.mailbox.co.uk (smtp.mailbox.net.uk [195.82.125.32])
-	by ozlabs.org (Postfix) with ESMTP id D16CD67A79
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 06:37:16 +1100 (EST)
-Message-ID: <41EEA1C7.7060802@jonmasters.org>
-Date: Wed, 19 Jan 2005 18:07:03 +0000
-From: Jon Masters <jonathan@jonmasters.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <1106120622.10851.42.camel@baythorne.infradead.org>
-	<BD84893E-6A28-11D9-AC28-000393DBC2E8@freescale.com>
-In-Reply-To: <BD84893E-6A28-11D9-AC28-000393DBC2E8@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16878.11077.556326.769738@cargo.ozlabs.ibm.com>
+Date: Wed, 19 Jan 2005 20:41:25 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1106120622.10851.42.camel@baythorne.infradead.org>
+References: <200501082324.j08NOIva030415@hera.kernel.org>
+	<20050109151353.GA9508@suse.de>
+	<1105956993.26551.327.camel@hades.cambridge.redhat.com>
+	<1106107876.4534.163.camel@gaston>
+	<1106120622.10851.42.camel@baythorne.infradead.org>
 Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, David Woodhouse <dwmw2@infradead.org>
+	Linus Torvalds <torvalds@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [PATCH] raid6: altivec support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,23 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+David Woodhouse writes:
 
-> We did talk about looking at using some work Ben did in ppc64 with OF in 
-> ppc32.  John Masters was looking into this, but I havent heard much from 
-> him on it lately.
+> Yeah.... I'm increasingly tempted to merge ppc32/ppc64 into one arch
+> like mips/parisc/s390. Or would that get vetoed on the basis that we
+> don't have all that horrid non-OF platform support in ppc64 yet, and
+> we're still kidding ourselves that all those embedded vendors will
+> either not notice ppc64 or will use OF?
 
-I went rather quiet since I had nothing new to add to the discussion. 
-But I did plan to get somewhere before FOSDEM (next month) so I could at 
-least talk to the guys there about it - this is really taking a backseat 
-as I've little time for it and no BDI2000/etc. at home :-)
+I'm going to insist that every new ppc64 platform supplies a device
+tree.  They don't have to have OF but they do need to have the booter
+or wrapper supply a flattened device tree (which is just a few kB of
+binary data as far as the booter/wrapper is concerned).  It doesn't
+have to include all the 
 
-> The firmware interface on the ppc32 embedded side is some what broken in 
-> my mind.
+As for merging ppc32 and ppc64, I think it would end up an awful ifdef
+mess, but if you can see a clean way to do it, send me a patch. :)
 
-It's absolutely broken and needs fixing - perhaps if someone wants to 
-work with me on it, we'd get it sorted more quickly.
-
-Cheers,
-
-Jon.
+Paul.
