@@ -1,32 +1,21 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Mon, 26 Jan 2004 11:43:01 +0800
-Message-Id: <200401261143.AA942145714@actinium.org>
+Subject: Announcement: MPHY now supported in mpc860sar
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: "linux-atm-general@lists.sourceforge.net" <linux-atm-general@lists.sourceforge.net>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Message-Id: <1075117282.1504.17.camel@zambia.cambridgebroadband.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "Arun Kumar" <arunkumar@actinium.org>
-Reply-To: <arunkumar@actinium.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: <linuxppc-devel@lists.linuxppc.org>
-Subject: RE:/dev/null
+Date: 26 Jan 2004 11:41:22 +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I am new to this field.
-I am trying to get bootloader for MPC8xx board.
-I am downloading from ELDK and i got eldk-ppc-linux-x86.
-When I am trying to get the eldk_build file from cvs of denx.de site Iam getting that open /dev/null failed.
-so it is coming out without getting the file.
+Just a quick note to say that multi-phy is now supported by the
+mpc860sar ATM driver, thanks to a patch by Rodolfo Giometti.
 
-How to open this /dev/null file.
-In /dev directory the null files exists and having with permissions 0666.But the problem is that it is not recognising in current home directory or /opt/eldk file (where I want to build files).
+Page: http://sourceforge.net/projects/mpc860sar/
 
-Even though I am downloading as a root the problem exists and I tried to make a hard link between /dev/null and /op/eldk/dev/null(which i created /dev/null seperately in this /opt/eldk). The same problem persists.
+Alex
 
-Help in this regard so that I can proceed further in my project.
-
-Thanks in advance,
-arunkumar@actinium.org.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
