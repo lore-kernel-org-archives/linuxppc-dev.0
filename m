@@ -1,29 +1,38 @@
-Message-Id: <200008130700.e7D70KF03045@shell.faradic.net>
-Date: Sun, 13 Aug 2000 02:00:19 EDT
-From: jingai <jingai@floatingpenguins.com>
-To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: iptables questions
-Reply-To: jingai@floatingpenguins.com
+Message-ID: <3996BFBD.FD8DE0D7@erols.com>
+Date: Sun, 13 Aug 2000 11:33:17 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+To: Josh Kindler <josh@antihype.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: atyfb problems?
+References: <B5BC31B9.2C74%josh@antihype.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey all,
+Josh Kindler wrote:
 
-I've been trying to get iptables to work since v1.0 and
-kernel v2.3.99pre5, but it always either crashes (itself)
-or brings down my entire machine (hard).  Even just
-adding one single NAT rule, it blows up completely.  I'd
-like to have my firewall setup, but at this point I will
-be satisfied with just masquerading :)  Is this a known
-problem with the PPC tree, do I need a patch, or am I
-just trying to do this too late at night? :)
+> Hmm... I jsut got the latest (as of last night) rsync of Ben's kernel. When
+> I compiled it, I got the following error. Previous kernels compiled fine, is
+> this a known issue or am I just stupid?
+>
+> atyfb.c:641: redefinition of `reset_GTC_3D_engine'
+> atyfb.c:631: `reset_GTC_3D_engine' previously defined here
 
-Any help would be greatly appreciated.
+> <snip>
 
-Regards,
-Jonathan
+Try disabling ATI Mach support.
+
+> Also I have an (AFAIK) unresolved airport problem:
+> I can compile it fine, but then when I insmod it i get:
+>
+> airport.o: unresolved symbol isa_io_base
+
+IIRC, this is in the list archives. (hint, search for the error)
+
+HTH
+--Nelson Abramson
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
