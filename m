@@ -1,94 +1,44 @@
-Date: Thu, 20 Nov 2003 14:43:08 -0500
-Subject: 64-bit reads and writes
-From: John Whitney <john.whitney@timesys.com>
-To: "Mailing List: linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <BBE2837C.278D%john.whitney@timesys.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Thu, 20 Nov 2003 21:12:49 +0100
+From: Harald Welte <laforge@gnumonks.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: insmod ipv6 freezes current linuxppc-2.5 and 2.5-benh
+Message-ID: <20031120201249.GB29432@sunbeam.de.gnumonks.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a board with 4-way interleaved, 16-bit flash on a 64-bit data bus.  I
-need to ensure that I have one 64-bit read or write, not two 32-bit reads or
-writes.  To do this, I've used a floating point register in newly created
-__raw_readll() and __raw_writell() (code below).
+Hi!
 
-Effectively, I save the current MSR, and OR in MSR_FP to allow floating
-point access.  I save off FPR1, load my value into it, and use "stfdx" to
-write the value out.  Then I restore FPR1 and MSR to their original values.
+I was trying to get a recent linuxppc-2.5 (or benh) kernel running on my
+G4 Titanium Powerbook IV, and it wouldn't even finish to boot.
 
-Does anyone see any problems with this method, or have a better way of
-accomplishing this?
+After some debugging, I found it was always crashing when sshd started.
+That in turn was, because the kernel tried to autoload the ipv6.ko
+module for sshd to listen at ::.
 
-The two routines are coded as follows:
+booting into single user mode and manually issuing 'insmod ipv6' shows
+exactly the same behaviour:  A full freeze, no more cursor at the
+console, but still responds to pings from the network.
 
-/*
- * For reading and writing 64-bit values, we need to use the floating point
- * registers.  The code will enable MSR_FP in the MSR register, use FPR1 to
- * read from and write to memory, and then restore everything to the
- * previous values.
- */
-static inline unsigned long long __raw_readll (int addr)
-{
-    unsigned long flags;
-    unsigned long msr;
-    unsigned long msr_save;
-    unsigned long long result;
-    unsigned long long fp_save;
+Firing up xmon seems to reveal it is looping somewhere:
 
-    local_irq_save (flags);
-    asm volatile ("sync\n"
-                  "mfmsr    %0\n"
-                  "ori        %1,%0,0x2000\n"
-                  "mtmsr    %1\n"
-                  "isync\n"
-                  "stfdx    1,0,%2\n"
-                  "lfdx        1,0,%4\n"
-                  "stfdx    1,0,%3\n"
-                  "sync\n"
-                  "lfdx        1,0,%2\n"
-                  "mtmsr    %0\n"
-                  "sync\n"
-                  "isync\n"
-                  : "=&r" (msr_save), "=&r" (msr)
-                  : "r" (&fp_save), "r" (&result), "r" (addr)
-                  : "memory" );
-    local_irq_restore (flags);
+pc is always between (count_relocs+0x34) and (count_relocs+0x40),
+backtrace:
+(t get_plt_size+0x60)
+(T module_frob_arch_sections+0xdc)
+(t load_module+0x474)
+(t sys_init_module+0x78)
+(T ret_from_syscall+0x0)
 
-    return result;
-}
+btw: The system is running a current debian 'testing'.
 
-static inline void __raw_writell (unsigned long long value, int addr)
-{
-    unsigned long flags;
-    unsigned long msr;
-    unsigned long msr_save;
-    unsigned long long fp_save;
+Is this a known issue? Any ideas?
 
-    local_irq_save (flags);
-    asm volatile ("sync\n"
-                  "mfmsr    %0\n"
-                  "ori        %1,%0,0x2000\n"
-                  "mtmsr    %1\n"
-                  "isync\n"
-                  "stfdx    1,0,%2\n"
-                  "lfdx        1,0,%3\n"
-                  "stfdx    1,0,%4\n"
-                  "sync\n"
-                  "lfdx        1,0,%2\n"
-                  "mtmsr    %0\n"
-                  "sync\n"
-                  "isync\n"
-                  : "=&r" (msr_save), "=&r" (msr)
-                  : "r" (&fp_save), "r" (&value), "r" (addr)
-                  : "memory" );
-    local_irq_restore (flags);
-    return;
-}
-
-
-John Whitney
-
+--
+- Harald Welte <laforge@gnumonks.org>               http://www.gnumonks.org/
+============================================================================
+Programming is like sex: One mistake and you have to support it your lifetime
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
