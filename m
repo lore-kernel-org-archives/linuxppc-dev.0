@@ -1,51 +1,35 @@
-Date: Tue, 2 Apr 2002 17:21:54 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: paulus@samba.org, linux-galileo@source.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: EV-64260-BP & GT64260 bi_recs
-Message-ID: <20020403002154.GB744@opus.bloom.county>
-References: <0203210213.AA15856@ivan.Harhan.ORG> <3C99801A.8070002@embeddededge.com> <15526.51621.991410.781713@argo.ozlabs.ibm.com> <3CA8A96D.9040309@embeddededge.com> <15529.17031.622986.926261@argo.ozlabs.ibm.com> <3CA9EA93.5000404@embeddededge.com> <20020402201235.GA28287@opus.bloom.county> <3CAA1C80.3070407@embeddededge.com>
+Date: Tue, 2 Apr 2002 23:04:11 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: GT64260 merge warning
+Message-ID: <20020402230411.G6003@altus.drgw.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3CAA1C80.3070407@embeddededge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Apr 02, 2002 at 04:02:56PM -0500, Dan Malek wrote:
-> Tom Rini wrote:
->
-> >It was probably me.
->
-> Heh.....I'm just having some fun :-).
+I'm getting close to a point where I want to start merging appropriate
+things from the linuxppc_2_4_galileo tree on source.mvista.com into
+2_4_devel.
 
-Ya, I figured :)
+The first thing I'm going to do is a moderately large cleanup to
+drivers/net/gt64260_eth.c.
 
-> I also know the reason
-> you probably changed it was to either make munuconfig or
-> something work, or had plans for CML-2.  I think some of the
-> confusing stuff we have for configuration is due to the tools
-> themselves, and that sometimes is reflected in the way the
-> code (#define and #ifdef) is written.
+The second thing is to check in the drivers/char/gt64260_mpsc.c driver
+originally from Zuma networks. This driver is reasonably well written, and
+actually works on SMP.
 
-Yes, there are some neat things which might be less feasible, or at
-least less of a good idea due to the current tools.
+There may be a few other relatively minor things later.
 
-> >...  One thing I want to do in the 2.5 tree is make
-> >arch/ppc/platforms/{8xx,4xx}.in and source those from
-> >arch/ppc/config.in,
->
-> I know that would help.  What happened to CML-2?
-
-I have a feeling that ESR stopped announcing releases of it on l-k since
-it wasn't adopted yet, and Linus has decided to fix more important
-things than the config system (and ESR refuses to try and transition
-from CML1 to CML2 in a manner that can be easily verified to be correct
-or stop trying to tackle the Aunt Tillie problem at the same time).
+So, if you are actually using _devel and the 64260 ethernet driver, speak
+up now.
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Schulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
