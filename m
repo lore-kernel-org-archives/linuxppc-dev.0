@@ -1,35 +1,42 @@
-Message-ID: <XFMail.990122110718.gdt@linuxppc.org>
+Message-ID: <XFMail.990122142503.gdt@linuxppc.org>
 Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.3.96.990122011837.2237A-100000@persephone.cs.nmt.edu>
-Date: Fri, 22 Jan 1999 11:07:18 -0000 (GMT)
+In-Reply-To: <199901220857.AAA10924@avocet.prod.itd.earthlink.net>
+Date: Fri, 22 Jan 1999 14:25:03 -0000 (GMT)
 From: Gary Thomas <gdt@linuxppc.org>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-Cc: Michael Meissner <meissner@cygnus.com>
-Cc: Michael Meissner <meissner@cygnus.com>,
-        Johnnie Peters <jpeters@phx.mcd.mot.com>,
-        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        linuxppc-dev@lists.linuxppc.org, Dan Malek <dmalek@jlc.net>
+To: Pink X <PinkX@earthlink.net>
+Subject: RE: Embedded ppc project
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-On 22-Jan-99 Cort Dougan wrote:
-> You're right.
+On 22-Jan-99 Pink X wrote:
 > 
-> }What about the fixes for the PS/2 mouse?  These are not large, but
-> }significant for systems that need to intialize the mouse from scratch.
 > 
-> I'll take another look at the patch.
+> Can someone give me  a brief overview of how the boot process works for 
+> linuxppc on non-mac, non-open firmware hardware?
+> 
+> For instance, we're looking at a custom processor board for a project... 
+> basically it will have a CPU, a DiskOnChip of about 24MB, RAM and a 
+> drive.   Will it be hugely difficult to get linuxppc to boot out of the 
+> DoC (with a kernal and compress root ramdisk in the DiskOnChip)  Does the 
+> kernel make assumptions about there being certain types of hardware or a 
+> open firmware roms being there?  Will it be hugely difficult for (very 
+> experienced programmers who have worked on unix but not linux 
+> specifically) to get the kernal hacked to our hardware formfactor (not 
+> counting any I/O work, just booting in this environment.)
+> 
+> Any advice appreciated!  We may go with the RPCLite board, but we kinda 
+> need a 603e level of power.  (So any 603e @200+MHz embedded boards would 
+> be great to hear about, we've not found any yet.)
+> 
 
-Thanks.  The important files [for this one] are:
-  drivers/char/pc_keyb.[ch]
-  drivers/char/Config.in
-
-Also the changes I made to the PPC configure files are useful and can be
-separated from the boot changes.
+One place to look is:
+  Cogent Computer Systems
+  (508) 278-9400
+  http://www.cogcomp.com/
 
 
 ------------------------------------------------------------------------
