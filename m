@@ -1,33 +1,43 @@
-Message-ID: <3D947EF3.7010800@embeddededge.com>
-Date: Fri, 27 Sep 2002 11:53:23 -0400
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <C08678384BE7D311B4D70004ACA371050B763622@amer22.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Status of MPC857T ???
+Date: Fri, 27 Sep 2002 09:57:51 -0700
 MIME-Version: 1.0
-To: acurtis@onz.com
-Cc: Sylvain Latulippe <slatulippe@mediatrix.com>,
-	"'Michael Thompson'" <mickey@berkeley.innomedia.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Are 8260 and 8250 CPM interface compatible?
-References: <NCBBIINEHIPFGJPLBEIFGEJJDMAA.acurtis@onz.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Allen Curtis wrote:
-
-> Considering that Motorola is now using the CPM in multiple processors, including DSPs, would it make sense to breakout the support from the 8260 implementation and make it an independent option like PCI?
-
-It would be reasonable, but I don't want to start that until we have another
-processor port in the works that also requires it.  Simply changing all of
-this for the sake of doing so with grand plans how it can be used anywhere
-isn't a useful way to use our resources.  I particularly don't like change
-for the sake of change, because it makes it difficult for us that rely
-on things to work, and I really want to avoid a mess like 4xx OCP :-).
-
-Thanks.
+The problems I had with our 857T board had nothing
+to do with the 857T, only with my own ignorance.
 
 
-	-- Dan
+-----Original Message-----
+From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
+Sent: Friday, September 27, 2002 1:23 AM
+To: LinuxPPC
+Subject: Status of MPC857T ???
+
+
+
+Hi there,
+
+is anyone using the MPC857T?
+
+IIRC there was a post to this list about problem with the MPC857.
+
+Actually the MPC857T should behave like the MPC855T, shouldn't it?
+So I could replace the 855T with the 857T in my designs without changing a
+single line, couldn't I?
+
+Thanks a million!
+
+Cheers,
+
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
