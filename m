@@ -1,60 +1,174 @@
-Date: Mon, 4 Dec 2000 23:55:20 +0100 (CET)
-From: Florin Boariu <florin@bnv-bamberg.de>
+Date: Tue, 5 Dec 2000 02:39:36 -0500 (EST)
+From: Alex Avriette <alex@macachu.yi.org>
+Reply-To: alex@cosmo.allay.net
 To: linuxppc-dev@lists.linuxppc.org
-Subject: wrong place?
-Message-ID: <Pine.LNX.4.21.0012042344440.19403-100000@wolverine>
+cc: max@trega.com
+Subject: lots of questions (va_list, embedded perl, cvsd, introduction - sort
+ of)
+In-Reply-To: <200012050600.AAA21723@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.10.10012050215570.22364-100000@macachu.ex-pressnet.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+first i wanted to give everyone a brief introduction so somebody can tell
+me to go away if im in the wrong place. the description on
+lists.linuxppc.org says that its for linuxppc developers. well, im a
+developer, and i use linuxppc, but im not developing linuxppc. im actively
+participating in the development of a couple items. opennap
+(opennap.sourceforge.net), which is an opensource napster server. tear
+(tear.sourceforge.net), which is a perl script that rips and encodes
+cds->mp3's very easily. im also developing a much-less-public foray into
+artificial intelligence that covers all the bases (c, perl, lisp, and
+bash). somebody tell me to go away if im in the wrong place.
 
-I'm very new to this list (about 30 sec) and before I start and bother
-people, I'd like to ask if I'm in the right place.
+okay, so to the real meat of this post. ive been having some problems with
+the opennap server. i find that the va_list functions (primarily v*printf)
+are giving me segfaults and data corruption. this, however, is *not*
+happening on an x86 bsd machine. i have limited machines to test this on,
+so im not quite sure that its glibc, but i have my suspicions. the general
+behaviour is thus:
 
-I actually do not intend to really develop linux-ppc since I don't think
-I'm good enough. I have some experience in C coding, I even wrote a linux
-device driver once (not necessarily the best one, but anyway... it works)
-and my main reason is that I want my iBook running linux. Of course, if me
-and my limited knowledge can be of any help, we will :)
+if i have one va_list and i use it twice, with two separate
+va_start-va_end clauses, the second one segfaults. i believe this is
+because the string in the second clause gets null'ed and strlen()
+segfaults. gdb falsely reports soinit.c:59, but i tracked down that issue
+on google. :)
 
-Am I a user (and off-topic on this list) or am I a developer (and in the
-right place)?
+i wrote a chassis to reproduce this, and have added it to the bottom of
+this message. the actual code which causes problems is here:
 
-What I want to do is cross-compile linux (kernel aswell as applications)
-from my current (intel) machine to my new shiny iBook. I already built the
-cross-compiling environment, but I'm having troubles compiling the
-2.4.0test11 kernel.
+void
+log (const char *fmt, ...)
+{
+    va_list ap;
 
-It's the following:
+    char buf[1024];
 
-powerpc-g3-linux-gnu-ld <snip...>
-	/usr/src/linux-ppc/lib/lib.a \
-	--end-group \
-	-o vmlinux
-arch/ppc/mm/mm.o: In function `map_page':
-arch/ppc/mm/mm.o(.text+0xe04): undefined reference to `set_pgdir'
-arch/ppc/mm/mm.o(.text+0xe04): relocation truncated to fit: R_PPC_REL24 set_pgdir
-drivers/input/inputdrv.o: In function `keybdev_event':
-drivers/input/inputdrv.o(.text+0x16ac): undefined reference to `emulate_raw'
-drivers/input/inputdrv.o(.text+0x16ac): relocation truncated to fit: R_PPC_REL24 emulate_raw
-make: *** [vmlinux] Error 1
+    va_start (ap, fmt); vsnprintf ( buf, 1022, fmt, ap ); va_end (ap);
+    va_start (ap, fmt); vprintf ( fmt, ap ); va_end (ap);
 
-I read in your ML archives that the second problem already occured in the
-test10 release. I also saw some patches, some did work, others didn't (at
-least that's what the archive says). I also read that it was planned to
-include those patches in the release. Has this been done (probably
-not). What about the first problem (set_pgdir?)
+    fputc ('\n', stdout);
+    fflush (stdout);
 
-best regards,
-florin.
+    putchan ( "#log", "logd", buf );
+}
+
+in the above code, buf is null. furthermore, in the second va_start-end
+clause, ap is clobbered. so putchan never has anything to "put." because
+the chassis is so thorough, i am adding it to the bottom of the message so
+my next question actually gets read. but i would really love it if people
+would take it and run it and tell me what they get.
+
+there is an irc server written in perl. its called pircd, and i believe
+its available at pircd.sourceforge.net. at any rate, the author makes the
+excellent observation "well, if youre going to make a server that is based
+on chat and text, what *better* language to write it in than perl?" so,
+because this napster server is so string-heavy, i have decided i'd like to
+embed perl into it. i have every perl book oreilly makes and a few others.
+_advanced_perl_programming_ has two chapters on embedded perl. the most
+promising part of it is the Ext::Embed module. my main difficulty here is
+that the code in APP is non-object oriented and monolithic. i had amazon
+send me a few books, notably the oreilly _make_ book and a book on c++
+authoring in gnu. these should help but im looking for some nudges in the
+right direction. has anyone on the list used embedded perl?
+
+okay, next question. i want to run cvs. our network is comprised of six
+servers at the moment, and i would like my fellow administrators to be
+able to sync up my current source tree. i havent found any rpms for cvsd,
+and i would preferr a tarball. in fact, i dont have rpm. so a tarball
+would be, er, necessary. :) i suppose rsync would work too, but i dont
+know about the server-side of that transaction.
+
+
+sorry to ask so many questions at once. but i trust you all have the
+smarts and patience to help (or tell me to go away! heh!).
+
+anyway, here's the chassis for va_list and v*printf (use gcc filename.c -o
+filename):
+
+/* begin */
+#include <stdarg.h>
+#include <stdio.h>
+
+void vsn_test ( const char *fmt, ...)
+{
+  va_list ap; char buf [1024]; int i;
+
+  va_start ( ap, fmt ); vsnprintf ( buf, 1022, fmt, ap ); va_end ( ap );
+
+  for (i = 1; i < 5; i++)
+  { printf ( "pass [%d] %s\n", i, buf );
+    va_start ( ap, fmt ); vsnprintf ( buf, 1022, fmt, ap ); va_end ( ap ); }
+}
+
+void v_test ( const char *fmt, ...)
+{
+  va_list ap; int i;
+
+  for (i = 1; i != 5; i++)
+  { printf ( "pass [%d] ", i );
+    va_start ( ap, fmt ); vprintf ( fmt, ap ); va_end ( ap ); printf ("\n"); }
+}
+
+void vs_test ( const char *fmt, ...)
+{
+  va_list ap; char buf[1024]; int i;
+
+  for (i = 1; i != 5; i++)
+  { printf ("pass [%d] %s\n", i );
+    va_start ( ap, fmt ); vsprintf ( buf, fmt, ap ); va_end ( ap ); }
+}
+
+
+void dual_va_test ( const char *fmt, ...)
+{
+  va_list ap; char buf [1024]; int i;
+
+  for (i = 1; i < 5; i++)
+  { va_start ( ap, fmt ); vsnprintf ( buf, 1022, fmt, ap); va_end ( ap ) ;
+    printf ( "dual-run pass [%d][vsn] %s\n", i, buf );
+    printf ( "dual-run pass [%d][v] ", i);
+    va_start ( ap, fmt ); vprintf ( fmt, ap ); va_end ( ap ); printf ("\n"); }
+}
+
+void nested_test ( const char *fmt, ...)
+{
+  va_list ap; char bufa [1024]; char bufb [1024]; int i;
+
+  for (i = 1; i < 5; i++)
+  { va_start ( ap, fmt );
+    vsnprintf ( bufa, 1022, fmt, ap );
+    vsnprintf ( bufb, 1022, fmt, ap );
+    va_end ( ap );
+
+    printf ("buffer [a] pass [%d]: %s\n", i, bufa);
+    printf ("buffer [b] pass [%d]: %s\n", i, bufb); }
+}
+
+void main (void)
+{
+  int tf = 25;   char string[256] = "somestring";
+  vsn_test     ( "int: %d string: %s", tf, string );
+  vs_test      ( "int: %d string: %s", tf, string );
+  v_test       ( "int: %d string: %s", tf, string );
+  dual_va_test ( "int: %d string: %s", tf, string );
+  nested_test  ( "int: %d string: %s", tf, string );
+}
+/* end */
+
+anyhow. thanks everyone.
+
+alex
+
 --
-[...] try this new version instead, which many people believe to
-      be the perfect compromise between new and old bugs. :)
+alex avriette [alex@cosmo.allay.net]
 
-	-- announce of ircII 2.9 "roof"
+"No man who uses EMACS is deserving of love."
+	Tom Christiansen <tchrist@perl.com>,
+	_Perl Cookbook_, pp. 653
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
