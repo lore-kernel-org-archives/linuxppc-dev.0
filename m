@@ -1,44 +1,35 @@
-From: dank@kegel.com
-Message-ID: <3D39E178.2B75266B@kegel.com>
-Date: Sat, 20 Jul 2002 15:17:28 -0700
-Reply-To: dank@kegel.com
-MIME-Version: 1.0
-To: Philip Decker <pdecker@wavewireless.com>
-Cc: vandana mehtani <vandana_mehtani123@rediffmail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ELF reader
-References: <0E97488D670BD411B8BD00C0F03BDF6401799ECC@SPEEDCOM3>
+Date: Sun, 21 Jul 2002 23:23:40 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: consistent_alloc() revisited
+Message-ID: <20020721132340.GE22786@zax>
+References: <20020716021313.GQ22786@zax> <20020720152213.10662@192.168.4.1>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020720152213.10662@192.168.4.1>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Oh, ok.  Perhaps VM can get support from WindRiver, then,
-once he's verified that the ELF file in question is valid.
-
-VM, have you a real PPC environment to run in, or
-is the emulator your only one?
-
-- Dan
-
-Philip Decker wrote:
-> I would assume VM refers to WindRiver's SingleStep simulator:
-> http://www.windriver.com/products/html/ss_sim.html
+On Sat, Jul 20, 2002 at 05:22:13PM +0200, Benjamin Herrenschmidt wrote:
 >
-> > -----Original Message-----
-> > From: dank@kegel.com [mailto:dank@kegel.com]
 > >
-> > vandana mehtani wrote:
-> > > i have made the crosscompiler for powerpc...
-> > > i have a compiled a normal c program printf "hello world"
-> > > with the cross compiler..
-> > > when i try to download it to single step powerpc simulator..
-> > > i get the following error
-> > > "aborting due to failure of ELF reader"
-> > > what cld be possible cause of error..
-> >
-> > Which emulator?  Are you using the one built into gdb?
-> > Or some proprietary one?
-> > - Dan
+> >Arguably setting PageReserved is the Right Thing, since
+> >consistent_alloc() memory obviously shouldn't be swapped or paged.
+> >However, it's only relevant if the memory is mapped into userspace,
+> >and then a driver can set VM_IO on the vma to prevent this.
+>
+> An other issue I had with AGP is, I think, killing the userspace
+> process mmap'ing some of this memory will cause the kernel to try
+> to free the pages if not PageReserved
+
+Surely it shouldn't if VM_IO is set.
+
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
