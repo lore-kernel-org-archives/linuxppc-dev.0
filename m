@@ -1,49 +1,43 @@
-Subject: Re: [PATCH][RFC] have_residual_data()
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Leigh Brown <leigh@solinno.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <1290.81.137.83.225.1086682323.squirrel@www.solinno.co.uk>
-References: <1290.81.137.83.225.1086682323.squirrel@www.solinno.co.uk>
-Content-Type: text/plain
-Message-Id: <1086809994.3227.83.camel@localhost>
+Date: Wed, 9 Jun 2004 17:16:05 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] fix missing option in binutils version check
+Message-ID: <20040610001605.GH18212@smtp.west.cox.net>
+References: <20040605074341.GA15279@suse.de> <20040608112556.GA21447@suse.de>
 Mime-Version: 1.0
-Date: Wed, 09 Jun 2004 14:39:54 -0500
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040608112556.GA21447@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2004-06-08 at 03:12, Leigh Brown wrote:
+On Tue, Jun 08, 2004 at 01:25:56PM +0200, Olaf Hering wrote:
 
-> I just read Gustavo's email, and co-incidently have finally began looking
-> again at my patches over the last couple of days to see about making
-> them good enough to submit.  To this end, please find attached a patch
-> to create a new inline function have_residual_data(), which looks like
-> this:
 >
-> static inline int have_residual_data(void) {
-> #if       defined(CONFIG_PREP_RESIDUAL)
-> 	return res && res->ResidualLength;
-> #else /* !defined(CONFIG_PREP_RESIDUAL) */
-> 	return 0;
-> #endif /* defined(CONFIG_PREP_RESIDUAL) */
-> }
+>  On Sat, Jun 05, Olaf Hering wrote:
+>
+> > pomegranate:~# echo dssall | /usr/bin/as -o /tmp/x
+> > {standard input}: Assembler messages:
+> > {standard input}:1: Error: Unrecognized opcode: `dssall'
+> > pomegranate:~# /usr/bin/as -v
+> > GNU assembler version 2.15.91.0.1 (powerpc-suse-linux) using BFD version 2.15.91.0.1 20040527 (SuSE Linux)
+> >
+> >
+> > *** 2.6 kernels no longer buildcorrectly with old versions of binutils.
+> > *** Please upgrade your binutils to 2.12.1 or newer
+> > make: *** [checkbin] Error 1
+> > make: Target `all' not remade because of errors.
+>
+> I talked to Alan, and -many is the correct fix.
 
-Sounds like a great idea. :) Without having time to read the whole
-patch, I think preferred style is:
-
-#if       defined(CONFIG_PREP_RESIDUAL)
-static inline int have_residual_data(void) {
-	return res && res->ResidualLength;
-}
-#else /* !defined(CONFIG_PREP_RESIDUAL) */
-static inline int have_residual_data(void) {
-	return 0;
-}
-#endif /* defined(CONFIG_PREP_RESIDUAL) */
+Does the resulting kernel compile (e.g. on a config where we might try
+and compile a .S file with 'dssall' in it) ?  I could be missing it, but
+is -many passed down to gas by something else now?  Otherwise this isn't
+a correct fix the assembler won't work. :)
 
 --
-Hollis Blanchard
-IBM Linux Technology Center
-
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
