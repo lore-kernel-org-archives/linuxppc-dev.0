@@ -1,42 +1,32 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mesh in 2.4.0-test1
-Date: Sun, 4 Jun 2000 22:03:56 +0200
-Message-Id: <20000604200356.7446@192.168.1.10>
-In-Reply-To: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
-References: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 4 Jun 2000 18:40:49 -0500
+From: anthony tong <atong@uiuc.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: iMac sense codes & atyfb
+Message-ID: <20000604184049.A780@rogue.genunix.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jun 4, 2000, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+I finally got curious enough (and finally had free time) to look
+at the monitor sense values on an iMac (rev D I think)..
 
->After 3 days of hacking, I found it. The new Core99 interrupt tree code
->doesn't
->take into account that on CHRP boxes with both ISA and OpenPIC, the interrupt
->numbers have to be fixed up. Below is the patch that made it work for me.
->
->Before I check it in into bitkeeper: should I replace the test
->
->    _machine == _MACH_chrp
->
->by
->
->    !strncmp(model, "IBM,LongTrail", 13)
->
->or are there other CHRP models bitten by this as well?
+The iMac has a standard mac video connector mounted on the bottom
+of the motherboard like contraption. Simply, the builtin monitor
+doesn't return any Apple sense codes; unplugging the monitor gives
+the same sense results. I suppose the iMac assumes that a monitor
+is always attached. Connecting other monitors returns the proper
+sense codes (well, I only tried a vga monitor.. it's a PITA with
+the short cabling and that I don't have proper casing&ps for the
+guts of this computer).
 
-After reading the code more closely, it appear that I spoke to quickly:
-_machine is initialized before finish_device_tree() in all cases. I
-beleive this problem will happen with all CHRPs since all of them have an
-ISA legacy controller. So I'll keep the test
-as it is, and I'll merge the fix into bk today for both 2.2 and 2.4 along
-with some other prom.c changes I have here.
+This brings up the question of why mac_map_monitor_sense() defaults
+to 640x480x67 if no sense codes/no monitor is attached. The only
+monitors that I can think of that use this mode are the old Apple
+RGB monitors; perhaps we can use a more sensible default value instead
+when using mac sense values?
 
-Ben.
-
+If only we had ddc..
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
