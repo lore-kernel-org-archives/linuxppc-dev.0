@@ -1,37 +1,50 @@
+Subject: Framebuffer problems
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF833FB15C.A4B24E5E-ON85256E9A.0066AC69-85256E9C.00054851@nanometrics.ca>
+From: Christopher E Cordahi <chris@nanometrics.ca>
+Date: Fri, 21 May 2004 20:57:41 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 8260 CPM DP ram free function
-Date: Fri, 21 May 2004 16:52:06 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAE2@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Will you please get rid of those #ifdefs?  If the code works,
-> just use it, if not, don't ask for a patch to be applied.
-> There is no reason for this.
+Hello all,
 
-Ok
+I'm having problems with a framebuffer on /dev/fb0 using the DENX 2.4.24
+kernel
 
-> The "host" functions should simply be removed and drivers
-> should use kmalloc()/kfree(), manage their own alignment
-> restrictions, since the 82xx is cache coherent.
+I have added the Linux Console Driver for the Epson S1D13806
+http://www.erd.epson.com/vdc/RelSoft/generic/s1d13xxx_linux.zip
+which prints the following to the console as it is initialized
+Console: switching to frame buffer device
+S1D13xxx: fb0: s1d13xxx frame buffer device
+S1D13xxx: Display 240 x 320 8Bpp
 
-Not sure how easy that would be. The host_alloc and dp_alloc gets called
-at few times _before_ kmem_cache_init() is called, so a kmalloc call
-panic()s the kernel.
-I know, because I tried to use kmalloc for handling the linked lists for
-the dp_alloc/free functions.
+Whenever the framebuffer is accessed a call is made to the
+function PROC_CONSOLE in fbcon.c which always returns -1
+because the info->display_fg pointer is NULL
 
-It would make allocating buffers in drivers easier.
+None of the functions that call PROC_CONSOLE test for this error value.
 
-> Let's clean this up and do it right if we are going to do it at all.
-Cleaning up is always good.
+Some commands seem to work because later functions test for con == -1.
+(FBIOGET_FSCREENINFO works because fbgen_get_fix tests for it)
+Ofher commands fail because later functions assume the con passed is
+correct and use it as an index into the fb_display array.
+(FBIOGETCMAP fails because fbgen_get_cmap doesn't test for it)
+I guess I'm lucky the whole O/S is not crashing.
 
-Any more suggestions before I remove the #ifdefs and resubmit?
+Is there a way to have PROC_CONSOLE always return a valid value?
+Or should all the functions in fbgen.c be fixed to handle con == -1?
+
+I would like to leave the serial port (/dev/ttyS0) as the console
+and I don't actually want the framebuffer as the console.
+I would prefer that only Konqueror/Embedded with Qt/Embedded
+use the framebuffer.
+
+Any assistance would be greatly appreciated.
+
+Chris
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
