@@ -1,16 +1,25 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
-	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id 9B64A67A82
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2005 01:09:13 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 5 Apr 2005 17:08:59 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D2D@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: RE: somewhat OT -- trying to build code on the fly then run it
+Return-Path: <j.glisse@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.206])
+	by ozlabs.org (Postfix) with ESMTP id E5E7367A6D
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Apr 2005 01:18:07 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so1406306wra
+	for <linuxppc-dev@ozlabs.org>; Tue, 05 Apr 2005 08:18:06 -0700 (PDT)
+Message-ID: <4240b91605040508172fff1f97@mail.gmail.com>
+Date: Tue, 5 Apr 2005 16:17:51 +0100
+From: Jerome Glisse <j.glisse@gmail.com>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <je1x9pv1mf.fsf@sykes.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4240b916050404033230db0551@mail.gmail.com>
+	<1112618509.26086.68.camel@gaston>
+	<4240b91605040412117b29d4ca@mail.gmail.com>
+	<1112656372.26086.88.camel@gaston>
+	<4240b91605040504525fd877e5@mail.gmail.com>
+	<je1x9pv1mf.fsf@sykes.suse.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: linux 2.6.12-rc1-bk5 compilation error
+Reply-To: Jerome Glisse <j.glisse@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Chris Friesen wrote:=20
-> I'm writing a testcase to test some code we wrote to allow userspace
-to=20
-> flush the whole dcache and invalidate the whole icache. =20
+On Apr 5, 2005 1:39 PM, Andreas Schwab <schwab@suse.de> wrote:
+> Jerome Glisse <j.glisse@gmail.com> writes:
+> 
+> > I will try t look at radeon framebuffer see if i can find anythings.
+> > Any idea of which change on that code may be the origin of this ?
+> 
+> I'd suggest looking at the changes between rc1 and rc2 first.  On my iBook
+> G3 with Radeon M6 I'm also having problems with rc2, whereas rc1 is
+> working fine.  I haven't found the time to look closer yet.
+> 
+> Andreas.
 
-Your testcase sounds like this kernel module for RT load generator:
+Shame on me, i was passing wrong arguments to the kernel
+now this works...
 
-	http://rtai.dk/cgi-bin/gratiswiki.pl?Latency_Killer/Flushy
-
-
-Comments welcome.
---=20
-Stephane
+Jerome Glisse
