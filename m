@@ -1,25 +1,19 @@
-Return-Path: <paubert@iram.es>
-Received: from ltgp.iram.es (ltgp.iram.es [150.214.224.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 912232BDEB
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Nov 2004 23:00:07 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Mon, 15 Nov 2004 12:55:37 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20041115115537.GA2664@iram.es>
-References: <41816863.9020000@vision.caltech.edu>
-	<1099006771.29690.83.camel@gaston>
-	<4181878C.20605@vision.caltech.edu>
-	<1099011090.29689.96.camel@gaston> <20041029101017.GA28149@iram.es>
-	<1099090806.29689.140.camel@gaston> <20041103123050.GA5057@iram.es>
-	<1099519901.900.49.camel@gaston>
+Return-Path: <marc.leeman@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.193])
+	by ozlabs.org (Postfix) with ESMTP id 833FB2BDEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Nov 2004 02:51:55 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id j1so308961rnf
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Nov 2004 07:51:53 -0800 (PST)
+Message-ID: <1f729c48041117075151960f69@mail.gmail.com>
+Date: Wed, 17 Nov 2004 16:51:53 +0100
+From: Marc Leeman <marc.leeman@gmail.com>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1f729c480411110036445cd8aa@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1099519901.900.49.camel@gaston>
-Cc: Arrigo Benedetti <arrigo@bologna.vision.caltech.edu>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: Disabling interrupts on a SMP system
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1f729c480411110036445cd8aa@mail.gmail.com>
+Subject: Re: 2.4 -> 2.6: problem probing PCI
+Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,140 +23,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I am currently comparing the 2.6.9 (failing code) PCI DBG output with
+the 2.4.28-rc1 (working code) DBG output:
 
-	Hi Ben,
+2.6.9:
+> PCI: Probing PCI hardware
+> PCI: bridge rsrc 0..bfffff (100), parent c0172188
+> PCI: reparented dma1 [0..1f] under PCI host bridge
+> PCI: reparented pic1 [20..3f] under PCI host bridge
+> PCI: reparented timer [40..5f] under PCI host bridge
+> PCI: reparented dma page reg [80..8f] under PCI host bridge
+> PCI: reparented pic2 [a0..bf] under PCI host bridge
+> PCI: reparented dma2 [c0..df] under PCI host bridge
+> PCI: bridge rsrc 80000000..fcffffff (200), parent c017216c
+> PCI:0000:00:00.0: Resource 1: 00000000-00000fff (f=3D200)
+> PCI: Cannot allocate resource region 1 of device 0000:00:00.0
+> PCI:  parent is c01b6054: 80000000-fcffffff (f=3D200)
+> PCI:0000:00:10.0: Resource 0: bffff000-bfffffff (f=3D200)
+> PCI:0000:00:10.0: Resource 1: 00bfffc0-00bfffff (f=3D101)
+> PCI:0000:00:10.0: Resource 2: bffc0000-bffdffff (f=3D200)
+> PCI:0000:00:11.0: Resource 0: bffbf000-bffbffff (f=3D200)
+> PCI:0000:00:11.0: Resource 1: 00bfff80-00bfffbf (f=3D101)
+> PCI:0000:00:11.0: Resource 2: bff80000-bff9ffff (f=3D200)
+> PCI:0000:00:12.0: Resource 0: bf800000-bfbfffff (f=3D1208)
+> PCI:0000:00:12.0: Resource 1: bf000000-bf7fffff (f=3D200)
+> PCI:0000:00:12.0: Resource 2: 00bfff70-00bfff7f (f=3D101)
+> PCI:0000:00:13.0: Resource 0: 00bfff60-00bfff6f (f=3D101)
+> PCI:0000:00:13.0: Resource 1: befffff0-beffffff (f=3D200)
 
-back to an old subject.
+2.4.28-rc1
+PCI: Probing PCI hardware
+PCI:00:00.0 Resource 1 [00000000-00000fff] is unassigned
+Fixup res 1 (101) of dev 00:10.0: bfffc0 -> febfffc0
+Fixup res 1 (101) of dev 00:11.0: bfff80 -> febfff80
+Fixup res 2 (101) of dev 00:12.0: bfff70 -> febfff70
+Fixup res 0 (101) of dev 00:13.0: bfff60 -> febfff60
+PCI: bridge rsrc fe000000..febfffff (100), parent c012aee8
+PCI: bridge rsrc 80000000..fcffffff (200), parent c012aecc
+PCI:00:10.0: Resource 0: bffff000-bfffffff (f=3D200)
+PCI:00:10.0: Resource 1: febfffc0-febfffff (f=3D101)
+PCI:00:10.0: Resource 2: bffc0000-bffdffff (f=3D200)
+PCI:00:11.0: Resource 0: bffbf000-bffbffff (f=3D200)
+PCI:00:11.0: Resource 1: febfff80-febfffbf (f=3D101)
+PCI:00:11.0: Resource 2: bff80000-bff9ffff (f=3D200)
+PCI:00:12.0: Resource 0: bf800000-bfbfffff (f=3D1208)
+PCI:00:12.0: Resource 1: bf000000-bf7fffff (f=3D200)
+PCI:00:12.0: Resource 2: febfff70-febfff7f (f=3D101)
+PCI:00:13.0: Resource 0: febfff60-febfff6f (f=3D101)
+PCI:00:13.0: Resource 1: befffff0-beffffff (f=3D200)
 
+The first important difference is that a number of fixups are no
+longer performed in the 2.6.9 kernel; which account for the
+differences in the PCI address ranges.
 
-On Thu, Nov 04, 2004 at 09:11:41AM +1100, Benjamin Herrenschmidt wrote:
-> Ah... so that would explain why newer machines don't show it ? the
-> openpic is faster or such ? I'll test you theory by adding a small delay
-> after reading the ack (just to test)...
+The problem seems to be in=20
+arch/ppc/kernel/pci.c
 
-Well, the new irq consolidation code has rendered my test patch 
-absolutely useless. I just send you what I have now, it's not
-but is minimally invasive in the generic code.
+When comparing (but not yet fixed), some minor changes have been made:
 
-The nested_irq_enable function is not really nice: you'll get
-a link time error if you want to use it more than once. But
-the only workaround would be very ugly macros.
+line 16 changed from
+   if (!res->start || res->end =3D=3D 0xffffffff) {
+to
+   if (res->end =3D=3D 0xffffffff) {
 
-	Regards,
-	Gabriel
+which disables the flow to enter the body in this case.
 
-===== arch/ppc/kernel/irq.c 1.47 vs edited =====
---- 1.47/arch/ppc/kernel/irq.c	2004-10-22 04:41:23 +02:00
-+++ edited/arch/ppc/kernel/irq.c	2004-11-15 00:51:49 +01:00
-@@ -76,6 +76,9 @@
- extern int tau_interrupts(int);
- #endif
- 
-+int hardirq_shadow_ticks=0;
-+extern unsigned long __hardirq_shadow_nip;
-+
- int show_interrupts(struct seq_file *p, void *v)
- {
- 	int i = *(loff_t *) v, j;
-@@ -138,6 +141,9 @@
- void do_IRQ(struct pt_regs *regs)
- {
- 	int irq, first = 1;
-+	static int prev_irq=-3, prev_prev_irq=-4;
-+	static unsigned spurious_jiffies;
-+	static int prev_spurious;
-         irq_enter();
- 
- 	/*
-@@ -151,10 +157,28 @@
- 	while ((irq = ppc_md.get_irq(regs)) >= 0) {
- 		__do_IRQ(irq, regs);
- 		first = 0;
-+		prev_prev_irq = prev_irq;
-+		prev_irq = irq;
- 	}
--	if (irq != -2 && first)
-+	if (irq != -2 && first) {
- 		/* That's not SMP safe ... but who cares ? */
- 		ppc_spurious_interrupts++;
-+		if (jiffies-spurious_jiffies>HZ) {
-+			if ((ppc_spurious_interrupts-prev_spurious) > 2 &&
-+			    (regs->nip - (unsigned long)&__hardirq_shadow_nip)
-+			    <=4) {
-+				printk("Interrupt hardirq_shadow_ticks "
-+				       "set to %d.\n",
-+				       ++hardirq_shadow_ticks);
-+			}
-+			prev_spurious = ppc_spurious_interrupts;
-+			spurious_jiffies=jiffies;
-+			printk(KERN_NOTICE
-+			       "Spurious interrupt, last vectors %d:%d, "
-+			       "NIP=0x%lx\n",
-+			       prev_prev_irq, prev_irq, regs->nip);
-+		}
-+	}
-         irq_exit();
- }
- 
-===== include/asm-ppc/hw_irq.h 1.10 vs edited =====
---- 1.10/include/asm-ppc/hw_irq.h	2004-10-19 07:26:40 +02:00
-+++ edited/include/asm-ppc/hw_irq.h	2004-11-15 11:38:45 +01:00
-@@ -32,6 +32,29 @@
- 	mtmsr(msr | MSR_EE);
- }
- 
-+#define ARCH_SHADOW_IRQS
-+
-+static inline void nested_irq_enable(void)
-+{
-+	extern int hardirq_shadow_ticks;
-+	int start, now;
-+	asm volatile(	"	mftb %0\n"
-+			"1:	mftb %1\n"
-+			"	sub %1,%1,%0\n"
-+			"	cmplw %1,%2\n"
-+			"	blt 1b\n"
-+			"	isync\n"
-+			"	mfmsr %0\n"
-+			"	ori %0,%0,0x8000\n"
-+			"	mtmsr %0\n"
-+			"	.globl __hardirq_shadow_nip\n"
-+			"__hardirq_shadow_nip: isync\n"
-+			: "=&r" (start), "=&r" (now)
-+			: "r" (hardirq_shadow_ticks)
-+			: "cr0");
-+	__asm__ __volatile__("": : :"memory");
-+}
-+
- static inline void local_irq_save_ptr(unsigned long *flags)
- {
- 	unsigned long msr;
-===== kernel/irq/handle.c 1.3 vs edited =====
---- 1.3/kernel/irq/handle.c	2004-11-04 20:13:19 +01:00
-+++ edited/kernel/irq/handle.c	2004-11-15 11:37:48 +01:00
-@@ -35,6 +35,12 @@
- 	}
- };
- 
-+#ifndef ARCH_SHADOW_IRQS
-+#define nested_irq_enable local_irq_enable
-+#endif
-+
-+
-+
- /*
-  * Generic 'no controller' code
-  */
-@@ -91,9 +97,9 @@
- {
- 	int ret, retval = 0, status = 0;
- 
--	if (!(action->flags & SA_INTERRUPT))
--		local_irq_enable();
--
-+	if (!(action->flags & SA_INTERRUPT)) {
-+		nested_irq_enable();
-+	}
- 	do {
- 		ret = action->handler(irq, action->dev_id, regs);
- 		if (ret == IRQ_HANDLED)
+another relevant piece of code that gets me into troubles is the
+computation of the offset
+                } else if (res->flags & IORESOURCE_IO) {
+                        offset =3D (unsigned long) hose->io_base_virt;
+                                - isa_io_base;
+                }
+
+both values are equal to 0xfe000000, giving a final offset of 0 and no
+adjustment.
+
+I tried commenting out 'isa_io_base' but this gets me in resource
+allocation conflicts later on (even though I get the ranges identical
+to the ones in the 2.4.28 kernel).
+
+Anyway, insights are welcome, I'm still investigating...
+
+--=20
+ash nazg durbatul=FBk, ash nazg gimbatul,
+ash nazg thrakatul=FBk agh burzum-ishi krimpatul
