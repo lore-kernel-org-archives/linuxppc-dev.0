@@ -1,154 +1,78 @@
-Date: Sat, 5 Jul 2003 04:16:02 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-Cc: Bill Fink <billfink@mindspring.com>
-Subject: Re: fsck_hfs on PPC???
-Message-Id: <20030705041602.2a49d76d.billfink@mindspring.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 5 Jul 2003 11:55:08 +0200 (MEST)
+From: Holger Bettag <hobold@informatik.uni-bremen.de>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: memmove broken
+In-Reply-To: <20030705072119.GA32363@wohnheim.fh-wedel.de>
+Message-ID: <Pine.GSO.4.53.0307051135310.3848@bob.informatik.uni-bremen.de>
+References: <16133.19178.764449.966821@cargo.ozlabs.ibm.com>
+ <IGEFJKJNHJDCBKALBJLLOEPGFNAA.joakim.tjernlund@lumentis.se>
+ <16134.4102.899233.25492@cargo.ozlabs.ibm.com> <20030705072119.GA32363@wohnheim.fh-wedel.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Update:
+On Sat, 5 Jul 2003, [iso-8859-1] Jörn Engel wrote:
 
-I think I've got Apple's fsck_hfs working now on PPC, with Roman Zippel's
-new Linux patch and two additional patches I worked up (see attached
-e-mail message):
-
-gwiz# fsck_hfs /dev/hda9
-** /dev/hda9
-** Checking HFS Plus volume.
-** Checking Extents Overflow file.
-** Checking Catalog file.
-** Checking Catalog hierarchy.
-** Checking volume bitmap.
-** Checking volume information.
-** The volume gwiz appears to be OK.
-
-						-Bill
-
-
-
-Begin forwarded message:
-
-Date: Sat, 5 Jul 2003 03:59:59 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: fsck_hfs on PPC???
-
-
-Hi again,
-
-On Fri, 4 Jul 2003, Roman Zippel wrote:
-
-> On Thu, 3 Jul 2003, Bill Fink wrote:
+[...]
+> > Why is it an issue?  Is the performance of the byte-by-byte loop
+> > really a limiting factor for you?
 >
-> > I was trying to use your Linux patch for Apple's fsck_hfs on a
-> > PPC system and not having much luck, so I was wondering if you
-> > might have any ideas.  The attached message to linuxppc-dev gives
-> > the details.  Basically I was able to get it to build OK with an
-> > additional patch (included in the attached message) but running
-> > fsck_hfs doesn't appear to do anything.  I have a similar patch
-> > for newfs_hfs but I haven't even tried to use that.
+> Not a limiting factor, but it should be noticable.  What is more
+> important - in my eyes - is that we can replace magic with obvious
+> code.
 >
-> I've updated the patch at http://www.ardistech.com/hfsplus/diskdev_cmds.diff.gz
-> It should fix these problems, could you give it a try?
+Doing runlength coding with LZ-style compressors is not magic, it's
+actually a fairly old trick.
 
-I think I've got it working now with the two additional attached
-patches (to fsck_hfs.tproj/dfalib/HardLinkCheck.c and
-fsck_hfs.tproj/dfalib/SDevice.c):
+[...]
+> memcpy has a very defined behaviour, as
+> long as source and destination don't overlap at all or as the sourse
+> is smaller, than the distination.  Cool.
+>
+The direction of memcpy is not guaranteed. Non-overlap is the only
+situation when memcpy has portable behaviour.
 
-gwiz# fsck_hfs /dev/hda9
-** /dev/hda9
-** Checking HFS Plus volume.
-** Checking Extents Overflow file.
-** Checking Catalog file.
-** Checking Catalog hierarchy.
-** Checking volume bitmap.
-** Checking volume information.
-** The volume gwiz appears to be OK.
+[...]
+> With that, source should always be smaller than destination for
+> memcpy, so the implementation details don't matter, as long as memcpy
+> doesn't do a reverse memcpy.
+>
+Not even a guarantee of direction helps, because memcpy might copy in
+larger units than single chars. This also breaks the dependency chain of
+an originally byte-wise copy. (If you copy in units of 32 bits, the first
+char of the source block will definitely not be replicated over the
+successive three chars, as a byte copy would do.)
 
-I haven't tried messing with newfs_hfs yet, so I don't know if it
-would have similar issues.
+> Plus, the zlib code is shorter and tells the reader exactly what it
+> does, without the need for extra comments.
+>
+There is only one portable and correct way to use memcpy in an LZ
+decompressor: the source data must be completely within the "past" part of
+data (already decompressed, immutable), and the destination address must
+be completely within the "future" part (the undefined memory buffer ahead of
+the pointer to the current byte).
 
-						-Thanks
+So you have to check if the ending address of the source block is smaller
+than the current address (the "present moment"). In that case, memcpy will
+work correctly no matter how it is implemented. Otherwise, you must use a
+byte-wise copy, because the semantics of the compressed stream rely on
+that.
 
-						-Bill
+If you want to optimize further, you can shorten source blocks to the
+largest legal size (i.e. up to "present"), and recursively call memcpy
+several times. This preserves the data dependencies as expected by the
+decompressor, but allows you to call memcpy with exponentially increasing
+block sizes.
 
+Another optimization would be to check for a source block that is only a
+single byte into the past, and then use memset to replicate it.
 
+Anything else violates the assumptions made by the
+compressor/decompressor.
 
---- fsck_hfs.tproj/dfalib/.orig/HardLinkCheck.c	2003-07-04 12:11:21.000000000 -0400
-+++ fsck_hfs.tproj/dfalib/.mod/HardLinkCheck.c	2003-07-04 12:18:06.000000000 -0400
-@@ -45,10 +45,16 @@
- #define _U2(v)	{ .u32 = ((((v) & 0xff000000) >> 24) | (((v) & 0xff0000) >> 8) | \
- 						 (((v) & 0xff00) << 8) | (((v) & 0xff) << 24)) }
- #else
-+#ifdef __BIG_ENDIAN__
-+#define _U(v)	(v)
-+#define _U2(v)	(v)
-+
-+#else
- #define _U(v)	((((v) >> 8) & 0xff) | (((v) & 0xff) << 8))
- #define _U2(v)	((((v) & 0xff000000) >> 24) | (((v) & 0xff0000) >> 8) | \
- 				 (((v) & 0xff00) << 8) | (((v) & 0xff) << 24))
- #endif
-+#endif
-
- HFSPlusCatalogKey gMetaDataDirKey = {
- 	_U(48),		/* key length */
---- fsck_hfs.tproj/dfalib/.orig/SDevice.c	2003-07-04 12:11:21.000000000 -0400
-+++ fsck_hfs.tproj/dfalib/.mod/SDevice.c	2003-07-05 03:44:12.000000000 -0400
-@@ -29,6 +29,11 @@
- #include <errno.h>
- #include <sys/ioctl.h>
-
-+#if __linux__
-+#include <linux/fs.h>
-+#include <stdio.h>
-+#endif
-+
- #if __APPLE__
- #include <IOKit/storage/IOMediaBSDClient.h>
- #else
-@@ -71,6 +76,12 @@
- 	return (0);
- #else
- 	struct stat statb;
-+#ifdef __linux__
-+	FILE	*fp;
-+	char	partline[80+2];
-+	int	partmajor, partminor;
-+	unsigned long long partn1kblocks;
-+#endif
- 	if (fstat(driveRefNum , &statb) < 0) {
- 		return (-1);
- 	}
-@@ -79,6 +90,25 @@
- 		*blockSize = 512;
- 		return 0;
- 	}
-+	if (S_ISBLK(statb.st_mode)) {
-+#ifdef __linux__
-+		fp = fopen("/proc/partitions", "r");
-+		if (fp) {
-+			while (fgets(partline, 80, fp)) {
-+				sscanf(partline, "%d %d %lld", &partmajor,
-+					&partminor, &partn1kblocks);
-+				if ((partmajor == MAJOR(statb.st_rdev)) &&
-+				    (partminor == MINOR(statb.st_rdev))) {
-+					*numBlocks = partn1kblocks * 2;
-+					*blockSize = 512;
-+					fclose(fp);
-+					return 0;
-+				}
-+			}
-+			fclose(fp);
-+		}
-+#endif
-+	}
- 	return (-1);
- #endif
- #else
+  Holger
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
