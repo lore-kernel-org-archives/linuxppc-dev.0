@@ -1,34 +1,46 @@
-In-Reply-To: <Pine.LNX.4.05.9903181753000.8817-100000@p05-10.hartford.dialin.ntplx.com>
-Date: Fri, 19 Mar 1999 00:07:56 +0100
-To: Tom Rini <tmrini@ntplx.net>, linuxppc-dev@lists.linuxppc.org
+Date: Fri, 19 Mar 1999 00:16:14 +0100
+To: linuxppc-dev@lists.linuxppc.org
+CC: Paul Mackerras <paulus@cs.anu.edu.au>
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: SCSI crashes with vger
-Message-Id: <19990319000756.005553@mail.mipsys.com>
+Subject: Thoughts about DBDMA and cache coherency
+Message-Id: <19990319001614.001351@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 18, 1999, Tom Rini <tmrini@ntplx.net> wrote:
+Hi all !
 
->Erg <paranoid worry>. In 2.2.2 there was a "scsi fix" which seems to have
->fixed the problem that some people (myself, Dan J) had when trying to do
->things like burn a CD on the ext chain or use both chains at once.  Now
->it's working well enough for me to do a silly thing like a raid0 /usr :)
->Hope this isn't related.. </paranoid worry>
+I'm sure I'm wrong but I would like someone to point me to my error:
 
-Do you still have the patch around so that i can revert it and see what
-happen ? I'm really not familiar enough with linux to track this none. I
-tried, but got deep inside the scsi subsystem, looks like it's crashing
-when completing the request with a program check exception (which can
-mean a lot of things, I still have to find out how to display SRR1 from xmon).
+It appears that Apple's Darwin drivers use to flushe the cache of the
+memory occupied by a DBDMA descriptor bloc before using it. This would
+mean that the memory is not cache coherent when seen from the PCI bus,
+and when you think about it, it looks logical: Writes issued from the PCI
+to memory are coherent since snooped by the CPU and will force it to
+reload the cache (I'm thinking about the 750 with backside cache, but
+this may apply to other implementations depending on the bridge), but
+when a device reads a piece of memory, i don't see the bridge asking the
+CPU to flush this cache range before the read completes. I didn't see any
+setting in Grackle to force this and in the case of the G3, the cache is
+not handled by the bridge anyway but by the CPU itself...
 
-The first 2.2.2 I got from paul's rsync crashed when probing my disk on
-the MESH bus (NCR bus passed fine) and worked whith this external disk
-shut down. I re-rsynced some time later with Paul and now, NCR crashes
-too, as does vger.
+That would mean that we need to flush the range occupied by DBDMA
+descriptors, but also any buffers used by DBDMA when outputing via a
+DBDMA channel.
 
+Under MacOS, we use an OS function called PrepareMemoryForIO that will
+take care of making pages resident, do appropriate cache flushing and
+returns physical page tables for ranges of system memory. We can also,
+for small buffers, use LockMemoryContiguous which will ... disable
+caching for the selected pages.
+
+Either I missed something big, either linux fails to do so and may have
+unreliable writes to DBDMA devices all the time (looks like it would
+crash a lot more often than it does, I must be wrong somewhere).
+
+Someone has the solution ?
 
 -- 
            E-Mail: <mailto:bh40@calva.net>
