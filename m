@@ -1,41 +1,24 @@
-From: phandel@cise.ufl.edu
-Date: Fri, 3 Sep 1999 03:10:21 -0400 (EDT)
-To: Alex Vallens <Vallens@Colorado.EDU>
-cc: linuxppc mail list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Ethernet on a PowerCenter Pro
-In-Reply-To: <37CEF60F.D1AA12A4@Colorado.EDU>
-Message-ID: <Pine.LNX.4.10.9909030308530.656-100000@dialup-l118.cise.ufl.edu>
+Message-ID: <000201bef600$257e7530$02456fa6@honey.cs.tsinghua.edu.cn>
+From: "Alan Wang" <wung_y@263.net>
+To: "linuxppc mail list" <linuxppc-dev@lists.linuxppc.org>
+Subject: something about storage attribute control(SAC) register
+Date: Fri, 3 Sep 1999 15:44:06 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2 Sep 1999, Alex Vallens wrote:
+hi,
+    in PPC401GF, there is 4G addressing space. so in SAC register, each bit
+control a block of 128M. But in pratice, embedded system do not have so many
+memory. Even one bit of SAC register(128M) seems too big. does anyone know
+why IBM design it like this? under the condition of no address translation
+available, if 32-bit address pratical?
 
-> Although this may be a very simple problem, I just can't get LinuxPPC 5
-> to recognize the built-in ethernet controller on my Power Computing
-> Power Center Pro 240. Has anyone had any success with this particular
-> machine, or have any insight to the right settings under the control
-> panel?
-
-My PowerCenter Pro 210's built-in ethernet has worked fine with every
-kernel I've found & made myself.  Here's what dmesg says:
-
-eth0: MACE at 00:05:[etc.], chip revision 9.64
-
-Just make sure you compile a kernel with PowerMac MACE ethernet support,
-and you should be fine.
-
-
-Thanks,
-Pete
-
--- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+regards,
+Wang
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
