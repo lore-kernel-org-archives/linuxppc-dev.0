@@ -1,22 +1,51 @@
-Message-ID: <004f01c38a85$fad74040$0202a8c0@homevl9biy3v7e>
-From: "Jacky Lam" <jackylam@astri.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Request for bootloader and kernel binaries for Walnut
-Date: Sat, 4 Oct 2003 22:44:12 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
+Date: Sat, 4 Oct 2003 09:07:38 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Jacky Lam <jackylam@astri.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Queston about Walnut
+Message-ID: <20031004090738.A12780@home.com>
+References: <20031002121733.A2E32C59E4@atlas.denx.de> <001101c3894c$38833ab0$2803050a@JackyLam> <3F7D3238.2090400@bluewin.ch> <00df01c38992$6d179b40$2803050a@JackyLam> <20031003080747.A7933@home.com> <001501c389cc$3d1277a0$0202a8c0@homevl9biy3v7e>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <001501c389cc$3d1277a0$0202a8c0@homevl9biy3v7e>; from jackylam@astri.org on Sat, Oct 04, 2003 at 12:34:37AM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all,
+On Sat, Oct 04, 2003 at 12:34:37AM +0800, Jacky Lam wrote:
+> > On Fri, Oct 03, 2003 at 05:40:46PM +0800, Jacky Lam wrote:
+> > >
+> > > > the kernel you use - vanilla+ppc-patch - is based on linuxppc-2.4,
+> which
+> > > > is not appropriate for your system. [At least it was like that some
+> time
+> > > > ago. Tom, could you please comment.] Try using the linuxppc_2_4_devel
+> > > > tree from Bitkeeper or from our FTP server (see http://www.denx.de).
+> > >
+> > >     I just tried. The result is the same. Using the original
+> walnut_config,
+> > > it hangs in mapin_ram().
+> > >     If I use minimal config, it hangs in __sti().
+> > >
+> > >     Does anyone still working on Walnut platform and successfully boot
+> up
+> > > 2.4 kernel on that? If no, could someone remember what is the last known
+> > > working toolchain and kernel on Walnut?
+> >
+> > I noticed this about a week ago.  It is some kind of merge problem
+> > between linux-2.4 and linuxppc-2.4.  linux-2.4 boot fine on walnut
+> > for me.  I didn't have time to investigate but might take a look at
+> > it again soon.
+>
+>     Really? That's so great! Do you have any idea about this? Maybe I can
+> try to investigate as well. Also, do you remember what is the version just
+> before this merge problem occurs? Thanks.
 
-    Does anyone have a pair of known working bootload and kernel binaries
-for Walnut board? Could you send me to have a test? Thanks so much.
+Well, maybe I should have cleaned my tree from a 440 build, I had
+an old CONFIG_440 hanging around causing the kernel to not be
+happy.  At any rate, I verified that current linuxppc-2.4 boots
+on walnut from stock openbios.
 
-Best regards,
-Jacky Lam
-
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
