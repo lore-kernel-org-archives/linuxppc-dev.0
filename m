@@ -1,38 +1,34 @@
-Message-ID: <39523796.FF6BFC9F@embeddededge.com>
-Date: Thu, 22 Jun 2000 11:58:14 -0400
-From: Dan Malek <dan@netx4.com>
+Date: Thu, 22 Jun 2000 13:15:10 -0400 (EDT)
+From: "Mark S. Mathews" <mark@absoval.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Can't mmap the top 1MB of /dev/mem?
+Message-ID: <Pine.LNX.3.96.1000622130831.10550A-100000@tristar.cc.absoval.com>
 MIME-Version: 1.0
-To: Patrick Lerda <Lerda@microprocess.com>
-CC: Nguyen Xuan Hoang <hoang_nguyen@op.com.sg>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU problems?
-References: <17B78BDF120BD411B70100500422FC63079F9D@IIS000>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Patrick Lerda wrote:
->
-> Have you tried to do complex operation on a 8xx board like compiling the
-> kernel.
+Hi Dan (and all),
 
-Yes, and it runs just like any other system that doesn't have any
-swap space and a minimal amount of memory.  Some things just don't
-work well, and applications fail because few test for memory allocation
-failure.
+I've been playing w/ mmap for flash and nvram access on the rpxlite(MV
+derived kernel). One thing I've noticed is that it won't let me mmap the
+top 1MB of the address space.  I'm guessing that the region isn't
+represented in the MMU stuff or this is a deliberate block in the /dev/mem
+driver.
 
-Are there bugs?  Perhaps.  Do I want them fixed?  Yes.
+I've done a little digging on my own and haven't found the cause.  Can
+anyone point me to the right file/function(s)?
 
-Do you want to help this FREE software effort?  If you are so sure
-there is an MMU bug, find it, fix it, and send me the patch.  We would
-all be grateful.  If you want dedicated help to assist your custom
-product development so you can make money, you may have to pay one
-of the very capable embedded Linux companies for this attention.
+Many Thanks,
+-Mark
 
-Thanks.
+Mark S. Mathews
 
+AbsoluteValue Systems      Web:    http://www.linux-wlan.com
+P.O. Box 941149            e-mail: mark@linux-wlan.com
+Maitland, FL 32794-1149    Phone:  407.644.8582
+USA                        Fax:    407.539.1294
 
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
