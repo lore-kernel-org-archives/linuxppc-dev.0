@@ -1,39 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bill Fink <billfink@mindspring.com>
-Cc: "David S. Miller" <davem@redhat.com>,
-	<linuxppc-dev@lists.linuxppc.org>, Anton Blanchard <anton@samba.org>
-Subject: Re: GigE Performance Comparison of GMAC and SUNGEM Drivers
-Date: Tue, 20 Nov 2001 13:02:32 +0100
-Message-Id: <20011120120232.6517@smtp.adsl.oleane.com>
-In-Reply-To: <Pine.LNX.4.33.0111200110210.28304-100000@gwiz.nasa.atd.net>
-References: <Pine.LNX.4.33.0111200110210.28304-100000@gwiz.nasa.atd.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: David Given <dg@tao-group.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Strange FPU/threads problem
+Date: Tue, 20 Nov 2001 18:16:35 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <0111201816350A.15049@pearl>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->I'd consider it much more than nice.  Since the whole point of GigE
->is better performance, taking such a huge peformance/CPU hit would
->be extremely bad.  OTOH, I probably won't be using the built-in GigE
->hardware anyway because of its apparent performance ceiling of about
->660 Mbps and its lack of jumbo frame support.
+Context: PowerMac 8200/120, 601 processor, stock kernel 2.4.12, libc 2.2.4,
+gcc 2.95.4, Debian woodyish.
 
-Well, I think we may get overall better perfs once we have this
-fixed, and (David, can you confirm ?), I think jumbo frames can
-be supported.
+I'm finding something really weird is going on with my program. It works like
+this:
 
-So there is a small issue with the Tx ring that I'll fix asap
-but it doesn't explain your problem, you are getting way too
-much interrupt, possibly those rxmac/txmac interrupts I've noticed
-here.
+I can compile the program either to use threads, or not to use threads. If I
+compile it so it *doesn't* use threads, it works fine.
 
-I'll investigate a bit and send you a patched driver.
+However, if I compile it so that it *does* use threads, it bails with a
+SIGFPE the first time in encounters a floating point instruction. And I don't
+know why.
 
-Thanks for taking the time for testing,
+What's happening is that my code is shuffling long longs around, and gcc is
+using the FPU as a fast way of doing this. The exact code is:
 
-Ben
+    C81F0008 0FE24468 lfd f0, 8 (r31)
+    D81F0028 0FE2446C stfd f0, 40 (r31)
 
+I've determined that the code is being executed in the primary process; that
+is, it hasn't spawned any threads yet. The memory that's being pointed to is
+valid.
+
+The FP bit in the MSR is unset, so the processor thinks I'm not using the
+FPU. But this should be perfectly normal, as my understanding of the kernel
+suggests that it uses lazy FP setting. The kernel should hook the trap and
+silently enable the FPU for me. But it's not.
+
+I suspect that this may be a kernel bug. Any ideas?
+
+--
+David Given
+dg@tao-group.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
