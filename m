@@ -1,41 +1,35 @@
-Message-ID: <3C44A4AF.9000302@cray.com>
-Date: Tue, 15 Jan 2002 15:52:47 -0600
-From: David Updegraff <dave@cray.com>
+Message-ID: <3C44A85E.1090108@embeddededge.com>
+Date: Tue, 15 Jan 2002 17:08:30 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: a MINIMAL405 submodel
+To: David Updegraff <dave@cray.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: a MINIMAL405 submodel
+References: <3C44A4AF.9000302@cray.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings.
+David Updegraff wrote:
 
-I have made a trivial little patch (and a few files..) to define a
-"minimally configured" 405[gp] board.  Its basically a 405 with
-no KB, RTC, PCI, et.al.  The idea being that if you define this
-submodel of CONFIG_4xx then you write loadable modules on your own
-to handle peripherals; this being just enough in the kernel to
-get you to net- or flash-boot.
+> ... Might we be able to limit the proliferation of submodel
+> in the PPC 4xx world with the addition of my proposed MINIMAL405
+> submodel and then let vendors write drivers instead of kernels?
 
-Its like a "WALNUT" but without any peripheral bank setup, RTC or
-KB assumptions.. you get the idea.
+The 8xx and 8260 are almost like this.  What you will discover over
+time is a driver you write is 99% of what someone else wants.  In your
+proposal, you would end up with a whole new driver that is almost identical
+to another, which isn't practical to maintain.  Just follow the convention
+of adding a board descriptor for your platform.  If it is truly identical
+to another, then the platforms can share the same files and this knowledge
+is implicit in the configuration.  Now, if the current configurations make
+assumptions about platforms that use a 405GP (and it shouldn't), that is
+what needs to change.
 
-In our case we bolt on lots of silly junk to the expansion banks
-and do DMA... but all inside of custom little drivers that set those
-banks up.  Might we be able to limit the proliferation of submodel
-in the PPC 4xx world with the addition of my proposed MINIMAL405
-submodel and then let vendors write drivers instead of kernels?
+Thanks.
 
-For any who care, have a peek at
-	http://www.toimi.com/linuxppc
-for the .patch file and a .tar file of needed additional platform
-files.
-
-Cheers.
-
---
-Dave Updegraff / dave@cray.com / 218-525-1154
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
