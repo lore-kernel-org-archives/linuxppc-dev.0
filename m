@@ -1,72 +1,45 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <20031218180858.55548.qmail@web41902.mail.yahoo.com>
-Date: Thu, 18 Dec 2003 10:08:58 -0800 (PST)
-From: lihong wei <lihongwlh@yahoo.com>
-Subject: Serial console failure on DENX Linux on MPC850 board
-To: ppclinux <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <DBF73ACB70D3D711A358000BDBACF5CE09D23B@SSMAIL1>
+From: Kiran Mandava <kiran.mandava@skystream.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ep8260 board linux port
+Date: Thu, 18 Dec 2003 11:44:15 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Hello All,
 
-I am porting latest version  Denx linux
-linuxppc_2_4_devel kernel and U-boot 3.0 to our MPC850
- board. I also used SELF to generate the ext2 file
-system. I am using the TQM850L configuration
- on my board, and configured the SCC2 as serial
-console(because the hardware designed like this).
-  After the kernel started the /sbin/init, which is
-the last step of booting, the console stop
-   response. I have studied several discussion groups
-and did the following changes, but it still
-    doesn't work:
+  I am trying to port linux 2.4.22 onto ep8260 board. (256 MB RAM on 6xx
+bus/ 32 MB Flash) using tools and source code from denx webisite.
+  I was able to port u-boot and trying to boot linux now.
+  i couldn't find any specific files to this board in the platform directory
+although est8260.h file has the basic bd structure. the problem i am facing
+is the processor loops in serial_console_write/ timer interrupt handler. i
+made sure that i am passing the baudrate proeprly by looking at the bd
+structure while passing teh control to start_kernel function.
+  My console does display everything properly running u-boot but once the
+control goes to linux don't see anything on the console.
 
-1. set boot command line in u-boot like this:
-    setenv bootargs console=ttyS0,115200 root=/dev/ram
-rw
+i made only the following changes for th elinux boot.
+	1. in uart.c made sure that the console port is defines as SMC1.
+	2. defines the SMC2 to be serial port too
+      3. FCC3 is configured as the ethernet.
 
-2. when creating root file system in SELF, under /dev
-directory, create devices with
-ELDK_MAKEDEV, ELDK_FIXOWNER, and then delete
-/dev/console, then link ttyS0 to /dev/console,
-(this is from some discussion group).
+and compiled and tried to boot the image, but i couldn't. i do have a BDI
+JTAG device and i was able to see the RAM properly.
 
-3. in /etc/inittab, added:
-ttyS0::respawn:-/bin/sh
+ could some one throw light on what i could be doing wrong, any sugestions
+are greatley appreciated. I bet some one would have done this sucessfully
+years before..
 
-4. The SELF used busybox-0.51, and I also tried
-busybox-0.61.1, there's no difference.
- I also tried  modifying the init_main() in
-busybox../init.c, and foreced the console_init()
-  routine to open("/dev/console"...) instead of using
-the parameters passed from kernel.
-Because after kernel started run /sbin/init, I can not
-trace the code, neither can I post
-debugging info from serail console, I can only tell
-the difference from the behavior of the
- last few lines of console output. It seems that the
-init routine can open the console device.
-  and the serial IOCTL in console_init() can also
-detect the device. but there's still no
-  output on the screen.
 
-I also tried to use the files system coming with ELDK
-distribution, but it's too big (1.5M)
- and my system has only 2M flash, including u-boot,
-and kernel. I tried to make a smaller
- image to cut everything except files like /bin/bash,
-/dev/console, /sbin/init. and somehow
-  it's still 1M. and system doesn't work either.
 
-I am stuck here and any response will be cordially
-appreciated!
 
-Best Regards,
-
-Vincent
+thanks,
+kiran
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
