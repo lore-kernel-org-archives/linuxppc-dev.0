@@ -1,40 +1,40 @@
-To: Oliver Neukum <Oliver.Neukum@lrz.uni-muenchen.de>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] USB on PPC440GP (cache incoherent)
-References: <52hekebq2a.fsf@topspin.com>
-	<200206080845.g588jvX11858@fachschaft.cup.uni-muenchen.de>
-From: Roland Dreier <roland@topspin.com>
-Date: 08 Jun 2002 13:43:26 -0700
-In-Reply-To: <200206080845.g588jvX11858@fachschaft.cup.uni-muenchen.de>
-Message-ID: <52ptz1a4cx.fsf@topspin.com>
+Message-ID: <003301c2101f$f7862730$7c72608c@11091031801>
+From: "=?big5?B?tL+upLFkIFwoSmFzb24gVHNlbmdcKQ==?=" <910318@itri.org.tw>
+To: "Linux PPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: How use float on MPC860 kernel module?
+Date: Mon, 10 Jun 2002 09:41:40 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "Oliver" == Oliver Neukum <Oliver.Neukum@lrz.uni-muenchen.de> writes:
+Hi,
 
-    Oliver> This can be used in error handling by storage devices. You
-    Oliver> must use GFP_NOIO.  And you should check for a failure due
-    Oliver> to OOM.
+Now I use float pointer on MPC860 kernel module.
+My target MPC860.
+My compiler : ppc_8xx-gcc (version 2.95.3)
+My CFLAGE set is
+CFLAGS :=
+$(CPPFLAGS) -Wall -Wstrict-prototypes -O -g -fomit-frame-pointer -fno-strict
+-aliasing -lm -msoft-float -D_SOFT_FLOAT
 
-Yep, I caught those missed checks for allocation failure.  And I will
-change to using GFP_NOIO where appropriate.
+My problem is:
+Cann't float point compile correctly on Kernel module?
 
-    Roland> -		srb->request_buffer = srb->sense_buffer;
-    Roland> +		srb->request_buffer = kmalloc(18, in_interrupt() ? GFP_ATOMIC :
+Problem maybe is :
+There is not the library (float soft emulation) on kernel module.
 
-    Oliver> However, why do you do this ? The srb is kmalloced.
+But I need the float on kernel module.
 
-Yes, but srb->sense_buffer is not aligned on a cache line boundary.
-My feeling is that this could corrupt the rest of the cache line,
-though others have questioned whether this is strictly necessary.  I
-just posted a question on lkml to try to and get an authoritative
-answer on DMA into unaligned buffers is OK.
+Is there any person who can give me the library that support float soft
+emulation
+on kernel module?
 
-Thanks for the comments,
-  Roland
+Thank you very much
+
+-Jason Tseng
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
