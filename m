@@ -1,43 +1,45 @@
-Subject: Trying to Build ArmBoot for EPXA1
+Message-ID: <3FCF3CE0.4020008@embeddededge.com>
+Date: Thu, 04 Dec 2003 08:55:44 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 4 Dec 2003 08:21:06 -0500
-Message-ID: <704F2B356FCC3E49A909C625BD9E5C40040261@ultsol01.tewks.ultsol.local>
-From: "Fahd Abidi" <fabidi@ultsol.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: the door is closing for 2.4
+References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com> <3FCEFB59.80300@intracom.gr>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Pantelis Antoniou wrote:
 
-I am trying to build armboot for the EPXA1, I know a ppc group might
-not be the best place to post but I was hoping someone here could
-give me pointers where to look or what to do. When I try and build
-ArmBoot 1.0 for the EPXA1 using mvista tools for the 920t I load the
-.hex file onto the board using the exc_flash_programmer but I get no
-response form the serial port. I then repeated the process using the
-arm9TDI tools from denx and got the same behavior. I was wondering if
-anyone had successfully built and loaded armboot onto the EPXA1 and
-what tools they used to do it.
+> However I don't think that 2.6 works for 8xx at all.
 
-Also Separately, I downloaded the Mvista Linux Preview Kit 3.0 for
-the EPXA1 board. It comes with Armboot sources init, when I try and
-compile this using the mvista tools I get the following message:
+It doesn't.
 
-/opt/hardhat/previewkit/arm/920t_le/bin/arm_920t_le-ld: ERROR: board/epxa1db/excalibur.o uses hardware FP, whereas armboot uses software FP
-File format not recognized: failed to merge target specific data of file board/epxa1db/excalibur.o
-/opt/hardhat/previewkit/arm/920t_le/bin/arm_920t_le-ld: ERROR: /opt/quartus/libraries/software/boot/libboot_xa_ads.a(boot-arm-ADS.o) is compiled for EABI version 2, whereas armboot is compiled for version 0
-File format not recognized: failed to merge target specific data of file /opt/quartus/libraries/software/boot/libboot_xa_ads.a(boot-arm-ADS.o)
-make: *** [armboot] Error 1
-[root@localhost armboot]#
+> What is the status of 2.6 for 8xx?
 
-It looks like there is a FP mismatch in armboot. Once again I am just
-looking for pointers.
+It's a f'ing mess.
 
-thanks allot!!
+> Does someone intent to do it, or should I try to give it a shot?
 
-Fahd Abidi
+I intended to do it, but I'm so busy with non-PPC stuff I never
+finshed much of anything.
+
+Right now, it won't even compile because all of the drivers need
+updates, then we need the usual processor dependent porting stuff
+done.  I have a pretty good idea what needs to be done, it's just
+more work than the few weekends I thought it would take.
+
+If someone wants to get the drivers to compile, I'll continue working
+on the processor specific parts and maybe we can get it done soon.
+
+Thanks.
+
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
