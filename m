@@ -1,53 +1,54 @@
-From: flar@allandria.com
-Message-Id: <200009010352.UAA22371@marcus.allandria.com>
-Subject: Re: Btree directories (Re: Status of HFS+ support)
-To: viro@math.psu.edu (Alexander Viro)
-Date: Thu, 31 Aug 2000 20:52:49 -0700 (PDT)
-Cc: dgatwood@deepspace.mklinux.org (David A. Gatwood), ak@suse.de (Andi Kleen),
-        lord@sgi.com (Steve Lord), matthew@wil.cx (Matthew Wilcox),
-        khalfmann@libra.de (Halfmann Klaus), roman@augan.com (Roman Zippel),
-        linuxppc-dev@lists.linuxppc.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <Pine.GSO.4.10.10008311902200.4074-100000@weyl.math.psu.edu> from "Alexander Viro" at Aug 31, 2000 10:40:30 PM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <v04220803b5d51a99c774@[10.0.0.42]>
+In-Reply-To: <20000831184447.D3823@opus.bloom.county>
+References: <39AE80BD.D86B34DA@embeddededge.com>
+ <Pine.HPX.4.10.10008311808260.15978-100000@gra-ux1.iram.es>
+ <20000831184447.D3823@opus.bloom.county>
+Date: Fri, 1 Sep 2000 01:42:14 -0700
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alexander Viro wrote:
-> On Thu, 31 Aug 2000 flar@allandria.com wrote:
+At 6:44 PM -0700 8/31/00, Tom Rini wrote:
+>On Thu, Aug 31, 2000 at 06:10:55PM +0200, Gabriel Paubert wrote:
+>>
+>>
+>>  On Thu, 31 Aug 2000, Dan Malek wrote:
+>>
+>>  > I would also like to see us spend a little more time trying to
+>>  > stabilize 2.4 instead of trying to solve elaborate configuration and
+>>  > boot schemes.  That is what 2.5 is for.
+>>
+>>  What are your problems with 2.4 ? I'm at 2.4.0-test7 and I've not had any
+>>  problem so far, although I still need to upgrade my modutils.
 >
-> > Yes, HFS and HFS+ both have a CNID for each file or directory. It just isn't
-> > entirely straightforward to search the catalog by this value, since the key
-> > is a combination of parentCNID and name. The CNID is guaranteed to be unique
-> > across a filesystem and there are a handful that are reserved for system
-> > files/directories such as the root (2) and the "parent of root" (1).
->
-> OK. Are they preserved by rename()?
+>Here's a few: The PCI resource allocation/conflict stuff has "issues" with
+>some Pmacs (7600, Yikes! G4, I don't know about others).
 
-There isn't anything preventing it. A rename() is messy enough because of the
-headache of moving around entries in the btree and updating all the implicit
-usage of the catalog key which depends on the filename. I don't think the
-MacOS actually preserves the CNID on a rename, tho. It's something that I
-think would be about the same complexity either way. The only thing you
-save by keeping the same CNID is changes to the extents overflow tree,
-which is usually empty anyway. (My code doesn't do rename() yet...)
+B&W G3 as well (same thing as the Yikes! G4 really).  I have the
+following problems on one (latest BK 2.4.0-test8 kernel, as of a
+couple minutes ago):
 
-> You don't have to check that directory is not busy in rmdir()/rename().
-> Back in 2.2 filesystems either had to do that, or they had to detect
-> attempts to read/create in/etc. dead directories. Not much of a save,
-> but...
+1. Resource conflicts are reported for the CMD646 IDE controller and
+an Adaptec 2940UW card
 
-Well, I don't think every filesystem did it properly in 2.2, then. I'm
-not entirely sure, but I think HFS wasn't quite as careful as it should
-have been about such things. As I recall, the HFS code has wandered around
-between different maintainers and is a little messy as a result.
+2. During the fb probe of the Rage 128 PCI card, a pattern of colored
+characters is written to the screen.  This might be somebody's
+deliberate debug output, as it almost looks too regular to be an
+error.
 
-I did finally get a recent source tree for 2.4, and I have to say that the
-documenation looks a lot better these days.
+3. When attempting to do the partition scan, the kernel has massive
+problems with lost IDE interrupts and failed DMA stuff.  Eventually
+it gives up and moves on without successfully scanning my IDE drive.
 
-	Brad Boyer
-	flar@pants.nu
+4. Probably due to the resource conflict problem, the aic7xxx driver
+doesn't recognize the 2940.  This is a showstopper for me because my
+root partition's on a drive connected to the 2940.
 
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
