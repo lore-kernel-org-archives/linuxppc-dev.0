@@ -1,36 +1,28 @@
-Date: Sun, 17 Dec 2000 17:37:21 -0800
-To: linuxppc-dev@lists.linuxppc.org
-Subject: TQ_ACTIVE & NFS_STALE undefined
-Message-ID: <20001217173721.A15124@valinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Steve DuChene <sad@valinux.com>
+Date: Mon, 18 Dec 2000 10:30:40 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: BootX (the MacOS X kind)
+In-Reply-To: <19341110161621.11025@192.168.1.10>
+Message-ID: <Pine.LNX.4.10.10012181028400.4672-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-When compiling the latest linuxppc_2.3 kernel from the bitkeeper
-archive when it gets to the linking stage I get the following
-errors:
+> >You should've trademarked the BootX name :-) This'll result in some
+> >confusion ...
+>
+> Yeah, I know. I suggested them to change the name long before they
+> released it, but they apparently didn't care.
 
-kernel/kernel.o: In function `do_timer':
-kernel/kernel.o(.text+0xd70c): undefined reference to `TQ_ACTIVE'
-kernel/kernel.o(.text+0xd70c): relocation truncated to fit: R_PPC_REL24
-TQ_ACTIVE
-kernel/kernel.o: In function `context_thread':
-kernel/kernel.o(.text+0x12df4): undefined reference to `TQ_ACTIVE'
-kernel/kernel.o(.text+0x12df4): relocation truncated to fit: R_PPC_REL24
-TQ_ACTIVE
-fs/fs.o: In function `__nfs_revalidate_inode':
-fs/fs.o(.text+0x30c5c): undefined reference to `NFS_STALE'
-fs/fs.o(.text+0x30c5c): relocation truncated to fit: R_PPC_REL24 NFS_STALE
-fs/fs.o(.text+0x30d7c): undefined reference to `NFS_STALE'
-fs/fs.o(.text+0x30d7c): relocation truncated to fit: R_PPC_REL24 NFS_STALE
-make: *** [vmlinux] Error 1
+Now who's surprised?
 
-The two references to TQ_ACTIVE come from kernel/context.c and
-kernel/timer.c  The reference to NFS_STALE comes from fs/nfs/inode.c
---
-Steven A. DuChene	sad@valinux.com
+What's the license on their version of BootX? Maybe we can hijack it :-)
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
