@@ -1,55 +1,96 @@
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: gdb load address and KERNELLOAD 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 03 Apr 2001 22:05:34 EDT."
-             <3ACA816E.71E4FA67@mvista.com>
-Date: Wed, 04 Apr 2001 08:42:19 +0200
-Message-Id: <20010404064224.72482281DB@denx.denx.de>
+Message-ID: <3ACAE9C5.6077A4E2@opensource.se>
+Date: Wed, 04 Apr 2001 11:30:45 +0200
+From: Magnus Damm <damm@opensource.se>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: mlocke@mvista.com
+Subject: runtime check of cacheline size.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3ACA816E.71E4FA67@mvista.com> Dan Malek wrote:
->
-> The only BDM debugger that works successfully with Linux is the
-> Abatron gdb/BDI2000, hosted on a Linux platform.
+Hi all,
 
-This is absolutely correct except for the word "only".
+Wouldn't it be nice with a glibc that works for all of us?
 
-The BDM4GDB  project  at  sourceforge  (see  bdm4gdb.sourceforge.net)
-provides all necessary information to build a home-made parallel port
-adapter  (schematics, source extension to GDB) which allows to do the
-same. If you cannot build a simple PCB  yourself,  we  offer  BDM4GDB
-adapters  at  production  cost ($ 50, including a CD-ROM with sources
-and binary for the modified GDB) as a service to the Linux community.
+Idea:
 
-The main differences between the BDI2000 and BDM4GDB:
+Let's run-time check the cacheline-size of our cpu!
 
-* BDI2000 connects to the Ethernet, BDM4GDB needs a parallel port  on
-  a PC.
-* BDI2000 has support for  many  CPU  types,  BDM4GDB  restricted  to
-  MPC8xx (so far)
-* BDI2000 has support for all comon flash types, BDM4GDB  needs  some
-  more  work  in that area (but you can adapt it yourself when needed -
-  it's Open Source)
-* BDI2000 is much faster for code download / flash programming
-* The BDI2000 costs around $ 2,500, BDM4GDB $ 50.
+How?
 
-Shameless plug:
+First we need to make sure that the maximum cacheline size of
+any PowerPC cpu is 128 bytes. (CACHELINE_MAX)
+If it's anything else then it's easy to add that to the code.
 
-I will give a presentation "Debugging  of  Linux  Kernel  and  Device
-Drivers  Using Low-Cost BDM Interface" featuring the BDM4GDB on May 4
-at the 3rd Brunswick Linux Days, see
-http://braunschweiger.linuxtage.de/programm/index.html
+Then if we should use the dcbz instruction we need at least
+CACHELINE_MAX bytes aligned to a CACHELINE_MAX address. (buf)
+Then we write:
 
-Wolfgang Denk
+address: data (32bit)
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Remember that Beethoven wrote his first symphony in C ...
+buf+16   16
+buf+32   32
+buf+64   64
+
+Then we use the "dcbz" instruction on buf.
+
+then we add together all data we've written above (sum):
+
+32 bit data on address:
+
+buf+64
+buf+32
+buf+16
+
+then: cachelinesize = 128-sum
+
+Easy, right?
+
+
+I tried to implement it using assembler:
+
+---- cut here ----
+
+cachelinesize_detect:
+
+#define CACHELINE_MAX 128
+
+        /* use dcbz to figure out the size of a cacheline
+         * on our system...
+         * needs a CACHELINE_MAX bytes buffer in r3.
+         * r3 should be aligned to CACHELINE_MAX too.
+         */
+
+        li      r4, 0x10        /* 16 bytes: mpc8xx, ibm4xx */
+        stwx    r4, r4, r3
+        li      r4, 0x20        /* 32 bytes */
+        stwx    r4, r4, r3
+        li      r4, 0x40        /* 64 bytes */
+        stwx    r4, r4, r3
+        dcbz    0, r3
+        add     r5, r4, r4      /* 128 bytes */
+        lwzx    r4, r4, r3
+        sub     r5, r5, r4
+        lwz     r4, 0x20(r3)
+        sub     r5, r5, r4
+        lwz     r4, 0x10(r3)
+        sub     r5, r5, r4
+
+/* now: r5 contains cacheline size */
+
+---- cut here ----
+
+The code is untested and I've probably use the "sub"
+instruction the wrong way. You get the idea anyhow.
+
+Who wants to adopt the idea for memset.S?
+
+I don't really have time, sorry...
+
+Cheers /
+
+Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
