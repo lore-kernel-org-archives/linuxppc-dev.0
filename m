@@ -1,28 +1,30 @@
-Message-ID: <3F8E43D8.6090904@imc-berlin.de>
-Date: Thu, 16 Oct 2003 09:08:08 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Lokesh Kumar <kumar.lokesh@wrx-us.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mpc8xx memory mapped 16550A uart garbage
-References: <3439AB3A99ECD5409F3A52ACF814744D158DA1@norcom2.norcom.net>
-In-Reply-To: <3439AB3A99ECD5409F3A52ACF814744D158DA1@norcom2.norcom.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: /proc problem
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: t.vanremortel@ha.be
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1066306828.735.29.camel@toni>
+Mime-Version: 1.0
+Date: Thu, 16 Oct 2003 14:20:29 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lokesh,
+Hi all,
 
-> I did measure the bit width and that is around 104us, which is correct.
-> Anything else?
+I just added some /proc support to my module to run on an EP405, but
+when I load my module, I get
+unresolved symbol __extendsfdf2
+Google didn't get me any further.
+Code can be found at http://linemb.d-sciencelab.com/rt_mod.c
 
-Hmm. I suppose you tried sending only character again and again and verified
-that your board is indeed sending this character over the lines by looking at
-the scope...
-
-
-Steven
+Thanks,
+--
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
