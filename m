@@ -1,69 +1,83 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Mon, 25 Sep 2000 16:24:58 +0100 (CED)
-Subject: Limon & PowerQUICC II, Booting the kernel
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: kernel@linux01.hasler.ascom.ch
-Message-id: <0G1G0093N5EZUI@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_41PqGbsqhsWW8+BPUvGmnw)"
+Message-ID: <39CF73D6.DC5E3DEB@emc.com>
+Date: Mon, 25 Sep 2000 11:48:38 -0400
+From: Zhaobin Zhu <zzhu@emc.com>
+MIME-Version: 1.0
+To: "ZHANG,HAI-TAO (Non-A-China,ex1)" <hai-tao_zhang@non.agilent.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Sandpoint/PPMC750 MPPMC7400
+References: <2F67A63DFFB1D31185D90090278CBB2D01679D7D@apmail6.chn.agilent.com>
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_41PqGbsqhsWW8+BPUvGmnw)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+"ZHANG,HAI-TAO (Non-A-China,ex1)" wrote:
 
-Hi
+> > I has been trying to boot Hardhat (CDK1.2)linux kernel on
+> > Sandpoint/PPMC750. Everytime the boot gets stuck at
+> > .......
+> > >Uncompressing Linux...done.
+> > >Now booting the kernel
+> Do you use 2.3.16 kernel ? The kernel stops here may be caused by MMU_init,
+> please check the arch/ppc/kernel/head.S and arch/ppc/mm/init.c. (you can use
+> ppc_md.progress for printing messages)
+>
 
-I have Limon up and running. I managed to set up the host in order
-to serv the linux kernel.
-The kernel I download is the ordinary kernel from Montavista HH1.2.
-I prepared the zImage in the following way:
-1. I stripped off the elf header. (dd if=zImage of=stripZImage bs=64k skip=1)
-2. I run it through mklimon to add the limon specific header.
+Hi  HAI-TAO,
 
-After I've loaded the kernel I can see the kernel in the RAM from addr 0.
+The kernel I use is Linux version 2.4.0-test2 .
 
-When I issue the 'run' command the target crashes.
+I enabled Sandpoint_debug. Here is the __most farther__ the boot goes:
+-----
+DINK32_ARTHUR >>go 900000
+loaded at:     00900000 00914E20
+relocated to:  00800000 00814E20
+zimage at:     0090B000 00989621
+avail ram:     00400000 00800000
 
----------------- Linux Monitor 1.4.2-SBC-8260 ----------------
-limon>
-limon>
-limon> load
-BOOTP/TFTP from server 10.1.20.2; our IP address is 10.1.20.1.
-Filename '/usr/src/nfs/limonZImage'.
-Loading: >.................................................................<
-done.
-limon>
-limon> debug
-limon> dw
-00000000   48000005  7c6b1b78  7cb92b78  38600040  H...|k.x|.+x8`.@
-00000010   7c600124  3c800040  60840000  7c6802a6  |`.$<..@`...|h..
-00000020   3863fffc  7c681b78  7c032000  40820028  8c..|h.x|. .@..(
-00000030   3c800040  60840000  3ca00040  60a5b274  <..@`...<..@`..t
-00000040   38a50003  7ca42850  54a5f0be  7ca72b78  8...|.(PT...|.+x
-limon>
-limon>
-limon> run
-... crash
+Linux/PPC load: root=nfs
+Uncompressing Linux...done.
+Now booting the kernel
+id mach(): doneMMU:enterMMU:hash inithash:enterhash:find
+piecehash:patchhash:doneMMU:mapinMMU:setbatMMU:exitsetup_arch
+: entersetup_arch: bootmemarch: exit
+------
+Observed problems:
+1) The boot is no consistent.
+     Sometime it hangs at
+     Now booting the kernel
+     id mach():
 
+     Sometime it hangs at
+     Now booting the kernel
+     id mach(): doneMMU:enterMMU:hash inithash:enterhash:find piece
 
-Question:
+2) By luck, the most farther it reaches
+     Now booting the kernel
+     id mach(): doneMMU:enterMMU:hash inithash:enterhash:find
+     piecehash:patchhash:doneMMU:mapinMMU:setbatMMU:exitsetup_arch
+     : entersetup_arch: bootmemarch: exit
 
-1. Is my kernel image munging correct?
+     It hangs there after entering free_area_init().
 
-2. Is the start address 0 correct?
+     I can't find the rountine under /arch/ppc/. So it must be an arch
+independent
+     rountine.
 
-3. Some data are transferred from limon to the kernel.
- - Does Limon handle this correctly?
- - Where are these data located?
+     Is it defined in mm/page_alloc.c:void __init free_area_init(unsigned long
+*zones_size) ?
 
+>From what I described, does anybody have a hint on what the problem is with
+PPMC750 ?
 
-Thank you for any help
+The boot goes fine with PPMC7400 on Sandpoint.
 
-Ruedi
+Thanks,
 
---Boundary_(ID_41PqGbsqhsWW8+BPUvGmnw)--
+--
+ Zhaobin Zhu
+ zzhu@emc.com 508-435-1000 x12823
+ Hardware Engineering, EMC Corporation
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
