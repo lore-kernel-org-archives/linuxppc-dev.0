@@ -1,49 +1,46 @@
-To: "Jacky Lam" <jackylam@astri.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Queston about Walnut 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Oct 2003 20:01:30 +0800."
-             <000e01c388dc$eb525510$0202a8c0@homevl9biy3v7e>
-Date: Thu, 02 Oct 2003 14:17:28 +0200
-Message-Id: <20031002121733.A2E32C59E4@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: Cross compiling : problem linking
+From: Toni Van Remortel <t.vanremortel@ha.be>
+Reply-To: linuxppc-embedded@lists.linuxppc.org
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1065099415.10206.5.camel@toni>
+Mime-Version: 1.0
+Date: Thu, 02 Oct 2003 14:56:56 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <000e01c388dc$eb525510$0202a8c0@homevl9biy3v7e> you wrote:
->
-> > Who gave you such (obviously wrong) instructions?
->
->         I take the example of u-boot to create the "uImage" and download it
-> to the board.
+Hi all,
 
-Please show me which U-Boot document uses 0x00400000 as load or entry
-point address so I can fix this immediately. It is WRONG  and  CANNOT
-work.
+I try to cross compile a small test program for the EP505 board. I use
+ELDK as compiler set.
 
-> > For PowerPC systems, both  Load  Address  and  Entry  Point  must  be
-> > specified as 0.
->
->         I have tried 0 before. But I get an exception in return. Could you
-> kindly give me some instructions how to run a kernel on this board?
+When using this compile command:
 
-Please start by giving a precise description of  what  you  did.  and
-which error messages you got.
+ppc_4xx-gcc -O -v -nostdlib -nostartfiles -mno-eabi -fno-exceptions \
+-fno-builtin -Wl,-Tscript.ld,-N -o rt_mod rt_mod.c
 
-You "get an exception" - when? When running "mkimage"?  When  booting
-the kernel? Which sort of exception? What is the exact error message?
-Please include a complete log of your actions and all output.
+I get after a while:
 
-Best regards,
+/opt/eldk/usr/ppc-linux/bin/ld: cannot open linker script file \
+script.ld: Onbekend bestand of map
+collect2: ld returned 1 exit status
 
-Wolfgang Denk
+I don't know what is wrong, but 'script.ld' isn't anywhere on my system.
 
+Side note: I used the compiler set already to cross compile a kernel,
+XFree and FLTK, so it works.
+
+Any idea?
+
+PS: the program currently should make a square wave on EBC P1 D1
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Totally illogical, there was no chance.
-	-- Spock, "The Galileo Seven", stardate 2822.3
+                           Toni Van Remortel
+              Wetenschappelijk Medewerker - D-science lab
+  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
+              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
+                      E-mail: t.vanremortel@ha.be
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
