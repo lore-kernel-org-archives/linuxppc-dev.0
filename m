@@ -1,29 +1,40 @@
-Date: Mon, 12 Jan 2004 12:45:41 +0100
-From: Colin Leroy <colin@colino.net>
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [PATCH] tas3004_tables.c off-by-one
-Message-Id: <20040112124541.188d0174.colin@colino.net>
-In-Reply-To: <D65308DD-42F3-11D8-8972-000A95A4DC02@kernel.crashing.org>
-References: <20031220175850.416fb0ec.colin@colino.net>
-	<1071962774.8935.23.camel@gaston>
-	<D65308DD-42F3-11D8-8972-000A95A4DC02@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: how to read/write registers of CPU or Device from user space
+Date: Mon, 12 Jan 2004 08:48:59 -0500
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B437137E@tarpon.mangrovesystems.com>
+From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+To: <zjzhou@newrocktech.com>, <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 09 Jan 2004 at 23h01, Segher Boessenkool wrote:
+>From user space access, use mmap.
 
-Hi,
 
-> It could be these tables are taken from Darwin, but there is no need
-> for that; the chip manual contains those tables, too (but for a bigger
-> range of values).
 
-By the way, this was for kernel 2.4 and dmasound. Alsa drivers in 2.6
-work fine.
---
-Colin
+Regards,
+ 
+Muhammad Sarwar
+Mangrove Systems Inc.
+
+
+-----Original Message-----
+From: John Zhou [mailto:zjzhou@newrocktech.com]
+Sent: Sunday, January 11, 2004 9:20 PM
+To: linuxppc-dev@lists.linuxppc.org
+Subject: how to read/write registers of CPU or Device from user space
+
+
+Hi, all,
+
+when debugging kernel or driver, we need to read/write registers of CPU and devices. I wanna use /dev/mem to do, is it possible? if need to do others things? is it better to write a driver for read/write CPU/device's registers by myself?
+
+Do you have any good advice?
+
+Thanks in advance!
+John
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
