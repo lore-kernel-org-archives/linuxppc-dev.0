@@ -1,24 +1,31 @@
-Message-ID: <3BD9D45C.8080207@oerlikon.ca>
-Date: Fri, 26 Oct 2001 17:23:40 -0400
-From: Sebastien Ruel <sruel@oerlikon.ca>
-Reply-To: sruel@oerlikon.ca
+Message-ID: <3BD9D47A.C8B06F10@mvista.com>
+Date: Fri, 26 Oct 2001 14:24:10 -0700
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-To: "Williams, Kevin M." <kevin.m.williams@marconi.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: looking for a nice root filesystem image
-References: <A3E34B558F5CD211B4980008C7A4A99003C584CE@sparrow.gso.mcs.marconi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Mark Pilon <mpilon@midrivers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: will the real ppc kernel please stand up
+References: <3BD9B30C.929F4747@midrivers.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  Williams, Kevin M. wrote:
-
->Try busybox.  It sounds EXACTLY like what you are looking for
+Mark Pilon wrote:
 >
->http://busybox.lineo.com
+> I know we've been over this before, but I was following some
+> advice to get the latest development kernel via pengiunppc.org, via
+> rsync:
 >
-Good idea, thank's!
+  linuxppc_2_4
 
+
+>                         linuxppc_2_4_devel
+
+Pulled this morning and Works fine today on Walnut
+
+
+
+-- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
