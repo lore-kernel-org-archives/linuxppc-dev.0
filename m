@@ -1,18 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id F1B822BF17
+Return-Path: <flucifredi@acm.org>
+Received: from mail2.speakeasy.net (mail2.speakeasy.net [216.254.0.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C66802BF18
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Jan 2005 07:56:38 +1100 (EST)
-In-Reply-To: <I9YGNJ02.V3Y@hadar.amcc.com>
-References: <I9YGNJ02.V3Y@hadar.amcc.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <87E60733-60CA-11D9-B453-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 7 Jan 2005 10:38:16 -0600
-To: <cashton@amcc.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Looking for PowerPC Linux experts in Austin, TX
+	Sat,  8 Jan 2005 08:16:18 +1100 (EST)
+Received: from blhealthcare.com (HELO [192.168.1.201])
+	(blsoftware@[151.204.230.210]) (envelope-sender <flucifredi@acm.org>)
+	by mail2.speakeasy.net (qmail-ldap-1.03) with AES256-SHA encrypted SMTP
+	for <linuxppc-embedded@ozlabs.org>; 7 Jan 2005 21:16:03 -0000
+Message-ID: <41DEFB89.5060404@acm.org>
+Date: Fri, 07 Jan 2005 16:13:45 -0500
+From: Federico Lucifredi <flucifredi@acm.org>
+MIME-Version: 1.0
+To: "Linux-ppc [mailing list]" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Frame Buffer and Y Cb Cr
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,31 +26,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Charlie,
+Hello All,
+    I am working on a fb driver for linux in an embedded PPC setup. I 
+have it working as far as linux is concerned, and I also understand the 
+video card side of the problem.
 
-Are you looking to hire people or are you looking for some community 
-involvement?
+    My trouble is: Linux sends me R G B and the hardware expects Y Cb 
+Cr. As things work through a memory-mapped file, I am at a loss for an 
+"intelligent" way to intercept and convert these values.
 
-- kumar
+    Any suggestions ?
 
-On Jan 7, 2005, at 10:33 AM, Charlie Ashton wrote:
+    Best - Federico
 
-> I'm responsible for PowerPC Software at AMCC, who acquired the 
-> embedded 405
->  and 440 product lines from IBM.
->
-> I'm interested in talking with PowerPC Linux experts in the Austin TX 
-> area.
->  We have a number of development projects in mind and are looking for 
-> advice,
->  opinions and contributions.
->
-> Regards,
->  Charlie Ashton
->
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+_________________________________________
+-- "'Problem' is a bleak word for challenge" - Richard Fish
+
+Muad'Dib of Caladan (Federico L. Lucifredi)- Harvard University & BU
+http://metcs.bu.edu/~lucifred
