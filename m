@@ -1,27 +1,32 @@
-Message-ID: <3C8FD16D.2060003@embeddededge.com>
-Date: Wed, 13 Mar 2002 17:23:41 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Leiying Du <ldu@solectek.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Debug kernel ELF using SDS single-step debugger
-References: <005701c1cad8$d397eb60$6649a8c0@LEIYINGDU>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <sc907704.027@gw_tms_syd2.pty.tms.thomson-csf.com>
+Date: Thu, 14 Mar 2002 10:09:58 +1100
+From: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>
+To: <linuxppc-embedded@lists.linuxppc.org>, <boppuri_navin@yahoo.com>
+Subject: Re: SPI Driver
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Leiying Du wrote:
+I plan to,
+but right now it is too incomplete for release. ( no support for
+multiple SPI device, no multithreading protection etc...)
+moreover, I am working with a development board which has no SPI
+device, so it has been tested only in loopback mode (the real board
+we're developing should be available soon. )
 
-> When I run the kernel ELF, I always get this error message "Couldn't find
-> 4096 bytes at 4096 alignment".
+just leave me a couple of weeks to work on it, and I'll send it to
+everyone...
 
-Well, you can't run the kernel ELF image (vmlinux) directly.  This error
-is because you are not telling the kernel information it needs to know
-from start up parameters.  These are provided by some form of bootloader.
+>>> sdfg sdfg <boppuri_navin@yahoo.com> 03/14/02 09:55am >>>
+Hello Jeremy,
 
+Would you be nice enough to put those drivers on some
+site and send that link to everyone on the mailing
+list? Thanks.
 
-	-- Dan
+Navin.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
