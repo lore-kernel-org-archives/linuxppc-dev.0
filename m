@@ -1,44 +1,46 @@
+Message-ID: <40E47CFB.7090106@246tNt.com>
+Date: Thu, 01 Jul 2004 23:07:07 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
+MIME-Version: 1.0
+To: mcclintock@freescale.com
+Cc: Adrian Cox <adrian@humboldt.co.uk>,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>,
+	"Kumar K. Gala" <kumar.gala@motorola.com>,
+	Matthew McClintock <mcclintock@motorola.com>
 Subject: Re: [PATCH][RFC]Updated MPC I2C driver
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Sylvain Munaut <tnt@246tnt.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>,
-	kumar.gala@freescale.com, mcclintock@freescale.com
-In-Reply-To: <40E463E5.1060401@246tNt.com>
-References: <1088705955.28598.168.camel@localhost>
-	 <40E463E5.1060401@246tNt.com>
-Content-Type: text/plain
-Message-Id: <1088715248.28598.192.camel@localhost>
-Mime-Version: 1.0
-Date: Thu, 01 Jul 2004 21:54:08 +0100
+References: <1088705955.28598.168.camel@localhost>	 <40E463E5.1060401@246tNt.com> <1088696887.7555.70.camel@matthew-laptop>
+In-Reply-To: <1088696887.7555.70.camel@matthew-laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-07-01 at 20:20, Sylvain Munaut wrote:
+Matthew McClintock wrote:
 
-> Interesting, it really looks like the MPC5200 I2C controller.
-> Unfortunatly :
->  - On the MPC5200, all the status/controls bits are in the MSBs ( so
-> the consts would need to be << 24 )
+ > The blocks look very similar, you might want to look at the follow
+ > up patch I just sent that abstracts the read/writes. It might be as
+ > simple as abstracting another read/write function for your
+ > particular platform.
+ >
 
-Are you sure about that? The MPC107 registers are little-endian PCI
-registers, accessed with readl/writel, but it looks to me that the
-MPC5200 registers are big-endian.
+Yes
+I'd say they are identical in fact. I kind of forgot that readl/writel
+does a endianness correction. So in fact this driver should work for
+the MPC5200.
 
->  - And there is a interrupt control register I don't see in your code.
-> It's shared by the two I2C controllers onboard.
+My only concern is about interrupts.
+MPC5200 has two I2C port:
+ * One is MBAR + 0x3D00
+ * Second is MBAR + 0x3D40
 
-That could easily be added as a special case.
+At MBAR + 0x3D20 there is an interrupt control register for the I2C
+ports ( shared, 4bits for the first port, 4bits for the second).
+ It controls for what reason an I2C interrupt should be fired. I don't
+know if there is a similar register on the other, I'll look up the
+datasheets.
 
-> I'll try to see if I can make it work on the lite5200 board.
 
-Please do try. It would be good if one driver covered all these chips.
-
-I'm going to try byte reads and writes on the MPC107 as my next
-experiment. I think that may avoid the need for separate access
-functions.
-
-- Adrian Cox
+Sylvain Munaut
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
