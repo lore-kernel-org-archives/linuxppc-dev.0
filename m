@@ -1,31 +1,39 @@
-Date: Fri, 18 Jun 1999 18:59:52 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Fix for atyfb and gcc 2.95
-Message-ID: <19990618185952.A808@drow.res.cmu.edu>
-Mime-Version: 1.0
+Message-ID: <376AD199.43D25@mrv.com>
+Date: Fri, 18 Jun 1999 16:09:13 -0700
+From: Nye Liu <nyet@nbase.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Motorola MPC8240 Sandpoint embedded linux
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-After a frustrating day playing with yet more of gcc's uglier and
-insufficiently-documented internals, I've found the problem with atyfb. 
-By chance and/or better register usage, r0 came up as the base register
-passed to aty_ld_le32; gcc currently has no way to detect this sort of
-mis-specified constraint on user assembly.  r0 is a valid register for
-an "r" constraint, but the proper constraint is actually "b" for base. 
-This explicitly disallows the use of r0, so egcs will shuffle around
-the registers to do the right thing.
+I have just started work on the MPC8240 Sandpoint platform (its
+basically an 603e with some integrated peripherals) but this is my first
+try at embedded linux devel. I have plenty of experience getting psos
+and vxworks running on a few different processors, but I am unfamiliar
+with the internals of how linux is booted.
 
-Dan
+I'm using ESTC's cheapo visionICE emulator solution, and would
+appriciate any help with getting this thing up and running.
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+The main problems that I see are:
+
+Its not CHRP or PREP.
+
+No prom, so i need to:
+Set up the memory map.
+Program the EPIC.
+
+Verify that the current serial drivers work with the Sandpoint's NS
+PC87308.
+
+Please email me directly, as I am not subscribed to this list, although
+i do read it regularly on the linuxppc site.
+
+nyet@nbase.com
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
