@@ -1,142 +1,23 @@
-Message-ID: <3CC7CD7A.20F24E1A@snom.de>
-Date: Thu, 25 Apr 2002 11:33:46 +0200
-From: Sven Boehringer <boehringer@snom.de>
-Reply-To: boehringer@snom.de
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3CC7F018.2040604@dgt-lab.com.pl>
+Date: Thu, 25 Apr 2002 14:01:28 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-To: Matthew Locke <mlocke@mvista.com>,
-	Fend Matthias <mfend@harris.com>, jimmlin@solomon.com.tw,
-	linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: AW: Does anyone port m8xx_pcmcia driver to Linux Kernel
- successfully?
-References: <8D4C69676E66D511A1CB00508BBBB192157983@ranmx1.ran.harris.com> <3CBEF7A7.1090900@mvista.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: console on SCC1 on 8260
+Content-Type: text/plain; charset=windows-1250; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Huh, I've just discovered that arch/ppc/8260_io/uart.c does not support
+ console on SCC1!
+Anyone has such version of this driver?
 
-i tried your patch, but it seems to me that there are some #defines
-missing?
-I try to use the source/kernel on a FADS board, an in that section there
-is
-"BCSR1_PCCVPP1". But i can't find this value. I tried to copy some
-values from ppcboot,
-but these particular are not there. Are there some special includes?
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
-I have the actual linuxppc_2_4_devel source-tree, but i can't find these
-values.
-
-regards
-	Sven
-
-Matthew Locke wrote:
->
-> here is the patch to add the 8xx pcmcia socket driver to the kernel.
->
-> Fend, Matthias wrote:
->
-> >hello Matthew,
-> >
-> >i also tried to do this work - without the desired success
-> >
-> >i don't know exactly if my hardware is faulty or my m8xx port ... :-(
-> >
-> >so if i could have your version of the pcmcia stuff i would be very glad.
-> >
-> >thanks matthias
-> >
-> >>-----Ursprüngliche Nachricht-----
-> >>Von:  Matthew Locke [SMTP:mlocke@mvista.com]
-> >>Gesendet am:  Dienstag, 16. April 2002 18:50
-> >>An:   Jacky Wang
-> >>Cc:   linuxppc-embedded@lists.linuxppc.org
-> >>Betreff:      Re: Does anyone port m8xx_pcmcia driver to Linux Kernel
-> >>successfully?
-> >>
-> >>
-> >>Jacky Wang wrote:
-> >>
-> >>>Hi everyone,
-> >>>
-> >>>I am interesting about how to port m8xx_pcmcia driver to linux kernel w/
-> >>>
-> >>MPC850.
-> >>
-> >>>Would you mind to share your successful experience with me?
-> >>>
-> >>I did (w/ the help of others). It is on its way upstream now. If you
-> >>need it soon, let me know and I can make it available.
-> >>
-> >>>
-> >>>Best Regards
-> >>>Jacky Wang
-> >>>
-> >>>
-> >>
-> >>** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org
-> >>
-> >/
-> >
->
-
-> +/* ------------------------------------------------------------------------- */
-> +/* FADS Boards from Motorola                                               */
-> +
-> +#if defined(CONFIG_FADS)
-> +
-> +#define PCMCIA_BOARD_MSG "FADS"
-> +
-> +static int voltage_set(int slot, int vcc, int vpp)
-> +{
-> +       uint reg = 0;
-> +
-> +       switch(vcc) {
-> +               case 0: break;
-> +               case 33: reg |= BCSR1_PCCVCC0; break;
-> +               case 50: reg |= BCSR1_PCCVCC1; break;
-> +               default: return 1;
-> +       }
-> +
-> +       switch(vpp) {
-> +               case 0: break;
-> +               case 33:
-> +               case 50:
-> +                       if(vcc == vpp)
-> +                               reg |= BCSR1_PCCVPP1;
-> +                       else
-> +                               return 1;
-> +                       break;
-> +               case 120:
-> +                       if ((vcc == 33) || (vcc == 50))
-> +                               reg |= BCSR1_PCCVPP0;
-> +                       else
-> +                               return 1;
-> +               default: return 1;
-> +       }
-> +
-> +       /* first, turn off all power */
-> +       *((uint *)BCSR1) &= ~(BCSR1_PCCVCC_MASK | BCSR1_PCCVPP_MASK);
-> +
-> +       /* enable new powersettings */
-> +       *((uint *)BCSR1) |= reg;
-> +
-> +       return 0;
-> +}
-> +
-> +#define socket_get(_slot_) PCMCIA_SOCKET_KEY_5V
-> +
-> +static void hardware_enable(int slot)
-> +{
-> +       *((uint *)BCSR1) &= ~BCSR1_PCCEN;
-> +}
-> +
-> +static void hardware_disable(int slot)
-> +{
-> +       *((uint *)BCSR1) |=  BCSR1_PCCEN;
-> +}
-> +
-> +#endif
-> +
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
