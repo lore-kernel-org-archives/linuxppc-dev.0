@@ -1,39 +1,50 @@
-Date: Fri, 4 Jan 2002 17:35:33 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org,
-	mod+linuxppc-dev@MissionCriticalLinux.com
-Cc: linux-galileo@source.mvista.com
-Subject: GT64260 mailing list and development source tree
-Message-ID: <20020104173533.G20985@altus.drgw.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Message-Id: <200201072201.RAA05808@missioncriticallinux.com>
+From: mod+linuxppc-dev@MissionCriticalLinux.com
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Link-time failures from "simple" CFLAGS changes
+Date: Mon, 07 Jan 2002 17:01:51 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have set up a 'linuxppc_2_4_galileo' BK tree on source.mvista.com, and a
-mailing list, 'linux-galileo@source.mvista.com'.
+When I change -O2 to -O0 in my CFLAGS definition in Makefile thus:
 
-http://source.mvista.com/cgi-bin/mailman/listinfo/linux-galileo
-http://source.mvista.com:14690//linuxppc_2_4_galileo
 
-If you are working on a board with a GT64260, please check this out. There
-are enough things that 'aren't done' on the current code in 2_4_devel, and
-there is lots of activity going on for the galileo, so I felt it would be
-better to have another tree.
+  CFLAGS := -g $(CPPFLAGS) -Wall -Wstrict-prototypes -Wno-trigraphs -O0 \
+                               -fno-strict-aliasing -fno-common
 
-This is a *development* tree, so *expect* things to change a lot.
 
-My goal is to get working gt64260 support on several boards in the
-_galileo tree, and clean it up to a point where it will be accepted by
-upstream people like Linus, etc, and then merge the working code into
-2_4_devel.
+  CFLAGS := -g $(CPPFLAGS) -Wall -Wstrict-prototypes -Wno-trigraphs -O2 \
+                               -fno-strict-aliasing -fno-common
 
---
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Schulz
+
+...I am astounded to see thousands of unresolved references
+at kernel link time.  WTF?  Any ideas?  These are the
+sorts of symbols that come up undefined:
+
+
+ after __bad_udelay before between clear_user copy_from_user copy_siginfo
+ copy_to_user dcacheFlushSingle dcacheInvalidateSingle dev_load down
+ down_interruptible down_trylock DQUOT_ALLOC_BLOCK DQUOT_FREE_BLOCK
+ DQUOT_PREALLOC_BLOCK eieio empty_stack fib_find_info fn_flush_list
+ fn_key_eq fn_key_leq frag_alloc_queue frag_free_queue frag_kfree_skb
+ free_pgd_fast free_pgd_slow get_native_tbl get_order get_pgd_fast
+ get_rtcl get_tbl get_tbu __get_user_bad htonl htons in_8 inet_getid
+ inet_putpeer in_le16 in_le32 ipc_buildid ipc_checkid ipc_get ipc_lock
+ ipc_lockall ipc_unlock ipc_unlockall ld_le32 maybe_unmark_and_push
+ ntohl ntohs out_8 out_be32 out_le16 out_le32 pcibios_make_OF_bus_map
+ pcibios_set_master phys_to_virt pmd_populate pop_stack prefetch
+ prefetchw pte_free_slow __put_user_bad rotate_left rtnetlink_rcv_skb SBI
+ __skb_cb_too_small_for_tcp sockfd_put socki_lookup strncpy_from_user
+ strnlen_user tb_ticks_since tcpdiag_rcv_skb tcp_need_reset
+ tcp_paws_discard tcp_replace_ts_recent tcp_store_ts_recent __udelay
+ unix_get_socket unix_release_addr up __USE_RTC verify_area virt_to_bus
+ virt_to_phys __xchg_called_with_bad_pointer xprt_move_iov
+
+
+This isn't a showstopper problem for me but I was so surprised to see
+it that I'm curious about its cause, so thanks for any enlightenment.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
