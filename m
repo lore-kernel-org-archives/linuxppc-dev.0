@@ -1,49 +1,72 @@
-Date: Sat, 22 Apr 2000 02:00:27 -0500
-Subject: yaboot FAQ in-progress
-From: Eric Peden <ericpeden@homemail.com>
-To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B526B83B.3B50%ericpeden@homemail.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Sat, 22 Apr 2000 12:31:07 +0200
+From: Bernhard Reiter <bernhard@intevation.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Lombard hard freeze
+Message-ID: <20000422123107.A8503@cheops.usf.Uni-Osnabrueck.DE>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+--M9NhX3UHpAaciwkO
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-After seeing a definite need for one, I've started working on a yaboot FAQ.
-Right now, it's very, very far from complete, but at least one's underway,
-right? ;) I currently use yaboot on a G4, with yaboot itself stored on an
-external SCSI device, and the procedure for setting things up is a little
-more convoluted than it is on most "standard" systems. I need help from some
-people that have set it up on one of these standard [read: non SCSI-card]
-systems. Specifically, what procedure did you have to follow to designate
-the boot device; how did you determine the boot device's OF alias; how is
-the drive connected to your Mac; stuff like that. If you can help out,
-please let me know, and of course you'll be given due credit in the FAQ. ;)
-I'd also like to hear from people who have set up a Zip drive as their boot
-device, as this seems to be a common request.
+Hello Linuxppc developers,
 
-In addition, I'd love to put even this preliminary version on the web for
-people to begin looking over and making suggestions, but I'm in a bit of an
-argument with my ISP right now over whether or not I should have a personal
-webspace, and as such am currently unable to make the document publicly
-available (I'm avoiding "free" sites that display banner ads as a matter of
-principle). If someone would like to donate a (very) small amount of
-webspace during these early phases of creation, I'd very much appreciate it.
-Please contact me if you're interested.
+I encounter hard freezes with my lombard G3/400 Powerbook.
+Though I cannot completely rule out hardware problems, it might
+be the software. The system never stopped running in MacOS 8.6
+I tried the TechTool Deluxe tests and the Gauge Pro Ram Check
+under MacOS without revealing any problems.
 
-Waitin' for those mails to start pourin' in. ;)
+The freezes occurr randomly when heavy compiling is done.
+(Like I cannot compile gnomehack 1.0.5 three times, it usually
+happens in the second compile attempt.) If you want to try
+ftp://intevation.de/users/bernhard has the .src.rpm right now.
 
-- --eric
+It does not matter if it is cold or warm, X11 running or pmud running.
+I tested Kernel versions 2.2.14 2.2.15-pre3 2.2.15-pre19
+together with the LinuxPPC 2000 install and the upgraded LinuxPPC 1999
+install (on two different partitions).
+I upgraded glibc, binutils and gcc.
+
+This powerbook has a 10 GB harddisc and 192 Mb ram, so it does not even
+swap for this compile.
+
+Another little detail hints towards a software problem:
+Even if I give the computer breaks after, let's say the first
+gnomehack compile, it chances to run through the next one is not higher.
+It looks like disorder somewhere in the kernel piles up, still it is
+a matter of time to lock up the machine.
+
+I would be glad if someone could help me to track the problem
+down further. I was told that this is the right place to ask.
+
+Regards,
+	Bernhard
+ps.: Please carbon copy relevant replies to me.
+
+--=20
+Professional Service around Free Software                (intevation.net) =
+=20
+The FreeGIS Project				            (freegis.org)
+Association for a Free Informational Infrastructure            (ffii.org)
+
+--M9NhX3UHpAaciwkO
+Content-Type: application/pgp-signature
+
 -----BEGIN PGP SIGNATURE-----
-Version: PGPfreeware 6.5.2 for non-commercial use <http://www.pgp.com>
+Version: GnuPG v1.0.1 (SunOS)
+Comment: For info see http://www.gnupg.org
 
-iQA/AwUBOQFN+6TQUBxXFpjFEQL3MACdGluftU9RqThuqaSqtRqydXUcvr8AoIwC
-WPeE/oEqN7T33iI4WM5w4hEm
-=Dkoh
+iEYEARECAAYFAjkBf2oACgkQh9ag3dpKERb3IgCfXrw5TwqGkHhtGZ06C+nZVIk3
+f5YAoM1fJbbPHOI+iLBHZ5SQpU7ZUdSh
+=5ZhE
 -----END PGP SIGNATURE-----
 
+--M9NhX3UHpAaciwkO--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
