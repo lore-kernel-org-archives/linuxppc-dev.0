@@ -1,38 +1,33 @@
-Message-Id: <200007271931.UAA32685@hyperion.valhalla.net>
-Date: Thu, 27 Jul 2000 20:32:01 +0100
-Subject: pre10 ben2 9600/IMSTTFB (part2)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Thu, 27 Jul 2000 21:48:05 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Joseph Garcia <jpgarcia@execpc.com>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: powerbook hang from post-sleep cdrom access - fix
+In-Reply-To: <39805F0A.5CE376C6@execpc.com>
+Message-ID: <Pine.LNX.4.10.10007272146140.2350-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-OK, it's a bit weird...
+> > Aye. Can you be more specific about 'do whatever needs to be done'? Can I
+> > just send the disk a read command to wake it up? Send a reset
+> > command?? Will a reset command hurt if I always send a drive reset
+> > there?
+>
+> My expirience is that just reading the drive causes a problem, much like
+> userspace trying to read it.  there is also the door locking feature that I
+> suppose could be done explicitly on wakeup if mounted.  I dont know what else a
+> "media change" ctl entails, but it seems to do enough to get the cdrom back to
+> where it left off.
 
-I'm trying to boot "single" now with no imsttfb option...
+OK, that seems to mean wherever we can safely send the drive a reset
+command after sleep, we should do that. Now under what conditions will a
+reset command mess up things beyond recovery? Is it possible to sleep the
+machine while the IDE drive has a request under service?
 
-I have the new input layer selected in the compile (and the changes made in
-/dev)
+	Michael
 
-It doesn't work (i.e. I get a blank screen) with the no video option ticked
-either... until...
-I do sysrq-k at which point I get the init 5 stuff (and an X server with a
-login prompt)...
-
-So I can get in (and check that it is the kernel I thought I was trying) and
-also look at messages - which seems to reveal no log for the previous
-attempt (in spite of the fact that it seems to have made it to 'single' -
-because I could type 'reboot').
-
-No mouse working... although all the correct messages (for the new input
-layer) appear in dmesg....
-keyboard is OK.
-
-I've never had a problem booting "single"  with the OF display before...
-Ho Hum...
-
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
