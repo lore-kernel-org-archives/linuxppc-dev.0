@@ -1,88 +1,89 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Mon, 02 Oct 2000 14:46:55 +0100 (CED)
-Subject: Re: Re: Re: Re: Re: VxWorks bootloader & PowerQUICC II,
- Booting the kernel
-To: vanbaren_gerald@si.com
-Cc: linuxppc-embedded@lists.linuxppc.org, kernel@linux01.hasler.ascom.ch
-Message-id: <0G1S00J60ZIBNW@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_T3Dg6DaJQo4yXWA0vldZSA)"
+Date: Mon, 2 Oct 2000 10:51:17 -0400 (EDT)
+From: "TWG - pat, mark & steve" <twg@world.std.com>
+To: Jari <jari.nguyen@smartstors.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Memory map?
+In-Reply-To: <39D59806.9AE0F189@serialsystem.com.sg>
+Message-ID: <Pine.SGI.3.95.1001002104232.17412D-100000@world.std.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_T3Dg6DaJQo4yXWA0vldZSA)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+Jari,
+I take it you're trying to do this from an application (i.e. not within
+the kernel).  Here is a (hack) piece of code which performs a similar
+task.  I use it to access a dual-port RAM connecting me to another
+processor.  First, it needs access to the (860T)'s internal memory map, to
+set up the chip selects so that CS5 decodes at 0x50000000.  Then it gets a
+pointer I can use to access the memory.  You probably only need to do the
+last mmap (and the fopen of /dev/mem!), since (presumably) there are
+already chip selects decoding your ROM.  (additional comments after the
+code)
 
-Hi Jon & Gerald
+#include <stdio.h>
+#include <asm/io.h>
 
-Thanx for the patches. The kernel compiles now well and even the download
-to the SBC8260 seems to work. It downloads 2 sections, perfect.
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
+#include <unistd.h>
+#include <sys/mman.h>
+#include <errno.h>
 
-CPU: EST Corp. est8260 -- MPC8260 PowerQUICC II SBC
-Version: 5.4
-BSP version: 1.2/4
-Creation date: Apr  3 2000, 20:04:55
+char *MapDpRam(void)
+{
+  int *paddr1;
+  char *paddr2;
+  int fd;
+  // figure out the page size (since we can only mmap in pagesize
+increments)
+  size_t size = getpagesize();
+  // get an FD to /dev/mem
+  fd = open("/dev/mem",O_RDWR);
+  // these 3 lines change the internal chip-selects in the 860T
+  paddr1 = mmap(0,size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0xfa200000);
+  *(paddr1+0x4b) = 0xffff8d84;
+  *(paddr1+0x4a) = 0x50007401;
+  // done messing with chip-selects, unmap them
+  munmap(paddr1,size);
+  // this one does the real work, gives me a pointer which, when accessed,
+points to the memory at physical address 50000000
+  paddr2 = mmap(0,size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0x50000000);
+  return(paddr2);
+}
 
-[VxWorks Boot]: l
-boot device          : motec
-unit number          : 0
-processor number     : 0
-host name            : linux01
-file name            : vxworksZImage
-inet on ethernet (e) : 10.1.20.1:ffffff00
-inet on backplane (b): 10.1.20.1
-host inet (h)        : 10.1.20.2
-gateway inet (g)     : 10.1.20.2
-flags (f)            : 0x84
-target name (tn)     : ppc
+Notes: It's a bit sloppy, I assume that getpagesize() returns at least 1K
+(which is all I need).  If you need more space, you will have to set
+"size" to some multiple of pagesize that's big enough.  It also assumes it
+knows where the MCR points to (0xfa200000) rather than reading it directly
+(I'm too lazy to figure out how to do that! :)
+Hope it helps...
 
-Attached TCP/IP interface to motec0.
-Attaching network interface lo0... done.
-Loading... 45688 + 463112
-entry = 0x400000
-[VxWorks Boot]:
-[VxWorks Boot]:
-[VxWorks Boot]: g 400000
-Starting at 0x400000...
-
-<I expect the output of the kernel on SMC1.>
-
-
-Questions:
-1. Is my assumption right that I have to jump to address 0x400000 in order to start the kernel?
-2. Dan mentioned that I have to start our stuff at 0x900000! How does this correspond?
-3. I'm still using HHL1.2. Does this kernel work on my board? (It's the revision test2)
-4. Does the kernel use SMC1 for the printk? I think yes!
-5. Does the objdump look right?
-
-/opt/hardhat/devkit/ppc/82xx/bin/ppc_82xx-objdump -h zvmlinux
-
-zvmlinux:     file format elf32-powerpc
-
-Sections:
-Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         000041f4  00400000  00400000  00010000  2**2
-                  CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .rodata       00000470  00404200  00404200  00014200  2**4
-                  CONTENTS, ALLOC, LOAD, READONLY, DATA
-  2 .data         0000030c  00405000  00405000  00015000  2**2
-                  CONTENTS, ALLOC, LOAD, DATA
-  3 .data.init    00000000  00406000  00406000  0008c380  2**0
-                  CONTENTS
-  4 .bss          00005278  00406000  00406000  00016000  2**2
-                  ALLOC
-  5 .gzimage      00071108  0040b278  0040b278  0001b278  2**0
-                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+Mark Phillips
 
 
-Thank you
+On Sat, 30 Sep 2000, Jari wrote:
 
-\Ruedi
-
-
---Boundary_(ID_T3Dg6DaJQo4yXWA0vldZSA)--
+>
+> Hello,
+>
+> After booting kernel, I want to access the physical address in rom ,
+> for example:
+> my rom begins at 0xFE00 0000, and I want to read 1 byte at this address.
+>
+> currently, the MMU has been turned on, the RAM begin at 0x0C00 0000,
+> and I don't know what the address of the ROM is.
+>
+> what do I have to do?
+> is there anybody know how to take the address of the ROM?
+>
+> Help me, pls.
+> Thank you,
+> Jari
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
