@@ -1,50 +1,56 @@
-Date: Tue, 2 Mar 1999 09:56:55 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-cc: VALETTE Eric <valette@crf.canon.fr>, jpeters@phx.mcd.mot.com,
-        paubert@iram.es, jeremy@goop.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Interrupt routing in prep_pci.c
-In-Reply-To: <Pine.LNX.3.96.990226001908.16892E-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.LNX.3.96.990302094133.27456D-100000@liberty.chnd1.az.home.com>
+Message-ID: <XFMail.990302122222.hcaley@loomer.com>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4.2.0.25.19990302191548.03a646a0@mail.lauterbach.com>
+Date: Tue, 02 Mar 1999 12:22:22 -0500 (EST)
+From: Batmensch <hcaley@loomer.com>
+To: Franz Sirl <Franz.Sirl@munich.netsurf.de>
+Subject: Re: strdup and pre-R5
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 26 Feb 1999, Cort Dougan wrote:
+Thank you for the feedback.  I don't really have any development
+background...how would you pass these options ?
 
-Hey, I don't _like_ just putting the info up there, but it was better than
-letting the people who might have had time then to do the code guess how
-to identify every single board.  Gathering that information would have
-been a pain for anybody on the outside.
+Hugh
 
-Now that I solved my top priority problems (de4x5 failed on 21143-based
-Moto boards and booting from flash works finally), I suppose I'll code
-this out of necessity.  If anybody's got a working board ID framework or
-has any sort of board ID code started for Moto. boards let me know because
-I hate to duplicate effort...
-
-> No hand-waving.  Send me code.  I need to check this against other boards
-> with different IO areas, different register layouts and such.
+On 02-Mar-99 Franz Sirl wrote:
+> At 04:29 02.03.99 , Batmensch wrote:
 > 
-> Please remember, your world of the newer moto boards isn't the entire
-> scope of what I'm trying to support.  So when you get frustrated with me
-> not taking things that are "obvious and easy" fixes please understand that
-> it may not work on other machines.
+>>I'm having a problem building OpenLdap 1.2 on a pre-R5 installation; the
+>>error
+>>seems to be with strdup(); the make complains :
+>>
+>>"In file included from args.c:22:
+>>../../include/ac/string.h:49 macro `strdup' using without args"
+>>
+>>I've been able to build it without error on both LinuxPPC 4 and Linux X86.
+>>Also the build of 1.0.2 that is included with the R5 distribution seems to 
+>>work
+>>properly.
+>>
+>>Anything i can do about this?
 > 
-> I'm not adamantly refusing anyones work, I'm trying to get these things to
-> evolve into a single working bootloader.
+> This is a common problem with glibc-2.1, the str... functions are macros 
+> and so some silly sources break on "extern str...()" declarations.
 > 
-> }First determine Raven or Hawk existence, if it is Raven the following
-> }works:
+> Possible solutions:
+> - correct source
+> - compile with -D__NO_STRING_INLINES
+> - compile with -Os
+> 
+> Franz.
 > 
 
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+----------------------------------
+E-Mail: Batmensch <hcaley@loomer.com>
+Date: 02-Mar-99
+Time: 12:20:50
 
+This message was sent by XFMail
+----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
