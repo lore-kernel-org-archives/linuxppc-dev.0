@@ -1,40 +1,46 @@
-Date: Sun, 21 Feb 1999 22:20:16 +1100
-Message-Id: <199902211120.WAA01557@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: meissner@cygnus.com
-CC: zankel@tarantel.rz.fh-muenchen.de, bh40@calva.net, davidsen@prodigy.com,
-        cort@persephone.cs.nmt.edu, marsmail@globegate.utm.edu,
-        dvdoug@tiac.net, paubert@iram.es, jskov@cygnus.co.uk, hozer@drgw.net,
-        linuxppc-dev@lists.linuxppc.org
-In-reply-to: <19990219085444.A1362@wogglebug.cygnus.com> (message from Michael
-	Meissner on Fri, 19 Feb 1999 08:54:44 -0500)
-Subject: Re: [ppc-dev] Summary: Restructuring Efforts
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <36CCB670.CE42A873@mailserv.rz.fh-muenchen.de> <199902190612.RAA00610@tango.anu.edu.au> <19990219085444.A1362@wogglebug.cygnus.com>
+In-Reply-To: <Pine.LNX.3.95.990220154008.23593A-100000@pacific.pht.com>
+Date: Sun, 21 Feb 1999 13:51:19 +0100
+To: Brad Midgley <brad@pht.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: 601 vs head.S
+Message-Id: <19990221135119.027203@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Meissner <meissner@cygnus.com> wrote:
+On Sat, Feb 20, 1999, Brad Midgley <brad@pht.com> wrote:
 
-> Why do people keep mentioning a second tree, and not using something like a
-> branch off of the main cvs tree?  Within egcs, we use branches for separate
-> development tasks (1.1.x and mainline).  In fact right now, I have my own
-> branch for the PowrerPC compiler changes.
+>without patch: 
+>
+>Welcome to Linux, kernel 2.2.1
+><hang>
+>
+>with patch:
+>
+>Welcome to Linux, kernel 2.2.1
+>started at ...
+>linked at ...
+>fb at...
+>MSR ...
+><hang>
 
-Two reasons, the main one being access control, the secondary one
-being that we may want to have the two trees maintained by different
-people in different places.
+Are you sure that the patch you copied is the only difference between
+those two kernels ? I mean, the first text used to be printed by prom.c
+until I changed it to the second one with my latest patch (the one that
+goes with BootX 1.0.2x)
 
-I don't think having two trees, keeping track of the differences, and
-merging changes from one to another is a big problem.  I have this
-Tk-based tool called `dirdiff' for visualizing the differences between
-up to 5 trees.  If anyone wants to have a look at it, it's in
-ftp://samba.anu.edu.au/pub/linux-pmac/misc/dirdiff.  It's still a
-little rough around the edges and it doesn't have any documentation,
-but it may be useful.
+In both cases, you hang after the early init and before the framebuffer
+is really initialized.
 
-Paul.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
