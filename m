@@ -1,128 +1,101 @@
-Message-Id: <199901101714.SAA00311@piglet.cpu.lu>
-Date: Sun, 10 Jan 1999 18:14:01 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Strange tar hang....
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <369927C8.693A3A43@pop.agri.ch>
+Date: Sun, 10 Jan 1999 23:20:57 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: linux-pmac@samba.anu.edu.au,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: [Fwd: header confusions 2.1.24vs. 2.1.131]
+Content-Type: multipart/mixed; boundary="------------CF9BDBC8C5CE4E58B5969D39"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+This is a multi-part message in MIME format.
+--------------CF9BDBC8C5CE4E58B5969D39
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-Anybody can help with this?
+Well in the meantime I found that this proplem is not unusual..
+Can any body help??
 
-For many kernel versions now, I have problems with tar. On extraction
-of any archive, tar will regularly 'hang', and only continue extraction
-after a few seconds of doing nothing.
+See on the archive search fd_set!!
 
-The symptom does depend on kernel version. 2.1.24 does not show it,
-some old dev kernels did, then around 2.1.1xx it was ok again. Now,
-with late 2.1.12x and 2.2.0preX, the symptom appears again.
+Thanks to  everybody
 
-tar itself is from tar-1.12-1b.ppc.rpm
+Andreas
+--------------CF9BDBC8C5CE4E58B5969D39
+Content-Type: message/rfc822
+Content-Disposition: inline
 
-I tried checking with strace what goes on, and here is what I found:
+Return-Path: <linux-pmac@samba.anu.edu.au>
+Received: from kong.bstc.net (kong.bstc.net [207.239.221.11])
+	by ief.ch (8.9.1/8.9.1) with SMTP id LAA27013
+	for <a.tobler@schweiz.ch>; Sun, 10 Jan 1999 11:31:00 GMT
+Received: (qmail 18080 invoked from network); 10 Jan 1999 12:41:01 -0000
+Received: from samba.anu.edu.au (150.203.164.44)
+  by kong.bstc.net with SMTP; 10 Jan 1999 12:41:01 -0000
+Received: from localhost ([127.0.0.1]:27223 "HELO" ident: "NO-IDENT-SERVICE[2]") by samba.anu.edu.au with SMTP id <12674785-2991>; Sun, 10 Jan 1999 22:30:35 +1100
+Message-Id: <36988FF6.A4E4AB1B@pop.agri.ch>
+Errors-To: listproc-errors@samba.anu.edu.au
+Reply-To: toa@pop.agri.ch
+Originator: linux-pmac@samba.anu.edu.au
+Sender: linux-pmac@samba.anu.edu.au
+Precedence: bulk
+From: Andreas Tobler <toa@pop.agri.ch>
+To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>
+Subject: header confusions 2.1.24vs. 2.1.131
+X-Listprocessor-Version: 6.0c -- ListProcessor by Anastasios Kotsikonas
+X-URL: http://samba.anu.edu.au/listproc
+X-Comment: Discussion of native Linux on PCI Powermacs
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+X-Mailer: Mozilla 4.07 (Macintosh; I; PPC)
+Date: Sun, 10 Jan 1999 22:30:35 +1100
+X-Censor-LoC: -1
+Content-Transfer-Encoding: 7bit
 
-	[this is the end of the previous extracted file]
-	[filedescriptor 3 is the archive (fbset-2.0-pre.tar from Geert)]
-	
-open("fbset-2.0-pre/etc/fb.modes.ATI", O_WRONLY|O_NONBLOCK|O_APPEND|O_CREAT|O_TR
-UNC, 0644) = 4
-write(4, "#\n#   Sample video modes\n# \n#"..., 2560) = 2560
-read(3, "mode\n \n#\n#\t640x480, 100 Hz, "..., 10240) = 10240
-write(4, "mode\n \n#\n#\t640x480, 100 Hz, "..., 10240) = 10240
-read(3, " chars\t\t104 lines\n#\tActive T"..., 10240) = 10240
-write(4, " chars\t\t104 lines\n#\tActive T"..., 9263) = 9263
-close(4)                                = 0
+Hello,
 
-	[the output file is written]
+it comes again, I didn't found a clear solution about my problem. Only a dirty hack.
 
-utime("fbset-2.0-pre/etc/fb.modes.ATI", [99/01/10-17:05:18, 98/07/08-00:08:01]) 
-= 0
-chmod("fbset-2.0-pre/etc/fb.modes.ATI", 0640) = 0
+I tried to compile the ACE package from: www.cs.wustl.edu/~schmidt/ACE.html.
+Under R4 I managed it also now under pre-5, but I'm not happy with the solution.
+The problem has to do with the 'fb_set' struct and its member fds_bits. The
+definition of it is in the select.h/ types.h. In R4 there is a definition of
+the struct in <linux/posix_types.h>
+like this:
 
-	[modification time and mode are set]
+"typedef struct fd_set {
+"			unsigned long fds_bits [__FDSET_LONGS];
+"} __kernel_fd_set;
 
-open("/etc/passwd", O_RDONLY)           = 4
-fstat(4, {st_mode=S_IFREG|0644, st_size=654, ...}) = 0
-mmap(0x7ffff1c8, 0, PROT_NONE, 0x4 /* MAP_??? */|MAP_FIXED|MAP_ANONYMOUS|0x18606
-40, 25560692, 0x1860000) = 0x30012000
-read(4, "root:DYCjOUK.G.u.Y:0:0:root:/roo"..., 4096) = 654
-read(4, "", 4096)                       = 0
-close(4)                                = 0
+in pre-R5 it looks like this (also in <linux/posix_types.h>) :
 
-	[not sure what it does with /etc/passwd here...]
-	[now comes the weird part]
+"typedef struct {  // without the fd_set!!
+"			unsigned long fds_bits [__FDSET_LONGS];
+"} __kernel_fd_set;
 
-munmap(0x30012000, 4096)                = 0
-gettimeofday({915984318, 325776}, NULL) = 0
-getpid()                                = 282
-socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP) = 4
+Changing the pre-5 definition in the R4 definition doesn't help.
 
-	[why is tar opening a socket now?]
-	[anyway, port 888 is not permitted (not root)]
+When I compile it under pre-5 with the latest egcs 1.1.1.c, I get an error
+which complains about fds_bits is not member of the struct fd_set.
+A look at the corresponding code line shows me, that a operation on fds_bits
+is done.
 
-bind(4, {sin_family=AF_INET, sin_port=htons(888), sin_addr=inet_addr("0.0.0.0")}
-, 16) = -1 EACCES (Permission denied)
-ioctl(4, 0x8004667e, 0x7ffff350)        = 0
-sendto(4, "6\23564\0\0\0\0\0\0\0\2\0\1\206\240"..., 56, 0, {sin_family=AF_INET, 
-sin_port=htons(111), sin_addr=inet_addr("127.0.0.1")}, 16) = 56
+Modifying this fds_bits into __fds_bits in code works, the compiler is
+satiesfied. (If the code really works is another question.) 
 
-	[hmm, sending to port 111? portmapper, no?]
-	[this will not work; I don't have portmapper
-	 started]
+My question, what is going wrong and why do the locations and definitions of
+the header files change from 2.1.24 to 2.1.131?
 
-select(1024, [4], NULL, NULL, {5, 0})   = 0 (Timeout)
 
-	[this is where the 'hang' occurs (5 seconds timeout, right?)]
-	[seems to me tar is waiting for a response on fd 4]
+Any hints are welcome
 
-sendto(4, "6\23564\0\0\0\0\0\0\0\2\0\1\206\240"..., 56, 0, {sin_family=AF_INET, 
-sin_port=htons(111), sin_addr=inet_addr("127.0.0.1")}, 16) = 56
+Thanks
+Andreas
 
-	[send again..]
-
-select(1024, [4], NULL, NULL, {0, 0})   = 1 (in [4], left {0, 0})
-
-	[ah, now fd 4 is available for reading???]
-	[ why not the first time?]
-
-recvfrom(4, 0x1861110, 400, 0, 0x7ffff2b8, 0x7ffff31c) = -1 ECONNREFUSED (Connec
-tion refused)
-
-	[sure, portmapper doesn't run.]
-
-close(4)                                = 0
-------------------------------------------------
-
-I don't have the slightest idea why tar is trying to talk to
-portmapper.
-
-Concerning the timeout, it doesn't occur on every attempt to contact
-portmapper. tar does this for every file in the archive, but only a few
-of them (3 out of some 20 attempts) show the timeout.
-
-Could this be a problem in the networking code of the kernel?
-
-Am I the only one seing this?
-
-Any other thoughts?
-
-For the record, I tried with portmapper started; 56 bytes are send to
-portmapper; who answers with 28 bytes. That's all that is talked
-between the two.
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-9, Montee St. Crepin           |    Ask Questions.  Make Mistakes.
-L-1365 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--------------CF9BDBC8C5CE4E58B5969D39--
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
