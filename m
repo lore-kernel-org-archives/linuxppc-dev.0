@@ -1,41 +1,30 @@
-Date: Mon, 8 Mar 1999 08:13:48 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: platinumfb problems
-In-Reply-To: <Pine.LNX.4.03.9903081025140.8012-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.3.96L.990308080845.1015A-100000@unix48.andrew.cmu.edu>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+Cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
+        Troy Benjegerdes <hozer@drgw.net>
+Subject: Re: [Linux SMP FAQ] Info request for SMP PPC systems Linux support
+References: <Pine.LNX.3.96.990307204927.15678A-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+From: "David Mentr\\'e" <David.Mentre@irisa.fr>
+Date: 08 Mar 1999 20:27:12 +0100
+In-Reply-To: Cort Dougan's message of "Sun, 7 Mar 1999 20:52:09 -0700 (MST)"
+Message-ID: <wd8yal74wa7.fsf@parate.irisa.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 8 Mar 1999, Geert Uytterhoeven wrote:
+Cort, Paul and Troy, thanks for your answers. A (rather) short PPC
+section has been added into the FAQ (v0.53). Let me know if you have
+further info.
 
->   - To pass options to a specific frame buffer device:
-> 
-> 	video=fbdev:opt1:val1
-> 	video=fbdev:opt1:val1,opt2:val2
-> 	video=fbdev:opt1:val1,opt2:val2,opt3:val3
+  http://www.irisa.fr/prive/dmentre/smp-faq/smp-faq-6.html
 
-That's too bad. That means I'd remembered correctly.
-
-Using the cmdline "root=/dev/sdb5 video=platinumfb:vmode:17,cmode:8" (from
-/proc/cmdline), Linux starts in screwed up palette mode, which would seem to
-indicate 16bit color (I'm running X great in 8bit, but trying to use 16bit
-makes for an annoying palette).
-
-It seems that with platinumfb, 16bit color is wrong in both console and X.
-'vmode 17 8' in console and 'startx -- -depth 8' make the colors sane again.
-
->From /var/log/dmesg:
-Monitor sense value = 0x60b, using video mode 17 and color mode 1.
-
-Color mode 1, eh?
-
--Hollis
-
+Regards,
+d.
+-- 
+ David.Mentre@irisa.fr -- http://www.irisa.fr/prive/dmentre/
+ Linux SMP FAQ: http://www.irisa.fr/prive/dmentre/smp-faq/
+ Opinions expressed here are only mine.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
