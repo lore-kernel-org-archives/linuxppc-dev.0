@@ -1,71 +1,142 @@
-Message-ID: <37E180D6.770194C3@ctam.com.au>
-Date: Fri, 17 Sep 1999 09:44:23 +1000
-From: Brendan Simon <bsimon@ctam.com.au>
-Reply-To: bsimon@ctam.com.au
-MIME-Version: 1.0
-CC: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Cross compilation for MPC860
-References: <19990916125231.12806.rocketmail@web601.yahoomail.com> <37E13540.1A410F5C@broadlink.com>
-Content-Type: text/plain; charset=us-ascii
+To: sebastien_tadeoni@yahoo.fr (sibastien tadioni)
+Date: Fri, 17 Sep 1999 10:23:15 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <19990916125231.12806.rocketmail@web601.yahoomail.com> from "sibastien tadioni" at Sep 16, 99 02:52:31 pm
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <19990917002315.B636D7B8@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Scott Wood wrote:
+=?iso-8859-1?q?s=E9bastien=20tad=E9oni?= writes:
+> I have no problem for installing binutils-2.2.1.0.19a.
+> But during the make of egcs-core-1.1.2, some command like
+> 'powerpc-linux-ar' were unknown.
 
-> > During the make zImage I get the following errors:
-> >
-> > ppc_ksyms.c:71:'isa_io_base' undeclared here (not in a fonction)
-> >
-> > ppc_ksyms.c:71:'initializer element for '--ksymtab_isa_io_base.value'
-> > is not constant,
-> >
-> > And the same thing with the variable pci_dram_offset.
-> >
-> > Perhaps is there a configuration problem or I didn't install correctly
-> > the powerpc-linux environment for cross development?
->
-> Your cross-compile environment is good for building kernels.  This is a kernel
-> configuration issue.  I got the same isa_io_base error building on a PowerMac
-> (which doesn't have ISA) until I enabled SCSI support (?!?!?).  For my MPC850 build
-> I commented out EXPORT_SYMBOL(isa_io_base); and also isa_mem_base and pci_dram_offset
-> in arch/ppc/kernel/ppc_ksyms.c and I was able to successfully build a kernel without SCSI.
-> Note that the 2.2.5-embedded kernel compiles in ADB support whether you configured for
-> it or not (correct me if I'm wrong, but that has been my experience so far), so I
-> commented out L_OBJS and LX_OBJS in drivers/macintosh/Makefile and it builds without ADB.
+Any particular reason for using old versions of binutils & egcs?
 
-I added #include "pci.h" after all the system includes.  This was an early hack but I am sure
-it is a configuration problem.  The best way is to choose the minimum configuration items.
-You will find if you include serial and serial-console support, then you will get the isa
-variable problems.  Do not choose any serial settings.  The embedded stuff enables serial
-console (genearally on SMC1) by default.
+My suggestion is that if you're just starting out, now is the best time to
+make sure you're using the latest gcc (2.95.1) and binutils. You have to make
+a tiny mod to the gcc specs file if you use binutils 2.9.1, because the name of
+the linker emulation has changed since the last binutils release. I'm currently
+using the binutils-990809 snapshot. Haven't actually run any code it produces
+yet though.
+
+Anyway, here's the complete list of problems I had building the 2.2.5 snapshot
+for an 860T board. All these are fixed in the 2.3.18 snapshot, but you may not
+want to be on the bleeding edge yet:
+
+The FEC driver fell through the cracks changing request_irq to request_8xxirq:
 
 
-> > On top of that the /usr/local/powerpc_linux/include directory is empty
-> > so that I can't make the ln -s with the include/linux and include/asm
-> > directories(in my linux sources directory) before I want to build the
-> > LibC.
->
-> Mine is empty too, and I can build kernels fine, but I get lots of errors trying
-> to build anything else.  Instead of fussing with it (I don't know _why_ the builds
-> fail anyway) I got a PowerMac, loaded YellowDog Linux, and all is well :-)
+*** arch/ppc/8xx_io/fec.c.dist	Wed Aug 11 12:56:00 1999
+--- arch/ppc/8xx_io/fec.c	Wed Aug 11 12:56:27 1999
+***************
+*** 981,989 ****
+  	/* Install our interrupt handlers.  The 860T FADS board uses
+  	 * IRQ2 for the MII interrupt.
+  	 */
+! 	if (request_irq(FEC_INTERRUPT, fec_enet_interrupt, 0, "fec", dev) != 0)
+  		panic("Could not allocate FEC IRQ!");
+! 	if (request_irq(SIU_IRQ2, mii_link_interrupt, 0, "mii", dev) != 0)
+  		panic("Could not allocate MII IRQ!");
+  
+  	dev->base_addr = (unsigned long)fecp;
+--- 981,989 ----
+  	/* Install our interrupt handlers.  The 860T FADS board uses
+  	 * IRQ2 for the MII interrupt.
+  	 */
+! 	if (request_8xxirq(FEC_INTERRUPT, fec_enet_interrupt, 0, "fec", dev) != 0)
+  		panic("Could not allocate FEC IRQ!");
+! 	if (request_8xxirq(SIU_IRQ2, mii_link_interrupt, 0, "mii", dev) != 0)
+  		panic("Could not allocate MII IRQ!");
+  
+  	dev->base_addr = (unsigned long)fecp;
 
-I cross-compile from an x86-linux host to a powerpc-linux target.  In this environment I have
-installed the compiler to /usr/local/gcc and the powerpc-linux specific stuff goes in
-/usr/local/gcc/powerpc-linux.  I made symbolic links from
-/usr/local/gcc/powerpc-linux/include/linux to <linux-src-path>/include/linux.  This worked
-for me.
 
-I have not used a Mac for development (yet).  If your compiler is /usr/bin, then you will
-probably need to make a symbolic link from /usr/powerpc-linux/include/linux to
-<linux-src-path>/include/linux.  Alternatively, you can use -I<linux-src-path>/include when
-building your applications.
+On similar lines, kernel/ksyms.c includes an EXPORT_SYMBOL of request_irq
+(which no longer exists).
 
-I assume that you have also built glibc for powrepc-linux if you are cross-compiling, and
-installed them in $prefix/$target (eg. /usr/local/gcc/powerpc-linux/).
+The Makefile in arch/ppc/kernel includes openpic.o, i8259.o and pmac_pic.o
+whenever CONFIG_APUS isn't set; even though most other platforms don't want
+them either.
+  
+drivers/char/Makefile includes pc_keyb.o and defkeymap.o whenever the ARCH is
+not m68k, which means they get included in all embedded 8xx builds.
 
-Brendan Simon.
+drivers/macintosh/Makefile includes via-cuda.o et al whenever CONFIG_MBX is
+not defined. I changed it like this:
 
+*** drivers/macintosh/Makefile.dist	Tue Aug 10 16:07:44 1999
+--- drivers/macintosh/Makefile	Tue Aug 10 16:25:03 1999
+***************
+*** 15,21 ****
+  L_TARGET := macintosh.a
+  M_OBJS   :=
+  
+! ifndef CONFIG_MBX
+  L_OBJS   := via-cuda.o macio-adb.o via-pmu.o mediabay.o
+  LX_OBJS  := adb.o
+  endif
+--- 15,21 ----
+  L_TARGET := macintosh.a
+  M_OBJS   :=
+  
+! ifdef CONFIG_PMAC
+  L_OBJS   := via-cuda.o macio-adb.o via-pmu.o mediabay.o
+  LX_OBJS  := adb.o
+  endif
+
+
+
+There seems to be a typo in net/core/dev.c:
+
+*** /tmp/linux/net/core/dev.c	Fri Apr  9 08:40:36 1999
+--- embedded-2.2.5/net/core/dev.c	Tue Aug 10 18:14:35 1999
+***************
+*** 1949,1955 ****
+  	arcnet_init();
+  #endif
+  #if defined(CONFIG_8xx)
+! #ifdef CONFIG_860T
+  	fec_enet_init();
+  #else
+          cpm_enet_init();
+--- 1949,1955 ----
+  	arcnet_init();
+  #endif
+  #if defined(CONFIG_8xx)
+! #ifdef CONFIG_MPC860T
+  	fec_enet_init();
+  #else
+          cpm_enet_init();
+
+Lots of the EXPORT_SYMBOLs in arch/ppc/kernel/ppc_ksyms.c caused me grief;
+I had to wrap isa_io_base, isa_mem_base and pci_dram_offset in
+#ifdef CONFIG_PCI. I #if 0'd out _prep_type and ucSystemType, and all of:
+
+  EXPORT_SYMBOL(adb_request);
+  EXPORT_SYMBOL(adb_autopoll);
+  EXPORT_SYMBOL(adb_register);
+
+  EXPORT_SYMBOL(pmu_request);
+  EXPORT_SYMBOL(pmu_send_request);
+  EXPORT_SYMBOL(pmu_poll);
+
+  EXPORT_SYMBOL(find_devices);
+  EXPORT_SYMBOL(find_type_devices);
+  EXPORT_SYMBOL(find_compatible_devices);
+
+  EXPORT_SYMBOL(feature_set);
+  EXPORT_SYMBOL(feature_clear);
+  EXPORT_SYMBOL(feature_test);
+
+  EXPORT_SYMBOL(device_is_compatible);
+
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
