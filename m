@@ -1,15 +1,34 @@
-Message-ID: <3E3D972A.3060105@bluewin.ch>
-Date: Sun, 02 Feb 2003 23:09:46 +0100
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23643@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: TFTP not able to find file???
+Date: Sun, 2 Feb 2003 14:28:27 -0800 
 MIME-Version: 1.0
-To: brian.auld@adic.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: TFTP not able to find file???
-References: <995FF289C9D69747A09E42992644595405B23642@penguin.adic.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+Wolfgang,
+
+That was it. Thanks. I needed that sym link "ln -s . tftpboot" to get it to
+work. Thanks a million.
+
+Wolfgang Denk:
+
+Might want to make a note to add that clip to section 3.2 "Configuration of
+a TFTP Server" to the "PPCBoot and Embedded Linux Guide" as I don't recall
+seeing it there.
+
+-- Brian
+
+-----Original Message-----
+From: Wolfgang Grandegger [mailto:wolfgang.grandegger@bluewin.ch]
+Sent: Sunday, February 02, 2003 5:10 PM
+To: brian.auld@adic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: TFTP not able to find file???
 
 Is the TFTP server started with the argument "-s"? Then do:
 
@@ -58,9 +77,12 @@ On 02/02/2003 10:56 PM brian.auld@adic.com wrote:
 >
 > Any ideas on why this isn't working??
 >
-> ***************************************************************************
-> ********************* (a) dhcp config file ********************************
-> ***************************************************************************
+>
+***************************************************************************
+> ********************* (a) dhcp config file
+********************************
+>
+***************************************************************************
 > subnet  172.16.77.0       netmask 255.255.255.0 {
 >         option routers          172.16.77.1;
 >         option subnet-mask      255.255.255.0;
@@ -72,16 +94,22 @@ On 02/02/2003 10:56 PM brian.auld@adic.com wrote:
 >                         option root-path        "/opt/eldk/ppc_4xx";
 >                         option host-name        "ebony1-linux-iSCSI";
 >                         next-server             172.16.77.151;
->                         filename                "/tftpboot/vmlinux.PPCBoot";
+>                         filename
+"/tftpboot/vmlinux.PPCBoot";
 >         }
 > }
-> ***************************************************************************
-> ***************************************************************************
+>
+***************************************************************************
+>
+***************************************************************************
 >
 >
-> ***************************************************************************
-> ********************* (b) tftp directory  *********************************
-> ***************************************************************************
+>
+***************************************************************************
+> ********************* (b) tftp directory
+*********************************
+>
+***************************************************************************
 > [root@ppc-dev logs]# ls -al /tftpboot
 > total 4336
 > drwxrwxrwx    4 root     root         4096 Feb  2 11:08 .
@@ -99,13 +127,18 @@ On 02/02/2003 10:56 PM brian.auld@adic.com wrote:
 > drwxr-xr-x    3 root     root         4096 Jan 30 04:11 X86PC
 > -rwxr-xr-x    1 root     root       611872 Feb  1 08:18 zImage.ebony
 > [root@ppc-dev logs]#
-> ***************************************************************************
-> ***************************************************************************
+>
+***************************************************************************
+>
+***************************************************************************
 >
 >
-> ***************************************************************************
-> ********************* (c) ebony serial port *******************************
-> ***************************************************************************
+>
+***************************************************************************
+> ********************* (c) ebony serial port
+*******************************
+>
+***************************************************************************
 > U-Boot 0.2.0 (Jan 31 2003 - 05:12:55)
 >
 > IBM PowerPC 440 Rev. C
@@ -138,8 +171,10 @@ On 02/02/2003 10:56 PM brian.auld@adic.com wrote:
 > Loading: *
 > TFTP error: 'File not found' (1)
 > Starting again
-> ***************************************************************************
-> ***************************************************************************
+>
+***************************************************************************
+>
+***************************************************************************
 >
 >
 > -- Brian
