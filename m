@@ -1,29 +1,38 @@
-Subject: Re: Sync palm on 2.4.x
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: FASSINO Jean-Philippe <jeanphilippe.fassino@rd.francetelecom.com>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <3C177F48.80DD694@rd.francetelecom.com>
-References: <3C177F48.80DD694@rd.francetelecom.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 12 Dec 2001 18:43:15 +0100
-Message-Id: <1008178995.8901.13.camel@pismo>
-Mime-Version: 1.0
+Message-ID: <3C17A868.605B0BED@ualberta.ca>
+Date: Wed, 12 Dec 2001 11:56:40 -0700
+From: Jesse McCrosky <mccrosky@ualberta.ca>
+MIME-Version: 1.0
+To: LinuxPPC Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: link error with jdk-1.3
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2001-12-12 at 17:01, FASSINO Jean-Philippe wrote:
+I just downloaded the the blackdown powerpc port of jdk-1.3.
+Unfortunately there
+seems to be some sort of link error.
 
-> I can't sync palm using irda on PowerBook G3 with kernel 2.4.
+When I try to run java I get the following error.
 
-Are you limiting speed to 57600 bps in /proc/sys/net/irda/max_baud_rate?
-It doesn't work with higher speeds yet.
+/usr/src/j2sdk1.3/jre/bin/ppc/native_threads/java: error while loading
+shared libraries: /usr/src/j2sdk1.3/jre/lib/ppc/classic/libjvm.so:
+symbol __register_frame_info, version GLIBC_2.0 not defined in file
+libc.so.6 with link time reference
 
-You also need a very recent kernel for this...
+I was actually getting a similar error on realpath before, but I hand
+edited the .java_wrapper file to replaace realpath references with
+absolute pathnames, foolishly thinking this would solve my problem...
 
+I am using glibc-2.2.4
+
+Any ideas?
+
+Thanks.
 
 --
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+	jesse McCrosky
+	mccrosky@ualberta.ca
+	GPG Public Key: http://www.ualberta.ca/~mccrosky/public_key.asc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
