@@ -1,38 +1,31 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: AW: Assistance with using /dev/fb0 and No X windows
-Date: Wed, 15 Jan 2003 12:53:09 +0100
-Message-ID: <9367F79C9DBB8147AD58A96C933F008603BD87@men-exch.intra.men.de>
-From: "Klaus Popp" <Klaus.Popp@men.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: "Klaus Popp" <Klaus.Popp@men.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: AW: Assistance with using /dev/fb0 and No X windows 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 15 Jan 2003 12:53:09 +0100."
+             <9367F79C9DBB8147AD58A96C933F008603BD87@men-exch.intra.men.de>
+Date: Wed, 15 Jan 2003 13:04:03 +0100
+Message-Id: <20030115120408.46083C608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+In message <9367F79C9DBB8147AD58A96C933F008603BD87@men-exch.intra.men.de> you wrote:
+>
+> You will find a framebuffer driver for the LynxEM chipset in the ELinOS distribution from SYSGO (www.elinos.com), name drivers/video/smiLynx.c
 
-You will find a framebuffer driver for the LynxEM chipset in the ELinOS distribution from SYSGO (www.elinos.com), name drivers/video/smiLynx.c
+Which version / architecture of the elinos distro?
 
-I was able to run text mode console, Qt/Embedded and X-Windows on top of this driver. However, this driver does not initialize videomode. It requires that the firmware has already setup the videomode correctly.
 
-I have made an application note for this issue
+Wolfgang Denk
 
-http://www.men.de/download/default.asp?prod=21APPN003&lid=
-
-Hope this helps
-
-Mit freundlichen Grüssen / Best Regards
-
-Klaus Popp, Head of Standard-Software Design
-MEN Mikro Elektronik GmbH
-Neuwieder Straße 7
-90411 Nuremberg, Germany
-Phone +49-911-99 33 5-61
-Fax +49-911-99 33 5-99
-E-Mail Klaus.Popp@men.de
-www.men.de
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Programmer's Lament: (Shakespeare, Macbeth, Act I, Scene vii)
+        "That we but teach bloody instructions,
+        which, being taught, return to plague the inventor..."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
