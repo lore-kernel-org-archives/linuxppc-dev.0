@@ -1,52 +1,43 @@
-Date: Wed, 16 Aug 2000 20:03:42 -0700 (PDT)
+Date: Wed, 16 Aug 2000 20:11:01 -0700 (PDT)
 From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: daenzerm@student.ethz.ch
-cc: MkLinux Setup List <mklinux-setup@public.lists.apple.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xlib Question
-In-Reply-To: <399A5D88.1535C44C@relog.ch>
-Message-ID: <Pine.LNX.3.96.1000816200011.30198E-100000@deepspace.mklinux.org>
+To: Frank Jas <frank@jrware.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Signal mask restore anomaly
+In-Reply-To: <200008161925.MAA00373@tallis.jrware.com>
+Message-ID: <Pine.LNX.3.96.1000816200603.30198F-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 16 Aug 2000, Michel Dänzer wrote:
+On Wed, 16 Aug 2000, Frank Jas wrote:
 
-> "David A. Gatwood" wrote:
+> Under certain circumstances, a signal blocked while a
+> signal handler is executing will not be restored.
+
+Hmm... I think I may be seeing something similar to this as well.  It
+could explain some very strange behaviour I'm seeing in my alarm handler.
+
+
+> The following execution sequence leads to the anomalous behavior.
 >
-> > When I'm running a multithreaded app with heavy signal load,
 >
-> ...like Netscape? :)
+> Trigger the SIGTSTP handler with a ^Z
+> While executing the handler, deliver a ^Z and ^C
+> Hit return to return from the handler.
+> Another instance of the SIGTSTP handler should execute.
+> Hit return to return from that instance of the handler.
+> Notice that the SIGINT handler does not execute and should have.
+> Any subsequent SIGINT are apparently blocked.
 
-No, my own program, but... hmm... now that you mention it.  It's
-interesting that almost every problem I've found in my code has been
-reported at some point as a bug in Netscape as well.  Most of them are my
-errors, but it makes me feel a little better knowing that I'm not the only
-one who isn't always careful about calling Xlib functions without proper
-display locking.... ;-)
-
-
-> > xlib messages stop being delivered from xlib to the program, resulting in
-> > XNextEvent stalling.  Most of the time, if you click somewhere in that
-> > window, those events all get delivered at once, sometimes twenty or thirty
-> > at a time.
->
-> I've noticed that Netscape often stalls up/downloads to/from the roaming
-> access server. When I click into the window, it continues. Is that the problem
-> you are seeing as well?
-
-I'm actually seeing the thing not update the window, then when you click
-over to another one, and click back, the thing (most of the time) updates.
+I'm almost sure I'm seeing this.  Except for me, it's a 10/sec. alarm
+handler and a SIGUSR2 that only occurs occasionally.  Major hair rippage.
+Let me know if anybody sees what's up.  Until then, I may stop blocking
+SIGUSR2 and see if that helps one of my two problems.  :-)
 
 
-> This makes me suspect the 4.0.1 server (I don't remember it happening with
-> 4.0), are you using that as well?
-
-No, using Xpmac, from 3.3.6 XFree.
-
-
+Later,
 David
 
 ---------------------------------------------------------------------
