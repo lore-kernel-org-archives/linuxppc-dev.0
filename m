@@ -1,29 +1,59 @@
-From: ghannon@cspi.com
-To: "Rick Hunnicutt" <rhunnicu@getntds.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256B66.0073511F.00@pine.cspi.com>
-Date: Wed, 20 Feb 2002 16:14:02 -0500
-Subject: RE: SCSI error on MVME5100
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: gopi@india.tejasnetworks.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Unable to write to SIMASK
+Date: Wed, 20 Feb 2002 18:27:52 -0300
+References: <Pine.LNX.4.21.0202210030560.24106-100000@tn100build.india.tejasnetworks.com>
+In-Reply-To: <Pine.LNX.4.21.0202210030560.24106-100000@tn100build.india.tejasnetworks.com>
+MIME-Version: 1.0
+Message-Id: <02022018275201.01017@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Can you tell me what you had to do to get the 2.4.11 to build for the
-5100?
-> Was it specifically called out in the .config file as a target? My HHL
-> kernel has a lot of "special" files for the 5100 I didn't see in the
-> standard distribution but now I'm wondering if this is an issue or not.
+On Wednesday 20 February 2002 21:53, gopi@india.tejasnetworks.com wrote:
+> hi..
+>
+>   We have an MPC860T based custom board.
+>
+>   We wanted to control interrupt on one of the irqs by writing to SIMASK
+> register using a small driver with two ioctls which will will do
+> the following:
+>
+>   // WRITE_MASK_IOCTL
+>   simask_write_ioctl(mask) {
+>     cli();
+better use save_flags(flags); cli();
 
-I've exmined the tree that I am working from and it has some files that are
-not in the 2.4.11 distribution.
-I imagine that my ex-coworker was able to get a patch or tarball from
-somewhere.
-They were not in the standard repository from what I can tell.
+>     (volatile unsigned int *)(IMMR + simask_offset) = mask;
+You're missing a * operator here (don't know about your actual source code,
+though...)
 
-Thanks,
-G. Hannon
+>     written_value = *(volatile unsigned int *)(IMMR + simask_offset);
+>     sti();
+better use restore_flags(flags)... and flags must be defined as an unsigned
+long.
+
+>     printk (written_value);
+>   }
+>
+>   // READ_MASK_IOCTL
+>   simask_read_ioctl() {
+>     cli(); // Not really needed..
+>     read_value = *(volatile unsigned int *)(IMMR + simask_offset);
+>     sti();
+>     printk (read_value);
+>   }
+>
+>
+<snip>
+
+
+HTH,
+
+R. Scop
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
