@@ -1,36 +1,23 @@
-Date: Tue, 23 May 2000 20:09:41 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Sergio Brandano <sb@dcs.qmw.ac.uk>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org,
-        stephan@jvc.nl
+Message-Id: <200005231758.SAA19464@copper.dcs.qmw.ac.uk>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Sergio Brandano <sb@dcs.qmw.ac.uk>, linuxppc-dev@lists.linuxppc.org,
+        debian-powerpc@lists.debian.org, stephan@jvc.nl, sb@dcs.qmw.ac.uk
 Subject: Re: Debian pmud package available 
-In-Reply-To: <200005231758.SAA19464@copper.dcs.qmw.ac.uk>
-Message-ID: <Pine.LNX.4.10.10005232000150.28612-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: Message from Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+   of "Tue, 23 May 2000 19:48:29 +0200." <Pine.LNX.4.10.10005231934210.4083-100000@opal.biophys.uni-duesseldorf.de>
+References: <Pine.LNX.4.10.10005231934210.4083-100000@opal.biophys.uni-duesseldorf.de> 
+Date: Tue, 23 May 2000 18:59:12 +0000
+From: Sergio Brandano <sb@dcs.qmw.ac.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  Thank's a lot for making this package. Did you manage to contact
->  Stephan? What about the apmd patch?
+ Thank's a lot for making this package. Did you manage to contact
+ Stephan? What about the apmd patch?
 
-Just what I needed to get half way up to speed with Debian packaging again
-:-)
+ On testing, I'm out of business for a while, as the baby is being
+ visited by the doctor (faulty display).
 
-I've not had an answer from Stephan but I didn't give him any heads-up
-either. The apmd patch seems to be included, it's enabled by the -a option
-to pmud as far as I could see. The fifo (/etc/power/apm) is created
-during installation, so all it should take is adding the -a to the
-PMUD_FLAGS definition in /etc/default/power. I need to document this :-)
-
->  On testing, I'm out of business for a while, as the baby is being
->  visited by the doctor (faulty display).
-
-Speedy recovery for the baby ...
-
-	Michael
-
+ Sergio
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
