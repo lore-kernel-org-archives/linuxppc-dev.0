@@ -1,35 +1,50 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?J=F6rn=20Nettingsmeier?= <nettings@folkwang-hochschule.de>,
-	<linuxppc-dev@lists.linuxppc.org>, Derrik Pates <dpates@dsdk12.net>
-Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
-Date: Wed, 5 Dec 2001 00:12:35 +0100
-Message-Id: <20011204231235.7099@smtp.wanadoo.fr>
-In-Reply-To: <3C0D53A4.E6A2F0DD@folkwang-hochschule.de>
-References: <3C0D53A4.E6A2F0DD@folkwang-hochschule.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200112042332.SAA17067@missioncriticallinux.com>
+From: mod+linuxppc-dev@MissionCriticalLinux.com
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Status of linuxppc support for Galileo GT64260
+Date: Tue, 04 Dec 2001 18:32:12 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->i'm seeing the same, but on 2.4.16-ben0 on a pismo powerbook.
->it does not happen every time, but often enough to be almost
->unusable.
->
->i *think* it gets triggered when i hit a button immediately after
->the screen has blanked. when i wait a couple of seconds until the
->suspend led has started blinking, i get the machine back most of the
->time.
->
->when it dies, the hd comes up, but the screen remains black. i tried
->blind-typing "reboot" in a root shell, but nothing happened. i could
->not ssh into the box from outside. there are no ping echos.
->
+I'm working with older linuxppc sources
+that run on a box designed around
+the Galileo GT64260 and I'm thinking
+about merging forward to the current
+linuxppc code base, so I'm wondering:
+what's the current status of the code
+that got checked in as the official
+PPClinux code for the Galileo GT64260?
 
-Try the latest rsync and tell me if that still happens.
+I'm asking because I recall seeing
+messages on these lists saying that
+code had been checked in with interrupt
+problems, PCI problems, no integrated-Enet
+driver and generally in "needs work"
+condition.  I notice that there is now a
+(strangely familiar) driver included for
+the integrated Enet, but (except for the
+recent exchange about how the GT64260 and
+VT82C686B don't play so nice together) I
+don't find much 64260-related discussion
+here except one terse followup message
+stating that PCI works.
 
-ben.
+So, is anybody using the current code?
+Would I be wrong to interpret the fact
+that it wouldn't compile when I tried it
+today as indication that not much has
+happened since the initial checkin by
+MontaVista?  Are the interrupt problems
+alluded to at the time of that initial
+checkin (could somebody characterize
+them for me?) still an issue?  Does
+the PCI support seem solid?  Anything
+in particular I need to watch out for?
+
+Thanks.
+          Michael O'Donnell
+        Mission Critical Linux
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
