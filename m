@@ -1,34 +1,39 @@
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 From: Trevor Woerner <ppc339@vtnet.ca>
 Reply-To: ppc339@vtnet.ca
 To: linuxppc-dev@lists.linuxppc.org
-Subject: can't write
-Date: Wed, 28 May 2003 23:19:27 -0400
+Subject: Re: lost interrupt
+Date: Wed, 28 May 2003 23:22:59 -0400
+References: <200305262341.59883.ppc339@vtnet.ca>
+In-Reply-To: <200305262341.59883.ppc339@vtnet.ca>
 MIME-Version: 1.0
-Message-Id: <200305282319.27041.ppc339@vtnet.ca>
+Message-Id: <200305282322.59223.ppc339@vtnet.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Now that I can get to the point where I can configure and mount my
-compact flash card I find yet another interesting twist... I can't
-write to the device.
+On May 26, 2003 11:41 pm, Trevor Woerner wrote:
+> I'm getting the dreaded "lost interrupt" whenever the kernel tries to
+> access my onboard CF card.
 
-If I mount it read-only everything is fine. I can read the device, do a
-directory listing, copy thing from it, execute binaries, open files...
-all that nice stuff. But the instant I try to write, things go up in
-smoke.
+It gets a bit stranger, but I think I'm onto something. I'll try to
+confirm this in the next day or so, but it appears on the surface that
+my device doesn't give an interrupt between the transfer of each
+segment in a multi-segment transaction.
 
-I wrote my own test modules to try to isolate this issue so I can study
-it more. My module gives the same results the kernel gets: no matter
-what is written to the device (ATA command 0x30), the entire sector
-always ends up being entirely filled with zeros.
+I enabled the debug statements in 'ide-disk.c' and what I found is that
+sometimes I receive interrupts and Linux is happy, and other times I
+don't. After thinking about it a little bit I believe the times I got
+interrupts were when single segments at a time were being read (ATA
+command 0x20) and when I didn't get interrupts were when multi-segment
+reads (still command 0x20 but with number of sectors > 1) were
+performed.
 
-Whether I write "0xbeef" 256 times or copy one sector (say sector 0) to
-some other place. When I read the newly written sector back, all it
-contains are zeros.
+	Trevor
 
-Anyone seen something like this before?
+kernel: 2.4.20-rc1
+cpu: PPC405gp
+device: SanDisk 16MB CF
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
