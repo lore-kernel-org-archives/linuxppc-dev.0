@@ -1,60 +1,71 @@
-Date: Sat, 22 Mar 2003 22:56:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: ppc: Makefile tidy-up round 2
-Message-ID: <20030322215648.GD15911@mars.ravnborg.org>
-References: <20030320222759.GA12267@mars.ravnborg.org> <20030322215403.GA15911@mars.ravnborg.org> <20030322215552.GB15911@mars.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030322215552.GB15911@mars.ravnborg.org>
+Message-ID: <63228.213.107.143.228.1048441818.squirrel@www.solinno.co.uk>
+Date: Sun, 23 Mar 2003 17:50:18 -0000 (GMT)
+Subject: [PATCH] Fix memory size not being passed to kernel from prep boot loader
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: <paulus@samba.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_20030323175018_73009"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-# This is a BitKeeper generated patch for the following project:
-# Project Name: Linux kernel tree
-# This patch format is intended for GNU patch command version 2.5 or higher.
-# This patch includes the following deltas:
-#	           ChangeSet	1.874   -> 1.875
-#	arch/ppc/boot/simple/Makefile	1.35    -> 1.36
-#	arch/ppc/boot/common/dummy.c	1.2     ->         (deleted)
-#	               (new)	        -> 1.1     arch/ppc/boot/simple/dummy.c
-#
-# The following is the BitKeeper ChangeSet Log
-# --------------------------------------------
-# 03/03/22	sam@mars.ravnborg.org	1.875
-# ppc: boot/common/dummy.c deleted
-# --------------------------------------------
-#
-diff -Nru a/arch/ppc/boot/common/dummy.c b/arch/ppc/boot/common/dummy.c
---- a/arch/ppc/boot/common/dummy.c	Sat Mar 22 22:47:19 2003
-+++ /dev/null	Wed Dec 31 16:00:00 1969
-@@ -1,4 +0,0 @@
--int main(void)
--{
--	return 0;
--}
-diff -Nru a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
---- a/arch/ppc/boot/simple/Makefile	Sat Mar 22 22:47:19 2003
-+++ b/arch/ppc/boot/simple/Makefile	Sat Mar 22 22:47:19 2003
-@@ -160,8 +160,7 @@
- MKPREP				:= $(utils)/mkprep
- MKTREE				:= $(utils)/mktree
+------=_20030323175018_73009
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
--$(obj)/dummy.o: $(common)/dummy.c
--	$(CC) -c -o $@ $(common)/dummy.c
-+targets := dummy.o
+Hi,
 
- $(obj)/zvmlinux: $(OBJS) $(LIBS) $(boot)/ld.script $(images)/vmlinux.gz \
- 		$(obj)/dummy.o
-diff -Nru a/arch/ppc/boot/simple/dummy.c b/arch/ppc/boot/simple/dummy.c
---- /dev/null	Wed Dec 31 16:00:00 1969
-+++ b/arch/ppc/boot/simple/dummy.c	Sat Mar 22 22:47:19 2003
-@@ -0,0 +1,4 @@
-+int main(void)
-+{
-+	return 0;
-+}
+Current linuxppc_2_4 doesn't work on my 140 because the boot loader isn't
+passing in the memory size.  This patch fixes that.
+
+Please apply.
+
+Cheers,
+
+Leigh.
+
+
+
+
+
+------=_20030323175018_73009
+Content-Type: application/octet-stream; name="prep_memsize.diff"
+Content-Disposition: attachment; filename="prep_memsize.diff"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtdXJOWCAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBjXzJfNC1wcmV2L2FyY2gvcHBj
+L2Jvb3QvcHJlcC9taXNjLmMgbGludXhwcGNfMl80LWxvY2FsL2FyY2gvcHBjL2Jvb3QvcHJlcC9t
+aXNjLmMKLS0tIGxpbnV4cHBjXzJfNC1wcmV2L2FyY2gvcHBjL2Jvb3QvcHJlcC9taXNjLmMJMjAw
+My0wMy0yMyAxNToyNDo1My4wMDAwMDAwMDAgKzAwMDAKKysrIGxpbnV4cHBjXzJfNC1sb2NhbC9h
+cmNoL3BwYy9ib290L3ByZXAvbWlzYy5jCTIwMDMtMDMtMjMgMTc6MTg6MTkuMDAwMDAwMDAwICsw
+MDAwCkBAIC0yMTQsNiArMjE0LDkgQEAKIAkJcHV0cygiXG4iKTsKIAl9CiAKKwkvKiBBc3N1bWUg
+MzJNIGluIHRoZSBhYnNlbmNlIG9mIG1vcmUgaW5mby4uLiAqLworCVRvdGFsTWVtb3J5ID0gMzIg
+KiAxMDI0ICogMTAyNDsKKwogCWlmIChyZXNpZHVhbCkgewogCQkvKgogCQkgKiBUZWxsIHRoZSB1
+c2VyIHdoZXJlIHRoZSByZXNpZHVhbCBkYXRhIGlzLgpAQCAtMjc0LDEzICsyNzcsMTMgQEAKIAkJ
+CQlzdGFydF9tdWx0aSA9IDE7CiAJCX0KIAkJbWVtY3B5KGhvbGRfcmVzaWR1YWwscmVzaWR1YWws
+c2l6ZW9mKFJFU0lEVUFMKSk7CisKKwkJaWYgKHJlc2lkdWFsLT5Ub3RhbE1lbW9yeSkKKwkJCVRv
+dGFsTWVtb3J5ID0gcmVzaWR1YWwtPlRvdGFsTWVtb3J5OwogCX0gZWxzZSB7CiAJCS8qIFRlbGwg
+dGhlIHVzZXIgd2UgZGlkbid0IGZpbmQgYW55dGhpbmcuICovCiAJCXB1dHMoIk5vIHJlc2lkdWFs
+IGRhdGEgZm91bmQuXG4iKTsKIAotCQkvKiBBc3N1bWUgMzJNIGluIHRoZSBhYnNlbmNlIG9mIG1v
+cmUgaW5mby4uLiAqLwotCQlUb3RhbE1lbW9yeSA9IDB4MDIwMDAwMDA7Ci0KIAkJLyoKIAkJICog
+VGhpcyBpcyBhICdiZXN0IGd1ZXNzJyBjaGVjay4gIFdlIHdhbnQgdG8gbWFrZSBzdXJlCiAJCSAq
+IHdlIGRvbid0IHRyeSB0aGlzIG9uIGEgUFJlUCBib3ggd2l0aG91dCBPRgpAQCAtMzA2LDkgKzMw
+OSw2IEBACiAJCQlUb3RhbE1lbW9yeSA9IG1lbV9pbmZvWzFdOwogCQkJYnJlYWs7CiAJCX0KLQot
+CQlob2xkX3Jlc2lkdWFsLT5Ub3RhbE1lbW9yeSA9IFRvdGFsTWVtb3J5OwotCQlyZXNpZHVhbCA9
+IGhvbGRfcmVzaWR1YWw7CiAgICAgICAgIH0KIAogCS8qIGFzc3VtZSB0aGUgY2h1bmsgYmVsb3cg
+OE0gaXMgZnJlZSAqLwpAQCAtNDI0LDYgKzQyNCwxMSBAQAogCQkJc2l6ZW9mKHVuc2lnbmVkIGxv
+bmcpOwogCQlyZWMgPSAoc3RydWN0IGJpX3JlY29yZCAqKSgodW5zaWduZWQgbG9uZylyZWMgKyBy
+ZWMtPnNpemUpOwogCisgICAgICAgICAgICAgICAgcmVjLT50YWcgPSBCSV9NRU1TSVpFOworICAg
+ICAgICAgICAgICAgIHJlYy0+ZGF0YVswXSA9IFRvdGFsTWVtb3J5OworICAgICAgICAgICAgICAg
+IHJlYy0+c2l6ZSA9IHNpemVvZihzdHJ1Y3QgYmlfcmVjb3JkKSArIHNpemVvZih1bnNpZ25lZCBs
+b25nKTsKKyAgICAgICAgICAgICAgICByZWMgPSAoc3RydWN0IGJpX3JlY29yZCAqKSgodW5zaWdu
+ZWQgbG9uZylyZWMgKyByZWMtPnNpemUpOworCiAJCXJlYy0+dGFnID0gQklfQ01EX0xJTkU7CiAJ
+CW1lbWNweSggKGNoYXIgKilyZWMtPmRhdGEsIGNtZF9saW5lLCBzdHJsZW4oY21kX2xpbmUpKzEp
+OwogCQlyZWMtPnNpemUgPSBzaXplb2Yoc3RydWN0IGJpX3JlY29yZCkgKyBzdHJsZW4oY21kX2xp
+bmUpICsgMTsK
+
+------=_20030323175018_73009--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
