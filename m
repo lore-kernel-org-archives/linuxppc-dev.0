@@ -1,31 +1,38 @@
-From: ajay.kunnath@exgate.tek.com
-Message-ID: <21F9768AF088D211BF1C0008C71E5786011B7913@ap-bang-m02.india.tek.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Help with MPC port
-Date: Mon, 17 Jul 2000 09:07:11 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200007171653.SAA16824@denx.local.net>
+To: ajay.kunnath@exgate.tek.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Help with MPC port 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 17 Jul 2000 09:07:11 PDT."
+             <21F9768AF088D211BF1C0008C71E5786011B7913@ap-bang-m02.india.tek.com>
+Date: Mon, 17 Jul 2000 18:53:44 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <21F9768AF088D211BF1C0008C71E5786011B7913@ap-bang-m02.india.tek.com> you wrote:
+>
+> I noticed in the m8xx_tty.c that the first few lines of code try to
+> access the structure immap_t. But, who initializes these structures ?
+> Is it the EPPCbug of MBX ? If so, how do I go about doing similar
+> thing on my proprietary board ?
 
-I am trying to get linux 2.2.13 from montavista running on a
-proprietary MPC860 board.
+It's the CPU who initializes this struc :-)
 
-I loaded the kernel into the RAM using MPCbug. On running it, it
-crashed in the early instructions of serial_init. I have hardcoded
-the board_info values in the mbxboot/head.S file as local_bd_info.
+You see it's used like that: "((immap_t *)IMAP_ADDR)->..."; IMAP_ADDR
+is the (physical) address where the IMMR of your CPU  is  mapped,  so
+you're accessing hardware registers, not some data structures in RAM.
 
-I noticed in the m8xx_tty.c that the first few lines of code try to
-access the structure immap_t. But, who initializes these structures ?
-Is it the EPPCbug of MBX ? If so, how do I go about doing similar
-thing on my proprietary board ?
+Welcome to the world of low level, hardware related programming!
 
+Wolfgang Denk
 
-Thanks,
-Ajay
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Bradley's Bromide: If computers get too  powerful,  we  can  organize
+them into a committee - that will do them in.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
