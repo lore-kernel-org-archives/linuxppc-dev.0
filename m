@@ -1,33 +1,58 @@
 Subject: Re: How to change endian attribute for a memory region
-To: Matt Porter <porter@cox.net>
-Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
-	Michael Meriin <Michael@KSWaves.com>,
+To: "Ralph Blach" <rcblach@us.ibm.com>
+Cc: Matt Porter <porter@cox.net>,
 	linuxppc-embedded@lists.linuxppc.org
 From: "Laurent Mohin" <laurent.mohin@acterna.com>
-Date: Tue, 15 Oct 2002 16:57:56 +0200
-Message-ID: <OFA8D7B9E2.58F185A5-ONC1256C53.0051DE49@eni.wago.de>
+Date: Tue, 15 Oct 2002 17:00:02 +0200
+Message-ID: <OF780A3997.14F8A90A-ONC1256C53.00523F95@eni.wago.de>
 MIME-Version: 1.0
 Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt,
+Ralph,
 
-In fact, after registering my frame buffer driver, my video memory is
-accessed directly by the X server.
-So I can't control the instruction (writew or other) it will use.
-
-Thanks,
+That was the purpose of my question. Has anybody written this IOremap_LE
+function?
 
 Laurent
 
 
 
 
-Matt Porter <porter@cox.net> on 15/10/2002 16:15:46
+"Ralph Blach" <rcblach@us.ibm.com> on 15/10/2002 16:34:14
 
-To:    Laurent Mohin/SE/Wavetek@Global
+To:    Matt Porter <porter@cox.net>
+cc:    linuxppc-embedded@lists.linuxppc.org
+Subject:    Re: How to change endian attribute for a memory region
+
+
+
+
+OK, I know this is absolute HERESY  for all you out there, and would never
+be supported in the kernel tree,
+and probably with very good reasons, but I'll mention it anyway.
+
+ON the 405 and the 440 class processors, there is an endian bit in the TLB
+which would make a 4k region
+little endian.  To use this bit one would have to write an IOremap_LE and
+support the bit in the page table,
+but it could be used.
+
+There are probabley better ways that are more inline with the PPC
+philosophy.
+
+Chip
+
+
+
+Matt Porter <porter@cox.net>@lists.linuxppc.org on 10/15/2002 10:15:46 AM
+
+Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
+
+
+To:    Laurent Mohin <laurent.mohin@acterna.com>
 cc:    Stefan Roese <stefan.roese@esd-electronics.com>, Michael Meriin
        <Michael@KSWaves.com>, linuxppc-embedded@lists.linuxppc.org
 Subject:    Re: How to change endian attribute for a memory region
