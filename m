@@ -1,64 +1,78 @@
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: "Mark A. Greer" <mgreer@mvista.com>,
 	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 19 Mar 2002 16:12:33 EST."
-             <3C97A9C1.EBA150B6@mvista.com>
-Date: Wed, 20 Mar 2002 00:36:30 +0100
-Message-Id: <20020319233635.2E203109F3@denx.denx.de>
+In-reply-to: Your message of "Tue, 19 Mar 2002 16:16:28 MST."
+             <20020319231628.GQ3762@opus.bloom.county>
+Date: Wed, 20 Mar 2002 00:46:57 +0100
+Message-Id: <20020319234702.CA8AA109F3@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <3C97A9C1.EBA150B6@mvista.com> you wrote:
+In message <20020319231628.GQ3762@opus.bloom.county> you wrote:
 >
-> > How about my proposal to replace MEMSIZE and  MEMSTART  with  a  more
-> > general description which allows for _several_ memory areas, probably
-> > of  different type (RAM, ROM, Flash, SRAM, ...), different bus witdth
-> > etc. ?
+> I sort-of remember this too.  For 2.4 I'm not sure if it's better to
+> have a massive ammount of compile time options or not.  Either way we'd
+
+What sort of compile time options? I don't want to have MAC addresses
+built into the kernel images!
+
+> need to change the driver to handle multiple enets, yes?
+
+Only some, like the 8xx. Other  configurations  run  just  fine  with
+several ethernet interfaces.
+
+> > BTW: the structure should probably be extended by one entry  for  the
+> > interface (eth0, eth1, etc...).
 >
-> I think its a good idea but overkill for now isn't it ("now" being 2.4 since
-> its going to change in 2.5)?
-...
-> Can we push this off into 2.5?  I was hoping to keep it fairly simple and
-> just get it done in 2.4.
+> Forcing ethX is a bad idea I think, but we do need a way of saying all
+> of this applies to *this* enet device.
 
-The systems I see shipping in the next 6 months or so will  be  based
-on 2.4 kernel; I think we should define this feature rather sooner or
-later to try it out and get it right.
+Right, probably an index is all we need.
 
-Of course, we can always add this locally, but why not do it now when
-we know it needs to get done?
+> Yes, but we're speaking in terms of GT-64260, which has ns1655x and it's
+> own, but I'm not as clear about having 'em both on.  But, does 8xx not
+> allow for reading of what things are currently set at now or must it be
+> specified?
 
-> But every board/driver can still use the console=xxx on the cmd line, right?
-> Can we get by with that?
+But isn't this the whole idea behind the new  interface  -  to  allow
+certain  things to be done just ONCE, in ONE place, and not again and
+again and again in several instances of  the  same  code,  with  good
+chances that at least one instance is buggy?
 
-The command line is pretty limited in leght, and there are many  more
-"interesting"  things  you want to pass to proprietary drivers etc. I
-rather had common stuff like this somewhere else...
+Of course I can retrieve this information in some CPU and  eventually
+board  dependend  way  somehow - but why should I bother to implement
+this code when the information is already available?
 
-> The only reason I'm pushing for simple bi_recs now is because I expect all
-> this to change significantly in 2.5.  If you want the 2.5 way back-ported to
-> 2.4 and everyone agrees that's what should be done, then I agree we should do
-> it the "right way" now.  Otherwise, I say do the minimum now and do it right
-> in 2.5.
+With the same argiment we could drop the MEMSIZE record - the  kernel
+can  detect the memory size as well. Not that I think that would be a
+good idea...
 
-If you ask for my opinion: let's do it right NOW, and stick with this
-in 2.5, rather than wasting some work  now  for  a  preliminary  ugly
-solution  which we think will get thrown avay (which might not happen
-as expected), and then spending even more work to do it right.
+And BTW: I'm not talking about 8xx systems only.
 
-If you know what  the  final  version  will  look  like,  then  let's
-implement this now. And be done with it.
+> > You are wrong. We'll switch faster than you seem to think.
+>
+> I know you'll switch when it's all set and working.
+
+Then, or before :-)
+
+> There's a time and place for everything, and it's called the development
+> line.  Big rewrites/changes are supposed to be done there and maybe
+> backported.
+
+Ummm... someone called 2.5 "fs-eating-non-compiling-crap,  so  ignore
+that for a few months". Guess who?
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Above all else -- sky.
+"I say we take off; nuke the site from orbit. It's the only way to be
+sure."                                  - Corporal Hicks, in "Aliens"
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
