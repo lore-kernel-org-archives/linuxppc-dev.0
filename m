@@ -1,43 +1,29 @@
-Date: Wed, 12 Jul 2000 07:16:04 -0700
+Date: Wed, 12 Jul 2000 07:17:45 -0700
 From: Matt Porter <mmporter@home.com>
-To: Adrian Cox <apc@agelectronics.co.uk>
+To: Michael Lundkvist <ml@epact.se>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Going from 2.2.12 to 2.2.17pre10
-Message-ID: <20000712071604.C28921@cx258813-a.chnd1.az.home.com>
-References: <20000709222943.A19611@cx258813-a.chnd1.az.home.com> <Pine.HPX.4.10.10007101412580.9548-100000@gra-ux1.iram.es> <20000710225720.A23538@cx258813-a.chnd1.az.home.com> <396AEAC7.D8CACCB2@agelectronics.co.uk>
+Message-ID: <20000712071745.D28921@cx258813-a.chnd1.az.home.com>
+References: <Pine.HPX.4.10.10007061912350.21326-100000@gra-ux1.iram.es> <qp66qji2pq.fsf@erbium.epact.se> <20000708162915.A11060@cx258813-a.chnd1.az.home.com> <qpu2dz6ddh.fsf@erbium.epact.se> <20000709222943.A19611@cx258813-a.chnd1.az.home.com> <qp66qb5x4o.fsf@erbium.epact.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <396AEAC7.D8CACCB2@agelectronics.co.uk>; from apc@agelectronics.co.uk on Tue, Jul 11, 2000 at 10:37:11AM +0100
+In-Reply-To: <qp66qb5x4o.fsf@erbium.epact.se>; from ml@epact.se on Wed, Jul 12, 2000 at 02:52:23PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jul 11, 2000 at 10:37:11AM +0100, Adrian Cox wrote:
->
-> Matt Porter wrote:
-> > Back to original point, I'm not against using a residual data or
-> > device tree if it doesn't have to have dozens of fixups applied.
-> > I just don't see that coming out of the proprietary hardware/software
-> > houses to use their broken data...
->
-> Residual data is useful for things like finding the memory size, and for
-> chips designed inside Apple. For almost everything else Linux already
-> contains a device tree, built by PCI probing when the kernel boots^*. I
-> don't see much need for a parallel, architecture specific, device tree.
+On Wed, Jul 12, 2000 at 02:52:23PM +0200, Michael Lundkvist wrote:
+> Matt Porter <mmporter@home.com> writes:
+> > >
+> > > Getting those changes into PPCBUG would be great.
+> >
+> > All you need is a big customer of MCG's to push them to do it.  Money
+> > is a powerful motivator.
+> >
+> OK. Then I'll try the official channels. Is there a name for these
+> changes so that people know what I'm asking for?
 
-Whoa...you mentioned the key phrase here...it's really only useful or
-required for chips design inside Apple where you can't get documentation.
-"Residual data" and defined in the PReP spec is only found on PReP systems
-where all the hardware is fully documented so it's easy to size the
-memory by other means.  It's not that hard to read board registers or
-the memory controller setup.
-
-I can see why the Mac folks have to deal with the broken OF device tree.
-
-A architecture specific (PPC) device tree (or residual data, if you will)
-would be part of a "standard" OpenSource firmware project.  It's only
-use would be to provide information for board bringup, etc.  It has it's
-advantages and disadvantages...
+The "PReP residual data ROMBOOT" changes...or something like that.
 
 --
 Matt Porter
