@@ -1,38 +1,50 @@
-Message-Id: <20010827062142.Postino-014504@smtp01.highway.ne.jp>
-Date: Mon, 27 Aug 2001 06:21:42 +0900
-To: mlan@cpu.lu
+Date: Sun, 26 Aug 2001 20:04:04 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Keith Owens <kaos@ocs.com.au>
 Cc: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: Call for help: altivec-enabled vlc
-In-Reply-To: <200108261754.TAA02887@piglet.grunz.lu>
-References: <20010827013941.Postino-000926@smtp01.highway.ne.jp>
- <200108261754.TAA02887@piglet.grunz.lu>
-MIME-Version: 1.0
+Subject: Re: 2.4.9-ac12 ppc ftr_fixup
+Message-ID: <20010826200404.E1481@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010826191536.C1481@cpe-24-221-152-185.az.sprintbbd.net> <20783.998880477@kao2.melbourne.sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20783.998880477@kao2.melbourne.sgi.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Michel Lanners <mlan@cpu.lu>
-To: k_fukui@highway.ne.jp
-Subject: Re: Call for help: altivec-enabled vlc
-Date: Sun, 26 Aug 2001 19:54:13 +0200 (CEST)
-cc: linuxppc-dev@lists.linuxppc.org
+[cc's trimmed]
 
-> On  27 Aug, this message from Kaoru Fukui echoed through cyberspace:
-> >> I've sat down a bit ;-) and came up with an Altivec-optimised IDCT
+On Mon, Aug 27, 2001 at 12:47:57PM +1000, Keith Owens wrote:
+> On Sun, 26 Aug 2001 19:15:36 -0700,
+> Tom Rini <trini@kernel.crashing.org> wrote:
+> >On Mon, Aug 27, 2001 at 10:27:22AM +1000, Keith Owens wrote:
 > >
-> > I don't know much.
-> > Altivec-gcc need "-fvec" as gcc option.
+> >> 2.4.9-ac12 has new ppc code for CPU feature fixups.  The ftr_fixup code
+> >> only handles entries that are built into the kernel.  timex.h defines
+> >> get_cycles() using ftr_fixup and get_cycles() is used all over the
+> >> place, including in modules.  AFAICT we need to add modutils support
+> >> for ftr_fixup.
+> >
+> >Er, eh?  Excuse me if I'm being obtuse, but where is the problem?  The fixup
+> >stuff is closely tied to bootup and what processor we happen to be on
+> >at the time.  So we won't be trying to fixup any code in a module...
 >
-> It's not altivec-enabled gcc; just plain asm which the assembler knows
-> about (if you pass the right option which I'm doing ;-).
->
+> do_cpu_ftr_fixups() replaces unsupported code with NOP, based on the
+> table from __start___ftr_fixup to __stop___ftr_fixup which contains all
+> the data marked as section(__ftr_fixup).  Fine, but it only handles
+> section __ftr_fixup data in the kernel, it does not write NOP over
+> __ftr_fixup data in modules.  So any code marked as section __ftr_fixup
+> in a module executes unchanged.  Unless I am missing something, that is
+> a problem.
 
-But gcc/config/rs6000.h doesn't have vector registor name.
-if it's used gas,isn't it inline asm?
+After a bit more digging, I'm pretty sure it's not much of a problem.
+get_cycles seems to be either a) SMP or b) DRM or c) arcnet related.
+a and b aren't an issue for 601 (no SMP and possible but unlikely that
+DRM will work on a machine w/ a 601).  If there's an arcnet PCI card, I suppose
+it could be an issue then...  Anyhow...
 
-Kaoru
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
