@@ -1,54 +1,42 @@
-Date: Sat, 29 Jul 2000 19:54:26 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: bogus dmasound.o module (was: Re: 2.4.0-test4 success (Re: affs))
-In-Reply-To: <20000729164011.A11090@suse.de>
-Message-ID: <Pine.LNX.4.10.10007291951200.3886-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a01b5a8c8c70822@[24.66.67.194]>
+In-Reply-To: <39831703.185AB483@embeddededge.com>
+References: <39821DD7.ED0DA0A2@embeddededge.com>; from dan@netx4.com on	
+ Fri, Jul 28, 2000 at 07:57:11PM -0400
+ <39821DD7.ED0DA0A2@embeddededge.com>
+ <v04003a00b5a8c0b923e3@[24.66.67.194]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 29 Jul 2000 12:56:40 -0500
+To: Dan Malek <dan@netx4.com>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: CONFIG_PPC != Mac
+Cc: Tom Rini <trini@kernel.crashing.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 29 Jul 2000, Olaf Hering wrote:
-> can someone check if the ./include/linux/soundcard.h is correct?
-> This looks bogus to us:
+At 12:40 PM -0500 7/29/2000, Dan Malek wrote:
+>Tony Mantler wrote:
 >
-> +178
-> /*
->  * Some big endian/little endian handling macros
->  */
+>> Add a CONFIG_PMAC maybe? I don't really object to sharing CONFIG_MAC with
+>> PPC, except that it would be easy to assume that CONFIG_MAC == CONFIG_MAC
+>> && __powerpc__, and vice versa CONFIG_MAC == CONFIG_MAC && __m68k__.
 >
-> #if defined(_AIX) || defined(AIX) || defined(sparc) || defined(HPPA) ||
-> defined(PPC)
-> /* Big endian machines */
-> #  define _PATCHKEY(id) (0xfd00|id)
-> #  define AFMT_S16_NE AFMT_S16_BE
-> #else
-> #  define _PATCHKEY(id) ((id<<8)|0xfd)
-> #  define AFMT_S16_NE AFMT_S16_LE
-> #endif
->
->
-> Is PPC really defined? At least (sparc) is wrong and should be
-> __sparc__. PPC should proably be __powerpc__.
-> It is from current benh tree.
+>Ahhhhh....I get it.  Apologies to the m68k folks....
+>OK....let me think about this and work on some alternatives.  So, it
+>is OK to assume CONFIG_MAC implies m68k?
 
-At least drivers/sound/dmasound/ doesn't refer to AFMT_S16_NE or _PATCHKEY.
+At the moment, it appears yes. via-cuda.c is a good example of this. On the
+other hand, valkyriefb.c uses __mc68000 instead, so go fig.
 
-It may be the cause of many endianness problems, though, if any userspace
-application assumes AFMT_S16_NE is always the native format.
 
-Gr{oetje,eeting}s,
+Cheers - Tony :)
 
-						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Tony Mantler       Renaissance Nerd Extraordinaire     nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada                     http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
