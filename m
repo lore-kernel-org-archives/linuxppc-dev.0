@@ -1,148 +1,184 @@
-Date: Mon, 29 Apr 2002 17:34:34 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [trini@kernel.crashing.org: [PATCH] Allow openpic_init to set all combos of polarity and sense]
-Message-ID: <20020430003434.GA21482@opus.bloom.county>
+Date: Mon, 29 Apr 2002 18:40:01 -0700
+From: andrew may <acmay@acmay.homeip.net>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH]for multiple 4xx boards
+Message-ID: <20020429184001.D6106@ecam.san.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="rJwd6BRFiFCcLxzm"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I thought I sent this here too, but oh well
+--rJwd6BRFiFCcLxzm
+Content-Type: text/plain; charset=us-ascii
 
------ Forwarded message from Tom Rini <trini@kernel.crashing.org> -----
+This is a first cut on just getting things to compile, link and boot
+correctly to support multiple 405 board types in the same kernel.
 
-Date: Mon, 29 Apr 2002 12:42:40 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] Allow openpic_init to set all combos of polarity and sense
+The basic idea is to change the functions in ppc4xx_setup so they
+are defaults or helper functions. So ppc4xx_setup does not make calls
+to board_xxx functions instead the board functions are called from
+ppc_md.xx directly and they may call ppc4xx functions if needed.
 
+The intention is that things can still be build for just one board
+if wanted, but some things will have to change in each board file.
+The walnut.c is at least done but I can't test the other so I would
+prefer for someone else to do/test those.
 
-The following patch adds support for telling open_pic.c not just the
-sense (edge or level) of an IRQ but the polarity as well.  After
-Paul's cleanup of the code (which killed the overloading of
-OpenPIC_InitSenses and added openpic_set_sources()) this problem finally
-showed up on hardhware which previously worked (by luck?).  What we do
-now is to define that bit 0x1 of the table is for sense (0 for edge, 1
-for level) and bit 0x2 of the table is for polarity (0 for negative, 1
-for positive).  This does mean that all tables currently in _devel will
-be broken, but I suspect that many, and possibly all of them are
-broken right now and need to be updated to use openpic_set_sources().
+The multi405.c file will also switch the OpenBIOS bd_t stucture
+to a PPCBoot bd_t struct so the same build can support both the
+OpenBIOS and PPCBoot. You still need to do both the zImage and
+pImage though.
 
-An offshoot of this patch is that in openpic_init we no long have to
-have the SIOint special case, since OpenPIC_InitSources[0] can define
-the correct sense/polarity.  Additionally this allows for cascades to be
-on other IRQs (and will cleanup Sandpoint abit).
+The mkimage.wrapper & arch/ppc/kernel/setup.c parts of the patch can
+be ignored. I don't really want the snic.c/h files included yet but
+I have include them as a refrence.
 
-Also, it's possible to define the table in terms of 0-3 still, but I've
-added defines for IRQ_SENSE_xxx and IRQ_POLARITY_xxx so people can make
-things clear.
+We really should be able to get the board type from bootloader but
+right now we just check some things in walnut_setup and snic_probe
+to see if that board type matches.
 
-Comments?
+--rJwd6BRFiFCcLxzm
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="multi405.patch.gz"
+Content-Transfer-Encoding: base64
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+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
+XFPxbpIMBby/A7LYynW+ZQAA
 
-===== arch/ppc/kernel/open_pic.c 1.50 vs edited =====
---- 1.50/arch/ppc/kernel/open_pic.c	Wed Apr 24 10:15:11 2002
-+++ edited/arch/ppc/kernel/open_pic.c	Sun Apr 28 09:10:36 2002
-@@ -34,6 +34,11 @@
-
- void* OpenPIC_Addr;
- static volatile struct OpenPIC *OpenPIC = NULL;
-+/*
-+ * We define OpenPIC_InitSenses table thusly:
-+ * bit 0x1: sense, 0 for edge and 1 for level.
-+ * bit 0x2: polarity, 0 for negative, 1 for positive.
-+ */
- u_int OpenPIC_NumInitSenses __initdata = 0;
- u_char *OpenPIC_InitSenses __initdata = NULL;
- extern int use_of_interrupt_tree;
-@@ -370,15 +385,8 @@
-
- 	openpic_set_priority(0xf);
-
--	/* SIOint (8259 cascade) is special */
--	if (offset) {
--		if (ppc_md.progress) ppc_md.progress("openpic: SIOint",0x3bc);
--		openpic_initirq(0, 8, offset, 1, 1);
--		openpic_mapirq(0, 1<<0, 0);
--	}
--
--	/* Init all external sources */
--	for (i = (offset ? 1 : 0); i < NumSources; i++) {
-+	/* Init all external sources, including possibly the cascade. */
-+	for (i = 0; i < NumSources; i++) {
- 		int pri, sense;
-
- 		if (ISR[i] == 0)
-@@ -388,12 +396,18 @@
- 		openpic_disable_irq(i+offset);
-
- 		pri = (i == programmer_switch_irq)? 9: 8;
-+		/*
-+		 * We find the vale from either the InitSenses table
-+		 * or assume a negative polarity level interrupt.
-+		 */
- 		sense = (i < OpenPIC_NumInitSenses)? OpenPIC_InitSenses[i]: 1;
--		if (sense)
-+
-+		if ((sense & IRQ_SENSE_MASK) == 1)
- 			irq_desc[i+offset].status = IRQ_LEVEL;
-
- 		/* Enabled, Priority 8 or 9 */
--		openpic_initirq(i, pri, i+offset, !sense, sense);
-+		openpic_initirq(i, pri, i+offset, (sense & IRQ_POLARITY_MASK),
-+				(sense & IRQ_SENSE_MASK));
- 		/* Processor 0 */
- 		openpic_mapirq(i, 1<<0, 0);
- 	}
-===== arch/ppc/kernel/prom.c 1.67 vs edited =====
---- 1.67/arch/ppc/kernel/prom.c	Tue Apr 16 04:42:08 2002
-+++ edited/arch/ppc/kernel/prom.c	Sun Apr 28 09:49:50 2002
-@@ -758,8 +758,10 @@
- 	for (np = allnodes; np != 0; np = np->allnext) {
- 		for (j = 0; j < np->n_intrs; j++) {
- 			i = np->intrs[j].line;
--			if (i >= off && i < max)
--				senses[i-off] = np->intrs[j].sense;
-+			if (i >= off && i < max && (i == 1))
-+				senses[i-off] = IRQ_SENSE_LEVEL;
-+			else if (i >= off && i < max && (i == 0))
-+				senses[i-off] = IRQ_SENSE_EDGE;
- 		}
- 	}
- }
-===== include/asm-ppc/open_pic.h 1.26 vs edited =====
---- 1.26/include/asm-ppc/open_pic.h	Thu Jan 24 17:48:13 2002
-+++ edited/include/asm-ppc/open_pic.h	Sun Apr 28 09:35:04 2002
-@@ -28,6 +28,19 @@
- #define OPENPIC_VEC_IPI		72	/* and up */
- #define OPENPIC_VEC_SPURIOUS	127
-
-+/*
-+ * For the OpenPIC_InitSenses table, we include both the sense
-+ * and polarity in one number and mask out the value we want
-+ * later on. -- Tom
-+ */
-+#define IRQ_SENSE_MASK		0x1
-+#define IRQ_SENSE_LEVEL		0x1
-+#define IRQ_SENSE_EDGE		0x0
-+
-+#define IRQ_POLARITY_MASK	0x2
-+#define IRQ_POLARITY_POSITIVE	0x2
-+#define IRQ_POLARITY_NEGATIVE	0x0
-+
- /* OpenPIC IRQ controller structure */
- extern struct hw_interrupt_type open_pic;
-
-
------ End forwarded message -----
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+--rJwd6BRFiFCcLxzm--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
