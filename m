@@ -1,27 +1,36 @@
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Troy Benjegerdes <hozer@drgw.net>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	Tom Rini <trini@kernel.crashing.org>
 Subject: Re: current linuxppc_2_4_devel SMP strangeness.. (processes dieing)
-To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <OF0228CE16.DE2672A5-ON86256AF5.00673D53@rchland.ibm.com>
-From: "David Boutcher" <boutcher@us.ibm.com>
-Date: Tue, 30 Oct 2001 12:50:14 -0600
+Date: Tue, 30 Oct 2001 20:28:30 +0100
+Message-Id: <20011030192830.7817@smtp.wanadoo.fr>
+In-Reply-To: <20011030121221.E13806@altus.drgw.net>
+References: <20011030121221.E13806@altus.drgw.net>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I am 'reliably' able to reproduce the following:
 >
-> kalmia:/var/log# /etc/init.d/squid restart
-> Restarting proxy server:
-> /etc/init.d/squid: line 3:   450 Segmentation fault
-start-stop-daemon
+>
+>Then, when I tried to log in over serial console, the login process
+>appeared to die after I entered 'root'.  If I kept trying, I would
+>occasional actually get a password prompt.
+>
+>
+>I think there's something going wrong either in the cache flush avoidance
+>stuff, or in the generic smp VM.
+>
+>(I'm going to finally update linuxppc_2_4 for MTX SMP later today, so I'll
+>can hopefully find out if it's a generic VM problem or not)
 
-Me too.  Same symptoms on iSeries.   There were some memory related changes
-that went in today...I suspect the problems are related to that.
+It's pre5 ? I think Tom's fix is wrong. It should probably be
+copy_user_page or copy_cow_page (I use the last one). Without that,
+the cache avoidance will probably win a direct ticket to hell ;)
 
-Dave Boutcher
-Senior Technical Staff Member
-iSeries Linux Development and Architecture
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
