@@ -1,73 +1,53 @@
-Subject: RE: Ramdisk image
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 1 Dec 2000 10:24:51 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E310A90D5@kolkrabbi.flaga.is>
-From: Kári Davíðsson <kd@flaga.is>
-To: "Daniel Furse" <daniel.furse@iptest.com>,
-        "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 1 Dec 2000 22:36:22 -0500
+From: Dan Hopper <eusdbho@rtp.ericsson.se>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: trouble with FEC on MPC860T - FEC_INTERRUPT not going off?
+Message-ID: <20001201223622.A28837@slug.rtp.ericsson.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-The ppc embedded faq at http://members.nbci.com/greyhams/linux points
-you
-to http://linuxdoc.org/HOWTO/Bootdisk-HOWTO-4.html for instructions on
-making
-ramdisks. Actually this link is broken (I just found out). You might try
+I've ported ppcboot to a custom MPC860T-based board which uses the
+FEC, and am now working on the kernel.  At the moment, I'm using the
+2.4-2000-11-11 kernel from ftp.denx.de as a baseline, since it
+seemed to be a good starting point.
 
-http://www.linux.org/docs/ldp/howto/Bootdisk-HOWTO/index.html which
-works for me.
+I've created my own header file in include/asm-ppc/, with board info
+struct, IMMR, and defined FEC_INTERRUPT to be SIU_LEVEL1.  I've
+corrected drivers/net/setup.c to call fec_enet_init.  The kernel
+boots, and gets down to this point, where the FEC is detected, but
+the PHY is not, and so eth0 can't be opened:
 
-If all fails,
+eth0: FEC ENET Version 0.2, 08:00:3e:03:01:04
+IP-Config: Failed to open eth0
+IP-Config: No network devices available.
 
-dd if=/dev/zero of=myimage bs=1k count=<size in kb>
-mke2fs myimage
-mount myimage <mountpoint in your directory structure>
-copy the files you want on your ramdisk to <mountpoint in your directory
-structure>
-umount <mountpoint in your directory structure>
-gzip myimage
+I've poked around, and it appears that the MII command queued at the
+end of fec_enet_init() is never processed.  It appears that this
+processing should be done from fec_enet_mii(), which is called from
+the FEC interrupt routine, fec_enet_interrupt().  To prove the
+point, I placed a printk() at the beginning of fec_enet_interrupt().
+It never appeared on the console, so I conclude that FEC interrupts
+aren't happening.
 
-And you should have a valid ramdisk.
+I'm aware that the MII can also have an interrupt assigned, though
+the current code makes it appear to be optional (only the FADS board
+seems to run request_8xxirq() on it).  The PHY IRQ line (it's an
+Level One LXT972LC) isn't hooked up to the 860, though it could be.
+Thinking this might be the problem, I put a scope on the LXT972's
+MDINT* pin, and rebooted the kernel.  No interrupts at all.  So,
+unless I'm missing an interaction, hooking that up would be unlikely
+to change the current problem.
 
-The steps above are from memory. If some of the command do not work
-properly it might because of missing options. In all cases check the
-manpage for these commands.
+I imagine I'm missing something obvious, but I can't figure out what
+it would be right now.  Has anyone got any suggestions, or perhaps
+has run into this type of problem before?
 
-Hope this helps,
-
-K.D.
-
-
-Example
-
------Original Message-----
-From: Daniel Furse [mailto:daniel.furse@iptest.com]
-Sent: 30. nóvember 2000 17:09
-To: Linux Embedded List (E-mail)
-Subject: Ramdisk image
-
-
-
-Hi everyone,
-
-How do I go about creating a ramdisk image for an embedded PPC system? I
-downloaded a pre-built image, which is now giving me problems, and I
-would
-like to create a new one. I have downloaded fileutils, but I have been
-unable to cross-compile them (we use RedHat x86 host, with gcc). Is
-there a
-patch or something? Is there a method/HOWTO/documentation somewhere
-about
-how to do this?
-
-Many thanks is advance,
-
-Dan Furse
-
+Thanks!
+Dan Hopper
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
