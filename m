@@ -1,21 +1,18 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 74F2667A73
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id 2381E67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 00:17:29 +1000 (EST)
-From: Jason McMullan <jason.mcmullan@timesys.com>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <20050328041119.GA30818@gate.ebshome.net>
-References: <1111525951.2987.76.camel@ad.doubleclick.net>
-	<20050328041119.GA30818@gate.ebshome.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-gXAZSCSkpUNf/y043PTZ"
-Date: Mon, 28 Mar 2005 09:17:24 -0500
-Message-Id: <1112019444.7311.5.camel@ad.doubleclick.net>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Updated: CPM2 I2C (SDMA and BitBang)
+	Tue, 29 Mar 2005 01:47:48 +1000 (EST)
+Message-ID: <19EE6EC66973A5408FBE4CB7772F6F0A210598@ltnmail.xyplex.com>
+From: "Autran, Guillaume" <gautran@mrv.com>
+To: 'Marcelo Tosatti ' <marcelo.tosatti@cyclades.com>,
+	'Bruce Donadt ' <bdonadt@arabellasw.com>
+Date: Mon, 28 Mar 2005 10:33:32 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Cc: 'linuxppc-embedded ' <linuxppc-embedded@ozlabs.org>
+Subject: RE: MPC885 CryptoApi support.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,46 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
---=-gXAZSCSkpUNf/y043PTZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, 2005-03-27 at 20:11 -0800, Eugene Surovegin wrote:
-> Jason, another thought. Do we really need all this mess with separate=20
-> algo and bus drivers?
->=20
-> Could you make just a bus driver like we have for 4xx, Keywest and=20
-> 85xx/52xx/MPC107? It's much cleaner and less confusing IMHO.
+Not sure. It seems that not all of the Linux kernel source they modified is
+freely available. The "free" evaluation kit only contains an old version of
+2.4.x kernel and definitely, no support for the MPC885 SEC-Lite.
+So, unless they rewrote the all thing, I don't understand how it could be...
 
 
-I made it separate algo/bus in case you had a PCI-card 85xx design
-where:
 
-	a) You booted the card with firmware
-	b) The firmware made the card a PCI device with the CPM exposed
-	   before you booted the kernel.
-        c) The PCI host had to program an EEPROM on the CPM I2C bus
-           for configuration to tell it where to get the kernel.
+-----Original Message-----
+From: Marcelo Tosatti
+To: Bruce Donadt
+Cc: Autran, Guillaume; linuxppc-embedded
+Sent: 03/24/2005 6:39 AM
+Subject: Re: MPC885 CryptoApi support.
 
-Admittedly, a little far out, but then you could make a
-CPM-exposed-by-PCI I2C bus driver.
+On Mon, Mar 21, 2005 at 03:54:39PM -0500, Bruce Donadt wrote:
+> Guillaume:
+> 
+> Arabella Software provides asynchronous 2.6 kernel CryptoApi support
+for the
+> MPC885 as well as the PowerQUICC II devices as part of our
+commercially
+> supported Linux distribution. If you would be interested in a
+commercial
+> open source offering, please feel free to contact me and I can provide
+> further detail.
 
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
-
-
---=-gXAZSCSkpUNf/y043PTZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBCSBH08/0vJ5szK6kRAuhEAKDYBaTZTKNDx4KxOzOvCRF5xxs7SACgoVMt
-BAjvKGPhoLLFiDnFMlVJ3uI=
-=iSkD
------END PGP SIGNATURE-----
-
---=-gXAZSCSkpUNf/y043PTZ--
+These drivers are not GPL, then? 
