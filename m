@@ -1,31 +1,46 @@
-Date: Wed, 13 Jan 1999 13:10:16 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Michael Meissner <meissner@cygnus.com>
-cc: linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
-        gdt@cygnus.com
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-In-Reply-To: <199901122243.RAA16378@tiktok.cygnus.com>
-Message-ID: <Pine.LNX.3.96.990113130844.3715A-100000@persephone.cs.nmt.edu>
+Date: Wed, 13 Jan 1999 16:14:25 -0500 (EST)
+From: Tom Vier <nester@erols.com>
+Reply-To: thomassr@erols.com
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Porting to NuBus PowerMacs
+In-Reply-To: <Pine.LNX.3.96.990112141237.3746A-100000@globegate.utm.edu>
+Message-ID: <Pine.LNX.3.96.990113161217.4699D-100000@zero>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-It looks like your zImage is being stomped on before it can be
-decompressed.  I'll take a look at the boot loader code and see why it
-isn't adjusting your free ram section.  You might want to try changing to
-load address in the PPCBug to be near the top of memory in the mean time.
+On Tue, 12 Jan 1999, David A. Gatwood wrote:
 
+> It's a lot harder than this, unfortunately.  The NuBus machines' memory
+> isn't contiguous.  Thus, code would have to be written and/or obtained to
 
-}	loaded at:     00400400 00415FD0
-}	relocated to:  00600000 00615BD0
-}	zimage at:     0040A400 0049A889
-}	avail ram:     00400000 00600000
-}
-}	Linux/PPC load: console=tty0 console=ttyS0,9600n8 root=/dev/sda2 mem=127M
-}	Uncompressing Linux...done.
-}	Now booting the kernel
+doh!
+
+> find out what memory is available in the machine and where that memory is
+> located in RAM.  That's going to be a nasty problem unless some code is
+> pulled from the MkLinux booter.  I'd expect that to also require a
+> substantial number of changes to the way memory is handled in linux, but I
+> could be wrong.
+
+hhmmm. don't some other arch's have non contiguous memory?
+
+> Beyond that, it will also require changes to irq.c to handle the interrupt
+> controller and a lot of code for DMA, if that's desired (I don't think
+> it's even remotely similar, AFAICT).  Of course, that stuff can be
+> obtained from Mach, but it'll be a lot of work.  Oh, and the i/o base
+> address is different, which may or may not be a problem, and supporting
+> certain pieces of hardware (which will remain nameless) will also require
+> speed penalties (this is the other reason MkLinux is slower than
+> LinuxPPC...).
+
+what pieces of hardware? important ones?
+
+--
+Tom Vier - 0x82B007A8
+thomassr@erols.com       | goto the Zero Page at:
+Tortured Souls Software  | http://www.erols.com/thomassr/zero/
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
