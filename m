@@ -1,10 +1,10 @@
-Date: Wed, 20 Jan 1999 22:28:13 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: davies@maniac.ultranet.com, Donald Becker <becker@cesdis1.gsfc.nasa.gov>
-cc: Linux kernel <linux-kernel@vger.rutgers.edu>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: de4x5 vs. tulip on PPC
-Message-ID: <Pine.LNX.4.03.9901202221410.28223-100000@mercator.cs.kuleuven.ac.be>
+Date: Wed, 20 Jan 1999 13:53:18 -0800 (PST)
+From: Ranjit Deshpande <ranjitd@sco.COM>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI-PCI bridges
+In-Reply-To: <Pine.LNX.4.03.9901202208430.28223-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.SCO.3.96.990120135000.13973C-100000@mammoth.sco.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -12,38 +12,34 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-On my machine, de4x5.c works, while tulip.c doesn't.
+Cool. de4x5 works great. Thanks Geert.
 
-Machine is a CHRP/PPC box, Ethernet is 21041 based D-Link DE-530CT.
+But I still need some answers about the PCI-PCI bridges issue. Was support
+omitted by design ?
 
-Relevant kernel messages:
+While my changes work on my Starmax is that the generic solution ?
 
-| eth0: DC21041 at 0x1080 (PCI bus 0, device 4), h/w address 00:80:c8:5a:f8:5b, 
-                                                             ^^^^^^^^^^^^^^^^^
-|       and requires IRQ29 (provided by PCI BIOS). 
-| de4x5.c:V0.543 1998/12/30 davies@maniac.ultranet.com 
-| eth0: media is TP. 
+Ranjit
 
-| tulip.c:v0.89H 5/23/98 becker@cesdis.gsfc.nasa.gov 
-| eth0: Digital DC21041 Tulip at 0x1080, 21041 mode, 80 00 5a c8 5b f8, IRQ 29. 
-                                                     ^^^^^^^^^^^^^^^^^
-| eth0: 21041 transmit timed out, status fc680000, CSR12 000001c8, CSR13 ffffef05, CSR14 ffffff3f, resetting... 
-| eth0: 21041 transmit timed out, status fc680010, CSR12 000052c8, CSR13 ffffef09, CSR14 fffff7fd, resetting... 
-| eth0: 21041 transmit timed out, status fc680010, CSR12 000001c8, CSR13 ffffef05, CSR14 ffffff3f, resetting... 
-| eth0: 21041 transmit timed out, status fc680010, CSR12 000052c8, CSR13 ffffef09, CSR14 fffff7fd, resetting... 
+On Wed, 20 Jan 1999, Geert Uytterhoeven wrote:
 
-So at least the Ethernet HW address is in the wrong endiannes for tulip.c.
-
-Are there people who can use tulip.c on a big endian machine?
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+> On Wed, 20 Jan 1999, Ranjit Deshpande wrote:
+> > 3. Why is the tulip code not reading the EEROM ? I'm using the standard
+> >    drivers/net/tulip.c. Does it require any PMAC specific changes ?
+> 
+> Does it help if you use the de4x5 driver instead of tulip? On my 21041, tulip
+> doesn't work, de4x5 does. On Intel both drivers work with the same board.
+> 
+> Greetings,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+> Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+> Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+> 
+> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
