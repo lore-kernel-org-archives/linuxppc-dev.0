@@ -1,79 +1,47 @@
-Message-ID: <38754508.976B932F@ctam.com.au>
-Date: Fri, 07 Jan 2000 12:44:41 +1100
-From: Brendan J Simon <Brendan.Simon@ctam.com.au>
-Reply-To: Brendan.Simon@ctam.com.au
+Message-ID: <00bc01bf58e1$2bf49b80$73f102de@sjzhu>
+Reply-To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Question about the video device driver
+Date: Fri, 7 Jan 2000 15:31:09 +0800
 MIME-Version: 1.0
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-        glibc-linux <glibc-linux@ricardo.ecn.wfu.edu>
-Subject: Re: MPC860 patches for glibc
-References: <20000105233607.0D48DED@elph.research.canon.com.au> <otg0wb8hk8.fsf@thinktwice.zoftcorp.dk>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Would the changes suggested below, to the cache line size (mpc8xx = 16 bytes, others = 32 bytes) make any difference
-if my Instruction Cache and Data Cache was disabled.  My current linux kernel has them all disabled for now.
+The video of MPC823 FADS board only support YCbYCr mode,
+so how can I write a device driver for the video of MPC823 FADS board,
+to enable the X?
 
-Brendan Simon.
+Any suggestion? 
+Thanks in advanced.
+
+-----Original Message-----
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Shuangjun Zhu (r44089) <r44089@email.sps.mot.com>
+Cc: linuxppc-dev@lists.linuxppc.org <linuxppc-dev@lists.linuxppc.org>
+Date: Tuesday, January 04, 2000 6:09 PM
+Subject: Re: Question about the video device driver
 
 
-
-Jesper Skov wrote:
-
-> >>>>> "Graham" == Graham Stoney <greyham@research.canon.com.au> writes:
 >
-> Graham> Brendan J Simon writes:
-> >> I didn't realise there were 860 patches for glibc.  Where can I get
-> >> these patches from ?
+>On Tue, 4 Jan 2000, Shuangjun Zhu wrote:
+>> If the data format in the video memory is CbYCrY,
+>> the above layer application like Xserver can handle this?
 >
-> Graham> The magic mailing list archive, of course (-:
+>XFree86 doesn't do YCbCr.
 >
-> Graham> http://lists.linuxppc.org/listarcs/linuxppc-embedded/199909/msg00000.html
+>Gr{oetje,eeting}s,
+>--
+>Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 >
-> >> What do they do ?
->
-> Graham> Fix the cache line size for dynamic loading, and rearrange the
-> Graham> FPU stuff so it doesn't get included when you build.
->
-> I think the below patch for dl-machine.c would be better. It incurs no
-> loop overhead on the 32-byte cache line CPUs - and I think the double
-> flush of the same line should be harmless (and cheaper than the loop
-> overhead).
->
-> There is one small potential for error; if the macro is called with a
-> (32-byte aligned pointer)+16/17/18...31 in which case the first 16
-> bytes (of the 32-byte aligned address) would not be flushed on a 8xx,
-> while they would be on a bigger CPU. (did that make any sense at all ;)
->
-> Comments? Is it as safe/sensible as I think it is?
->
-> Thanks,
-> Jesper
->
-> --- powerpc/dl-machine.c~       Fri Mar  5 00:26:43 1999
-> +++ powerpc/dl-machine.c        Thu Jan  6 14:09:34 2000
-> @@ -63,10 +63,17 @@
->  #define OPCODE_SLWI(ra,rs,sh) OPCODE_RLWINM(ra,rs,sh,0,31-sh)
+>In personal conversations with technical people, I call myself a hacker. But
+>when I'm talking to journalists I just say "programmer" or something like that.
+>     -- Linus Torvalds
 >
 >
-> -#define PPC_DCBST(where) asm ("dcbst 0,%0" : : "r"(where) : "memory")
-> +/* The macros dealing with cache lines affect both (where) and
-> +   (where+16).  This is in order to support the 8xx CPUs which have
-> +   16-byte cache lines.  On the CPUs with 32-byte cache lines this
-> +   should have no noticable effect as the first store instruction
-> +   would effectively make the second instruction a NOP (since the line
-> +   would no longer be dirty). */
-> +#define PPC_DCBST(where) asm ("dcbst 0,%0;dcbst 0,%1" : : "r"(where), "r"((unsigned long)(where)+16) : "memory")
-> +#define PPC_ICBI(where) asm ("icbi 0,%0;icbi 0,%1" : : "r"(where), "r"((unsigned long)(where)+16) : "memory")
-> +
->  #define PPC_SYNC asm ("sync" : : : "memory")
->  #define PPC_ISYNC asm volatile ("sync; isync" : : : "memory")
-> -#define PPC_ICBI(where) asm ("icbi 0,%0" : : "r"(where) : "memory")
->  #define PPC_DIE asm volatile ("tweq 0,0")
->
->  /* Use this when you've modified some code, but it won't be in the
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
