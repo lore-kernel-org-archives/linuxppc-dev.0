@@ -1,20 +1,17 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp4.wanadoo.fr (smtp4.wanadoo.fr [193.252.22.27])
-	by ozlabs.org (Postfix) with ESMTP id EE2A92BDB5
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 20:35:30 +1100 (EST)
-Date: Sun, 2 Jan 2005 10:43:11 +0100
-To: mikemartin@linux.ca
-Message-ID: <20050102094311.GB25739@pegasos>
-References: <20050101150055.GA15400@pegasos>
-	<200501011630.j01GUP1R007603@arbas.nms.ulrich-teichert.org>
-	<20050101165758.GA18559@pegasos>
-	<855e88d00501011715633922b2@mail.gmail.com>
-Mime-Version: 1.0
+Return-Path: <krypton@ulrich-teichert.org>
+Received: from arbas.nms.ulrich-teichert.org (i3ED6530A.versanet.de
+	[62.214.83.10]) by ozlabs.org (Postfix) with ESMTP id CCECC2BF07
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 02:47:53 +1100 (EST)
+Message-Id: <200501021538.j02Fc0Ld013444@arbas.nms.ulrich-teichert.org>
+To: sven.luther@wanadoo.fr (Sven Luther)
+Date: Sun, 2 Jan 2005 16:38:00 +0100 (MET)
+In-Reply-To: <20050101165758.GA18559@pegasos> from "Sven Luther" at Jan 01,
+	2005 05:57:58 PM
+From: Ulrich Teichert <krypton@ulrich-teichert.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <855e88d00501011715633922b2@mail.gmail.com>
-From: Sven Luther <sven.luther@wanadoo.fr>
 Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org, debian-boot@lists.debian.org
+	mikemartin@linux.ca, debian-powerpc@lists.debian.org
 Subject: Re: 43p-140 install issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,59 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 01, 2005 at 08:15:13PM -0500, Mike Martin wrote:
-> I can boot with this image:
-> http://debian.yorku.ca/debian/dists/testing/main/installer-powerpc/current/images/powerpc/netboot/vmlinuz-prep.initrd
+Hi,
 
-Cool.
+[del]
+>Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel too.
+>Let' try to get this fixed before the sarge release, which is not so far off
+>now.
 
-> And things seems to go very well. Network configures, hard drives
-> partition, it dies at "Install the base system"  with "The debootstrap
-> program exited with an error (return value 255)." It instructs me to
-> check /var/log/messages which now contains: "execv: No such file or
-> directory"
+OK, 9 hours later I had a current sarge buisnesscard CD image, with
+interesting results. I booted the standard kernel from the cdrom
+with `boot cdrom:`, it came up and failed to load the initrd, so it died
+on the spot as nothing could be mounted. It was detecting that I was using
+a serial console.
+Of course, I forgot to capture that session, so I did it again with logging
+on in kermit. Then I could not boot anything from the CD, but I can still
+boot fine from disk, so it's not a hardware problem. The LED displays F05
+after reading something from the CDROM in this case and the machine hangs.
+Strange.
 
-Strange, can you check at what percentage of "install base system" this error
-happned ? can you attach the full /var/log/messages and /var/log/syslog ?
+I will try to boot via tftp, the firmware seems to be unable to boot
+a specific file from CDROM,
 
-Mmm, CCing debian-boot as this seems more relevant there.@
-
-> The previous step, partitioning, added:
->   "No matching physical volumes found
->   No volume groups found
->   Reading all physical volumes.  This may take a while..."
-> 
-> Anyone?
-> 
-> MikeMartin
-> 
-> On Sat, 1 Jan 2005 17:57:58 +0100, Sven Luther <sven.luther@wanadoo.fr> wrote:
-> > On Sat, Jan 01, 2005 at 05:30:25PM +0100, Ulrich Teichert wrote:
-> > > Hi,
-> > >
-> > > [del]
-> > > >I would prefer that we fix the debian kernels for them to work correctly
-> > > >though. More on this on monday.
-> > >
-> > > I failed to configure a stock 2.4.28 kernel to detect the SCSI controler.
-> > > I think some of Leigh patches for this must be applied, but I haven't
-> > > gone any further.
-> > 
-> > I had some report on a power3 box, that only the SMP sym53c8xx driver worked.
-> > When configuring in UP mode,
-> > 
-> > > [del]
-> > > >Do the debian 2.4.27 kernel work on it ? I was unable to boot the 2.4.27 d-i
-> > > >kernel on my powerstack, but this is a different machine, so the issues may be
-> > > >a bit different.
-> > >
-> > > I've only tried the Woody PREP kernel, which failed in a way which I can't
-> > > remember, but I'll give it a try.
-> > 
-> > Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel too.
-> > Let' try to get this fixed before the sarge release, which is not so far off
-> > now.
-
-Friendly,
-
-Sven Luther
+CU,
+Uli
+-- 
+Dipl. Inf. Ulrich Teichert|e-mail: Ulrich.Teichert@gmx.de
+Stormweg 24               |listening to: Suicide Drive (The Deep Eynde)
+24539 Neumuenster, Germany|Public Pervert (Interpol) Clé De Contact (Metal Urbain)
