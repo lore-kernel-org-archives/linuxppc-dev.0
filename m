@@ -1,47 +1,46 @@
-Date: Mon, 27 Aug 2001 15:40:06 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-commit@source.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc_htab.c again
-Message-ID: <20010827154006.C6925@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010827090729.B6925@cpe-24-221-152-185.az.sprintbbd.net> <3B8A8F26.EC447C4@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B8A8F26.EC447C4@mvista.com>
+Message-Id: <200108272249.AAA00844@piglet.grunz.lu>
+Date: Tue, 28 Aug 2001 00:49:50 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Call for help: altivec-enabled vlc
+To: k_fukui@highway.ne.jp
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20010827062142.Postino-014504@smtp01.highway.ne.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Aug 27, 2001 at 02:19:18PM -0400, Dan Malek wrote:
-> Tom Rini wrote:
-> >
-> > Hey all.  I notice paul made ppc_htab.c compile on all arches again.  I'm
-> > not about to undo this or anything, but I still don't agree with it.
+On  27 Aug, this message from Kaoru Fukui echoed through cyberspace:
+>> On  27 Aug, this message from Kaoru Fukui echoed through cyberspace:
+>> >> I've sat down a bit ;-) and came up with an Altivec-optimised IDCT
+>> >
+>> > I don't know much.
+>> > Altivec-gcc need "-fvec" as gcc option.
+>>
+>> It's not altivec-enabled gcc; just plain asm which the assembler knows
+>> about (if you pass the right option which I'm doing ;-).
+>>
 >
-> Just look at it carefully.
+> But gcc/config/rs6000.h doesn't have vector registor name.
+> if it's used gas,isn't it inline asm?
 
-Okay.
+Yes, it's inline asm. Obviously the assembler knows about Altivec, and
+the binutils know most opcodes (objdump --disassemble-all lacks
+knowledge about a few opcodes).
 
-> In the past, on processors without HPTE
-> the code was almost one big no-op (due to conditional tests, etc.) but
-> somewhere there were a few sublte generic operations (like tlbie) that
-> were important to (nearly) all processors.  I often took advantage of
-> that.  The code would compile, no #ifdef necessary, generic functions
-> called, and in the end "the right thing" would happen :-).
+But you can't for instance specify the vector registers in the clobber
+list of inline asm; that part is treated by the compiler.
 
-Yes, but that doesn't happen now, is what I'm trying to get it.  We -EFAULT
-before then.  If I'm reading the current code right, it appears to now all
-be HPTE related anyhow.  I think it'd be a great thing to put the generic
-stuffs into a 'generic' file.  I think putting more things into
-/proc/ppc_htab, when it used to print anything on !6xx, was a laziness
-induced idea.   It worked but was ugly. :)  We can't do that anymore,
-w/o hacking up the code abit.  It does compile now, w/ less ifdefs than before
-since we tossed in more dummy #defines.  I just don't get why we want to
-compile it when it doesn't do anything...
+Michel
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
