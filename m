@@ -1,15 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id D23EC67A64
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 03:15:18 +1100 (EST)
-Date: Tue, 18 Jan 2005 09:15:15 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Message-ID: <20050118161515.GI28724@smtp.west.cox.net>
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7412367A2C
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 03:52:16 +1100 (EST)
+In-Reply-To: <20050118161515.GI28724@smtp.west.cox.net>
 References: <41EC29A8.1040703@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41EC29A8.1040703@mvista.com>
+	<20050118161515.GI28724@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <93780AB0-696D-11D9-81BE-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 18 Jan 2005 11:25:33 -0500
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,36 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 17, 2005 at 02:10:00PM -0700, Mark A. Greer wrote:
 
-> All,
-> 
-> I have a platform with an i2c rtc chip.  Since much of the code for an 
-> rtc driver is already in drivers/char/genrtc.c, I would like to reuse 
-> that code and directly implement get_rtc_time(), et. al. in the rtc 
-> driver.  The problem is that include/asm-ppc/rtc.h assumes that 
-> get_rtc_time(), et. al. should be mapped to ppc_md.get_rtc_time() et. 
-> al.  To work around this, I made an option to turn off that assumption.  
-> The patch is included.
-> 
-> There are 2 reasons to not use the ppc_md.get_rtc_time() et. al. interfaces:
-> 1) They are called before the i2c driver is initialized and even loaded 
-> if its a module.
+On Jan 18, 2005, at 11:15 AM, Tom Rini wrote:
 
-But they check if it's set, so they can be assigned later and this is
-OK.
+> On Mon, Jan 17, 2005 at 02:10:00PM -0700, Mark A. Greer wrote:
 
-> 2) Its ppc-specific.  Implementing get_rtc_time() et. al. directly makes 
-> it generic across all architectures.
+>> There are 2 reasons to not use the ppc_md.get_rtc_time() et. al. 
+>> interfaces:
+>> 1) They are called before the i2c driver is initialized and even 
+>> loaded
+>> if its a module.
 
-Guessing, this is for a marvell chipset that's found on MIPS too.
+There are three reasons.  You don't want to use an I2c rtc clock at
+all in these functions because they get can get called from the
+clock interrupt to update the time in the rtc.  If it does happen to 
+work,
+it creates long latencies in the timer interrupt.  If the i2c requires 
+an
+interrupt, they system will crash or hang.
 
-> Is there a better way to do this?
+A system using an I2C RTC should find some way to access the
+clock from application space as a standard I2C device and manage
+time/clock from the application, not from the kernel.
 
-How about we try borrowing the MIPS abstraction and force todc_time,
-pmac_time (any others?) to directly define (and EXPORT_SYMBOL)
-get_rtc_time / set_rtc_time / etc.
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+	-- Dan
