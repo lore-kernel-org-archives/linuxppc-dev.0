@@ -1,76 +1,52 @@
-In-Reply-To: <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
-References: <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <85234FE8-C60D-11D8-9586-003065F9B7DC@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: On the MPC85xx development boards
-Date: Thu, 24 Jun 2004 14:37:17 -0400
-To: Mikko Alutoin <mikko.alutoin@luukku.com>
+Message-ID: <40DB2199.2050006@mvista.com>
+Date: Thu, 24 Jun 2004 11:46:49 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Dieu Morales <dieumorales@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Brian Waite <waite@skycomputers.com>
+Subject: Re: GT64260_eth (Ethernet) Driver
+References: <20040620202719.25741.qmail@web60407.mail.yahoo.com>	 <40DA06BE.204@mvista.com> <1088066228.18627.3352.camel@hades.cambridge.redhat.com>
+In-Reply-To: <1088066228.18627.3352.camel@hades.cambridge.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Jun 24, 2004, at 9:55 AM, Mikko Alutoin wrote:
+David Woodhouse wrote:
 
+>You are lost in a twisty maze of BK trees, all alike.
+>
+>On Wed, 2004-06-23 at 15:39 -0700, Mark A. Greer wrote:
+>
+>
+>>You should sync up with Brian Waite (look at CC: list) who has been
+>>looking at writing a new enet driver for the 2.6 kernel using the latest
+>>bridge support code.  You can get a look at the latest support code by
+>>cloning bk://source.mvista.com/linux-2.5-marvell.  Note the the mpsc
+>>driver that's there still isn't working correctly.
+>>
+>>
+>
+>Ooh look another one. What's in here that merits it having its own tree
+>and prevents it from being accepted upstream?
+>
+It doesn't "merit" its own tree; it has its own tree because the code is
+not yet ready to be passed upstream but others need to see the code.  If
+you don't want to deal with the code in this tree, don't.  When it is
+ready, and eventually [hopefully] accepted into the kernel.org tree,
+this tree will disappear.
 
-> 4)	Silicon Tx GP3 8560
+>
+>Please be as specific as you can -- my task for the next few weeks
+>involves making Dy-4 DMV-182 support happen.
+>
 
-Having done the development of this board, I can tell you quite a
-bit about it.
+This tree has a complete rewrite of the core code.  Look at
+arch/ppc/syslib/.
 
-This is an "ODM" board, which means it comes with useful software
-in some vertical markets.  It's purpose is to be quickly functional
-as a product prototype, so the board size, connectors and options
-are designed for more than just software development.  It is available
-today with an 8541, 8555, or 8560 processor, there are other
-board variations to be announced soon.
+Mark
 
-RPC Electronics is providing low volume manufacturing of custom
-variations of these boards to meet product introduction schedules.
-They are also able to work with other manufacturers, provide parts
-kits, or whatever is necessary to minimize development resources
-and expedite product deployment.
-
-> I am under the impression that 1, 2, 4 and 5 (but not 3) come with a
-> Linux BSP included? Is this correct?
-
-Embedded Edge is providing the software which includes U-boot, Linux
-2.4.26,
-a small distribution, and an SPE enabled version of gcc 3.3.3 with
-binutils.
-The board comes with a kernel and file system in flash, upon power up
-will
-autoboot Linux and configure the network for remote access.  Unless you
-are doing kernel development, all you need to do is log in an mount an
-NFS file system to start your application development.
-
-> Let us assume that the final product will not be based on a commercial
-> Embedded Linux distro, but a custom 2.6 kernel with busybox & uclibc.
-> Should that effect the choice in any way?
-
-We are working with Freescale to get the 2.6 work merged into the
-kernel,
-so that will be available shortly for downloading.  I'm not a big fan
-of busybox,
-but people have been asking so a version of that and uclibc will also be
-available once we get the 2.4/2.6 and glibc tools stable.
-
-> Forgive me if the questions seem a bit foolish. The bottom line is
-> that I have not used any kind of development boards in the past and I
-> would like to receive some insight on which one of the above to
-> choose.
-
-It's more than choosing a board.  An Original Design Manufactuerer (ODM)
-provider is more than just a board.  It's all about providing the
-structure that
-will minimize your resource investment and expediting your product
-development.
-
-Have fun!
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
