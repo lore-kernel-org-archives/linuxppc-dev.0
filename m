@@ -1,109 +1,38 @@
-Message-Id: <200211140848.CAA19190@lists.linuxppc.org>
-From: "=?GB2312?Q?=D3=DA=E6=BA?=" <yuj@mail.ndsc.com.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: motorola lopec mpc7410
-Mime-Version: 1.0
+Subject: Re: USB Host Controller Problem
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: Nageswari S <nageswari@sanyo.co.in>
+Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <6DF87017DA95D611AC6000606730DE9B0EC0CC@BLREXSR>
+References: <6DF87017DA95D611AC6000606730DE9B0EC0CC@BLREXSR>
 Content-Type: text/plain
-Date: Thu, 14 Nov 2002 16:50:34 +0800
+Date: 14 Nov 2002 12:56:10 +0100
+Message-Id: <1037274970.15616.45.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi!
- I'm porting mvista linux 2.1 for the motorola lopec mpc7410 board.And I noticed that there are some differences between the board version described by mvista and motorola.Also,the version of PPCBug is different.I'm wondering why?
- Does anyone have encounter the problem before?Here is my board starting information:
-///////////
-Copyright Motorola Inc. 1988 - 2001, All Rights Reserved
+On Thu, 2002-11-14 at 08:22, Nageswari S wrote:
+>
+> Hi,
+>
+> I have a custom PowerPC baord based on IBM 405 core with "No PCI".
+>
+> I have my USB Host controller (OHCI) based with HC registers from
+> 0xef601200.
+>
+> When I access these address locations, I am getting kernel panic with
+> machine check interuupt.
+>
+> Is there any special setting to enable IO address range.
 
-PPC5 Debugger/Diagnostics Release Version 1.3 - 04/27/2001 RM01
-COLD Start
+you use ioremap ?
 
-Local Memory Found =20000000 (&536870912)
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
-MPU Clock Speed =400Mhz
-
-BUS Clock Speed =100Mhz
-
-Reset Vector Location  : ROM Bank B
-Mezzanine Configuration: Single-MPU
-Current 60X-Bus Master : MPU0
-Idle MPU(s)            : NONE
-
-L2Cache:       2048KB, 200Mhz
-System Memory: 512MB, ECC Enabled (ECC-Memory Detected)
-
-PPC5-Bug>CNFG
-Board (PWA) Serial Number = "6016204     "
-Board Identifier          = "LoPEC-P011      "
-Artwork (PWA) Identifier  = "01-W3646F11B    "
-MPU Clock Speed           = "400"
-BUS Clock Speed           = "100"
-Ethernet Address          = 0001AF0996C8
-Primary SCSI Identifier   = "07"
-System Serial Number      = "0               "
-System Identifier         = "0                              "
-License Identifier        = "6016204  "
-//////////////////
-
-When I port the mvista linux v2.1(motorola lopec 74xx lsp),the starting information is showed below:
-
-//////////////
-Copyright Motorola Inc. 1988 - 2001, All Rights Reserved
-
-PPC5 Debugger/Diagnostics Release Version 1.3 - 04/27/2001 RM01
-COLD Start
-
-Local Memory Found =20000000 (&536870912)
-
-MPU Clock Speed =400Mhz
-
-BUS Clock Speed =100Mhz
-
-Reset Vector Location  : ROM Bank B
-Mezzanine Configuration: Single-MPU
-Current 60X-Bus Master : MPU0
-Idle MPU(s)            : NONE
-
-L2Cache:       2048KB, 200Mhz
-Initializing System Memory (DRAM)...
-L2Cache:       2048KB, 200Mhz
-System Memory: 512MB, ECC Enabled (ECC-Memory Detected)
-
-
-SelfTest/Boots about to Begin... Press <BREAK> at anytime to Abort ALL
-
-NetBoot about to Begin... Press <ESC> to Bypass, <SPC> to Continue
-
-Network Booting from: I82559, Controller 0, Device 0
-Device Name: /pci@fec00000/pci8086,1209@e,0:0,0
-Loading: vmlinuz-motorola-lopec
-
-Client IP Address      = 192.168.201.3
-Server IP Address      = 192.168.201.1
-Gateway IP Address     = 0.0.0.0
-Subnet IP Address Mask = 255.255.255.0
-Boot File Name         = vmlinuz-motorola-lopec
-Argument File Name     =
-
-Network Boot File load in progress... To abort hit <BREAK>
-
-Bytes Received =&784800, Bytes Loaded =&784800
-Bytes/Second   =&392400, Elapsed Time =2 Second(s)
-
-Residual-Data Located at: $1FED16DC
-loaded at:     00005400 000C65BC
-relocated to:  00800000 008C11BC
-zimage at:     00805A00 008BD53E
-avail ram:     00400000 00800000
-
-Linux/PPC load: ip=on
-Uncompressing Linux...done.
-Now booting the kernel
-
-///////////////////////////////////////////////////////////////////////////
-
-After  "Now booting the kernel",there is nothing put on the screen.I don't know why?Can anybody help me?
-　　　　　　　　yuj@mail.ndsc.com.cn
-　　　　　　　　　　2002-11-14
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
