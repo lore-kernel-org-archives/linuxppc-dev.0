@@ -1,52 +1,34 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A208E5E2@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Root login...
-Date: Thu, 4 Oct 2001 15:43:02 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Kapil Konde" <kapilkk@yahoo.com>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Bad Magic Number 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 03 Oct 2001 14:39:47 +0530."
+             <GDEHIPAFEMJDKNFDCIEBIEGECCAA.kapilkk@yahoo.com>
+Date: Fri, 05 Oct 2001 09:10:56 +0200
+Message-Id: <20011005071101.41BA8100A5@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <GDEHIPAFEMJDKNFDCIEBIEGECCAA.kapilkk@yahoo.com> you wrote:
+>
+> 	I am trying to boot linux on my custom mpc8xx card. I have ppcboot loaded
+> and I am loading linux kernel image using tftp. When I say bootm it gives me
+> error "Bad Magic Number".
+> Can anybody please explain the error and suggest any solution for it.
 
-I used HHL Journeyman 2.0 PPC 7xx to build ramdisk for our custom PPC 750
-board. When I try to execute, it gives the login prompt. But when I type
-'root' and hit enter, it gives me back login prompt again. Basically it is
-not logging in.
+The image you are trying to boot is not a PPCBoot image, i. e. it was
+not created using the "mkimage" tool that omes with PPCBoot. See  the
+PPCBoot README file.
 
-What might be the problem that is causing this?. I tried with just "/bin/sh"
-and it directly gives me the shell prompt as expected... when I put
-"/sbin/init", it gives this login problem.
+Wolfgang Denk
 
-Any help would be great.
-
-Am I missing any files???.
-I put the following files in ramdisk...
-
-/bin
-bash cat cp date echo ls mount ping ps sh stty umount
-
-/dev
-console ram0 tty ttyS0
-
-/sbin
-fsck getty halt ifconfig init insmod lsmod modprobe reboot shutdown sulogin
-
-/etc
-fstab (with /dev/root, /dev/ram0 and /proc)
-passwd
-group
-inittad (as is from HHL Journeyman)
-rc.d (as is from HHL Journeyman)
-init.d (as is from HHL Journeyman)
-default (as is from HHL Journeyman)
-
-and create few other directories...
-/root /proc /mnt /usr /tmp /var
-
--- Siva
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Conscious is when you are aware of something, and conscience is  when
+you wish you weren't.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
