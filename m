@@ -1,42 +1,36 @@
-Date: Thu, 19 Oct 2000 09:02:05 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+Message-Id: <200010191621.LAA28113@lists.linuxppc.org>
+Date: Thu, 19 Oct 2000 12:21:22 -0400
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+Content-Type: text/plain;
+	charset=us-ascii
+Subject: Re: openoffice on ppc anyone?
+Cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Thomas Graichen <graichen@innominate.de>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: openoffice on ppc anyone?
-Message-ID: <20001019090205.L15104@opus.bloom.county>
-References: <20001019080331.H15104@opus.bloom.county> <Pine.LNX.4.10.10010191709430.2489-100000@zirkon.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.10010191709430.2489-100000@zirkon.biophys.uni-duesseldorf.de>; from schmitz@zirkon.biophys.uni-duesseldorf.de on Thu, Oct 19, 2000 at 05:11:05PM +0200
+To: Tom Rini <trini@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v337)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 19, 2000 at 05:11:05PM +0200, Michael Schmitz wrote:
->
-> > Well, make sure to update your tree.  One of the mailing lists on that page
-> > says some diffs for linux/ppc have been checked in.
->
-> Yep, I've seen that - do they check in these changes under the 605 tag?
+Hi,
 
-Check the website. :) I believe so.
+> Well I've run almost every glibc since gary thomas started releasing 'em
+> way back when (thanks gary!) and I've been lucky so far. :)
 
-> > > I'm already using a recent gcc 2.95.3 but libc upgrades always freak me
-> > > out ...
-> >
-> > It's not as bad as it used to be. :)
->
-> Sure, but I barely survived one or two botched ones a while ago :-) (m68k,
-> not ppc though)
+Me too!  The only real issue for *robust* native threads use are to stay with at least with glibc-2.1.3 (glibc-2.1.2 has some problems with the jdk).
 
-Well I've run almost every glibc since gary thomas started releasing 'em
-way back when (thanks gary!) and I've been lucky so far. :)
+When choosing a glibc-2.1.3 version, stick with either the glibc-2.1.3-5a-rpm which shipped with YDL and LinuxPPC I think) from Franz or his very latest glibc-2.1.3-15f rpm because the intermediate versions had native threads bugs introduced after the glibc-2.1.3 branch was completed (bug fixes which made new bugs!).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+The jdk 1.2.2 FCS should be fine for the open office release since it is basically bug for bug compatible with the x86 jdk 1.2.2 (and Sun's jdk 1.2.2 for that matter).
+
+If the jdk 1.2.2 runs into any trouble, let me know and I will fix it and make a special binary for anyone working on the openoffice port (or anyone for that matter).
+
+Just let me know.
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
