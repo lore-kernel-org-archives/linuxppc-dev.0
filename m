@@ -1,47 +1,36 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <159C486347C8D3119B1D005004A4694002593E8A@OLIVE>
-From: Steven Rothweiler <Stevenr@raritan.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: HOWTO Status??
-Date: Fri, 25 Jul 2003 17:53:42 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Steven Rothweiler <Stevenr@raritan.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: HOWTO Status?? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 25 Jul 2003 17:53:42 EDT."
+             <159C486347C8D3119B1D005004A4694002593E8A@OLIVE>
+Date: Sat, 26 Jul 2003 00:09:37 +0200
+Message-Id: <20030725220942.8F430C602D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Isn't it here:
-http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
+In message <159C486347C8D3119B1D005004A4694002593E8A@OLIVE> you wrote:
+>
+> Isn't it here:
+> http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
+
+Did you read it? It says:
+
+"Boas Betzler, 21 August 2001"
+
+And AFAICT it has not been changed since.
 
 
-> -----Original Message-----
-> From: Wolfgang Denk [mailto:wd@denx.de]
-> Sent: Friday, July 25, 2003 5:45 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: HOWTO Status??
->
-> Hi,
->
-> does anybody know what happened to the "Linux  for  PowerPC  Embedded
-> Systems  HOWTO"  -  the  file, once a precious resource, has not been
-> updated for about two years (!), and  the  current  maintainer  (Boas
-> Betzler)  does  not  reply to email sent to the address listed in the
-> document.
->
-> Is this document orphaned?
->
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> "More software projects have gone awry for lack of calendar time than
-> for all other causes combined."
->                          - Fred Brooks, Jr., _The Mythical Man Month_
->
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+On our campus the UNIX system has proved to be not only an  effective
+software tool, but an agent of technical and social change within the
+University.                          - John Lions (U. of Toronto (?))
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
