@@ -1,24 +1,26 @@
-Message-ID: <3A831FF6.CE4BB215@intel.com>
-Date: Thu, 08 Feb 2001 14:38:46 -0800
-From: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
+Message-ID: <3A83231E.EEC54514@mvista.com>
+Date: Thu, 08 Feb 2001 17:52:14 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Fixes for the FADS boards
+To: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Fixes for the FADS boards
+References: <3A831FF6.CE4BB215@intel.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've finally managed to get kernels working on my FADS board.
+"Bruno R. Barreyra" wrote:
 
-I've noticed the support has been removed from the latest linuxppc_2_4
-branch, and I've put it back there again. Is there a person to whom I
-should send a patch so this can get re-included on the tree?
+> I've noticed the support has been removed from the latest linuxppc_2_4
 
---
-[]'s Bruno Renato Barreyra
-bruno.r.barreyra@intel.com
-barreyra@ufl.edu
+You should read the mailing list archives..........
 
+The FADS support is in the 2.4 kernel found on MontaVista's server,
+in /pub/Area51.  It's already on it's way into the kernel tree.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
