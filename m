@@ -1,43 +1,106 @@
-Date: Mon, 1 Feb 1999 11:04:59 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "Petr Vandrovec Ing. VTEI" <VANDROVE@vc.cvut.cz>
-cc: "dhiltgen@toocool.calpoly.edu" <dhiltgen@toocool.itslab.calpoly.edu>,
-        O.Waller@ee.qub.ac.uk, mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: matroxfb, anybody? (More details...)
-In-Reply-To: <1EB9B063356@vcnet.vc.cvut.cz>
-Message-ID: <Pine.LNX.4.03.9902011101440.17350-100000@mercator.cs.kuleuven.ac.be>
+From: "Petr Vandrovec Ing. VTEI" <VANDROVE@vc.cvut.cz>
+To: Owen Waller <O.Waller@ee.qub.ac.uk>
+Date: Mon, 1 Feb 1999 17:38:06 MET-1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: Multipart/Mixed; boundary=Message-Boundary-6663
+Subject: Re: matroxfb, anybody? (More details...)
+CC: linuxppc-dev@lists.linuxppc.org
+Message-ID: <1F2ACA229B9@vcnet.vc.cvut.cz>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 1 Feb 1999, Petr Vandrovec Ing. VTEI wrote:
-> Strange. I tried two fbdev servers (on i386) and they both works. There is
-> only one problem I know of: only one, foreground, server updates screen.
-> I think that fbdev server thinks that he is not visible when it gets
 
-The console subsystem isn't yet multi-head aware. The X server shouldn't
-receive the console switch signal when you switch to another VC on a different
-frame buffer device. But to make that work and make really use of that, we need
-support for multiple input devices first.
+--Message-Boundary-6663
+Content-type: text/plain; charset=US-ASCII
+Content-description: Mail message body
+Content-Transfer-Encoding: 7BIT
 
-> console switch signal... SVGA server even switches into textmode... But
-> they work in paralell. Also, maybe that you should run X on fb1 using
+On  1 Feb 99 at 15:30, Owen Waller wrote:
+> o.k. well the x86 board definelty doesn't... So we now have a more general
+> problem:
+> If I have two idential video boards in my Mac one "mac" specific which
+> shows up in the OF tree, and one that is x86 sourced and doesn't show up
+> under OF how can we initialise both boards correctly.
+If you have at least one matrox in your OF tree, driver will initialize
+all matroxes from offb. If you have no matrox in OF tree, driver will
+initialize them from matrox_init.
+> im my case matroxfb will become my primary head, but I'd still like access
+> to the internal (control) video in case soemthing in a new kernel dies
+> before matroxfb is initialised.
+Without offb you can set order by
+video=control: video=matrox:
+to get control first (or vice versa to get matrox first). With offb I do not
+know.
 
-Yes, XF86_SVGA switches to text mode on VC switch. BTW, have you tried
-XF86_SVGA with Gerd Knorr's patches to make it use fbdev? I assume that one
-will keep the display image on VC switch.
+So, attached patch adds back that matrox_init is called unless you
+specify `video=matrox:off' on command line. In this case, matrox can
+be still initialized through offb. If you specify `video=matrox:disabled',
+driver will be unavailable for offb too.
+Also, driver still does not use device_node passed to driver by offb
+because of no-one told me what I can expect in that variable... Driver
+uses nvram_read_byte(NV_VMODE & NV_CMODE) to set initial resolution if
+offb is enabled.
+                                    Best regards,
+                                        Petr Vandrovec
+                                        vandrove@vc.cvut.cz
 
-Greetings,
+P.S.: I hope that your list survive this 890 bytes long attachment.
+P.P.S.: As usual, cc-me if you have comments/question/...
+P.P.P.S.: If patch will not apply cleanly, apply Geert's scr_readw()
+patches first.
 
-						Geert
+--Message-Boundary-6663
+Content-type: text/plain; charset=US-ASCII
+Content-description: Text from file 'OW'
+Content-Transfer-Encoding: 7BIT
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+--- linux-2.2.1.dist/drivers/video/matroxfb.c	Fri Jan 15 22:56:49 1999
++++ linux/drivers/video/matroxfb.c	Mon Feb  1 16:55:56 1999
+@@ -4,7 +4,7 @@
+  *
+  * (c) 1998,1999 Petr Vandrovec <vandrove@vc.cvut.cz>
+  *
+- * Version: 1.9 1999/01/04
++ * Version: 1.13 1999/02/01
+  *
+  * MTRR stuff: 1998 Tom Rini <tmrini@ntplx.net>
+  *
+@@ -5743,20 +5748,26 @@
+ }
+ 
+ #ifndef MODULE
++static int __init initialized = 0;
++
+ __initfunc(void matroxfb_init(void))
+ {
+ 	DBG("matroxfb_init")
+-#if defined(CONFIG_FB_OF)
+-/* Nothing to do, must be called from offb */
+-#else	
+-	matrox_init();
+-#endif
++	
++	if (!initialized) {
++		initialized = 1;
++		matrox_init();
++	}
+ }
+ 
+ #if defined(CONFIG_FB_OF)
+ __initfunc(int matrox_of_init(struct device_node *dp)) {
+ 	DBG("matrox_of_init");
+-	matrox_init();
++	
++	if (!initialized) {
++		initialized = 1;
++		matrox_init();
++	}
+ 	if (!fb_list) return -ENXIO;
+ 	return 0;
+ }
 
+--Message-Boundary-6663--
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
