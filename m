@@ -1,56 +1,45 @@
-Date: Thu, 9 Mar 2000 18:46:43 +0100 (MET)
-From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.15pre11 on PB Lombard
-In-Reply-To: <20000308105356.021134@mailhost.mipsys.com>
-Message-ID: <Pine.SOL.3.95.1000309182200.26688A-100000@juliet>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v03110701b4eda44b28b7@[129.100.29.243]>
+In-Reply-To: <20000309201738.011546@mailhost.mipsys.com>
+References: <v03110700b4ed3e1295ce@[129.100.29.243]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 9 Mar 2000 14:01:38 -0500
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: IDE problems with 2.3.49?- same with 2.2.15pre3
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 8 Mar 2000, Benjamin Herrenschmidt wrote:
+Hi Ben,
 
-> On Tue, Mar 7, 2000, Derek Homeier <supas100@astrophysik.uni-kiel.de> wrote:
+>>Is there something different about recent G4 450s that I need to worry about?
 >
-> >... some 2^4 adresses or so follow, which I could write down if anyone
-> >will find them useful. I can't get anything beyond that, because xmon
-> >prints everything else black on black!
-> >
-> >This happens both with CONFIG_MAC_FLOPPY set or unset (the above is without
-> >floppy driver)
->
-> Check that you didn't include inadvertently the legacy PC floppy driver
->
-Oh right, CONFIG_BLK_DEV_FD dunnit! I wonder how I came to include it, since
-I usually start with pmac_defconfig and from that only remove stuff I don't
-need, except for few things like the USB drivers. It boots, however, and
-I even got the SUN12x22 font to work now, thank you!
-What's still causing problems is the DMA code, however. There's still the
+>Use yaboot, not BootX and tell me if you still have the problem.
 
-: hda: Enabling MultiWord DMA 2
-: hdc: packet command error: status=0x51 { DriveReady SeekComplete Error }
-: hdc: packet command error: error=0x54
-: ATAPI device hdc:
-:   Error: Illegal request -- (Sense key=0x05)
-:   Invalid field in command packet -- (asc=0x24, ascq=0x00)
-:   The failed "Start Stop Unit" packet command was:
-:   "1b 00 00 00 03 00 00 00 00 00 00 00 "
-: cdrom: open failed.
+I grabbed the yellowdog yaboot_0.4 (I can not get your yaboot_0.5 to
+uncompress properly) and started up with with the following yaboot.conf
 
-error on startup. I can't see if this is directly causing any problems, but
-the performance for hdc is frequently down to 0.8 MB/s. Apparently ejecting
-and reloading the disk is sufficient to bring it back to 1.6 MB/s, but after
-returning from sleep it's down again (this is the 24X CD-ROM on a 333 MHz
-PB 101, FYI). Well, at least I found an easy workaround now...
+image=zip:vmlinux.2.2.15pre3
+label=linuxppc
+append="root=/dev/hda12 video=aty128fb:vmode:18,cmode:32"
 
-I also noticed that power consumption during sleep had dramatically increased
-with the previous 2.2.15pre kernels; I'm currently checking out if that problem
-persists.
+And used the command-option-o-f settings to get the of prompt and then typed:
 
-Thanks again,
-							Derek
+boot zip:yaboot_0.4
+
+and at the yaboot prompt typed linuxppc
+
+Unfortunately I could not see the screen since it got split into 3 separate
+vertical panes (like the aty128fb.c problem that anthony fixed by removing
+the clock setting calls if you remember).
+
+I will try again with just the OF frame buffer and let you know what if any
+error messages about lost interrupts come up.
+
+Thanks,
+
+Kevin
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
