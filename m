@@ -1,44 +1,37 @@
-Message-ID: <39FD5054.77244045@centurysys.co.jp>
-Date: Mon, 30 Oct 2000 19:41:25 +0900
-From: Tania Boak <tania@centurysys.co.jp>
-MIME-Version: 1.0
-To: Erik Kunze <Erik.Kunze@philosys.de>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: pppd/pppoed
-References: <20001027103234.A24109@nphilos.philosys.de>
-Content-Type: text/plain; charset=iso-2022-jp
+Message-Id: <39FD8ADF.268A4CE1@fht-esslingen.de>
+Date: Mon, 30 Oct 2000 15:51:11 +0100
+From: Matthias Kienle <Matthias.Kienle@fht-esslingen.de>
+Reply-To: Matthias.Kienle@stz-softwaretechnik.de
+Mime-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Building a AIX Cross Compiler
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Erik
+Hi *,
 
-If you would prefer not to cross compile, Century Systems has a MPC860T based
-linux product with an optional hard disk on which you can compile both pppd and
-pppoed.  Details at
-http://www.centurysys.co.jp/product/eserver/eserverindex.html.
+I try to structure a cross compiler. The binutils were already
+successfully compiled (with a gcc bin packages for aix). Unfortunately I
+receive an error during compiling the gcc-core. I compile the packages
+with a AIX 4.3 system. I use a gcc compiler (bin packages for aix) to
+compile the gcc-core (same as I used for the binutils). The error output
+shows me trouble with the ld. ld returned 12. The text which comes with
+the return code is:
 
-Tania
+ld: 0711-781 ERROR: TOC overflow. TOC size: 68908       Maximum size:
+65536
+collect2: ld returned 12 exit status
 
-Erik Kunze wrote:
+Is there anybody who could help me?
 
-> Hi,
->
-> I'm trying to port pppd and pppoed to a MPC860T based embedded board
-> using Hard Hat 1.2 for cross developement. Unfortunately both packages
-> aren't designed for cross compiling.
->
-> Did anyone already port these programs to embedded Linux/PPC?
->
-> Erik
-> --
->    Dipl.-Ing. Erik Kunze               Phone: +49 - 89 - 32 14 07 41
->    PHILOSYS Software GmbH              Fax:   +49 - 89 - 32 14 07 12
->    Edisonstr. 6                        Email: Erik.Kunze@philosys.de
->    D-85716 Unterschleissheim           WWW:   www.philosys.de/~kunze
->
->         PGP-Key: http://www.philosys.de/~kunze/public_key.txt
->
+ciao Matthias
 
++---------------------------------------------------------+
+| Matthias Kienle                                         |
+|    Fachhochschule fuer Technik Esslingen                |
+|    (mailto:Matthias.Kienle@fht-esslingen.de)            |
++---------------------------------------------------------+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
