@@ -1,26 +1,32 @@
-Message-ID: <36AE55DB.96CC94ED@jps.net>
-Date: Tue, 26 Jan 1999 15:55:07 -0800
-From: Keith Clayton <kclayton@jps.net>
-Reply-To: kclayton@jps.net
+Date: Tue, 26 Jan 1999 16:26:46 -0800 (PST)
+From: Matt McLean <keys@yikes.com>
+To: Ira Joseph Woodhead <ira@wrath.iatlas.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: pre-R5 deficiencies
+In-Reply-To: <199901262207.RAA06012@wrath.iatlas.com>
+Message-ID: <Pine.BSF.4.01.9901261618270.18799-100000@brio.yikes.com>
 MIME-Version: 1.0
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: glibc 2.1?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-My understanding is that one of the holdups for r5 is glibc2.1  Anyone
-privy to glibc2 development?  I've been putting on hold any non-critical
-upgrades/compilations b/c I'd like to link against glibc2 and not have
-to visit the whole libc5, glibc2, fix0961212 adventure.  I haven't seen
-anything  mentioned on the lists but I've seen a glibc2.0.1xx rpm on
-ftp.linuxppc.org.
+On Tue, 26 Jan 1999, Ira Joseph Woodhead wrote:
 
+> What is the reasoning behind including a findutils in pre-R5 that has no
+> updatedb binary?? It even has scripts that use updatedb (cron jobs) but
+> no updatedb binary. Furthermore, 'rpm -qlp *.rpm' reveals that it is not
+> included in any package.
 
-TIA,
-Keith Clayton
-kclayton@jps.net
+<snip>
+
+This was a decision made by redhat.  According to a note from Erik Troan
+in the spec file, you're supposed to use Secure Locate (slocate) instead.
+As for why a cron script that uses updatedb is still included, I don't
+know. :-)
+
+m.
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
