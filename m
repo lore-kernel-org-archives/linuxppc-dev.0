@@ -1,33 +1,34 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: "Marcus H. Mendenhall" <mendenmh@telalink.net>,
-        <linuxppc-dev@lists.linuxppc.org>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: (more) 2.4 problems / G4/500/1GB dual processor / USB
-Date: Fri, 1 Sep 2000 16:42:38 +0200
-Message-Id: <20000901144238.2387@mailhost.mipsys.com>
-In-Reply-To: <20000901144114.29642@mailhost.mipsys.com>
-References: <20000901144114.29642@mailhost.mipsys.com>
+Message-ID: <39AFC193.D492A0B@student.ethz.ch>
+Date: Fri, 01 Sep 2000 16:47:47 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: asm statement in include/asm not ansi conform
+References: <39AF9699.5529818B@student.ethz.ch> <20000901143751.6724@mailhost.mipsys.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Benjamin Herrenschmidt wrote:
 >
->>I get a series of PCI address conflicts when probing the PCI bus
->>which result in my ethernet card not being able to be turned on. I am
->>not using the built-in GMAC, but an older Apple 10/100 PCI card. This
->>does not happen with the linux-pmac-stable kernel.
+> >
+> >The PLL and clock values are bogus. You could try overriding the clock
+> > values in XF86Config.
 >
->With recent kernels, GMAC works nicely. Several people (including me) are
->working on solving those PCI problems.
+> Maybe the DRI tree doesn't contain the PLL probe code for PPC ?
 
-Oops, I didn't notice you were using a dual-G4. I've not yet merged the
-GMAC changes for this machine in 2.4, but if you rsync my current 2.2
-tree, you should have a working GMAC driver (and no PCI conflicts BTW).
-I'm waiting for some older patches to be accepted by Linus before hacking
-more on the bk tree.
+Not maybe ;)
 
-Ben.
+(When) Will that code be submitted to XFree86 BTW?
 
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
