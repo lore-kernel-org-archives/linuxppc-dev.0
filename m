@@ -1,36 +1,37 @@
-Message-ID: <3B8A8FEC.172413E5@raleigh.ibm.com>
-Date: Mon, 27 Aug 2001 14:22:36 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Elan Feingold" <elan@nxnetworks.com>
+To: <wd@denx.de>, <kenneth.johansson@inn.ericsson.se>
+Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Driver question 
+Date: Mon, 27 Aug 2001 13:25:58 -0500
+Message-ID: <NDBBLJLFCLLGDHJPGKGCCECFEEAA.elan@nxnetworks.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>,
-	Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: support for only 255 processes on a 405
-References: <3B8A3145.8F73BDA2@raleigh.ibm.com> <3B8A8E16.B26A9254@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <20010826204606.0BC8A10CBE@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan
+> > One of them lives at 0x84000800 (above 2Gb!).
+> That's a physical address, right?
 
-Perhaps i dont understand.  It looks like from the code that process id
-and pids dont match.  Could you explain how this code works.
+Correct.
 
-Chip
+> Ummm... you must have been doing something wrong.
 
-Dan Malek wrote:
->
-> Ralph Blach wrote:
-> >
-> > Is there any support for having a special case for the 405 that would
-> > limit the number of processes to 255.  This means that the pid and
-> > context could be the same.  This might be a performance gain.
->
-> The PID and context are already reused until there are more than 255
-> (or whatever the MMU can support) active processes.  There isn't a
-> special case needed, this is generic to all PowerPC with small context
-> space resources.
->
->         -- Dan
+Yep, I wasn't page aligning the 0x8400800 8-)  That did it.
+
+> You can use mmap(), but of course  you  need  a  device  driver  that
+> provides such a mmap() interface.
+
+It didn't sound like Kenneth was using a device driver (is that correct,
+Kenneth?).  Is the driver used to provide additional features (like making
+sure the memory is not cached, etc.)?
+
+I'm confused 8-)  Thanks in advance for any help you can provide.
+
+-elan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
