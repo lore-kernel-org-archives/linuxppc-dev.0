@@ -1,24 +1,25 @@
-Message-ID: <37D0F88E70D96C428C19EEB865701A3801FD0B48@buda902a.siemens.hu>
-From: =?windows-1250?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.com>
-To: Xupei Liang <tliang@yahoo.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Unused sectors in the ATA drive
-Date: Thu, 15 Jan 2004 08:00:59 +0100
+From: Amit.Lubovsky@infineon.com
+Message-ID: <AD2F581BD7340A4C908AF1AFB066EA3B0E49C4@ntah901e.savan.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Nick.Pur@infineon.com
+Subject: pci interrupt routing MBX860
+Date: Thu, 15 Jan 2004 13:34:32 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="windows-1250"
+	charset="windows-1255"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-1. Yes.
-    You have to share this area with many (old, mainly DOS oriented)
-viruses.
-2. No.
-    Intelligent programmers (like You and I) don't use unused areas.
+Hi,
+I try to route a pci interrupt on the MBX860
+As I understand I have to configure the Winbond bridge including
+the programmable interrupt controller.
+I haven't found any documentation or any example of how to do it.
+I will appreciate any help regarding the above and also any more info
+about how to perform the interrupt routing from the pci to the cpu.
 
-> -----Eredeti üzenet-----
-> Feladó: Xupei Liang [mailto:tliang@yahoo.com]
-[snip]
+Thanks,
+Amit.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
