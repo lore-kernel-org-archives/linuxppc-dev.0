@@ -1,30 +1,43 @@
 Subject: Re: ibook G4 Status Report
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 To: cpistagna@vrlteam.org
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Cc: linuxppc-dev@lists.linuxppc.org
 In-Reply-To: <20040222111847.GX2289@adapter.n0skillz.org>
 References: <20040222111847.GX2289@adapter.n0skillz.org>
-Content-Type: text/plain
-Message-Id: <1077484051.852.77.camel@gaston>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1077644505.14639.94.camel@thor.asgaard.local>
 Mime-Version: 1.0
-Date: Mon, 23 Feb 2004 08:07:31 +1100
+Date: Tue, 24 Feb 2004 18:41:46 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> finally, i'm using a 2.6.1-ben1 with no additional patch or workaround.
+On Sun, 2004-02-22 at 12:18, Costantino Pistagna wrote:
 >
-> i've not tried your suggested hack for the turn back to console problem.
-> next week i'll find a couple of minutes to patch X and i'll write a
-> report onto this list.
+> Now the second screen switch in clone-mode without any problem. The only
+> trouble is that the output resolution is the same of the embedded lcd,
+> so the max res that i can use is 1024x768; no matter about the paramters
+> specified in XF86Config.
 
-The mode used for cloning the display is picked by the X driver
-according to strange rules I don't fully get at this point ;)
+You need to set up either multiple screens or clone modes to go beyond
+that.
 
-Regarding the switch to console, commenting out the various call
-to vgaHWxxxx in RADEONSave() & RADEONRestore() may help.
+> If it's usefull, i've patched my OF to unlock the video resolutions as
+> described in some howtos on the net.
 
-Ben.
+Only Mac OS cares about that, in order to artificially cripple iBooks.
+
+
+> if you've readed carefully above, i've to disable the second screen in
+> ServerLayout; if i turn it on the system start with an 8bits ColorDepth.
+> I've no idea about this...maybe i've done some mistake.
+
+Impossible to tell without seeing the server log.
+
+
+--
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
