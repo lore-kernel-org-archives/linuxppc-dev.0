@@ -1,106 +1,136 @@
-From: v.sudeep@exgate.tek.com
-Message-ID: <301A812E6528D511A8F70008C71E57860290F707@ap-bang-m02.india.tek.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Loading Linux on the Walnut Board
-Date: Fri, 5 Dec 2003 02:40:12 -0800 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: problem using both mpc857dsl fec and scc1
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: Dennis Khoo <dkhoo@atmxdsl.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <003f01c3b9fa$c66e0f10$7ec7c7c7@dkhoo>
+References: <019501c3b9c5$b339a060$0400a8c0@eurostudio.local>
+	 <003f01c3b9fa$c66e0f10$7ec7c7c7@dkhoo>
+Content-Type: text/plain
+Message-Id: <1070622713.28153.5.camel@linpc003.aimsys.nl>
+Mime-Version: 1.0
+Date: Fri, 05 Dec 2003 12:11:53 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi !!!
+Hi,
 
-I am a Linux newbie.. And recently I was trying to bring up the Walnut Board
-with Linux and found that the documentation for the whole thing was vastly
-inadequate. So I decided to pen my experience for everyone else's benefit.
-So here goes....
-Regs
-Sudeep V
+I would say to double check your parallel port I/O settings
 
+Jaap-Jan
 
-
-Aim: As a first step in the process of learning about Embedded Linux, we
-thought we would try the relatively easy part of trying to bring up Linux on
-the Walnut Board.
-
-Specifications:
-Host Machine : Intel x86 having Red Hat 9 installed (& Intel x86 having Red
-Hat 7.0 installed for compiling the kernel since we had issues with RH9)
-Target Board: IBM Walnut board - 405GP with PowerPC processor.
-Cross-Compiler: MonteVista Hard Hat Linux 2.0  for the ibm-walnut board
-
-The Success Story:
-1. Connected the PPC board to the Host machine by the serial cable and the
-network cable. Started minicom (version 1.83.1) which is being used as the
-serial communication program.
-2. Using minicom set the local(walnut board) and remote(host) ip-address.
-3. Set up and start the Internet Boot Protocol Server(bootpd implements an
-Internet Bootstrap protocol{BOOTP} server) in standalone mode (we used it
-with debug level 5 ----  /usr/sbin/bootpd -d5). In the config file
-/etc/bootptab, specify the following:
-*	Bootfile Home Directory (hd),
-*	Bootfile (bf),
-*	Host IP Address (ip),
-*	TFTP server address client should use(sa),
-*	Host subnet mask (sm),
-*	Host Hardware address (ha),
-*	Root path to mount as root(rp).
-
-4. Start the ftp service Trivial File Transfer Protocol (TFTP - A simple
-file transfer protocol used for down-loading boot code to diskless
-workstations.) /usr/sbin/in.tftpd
-
-5.  Building the kernel image: We had issues compiling the MonteVista Hard
-Hat 2.0 kernel source from the Red Hat 9 Host machine (probably due to a
-incompatible version of Perl). So we installed the MonteVista Hard Hat 2.0
-kernel on a Red Hat Linux 7.0 machine. And built the kernel as usual.
-Steps while building the kernel
-*	cd /opt/hardhat/devkit/lsp/ibm-walnut/linux-2.4.2_hhl120/
-*	make walnut_image
-*	make mrproper
-*	make clean
-*	make dep
-*	make zImage
-
-6. The image created is available at
-/opt/hardhat/devkit/lsp/ibm-walnut/linux-2.4.2_hhl120//arch/ppc/boot/images/
-as vmlinux.tree.img.
-Copy this to the /tftpboot/ directory or wherever the Bootfile Home
-Directory has been set to.
-
-7. Now power on or reset the board and Bingo !!!! the kernel must be loading
-....
-
-Lessons Learnt:
-1. This whole exercise was very useful in understanding the way things are
-done in the embedded world.
-2. We have begun to understand the  A B Cs involved in bringing up a board.
-3. Never trust anything. After installing MonteVista Hard Hat Linux on the
-Host machine with RH9, we tried to build the kernel for the target board.
-After many unsuccessful attempts and a little bit of debugging, we realised
-that probably the errors were due to the incompatible versions of Perl. (RH7
-uses Perl v5.6.0 while RH9 uses Perl v5.8.0)
-4. Leave no stone unturned. After successfully building the kernel, we had
-to search with quite a few of files created to find which was the correct
-image. Most of the documentation that we found on the net did misguide us on
-this count.
-5. Its fun to work with stuff with very less documentation. But there are
-many people having trouble getting things working in this field, we are not
-alone......
-
-
-
-Notes :
-TFTP (Trivial File Transfer Protocol) is used on light-weight Internet
-devices in order to transfer files. Specifically, it is one of the most
-popular methods for "remote booting". It is such a simple protocol that it
-can be implemented within the firmware on network devices that do not
-contain hard-disks. It is often used in conjunction with bootp
-<http://www.iss.net/security_center/advice/Services/bootp/default.htm>: the
-device first contacts the bootp server, which then tells it which TFTP to
-load the "boot image" from.
+On Thu, 2003-12-04 at 01:08, Dennis Khoo wrote:
+> Hi all,
+>
+> I'm having a peculiar problem.
+>
+> Briefly, my platform is MPC857DSL IAD board from Motorola.  I'm using U-boot
+> 0.4.8 to bootp the kernel(2.4.18 and 2.4.22)  through SCC1 and then load
+> NFS.   If I configure the kernel with only SCC1, then everything works
+> well(NFS works and ping through eth0 works).  If I configure the kernel with
+> only FEC (in fec.c PDPAR[UT]=0,UTMOD[SPLIT]=1,ENCTRL[FEC_PIN_MUX]=1), then
+> everything works well through FEC which is hooked up to a RealTek RTL8305S
+> switch.
+>
+> But if I configure the kernel to use both SCC1 and FEC, SCC1 works and FEC
+> doesn't.  NFS and ping run well through SCC1(eth0).  But when I try to ping
+> out through FEC(eth1), I get ring buffer dumps and no ping response:
+>
+> NETDEV WATCHDOG: eth1: transmit timed out
+> eth1: transmit timed out.
+> Ring data dump: cur_tx c1fa8100, tx_free 0, dirty_tx c1fa8100, cur_rx
+> c1fa8020
+>  tx: 16 buffers
+>   c1fa8100: 9c00 002a 01f868c2
+>   c1fa8108: 9c00 002a 01f86842
+>   c1fa8110: 9c00 002a 01f867c2
+>   c1fa8118: 9c00 002a 01f86742
+>   c1fa8120: 9c00 002a 01f866c2
+>   c1fa8128: 9c00 002a 01f86642
+>   c1fa8130: 9c00 002a 01f865c2
+>   c1fa8138: 9c00 002a 01f86542
+>   c1fa8140: 9c00 002a 01f864c2
+>   c1fa8148: 9c00 002a 01f86442
+>   c1fa8150: 9c00 002a 01f863c2
+>   c1fa8158: 9c00 002a 01f86342
+>   c1fa8160: 9c00 002a 01f862c2
+>   c1fa8168: 9c00 002a 01dafbe2
+>   c1fa8170: 9c00 002a 01dafb62
+>   c1fa8178: bc00 002a 01dafce2
+>  rx: 32 buffers
+>   c1fa8000: 8880 0252 01fa7000
+>   c1fa8008: 8880 0040 01fa7800
+>   c1fa8010: 8880 0162 01fa6000
+>   c1fa8018: 8880 0040 01fa6800
+>   c1fa8020: 8000 0000 01fa5000
+>   c1fa8028: 8000 0000 01fa5800
+>   c1fa8030: 8000 0000 01fa4000
+>   c1fa8038: 8000 0000 01fa4800
+>   c1fa8040: 8000 0000 01fa3000
+>   c1fa8048: 8000 0000 01fa3800
+>   c1fa8050: 8000 0000 01fa2000
+>   c1fa8058: 8000 0000 01fa2800
+>   c1fa8060: 8000 0000 01fa1000
+>   c1fa8068: 8000 0000 01fa1800
+>   c1fa8070: 8000 0000 01fa0000
+>   c1fa8078: 8000 0000 01fa0800
+>   c1fa8080: 8000 0000 01f9f000
+>   c1fa8088: 8000 0000 01f9f800
+>   c1fa8090: 8000 0000 01f9e000
+>   c1fa8098: 8000 0000 01f9e800
+>   c1fa80a0: 8000 0000 01f9d000
+>   c1fa80a8: 8000 0000 01f9d800
+>   c1fa80b0: 8000 0000 01f9c000
+>   c1fa80b8: 8000 0000 01f9c800
+>   c1fa80c0: 8000 0000 01f9b000
+>   c1fa80c8: 8000 0000 01f9b800
+>   c1fa80d0: 8000 0000 01f9a000
+>   c1fa80d8: 8000 0000 01f9a800
+>   c1fa80e0: 8000 0000 01f99000
+>   c1fa80e8: 8000 0000 01f99800
+>   c1fa80f0: 8000 0000 01f98000
+>   c1fa80f8: a000 0000 01f98800
+>
+>
+> Doing an ifconfig gives me......(TX errors continue to accumulate
+> indefinitely even after I stop ping)
+>
+> eth0      Link encap:Ethernet  HWaddr 00:02:87:55:66:77
+>           inet addr:199.199.199.129  Bcast:199.199.199.255
+> Mask:255.255.255.0
+>           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:1538 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:698 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:100
+>           RX bytes:1787601 (1.7 Mb)  TX bytes:102816 (100.4 kb)
+>           Base address:0x3c00
+>
+> eth1      Link encap:Ethernet  HWaddr 00:02:87:D5:66:77
+>           inet addr:192.168.2.129  Bcast:192.168.2.255  Mask:255.255.255.0
+>           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:4 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:0 errors:5 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:100
+>           RX bytes:1076 (1.0 kb)  TX bytes:672 (672.0 b)
+>           Base address:0xe00
+>
+> lo        Link encap:Local Loopback
+>           inet addr:127.0.0.1  Mask:255.0.0.0
+>           UP LOOPBACK RUNNING  MTU:16436  Metric:1
+>           RX packets:21 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:21 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:0
+>           RX bytes:2352 (2.2 kb)  TX bytes:2352 (2.2 kb)
+>
+>
+> Any help is deeply appreciated.
+>
+> Thanks,
+> Dennis Khoo
+> Software Engineer
+> Adapcom, INC.
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
