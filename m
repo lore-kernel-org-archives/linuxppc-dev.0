@@ -1,42 +1,31 @@
-From: "Christophe Hannoyer" <christophe.hannoyer@men-france.fr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Baud rate for synchronous/asyncronous device driver.
-Date: Mon, 30 Jun 2003 19:34:10 +0200
-Message-ID: <KIEIKPGDNIEHFJHOLDKGKENACCAA.christophe.hannoyer@men-france.fr>
-MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-15"
+From: Rakesh jagota <j.rakesh@gdatech.co.in>
+Reply-To: j.rakesh@gdatech.co.in
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problem with kernel loading in PPC IBM405 based board
+Date: Thu, 6 Nov 2003 20:05:59 +0530
+MIME-Version: 1.0
+Message-ID: <f4sdizk28w071ij.110620032000@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi all,
+I am working on PPC IBM 405 based processor board. I have kernel from
+"montavista" 2.4.17-mv121 version. I have tried to put the vmlinux image in
+the "SDRAM" after doing the all initialization (in boot level).
 
-I'm currently developing a device driver for Triple Communication
-Controller. The diver managed two modes (asynchronous or synchronous)
-because each serial line could be independently configured as synchronous or
-asynchronous.
+We are loading the vmlinux in SDRAM at 0x00020000. I am not able to see any
+debug message on the serial port. I am not sure about the kernel jump
+location. Is there any way to find out the exact location to load the kernel
+and jump to proper location.
 
-My request is concerning the configuration of the baud rate. In asynchronous
-mode, there is no problem. I used the standard method (stty command for
-example) and the standard predefine baud rates. Now I need in synchronous
-mode to be able to configure the baud rate at any custom value (and not
-predefined or fixed values).
 
-One solution could be to use the spd_cust mode and the divisor. But with
-this solution I can't set any values and I'm limited by pre-define values
-too (baud_base, baud_base / 2, baud_base / 3 ...)
-An other solution could be to use the baud_base to set the baud rate. I
-don't like this one because it's not the standard use of baud_base and could
-be disturbing for the next users of this driver.
 
-Any solution will be welcome.
+Thanks & Regards,
 
-Best regards,
-
-Christophe Hannoyer
-MEN Mikro Elektronik
-www.men-france.fr
+Rakesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
