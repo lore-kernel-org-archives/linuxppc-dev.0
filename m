@@ -1,131 +1,45 @@
-Date: Mon, 29 Jul 2002 18:17:02 +0100
-From: Russell King <rmk@arm.linux.org.uk>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.linuxppc.org
-Subject: 3 Serial issues up for discussion (was: Re: Serial core problems on embedded PPC)
-Message-ID: <20020729181702.E25451@flint.arm.linux.org.uk>
-References: <20020729040824.GA2351@zax> <20020729100009.A23843@flint.arm.linux.org.uk> <20020729144408.GA11206@opus.bloom.county>
+Date: Mon, 29 Jul 2002 10:43:41 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 3 Serial issues up for discussion (was: Re: Serial core problems on embedded PPC)
+Message-ID: <20020729174341.GA12964@opus.bloom.county>
+References: <20020729181702.E25451@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020729144408.GA11206@opus.bloom.county>; from trini@kernel.crashing.org on Mon, Jul 29, 2002 at 07:44:08AM -0700
+In-Reply-To: <20020729181702.E25451@flint.arm.linux.org.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 29, 2002 at 07:44:08AM -0700, Tom Rini wrote:
-> On Mon, Jul 29, 2002 at 10:00:10AM +0100, Russell King wrote:
-> > Unless ppc and others are willing to put up with major breakage when I
-> > change asm/serial.h, I don't see this getting cleaned up.  Comments on
-> > this area welcome.
+On Mon, Jul 29, 2002 at 06:17:02PM +0100, Russell King wrote:
+
+
+> 1. Serial port initialisation
+> -----------------------------
 >
-> Well, what changes do you have in mind?
+> Firstly, one thing to bear in mind here is that, as Alan says "be nice
+> to make sure it was much earlier".  I guess Alan's right, so we can get
+> oopsen out of the the kernel relatively easily, even when we're using
+> framebuffer consoles.
+>
+> I'm sure Alan will enlighten us with his specific reasons if required.
+>
+> There have been several suggestions around on how to fix this table:
+>
+> a. architectures provide a sub-module to 8250.c which contains the
+>    per-port details, rather than a table in serial.h.  This would
+>    ideally mean removing serial.h completely.  The relevant object
+>    would be linked into 8250.c when 8250.c is built as a module.
 
-Firstly, apologies to Tom for turning this into a general discussion
-mail.  At the request of Tom, this message is also CC:'d to the PPC
-devel lists.
-
-There's quite a lot in here, so please, when replying edit out stuff
-your not replying to.  Thanks.
-
-
-1. Serial port initialisation
------------------------------
-
-Firstly, one thing to bear in mind here is that, as Alan says "be nice
-to make sure it was much earlier".  I guess Alan's right, so we can get
-oopsen out of the the kernel relatively easily, even when we're using
-framebuffer consoles.
-
-I'm sure Alan will enlighten us with his specific reasons if required.
-
-There have been several suggestions around on how to fix this table:
-
-a. architectures provide a sub-module to 8250.c which contains the
-   per-port details, rather than a table in serial.h.  This would
-   ideally mean removing serial.h completely.  The relevant object
-   would be linked into 8250.c when 8250.c is built as a module.
-
-b. we create 8250_hub6.c, 8250_generic.c, 8250_multiport.c and friends
-   each containing the parameters for the specific cards and handle it
-   as above.
-
-c. make it the responsibility of user space to tell the kernel about
-   many serial ports, and leave just the ones necessary for serial
-   console in the kernel.  (see issue 2 below)
-
-d. we keep serial.h, make it 8250-compatible ports only, and change
-   CONFIG_SERIAL_MULTIPORT and friends to CONFIG_SERIAL_8250_MULTIPORT
-   This is the simplest and least likely to break other code.  On the
-   other hand, we end up hauling the ISA table and struct old_serial_port
-   into 2.6.
-
-
-2. setserial API
-----------------
-
-This is actually tied closely into another issue; I'd like to get rid
-of this silly idea where we're able to open serial ports that don't
-exist (ie, their UART is "unknown").  This behaviour appears to be for
-the benefit of setserial to allow it to modify port base addresses and
-interrupt levels, etc.  Removing this facility would require a new API
-for such things.  The best suggestion made so far is to do something
-like:
-
-# echo "add 0x2e8,3,autoconfig" >/dev/serialctl
-# echo "remove 0x2e8" >/dev/serialctl
-
-(or s,/dev/serialctl,/proc/tty/driver/serial, which pre-exists)
-
-where we have "add ioport,irq,flags" and "remove ioport" (note that
-mmio ports aren't covered here since they require ioremap games which
-tends to be card specific!)
-
-Why make this change?  Well, we have quite a lot of baggage being
-dragged around to support configuration of an open port and being
-able to open a non-existent port.  I'd really like to get rid of
-this excess baggage.
-
-
-3. /dev/ttyS*, /dev/ttySA*, /dev/ttyCL*, /dev/ttyAM*, etc
----------------------------------------------------------
-
-All the above are serial ports of various types.  It has been expressed
-several times that people would like to see all of them appear as
-/dev/ttyS* (indeed, there was an, erm, rather heated discussion about
-it a couple of years ago.)  I'm going to be neutral on this point
-here.
-
-There are several issues surrounding this:
-
-a. The serial core.c is very almost capable of handling this abstraction,
-   with one exception - a registered port can only be in one group at
-   one time.  This restriction is brought about because of the way the
-   tty layer handles its tty ports.
-
-   (Handling dual registrations in two different majors gets _really_
-    messy - eg, you two built-in 16550A ports and two SA1100 ports
-    taking up ttyS0 to ttyS3.  You then add a 16550A PCMCIA modem,
-    which becomes ttyS4.  Oh, and the SA1100 ports are also appearing
-    as ttySA0 and ttySA1.  _really_ messy.  No thanks.)
-
-b. serial consoles.  Each hardware driver handles its serial consoles
-   by itself, and if you have two or more hardware drivers built in
-   with serial console support, you need to be able to tell them apart
-   with the console= kernel parameter.
-
-   Again, this could be solvable if we have one "ttyS" view of everything
-   (core.c would then be responsible for registering the console with
-    printk.c and passing the various methods off to the relevant
-    hardware).
-
-c. People with many serial ports.  We _could_ change the device number
-   allocations such that ttyS gobbles up the ttySA, ttyCL, ttyAM, etc
-   device numbers so we end up with the same number of port slots
-   available for those with many many serial ports in their machines.
-
-
+I think this would work best.  On PPC this would allow us to change the
+mess of include/asm-ppc/serial.h into a slightly cleaner Makefile
+(especially if we do the automagic <platforms/platform.h> or
+<asm/platform.h> bit that's been talked about in the past) magic and we
+could use that object file as well in the bootwrapper as well.
 
 --
-Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
-             http://www.arm.linux.org.uk/personal/aboutme.html
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
