@@ -1,49 +1,29 @@
-To: Song Sam <samlinuxppc@yahoo.com.cn>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [patch]Make 2.6.7 kernel "make uImage" work for RPXlite DW 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 18 Jul 2004 06:41:38 +0800."
-             <20040717224138.36870.qmail@web15205.mail.bjs.yahoo.com>
-Date: Sun, 18 Jul 2004 11:10:06 +0200
-Message-Id: <20040718091011.3CBFCC109F@atlas.denx.de>
+Message-ID: <001a01c46d43$efe4eb50$212d4cdc@smkim>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: "Arun Prasad Velu" <arun@ossi.co.in>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <NIBBKGBHPKFDFAOHCGBLAECMCAAA.arun@ossi.co.in>
+Subject: Re: Cross compiling for VxWorks/PowerPC Target from a Linux/x86 Machine
+Date: Mon, 19 Jul 2004 12:53:15 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040717224138.36870.qmail@web15205.mail.bjs.yahoo.com> you wrote:
+Hi,
+
 >
-> I found that the current 2.6.7 kernel "make uImage"
-> can make pass but didn't work with U-Boot on RPXlite
-> DW board.This fault is about bd_t,a FAQ in
-> DULG-13.2.5.Linux hangs after uncompressing the
-> kerne.So I make a patch against bk linuxppc-2.5 tree
-> as following.Wolfgang,could you check it?
+> I'd like to know how feasible is it to cross compile for a VxWorks/PowerPC
+> Target from a Linux/x86 Machine?
 
-Sorry, I cannot. I don't have write permision on the  BK  trees.  Try
-submitting a patch to this list oand/or the maintainers.
+I think http://vxtools.sourceforge.net/ is a good starting point.
+The project is an attempt to make open source vxworks tools running on Linux
+and have the link to the vxworks compiler sources.
 
-> 1.Why 2.6.x kernel still use ppcboot.h rather than
-> u-boot.h?Anyway,ppcboot is a past thing.
+Regards,
+Sangmoon Kim
 
-You are right. Probably nobody bothered to submit a patch.e
-
-> 2.Could <asm/ppcboot.h> include in rpxlite.h or
-> <BOARD.h> to replace bd_t a better idea all the time?
-
-Don't assume that everybody wants to use U-Boot. Maybe this  should be
-made dependent on CONFIG_UBOOT like they did for the 5200 [in 2.4].
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"We all agree on the necessity of compromise. We just can't agree  on
-when it's necessary to compromise."
-                - Larry Wall in  <1991Nov13.194420.28091@netlabs.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
