@@ -1,32 +1,31 @@
-Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B87C888@zcard0k8.ca.nortel.com>
-From: "Andrew Williams" <awilliam@nortelnetworks.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: FW: Code Clean-Up
-Date: Mon, 26 Apr 2004 14:50:24 -0400
+In-Reply-To: <20040426190138.4392EC109F@atlas.denx.de>
+Subject: Re: libjpeg
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF2F145C49.BE0B4823-ON85256E82.007533AB-85256E82.00754FEC@nanometrics.ca>
+From: David Ho <DavidHo@nanometrics.ca>
+Date: Mon, 26 Apr 2004 17:21:21 -0400
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Re-send due to outlook HTML formatting issues...
+> > Is there an idiot's guide to run the configure script to generate a
+>
+> "configure --help" may help ;-)
+>
+> > makefile that uses a cross-compiler instead of the native gcc.  I like
+to
+> > build it from my ix86 box.  I'm getting a headache from googling...
+>
 
+This seems to do the trick.
 
------Original Message-----
-Sent: April 26, 2004 10:52 AM
-To: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Code Clean-Up
+CC=ppc-linux-gcc ./configure --disable-shared ppc-linux
+--prefix=/home/davidho/usr/local
 
+David
 
-What's the current view/policy on code cleanup?
-Eg. immap_8260.h vs 8xx_immap.h
-
-  Furthermore each unit that accesses the immap, has to conditionaly select
-the target platform header file.
-
-I'm proposing a single immap.h file, that conditionaly selects either
-immap_8260.h, or 8xx_immap.h (possibly renamed to immap_8xx.h).
-
-  Do people want to see this type of restructure/patch?
-
-Andrew
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
