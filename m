@@ -1,106 +1,122 @@
-Date: Sat, 26 Feb 2000 13:37:46 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Jeff Garzik <jgarzik@mandrakesoft.com>
-cc: "Brandon S. Allbery KF8NH" <allbery@kf8nh.apk.net>,
-        Brad Parker <brad@parker.boston.ma.us>,
-        linuxppc-dev@lists.linuxppc.org,
-        Linux Kernel List <linux-kernel@vger.rutgers.edu>
-Subject: Re: 2.3.47 imac build?
-In-Reply-To: <38B8286A.45F64EAD@mandrakesoft.com>
-Message-ID: <Pine.LNX.4.10.10002261334130.32104-200000@shell.unixbox.com>
+Date: Mon, 28 Feb 2000 02:29:42 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc
+ with r128
+In-Reply-To: <v03110700b4dd777b032a@[209.183.136.166]>
+Message-ID: <Pine.LNX.4.21.0002280213230.19278-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-741392083-115030922-951601066=:32104"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+On Sat, 26 Feb 2000, Kevin B. Hendricks wrote:
 
----741392083-115030922-951601066=:32104
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ Thats the responces i got back from the xfree list about the usb mouse
+problems in 3.9.18, the bit about drivers/usb/mouse.c not setting the
+the bit 3 correctly in the first data byte seems intresting, maybe the
+problem is in our side ?
 
+  Kostas
 
-This little buglet is fixed with the attached patch i made a while back.
-although it is really not needed anymore since cort tells me its fixed
-(see 48pre probably, or bk).  anyhow, abs() is defined in misc.S.
-but for those building 2.3.47 and don't want to see that annoying warning,
-this patch will be fine.
+----------------------------------------------------------------------
 
+>From yokota@zodiac.mech.utsunomiya-u.ac.jp Mon Feb 28 02:12:31 2000
+Date: Sat, 26 Feb 2000 16:22:32 +0900
+From: Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
+Reply-To: devel@XFree86.Org
+To: devel@XFree86.Org
+Cc: yokota@zodiac.mech.utsunomiya-u.ac.jp
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc
+     with r128 (fwd)
 
-ani
+linuxppc doesn't have the PS/2 mouse port, does it?  Then, why do they
+want to use the IMPS/2 protocol on the linuxppc machine?  If they are
+trying to use the USB version of IntelliMouse, they shouldn't be needing
+IMPS/2.
 
+Anyway, if they somehow do use the PS/2 version of the IntelliMouse on
+the PS/2 mouse port...
 
-On Sat, 26 Feb 2000, Jeff Garzik wrote:
+We need to know exact model of his mouse.  Some mice are not very
+compatible with the others.  I have genuine MS IntelliMouse,
+IntelliMouse Explorer, Wheel Mouse, IntelliMouse Trackball, and they
+are all fine with 3.9.18.  But, as there are quite a number of
+slightly different models of IntelliMouse, there may be some which
+aren't so compatible with the others.
 
+He is talking about the IMPS/2 spec.  AFAIK, Microsoft has not
+released the official document describing the IntelliMouse protocol.
+If he has the official spec, I would like to see it.
+
+In any case, does anybody else has IntelliMouse which worked in 3.9.17
+or before, but not in 3.9.18?  We broke IMPS/2 support somewhere
+around 3.9.17d and it wasn't (supposedly) fixed until 3.9.17Z.  I
+would like to believe 3.9.18 is OK with IMPS/2.
+
+# Aha, maybe their mouse driver is trying to emulate the IMPS/2
+# protocol, and does not quite get it right...
+
+>But according to my specs on IMPS/2 the first character has the following bina
+>ry
+>format:
 >
-> "Brandon S. Allbery KF8NH" wrote:
-> >
-> > In message <38B82560.CE2A6EA4@mandrakesoft.com>, Jeff Garzik writes:
-> > +-----
-> > | 1) investigate why this warning does not occur on x86.  (is it a gcc
-> > | builtin?)
-> > +--->8
-> >
-> > The gcc 2.95.1 info pages claim so.
->
-> Thanks, I was too slack to look it up :)
->
-> PPC arch compiles with -fno-builtin.  Why is this?  It seems sub-optimal
-> and non-uniform, leading to little platform discrepancies like this...
->
-> 	Jeff
->
->
->
-> --
-> Jeff Garzik              |
-> Building 1024            | Viva la open source!
-> MandrakeSoft, Inc.       |
->
->
+>0b00xy0321  with xy indicating movement in positive x or y direction of mouse
+>and 321 being the mouse buttons.  The later characters determine the dx, dy, a
+>nd
+>dz values.
 
----741392083-115030922-951601066=:32104
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="abs-ppc.patch"
-Content-ID: <Pine.LNX.4.10.10002261337460.32104@shell.unixbox.com>
-Content-Description: 
-Content-Disposition: attachment; filename="abs-ppc.patch"
-Content-Transfer-Encoding: BASE64
+The first byte from the original IBM PS/2 mouse is
 
-ZGlmZiAtdU5yIGxpbnV4Lm9yaWcvYXJjaC9wcGMva2VybmVsL3BwY19rc3lt
-cy5jIGxpbnV4L2FyY2gvcHBjL2tlcm5lbC9wcGNfa3N5bXMuYw0KLS0tIGxp
-bnV4Lm9yaWcvYXJjaC9wcGMva2VybmVsL3BwY19rc3ltcy5jCU1vbiBGZWIg
-MTQgMTQ6Mzc6MjUgMjAwMA0KKysrIGxpbnV4L2FyY2gvcHBjL2tlcm5lbC9w
-cGNfa3N5bXMuYwlNb24gRmViIDIxIDE4OjIyOjQ3IDIwMDANCkBAIC01Niw3
-ICs1Niw2IEBADQogDQogYXNtbGlua2FnZSBsb25nIGxvbmcgX19hc2hyZGkz
-KGxvbmcgbG9uZywgaW50KTsNCiBhc21saW5rYWdlIGxvbmcgbG9uZyBfX2xz
-aHJkaTMobG9uZyBsb25nLCBpbnQpOw0KLWFzbWxpbmthZ2UgaW50IGFicyhp
-bnQpOw0KIA0KIEVYUE9SVF9TWU1CT0woY2xlYXJfcGFnZSk7DQogRVhQT1JU
-X1NZTUJPTChkb19zaWduYWwpOw0KZGlmZiAtdU5yIGxpbnV4Lm9yaWcvYXJj
-aC9wcGMvbGliL01ha2VmaWxlIGxpbnV4L2FyY2gvcHBjL2xpYi9NYWtlZmls
-ZQ0KLS0tIGxpbnV4Lm9yaWcvYXJjaC9wcGMvbGliL01ha2VmaWxlCU1vbiBE
-ZWMgMjAgMTU6NDM6NDAgMTk5OQ0KKysrIGxpbnV4L2FyY2gvcHBjL2xpYi9N
-YWtlZmlsZQlNb24gRmViIDIxIDE4OjIyOjEzIDIwMDANCkBAIC02LDcgKzYs
-NyBAQA0KIAkkKENDKSAtRF9fQVNTRU1CTFlfXyAkKEFGTEFHUykgLWMgJDwg
-LW8gJCoubw0KIA0KIE9fVEFSR0VUID0gbGliLm8NCi1PX09CSlMgID0gY2hl
-Y2tzdW0ubyBzdHJpbmcubyBzdHJjYXNlLm8NCitPX09CSlMgID0gY2hlY2tz
-dW0ubyBzdHJpbmcubyBzdHJjYXNlLm8gYWJzLm8NCiANCiBpZmRlZiBDT05G
-SUdfU01QDQogT19PQkpTICs9IGxvY2tzLm8NCmRpZmYgLXVOciBsaW51eC5v
-cmlnL2FyY2gvcHBjL2xpYi9hYnMuUyBsaW51eC9hcmNoL3BwYy9saWIvYWJz
-LlMNCi0tLSBsaW51eC5vcmlnL2FyY2gvcHBjL2xpYi9hYnMuUwlXZWQgRGVj
-IDMxIDE3OjAwOjAwIDE5NjkNCisrKyBsaW51eC9hcmNoL3BwYy9saWIvYWJz
-LlMJTW9uIEZlYiAyMSAxODoyMTo1OSAyMDAwDQpAQCAtMCwwICsxLDcgQEAN
-CisgICAgICAgIC5nbG9ibCBhYnMNCithYnM6DQorICAgICAgICBtci4gMywz
-DQorICAgICAgICBiY2xyIDQsMA0KKyAgICAgICAgbmVnIDMsMw0KKyAgICAg
-ICAgYmxyDQorDQpkaWZmIC11TnIgbGludXgub3JpZy9pbmNsdWRlL2FzbS1w
-cGMvc3lzdGVtLmggbGludXgvaW5jbHVkZS9hc20tcHBjL3N5c3RlbS5oDQot
-LS0gbGludXgub3JpZy9pbmNsdWRlL2FzbS1wcGMvc3lzdGVtLmgJTW9uIERl
-YyAyNyAxNToxMDoyMCAxOTk5DQorKysgbGludXgvaW5jbHVkZS9hc20tcHBj
-L3N5c3RlbS5oCU1vbiBGZWIgMjEgMTg6MzE6NDIgMjAwMA0KQEAgLTE0OCw0
-ICsxNDgsNiBAQA0KIAlyZXR1cm4gKHZvaWQgKikgeGNoZ191MzIobSwgKHVu
-c2lnbmVkIGxvbmcpIHZhbCk7DQogfQ0KIA0KKw0KK2FzbWxpbmthZ2UgaW50
-IGFicyhpbnQpOw0KICNlbmRpZg0K
----741392083-115030922-951601066=:32104--
+   bit 7  Y overflow
+       6  X overflow
+       5  sign Y
+       4  sign X
+       3  always 1
+       2  always 0 (many 3 button PS/2 mouse uses this bit to indicate
+          the middle button status)
+       1  right butten
+       0  left button
+
+There have been some mice which do NOT set the bit 3, or use it
+for other purposes.  But, IntelliMouse seem to always set the bit 3...
+
+I wonder what document he is referring to and how he obtained it...
+
+Kazu
+
+----------------------------------------------------------------------
+
+>  Hmm, what version of LinuxPPC is this? That probably is an old, twitchy
+>USB stack. There will be a new version released shortly which should be
+>better. The old versions only did imps2.
+
+Ok, old code may be buggy.
+
+>Could the bit3 not getting set
+>be an endian issue?
+
+Absolutely not.  It is definitely a emulator issue.
+
+[...]
+>  I'll see about slapping together a linux-usb input driver this weekend.
+>That should make everybody happier.
+
+I had a quick glance at Linux input driver suite 0.4.4 by Voltech
+Pavlik.  It appears that it emulates IMPS/2 all right in mousedev.c;
+we can expect this driver will work with the XFree86 mouse code.
+
+In contrast, Linux 2.3.29's original drivers/usb/mouse.c does NOT set
+the bit 3 correctly in the first data byte.  People in the linux/PPC
+mailing list must have complained because of this...
+
+I don't have a Linux/PPC box or Linux/i386 box here.  So, I cannot
+verify the above findings.  But, I believe I am not very badly beside the
+mark.
+
+Kazu
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
