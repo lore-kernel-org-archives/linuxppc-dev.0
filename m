@@ -1,39 +1,46 @@
-Message-ID: <3F7BBFBE.4060701@kegel.com>
-Date: Wed, 01 Oct 2003 23:03:42 -0700
-From: Dan Kegel <dank@kegel.com>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem of concurrency in arch/ppc/8260_io/uart.c
-References: <3F79A106.8010608@embeddededge.com> <3F417AA6-F41B-11D7-B134-000393DBC2E8@motorola.com> <20031001143243.GE12343@ip68-0-152-218.tc.ph.cox.net> <1065019736.9737.526.camel@hermes> <005801c38861$e7a596a0$020120b0@jockeXP> <20031001213239.GA17768@ip68-0-152-218.tc.ph.cox.net>
-In-Reply-To: <20031001213239.GA17768@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Thu, 02 Oct 2003 09:18:20 +0200
+From: ARIBAUD Albert <a.aribaud@giat-industries.fr>
+Subject: RE: Where to Put Ethernet MAC Addresses?
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <F886A68DA978614991E47D82EA26B54210E956@csy-exchange1.giat.intra>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
->>Commited where? I can't see it in http://ppc.bitkeeper.com:8080/linuxppc_2_4_devel
+> -----Message d'origine-----
+> De : owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]De la part
+> de Howard,
+> Marc
+> Envoyé : mercredi 1 octobre 2003 22:44
+> À : 'Dan Malek'; Kent Borg
+> Cc : linuxppc-embedded@lists.linuxppc.org
+> Objet : RE: Where to Put Ethernet MAC Addresses?
 >
 >
-> It's in the linuxppc-2.4 tree.  I'll try and get it to Marcelo in time
-> for 2.4.21-pre7.
+>
+> I personally favor the "roll your own MAC address from the
+> serial number" approach but it does have the drawback that
+> you must have unique serial #'s on the boards.  If the serial
+> numbers are entered (or not entered) by lazy humans you could
+> potentially have two devices with the same MAC address on a
+> network.  I also select as the first 3 bytes of the MAC
+> address the address assigned to a defunct company and the lower
+> 3 bytes derived from the serial number.
 
-Say, how up to date is Marcelo's tree in general
-with respect to linuxppc_2_4_devel?  Does it have
-the ppc405 support stuff?
+There is a range of MAC adresses for local use (inside an appliance
+or even inside a vehicle would be the case). That's what I use for
+in-lab development on custom MPC855T boards.
 
-We have been using a linuxppc_2_4_devel snapshot from
-a year or so ago on the ppc405, and it'd be nice to be able to
-move to a vanilla kernel someday.
+See for instance <http://www.centsoft.com/mac.htm>.
 
-Thanks,
-Dan
+If you don't mass-produce, using the current time for a seed might
+work. :)
 
+HTH
 --
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
-
+Albert.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
