@@ -1,53 +1,44 @@
-Date: Wed, 29 Sep 1999 09:39:01 +0200 (MET DST)
+Date: Wed, 29 Sep 1999 09:40:33 +0200 (MET DST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Lou Langholtz <ldl@chpc.utah.edu>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+To: Takashi Oe <toe@unlserve.unl.edu>
+cc: Lou Langholtz <ldl@chpc.utah.edu>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [Fwd: Bug: 2.2.12 still hangs PPC after some PPP activity]
-In-Reply-To: <37F1C0A3.B9F25580@chpc.utah.edu>
-Message-ID: <Pine.GSO.4.10.9909290937380.328-100000@begonia.sonytel.be>
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.990929021435.16135B-100000@ofey.inetnebr.com>
+Message-ID: <Pine.GSO.4.10.9909290939220.328-100000@begonia.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi Lou,
-	
-> > > What might happen if a driver does:
-> >
-> > point A
-> >
-> > > save_flags(old_flags);
-> > > cli();
-> > > restore_flags(old_flags);
+On Wed, 29 Sep 1999, Takashi Oe wrote:
+> On Wed, 29 Sep 1999, Lou Langholtz wrote:
+> > What might happen if a driver does:
+> > 
+> > save_flags(old_flags);
+> > cli();
+> > restore_flags(old_flags);
+> > save_flags(new_flags);
+> > cli();
+> > restore_flags(new_flags);
+> > /* can't we be interupted here? Assume yes, if so */
+> > restore_flags(old_flags);
+> > 
+> > seems like this might introduce a bug if we could get interrupted after the
+> > restore of the new_flags but before the second restore of old flags in such a
+> > way such that the proper state of old_flags could change. I'm not comfortable
+> > enough though with my understanding of interrupts and driver routines to be
+> > certain one way or another. To be more specific, consider the case on just a
+> > single processor system. If this strikes anyone else as a possible race
+> > condition that could introduce a bug, then this is what we need to fix in
+> > macserial.c's rs_write routine since this code can potentially happen.
 > 
-> point A2?
-> 
-> > > save_flags(new_flags);
-> > > cli();
-> > > restore_flags(new_flags);
-> >
-> > point B
-> >
-> > > /* can't we be interupted here? Assume yes, if so */
-> > > restore_flags(old_flags);
-> >
-> > point C
+> I'm fairly certain it's a bug.  Good spotting.  The last restore_flags()
+> shouldn't be there.
 
-point A == point A2 == point B == point C
-
-> > > . . .Opinions??? Please clue me in anyway... this stuff's a kick! :-)
-> >
-> > The interrupt mask register has the same contents at points A, B and C. Hence,
-> > if we could be interrupt a point A, we can be interrupt at points B and C. . . .
-> 
-> Looking in macserial.c's rs_write() function it can call transmit_chars(info) at
-> point B which would seem to me to be able to be a point at which the interupt mask
-> register could change. No? I have to admit I'm only now reading the various docs
-> on kernel locks. So I just email'd you hoping you'd give me another hint ;-)
-
-I don't know how the serial port hardware has to be programmed. But if
-transmit_chars() must be called with interrupts disabled, it's indeed a bug.
+Or one of the others. The last restore_flags() may make me think there's
+something wrong, but it cannot cause harm. If there's a real bug, it should be
+related to the other flag manipulation calls.
 
 Greetings,
 
