@@ -1,13 +1,13 @@
-Message-ID: <39842797.3EDD80B6@student.ethz.ch>
-Date: Sun, 30 Jul 2000 15:03:19 +0200
+Message-ID: <39842A00.B22F6C1F@student.ethz.ch>
+Date: Sun, 30 Jul 2000 15:13:36 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Tony Mantler <nicoya@apia.dhs.org>, Tom Rini <trini@kernel.crashing.org>,
-        Dan Malek <dan@netx4.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_PPC != Mac
-References: <Pine.LNX.4.10.10007292003430.3886-100000@cassiopeia.home>
+CC: Roman Zippel <zippel@fh-brandenburg.de>,
+        Linux/PPC on APUS <linux-apus-devel@lists.sourceforge.net>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: bogus dmasound.o module (was: Re: 2.4.0-test4 success (Re: affs))
+References: <Pine.LNX.4.10.10007291437400.1201-100000@cassiopeia.home>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
@@ -15,18 +15,21 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Geert Uytterhoeven wrote:
 
-> The Master PPC Penguin decided to no longer allow to build machine specific
-> kernels, but treat PowerMac/PReP/MTX/CHRP as one big machine type
-> (`CONFIG_ALL_PPC').
+> > 'make modules_install' tries to install dmasound.o (which doesn't exist
+> > anymore) instead of dmasound_paula.o and dmasound_core.o
+>
+> Does this help? IIRC, I have it in my tree since a while, but I forgot about
+> it.
 
-Where does APUS fit in there?
+Yes it helps, but the dmasound_* modules get installed in misc, not sound - is
+that intended?
 
 
 Michel
 
 
 --
-There's no place like ~
+Intel: where Quality is job number 0.9998782345!
 ______________________________________________________________________________
 Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
 Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
