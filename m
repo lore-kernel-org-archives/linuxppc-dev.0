@@ -1,45 +1,38 @@
-Date: Mon, 7 Dec 1998 11:46:40 -0600 (CST)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: Elgin Lee <ehl@funghi.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF68_FBDev under MkLinux? 
-In-Reply-To: <Pine.LNX.4.03.9812070957590.31794-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.3.96.981207114602.20658A-100000@globegate.utm.edu>
+Message-ID: <366C1BB4.84BF174@zg.tel.hr>
+Date: Mon, 07 Dec 1998 19:17:29 +0100
+From: Stanko Juzbasic <stanko.juzbasic@zg.tel.hr>
+Reply-To: stanko.juzbasic@zg.tel.hr
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: AUDIO files don't seem to play...
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Dec 1998, Geert Uytterhoeven wrote:
 
-> On Sun, 6 Dec 1998, David A. Gatwood wrote:
-> > On Sat, 5 Dec 1998, Elgin Lee wrote:
-> > > >   2. Adopt XF68_FBdev so it can use the MkLinux video mode ioctl stuff.
-> > 
-> > vmode ioctl stuff?  Since when does MkLinux support detecting or changing
-> > video modes?  This is where we're going to run into trouble either way.
-> 
-> Doesn't the stuff in <asm/vc_ioctl.h> come from MkLinux?
+To whoever it may concern...
 
-Maybe.  I'm not saying the linux server part doesn't have the support,
-just that the mach kernel drivers don't, AFAIK.  :-)
+I have recently installed Linux_PPC R4 (kernel 2.1.24)  on a PowerMac
+7200 with PowerPC 601 chip.
+I am interested in audio.
+I tried to play a few straigrtforward 44.1 k audio files (.wav; .aiff;
+.au; .snd; raw), plain PCM,
+no compression -it does not work: unpleasant gaps dominate the
+reproduction. I used the comand
+play (from SOX, which is the only audio utility that seems to come with
+the system). It seems to do something
+with double buffering, or timing problems, I checked every piece of
+documentation that I came across, no mention.
+I recompiled the kernel, recompiled SOX, it's all the same.
+On the other hand audio CDs are being played flawlessly.
+If anybody has experienced such a problem, I would be glad to be told
+about the remedy, else, I am curious to report it.
 
+Thanks in advance!
 
-Later,
-David
+stanko
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
-
------BEGIN GEEK CODE BLOCK-----
-Version 3.1
-GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
-P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
-M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
-b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
-------END GEEK CODE BLOCK------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
