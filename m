@@ -1,50 +1,50 @@
-Message-ID: <39460E0C.CBEE73AD@agelectronics.co.uk>
-Date: Tue, 13 Jun 2000 11:33:48 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
-MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PowerPC BOF at Ottawa Linux Symposium July 19
-References: <OF1ED8D32F.3AA2FD26-ON852568F9.0061D9AD@pok.ibm.com> <20000610182014.H31097@medea.fsmlabs.com> <39453A10.55C5F4D6@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
+To: Nelson Abramson <pogtal@erols.com>
+Cc: rboder@grn.georet.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: G4 configuration
+References: <393D6256.89D44EA6@grn.georet.net> <393D7854.8CF53542@erols.com>
+From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
+Date: 13 Jun 2000 14:36:42 +0200
+In-Reply-To: Nelson Abramson's message of Tue, 06 Jun 2000 18:16:52 -0400
+Message-ID: <8xg0qhbvvp.fsf@s61.informatik.uni-bremen.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Nelson Abramson <pogtal@erols.com> writes:
 
-> As a workstation/server BOF, I don't know how much interest exists to
-> discuss this.  The easy answer is a set of orthogonal directory trees,
-> but I think the highest priority should be on maintaining a set of
-> common files.  Having experienced splitting some processor dependent
-> files, I would still take the #ifdefs over tracking similar changes
-> across multiple files.
+>
+> Ryan Boder wrote:
+>
+> > Does anyone have a .config to configure a kernel that is stable on the
+> > G4 sawtooth? I have the current stable source but every kernel I compile
+> > freezes and corrupts my root file system. If anyone has one will you
+> > please mail it to me?
+>
+> The .config that comes with Paul's tree (via rsync) should compile and run
+> your sawtooth just fine.  It worked for me...
+>
+I have similar troubles to find a config that even only compiles. I got the
+latest (well, a few days ago) 2.3 Kernel sources via bitkeeper. There seems
+to be no default config file there.
 
-I'd go with that some of the way, but I think MMU_init() in mm/init.c
-goes a bit too far. It feels like every time I port my patches to a new
-release kernel somebody has added extra boards and I have to sort switch
-statements out by hand.
+During 'make xconfig', most of the options are sensibly set. My only changes
+were to drop a bit of unneeded functionality, like certain exotic file
+systems, or support for hardware that is not present in my sawtooth G4.
+Afterwards, 'make dep' doesn't complain, but make zImage eventually fails
+for the file "ide-dma.c", with the compiler complaining that the structure
+"hwif" has no member "pci_dev". Apparently, part of the configuration thinks
+that IDE doesn't sit on PCI, but the driver relies on the presence of a
+PCI device.
 
-As an example, looking at 2.2 and 2.3, the actions performed by
-xxx_find_end_of_memory() haven't changed very much. There probably
-wouldn't be much problem introducing a ppc_md.find_end_of_memory call(),
-and patches to add new machines would apply much cleaner.
+In older kernels, there used to be a config option "Generic PC IDE support"
+or somesuch, which was actually the core of all IDE functionality. This
+option didn't exist in the 2.3 tree, so I cannot accidentally have turned off
+basic IDE support (as is possible with 2.2, and is the favourite beginner's
+error on non-PC systems).
 
-I don't think the world is ready for my dream of eliminating _machine
-completely, but if there's any interest I can attempt a test refactoring
-of mm/init.c. This needn't be an all at once change; the idiom I'm
-thinking of goes something like:
-	if (ppc_md.do_whatever())
-		ppc_md.do_whatever();
-	else {
-#ifndef CONFIG_8xx
-	switch(_machine)
-	...
-#else
-	8xx_do_whatever();
-#endif
-	}
+So if anyone has a working config for a sawtooth G4, I'd be happy if I could
+obtain a copy.
 
-- Adrian Cox, AG Electronics
+  Holger
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
