@@ -1,27 +1,35 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A298BE4A@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PPC 750 and DEC Tulip driver...
-Date: Fri, 8 Feb 2002 12:26:14 -0800 
+From: Jim Thompson <jim@musenki.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15460.13505.638556.964526@gargle.gargle.HOWL>
+Date: Fri, 8 Feb 2002 14:27:45 -0600
+To: Dan Malek <dan@embeddededge.com>
+Cc: Adrian Cox <adrian@humboldt.co.uk>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC107 I2C
+In-Reply-To: <3C640134.3090705@embeddededge.com>
+References: <20020208094057.799c099a.adrian@humboldt.co.uk>
+	<3C63F5A4.5070608@embeddededge.com>
+	<20020208162309.395f7c2f.adrian@humboldt.co.uk>
+	<15459.65390.787694.577725@gargle.gargle.HOWL>
+	<3C640134.3090705@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Dan Malek writes:
+> Jim Thompson wrote:
 
-I am using 2.4.17 kernel version on my custom PowerPC 750 board.
+> > Did my question about EUMBBAR and the 8245's serial port(s) not make
+> > it out to the list?
+>
+> Yes, and you can _pay_ me for 30 second responses to e-mail :-).  If
+> you want free help you need to wait until someone is free to respond.
 
-I can plugin any PCI cards (PMC actually) to my board and use it. I tried to
-use 92559ER and works fine. But when I use the DEC 2114x tulip, it gives me
-watchdog timeouts. I am attaching the log of errors with this email.
+OK, but thats now how I meant it.  I hadn't seen my email come back
+from either list.
 
-Can some one suggest me what this Watchdog timeout is about?. That too
-especially only when using the tulip driver.
+Jim
 
-Thanks,
--- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
