@@ -1,89 +1,76 @@
-From: David Jander <david.jander@protonic.nl>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: Memory map with "holes"...
-Date: Tue, 12 Aug 2003 17:00:11 +0200
-Cc: linuxppc-embedded@lists.linuxppc.org
-References: <20030812141332.496E2C59E4@atlas.denx.de>
-In-Reply-To: <20030812141332.496E2C59E4@atlas.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200308121700.11708.david.jander@protonic.nl>
+Date: Tue, 12 Aug 2003 08:25:03 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+Cc: Dan Malek <dan@embeddededge.com>,
+	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Build issues with 2.6.0-test3
+Message-ID: <20030812152503.GK807@ip68-0-152-218.tc.ph.cox.net>
+References: <3F33BC10.8060407@imc-berlin.de> <3F33EADE.4010908@embeddededge.com> <3F38DEC4.8050708@imc-berlin.de> <1060696614.31273.419.camel@hermes>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1060696614.31273.419.camel@hermes>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tuesday 12 August 2003 16:13, Wolfgang Denk wrote:
-> In message <200308121432.09782.david.jander@protonic.nl> you wrote:
-> > We are designing a board based on the MPC852T (MPC866 serivate), and
-> > I want to make sure there is the possibility to mount different-size
-> > SDRAM chips on it, so I just connect the two bank-select pins to some
-> > higher address lines, leaving some out in between, in order to acomodate
-> > for bigger chips in the future. The bottom line is that I will get the
-> > memory map split up into 4 segments with vast holes between each segment
-> > that are undefined. What do I need to keep in mind regarding linux
-> > about this? I suppose it isn't an issue, but I want to be sure I don't
+On Tue, Aug 12, 2003 at 07:56:55AM -0600, Gary Thomas wrote:
+
+> * How best to handle optional support?  One of the patches fixes
+>   a problem of a missing system call (sys_pciconfig_iobase).  In
+>   this case, the platform I was building for has no PCI, so it's
+>   not configured in.  The way I fixed it was to conditionalize
+>   the syscall table.  An alternate way would be to have a module
+>   which is compiled if CONFIG_PCI is *not* set (or alternately
+>   have arch/ppc/kernel/pci.c always be compiled and export the
+>   appropriate functions that just return -ENOSYS).  Comments?
+
+'cond_syscall' is _supposed_ to work here.  But in this one case, it
+does not.  I've tried tracking this down a little bit, and the 'weak'
+asm bits make it as far as the pci.s file, but not the pci.o.  And to
+make it all the more odd, if I threw the cond_syscall into a file in
+kernel/ (just to try it out), it works.
+
+> * I have a number of boards/platforms that I support that have
+>   not been moved into 2.6.  Can I just send patches for those
+>   as well?
+
+In the same manner you did for 2.4, yes (logical patches, and preferably
+against linux-2.5 (linux-2.6 now?) tree.  If something is missing there
+(it shouldn't be, but it could be :)) that is in linuxppc-2.5, either
+move it over in another changeset, or bug myself / paul / ben.
+
+> * Has anyone succeeded in building & running 2.6 (or late 2.5)
+>   on any embedded boards (8xx/8260/405)?
+
+No / Yes / Yes.
+
+BTW:
+> Index: arch/ppc/8260_io/uart.c
+> ===================================================================
+> RCS file: /home/gthomas/my_cvs/develop/linuxppc-2.5/arch/ppc/8260_io/uart.c,v
+> retrieving revision 1.1
+> diff -u -5 -p -r1.1 uart.c
+> --- arch/ppc/8260_io/uart.c	12 Aug 2003 12:18:15 -0000	1.1
+> +++ arch/ppc/8260_io/uart.c	12 Aug 2003 13:30:40 -0000
+> @@ -2389,11 +2389,11 @@ void kgdb_map_scc(void)
+>  	up->smc_mrblr = RX_BUF_SIZE;		/* receive buffer length */
+>  	up->smc_maxidl = RX_BUF_SIZE;
+>  }
+>  #endif
 >
-> This is not an issue, as Linux does not care about  the  organization
-> of  your  memory.  It  just  expects some amount of contiguous memory
-> stating at address 0.
+> -static kdev_t serial_console_device(struct console *c)
+> +static struct tty_driver *serial_console_device(struct console *c, int *index)
+>  {
+>  	*index = c->index;
+>  	return serial_driver;
+>  }
 
-AFAIK this is exactly what I do _not_ get.
-I wanted to connect the bank select lines BA0 and BA1 of the SDRAM chips to A6
-and A5 respectively, and use only one CS (Chip-Select).
-
-> > get any trouble later. Any experience with memory holes? I suppose the
-> > boot-loader should tell the kernel about the memory-map, in a way just
-> > like lilo on an x86 machine, am I right? Does this work the same way on
->
-> No. There will not be any "holes". It is up  to  your  bootloader  to
-> program  the  memory controller of the MPC8xx such that there is just
-> one contiguous piece of memory. See U-Boot for example code how to do
-> that (including auto-sizing routines and all the rest).
-
-I saw different examples (tqm8xx.c for instance), but the only thing they seem
-to do is program the memory controller in a way that all CS's map the whole
-RAM on a contiguous block.
-What I pretend to do is something like this:
-Memory mapped on CS0:
-Region                  What
---------------------------------
-0x00000000-0x007fffff   RAM
-0x00800000-0x01ffffff   invalid
-0x02000000-0x027fffff   RAM
-0x02800000-0x03ffffff   invalid
-0x04000000-0x047fffff   RAM
-0x04800000-0x05ffffff   invalid
-0x06000000-0x067fffff   RAM
-
-So it would not be possible to use the memory controller to make a contiguous
-block out of this. But maybe the kernel could be told to declare the ranges
-marked as "invalid" to be, well, invalid. With a MMU this should not matter,
-only the kernel must know what to do.
-
-For example I found in /arch/ppc/init.c, in the function set_phys_avail(),
-this piece of code:
-
-phys_avail.regions[0].address = PPC_MEMSTART;
-phys_avail.regions[0].size = total_memory;
-phys_avail.n_regions = 1;
-
-This looks fairly easy to modify, but I wonder why nobody seems to use more
-than one region in linux-ppc??
-What's the policy? To not use this?
-Am I the only one who wants something like this?
-Should I start implementing this myself on u-boot and linux-ppc ('cause I
-believe in this case you'd have to give linux a map from the boot-loader), or
-should I better restrict my design to contiguous blocks of RAM only (this
-would make me waste 4 CS lines, and unnecessarily complex hardware)?
-
-Sincerely,
+After looking at the similar code in drivers/serial, I don't think this
+is sufficient.  But I didn't dig too far into seee what c->data was
+there.
 
 --
-David Jander
-Protonic Holland.
-tel.: +31 (0) 229 212928
-fax.: +31 (0) 229 210930
-Factorij 36 / 1628 AL Zwaag
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
