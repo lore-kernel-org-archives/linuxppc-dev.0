@@ -1,26 +1,37 @@
-Message-ID: <20020723170424.50300.qmail@web11507.mail.yahoo.com>
-Date: Tue, 23 Jul 2002 10:04:24 -0700 (PDT)
-From: Khai Trinh <kqtrinh@yahoo.com>
-Subject: file->private_data
-To: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 23 Jul 2002 10:13:56 -0700 (PDT)
+From: John Tyner <jtyner@cs.ucr.edu>
+To: Khai Trinh <kqtrinh@yahoo.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: file->private_data
+In-Reply-To: <20020723170424.50300.qmail@web11507.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.30.0207231013140.31567-100000@hill.cs.ucr.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi folks,
+That pointer is all yours. Your driver can store data that is specifiec to
+each open device using that pointer.
 
-I am new to linux. So, my question is:
+On Tue, 23 Jul 2002, Khai Trinh wrote:
 
-what is file->private_data? Does it set to the device
-structure by the kernel when you register your device
-with devfs_register()?
+>
+> Hi folks,
+>
+> I am new to linux. So, my question is:
+>
+> what is file->private_data? Does it set to the device
+> structure by the kernel when you register your device
+> with devfs_register()?
+>
+> Thanks,
+> --Khai
+>
+> Yahoo! Health - Feel better, live better
+> http://health.yahoo.com
+>
+>
 
-Thanks,
---Khai
-
-Yahoo! Health - Feel better, live better
-http://health.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
