@@ -1,47 +1,57 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mesh in 2.4.0-test1
-Date: Sun, 4 Jun 2000 14:29:05 +0200
-Message-Id: <20000604122905.30293@192.168.1.10>
-In-Reply-To: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
-References: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
+Message-Id: <200006041356.PAA00976@piglet.grunz.lu>
+Date: Sun, 4 Jun 2000 15:55:59 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: [patch] VRAM detection in controlfb
+To: ajoshi@shell.unixbox.com
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.10006031728230.9136-100000@shell.unixbox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jun 4, 2000, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Hi all,
 
->take into account that on CHRP boxes with both ISA and OpenPIC, the interrupt
->numbers have to be fixed up. Below is the patch that made it work for me.
+On   3 Jun, this message from Ani Joshi echoed through cyberspace:
+>> For those with multiple display adapters, do you think an option
+>> controlfb:off might make sense?
+
+Silly me; that's already taken care of in fbmem.c.
+
+>> As there is no way to control which card
+>> gets assigned which framebuffer device, that might help in certain
+>> situations...
 >
->Before I check it in into bitkeeper: should I replace the test
+> I believe you can set which driver gets init'ed first by using the args:
 >
->    _machine == _MACH_chrp
->
->by
->
->    !strncmp(model, "IBM,LongTrail", 13)
->
->or are there other CHRP models bitten by this as well?
+> video=foo:blah video=bar:blah
 
-Hum, that's a side effect of enabling the new interrupt tree parsing on
-all machines. Well, that's more or less my fault: the pmac_newworld
-variable gets set to 1 on CHRP, thus enabling the new interrupt tree
-parsing on them.
+Right, that's handles in fbmem.c. Unfortunately, I've never seen it
+documented anywhere... So, I've started to write up a doc about
+framebuffer kernel command line options. I've come across a few
+oddities; among others the format of options:
 
-A better fix would be to only enable pmac_newworld on pmacs. (But still
-keep the interrupt tree parsing for chrp since it's basically a chrp
-thing that Apple implemented in newworld machines).
+1. What do the vc: and map: options do?
+2. Why can you specify more options after 'scrollback:', separated with
+   a ',', but not after the 'map:' option (no other options possible),
+   whereas you can have more options following 'vc:', but without a
+   separator?
 
-Note that this problem may be present in recent 2.2.x kernels too.
-However, a subtle difference in 2.2.x is that _machine may not be
-initialized yet when finish_device_tree() is called.
+Thanks
 
-I'll look into those today and push fixed to both bk trees.
+Michel
 
-Ben.
+BTW, anybody have the fbutils compiled for 2k and recent kernels? I
+can't seem to get it to compile....
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
