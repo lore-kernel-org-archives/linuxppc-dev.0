@@ -1,32 +1,27 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: "Toshimitsu Murakami" <murakami@realvision.co.jp>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: PrPMC750 board supported?
-Date: Fri, 9 Mar 2001 10:56:34 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMGENPCPAA.s.coluccini@caen.it>
+Message-ID: <3AA8A8EE.1C1A8149@fiberlogic.com>
+Date: Fri, 09 Mar 2001 17:57:02 +0800
+From: "Lin, Nan-Hung" <carl@fiberlogic.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <200103090932.AA02038@racer.realvision.co.jp>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: How to get COFF-format code
+Content-Type: text/plain; charset=big5
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Hi, Stefano,
->
-> 	Thank you for information.
-> But I cannot find the 2_5 kernel of RTLinux at fsmlabs' ftp.
-> Can I use version 3.0 instead of 2_5?
+Hello,
 
-Excuse me, too brief in my precedent mail, you can download the 2_5 kernel
-tree with bitkeeper connecting to the port 5005. You can find some hints at:
-http://bitkeeper.fsmlabs.com/linuxppcbk.html
+I use linux-2.4.0-test13-pre2 and
+      Processor Type as 8xx
+      Machine Type as   TQM855L
 
-It is not the RTLinux kernel, it is the standard linuxppc kernel under
-development.
+The "make" only generates ELF-format code.
+How to generate COFF-format code ?
 
-Bye.
-Stefano.
+Thanks for help.
 
+
+------------------------------------------
+Carl Lin               carl@fiberlogic.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
