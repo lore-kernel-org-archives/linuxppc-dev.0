@@ -1,37 +1,33 @@
-To: Rod Boyce <rod_boyce@stratexnet.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Lauri Ojantakanen <lauri.ojantakanen@solidtech.com>
-Subject: Re: Booting sandpoint from ide disk 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 06 Sep 2002 02:57:59 +1200."
-             <8D7C5F56B409554D9D46AC22195807F3061A1E@exchwenz01.smtp.dmcwave.co.nz>
-Date: Thu, 05 Sep 2002 17:24:57 +0200
-Message-Id: <20020905152502.43E9A11836@denx.denx.de>
+Message-ID: <3D777C99.97AF4D14@mvista.com>
+Date: Thu, 05 Sep 2002 11:47:37 -0400
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Lauri Ojantakanen <lauri.ojantakanen@solidtech.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Booting sandpoint from ide disk
+References: <200209051316.19309.lauri.ojantakanen@solidtech.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <8D7C5F56B409554D9D46AC22195807F3061A1E@exchwenz01.smtp.dmcwave.co.nz> you wrote:
->
-> There is nothing stopping you porting PPCBoot to this CPU.  Once you have
-> ported PPCBoot to this CPU you could use PPCBoot...:)
->
-> Rod
->
-> PS I'm, sure you could find somebody to pay money to who would do this for
-> you...
+Lauri Ojantakanen wrote:
 
-Sure; we do this work all the time. It takes usually  less  than  two
-weeks. Feel free to contact me.
+> Hi,
+>
+> does anyone have a good solution for booting sandpoint X3 (cpu 7410, altivec
+> supported) from ide hard disk? Dink32 does not seem to support anything like
+> that and ppcboot does not seem to support that CPU.
 
-Wolfgang Denk
+If you want to stay with DINK, you can put the zImage in flash and set DINK up
+to automatically (or not) jump to where you put it.  The zImage will relocate
+itself, uncompress the kernel (in the proper location) and then boot.  With the
+correct cmdline, you can use an IDE disk partition for your root filesystem.
+Unless you hack DINK, you won't be able to boot a kernel actually sitting on
+the IDE disk, you have to put it in flash or get it into memory some other way
+first.  As others have already said, you can always use PPCBoot.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There is a biblical analogy I'd like to draw here.   Casts are to C++
-Programmers what the apple was to Eve.         - Scott Douglas Meyers
+Mark
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
