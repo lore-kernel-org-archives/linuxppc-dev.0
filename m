@@ -1,44 +1,49 @@
-Date: Fri, 23 Aug 2002 15:13:47 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
-To: John Fisher <John.Fisher@nec.com.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: cygwin and embedded linux
-In-Reply-To: <Pine.LNX.4.40.0208220914420.2118-100000@mag.devdep.sysgo.de>
-Message-ID: <Pine.LNX.4.40.0208231506060.12655-100000@mag.devdep.sysgo.de>
+Message-ID: <3D66375C.2046CFA9@ardistech.com>
+Date: Fri, 23 Aug 2002 15:23:40 +0200
+From: "bart@ardistech.com" <bart@ardistech.com>
+Reply-To: bart@ardistech.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Wolfgang Denk <wd@denx.de>
+Cc: govindan@india.tejasnetworks.com, svacca@valcom.com,
+	"LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>,
+	govindan@tejasnetworks.com
+Subject: Re: Execute Reset via CheckStop approach
+References: <20020823113326.5A43F11822@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 22 Aug 2002, I wrote:
+Hi Wolfgang,
 
-> 2. The "emulation" will never be 100%. Maybe 99%. Maybe 99.99%. That last
->    fraction can be a major PITA, because it is not obvious. To compile a
->    kernel you need a lot of tools with a lot of explicit and implicit twists
->    to them. It is just a gut feeling that I wouldn't want to rely on this,
->    if I don't have to. The native way just seems the better way to do it to
->    me.
+> The DER should be set by your formware. Fix this!
+>
+I cleared CFG_DER in ppcboot to clear the CHSTP bit. After that I needed to
+map in the br0 range and to make the asm's volatile and set the input/output
+parameters of the asm to get the HRESET_N pulse. So this is the version
+which works (on a MPC823e) in the context of the Linux kernel:
 
-Since the term "native" seems to have triggered many other (very
-interesting) posts, just for completeness: in fact I chose bad wording
-for what I wanted to say in this post. In this case, with "native" I
-merely meant a real Linux box (vs. a Windows box), not necessarily a
-native ppc-linux machine.
+        /* Get base address mapped by BR0/OR0 and map it in */
+        val = ((immap_t *)IMAP_ADDR)->im_memctl.memc_br0 & 0xFFFF8000;
+	val = (int) ioremap( retval, 0x4000 );
+        cli();
 
-Native ppc-linux is definitely one way to go, although I'd tend to
-hold with one of the other posts to this thread. It pointed out the
-necessity/robustness/repoducability/beauty of clearly distincting
-between the host and the target.
+        /* Enable CheckStop Reset */
+        ((immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr |= 0x00000080;
 
-Regards,
-Marius
+        /* Invalidate BR0 mapping */
+        ((immap_t *)IMAP_ADDR)->im_memctl.memc_br0 &= ~0x1;
 
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+        /* Clear ME in MSR and cause CheckStop */
+        __asm__ volatile("mfmsr %0" : "=r" (msr) );
+        msr &= ~0x1000;
+        __asm__ volatile("mtmsr %0": : "r" (msr) );
+        val = * (unsigned char *) val;
+        printk("Restart failed\n");
+        while(1)
+	   ;
 
+Cheers,
+	Bart
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
