@@ -1,51 +1,24 @@
-Message-ID: <379F7AB9.E8D230CE@videotron.ca>
-Date: Wed, 28 Jul 1999 16:48:42 -0500
-From: Alain Birtz <abz@videotron.ca>
+Message-ID: <XFMail.990728151208.jeremy@goop.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Realloc() problem with Efence
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+In-Reply-To: <199907280009.KAA01751@tango.anu.edu.au>
+Date: Wed, 28 Jul 1999 15:12:08 -0700 (PDT)
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Paul.Mackerras@cs.anu.edu.au
+Subject: Re: G3 Upgrade Questions....
+Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        geiseri@msoe.edu
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-What is wrong with this code ?
-Code is executed correctly without Electric Fence
-But linked with Efence library, dbg complaint:
 
-   Electric Fence 2.0.5 Copyright (C) 1987-1998 Bruce Perens.
-   ...
-   ...
-   Program received signal SIGSEGV, Segmentation fault.
+On 28-Jul-99 Paul Mackerras wrote:
+> Yeah, reading the temperature isn't actually implemented yet.
 
-when trying to write the first B, just after the first memory allocation
-buffer
-(at the instruction (*c_ptr++ = 'B'))
+I've got a patch.  I polish it up and send it out soon.
 
-
-void tst ()
-{
- int i;
- char *c_buf, *c_ptr, *temp_c_buf;
-
- c_buf = (char *)malloc(5000);
- if (c_buf != NULL)
-  {
-  c_ptr = c_buf;
-  for (i = 0; i < 5000; i++)
-   *c_ptr++ = 'A';
-  temp_c_buf = c_buf;
-  realloc(temp_c_buf, 5000 + 5000);
-  if (temp_c_buf != NULL)
-   {
-   for (i = 0; i < 5000; i++)
-    *c_ptr++ = 'B';
-   }
-  }
-}
-
-
-
+        J
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
