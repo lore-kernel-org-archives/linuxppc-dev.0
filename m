@@ -1,34 +1,26 @@
-Cc: Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3967600B.92648EB6@lucent.com>
-Date: Sat, 08 Jul 2000 11:08:27 -0600
-From: Steve Tarr <tarr@lucent.com>
+Message-ID: <39676C84.A63FD6F9@embeddededge.com>
+Date: Sat, 08 Jul 2000 14:01:40 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: "Kim, Jin Young" <jykim@ce.cnu.ac.kr>
+To: Steve Tarr <tarr@lucent.com>
+CC: "Kim, Jin Young" <jykim@ce.cnu.ac.kr>,
+        Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: pci bridge in 8260
-References: <NEBBLJBIIKANNNOGGKNDMEOHCAAA.jykim@raonet.com>
+References: <NEBBLJBIIKANNNOGGKNDMEOHCAAA.jykim@raonet.com> <3967600B.92648EB6@lucent.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-My understanding is not to expect it any time soon (<12months).
-As to a good alternative, I have no experience
-
-
-
-"Kim, Jin Young" wrote:
+Steve Tarr wrote:
 >
-> Does anybody know when 8260 has pci bridge in it?
-> If there is no schedule in the near future, which pci bridge chip is
-> best fit to 8260, in the view of hw design and linux porting aspect?
->
-> Jin
->
+> My understanding is not to expect it any time soon (<12months).
+> As to a good alternative, I have no experience
 
---
-Steven Tarr
-Lucent Technologies - Bell Labs
-303-538-4056
-tarr@lucent.com
+Well, its a standard 60x bus.  Anything that worked on those should
+work on the 8260.  I have seen/used 8260s with Tundra PowerSpan......
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
