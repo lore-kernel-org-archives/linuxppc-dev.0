@@ -1,28 +1,36 @@
-Date: Wed, 10 Oct 2001 18:05:29 -0700
+Date: Wed, 10 Oct 2001 18:06:22 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Val Henson <val@nmt.edu>, linuxppc-dev@lists.linuxppc.org
+To: Val Henson <val@nmt.edu>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
 Subject: Re: SBS Palomar II/IV/V port
-Message-ID: <20011010180529.A11067@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011010122415.A22918@boardwalk> <20011010213037.30369@smtp.wanadoo.fr>
+Message-ID: <20011010180622.B11067@cpe-24-221-152-185.az.sprintbbd.net>
+References: <0110092125.AA22665@ivan.Harhan.ORG> <20011010122415.A22918@boardwalk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011010213037.30369@smtp.wanadoo.fr>
+In-Reply-To: <20011010122415.A22918@boardwalk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Oct 10, 2001 at 11:30:37PM +0200, Benjamin Herrenschmidt wrote:
+On Wed, Oct 10, 2001 at 12:24:15PM -0600, Val Henson wrote:
+>
+> On Tue, Oct 09, 2001 at 02:25:03PM -0700, Michael Sokolov wrote:
+>
+> > Some other bi_rec fixes may be needed (initrd ones are broken I think).
+>
+> Indeed!  This is on my list of stuff to do - straighten out once and
+> for all how BI_INITRD works and then rewrite the Gemini boot process
+> to use it.  It seemed like we had two interpretations:
+>
+> 1. The BI_INITRD boot record contains the start address and the size
+>    of the initrd.
+>
+> 2. The BI_INITRD boot record contains the entire initrd itself (as a
+>    really large boot record).
 
-> I'll eventually push some code in the upcoming 1 or 2 days that
-> does the kernel-side of getting passed pointer-based birecs. I
-> will eventually throw in a couple of new birec definitions as
-> well.
-
-Can we please not commit this just yet?  2.5 will open up soon
-hopefully...  Maybe after 2.4.12 or so.  I think it would be a bad thing
-to put this in the 2_4 trees (either of 'em) inititally.  Throwing
-around patches tho would be good. :)
+I thought we had agreed on 1 (and nothing uses it yet anyhow).  Tho my
+memory could be hazy.
 
 --
 Tom Rini (TR1265)
