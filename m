@@ -1,123 +1,120 @@
-Message-ID: <39C9F8A2.9F1707B0@mpifr-bonn.mpg.de>
-Date: Thu, 21 Sep 2000 14:01:38 +0200
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Date: Thu, 21 Sep 2000 15:44:51 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Paul Mackerras <paulus@linuxcare.com.au>
+cc: Dan Malek <dan@mvista.com>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+In-Reply-To: <14793.38735.809789.111193@argo.linuxcare.com.au>
+Message-ID: <Pine.LNX.4.10.10009211536590.375-100000@cassiopeia.home>
 MIME-Version: 1.0
-To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-CC: Linux-IrDA <linux-irda@pasta.cs.UiT.No>
-Subject: IrDA speed w/LinuxPPC: again [long, sorry]
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I still had no success in changing the speed of the IrDA if on my Apple
-PowerBook 1999 with Linux2.2.17pre20-ben3. To understand better what goes on, I
-enabled all debugging in the macserial and irda drivers, adding/expanding some
-more messages to the latter ones.
+On Thu, 21 Sep 2000, Paul Mackerras wrote:
+> Dan Malek writes:
+>
+> > Yes....IMHO I think the PC is one of the worst architecture designs
+> > ever, and making my PowerMac or anything else live within those
+> > contraints isn't progress....
+>
+> Well, your powermac has a PCI bus, and PCI has an I/O space as well as
+> a memory space (for better or for worse).
+>
+> I think my basic point is that a setup where you can't do inb(n) to
+> read the byte at address n in PCI I/O space is broken.  On systems
+> with 1 PCI host bridge, this is unambiguous, on systems with >1 host
+> bridge inb(n) should access address n in PCI I/O space on the first
+> host bridge.
 
-I first successfully tried to change the speed of the serial device to 115.2
-kBd:
+And how do you handle accesses to PCI I/O space on the other busses?
 
-kernel: rs_open ttyS1, count = 0
-kernel: startup() (ttyS1, irq 16)
-kernel: starting up ttyS1 (irq 16)...
-kernel: ttyS01: powering up hardware
-kernel: setting up ttys1 SCC...
-kernel: set speed to 4800 bds, <6>8 bits, <6>1 stop, <6>timeout=3/100s, base:0
-kernel: enabling IRQ on ttyS1 (irq 16)...
-kernel: rs_interrupt: irq 16, zs_intreg 0x1
-kernel: rs_interrupt: irq 16, zs_intreg 0x0
-kernel: rs_open ttys1 successful...
-kernel: set speed to 115200 bds, <6>8 bits, <6>1 stop, <6>timeout=3/100s, base:0
-kernel: rs_close ttys1, count = 1
-kernel: waiting end of Tx... (timeout:3000)
-kernel: waiting end of Rx...
-kernel: Shutting down serial port 1 (irq 16)....
-kernel: ttyS01: shutting down hardware
+> > Yes, _someone_ has to know, but when that is hardcoded into a driver,
+> > it isn't portable.  It's not at that address if it isn't on the first
+> > ISA bridge of the first PCI bus, either.  That's the basis of my
+> > suggestion that drivers don't assume where things are mapped.  The
+>
+> In the case of I/O space, there isn't any mapping.  Address n in I/O
+> space is accessed with inb(n).
 
-Then, I started the IrDA stuff:
+`The I/O space' is the union of all I/O spaces behind all bridges.
 
-kernel: IrDA (tm) Protocols for Linux-2.2 (Dag Brattli)
-[...]
-kernel: IrCOMM protocol (Dag Brattli)
-kernel: rs_open ttyS1, count = 0
-kernel: startup() (ttyS1, irq 16)
-kernel: starting up ttyS1 (irq 16)...
-kernel: ttyS01: powering up hardware
-kernel: setting up ttys1 SCC...
-kernel: set speed to 115200 bds, <6>8 bits, <6>1 stop, <6>timeout=3/100s, base:0
-kernel: enabling IRQ on ttyS1 (irq 16)...
-kernel: rs_interrupt: irq 16, zs_intreg 0x1
-kernel: rs_interrupt: irq 16, zs_intreg 0x0
-kernel: rs_open ttys1 successful...
-kernel: set speed to 9600 bds, <6>8 bits, <6>1 stop, <6>timeout=3/100s, base:0
-kernel: hashbin_insert()
-kernel: enqueue_first()
-kernel: IrDA: Registered device irda0
-irattach: 1.1 Tue Nov  9 15:30:55 1999 Dag Brattli
-irattach: 1.1 Tue Nov  9 15:30:55 1999 Dag Brattli
-test: irattach startup succeeded
-irattach: executing: 'echo 1 > /proc/sys/net/irda/discovery'
-kernel: rs_open ttyS1, count = 1
-kernel: startup() (ttyS1, irq 16)
-kernel:  -> already inited
-kernel: rs_open ttys1 successful...
-kernel: rs_close ttys1, count = 2
-irattach: Starting device irda0
-[...]
+> >  On a PC with a serial port in the Super I/O on the PCI
+> > bus you will still get 0x3f8 (or whatever it is, I never memorized
+> > these).  I don't know what you get on a PC with more than one
+> > PCI bus....
+>
+> Since an intel CPU has only a single I/O space (just as it has a
+> single physical memory space) I assume that each PCI host bridge
+> has a window that passes accesses to I/O ports in certain ranges
+> through to the PCI bus behind it.  Hopefully the ranges are all
+> distinct. :-)
 
-Obviously, IrDA sets the speed of the associated tty device back to 9.k kBd. I
-tried to change the speed of /dev/ircomm0 with a stty command, which gave the
-following result:
+That's indeed how it's supposed to work (AFAIK).
 
-[...]
-kernel: ircomm_tty_do_event: state=IRCOMM_TTY_IDLE,
-event=IRCOMM_TTY_ATTACH_CABLE
-kernel: ircomm_tty_state_idle: state=IRCOMM_TTY_IDLE,
-event=IRCOMM_TTY_ATTACH_CABLE
-kernel: ircomm_tty_next_state: next state=IRCOMM_TTY_SEARCH, service type=6
-kernel: irlmp_discovery_confirm()
-kernel: ircomm_tty_block_til_ready()
-kernel: ircomm_tty_block_til_ready(), O_NONBLOCK requested!
-kernel: ircomm_tty_ioctl(cmd 1076655123 w/arg 0x7ffff818)
-kernel: ircomm_tty_ioctl: ioctl 1076655123 = 0x402c7413     ##
-kernel: ircomm_tty_ioctl(cmd -2144570347 w/arg 0x7ffff8e8)
-kernel: ircomm_tty_ioctl: ioctl -2144570347 = 0x802c7415     ##
-kernel: ircomm_tty_wait_until_sent()
-kernel: ircomm_tty_set_termios()
-kernel: ircomm_tty_change_speed()
-kernel: ircomm_tty_change_speed 115200 baud
-kernel: ircomm_tty_change_speed request 115200 baud
-kernel: ircomm_param_request()
-kernel: ircomm_param_data_rate(), data rate = 115200
-kernel: irda_insert_integer(), pi=0x10, pl=4, pi=115200
-kernel: ircomm_param_request(), skb->len=6
-kernel: ircomm_param_request()
-kernel: irda_insert_integer(), pi=0x11, pl=1, pi=318767104
-kernel: ircomm_param_request(), skb->len=9
-kernel: ircomm_param_request()
-kernel: ircomm_param_flow_control(), flow control = 0x00
-kernel: irda_insert_integer(), pi=0x12, pl=1, pi=0
-kernel: ircomm_param_request(), skb->len=12
-kernel: ircomm_tty_do_softint()
-kernel: ircomm_tty_ioctl(cmd 1076655123 w/arg 0x7ffff818)
-kernel: ircomm_tty_ioctl: ioctl 1076655123 = 0x402c7413     ##
+> We could do that too, we would just have to make sure that we assigned
+> PCI I/O addresses so that no two bridges had devices in the same 4k
+> range, then we could set up the virtual->physical mapping to give the
+> illusion of a single I/O space.
 
-I think there are two interesting things to remark:
+I think the mapping from 8 (not 64, IIRC) consecutive I/O port addresses to 1
+4K page was meant exactly to solve this problem.
 
-1. The new speed is inserted in some sort of "command queue". I think
-   ircomm_tty_ioctl is called to set some, maybe these, parameters, but the cmd
-   arg of this function seems to be invalid, as EACH call falls through to the
-   "default" branch (lines maked with "##"; cmd printed). I could not track down
-   where this ioctl is actually called, but cmd is definitely NO valid tty
-   ioctl.
+> > > > A driver should never simply 'inb(SERIAL_PORT_STATUS)' using some #define,
+> > >
+> > > Why not?
+> >
+> > Well, this is exactly why we are all discussing this right now.  It
+> > doesn't work on anything except a PC.
+>
+> It doesn't work on anything except a PC, or a prep system, or a chrp,
+> or an alpha system, or a sun ultra 5, or anything else where the
+> designer has used a super-i/o chip because it is cheap and gives them
+> all the usual things they want.  In fact it works almost everywhere
+> except on powermacs and embedded systems. :-)
 
-2. This may be a result of the ioctl above, but the macserial speed change is
-   never called.
+Even some embedded systems have Super I/Os :-)
 
-Any help or comment on this is really welcome!
+But: Super I/O is legacy I/O, and always present on the first bus (starting at
+I/O space address 0). I never heard of a system with a Super I/O on a
+different bus, but of course no one prevents me from building a system like
+that...
 
-Thanks in advance, Albrecht.
+Legacy I/O is also limited to 10 bit addresses. This knowledge could optimize
+the size of my translation table (cfr. my previous mail).
+
+> > I don't think inb/outb should ever have to "cope" with address
+> > calculations.....
+>
+> inb(n) should do whatever is necessary to access address n in PCI I/O
+> space.
+
+Yes indeed.
+
+> > All I'm suggesting is that the address value you give to inb/outb
+> > is exactly what it needs to use, and it has to be stored in 32 (or
+> > 64) bits.  Any solution that maps multiple ISA busses has to do this,
+>
+> I don't believe there are any systems with multiple ISA buses.  That
+> would be an abomination. :-)
+
+IIRC the spec allows only one PCI/ISA bridge, and it has to be on the first
+PCI bus so legacy I/O accesses work.
+
+And we still didn't mention the nightmare called ISA memory space... Where is
+your legacy VGA memory?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
