@@ -1,14 +1,18 @@
 Return-Path: <cfriesen@nortel.com>
-Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
-	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id 2C1AB67A45
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Feb 2005 05:11:29 +1100 (EST)
-Message-ID: <420117CA.8090507@nortelnetworks.com>
-Date: Wed, 02 Feb 2005 12:11:22 -0600
+Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
+	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id 1F01267A2C
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Feb 2005 05:39:57 +1100 (EST)
+Received: from zcard303.ca.nortel.com (zcard303.ca.nortel.com [47.129.242.59])
+	by zcars04e.nortelnetworks.com (Switch-2.2.6/Switch-2.2.0) with
+	ESMTP id j12Idrs26872
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Feb 2005 13:39:54 -0500 (EST)
+Message-ID: <42011E77.6040906@nortel.com>
+Date: Wed, 02 Feb 2005 12:39:51 -0600
 From: Chris Friesen <cfriesen@nortel.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: buggy mlock() behaviour in 2.6.9 on ppc64?
+Subject: new binutils breaks "tlbie" instruction in kernel?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I've got a simple test app that tries to mmap() and mlock() an amount of 
-memory specified on the commandline.
 
-If I specify more than the amount of physical memory in the system, I 
-get different behaviours between ppc and ppc64.
+The "tlbie" instruction has a bit which may be set to indicate regular 
+or large page size.  This used to be set via an optional second parameter.
 
-With the ppc kernel, my mmap() call will eventually fail and return 
-MAP_FAILED.
+Apparently some time between binutils versions 2.15.91.0.2 and 
+2.15.92.0.2 a change went in to make this second parameter mandatory, 
+which breaks the kernel ppc code.
 
-With the ppc64 kernel, however, the system hangs, and the fans speed 
-starts increasing.  It seems like it doesn't realize that there is 
-simply no way that it will ever be able to succeed.
+What is the recommended way to fix this?  Do all binutils versions 
+understand the second parameter, or will "sufficiently old" versions 
+choke on it?
 
-Is this expected behaviour for ppc64?
 
+Thanks,
 
 Chris
