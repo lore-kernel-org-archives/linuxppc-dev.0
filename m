@@ -1,31 +1,39 @@
-Date: Sat, 3 Jun 2000 17:31:10 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Michel Lanners <mlan@cpu.lu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] VRAM detection in controlfb
-In-Reply-To: <20000603170917.A11644@quaketop.them.org>
-Message-ID: <Pine.LNX.4.10.10006031728230.9136-100000@shell.unixbox.com>
+From: bob@kunk.jriver.com
+Message-ID: <20000604040407.10637.qmail@kunk.jriver.com>
+Subject: Frustration with MACE...
+To: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 3 Jun 2000 23:04:07 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jun 03, 2000 at 08:28:25AM +0200, Michel Lanners wrote:
-> For those with multiple display adapters, do you think an option
-> controlfb:off might make sense? As there is no way to control which card
-> gets assigned which framebuffer device, that might help in certain
-> situations...
+I've spent several hours tonite trying to get the MACE driver to behave
+properly on a 7200/90 with the 2.2.15pre20 kernel.
 
-I believe you can set which driver gets init'ed first by using the args:
+The internal ethernet is connected via the 10BT port. It works sometimes for
+a while and then just stops working. I have tried it through a switch and
+with a cisco 675.
 
-video=foo:blah video=bar:blah
+I looked over the plscc configs, noticed the little force AAUI config.
+Tried different plscc combos, tried different phycc (PHY) combos, it's
+still flakey! I've tried it on 3 7200's. It works pretty well on only one.
 
-foo's _init will be called first, and bar's next, (therefore being fb0 and
-fb1 respectively).
+If the machine is in MacOS I can pump megabytes through the Mesh without
+trouble.
 
+If I use a PCI ethernet card, it works perfectly. I'm running out of ideas
+(and if don't get this working, I'll be out of PCI slots).
 
-ani
+When it doesn't work, I don't even get errors in netstat -in.
 
+Any IDEAS????
+
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
