@@ -1,48 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
-Subject: BDI kernel debug
-Date: Tue, 6 Jul 2004 13:31:08 +0200
+Date: Tue, 6 Jul 2004 08:28:55 -0500 (CDT)
+From: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+To: Jean-Christophe Dubois <jdubois@mc.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: proposed patch for cross compiling from Solaris 2.8
+In-Reply-To: <1089105643.31278.228.camel@fr-jdubois1.ad.mc.com>
+Message-ID: <Pine.LNX.4.44.0407060823120.2040-100000@spider.ancor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200407061331.08613.Schramel.Linux@go.bartec.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+On Tue, 6 Jul 2004, Jean-Christophe Dubois wrote:
+> Hi,
+>
+> I got into several issues while trying to cross-compile a Linux 2.6 PPC
+> kernel from a Solaris 2.8 host (beside getting a valid cross compilation
+> chain). Mainly some programs compiled on the host are not planned to be
+> compiled on anything but Linux (The host has to run Linux).
 
-i have some problems with debugging my kernel. This is the first time i use bdi for kernel debugging. ELDK 3.0 is my toolchain (Target 8270).
-My bdi2000 can sync with the gdb (ddd) debugger.
-I let the kernel run until "start_here", at example. Then i try to step through the source.  I see the source and i can step in it. Sometimes it happens that i spend a lot of time in
-linux/kernel/timer.c. Then the output of gdb is "
-(gdb) next
- Single stepping until exit from function __cli,
- which has no line number information.
+All of the things you've changed look wrong to me.
 
- Program received signal SIGSTOP, Stopped (signal).
- 0xc0007dec in __cli ()"
+Most of your changes are taking out <stdint.h>, which is not correct.
+This header should be on any system, it is part of the C standard. Even
+the getopt changes shouldn't be required, you should be using the
+version of getopt that came with your package.
 
-The same output with "step". "Cont" ends also there, although i had set a breakpoint later in the source.
+Are you sure that you've specified -nostdinc -nostdlib and given the
+proper list of locations for the cross-compile system includes when
+compiling?
 
-Are there some options in the kernel or in the gdb to set ?
+-Bret
 
-Thanks in advance
-Marco
-
-
-
----------
-Marco Schramel
-R&D
-Bartec GmbH
-Schulstr. 30
-94239 Gotteszell, Germany
-www.bartec.de
-Marco.Schramel@go.bartec.de
-Phone:  +49 (0)9929/301332
-Fax:    +49 (0)9929/301112
+--
+Bret Indrelee                 QLogic Corporation
+Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
