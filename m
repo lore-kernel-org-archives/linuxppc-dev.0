@@ -1,43 +1,47 @@
-Date: Mon, 10 Jul 2000 21:27:39 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Ramprasad Rao <ramp@oddjob.uchicago.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: yaBoot and Standard Tree
-Message-ID: <20000710212739.J7162@plato.local.lan>
-References: <20000710191307.H7162@plato.local.lan> <Pine.GSU.4.05.10007102233090.23502-100000@oddjob.uchicago.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5RlU4xxYGspG+nv4"
-In-Reply-To: <Pine.GSU.4.05.10007102233090.23502-100000@oddjob.uchicago.edu>; from ramp@oddjob.uchicago.edu on Mon, Jul 10, 2000 at 11:00:49PM -0500
+Message-ID: <396AB595.DC926132@lightning.ch>
+Date: Tue, 11 Jul 2000 07:50:13 +0200
+From: Daniel Marmier <daniel.marmier@lightning.ch>
+Reply-To: daniel.marmier@lightning.ch
+MIME-Version: 1.0
+To: Dan Malek <dan@netx4.com>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help with string.S
+References: <3967B1E3.80CAC746@embeddededge.com> <396969E1.A7256E4A@lightning.ch> <396A5162.411F49EF@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---5RlU4xxYGspG+nv4
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+Dan Malek wrote:
+> These are becoming a pain in the ass instructions.  Has anyone ever
+> done some performance analysis to see what we really gain here in
+> real life?  Sure, locally and logically you can make an intuitive
+> argument, but we are sure fetching lots of instructions just to get
+> this aligned, and further to actually move the data.
+>
+> These instructions certainly don't work on uncached memory space,
+> causing the alignment exception and probably horrible performance without
+> people knowing.  These instructions used to cause the exception on
+> the early MPC8xx processors when copyback cache wasn't enabled.  Today,
+> the newer silicon doesn't fault at all regardless of cache mode.  I
+> guess I need to determine what is really happening.  Nothing would
+> be fine, but it appears _something_ (usually incorrect) happens.
 
-On Mon, Jul 10, 2000 at 11:00:49PM -0500, Ramprasad Rao wrote:
->=20
-> 2.2.17pre6 and later from the standard kernel tree did boot on my
-> iMac 333. I think that most of the pmac-specific patches from Paul's
-> rsync have been merged into the official sources.
+I have seen this happen on cacheable memory with copyback enabled.
+The dcbz-memcpy caused the destination to be zeroed, IIRC.
 
-that is great news!  i have been optimistic about 2.2.17 from some
-entries in Alan Cox's diary but i don't have time to mess with pre*
-kernels.
+> > But the function works fine if I remove that instruction.
+>
+> I'm still a C code fan:
+>         for(i=0; i<count; i++)
+>                 *d++ = *s++;
+>
+> ...and let the compiler guys make it go fast :-).
 
-/me who can't wait for the day when compiling a kernel on ppc takes
-the same source as on intel and sparc.
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---5RlU4xxYGspG+nv4
-Content-Type: application/pgp-signature
+That would be cool, but I am sure the asm funcs perform much better.
+I'll try to do some benchmarking if I have time.
 
 
---5RlU4xxYGspG+nv4--
+				Daniel M.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
