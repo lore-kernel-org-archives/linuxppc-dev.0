@@ -1,25 +1,41 @@
-In-Reply-To: <1092926140.10314.101.camel@localhost>
-References: <1092926140.10314.101.camel@localhost>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <FE889179-F1F1-11D8-8765-003065F9B7DC@embeddededge.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-	mcclintock@freescale.com, mgreer@mvista.com
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: [RFC] Test patch for Sandpoint X2
-Date: Thu, 19 Aug 2004 11:11:06 -0400
-To: Adrian Cox <adrian@humboldt.co.uk>
+Date: Thu, 19 Aug 2004 13:11:30 -0400 (EDT)
+From: "Mark S. Mathews" <mark@linux-wlan.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: 405EP and pci_alloc_consistent()
+Message-ID: <Pine.LNX.4.61.0408191303100.3546@chef.linux-wlan.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 19, 2004, at 10:35 AM, Adrian Cox wrote:
+Hi Folks,
 
-> Any comments?
+I've got a wlan driver I'm running on a 405EP target with the 2.4.27
+rsynch'd from the mvista site last week (my customer did that, I don't
+have the exact details).
 
-Thank you :-)  I have both X2 and X3 systems.  I will test them
-as time permits.
+This device/driver relies on a dma'd 'control block' where all the queues
+(heads,tails,metadata etc.) are managed.  We allocate that block with
+pci_alloc_consistent().  I had some trouble with stale values until I
+wrapped all the accesses of the block with invalidate_dcache_range()
+before reads and flush_dcache_range() after writes.
 
-	-- Dan
+I don't have a problem with the necessity to do all that, but it does
+leave me a little uncomfortable.  I thought the pci_alloc_consistent call
+should mark the tlb entrie(s) for that memory as non-cacheable.  Am I
+missing something?
+
+Thanks,
+-Mark
+
+--
+
+Mark S. Mathews
+
+AbsoluteValue Systems      Web:    http://www.linux-wlan.com
+721-D North Drive          e-mail: mark@linux-wlan.com
+Melbourne, FL 32934        Phone:  321.259.0737
+USA                        Fax:    321.259.0286
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
