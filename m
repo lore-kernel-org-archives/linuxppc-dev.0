@@ -1,44 +1,49 @@
-Date: Sun, 3 Jan 1999 19:31:49 -0500 (EST)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Reply-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Sam Quigley <osquigle@cs.uchicago.edu>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: FTP Problems
-In-Reply-To: <o9un240gfbb.fsf@yeenoghu.cs.uchicago.edu>
-Message-ID: <Pine.LNX.3.96L.990103184911.3513C-100000@unix49.andrew.cmu.edu>
+Message-ID: <36901B63.5F905878@jlc.net>
+Date: Sun, 03 Jan 1999 20:37:39 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+CC: Paul Mackerras <paulus@cs.anu.edu.au>,
+        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        bh40@calva.net, tmrini@ntplx.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: irq cleanup
+References: <Pine.LNX.3.96.981231143743.14310A-100000@persephone.cs.nmt.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 3 Jan 1999, Sam Quigley wrote:
+Cort Dougan wrote:
 
-> > OK, so it can't open the RPMS database, right? Can you switch to virtual
-> > console 3 (Cmd-F3) or 4 and see if there's a specific error listed? That
-> > might be a little more helpful than the installer errors message.
-> 
-> I have this problem too: the error reported is, on console 3:
-> 
-> * ugFindUpgradePackages() ...
-> * failed opening /mnt/var/lib/rpm/packages.rpm
-> 
-> the installer warns that 'an error occurred during step "Choose
-> packages to upgrade"', but also has a stray line reading
-> "/mnt/var/lib/rpm/nameindex.rpm:" on the background.  (this is,
-> presumably, an error message from something other than the installer)
-> 
-> I can cat packages.rpm fine from the console.
+> I was adding code for the QSPAN interrupts on the mbx.....
 
-Hmm. I am *not* an expert on the RedHat installer, but what's in packages.rpm?
-And how about nameindex.rpm?
+I am a little confused by this.  I am travelling and don't have
+my books handy. and I remember the MBX uses the 8259
+interrupt controller to manage all PCI/ISA device interrupts.
+What I don't remember are the actual connections.  I believe
+the PCI interrupts are routed to the 8259, which is then
+routed to one of the 8xx external interrupts.
 
-I expect we'll get a little help once people get settled after MacWorld. Which
-reminds me, I was hoping I could get a list of the various people working on
-R5 and what they're doing. Just curious, plus it would make it easy to have a
-dialogue with the person(s) working on the RedHat installer.
+The QSPAN interrupts are for things like PCI parity
+errors and the IDMA.  However, the IDMA won't operate
+because of a silicon bug that will not allow the QSPAN to
+be a master on the 8xx bus.
 
--Hollis
+To support PCI or ISA devices that interrupt on the MBX
+you would need to modify irq.c to support a multilevel interrupt
+scheme.  The 8259 would interrupt on one of the 8xx interrupt
+controller levels, then you would have to process all 8259
+interrupts.
+
+> The idea is to have a master controller, and each slave is dealt with as a
+> handler so we don't have such an ifdef soup.
+
+That's the right idea.   The master in this case would
+be the 8xx interrupt controller, and the slave would be the 8259.
+The QSpan isn't part of the picture.
+
+
+    -- Dan
 
 
 
