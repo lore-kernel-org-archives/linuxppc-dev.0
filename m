@@ -1,91 +1,66 @@
-Date: Tue, 11 Feb 2003 12:16:08 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: [PATCH] 8xx_io/uart.c
-In-reply-to: <3E47F4D4.5070202@embeddededge.com>
-To: Dan Malek <dan@embeddededge.com>,
-	Murray Jensen <Murray.Jensen@csiro.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLIECLFKAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3E491EE8.6070503@embeddededge.com>
+Date: Tue, 11 Feb 2003 11:03:52 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: joakim.tjernlund@lumentis.se
+Cc: Murray Jensen <Murray.Jensen@csiro.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] 8xx_io/uart.c
+References: <IGEFJKJNHJDCBKALBJLLIECLFKAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan Malek
-> Murray Jensen wrote:
->
->  > ...a quick perusal of the code will convince you
-> > of this.
->
-> No it won't.  Find the case where this happens and then I'll be convinced :-)
+Joakim Tjernlund wrote:
 
-Correct, it won't fail since the first instance is redundant. The info ptr is
-set to &consinfo and consinfo has "good" values for tx_va_base and tx_bd_base.
+> ..... Will KGDB/XMON write this early and/or
+> is KGDB/XMON guaranteed not to write a LF?
 
-However if my_console_write is called BEFORE consinfo has been setup(in
-serial_console_setup) then both is needed. Will KGDB/XMON write this early and/or
-is KGDB/XMON guaranteed not to write a LF? It sure seems fragile.
+Yes, yes.  Making these work, especially kgdb, was a real PITA.
+Both format their own packets/strings and expect behavior of
+reading/writing directly to a uart FIFO.  Like I said, if you really
+understand how xmon/kgdb work, you would understand why these functions
+are written exactly as they are.
 
-> For example, was someone supposed to blindly accept Jocke's patch to make
-> the serial port fifos so much larger?  I had to take the time (over and over) :-)
-> to explain why this wasn't a bug.  It would be nice if some of you went through
-> the learning curve to understand how things are supposed to work before you
-> just declare bugs and submit patches.
+The printk never calls a serial driver before it is fully initialized.
+Debugger serial interfaces, especially kgdb, expect a simple uart fifo
+immediately available within a few hundred lines of kernel code execution.
 
-Well, the patch itself did not contain the FIFO part, but the mail contained
-a request to make them bigger. I would had included the FIFO part in the patch
-if I had been sure it was the right thing to do. Still think it's a good
-idea to expand the # of TX BD and the FIFO length, but possibly one should
-keep the lower length during early access to keep the usage of DPRAM low.
 
-> As a final example, Jocke keeps bugging me about his ethernet updates.  I
-> explained (yet again, it was in the archives) that this had been attempted
-> in the past, and it caused problems with packet routing/forwarding.  Why
-> do I have to take the time to set up the testing environment and once again
-> prove this is still a problem?  I hoped to find someone with a test
-> environment to prove this (as they mentioned the bug in the first place),
-> but they are also busy with their own projects.  Someday I may have time
-> to set this up, make some changes to the patch so it works better, and
-> do some testing to ensure the upstream alignment changes are done properly.
-> If someone else can take the time to ensure it works (or make it work)
-> in this condition where it was known to fail in the past, I would be more
-> likely to check it in without taking the time to do the testing myself.
+> The buffer is kmalloc'ed and kmalloc always returns L1 cache aligned buffers.
+> Then  __dev_alloc_skb()/dev_alloc_skb() reserves 16 bytes in the beginning of the
+> buffer and since the L1 cache line is 16 bytes it is still L1 cache aligned.
 
-Come on, the last constructive mail I got from you regarding my Ethernet patch
-was http://lists.linuxppc.org/linuxppc-embedded/200211/msg00123.html
-where you told me you were looking at the patch and would integrate
-"something that hopefully works". You had some concerns about L1 cache alignment
-and I explained that I carefully checked that the buffer were L1 cache aligned.
+It's the data at the end of the buffer that's the problem.  The IP stack (used
+to) stores information in dynamically allocated memory that would get corrupted
+when buffers were invalidated.  There was lots of discussion about this on kernel
+and other mailing lists (like mips and arm).  After we found it, there was some
+discussion about how to fix it, but I didn't follow up on all of the details.
+To ensure this works, you have to configure a forwarding/routing multiple
+ethernet environment and get the 8xx to forward packets across the links.
+That was the failure condition, there are people using 8xx in these configurations,
+and we can't introduce a "solution" that has been known to be a problem in
+the past.
 
-The buffer is kmalloc'ed and kmalloc always returns L1 cache aligned buffers.
-Then  __dev_alloc_skb()/dev_alloc_skb() reserves 16 bytes in the beginning of the
-buffer and since the L1 cache line is 16 bytes it is still L1 cache aligned.
+> You think I just hacked this up and throwed it over the fence?
 
-If this is your only concern, I can make a new patch that allocates 2*L1_CACHE_BYTES
-extra space and place the data buffer in between.
+No, but you could have saved yourself some time by reading the archives.
+You could have started with:
+	http://lists.linuxppc.org/linuxppc-embedded/200008/msg00105.html
+and then:
+	http://lists.linuxppc.org/linuxppc-embedded/200106/msg00078.html
 
-Since then you told me that you had sent the patch to some guys that would
-be able to trigger the problem you are worried about and I have waited several
-months to get the results(and sent reminder to you) and this the first I
-hear from you about the outcome.
+After the problems with the 405gp and tulip driver I started looking around
+at the other lists and asking network folks for solutions. They didn't have
+any and suggested non coherent processors not dma into skbuffers.  We are
+fortunate on 8xx that the driver is only used on this processor, so if we
+can find some solution it doesn't have to work generically for others.  The
+networking folks suggested the only solution was to give skbuf allocators
+knowledge of cache line sizes, but that was never pursued as far as I know.
 
-You reefer to the archives and I have tried to find it, but I didn't find anything.
-Please supply search keys or a link when you reefer to the archives since
-the search function does not work very well(you must known this already since you could
-not locate the mail from Murray Jensen).
 
->
-> It's easy to hack up code, throw it over the fence, and complain when
-> someone else won't take care of it.  Make that job easier for those of
-> us trying to maintain the source trees, it would be appreciated.
-
-You think I just hacked this up and throwed it over the fence? I beg to differ, I have
-been monitoring the success/failure of this patch all along, posted updates and answered
-questions. The patch so far has been a success and I think it's more than ready to go in.
-
- Jocke
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
