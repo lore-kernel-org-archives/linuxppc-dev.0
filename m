@@ -1,54 +1,39 @@
-Message-Id: <200010230250.WAA09756@smtp-out1.bellatlantic.net>
-Date: Sun, 22 Oct 2000 22:50:33 -0400
-From: "Andrew W. Reynolds" <Drew.Reynolds@actel.com>
-Reply-To: drew@actel.com
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: Re: Support for G4 ZIF upgrades in B+W G3 rev2
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-To: "Timothy A. Seufert" <tas@mindspring.com>
-Mime-Version: 1.0 (Apple Message framework v337)
+Date: Mon, 23 Oct 2000 13:39:29 +0200 (MET DST)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+To: linuxppc-dev@lists.linuxppc.org
+cc: Michael Norton <mnorton@cisco.com>
+Subject: Re: COPTS for Makefile LinuxPPC 2000
+In-Reply-To: <200010210500.AAA23065@lists.linuxppc.org>
+Message-ID: <Pine.SOL.3.95.1001023131438.18258B-100000@juliet>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tim,
+On Fri, 20 Oct 2000 15:17:26 -0700 (PDT), Michael Norton <mnorton@cisco.com> wrote:
+>
+> I am trying to build the OpenGL Heretic game and there are compiler options in t
+> he Makefile for m68k but not for the PPC.
+>
+> COPT.m68k = -m68020-60 -O2 -fomit-frame-pointer -D__BIG_ENDIAN__ -D__32BIT__ \
+>         -DHAVE_ALLOCA_H
+>
+>
+> was should this statement read if I am going to compile a PPC image on my G4?
+>
+Well, you probably should keep the defines, and possibly the "-fomit-frame-pointer"
+as well, so leave everything after that unchanged. It's possible you need
+"-fsigned-char" in addition. You obviously wouldn't want the "-m68020-60"
+which turns on m68k-specific tuning. You might simply try "-O2" or "-O3" for a
+first run. There also are some architecture-specific flags available on PPC,
+such as"-mcpu=604", don't know if there is a flag for 750 or even 7400 yet.
+You should look at the gcc info page for more details on the different
+optimizations (under "Invoking GCC::"). Chances are you won't need
+terribly agressive optimization if that game actually runs on a 68k :-).
 
-It does not work with Mac OS X Beta. Newer has a comment on its web sight http://www.newertech.com that they have drivers that work with Mac OS X DP4 but they want to test them with Mac OS X Beta before releasing them. I sent them E-mail requesting updated status but I haven't heard anything back.
+HTH,
+							Derek
 
-I hope this helps.
-
-Drew
-
-On Saturday, October 21, 2000, at 06:04 PM, Timothy A. Seufert wrote:
-
->
-> At 9:45 AM -0400 10/21/00, Kevin B. Hendricks wrote:
-> >Hi,
-> >
-> >I want to upgrade my development box.
-> >
-> >Does PPC Linux work well with G4 ZIF upgrades used in B+W G3 rev 2 systems?
-> >I read something about Apple firmware upgrades that prevent this
-> >combination from working?
->
-> Apple's later firmware version(s) for the B&W do not work with G4
-> CPUs.  If you have a rev 2 system, you have the affected firmware.
-> The vendors which ship ZIF upgrades for B&W computers include a
-> utility to patch the firmware so that you can boot the machine with a
-> G4.
->
-> >Does this effect Linux on PPC?  Does it affect Mac OSX?
->
-> It shouldn't affect Linux at all.  As long as the firmware
-> successfully initialized the CPU, the kernel is happy.  Dunno about
-> MacOS X, but my guess is that it should work too.
->
->    Tim Seufert
->
->
->
->
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
