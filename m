@@ -1,41 +1,32 @@
-Message-ID: <006c01bffdbc$802f0f70$1a0210ac@r2d2>
-From: "Todd C. Larsen" <tlarsen@openbits.net>
-To: "LinuxPPC Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: What 405 and MPC740/MPC106 reference boards should I buy for LinuxPPC embedded development?
-Date: Thu, 3 Aug 2000 19:34:22 -0700
+Message-ID: <398A4A55.9660C07C@embeddededge.com>
+Date: Fri, 04 Aug 2000 00:45:09 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+To: Nguyen Xuan Hoang <hoang_nguyen@smartstors.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Usb slave API
+References: <380658298.965240776157.JavaMail.root@web621-wrb.mail.com> <39888816.AEA4C307@mvista.com> <001101bffd79$167e2860$0401a8c0@hoangmobile>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm interested in purchasing reference or evaluation boards for two
-different PowerPC implementations that are reasonably good choices
-as LinuxPPC targets.
+Nguyen Xuan Hoang wrote:
 
-The first target is an IBM 405GP.  I've noticed that MontaVista has
-been working with the Walnut board, and I'm wondering if this is
-the best (or just *only*) evaluation board to use.
+> >From my understanding the usb slave driver (not host) was done for MPC823
+> and MPC850,
 
-The second target is an MPC740 with the MPC106 PCI bridge.  I've
-worked with the Yellowknife (both X2 and X4) in the past, with
-MPC603e and (I think) MPC740 PGA modules, but not with LinuxPPC.
-Was LinuxPPC ever running on the Yellowknife?
+We are working with Embedded Planet to GPL release their host/slave USB
+for the 823 and 850.  This should hopefully happen in about a week or
+so.
+I don't think anyone every posted a complete driver, due to the USB
+stack
+changes in the Linux kernel.
 
-I've noticed that the Yellowknife may no longer be available (the
-documentation pages indicate they are "archival use only").  Is
-there another alternative for the MPC740/MPC106 combination,
-perhaps something from IBM?  The Sandpoint board won't work for
-me because there doesn't seem to be an MPC740/MPC106 module.
+Just sit tight for a week or so and everything should arrive.  I am sure
+there willl be an announcement when this occurs.
 
-For this second combination, the board doesn't need to be an
-evalation board per se, so I'm open to suggestions.
 
-Thanks.
-______________________________________________________________________
-   Todd Larsen                                 realtime4aim  [AIM]
-   tlarsen@openbits.net
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
