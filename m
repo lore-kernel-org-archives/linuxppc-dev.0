@@ -1,55 +1,47 @@
-Message-ID: <3B5BA1A4.CF1BA180@genetel.co.kr>
-Date: Mon, 23 Jul 2001 13:01:45 +0900
-From: hychon <hychon@genetel.co.kr>
-Reply-To: hychon@genetel.co.kr
+Message-ID: <004701c11341$43e704a0$8021690a@huawei.com>
+From: "machael thailer" <dony.he@huawei.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: About system calls question...
+Date: Mon, 23 Jul 2001 14:32:36 +0800
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: how to get a physical address?
-Content-Type: text/plain; charset=EUC-KR
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi~~
+I have a question about how to use system calls...
+I notice that in init/main.c=>init() functions:
 
-I want to know "how to get a physical address from mmaped area??"
+init(void * unused)
+{
+    ....
+if (open("/dev/console", O_RDWR, 0) < 0)
+  printk("Warning: unable to open an initial console.\n");
 
-I find  some information  variable vitrual address is  "from
-3G+physical_memory_size + 8M to 4G" here mailing site.
+ (void) dup(0);
+ (void) dup(0);
 
-my case , 32M ram
+ /*
+  * We try each of these until one succeeds.
+  *
+  * The Bourne shell can be used instead of init if we are
+  * trying to recover a really broken machine.
+  */
 
-I allocate vitrual address throgh by following
+ if (execute_command)
+  execve(execute_command,argv_init,envp_init);
+ execve("/sbin/init",argv_init,envp_init);
+......
+}
 
- mem1_chy = open("/dev/kmem", O_RDWR);
- chy_addr1 = mmap(0, 64*1024,(PROT_READ|PROT_WRITE),MAP_SHARED, mem1_chy
+My question is since "open" "dup" and "execve" are system calls, they should
+be called  only in user process instead of in kernel space.
 
-,0xFF000000 );
-  printf(" address : chy_addr1 = %x   \n", chy_addr );
+Why can they be used in this way here?
+Thanks in advance!
 
-      --->  result =>   address : chy_addr1 = 30027000
-
- and
-
-  mem2_chy = open("/dev/kmem", O_RDWR);
-  chy_addr2 = mmap(0, 64*1024,(PROT_READ|PROT_WRITE),MAP_SHARED,
-mem2_chy , 0x100000 );
-  printf(" address : chy_addr2 = %x   \n", chy_addr2 );
-
-      --->  result =>   address : chy_addr2 = 30016000
-
-
-how a get a phyisical address of chy_addr2 (chy_addr1) ??
- chy_addr 2is not return "100000" .      wondering??
-
-I want  a little  information about "from 3G+physical_memory_size + 8M
-to 4G"?
- - why it add 8M ?
-
-anyway, I want to know get a physical address from VMA araa??
-
-
-                                             --  hye yong --
+machael thailer
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
