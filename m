@@ -1,28 +1,39 @@
-Message-Id: <4.3.2.7.2.20000713184211.032d6100@mail.munich.netsurf.de>
-Date: Thu, 13 Jul 2000 18:45:34 +0200
-To: Wolfgang Denk <wd@denx.de>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: BDM for Linux Kernel Debugging - MMU Support available
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200007131433.QAA23929@denx.local.net>
+Date: Thu, 13 Jul 2000 14:22:02 -0400
+From: Josh Huber <huber@mclinux.com>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: > 512 MB of ram on G4?
+Message-ID: <20000713142202.A1289@mclx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 16:33 13.07.00, Wolfgang Denk wrote:
->So we now have both a "free" and a "professional"  solution  for  BDM
->based  Linux  kernel  debugging, both interfacing with GDB (or DDD if
->you like) and allowing to debug kernel code (single stepping,  break-
->points,  etc.)  and/or  inspect kernel data... From what I've seen so
->far, both solutions provide the same features, and  work  with  about
->the same speed - and with the same results.
+--RnlQjJ0d97Da+TV1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hey, what about Lauterbach? We have Linux-Awareness in our MPC8xx stuff
-too! I'll think I'll cancel the donation of the 8260 board to you ;-)).
+Hey, I'm trying to put 1GB of ram in an Apple G4 box here, but I'm having
+trouble.  Anything higher (well, in increments of 256M) is dumping me into
+xmon early on boot (before the fbcons is initialized).
 
-Franz.
+Any thoughts?  I'm unable to use xmon because of the USB
+keyboard...unfortunately.  Too bad Apple didn't put a real serial port on
+these machines :(
 
+Thanks,
+--=20
+Josh
+6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
+61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+
+--RnlQjJ0d97Da+TV1
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--RnlQjJ0d97Da+TV1--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
