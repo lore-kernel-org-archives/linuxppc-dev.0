@@ -1,42 +1,41 @@
-Message-ID: <F14441D40E5AD3118886005004607AD10BDDDD@MAIL1>
-From: "Halfmann, Klaus" <khalfmann@libra.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ibook ttyS0 (modem), and pppd problem, linux-2.2.17pre20ben2
-Date: Mon, 9 Oct 2000 12:45:26 +0200 
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Topi Kanerva <tkanerva@ees2.oulu.fi>,
+        Giuliano Pochini
+ <pochini@denise.shiny.it>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: can't boot 2.4.0-t9
+Date: Mon, 9 Oct 2000 13:28:01 +0200
+Message-Id: <19340903045945.2380@192.168.1.2>
+In-Reply-To: <Pine.GSO.4.21.0010091229310.24725-100000@stekt6>
+References: <Pine.GSO.4.21.0010091229310.24725-100000@stekt6>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1252"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Conrad H Ziesler [mailto:cziesler@umich.edu] wrote:
-
-> The first time i run pppd after reboot, everything works great.
 >
-> however, if the remote host abruptly hangs up, then all future pppd
-> instances yield the following trace in syslog:
+>is this the plain 2.4.0-test9 or linuxcare devel version?
+>If I were you, I'd try to backport the test7 scsi code to make
+>the hack work again.
+>I don't know about the drivers/scsi stuff, because I have a pismo
+>(and hence no scsi), but for sure none of the 2.4.0-testx kernels
+>have worked for me in terms of X: if I start X (4.0.1c), the
+>lcd screen goes black, or then just completely wild.
 >
-> Oct  7 18:35:15 mwatt pppd[7318]: pppd 2.3.11 started by root, uid 0
-> Oct  7 18:35:19 mwatt pppd[7318]: Hangup (SIGHUP)
-> Oct  7 18:35:19 mwatt pppd[7318]: Connect script failed
->
-> that is, pppd aborts without ever running chat.
-> nothing i seem to do fixes this except reboot.
+>Can anyone else with a pismo confirm this?
 
-I have just the same problem and help myself as follows:
-I compiled macserial as a module. So when this problem
-hits me I do a rmmod/insmod on macserial and everything
-is fine again.
+For the SCSI resources problem, I have to check is the main tree is up-
+to-date with the latest PPC fixes. You may want to try with the PPC
+bitkeeper tree.
 
-This problem appeard in all 2.2 kernels I had until now.
-Of course this is a bug in the macserial driver
-(and it may already be known) ...
+For the X 4 vs. 2.4 issue, I've been biten by this for a long time (on a
+Pismo too and on a G4) until I figured out that the X server dies when
+looking up font path. I had a broken font path in my /etc/X11/XF86Config,
+removing it fixed the problem. (It's the last one in the list, it used to
+give an error with older X servers).
 
-|       |                  Klaus Halfmann       khalfmann@libra.de
-|       |
-|    i  | --.  r---  -- |  Libra Software GmbH  Tel +49 (0)621 41997-15
-|    |  b-- |  |    a-- |  Erzbergerstr. 17     Fax +49 (0)621 41997-30
-L--- |  --- |  |    .---.  68165 Mannheim
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
