@@ -1,55 +1,47 @@
-Message-Id: <200004280609.IAA00288@piglet.grunz.lu>
-Date: Fri, 28 Apr 2000 08:09:20 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: VRAM detection in controlfb.c
-To: drow@false.org, chepner@cs.dartmouth.edu
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20000428000745.A853@drow.res.cmu.edu>
+Message-ID: <39092B2B.249FFC07@student.ethz.ch>
+Date: Fri, 28 Apr 2000 08:09:47 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
+CC: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree 4.0 dual monitor on AGP G4
+References: <200004280051.RAA20647@pop3.ucdavis.edu>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
-
-On  28 Apr, this message from Daniel Jacobowitz echoed through cyberspace:
+"W. Taylor Holliday" wrote:
 >
-> On Thu, Apr 27, 2000 at 11:39:59PM -0400, Clint Hepner wrote:
->> I recently added another 2MB of VRAM to my PM8500
->> with control video, and was dismayed when linux wouldn't
->> recognize it.
-
-Let me guess: you're running 2.2 kernel on an 8x00 machine....
-
->> My question is, is the problem only with detecting the
->> VRAM, or could there be problems addressing the VRAM as
->> well if the kernel isn't able to detect it on its own.
+> >
+> >  Yes it would work, there is a problem with the approach taken by
+> > fbdev/glint, the BusID info isn't used at all there for the choise
+> > of the device to be opened, without the fbdev option you always
+> > get /dev/fb0 which might not be what you want.
 >
-> No, there shouldn't be any problems.
+> According to the XFree 4 documentation, the BusID determines the device, and
+> thus the framebuffer used, even in the case of fbdev. So I'm kinda confused.
 
-The problem lies in the detection. 2.2 and 2.3 kernels have different
-versions of the detection code; 2.2 will not work with 4MB on 8x00
-machines, and 2.3 will not work with 4MB on 7x00 machines. So none of
-the two versions is what we need :-(
+This doesn't apply to framebuffer devices, I guess it's about the PCI devices.
+There's currently no safe way to find the corresponding fbdev for a given PCI
+device and vice versa. But it's being worked on.
 
-> I may just support a boot parameter for this if I can't figure it
-> out...
 
-Considering that fewer and fewer people will use affected machines
-(they're starting to get old...), adding a boot parameter may be the
-right solution, except if by any magic we get at documentation from
-Apple. I'm no magician, however ;-)
+> > Here is a small patch (untested) that changes r128 to use the "fbdev"
+> > option instead of using BusID to get the fbdev device.
+> > If the BusID and fbdev options don't match bad things will happen
+> > so be carefull there.
+> > For people that don't have more than one r128 card the previous behaviour
+> > works better so don't use it...
+>
+> If I apply your patch and recompile, how should I modify the config file?
+> Get rid of all BusID's? Just for the second monitor?
+
+I suggest always giving all BusIDs, it doesn't hurt as long as BusID and fbdev
+match.
+
 
 Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
