@@ -1,27 +1,61 @@
-Message-ID: <3AF3551D.3627FFBC@acm.org>
-Date: Fri, 04 May 2001 18:19:25 -0700
-From: Ira Weiny <iweiny@acm.org>
+Message-ID: <3AF35975.30456155@iiic.ethz.ch>
+Date: Sat, 05 May 2001 03:37:57 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: ieee1394 status
-Content-Type: text/plain; charset=us-ascii
+To: "Jason E. Stewart" <jason@openinformatics.com>
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Success! (was Re: External Monitor under Pismo)
+References: <20010404092143.EFE4C2F01B@apollo.valhalla.net>
+		<3ACB537B.99B851B9@netfall.com>
+		<87hf0433qs.fsf@amadeus.openinformatics.com>
+		<3ACB6167.3B2E0242@iiic.ethz.ch>
+		<878zlg31mw.fsf@amadeus.openinformatics.com>
+		<3ACB9611.C95D16A2@iiic.ethz.ch>
+		<87ae5w1ce3.fsf@amadeus.openinformatics.com>
+		<3ACB9EB3.2661FFCE@iiic.ethz.ch>
+		<87u242zz7y.fsf@amadeus.openinformatics.com>
+		<3ACCFFBB.58CC75D2@iiic.ethz.ch>
+		<87itjmf7lf.fsf_-_@amadeus.openinformatics.com>
+		<3AEDEF2D.4B823134@iiic.ethz.ch>
+		<87wv7x984o.fsf@amadeus.openinformatics.com>
+		<3AF1D91F.7030801@iiic.ethz.ch>
+		<87hez1pjm1.fsf@amadeus.openinformatics.com>
+		<3AF29AF6.9AC80F3E@iiic.ethz.ch> <87hez1hw97.fsf@amadeus.openinformatics.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Has anything more been done on the ieee1394 since March?  Back then
-there was a big discussion about some patches and fixes for endianess.
-Did these make it into Ben's rsynced tree?
+"Jason E. Stewart" wrote:
+>
+> "Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
+>
+> > Note that you needn't install anything to try a new version, check out the
+> > -modulepath option of the XFree86 binary. Sorry I forgot to point this out
+> > earlier.
+>
+> Aaah... yes, that would have helped. I figured there had to be an
+> option like that. My mistake was to go looking for an environment
+> variable and not for a command line option. Next time, I'll just write
+> an email.
 
-I am trying to do some work with 1394 on my Titanium and it seems to
-self id correctly but there are problems when trying to read from the
-bus.  I am assuming a problem in the OHCI driver since my G3 did not
-have these problems last night with the pcilynx driver.  (And I can't
-verify that until next week when I get back to it.  Sorry)
+Always a good idea before trying anything potentially dangerous. :)
 
-Should I dig into this further?  Is there a tree with newer 1394 code in
-it?
-Ira
 
+> OK. With the new XFree86 binary it can't load the r128 driver:
+>
+> (EE) R128(0): Cannot read V_BIOS (4)
+
+This is usually harmless.
+
+> I'm attaching the whole log, as well as my config file.
+
+It's using the 4.0.3 modules... did you give it the (correct) -modulepath
+option?
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
