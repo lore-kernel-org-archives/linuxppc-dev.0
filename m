@@ -1,60 +1,21 @@
-Date: Tue, 28 Jan 2003 21:06:46 +0100
+From: xiaogeng_jin@agilent.com
+Message-ID: <9153F74610B7D311B83900902771C871124D9396@axcs07.cos.agilent.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Program for Embedded & Kernel Development at fosdem 2003
-Message-ID: <20030128200646.GE839@mind.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: p2@mind.be (Peter 'p2' De Schrijver)
+Subject: how to halt m8xx?
+Date: Tue, 28 Jan 2003 17:00:45 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all,
+Hi,
 
-Fosdem 2003 will be held 8 and 9 february 2003 in Brussels. See
-http://www.fosdem.org for more info.
+I found that in m8xx the halt function is the same as the restart function because m8xx_halt() just calls m8xx_restart() in m8xx_setup.c. If I just want to halt the m8xx system but not to restart it automatically, what should I do? Set a few registers and wait for ever? THanks for your thoughts.
 
-The program for the Embedded & Kernel Development Room at fosdem 2003 :
+Regards,
 
-Saturday 8/2/2003
-=================
-
-14:00 - 14:45 : Keynote
-	        opencores.org : free hardware development
-				Speaker : Richard Herveille
-
-14:45 - 15:30 : Adapting Debian for Embedded Use
-				Speaker : Martin Michlmayr
-
-16:00 - 16:45 : Portable programming on complex systems
-				Speaker : Peter De Schrijver
-
-16:45 - 17:30 : Wonka  - a JVM for embedded systems
-				Speaker : Chris Gray
-
-Sunday 9/2/2003
-===============
-
-10:00 - 11:00 : breakfast + BoF's
-
-11:00 - 11:45 : Cross-compiling in embedded systems
-  				Speaker : Eero Tamminen
-
-11:45 - 12:30 : eCos
- 				Speaker : Nick Garnett
-
-14:00 - 14:45 : RTAI
-				Speaker : Philippe Gerum
-
-14:45 - 15:30 : GNU Bayonne and real-time issues in freely licensed
-                telephony software
-				Speaker : David Sugar
-
-15:30 - 16:15 : Using C++ for real-time extensions to the Linux kernel
-				Speaker : Peter Soetens
-
-Cheers,
-
-Peter.
+- Shawn.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
