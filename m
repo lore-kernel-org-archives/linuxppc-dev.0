@@ -1,33 +1,31 @@
-From: Subodh Nijsure <subodh@best.com>
-Message-Id: <200103161525.HAA26938@shell9.ba.best.com>
-Subject: Re: flash writing with Linux
-In-Reply-To: <3AB1E380.7E88EC47@esd-electronics.com> from Matthias Fuchs at "Mar 16, 1 10:57:20 am"
-To: matthias.fuchs@esd-electronics.com (Matthias Fuchs)
-Date: Fri, 16 Mar 2001 07:25:38 -0800 (PST)
-Cc: linuxppc-embedded@lists.linuxppc.org
+From: mschmid@ascona.de
+Subject: where to get sources ?
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFE7C2BDB6.D352465E-ONC1256A11.005CC8B1@ascona.de>
+Date: Fri, 16 Mar 2001 18:13:55 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> Hi,
->
-> does anybody know if a flash writing tool for Linux is available ?
-> I want to update a flash image from a running Linux. The Linux is
-> running from a ramdisk, so the flash can be erased and rewritten.
->
-> I think what I need are two thing: A device driver for accessing the
-> flash and a command line tool for erasing and writing to the flash.
+Hello.
 
-Perhaps you can take a look at mtd and use that to manage your flash.
-With mtd you can partition your flash to different devices and erase them
-selectively.
+I'm a newbie at embedded linux and after i had successfuly setup my CDK i
+now want to make
+the first steps to setup a linux system on a embedded ppc target.
 
-Once you have your flash partitioned you can simply cat a file to /dev/mtd#
-to copy new content to the flash.
+First of all i want to setup a minimal system.
+Therefor i search a source to download the linux source.
+Are there special download locations for the CPU i use ?
 
-/Subodh Nijsure
+My target system uses a MPC8240 CPU.
+There is a intel 82559 ethernet chip on the board.
+System memory size is 256MB or 512MB , no disks, so i think i need a
+ramdisk.
+A further step will be to start the system from flash (8MB / intel flash).
+
+Regards Mathias
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
