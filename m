@@ -1,64 +1,83 @@
-Date: Mon, 29 Jul 2002 23:19:27 +0100
-From: Matthew Wilcox <willy@debian.org>
-To: Russell King <rmk@arm.linux.org.uk>
+Date: Mon, 29 Jul 2002 19:51:23 -0700 (PDT)
+Message-Id: <20020729.195123.59797547.davem@redhat.com>
+To: rmk@arm.linux.org.uk
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [parisc-linux] 3 Serial issues up for discussion (was: Re: Serial core problems on embedded PPC)
-Message-ID: <20020729231927.D3317@parcelfarce.linux.theplanet.co.uk>
-References: <20020729040824.GA2351@zax> <20020729100009.A23843@flint.arm.linux.org.uk> <20020729144408.GA11206@opus.bloom.county> <20020729181702.E25451@flint.arm.linux.org.uk>
+Subject: Re: 3 Serial issues up for discussion
+From: "David S. Miller" <davem@redhat.com>
+In-Reply-To: <20020729181702.E25451@flint.arm.linux.org.uk>
+References: <20020729100009.A23843@flint.arm.linux.org.uk>
+	<20020729144408.GA11206@opus.bloom.county>
+	<20020729181702.E25451@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020729181702.E25451@flint.arm.linux.org.uk>; from rmk@arm.linux.org.uk on Mon, Jul 29, 2002 at 06:17:02PM +0100
+Content-Type: Text/Plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 29, 2002 at 06:17:02PM +0100, Russell King wrote:
-> 3. /dev/ttyS*, /dev/ttySA*, /dev/ttyCL*, /dev/ttyAM*, etc
-> ---------------------------------------------------------
->
-> All the above are serial ports of various types.  It has been expressed
-> several times that people would like to see all of them appear as
-> /dev/ttyS* (indeed, there was an, erm, rather heated discussion about
-> it a couple of years ago.)  I'm going to be neutral on this point
-> here.
+   From: Russell King <rmk@arm.linux.org.uk>
+   Date: Mon, 29 Jul 2002 18:17:02 +0100
 
-I'm not.  All the issues you mention below go away if we make the rule
-that _all_ serial ports are /dev/ttyS*.  Userspace can have symlinks to
-ease the transition if necessary.
+   d. we keep serial.h, make it 8250-compatible ports only, and change
+      CONFIG_SERIAL_MULTIPORT and friends to CONFIG_SERIAL_8250_MULTIPORT
+      This is the simplest and least likely to break other code.  On the
+      other hand, we end up hauling the ISA table and struct old_serial_port
+      into 2.6.
 
-> c. People with many serial ports.  We _could_ change the device number
->    allocations such that ttyS gobbles up the ttySA, ttyCL, ttyAM, etc
->    device numbers so we end up with the same number of port slots
->    available for those with many many serial ports in their machines.
+My only suggestion here is that, whatever you do, if you keep
+serial.h rename it to serial8250.h or similar thanks :-)
 
-Yep, there really are people with >256 serial ports.  It'd be nice to
-support them.  Does anything care about the mapping from device name
-to char minor?  I suspect the MAKEDEV maintainer will come and squash
-me if i suggest moving the mapping for the first 192 serial devices,
-but we should be able to reclaim:
+   b. serial consoles.  Each hardware driver handles its serial consoles
+      by itself, and if you have two or more hardware drivers built in
+      with serial console support, you need to be able to tell them apart
+      with the console= kernel parameter.
 
-Chase serial card (major 17/18), the Cyclades (major 19/20), Digiboard
-(major 22/23), Stallion (major 24/25), Specialix (32/33), isdn4linux
-(43/44), Comtrol (46/47), SDL RISCom (48/49), Hayes (57/58), Computone
-(71/72), Specialix (75/76), PAM (78/79), Comtrol VS (105/106), ISI
-(112/113), Technology Concepts (148/149), Specialix RIO (154/155/156/157),
-Chase Research (164/165), ACM (166/167), Moxa (172/173), SmartIO
-(174/175), USB (188/189), Low-density misc serial ports (204/205),
-userspace (208/209) BlueTooth (216/217), A2232 (224/225) ... holy crap,
-that's a lot of char dev space ;-)  52 majors.. think what those must
-be worth on the open market ;-)
+      Again, this could be solvable if we have one "ttyS" view of everything
+      (core.c would then be responsible for registering the console with
+       printk.c and passing the various methods off to the relevant
+       hardware).
 
-My only real objection (and it's a problem we have at the moment!) is
-that serial ports then become like ethernet interfaces.  Add or remove a
-card and everything changes number.  Somehow we already survive with this.
-I was very careful when adding a new SIIG 4-port serial card to my console
-server the other day to notice which card was first in PCI bus scan
-order and make sure all my existing machines were hooked up to that one.
+On many platforms we know exactly which serial port is for
+the console because this is set in some firmware variable.
+For others we could say "it's ttyS0 unless stated otherwise
+in console=" as one possible solution.
 
-The solution to this has to be to name devices by PCI bus ID, but this is
-an argument for an entirely different thread ;-)
+Hey while we're on this topic.  While converting over the sparc
+drivers I've come to the conclusion that the serial console write
+should be interrupt driven just like any other serial port TX.  The
+con->write() algorithm in such a scheme would look something like:
 
---
-Revolutions do not require corporate support.
+static void
+fooserial_console_write(struct console *con, const char *s,
+			unsigned int count)
+{
+	struct uart_fooserial_port *up = CON_TO_UART(con);
+	unsigned long flags;
+	int i, true_count;
+
+	true_count = count;
+	for (i = count - 1; i >= 0; i--) {
+		if (s[i] == '\n')
+			true_count++;
+	}
+
+	spin_lock_irqsave(up, flags);
+	poll_until_xmit_buffer_bytes_free(up, true_count);
+	append_con_buffer_to_xmit_tail(up, s, count);
+	spin_unlock_irqrestore(up, flags);
+}
+
+The reason it is done with this "poll until enough space" mechanism
+is because we can't sleep.
+
+Upon further consideration this does have some problems.  Because of
+the silly '\n' handling this means we have to make sure printk
+console output cannot give us more than 1/2 the xmit buffer size
+in a single write call else we could potentially never have enough
+space free to do the whole write.  We could size the xmit buffer
+appropriately for console uart instances, using some value from
+the console layer, to solve this.  Or we could make con->write()
+calls limit how much they give at one call.  We could indicate this
+limit in con->write_max or similar.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
