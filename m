@@ -1,102 +1,36 @@
-From: mlocke@jps.net
-Message-ID: <3A37B5CF.ADB8E1DD@jps.net>
-Date: Wed, 13 Dec 2000 09:45:51 -0800
-Reply-To: mlocke@mvista.com
+Message-ID: <3A37B818.CC0C5718@ssh.com>
+Date: Wed, 13 Dec 2000 19:55:36 +0200
+From: Arto Vuori <avuori@ssh.com>
 MIME-Version: 1.0
-To: Nils Hagge <Nils.Hagge@stud.uni-hannover.de>
+To: Dan Malek <dan@mvista.com>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel panic: No init found.
-References: <006c01c0650f$73b65d60$1e894b82@pc30>
+Subject: Re: 2.5 or 2.4 kernel profiling
+References: <20001212182856.A8336@brixi.research.canon.com.au> <Pine.GSO.4.21.0012120933330.24199-100000@eos> <20001213121554.B17129@brixi.research.canon.com.au> <3A37A048.46E692A0@mvista.com> <3A37B08A.3FE08AF7@ssh.com> <3A37B2E4.B3944354@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-you really should contact MV support for this kind of stuff (if you have
-a support contract).
+Dan Malek wrote:
+> I have been pushing driver updates into the BK linuxppc_2_5 tree,
+> but not into the linuxppc_2_3 tree as we are trying to stablize
+> that for 2.4.  All of these you mentioned, and others have been
+> updated.  The MII interface is still broken for some PHYs.
 
-Ot is something with your basic setup.  Did you add the /opt.../target
-directory to /etc/exports ? if so, did you restart the nfs server?  is
-the nfs server running?
+OK
 
-Nils Hagge wrote:
->
-> Hi,
->
-> I try to run Hard Hat Linux from Montavista as described in the CDK 1.2
-> manual on an RPX lite board.
-> Unfortunately, the installation procedure is only for hosts with Red Hat
-> Linux, I hoped this would work for SuSE, too.
->
-> The problem has to do with the NFS filesystem. I can successfully download a
-> precompiled
-> Hard Hat Linux boot-image via TFTP and monitor this with the serial port.
->
-> The following is the output over the serial port...
->
->  target IP address : 824B8932
->  target file name  : rpxlite.srec
->  address bias      : 0
-> Starting tftp download:
-> inetARP(): OK
-> .1.2.4.8.16.32.64.128.256.512.1024.2048.4096.8192
-> load_tftp(): OK
-> 1087283 data bytes, 13764 S-records, 2124 tftp blocks, 0 repeated blocks
-> start address = 00200000
-> load_tftp_toMem(): OK
-> Transferring control to downloaded program
-> loaded at:     00200000 0020B1FC
-> relocated to:  00180000 0018B1FC
-> boart
-ata at: 001801C8 001801E4
-> relocated to:  00200100 0020011C
-> zimage at:     00206000 0026A4C4
-> avail ram:     0026B000 01000000
->
-> Linux/PPC load: root=/dev/nfs rw nfsroot=/opt/hardhat/devkit/ppc/8xx/target
-> Uncompressing Linux...done.
-> Now booting the kernel
-> Linux version 2.2.14 (root@rodan.mvista.com) (gcc version 2.95.2 19991030
-> (2.95.
-> 3 prerelease/franzo)) #1 Tue Aug 8 02:01:27 PDT 2000
-> Boot arguments: root=/dev/nfs rw nfsroot=/opt/hardhat/devkit/ppc/8xx/target
-> time_init: decrementer frequency = 240000000/60
-> Calibrating delay loop... 63.69 BogoMIPS
-> Memory: 15152k available (740k kernel code, 456k data, 36k init)
-> [c0000000,c1000
-> IP Protocols: ICMP, UDP, TCP
-> TCP: Hash tables configured (ehash 16384 bhash 16384)
-> Initializing RT netlink socket
-> Starting kswapd v 1.5
-> CPM UART driver version 0.03
-> ttyS00 at 0x0280 is a SMC
-> ttyS01 at 0x0380 is a SMC
-> pty: 256 Unix98 ptys configured
-> RAM disk driver initialized:  16 RAM disks of 4096K size
-> loop: registered device at major 7
-> eth0: CPM ENET Version 0.2, 00:10:ec:00:1b:fb
-> PPP: version 2.3.7 (demand dialling)
-> TCP compression code copyright 1989 Regents of the University of California
-> PPP line discipline registered.
-> Sending BOOTP requests.... OK
-> IP-Config: Got BOOTP answer from 130.75.137.50, my address is 130.75.137.59
-> Looking up port of RPC 100003/2 on 130.75.137.50
-> Looking up port of RPC 100005/1 on 130.75.137.50
-> VFS: Mounted root (NFS filesystem).
-> Freeing unused kernel memory: 36k init
-> Kernel panic: No init found.  Try passing init= option to kernel.
-> Rebooting in 180 seconds..
->
-> ----snip----
->
-> The filesystem seems to be mounted, but it does not find any files in there
-> although the full "linux tree" is available. I also tried adding
->   init=/bin/init   init=bin/init    init=/opt/.../target/bin/init
-> to the boot arguments, but nothing helped.
->
-> Do you know that problem or have an idea? Any help is welcome. Thank in
-> advance.
->
-> Nils Hagge
->>bN
+> For all processors, the BK linuxppc_2_5 tree has many more updates
+> than the more visible 2_3 tree.
+
+Is there any way to get BK linuxppc_2_5 tree without using BitKeeper
+tools?? I found only older snapshots on FTP site. Also rsync is unable
+to find linuxppc_2_5 snapshot.
+
+	-Arto
+
+--
+Arto Vuori
+email: avuori@ssh.com
+mobile:	+358 40 754 5223
+
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
