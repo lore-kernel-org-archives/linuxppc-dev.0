@@ -1,38 +1,56 @@
-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Cc: Rakesh Jagota <j.rakesh@gdatech.co.in>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 15 May 2003 08:31:05 CDT."
-             <Pine.LNX.4.44.0305150828210.26702-100000@spider.ancor.com>
-Date: Thu, 15 May 2003 15:35:01 +0200
-Message-Id: <20030515133506.57E40C6092@atlas.denx.de>
+Subject: RE: How?
+From: Craig Hollabaugh <craig@hollabaugh.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Date: 15 May 2003 08:03:48 -0600
+Message-Id: <1053007429.481.6.camel@ch>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.44.0305150828210.26702-100000@spider.ancor.com> you wrote:
->
-> Don't know why you want to handle it from user space, but the easiest way
-> to notify an application would be to send a signal. Have a special ioctl()
-> to notify the driver that this application wants a signal, and then when
-> the driver receives the interrupt it clears the condition and sends a
-> signal to the registered application(s).
+Rakesh,
 
-Instead of inventing new special ioctl()'s it's  probably  better  to
-use existing and standardized interfaces like select() resp. poll().
 
-Best regards,
+Your interrupt routine can send a signal to your user space process.
 
-Wolfgang Denk
+Here's what I've used
+
+void sendSignal(void)
+{
+        struct task_struct *p;
+        if ( pid ) {
+
+/*
+        for_each_task(p) {
+                if (p->pid == pid) {
+                        send_sig(SIGIO,p,1);
+                        break;
+                }
+        }
+*/
+
+/* or better yet */
+
+        if (p = find_task_by_pid(pid)) send_sig(SIGIO,p,1);
+        /* from page 83 in ulk */
+        }
+}
+
+ulk is Understanding The Linux Kernel.
+
+Craig
+
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"The POP3 server service depends on the SMTP  server  service,  which
-failed to start because of the following error: The operation comple-
-ted successfully."                         -- Windows NT Server v3.51
+___________________________________________________________
+Dr. Craig Hollabaugh                   craig@hollabaugh.com
+Author of Embedded Linux
+
+P.O. Box 1405
+Ouray, CO 81427-1405        See my "kitchen sink" resume at
+970 325 4810 home            www.hollabaugh.com/resume.html
+970 325 0509 office
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
