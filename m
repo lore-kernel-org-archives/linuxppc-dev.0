@@ -1,55 +1,35 @@
 From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>,
-	"Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: Serial port text corruption
-Date: Tue, 18 May 2004 23:05:27 +0200
-Message-ID: <BCEFJBPJCGFCNMMMIDBHMEBDCGAA.Joakim.Tjernlund@lumentis.se>
+Date: Tue, 18 May 2004 23:17:01 +0200
+Message-ID: <BCEFJBPJCGFCNMMMIDBHIEBECGAA.Joakim.Tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <3EECAC02-A8EC-11D8-BBC2-003065F9B7DC@embeddededge.com>
+	charset="iso-8859-1"
+In-Reply-To: <065ACD8E84315E4394C835E398C8D5EB089D46@cossmgmbx02.email.corp.tld>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> On May 18, 2004, at 6:03 AM, Joakim Tjernlund wrote:
+> I would look at the SMC1 buffering and handling of caches (either snooping, not caching the buffers, or flushing before
+> transmitting).
+
+The 8xx uses its internal memory as buffers and this is uncached memory, so this should not be a problem.
+
 >
-> > This is very confusing and I would fix it but I don't know where to
-> > start.
-> > Any guesses as to where the problem is? Kernel serial layer, the 8xx
-> > uart.c driver,
-> > the user space login program or somewhere else?
+> Another possiblility is sending data that is stored on the stack in a subroutine which subsequently returns before the
+> data is actually transmitted -- when you are lucky, the data hasn't changed when the Tx occurs, when you are unlucky, a
+> call sequence has overwritten the string on the stack.  Since this is (presumably) standard linux and that sort of a
+> problem would have been found and fixed loooong ago in the linux core code, I would concentrate on your low level code.
+
+OK, I will have a look at this.
+
 >
-> Are you using a USB to serial adapter on your laptop?
+> Just to eliminate variables, you should hook a logic analyzer or 'scope to the board's Tx line and verify the baud rate
+> hasn't changed when you get the garbage characters.  If the baud rate has changed, it will be a clocking problem.
 
-Nope, this is a plain RS232 port with TeraTerm on top. This
-has also happened on different laptops.
+I will see what I can do.
 
-> On the other hand, many. many years ago when the 8xx uart driver was
-> written we added some delays during mode changes (which happens
-> during this phase of the log in) to ensure all of the CPM fifos were
-> drained
-> properly.  Again, this wasn't exactly the SMC problem, but shifting out
-> bits
-> that didn't look proper messed up the host serial interface.  Maybe
-> during
-> all of the recent updates to the drivers people "optimized" things not
-> knowing
-> their effects.
-
-Had a look in the driver and the rs_8xx_ioctl()
-calls tty_wait_until_sent(tty, 0) for most things but
-rs_8xx_set_termios() calls change_speed without a delay.
-Is this the delays you are thinking about?
-
-I am using agetty and I have just read that agetty tries to figure
-out parity settings during login and sets the tty accordinly. So
-maybe agetty gets confused and changes the parity? Would
-that affect the Password line but not the previous line where the username
-is entered?
-
-Relevant line of my inittab is:
-  con:2345:respawn:/sbin/getty -L console 115200 vt100
+ Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
