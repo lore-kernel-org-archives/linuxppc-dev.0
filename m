@@ -1,34 +1,35 @@
-Date: Fri, 31 May 2002 07:47:25 -0700
+Date: Fri, 31 May 2002 07:48:25 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Murray Jensen <Murray.Jensen@csiro.au>
-Cc: Rosen Jeremy <Rosen.Jeremy@tms-pty.com>,
+To: Paul Mackerras <paulus@samba.org>
+Cc: Matthew Locke <mlocke@mvista.com>,
+	Dan Malek <dan@embeddededge.com>,
+	David Gibson <david@gibson.dropbear.id.au>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] enhanced i2c driver for MPC8xx/MPC8260 CPM ...
-Message-ID: <20020531144725.GG32412@opus.bloom.county>
-References: <scf74bf6.008@au.thalesgroup.com> <3377.1022808761@msa.cmst.csiro.au>
+Subject: Re: LMBench and CONFIG_PIN_TLB
+Message-ID: <20020531144825.GH32412@opus.bloom.county>
+References: <20020529030838.GZ16537@zax> <3CF4E842.3070207@embeddededge.com> <15605.24191.948013.249297@argo.ozlabs.ibm.com> <3CF581BE.8020207@embeddededge.com> <3CF64E9C.60303@mvista.com> <15606.47823.449239.651529@argo.ozlabs.ibm.com> <20020531001005.GD32412@opus.bloom.county>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3377.1022808761@msa.cmst.csiro.au>
+In-Reply-To: <20020531001005.GD32412@opus.bloom.county>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 31, 2002 at 11:32:41AM +1000, Murray Jensen wrote:
+On Thu, May 30, 2002 at 05:10:05PM -0700, Tom Rini wrote:
+>
+> On Fri, May 31, 2002 at 09:50:39AM +1000, Paul Mackerras wrote:
+> >
+> > > btw, there are bugs with it.  Starting several processes with init or
+> > > even telnetd will expose the bug.
+> >
+> > David and I haven't been able to reproduce this on the Walnut or the
+> > EP405.  What sort of machine are you using, what processor, how much
+> > RAM, and what distro are you using?
+>
+> A Walnut (pvr: 40110145) with 32mb of RAM and Debian/Woody shows it off
+> quite nicely here.
 
-> I think the file that includes <linux/i2c-algo-cpm.h> is expected to include
-> commproc.h, or cpm_8260.h, as required. What is the policy on these things?
-> Should every include file include all headers it needs? Anyone?
-
-IMHO, a header file should only include other things which the header
-itself needs.  eg if you do 'u8 foo;' in foo.h, add #include <asm/types.h>
-
-Anything the C file needs itself, it should include, and for the sake of
-being explicit (and it's good for multi-arch drivers) if the C code does
-'u8 bar;' it should do #include <asm/types.h> too.
-
-> Should we take this discussion off the list now? Cheers!
-
-Nah..
+With nfsroot, and logging in via serial console initially even.
 
 --
 Tom Rini (TR1265)
