@@ -1,35 +1,53 @@
-Message-ID: <20000203214854.24844.qmail@web205.mail.yahoo.com>
-Date: Thu, 3 Feb 2000 13:48:54 -0800 (PST)
-From: "D.J. Barrow" <barrow_dj@yahoo.com>
-Subject: Re P600 vs G4 400Mhz.
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <v04220802b4c015dac1c7@[10.0.0.42]>
+In-Reply-To: <38993D7F.B0964A77@dalim.de>
+References: 
+ <88732CD95EB64875C125687900681C6E.00681C98C1256879@kehl.dalim.de>
+ <38993D7F.B0964A77@dalim.de>
+Date: Thu, 3 Feb 2000 22:19:34 -0800
+To: Stephane GEORGES <sg@dalim.de>
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: Speed tests - G4-400 and PIII-600
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-One thing I personally would be very intrested in
-knowing is how much does our having to make fake page
-table entries  hack slows us down as the powerpc
-hardware under the hood uses a hash table & how much
-work would it be to alter the memory managment page
-middle dir api's etc. to use a truly architecture
-independent page management system like the mach
-microkernel ( rather than Linus'es idea of
-architecture independence being 386 486 & pentium ).
+At 9:34 AM +0100 2/3/00, Stephane GEORGES wrote:
+>I've made speed tests on programs running on my LinuxPPC on G4-400 Mhz AGP,
+>and on Pentium III 600 Mhz.
 
-Also has anyone checked how much faster the code
-Metrowerks produces is from using it on the Mac I can
-safely say that it is better than gcc on powerpc.
+>Bogomips:
+>     - on Intel : ~ 600
+>     - on PowerPC: ~ 800
 
-Also as pointed out by a colleague of mine at work
-we "cheat" on the bogomips calculation according to
-him
-the rules state that 2 instructions should be used
-to do this loop not one as we do with the bdnz trick.
-However owing to our zero cycle branch prediction we
-should ( I'd hope ) be still able to achieve the high
-bogomips value.
+BogoMIPS is meaningless.  It is not a benchmark.
+
+>The test programs are dealing with run-length images processing.
+>
+>I was disapointed by the fact that the Intel machine ran 25% faster
+>than the PowerPC machine.
+>
+>I thought that a G4-400 was worth a PIII-800 ...
+
+That's just marketing hype.
+
+>Maybe gcc including Alvitec patches will provide better performances ...
+
+Perhaps.  But you'd have to recode your software to use AltiVec; you
+can't just recompile and get a speed boost.  And you'd have to do the
+same with the PIII SSE vector instructions to make a fair comparison.
+AltiVec is better overall than SSE, but how much better depends a lot
+on the application.
+
+Actually, I'd say that the G4 put in a pretty good show, considering
+that the PIII's clock rate is 50% faster.  Last time I looked, the G4
+and PIII have about the same SPECint95 rating at the same clock
+speed, though the G4 is considerably better at SPECfp95.
+
+Motorola's inability to ramp up G4 clock speeds is a big problem.
+
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
