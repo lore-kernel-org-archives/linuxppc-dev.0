@@ -1,51 +1,44 @@
-Message-ID: <3AD01011.A8FAB831@mvista.com>
-Date: Sun, 08 Apr 2001 03:15:29 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: David Schleef <ds@schleef.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bugfix patch to arch/ppc/8260_io/fcc_enet.c
-References: <20010406071644.A2517@stm.lbl.gov>
-Content-Type: text/plain; charset=us-ascii
+Date: Sun, 08 Apr 2001 15:47:43 +0100
+Subject: Re: DMASOUND->rev6  (2.4.3)(attn: Xine, MOL, PowerComputing,
+	 ibook, Tumbler)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: phandel@cise.ufl.edu
+Cc: linuxppc-dev@lists.linuxppc.org, gewrgiou@imbc.gr
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010408144747.361B92F074@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David Schleef wrote:
->
-> The attached patch fixes a bug with 8260 fcc_enet driver that
-> is related to when the TX buffer becomes full.
+On Sat, Apr 7, 2001, Peter wrote:
+> On Sat, 7 Apr 2001, Iain Sandoe wrote:
+>> >>  - fix bug where TX stops when dbdma status comes up "DEAD"
+>> >>    so far only reported on PowerComputing clones ... but.
+>> >>    (PowerComputing clones - NOT TESTED - please let me know what happens).
+>> >
+>> > Nope, I can still kill sound by merely moving the mouse.  Here is the new
+>> > line from the console:
+>> > Apr  7 03:31:13 like kernel: dmasound_pmac: tx-irq: xfer died - patching
+>> > it up...
+>> >
+>> > ...but sound is dead, along with the player app, just as before.
 
-Well, you need to prove to me you don't have a wrap-around
-problem.  The line:
-	if(cep->skb_cur - cep->skb_dirty >= TX_RING_SIZE){
+It's disappointing that the sound won't re-start... (with Kostas' tests - it
+_was_ - just from the 'wrong' place).
 
-is in big trouble, and I suspect you changed these from shorts
-to ints because it didn't work right.  I suspect all you did
-was postpone the problem until you hit 4G of packets instead of 64K.
+> Another datapoint: It seems as if I can kill sound more easily when I play
+> mp3s that reside on my fast drive -> I can kill it within 30sec from the
+> IBM 7200rpm UltraSCSI drive, but it takes a few minutes of playing from
+> the Seagate 5400rpm UltraSCSI drive.
 
+Hmmm. I'm getting a bit confused... the disk problem we think we (might)
+understand - the mouse one is different, maybe ?
 
-> ..... Currently,
-> the driver relies on the BD_ENET_TX_READY for determining if
-> a ring slot is available for a tx buffer.  This is not a
-> valid criterion, because the interrupt handler may not have
-> cleared the slot from a previous tx buffer.
+I need to get a report from Kostas - because I don't (think) he has the
+mouse problem?
 
-I beg to differ.  It is a valid criterion because the interrupt
-handler isn't responsible for clearing the flag.  The transmit
-function sets it, and the CPM will clear it when it is done sending
-the buffer.
-
-You are going to have big problems if you are writing into buffers
-that have this flag set.
-
-> ..... This bug is easy
-> to generate by writing files over NFS with large wsize.
-
-Then, there is some other bug that needs to be found and fixed.....
-
-
-
-	-- Dan
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
