@@ -1,60 +1,52 @@
-Subject: RE: Kernel Oops when receiving a lot of UDP packets while booting
+Message-ID: <3C39C144.7090202@embeddededge.com>
+Date: Mon, 07 Jan 2002 10:39:48 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Mon, 7 Jan 2002 15:16:55 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E31459415@kolkrabbi.flaga.is>
-From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
-To: "Peter Desnoyers" <pdesnoyers@chinook.com>
-Cc: "LEROY Christophe" <christophe.leroy@c-s.fr>,
-	"linuxppc" <linuxppc-embedded@lists.linuxppc.org>
+To: Borracini Evandro-R45188 <Evandro.Borracini@motorola.com>
+Cc: "'dmalek@jlc.net'" <dmalek@jlc.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CS4218 sound driver
+References: <69AB2E42243FD511920200805FE64EAD0E367D@zbr01exm01.spo.br.mot.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: Peter Desnoyers [mailto:pdesnoyers@chinook.com]
-> Sent: 7. janúar 2002 15:02
-> To: Kári Davíðsson
-> Cc: LEROY Christophe; linuxppc
-> Subject: Re: Kernel Oops when receiving a lot of UDP packets while
-> booting
->
->
-> > I have verified that I am getting packets over the ethernet
-> > before the scc_enet_open() is called, I somehow suspect that
-> > this might be causing my random crashes.
->
-> You just kludge it by looking at your 'opened' flag and dropping the
-> packet in scc_enet_rx if it's false.  If it stops the
+Borracini Evandro-R45188 wrote:
 
-Yes I will try that too.
 
-> crashes, you'll be
-> OK until you find a version of the driver that doesn't have this
-> problem.
->
-> The version of the driver I use does all the hardware
-> initialization in
-> scc_enet_init, and then all that scc_enet_open does is call
-> netif_start_queue.
+> You wrote the cs4218_tdm sound driver, right?
 
-My enet.c does excactly this. And it is deffinitly not doing the right
-thing,
-try e.g. to flood ping the board while it is booting you will see all
-kinds
-of wonderful strange behaviour.
+Yes.
 
-Thanks,
+> I would like to use your cs4218 driver on my MPC823 board but I don't know how to connect an audio codec to the TDM.
 
-K.D.
 
->
-> --
-> .....................................................................
->  Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
->  Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
->  100 Hayden Ave, Lexington MA 02421
->
+There are many, many ways to configure codecs to match a hardware and software
+interface.  Not all (and I don't think any Motorola :-) codecs lend themselves
+to an efficient hardware connection to the TDM along with useful software features.
+
+The CS4218 codec (and others in this family) work well with the TDM interface and
+provide the features we want for professinal audio. First of all, you need to choose a
+codec that will source a very accurate clock, or provide some external hardware to
+do so.  The MPC8xx can't source a clock that is useful for standard sampling frequencies.
+The driver is a trivial implementation of TDM data transfer to/from the codec, and is
+also specific to the Embedded Planet HIOX card because all codec control is performed
+through GPIO pins and the SPI.  About 95% of this driver is taken from the PowerMac
+dmasound driver, since they are logically very similar.
+
+> Do you  know ( or does anyone in linuxppc list know) were I can find the hardware schematic  for the cs4218_tdm driver?
+
+It's actually pretty simple.  Get a CS4218 data sheet and look at the signals.  The
+clock is obvious, the frame pulse, tx/rx are connected to the TDM.  In a default
+mode, this is all you need to make it work.  We then connected the mode pins to a
+GPIO register to select the sampling frequency, and the SPI is connected to the CS4218
+control interface to provide gain/level control.  I didn't use the 8xx SPI controller
+because the overhead was too high.  I just software-clocked the bits on the pins.
+
+Have fun.
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
