@@ -1,50 +1,43 @@
-Message-Id: <v03010d01b33561985f76@[209.96.179.5]>
-In-Reply-To: <19990410145303.1090.qmail@associate.com>
+From: "Adam Kropp" <akropp@MIT.EDU>
+To: "Alexander Derbes" <acd@po.cwru.edu>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: Gray Mac Quick Cam and Linux PPC?
+Date: Sat, 10 Apr 1999 17:52:36 -0400
+Message-Id: <001301be839c$71ec9720$4e00dc12@waste-lands.mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 10 Apr 1999 16:19:08 -0400
-To: LinuxPPC-Dev@associate.com, linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Subject: Re: Lock-up while building mod_perl
-Cc: root@associate.com
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <Pine.LNX.4.04.9904091706250.11190-100000@discordia.student.cwru.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I tried to get the specs awhile ago, but at the time I could only get
+the B&W Mac QuickCam, the B&W and Color PC (Parallel) QuickCams.  
+Also, it involves using the serial controller in synchronous mode, and
+I didn't have time to dig up docs on how to do that.  I know you used
+to be able to write to connectix to get the specs, but I'm not sure
+now that it's owned by USR.
+
+-----Original Message-----
+From: owner-linuxppc-dev@lists.linuxppc.org
+[mailto:owner-linuxppc-dev@lists.linuxppc.org]On Behalf Of Alexander
+Derbes
+Sent: Friday, April 09, 1999 5:09 PM
+To: acd@po.cwru.edu
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Gray Mac Quick Cam and Linux PPC?
+
+
+
+
 Hi,
 
-I backported linuxthreads-0.7 (part of glibc) to glibc 1.99 and submitted a
-patch to Gary for inclusion into glibc 1.99 which he did in the form of
-version 1p.  Unfortunately, linuxthreads-0.7 has some problems with the
-sparse array structures used to store thread-specific data (I found this
-when testing with JDK 1.2 native threads).  I have a fix, but I want to do
-some more testing before releasing it.  The best solution right now for
-programs that work with linuxthreads (native threads) like the JDK, MySQL
-and probably mod-perl is to drop back to glibc (1o) with liuxthreds 0.5 for
-now.  I will try and track down and fix all of the problems with
-linuxthreads 0.7 and ppc and get a new threads update patch ready for glibc
-1q or later.
+  anyone know if it is possible to get a mac quick cam working under linux
+ppc?  if it has not been done anyone know if the serial format is
+published?
 
-Sorry about that, the fault was mine.
-
-Kevin
-
-At 2:53 PM +0000 4/10/99, LinuxPPC-Dev@associate.com wrote:
->Hi,
->
->Yesterday while trying to build/compile the mod_perl RPM from
->ftp://rawhide.redhat.com/SRPMS/SRPMS/mod_perl-1.18-5.src.rpm
->I experienced a total lock-up/freeze/crash.  It's been a LONG while
->since anything like that happened, so I thought I'd pass the new on here.
->I have a suspicion that this may be connected to the glibc-p release,
->which I recently upgraded to - this glibc also caused MySQL to stop working,
->even when compiled against the new glibc.
->
->Has anyone else seen this kind of problem (compiling mod_perl)?
->
->I'm running on a 7200/90 updated with all the latest R4 stuff.
->
->glen_stewart@associate.com
+-acd
 
 
 
