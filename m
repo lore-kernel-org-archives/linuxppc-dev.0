@@ -1,59 +1,51 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?Michel=20D=E4nzer?= <michel@daenzer.net>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Weird interrupt problem
-Date: Thu, 8 Aug 2002 14:07:00 +0200
-Message-Id: <20020808120700.30639@192.168.4.1>
-In-Reply-To: <1028761518.1262.1236.camel@tibook>
-References: <1028761518.1262.1236.camel@tibook>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 8 Aug 2002 23:18:33 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Peter Bergner <bergner@borg.umn.edu>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxPPC Dev <linuxppc-dev@lists.linuxppc.org>,
+	Mike Corrigan <mikejc@us.ibm.com>
+Subject: Re: FP save/restore code in ppc32/ppc64 kernels
+Message-ID: <20020808131833.GD23964@krispykreme>
+References: <20020807162302.GA39680@congo.borg.umn.edu> <20020808114646.GA23964@krispykreme>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020808114646.GA23964@krispykreme>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Today this happened to me the second time: All of a sudden, the USB
->mouse stopped working. At the same time this appeared in the syslog:
->
->Aug  7 17:19:57 tibook kernel: Unhandled interrupt 1d, disabled
->
->Plugging the mouse to the other socket worked, but it wouldn't work
->again in the original one. As you can see in the attached
->/proc/interrupts, interrupt 29 (=1d) is unknown. Interestingly,
->interrupt 28 seems to be for the USB socket which stopped working (I
->think it was the same one when the first problem first occured, might be
->coincidence though). Was it somehow rewarded for its 100'000th
->occurence? ;) Seriously, is it possible that the number changed somehow?
->
->
->This wouldn't be all that bad, if the whole system wasn't very sluggish
->afterwards. When it occured the first time, I had CONFIG_TAU enabled in
->the kernel, which Ben said might cause the sluggishness at least. But
->now it's disabled.
->
->
->This is on a TiBook III/667 running 2.4.18-ben0-lotsanicestuff if it
->matters. The first occurence was with 2.4.19-presomething-ben0.
->
->
->Has anyone experienced anything similar?
 
-Really weird. It looks like the openpic is going south. Seriously, looks
-like a HW problem, that is the interrupt controller starts giving us
-bogus interrupt numbers. Doesn't sound good at all :(
+> The final thing to look at is what ptrace returns for the MSR. I
+> suggested that we should copy in the FE0/FE1 bits out of the thread
+> struct (since the MSR_FP, FE0 and FE1 bits will always be zero as
+> ptrace does a giveup_fpu just before reading any FP stuff). Paul
+> pointed out for completeness we should always set the MSR_FP bit too.
 
-Ideally, when that happens, you could drop into macsbug and peek at
-the vector/priority & destination registers for this interrupt source
-and tell me what they say. (Hook into the code for the error message
-which is in arch/ppc/kernel/irq.c, and call a function you'll write
-in open_pic.c that will dump these (to access them, look at what
-openpic_enable/disable IRQ does).
+To follow up, this is what we currently see via ptrace:
 
-It may be some kind of race within the openpic driver when we keep
-enabling/disabling the source in ack() and end(). I'm pretty sure
-we don't really need them, oh well...
+./msr
+msr = d032
 
-Ben.
+And here is what we see with the above fixes:
 
+./msr
+msr = f932
+
+fpemode is a small program from Paulus that changes the FE0 and
+FE1 bits via the prctl. This shows:
+
+./fpemode 0 ./msr
+msr = f032
+
+./fpemode 1 ./msr
+msr = f132
+
+./fpemode 2 ./msr
+msr = f832
+
+./fpemode 3 ./msr
+msr = f932
+
+Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
