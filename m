@@ -1,31 +1,19 @@
-Message-ID: <3B853507.31F4ADAC@mvista.com>
-Date: Thu, 23 Aug 2001 12:53:27 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3B853FC3.ECE38D2@raleigh.ibm.com>
+Date: Thu, 23 Aug 2001 13:39:15 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-To: Linux Kernel <pakernel@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux Kernel and MPC 8240
-References: <20010823053911.20714.qmail@web20206.mail.yahoo.com>
+To: Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: using the little endian bit 4xx mmu
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Linux Kernel wrote:
+Is there any hope of getting an ioremap little endian in the 4xx code
+so the tlb would use little endian bit in the tlb?
 
-> When I looked at linux source code there are some
-> header files related to 8260 in asm-ppc directory.
+Thanks
 
-The 8260 is not an 8240.....don't look at those files.
-
-> I was wondering if I have to do any modifications to
-> kernel code to work with PowerPC 8240?
-
-You need some kind of a board definition and configuration
-so you get the PCI and I/O devices configured properly.
-Take a look at the Sandpoint stuff.
-
-
-	-- Dan
+Chip
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
