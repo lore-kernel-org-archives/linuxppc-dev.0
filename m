@@ -1,57 +1,43 @@
-Date: Tue, 4 Apr 2000 08:55:43 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Steven Hanley <sjh@wibble.net>
-cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: problems with the frame buffer (ATV 64) on a power mac 7220 in
-   newer kernels
-In-Reply-To: <38E93D4B.6BDE311@wibble.net>
-Message-ID: <Pine.LNX.4.05.10004040854190.15657-100000@callisto.of.borg>
+Message-Id: <200004040659.CAA16921@shell.faradic.net>
+Date: Tue, 04 Apr 2000 02:59:33 EDT
+From: jingai <jingai@floatingpenguins.com>
+To: "Geert Uytterhoeven <geert@linux-m68k.org>; jingai" <jingai@floatingpenguins.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Re: DMA Sound split & Atari800
+Reply-To: jingai@floatingpenguins.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 4 Apr 2000, Steven Hanley wrote:
-> Michel Lanners wrote:
-> > > I tried a kernel command line of video=controlfb:vmode:5
-> >                                          ^^^^^^^^^
-> > I didn't know the 7220 had a control display adapter? Anyway, this
-> > option will do nothing for your ATI display. You need to look at atyfb
-> > for relevant options.
+> On Mon, 3 Apr 2000, jingai wrote:
+> > I am trying to build Atari800 (the emulator) with sound support, and so
+far
+> > I have been successful, except that the output is very 'jittery.'  It
 >
-> I have no idea what the hardware actually has or doesnt, however as
-> mentioned in the email I did try a plain video=vmode:6 also which if I
-> read line 3279 of atyfb.c correctly (2.2.15pre14)
->
-> 3278-#if defined(CONFIG_PPC)
-> 3279:   else if (!strncmp(this_opt, "vmode:", 6)) {
-> 3280-       unsigned int vmode = simple_strtoul(this_opt+6, NULL, 0);
-> 3281-       if (vmode > 0 && vmode <= VMODE_MAX)
-> 3282-           default_vmode = vmode;
->
-> should set the vmode correctly to whatever I pass, instead it still just
-> goes with 6 seemingly due to code paulus added since 2.2.10.
+> Did it work before you applied the dmasound split patches?
 
-Should be:
+Actually, I *believe* it didn't.  I honestly didn't get it to work at all
+before applying the patches (I found the SIGNED_SAMPLES and
+POKEYSND_BIG_ENDIAN defines after patching), but I did later on boot to
+what I *think* was a kernel before the patches... I say "think" because I'm
+not entirely sure I didn't overwrite that kernel with the new patched
+kernel at some point during this whole process.. but I am fairly sure that
+it probably would have worked the same, and that this problem has always
+been there (ie, you didn't introduce it, AFAIK).. so it's either a problem
+with the sound implementation in LinuxPPC or in Atari800... but, since
+Atari800 is primarily developed for the Atari Falcon (m68k, I believe) and
+not x86 (although x86 support is certainly more carefully monitored than
+PPC I'm sure), I'm not entirely sure where the problem lies..
 
-    video=atyfb:vmode:6
+.ugh, sorry for the rambling.. I just got off work and it's 3am already so
+you'll have to excuse me.. :)  But, if anyone who does know more about
+kernel hacking than myself would care to make some attempt at building
+Atari800 I would really appreciate it.. I could send the latest sources
+(0.9.9h) plus the required roms to whomever is willing to try.
 
-The default video= parser doesn't know about vmode options. In 2.3.x it does
-using this syntax:
-
-    video=mac6
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Regards,
+Jonathan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
