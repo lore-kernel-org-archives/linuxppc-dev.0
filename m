@@ -1,43 +1,24 @@
-Message-ID: <XFMail.990329155456.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <36FFEF81.2EF1405C@bellatlantic.net>
+Date: Mon, 29 Mar 1999 21:24:17 +0000
+From: "Andrew W. Reynolds" <drewr@bellatlantic.net>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.10.9903290441460.22943-100000@beer.pub.umich.edu>
-Date: Mon, 29 Mar 1999 15:54:56 +0100 (BST)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Satadru Pramanik <satadru@umich.edu>
-Subject: RE: /usr/include files
-Cc: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
+Subject: GNAT 3.11p with EGCS-1.1.2 uploaded to LinuxPPC
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+My brother has finally put together the RPM's for GNAT 3.11p built into
+EGCS-1.1.2. He uploaded the needed files to ftp.linuxppc.org/incoming. I
 
-On 29-Mar-99 Satadru Pramanik wrote:
-> 
-> Exactly wher can I get a copy of all the files in the /usr/include dir?  I
-> have egcs 1.1.2, and glibc 2.1, and my compilation of MySQL is failing due
-> to problems with the files in that dir.   I already have my
-> /usr/include/linux dir symlinked to a cvs updated src dir, so I just need
-> to get these include files fixed, I think.   Which rpm file would this be
-> in?  I have the RedHat 5.9 Starbuck SRPMS files, so I just need to know
-> which one to use.
-> 
+am working on the GDB-4.17 with GNAT patches. I have a working version
+but I need to modify the configure scripts to correctly select the
+threads implementation. If any one needs the binary I will post it in a
+binary RPM for both R4 and R5.
 
-These files come from a myriad of sources.
+Andrew Reynolds (the other half)
 
-The primary ones come from the GLIBC-devel package.
-Others, such as the include files for TCL/TK, would come from other assorted
-packages.
-
-What kind of problems are you having?  details, please.
-
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
 
 
 
