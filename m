@@ -1,19 +1,18 @@
-Return-Path: <listmail@conspiracy.net>
-Received: from ns.traffictel.com (mail.conspiracy.net [209.189.226.94])
-	by ozlabs.org (Postfix) with ESMTP id 7861F2BF10
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id D307D2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Dec 2004 04:14:04 +1100 (EST)
-Message-ID: <41D19406.2050904@conspiracy.net>
-Date: Tue, 28 Dec 2004 11:12:38 -0600
-From: "paul.bilke" <listmail@conspiracy.net>
+	Wed, 29 Dec 2004 04:28:43 +1100 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A647421@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'paul.bilke'" <listmail@conspiracy.net>,
+	Wolfgang Denk <wd@denx.de>
+Date: Tue, 28 Dec 2004 12:28:37 -0500
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-References: <20041228095119.F07EDC1430@atlas.denx.de>
-In-Reply-To: <20041228095119.F07EDC1430@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: simple bootloader 2.6.10-rc3 8xx
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: simple bootloader 2.6.10-rc3 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,10 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi! (Thanks !) 
+
+I guess I need some more education - since I am getting my problem right at
+the boot - is 
+I-Cache enabled (by default ?) for 8xx on 2.6 at the booting ? - I do not
+see anything in .config 
+which controls it (or I am missing it there ?) 
+How (where and at what point during the boot)-) I could disable I-Cache ?
+
+Thanks,
+Alex
+-----Original Message-----
+From: paul.bilke [mailto:listmail@conspiracy.net]
+Sent: Tuesday, December 28, 2004 12:13 PM
+To: Wolfgang Denk
+Cc: Povolotsky, Alexander; linuxppc-embedded@ozlabs.org
+Subject: Re: simple bootloader 2.6.10-rc3 8xx
+
+
 Actually wd is right, one quick check to see if this is the problem is 
 to disable the I-Cache.  The problem only shows up the the I cache 
-enabled.  I ran my
-870 with them disabled for months (I know its painful) until I got the 
+enabled.  I ran my 870 with them disabled for months (I know its painful)
+until I got the 
 powers that be to approve wd to spend the time we did not have to fix it.
 Some of the best money I ever spent.
 
@@ -37,7 +55,9 @@ Wolfgang Denk wrote:
 
 >Dear Alex,
 >
->in message <313680C9A886D511A06000204840E1CF0A64741E@whq-msgusr-02.pit.comms.marconi.com> you wrote:
+>in message
+<313680C9A886D511A06000204840E1CF0A64741E@whq-msgusr-02.pit.comms.marconi.co
+m> you wrote:
 >  
 >
 >> 
