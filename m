@@ -1,42 +1,55 @@
-Message-ID: <3E37D18D.7080900@imc-berlin.de>
-Date: Wed, 29 Jan 2003 14:05:17 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <75DF04AC5ED4D511A9810090273CB4163A67DA@ROKONET-E>
+From: Eli Brin <elib@rokonet.co.il>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: ELDK rebuild from scratch on RHL 8.0
+Date: Wed, 29 Jan 2003 15:23:10 +0200
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: I2C RTC with MPC8xx?
-References: <20030129124938.4338CC608E@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk schrieb:
-> In message <3E37CB15.50307@imc-berlin.de> you wrote:
->
->>what do I have to do to use an I2C RTC (like Dallas DS1337) within LinuxPPC?
->
-> Use drivers/i2c/i2c-algo-8xx.c and add your own version of
-> drivers/i2c/i2c-ds1337.c ?
-Hmm. But there must be at least one excample!?
-Someone must have done that before!?
-After all I don't want to reinvent the wheel... (Ooh, how much I love that
-phrase!) :o)
+Hello,
 
->>I know there're drivers for PPCBoot / U-Boot.
->
->
-> There are also drivers for Linux.
-I bet there are drivers for Linux!
-How else should all the people using PPCBoot/U-Boot and I2C RTCs on MPC8xx
-platforms access them from Linux...
+We are trying to build the ELDK from scratch on Redhat Linux 8.0.
 
-But where could I find one? Isn't LWMON using an I2C RTC? But I just can't find
-the driver...
+The build environment is the same as described in the documentation.
 
-Thanks,
+We run the ELDK_BUILD script and it executes the build.sh rpm stage.
 
-Steven
+It seems that some files are not created and Makefile for rmp-4.0.3 is not
+created to.
+
+I have tried also with automake 1.7.2 and autoconf 2.57 with no success.
+
+We found the following text:
+....> I had a problem with autogen.sh when compiling TN5250 on RedHat 8.0.
+....> (This was 0.17.1 downloaded from CVS.)  It had worked OK on RedHat
+7.3.
+....>
+....> The problem was it didn't copy ltmain.sh to the TN5250 directory,
+which
+....> caused later fatal errors.  automake versions prior to 1.6 run
+....> libtoolize internally to get ltmain.sh.  But in 1.6 they took
+libtoolize
+....> out of automake and put it in autoreconf, part of autoconf.  (RedHat
+7.3
+....> has automake 1.4, while 8.0 has 1.6.)
+....>
+....> The fix was to put libtoolize into autogen.sh just before the call to
+....> automake.  Works OK now.
+
+.... I had the same problem with RedHat 8.0, but hadn't had a chance to
+chase
+.... down the problem yet.  Thanks for posting this!
+
+I don't know if its related to this problem, because the libtoolize is in
+the autogen script.
+
+Any ideas ?  I am sure I followed the instructions carefully, but...
+
+Best Regards,
+Eli Brin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
