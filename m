@@ -1,14 +1,35 @@
-Message-ID: <819E3E914E0AD11194DE00805F0D100B0138B827@fbi.infocom.dk>
-From: Kim Jørgensen <KIJ@infocom.dk>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
+Message-Id: <200004121212.IAA10789@hoover.gilbarco.com>
+From: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
+To: "'Kim Jørgensen'" <KIJ@infocom.dk>,
+        "'linuxppc-embedded@lists.linuxppc.org'"
 	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: No bash prompt
-Date: Wed, 12 Apr 2000 13:51:50 +0200
-MIME-Version: 1.0
+Subject: RE: No bash prompt
+Date: Wed, 12 Apr 2000 08:12:50 -0400
+Mime-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Kim,
+
+Are you trying to boot your board with a BDM plugged in?  If so, Dan made us
+aware that BDM's will fight with the kernel and will get confused about the
+VM.  If this is your situation, you will need to program your flash with the
+kernel and boot it without a BDM connected.
+
+Hope that helped,
+Jason
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Kim
+Jørgensen
+Sent: Wednesday, April 12, 2000 7:52 AM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: No bash prompt
+
 
 
 Hi.
