@@ -1,46 +1,52 @@
-From: Brad Boyer <flar@cegt201.bradley.edu>
-Message-Id: <199906102103.QAA15072@cegt201.bradley.edu>
-Subject: Re: EM86 port for LinuxPPC?
-To: jpgarcia@execpc.com (Joseph Palani Garcia)
-Date: Thu, 10 Jun 1999 16:03:00 -0500 (CDT)
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.GSO.3.95.990610130308.9290A-100000@earth> from "Joseph Palani Garcia" at Jun 10, 99 01:13:51 pm
+Message-Id: <199906102114.XAA00319@piglet.cpu.lu>
+Date: Thu, 10 Jun 1999 23:14:51 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Q: control is a C&T 65550?
+To: drow@false.org
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19990608101236.A5738@drow.res.cmu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Some may have noticed the EM86 x86 "emulator" for alpha/linux to run
-> x86/linux binaries.  I recently added the define to my kernel compile and
-> it compiled the binary support (the em86 program gets help from the
-> kernel, so theres a kernel define in the alpha kernel config).  Anyway,
-> I downloaded all the source from digital's site, and tried compiling it.
-> It all compiled fine except for one thing, the thing i am doubious about.
-> a source file that is only about 25 lines of assembly.  What i think it
-> does is reroute the syscalls to the friend in the kernel.  It seems to me
-> that because of this, it may be bound to the alpha architecure.  Is there
-> a way to port this to ppc?  or is there just too many dissimilarities
-> between alpha and ppc archs?  ( i haven't tried doing it yet because i
-> don't know if its worth the time in learning alpha and ppc assm/arch just
-> to get x86/linux bins to run... or im just lazy)
+On   8 Jun, this message from Daniel Jacobowitz echoed through cyberspace:
+> 
+> On Tue, Jun 08, 1999 at 04:00:48PM +0200, Geert Uytterhoeven wrote:
+>> On Tue, 8 Jun 1999, Daniel Jacobowitz wrote:
+>> > On Tue, Jun 08, 1999 at 07:51:39AM -0400, Jason Y. Sproul wrote:
+>> > > Is it correct that the /chaos/control chip is essentially a Chips &
+>> > > Technologies 65550? If so, does anyone have the variances from the 65550
+>> > > datasheet, and if not, what the heck is it? :^)
+>> > 
+>> > It's my understanding that it's not.  No one has any documentation on
+>> > it to my knowledge... I'd love to add hardware cursor support, which
+>> > I'm fairly sure it has, to controlfb.  But I can't do it without some
+>> > sort of reference.
+>> 
+>> Move the cursor under MacOS and see which registers or video memory addresses
+>> change?
+> 
+> That's one of those if-i-had-more-time things - and more specifically,
+> if I knew how to dump video regs under macos.  Is it trivial?
 
-I looked into this earlier, and even started to work on it, but I went
-on to something else before I got finished.  The major problems as I
-saw them were that all the code for EM86 assumes a 64 bit
-little-endian architecture, and it would be annoying to track down all
-those assumptions and correct them.  That is doable, but time
-consuming.  The other major headache is that the actual CPU emulation
-used is the proprietary FX32 library from DEC.  We would have to write
-our own x86 emulation library to replace it.  This isn't so much of a
-problem, because there is already a basic x86 emulator in one of the
-bootloaders, to be able to run BIOS code from PCI cards with x86 BIOS
-chips on them.  I started looking at it, but then I went on to
-something that was more interesting, and I felt was more useful.  I'd
-be glad to share more detailed thoughts on this if anyone wants.
+Not with my favourite tool: MacsBug. Problem is that MacsBug includes
+some kind of control driver, that is able to switch control into its
+own mode, preserving the original VRAM contents from MacOS... except
+the cursor, of course. So, when you look at control's registers with
+MacsBug, you see MacsBug's values, not MacOS'.
 
-	Brad Boyer
-	flar@cegt201.bradley.edu
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
