@@ -1,38 +1,28 @@
-Date: Thu, 27 Jan 2000 15:06:28 -0700
+Date: Thu, 27 Jan 2000 15:09:26 -0700
 From: Cort Dougan <cort@fsmlabs.com>
-To: Dan Malek <dan@netx4.com>
-Cc: Brendan.Simon@ctam.com.au,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+To: Bill Roman <roman@alerton.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: linuxppc-embedded: main kernel tree
-Message-ID: <20000127150628.U14218@hq.fsmlabs.com>
-References: <388F3D65.3B420FED@ctam.com.au> <388F18F5.BDE5D395@netx4.com>
+Message-ID: <20000127150926.V14218@hq.fsmlabs.com>
+References: <388F3D65.3B420FED@ctam.com.au> <388F18F5.BDE5D395@netx4.com> <00012611055301.05597@alan.corp.packetengines.com> <388F76DF.85E1985E@alerton.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <388F18F5.BDE5D395@netx4.com>; from Dan Malek on Wed, Jan 26, 2000 at 10:55:33AM -0500
+In-Reply-To: <388F76DF.85E1985E@alerton.com>; from Bill Roman on Wed, Jan 26, 2000 at 02:36:15PM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have no trouble.  Send me mail with the error and we can get you going
-again.
+The config.in file is not so easy as a bash script.  Bash isn't the only
+thing that has to parse the file.  Tcl goes through it on a xconfig as
+well.
 
-} The "main" tree is really the 2.3.xx tree right now, and all of
-} the 8xx support is there.  For some reason, the BitKeeper 2.3.41
-} version doesn't build.  I fixed a couple of problems, but now I
-} am wondering if it will build for any PMac platform.......
+If you get 2.3.41-pre3 that problem is fixed (it was fixed some time ago).
+The latest pre-patch is very close to our ppc tree (with a few differences
+I committed just today).  If there's a problem in that tree please do let
+us know so we can keep up-to-date with problems.
 
-I send patches to Linus every pre-patch he releases.  If he doesn't have
-time or is unwilling to absorb the patches for the next pre-patch that's an
-issue you need to take up with him...  Lately he's been pretty good about
-absorbing things right away, though.
-
-} Every day?  I have the same complaint most people have expressed
-} lately.  I work in the BitKeeper tree, which is supposed to be
-} the official PPC tree and one step away from kernel.org.  I can't
-
-No, you need to tell me there's a problem so we can fix it.
-
-} build it for any of my systems.  I have to go looking for something
-} from Paul or Ben or someone else to get something to work......
+} As of 2.3.33 (from kernel.org), at lines 88 and 90 in arch/ppc/config.in
+} (shortly after "comment 'General setup'"), "else if" should be "elif".  Shell
+} scripts are not C :-)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
