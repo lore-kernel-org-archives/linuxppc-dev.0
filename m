@@ -1,43 +1,79 @@
-To: Kim J?rgensen <KIJ@infocom.dk>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: X-server for the mpc823 LCD controller?
-References: <819E3E914E0AD11194DE00805F0D100B0138B84B@fbi.infocom.dk>
-From: Marcus Sundberg <marcus@cendio.se>
-Date: 01 May 2000 21:28:23 +0200
-In-Reply-To: Kim J?rgensen's message of "Mon, 1 May 2000 14:10:30 +0200"
-Message-ID: <vepur69ijs.fsf@biffen.cendio.se>
+Message-Id: <390DDCC0.D293406B@labs.mot.com>
+Date: Mon, 01 May 2000 14:36:32 -0500
+From: "Joshua Horvath" <Josh_Horvath-AJH051@email.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Board boots when in BDM, hangs otherwise
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kim Jørgensen <KIJ@infocom.dk> writes:
+I've got a custom 855T based board that I'm having trouble getting Linux to
+boot up on consistently.
 
-> I would like to run X-windows (or something similar) on my custom mpc823
-> board. So I'm looking for a X-server for the mpc823 LCD controller, is there
-> any one out there?
->
->
-> I have used the RPXL LCD frame buffer on my RPXL board, with the program
-> dispbmp. Is the source code available for this program?
-> Can any existing graphical server use this frame buffer?
+I've written a simple bootloader that allows me to TFTP an image to RAM and
+execute it.  If I download this program via the BDM port and run it, everything
+works fine.  The ethernet download works fine and the kernel boots without a
+hitch.
 
-XGGI (http://www.stacken.kth.se/~mackan/ggi/xggi/) should run fine on
-the 823 together with my not-yet-released-but-as-soon-as-I-get-time-
-to-commit-it LibGGI driver for the 823.
+I then progammed this code into flash and although everything appears to work
+correctly, Linux won't boot after downloading the image to RAM.  I've verified
+that the image is in fact uncorrupted after download so I would expect it to
+boot correctly.  The bootup goes like this:
 
-However I have not attempted to cross-compile XGGI yet, so someone
-with a faster LinuxPPC box than an 8xx and some spare time is welcome
-to try a native compile.
+loaded at:     00210000 0021C578
+relocated to:  00100000 0010C578
+board data at: 001001C8 001001E4
+relocated to:  00200100 0020011C
+zimage at:     00217000 00282603
+initrd at:     00282603 00459440
+avail ram:     0045A000 01000000
 
-Unlike Microwindows XGGI is a real, full-featured, X-server. This
-ofcourse means that it's larger than Microwindows, but it's still
-smaller than common X-servers:
-XF86_SVGA       - 2.6 MB
-XF86_FBDev      - 1.9 MB
-XGGI            - 1.5 MB
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.2.13 (srossi@boston.ccrl.mot.com) (gcc version 2.95.2 19991024
+(
+release)) #152 Wed Apr 26 15:22:16 CDT 2000
+Boot arguments: root=/dev/ram
+time_init: decrementer frequency = 187500000/60
+Calibrating delay loop... 49.46 BogoMIPS
+clear_bit(0, c01381c0)
+NIP: C0007030 XER: E000217F LR: C0007030 REGS: c00dcb50 TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c00dac90[0] 'swapper' mm->pgd c00d9000 Last syscall: 0
+last math 00000000
+GPR00: C0007030 C00DCC00 C00DAC90 0000001A 00000001 00000017 00000000 C00F6849
+GPR08: 00000017 C00F0000 FF002808 C00DCB40 95113133 000191B8 00004C00 00000000
+GPR16: 00000000 C04DCC00 C00F0000 C0120000 C0120000 00000000 00000000 C015B000
+GPR24: C0120760 00000000 C012075C C1000000 C00F0000 00000001 C1000000 00000001
+Call backtrace:
+C0007030 C00EBC5C C00EA6E4 C000221C
+Kernel panic: kernel access of bad area pc c0007030 lr c0007030 address
+C1000000
+ tsk swapper/0
+In swapper task - not syncing
+Rebooting in 180 seconds..
 
-//Marcus
+
+I'm using the EST VisionICE box to do the BDM download.  Now, the weird thing
+is, if I do an "IN" command (which does some basic initialization and puts the
+processor in debug mode) and then jump to flash and execute my code, everything
+works fine.  My bootloader code also does board initialization and as far as I
+can tell I'm setting up the registers the exact same way, so I can't figure out
+what is getting configured differently by the VisionICE box.  I've disabled the
+MMU and the caches.
+
+I've also noticed that the code executes faster after I do an "IN" and jump to
+flash (i.e. when I'm in BDM) versus when I just powerup or do a hard reset and
+have the code execute automatically.
+
+Does anyone know what the problem might be?  Since it runs correctly after
+being initialized by the VisionICE box I assume something is wrong with my
+hardware init routine but I can't figure out what that is.
+
+Thanks,
+-Josh
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
