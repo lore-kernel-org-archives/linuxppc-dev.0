@@ -1,46 +1,31 @@
-Date: Fri, 26 Mar 1999 19:57:04 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: John L Grantham <jgrantha@hannover.sgh-net.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MySQL?
-In-Reply-To: <199903261322.NAA15082@go.hannover.sgh-net.de>
-Message-ID: <Pine.LNX.4.10.9903261942550.31447-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a01b3219f570c82@[192.168.1.4]>
+In-Reply-To: <Pine.LNX.3.95.990326170718.11329A-100000@drongo.anu.edu.au>
+References: <36FA6863.50817162@business.wm.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 26 Mar 1999 21:33:00 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: "N.G. Temme" <niek@database.rino.nl>
+Subject: Re: Apple Job Posting and Good News for LinuxPPC developers
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>On Thu, 25 Mar 1999, Kevin B. Hendricks wrote:
+>
+>> We should get one of our own into this role and get a leg up on helping
+>>apple
+>> open up its hardware specs for Linux PPC
+>>
+>> What do you think?
+>
+>I'm voting for Paul Mackerras to get the job.. :-)
+>(I'm sure he _love_ to spend his time working solely on linuxpmac.. :-)
+>
 
- I did build MySQL rpms about a month ago, i didn't checked them enough though,
-i only did a connection created a db, a few inserts/selects and thats it.
-I plan to spend some more time in it when i get some free time, i can upload
-the rpms somewhere if you want to check them out.
 
-  Kostas Gewrgiou.
+me too
 
-On Fri, 26 Mar 1999, John L Grantham wrote:
-
-> 
-> Hi all,
-> 
-> Sorry if this question has been asked before. Is there a PPC-precompiled 
-> version of MySQL available, and if not, will there be one? Has anyone 
-> succeeded in installing MySQL from source with LinuxPPC R4?
-> 
-> Hope to hear from you soon... ;-)
-> 
-> TIA,
-> 
-> John
-> 
-> 
-> 
-> John Grantham | Dipl.-Designer (FH)
->               | Linux am Mac FAQ: http://linux.macnews.de/
->               | Homepage: http://surf.to/multimedia
-> 
-> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
