@@ -1,21 +1,16 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id A985F67A6B
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 41AAE67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Mar 2005 10:15:42 +1100 (EST)
-Date: Wed, 2 Mar 2005 16:15:30 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050302161530.D31614@cox.net>
-References: <20050302105201.C31614@cox.net>
-	<b83e8f546345414634e6c7518b441996@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b83e8f546345414634e6c7518b441996@freescale.com>;
-	from kumar.gala@freescale.com on Wed, Mar 02, 2005 at 05:06:31PM
-	-0600
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: PowerPC4xx Watchdog
+	Thu,  3 Mar 2005 15:27:14 +1100 (EST)
+Date: Wed, 2 Mar 2005 22:26:56 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: akpm@osdl.org
+Message-ID: <Pine.LNX.4.61.0503022222360.28697@blarg.somerset.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: Add support for the Dallas 1553 RTC/NVRAM
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +21,85 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 02, 2005 at 05:06:31PM -0600, Kumar Gala wrote:
-> Matt,
-> 
-> [snip]
-> 
-> > What do you see as the advantage to having a watchdog driver
-> >  that uses the booke hardware watchdog facility over a generic
-> >  timebase driven driver?
-> 
-> I would think the watchdog would be useful in cases that the normal 
-> decrementer exceptions gets disabled when MSR[EE] = 0.
+Andrew,
 
-That's the only thing I can think of.  I guess my question then
-is whether people think this is important enough in practice
-to have the hardware watchdog as an alternative. My guess is yes,
-but I don't have a strong opinion. 
+This patch adds support for the Dallas 1553 RTC/NVRAM.
 
--Matt
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+
+---
+diff -Nru a/arch/ppc/syslib/todc_time.c b/arch/ppc/syslib/todc_time.c
+--- a/arch/ppc/syslib/todc_time.c	2005-03-02 22:05:08 -06:00
++++ b/arch/ppc/syslib/todc_time.c	2005-03-02 22:05:08 -06:00
+@@ -287,6 +287,7 @@
+ 		limit = 1;
+ 
+ 		switch (todc_info->rtc_type) {
++			case TODC_TYPE_DS1553:
+ 			case TODC_TYPE_DS1557:
+ 			case TODC_TYPE_DS1743:
+ 			case TODC_TYPE_DS1746:	/* XXXX BAD HACK -> FIX */
+@@ -322,6 +323,7 @@
+ 
+ 	if (todc_info->rtc_type != TODC_TYPE_MC146818) {
+ 		switch (todc_info->rtc_type) {
++			case TODC_TYPE_DS1553:
+ 			case TODC_TYPE_DS1557:
+ 			case TODC_TYPE_DS1743:
+ 			case TODC_TYPE_DS1746:	/* XXXX BAD HACK -> FIX */
+@@ -418,6 +420,7 @@
+ 	unsigned char save_control = 0, val;
+ 
+ 	switch (todc_info->rtc_type) {
++		case TODC_TYPE_DS1553:
+ 		case TODC_TYPE_DS1557:
+ 		case TODC_TYPE_DS1746:	/* XXXX BAD HACK -> FIX */
+ 		case TODC_TYPE_DS1747:
+@@ -432,6 +435,7 @@
+ 	val = todc_read_val(addr);
+ 
+ 	switch (todc_info->rtc_type) {
++		case TODC_TYPE_DS1553:
+ 		case TODC_TYPE_DS1557:
+ 		case TODC_TYPE_DS1746:	/* XXXX BAD HACK -> FIX */
+ 		case TODC_TYPE_DS1747:
+diff -Nru a/include/asm-ppc/todc.h b/include/asm-ppc/todc.h
+--- a/include/asm-ppc/todc.h	2005-03-02 22:05:08 -06:00
++++ b/include/asm-ppc/todc.h	2005-03-02 22:05:08 -06:00
+@@ -98,6 +98,7 @@
+ #define TODC_TYPE_PC97307		10	/* PC97307 internal RTC */
+ #define TODC_TYPE_DS1557		11	/* Dallas DS1557 RTC */
+ #define TODC_TYPE_DS17285		12	/* Dallas DS17285 RTC */
++#define TODC_TYPE_DS1553		13	/* Dallas DS1553 RTC */
+ #define	TODC_TYPE_MC146818		100	/* Leave room for m48txx's */
+ 
+ /*
+@@ -207,6 +208,28 @@
+ #define	TODC_TYPE_DS1501_FLAGS		(TODC_TYPE_DS1501_NVRAM_SIZE + 0xff)
+ #define	TODC_TYPE_DS1501_NVRAM_ADDR_REG	0x10
+ #define	TODC_TYPE_DS1501_NVRAM_DATA_REG	0x13
++
++#define	TODC_TYPE_DS1553_NVRAM_SIZE		0x1ff0
++#define	TODC_TYPE_DS1553_SW_FLAGS		0
++#define	TODC_TYPE_DS1553_YEAR			0x1fff
++#define	TODC_TYPE_DS1553_MONTH			0x1ffe
++#define	TODC_TYPE_DS1553_DOM			0x1ffd	/* Day of Month */
++#define	TODC_TYPE_DS1553_DOW			0x1ffc	/* Day of Week */
++#define	TODC_TYPE_DS1553_HOURS			0x1ffb
++#define	TODC_TYPE_DS1553_MINUTES		0x1ffa
++#define	TODC_TYPE_DS1553_SECONDS		0x1ff9
++#define	TODC_TYPE_DS1553_CNTL_B			0x1ff9
++#define	TODC_TYPE_DS1553_CNTL_A			0x1ff8	/* control_a R/W regs */
++#define	TODC_TYPE_DS1553_WATCHDOG		0x1ff7
++#define	TODC_TYPE_DS1553_INTERRUPTS		0x1ff6
++#define	TODC_TYPE_DS1553_ALARM_DATE		0x1ff5
++#define	TODC_TYPE_DS1553_ALARM_HOUR		0x1ff4
++#define	TODC_TYPE_DS1553_ALARM_MINUTES		0x1ff3
++#define	TODC_TYPE_DS1553_ALARM_SECONDS		0x1ff2
++#define	TODC_TYPE_DS1553_CENTURY		0x1ff8
++#define	TODC_TYPE_DS1553_FLAGS			0x1ff0
++#define	TODC_TYPE_DS1553_NVRAM_ADDR_REG		0
++#define	TODC_TYPE_DS1553_NVRAM_DATA_REG		0
+ 
+ #define	TODC_TYPE_DS1557_NVRAM_SIZE		0x7fff0
+ #define	TODC_TYPE_DS1557_SW_FLAGS		0
