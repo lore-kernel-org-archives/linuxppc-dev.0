@@ -1,34 +1,35 @@
-Message-ID: <3B85D758.572A0AD8@mvista.com>
-Date: Fri, 24 Aug 2001 00:26:00 -0400
+Message-ID: <3B85E0D2.21BC306E@mvista.com>
+Date: Fri, 24 Aug 2001 01:06:26 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: "Marti, Felix" <fmarti@desanasystems.com>
-Cc: "'Troy Benjegerdes'" <hozer@drgw.net>,
-	Ralph Blach <rcblach@raleigh.ibm.com>,
-	Linix PPC Emmbedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: using the little endian bit 4xx mmu
-References: <1DF71FB881F4D311A6B700C04FA06A1AC437B4@orca.desanasystems.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: status of linuxppc_2_4_devel for ppc405gp
+References: <20010823074100.31846@smtp.wanadoo.fr> <20010823110818.2847@smtp.adsl.oleane.com> <20010824114153.A790@zax>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Marti, Felix" wrote:
+David Gibson wrote:
+to break.
 >
-> I hacked it in a few hours:
-> in arch/ppc/kernel/head_4xx.S
+> Ah yes, I ran into that one when I started converting the ppc405_enet
+> driver to use ioremap() and in_beXX() instead of the godawful mess of
+> direct access and explicit eieio()s it uses now.
 
-Ugh....we have discussed this in the past.  What is the advantage
-of using this feature?  All of the existing drivers and I/O macros
-are designed to handle mixing of endian modes depending upon the
-processor and I/O device.  All this does is complicate a standard
-set of programming interfaces that everyone expects to work as they
-have in the past.
+Umm....what are you doing?  Those registers are already mapped via
+ioremap(), so that isn't necessary.  What you consider a "godawful mess"
+is a personal preference, and I prefer the programming style that
+currently exists.  I don't have any love for the driver, but it
+certainly isn't a patch I would check in.......
 
-The ability to set a feature flag in the PTE and transfer that to
-the TLB isn't a solution to anything.  You are going to have to
-rewrite all of the standard functions, macros, and device drivers
-to utilize this feature, and we haven't seen any benefit to doing this.
+The only modification that _should_ be done is moving the generic
+on-board I/O mapping done during board initialization to be a specific
+ioremap() in the driver, and actually looking at the eieio() to ensure
+they are really necessary.
+
 
 
 	-- Dan
