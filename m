@@ -1,38 +1,44 @@
-To: cjohnson@gcctech.com
-Cc: Sergey Urvanov <abs@dts.ru>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ioperm 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 27 Apr 2004 11:59:02 EDT."
-             <408E8346.9070202@gcctech.com>
-Date: Tue, 27 Apr 2004 18:44:00 +0200
-Message-Id: <20040427164405.B19C9C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: 826x FCC ethernet in promiscuous mode
+Date: Tue, 27 Apr 2004 13:39:12 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAC5@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <408E8346.9070202@gcctech.com> you wrote:
->
-> I've seen that also - if I remember correctly, it was an issue with the
-> toolchain.  I don't use eldk however, I roll my own.  Check your include
+Hi
 
-I bet a few beer that this is not a toolchain issue.
+I cannot seem to get  the FCC ethernet controller on a 8266 to do
+promiscous mode correctly.
+I am trying to use tcpdump to show some traffic on a hub it is
+conneccted to (and yes it is a hub, not a switch). Tcpdump does not show
+anything but what it would show normally (ie broadcast and packets
+addressed to the interface)
 
-> >I'm getting it while trying to compile  for a ppc405EP based board,
-...
-> >#define BASEPORT 0x378
+I have tested the hub using another computer running ethereal and it can
+se everything it is supposed to.
 
-That smells like x86 PC code. It cannot run on a PowerPC.
+Any ideas?
+(I had a quick look in the sources, and it seems that the promiscous bit
+gets set)
+
+This is running on 2.6.5
 
 
-Best regards,
 
-Wolfgang Denk
+On a related note... Anybodyu know how to get linux to see RFC-1042
+formated ARP packets?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I've got a bad feeling about this.
+Rune Torgersen
+System Developer
+Innovative Systems LLC
+1000 Innovative Drive
+Mitchell, SD 57301
+Ph: 605-995-6120
+www.innovsys.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
