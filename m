@@ -1,43 +1,44 @@
-Message-ID: <00a701c47371$f44de1e0$0a589edd@free>
-From: =?ks_c_5601-1987?B?sejEociv?= <willy@airpoint.co.kr>
-To: "linuxppc" <linuxppc-embedded@lists.linuxppc.org>
-Subject: enable_irq(12) unbalanced for ppc8260
-Date: Tue, 27 Jul 2004 09:37:53 +0900
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ks_c_5601-1987"
+In-Reply-To: <wn5ekmysjns.fsf@linhd-2.ca.nortel.com>
+References: <EB9CAD60-DF2E-11D8-910D-003065F9B7DC@embeddededge.com> <wn5ekmysjns.fsf@linhd-2.ca.nortel.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <E86979D8-DF6A-11D8-9BE7-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: BAT mapping exported to user-space
+Date: Mon, 26 Jul 2004 21:18:46 -0400
+To: Linh Dang <linh@linhdang.home>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, there.
+On Jul 26, 2004, at 2:33 PM, Linh Dang wrote:
 
-I used ppc8260 cpm timer as followings:
+> My understanding is:
+>
+> - mmap(2) uses pages to map the device (my platform doesn't have large
+> page.)
 
-void  init_timer()
-{
-    ...
-    request_8xxirq(SIU_INT_TIMER1, handler, 0, "TIMER", NULL);
-    enable_irq(SIU_INT_TIMER1);
-    ...
-}
+Yes, so?
 
-void stop_timer()
-{
-    disable_irq(SIU_INT_TIMER1);
-    free_irq(SIU_INT_TIMER1, NULL);
-}
+> - mapping a large address range (hundreds-of-megabytes) is much more
+>   efficient with BATs than with pages.
 
-I called init_timer() after loading module and then called stop_timer()
-after 10 seconds by user space program. It works well for first time
-just after loading module and executing user space program. But it fails
-from the next execution of user space program throwing 'enable_irq(12)
-unbalanced' error. I mean interrupt won't occur.
+Depends upon your measurement of efficiency.
 
-What's wrong? What should I do to disable timer interrupt to avoid above
-error?
+> So, do you mean:
+>         - mmap(2) can use BATs? or
 
-Thanks.
+Not likely due to alignment and size constraints.
 
-willy.
+>         - the difference in performance is negligible between BATs and
+>           pages when mapping an address range of 200MBs?
+
+If you can measure or are affected by the difference, there are many
+more things that will ensure your software will not work properly.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
