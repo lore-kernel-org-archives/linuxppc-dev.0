@@ -1,33 +1,33 @@
-Message-ID: <A3E34B558F5CD211B4980008C7A4A99003C58340@GSO-SPARROW-SRV>
-From: "Williams, Kevin M." <kevin.m.williams@marconi.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling and using hhl's glibc
-Date: Tue, 31 Jul 2001 11:15:01 -0400
+Message-ID: <E1836A7F3557D311A14000805F9F36FCD4E3DC@usdfo011.usac.danfoss.net>
+From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Support (E-mail)" <techsupport@embeddedplanet.com>
+Subject: SCC character recognition/DMA
+Date: Tue, 31 Jul 2001 11:28:05 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->I am getting ready, at long last, to start using glibc on our 603e based
->embedded board. Hitherto, I have not used and of the HHL tools. It does,
->however, look like their glibc has the best patches, so I'd like to give
->it a try.
-....
->My first big question is whether or not all of the needed patched are
->already applied?
+All,
 
-IMHO, if you want support for using HHL, you should purchase a MV
-subscription.  Everything you get for free is already on their FTP site.
+I have an Embedded Planet with a LITE_DW Motorola 823 PPC
+using a HIOX interface board.
 
-And no...I am not an MV employee.
+Has anyone attempted to utilize the character-recognition
+feature of the SCC ports with any success?
 
->What modifications would need be made
->to the specs file to compile against this installed library.
+Also, I have been researching the uart.c and related files but I
+don't see if DMA is used to shuttle data to/from the serial
+ports. Has that been attempted?
 
-I used --with-libs when I built gcc.
+Regards,
+     Michael Pergola
+     Software Engineer
+     Danfoss Air-Conditioning & Refrigeration Division
+     7941 Corporate Blvd.
+     Baltimore, MD  21236     (410) 931-8250 x4259
 
-Kevin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
