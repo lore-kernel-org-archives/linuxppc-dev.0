@@ -1,37 +1,48 @@
-Message-ID: <390F51FC.EC11B8B9@embeddededge.com>
-Date: Tue, 02 May 2000 18:09:00 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <390FDE5F.EFEF7015@ssh.com>
+Date: Wed, 03 May 2000 11:07:59 +0300
+From: Arto Vuori <avuori@ssh.com>
 MIME-Version: 1.0
-To: "Brown, David (dbrown03)" <DBrown03@harris.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Interference between SCC serial and ethernet
-References: <BE1C564723B3D21191FD0000F840E39801D814EC@rfcmx2.rfc.comm.harris.com>
+To: diekema_jon <diekema@bucks.si.com>
+CC: linuxppc-embedded@lists.linuxppc.org, bkuschak@yaoo.com,
+        jim.chapman@iname.com, frank@mitre.org
+Subject: Re: Getting the image section of the ELF file to load w/ VxWorks boot
+ ROM
+References: <m12mgPF-001SyZC@bucks>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Brown, David (dbrown03)" wrote:
+diekema_jon wrote:
 >
-> I have the MontaVista 2.2.13 kernel running on my board.
+>         I am having trouble loading the image section of the elf file
+>         (contains the gzip compressed Linux kernel) with the VxWorks boot
+>         ROM or the EST VisionICE on the EST SBC8260 board.  Both of these
+>         options appear to ignore this section.
+>
 
-I need a little help here :-).....I assume it is a 860 class processor,
-but what about the board?  There are implementation specific considerations
-for the I/O port configurations.  You didn't happen to use some of
-the I/O ports for Ethernet control that multiplex to the others?
+I had similar problems. It seems that EST tools don't convert all ELF
+sections in zImage. I managed to get around the problem by building
+bootimage by using different method than in arch/ppc/coffboot or
+mbxboot. Instead using objcopy to add new sections, i use
+arch/ppc/chrpboot/piggypack.c to generate object files from images and
+after that link them with rest of objects. Here's couple lines from my
+Makefile that does the actual job:
 
-> The SCC serial ports work fine for me, until I use Ethernet.
+image.o: piggyback ../coffboot/vmlinux.gz
+        ./piggyback image < ../coffboot/vmlinux.gz | $(AS) -o image.o
 
-How do you boot the system not using Ethernet, then enable it?  Do
-you mean running to different kernel configurations?
+zImage: $(OBJS) no_initrd.o mknote
+        $(LD) $(LD_ARGS) -o $@ $(OBJS) no_initrd.o $(LIBS)
+        ./mknote > note
+        $(OBJCOPY) $@ $@ --add-section=.note=note -R .comment
 
+You also need to modify some .c files so that they can find the image
+address and size.
 
-> ... Has anyone used SCC serial ports and SCC Ethernet simultaneously?
-
-Yes, even multiple Ethernet and multiple SCCs.
-
-
-
-	-- Dan
+--
+Arto Vuori
+email: avuori@ssh.com
+mobile:	+358 40 754 5223
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
