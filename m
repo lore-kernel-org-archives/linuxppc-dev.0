@@ -1,37 +1,35 @@
-Message-ID: <3BC3B729.EFE00901@mvista.com>
-Date: Tue, 09 Oct 2001 22:49:13 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3BC3BC07.D6158215@carts.com>
+Date: Tue, 09 Oct 2001 20:09:59 -0700
+From: Kevin Fry <kevin@carts.com>
 MIME-Version: 1.0
-To: "Gessner, Matt" <mattg@aiinet.com>
-Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Odd behaviour with 860P and LXT970
-References: <638AA0336D7ED411928700D0B7B0D75BB32349@aimail.aiinet.com>
+To: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8260 Communications Proccessor overload??
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Gessner, Matt" wrote:
+   Has anyone ever run all 3 FCC ports at the same time with a
+100Mbit link?  I think I'm seeing the Communications Processor get
+overloaded, but Motorola claims there is no problem.  The setup is as
+follows:  FCC1 is ftp-ing a very large file out (say 100MBytes).  FCC2
+is
+ftp-ing a very large file in.  FCC3 is being pinged at maximum rate by a
+PC.
+ What happens occasionally (like 1 out of 10 times) is that
+the ping on FCC3 is not responded to in any manner.  A close examination
+of
+the Ethernet PHY (AM79C874) indicates no errors, but the MAC is
+reporting
+CRC errors.  I have captured the MAC --> PHY transfers on a logic
+analyzer
+and am decoding them at present (I hate computing a CRC-32 by hand).  I
+was
+hoping someone else has experience relative to this situation.
 
-> ..... It's the switching
-> rates that causes the problem.
+Thanks,
 
-Take an o'scope and look at the clocks from the PHY to the FEC.  The
-PHY is responsible for providing the data clocks, and there is nothing
-from "our" side that is clock speed related (except the MDIO clock, which
-isn't the concern here).  The only thing we have to know in the driver is
-full/half duplex and reconfigure the FEC if necessary.
+Kevin Fry
 
-It almost sounds like the PHY didn't negotiate or determine the clock speed
-correctly.  I tend to take the simple approach and always let the PHY
-autonegotiate.  That is, I don't tell it with commands to use a particular
-link speed, just read what it found.  The PHY command interface in the FEC
-driver seems to be growing more complex and forcing modes of operation, when
-I never did that in the original driver.
-
-That's about all I can think of at this hour.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
