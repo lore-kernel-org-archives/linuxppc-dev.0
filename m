@@ -1,28 +1,45 @@
-Message-ID: <38AEFE72.2E9C7300@tiac.net>
-Date: Sat, 19 Feb 2000 15:34:58 -0500
-From: Patrick Callahan <pac1@tiac.net>
+Message-ID: <38AF40D5.F266CFB3@denise.shiny.it>
+Date: Sat, 19 Feb 2000 20:18:13 -0500
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.3.45 on B&W G3 PCI-PCI Bridge scan - Is this a problem in earlier
- kernels?
+To: Adrian Cox <apc@agelectronics.co.uk>
+CC: Rob Barris <rbarris@quicksilver.com>,
+        LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>,
+        Debian PowerPC <debian-powerpc@lists.debian.org>
+Subject: Re: Altivec and binary compatibility
+References: <389AAA06.CBCDB19A@agelectronics.co.uk>
+		 <389EE09A.571A6C26@denise.shiny.it>
+		 <389F09C2.18FD4AA5@agelectronics.co.uk> <v03010d02b4cce4346bac@[192.168.1.16]> <38A7D0FD.D6A7E95D@agelectronics.co.uk>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Is it possible that this PCI-PCI bridge scan timing problem manifests
-itself in earlier kernels on Blue
-G3's as intermittent boot failures?  Ocasionally when I run in MacOS 8.6
-for a time, and then boot into Linux using the BootX application version
-1.2.? the boot gets to the point where it writes out the word booting...
-on the console. but no further.
 
-Is this worth investigating and fixing in the stable kernel if it is
-shown to be a problem there?
+> >    This is not correct.  OS's on P-III have to be updated to provide proper
+> > context switch support for the SSE registers.  I'm pretty sure Win98 has it
+> > covered.  It's really the same type of jump as AltiVec - use of SSE
+> > features is not restricted to OS or driver code, apps use them too.
+>
+> I know that the OS has to support these registers. Latest development
+> kernels *DO* support them.
+>
+> That is not the problem.
+>
+> The problem is with C++ exception sequences and setjmp being different
+> for Altivec and non-Altivec code.
 
-Pat Callahan
-Acton Ma USA
-Programmer
+IMHO C++ exceptions are not a problem. All objects are destroyed when a
+function exits with an exception and it's an exit without return. The thrown
+object is put on the stack (I think) and the calling code will handle it.
+Obviously you can't mix code compiled for Altivec and code compiled for plain
+PPC if they exchange data with exceptions, jumps and friends.
+
+> How does Linux on ia32 handle linking between generic ia32 and Pentium-III user-space code ?
+
+No idea... It's likely an unsolved issue yet.
+
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
