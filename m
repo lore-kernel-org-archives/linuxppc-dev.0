@@ -1,206 +1,201 @@
-Message-Id: <4.2.0.37.19990430013458.0489a950@mail.lauterbach.com>
-Date: Fri, 30 Apr 1999 02:09:09 +0200
-To: egcs-patches@egcs.cygnus.com
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: PATCH: Fix 2 PPC/SYSV varargs problems
-Cc: rth@cygnus.com, meissner@cygnus.com, David Edelsohn <dje@watson.ibm.com>,
+Message-ID: <19990429194817.B20300@cygnus.com>
+Date: Thu, 29 Apr 1999 19:48:17 -0700
+From: Richard Henderson <rth@cygnus.com>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        egcs-patches@egcs.cygnus.com
+Cc: meissner@cygnus.com, David Edelsohn <dje@watson.ibm.com>,
         linuxppc-dev@lists.linuxppc.org
+Subject: Re: PATCH: Fix 2 PPC/SYSV varargs problems
+References: <4.2.0.37.19990430013458.0489a950@mail.lauterbach.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="=====================_53744284==_"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4.2.0.37.19990430013458.0489a950@mail.lauterbach.com>; from Franz Sirl on Fri, Apr 30, 1999 at 02:09:09AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---=====================_53744284==_
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+On Fri, Apr 30, 1999 at 02:09:09AM +0200, Franz Sirl wrote:
+> 1. the varargs save area calculation bug, this is a hack and Richard ;-) 
+> probably won't like it, but maybe it's good enough for egcs-1.2
 
-Hi,
+You're right -- I hate it.  You'll have made it so I can't build a
+ppc cross compiler on my Alphas, and you'll have killed the compiler
+for a ppc64-linux.
 
-this patch is supposed to fix the following problems on PPC/SYSV:
-
-1. the varargs save area calculation bug, this is a hack and Richard ;-) 
-probably won't like it, but maybe it's good enough for egcs-1.2
-
-2. if you call a function that uses more then 8 float args before all 
-integer argument passing registers are consumed, egcs will missetup the 
-calling sequence. I introduced a new variable cum->sysv_fwords in the 
-CUMULATIVE_ARGS struct, which counts the saved float words and adjusted 
-cum->words where needed (I hope). There maybe better/nicer ways to 
-implement that, so tell me if you want a different solution. A testcase is 
-attached, the original problem happens with gnuplot.
-
-Franz.
+Here's an implementation of what I'd suggested before.  It looks ok
+to the eye, but I don't have a ppc-linux box handy to try it out on.
 
 
+r~
 
---=====================_53744284==_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: attachment; filename="varargs.testcase.c"
-Content-Transfer-Encoding: quoted-printable
 
-#include <stdarg.h>=0A=0Ainline void debug(const char *fp,const char=
- *msg,...)=0A{=0A       va_list ap;=0A       double df;=0A   =0A=0A       if=
- (*fp !=3D '1')=0A             abort();=0A       if (*msg !=3D '2')=0A      =
-       abort();=0A   =0A       va_start( ap, msg );=0A   =0A       df =3D=
- va_arg(ap,double);=0A       if (df <1.09 || df >1.11)=0A            =
- abort();=0A       df =3D va_arg(ap,double);=0A       if (df <1.19 || df=
- >1.21)=0A             abort();=0A       df =3D va_arg(ap,double);=0A      =
- if (df <1.29 || df >1.31)=0A             abort();=0A       df =3D=
- va_arg(ap,double);=0A       if (df <1.39 || df >1.41)=0A            =
- abort();=0A       df =3D va_arg(ap,double);=0A       if (df <1.49 || df=
- >1.51)=0A             abort();=0A       if ( *va_arg(ap,char*) !=3D '3')=0A=
-             abort();=0A       if ( *va_arg(ap,char*) !=3D '4')=0A          =
-   abort();=0A       if ( *va_arg(ap,char*) !=3D '5')=0A            =
- abort();=0A       df =3D va_arg(ap,double);=0A       if (df <1.59 || df=
- >1.61)=0A             abort();=0A       df =3D va_arg(ap,double);=0A      =
- if (df <1.69 || df >1.71)=0A             abort();=0A       df =3D=
- va_arg(ap,double);=0A       if (df <1.79 || df >1.81)=0A            =
- abort();=0A       df =3D va_arg(ap,double);=0A       if (df <1.89 || df=
- >1.91)=0A             abort();=0A       if ( va_arg(ap,int) !=3D 101)=0A   =
-          abort();=0A       if ( va_arg(ap,int) !=3D 102)=0A            =
- abort();=0A       if ( va_arg(ap,int) !=3D 103)=0A             abort();=0A =
-      if ( va_arg(ap,int) !=3D 104)=0A             abort();=0A       if (=
- *va_arg(ap,char*) !=3D '6')=0A             abort();=0A       if (=
- va_arg(ap,int) !=3D 105)=0A             abort();=0A       if (=
- va_arg(ap,int) !=3D 106)=0A             abort();=0A       if (=
- va_arg(ap,int) !=3D 107)=0A             abort();=0A       if (=
- va_arg(ap,int) !=3D 108)=0A             abort();=0A       if (=
- va_arg(ap,int) !=3D 109)=0A             abort();=0A=0A   =0A       if (=
- va_arg(ap,int) !=3D 110)=0A             abort();=0A=0A       va_end( ap=
- );=0A}=0A=0Aint main(void)=0A{=0A     debug("1 filepointer", "2 format",=
- 1.1,1.2,1.3,1.4,1.5, "3","4","5", 1.6,1.7,1.8,1.9, 101,102,103,104, "6",=
- 105,106,107,108,109,110);=0A     exit(0);=0A}=0A=0A
---=====================_53744284==_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: attachment; filename="varargsfix2.patch"
-Content-Transfer-Encoding: quoted-printable
+	* va-ppc.h (__va_start_common): Let __builtin_saveregs do the work.
+	* rs6000.c (expand_builtin_saveregs): For SYSV, initialize a private
+	va_list struct, and return a pointer to it.
 
-Index:=
- expr.c=0A=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0ARCS file:=
- /egcs/carton/cvsfiles/egcs/gcc/expr.c,v=0Aretrieving revision 1.141=0Adiff=
- -u -p -r1.141 expr.c=0A--- expr.c	1999/04/27 05:34:43	1.141=0A+++=
- gcc/expr.c	1999/04/28 22:23:47=0A@@ -8951,7 +8951,13 @@ expand_builtin=
- (exp, target, subtarget, =0A 		if (wordnum < 0 || wordnum >=3D nwords ||=
- TREE_INT_CST_HIGH (arg))=0A 		  error ("argument of `__builtin_args_info'=
- out of range");=0A 		else=0A-		  return GEN_INT (word_ptr[wordnum]);=0A+		 =
- {=0A+#ifdef CUMULATIVE_ARG_INFO_IS_RTX=0A+		    if=
- (CUMULATIVE_ARG_INFO_IS_RTX(wordnum))=0A+		      return=
- word_ptr[wordnum];=0A+#endif=0A+		    return GEN_INT=
- (word_ptr[wordnum]);=0A+	          }=0A 	      }=0A 	  }=0A 	else=0AIndex:=
- va-ppc.h=0A=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0ARCS file:=
- /egcs/carton/cvsfiles/egcs/gcc/ginclude/va-ppc.h,v=0Aretrieving revision=
- 1.4=0Adiff -u -p -r1.4 va-ppc.h=0A--- va-ppc.h	1998/12/16 21:19:40	1.4=0A++=
-+ gcc/ginclude/va-ppc.h	1999/04/28 23:23:10=0A@@ -80,8 +80,7 @@=
- __extension__ ({							\=0A 									\=0A    (AP)->gpr =3D (__words < 8) ?=
- __words : 8;				\=0A    (AP)->fpr =3D __va_fregno - 33;					\=0A-  =
- (AP)->reg_save_area =3D (((char *) __builtin_frame_address (0))	\=0A-			  +=
- __va_varargs_offset);			\=0A+   (AP)->reg_save_area =3D ((char *)=
- __builtin_args_info (8));		\=0A    __va_overflow(AP) =3D ((char=
- *)__builtin_saveregs ()			\=0A 			+ (((__words >=3D 8) ? __words - 8 :=
- 0)		\=0A 			   * sizeof (long)));				\=0AIndex:=
- rs6000.h=0A=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0ARCS file:=
- /egcs/carton/cvsfiles/egcs/gcc/config/rs6000/rs6000.h,v=0Aretrieving=
- revision 1.45=0Adiff -u -p -r1.45 rs6000.h=0A--- rs6000.h	1999/04/27=
- 12:39:56	1.45=0A+++ gcc/config/rs6000/rs6000.h	1999/04/29 23:16:17=0A@@=
- -1445,15 +1445,19 @@ extern int rs6000_sysv_varargs_p;=0A =0A typedef=
- struct rs6000_args=0A {=0A-  int words;			/* # words uses for passing GP=
- registers */=0A+  int words;			/* # words uses for passing GP+FP registers=
- */=0A   int fregno;			/* next available FP register */=0A   int=
- nargs_prototype;		/* # args left in the current prototype */=0A   int=
- orig_nargs;		/* Original value of nargs_prototype */=0A   int=
- varargs_offset;		/* offset of the varargs save area */=0A   int=
- prototype;		/* Whether a prototype was defined */=0A   int call_cookie;		/*=
- Do special things for this call */=0A+  int sysv_fwords;		/* # words uses=
- for passing FP registers */=0A+  void *save_area;		/* setup with rtx=
- pointing to varargs_save_area */=0A } CUMULATIVE_ARGS;=0A =0A+#define=
- CUMULATIVE_ARG_INFO_IS_RTX(idx) ((idx) =3D=3D 8)=0A+=0A /* Define=
- intermediate macro to compute the size (in registers) of an argument=0A   =
- for the RS/6000.  */=0A =0AIndex:=
- rs6000.c=0A=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0ARCS file:=
- /egcs/carton/cvsfiles/egcs/gcc/config/rs6000/rs6000.c,v=0Aretrieving=
- revision 1.66=0Adiff -u -p -r1.66 rs6000.c=0A--- rs6000.c	1999/04/27=
- 12:39:58	1.66=0A+++ gcc/config/rs6000/rs6000.c	1999/04/29 23:16:29=0A@@=
- -1256,6 +1261,7 @@ init_cumulative_args (cum, fntype, libna=0A  =
- cum->fregno =3D FP_ARG_MIN_REG;=0A   cum->prototype =3D (fntype &&=
- TYPE_ARG_TYPES (fntype));=0A   cum->call_cookie =3D CALL_NORMAL;=0A+ =
- cum->sysv_fwords =3D 0;=0A =0A   if (incoming)=0A     {=0A@@ -1381,10=
- +1387,10 @@ function_arg_advance (cum, mode, type, n=0A       /* Long longs=
- must not be split between registers and stack */=0A       if=
- ((GET_MODE_CLASS (mode) !=3D MODE_FLOAT || TARGET_SOFT_FLOAT)=0A 	  && type=
- && !AGGREGATE_TYPE_P (type)=0A-	  && cum->words < GP_ARG_NUM_REG=0A-	  &&=
- cum->words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)=0A+	  &&=
- cum->words - cum->sysv_fwords < GP_ARG_NUM_REG=0A+	  && cum->words -=
- cum->sysv_fwords + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)=0A=
- 	{=0A-	  cum->words =3D GP_ARG_NUM_REG;=0A+	  cum->words =3D GP_ARG_NUM_REG=
- + cum->sysv_fwords;=0A 	}=0A =0A       /* Aggregates get passed as pointers=
- */=0A@@ -1399,7 +1405,11 @@ function_arg_advance (cum, mode, type, n=0A=
- 	cum->fregno++;=0A =0A       else=0A-	cum->words +=3D RS6000_ARG_SIZE=
- (mode, type, 1);=0A+	{ =0A+	  cum->words +=3D RS6000_ARG_SIZE (mode, type,=
- 1);=0A+	  if (GET_MODE_CLASS (mode) =3D=3D MODE_FLOAT)=0A+	   =
- cum->sysv_fwords +=3D RS6000_ARG_SIZE (mode, type, 1);=0A+	}=0A     }=0A  =
- else=0A     if (named)=0A@@ -1411,8 +1421,8 @@ function_arg_advance (cum,=
- mode, type, n=0A =0A   if (TARGET_DEBUG_ARG)=0A     fprintf (stderr,=0A-	  =
-   "function_adv: words =3D %2d, fregno =3D %2d, nargs =3D %4d, proto =3D=
- %d, mode =3D %4s, named =3D %d, align =3D %d\n",=0A-	     cum->words,=
- cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode),=
- named, align);=0A+	     "function_adv: words =3D %2d, sysv_fwords =3D %2d,=
- fregno =3D %2d, nargs =3D %4d, proto =3D %d, mode =3D %4s, named =3D %d,=
- align =3D %d\n",=0A+	     cum->words, cum->sysv_fwords, cum->fregno,=
- cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named, align);=
-=0A }=0A =0C=0A /* Determine where to put an argument to a function.=0A@@=
- -1451,8 +1461,8 @@ function_arg (cum, mode, type, named)=0A =0A   if=
- (TARGET_DEBUG_ARG)=0A     fprintf (stderr,=0A-	     "function_arg: words =
-=3D %2d, fregno =3D %2d, nargs =3D %4d, proto =3D %d, mode =3D %4s, named =
-=3D %d, align =3D %d\n",=0A-	     cum->words, cum->fregno,=
- cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named,=
- align);=0A+	     "function_arg: words =3D %2d, sysv_fwords =3D %2d, fregno=
- =3D %2d, nargs =3D %4d, proto =3D %d, mode =3D %4s, named =3D %d, align =3D=
- %d\n",=0A+	     cum->words, cum->sysv_fwords, cum->fregno,=
- cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named, align);=
-=0A =0A   /* Return a marker to indicate whether CR1 needs to set or clear=
- the bit that V.4=0A      uses to say fp args were passed in registers. =
- Assume that we don't need the=0A@@ -1522,14 +1532,14 @@ function_arg (cum,=
- mode, type, named)=0A   /* Long longs won't be split between register and=
- stack;=0A      FP arguments get passed on the stack if they didn't get a=
- register.  */=0A   else if ((DEFAULT_ABI =3D=3D ABI_V4 || DEFAULT_ABI =3D=
-=3D ABI_SOLARIS) &&=0A-	   (align_words + RS6000_ARG_SIZE (mode, type,=
- named) > GP_ARG_NUM_REG=0A+	   (align_words - cum->sysv_fwords +=
- RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG=0A 	    ||=
- (GET_MODE_CLASS (mode) =3D=3D MODE_FLOAT && TARGET_HARD_FLOAT)))=0A     {=
-=0A       return NULL_RTX;=0A     }=0A =0A-  else if (align_words <=
- GP_ARG_NUM_REG)=0A-    return gen_rtx_REG (mode, GP_ARG_MIN_REG +=
- align_words);=0A+  else if (align_words - cum->sysv_fwords <=
- GP_ARG_NUM_REG)=0A+    return gen_rtx_REG (mode, GP_ARG_MIN_REG +=
- align_words - cum->sysv_fwords);=0A =0A   return NULL_RTX;=0A }=0A@@=
- -1626,21 +1636,24 @@ setup_incoming_varargs (cum, mode, type,=0A =0A   if=
- (TARGET_DEBUG_ARG)=0A     fprintf (stderr,=0A-	     "setup_vararg: words =
-=3D %2d, fregno =3D %2d, nargs =3D %4d, proto =3D %d, mode =3D %4s, no_rtl=
-=3D %d\n",=0A-	     cum->words, cum->fregno, cum->nargs_prototype,=
- cum->prototype, GET_MODE_NAME (mode), no_rtl);=0A+	     "setup_vararg:=
- words =3D %2d, sysv_fwords =3D %2d, fregno =3D %2d, nargs =3D %4d, proto =
-=3D %d, mode =3D %4s, no_rtl=3D %d\n",=0A+	     cum->words,=
- cum->sysv_fwords, cum->fregno, cum->nargs_prototype, cum->prototype,=
- GET_MODE_NAME (mode), no_rtl);=0A =0A   if (DEFAULT_ABI =3D=3D ABI_V4 ||=
- DEFAULT_ABI =3D=3D ABI_SOLARIS)=0A     {=0A       rs6000_sysv_varargs_p =3D=
- 1;=0A       if (! no_rtl)=0A-	save_area =3D plus_constant=
- (frame_pointer_rtx, RS6000_VARARGS_OFFSET);=0A+	{=0A+	  save_area =3D=
- plus_constant (virtual_stack_vars_rtx, -RS6000_VARARGS_SIZE);=0A+	  (rtx)=
- cum->save_area =3D save_area;=0A+	}=0A     }=0A   else=0A    =
- rs6000_sysv_varargs_p =3D 0;=0A =0A-  if (cum->words < 8)=0A+  if=
- (cum->words - cum->sysv_fwords < 8)=0A     {=0A-      int first_reg_offset=
- =3D cum->words;=0A+      int first_reg_offset =3D cum->words -=
- cum->sysv_fwords;=0A =0A       if (MUST_PASS_IN_STACK (mode, type))=0A=
- 	first_reg_offset +=3D RS6000_ARG_SIZE (TYPE_MODE (type), type, 1);=0A
---=====================_53744284==_--
+Index: ginclude/va-ppc.h
+===================================================================
+RCS file: /egcs/carton/cvsfiles/egcs/gcc/ginclude/va-ppc.h,v
+retrieving revision 1.4
+diff -c -p -d -r1.4 va-ppc.h
+*** va-ppc.h	1998/12/16 21:19:40	1.4
+--- va-ppc.h	1999/04/30 02:45:30
+*************** typedef struct {
+*** 59,92 ****
+    ((TYPE *) (void *) (&(((__va_regsave_t *)				\
+  			 (AP)->reg_save_area)->__gp_save[(int)(AP)->gpr])))
+  
+! /* Common code for va_start for both varargs and stdarg.  This depends
+!    on the format of rs6000_args in rs6000.h.  The fields used are:
+! 
+!    #0	WORDS			# words used for GP regs/stack values
+!    #1	FREGNO			next available FP register
+!    #2	NARGS_PROTOTYPE		# args left in the current prototype
+!    #3	ORIG_NARGS		original value of NARGS_PROTOTYPE
+!    #4	VARARGS_OFFSET		offset from frame pointer of varargs area */
+! 
+! #define __va_words		__builtin_args_info (0)
+! #define __va_fregno		__builtin_args_info (1)
+! #define	__va_nargs		__builtin_args_info (2)
+! #define __va_orig_nargs		__builtin_args_info (3)
+! #define __va_varargs_offset	__builtin_args_info (4)
+  
+! #define __va_start_common(AP, FAKE)					\
+! __extension__ ({							\
+!    register int __words = __va_words - FAKE;				\
+! 									\
+!    (AP)->gpr = (__words < 8) ? __words : 8;				\
+!    (AP)->fpr = __va_fregno - 33;					\
+!    (AP)->reg_save_area = (((char *) __builtin_frame_address (0))	\
+! 			  + __va_varargs_offset);			\
+!    __va_overflow(AP) = ((char *)__builtin_saveregs ()			\
+! 			+ (((__words >= 8) ? __words - 8 : 0)		\
+! 			   * sizeof (long)));				\
+!    (void)0;								\
+! })
+  
+  #ifdef _STDARG_H /* stdarg.h support */
+  
+--- 59,71 ----
+    ((TYPE *) (void *) (&(((__va_regsave_t *)				\
+  			 (AP)->reg_save_area)->__gp_save[(int)(AP)->gpr])))
+  
+! /* Common code for va_start for both varargs and stdarg.  We allow all
+!    the work to be done by __builtin_saveregs.  It returns a pointer to
+!    a va_list that was constructed on the stack; we must simply copy it
+!    to the user's variable.  */
+  
+! #define __va_start_common(AP, FAKE) \
+!   __builtin_memcpy ((AP), __builtin_saveregs (), sizeof(__gnuc_va_list))
+  
+  #ifdef _STDARG_H /* stdarg.h support */
+  
+Index: config/rs6000/rs6000.c
+===================================================================
+RCS file: /egcs/carton/cvsfiles/egcs/gcc/config/rs6000/rs6000.c,v
+retrieving revision 1.66
+diff -c -p -d -r1.66 rs6000.c
+*** rs6000.c	1999/04/27 12:39:58	1.66
+--- rs6000.c	1999/04/30 02:45:30
+*************** setup_incoming_varargs (cum, mode, type,
+*** 1704,1716 ****
+     
+     On the Power/PowerPC return the address of the area on the stack
+     used to hold arguments.  Under AIX, this includes the 8 word register
+!    save area.  Under V.4 this does not.  */
+  
+  struct rtx_def *
+  expand_builtin_saveregs (args)
+       tree args ATTRIBUTE_UNUSED;
+  {
+!   return virtual_incoming_args_rtx;
+  }
+  
+  
+--- 1704,1786 ----
+     
+     On the Power/PowerPC return the address of the area on the stack
+     used to hold arguments.  Under AIX, this includes the 8 word register
+!    save area. 
+! 
+!    Under V.4, things are more complicated.  We do not have access to
+!    all of the virtual registers required for va_start to do its job,
+!    so we construct the va_list in its entirity here, and reduce va_start
+!    to a block copy.  This is similar to the way we do things on Alpha.  */
+  
+  struct rtx_def *
+  expand_builtin_saveregs (args)
+       tree args ATTRIBUTE_UNUSED;
+  {
+!   rtx block, mem_gpr_fpr, mem_reg_save_area, mem_overflow, tmp;
+!   tree fntype;
+!   int stdarg_p;
+!   HOST_WIDE_INT words, gpr, fpr;
+! 
+!   if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+!     return virtual_incoming_args_rtx;
+! 
+!   fntype = TREE_TYPE (current_function_decl);
+!   stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
+! 	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+! 		  != void_type_node));
+! 
+!   /* Allocate the va_list constructor.  */
+!   block = assign_stack_local (BLKmode, 3 * UNITS_PER_WORD, BITS_PER_WORD);
+!   RTX_UNCHANGING_P (block) = 1;
+!   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
+! 
+!   mem_gpr_fpr = change_address (block, word_mode, XEXP (block, 0));
+!   mem_overflow = change_address (block, ptr_mode, 
+! 			         plus_constant (XEXP (block, 0),
+! 						UNITS_PER_WORD));
+!   mem_reg_save_area = change_address (block, ptr_mode, 
+! 				      plus_constant (XEXP (block, 0),
+! 						     2 * UNITS_PER_WORD));
+! 
+!   /* Construct the two characters of `gpr' and `fpr' as a unit.  */
+!   words = current_function_args_info.words - !stdarg_p;
+!   gpr = (words > 8 ? 8 : words);
+!   fpr = current_function_args_info.fregno - 33;
+! 
+!   if (BYTES_BIG_ENDIAN)
+!     {
+!       HOST_WIDE_INT bits = gpr << 8 | fpr;
+!       if (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD)
+!         tmp = GEN_INT (bits << (BITS_PER_WORD - 16));
+!       else
+! 	{
+! 	  bits <<= BITS_PER_WORD - HOST_BITS_PER_WIDE_INT - 16;
+! 	  tmp = immed_double_const (0, bits, word_mode);
+! 	}
+!     }
+!   else
+!     tmp = GEN_INT (fpr << 8 | gpr);
+! 
+!   emit_move_insn (mem_gpr_fpr, tmp);
+! 
+!   /* Find the overflow area.  */
+!   if (words <= 8)
+!     tmp = virtual_incoming_args_rtx;
+!   else
+!     tmp = expand_binop (Pmode, add_optab, virtual_incoming_args_rtx,
+! 		        GEN_INT ((words - 8) * UNITS_PER_WORD),
+! 		        mem_overflow, 0, OPTAB_WIDEN);
+!   if (tmp != mem_overflow)
+!     emit_move_insn (mem_overflow, tmp);
+! 
+!   /* Find the register save area.  */
+!   tmp = expand_binop (Pmode, add_optab, virtual_stack_vars_rtx,
+! 		      GEN_INT (-RS6000_VARARGS_SIZE),
+! 		      mem_reg_save_area, 0, OPTAB_WIDEN);
+!   if (tmp != mem_reg_save_area)
+!     emit_move_insn (mem_reg_save_area, tmp);
+! 
+!   /* Return the address of the va_list constructor.  */
+!   return XEXP (block, 0);
+  }
+  
+  
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
