@@ -1,29 +1,42 @@
-Message-ID: <XFMail.20030311152107.pochini@shiny.it>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 11 Mar 2003 11:45:11 -0700
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
+Message-ID: <20030311184511.GA3776@rover.farnsworth.org>
+References: <15973.18737.651334.824024@argo.ozlabs.ibm.com> <20030305010318.6A4D3C6E0C@atlas.denx.de> <15973.24544.124365.553602@argo.ozlabs.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <1047380759.5250.7889.camel@bnocera.surrey.redhat.com>
-Date: Tue, 11 Mar 2003 15:21:07 +0100 (CET)
-From: Giuliano Pochini <pochini@shiny.it>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Debugging
+In-Reply-To: <15973.24544.124365.553602@argo.ozlabs.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does xmon work ?  When something oopses I see the xmon prompt, but
-I can't type anything - machine completely freezed. SysReq commands
-also are disabled and I must hit the hard reset button.
-I disabled xmon so oops messages show up on the console and in the
-logs, but I have problems with them too. ksymoops spits a lot of
-warnings about non-matching addresses, etc. and the function where
-the oops occurred is always "may not be reliable". To locate the
-bug I put a lot of printk in my driver and - murphy's surprise -
-oopses do not have a backtrace anymore, just one unresolvable
-address. #:-6
-I'm using 2.4.21p4 on a blue G3. I recompiled Kernel, modules, ALSA
-to be sure System.map is the right one.
+On Wed, Mar 05, 2003 at 02:24:32AM +0000, Paul Mackerras wrote:
+> Well, there is no reason why the secondary hold code shouldn't just
+> reference an ordinary variable in the kernel data section.  It would
+> take a couple more instructions, but that shouldn't be a problem.  The
+> starting address for the secondary hold code needs to be well-known
+> (at least to the prep boot wrapper) but the variable that it spins on
+> doesn't.
+>
+> Paul.
 
-Bye.
+I took a stab at implementing this.  It's simple when the kernel text
+and data are relocated as a unit and PIC references work.  Unfortunately,
+that doesn't always happen.  On OF machines, prom_hold_cpus() in
+prom_init.c only copies the first 0x100 bytes of kernel text to
+location 0 and starts the secondary cpus running at secondary_hold()
+within that area.  I thought of passing in a pointer to kernel data,
+but that's not sufficient because it looks like in some cases kernel
+data is relocated while secondary_hold() is running.
 
+So, if kernel data may be relocated while secondary_hold is polling,
+the polled location can't be in kernel data.  Location 0x0 and 0x4 are
+beginning to look good to me.
+
+Does this seem right, or am I misreading the code?
+
+-Dale
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
