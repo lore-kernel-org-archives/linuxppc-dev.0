@@ -1,47 +1,26 @@
-Message-Id: <200006130707.JAA17893@denx.local.net>
-To: Dan Malek <dan@netx4.com>
-cc: Lucinda Schafer <lucsch@adaptivemicro.com>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Software Emulation Kernel Panic 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 12 Jun 2000 20:47:12 EDT."
-             <39458490.234545FC@embeddededge.com>
-Date: Tue, 13 Jun 2000 09:07:45 +0200
+Message-Id: <m131qWd-001SyaC@bucks>
+From: diekema@bucks.si.com (diekema_jon)
+Subject: init is running (didn't trigger the wait queue panic)
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 13 Jun 2000 09:14:38 -0400 (EDT)
+Cc: all@cideas.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <39458490.234545FC@embeddededge.com> Dan Malek wrote:
->
-> > Wolfgang's suggestion makes a lot of sense to me:
-> > "Usually this means that you are running on an old  mask  revision  of
-> > the  CPU,  which  still  has  the  (in)famous  "Cache Corruption When
-> > Writing to Special Registers" bug."
->
-> I believe that only affected some 860(T) processors.  I don't remember
-> that listed for any other processor model or silicon.
+	* To: linuxppc-embedded@lists.linuxppc.org
 
-Unfortunately,  this  silicon  bug  is  present  on  the  early  mask
-revisions of _all_ MPC8xx CPUs.
+	I tried running init again with Linux 2.4.0-test1-ac10
+	(through changeset 1.247.1.6 00/06/12 18:04:09-04:00
+	dmalek@geefour.netx4.com), and I was surprised to find that it
+	worked.  Previously, init was triggering a wait queue panic in the
+	scheduler.
 
-On the MPC823 it's listed as "CPU6. Possible  Data  Cache  Curruption
-With  Special Purpose Register Access Located in Data Cache, Data MMU
-or SIU" up to and including CPU revision 0.3  (mask  set  3F98S);  it
-seems fixed in revision A (mask set 0H98G, 1H98G) and later.
+	With init active, inetd is running and it is possible to use
+	telnet to establish a connection.  cool very cool :)
 
-For the MPC850 it's listed as "CPU7. Possible Data  Cache  Curruption
-When  Writing  SPRs"  up  to and including CPU revision 0.3 (mask set
-3F98S); it seems fixed in revision A  (mask  set  0H98G,  2H98G)  and
-later. I have a few samples of MPC850 CPUs labeled as 7F98S which are
-not listed by Motorola, which are also affected.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"No matter where you go, there you are..."          - Buckaroo Banzai
+	Target: EST SBC8260 with MPC8260 Rev A.1 at CPU/CPM/BUS 200/167/66
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
