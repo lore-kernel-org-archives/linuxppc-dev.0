@@ -1,47 +1,98 @@
-Date: Thu, 28 Oct 1999 22:46:52 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Josh Huber <huberj@WPI.EDU>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LCD stretching partially working!
-In-Reply-To: <14360.32207.88755.452600@cpu.wpi.edu>
-Message-ID: <Pine.LNX.4.05.9910282243080.6037-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a00b43e690932c6@[216.81.26.227]>
+In-Reply-To: <Pine.HPX.4.10.9910281205380.18743-100000@gra-ux1.iram.es>
+References: <v04003a00b43d2b8b3cd6@[216.81.1.41]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 28 Oct 1999 16:20:38 -0500
+To: Gabriel Paubert <paubert@iram.es>
+From: Tony Mantler <eek@escape.ca>
+Subject: Re: question about altivec registers
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 28 Oct 1999, Josh Huber wrote:
-> I'm working on getting hardware stretching for the Rage LT chipset
-> (wallst. & lombard at least), and have got this far:
-> 
-> 
-> In console mode:
-> 1. Stretching in the vertical direction works
-> 2. stretching in the horiz direction works
+At 6:01 AM -0500 10/28/99, Gabriel Paubert wrote:
+>On Wed, 27 Oct 1999, Tony Mantler wrote:
+>
+[...]
+>> It would seem to me that using a bitmap to mark used registers would allow
+>> more flexibility on the compiler side to play with register usage without
+>> incurring longer context switch times. I wouldn't try to guess the relative
+>> tradeoff values though.
+>
+>Since all 32 registers have exactly the same capabilities, using only a
+>consecutive set of registers is not a problem for the compiler. That's how
+>it works for integer registers and FP registers 14 to 31 (for integer
+>actually register 0 is special).
 
-Great!
+I suppose I'm a bit too used to 68k stuff, where sorting register usage
+takes a back seat to efficient register re-use. However, with the size of
+the data in the Altivec registers, I would expect a bit of optimization to
+slant away from cases where the registers can be easily sorted and packed.
 
-> 3. doing both at the same time appears to work...except for a little
->    screen flicker. (what could cause this?)
 
-Two possible solutions:
+>Taking into account the comments on the
+>ABI, the only strategy which seems implementable is to distinguish 2 cases
+>only vrsave=0 and vrsave!=0. Using a bitmap means a lot of conditional
+>branches, which can obviously be folded but nevertheless bloat the code.
+>(For save+restore: 64 conditional branches + 16 mtcrf= 320 bytes).
 
-  - Does it help if you lower the mclk?
-  - Perhaps the display FIFO parameters have to take into account the
-    stretching? At least for the horizontal stretching this sounds logical to
-    me, i.e. try to use
+Quite true.
 
-    xclks_per_row = (pll->mclk_fb_div*pll->vclk_post_div_real*64*hstretch<<11)/
-		    (pll->vclk_fb_div*pll->mclk_post_div_real*bpp);
 
-Gr{oetje,eeting}s,
+>There is also a problem of knowing how to update the bitmap in nested
+>subroutines: to keep it correct the called subroutine must save the
+>current vrsave and then or it with the bitmask of the registers it uses.
+>Then on exit it has to restore caller's vrsave. Do we want such a complex
+>strategy ? I don't mean that it is impossible to implement, but that it
+>looks complex.
+
+I think saving registers in a subroutine is a pain no matter how it's
+implemented. If the VRSAVE is used as a count, the subroutine still has to
+save the old value, save the overwritten registers, calculate what the
+proper new value is (think new < old = oops!) then restore the overwritten
+registers and old VRSAVE value when it exits.
+
+
+>OTOH, if the register usage is designed similarly to integer and FP, the
+>bitmask might look like 111...1100...0011...11 (i.e. with at most 2
+>transitions between 0 and 1 in the bit string). It might be worth
+>optimizing the save/restore routine for this case, saving/restoring more
+>registers than necessary when vrsave does not have such a canonical form.
+
+Hmm, count bits in from the left and right, mask and check for missed bits,
+then branch to either a full save or a left+right save.
+
+Doing it that way would also somewhat optimize VRSAVE=0, since both the
+leftmost and rightmost bits are 0, it would pass right through the
+left-save and right-save half of the optimized register save.
+
+Perhaps a little longer than "if (VRSAVE==0) return;", but it's quick
+enough for me.
+
+
+[.. enforce proper VRSAVE usage ..]
+>
+>Indeed, I had not considered this problem. Note that conditional clearing
+>of most registers can probably be done without conditional branches. Just
+>put a copy of vrsave in one vr and then find a smart way to transform
+>these bits in masks to clear the registers (probably you'll have to splat
+>it first). It won't work for the the last register(s) because you need
+>some workspace, however.
+
+Mmm, the joys of a bitwise AND.
+
+
+>Anyway, having a special fast path for the case vrsave=0 is probably the
+>most important optimization IMHO.
+
+Indeed.
+
+
 --
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
+Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
