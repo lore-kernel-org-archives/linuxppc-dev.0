@@ -1,30 +1,44 @@
-Message-ID: <BFC0587634C3D111AACB00805FA766FA02C1C6AE@exchny12.ny.smb.com>
-From: "Velasquez, Carlos" <carlos.velasquez@ssmb.com>
-To: "Linuxppc Mailing List (E-mail)" <linuxppc-dev@lists.linuxppc.org>
-Subject: Video Acceleration...
-Date: Wed, 28 Jul 1999 11:20:41 -0400
+Message-Id: <199907282103.RAA28451@thanatopsis.mit.edu>
+To: Alain Birtz <abz@videotron.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Realloc() problem with Efence 
+In-Reply-To: Your message of "Wed, 28 Jul 1999 16:48:42 CDT."
+             <379F7AB9.E8D230CE@videotron.ca>
+Date: Wed, 28 Jul 1999 17:03:39 -0300
+From: Nicholas T Ingolia <ingolia@MIT.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+-----BEGIN PGP SIGNED MESSAGE-----
 
-So I finally got R5 up and running (great interface too!) and started doing
-some nifty things on my SuperMac. I read in the R5 manual that if you are a
-Twin Turbo owner, you can add -tt128m (or something like that) to the
-gdm.conf file, so I did.
+Hello...
 
-Well, after rebooting, the screen came in with horrible colors, etc etc.
-Anyone know what's up with that? My video card is a Twin Turbo 8 meg card.
+realloc() may move the memory being realloated.  To quote from the man page,
 
-Carlos
+       realloc() returns a pointer to the newly allocated memory,
+       which is suitably aligned for any kind of variable and may
+       be  different from ptr...
 
-______________________________________________________________________
-C.F. Velasquez
-Asst. Vice President
-Global Database and Technology Division
-Salomon Smith Barney, Inc.
+It doesn't (and couldn't) mutate the pointer temp_c_buf directly.
 
+Thus, you probably want to re-write your code to do
+
+temp_c_buf = realloc(temp_c_buf, 5000 + 5000);
+
+- --Nicholas Ingolia
+ingolia@mit.edu
+-----BEGIN PGP SIGNATURE-----
+Version: PGPfreeware 5.0i for non-commercial use
+Comment: Processed by Mailcrypt 3.5.3, an Emacs/PGP interface
+Charset: noconv
+
+iQCVAwUBN59h+gRHXKx72OUhAQEkNAP/bYZO+zzGI2bDBRuCYabEfaxo8/EAffTN
+hliGzKLwhhEetuvrUNv+pam5qBXGb3OLWWAZdRmypEvPXfYP/w3wGlJlGKWxAbGm
+WhBJkzwVWEkqKmqADiClP7ucJcMIYkMcLLVcCBnVEsjoPFDumoc2ncEe6beeRDIB
+gma/mrLVmZs=
+=tyhG
+-----END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
