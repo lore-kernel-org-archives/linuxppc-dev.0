@@ -1,51 +1,50 @@
-To: engineersong@hanmail.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: SCC3 console problem on MPC860 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 30 Mar 2001 09:58:39 +0700."
-             <20010330095839.HM.30000000001Zxx8@www4.hanmail.net>
-Date: Fri, 30 Mar 2001 09:53:54 +0200
-Message-Id: <20010330075359.4273128827@denx.denx.de>
+Message-ID: <3AC495E2.D7352CF4@raleigh.ibm.com>
+Date: Fri, 30 Mar 2001 09:19:14 -0500
+From: Ralph Blach <rcblach@raleigh.ibm.com>
+MIME-Version: 1.0
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Whate kind of kernel errors cause an Segmentation Fault
+Content-Type: multipart/mixed;
+ boundary="------------712FADAD78960C3975CC950E"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010330095839.HM.30000000001Zxx8@www4.hanmail.net> you wrote:
->
-> I would like to use SCC3 as second console, and use SMC1 as first console.
-> I ported denx kernel 2.4.3-pre4 into my 860 board.
-> when I compiling, checked SCC3 for UART option in MPC8xx CPM option.
-> SMC1(ttyS0) is connected to my linux box COM2, SCC3(ttyS1) is connected to COM1.
+This is a multi-part message in MIME format.
+--------------712FADAD78960C3975CC950E
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-What's the kernel output for the serial ports? Please send me your kernel boot messages!
+What kind of kernel return codes will cause the C library to print out
+the message
 
-> After booting, in COM2 echo 1111 > /dev/ttyS1 result is shown in SCC3(ttyS1).
-> so far good.
-> but, COM1 port don't any receive keyboard key.
+"Segmentation Fault"
 
-Please define what you mean by COM1 and COM2.
+Thanks
 
-How did you test this?
+Chip
+--------------712FADAD78960C3975CC950E
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
 
-> In /arch/ppc/uart.c
-> I modified CONFIG_SERIAL_CONSOLE_PORT for SCC3 console
->
-> #if 1
-> #undef CONFIG_SERIAL_CONSOLE_PORT
-> #define CONFIG_SERIAL_CONSOLE_PORT	1
-> #endif
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;15936
+fn:Ralph Blach
+end:vcard
 
-If in your configuration SCC3 is the second entry in rs_table[], then
-this should work.
+--------------712FADAD78960C3975CC950E--
 
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-God made machine language; all the rest is the work of man.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
