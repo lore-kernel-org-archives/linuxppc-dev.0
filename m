@@ -1,44 +1,51 @@
-In-Reply-To: <v04220801b4daa2e26f84@[10.0.0.42]>
-Date: Thu, 24 Feb 2000 12:12:10 +0100
-To: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: PCI I/O address problems on B&W G3
-Message-Id: <20000224121210.030675@mailhost.mipsys.com>
+Date: Thu, 24 Feb 2000 09:30:38 -0500
+From: Daniel Jacobowitz <drow@false.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PowerMac G4 and pcmcia flash cards
+Message-ID: <20000224093038.A13400@drow.res.cmu.edu>
+References: <38B47631.6FE88852@erols.com> <200002242101.QAA01570@marcus.pants.nu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200002242101.QAA01570@marcus.pants.nu>; from flar@pants.nu on Thu, Feb 24, 2000 at 01:01:59PM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Feb 24, 2000, Timothy A. Seufert <tas@mindspring.com> wrote:
-
->01:04.0 SCSI storage controller: Adaptec 7899A (rev 01)
->	Subsystem: Adaptec: Unknown device f620
->	Flags: bus master, 66Mhz, medium devsel, latency 16, IRQ 25
->	BIST result: 00
->	I/O ports at fe000000
->	Memory at 80883000 (64-bit, non-prefetchable)
->	Expansion ROM at 80900000 [disabled]
->	Capabilities: [dc] Power Management version 2
+On Thu, Feb 24, 2000 at 01:01:59PM -0800, Brad Boyer wrote:
 >
->01:04.1 SCSI storage controller: Adaptec 7899A (rev 01)
->	Subsystem: Adaptec: Unknown device f620
->	Flags: bus master, 66Mhz, medium devsel, latency 16
->	BIST result: 00
->	I/O ports at fe000000
->	Memory at 80882000 (64-bit, non-prefetchable)
->	Expansion ROM at 808e0000 [disabled]
->	Capabilities: [dc] Power Management version 2
+> Nelson Abramson wrote:
+> > >         Do you know what the feasability is of Linux support of Apple's
+> > > Airport bases and Airport cards?
+> >
+> > I imagine fairly possible...I would guess that with the release of mosX and the
+> > bsd device drivers for the airport, porting them to *nix would be pretty easy
+> > (hopefully)....
+>
+> Well, since Lucent released Linux drivers for the WaveLan cards, I suspect it
+> is much simpler than waiting for Apple to write drivers for Darwin.  Apple
+> made an OEM deal with Lucent, so Airport cards have all the same guts as the
+> original Lucent cards.  In fact, if you rip apart an Airport base station, you
+> will find a genuine Lucent card in a PCMCIA slot.  There was a web site with
+> pictures of all the parts from a base station.
+>
+> 	Brad Boyer
+> 	flar@pants.nu
+>
+> P.S.: The wavelan drivers can be found at http://www.wavelan.com/support/software/
+> but they claim that they only work with x86 laptops.  The source is there, so it
+> should be possible to fix for ppc.
 
+No, actually.   There are two wavelan drivers; the one there relies on
+a non-free (read: binary only) library.  There's a similar one, which I
+believe Lucent funded in part, available from the contrib/ directory on
+the PCMCIA ftp site - wvlan_cs as opposed to wavelan2_cs.
 
-Hum... Both cards are behind the PCI<->PCI bridges, and so they should
-both have io addresses in the range fe001000 -> fe001fff
+Dan
 
-The fact that they are at fe000000 seems to indicate that the io base
-address is 0 (and so was apparently _not_ assigned at all). Could you
-break into OF, dev to those devices, and send me the output of
-.properties ? (I need the content of the "reg" and "assigned addresses"
-properties). I want to see what OF did with the cards exactly.
-
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
