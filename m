@@ -1,40 +1,52 @@
-Message-ID: <39902BE4.44DE97C1@ivey.uwo.ca>
-Date: Tue, 08 Aug 2000 11:48:52 -0400
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Message-ID: <39902E69.67F50604@relog.ch>
+Date: Tue, 08 Aug 2000 17:59:37 +0200
+From: Michel Dänzer <daenzer@relog.ch>
+Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: How to get up-to-speed on the 3D / DRI in Rage 128
-Content-Type: text/plain; charset=us-ascii
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: How to get up-to-speed on the 3D / DRI in Rage 128
+References: <39902BE4.44DE97C1@ivey.uwo.ca>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+"Kevin B. Hendricks" wrote:
 
-I am about to start the Java 3D port to ppc and wanted to get some accelerated
-3D capabilities for rage 128 going first.
+> I have the xf 401 src tar archives and I can get a hold of ani's cvs of the
+> xfree86 tree.
 
-I have noticed a few patches fly by recently on exactly this issue (also fixes
-to panning, etc).
+I haven't used Ani's patches, and I seem to be the only one running DRI
+successfully so far. Maybe better try without them first.
 
-What is the best way to get up to speed quickly here?
 
-I have the xf 401 src tar archives and I can get a hold of ani's cvs of the
-xfree86 tree.
+> What other patches/fixes do I need to get going?
+>
+> - aty128fb.c patches for panning?
 
-What other patches/fixes do I need to get going?
+Not needed, you can use the full screen.
 
-- aty128fb.c patches for panning?
-- DRI patches?
-- etc
+> - DRI patches?
 
-Any quick pointers would be greatly appreciated.
+Yep. What I'm running is the DRI CVS trunk (which is basically X 4.0.1 and
+some DRI changes) and a patch that I've posted to dri-devel. If you can't get
+it from there, I can send it to you privately or put it up for HTTP download.
 
-BTW: We really do need a developers searchable patch archive for major systems
-like XFree 4.0, the kernel, drivers, gcc, binutils, glibc, etc
+(Jack Howarth should have it as well)
 
-Thanks
+> - etc
 
-Kevin
+That's all I can think of ATM.
+
+
+Good luck Kevin,
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
