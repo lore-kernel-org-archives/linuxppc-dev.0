@@ -1,26 +1,22 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id B1AA367A46
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.xs4all.nl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 8882267A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Jan 2005 06:55:29 +1100 (EST)
-Received: from mailman.pit.comms.marconi.com (mailman.pit.comms.marconi.com
-	[169.144.2.12])
-	by mailgate.pit.comms.marconi.com (8.12.10+Sun/8.12.10) with ESMTP id
-	j0GJtPDR027252 for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Jan 2005 14:55:25 -0500 (EST)
-Received: from uspitsmsgrtr01.pit.comms.marconi.com
-	(uspitsmsgrtr01.pit.comms.marconi.com [169.144.2.221])
-	by mailman.pit.comms.marconi.com (8.9.3/8.9.3) with ESMTP id OAA08622
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Jan 2005 14:55:27 -0500 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A6474EC@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Sun, 16 Jan 2005 14:54:44 -0500
+	Mon, 17 Jan 2005 18:16:55 +1100 (EST)
+Received: from linux.local (linux.local [192.168.1.97])
+	by protonic.xs4all.nl (Postfix on SuSE Linux 7.2 (i386)) with ESMTP id
+	A0E6FD403E for <linuxppc-embedded@ozlabs.org>;
+	Mon, 17 Jan 2005 08:05:54 +0100 (CET)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Mon, 17 Jan 2005 08:16:50 +0100
+References: <313680C9A886D511A06000204840E1CF0A6474EC@whq-msgusr-02.pit.comms.marconi.com>
+In-Reply-To: <313680C9A886D511A06000204840E1CF0A6474EC@whq-msgusr-02.pit.comms.marconi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
-Subject: Linux 2.6-10.rc3  8xx  - Only 3 characters are printed well in __
+  charset="iso-8859-1"
+Message-Id: <200501170816.50398.david.jander@protonic.nl>
+Subject: Re: Linux 2.6-10.rc3 8xx - Only 3 characters are printed well in __
 	init start_kernel() upon kernel booting - why ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -32,81 +28,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Per kind advise I have got, I have added baud rate to the command =
-line (I
-> did not have it there before):
->=20
-> CONFIG_CMDLINE=3D"console=3DttyCPM0,115200 panic=3D3 root=3D/dev/ram"
->=20
-> 	However, my real current problem (just 3 characters get printed
-> correctly during the kernel boot) did not go away.
->=20
-> 	Is there a way to check if the baud rate specified in the .config's
-> commandline is indeed in effect for the kernel booting ?
->=20
-> 	Any other reasons/explanation for my "3 character" problem ?
->=20
-> 	 -----Original Message-----
-> 	From: 	Povolotsky, Alexander =20
-> 	Sent:	Sunday, January 16, 2005 5:59 AM
-> 	To:	'linuxppc-dev@ozlabs.org'
-> 	Subject:	Linux 2.6-10.rc3  8xx kernel booting - how to set
-> baud rate for the serial driver ?
->=20
-> 	Hi,
-> 	...=20
-> 	    =20
-> 	My bootloader uses 115200 baud rate for the serial output during
-> boot strapping.
->=20
-> 	I have:
-> 	CONFIG_SERIAL_CPM_CONSOLE
-> 	in my .config=20
-> 	...=20
-> I could see some output during the kernel boot -
-> I noticed that (only 3) characters (see below) from the linux_banner =
-are
-> printed
-> in __init start_kernel() upon booting . Then a lot of garbage is =
-outputted
-> and eventually kernel hangs ...
->=20
-> after gunzip
-> done.
-> Now booting the kernel
-> =
-Lin=FF=FF=FF=FF=FF=FF=FF=FF=C0=FF=FF=FF=FF=FF=FF=FF=FF=C08=C0=FF=FF=FF=FF=
-=FF=FF=FF=FF=C0X=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0x=C0=FF=FF=FF=FF=FF=FF=FF=FF=
-=C0~=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0=B8=C0=FF=FF=FF=FF=FF=FF=FF
-> =FF=C0=D8=C0=FF=FF
-> <more garbage>
-> <hangs>
->=20
-> to prove it I added printk("ALEX\n"); in __init start_kernel() prior =
-to
-> printk(linux_banner);
->=20
-> ...=20
-> lock_kernel();
-> page_address_init();
-> printk("ALEX\n");
-> printk(linux_banner);
-> setup_arch(&command_line);
-> setup_per_cpu_areas();
-> ...
->=20
-> after gunzip
-> done.
-> Now booting the kernel
-> =
-ALE=FF=FF=FF=FF=FF=FF=FF=FF=C0=FF=FF=FF=FF=FF=FF=FF=FF=C08=C0=FF=FF=FF=FF=
-=FF=FF=FF=FF=C0X=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0x=C0=FF=FF=FF=FF=FF=FF=FF=FF=
-=C0~=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0=B8=C0=FF=FF=FF=FF=FF=FF=FF
-> =FF=C0=D8=C0=FF=FF
-> <more garbage>
-> <hangs>
->=20
-> Why would first 3 characters come out right ?
-> Any ideas ?
-> Thanks,
->=20
+On Sunday 16 January 2005 20:54, Povolotsky, Alexander wrote:
+>[...]
+> > to prove it I added printk("ALEX\n"); in __init start_kernel() prior to
+> > printk(linux_banner);
+> >
+> > ...
+> > lock_kernel();
+> > page_address_init();
+> > printk("ALEX\n");
+> > printk(linux_banner);
+> > setup_arch(&command_line);
+> > setup_per_cpu_areas();
+> > ...
+> >
+> > after gunzip
+> > done.
+> > Now booting the kernel
+> > ALE=FF=FF=FF=FF=FF=FF=FF=FF=C0=FF=FF=FF=FF=FF=FF=FF=FF=C08=C0=FF=FF=FF=
+=FF=FF=FF=FF=FF=C0X=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0x=C0=FF=FF=FF=FF=FF=FF=FF=
+=FF=C0~=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0=B8=C0=FF=FF=FF=FF=FF=FF
+> >=FF =FF=C0=D8=C0=FF=FF
+> > <more garbage>
+> > <hangs>
+> >
+> > Why would first 3 characters come out right ?
+> > Any ideas ?
+
+My fairly uneducated guess: The system hangs before the last character come=
+s=20
+out of the uart buffer. Try adding a delay just after printk.
+The garbage could be anything produced by a piece of hardware gone wild.
+
+Greetings,
+
+=2D-=20
+David Jander
+Protonic Holland.
