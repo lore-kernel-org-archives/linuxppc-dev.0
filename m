@@ -1,34 +1,98 @@
-Date: Thu, 14 Feb 2002 14:31:22 -0500 (EST)
-From: "Christopher C. Chimelis" <chris@debian.org>
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org,
-	yellowdog-devel@lists.yellowdoglinux.com,
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: Ani Joshi <ajoshi@shell.unixbox.com>,
 	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
 Subject: Re: new G4 dual 1 gig is here - how to install?
-In-Reply-To: <20020214180812.8819@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.21.0202141430090.8533-100000@spawn.hockeyfiend.com>
+Date: Fri, 15 Feb 2002 06:08:18 -0500
+Cc: linuxppc-dev@lists.linuxppc.org,
+	<yellowdog-devel@lists.yellowdoglinux.com>
+References: <Pine.BSF.4.44.0202131947110.42574-100000@shell.unixbox.com>
+In-Reply-To: <Pine.BSF.4.44.0202131947110.42574-100000@shell.unixbox.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20020215110330.PVOP20323.tomts20-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 14 Feb 2002 benh@kernel.crashing.org wrote:
+Hi Ani,
 
-> >Also, interestingly enough, SOUND is out of control on this new
-> >machine.  A beep comes out at ear-shattering levels no matter what I
-> >do.  I do believe something has changed when it comes ot sound in these
-> >new systems.
+A couple of problems.
+
+1. Checking the BIOS scratch register
+
+ tmp = INREG(RADEON_BIOS_4_SCRATCH);
+
+        if (rinfo->hasCRTC2) {
+                /* primary DVI port */
+                if (tmp & 0x08)
+                        rinfo->dviDisp_type = MT_DFP;
+
+To determine which port on a 7500 is actualy being used does not work on
+PPC, so we have to use the OF names and look in the tree to dtermine which
+port is working somehow.  Question is how?
+
+2. For some reason I keep getting the following failure message:
+
+                         default:
+                                printk("radeonfb: Failed to detect DFP
+panel size\n");
+                                return 0;
+
+which means:
+
+        if (radeon_dfp_parse_EDID(rinfo))
+                radeon_update_default_var(rinfo);
+
+        if (!rinfo->got_dfpinfo) {
+
+Somehow rinfo->got_dfpinfo is not being set (yet a received no warning
+messages about EDID not being detected).
+
+The OF device tree does have the "EDID" block but for some reason it is
+not being found properly (the dual head issue of the 7500 leading to two
+different device tree nodes?) or not being parsed properly.
+
+But I never received the following message:
+
+        if (!radeon_get_EDID_OF(rinfo))
+                RTRACE("radeonfb: could not retrieve EDID from OF\n");
+
+
+And I never received this message either:
+
+        printk("radeonfb: detected DFP panel size from EDID: %dx%d\n",
+                rinfo->panel_xres, rinfo->panel_yres);
+
+        rinfo->got_dfpinfo = 1;
+
+
+And instead I always get just The "Failed to detect DFP panel size"
+
+I can't figure it out.
+
+I will add some more debug print statements so that I can actually see
+what is messing up.
+
+Thanks,
+
+Kevin
+
+On February 13, 2002 10:53, Ani Joshi wrote:
+> On Wed, 13 Feb 2002, Kevin B. Hendricks wrote:
+> > 2.  The bad news is that my ATI 7500 with my flat panel display simply
+> > goes black so I can't tell exactly what is detected or not.
 >
-> Maybe yet another crappy tumbler setup ? Make sure you use my
-> latest kernel, I also started adding some 7455 support & cleaned
-> up the NAP/DOZE/idle thing.
-
-If it is tumbler, let me know.  I've become annoyed at the default volume
-levels (too loud) in the driver and am planning on changing them.  I'd be
-happy to have a few extra people to bounce settings off of.
-
-C
-
+> You will need to check if the OpenFirmware pll probing code I use in
+> radeonfb works on 7500.  Look in the device-tree node and see what the
+> reference clock is.  If you look in radeon_get_pllinfo() you can see the
+> OF probe code there.  IIRC on x86 7500 boards, the xclk is ~ 22000, the
+> ref div is 12 and reference clock is 2700 i belive.  The 7500 is
+> supported on x86 btw.
+>
+> If you can log in and get a bootlog that would be helpful.
+>
+>
+> ani
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
