@@ -1,32 +1,40 @@
-Date: Sat, 25 Sep 1999 13:57:23 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-user@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com,
-        linuxppc-dev@lists.linuxppc.org, mklinux-setup@public.lists.apple.com
-Subject: XFree86-3.3.5-1.6.0b
-In-Reply-To: <Pine.LNX.4.10.9909031141370.8429-100000@opus.bloom.county>
-Message-ID: <Pine.LNX.4.10.9909251336400.8691-100000@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19990925224650.18793.qmail@www0w.netaddress.usa.net>
+Date: 25 Sep 99 17:46:50 CDT
+From: jeramy b smith <ultrapenguin@netscape.net>
+To: Anirudh Joshi <ajoshi@Glue.umd.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Re: SndConfig for Linux/PPC]
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello again all.
-
-I've uploaded XFree86-3.3.5-1.6.0b rpms to
-ftp://devel.linuxppc.org/users/trini/XFree86-3.3.5
-If you installed 3.3.5-1.6.0a, and use FBDev, you only need to update that
-particular RPM.  If you use Xpmac, nothing should have changed.  This
-should fix most of the invalid depth/etc problems when trying to do >16.
-
-Compiling w/ egcs 1.1.2-12f did not fix at least the main accel bug
-(crash), so this is built vs 2.95.x as well.  More feedback/etc is
-welcome.
-
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
-
+Anirudh Joshi <ajoshi@Glue.umd.edu> wrote:
+> 
+> 	heh... funny you bring this up, cause just yesterday i decided
+> (was coaxed rather) to rewrite the awacs driver.  hopefully when i'm
+> finished, it'll be out of dmasound.c and awacs.c will be done The Right
+> Way (or whatever way i think is Right :).  anyhow, it'll have all the
+> goodies like mixer support, etc...
+> 
+Still though, how would my program be able to detect the presence of mac style
+sound device after your patch hits the tree? I say this because I would like
+my program to first scan for PCI cards like the Ensoniq(assuming that if you
+have one of these you don't want to use the built in sound), then look for
+built-in (some IBM machines won't have this so I need to detect it and not
+assume its there), or if neither is found prompt the user to explain why he is
+running the program if he doesn't have a sound card.
+> ani
+> 
+> On Fri, 24 Sep 1999, Jeramy B Smith wrote:
+> 
+> > 
+> > I've been thinking about making sndconfig run on linuxppc. 
+> > A. rip out the sun/sbus code
+> > B. remove defs for isa cards
+> > C. remove the defs for pci cards that don't work on linuxppc
+> > D. add dma sound def
+> > E. debug, debug, debug
+> > F. Resync with RedHats source and beg them to add the PPC stuff
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
