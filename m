@@ -1,32 +1,54 @@
-To: "Navin Boppuri" <navin.boppuri@newisys.com>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Weird flash problem with saveenv 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 Aug 2001 16:18:23 CDT."
-             <3A494DE356A49A40B37442E1E0D9F3B5063420@ptah.ad.newisys.com>
-Date: Thu, 16 Aug 2001 00:23:40 +0200
-Message-Id: <20010815222345.88C0D10CBA@denx.denx.de>
+Date: Thu, 16 Aug 2001 10:18:34 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Anyone using an IBM RISCWatch ICE?
+Message-ID: <20010816101834.A14201@zax>
+References: <FF6CF34C346E724596A2FB5CAAB2C49750C3C1@voyager.ops.infiniswitch.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <FF6CF34C346E724596A2FB5CAAB2C49750C3C1@voyager.ops.infiniswitch.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3A494DE356A49A40B37442E1E0D9F3B5063420@ptah.ad.newisys.com> you wrote:
+On Wed, Aug 15, 2001 at 11:12:17AM -0400, Wright, David wrote:
 >
-> I have AM29LV640DU (128 uniform sectors 32kwords each) chips on my
-> custom board. I have been able to do "saveenv" on all but one of my
-> boards. I notice that the erase is not performed correctly and
+> Hi,
+>
+> I've been attempting to use an IBM RISCWatch ICE on a Walnut system
+> and I'm having problems.  (Spare me any lectures about how I should
+> be using a BDI.  I'm just trying to find out how usable the IBM is,
+> since it's already here.)
+>
+> The specific problem I'm trying to solve is this:  how do I set a
+> breakpoint early in kernel startup, say at start_kernel (just as
+> the MMU is enabled)?  I've tried booting the Walnut so that it
+> comes up into its ROM monitor, then stopping it with the ICE, and
+> setting a hardware breakpoint at the start_kernel virtual address.
+> Problem is, when I start the CPU running again, the Walnut is no
+> longer responding to the keyboard (serial line).  Can't do anything
+> except reset it at that point.  Using the ICE reveals that the CPU
+> is still running, but I have no real idea what it's doing.  It sure
+> isn't responding to the serial port.
 
-Is that one of the flash chips that may power on in locked state  for
-some  of  the sectors? [Don't have the manyal with me right now.] Did
-you try writing a sector unlock sequence?
+I've encountered the same problem on a Walnut here, but not reliably -
+I generally find that it works for a few times, then I try another
+breakpoint in just the same way and the board stops responding to
+serial.  I've found that resetting the board and the processor probe
+and restarting the RISCWatch software tends to help, in the sense that
+it will then work again for a reasonable while.
 
-Wolfgang Denk
+> As an alternative, I tried setting a hardware breakpoint at the
+> physical address of "start_here".  That doesn't hang, but the
+> breakpoint is never hit, either.
+>
+> Any ideas gratefully accepted.  I've tried this kind of thing with
+> a BDI and had no problems.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The nice thing about standards is, there are so many to choose from.
+David Gibson			| Microsoft: Making the easy things hard
+david@gibson.dropbear.id.au	| and the hard things buggy
+http://www.ozlabs.org/people/dgibson
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
