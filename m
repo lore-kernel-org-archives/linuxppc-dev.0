@@ -1,49 +1,60 @@
-To: "Tord Andersson" <Tord.Andersson@combitechsystems.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC5200LITE - kernel BUG at page_alloc.c 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 Nov 2003 08:52:48 +0100."
-             <004B1D7A5257174C9044A1B7BD0E60ED447042@ratatosk.combitechsystems.com>
-Date: Thu, 27 Nov 2003 10:54:14 +0100
-Message-Id: <20031127095419.9DA4BC5F5F@atlas.denx.de>
+Message-ID: <3FC5CF65.1060109@imc-berlin.de>
+Date: Thu, 27 Nov 2003 11:18:13 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: Dan Kegel <dank@kegel.com>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Nathan Field <ndf@ghs.com>
+Subject: Re: Cross Compiler running under Win32
+References: <3FC4B0EC.3090107@imc-berlin.de> <3FC56D24.6030000@kegel.com>
+In-Reply-To: <3FC56D24.6030000@kegel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Tord,
+Dan Kegel wrote:
 
-in message <004B1D7A5257174C9044A1B7BD0E60ED447042@ratatosk.combitechsystems.com> you wrote:
+> Steven Scholz wrote:
 >
-> I have some troubles when trying to run Linux-2.4.23-pre5 on a an
-> MPC5200LITE board (16MB) with U-BOOT 1.0.1). Right after the bogoMIPS
-> calculation I get "kernel BUG at page_alloc.c:105", and the system
-> reboots (see excerpt at end of mail).
+>> does someone know of a cross compiler (producing code for let's say
+>> MPC8xx) that
+>> is running natively under win32 (Windows2000/XP) without stuff like
+>> CYGWIN?
+>>
+>> I'am just wondering.
+>> Apparently MVISTA released their new "DevRocket" which is supposed to
+>> run under
+>> WindowsXP. So I assume they have cross compilers for "30 processors
+>> from 8
+>> architectures" running under Windows...
+>
+> They could well be using cygwin for the compilers; they charge
+> enough that the licensing fee for cygwin is peanuts, I bet.
+>
+> But what's wrong with using Cygwin?
 
-Which board revision / configuration is this? Do  you  have  any  PCI
-cards  plugged  in?  Dose the simple memory test ("mtest" command) in
-U-Boot work?
+I think Cygwin is much too much overhead for just compiling a small application.
+I was told that I could take just the GCC package from Cygwin without installing
+all of it.
 
-> I think the part which goes wrong is when the system tries to check if
-> the free pages in memory are OK (__freepages_ok(...)), where the
-> (page->mapping) seems to be marked and thus causing a bug.
-> Is there some kind of problems related to that all pages resides in the
-> zone(0), which seems to be used for DMA?
+"licensing fee for cygwin" ???
+So it's not free?
+Could we just take the GCC package and the DLL and distribute it together with
+our software and install it on our costumers Windows PCs?
+We have to be able to generate and (cross-)compile code on our costumers PCs
+that is than transfered to our devices and executed.
 
-To me this looks like a memory problem.
-
-Best regards,
-
-Wolfgang Denk
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Making files is easy under  the  UNIX  operating  system.  Therefore,
-users  tend  to  create  numerous  files  using large amounts of file
-space. It has been said that the only standard thing about  all  UNIX
-systems  is  the  message-of-the-day  telling users to clean up their
-files.                            -- System V.2 administrator's guide
+Steven Scholz
+
+imc Measurement & Control               imc Meﬂsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
+fon: +49 30 467090-0                    Tel: 030 / 467090-0
+fax: +49 30 4631576                     fax: 030 / 4631576
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
