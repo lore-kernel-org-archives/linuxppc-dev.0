@@ -1,49 +1,27 @@
-Message-ID: <39831621.79C54E27@embeddededge.com>
-Date: Sat, 29 Jul 2000 13:36:33 -0400
+Message-ID: <39831703.185AB483@embeddededge.com>
+Date: Sat, 29 Jul 2000 13:40:19 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-CC: Dan Malek <dan@netx4.com>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+To: Tony Mantler <nicoya@apia.dhs.org>
+CC: Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@netx4.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: CONFIG_PPC != Mac
-References: <39821DD7.ED0DA0A2@embeddededge.com> <20000729093817.C4552@opus.bloom.county>
+References: <39821DD7.ED0DA0A2@embeddededge.com>; from dan@netx4.com on
+	 Fri, Jul 28, 2000 at 07:57:11PM -0400 <39821DD7.ED0DA0A2@embeddededge.com> <v04003a00b5a8c0b923e3@[24.66.67.194]>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Tony Mantler wrote:
 
-> Well, where are the specific breakages?  (CONFIG_MAC is used for 68k only
-> right now, IIRC.)
+> Add a CONFIG_PMAC maybe? I don't really object to sharing CONFIG_MAC with
+> PPC, except that it would be easy to assume that CONFIG_MAC == CONFIG_MAC
+> && __powerpc__, and vice versa CONFIG_MAC == CONFIG_MAC && __m68k__.
 
-Sorry, I guess I haven't looked at it in a while.....I just noticed
-this with the recent 2.4.0-test5 BitKeeper tree.
-
-All CONFIG_PPC builds include drivers/macintosh, and I guess there are
-more changes happening there that require additional configuration
-options.  For example, you can't build a PowerPC without Machintosh
-and USB (and ADB, and keyboards, and....).  So, when I have a PowerPC
-that isn't a Mac, I can't link a kernel unless I have all of these
-devices configured.  Then, it likes to probe for this stuff, or look
-for OF device trees, or something else I don't have.
-
-However, there is a good side :-).  For the first time I am able to
-build a kernel without _any_  Mac drivers, which is really nice.
-
-I modified the Makefiles to remove the line:
-	DRIVERS-$(CONFIG_PPC) += drivers/macintosh/macintosh.o
-
-and other places where CONFIG_PPC included the macintosh subdir.
-
-
-This at least works for my embedded systems.  The interesting part
-is that in all of these cases, there is an identical Makefile line
-or logic for CONFIG_MAC, so I kind of assumed that if you really want
-Mac drivers, you could just configure this.....
-
-I am now about to experiment with building for my iMacs and G4s.
-I would like to know what people think CONFIG_MAC or CONFIG_PPC or
-some of these others are supposed to mean, or assumptions they make.
+Ahhhhh....I get it.  Apologies to the m68k folks....
+OK....let me think about this and work on some alternatives.  So, it
+is OK to assume CONFIG_MAC implies m68k?
 
 Thanks.
 
