@@ -1,43 +1,38 @@
-Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D052@renexch3.rennes.thmulti.com>
-From: Fillod Stephane <stephane.fillod@thomson.net>
-To: "'Sergey Urvanov'" <abs@dts.ru>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: ioperm
-Date: Tue, 27 Apr 2004 11:49:46 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+Date: Tue, 27 Apr 2004 12:48:20 +0200
+From: Magnus Damm <damm@opensource.se>
+To: Oliver Korpilla <okorpil@fh-landshut.de>
+Cc: mgroeger@sysgo.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Initrd and PPCbug, can it work?
+Message-Id: <20040427124820.2f3aa14c.damm@opensource.se>
+In-Reply-To: <408E2AF4.2050907@fh-landshut.de>
+References: <Pine.LNX.4.58.0404211503050.20798@ppcproject1>
+	<20040426220944.GI19246@smtp.west.cox.net>
+	<408E000A.6040303@fh-landshut.de>
+	<Pine.LNX.4.56.0404270913230.2035@mag.sysgo.com>
+	<408E1ED0.4050404@fh-landshut.de>
+	<Pine.LNX.4.56.0404271119270.2567@mag.sysgo.com>
+	<408E2AF4.2050907@fh-landshut.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->Anybody seen this error?
+On Tue, 27 Apr 2004 11:42:12 +0200
+Oliver Korpilla <okorpil@fh-landshut.de> wrote:
 
-No :)
+> This was the first I checked - CONFIG_EXT2_FS is set to y. Besides, I
+> tried doing the same with a cramfs initrd - won't work either. Cannot
+> say whether I configured that right.
+>
+> Maybe this is an endianess problem in my initrds?
 
->I'm getting it while trying to compile  for a ppc405EP based board,
->using the ELDK 2.1 toolchain (ppc_4xx).
+As long as you use ext2 you should not have any endian problems.
 
-Don't use ioperm. There's no io bus, only memory bus.
+It might be tempting to use other fancy filesystems, but I don't
+like endian problems so I usually stick to ext2. I create my
+ext2 initrds on x86 systems and use them on ppc without problems.
 
-Please have a look at Denx's FAQ for accessing memory bus:
-
-
-http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Accessin
-gPeripheralsFromUserSpace
-
-For more information, please follow this thread:
-	http://lists.linuxppc.org/linuxppc-embedded/200403/msg00059.html
-
-
-> #define BASEPORT 0x378
-
-I don't know what your BASEPORT is, but it looks very wrong.
-
-
-Welcome in ppc world.
-
-Regards,
-Stéphane
+/ magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
