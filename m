@@ -1,35 +1,37 @@
-Message-ID: <002b01c2d90c$982cc120$0700a8c0@pc005>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: NFS and ram filesystems
-Date: Thu, 20 Feb 2003 19:19:22 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: NFS and ram filesystems
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <002b01c2d90c$982cc120$0700a8c0@pc005>
+References: <002b01c2d90c$982cc120$0700a8c0@pc005>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 20 Feb 2003 19:48:41 +0100
+Message-Id: <1045766921.30141.80.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear friends,
+On Thu, 2003-02-20 at 19:19, Ing.Gianfranco Morandi wrote:
+> The question is:
+> How can I boot the board by using PPCboot, mount initially the NFS
+> filesystem, load a new big ramdisk image and finally remount root on
+> ramdisk?
 
-We are finalizing our project on a custom 8260 board and as suggested in
-many "Linux HOWTO" we are trying to move from NFS to ram filesystem.
-Actually we have burned the flash with both kernel and ramdisk images and
-modified the initial bootargs variable to indicate where to find the two
-images.
-At this point all is working, but the ramdisk image is obviously too small
-to support the whole application (Flash size cannot be larger than 2Mbytes).
+??? say what ??
 
-The question is:
-How can I boot the board by using PPCboot, mount initially the NFS
-filesystem, load a new big ramdisk image and finally remount root on
-ramdisk?
-Any help would be appreciated.
+You just have to explain this a bit more what are you really trying to
+do? if you have nfsroot why switch over to a ramdisk.
 
-many thanks
+If you want to test the system you have in a ramdisk there is much
+easier ways.
 
-Gianfranco
+
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 719 70 20
+Tellusborgsvägen  94              Fax: +46 8 719 29 45
+126 25 Stockholm                  ken@switchboard.ericsson.se
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
