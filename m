@@ -1,36 +1,24 @@
-Message-ID: <39F866D9.B167DC78@mvista.com>
-Date: Thu, 26 Oct 2000 10:16:09 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-Reply-To: mgreer@mvista.com
+Message-ID: <39F8689A.5BEAA6F2@emc.com>
+Date: Thu, 26 Oct 2000 13:23:38 -0400
+From: Zhaobin Zhu <zzhu@emc.com>
 MIME-Version: 1.0
-To: Topi Kanerva <tkanerva@ees2.oulu.fi>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: sandpoint woes.
-References: <Pine.GSO.4.21.0010261820540.18282-100000@stekt6>
-Content-Type: text/plain; charset=us-ascii
+CC: linuxppc-emb <linuxppc-embedded@lists.linuxppc.org>
+Subject: Convert srecord file to binary file
+References: <001f01c03f60$982d74a0$0a00010a@airvent.it>
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Topi Kanerva wrote:
+Hi,
 
-> init started:  BusyBox v0.43 (2000.07.20-00:29+0000) multi-call binary
-> Sorry, your computer does not have enough memory.              \
->
-> ...
-> DINK reports that my sandpoint does have 64M of memory, but when Linux
-> kernel boots, it only finds 32M of memory (29056k available (944k kernel
-> code, 404k data, 172k init)) ... I even tried to put a "mem=64M" kernel
-> bootoption, but it didn't make any difference. Any ideas?
+Is there an utility under linux/unix to convert srecord file to binary file
+which can be burnt into eprom ?
 
-Yes, DINK lies.  At least on all the boards I have, there are 32 MB of memory
-even though DINK says there are 64MB (DINK enables an extra memory bank of 32 MB
-in the mem ctlr even though the memory doesn't exist).  To combat that, I
-hard-coded 32MB--yes, an ugly hack--in
-arch/ppc/mm/init.c:sandpoint_find_end_of_memory().  If you believe you really
-have 64 MB, go ahead and change that routine to report 64MB or whatever you
-think is appropriate.
+Thanks,
 
-Mark
+--
+ Zhaobin Zhu
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
