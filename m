@@ -1,70 +1,60 @@
-Message-Id: <200002141749.LAA26552@lists.linuxppc.org>
-Date: Mon, 14 Feb 2000 12:45:53 -0500 (EST)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: Re: Bug in acceled Xpmac?
-To: linuxppc-dev@lists.linuxppc.org, ningerso@d.umn.edu
+Date: Mon, 14 Feb 2000 19:51:25 +0100 (MET)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+Reply-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
+To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Atherosclerotic Linux Mice Uni-Mouse Only ...
+In-Reply-To: <200002130600.AAA05020@lists.linuxppc.org>
+Message-ID: <Pine.SOL.3.95.1000214192157.7820D-100000@juliet>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-Yes, thjere was a serious mouse bug problem with usb mice fixed in
-Xpmac rev8 and later versions.  It seems that the accelerated Xpmac
-was not properly setting an accurate time for the mouse button
-events.
-
-Please try upgrading to Xpmac rev9 and try again (see
-http://www.linuxppc.org/BlueG3/ for a link.
-
-If you still have a mouse problem with Xpmac rev9, please let me
-know.
-
-Thanks,
-
-Kevin
-
->It looks like the accelerated Xpmac that was released in January
-may have
->a bug in mouse handling.
+On Sat, 12 Feb 2000 08:44:15 -0800, Jeremy Knope <swttiggr2@yahoo.com> wrote:
 >
->I was working on a small epplet for one button mouse users to make
-better
->use of enlightenment. When using the version of Xpmac that shipped
-with
->LinuxPPC 1999 Q1 it worked fine. But when using the recent
-accelerated
->version, the mouse functionality wouldn't change.
->
->XGetPointerMapping returns the values that were set, but it doesn't
-seem
->to be updating the way it handles the button.
->
->Has anyone else seen similar behavior or know of a fix? I attached
-the
->source of my program for anyone interested in trying it out.
->
->-------------------------------------------------------------------
---------
->|   Nathan Ingersoll             |   Computer Science/Mathematics
-      |
->|   mailto: ningerso@d.umn.edu   |   University of Minnesota-Duluth
-      |
->|   http://umn.edu/~ningerso     |   http://www.d.umn.edu
-      |
->-------------------------------------------------------------------
---------
->
+> I'm using an XLR8 Point&Scroll mouse... works great.
+> plugged it in... booted linux... worked! now if i only
+> could get the scroll wheel to work... pressing it is a
+> button tho so it's a full 3 button mouse. there are
+> things for scroll wheels in linux but not sure if
+> it'll work. specially cuz the one i found uses
+> XF86Config, i'm using Xpmac which i seemed to read
+> that it doesn't use that file.
 
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Yep, I'm not aware of any way to use it with Xpmac. With XF68_FBDev it's
+working great. Now, if I could only get the wheel recognized in /dev/gpmdata!
+When I pass the mouse input through gpm to use th usb mouse and the
+trackpad, the wheel doesn't work. I've already installed a patched gpm
+from debian (in /debian/dists/potato/main/source/misc/gpm_1.17.8.*) that's
+supposed to fix this, but gpm still either doesn't repat the wheel action
+properly or XFree doesn't recognize it. Maybe all it would take is to have
+XFree read /dev/gpmdata in "IMPS/2" protocoll (currently this only works
+with "MouseSystems")? Any ideas?
+
+>
+> - --- NTR <ntr@mindmachine.com> wrote:
+> > Dear Uni Mouse Fanatics,
+> >
+What's the Uni Mouse?
+
+> > Is this the only mouse that will work in 3 button
+> > mode for Linux....or
+> > will any USB Mouse work.
+> >
+> > I am particular towards the Kensington Turbo Ball
+> > for purely
+> > atherosclerotic reasons.  You move your palm or
+> > fingers, not your whole
+> > hand and elbow.  Helps keep the years off my
+> > wrist/elbow replacement  Its
+> > USB.  Will it work?
+> >
+Like these, too. I've a Logitech ADB Trackman on my old 8100. Wish I'd find
+such a thing for my PB.
+
+Greetings,
+							Derek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
