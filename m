@@ -1,46 +1,27 @@
-Message-ID: <3BF2E0E9.920DBE17@folkwang-hochschule.de>
-Date: Wed, 14 Nov 2001 22:23:53 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Berlin <dan@cgsoftware.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>,
+	"Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: DFP support for kernel radeonfb.c added
+Date: Wed, 14 Nov 2001 22:24:15 +0100
+Message-Id: <20011114212415.18586@smtp.wanadoo.fr>
+In-Reply-To: <Pine.LNX.4.33.0111141518370.25545-100000@www.cgsoftware.com>
+References: <Pine.LNX.4.33.0111141518370.25545-100000@www.cgsoftware.com>
 MIME-Version: 1.0
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: Vincent Katz <vincent.katz@laposte.net>,
-	jhartmann@precisioninsight.com, paulus@samba.org,
-	linuxppc-dev@lists.linuxppc.org, paulus@au.ibm.com
-Subject: Re: AGP : ATI128,powerpc
-References: <1005771164.6732.19.camel@avalon> <20011114210702.ELOS11133.tomts9-srv.bellnexxia.net@there>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Kevin B. Hendricks" wrote:
->
-> Hi,
->
-> Try Ben Herrenschmidt's tree.  There is support for powerpc in that tree.
->
-> Kevin
->
+>No, I mean using i2c to grab it.
 
-i've been using ben's tree for a powerbook for quite some time, and
-i used to see the same error, so i disabled agp and dri.
+I think OF uses the Radeon "GPIO" registers to probe the panel type based
+on a wired panel ID and a table of EDIDs in the driver. At least, it did
+it that way on mach64. I dumped a disassembly of the Rage M3 (r128 base)
+MacOS 9 driver of my Pismo and started tracing it, it seem to play with
+GPIOs as well. I didn't yet figure out the exact algorithm though.
 
-has this been fixed lately ?
-i'm desperate for faster video. 2d performance under x is pathetic,
-and scrolling is a major pita.
+Ben.
 
-does anyone know how to speed up a pismo powerbook x server ?
-
-regards,
-
-jörn
-
-
---
-Jörn Nettingsmeier
-home://Kurfürstenstr.49.45138.Essen.Germany
-phone://+49.201.491621
-http://spunk.dnsalias.org
-http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
