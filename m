@@ -1,88 +1,49 @@
-Message-ID: <3F17BCE4.7070603@dgt-lab.com.pl>
-Date: Fri, 18 Jul 2003 11:24:52 +0200
-From: Adam Kaczynski <kaczor@dgt-lab.com.pl>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: Juergen Beisert <jbeisert@eurodsn.de>
+Reply-To: jbeisert@eurodsn.de
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Debugging with BDI
+Date: Fri, 18 Jul 2003 11:26:35 +0200
 MIME-Version: 1.0
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: HDLC driver for MPC8260
-References: <20030718071048.82F6EC6D82@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200307181126.35714.jbeisert@eurodsn.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How to buid a "net" driver? Please have a look at
-http://www.dgt-lab.com.pl/Serwis/mpc860hdlc.tar.gz
+Hi all,
 
-This is a per-channel structure:
+I'm trying to debug my u-boot with BDI. It's a 405GP system.
+In the telnet sessoin I can insert "reset run" and the u-boot starts. When I
+enter "reset halt" and then "go" it won't do anything. I have tried with ddd
+and I see a few instructions work up to the mtmsr instruction (with "restart
+halt", "bi 0xfffc0100"and "go" at the BDI telent and then start the ddd)
 
-typedef struct m_port_t {
-         hdlc_device hdlc;    /* HDLC device struct - must be first */
-<a lot of private variables comes here...>
-}
+See file cpu/ppc4xx/start.S:
+#if defined(CONFIG_405GP) || defined(CONFIG_405CR) || defined(CONFIG_405)
+ /*----------------------------------------------------------------------- */
+ /* Clear and set up some registers. */
+ /*----------------------------------------------------------------------- */
+          addi    r4,r0,0x0000
+          mtspr   sgr,r4
+          mtspr   dcwr,r4
+          mtesr   r4               /* clear Exception Syndrome Reg */
+          mttcr   r4                /* clear Timer Control Reg */
+          mtxer   r4               /* clear Fixed-Point Exception Reg */
+          mtevpr  r4              /* clear Exception Vector Prefix Reg */
+          addi  r4,r0,0x1000    /* set ME bit (Machine Exceptions) */
+          oris  r4,r4,0x0002      /* set CE bit (Critical Exceptions) */
+          mtmsr   r4                  /* change MSR */
+When I step the mtmsr instruction ddd shows address 0x700, and the esr
+register has 0x8800'0000 (illegal instruction occured?????).
+Same when I place a breakpoint behind the mtmsr instruction und use "cont"
+instead of "stepi".
 
-initialization:
-static int __init mpc860hdlc_init(void)
-calls
-result = register_hdlc_device(&m_dev[i].hdlc);
-for each channel  - does registration in the HDLC stack.
+What is the difference between "reset run" and "reset halt", "go"?
 
+Thanks in advance for any suggestion.
 
-de-initialization:
-static void __exit mpc860hdlc_cleanup(void)
-does the opposite thing:
-unregister_hdlc_device(&m_dev[i].hdlc);
-
-open method:
-static int m_open(hdlc_device *hdlc)
-starts the transmitter queue:
-netif_start_queue(hdlc_to_dev(hdlc));
-
-
-the close method does the opposite thing:
-static void m_close(hdlc_device *hdlc)
-stops the queue
-netif_stop_queue(hdlc_to_dev(hdlc));
-
-the ioctl will probably need re-design work together with sethdlc
-utility if you want to pass down more parameters:
-static int m_ioctl(hdlc_device *hdlc, struct ifreq *ifr, int cmd)
-
-Now the xmit method:
-static int m_xmit(hdlc_device *hdlc, struct sk_buff *skb)
-should queue the skb and initiate sending it
-(I simplified my task by using an intermediate transmitter queue but you
-may wish to directly connect the skbuff to a buffer descriptor- you'll
-skip one memcpy then)
-or stop if the queue is full (netif_stop_queue(hdlc_to_dev(hdlc));
-return 1;)
-The skb needs to be freed either after copying it or sending it (in this
-case in the interrupt)
-dev_kfree_skb_any(skb);
-In the transmitter interrupt one should unlock the queue if it was
-locked due to being full
-netif_wake_queue(hdlc_to_dev(&_m_dev->hdlc));
-
-Reception:
-in the interrupt (or in a bottom half if you like)
-do some sanity checks... if OK
-skb = dev_alloc_skb(len);
-copy the data from the low-level buffer
-and push it upwards the stack
-hdlc_netif_rx(&_m_dev->hdlc, skb);
-That's it.
-If you like you may also pre-allocate some skbuffs and connect them to
-buffer descriptors (this way you will avoid copying)
-
-This is almost all you need to know. Don't hesitate to ask if something
-is unclear.
-
-The doble-copying appears not to spoil the performance too much. For
-8260 it is even less significant (I checked it for ATM driver) but if
-you want to make your boss more happy you may design the driver in a
-more mature way than I did.
-
-Regards,
-Adam
-
+-- JB
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
