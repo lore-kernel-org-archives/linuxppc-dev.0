@@ -1,47 +1,68 @@
-Message-ID: <3843ED00.20D47DF4@netx4.com>
-Date: Tue, 30 Nov 1999 10:28:00 -0500
-From: Dan Malek <dan@netx4.com>
+From: kd@flaga.is
+Subject: pthreads, glibc2.1.2 problems
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF8A4A80C6.CC06AB0A-ON00256839.0055E479@flaga.is>
+Date: Tue, 30 Nov 1999 16:07:51 +0000
 MIME-Version: 1.0
-To: Graham Stoney <greyham@research.canon.com.au>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Real Time response/latency question
-References: <19991130034844.1B3E0F380@elph.research.canon.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Graham Stoney wrote:
-> 
-> Hi folks,
-> 
-> I'm looking at software architecture questions, and wondering how much
-> application domain work I can move out of driver land and into user space,
+Hi,
 
-I believe this is a good programming practice, and in many
-cases I don't even write a driver when the application is
-allowed to run with root privilege.
+Could someone verify for me that pthread_create() does not block
+indefinitly on their embedded system setup (or even pmac would be great
+too).
+My setup is glibc 2.1.2 with fpu and cache patch applied , kernel 2.2.5 and
+gcc 2.95.2.
+The following short program, compiled with gcc -static pthreads.c -o
+pthreads -pthreads
+blocks at pthread_create() for no apparent reason (when run on ppc823). The
+same program compiled on i386
+(same glibc, kernel 2.2.1 and same gcc and same compile flags) runs fine.
 
-> .... Can anyone give me a rough idea of the maximum
-> latency in user space I could expect on an 860T based system with multiple
-> threads, where only one thread has SCHED_RR realtime scheduling priority?
+Thank you
 
+K.D.
 
-You can't answer this question due to the design and implementation
-of the kernel.  Most "real-time" systems can't either once you
-throw protocol stacks, file systems, disk drives, and other
-external devices or distributed services into the feature mix.
+####program begins#####
 
-I have successfully written applications that required
-sub-millisecond latency.  You just have to be careful about
-other applications in the system, and remember that you can't
-preempt the kernel.
+#include <stdio.h>
+#include <pthread.h>
+#include <errno.h>
 
-If you have hard real-time requirements, check into the RT-Linux
-features.  These are starting to mature, and can make scheduling
-guarantees within the confined real-time domain.
+#define assert(X) if(!(X)){printf("assertion failed in %s at line %d\n",
+__FILE__, __LINE__);}
 
+void* funcA(void* arg)
+{
+     int i;
+     int* times = (int*)arg;
 
-	-- Dan
+     for(i = 0; i < *times; i++)
+     {
+          sleep(1);
+          printf("threadA : %d\n", i);
+     }
+}
+
+int main(int argc, char** argv)
+{
+     int res;
+     int argA;
+     int statusA;
+     pthread_t threadA;
+
+     argA=10;
+     printf("Create thread A\n");
+     res = pthread_create(&threadA, NULL, funcA, (void*)&argA);
+     assert(res==0);
+
+     printf("Joining thread A\n");
+     pthread_join(threadA, NULL);
+}
+####program ends######
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
