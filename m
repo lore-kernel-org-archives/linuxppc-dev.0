@@ -1,50 +1,44 @@
-Date: Tue, 14 Aug 2001 10:45:49 +0100
-Subject: Re: Occasional crash reports
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Takashi Oe <toe@unlserve.unl.edu>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010814094529.3E40EDBA11@atlas.valhalla.net>
+Message-ID: <3B79115A.AA9B5550@inn.ericsson.se>
+Date: Tue, 14 Aug 2001 13:54:02 +0200
+From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+MIME-Version: 1.0
+To: Larry McVoy <lm@bitmover.com>
+Cc: Gavin Hemphill <hemphill@drea.dnd.ca>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC bk repos reorg
+References: <15218.2656.8980.846399@cargo.ozlabs.ibm.com> <20010808211410.J7728@work.bitmover.com> <15218.4778.270562.782105@cargo.ozlabs.ibm.com> <20010808213806.C13789@work.bitmover.com> <15218.7077.297813.862317@cargo.ozlabs.ibm.com> <20010809192852.L13789@work.bitmover.com> <20010810080751.B31136@cpe-24-221-152-185.az.sprintbbd.net> <20010810081659.A13789@work.bitmover.com> <3B77D988.6A9D6C60@drea.dnd.ca> <20010813083553.B4702@work.bitmover.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 14, 2001, Takashi Oe wrote:
-> On Mon, 13 Aug 2001, Benjamin Herrenschmidt wrote:
+I can't even use the old way from work but I have done some testing with bk
+from home in aticipation of the 4xx updates that has been RSN the last few
+month.
+
+The revtool is a really nice tool to find out what has changed and once I
+figured out that I needed to also do a get command everything that I need
+works. BUT one thing I did not like is the fact that a grep -r now catch not
+only the source but also the file in the repository directory. Is there a way
+to work with bk that the source is not in the same place as the bk files?
+
+
+Larry McVoy wrote:
 >
->> I'm getting regular crash reports for which I'm having trouble figuring
->> out what's going on exactly. Those are with my tree or bk 2_4_devel, but
->> the problem may be present elsewhere.
->>
->> So basically, the kernel tends to die in various locations where things
->> should be just fine, but I did notice one thing: In most of these cases,
->> I had softirq around in the backtrace (either running in softirqs, or
->> having do_softirq() in the backtrace). There is one case where I didn't
->> have it: it dies inside power_save(), so probably because an interrupt
->> that happened just before messed things up.
->>
->> I'm wondering if we might be running into some stack overflow...
+> For now use the old port numbers those should still work while I go poke
+> at this.
 >
-> I don't really know, but I can confirm that both 2.2.x and 2.4.x kernels
-> are unstable on a beige g3 and a bmac equipped b/w g3.  I can crash them
-> rather easily with regular programs, given a day or two.
+> On Mon, Aug 13, 2001 at 10:43:36AM -0300, Gavin Hemphill wrote:
+> > Larry I just tried out the anonymous access using the new syntax and
+> > found that (of course) it won't work through our firewall. I'd had a
+> > hole punched in the firewall to allow pull's etc. but it's tied to
+> > port numbers. Do you have any suggestions on how to handle this with
+> > the reorganized parents.
 
-Can you point at which program reliably crashes beige/G3?
-that's what I use as my dev/build machine and it seems to be stable (2.4.x)
-except under the following circumstance:
-
-If I boot using the BootX application - at which point something drops a
-bomb which almost always ends up in the network stack and shows up as an
-illegal instruction (usually an FP one).
-
-If I hard-reboot this doesn't seem to happen.
-
-I haven't had time to fiddle with making the kernel write-only or whatever
-to find out who drops the bomb (although is may well be something that is
-left over from MacOS that BootX application hasn't managed to stop).
-
-Iain.
+--
+Kenneth Johansson
+Ericsson Business Innovation AB   Tel: +46 8 404 71 83
+Viderögatan 3                     Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
