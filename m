@@ -1,48 +1,36 @@
-Message-Id: <4.3.2.20001011072641.00b74a60@falcon.si.com>
-Date: Wed, 11 Oct 2000 07:29:22 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: exchanges file in minicom
-In-Reply-To: <39E3915B.528A90FF@emc.com>
-References: <Pine.HPX.4.10.10010102202210.16113-100000@gra-ux1.iram.es>
+Message-ID: <007201c0339d$5b235c60$0a00010a@airvent.it>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-emb" <linuxppc-embedded@lists.linuxppc.org>
+Subject: PCMCIA on the FADS
+Date: Wed, 11 Oct 2000 18:05:29 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You can use uuencode to convert binary to an ASCII encoding, transfer
-the (now ASCII) file via cat (or use the minicom capture feature), and
-then use uudecode to convert the file back into binary.  You can use
-tar to bundle files together and gzip to make them smaller before you
-uuencode them (making them bigger again :-).
+I am trying to make the Damm's PCMCIA socket drivers work on my FADS823.
 
-This is technically inferior to the zmodem approach, but all the tools
-should already be on your systems.
+I think the problem is related to the ioremapping of _IO_BASE.
 
-gvb
+What value should i give to it? I tried giving it an unused value
+(0x02200000 on my FADS), doing into arch/ppc/mm/init.c a simple
+ioremap(_IO_BASE, _IO_BASE_SIZE) where IO_BASE_SIZE is 64*1024, but when i
+load m8xx_pcmcia.o i get this error:
 
+8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
+8xx_pcmcia: FADS using SLOT_B with IRQ 13.
+IP: C400B0AC XER: A000624E and so on.....
+TASK = c0640000[17] 'insmod' mm->pgd c032f000
 
-At 05:59 PM 10/10/00 -0400, Zhaobin Zhu wrote:
+What is the problem? :-o
 
->Hi,
->
->I boot linux over IDE disk.
->The only connection between host and target is RS232 which is used
->to download and as console(minicom).
->
->After kernel is running on target, how can I send/receive files between
->host(minicom/linux) and target ?
->
->For ascii file, I can use "cat  < /dev/ttyS0" on target, and
->"ascii-xfr .." on host. How about Binary files ?
->
->Thanks,
->--
->  Zhaobin Zhu
->  zzhu@emc.com
->
->
+- may the pinguin b with u -
+
+Have a nice day,
+Paolo Scaffardi.
+AIRVENT SAM s.p.a. - RIMINI - ITALY
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
