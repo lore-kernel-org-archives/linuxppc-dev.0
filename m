@@ -1,32 +1,42 @@
-To: "Mark Chambers" <markc@mail.com>
+To: =?utf-8?Q?Garcia_J=C3=A9r=C3=A9mie?= <GARCIAJ@3il.fr>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: U-Boot and kernel 2.6 
+Subject: Re: Compiling assembler file with ppc_405-gcc 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jun 2004 11:31:04 EDT."
-             <002a01c44fc9$201dc820$0301a8c0@chuck2>
-Date: Fri, 11 Jun 2004 18:22:09 +0200
-Message-Id: <20040611162214.EF46AC109F@atlas.denx.de>
+In-reply-to: Your message of "Fri, 11 Jun 2004 17:28:25 BST."
+             <85E6ED5B5EC32F439702305CC417E12D9E2A78@email.3il.fr>
+Date: Fri, 11 Jun 2004 18:25:51 +0200
+Message-Id: <20040611162556.18B71C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <002a01c44fc9$201dc820$0301a8c0@chuck2> you wrote:
+In message <85E6ED5B5EC32F439702305CC417E12D9E2A78@email.3il.fr> you wrote:
 >
-> Here's another idea - how about XML?  That would be two steps forward, IMO,
-> instead of just going from one magic structure to another.
+> To compile this, I use the following lines in a makefile:
+...
+> ppcsiafn.o:
+>       $(AS) $(CFLAGS_AS) -c $(SRC_PATH)/startup/init/ppcsiafn.s -o ppcsiafn.o
+...
+> After a lot of tests, here are my conclusions: the different "#include" are not considered by the compiler. Indeed, I tried to introduce compilation errors in the different ".h" files --> no difference in the result
 
-Oh no. Don't forget that the the boot loader  has  to  generate  XML.
-Grrrhh... [I'd rather generate a troff document, then :-) ]
+You don't call a compiler. You just run the assembler.  The  assember
+does  nothing else but assemble your code. It does NOT include things
+like running a preprocessore or so.
 
-> As to just trashing bd_t, does that mean users have to upgrade their
-> bootloader to use newer kernels, and could not switch back easily if
-> problems arose?  Perhaps the kernel could identify whether the pointer is to
-> a bd_t or something else and handle it automatically?
+> So I guess that but I don't know why : the character "#" is understood as a comment (equivalent to /* ...*/).
 
-I guess you can always add some glue code (aka bootstrap  loader)  to
-the Linux kernel which converts one interface into another.
+Maybe you want to check assembler syntax?
+
+> To conclude : is there a specific compil option to give to gcc for it to understand the #include command?
+
+"gcc" does know how to run a preprocessor. But you're not running  "gcc",
+you're running "as" only.
+
+> I checked the different linux assembler file and the #include is used. So why am I not able to use it?
+
+Because your build rule is inappropriate for what you want to do?
 
 Best regards,
 
@@ -35,7 +45,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A conservative is a man with two perfectly good legs  who  has  never
-learned to walk.                              - Franklin D. Roosevelt
+Generally speaking, there are other ways to accomplish whatever it is
+that you think you need ...                               - Doug Gwyn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
