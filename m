@@ -1,127 +1,54 @@
-Message-ID: <38D839A5.F90E4FBE@huawei.com.cn>
-Date: Wed, 22 Mar 2000 11:10:29 +0800
-From: dony <dony.he@huawei.com.cn>
+Message-ID: <38D87FC0.548D1E61@email.sps.mot.com>
+Date: Wed, 22 Mar 2000 09:09:36 +0100
+From: "Stephan Ruettiger (r0337c)" <r0337c@email.sps.mot.com>
 MIME-Version: 1.0
-To: Joe Green <jgreen@mvista.com>
-CC: Dan Malek <dan@netx4.com>,
-        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Does mpc8xx-2.2.13 support "Enable loadable module support"?
-References: <NCBBKJKKGDLPHKDPAFFMMEIPCDAA.jsw-embedded@mindspring.com> <38D6E781.884AA846@embeddededge.com> <38D8236B.C27DE94B@huawei.com.cn> <00032117584900.03592@minotaur.mvista.com>
+To: Wolfgang Denk <wd@denx.de>
+CC: Don Holmgren <djholm@fnal.gov>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: root nfs boot problems
+References: <200003211928.UAA20238@denx.local.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank you Joe, your patch works great :-)
+The tcpdump during the boot sequence shows me the error. I see at the
+host the packets during tftp download of the zImage file. As the NFS
+client try to connect i see nothing. So i changed the default setting
+for ethernet from SCC2 to SCC1 (as described in the manual for the board
+:-) and it
+works.
 
-Joe Green wrote:
+Wolfgang Denk wrote:
+>
+> In message <Pine.SGI.3.95.1000321111628.2421C-100000@hppc.fnal.gov> you wrote:
+> >
+> > I don't believe the "neighbour table overflow" errors are the problem.  I
+> > get them frequently but otherwise have success.
+>
+> I have never seen such errors when the ethernet  inrface  is  working
+> correclty.
+>
+> > It looks like a problem on your nfs server.  The "unable to get nfsd port
+> > number from server" and "unable to get mountd port number from server"
+> > messages indicate that at minimum, the portmapper is not running on your
+> > server.  Perhaps mountd and/or nfsd are also not running.
+>
+> Well, IMHO it's more likely that no packets were  ever  sent  to  the
+> ethernet  at  all.  This  type  of problemppens for instance when the
+> Transmit Enable signal is not asserted.
+>
+> It might be useful to check with a sniffer if the box is transmitting
+> at all...
 
-> On Tue, 21 Mar 2000, dony wrote:
-> >      If I compile the kernel without "Enable loadable module support" , then it
-> > works successfully. But if  I do again with "Enable loadable module support", then
-> > some errors occur:
-> > Does someone know why?
->
-> Here's a patch I believe should fix these problems.  Let me know if you
-> have any problems with it.  This is based on the Hard Hat Linux kernel
-> we ship, so there may be some differences from the tree you have (hope
-> not).
->
-> --- linux.old/arch/ppc/kernel/ppc8xx_pic.c      Tue Mar 21 02:03:06 2000
-> +++ linux/arch/ppc/kernel/ppc8xx_pic.c  Tue Mar 21 17:42:58 2000
-> @@ -148,4 +148,15 @@
->         irq += i8259_pic.irq_offset;
->         return (request_8xxirq(irq, handler, irqflags, devname, dev_id));
->  }
-> -#endif
-> +#else /* CONFIG_MBX */
-> +int request_irq(
-> +       unsigned int irq,
-> +       void (*handler)(int, void *, struct pt_regs *),
-> +       unsigned long irqflags,
-> +       const char * devname,
-> +       void *dev_id
-> +)
-> +{
-> +       return -EINVAL;
-> +}
-> +#endif /* CONFIG_MBX */
-> --- linux.old/arch/ppc/kernel/ppc_ksyms.c       Wed Oct 20 00:14:00 1999
-> +++ linux/arch/ppc/kernel/ppc_ksyms.c   Tue Mar 21 18:31:02 2000
-> @@ -69,14 +69,18 @@
->  EXPORT_SYMBOL(ppc_local_irq_count);
->  EXPORT_SYMBOL(ppc_local_bh_count);
->
-> +#ifdef CONFIG_PCI
->  EXPORT_SYMBOL(isa_io_base);
->  EXPORT_SYMBOL(isa_mem_base);
->  EXPORT_SYMBOL(pci_dram_offset);
-> +#endif /* CONFIG_PCI */
->  EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
->  EXPORT_SYMBOL(DMA_MODE_READ);
->  EXPORT_SYMBOL(DMA_MODE_WRITE);
-> +#ifndef CONFIG_8xx
->  EXPORT_SYMBOL(_prep_type);
->  EXPORT_SYMBOL(ucSystemType);
-> +#endif /* CONFIG_8xx */
->
->  EXPORT_SYMBOL(atomic_add);
->  EXPORT_SYMBOL(atomic_sub);
-> @@ -181,18 +185,21 @@
->  EXPORT_SYMBOL(_machine);
->  EXPORT_SYMBOL(ppc_md);
->
-> +#ifndef CONFIG_8xx
->  EXPORT_SYMBOL(adb_request);
->  EXPORT_SYMBOL(adb_register);
->  EXPORT_SYMBOL(cuda_request);
->  EXPORT_SYMBOL(cuda_poll);
->  EXPORT_SYMBOL(pmu_request);
->  EXPORT_SYMBOL(pmu_poll);
-> +#endif /* CONFIG_8xx */
->  #ifdef CONFIG_PMAC_PBOOK
->  EXPORT_SYMBOL(pmu_register_sleep_notifier);
->  EXPORT_SYMBOL(pmu_unregister_sleep_notifier);
->  EXPORT_SYMBOL(pmu_enable_irled);
->  #endif CONFIG_PMAC_PBOOK
->  EXPORT_SYMBOL(abort);
-> +#ifndef CONFIG_8xx
->  EXPORT_SYMBOL(find_devices);
->  EXPORT_SYMBOL(find_type_devices);
->  EXPORT_SYMBOL(find_compatible_devices);
-> @@ -204,6 +211,7 @@
->  EXPORT_SYMBOL(feature_set);
->  EXPORT_SYMBOL(feature_clear);
->  EXPORT_SYMBOL(feature_test);
-> +#endif /* CONFIG_8xx */
->  #ifdef CONFIG_SCSI
->  EXPORT_SYMBOL(note_scsi_host);
->  #endif
-> @@ -214,7 +222,9 @@
->  #endif /* CONFIG_PMAC */
->
->  EXPORT_SYMBOL(abs);
-> +#ifndef CONFIG_8xx
->  EXPORT_SYMBOL(device_is_compatible);
-> +#endif /* CONFIG_8xx */
->
->  EXPORT_SYMBOL_NOVERS(__ashrdi3);
->  EXPORT_SYMBOL_NOVERS(__lshrdi3);
-> --- linux.old/drivers/macintosh/Makefile        Thu Apr 29 19:53:48 1999
-> +++ linux/drivers/macintosh/Makefile    Tue Mar 21 18:21:04 2000
-> @@ -15,7 +15,7 @@
->  L_TARGET := macintosh.a
->  M_OBJS   :=
->
-> -ifndef CONFIG_MBX
-> +ifndef CONFIG_8xx
->  L_OBJS   := via-cuda.o macio-adb.o via-pmu.o mediabay.o
->  LX_OBJS  := adb.o
->  endif
->
-> --
-> Joe Green <jgreen@mvista.com>
-> MontaVista Software, Inc.
+Thanks,
 
+     Stephan Ruettiger
+
+------------------------
+Stephan Ruettiger
+Motorola Munich
+r0337c@email.sps.mot.com
+------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
