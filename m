@@ -1,68 +1,54 @@
-Date: Thu, 6 Sep 2001 11:19:50 +1000
+Date: Thu, 6 Sep 2001 11:26:10 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: Paul Mackerras <paulus@samba.org>
-Subject: xmon support for Walnut
-Message-ID: <20010906111950.D20279@zax>
+Subject: Walnut bootloader fix
+Message-ID: <20010906112610.E20279@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The following patch allows xmon to run on Walnut machines.
+The following patch adds code to the "simple" bootloader to disable
+the ethernet controller on the Walnut board before booting the
+kernel.  This is necessary on the Walnut I have, at least, or the EMAC
+has a tendency to DMA broadcast packets into the kernel text.
 
-diff -urN ../linuxppc_2_4_devel/arch/ppc/xmon/start.c linux-bungo/arch/ppc/xmon/start.c
---- ../linuxppc_2_4_devel/arch/ppc/xmon/start.c	Wed Sep  5 13:58:54 2001
-+++ linux-bungo/arch/ppc/xmon/start.c	Wed Sep  5 14:52:38 2001
-@@ -151,6 +151,11 @@
- 	sccd = (volatile unsigned char *) 0xffeffb08;
- 	TXRDY = 0x20;
- 	RXRDY = 1;
-+#elif defined(CONFIG_405GP)
-+	sccc = (volatile unsigned char *)0xef600305;
-+	sccd = (volatile unsigned char *)0xef600300;
-+	TXRDY = 0x20;
-+	RXRDY = 1;
- #endif /* platform */
- }
+diff -urN ../linuxppc_2_4_devel/arch/ppc/boot/simple/embed_config.c linux-bungo/arch/ppc/boot/simple/embed_config.c
+--- ../linuxppc_2_4_devel/arch/ppc/boot/simple/embed_config.c	Fri Aug 31 13:08:41 2001
++++ linux-bungo/arch/ppc/boot/simple/embed_config.c	Thu Sep  6 11:25:24 2001
+@@ -638,6 +638,8 @@
+ */
+ #define	BOARD_INFO_VECTOR	0xFFFE0B50
 
-diff -urN ../linuxppc_2_4_devel/arch/ppc/xmon/xmon.c linux-bungo/arch/ppc/xmon/xmon.c
---- ../linuxppc_2_4_devel/arch/ppc/xmon/xmon.c	Tue Aug 28 15:06:37 2001
-+++ linux-bungo/arch/ppc/xmon/xmon.c	Fri Aug 31 15:23:57 2001
-@@ -1,5 +1,5 @@
- /*
-- * BK Id: %F% %I% %G% %U% %#%
-+ * BK Id: SCCS/s.xmon.c 1.17 08/19/01 19:15:49 benh
-  */
- /*
-  * Routines providing a simple monitor for use on the PowerMac.
-@@ -910,6 +910,16 @@
++#define PPC405_EM0MR0_ADDR	0xEF600800;
++
+ void
+ embed_config(bd_t **bdp)
+ {
+@@ -646,6 +648,7 @@
+ 	bd_t	*bd, *walnut_bd;
+ 	bd_t *(*get_board_info)(void) =
+ 	    (bd_t *(*)(void))(*(unsigned long *)BOARD_INFO_VECTOR);
++	volatile u32 *em0mr0 = (volatile u32 *)PPC405_EM0MR0_ADDR;
+
+ 	bd = &bdinfo;
+ 	*bdp = bd;
+@@ -668,5 +671,14 @@
+ 		bd->bi_busfreq = 100000000;
+ 		bd->bi_pci_busfreq = 66666666;
+ 	}
++
++	/* Now turn of the EMAC - otherwise it has a tendency to DMA
++	   crap into the kernel text */
++	mtdcr(DCRN_MALCR, MALCR_MMSR);                /* 1st reset MAL */
++
++	while (mfdcr(DCRN_MALCR) & MALCR_MMSR)
++		;    /* wait for the reset */
++
++	*em0mr0 = 0x20000000;        /* then reset EMAC */
  }
  #endif
-
-+#ifndef CONFIG_PPC_STD_MMU
-+
-+static void
-+dump_hash_table()
-+{
-+	printf("Non-standard MMU.  Can't print has table.\n");
-+}
-+
-+#else /* CONFIG_PPC_STD_MMU */
-+
- #ifndef CONFIG_PPC64BRIDGE
- static void
- dump_hash_table_seg(unsigned seg, unsigned start, unsigned end)
-@@ -1056,6 +1066,8 @@
- 		seg_start = seg_end + 0x1000;
- 	}
- }
-+
-+#endif /* CONFIG_PPC_STD_MMU */
-
- int
- mread(unsigned adrs, void *buf, int size)
 
 
 --
