@@ -1,52 +1,46 @@
-Date: Tue, 22 Jun 1999 11:23:19 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: satadru pramanik <satadru@umich.edu>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Re: R5 X setup on B/W G3; OF Setup; USB mouse support
-In-Reply-To: <Pine.LNX.4.10.9906220308450.17871-100000@beer.pub.umich.edu>
-Message-ID: <Pine.LNX.4.05.9906221120520.15504-100000@opus.bloom.county>
+From: Nathan Sheeley <nsheeley@ibmoto.com>
+Message-Id: <199906221621.LAA28496@shippy.ibmoto.com>
+Subject: bug in head.S
+To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 22 Jun 1999 11:21:02 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 22 Jun 1999, satadru pramanik wrote:
 
-> After extensively browsing the list archives, and various man pages, i
-> have been unable to come to an understanding as to how I should change the
-> resolution in X unless I reboot into MacOS, change resolutions, and reboot
-> back into Linux.   Is this true?   fbset refuses to change resolutions
-> at the console.   
+This is more or less the same message that I posted earlier, but no one 
+replied.  Please at least tell me to go away ;^)
 
-For the Blue&White this is true right now.
+I was poking around in arch/ppc/kernel/head.S and I noticed this:
 
-> Secondly, I'm using the 2.2.10 kernel sources posted earlier with the USB
-> support, and they work fantastically, letting me use the USB keyboard on
-> the B/W G3, but the mouse refuses to work inside X...   How do I configure
-> X to use the USB mouse, instead of having to hook up a ADB mouse?
+  oris  r18,r8,0x20000000@h
+  oris  r21,r11,(KERNELBASE+0x20000000)@h
+  mtspr DBAT2L,r18    /* N.B. 6xx (not 601) have valid */
+  mtspr DBAT2U,r21    /* bit in upper BAT register */
+  mtspr IBAT2L,r28
+               ^^^^^^^^^^^^^^^^Wouldn't r18 make more sense here?
+  mtspr IBAT2U,r21    
 
-It was in the bottom of the mail Paul M sent out..
+Has anyone tried to build/run a pmac SMP kernel with a recent (2.2.9)
+version of Linux?  
 
-> Finally, I have been using OF to boot a 7600/132 successfully all the way
-> through to 2.2.7.   I'm hearing that the MacOS boot mechanism through
-> BootX may cause certain problems, such as the total lack of sound I have
-> right now.  I understand that certain coff headers aren't being
-> generated correctly for the OF 3.0+ revisions, is this an issue if I have
-> already installed Linux on the internal IDE hard disk?   I have messed
-> around in OF on the B/W G3 just like I did on the 7600, and as far as I
-> can tell, a boot-device setting for the 6th partition on the internal IDE
-> disk should be this (looking at the system-disk control panel output):
-> /pci@80000000/pci-bridge@d/pci-ata@1/ata-4@0/@0:4
+    o I've got a 9500 with 2 604e/200MHz.
+    o A UP kernel works fine.  
+    o Compliling the same kernel with the SMP support box checked results in
+      a kernel that doesn't boot on UP(a G3) or SMP(the 9500) machines. 
+    o I also replaced the dual card with a single 133 MHz CPU, which also fails 
+    to boot the SMP kernel.
 
-Basically OF on the new machines (imac, Blue&White, Lombard) is very
-different from what we had working before.  You're currently stuck with
-BootX.  But, if you use the boot extention to start up Linux, you can have
-sound again.
+Can I expect a SMP kernel to boot on a UP?  I thought so, although it might
+be slower than a UP kernel on a UP.
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+The symptoms are that it gets to the point of "opening the display", which
+activates the display (all white, I assume painted that way by OF), prints 
+"copying OF device tree...done" and stops.  
+
+Nathan Sheeley
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
