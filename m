@@ -1,41 +1,58 @@
-Date: Thu, 27 Sep 2001 13:33:02 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@mvista.com>
-Cc: "Williams, Kevin M." <kevin.m.williams@marconi.com>,
-	embarque ppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: minor commproc.h fix
-Message-ID: <20010927133302.A23005@cpe-24-221-152-185.az.sprintbbd.net>
-References: <A3E34B558F5CD211B4980008C7A4A99003C58441@sparrow.eng.gilbarco.com> <3BB3890B.FE7E6FEE@mvista.com>
-Mime-Version: 1.0
+Message-ID: <3BB39D2E.7C9A3339@mvista.com>
+Date: Thu, 27 Sep 2001 14:42:06 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: danieltaylor@acm.org
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Adding 'bus_offset' to pci_controller
+References: <200109271310.JAA20256@missioncriticallinux.com> <3BB38008.39A3F149@we.mediaone.net>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BB3890B.FE7E6FEE@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 27, 2001 at 04:16:11PM -0400, Dan Malek wrote:
-> "Williams, Kevin M." wrote:
-> >
-> > Can you please make the following change to the linuxppc_2_4 tree:
->
-> Well, this is odd....it's correct in the _devel tree......
->
-> I don't use the 2_4 tree, so if someone could verify and fix
-> this (Tom? :-).
+Dan Taylor wrote:
 
-2_4 is a bit out of date, wrt 8xx.  I'm trying to work on it really :)
-Wolfgang probably noticed this and it was part of one of his patches..
+> The bus number refers to the segment of PCI between bridges (host
+> PCI-PCI, or other) or attached to a single bridge; multiple host
+> bridges are referenced although I have never tried it.  So, from
+> your host bridge, for example the embedded MPC107 in an '8240, there
+> are four Ethernet devices, an IDE interface, and a PCI-PCI bridge,
+> and then there are two Fibre Channel devices attached to the PCI-
+> PCI bridge.  There will be two pci_bus structures, one for the PCI
+> bus from the host bridge to the PCI-PCI bridge, which should be bus
+> number 0, and another for the PCI bus on the "other" side of the
+> PCI-PCI bridge, which should be number 1.  All the Ethernet devices'
+> AND the PCI-PCI bridge's pci_dev structures will point to the
+> HOST BRIDGE pci_bus structure; the Fibre Channel devices will point
+> to a pci_bus structure associated with the PCI-PCI bridge.
 
-> > 3 is odd parity, 2 is even. See page 22-14 of the MPC850 user's manual.
->
-> Actually 0 is odd parity, 2 is even.  The code will either set or
-> clear this bit depending upon the serial port settings requested.
+All of this is correct but it doesn't address the actual issue.
 
-The comments/names are wierd, We do either EVP (even parity) or marked partiy
-i think it's called.
+Background:
+When generating a config addr on a PCI bus, you encode the bus number of the
+target bus.  If the encoded bus number  matches the pci bus immediately below
+the bridge, a Type 0 cycle is generated on that PCI bus; if not the same, a
+Type 1 cycle is generated and should be claimed by the appropriate bridge on
+that pci bus.  So, if you want to talk to a device on the PCI bus directly
+below the host bridge, you must have the same bus number encoded in the config
+addr that the bridge thinks that bus is (make sense?).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Up until now, host bridges with 2 pci buses (that's 2 "hoses" in linuxppc
+nomenclature) hanging off them have allowed the s/w to set the bus number of
+the second hose.  This lets us set up the second hose to "think" its pci bus
+is the same bus number as we use up in linuxppc-land so linuxppc pci bus
+number matches the physical bus numbering of the hoses.
+
+With the gt64260, BOTH hoses are considered PCI bus 0 so when generating the
+config addr that gets passed to the bridge for the second hose, you have to
+subtract out the number of buses on the first hose.  That's the problem being
+solved here.
+
+Now that I've said all that, I think I've just found a way to set the bus
+number of the second hose so, if it works, all of this becomes moot.
+
+Mark
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
