@@ -1,40 +1,52 @@
-Message-Id: <200010132147.XAA00867@piglet.grunz.lu>
-Date: Fri, 13 Oct 2000 23:47:47 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: dual head r128
-To: bh40@calva.net
-cc: geert@linux-m68k.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19340907150812.9049@192.168.1.10>
+Date: Fri, 13 Oct 2000 17:42:05 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Samuel Rydh <samuel@ibrium.se>
+Subject: Re: [linux-fbdev] Re: Video driver bug
+In-Reply-To: <19340907141507.13024@192.168.1.10>
+Message-ID: <Pine.A41.3.96LJ1.1b7.1001013173038.60708A-100000@unlserve.unl.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Ok, If I follow you correctly, that mean that if we have, for example,
-> bus 1 set to 0x10000-0x1ffff, ioportremap() would return, for an address
-> in this range, the address + bus_io_base - 0x10000. At least on Macs,
-> AFAIK, we have only 64k or 128k of IOs available.
+On Fri, 13 Oct 2000, Benjamin Herrenschmidt wrote:
 
-No, the regions are larger. Apple's doc talks about '23 bits of IO
-space', which is 8M, at least for the first-generation bridges (bandit,
-that is).
+> >That's for 2.5.0. I think the first thing we need to do in 2.5.0 is to remove
+> >all `mess with non-visible VCs' support, so /dev/fb* works on the _current_
+> >video mode.
+>
+>
+> Well, my understanding is that MOL needs to be able to "probe" for all
+> supported mode. Doing so on a visible console would definitely be hell.
+> It does that in order to setup the MacOS-side driver mode list.
 
-Anyway, the best way to find out the size of this region (unless you can
-read it from the bridge) is to look at the OF device tree, and the
-bridge's region properties.
+According to Samuel's last post, MOL needs both var and fix for probing.
+If there is something like:
 
-Cheers
+struct fb_probe_info {
+	struct fb_var_screeninfo var;
+	struct fb_fix_screeninfo fix;
+};
 
-Michel
+int fb_probe_mode (struct fb_probe_info *pi) {
+	int err;
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+	pi->var.activate = FB_ACTIVATE_TEST;
+	if ((err = set_var(&pi->var))<0)
+		return err;
+	var_to_fix(&pi->var, &pi->fix);
 
+	return 0;
+}
+
+MOL would be happy?
+
+
+Takashi Oe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
