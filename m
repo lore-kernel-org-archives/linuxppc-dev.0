@@ -1,18 +1,22 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 94E6E67A6B
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id E8C4767A71
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Apr 2005 14:17:32 +1000 (EST)
-Date: Sun, 3 Apr 2005 21:17:28 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
+	Mon,  4 Apr 2005 17:13:31 +1000 (EST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id A823D4078
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  4 Apr 2005 09:13:38 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
 To: linuxppc-embedded@ozlabs.org
-Message-ID: <20050404041728.GB9575@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="ADZbWkCsHQ7r3kzd"
-Subject: [PATCH] ppc32: ppc4xx_pic - add acknowledge when enabling
-	level-sensitive IRQ
+Date: Mon, 4 Apr 2005 09:13:25 +0200
+References: <F2BED41F1171FF449F88D60191848A84023CB06D@budg132a.sysdata.siemens.hu>
+In-Reply-To: <F2BED41F1171FF449F88D60191848A84023CB06D@budg132a.sysdata.siemens.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200504040913.25698.david.jander@protonic.nl>
+Subject: Re: Which kernel to use?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,44 +27,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Friday 01 April 2005 15:34, Buday Gergely Istv=C3=A1n wrote:
+> I  have a gadget built around a ppc xpc850xxztb processor with 2M flash a=
+nd
+> 8M ram. The opsys is Hard Hat, but I'd like to change it to an
+> openembedded-based solution. Where can I get sources for a proper kernel
+> that works with this system?
 
---ADZbWkCsHQ7r3kzd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Have a look at www.denx.de
+Take the development branch of 2.4 from that site.... and stop sticking the=
+=20
+finger in that wound ;-)
 
-Andrew,
+Greetings,
 
-this patch adds interrupt acknowledge to the PPC4xx PIC enable_irq 
-implementation for level-sensitive IRQ sources. This helps in cases 
-when enable/disable_irq is used in interrupt handlers for hardware, 
-which requires IRQ acknowledge to be issued from non-interrupt context 
-(e.g. when actual ACK in device needs an I2C transaction). For such 
-strange hardware, interrupt handler disables IRQ and defers actual ACK 
-to some other context. When this happens, IRQ is enabled again. For 
-level-sensitive sources we get spurious triggering right after IRQ 
-is enabled. This patch fixes this.
-Suggested by Tolunay Orkun <listmember@orkun.us>.
-
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
-
---ADZbWkCsHQ7r3kzd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="ppc4xx_pic_ack_on_enable.diff"
-
-===== arch/ppc/syslib/ppc4xx_pic.c 1.15 vs edited =====
---- 1.15/arch/ppc/syslib/ppc4xx_pic.c	2005-03-04 22:41:17 -08:00
-+++ edited/arch/ppc/syslib/ppc4xx_pic.c	2005-04-03 12:00:55 -07:00
-@@ -41,7 +41,10 @@
- #define UIC_HANDLERS(n)							\
- static void ppc4xx_uic##n##_enable(unsigned int irq)			\
- {									\
--	ppc_cached_irq_mask[n] |= IRQ_MASK_UIC##n(irq);			\
-+	u32 mask = IRQ_MASK_UIC##n(irq);				\
-+	if (irq_desc[irq].status & IRQ_LEVEL)				\
-+		mtdcr(DCRN_UIC_SR(UIC##n), mask);			\
-+	ppc_cached_irq_mask[n] |= mask;					\
- 	mtdcr(DCRN_UIC_ER(UIC##n), ppc_cached_irq_mask[n]);		\
- }									\
- 									\
-
---ADZbWkCsHQ7r3kzd--
+=2D-=20
+David Jander
