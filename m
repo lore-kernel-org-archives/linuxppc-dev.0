@@ -1,48 +1,32 @@
-Message-ID: <39BFEA3F.70687DFE@snmc.com>
-Date: Wed, 13 Sep 2000 15:57:35 -0500
-From: Daris A Nevil <dnevil@snmc.com>
+Subject: Re: Any docments analyzing linuxppc kernel and it's policy?
+To: gongzhuo@163.net (Gong Zhuo)
+Date: Thu, 14 Sep 2000 11:22:04 +1100 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (Linux PPC Mailing List)
+In-Reply-To: <012101c01d7e$097f5b00$4607a8c0@LocalHost> from "Gong Zhuo" at Sep 13, 2000 08:27:50 PM
 MIME-Version: 1.0
-To: "Min-kyu, Joo" <zzu@cesys.ajou.ac.kr>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: I want to find flash device driver...
-References: <000e01c01db8$b5289ea0$481877d3@ajou.ac.kr>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000914002204.35D14F0@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joo,
+Gong Zhuo writes:
+>   Is there any document analyzing the linuxppc kernel and how does the
+> kernel arrange all the logical space ?
 
-QSLinux contains a fully functioning FLASH driver, and an interface to
-the Ext2FS filesystem, with compression.  You can find the source at
-ftp://qslinux.org, and documentation at http://qslinux.org.
+Check out Dan's answer from last time this FAQ was asked, at:
+    http://lists.linuxppc.org/listarcs/linuxppc-embedded/200005/msg00157.html
+
+You can find this link in the "Memory Map" section of the HOWTO at:
+http://members.nbci.com/_XMCM/greyhams/linux/PowerPC-Embedded-HOWTO-8.html#ss8.2
 
 Regards,
-Daris Nevil
-
-
-"Min-kyu, Joo" wrote:
->
-> I use flash in Linux...
-> I want to use flash after booting linux, making filesystem and mounting flash, and read and write to flash...
-> So I need flash device driver...
-> I wrote driver code for flash..because my linux read compressed kernel image from flash..
-> But when I access flash from system call(open, read, write), it seems to be some problem..
->
-> Does anyone know where can I get flash device driver for linux?
->
-> --zzu--
->
-
+Graham
 --
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
-qslinux.org
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
