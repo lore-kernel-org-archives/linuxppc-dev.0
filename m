@@ -1,33 +1,38 @@
-Date: Sun, 19 Aug 2001 01:26:45 +0100
-Subject: Re: Mace and Bmac ethernet drivers [was: Occasional crash reports]
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Mike Fedyk <mfedyk@matchmail.com>,
-	linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010819002647.48C57DBAFB@atlas.valhalla.net>
+Message-Id: <4.2.2.20010818203738.028a6d60@mail.inkverse.com>
+Date: Sat, 18 Aug 2001 20:46:05 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Jeremy Radlow <jtr@sourcerers.com>
+Subject: Internal airport card works (was Re: Internal airport card not
+  working? (2.4.6-benh))
+In-Reply-To: <4.2.2.20010714123138.01d64dc0@mail.inkverse.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 18, 2001,  Mike Fedyk wrote:
-> On Sat, Aug 18, 2001 at 12:16:58PM +0100, Iain Sandoe wrote:
->> as I say, booting with the BootX *init* (rather than the application) bmac,
->> at least, seems reliable on g3/beige (don't use Mace much).
+Just following up on a month old problem...
 
-> What's your best uptime for the g3?  I have one setup as a ipsec
-> gateway/firewall, and it didn't last over 28 days.  Add a tulip card (it
-> already had one for firewall, now has two...) and I now have 70 days uptime.
+As I discovered, the problem was that I had to explicitly turn off encryption
+via iwconfig.  I don't know whether the problem is in the card's firmware
+(which I haven't updated yet) or in the driver initialization, but the
+airport card works great under 2.4.6, and of course under the latest kernel
+- 2.4.9-benh0.
 
-Hmmm.  The g3/beige is my dev box - the interval between reboots for new
-kernels is much less than that ;-)
+-Jeremy
 
-I don't (necessarily) think this is the same problem - with the corruption I
-was seeing  booting using the BootX *app* I was struggling to get 2 hours
-uptime ... it was crashing with illegal instruction oopses in the network
-stack.
+p.s. from /etc/network/interfaces:
 
-ciao,
-Iain.
+auto eth1
+iface eth1 inet static
+         address 192.168.1.13
+         netmask 255.255.255.0
+         network 192.168.1.0
+         broadcast 192.168.1.255
+         gateway 192.168.1.1
+         up iwconfig eth1 key off
+         up iwconfig eth1 essid "Apple Network xxxxxx"
+         up iwconfig eth1 mode Managed
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
