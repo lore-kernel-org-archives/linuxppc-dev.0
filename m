@@ -1,49 +1,44 @@
-Date: Thu, 20 Jul 2000 08:13:06 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Sacha Varma <sacha@ssl.co.uk>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI compatibility
-In-Reply-To: <39770DCD.B7F1C6FE@ssl.co.uk>
-Message-ID: <Pine.LNX.4.10.10007200804160.22316-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
+To: linuxppc-dev@lists.linuxppc.org
+Message-Id: <v03110705b59cc8805557@[129.100.29.243]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 20 Jul 2000 11:23:11 -0400
+Subject: Testers needed for Java Plugin for Mozilla
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 Jul 2000, Sacha Varma wrote:
+Hi,
 
-> So... does this mean that as far as hardware is concerned there is nothing to prevent me from using any old PCI graphics card in a (non-AGP?) mac so long as linux has drivers for it?
+If anyone out there is keeping up with Mozilla nightly builds and has time
+to do some testing, I hope to have a working OJI (openjava interface)
+plug-in for java 1.3 ready to go this week or next.
 
-Correct, there is nothing preventing any PCI graphics device from working
-in linux unless there is something extremely fundamentally wrong with it
-(like relying on PC BIOS too much, but that is very rare)
+With this plugin in place, Mozilla has full java capabilities (I hope!).
 
->From personal experience, I have the following "PC" graphics cards working
-on my PowerMac:  CirrusLogic 5340, Trident Image3D 975, S3 Savage4, S3
-Vision968, and a 3dfx banshee.  Yes, I'm a video card junkie.
+If interested, you need to be able to keep up the latest mozilla builds and
+know how to use gdb and mozilla togther and report plugin bugs back to me.
 
+Just drop me a line if interested.
 
->
-> Where in the kernel source is the bit where it initialises the display (is this a per-host-architecture thing, per-video-chipset thing, or a generic PCI thing)?
->
+mailto:khendricks@ivey.uwo.ca
 
-you can enable it by:  (pdev is the struct pci_dev pointer to your device)
+(p.s. it is neat watching java finally work in mozilla!).
 
-u16 tmp;
+Thanks,
 
-pci_read_config_word(pdev, PCI_COMMAND, &tmp);
-if (!(tmp & PCI_COMMAND_MEMORY)) {
-	tmp |= PCI_COMMAND_MEMORY;
-	pci_write_config_word(pdev, PCI_COMMAND, tmp);
-}
-
-and same for PCI_COMMAND_IO instead of PCI_COMMAND_MEMORY
-
-you do this before any IO/mem access to the device.
+Kevin
 
 
-ani
+
+
+--
+Kevin B. Hendricks, Associate Professor of Operations and Information
+Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
