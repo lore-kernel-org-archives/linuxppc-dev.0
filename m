@@ -1,22 +1,15 @@
-Return-Path: <Charles.Wells@nielsenmedia.com>
-Received: from yorktown.nielsenmedia.com (yorktown.nielsenmedia.com
-	[206.113.192.17]) by ozlabs.org (Postfix) with ESMTP id 17DC967A7F
+Return-Path: <annamaya@yahoo.com>
+Received: from web53805.mail.yahoo.com (web53805.mail.yahoo.com
+	[206.190.36.200]) by ozlabs.org (Postfix) with SMTP id B1FB867A78
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 08:11:11 +1100 (EST)
-Received: from nmrflimg2.enterprisenet.org (nmrflimg2.enterprisenet.org
-	[10.38.67.65])
-	by yorktown.nielsenmedia.com (8.12.10/8.12.8) with ESMTP id
-	j0JKpS3x009936 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 15:51:28 -0500 (EST)
+	Thu, 20 Jan 2005 09:08:24 +1100 (EST)
+Message-ID: <20050119220819.24822.qmail@web53805.mail.yahoo.com>
+Date: Wed, 19 Jan 2005 14:08:18 -0800 (PST)
+From: annamaya <annamaya@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 19 Jan 2005 15:55:42 -0500
-Message-ID: <3428D9627CC79A4ABF37A519431D981201BD27A8@nmr001oldmsx05.enterprisenet.org>
-From: "Wells, Charles" <Charles.Wells@NielsenMedia.com>
-To: "Pantelis Antoniou" <panto@intracom.gr>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [linux-usb-devel] USB host on Freescale MPC880
+Content-Type: text/plain; charset=us-ascii
+Subject: Input to the timerclk on the MPC8280
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,14 +20,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Pantelis,
+I've asked this question on this forum before but it
+did not get answered. I tried asking the same question
+in the U-Boot forum with no results. So, I am going to
+try this again.
 
->I have a fairly hacked over version of the original USB host driver
-that works for 87x/88x.
->
->Are you interested?
+According to section 4.1.2 on Page 4-4 in the MPC8280
+User's Manual, one should be able to use a combination
+of  external clocks on Port C pins 25, 26, 27 and 29,
+the CPM cloak and BRG1 to generate a 32KHz or a 4MHz
+clock. I am unable to find  any code in u-boot or any
+other place that initializes any of these pins to be
+external clocks. And as for BRG1, I believe it is
+being used for the SMC clock.
 
-I would be interested in seeing this code as well.
+I am unable to understand how this is done. Can we
+have a timerclk input WITHOUT an external clock
+signal? Can I just use the CPM clock to generate this?
+How is this being done in U-Boot now?
 
-Regards,
-Charlie
+Thanks much for your help. I really need an answer to
+this. 
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Yahoo! Mail - now with 250MB free storage. Learn more.
+http://info.mail.yahoo.com/mail_250
