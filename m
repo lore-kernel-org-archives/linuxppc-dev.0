@@ -1,35 +1,42 @@
-Message-ID: <3ACC1118.446211F0@mvista.com>
-Date: Thu, 05 Apr 2001 02:30:48 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: jerry <jerry.nguyen@serialsystem.com.sg>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 5 Apr 2001 11:16:59 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Dan Malek <dan@mvista.com>
+Cc: jerry <jerry.nguyen@serialsystem.com.sg>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: how to get the physival address
-References: <20010404155419.8B369281DB@denx.denx.de> <001001c0bd86$c54562a0$de0fa8c0@mystore> <3ACC0989.4BAA6CB9@mvista.com> <002001c0bd99$96c03a00$de0fa8c0@mystore>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3ACC0989.4BAA6CB9@mvista.com>
+Message-ID: <Pine.HPX.4.10.10104051112160.18432-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-jerry wrote:
+On Thu, 5 Apr 2001, Dan Malek wrote:
 
-> But it does not work  for  defined variable (it was defined in driver so it
-> should be in kernel space, isn't it?).
+>
+> jerry wrote:
+>
+>
+> > I try to print out:  buffer_array = 0xC4056220
+>
+> To get an address like this, you must be loading the
+> driver as a module.  There are a variety of opinions about
+> how to do this, like using kmalloc() to dynamically allocate
+> the space after the module is loaded.  In the linuxppc_2_5
+> kernel from FSM Labs are some VM modifications I have started.
+> The virt_to_phys() is appropriate to use on the MPC8xx for this
+> sort of thing, and you can even do consistent_alloc() if you want
+> cache inhibited pages.  In older kernels, there are no functions
+> that will provide this for you (well, you can trudge through the
+> page tables, get the PTE and convert it yourself, but that sucks :-).
+>
 
-A loadable driver is dynamically allocated from kernel virtual memory.
-The dynamic virtual memory does not have the 1:1 mapping property to
-real memory that virt_to_phys(), __pa() or anything else expects.  To
-me, based upon my past experience, you should be able to get this
-mapping information for any virtual address, but others want to
-argue about that point.  So, I have "fixed" the PowerPC verions of
-these functions in the linuxppc_2_5 kernel, but who knows if it
-will last.......
+Furthermre there is no guarantee that the memory will be physically
+contiguous. Unless magically aligned, a 4096 bytes buffer will almost
+always span 2 pages.
 
+	Gabriel.
 
-	-- Dan
-
---
-
-	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
