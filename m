@@ -1,55 +1,56 @@
-Date: Fri, 11 Apr 2003 15:21:02 -0700
-From: Rob Baxter <robb@synergy.synergy.encinitas.ca.us>
-To: Rob Latham <rob@terizla.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: glibc: optimized ppc bcopy
-Message-ID: <20030411152102.A29581@synergy>
-References: <20030411210449.GC92837@terizla.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030411210449.GC92837@terizla.org>; from rob@terizla.org on Fri, Apr 11, 2003 at 04:04:49PM -0500
+Date: Sat, 12 Apr 2003 15:05:25 -0700
+From: Ira Weiny <iweiny@acm.org>
+Subject: Re: Machine Check question
+In-reply-to: <16021.61655.348425.683335@nanango.paulus.ozlabs.org>
+To: linuxppc <linuxppc-dev@lists.linuxppc.org>
+Message-id: <20030412150525.248091e5.iweiny@acm.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII
+References: <20030410013241.3ae349e5.iweiny@acm.org>
+ <16021.61655.348425.683335@nanango.paulus.ozlabs.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Apr 11, 2003 at 04:04:49PM -0500, Rob Latham wrote:
->
-> i noticed something when comparing lmbench numbers between os x and
-> linux on the same hardware:  linux beats os x at every category except
-> one: Bcopy (libc)
->
-> *Local* Communication bandwidths in MB/s - bigger is better
-> -----------------------------------------------------------
-> Host                OS  Pipe AF    TCP  File   Mmap  Bcopy  Bcopy  Mem   Mem
->                              UNIX      reread reread (libc) (hand) read write
-> --------- ------------- ---- ---- ---- ------ ------ ------ ------ ---- -----
-> aragorn   Linux 2.4.20- 198. 216. 90.1  206.5  173.1  122.8  124.2 173. 358.3
-> os-x         Darwin 6.4 124. 121. 80.5  150.6  178.1  239.8  123.4 178. 411.9
->
-> So i looked a bit closer at glibc: there are no optimized powerpc
-> string or memory operations.  ( later confirmed by the glibc web
-> pages)
->
-> I know there are a zillion powerpc variants:  would it be hard to
-> write assembly that works with all of them?  I know almost zero about
-> powerpc assembly, but this might be a fun place to start learning.  Of
-> course, if anyone else has already started such an undertaking, i'll
-> defer to them and go work on something else.
->
-> For those curious, the full lmbench run can be found here:
-> http://terizla.org/~robl/pbook/benchmarks/lmbench-linux_vs_osx.1
-> (linux does quite well :> )
->
-> ==rob
->
-> --
-> Rob Latham                                        Chicago, IL USA
->
+On Fri, 11 Apr 2003 08:31:51 +1000 (EST)
+Paul Mackerras <paulus@samba.org> wrote:
 
-Another route would be the use of an AltiVec coded library variant:
+> Ira Weiny writes:
+>
+> > I have put some more effort into my Microdrive (PCMCIA IDE) problem.
+>
+> What sort of machine do you have?  There is a known problem on tibooks
+> where the IDE subsystem ends up trying to use powermac-IDE functions
+> on PCMCIA IDE drives.
+>
+> Paul.
 
-http://e-www.motorola.com/webapp/sps/site/overview.jsp?nodeId=03C1TR0467mKqW5Nf2d9nb
+Yes this is a TiBook.  500Mhz about 2 years old...
 
-Rob Baxter
+[root@batwing2 iweiny]# cat /proc/cpuinfo
+cpu		: 7410, altivec supported
+temperature 	: 10-12 C (uncalibrated)
+clock		: 500MHz
+revision	: 17.3 (pvr 800c 1103)
+bogomips	: 996.14
+machine		: PowerBook3,2
+motherboard	: PowerBook3,2 MacRISC2 MacRISC Power Macintosh
+detected as	: 71 (PowerBook Titanium)
+pmac flags	: 0000000b
+L2 cache	: 1024K unified
+memory		: 512MB
+pmac-generation	: NewWorld
+[root@batwing2 iweiny]#
+
+
+I assume the problem does not have a solution?  If so I would be most
+interested in trying to figure it out.  Or is there a work around?
+
+This worked on my 2.4.14-pre7-ben0.
+
+Thanks,
+Ira Weiny
+iweiny@acm.org
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
