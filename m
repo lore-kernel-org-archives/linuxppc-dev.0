@@ -1,21 +1,22 @@
-Subject: Re: dmasound audio patch
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Mon, 8 Apr 2002 09:22:53 -0400
+From: Bill Fink <billfink@mindspring.com>
 To: Bill Fink <billfink@mindspring.com>
-Cc: linuxppc-dev@lists.linuxppc.org,
+Cc: michel@daenzer.net, linuxppc-dev@lists.linuxppc.org,
 	yellowdog-general@lists.terrasoftsolutions.com
+Subject: Re: dmasound audio patch
+Message-Id: <20020408092253.371cbd8c.billfink@mindspring.com>
 In-Reply-To: <20020408084102.195d67bd.billfink@mindspring.com>
 References: <20020407172358.36f3fd3e.billfink@mindspring.com>
 	<1018261838.1870.7347.camel@tibook>
 	<20020408084102.195d67bd.billfink@mindspring.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 08 Apr 2002 14:50:52 +0200
-Message-Id: <1018270252.1870.8601.camel@tibook>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2002-04-08 at 14:41, Bill Fink wrote:
+On Mon, 8 Apr 2002, Bill Fink wrote:
+
 > On 08 Apr 2002, Michel Dänzer wrote:
 >
 > > On Sun, 2002-04-07 at 23:23, Bill Fink wrote:
@@ -35,13 +36,29 @@ On Mon, 2002-04-08 at 14:41, Bill Fink wrote:
 >
 > That's good to know.  I was using xmms-1.2.4 that came with YDL 2.1,
 > but I see that YDL 2.2 has xmms-1.2.5, so I'll give that a try.
+>
+> 						-Thanks
+>
+> 						-Bill
 
-Hmm, looking at our xmms changelog, the endianness fixes may only be in
-1.2.6 or later. YMMV.
+Hmmm.  I just tried xmms-1.2.5 and got:
 
+% xmms
+/usr/lib/xmms/Input/libcdread.so: undefined symbol: playlist_position
 
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+I then updated to xmms-cdread-0.11d, but when I tried playing a CD
+with the OSS output driver, I still got static.
+
+This is already getting much more trouble than it's worth, and this
+is just one app.  I'll stick with my friend's dmasound kernel patch,
+which works just fine for the apps I generally use.
+
+						-Bill
+
+P.S.  There didn't seem to be *ANY* xmms-cdread PPC RPM with YDL 2.2,
+      let alone an updated one (I got the xmms-cdread-0.11d PPC RPM
+      from LinuxPPC Contribs).
+
+P.P.S.  Another thing I noticed missing from YDL 2.2 is mozilla-chat.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
