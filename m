@@ -1,37 +1,33 @@
-From: dank@kegel.com
-Message-ID: <3D4028DD.31E575B3@kegel.com>
-Date: Thu, 25 Jul 2002 09:35:41 -0700
-Reply-To: dank@kegel.com
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: David Updegraff <dave@cray.com>
+Message-Id: <200207251713.MAA00232@mint.mw.cray.com>
+Subject: abatron and kernel modules.
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 25 Jul 2002 12:13:37 -0500 (CDT)
 MIME-Version: 1.0
-To: Charles Lockhart <lockhart@jeans.ifa.hawaii.edu>
-Cc: orbit-list@gnome.org,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: embedded devices
-References: <Pine.SOL.3.96.1020724232006.5583A-100000@jeans>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Charles Lockhart wrote:
->
-> Has anyone had much luck porting orbit to embedded linux devices?  I'm
-> looking at trying to port it to an ipEngine (product of Brightstar
-> Engineering, www.brightstareng.com), running an embedded version of Linux
-> on a ppc (mpc823).  What problems have people had?  What kind of
-> performance did you get?  What kind of footprint did you end up with?
-> A summary of what it might entail?
+Hi.
 
-Yes, I've done it; we ported it to the ppc405, sh4, and ppc750.
-Footprint was as small as any commercial corba server.
-There were some minor annoying bits to the port,
-mostly having to do with cross-compiling.
-Oh, and gcc-3.0.2 wasn't up to the task of running orbitcpp,
-at least on sh4; I think you need gcc-3.0.4 if you want that to work.
+We've been very happily using BDI2000 for kernel debugging on our 405GP
+on a 2.4.2 kernel with builtin abatron MMU support (via PTBASE at 0xf0).
 
-This is a work in progress, so be kind.  It's at
-http://www.kegel.com/xgcc3/orbit.html
+But I have not figured out how to get it deal with the address space of
+a loaded kernel module: it claims that the region is missing from the
+page tables.  Kernel addresses are in 0xC00xxxxx ranges, and when we load
+the module, 'module_list' now points to 0xC340xxxx ranges.  BDI can
+dump the physical addresses of my module, but cant talk to the virual
+kernel address space of the loaded module.
 
-- Dan
+Is there some page table magic that goes on with module loading that
+is confusing both me and the BDI?
+
+Thanx.
+
+--
+Dave Updegraff, Cray Inc. / dave@cray.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
