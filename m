@@ -1,16 +1,17 @@
-Return-Path: <GARCIAJ@3il.fr>
-Received: from email.3il.fr (email.3il.fr [195.25.243.230])
-	by ozlabs.org (Postfix) with ESMTP id 9BD4867A64
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2005 18:40:49 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 1 Apr 2005 10:40:53 +0200
-Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B19@exnet.3il.fr>
-From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-To: "Josh Boyer" <jwboyer@jdub.homelinux.org>
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9D5EA67A6F
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Apr 2005 20:04:44 +1000 (EST)
+In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D4F0D23@rennsmail02.eu.thmulti.com>
+References: <1CFEB358338412458B21FAA0D78FE86D4F0D23@rennsmail02.eu.thmulti.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <3564f98e15f831085f459002d1607acf@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 1 Apr 2005 04:04:40 -0600
+To: "Fillod Stephane" <stephane.fillod@thomson.net>
 Cc: linuxppc-dev@ozlabs.org
-Subject: RE : How to read/write in flash memories (MTD)?
+Subject: Re: [PATCH] invalid instructions in kernel mode
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,312 +21,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh,
+What is the crash01 test doing that causes this code to get invoked? =20
+is the kernel you are using using build with math emulation on or off?
 
-Your reply confirmed my feeling. So I've decided to use the MTD but with =
-my own driver as I found in a tutorial. So I made the file (module) =
-/drivers/mtd/maps/myBoardFlash.c in order to support my 2 flash =
-memories. You can see the code below, but once again (sorry...) I have =
-some questions and doubts on it.=20
-1- Is that driver correct for my case?=20
-2- Are those R/W routines are usable?
-3- In our application we want to download source code and achievable =
-code using Ethernet (so R/W operations). Do I need a filesystem for that =
-as JFFS 2 ?=20
-4- Giving this driver, what is the process to use my R/W routines (if =
-they are correct...) from the user space?
+- kumar
 
+On Mar 31, 2005, at 11:47 AM, Fillod Stephane wrote:
 
-#include <linux/module.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/mtd/mtd.h>
-#include <linux/mtd/map.h>
-#include <linux/mtd/partitions.h>
-#include <linux/config.h>
-#include <linux/version.h>
-#include <asm/io.h>
-
-static struct mtd_info *boot_flash;
-static struct mtd_info *oper_flash;
-
-/*************************************************/
-/*                Mapping infos                  */
-/*************************************************/
-
-/* Map infos for the boot flash */
-static struct map_info myboard_flash_boot_map =3D {
-        .name      =3D   "MYBOARD boot flash",
-        .size      =3D   BOARD_BOOT_FLASH_SIZE,
-        .buswidth  =3D   1,
-        .read8     =3D   myboard_flash_read8,
-        .read16    =3D   myboard_flash_read16,
-        .read32    =3D   myboard_flash_read32,
-        .copy_from =3D   myboard_flash_copy_from,
-        .write8    =3D   myboard_flash_write8,
-        .write16   =3D   myboard_flash_write16,
-        .write32   =3D   myboard_flash_write32,
-        .copy_to   =3D   myboard_flash_copy_to
-};
-
-
-/* Map infos for the operationnal flash */
-static struct map_info myboard_flash_oper_map =3D {
-        .name      =3D   "MYBOARD oper flash",
-        .size      =3D   BOARD_OPER_FLASH_SIZE,
-        .buswidth  =3D   2,
-        .read8     =3D   myboard_flash_read8,
-        .read16    =3D   myboard_flash_read16,
-        .read32    =3D   myboard_flash_read32,
-        .copy_from =3D   myboard_flash_copy_from,
-        .write8    =3D   myboard_flash_write8,
-        .write16   =3D   myboard_flash_write16,
-        .write32   =3D   myboard_flash_write32,
-        .copy_to   =3D   myboard_flash_copy_to       =20
-};
-
-
-            =20
-/*************************************************/
-/*           Partitionning infos                 */
-/*************************************************/
-
-/* Boot flash partionning infos */
-static struct mtd_partition myboard_flash_boot_partitions[] =3D {
-        {
-                .name =3D   "Boot flash partition",
-                .offset =3D 0x0,
-                .size =3D   BOARD_BOOT_FLASH_SIZE,
-        }
-};
-
-
-/* Oper flash partionning infos */
-static struct mtd_partition myboard_flash_oper_partitions[] =3D {
-        {
-                .name =3D   "Oper flash partition", =20
-                .offset =3D 0x0,
-                .size =3D   BOARD_OPER_FLASH_SIZE,       =20
-        }
-};
-
-
-
-/**************************************************/
-/*          Read/Write routines                   */
-/**************************************************/
-
-__u8 myboard_flash_read8(struct map_info *map, unsigned long ofs)
-{
-  return __raw_readb(map->map_priv_1 + ofs);
-}
-
-__u16 myboard_flash_read16(struct map_info *map, unsigned long ofs)
-{
-  return __raw_readw(map->map_priv_1 + ofs);
-}
-
-__u32 myboard_flash_read32(struct map_info *map, unsigned long ofs)
-{
-  return __raw_readl(map->map_priv_1 + ofs);
-}
-
-void myboard_flash_copy_from(struct map_info *map, void *to, unsigned =
-long from, ssize_t len)
-{
-  memcpy_fromio(to, map->map_priv_1 + from, len);
-}
-
-void myboard_flash_write8(struct map_info *map, __u8 d, unsigned long =
-adr)
-{
-  __raw_writeb(d, map->map_priv_1 + adr);
-  mb();
-}
-
-void myboard_flash_write16(struct map_info *map, __u16 d, unsigned long =
-adr)
-{
-  __raw_writew(d, map->map_priv_1 + adr);
-  mb();
-}
-
-void myboard_flash_write32(struct map_info *map, __u32 d, unsigned long =
-adr)
-{
-  __raw_writel(d, map->map_priv_1 + adr);
-  mb();
-}
-
-
-
-/**********************************************/
-/*              Module Init                   */
-/**********************************************/
-
-int __init init_myboard_flash(void)                  map_info
-{
-    /*
-     * Boot flash init
-     */
-=20
-    printk(KERN_NOTICE "myboard boot flash: %x at %x\n", =
-BOARD_BOOT_FLASH_SIZE, MYBOARD_FLASH_BOOT_BASE);
-    /* Obtain a virtual address for the physic one given ibn order to =
-perform R/W operations */
-    myboard_flash_boot_map.map_priv_1 =3D (unsigned =
-long)ioremap(MYBOARD_FLASH_BOOT_BASE, BOARD_BOOT_FLASH_SIZE);
-    if (!myboard_flash_boot_map.map_priv_1)
-    {
-        printk("Failed to ioremap for boot flash!!\n");
-        return -EIO;
-    }
-   =20
-    boot_flash =3D do_map_probe("cfi_probe", &myboard_flash_boot_map);
-    if (boot_flash)
-    {
-        boot_flash->module =3D THIS_MODULE;
-        boot_flash->erasesize =3D 0x10000;
-    }
-    else
-    {
-        printk("map probe failed for boot flash!!\n");
-        return -ENXIO;
-    }
-
-   =20
-    /*
-     * Oper flash init
-     */
-
-    printk(KERN_NOTICE "myboard oper flash: %x at %x\n", =
-BOARD_OPER_FLASH_SIZE, MYBOARD_FLASH_OPER_BASE);
-    /* Obtain a virtual address for the physic one given ibn order to =
-perform R/W operations */
-    myboard_flash_boot_map.map_priv_1 =3D (unsigned =
-long)ioremap(MYBOARD_FLASH_OPER_BASE, BOARD_OPER_FLASH_SIZE);
-    if (!myboard_flash_oper_map.map_priv_1)
-    {
-        printk("Failed to ioremap for oper flash!!\n");
-        return -EIO;
-    }
-
-    oper_flash =3D do_map_probe("cfi_probe", &myboard_flash_oper_map);
-    if (oper_flash)
-    {
-        oper_flash->module =3D THIS_MODULE;
-        oper_flash->erasesize =3D 0x10000;
-    }
-    else
-    {
-        printk("map probe failed for oper flash!!\n"); =20
-        return -ENXIO;
-    }
-
-
-    /*
-     * Create partitions
-     */
-    =20
-    if(boot_flash && oper_flash)
-    {
-        =
-add_mtd_partitions(boot_flash,myboard_flash_boot_partitions,sizeof(myboar=
-d_flash_boot_partitions)/sizeof(struct mtd_partition));
-        =
-add_mtd_partitions(oper_flash,myboard_flash_oper_partitions,sizeof(myboar=
-d_flash_oper_partitions)/sizeof(struct mtd_partition));
-        return 0;=20
-    }
-    else
-    {
-        /* Free the obtained virtual addresses */
-        iounmap((void *)myboard_flash_boot_map.map_priv_1);
-        iounmap((void *)myboard_flash_oper_map.map_priv_1);
-        return -ENXIO;
-    }
-}
-
-
-
-/**********************************************/
-/*              Module Cleanup                */
-/**********************************************/
-
-static void __exit cleanup_myboard_flash(void)
-{
-    /*
-     * Delete partitions
-     */
-    =20
-    if (boot_flash)
-    {
-        del_mtd_partitions(boot_flash);
-        map_destroy(boot_flash);
-    }
-    if (oper_flash)
-    {
-        del_mtd_partitions(oper_flash);
-        map_destroy(oper_flash);
-    }
-
-   =20
-    /*
-     * Free Free the obtained virtual addresses=20
-     */
-    =20
-    if (myboard_flash_boot_map.map_priv_1)
-    {
-        iounmap((void *)myboard_flash_boot_map.map_priv_1);
-        myboard_flash_boot_map.map_priv_1 =3D 0;
-    }
-    if (myboard_flash_oper_map.map_priv_1)
-    {
-        iounmap((void *)myboard_flash_oper_map.map_priv_1);
-        myboard_flash_oper_map.map_priv_1 =3D 0;
-    }
-}
-
- =20
-
-module_init(init_myboard_flash);
-module_exit(cleanup_myboard_flash);
-
-
-
-
--------- Message d'origine--------
-De: Josh Boyer [mailto:jwboyer@jdub.homelinux.org]
-Date: ven. 01/04/2005 01:34
-=C0: Garcia J=E9r=E9mie
-Cc: linuxppc-dev@ozlabs.org
-Objet : Re: How to read/write in flash memories (MTD)?
-=20
-On Thu, 2005-03-31 at 11:59 +0200, Garcia J=E9r=E9mie wrote:
-> L&G,
-> Although I'm a newbie in linux kernel development, I'm in charge of =
-adapting a Montavista LSP to fit our hardware. In our platform, we use 2 =
-AMD flash memories (AM29LV) in which one we would like to process =
-read/write operations. So I'm looking for a way to do that. I saw that =
-at compilation time, there is MTD item which seems to be created for =
-that. But I guess activate that will not be enough to reach my =
-objective.
-
-You need to enable MTD with the appropriate chip drivers and either the
-MTD character device or the MTD block device (or both).  These will
-create /dev/mtdX and /dev/mtdblockX respectively.  If you are using
-devfs or sysfs + udev, they should show up in /dev.  Otherwise, you'll
-need to use mknod to create them.
-
-> Indeed, we are developping an application (in the user-space) which =
-will initiate operation on the 2 flash memories. So, how can I access =
-them from my application?
-> Please help me cause I'm getting lost in the linux sources....
-
-I'm not sure what kind of operations you mean, but the block and char
-devices allow read/write operation.  If you are looking for a filesystem
-to run on these devices, take a look at JFFS2.  Cramfs or squashfs can
-also be used, but they are read-only.
-
-josh
+> Hi,
+>
+> When CPU has no (classic) FPU, and math emulation is disabled,
+>  fp instructions are not allowed in kernel mode.
+>  This bug has been found with crashme (crash01) of LTP, on a e500=20
+> system.
+>
+> The patch was made against linux 2.6.11.6.
+>  A trivial typo fix has been appended.
+>
+> Rem: a CONFIG_PPCFPU define could make life easier.
+>
+>
+>
+> Signed-off-by: Stephane Fillod <fillods@gmail.com>
+>
+> --- linux/arch/ppc/kernel/align.c=A0=A0=A0=A0=A0=A0 6 Dec 2004 =
+16:18:11 -0000
+>  1.1.1.1
+>  +++ linux/arch/ppc/kernel/align.c=A0=A0=A0=A0=A0=A0 31 Mar 2005 =
+16:33:25 -0000
+>  @@ -333,10 +333,14 @@
+>  =A0=A0=A0=A0=A0=A0=A0 }
+>  =A0
+>  =A0=A0=A0=A0=A0=A0=A0 if (flags & F) {
+>  +#if !(defined(CONFIG_4xx) || defined(CONFIG_8xx) ||
+>  defined(CONFIG_E500)) || defined(CONFIG_MATH_EMULATION)
+> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_disable();
+> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 if (regs->msr & MSR_FP)
+>  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+giveup_fpu(current);
+> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_enable();
+> +#else
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 return 0;
+>  +#endif
+>  =A0=A0=A0=A0=A0=A0=A0 }
+>  =A0
+>  =A0=A0=A0=A0=A0=A0=A0 /* If we read the operand, copy it in, else get =
+register=20
+> values
+> */
+>  @@ -366,6 +370,8 @@
+>  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 }
+>  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 break;
+>  =A0
+>  +#if !(defined(CONFIG_4xx) || defined(CONFIG_8xx) ||
+>  defined(CONFIG_E500)) || defined(CONFIG_MATH_EMULATION)
+> +
+>  =A0=A0=A0=A0=A0=A0=A0 /* Single-precision FP load and store require =
+conversions...=20
+> */
+>  =A0=A0=A0=A0=A0=A0=A0 case LD+F+S:
+>  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_disable();
+> @@ -379,6 +385,7 @@
+>  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 cvt_df(&data.d, &data.f, =
+&current->thread.fpscr);
+> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 preempt_enable();
+> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 break;
+>  +#endif
+>  =A0=A0=A0=A0=A0=A0=A0 }
+>  =A0
+>  =A0=A0=A0=A0=A0=A0=A0 if (flags & ST) {
+>  --- linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0=A0=A0 26 Mar 2005 =
+03:28:36 -0000
+>  1.1.1.2
+>  +++ linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0=A0=A0 31 Mar 2005 =
+16:33:25 -0000
+>  @@ -1096,7 +1096,8 @@
+>  =A0 * and exceptions as if the cpu had performed the load or store.
+>  =A0 */
+>  =A0
+>  -#if defined(CONFIG_4xx) || defined(CONFIG_E500)
+> +#if !(defined(CONFIG_4xx) || defined(CONFIG_E500) ||
+>  defined(CONFIG_8xx)) ||=A0 defined(CONFIG_MATH_EMULATION)
+> +#if defined(CONFIG_4xx) || defined(CONFIG_E500)
+> =A0_GLOBAL(cvt_fd)
+> =A0=A0=A0=A0=A0=A0=A0 lfs=A0=A0=A0=A0 0,0(r3)
+>  =A0=A0=A0=A0=A0=A0=A0 stfd=A0=A0=A0 0,0(r4)
+>  @@ -1125,6 +1126,7 @@
+>  =A0=A0=A0=A0=A0=A0=A0 stfd=A0=A0=A0 0,-4(r5)
+>  =A0=A0=A0=A0=A0=A0=A0 blr
+>  =A0#endif
+>  +#endif
+>  =A0
+>  =A0/*
+>  =A0 * Create a kernel thread
+>  --- linux/arch/ppc/kernel/process.c=A0=A0=A0=A0 26 Mar 2005 03:28:20 =
+-0000
+>  1.1.1.2
+>  +++ linux/arch/ppc/kernel/process.c=A0=A0=A0=A0 31 Mar 2005 16:33:25 =
+-0000
+>  @@ -342,7 +342,7 @@
+>  =A0=A0=A0=A0=A0=A0=A0 printk("\n");
+>  =A0#ifdef CONFIG_KALLSYMS
+> =A0=A0=A0=A0=A0=A0=A0 /*
+>  -=A0=A0=A0=A0=A0=A0=A0 * Lookup NIP late so we have the best change =
+of getting the
+>  +=A0=A0=A0=A0=A0=A0=A0 * Lookup NIP late so we have the best chance =
+of getting the
+>  =A0=A0=A0=A0=A0=A0=A0=A0 * above info out without failing
+>  =A0=A0=A0=A0=A0=A0=A0=A0 */
+>  =A0=A0=A0=A0=A0=A0=A0 printk("NIP [%08lx] ", regs->nip);
+>
+>
+>
+> Best Regards,
+>
+> --=20
+> Stephane
