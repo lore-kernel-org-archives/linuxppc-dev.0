@@ -1,20 +1,19 @@
-Return-Path: <Bjorn.Ostby@combitechsystems.com>
-Received: from ms-102.aerotechtelub.se (ms-102.aerotechtelub.se
-	[192.176.33.164]) by ozlabs.org (Postfix) with ESMTP id C553867A7E
+Return-Path: <manninej@students.cc.tut.fi>
+Received: from mozart.cc.tut.fi (mozart.cc.tut.fi [130.230.10.30])
+	by ozlabs.org (Postfix) with SMTP id A92BD67A9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Feb 2005 22:19:37 +1100 (EST)
-Received: from ratatosk.combitechsystems.com (unverified) by
-	ms-102.aerotechtelub.se (Clearswift SMTPRS 5.0.4) with ESMTP id
-	<T6efe4882d6c0b021a11254@ms-102.aerotechtelub.se> for
-	<linuxppc-embedded@ozlabs.org>; Tue, 8 Feb 2005 12:09:27 +0100
+	Tue,  8 Feb 2005 22:28:58 +1100 (EST)
+Date: Tue, 8 Feb 2005 13:28:56 +0200 (EET)
+From: Jarno Manninen <manninej@students.cc.tut.fi>
+To: Martin Krause <Martin.Krause@tqs.de>
+In-Reply-To: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B71@TQ-MAILSRV-1>
+Message-ID: <Pine.LNX.4.58.0502081323590.17665@mozart.cc.tut.fi>
+References: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B71@TQ-MAILSRV-1>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C50DCE.9BB1F0D7"
-Date: Tue, 8 Feb 2005 12:09:07 +0100
-Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0178CBE7@ratatosk.combitechsystems.com>
-From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitechsystems.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RTAI+ELDK Compile Problems
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: AW: Microwindows on Icecube/CoralP 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,154 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Tue, 8 Feb 2005, Martin Krause wrote:
 
-This is a multi-part message in MIME format.
+> Hm, the SM501 has 8 MB internal RAM. The framebuffer lies within this
+> memory. The SM501 is connected with the MPC5200 over the local bus
+> interface (not over PCI) and mapped with CS1 to address range
+> 0xE0000000-0xE3FFFFFF. The SM501 configuration registers are within
+> the mapped memory area at 0xE3E00000. I can't imagine, why the byte
+> swapping should only affect accesses to the famebuffer memory and not
+> to the configuration registers (where also single bits at the right
+> position must be set correctly). I could configure CS1 to do byte
+> swapping, but then access to the SM501 configuration registers does
+> not work any longer, because this bytes are swapped, too.
 
-------_=_NextPart_001_01C50DCE.9BB1F0D7
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Um. Have you written a kernel FB driver? If so then the write/read macros
+do this swapping for you. Assuming that you use those for accessing the
+device registers. At least SM722 requires those writes to be swapped too.
 
-I've got a major problem trying to compile RTAI using the ELDK cross =
-compiler.
-I'm using ELDK version 3.1, and my target is ppc_8xx (823). I have =
-followed the instructions given at =
-ftp://ftp.denx.de/pub/RTAI/24.1.12/README.install, using the
-linuxppc_2_4_devel kernel (2004_04_30_1320) and rtai-24.1.12-denx.=20
+> Geert, I've seen, you have done much of the fb stuff in the linux
+> kernel (thank you for that!). Could you please point me to the best
+> place, where byte swapping should be done if I want to use the linux
+> text console in 16 bit mode with the MPC5200?
 
-Now, the rtai patch works fine, and the kernel compiles, but when I try =
-to compile rtai
-The following error occurs:
+Perhaps the pseudopalette would suffice here, I guess? And supposing that
+you have written a FB driver. If not then you have to do the patching at
+the gfx-library level.
 
-/opt/eldk-3.1/ppc_8xx/usr/src/rtai-24.1.12/include/asm/rtai_srq.h:=20
-In function `rtai_srq':
-/opt/eldk-3.1/ppc_8xx/usr/src/rtai-24.1.12/include/asm/rtai_srq.h:32:=20
-error: asm-specifier for variable `__sc_3' conflicts with asm clobber =
-list
-
-I have also tried other versions of rtai (3.0 and 3.1) but these give =
-the same result.
-
-I may also mention that when trying to compile any kernel except the one =
-shipped with eldk and ppc_devel label_2004_04_30_1320, similar errors =
-occur:
-
-compile example from ppc_2_4_devel (label_2003_10_11_0005)=20
-using "make ARCH=3Dppc CROSS_COMPILE=3Dppc_8xx- uImage"
-
-/opt/eldk-3.1/ppc_8xx/usr/src/linuxppc_2_4_devel/include/asm/unistd.h: =
-In function `init':
-/opt/eldk-3.1/ppc_8xx/usr/src/linuxppc_2_4_devel/include/asm/unistd.h:439=
-: error: asm-specifier for variable `__sc_4' conflicts with asm clobber =
-list
-
-I have exported the CROSS_COMPILE variable and added the =
-eldk-3.1/usr/bin and eldk-3.1/bin
-directories to the path.
-
-Can anyone tell me what's going on here or, better yet, how to solve =
-it?.
-
-
-Best regards,
-Bjorn Ostby
-
-
-
-------_=_NextPart_001_01C50DCE.9BB1F0D7
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6249.1">
-<TITLE>RTAI+ELDK Compile Problems</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">I've got a major problem trying =
-to compile RTAI using the ELDK cross compiler.</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">I'm using ELDK version 3.1, and =
-my target is ppc_8xx (823). I have followed the instructions given at =
-</FONT><A =
-HREF=3D"ftp://ftp.denx.de/pub/RTAI/24.1.12/README.install"><U><FONT =
-COLOR=3D"#0000FF" SIZE=3D2 FACE=3D"Courier =
-New">ftp://ftp.denx.de/pub/RTAI/24.1.12/README.install</FONT></U></A><FON=
-T SIZE=3D2 FACE=3D"Courier New">, using the</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">linuxppc_2_4_devel kernel =
-(2004_04_30_1320) and rtai-24.1.12-denx. </FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">Now, the rtai patch works fine, =
-and the kernel compiles, but when I try to compile rtai</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">The following error =
-occurs:</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier =
-New">/opt/eldk-3.1/ppc_8xx/usr/src/rtai-24.1.12/include/asm/rtai_srq.h: =
-</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">In function `rtai_srq':</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier =
-New">/opt/eldk-3.1/ppc_8xx/usr/src/rtai-24.1.12/include/asm/rtai_srq.h:32=
-: </FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">error: asm-specifier for =
-variable `__sc_3' conflicts with asm clobber list</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">I have also tried other versions =
-of rtai (3.0 and 3.1) but these give the same result.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">I may also mention that when =
-trying to compile any kernel except the one shipped with eldk and =
-ppc_devel label_2004_04_30_1320, similar errors occur:</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">compile example from =
-ppc_2_4_devel (label_2003_10_11_0005) </FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">using &quot;make ARCH=3Dppc =
-CROSS_COMPILE=3Dppc_8xx- uImage&quot;</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier =
-New">/opt/eldk-3.1/ppc_8xx/usr/src/linuxppc_2_4_devel/include/asm/unistd.=
-h: In function `init':</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier =
-New">/opt/eldk-3.1/ppc_8xx/usr/src/linuxppc_2_4_devel/include/asm/unistd.=
-h:439: error: asm-specifier for variable `__sc_4' conflicts with asm =
-clobber list</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">I have exported the CROSS_COMPILE =
-variable and added the eldk-3.1/usr/bin and eldk-3.1/bin</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">directories to the path.</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">Can anyone tell me what's going =
-on here or, better yet, how to solve it?.</FONT>
-</P>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">Best regards,</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">Bjorn Ostby</FONT>
-</P>
-<BR>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C50DCE.9BB1F0D7--
+- Jarno
