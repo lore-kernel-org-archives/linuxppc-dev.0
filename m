@@ -1,31 +1,48 @@
-Message-ID: <37C973C9.B6FB489@usa.net>
-Date: Sun, 29 Aug 1999 13:54:19 -0400
-From: David Riley <happyoscar42@usa.net>
-Reply-To: happyoscar42@usa.net
+Message-Id: <199908292028.WAA00305@piglet.cpu.lu>
+Date: Sun, 29 Aug 1999 22:28:38 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Zero Pages / Cache Coherency
+To: apc@agelectronics.co.uk
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <37C65FF0.A5FBD535@agelectronics.co.uk>
 MIME-Version: 1.0
-To: Stephen Edie <sedie@terraplex.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86 support for Voodoo 3 acceleration
-References: <l03130307b3ec7ec8030d@[192.168.10.2]>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Stephen Edie wrote:
+On  27 Aug, this message from Adrian Cox echoed through cyberspace:
+> 
+> I'm currently trying out the pre-zeroing of pages in the idle task, and
+> I'm a little worried about its effect on cache-coherency. I can't prove
+> to
+> my satisfaction that none of the pages being cleared by zero_paged() is
+> in the cache, and I'm not sure that turning off caching in the PTE will
+> have any effect on cache lines already allocated in L1 or L2.
 
-> Is the full source code to the driver available?  Or is it written using
-> the Glide libraries?  If it is written using Glide, than it will be
-> necessary to contact 3dfx and get Glide ported to PPC Linux before it can
-> be ported.  Otherwise, it's entirely possible.  :)
+Cort Dougan had a paper about memory management in Linux on the PowerPC
+online at NMT, but at this time the link is broken
+(http://www.cs.nmt.edu/~cort/papers/linuxppc-mm/). If I remeber right,
+he also spoke about zeroing pegaes in the idle task.
 
-This ought to happen once someone gets a LinuxPPC machine to Darryl Strauss
-<http://glide.xxedgexx.com>.
+Cort, are you among us? What's up with your personal pages?
 
+> Obviously, any incoherency would be extremely rare, but ensuring that
+> the page is invalidated from the caches before it is zeroed has the
+> added bonus of removing the need for a flush_page_to_ram() in my
+> modified anonymous memory allocator.
 
---
---"Your mouse has been moved.  Windows 95 must be restarted for change to take
-effect."
+I can't remeber whether Cort also treated this subject.
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
