@@ -1,38 +1,46 @@
-Subject: Re: fan control: therm_pm72 on _new_ powermacs 64 ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: boris <boris@macbeth.rhoen.de>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040816161526.GA3869@macbeth.rhoen.de>
-References: <20040805123304.GA18674@macbeth.rhoen.de>
-	 <1091779721.9271.218.camel@gaston> <20040816161526.GA3869@macbeth.rhoen.de>
+Subject: [RFC] Machine check handling
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
 Content-Type: text/plain
-Message-Id: <1092702799.9529.74.camel@gaston>
+Message-Id: <1092835012.10314.46.camel@localhost>
 Mime-Version: 1.0
-Date: Tue, 17 Aug 2004 10:33:20 +1000
+Date: Wed, 18 Aug 2004 14:16:53 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2004-08-17 at 02:15, boris wrote:
-> On Fri, Aug 06, 2004 at 06:08:41PM +1000, Benjamin Herrenschmidt wrote:
->
-> > >  Is someone working on linux support for the new fan control unit built in
-> > >  recent pmac64 ? Or has further details ?
->
-> > You mean the latest G5s ? not yet, as soon as I get the hardware hopefully
->
-> It looks like apple released the source (opendarwin) for the new cooling
-> system: PowerMac7_3_CPUCoolingCtrlLoop.cpp (AppleMacRISC4PE-125.2.2)!
->
-> Is there an easy way to use this code to get the cooling system working
-> in linux ?
+The current handling of machine check in Linux 2.6 on the PowerPC has
+some problems. If the processor was in user_mode, the handler returns a
+SIGBUS even if the machine check cause was a hardware fault such as an
+internal cache parity error or ECC memory failure. This is quite
+different to the handling of machine checks from hardware faults on
+i386.
 
-Possibly, though it's the high level control loop, it lacks the low
-level driver, I'll have to figure that one out in different ways. I'm
-waiting for one of these models (already ordered), so I'll work on that
-as soon as I get it.
+I propose restructuring the machine check handling as follows:
+1) On entry to the machine handler, call a CPU specific handler to tell
+us whether the cause was internal or external.
+1a) If internal, log the fault and either panic or return.
+2) If the cause was external, call a platform specific handler to tell
+us whether the cause can be associated with a process.
+2a) If yes (such as the I/O code for PowerMac), handle as current
+(SIGBUS, drop to debugger, etc.).
+2b) If no, log the fault and either panic or return.
 
-Ben.
+In the absence of specific handlers, the code would assume that the
+machine check was external to the processor and the result of process
+actions. This should leave the current behaviour intact on machines
+which use it for PCI probing, while on machines with genuine hardware
+faults the mysterious SIGBUS arrivals will be replaced with clear log
+messages.
+
+For part 1 I'm thinking of an extra function pointer in struct cpu_spec,
+and for part 2 an extra function pointer in ppc_md. I'd like to know if
+anyone has any strong opinions on this before I update my old Linux 2.4
+patch:
+http://www.humboldt.co.uk/Downloads/PowerPC/mcheck-1.156.html
+
+- Adrian Cox
+Humboldt Solutions Ltd.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
