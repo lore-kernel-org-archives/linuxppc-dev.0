@@ -1,77 +1,36 @@
-Date: Tue, 14 Aug 2001 00:43:16 -0700 (PDT)
-From: James F Dougherty <jfd@GigabitNetworks.COM>
-Message-Id: <200108140743.AAA05509@krakatoa.gigabitnetworks.com>
-To: anj@aps.anl.gov, mgreer@mvista.com
-Subject: Re: MPC8240 EPIC Driver (Attached)
-Cc: mporter@mvista.com, dan@mvista.com, jfd@GigabitNetworks.COM,
-	linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu,
-	jfd@cs.stanford.edu
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3B78DCB6.8090504@humboldt.co.uk>
+Date: Tue, 14 Aug 2001 09:09:26 +0100
+From: Adrian Cox <adrian@humboldt.co.uk>
+MIME-Version: 1.0
+To: bhupinder sahran <bhup_sah@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: running configuring cycle across the host side of a 21554 non transparent bridge
+References: <20010814015521.7396.qmail@web3803.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark,
+bhupinder sahran wrote:
+> i am having a 21554 pci bridge between two processors.
+> on the local side of the bridge MPC8240(linux) is
+> sitting.
+> from the local side i want to run configuration cycle
+> of the host(primary) side of bridge.
+> i am using semaphore method given by intel
+> documentation.
+> i have enabled the configuration up bit also.
+> i am always getting 0xffffffff in my upstream config
+> data register.
+> can anybody tell me what could be the problem
+> thanx in advance
 
-Send me your changes and I'll
-gladly test them...
+As this is the third time you've asked, I'd say it's pretty likely that
+nobody here knows the answer. I've used the 21554, but I've never
+actually needed to do this.
 
+--
+Adrian Cox   http://www.humboldt.co.uk/
 
-		Thanks,
-		-James
-
-
->
-> > "Mark A. Greer" wrote:
-> > >
-> > > The changes to the openpic code for supporting serial interrupt mode are
-very minor.
-> >
-> > Actually IIRC they're already present in the version shipped with
-> > HHL-2.0.  I don't remember making any changes for that at all on the
-> > MVME2100 support, but my memory has been known to be faulty.
->
-> Well, there is no _explicit_ support for serial mode but there was an 'if'
-stmt added that
-> adjusts NumSources if it is less than OpenPIC_NumInitSenses.  That let's you
-proceed with
-> an initsenses with more irq's than the pic tells you it has.  Its not a
-complete, long-term
-> solution.
->
-> Also, I'm trying to keep this discussion relative to 2_4_devel not hhlx.x
->
-> > > What I mean is a table where you specify the irq, the offset fo the regs
-from the base
-> > > address, the sensitivity, and the polarity all separately.  Also the
-appropriate
-> > > extensions to support serial interrupt mode (e.g., MVME2100 uses that).
-With a table
-> > > format something like that, you can avoid the sparse and negative irq's on
-the
-> > > 8240/107 and still keep things pretty clean looking.
-> >
-> > That sounds right.  It could also use the NIRQ field of the Feature
-> > Reporting Register to cross-check that the table given is the correct size
-> > for the chip it's controlling, and have some way of specifying the
-> > presence or absensce of a cascaded i8259 (presumably with its own table).
->
-> The NIRQ field is a part of the problem in serial mode.  You can have 16 lines
-hooked up in
-> serial mode and the NIRQ still tells you that there should only be 5, IIRC.
->
-> The table changes are intended to solve more than just epic serial mode.
-They're intended
-> to make explicit--and flexible--all the assumptions that are currently buried
-in the
-> initsenses table (irq #, the offset of corresponding reg in pic, sensifivity
-and
-> polarity).  These aren't extensive changes, I should just do them, post a
-patch for review
-> & shut up...  :)
->
-> Mark
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
