@@ -1,18 +1,21 @@
-Return-Path: <adam@semicircular.net>
-Received: from mail.semicircular.net (214.20.233.220.exetel.com.au
-	[220.233.20.214]) by ozlabs.org (Postfix) with ESMTP id 9814467A6B
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2005 21:57:42 +1100 (EST)
-Received: by mail.semicircular.net (Exim 3.35) id 1D8c9L-00022Y-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Mar 2005 21:41:15 +1100
-Message-ID: <422D8149.5030400@semicircular.net>
-Date: Tue, 08 Mar 2005 21:41:13 +1100
-From: Adam Kent <adam@semicircular.net>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-References: <20050308030424.DA5D367A79@ozlabs.org>
-In-Reply-To: <20050308030424.DA5D367A79@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: MPC82xx and linux-2.6.
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id 72FE367A64
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Mar 2005 23:20:52 +1100 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 8 Mar 2005 05:20:48 -0700
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050308122048.GA22866@xyzzy>
+References: <422C495B.8090805@katalix.com>
+	<20050307125808.6585A200008A@mwinf0308.wanadoo.fr>
+	<20050307225401.GA31041@xyzzy> <20050308064945.GC27722@pegasos>
+	<1110266832.13607.267.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1110266832.13607.267.camel@gaston>
+Cc: Nicolas DET <det.nicolas@free.fr>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: mv643xx_eth SA_SHIRQ support patch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,9 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-leo wrote:
-> Anyone who has experience in booting linux-2.6 on Motorola ADS8260 platform?
+On Tue, Mar 08, 2005 at 06:27:12PM +1100, Benjamin Herrenschmidt wrote:
+> > Notice that benh is telling me that you should use SA_SHIRQ always and that
+> > SA_INTERRUPT should go away, and that you should contact him online if you
+> > have trouble with that.
+> > 
+> > > For the pegasos 2, you'll need the second patch which applies after
+> > > the one I previously sent for chrp_setup.c.
+> > 
+> > Ok, will test this anyway, and tell you how it works.
+> 
+> GHeh, ok, just picked up the discussion. Yes, there is really no reason
+> to use SA_INTERRUPT here, this is a thing of the past.
 
-Yes.  It boots and runs fine.  I suggest you have a browse through the 
-linuxppc-embedded archives... 
-http://ozlabs.org/pipermail/linuxppc-embedded/
+Excellent.  Thanks.
+
+Here's a new patch to try.  :-)
+
+-Dale
+
+mv643xx: Always pass SA_SHIRQ to request_irq()
+
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+
+Index: linux-2.5-enet/drivers/net/mv643xx_eth.c
+===================================================================
+--- linux-2.5-enet.orig/drivers/net/mv643xx_eth.c
++++ linux-2.5-enet/drivers/net/mv643xx_eth.c
+@@ -668,7 +668,7 @@
+ 	spin_lock_irq(&mp->lock);
+ 
+ 	err = request_irq(dev->irq, mv643xx_eth_int_handler,
+-			SA_INTERRUPT | SA_SAMPLE_RANDOM, dev->name, dev);
++			SA_SHIRQ | SA_SAMPLE_RANDOM, dev->name, dev);
+ 
+ 	if (err) {
+ 		printk(KERN_ERR "Can not assign IRQ number to MV643XX_eth%d\n",
