@@ -1,69 +1,68 @@
-Message-ID: <3F56E58C.17B0E035@aimsys.nl>
-Date: Thu, 04 Sep 2003 09:11:08 +0200
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: "'Chris Simmonds'" <chris@2net.co.uk>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: IRQ0 handler
+Date: Thu, 4 Sep 2003 15:55:52 +0800
+Message-ID: <000b01c372b9$f7071aa0$9702a8c0@newrock2>
 MIME-Version: 1.0
-To: Jan Dominik Baranski <jdb2@ece.msstate.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel hangs on EP862-1.1 during boot
-References: <3F5664E8.3080502@ece.msstate.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <3F54B7C2.9060409@2net.co.uk>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Jan,
+Have you config SIEXR, SIU external interrupt comtrol register, which edge detect mode you used ?  Low assertion or High to low change to generate an interrupt?
 
-What you could do is check of your board data that is passed to the kernel
-is still valid in start_kernel.
-Also, are you sure you have the kernel uart driver properly configured
-(i.e. it works but you don't see anything)
+John Zhou
 
-Jaap-Jan
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Chris
+Simmonds
+Sent: Tuesday, September 02, 2003 11:31 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: IRQ0 handler
 
-Jan Dominik Baranski wrote:
->
-> Hello all,
-> I'm having trouble getting a 2.4.22 kernel to boot on an Embedded Planet
-> EP862-1.1 board (based on an MPC860). I get this:
-> ---
-> Loaded addresses 00400000 through 0049FFFF.
->  >go
-> [Go 00400000]
->
-> loaded at:     00400000 004A31F4
-> relocated to:  00180000 002231F4
-> board data at: 00220128 00220144
-> relocated to:  001862E0 001862FC
-> zimage at:     001868A0 0021F3EC
-> avail ram:     00224000 01000000
->
-> Linux/PPC load: console=ttyS0,9600
-> Uncompressing Linux...done.
-> Now booting the kernel
->
-> <just hangs here>
->
-> ---
-> I've searched the archives, but no one seems to have this board/problem
-> combination. I've made sure the watchdog timer is disabled and that the
-> IMMR (0xfa200000) is set correctly. Being pretty new to this, I don't
-> really know where else to look. Maybe something related to m8xx_board_info?
->
-> The thing is, I've been able to get an old kernel (2.4.7) from Timesys
-> that's configured for an RPX Classic board to boot correctly. I just
-> can't figure out what they may have done that I haven't.
->
-> Any suggestions??
->
-> Thanks
->
-> -Jan
->
+
+
+Hi,
+
+Can anybody tell me how to install a handler for irq0 on an 8xx
+platform? Doing the obvious (request_8xxirq (SIU_IRQ0 ...)) doesn't seem
+to work. It seems that I need to modify head_8xx.S so that the excption
+handler for 0x100 is do_IRQ instead of UnKnownException. I tried the
+patch below, but now I get a Software Emulation trap (0x1000). Any help
+gratefully accepted.
+
+Chris.
+
+/* System reset */
+#ifdef CONFIG_SMP /* MVME/MTX start the secondary here */
+    STD_EXCEPTION(0x100, Reset, __secondary_start_psurge)
+#else
+/****
+    Replace norrmal NMI handler with do_IRQ
+
+    STD_EXCEPTION(0x100, Reset, UnknownException)
+****/
+NMI_Interrupt:
+    EXCEPTION_PROLOG;
+    addi    r3,r1,STACK_FRAME_OVERHEAD
+    li    r20,MSR_KERNEL
+    li    r4,0
+    bl    transfer_to_handler
+    .long    do_IRQ;
+    .long    ret_from_intercept
+
+#endif
 
 --
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+Chris Simmonds                        2net Limited
+chris@2net.co.uk                      http://www.2net.co.uk/
+Tel:   +44 (0)1962 869003             Fax:   +44 (0)870 056 7556
+"If it's not connected, it's not effective"(tm)
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
