@@ -1,37 +1,26 @@
-Date: Mon, 27 Sep 1999 09:05:51 +0200 (MET DST)
+Date: Mon, 27 Sep 1999 09:07:16 +0200 (MET DST)
 From: Geert Uytterhoeven <geert@sonycom.com>
-To: minyard@acm.org
-cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-user@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com,
-        linuxppc-dev@lists.linuxppc.org, mklinux-setup@public.lists.apple.com
-Subject: Re: XFree86-3.3.5-1.6.0b
-In-Reply-To: <m2u2oh77bj.fsf@morse.concentric.net>
-Message-ID: <Pine.GSO.4.10.9909270905180.11511-100000@begonia.sonytel.be>
+To: Randall R Schulz <rrschulz@cris.com>
+cc: mlan@cpu.lu, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Inbound TCP Circuits over PPP Stall; MTUs and Kppp
+In-Reply-To: <v04210104b4143d523d32@[206.173.234.127]>
+Message-ID: <Pine.GSO.4.10.9909270906510.11511-100000@begonia.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 26 Sep 1999 minyard@acm.org wrote:
-> It's not working on my Lombard in 24-bit mode.  15-bit mode works
-> fine.  Specifically, the server says:
-> 
->    No valid modes found
-> 
-> at startup when 24bpp is specified.  It doesn't say why it is not
-> valid, it just doesn't work.  Since it works in 15bpp mode, that seems
-> rather odd.
-> 
-> Also, starting the screen saver causes the following:
-> 
->   Fatal server error:
->   fbdevUpdateColormap: FBIOPUTCMAP failed (Function not implemented)
-> 
-> That would be nice to have fixed.  This did the same thing for 3.3.3.
+On Sun, 26 Sep 1999, Randall R Schulz wrote:
+> Yes, I, too, have the hunch that the problem is data sensitive and 
+> may relate to checksum generation. There were 17 messages in 
+> LinuxPPC-Dev (topic: "TCPv4 checksum errors") late last December 
+> about checksum generation problems, but the thread ended and it 
+> appeared that either the problem was fixed or was deemed spurious to 
+> begin with.
 
-You need to use a frame buffer device that's specific for your hardware, not
-just offb.
+The bug in the checksum routines was fixed (by Petr Vandrovec, IIRC).
 
 Greetings,
 
