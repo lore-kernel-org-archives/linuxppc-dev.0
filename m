@@ -1,30 +1,32 @@
-Message-ID: <37ED04AD.B09AA95@arcormail.de>
-Date: Sat, 25 Sep 1999 18:21:51 +0100
-From: Michael Fenske <michael.fenske@arcormail.de>
-Reply-To: michael.fenske@arcormail.de
+Date: Sat, 25 Sep 1999 13:57:23 -0700 (MST)
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-user@lists.linuxppc.org,
+        yellowdog-general@lists.yellowdoglinux.com,
+        linuxppc-dev@lists.linuxppc.org, mklinux-setup@public.lists.apple.com
+Subject: XFree86-3.3.5-1.6.0b
+In-Reply-To: <Pine.LNX.4.10.9909031141370.8429-100000@opus.bloom.county>
+Message-ID: <Pine.LNX.4.10.9909251336400.8691-100000@opus.bloom.county>
 MIME-Version: 1.0
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] Paul's rsync kernel compile fix
-References: <19990924222214.A7489@io.nu> <37EC952C.9285EA6C@wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel wrote:
-> 
-> I think you are:
-> - these variables are used by any number of drivers
-> - they are declared in <asm/dma.h>
-> 
-> Maybe you should rsync again?
+Hello again all.
 
-I rsync'd today. Nevertheless I get warnings various variables are
-declared but not defined or defined but not used. I think (hope) this is
-because I selected only the necessary drivers for my Wallstreet PB to
-compile into the kernel.
+I've uploaded XFree86-3.3.5-1.6.0b rpms to
+ftp://devel.linuxppc.org/users/trini/XFree86-3.3.5
+If you installed 3.3.5-1.6.0a, and use FBDev, you only need to update that
+particular RPM.  If you use Xpmac, nothing should have changed.  This
+should fix most of the invalid depth/etc problems when trying to do >16.
 
-Michael
+Compiling w/ egcs 1.1.2-12f did not fix at least the main accel bug
+(crash), so this is built vs 2.95.x as well.  More feedback/etc is
+welcome.
+
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
