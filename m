@@ -1,58 +1,47 @@
-Message-Id: <199903061239.MAA25819@go.hannover.sgh-net.de>
-Subject: LinuxPPC after Rhapsody DR2
-Date: Sat, 6 Mar 99 13:39:30 +0100
-From: John L Grantham <jgrantha@hannover.sgh-net.de>
-To: <linuxppc-dev@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [Linux SMP FAQ] Info request for SMP PPC systems Linux support
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "David Mentr\\'e" <David.Mentre@irisa.fr>
+Date: 06 Mar 1999 18:28:28 +0100
+Message-ID: <wd8d82m7cjn.fsf@parate.irisa.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+[ as I'm not on this list, so please Cc: to me any answer. Thanks. ]
 
-I have a question: I had Rhapsody DR2 installed on my computer at work (I 
-have two G3 minitowers, one at work, one at home--at home I have LinuxPPC 
-R4 installed on an internal SCSI Barracuda) and decided that I wanted to 
-use Linux at work instead of Rhapsody, as we use several other Linux 
-boxes (SuSE Linux) and have a lot of Linux software lying around.
+ Hello all LinuxPPC developpers,
 
-On my computer at work, I have a G3/266 MT with the standard 6 GB IDE 
-drive. Previously, Rhapsody occupied 800 MB on its own Titan partition 
-(the rest was HFS partitions); I deleted that partition and one other 
-smaller one to create 1.2 GB of space on my hard drive for LinuxPPC. 
-There was one other partition marked, though, that I noticed with pdisk: 
-the "Rhapsody Boot Loader". I did not delete it, but was wondering if I 
-should or can. (It's not terrible, as it only occupies 1K, but I didn't 
-know if it could cause problems now that Rhapsody is no longer there.)
+I'm the maintainer of the Linux SMP FAQ (see pointer below if you want
+to have a look). Right know, this FAQ is very x86 centric but I plan to
+change that. Looking at linuxppc.org, it seems that :
 
-Another oddity was that, after using BootX to install and boot LinuxPPC, 
-the computer would boot in an odd fashion--briefly it would show a 
-blinking question mark, then make a loud "click", then I would get a 
-Happy Mac and all would go normally, until the MacOS booted fully--all of 
-my icons looked _really_ weird (all in half-resolution and 
-scrambled--i.e. folders had LaserWriter icons, programs had no icon, 
-etc.) and the System was extremely unstable. After zapping the PRAM and 
-reverting to OS 8.5, all was well again, and LinuxPPC runs totally 
-normally.
+ - support is beeing developed (by lead programmer Cort Dougan )for
+   PowerSurge boards. This includes the UMAX s900.
 
-As an aside, it was getting obnoxious using LinuxPPC at home, since I 
-have a SPIGA ISDN and can't get it to run--meaning I can't try all the 
-Net tools online. But here at work, we have a leased line, and LinuxPPC 
-rocks in a LAN!
+ - support for SMP PowerMac is working.
 
-Anyway, hope you all can help clear up that problem.
+So here are my questions :
 
-Best regards,
+ 1. what is the current status of SMP support for LinuxPPC? any table? 
 
-John
+ 2. is there any specific things to do to make a PPC SMP system?
+    (kernel compilation, boot, etc.)
+
+ 3. is there a mailing-list I should subscribe to to have further info
+    on this subject (i.e. SMP && PPC && Linux)?
+
+ 4. any bench result of SMP system?
 
 
-
-John Grantham | Dipl.-Designer (FH)
-              | Linux am Mac FAQ: http://linux.macnews.de/
-              | Homepage: http://surf.to/multimedia
-
+Thanks in advance for any info/pointer,
+Best Regards,
+david
+-- 
+ David.Mentre@irisa.fr -- http://www.irisa.fr/prive/dmentre/
+ Linux SMP FAQ: http://www.irisa.fr/prive/dmentre/smp-faq/
+ Opinions expressed here are only mine.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
