@@ -1,29 +1,47 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Thu, 17 Aug 2000 15:46:45 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Joseph Garcia <jpgarcia@execpc.com>
-cc: Vladimir Simonov <sv@asplinux.ru>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: nvsetenv on NW (was Can't find nvtool?)
-In-Reply-To: <399C396E.C72DFCA4@execpc.com>
-Message-ID: <Pine.LNX.3.96L.1000817154441.1998A-100000@unix47.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 17 Aug 2000 13:37:27 -0700
+From: Matt Porter <mporter@mvista.com>
+To: tom_gall@vnet.ibm.com
+Cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI Buses
+Message-ID: <20000817133727.A19393@cx258813-a.chnd1.az.home.com>
+References: <200008151939.VAA00754@piglet.grunz.lu> <3999CF3E.561EB9C8@vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3999CF3E.561EB9C8@vnet.ibm.com>; from tom_gall@vnet.ibm.com on Tue, Aug 15, 2000 at 11:16:14PM +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 17 Aug 2000, Joseph Garcia wrote:
+On Tue, Aug 15, 2000 at 11:16:14PM +0000, tom_gall@vnet.ibm.com wrote:
 >
-> Basically, I'm saying that nvsetenv could/should be modified to recognize which
-> kind of system its on, and act accordingly.  If nobody wants to do it, I suppose
-> I could.
+> Michel Lanners wrote:
+> >
+> > Hi Tom,
+> >
+> > On  15 Aug, this message from tom_gall@vnet.ibm.com echoed through cyberspace:
+> > >   Just a stupid question here for those of you that have Mac hardware. Of all
+> > > the Mac hardware in existance right now, all Macs have at most one PCI bus
+> > > right?
+>
+> Hi All,
+>
+>   I thank you much for the information. It took me a little bit but as I've been
+> looking at the PCI code I ran across the pmac PCI implementation which
+> definately has support for more than one PCI bus.
+>
+>   Where I'm coming from is getting the same thing working on IBM PowerPC
+> hardware for multiple pythons... fun fun fun...
 
-It's already been done by Klaus Halfmann. I put together an rpm with the
-updated code, but since there haven't been any dist revs since then the new
-nvsetenv hasn't made it into most people's boxes yet.
+Do you mean two separate physical buses like on the CPC710 PHB?  If so,
+then check out the SBS K2 LSP code in MontaVista CDK1.2 release
+(ftp.mvista.com).  There's some extra layering in their to allow
+for kernel resident PCI autoconfiguration before the generic bus scan
+as well as transparent handling of config space accesses via the different
+CFGA/CFGD addresses.
 
--Hollis
-
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
