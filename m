@@ -1,26 +1,44 @@
-Message-Id: <v02130500b33e8faeeab0@[209.215.25.9]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 17 Apr 1999 20:31:58 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: jhaas@madison-web.com (Jason Haas)
-Subject: New OF info on ANSen
+Message-ID: <XFMail.990417214812.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <fc.000f61e60004dff8000f61e60004dff8.4dffa@DEWEY.ESD113.WEDNET.EDU>
+Date: Sat, 17 Apr 1999 21:48:12 +0100 (BST)
+From: Gary Thomas <gdt@linuxppc.org>
+To: (Josh Hudson) <Josh_Hudson@DEWEY.ESD113.WEDNET.EDU>
+Subject: RE: Assembler Error
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-According to Macintouch.com, Apple has posted "Apple has posted an article
-on Open Firmware in its Tech Info Library that 'contains a comprehensive
-overview of Apple's implementation of PCI Open Firmware on the Apple
-Network Servers 500 and 700.' "
 
-ANS hackers and owners may find that interesting/useful/helpful.
+On 17-Apr-99 Josh Hudson wrote:
+> 
+> When I try to compile big codes with lots of lines I get this:
+> 
+> /tmp/cca00758.s: Assembler messages:
+> /tmp/cca00758.s:40303: Error: Bad expression
+> /tmp/cca00758.s:40303: Error: Rest of line ignored. First ignored
+> character is `M'.
+> make: *** [act_comm.o] Error 1  
+> 
+> 
+> Can anyone help me fix this problem???
+> 
 
-The TIL article's URL is:
+Which version of the compiler/binutils?  You can get this via:
+  rpm -qif `which cc`
+  rpm -qif `which as`
 
-http://til.info.apple.com/techinfo.nsf/artnum/n60285
+Can you provide example code with a repeatable failing case?
 
-=-  Jason Haas, jhaas@linuxppc.com / jhaas@madison-web.com
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
 
 
 
