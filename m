@@ -1,18 +1,14 @@
-Date: Mon, 12 Jun 2000 13:42:56 +0200
-From: Olaf Hering <olh@suse.de>
+Date: Mon, 12 Jun 2000 14:46:03 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 To: Michel Lanners <mlan@cpu.lu>
-Cc: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Out of memory?
-Message-ID: <20000612134256.B12226@suse.de>
-References: <200006121039.MAA03014@piglet.grunz.lu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <200006121039.MAA03014@piglet.grunz.lu>
+Message-ID: <Pine.LNX.4.10.10006121406480.19735-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
-
-
-On Mon, Jun 12, Michel Lanners wrote:
 
 
 > Jun 12 10:53:13 piglet kernel: VM: killing process gimp
@@ -31,18 +27,23 @@ On Mon, Jun 12, Michel Lanners wrote:
 > swapped out? In all of the above cases, I've always had over 100 megs of
 > swap free. Or is there a fixed limit on how big a process can get?
 
-It is only self protection of the kernel to run not out of memory.
-The last process that want to allocate memory when memory is low gets
-killed. Looks like that is not smart enough when swap is still
-available.
+There's a limit on process VM size but that's quite large and shouldn'
+affect you there. I'd look into the exact reason why the kernel could not
+satisfy a paging request in your specific case. You might be attempting to
+free pages in order to swap in what you need but kswapd didn't succeed in
+swapping out anything. Or maybe there's nothing left on any of the free
+lists that are used by __get_free_page(GFP_USER). How much swap space
+remains is meaningless as long as there isn't any page in RAM that's "old"
+enough to be swapped out.
 
+Try to adjust the page aging parameters to make kswapd more aggressive
+about swapping out stuff that's only moderately old (probably done via
+/proc/sys/vm/kswapd). Or add some debug code to __get_free_pages to find
+out where it gets stuck (i.e. is the paging request even happening at a
+stage where the number of free pages is below the highwater mark for
+kswapd).
 
-Gruss Olaf
+	Michael
 
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
