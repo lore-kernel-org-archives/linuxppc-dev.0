@@ -1,36 +1,30 @@
-Message-ID: <39C80065.4741C043@mvista.com>
-Date: Tue, 19 Sep 2000 20:10:13 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <39C822D7.93126A84@ncal.verio.com>
+Date: Tue, 19 Sep 2000 19:37:11 -0700
+From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
-To: Roman Zippel <zippel@fh-brandenburg.de>
-CC: paulus@linuxcare.com.au, Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-References: <Pine.GSO.4.10.10009200107220.9268-100000@zeus.fh-brandenburg.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: Troy Benjegerdes <hozer@drgw.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: dual G4 time issues..
+References: <39C518A9.2BA320DA@ncal.verio.com> <20000918090710.14056@mailhost.mipsys.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Roman Zippel wrote:
+Benjamin Herrenschmidt wrote:
+>
+>
+> I had reports of pthread-intensive applications having the threads
+> randomly "hang" when running on the SMP 2.2.x kernel. This happens on PPC
+> only (works fine with the same kernel on x86) and it's fine on UP.
+>
 
-> Fixed addresses shouldn't be that much of a problem.
+I'll look into getting a serial port on this machine so I can
+try some debugging. Any recommendations what sort of PCI I/O
+card would work best, or would one of those gadgets that
+replaces the modem be a better bet? I'll guess I should
+also look into the modem cross-over cable trick.
 
-They are no problem today....It would be nice if it stayed that way :-).
-
-> .... we would only need a C implementation from parts hashtable.S,
-> what might be usefull for other stuff as well.
-
-Except only the 7xx (601?, 604) use the hastable.  It's not a generic
-MMU place.
-
-> Something I would like to throw out first is mem_pieces.c....
-> ... pmac_find_end_of_memory(), which then is completly confused,
-
-I am usually confused by this point, too :-).  I then just tip-toe
-away thinking there are better places I can spend my time.
-
-
-	-- Dan
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
