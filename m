@@ -1,41 +1,31 @@
-Date: Tue, 20 Apr 1999 17:16:22 +1000 (EST)
-From: Grant Bayley <gbayley@ausmac.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Apple's "Darwin Streaming Server"
-In-Reply-To: <199904200459.XAA07227@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.04.9904201701350.6655-100000@ausmac.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.2.0.32.19990420113648.044b7ea0@mail.lauterbach.com>
+Date: Tue, 20 Apr 1999 11:40:19 +0200
+To: root <roboj@ibm.net>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: Kernel 2.2.6-ac1 problem
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <371BBD46.246D9D0F@ibm.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi folks,
+At 01:33 20.04.99 , root wrote:
 
-Having played around with Quicktime 4 this morning and watched the BBC etc
-across the Internet, I was delighted to see that Apple have opensourced
-and released the source code for the streaming server itself.
+>I compiled the latest kernel from source and I created vmlinux with no
+>problems.  After installing it in my system folder on my mac partition
+>and booting linux again, I get I/O errors somewhat randomly.
+>The message that is displayed is "No space left on device".  The file
+>/var/log/messages conatins the following lines:
+>
+>Apr 19 23:23:07 localhost kernel: EXT2-fs error (device ide0(3,4)):
+>ext2_new_block: Free blocks count corrupted for block group 13
 
-I downloaded it and read the FAQ - only problem is they use the funky
-NeXTStep-ish Makefile to build the thing and requires "modification of a
-handful of source files" to compile and run on "platforms other than Mac
-OS X Server".
+Are you sure you use egcs-1.1.2 for compiling the kernel? egcs versions 
+before 1.1 (or 1.1.1? I don't remember anymore) had this problem.
 
-I realise this is off topic, but it would be an interesting addition to
-Linux (and LinuxPPC in particular) to have this available in an
-easy-to-compile (./configure, anyone  :-) package..
-
-Has anyone started work on porting this?
-
-Grant
-
-___________________________________________________
-Grant Bayley
-- Network Administrator, Batey Kazoo Communications
-- Administrator, The AusMac Archive
-http://www.ausmac.net/    gbayley@ausmac.net
-__________________________________________________
-
+Franz.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
