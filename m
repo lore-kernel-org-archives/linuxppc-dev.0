@@ -1,78 +1,74 @@
-To: Troy Benjegerdes <hozer@drgw.net>
-Cc: Gabriel Paubert <paubert@iram.es>, Matt Porter <mmporter@home.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: arch/ppc/kernel restructure + MVME/MTX OpenPIC support
-References: <Pine.LNX.4.04.9901101614300.926-100000@narn.local.drgw.net>
-Reply-To: minyard@acm.org
-From: Corey Minyard <minyard@acm.org>
-Date: 11 Jan 1999 13:01:49 -0600
-In-Reply-To: Troy Benjegerdes's message of Sun, 10 Jan 1999 16:24:13 -0600 (CST)
-Message-ID: <m267advdk2.fsf@wf-rch.cirr.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="==_Boundary-1_=="
+Date: Mon, 11 Jan 1999 20:50:11 +0100
+To: linuxppc-dev@lists.linuxppc.org
+CC: Cort Dougan <cort@ladron.cs.nmt.edu>,
+        Paul Mackerras <paulus@cs.anu.edu.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: PowerBook ZIP patch
+Message-Id: <19990111205011.003224@mail.mipsys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes <hozer@drgw.net> writes:
+--==_Boundary-1_==
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-> I have just finished some early testing of this.
-> 
-> The patch is available on
-> ftp://ftp.microux.com/pub/linux/linuxppc-rework-troy.patch.gz
-> 
-> Here's what I put in the REAME:
-> 
-> This is my set of integrated patches to the Linux kernel, which are based on
-> Corey Minyard's linuxppc-rework3.diff patches, along with Gabriel Paubert's
-> Preploader (which I have integrated into arch/ppc/preploader) and Raven MPIC
-> support for Motorola MTX/MVME boards.
-> 
-> This works on my MTX board, but only with CONFIG_PREPLOADER (the preploader
-> has a config option ;) ) because the raven needs to have it's PCI memory
-> space remapped or it isn't accessible.
-> 
-> Pmac should work, along with APUS. I think I may have broken MBX support..
-> Can someone check this out and fix this?
-> 
-> These patches were made from my local CVS archive agains 2.2.0-pre6.
-> Please let me know if you have any additions, etc. 
-> 
+The following patch enables the PowerBook internal ZIP drive. You may
+need my other patch to irq.c that fixes bogus interrupt values for the
+left bay to work (should be included in Cort's new irq.c when finished).
+The right bay should work "as is".
 
-Is there anybody that could do the MBX work and test things out?  That
-is the biggest hole missing.  I'd like to see all the 8xx and MBX stuff
-be put into the new framework, but I don't have the experience to do
-it.  I'm also a little short of time right now since I'm remodelling
-my house.
 
-Also, a couple of small things that probably need to be fixed:
-
- * The __initfunc()  needs to be removed from all the xxx_setup_residual
-   function calls, since that is called all the time.
-
- * The patch to idle.c needs to look something like:
-
---- linux-2.2p4.orig/arch/ppc/kernel/idle.c     Mon Jan  4 16:59:13 1999
-+++ linux-2.2p4/arch/ppc/kernel/idle.c  Mon Jan  4 16:49:13 1999
-@@ -301,7 +301,14 @@
-                        hid0 &= ~(HID0_NAP | HID0_SLEEP | HID0_DOZE);
-                        hid0 |= (powersave_nap? HID0_NAP: HID0_DOZE) | HID0_DPM;
-                        asm("mtspr 1008,%0" : : "r" (hid0));
--                       msr |= MSR_POW;
-+
-+                       /* set the POW bit in the MSR, and enable interrupts
-+                          so we'll wake up sometime! */
-+                       _nmask_and_or_msr(0, MSR_POW | MSR_EE);
-+
-+                       /* Disable interrupts again so restore_flags will
-+                          work. */
-+                       _nmask_and_or_msr(MSR_EE, 0);
-                }
-                restore_flags(msr);
-        default:
+--- linux.orig/drivers/block/ide-probe.c	Thu Jan  7 14:17:32 1999
++++ linux.dev/drivers/block/ide-probe.c	Mon Jan 11 22:44:52 1999
+@@ -118,8 +118,14 @@
+ 				}
+ 				type = ide_cdrom;	/* Early cdrom models used zero */
+ 			case ide_cdrom:
+-				printk ("CDROM");
+ 				drive->removable = 1;
++				/* XXX kludge for Apple PowerBook internal zip */
++				if (!strstr(id->model, "CD-ROM") && strstr(id->model, "ZIP")) {
++					printk ("FLOPPY");
++					type = ide_floppy;
++					break;
++				}
++				printk ("CDROM");
+ 				break;
+ 			case ide_tape:
+ 				printk ("TAPE");
 
 
 -- 
-Corey Minyard               Internet:  minyard@acm.org
-  Work: minyard@nortel.ca       UUCP:  minyard@wf-rch.cirr.com
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
+--==_Boundary-1_==
+Mime-Version: 1.0
+Content-Type: application/octet-stream; name="zip.patch"; x-mac-creator="43574945"; x-mac-type="54455854"
+Message-Id: <19990111205023.028569>
+Date: Mon, 11 Jan 1999 20:50:23 +0100
+Content-Transfer-Encoding: base64
+
+LS0tIGxpbnV4Lm9yaWcvZHJpdmVycy9ibG9jay9pZGUtcHJvYmUuYwlUaHUgSmFu
+ICA3IDE0OjE3OjMyIDE5OTkKKysrIGxpbnV4LmRldi9kcml2ZXJzL2Jsb2NrL2lk
+ZS1wcm9iZS5jCU1vbiBKYW4gMTEgMjI6NDQ6NTIgMTk5OQpAQCAtMTE4LDggKzEx
+OCwxNCBAQAogCQkJCX0KIAkJCQl0eXBlID0gaWRlX2Nkcm9tOwkvKiBFYXJseSBj
+ZHJvbSBtb2RlbHMgdXNlZCB6ZXJvICovCiAJCQljYXNlIGlkZV9jZHJvbToKLQkJ
+CQlwcmludGsgKCJDRFJPTSIpOwogCQkJCWRyaXZlLT5yZW1vdmFibGUgPSAxOwor
+CQkJCS8qIFhYWCBrbHVkZ2UgZm9yIEFwcGxlIFBvd2VyQm9vayBpbnRlcm5hbCB6
+aXAgKi8KKwkJCQlpZiAoIXN0cnN0cihpZC0+bW9kZWwsICJDRC1ST00iKSAmJiBz
+dHJzdHIoaWQtPm1vZGVsLCAiWklQIikpIHsKKwkJCQkJcHJpbnRrICgiRkxPUFBZ
+Iik7CisJCQkJCXR5cGUgPSBpZGVfZmxvcHB5OworCQkJCQlicmVhazsKKwkJCQl9
+CisJCQkJcHJpbnRrICgiQ0RST00iKTsKIAkJCQlicmVhazsKIAkJCWNhc2UgaWRl
+X3RhcGU6CiAJCQkJcHJpbnRrICgiVEFQRSIpOwo=
+
+--==_Boundary-1_==--
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
