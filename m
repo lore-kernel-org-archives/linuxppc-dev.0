@@ -1,37 +1,51 @@
-Message-Id: <199912091815.TAA00291@piglet.grunz.lu>
-Date: Thu, 9 Dec 1999 19:15:18 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: NE2000 problem
-To: costabel@wanadoo.fr
-cc: nenolina@pit.ktu.lt, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <384F5653.C986FCC6@wanadoo.fr>
+Message-ID: <384FF57D.550C9514@pop.agri.ch>
+Date: Thu, 09 Dec 1999 19:31:44 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: Gary Thomas <gdt@linuxppc.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Mozilla preM12 ppc rpms...
+References: <XFMail.991209110250.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   9 Dec, this message from Martin Costabel echoed through cyberspace:
->> My ifconfig is from the 'net-tools-1.32.alpha-2B' RPM (don't remember
->> where I got that).
+
+
+Gary Thomas wrote:
 > 
-> Wow. If this is your new net-tools RPM, then the previous one must have
-> been really old :-) The version you mention dates from June 1997 and was
-> contained in LinuxPPC Feb98 (aka Valentine's Day edition or R3).
-> Nowadays, net-tools version numbers are 1.52 or higher.
+> On 09-Dec-99 Ani Joshi wrote:
+> >
+> >
+> > I have placed a preM12 snapshot at
+> >
+> > ftp://devel.linuxppc.org/users/ajoshi/{RPMS,SRPMS}
+> >
+> > This build includes Franz Sirl's XPTCall port.
+> > Please let me know how it well it fares for everyone as we have not
+> > tested it much.
+> >
+> 
+> Where can I find all of the required pieces?
+> 
+> [root@icarus gary]# rpm -ivUh /tmp/mozilla-5.0-M11.ppc.rpm
+> error: failed dependencies:
+>         glibc >= 2.1.3-0h is needed by mozilla-5.0-M11
+>         libIDL-0.6.so.0 is needed by mozilla-5.0-M11
+>         libgtkmozilla.so.0 is needed by mozilla-5.0-M11
+>         libstdc++-libc6.1-2.so.3 is needed by mozilla-5.0-M11
+>         libc.so.6(GLIBC_2.1.3) is needed by mozilla-5.0-M11
 
-In fact, I have version 1.50 installed, but self-compiled from source.
-That's what happens when you don't stay with RPMs....
+at least the libc stuff you can find under the address above with
+fsirl/R5/RPMS iso ajoshi 
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Andreas
+-- 
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail:   a.tobler@schweiz.ch
+-----------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
