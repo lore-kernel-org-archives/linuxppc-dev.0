@@ -1,15 +1,28 @@
-Message-ID: <01C07705.46376070.svacca@valcom.com>
+Message-ID: <01C07724.0C987560.svacca@valcom.com>
 From: Steven Vacca <svacca@valcom.com>
 Reply-To: "svacca@valcom.com" <svacca@valcom.com>
 To: "LinuxEmbeddedMailList (E-mail)"
 	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: TCP Server stops accepting after 10mins
-Date: Fri, 5 Jan 2001 10:50:08 -0500
+Subject: How to disable Denial-of-Service safeguard in Linux Kernel?
+Date: Fri, 5 Jan 2001 14:30:26 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+I am suspecting the the problem stated below is due to Denial-of-Service safeguards
+incorporated into the Linux Kernel.  Would anyone know how to diable this feauture?
+
+Thanks,
+
+ShutEye Thinkin
+
+-----Original Message-----
+From:	Steven Vacca [SMTP:svacca@valcom.com]
+Sent:	Friday, January 05, 2001 10:50 AM
+To:	LinuxEmbeddedMailList (E-mail)
+Subject:	TCP Server stops accepting after 10mins
 
 Hi everyone.  I would very much appreciate help with the following problem:
 
