@@ -1,41 +1,26 @@
-To: "Jon A. Christopher" <jon@amanda.tamu.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bug in getenv/putenv on linuxppc/G4
-References: <Pine.LNX.4.04.9911010157580.7854-200000@amanda.tamu.edu>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 01 Nov 1999 13:55:24 +0100
-In-Reply-To: "Jon A. Christopher"'s message of "Mon, 1 Nov 1999 02:02:55 -0600 (EST)"
-Message-ID: <kfyd7tuz803.fsf@kieraypc01.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Brad Boyer <flar@marcus.pants.nu>
+Message-Id: <199911011413.GAA26510@marcus.pants.nu>
+Subject: Re: PMU daemon
+To: hozer@drgw.net (Troy Benjegerdes)
+Date: Mon, 1 Nov 1999 06:13:28 -0800 (PST)
+Cc: paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <381C4668.56DAA6A0@drgw.net> from "Troy Benjegerdes" at Oct 31, 99 07:38:48 am
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Jon A. Christopher" <jon@amanda.tamu.edu> writes:
+Troy Benjegerdes wrote:
+> ncftpget ftp://ftp.linuxcare.com.au/pmud-0.2.tar.gz
+> Remote host has closed the connection.
+> ncftpget: cannot open ftp.linuxcare.com.au: remote host closed control
+> connection. 
 
-> I've just discovered a bug in either getenv (probably) or putenv (less
-> likely) on linuxppc on a G4, glibc-2.1.1-6c.
-> 
-> The attached test program demonstrates the bug.  Basically, using putenv
-> to add a variable to the environment whose name is only one letter long
-> and then using getenv to read it doesn't work.  
-> 
-> Variables with two or more letters are processed as normal.
-> 
-> I'm not sure if this is a glibc or a linuxppc problem, but I don't have
-> teh same problem on my intel RH 5.2 box, or any other unix I've ever heard
-> of.
+I found that the linuxcare site refuses all connections made with ncftp.
+Other ftp clients seem to work fine.
 
-It's a libc problem, reported on the libc-alpha list a few months
-ago, and I think a patch was posted too.
-It's fixed in glibc 2.1.2 in any case.
+	Brad Boyer
+	flar@pants.nu
 
-//Marcus
--- 
--------------------------------+------------------------------------
-        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
- Royal Institute of Technology |       Phone: +46 707 295404
-       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
