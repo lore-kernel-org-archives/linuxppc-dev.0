@@ -1,48 +1,46 @@
-Message-ID: <FA06AA2C99BCD511951200005A994410438645@irvexch1.sextantifs.com>
-From: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
-To: "'Tom Rini'" <trini@kernel.crashing.org>,
-	"Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
+Date: Fri, 3 May 2002 09:42:42 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
 Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
 	"'acurtis@onz.com'" <acurtis@onz.com>
-Date: Fri, 3 May 2002 09:39:36 -0700
-Subject: RE: linuxppc_2_4_devel - Walnut compile
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: linuxppc_2_4_devel - Walnut compile
+Message-ID: <20020503164242.GB894@opus.bloom.county>
+References: <FA06AA2C99BCD511951200005A99441043863E@irvexch1.sextantifs.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <FA06AA2C99BCD511951200005A99441043863E@irvexch1.sextantifs.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I hopefully just fixed xconfig.  Now I need to talk to Keith Owens to
-> get the proper fix pushed onto Marcelo.
+On Thu, May 02, 2002 at 04:06:46PM -0700, Curtis, Allen wrote:
+
+> 1. make menuconfig (xconfig - does not work)
+>     and stripped out all of the extra junk
 >
 
-Thanks
+I hopefully just fixed xconfig.  Now I need to talk to Keith Owens to
+get the proper fix pushed onto Marcelo.
 
-> > 2. linker error - early_serial* symbols undefined
-> >    modified drivers/char/Makefile - to include serial.c
->
-> Turn on CONFIG_SERIAL.  No one has tested any of the 4xx configs w/o
-> CONFIG_SERIAL, so it's not supprising it didn't work.  I've
-> pushed a few
-> small things which might help however.
+> 2. linker error - early_serial* symbols undefined
+>    modified drivers/char/Makefile - to include serial.c
 
-I got this to build doing the following. In the process of testing it now.
+Turn on CONFIG_SERIAL.  No one has tested any of the 4xx configs w/o
+CONFIG_SERIAL, so it's not supprising it didn't work.  I've pushed a few
+small things which might help however.
 
-1. Changed Standard/Generic Serial Port to [Y] from [M]
-	This enabled the console on serial port option
+> 3. linker error - serial_close() undefined
+>    reviewed the source code in arch/ppc. I believe that I need serial_sicc.c
 
-Notes:
-a) Makefile modifications were unnecessary in drivers/char.
-b) I guess that SICC is not appropriate.....
+This is odd.  Where was the linker error?  serial_close() is also in the
+bootwrapper stuff.
 
-> > 4. Reviewed arch/ppc/config.in and discovered the following
->
-> Fix this as well (missing space was the actual problem).
+> 4. Reviewed arch/ppc/config.in and discovered the following
 
-Yup, that is what I did....
+Fix this as well (missing space was the actual problem).
 
-Thanks for the help!
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
