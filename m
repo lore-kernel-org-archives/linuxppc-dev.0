@@ -1,425 +1,84 @@
-From: "Ron Bianco" <ronb@junction.net>
-To: "LinuxPPClist" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problems in building a kernel for a minimal 8240 board
-Date: Fri, 7 Jul 2000 13:10:04 -0700
-Message-ID: <000301bfe84f$56c9a820$4d012ac7@warp-speed>
+Message-ID: <39664E6E.56CA6D7@embeddededge.com>
+Date: Fri, 07 Jul 2000 17:41:02 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Ron Bianco <ronb@junction.net>
+CC: LinuxPPClist <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problems in building a kernel for a minimal 8240 board
+References: <000301bfe84f$56c9a820$4d012ac7@warp-speed>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,  thanks to all those good folks who contribute expert advice to this mail list.
-I'm sure it is very much appreciated by those of us who are less knowledgeable and seek
-help.
+Ron Bianco wrote:
 
-I'm trying to build a kernel for a custom MPC8240 board using the MontaVista
-Sandpoint-8240  2.2.14 source tree as a starting point.  I'm using the MontaVista CDK
-toolset running on RH Linux 6.2 which is the guest OS under VMWare running on NT4.
-I'm also using EST's Probe for JTAG comm./debugging.
+> I've been trying to figure out what files I need to change to reflect the differences
+> between the Sandpoint and our board, and produce a clean build with my radically
+> simplified config.
 
-Our 8240 board is much simpler than the Sandpoint+Unity(8240) config, due to the fact that
-it is an auxiliary board in our digital audio matrix mixer.   It's major components are:
-An SODIMM slot for SDRAM with a 64MB module,  8MB flash, a PCI SCSI chip - SY53C895,  a
-PCI Ethernet chip - Intel 82559,   there are existing Linux drivers for both these
-chips/families.
-There are no PCI slots, RTC, keyboard, ISA bridge, L2 cache RAM, video etc.
-The board is basically functional:  PCI config cycles work, SDRAM works, test code runs
-OK.
+You don't have a "radically simplified" configuration from the Sandpoint.
+The only thing you don't have are the ISA I/O devices in the SouthBridge
+and Super I/O chips.  The only thing I ever used in that set was the serial
+I/O port, and that never worked well.
 
-See below for the contents of my .config file, which 'matches' the autoconf.h file of
-course.
-I'm not sure if it is the closest match to what I need, but it is not sufficient of itself
-to produce a clean build.
-I've been trying to figure out what files I need to change to reflect the differences
-between the Sandpoint and our board, and produce a clean build with my radically
-simplified config.
+> I know the file:  arch/ppc/kernel/Makefile is causing me some grief,
 
-I know the file:  arch/ppc/kernel/Makefile is causing me some grief, as almost all the
-link problems I'm seeing are to do with kernel.o.   In addition to using my config
-unsuccessfully,  I've successfully  built from the original sandpoint config
+The Makefile is OK, it is just the configuration that is amiss.
 
-Here is the problematic command line:
+> A major question I have in both cases is:   why is pmac stuff in there?
 
-powerpc-linux-ld  -r -o kernel.o ppc_ksyms.o setup.o chrp_setup.o prep_setup.o entry.o
-traps.o irq.o idle.o
-time.o process.o signal.o syscalls.o misc.o bitops.o ptrace.o align.o ppc_htab.o
-semaphore.o hashtable.o pci
-.o prep_time.o pmac_time.o chrp_time.o pmac_setup.o pmac_support.o prep_pci.o pmac_pci.o
-chrp_pci.o residual
-.o prom.o open_pic.o feature.o prep_nvram.o i8259.o pmac_pic.o indirect_pci.o gemini_pci.o
-gemini_prom.o gem
-ini_setup.o sandpoint_pci.o sandpoint_setup.
+To resolve some common functions among all of the platforms.
 
-A major question I have in both cases is:   why is pmac stuff in there?
-Also linked into the kernel are 5 files to do with pci,  why?   For one thing, I thought
-prep and chrp were mutually exclusive hardware configurations.   Also, there is no i8259
-on the sandpoint board!?!   And why the gemini stuff?
+> Also linked into the kernel are 5 files to do with pci,  why?   For one thing, I thought
+> prep and chrp were mutually exclusive hardware configurations.
 
-This causes problems when the config is changed/simplified.  And I've tried various
-combinations of O_OBJS items with no joy.   There is a lot of interdependencies of
-function calls amongst these files.   I've started to explore some of the source files,
-but am so far bewildered on what to specify for a minimal obj file list that will link OK.
+They are, but this is configured at run-time.  The 8240 is basically
+a PowerPC 603 core with a MPC106 PCI Bridge.  I don't remember which
+memory map I used, probably Prep, but it doesn't quite match either one.
+It doesn't really matter as the I/O mapping functions are fairly generic.
+I just used the bits and pieces that were appropriate.
 
-There are some source file changes I'll have to make too I think, sandpoint_setup.c for
-one.  Does anyone have any tips on what other files I'll have to modify?
 
-If I had some idea of the history of the sandpoint-8240 porting process, it would probably
-help a lot.
-At the moment I'm concentrating on generating and analyzing cross reference information to
-better understand the functional interdependencies in kernel.o.
+> ...   Also, there is no i8259
+> on the sandpoint board!?!
 
-Thanks in advance for any advice.
+Yes, there is.  It is inside the SouthBridge (Winbond 83c553).  It handles
+all of the external interrupt arbitration.
 
-Ron Bianco
-Computer Systems Technologist
-Level Control Systems
-email: ronb@junction.net
-phone: 250-549-2558 Ext 8
-web:  www.lcsaudio.com
+> ....   And why the gemini stuff?
 
-#
-# Automatically generated by make menuconfig: don't edit
-#
+To get the Grackle (MPC106) PCI configuration/control functions.  I just
+used what Cort wrote for the Gemini, no sense duplicating code.
 
-#
-# Platform support
-#
-CONFIG_PPC=y
-CONFIG_6xx=y
-# CONFIG_PPC64 is not set
-# CONFIG_8xx is not set
-# CONFIG_PMAC is not set
-# CONFIG_PREP is not set
-# CONFIG_CHRP is not set
-# CONFIG_ALL_PPC is not set
-# CONFIG_GEMINI is not set
-CONFIG_SANDPOINT=y
-# CONFIG_APUS is not set
-# CONFIG_MBX is not set
-# CONFIG_SMP is not set
-CONFIG_MACH_SPECIFIC=y
-CONFIG_6xx=y
-#
-# General setup
-#
-# CONFIG_EXPERIMENTAL is not set
-# CONFIG_MODULES is not set
-CONFIG_PCI=y
-CONFIG_CHRP_MAPB=y
-CONFIG_NET=y
-CONFIG_SYSCTL=y
-CONFIG_SYSVIPC=y
-# CONFIG_BSD_PROCESS_ACCT is not set
-CONFIG_BINFMT_ELF=y
-CONFIG_KERNEL_ELF=y
-CONFIG_BINFMT_MISC=y
-# CONFIG_PARPORT is not set
-# CONFIG_VGA_CONSOLE is not set
-# CONFIG_FB is not set
-# CONFIG_PMAC_PBOOK is not set
-# CONFIG_MAC_KEYBOARD is not set
-# CONFIG_MAC_FLOPPY is not set
-# CONFIG_MAC_SERIAL is not set
-# CONFIG_PROC_DEVICETREE is not set
-# CONFIG_TOTALMP is not set
-# CONFIG_BOOTX_TEXT is not set
-# CONFIG_MOTOROLA_HOTSWAP is not set
+> This causes problems when the config is changed/simplified.
 
-#
-# Plug and Play configuration
-#
-# CONFIG_PNP is not set
-# CONFIG_ISAPNP is not set
+There isn't very much you are going to change from the Sandpoint port,
+as it was really just a 8240 Port.  I used the Ethernet card on the
+PCI bus, but you are doing the same.
 
-#
-# Block devices
-#
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_DEV_IDE is not set
-# CONFIG_BLK_DEV_HD_ONLY is not set
-# CONFIG_BLK_CPQ_DA is not set
-CONFIG_BLK_DEV_LOOP=y
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_MD is not set
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_INITRD=y
-# CONFIG_BLK_DEV_XD is not set
-# CONFIG_PARIDE is not set
-# CONFIG_BLK_DEV_IDE_MODES is not set
-# CONFIG_BLK_DEV_HD is not set
+You will have to include your Ethernet driver and other PCI device
+drivers.  You will have to possibly modify the OpenPIC configuration to
+match your hardware (I don't know how you are managing external interrupts).
+The code as I left it assumed a standard serial port at a well known
+address for the boot/kernel console.  You will probably have to change
+that to match your system.
 
-#
-# Networking options
-#
-CONFIG_PACKET=y
-# CONFIG_PACKET_MMAP is not set
-# CONFIG_NETLINK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_FILTER is not set
-CONFIG_UNIX=y
-CONFIG_INET=y
-# CONFIG_IP_MULTICAST is not set
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_PNP=y
-CONFIG_IP_PNP_BOOTP=y
-# CONFIG_IP_PNP_RARP is not set
-# CONFIG_IP_ROUTER is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_ALIAS is not set
-# CONFIG_SYN_COOKIES is not set
-CONFIG_SKB_LARGE=y
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
+> ..........   There is a lot of interdependencies of
+> function calls amongst these files.   I've started to explore some of the source files,
+> but am so far bewildered on what to specify for a minimal obj file list that will link OK.
 
-#
-# SCSI support
-#
-CONFIG_SCSI=y
-CONFIG_BLK_DEV_SD=y
-# CONFIG_CHR_DEV_ST is not set
-CONFIG_BLK_DEV_SR=y
-CONFIG_BLK_DEV_SR_VENDOR=y
-# CONFIG_CHR_DEV_SG is not set
-# CONFIG_SCSI_MULTI_LUN is not set
-CONFIG_SCSI_CONSTANTS=y
-# CONFIG_SCSI_LOGGING is not set
+Yes.  The Sandpoint or Gemini are about as minimal as you can get.  There
+doesn't appear to be much software specific to Sandpoint because it
+utilizes all of the standard functions in other files for the standard
+interfaces (processor, PCI, OpenPIC, etc.).
 
-#
-# SCSI low-level drivers
-#
-# CONFIG_SCSI_7000FASST is not set
-# CONFIG_SCSI_ACARD is not set
-# CONFIG_SCSI_AHA152X is not set
-# CONFIG_SCSI_AHA1542 is not set
-# CONFIG_SCSI_AHA1740 is not set
-# CONFIG_SCSI_AIC7XXX is not set
-# CONFIG_SCSI_IPS is not set
-# CONFIG_SCSI_ADVANSYS is not set
-# CONFIG_SCSI_IN2000 is not set
-# CONFIG_SCSI_AM53C974 is not set
-# CONFIG_SCSI_MEGARAID is not set
-# CONFIG_SCSI_BUSLOGIC is not set
-# CONFIG_SCSI_DTC3280 is not set
-# CONFIG_SCSI_EATA is not set
-# CONFIG_SCSI_EATA_DMA is not set
-# CONFIG_SCSI_EATA_PIO is not set
-# CONFIG_SCSI_FUTURE_DOMAIN is not set
-# CONFIG_SCSI_GDTH is not set
-# CONFIG_SCSI_GENERIC_NCR5380 is not set
-# CONFIG_SCSI_INITIO is not set
-# CONFIG_SCSI_INIA100 is not set
-# CONFIG_SCSI_NCR53C406A is not set
-# CONFIG_SCSI_SYM53C416 is not set
-# CONFIG_SCSI_NCR53C7xx is not set
-# CONFIG_SCSI_NCR53C8XX is not set
-CONFIG_SCSI_SYM53C8XX=y
-CONFIG_SCSI_NCR53C8XX_DEFAULT_TAGS=8
-CONFIG_SCSI_NCR53C8XX_MAX_TAGS=32
-CONFIG_SCSI_NCR53C8XX_SYNC=20
-# CONFIG_SCSI_NCR53C8XX_PROFILE is not set
-# CONFIG_SCSI_NCR53C8XX_IOMAPPED is not set
-# CONFIG_SCSI_NCR53C8XX_PQS_PDS is not set
-# CONFIG_SCSI_PAS16 is not set
-# CONFIG_SCSI_PCI2000 is not set
-# CONFIG_SCSI_PCI2220I is not set
-# CONFIG_SCSI_PSI240I is not set
-# CONFIG_SCSI_QLOGIC_FAS is not set
-# CONFIG_SCSI_QLOGIC_ISP is not set
-# CONFIG_SCSI_QLOGIC_FC is not set
-# CONFIG_SCSI_SEAGATE is not set
-# CONFIG_SCSI_DC390T is not set
-# CONFIG_SCSI_T128 is not set
-# CONFIG_SCSI_U14_34F is not set
-# CONFIG_SCSI_ULTRASTOR is not set
-# CONFIG_SCSI_MESH is not set
-# CONFIG_SCSI_MAC53C94 is not set
+Take the existing Sandpoint files, modify to suit your needs, configure
+your Ethernet driver, and you are done.  Don't try to remove all of the
+other files because they are required to support the hardware.
 
-#
-# Network device support
-#
-CONFIG_NETDEVICES=y
 
-#
-# ARCnet devices
-#
-# CONFIG_ARCNET is not set
-# CONFIG_DUMMY is not set
-# CONFIG_EQUALIZER is not set
-# CONFIG_NET_SB1000 is not set
 
-#
-# Ethernet (10 or 100Mbit)
-#
-CONFIG_NET_ETHERNET=y
-# CONFIG_MACE is not set
-# CONFIG_BMAC is not set
-# CONFIG_NET_VENDOR_3COM is not set
-# CONFIG_LANCE is not set
-# CONFIG_NET_VENDOR_SMC is not set
-# CONFIG_NET_VENDOR_RACAL is not set
-# CONFIG_NET_ISA is not set
-CONFIG_NET_EISA=y
-# CONFIG_PCNET32 is not set
-# CONFIG_APRICOT is not set
-# CONFIG_CS89x0 is not set
-# CONFIG_DE4X5 is not set
-# CONFIG_DEC_ELCP is not set
-# CONFIG_DGRS is not set
-CONFIG_EEXPRESS_PRO100=y
-# CONFIG_NE2K_PCI is not set
-# CONFIG_TLAN is not set
-# CONFIG_VIA_RHINE is not set
-# CONFIG_ADAPTEC_STARFIRE is not set
-# CONFIG_NET_POCKET is not set
-# CONFIG_FDDI is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
-# CONFIG_NET_RADIO is not set
-
-#
-# Token ring devices
-#
-# CONFIG_TR is not set
-# CONFIG_NET_FC is not set
-
-#
-# Wan interfaces
-#
-# CONFIG_HOSTESS_SV11 is not set
-# CONFIG_COSA is not set
-# CONFIG_SEALEVEL_4021 is not set
-# CONFIG_DLCI is not set
-# CONFIG_WAN_DRIVERS is not set
-# CONFIG_LAPBETHER is not set
-# CONFIG_X25_ASY is not set
-
-#
-# Amateur Radio support
-#
-# CONFIG_HAMRADIO is not set
-
-#
-# ISDN subsystem
-#
-# CONFIG_ISDN is not set
-
-#
-# Old CD-ROM drivers (not SCSI, not IDE)
-#
-# CONFIG_CD_NO_IDESCSI is not set
-
-#
-# Console drivers
-#
-
-#
-# Character devices
-#
-# CONFIG_VT is not set
-# CONFIG_SERIAL is not set
-# CONFIG_SERIAL_EXTENDED is not set
-# CONFIG_SERIAL_NONSTANDARD is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_UNIX98_PTY_COUNT=256
-
-#
-# Mice
-#
-# CONFIG_BUSMOUSE is not set
-# CONFIG_MOUSE is not set
-# CONFIG_QIC02_TAPE is not set
-# CONFIG_WATCHDOG is not set
-# CONFIG_NVRAM is not set
-# CONFIG_RTC is not set
-
-#
-# Video For Linux
-#
-# CONFIG_VIDEO_DEV is not set
-
-#
-# Joystick support
-#
-# CONFIG_JOYSTICK is not set
-# CONFIG_DTLK is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-
-#
-# Ftape, the floppy tape device driver
-#
-# CONFIG_FTAPE is not set
-
-#
-# USB drivers - not for the faint of heart
-#
-# CONFIG_USB is not set
-
-#
-# Filesystems
-#
-# CONFIG_QUOTA is not set
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_FAT_FS is not set
-# CONFIG_MSDOS_FS is not set
-# CONFIG_UMSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-CONFIG_ISO9660_FS=y
-# CONFIG_JOLIET is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_NTFS_FS is not set
-# CONFIG_HPFS_FS is not set
-CONFIG_PROC_FS=y
-CONFIG_DEVPTS_FS=y
-CONFIG_ROMFS_FS=y
-CONFIG_EXT2_FS=y
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-
-#
-# Network File Systems
-#
-# CONFIG_CODA_FS is not set
-CONFIG_NFS_FS=y
-CONFIG_ROOT_NFS=y
-CONFIG_SUNRPC=y
-CONFIG_LOCKD=y
-# CONFIG_SMB_FS is not set
-# CONFIG_NCP_FS is not set
-
-#
-# Partition Types
-#
-CONFIG_PARTITION_ADVANCED=y
-# CONFIG_OSF_PARTITION is not set
-# CONFIG_MAC_PARTITION is not set
-CONFIG_MSDOS_PARTITION=y
-# CONFIG_BSD_DISKLABEL is not set
-# CONFIG_SOLARIS_X86_PARTITION is not set
-# CONFIG_UNIXWARE_DISKLABEL is not set
-# CONFIG_SGI_PARTITION is not set
-# CONFIG_SUN_PARTITION is not set
-# CONFIG_AMIGA_PARTITION is not set
-# CONFIG_ATARI_PARTITION is not set
-# CONFIG_ACORN_PARTITION is not set
-# CONFIG_NLS is not set
-
-#
-# Sound
-#
-# CONFIG_SOUND is not set
-
-#
-# Kernel hacking
-#
-# CONFIG_MAGIC_SYSRQ is not set
-# CONFIG_KGDB is not set
-# CONFIG_XMON is not set
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
