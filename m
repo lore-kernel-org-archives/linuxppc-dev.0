@@ -1,30 +1,41 @@
-Date: Thu, 23 Mar 2000 17:10:24 -0800
-From: Geoff Keating <geoffk@cygnus.com>
-Message-Id: <200003240110.RAA05871@localhost.cygnus.com>
-To: linuxppc-dev@lists.linuxppc.org
-CC: libc-hacker@sourceware.cygnus.com
-Subject: Change to mman.h around 2.3.99-pre3-pre4
+Message-ID: <38DAC6B9.FFAB3AC3@worldnet.fr>
+Date: Fri, 24 Mar 2000 02:36:57 +0100
+From: Franck Chionna <blokos@worldnet.fr>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Jeff Garzik <jgarzik@mandrakesoft.com>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Tulip on PPC :-)
+References: <Pine.LNX.4.05.10003231817520.29617-100000@callisto.of.borg>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anyone know why the file linux/include/asm-ppc/mman.h changed the
-values of MCL_CURRENT and MCL_FUTURE around kernel version
-2.3.99-pre3-pre4?
+Geert Uytterhoeven wrote:
 
-This change causes binary incompatibility.
+>         Hi Jeff,
+>
+> The latest Tulip driver (2.3.99-pre3-pre7) works fine on the DEC21041 card in
+> my PPC box.  Great job!
+>
+> Gr{oetje,eeting}s,
+>
+>                                                 Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                                             -- Linus Torvalds
+>
 
-They used to be
+where can i find this last version ?
 
-#define MCL_CURRENT     0x2000          /* lock all currently mapped pages */
-#define MCL_FUTURE      0x4000          /* lock all additions to address space */
+Thanks
 
-but they're now
+Franck Chionna
 
-#define MCL_CURRENT	1		/* lock all current mappings */
-#define MCL_FUTURE	2		/* lock all future mappings */
-
---
-- Geoffrey Keating <geoffk@cygnus.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
