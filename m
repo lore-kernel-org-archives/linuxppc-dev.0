@@ -1,36 +1,23 @@
-Message-ID: <3A22C5BF.445BF4F1@mvista.com>
-Date: Mon, 27 Nov 2000 13:36:15 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-Reply-To: mgreer@mvista.com
+From: "Dan Jankins" <DJankins@communica.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8240 built in uart??
+Date: Mon, 27 Nov 2000 16:00:54 -0500
+Message-ID: <NEBBKDMDALNLPJILFLLOAEBHCAAA.DJankins@communica.com>
 MIME-Version: 1.0
-To: Dan Jankins <DJankins@communica.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MP8240 UART
-References: <NEBBKDMDALNLPJILFLLOCEBFCAAA.DJankins@communica.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Jankins wrote:
+Hi All, It appears that the MPC8240 has and UART build into it.  The PCI
+Clock's signals (PCICLK0,1,2,3, pins AC25,AB25,AE26, AF25) are dual
+function.  I have a Sandpoint Dev Board and there is a MAXIUM RS-232 driver
+connected to these pins on the daughter.  This would make it the third
+RS-232 port.  This port is not brought out to a external connector, only to
+J5 on the daughter board.
 
-> Hi All,  I am a new to PowerPC.  I have downloaded the Sandpoint Doc?s
-> including Schematic.  I the Unity X4 schematic  (page 9) has reference to a
-> UART (SOUT1, SIN1, RTS1, CTS1) but the MP8240 Data sheet status these line
-> are PCI clock.
->
-> Is there a UART in the MP8240?  If so where can I find information on it.
-> Also does Hardhat Linux use this port?
-
-There is no uart in the 8240 itself or on the 8240 processor module but there
-is a uart on the sandpoint.  It is a 16550 compatible uart on the National
-87308VUL SuperIO chip.  Go the the National website for more info on that
-chip.
-
-Yes, Hardhat linux supports that hardware.  That is what the serial console
-uses.
-
-Mark
+Daniel R Jankins
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
