@@ -1,71 +1,27 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0605C@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: "'Wolfgang Denk'" <wd@denx.de>, James Don <JDon@spacebridge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: RAMDISK IMAGES(2): ash has no job control ??? ... can't acces
-	 s tt y; job control turned off
-Date: Mon, 13 Jan 2003 20:00:14 -0500
+Message-ID: <3E23657D.7090302@mvista.com>
+Date: Mon, 13 Jan 2003 19:18:53 -0600
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: James Don <JDon@spacebridge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RPM: how do i un-pack an rpm without installing ...
+References: <DB0585C9F6F9D411BE8F00D0B7896A4CC0605A@SNCMAIL>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-Just went to look at your ELDK ... seems the rpms don't have patch in them
-... which package as the source code for the build?
-
-I tried these ... but looks like there is only binaries in them ...
-
-util-linux-ppc_8xx-2.11f-17.ppc.rpm
-SELF-ppc_8xx-1.0-1.ppc.rpm
-
-Jim
-
------Original Message-----
-From: Wolfgang Denk [mailto:wd@denx.de]
-Sent: Sunday, January 12, 2003 5:40 PM
-To: James Don
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RAMDISK IMAGES(2): ash has no job control ??? ... can't acces s
-tt y; job control turned off
-
-In message <DB0585C9F6F9D411BE8F00D0B7896A4CC0603B@SNCMAIL> you wrote:
+James Don wrote:
+> Sorry,
+> Not really a topic for this group but ...
 >
-> 2.) I added line "ttyS1::askfirst:-/bin/sh" to inittab ... and I get
-> "Bummer, can't open /dev/ttyS1" ... which was funny enough to make me blow
-> coffee out my nose ... whats this tty normally used for?
+> how do i un-pack an rpm without installing it?
 
-It is you who defines the use of the serial ports on your board -  we
-cannot answer this question.
+Use "rpm2cpio" to produce a cpio archive, and then use cpio to extract it.
 
-> 3.) I added line "ttyS0::askfirst:-/bin/sh" to inittab ... and that seems
-to
-> work ...
->
-> Three leads to a question ... here it is ...
->
-> Should I change 'libbb.h' to open /dev/ttyS0 instead of ttyS ... see line
+"rpm2cpio <rpm> | cpio -id" works for me.
 
-You probably don't want to make your ramdisk  image  dependend  on  a
-specific  board / tty use.
+--Mark
 
-If you look closer at our ELDK you will find that it contains a small
-modification to  "login"  (calling  of  TIOCSCTTY  ioctl)  which  was
-necessary  to  allow  for  using  /dev/console  as the default serial
-console device specified in inittab. See the
-build/target_rpms/util-linux/SOURCES/login-eldk.patch
-file in the ELDK build environment.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Nothing in progression can rest on its original plan. We may as  well
-think  of  rocking  a grown man in the cradle of an infant.
-- Edmund Burke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
