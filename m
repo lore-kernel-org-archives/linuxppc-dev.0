@@ -1,44 +1,44 @@
-Message-Id: <200007121316.OAA02671@hyperion.valhalla.net>
-Date: Wed, 12 Jul 2000 14:16:43 +0100
-Subject: Re: 2.4.0-t1 & t3: dmasound
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: schinder@pobox.com
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Going from 2.2.12 to 2.2.17pre10
+Date: Wed, 12 Jul 2000 15:31:07 +0200
+Message-Id: <20000712133107.23409@mailhost.mipsys.com>
+In-Reply-To: <Pine.LNX.4.10.10007112110350.1244-100000@cassiopeia.home>
+References: <Pine.LNX.4.10.10007112110350.1244-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[snip]
-> } Happy to try & fix - but it would be useful to know whether there are *any*
-> } conditions under which it has worked.
+>Well, some (control/platinum/valkyrie) will keep on using OF probing since
+>they're used on PowerMac only. But their initialization routine will no
+longer
+>be called by offb.
 >
-> This is on a Performa 6400.
->
-> linux% cat /dev/sndstat
-> PowerMac (AWACS rev 2) DMA sound driver:
->  sound.format = 0x20 (signed 16 bit big)
->  sound.speed = 44100Hz (phys. 44100Hz)
->  sound.stereo = 0x1 (stereo)
->  sq.block_size = 32768 sq.max_count = 4 sq.max_active = 4
->  sq.count = 0 sq.rear_size = 12288
->  sq.active = 0 sq.syncing = 0
->
-> linux% uname -a
-> Linux c22234-c.scllg1.pa.home.com 2.4.0-test1-ac21 #1 Wed Jun 21 23:15:08
-> EDT 2000 ppc unknown
->
-> The source is from Paul's developent tree.
->
-> I've compiled sound support in rather than as a module.  It works, but
-> the only way to control the volume is by using the Gnome mixer.  On
-> anything else I've tried (xmms, the CD player that comes with Gnome,
-> reaplayer), the volume sliders don't work.  But the sound is fine.
+>Prepare to see an (untested, as usual :-) patch for this RSN...
 
-thnx v. much - I've a hunch we're not getting any interrupts...
-still investigating...
+BTW. I didn't look in details yet what's wrong, but I noticed that with
+the current bk 2.4test3:
 
-Iain
+ - video=ofonly doesn't work. We need to find some kludge to get this one
+back, as it's useful on some setup with broken video (and can be the only
+way to get the machine up)
+
+ - aty128fb doesn't intialize console_fb_info (the Xpmac compat stuff).
+This is easily fixed by copy&pasting code from another driver, I'll have
+a fix for this in bk tonight
+
+ - More annoying: I couldn't get XF4 to work on the Pismo with this
+kernel. I tried with or without aty128fb in the kernel, I tried XF4 with
+the plain fbdevhw driver, with the r128 driver without fbdev, and with
+the r128 driver on top of fbdev, and all I could get is a hung XFree on a
+black screen (I found no way to get the screen back with a console, but
+the machine still answer to telnet).
+The exact same XF4 binary works nicely on 2.2
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
