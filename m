@@ -1,59 +1,67 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Daniel Berlin <dan@cgsoftware.com>
-Subject: Re: DFP support for kernel radeonfb.c added
-Date: Thu, 15 Nov 2001 07:16:28 -0500
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-References: <Pine.LNX.4.33.0111142302580.13578-100000@www.cgsoftware.com>
-In-Reply-To: <Pine.LNX.4.33.0111142302580.13578-100000@www.cgsoftware.com>
+Message-ID: <3BF3B237.2F29F8D6@folkwang-hochschule.de>
+Date: Thu, 15 Nov 2001 13:16:55 +0100
+From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
 MIME-Version: 1.0
-Message-Id: <20011115121346.JSZQ25459.tomts20-srv.bellnexxia.net@there>
+To: linuxppc-dev@lists.linuxppc.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: running hot ! [was:Re: AGP : ATI128,powerpc]
+References: <20011114230308.04E9D18077@haven.ozlabs.ibm.com> <15346.46026.126227.601357@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+hello *
 
-That is interesting.  I hard coded mine to 67 but the PLL probe code
-returned 12.  Ani said it should be 67 so I just assumed OF was not
-setting up the card properly.
+thanks to your hints, i was able to speed up my x performance by
+switching to the ati x server.
+scrolling is now what god intended it to be.
 
-Pleaase let me know if that is indeed the issue.
+i have also compiled the latest benh kernel with agp and ati
+support.
+all runs fine, although i have not yet been able to run 3d stuff,
+probably a missing x module.
 
-Glad to hear it works basically!
+one peculiar thing: the trackpad button of my pismo gets quite hot,
+which it did not do before.
+it's not too extreme, but the difference to my old setup
+(xfree3.3.6, framebuffer xserver, old kernel w/o agp and ati
+support) where the button used to be totally cold is remarkable.
 
-Care to try with adding:
+has anyone seen that, too ?
 
-radeon:of_edid,lcd
+regards,
 
-to see how that does ( I already added in the searching for EDID1)
+jörn
 
-Thanks.
 
-Kevin
-
-On November 15, 2001 01:04, Daniel Berlin wrote:
-> On Wed, 14 Nov 2001, Kevin B. Hendricks wrote:
-> > Anyway, please give it a try.  I will send followup patches with other
-> > fixes and additions I make to improve things but this should be enough
-> > to get people working until the i2c stuff gets going.
-> >
-> > So Daniel, if you get a chance, please try this.  If it works, then we
-> > have broken nothing for you and we can then decide if you want to move
-> > to the more general case of using EDID info.  If it does not work,
-> > please let me know asap so I can back out my changes in groups until
-> > we identify what is going wrong here.
+Paul Mackerras wrote:
 >
-> It works, but if i don't set the refdiv to 67 (like we do for the QD), i
-> get what looks like a very slow refresh rate (IE when you move the mouse
-> in X or cause a lot of screen updates on the console, you can see it's
-> going slower than it should).
-> I'll reboot a few times to verify this is indeed the cause.
+> J?rn Nettingsmeier writes:
 >
-> > Thanks,
+> > i've been using ben's tree for a powerbook for quite some time, and
+> > i used to see the same error, so i disabled agp and dri.
 > >
-> > Kevin
+> > has this been fixed lately ?
+> > i'm desperate for faster video. 2d performance under x is pathetic,
+> > and scrolling is a major pita.
+>
+> Getting reasonable 2D performance for things like scrolling doesn't
+> need DRI and/or AGP, you just need an X server that knows how to drive
+> the rage 128 chip.  I'm using XFree86 4.1.0 (from debian unstable) on
+> my Ti powerbook and it works just fine.  I can send you my
+> XF86Config-4 if you like (you would need to tweak it a little for a
+> pismo) or you could ask Ben Herrenschmidt for the config he uses on
+> his pismo.
+>
+> Paul.
+>
+
+--
+Jörn Nettingsmeier
+home://Kurfürstenstr.49.45138.Essen.Germany
+phone://+49.201.491621
+http://spunk.dnsalias.org
+http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
