@@ -1,9 +1,9 @@
-Date: Thu, 12 Apr 2001 15:58:13 -0600
-From: Cort Dougan <cort@fsmlabs.com>
+Date: Thu, 12 Apr 2001 16:23:48 -0700
+From: Anton Blanchard <anton@samba.org>
 To: tom_gall@vnet.ibm.com
 Cc: linuxppc-commit@fsmlabs.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: compiler or kernel source defines
-Message-ID: <20010412155813.I4021@ftsoj.fsmlabs.com>
+Message-ID: <20010412162348.A17583@va.samba.org>
 References: <3AD5F612.E3E282E8@vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -12,10 +12,26 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been steering towards use of CONFIG_PPC which we set in the kernel
-config.  I'd like to continue to use that for _all_ PPC's but we could have
-CONFIG_PPC32 and CONFIG_PPC64 for each version.
 
-If that'll work for you guys I can add those.
+Hi,
+
+> #ifdef defined(__powerpc__) and !defined(__PPC64__)
+>
+> 32 bit PPC kernel code
+>
+> #elif defined(__powerpc__) and defined(__PPC64__)
+>
+> 64 bit PPC kernel code
+>
+> #endif
+>
+>   Seems like the only risk here is that one always assumes to be using gcc and
+> that's perfectly valid to me.
+
+Thats what we do in the sparc port. We did have a problem where some
+areas used sparc and not __sparc__ and the gcc guys decided to stop
+gcc from definining it. But apart from that its been fine.
+
+Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
