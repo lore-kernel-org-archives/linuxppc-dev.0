@@ -1,58 +1,64 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: Gabriel Paubert <paubert@iram.es>,
-        Kevin Hendricks <khendricks@ivey.uwo.ca>
+Date: Fri, 21 Jan 2000 01:05:26 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
+        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-Date: Thu, 20 Jan 2000 23:34:23 +0100
-Content-Type: text/plain
-Cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-References: <Pine.HPX.4.10.10001202043560.18916-100000@gra-ux1.iram.es>
-In-Reply-To: <Pine.HPX.4.10.10001202043560.18916-100000@gra-ux1.iram.es>
+In-Reply-To: <00012023473100.01038@enzo.bigblue.local>
+Message-ID: <Pine.HPX.4.10.10001202357570.18916-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Message-Id: <00012023473100.01038@enzo.bigblue.local>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am Don, 20 Jan 2000 schrieb Gabriel Paubert:
->Hi,
->
->> In this particular case, the base address can change (but very very rarely
->> such as writing to one Aperature or Another on the Rage 128 card) and all of
->> the writes are made to either the card memory mapped io or the frame buffer
->> itself.
->
->Then the memory clobber would force the compiler to reload base_addr
->between 2 writes to the frame buffer.
->
->> Should I not include the : "memory" clobber in this case?  Will it hurt
->> performance much?
->
->I think that it is not necessary: the best thing with a compiler which
->performs alias analysis might be to tell the truth
->
->asm ("stwbrx %1,%2,%3"
->     : "=m" (*(volatile unsigned *)(base_addr+regindex))
->     : "r" (regdata), "b" (base_addr), "r" (regindex));
->
->Note we don't use %0, and it won't produce any aditional code. You may
->want to check what the compiler would have generated as addressing mode
->by appending " # %0" at the end of the code string.
 
-It depends a little bit on the usage of the asm's if the memory (either
-global or local) clobber is needed or not. If you use them for read/writes to HW
-registers needing ordering (which is very likely here since we talk about
-graphics HW), the compiler can only decide on the memory usage defined by the
-clobbers/memory inputs on how to order the inlines (volatile has no effect on
-this).
 
-Actually the load instructions need a memory input too:
+On Thu, 20 Jan 2000, Franz Sirl wrote:
 
-asm volatile ("lwbrx %0,%1,%2" : "=r"(val) : "b"(regindex), "r"(base_addr),
-"m" (*(volatile unsigned *)(base_addr+regindex)));
+> It depends a little bit on the usage of the asm's if the memory (either
+> global or local) clobber is needed or not. If you use them for read/writes to HW
+> registers needing ordering (which is very likely here since we talk about
+> graphics HW), the compiler can only decide on the memory usage defined by the
+> clobbers/memory inputs on how to order the inlines (volatile has no effect on
+> this).
 
-And to insure ordering on processor level you still need the eieio (with a
-memory clobber) as usual.
+Do you mean that a volatile memory reference can be reordered wit an asm
+volatile statement ? I thought theat this was not possible.
 
-Franz.
+>From GCC's documentation:
+
+   "You can prevent an `asm' instruction from being deleted, moved
+significantly, or combined, by writing the keyword `volatile' after the
+`asm'."
+
+You might disagree, but I consider that moving across a volatile memory
+reference is a _significant_ move, a very significant one.
+
+> Actually the load instructions need a memory input too:
+>
+> asm volatile ("lwbrx %0,%1,%2" : "=r"(val) : "b"(regindex), "r"(base_addr),
+> "m" (*(volatile unsigned *)(base_addr+regindex)));
+
+Indeed, perhaps even more than the store since asm without output operands
+are actually assumed to have side effects.
+
+>
+> And to insure ordering on processor level you still need the eieio (with a
+> memory clobber) as usual.
+
+
+The best thing to do is probably to put the eieio inside the asm
+statement, perhaps with 2 macros, one that includes the eieio and one that
+does not include it.
+
+Memory clobbers should be used extremely sparingly, I view them as the
+last resort when _nothing_ else would work. They are used far too often
+for my taste in the kernel, probably because they don't affect
+significantly machines with very few registers like Intel which have to
+permanently spill registers to memory or stack.
+
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
