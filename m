@@ -1,23 +1,97 @@
-From: Alexander.J@lntinfotech.com
-Subject: Target CPU selection for Real time Embedded Linux
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFB8D7A27E.4DFEB42B-ON65256C86.003DE12F@lntinfotech.com>
-Date: Thu, 5 Dec 2002 16:48:32 +0530
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Brian Waite <waite@skycomputers.com>
+To: Dan Vatca <dan@umft.ro>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: NFS root woes: No init found
+Date: Thu, 5 Dec 2002 10:20:53 -0500
+References: <200212041635.31861.waite@skycomputers.com> <200212041736.16628.waite@skycomputers.com> <200212051046.01969.dan@umft.ro>
+In-Reply-To: <200212051046.01969.dan@umft.ro>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-Id: <200212051020.53475.waite@skycomputers.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+But my target believe it was able to correctly open the file because it is
+parsing the header of the file to determine the file type. Also, If I remove
+my /dev/console node from the nfsroot, then console_init() throws a warning
+about no default console found, so it must have found the file on the remote
+host right?
+My NFS root is infact loacted in /home/ppc. I have used this exact NFS root to
+bring up an eval board.
 
-We would like to build a Router software engine using Real Time Embedded
-linux.
-
-In this process, we need to freeze the target CPU. Could anyone help me in
-this regard?
 
 Thanks
-Alex
+Brian
+On Thursday 05 December 2002 3:50 am, Dan Vatca wrote:
+>
+> On Thursday 05 December 2002 00:36, Brian Waite wrote:
+> > I tried that but things look pretty happy. Here is the output I get with
+> > tcpdump -vvv -s 1500 host seblade2
+> >
+> > I know this NFS root is set up because other PPC boxes use it for NFS
+> > root. I am pretty stumped.
+> >
+> > 17:32:19.528377 seblade2.800 > dayton.sunrpc:  [udp sum ok] udp 56 (DF)
+> > (ttl 64, id 0, len 84)
+> > 17:32:19.528732 dayton.sunrpc > seblade2.800:  [udp sum ok] udp 28 (DF)
+> > (ttl 64, id 0, len 56)
+> > 17:32:19.559211 seblade2.800 > dayton.sunrpc:  [udp sum ok] udp 56 (DF)
+> > (ttl 64, id 0, len 84)
+> > 17:32:19.559469 dayton.sunrpc > seblade2.800:  [udp sum ok] udp 28 (DF)
+> > (ttl 64, id 0, len 56)
+> > 17:32:19.579903 seblade2.800 > dayton.32771:  [udp sum ok] udp 56 (DF)
+> > (ttl 64, id 0, len 84)
+> > 17:32:19.585120 dayton.32771 > seblade2.800:  [udp sum ok] udp 60 (DF)
+> > (ttl 64, id 0, len 88)
+> > 17:32:19.585790 seblade2.159747 > dayton.nfs: 100 getattr fh Unknown/1
+> > (DF) (ttl 64, id 0, len 128)
+> > 17:32:19.585865 dayton.nfs > seblade2.159747: reply ok 96 getattr DIR
+> > 40755 ids 0/0 sz 4096  (DF) (ttl 64, id 0, len 124)
+> > 17:32:19.586681 seblade2.159748 > dayton.nfs: 100 fsstat fh Unknown/1
+> > (DF) (ttl 64, id 0, len 128)
+> > 17:32:19.586781 dayton.nfs > seblade2.159748: reply ok 48 fsstat [|nfs]
+> > (DF) (ttl 64, id 0, len 76)
+> > 17:32:19.615317 seblade2.159749 > dayton.nfs: 108 lookup fh Unknown/1
+> > "dev" (DF) (ttl 64, id 0, len 136)
+> > 17:32:19.615396 dayton.nfs > seblade2.159749: reply ok 128 lookup fh
+> > Unknown/1 DIR 40755 ids 0/0 sz 77824 nlink 17 rdev ffffffff fsid 306
+> > nodeid 246c8 a/m/ctime 1039040869.000000 1039039592.000000
+> > 1039039592.000000  (DF) (ttl 64, id 0, len 156)
+> > 17:32:19.616315 seblade2.159750 > dayton.nfs: 112 lookup fh Unknown/1
+> > "console" (DF) (ttl 64, id 0, len 140)
+> > 17:32:19.616353 dayton.nfs > seblade2.159750: reply ok 128 lookup fh
+> > Unknown/1 CHR 20600 ids 504/0 sz 0 nlink 1 rdev 501 fsid 306 nodeid 247e4
+> > a/m/ctime 1015747714.000000 1027439792.000000 1039029441.000000  (DF)
+> > (ttl 64, id 0, len 156)
+> > 17:32:19.628334 seblade2.159751 > dayton.nfs: 108 lookup fh Unknown/1
+> > "bin" (DF) (ttl 64, id 0, len 136)
+> > 17:32:19.628400 dayton.nfs > seblade2.159751: reply ok 128 lookup fh
+> > Unknown/1 DIR 40755 ids 0/0 sz 4096 nlink 2 rdev ffffffff fsid 306 nodeid
+> > 1d38b9 a/m/ctime 1039040880.000000 1026358299.000000 1030454764.000000
+> > (DF) (ttl 64, id 0, len 156)
+> > 17:32:19.629347 seblade2.159752 > dayton.nfs: 116 lookup fh Unknown/1
+> > "ash.static" (DF) (ttl 64, id 0, len 144)
+> > 17:32:19.629382 dayton.nfs > seblade2.159752: reply ok 128 lookup fh
+> > Unknown/1 REG 100755 ids 0/0 sz 522456 nlink 1 rdev ffffffff fsid 306
+> > nodeid 1d38f8 a/m/ctime 1039040880.000000 1015669398.000000
+> > 1030454763.000000  (DF) (ttl 64, id 0, len 156)
+> > 17:32:19.640029 seblade2.159753 > dayton.nfs: 112 read fh Unknown/1 4096
+> > bytes @ 0 (DF) (ttl 64, id 0, len 140)
+> > 17:32:19.640181 dayton > seblade2: (frag 51580:1244@2960) (ttl 64, len
+> > 1264) 17:32:19.640192 dayton > seblade2: (frag 51580:1480@1480+) (ttl 64,
+> > len 1500) 17:32:19.640201 dayton.nfs > seblade2.159753: reply ok 1472
+> > read REG 100755 ids 0/0 sz 522456 nlink 1 rdev ffffffff fsid 306 nodeid
+> > 1d38f8 a/m/ctime 1039041139.000000 1015669398.000000 1030454763.000000
+> > (frag 51580:1480@0+) (ttl 64, len 1500)
+>
+> - From your output it seems that your system cannot find a /bin, /dev, and
+> other things on that nfs mountpoint. But the nfs seems to be up and
+> responding with read errors ... Are you sure you did not overlooked a path?
+> Because the /home (as I saw from a previous email ...) is very strange
+> place to hold a filesystem root ...
+>
+> Dan.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
