@@ -1,75 +1,75 @@
-Date: Thu, 21 Jan 1999 14:07:15 -0600 (CST)
-From: Kevin Puetz <kp11901@mail.cedarnet.org>
-To: j k <j_kn@yahoo.com>
-cc: Kevin Puetz <kp11901@cedarnet.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppp problem
-In-Reply-To: <19990121195124.20532.rocketmail@send204.yahoomail.com>
-Message-ID: <Pine.SGI.3.95.990121140545.7656A-100000@www.cedarnet.org>
+Message-ID: <36A7BC64.EE5457BA@phx.mcd.mot.com>
+Date: Thu, 21 Jan 1999 16:46:44 -0700
+From: Johnnie Peters <jpeters@phx.mcd.mot.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gary Thomas <gdt@linuxppc.org>
+CC: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
+        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
+        Dan Malek <dmalek@jlc.net>, Cort Dougan <cort@persephone.cs.nmt.edu>,
+        Michael Meissner <meissner@cygnus.com>
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+References: <XFMail.990120152136.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Yes, but kppp messes up the serial handshake quite badly. I don't really
-know where the errors are coming from, but you could try a new (2.1.13x or
-2.2.0-preX) kernel. At least one source of bad checksum packets was fixed
-some time since 2.1.24
+Hi Everybody
 
-On Thu, 21 Jan 1999, j k wrote:
+I downloaded this stuff, merged it in and tried it.  Everything worked
+fine except the serial console connections are not showing the
+bootloader information that was introduced with Cort's serial
+console changes.  I don't yet know why as I am suddenly swamped
+with work but I will track it down in the next few days if nobody else
+does.  Othwise this looks really great.
 
-> The kernel is 2.1.24. Actually, if I start ppp as root from console, I
-> don't see lot packets transfer. If the machine is freshly rebooted and
-> I login from a regular user's X-window, using 'su -', then problem
-> will come up. It seems to me the machine sends out packets and then
-> the packets loop back.
-> 
-> The "Bad checksum" message has nothing to do with X-window.
-> 
-> Thanks
-> 
-> Jun Kong
-> 
-> ---Kevin Puetz <kp11901@cedarnet.org> wrote:
+I really like the configuration changes Gary mode for the command
+line stuff and being able to configure the mouse to force initialization.
+
+Johnnie
+
+
+Gary Thomas wrote:
+
+> On 20-Jan-99 Johnnie Peters wrote:
 > >
-> > What kernel? This has been resolved (though it came and went for a
-> long 
-> > time...) It never fully stopped networking from working, though.
-> > 
-> > >From: j k <j_kn@yahoo.COM>
-> > >To: puetzk6715@uni.edu
-> > >Subject: Re: ppp problem
-> > >Date: Tue, Jan 19, 1999, 3:21 PM
-> > >
-> > 
-> > >
-> > > Thank you very much for the info, I didn't know netcfg can be used
-> to
-> > > set up network. I tried kppp but no luck at all so I just use the
-> > > regular ppp. I guess there are some other problems with the network.
-> > > It complains "bad checksum". I need to look into this when I get a
-> > > chance.
-> > >
-> > > Thanks again
-> > >
-> > > Jun Kong
-> > >
-> > >
-> > >
-> > > ---puetzk6715@uni.edu wrote:
-> > >>
-> > >> I have never had good luck with kppp - I use netcfg, which works
-> much
-> > >> better.
-> > >>
-> > >
-> 
-> _________________________________________________________
-> DO YOU YAHOO!?
-> Get your free @yahoo.com address at http://mail.yahoo.com
-> 
+> > I will volunteer to try the patches on:
+> >
+> > Blackhawk
+> > Comet
+> > Utah
+> > Mequite
+> > MTX
+> > VME2600/2700/3600
+> >
+> > just as soon as they are available.
+> >
+>
+> I have put up all my patches against 2.2.0p7 at:
+>   ftp://ftp.linuxppc.org/gary/diffs-2.2.0p7-Jan20
+> These are diffs against the virgin 2.2.0-pre7.
+>
+> This includes the changes to fix boot problems on my Utah box,
+> as well as the changes to get the PS/2 mouse working again.
+>
+> I also did some restructuring of the PPC main configuration menu
+> so that Pmac questions are ignored if you aren't configuring for
+> a PowerMac.  I also added a configuration option to set the default
+> kernel boot line, passed to the bootstrap code.
+>
+> Note: I have had persistent problems with the cache test in the
+> NCR driver.  It seems to work fine if I just ignore it, so I also
+> left it that way.  I also had to "tone down" the driver a lot,
+> the default of WIDE+20Mhz just doesn't cut it on my drives :-)
+>
+> ------------------------------------------------------------------------
+> Gary Thomas                              |
+> email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+>    ... opinions expressed here are mine  |        life for me"
+>        and no one else would claim them! |
+>                                          |      Thomas Jefferson
+> ------------------------------------------------------------------------
 
-Kevin Puetz <kp11901@www.cedarnet.org>
 
 
 
