@@ -1,23 +1,51 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Giuliano Pochini <pochini@shiny.it>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: slow ZIP
-Date: Wed, 2 May 2001 13:32:17 +0200
-Message-Id: <20010502113217.25530@mailhost.mipsys.com>
-In-Reply-To: <XFMail.010502102553.pochini@shiny.it>
-References: <XFMail.010502102553.pochini@shiny.it>
+To: "Grover, Andrew" <andrew.grover@intel.com>
+Cc: "Acpi-PM (E-mail)" <linux-power@phobos.fachschaften.tu-muenchen.de>,
+	<sfr@canb.auug.org.au>, <linuxppc-dev@lists.linuxppc.org>,
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: pmevent patch and PM
+References: <4148FEAAD879D311AC5700A0C969E89006CDDD9D@orsmsx35.jf.intel.com>
+From: John Fremlin <chief@bandits.org>
+Date: 02 May 2001 18:59:32 +0100
+In-Reply-To: <4148FEAAD879D311AC5700A0C969E89006CDDD9D@orsmsx35.jf.intel.com>
+Message-ID: <m23danaayj.fsf@boreas.yi.org.>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Ok, but how can I enable DMA after boot ?  hdparm refuses to do it.
+Hi PM maintainers! ARM and PPC ppl, who is your PM maintainer?
 
-Look for the code in ide-pmac.c that skips enabling DMA when the
-device is an ide floppy.
+"Grover, Andrew" <andrew.grover@intel.com> writes:
 
-Ben.
+> ACPI has by far the richest set of capabilities. It is a superset of
+> APM.  Therefore a combined APM/ACPI interface is going to look a lot
+> like an ACPI interface.
+>
+> IMHO an abstracted interface at this point is overengineering. Maybe
+> later it will make sense, though.
 
+A simple event interface is presented with the pmevent patch. It is
+very extensible. The individual PM system driver suggests an action to
+be taken and identifies the event exactly. Any number of userspace
+readers can therefore apply fine grained policy to specific events and
+simultaneously handle unknown events reasonably well.
+
+The pmevent patch is available here
+
+        http://john.snoop.dk/programs/linux/offbutton
+
+There are some badly done example bindings for APM (that part of the
+patch needs to be cleaned up).  Will your PM driver be able to map
+events well onto it? I hope it should remove the need for an PM driver
+specific event interfaces.
+
+Please take a look and comment.
+
+[...]
+
+--
+
+	http://ape.n3.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
