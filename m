@@ -1,55 +1,42 @@
-Date: Wed, 28 Nov 2001 16:51:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Date: Thu, 29 Nov 2001 01:19:41 +0100
+From: Olaf Hering <olh@suse.de>
 To: Paul Mackerras <paulus@samba.org>
-Cc: Dan Malek <dan@embeddededge.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: include/asm-ppc/platforms/
-Message-ID: <20011128165132.G29541@cpe-24-221-152-185.az.sprintbbd.net>
-References: <15363.31192.101536.919771@gargle.gargle.HOWL> <3C2B376F.9070508@embeddededge.com> <15364.32906.728532.676746@gargle.gargle.HOWL>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_ALL_PPC
+Message-ID: <20011129011941.A10393@suse.de>
+References: <3C0561FE.80489F5E@vnet.ibm.com> <20011128221928.8366@smtp.wanadoo.fr> <15365.29851.123004.897729@gargle.gargle.HOWL>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15364.32906.728532.676746@gargle.gargle.HOWL>
+In-Reply-To: <15365.29851.123004.897729@gargle.gargle.HOWL>; from paulus@samba.org on Thu, Nov 29, 2001 at 10:34:51AM +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 28, 2001 at 05:13:30PM +1100, Paul Mackerras wrote:
+On Thu, Nov 29, Paul Mackeras wrote:
+
 >
-> Dan Malek writes:
+> Benjamin Herrenschmidt writes:
 >
-> > That's a pretty good idea, and I have another one.  Name the
-> > directory include/asm-ppc/ppc-platforms or something, then
-> > have a symbolic link
-> > 	include/asm/platform -> include/asm-ppc/ppc-platforms/<board-file>
+> > It's a difficult choice ;)
 > >
-> > That way we can just #include <platform.h> instead of having lots
-> > of ifdefs in upper level files to determine which one is needed.  If
-> > we are moving files around, let's have some effect on actually making
-> > it easier to use them, too.
+> > What about CONFIG_COMMON_PPC ? Still a bit misleading, but probably
+> > better than CONFIG_ALL_PPC...
 >
-> I have figured out a way to do this without too much pain.  The idea
-> is that we will have platform.h and platform-serial.h be symlinks to
-> files in include/asm-ppc/platforms/.  The way that I am suggesting
-> that we do this is to have special comments in those files (the ones
-> in include/asm-ppc/platforms) that say what should be symlinked, like
-> this, from include/asm-ppc/platforms/all_ppc_serial.h:
+> You know, what I am really tempted to do is to split out prep again
+> and have a CONFIG_PPC_OPENFIRMWARE to indicate pmac and chrp and
+> anything else that has a working OF.  But Olaf would kill me... :)
 
-The one thing I don't like about this is that there's a handfull of
-platforms which would use the 'all_ppc_serial.h' file.
+Hmm, why? :)
 
-> The patch below does all this.  It does mean that we will need a
-> platform header for every platform, and a platform_serial header for
-> every platform where we want to use the standard serial driver.  As an
-> example, I have made an all_ppc_serial.h that contains most of what
-> was in serial.h before.  In fact, with a bit of care we could make
-> serial.h be the symlink.
 
-Well, if I read that mess if #ifdefs, they already are a whole
-'serial.h', so lets just do it in one go. :)
 
-Aside from that it looks good.
+Gruss Olaf
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
