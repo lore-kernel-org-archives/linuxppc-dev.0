@@ -1,21 +1,21 @@
-Message-ID: <3ED797FD.F88A64FC@opersys.com>
-Date: Fri, 30 May 2003 13:42:21 -0400
+Message-ID: <3ED7CB98.8C48DCAA@opersys.com>
+Date: Fri, 30 May 2003 17:22:32 -0400
 From: Karim Yaghmour <karim@opersys.com>
 Reply-To: karim@opersys.com
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Embedded Planet SBC860H
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Embedded Planet SBC860H
+References: <D73A25AA6E54D511AD74009027B1110F3C0868@ORION>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I was wondering whether anyone had experience running Linux and
-U-Boot on an Embedded Planet SBC860H? I suppose it ought to be
-quite similar to the RPX boards ... I just don't see an SBC860H
-item in the kernel config or in U-Boot ... so just making sure.
+Steven Blakeslee wrote:
+> The EP8xx is the same as a CLLF BW31 but it has SDRAM instead of DRAM.
 
-Thanks,
+Great! Thanks Steven.
 
 Karim
 
