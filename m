@@ -1,32 +1,38 @@
-Subject: 405 I2C
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-To: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Cc: Armin Kuster <akuster@mvista.com>,
-	andrew may <acmay@acmay.homeip.net>
-Content-Type: text/plain
-Date: 21 May 2002 17:30:53 +0200
-Message-Id: <1021995053.7265.22.camel@swb11>
+Date: Tue, 21 May 2002 08:42:02 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem setting breakpoints with BDI2000
+Message-ID: <20020521154202.GC1209@opus.bloom.county>
+References: <B164B53F5BD6D511888D009027732E1A4D11CC@ntserver.act.domain>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B164B53F5BD6D511888D009027732E1A4D11CC@ntserver.act.domain>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How would you feel about merging the i2c-adap-ibm_ocp.c
-andi2c-algo-ibm_ocp.c into one file. This way it's possible to build the
-i2c drivers as a module.
+On Tue, May 21, 2002 at 12:38:01PM +1000, Rudolf Ladyzhenskii wrote:
+>
+> Hi, all
+>
+> I have BDI2000 with software version v1.11
+> I have problems setting a breakpoint. I am trying to set a breakpoint in the
+> start_kernel() function to debug misbehaving kernel.
+> So, at command line I type:
+> bi 0xXXXXXXXX, where 0xXXXXXXXX is address of start_kernel out of map file.
+> BDI does not stop there, it passes this breakpoint. IO tried it with HARD
+> and SOFT breakpoints.
 
+What order did you do it in?  That's important.  You need to 'halt',
+'load', 'bi 0xabcdef12', 'go'
 
-Also I have a problem when accessing a device that is not present. The
-bus ends up in busy state an no other action can be taken. I solved the
-problem for me here by simply removing the test in iix_xfer but a proper
-solution has to be discussed. I have not tried Andrew's new iic_xfer is
-it going to be merged ??
-
+If you use hard breakpoints, make sure to do a 'ci' and then 'break
+soft' either just before attaching with GDB or after attaching but
+before you do anything else.
 
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
