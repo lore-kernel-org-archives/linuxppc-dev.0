@@ -1,39 +1,27 @@
-To: Jin Cheng <jcheng@redswitch.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: root login on ELDK nfs booting 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 28 Aug 2002 11:32:03 PDT."
-             <3D6D1722.9421CC3B@redswitch.com>
-Date: Wed, 28 Aug 2002 22:14:09 +0200
-Message-Id: <20020828201415.10D6D1182F@denx.denx.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: jim <jduey@ccc-dcs.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PCI and DMA
+Date: Wed, 28 Aug 2002 20:58:41 +0000
+MIME-Version: 1.0
+Message-Id: <20020829021107.5924F38C2D@server.weathercom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3D6D1722.9421CC3B@redswitch.com> you wrote:
->
-> I booted on /opt/eldk/ppc_4xx. But it does not allow root login from my
-> serial console.
-> I changed the /etc/passwd so that I can login in as adm. Anyone can give
-> me advice on the
-> problem? Thanks.
+Hi folks,
 
-It's difficult to predict what you changed, and how.
+I've got a problem doing DMA over the PCI bus.  After I've done a DMA write
+to the device, the kernel hangs when I do a pci_read_config_byte for that
+device.  I've determined that when pci_read_config_byte is called, execution
+makes it to the call to the read_byte function of the pci_ops structure.
+(This function is pointed to by pdev->bus->ops->read_byte.)  What I can't
+seem to find is the code that is actually doing the read from the device
+configuration space.  Can somebody point me to it?  This is on a 405GP Walnut
+board.
 
-A stab into the dark: when installing the ELDK, did you  remember  to
-run  the  ELDK_FIXOWNER  script??  See  section  "7.  Mounting Target
-Components via NFS" at http://www.denx.de/ELDK/eldk-nfs.html
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-1st Old Man:  Gee, its windy today.
-2nd Old Man:  No it's not... it's Thursday.
-3rd Old Man:  Yeh, me too.  Let's go for a beer.
+Thanks,
+Jim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
