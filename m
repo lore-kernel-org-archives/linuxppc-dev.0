@@ -1,9 +1,9 @@
-Date: Mon, 7 Oct 2002 22:48:50 +0100 (BST)
+Date: Mon, 7 Oct 2002 22:52:03 +0100 (BST)
 From: Leigh Brown <leigh@solinno.co.uk>
 To: trini@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Minor command line fix
-Message-ID: <Pine.LNX.4.44.0210072246560.4630-100000@micro.solinno.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org, <hollis@austin.ibm.com>
+Subject: Tiny fix to Carolina l2 reporting
+Message-ID: <Pine.LNX.4.44.0210072249080.4630-100000@micro.solinno.co.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -12,25 +12,40 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Hi,
 
-I think it's a bug, and I think this fixes it.
+This one's Hollis's.  I think someone reported that this fixes it.  It
+definitely looks better.
 
 Cheers,
 
 Leigh.
 
-diff -urNX /home/leigh/.diffex linuxppc_2_4_devel-prev/arch/ppc/kernel/setup.c linuxppc_2_4_devel-local/arch/ppc/kernel/setup.c
---- linuxppc_2_4_devel-prev/arch/ppc/kernel/setup.c	Sun Sep  8 18:38:47 2002
-+++ linuxppc_2_4_devel-local/arch/ppc/kernel/setup.c	Sun Sep  8 18:39:26 2002
-@@ -471,7 +471,8 @@
- 		ulong *data = rec->data;
- 		switch (rec->tag) {
- 		case BI_CMD_LINE:
--			memcpy(cmd_line, (void *)data, rec->size);
-+			memcpy(cmd_line, (void *)data, rec->size -
-+						      sizeof(struct bi_record));
- 			break;
- 		case BI_SYSMAP:
- 			sysmap = (char *)((data[0] >= (KERNELBASE)) ? data[0] :
+
+--- linuxppc_2_4_devel/arch/ppc/platforms/prep_setup.c	Thu May 30 13:31:24 2002
++++ linuxppc_2_4_devel-local/arch/ppc/platforms/prep_setup.c	Tue Jun 11 14:47:25 2002
+@@ -340,12 +340,17 @@
+ 		unsigned int l2_reg = inb(PREP_IBM_L2INFO);
+
+ 		/* L2 size */
+-		if ((l2_reg & 0x60) == 0)
+-			seq_printf(m, "256KiB");
+-		else if ((l2_reg & 0x60) == 1)
+-			seq_printf(m, "512KiB");
+-		else
+-			seq_printf(m, "unknown size");
++		switch ((l2_reg & 0x60) >> 5) {
++			case 0:
++				seq_printf(m, "256KiB");
++				break;
++			case 1:
++				seq_printf(m, "512KiB");
++				break;
++			default:
++				seq_printf(m, "unknown size");
++				break;
++		}
+
+ 		/* L2 type */
+ 		if ((l2_reg & 0x3) == 0)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
