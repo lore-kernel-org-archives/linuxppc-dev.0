@@ -1,42 +1,41 @@
-Message-ID: <40845BA6.6010706@buckeye.ece.drexel.edu>
-Date: Mon, 19 Apr 2004 19:07:18 -0400
-From: Sharad Gupta <sharad@buckeye.ece.drexel.edu>
+Message-ID: <408476A2.2070106@jonmasters.org>
+Date: Tue, 20 Apr 2004 02:02:26 +0100
+From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-To: Jeff Angielski <jangiels@speakeasy.net>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: more SystemACE problems
-References: <407470ED.3030607@buckeye.ece.drexel.edu>	 <6058-40021@sneakemail.com> <407ADCFE.8080302@buckeye.ece.drexel.edu>	 <25757-52278@sneakemail.com>  <407EDCF7.2020009@buckeye.ece.drexel.edu>	 <1082322389.23738.13.camel@localhost.localdomain>	 <4084151A.4050805@buckeye.ece.drexel.edu> <1082399912.8706.11.camel@localhost.localdomain>
-In-Reply-To: <1082399912.8706.11.camel@localhost.localdomain>
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: System ACE MPU interface to CF card
+References: <407470ED.3030607@buckeye.ece.drexel.edu> <6058-40021@sneakemail.com> <407ADCFE.8080302@buckeye.ece.drexel.edu> <25757-52278@sneakemail.com> <407EDCF7.2020009@buckeye.ece.drexel.edu> <6334-88322@sneakemail.com> <4081CBB0.7090800@jonmasters.org>
+In-Reply-To: <4081CBB0.7090800@jonmasters.org>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jeff Angielski wrote:
-> On Mon, 2004-04-19 at 14:06, Sharad Gupta wrote:
-> I would suggest instrumenting the code in the driver that actually
-> handles the block request from the kernel.  For instance, is the request
-> being received by the xsa_thread?  Is the driver actually making a
-> request to the device.  And most importantly and where I suspect your
-> problem lies, is the xsa_complete_request() ever getting run?
->
-> Jeff Angielski
-> The PTR Group
 
-Hi Jeff,
+Jon Masters wrote:
 
-Thanks very much for your help. I have enabled the interrupts for
-SystemACE now. And in fact xsa_complete_request() was never called. I
-fixed that in xsa_thread.
+| I am having problems with xilinx_sysace at my end. This is on a
+| non-ML300 which is not running at anything like the same clock as the
+| rest of you at this moment in time (for various hardware development
+| reasons unrelated to the Linux side). I have a classic case of debugging
+| printk code altering the rate of execution and making things work.
 
-I was wondering if you could send in your modifications to the
-xilinx_systemace/* files so that I can know better where else the
-potential problems may lie.
+I received a mail offlist about this concerning the issues with an
+earlier revision of the xilinx_sysace driver brokenly not following the
+datasheet and failing to hold the device configuration controller in
+reset while doing transfers. I have now upgraded to a new verson.
 
-Do I need to have a device entry for xsystemacea (0/1) in my /dev
-directory ? If yes, then what should it be like ?
+This has fixed the ``hardware seems fairly screwed, it's not giving me
+interrupts when I want it! arrrgh!'' type problems but I still get
+random lockups and corruption of the request queue, which I think is
+related to a missing spinlock aquisition somewhere else.
 
-Thanks
-Sharad.
+To be honest I might soon get annoyed enough with it to rewrite it.
+Clearly Xilinx think it is a really good idea to have this HAL concept
+(and I think it is a really really bad one) - and I am one of the people
+that ends up using this code so really want something that works :-).
+
+Jon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
