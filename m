@@ -1,33 +1,35 @@
-Message-Id: <4.3.2.20000628111453.00b44440@falcon.si.com>
-Date: Wed, 28 Jun 2000 11:17:03 -0400
-To: Pei-Jie Hong <Pei-Jie.Hong@cern.ch>, linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: A question about head.S
-In-Reply-To: <3909A05A.E1901D52@cern.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <200006281530.RAA30903@denx.local.net>
+To: Pei-Jie Hong <Pei-Jie.Hong@cern.ch>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: A question about head.S 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 28 Apr 2000 16:29:46 +0200."
+             <3909A05A.E1901D52@cern.ch>
+Date: Wed, 28 Jun 2000 17:30:03 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You can use numbers for local (temporary) labels followed by 'f' for
-forward or 'b' for back.  The instruction bne 4f goes to the label '4'
-further down in the program.  If it was bne 4b, it would go to the
-label '4' previously seen in the file.  This is good for short logical
-jumps and loops.  Use the feature with care, massive confusion
-otherwise ensues.
-
-gvb
-
-
-At 04:29 PM 4/28/00 +0200, Pei-Jie Hong wrote:
-
->In arch/ppc/kernel/head.S, there are lines looks like
->bne 4f or b 5f, I know they are branch instructions, but what
->about 4f or 5f. Are they the relative length? and what is the unit,
->I mean if 4f is a number , is it number of instructions or number
->of bytes or words?
+In message <3909A05A.E1901D52@cern.ch> you wrote:
 >
+> In arch/ppc/kernel/head.S, there are lines looks like
+> bne 4f or b 5f, I know they are branch instructions, but what
+> about 4f or 5f. Are they the relative length? and what is the unit,
+> I mean if 4f is a number , is it number of instructions or number
+> of bytes or words?
 
+You will also see labels "4:" and "5:" etc. in the text.  "4f"  means
+"label  4  searching  forward",  while  "5b"  means "label 5 seaching
+backwards".
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Heavier than air flying machines are impossible.
+                    -- Lord Kelvin, President, Royal Society, c. 1895
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
