@@ -1,49 +1,186 @@
-To: "Young-Han, Kim" <yhkim@da-san.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC 8xx as SPI slave... 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 26 Mar 2003 18:44:17 +0900."
-             <000901c2f37c$44a2a800$337ceccb@dasan.com>
-Date: Wed, 26 Mar 2003 12:02:10 +0100
-Message-Id: <20030326110215.8C7ECC58BA@atlas.denx.de>
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "Tom Rini" <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH] CPCI405 update
+Date: Wed, 26 Mar 2003 14:31:47 +0100
+Message-ID: <EFEAIMDCOOOHIEPHDNFJMEMLFDAA.stefan.roese@esd-electronics.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_005D_01C2F3A4.6ED00D70"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Kim,
+This is a multi-part message in MIME format.
 
-in message <000901c2f37c$44a2a800$337ceccb@dasan.com> you wrote:
->
->   Also, I was doubt the cache problem.
->   I'll  check again...
->   My code is based on your lwmon_spi.c just basic function.
+------=_NextPart_000_005D_01C2F3A4.6ED00D70
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-Note that there is also a simple (and more  generic)  SPI  driver  in
-cpm_spi.c
+Hello
 
-> > Does the 8xx transfer data at all? You know, SPI has a very, very low
-> > priority onthe CPM, so it will be starved  by  any  other  I/O  (like
-> > ethernet and especially USB).
->
->   Just transmit the previous data of TX BD not on time.
->   I'll check the priority...
+The attached patch fixes a baudrate problem with the 400MHz version of the
+PPC405GPr on the CPCI405 board.
 
-Try reducing the SPI clock. You cannot change the priority of SPI  in
-the  CPM  - it is implemented in software (microcode), and running at
-the lowest priority. It is not useful for any  taks  which  needs  to
-transfer large amounts of data quickly.
+- Added cpci405_early_serial_map (cloned from evb405ep) to generate
+BASE_BAUD dynamically from the UDIV settings (configured by U-Boot).
 
+Please apply this patch to linuxppc_2_4_devel.
 
 Best regards,
+Stefan.
 
-Wolfgang Denk
+------=_NextPart_000_005D_01C2F3A4.6ED00D70
+Content-Type: application/octet-stream;
+	name="linuxppc_2_4_devel_2.4.21pre5.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="linuxppc_2_4_devel_2.4.21pre5.patch"
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Those who do not  understand  Unix  are  condemned  to  reinvent  it,
-poorly.              - Henry Spencer, University of Toronto Unix hack
+diff -N -u -r --exclude=3DCVS --exclude=3DLOG =
+linuxppc_2_4_devel_2.4.21pre5_orig/arch/ppc/platforms/cpci405.c =
+linuxppc_2_4_devel_2.4.21pre5/arch/ppc/platforms/cpci405.c=0A=
+--- linuxppc_2_4_devel_2.4.21pre5_orig/arch/ppc/platforms/cpci405.c	Wed =
+Mar 26 14:00:18 2003=0A=
++++ linuxppc_2_4_devel_2.4.21pre5/arch/ppc/platforms/cpci405.c	Wed Mar =
+26 14:09:02 2003=0A=
+@@ -6,7 +6,7 @@=0A=
+  * Author: Stefan Roese=0A=
+  *         stefan.roese@esd-electronics.com=0A=
+  *=0A=
+- * Copyright 2001 esd electronic system design - hannover germany=0A=
++ * Copyright 2001-2003 esd electronic system design - hannover germany=0A=
+  *=0A=
+  * This program is free software; you can redistribute  it and/or =
+modify it=0A=
+  * under  the terms of  the GNU General Public License as published by =
+the=0A=
+409/2001 - armin=0A=
+  *       added board_init to add in additional instuctions needed =
+during platfrom_init=0A=
+  *=0A=
++ * 		: 03/26/03 - stefan=0A=
++ *		Added cpci405_early_serial_map (cloned from evb405ep) to generate=0A=
++ *		BASE_BAUD dynamically from the UDIV settings (configured by U-Boot).=0A=
++ *=0A=
+  */=0A=
+=0A=
+ #include <linux/config.h>=0A=
+3pci-bridge.h>=0A=
+ #include <asm/machdep.h>=0A=
+ #include <asm/todc.h>=0A=
++#include <linux/serial.h>=0A=
+=0A=
+-void *cpci405_nvram;=0A=
++void *cpci405_nvram;=0A=
+=0A=
+ /*=0A=
+  * Some IRQs unique to CPCI-405.=0A=
+2_TABLE_LOOKUP;=0A=
+ };=0A=
+=0A=
++/* The serial clock for the chip is an internal clock determined by=0A=
++ * different clock speeds/dividers.=0A=
++ * Calculate the proper input baud rate and setup the serial driver.=0A=
++ */=0A=
++static void __init=0A=
++cpci405_early_serial_map(void)=0A=
++{=0A=
++	u32 uart_div;=0A=
++	int serial_baud_405;=0A=
++	bd_t *bip =3D (bd_t *) __res;=0A=
++	struct serial_struct serialreq =3D {0};=0A=
++=0A=
++         /* Calculate the serial clock input frequency=0A=
++          *=0A=
++          * The base baud is the PLL OUTA (provided in the board info=0A=
++          * structure) divided by the external UART Divisor, divided=0A=
++          * by 16.=0A=
++          */=0A=
++	uart_div =3D (mfdcr(DCRN_CHCR_BASE) & CHR0_UDIV) >> 1;=0A=
++	serial_baud_405 =3D bip->bi_procfreq / uart_div / 16;=0A=
++=0A=
++	/* Update the serial port attributes */=0A=
++	serialreq.baud_base =3D serial_baud_405;=0A=
++	serialreq.flags =3D (ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST);=0A=
++	serialreq.io_type =3D SERIAL_IO_MEM;=0A=
++=0A=
++	serialreq.line =3D 0;=0A=
++	serialreq.port =3D 0;=0A=
++	serialreq.irq =3D ACTING_UART0_INT;=0A=
++	serialreq.iomem_base =3D (void*)ACTING_UART0_IO_BASE;=0A=
++=0A=
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)=0A=
++	/* Configure debug serial access */=0A=
++	gen550_init(0, &serialreq);=0A=
++#endif=0A=
++=0A=
++	if (early_serial_setup(&serialreq) !=3D 0) {=0A=
++		printk("Early serial init of port 0 failed\n");=0A=
++	}=0A=
++=0A=
++	serialreq.line =3D 1;=0A=
++	serialreq.port =3D 1;=0A=
++	serialreq.irq =3D ACTING_UART1_INT;=0A=
++	serialreq.iomem_base =3D (void*)ACTING_UART1_IO_BASE;=0A=
++=0A=
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)=0A=
++	/* Configure debug serial access */=0A=
++	gen550_init(1, &serialreq);=0A=
++#endif=0A=
++=0A=
++	if (early_serial_setup(&serialreq) !=3D 0) {=0A=
++		printk("Early serial init of port 1 failed\n");=0A=
++	}=0A=
++}=0A=
++=0A=
+ void __init=0A=
+ board_setup_arch(void)=0A=
+ {=0A=
++        cpci405_early_serial_map();=0A=
+ 	TODC_INIT(TODC_TYPE_MK48T35, cpci405_nvram, cpci405_nvram, =
+cpci405_nvram, 8);=0A=
+ }=0A=
+=0A=
+diff -N -u -r --exclude=3DCVS --exclude=3DLOG =
+linuxppc_2_4_devel_2.4.21pre5_orig/arch/ppc/platforms/cpci405.h =
+linuxppc_2_4_devel_2.4.21pre5/arch/ppc/platforms/cpci405.h=0A=
+--- linuxppc_2_4_devel_2.4.21pre5_orig/arch/ppc/platforms/cpci405.h	Wed =
+Mar 26 13:58:28 2003=0A=
++++ linuxppc_2_4_devel_2.4.21pre5/arch/ppc/platforms/cpci405.h	Wed Mar =
+26 14:11:04 2003=0A=
+2NVRAM_PADDR	((uint)0xf0200000)=0A=
+ #define CPCI405_NVRAM_SIZE	((uint)32*1024)=0A=
+=0A=
+-#ifdef CONFIG_PPC405GP_INTERNAL_CLOCK=0A=
+-#define BASE_BAUD		201600=0A=
++#if defined(CONFIG_UART0_TTYS0)=0A=
++#define ACTING_UART0_IO_BASE	UART0_IO_BASE=0A=
++#define ACTING_UART1_IO_BASE	UART1_IO_BASE=0A=
++#define ACTING_UART0_INT	UART0_INT=0A=
++#define ACTING_UART1_INT	UART1_INT=0A=
+ #else=0A=
+-#define BASE_BAUD		691200=0A=
++#define ACTING_UART0_IO_BASE	UART1_IO_BASE=0A=
++#define ACTING_UART1_IO_BASE	UART0_IO_BASE=0A=
++#define ACTING_UART0_INT	UART1_INT=0A=
++#define ACTING_UART1_INT	UART0_INT=0A=
+ #endif=0A=
++=0A=
++/* The UART clock is based off an internal clock -=0A=
++ * define BASE_BAUD based on the internal clock and divider(s).=0A=
++ * Since BASE_BAUD must be a constant, we will initialize it=0A=
++ * using clock/divider values which U-Boot initializes=0A=
++ * for typical configurations at various CPU speeds.=0A=
++ * The base baud is calculated as (FWDA / EXT UART DIV / 16)=0A=
++ */=0A=
++#define BASE_BAUD       0=0A=
+=0A=
+ #define PPC4xx_MACHINE_NAME "esd CPCI-405"=0A=
+=0A=
+
+------=_NextPart_000_005D_01C2F3A4.6ED00D70--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
