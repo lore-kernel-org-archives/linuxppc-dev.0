@@ -1,25 +1,38 @@
-Message-ID: <39BE96CC.88222797@pop.agri.ch>
-Date: Tue, 12 Sep 2000 22:49:25 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Date: Tue, 12 Sep 2000 22:55:28 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: mberglund <matt@realestatesafari.com>
+cc: Graham Stoney <greyham@research.canon.com.au>,
+        Michel Dänzer <daenzerm@student.ethz.ch>,
+        Todd Lipcon <tlipcon@mercea.net>,
+        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Roles for distributions
+In-Reply-To: <Pine.LNX.4.21.0009121053310.832-100000@europa.rcinfo.net>
+Message-ID: <Pine.LNX.4.10.10009122208210.3754-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@linuxcare.com>
-CC: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: success 2.4.0-test8 with latest bk
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul & others,
+> > However, the intractible part is getting my fix into the official sources.
+> > I'm not working for a distribution; maybe it would be easier if I was.
+> > I'm just a user who doesn't want to have to keep reapplying my patches every
+> > time I get a new release, and would like to fix stuff properly so the next
+> > guy who comes along has an easier time than I did.  It's not at all clear how
+> > to get fixes in even once you've dug up the solution.
+>
+> You guys are discussing some of the issues our group (of two) would like
+> to rectify. This is an on-going problem, and I think part of it has to do
+> with the fact that there is not a "non-commercial" distribution going. We
 
-I want to express my thanks to you including Geert's pci-res patch, now
-I'm able again to run the latest devel tree from bk on my ancient 7200
-with it's 2940UW.
-It is running since three h.
+Please clarify. I thought Debian qualifies as a non-commercial
+distribution?
 
-Thx
+I don't think any of this really is about commercial vs. volunteer
+interests. Rather mainstream vs. oddball architecture issues.
 
-Andreas
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
