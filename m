@@ -1,29 +1,37 @@
-Message-ID: <40EA7A74.1000408@fh-landshut.de>
-Date: Tue, 06 Jul 2004 12:09:56 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
+Message-ID: <40EA7C07.5070605@imc-berlin.de>
+Date: Tue, 06 Jul 2004 12:16:39 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC7455 DMA buffer strangeness
-References: <Pine.LNX.4.58.0407051018590.388@corpster2>	 <1089102844.937.57.camel@localhost>  <40EA6739.2040408@fh-landshut.de> <1089106451.937.85.camel@localhost>
-In-Reply-To: <1089106451.937.85.camel@localhost>
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ATAG for MAC address???
+References: <20040706095544.DBC29C109F@atlas.denx.de>
+In-Reply-To: <20040706095544.DBC29C109F@atlas.denx.de>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, Adrian!
+Wolfgang Denk wrote:
 
-When removing the line
+> In message <40EA6996.1010402@imc-berlin.de> you wrote:
+>
+>>could we introduce an ATAG_MAC or ATAG_ETH_MAC so we can pass the MAC
+>>address for the ethernet controller from the boot loader to the linux kernel
+>>using the ATAG mechanism?
+>>
+>>I don't want to pass "MAC=..." as a commandline though.
+>
+>
+> Linux does not use any ATAGs on PowerPC.
+>
+> Wrong list?
 
-vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+Stupid mail client!
+Sorry!
 
-from my mmap() hook, DMA works as expected.
+Thanks,
 
-So my problem just transformed to "Differentiate mapping for Master Windows
-(uncached) from mapping for DMA (cache coherent)".
+Steven
 
-Many a lot of thanks,
-Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
