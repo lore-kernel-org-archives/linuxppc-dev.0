@@ -1,17 +1,19 @@
-Return-Path: <nzeitler@osii.com>
-Received: from OSIMAIL.osii.com (mail.osii.com [208.42.8.142])
-	by ozlabs.org (Postfix) with ESMTP id 2DB512BF07
+Return-Path: <wd@denx.de>
+Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
+	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 06F722BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 11:06:31 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 13 Dec 2004 18:06:29 -0600
-Message-ID: <01C22B6B78D52B46BE3C38FB525617EF909AC8@osimail.osii.com>
-From: "Zeitler, Nathan" <nzeitler@osii.com>
+	Tue, 14 Dec 2004 11:33:24 +1100 (EST)
 To: "Andrew Dennison" <andrew.dennison@motec.com.au>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 14 Dec 2004 10:48:11 +1100."
+	<002a01c4e16e$34451010$4000a8c0@CAT>
+Date: Tue, 14 Dec 2004 01:32:56 +0100
+Sender: wd@denx.de
+Message-Id: <20041214003301.2CC13C1430@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Lite5200 and PCI1520 
+Subject: Re: Lite5200 and PCI1520 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,34 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Andrew,
+Dear Andrew,
 
->Nathan,
->I posted a question on cardbus with the 5200 a few weeks ago but got no
-reply. I think the reason is that=20
->cardbus / pcmcia support may not have been considered when the 5200 PCI
-memory map was laid out, but I >would love to be contradicted!
+in message <002a01c4e16e$34451010$4000a8c0@CAT> you wrote:
+> 
+> I posted a question on cardbus with the 5200 a few weeks ago but got no
+> reply. I think the reason is that cardbus / pcmcia support may not have
+> been considered when the 5200 PCI memory map was laid out, but I would
+> love to be contradicted!
 
-This would certainly help explain some of the pain in getting it to
-work.  :-/
+I think I can confirm that this was not considered, but I'm not  sure
+that this is an issue here.
 
->Which kernel are you using?
+> I also have a few outstanding issues that I haven't resolved yet, hence I
+> haven't posted a full patch, but I can now load and configure a wireless
+> ethernet card. Loading cardbus drivers currently fails when accessing PCI
+> configuration space on the cardbus bus, and I haven't sorted this out yet.
 
-I'm using the 2.4.25 kernel from Denx also.  The version I have is a
-couple months old (trying to keep from changing too many things at once!
-:-)  ),but I have also tried the top-of-CVS version to no avail.  My
-ELDK version is old, as explained earlier, but I'm taking steps to
-change that.
+I'd like to see your patch (even if preliminary).
 
+> Part of the reason for my reply is also to check if my current approach
+> (remapping the PCI address space) is sane - comments anyone? I have made
+> similar changes in u-boot and can now read / write CF cards so it seems
+> like the right approach for the kernel too.
 
->I also have a few outstanding issues that I haven't resolved yet, hence
-I haven't posted a full patch, but I can=20
->now load and configure a wireless ethernet card. Loading cardbus
-drivers currently fails when accessing PCI >configuration space on the
-cardbus bus, and I haven't sorted this out yet.
+Unfortunately I don't have any hardware yet with  a  working  cardbus
+interface. But this might change soon...
 
-It sounds like we're working towards the same end!  I would like to
-assist in some way if possible.  I am willing to believe that remapping
-the PCI bus is a possible approach, although I'd like to hear the
-opinion of others as well.  Where in UBOOT did you change the PCI bus
-mappings?
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Men don't talk peace unless they're ready to back it up with war.
+	-- Col. Green, "The Savage Curtain", stardate 5906.4
