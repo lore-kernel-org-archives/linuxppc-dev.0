@@ -1,27 +1,28 @@
-Message-ID: <3743301F.549376B@wanadoo.fr>
-Date: Wed, 19 May 1999 23:41:51 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-Reply-To: costabel@wanadoo.fr
+Date: Wed, 19 May 1999 18:12:06 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: "J. Lewellen" <jasson@u.washington.edu>
+cc: Andreas Bogk <andreas@andreas.org>,
+        Alvin Brattli <Alvin.Brattli@phys.uit.no>,
+        linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Re: Patch: PB G3 Tapping?
+In-Reply-To: <Pine.A41.4.10.9905191320300.74104-100000@dante15.u.washington.edu>
+Message-ID: <Pine.LNX.3.96L.990519180234.4847B-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
-To: Mark Lin <mlin@MPI-Softtech.Com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.3 compile error on ppc
-References: <Pine.SOL.4.05.9905191619550.26011-100000@mpi.mpi-softtech.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mark Lin wrote:
+On Wed, 19 May 1999, J. Lewellen wrote:
 > 
-> What are the modules to check out?  "kernel" doesn't work as suggested
-> on the web page.
+> Can someone point me to a kernel patch to turn tapping off on my G3
+> laptop?
 
-linux 
-(yes, this gives /cvs/linux/linux as repository)
+There's a commandline utility. Check BenH's homepage or search the list
+archives.
 
---
-Martin
+-Hollis
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
