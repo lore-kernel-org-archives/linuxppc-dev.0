@@ -1,25 +1,38 @@
-Message-ID: <39CC2C86.40AF66CF@ncal.verio.com>
-Date: Fri, 22 Sep 2000 21:07:34 -0700
-From: Henry Worth <haworth@ncal.verio.com>
+Message-ID: <39CC3D55.74CD42A2@wanadoo.fr>
+Date: Sat, 23 Sep 2000 07:19:17 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux keycodes and left cursor on Pismo
-References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com> <39CBD3D0.C7F1964A@wanadoo.fr>
+Subject: Re: Re; 2.4.0-test9 on B&W G3
+References: <20000922164705.32547@mail.mipsys.com> <39CBAA3C.2CC16A34@wanadoo.fr>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Martin Costabel wrote:
->
-> F13 (keycode 0x69) works for me as MagicSysRq (ADB keyboard, kernels
-> 2.2.x or 2.4.0-x).
->
 
-Ah, well no F13 or equiv. combo on a Pismo. Grepping through
-the sources it doesn't appear there is any bootparm or /proc
-entry to change it... So changing it to 0x6f in
-/arc/ppc/kernel/pmac_setup.c and rebuilding it should
-give you F12 instead.
+> Glad to hear that the linuxppc_2_3 bk tree is not dead. I was just going
+> to ask about it, because since 2 weeks it has remained at -test8 which
+> is feared for its terrible mailbox-eating habits.
+>
+> On the other hand, I am running a kernel obtained from this tree by
+> applying just the "official" test9-pre1 patch, and I have now an uptime
+> of 4 days, 22:02. This is the longest uptime I ever had with a 2.3/4
+> kernel. No spontaneous freezes so far <knocking on wood>.
+
+OK, I asked for it: As of right now, the bk linux_2_3 bk tree is at
+2.4.0-test9-pre4. It is less dangerous than -test8 insofar as it doesn't
+boot :-)
+
+It compiles if one upgrades arch/ppc/kernel/time.c to, for example, the
+one from Paul's linux-pmac-devel tree.
+
+But it doesn't recognize my SCSI disk. I think it's a feature of
+-test9-pre4 that SCSI is broken. This is patched in pre5 or pre6. So
+I'll wait or use Paul's drivers/scsi directory...
+
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
