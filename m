@@ -1,52 +1,57 @@
-Date: Thu, 9 Nov 2000 07:38:14 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: jcarr@mail.linuxppc.org
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+From: jcarr@mail.linuxppc.org
+Date: Thu, 9 Nov 2000 11:12:09 -0600 (CST)
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Example miboot on new world rom problem
-Message-ID: <20001109073814.A4577@plato.local.lan>
-References: <19341004061114.22300@192.168.1.2> <Pine.LNX.4.21.0011090829230.1582-100000@jcarr.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
-In-Reply-To: <Pine.LNX.4.21.0011090829230.1582-100000@jcarr.linuxppc.org>; from jcarr@mail.linuxppc.org on Thu, Nov 09, 2000 at 08:57:21AM -0600
+In-Reply-To: <19341004092456.12247@192.168.1.2>
+Message-ID: <Pine.LNX.4.21.0011091043510.1824-100000@jcarr.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---BOKacYhQ+x31HxR3
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+> >Some new ibook I think. I get the same behavior on the iMac DV. Startup
+> >disk doesn't change the boot-device value on there. Instead, it loads the
+> >first TBXI file from the first HFS partition it finds. Then the MacOS ROM
+> >finds out that "LinuxPPC Boot" is the name of the partition to boot and
+> >then continues...
+> >
+> >Thus miboot is loaded on a new world rom machine.
+> >
+> >This is the reason I think either:
+> >
+> >1) yaboot needs the code from pmac_support.c (aka SetPRAMBoot )
+> >
+> >2) We'll have to write a new startup disk control panel( like system disk)
+>
+> Whatever you do with SetPRAMBoot won't help since miBoot won't boot reliably
+> the new machines. The problem is to have MacOS Startup Disk properly set boot
+> to the yaboot image... I beleive you checked that you have the proper
+> <COMPATIBLE> entries for those new machines in the OF boot script ?
+> (tbxi should be a script that in turns load yaboot, look at ybin scripts).
 
-On Thu, Nov 09, 2000 at 08:57:21AM -0600, jcarr@mail.linuxppc.org wrote:
->=20
-> Some new ibook I think. I get the same behavior on the iMac DV. Startup
-> disk doesn't change the boot-device value on there. Instead, it loads the
+Yes I need to look at the ybin script again. However, this doesn't fix the
+problem of miBoot running on New World ROM machines and also does not
+provide a solution to the problem either. The problem that the guy was
+having with his ibook and I have with the iMac DV. The only way that this
+guy is left to boot yaboot is to go into OF and do:
 
-thats insane, probably a bug in apple's startup disk control panel...
+boot hd:9,\\:tbxi
 
-> first TBXI file from the first HFS partition it finds. Then the MacOS ROM
-> finds out that "LinuxPPC Boot" is the name of the partition to boot and
-> then continues...
->=20
-> Thus miboot is loaded on a new world rom machine.
->=20
-> This is the reason I think either:
->=20
-> 1) yaboot needs the code from pmac_support.c (aka SetPRAMBoot )
->=20
-> 2) We'll have to write a new startup disk control panel( like system disk)
+The functionality of SetPRAMBoot(by that I mean the ability to do what
+startup disk does) needs to be added to yaboot not for the reasons I
+stated earlier. So I was wrong about the reasons I stated in the last
+email. Sorry about that... this all can be rather convoluted! This
+functionality needs to be there if yaboot is to ever allow users to select
+thier MacOS boot partitions.
 
-or 3)  setup the correct type of bootstrap for the current type of
-machine.  then you don't have any of this nonsense. =20
+In the other case, miBoot needs to have the ability to change the
+boot-device if it detects that it is running on a New World ROM
+machine. Maybe Harry Eaton or Mike Tesch are still around and can help
+grok bootvars code to add to miboot?
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Jeff
 
---BOKacYhQ+x31HxR3
-Content-Type: application/pgp-signature
-
-
---BOKacYhQ+x31HxR3--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
