@@ -1,28 +1,31 @@
-Date: Thu, 30 Aug 2001 09:19:36 -0700
+Date: Thu, 30 Aug 2001 09:21:50 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Xavier Grave <grave@ipno.in2p3.fr>
-Cc: embarque ppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mvme5100 one more time...
-Message-ID: <20010830091936.N18618@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010830170043.A8047@ipnpcu5.in2p3.fr>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: HHL 2.0 Journeyman and SuSE Linux
+Message-ID: <20010830092150.O18618@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010830175217.H858@zax> <3B8DFF2F.44AFE98F@imc-berlin.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010830170043.A8047@ipnpcu5.in2p3.fr>
+In-Reply-To: <3B8DFF2F.44AFE98F@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Aug 30, 2001 at 05:00:43PM +0200, Xavier Grave wrote:
+On Thu, Aug 30, 2001 at 10:54:07AM +0200, Steven Scholz wrote:
 
-> I have compiled the last 2.4.10-pre1 kernel from linuxppc_2_4_devel
-> and I try to do a :
-> ppc6bug> nbo 0 0 ,,, zImage.pplus
->
-> The only thing I have is the following :
-> Exception : Program (Illegal instruction)
+> is it possible to install and use the HHL 2.0 Journeyman Edition on a
+> SuSE Linux 7.x machine?
 
-What CPU is this?  I'm assuming you get a register dump, can you post that
-too?
+Possibly.  The RedHat rpms should 'just work'.  Or you can download the
+source rpms and compile the host tools for your setup.  The target binaries
+are all the same.
+
+> It looks like Journeyman only (!) suports Red Hat as a development host?
+> Is that right?
+
+Yes.  We also provide the source however.  And everything goes into /opt
+anyways.
 
 --
 Tom Rini (TR1265)
