@@ -1,29 +1,25 @@
+From: diekema_jon <diekema@lucky.si.com>
+Message-Id: <200208091838.OAA14194@lucky.si.com>
+Subject: Re: /dev/flash and MTD
+To: xjin@redswitch.com ("Xiaogeng (Shawn) Jin")
+Date: Fri, 9 Aug 2002 14:38:45 -0400 (EDT)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3D540B52.8080709@redswitch.com> from "Xiaogeng (Shawn) Jin" at Aug 09, 2002 11:34:58 AM
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Tigon3 driver, broadcom 5307, 440GP, working? (solved)
-Date: Fri, 9 Aug 2002 11:21:51 -0500
-Message-ID: <45B36A38D959B44CB032DA427A6E106401281475@cceexc18.americas.cpqcorp.net>
-From: "Cameron, Steve" <Steve.Cameron@hp.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wrote:
-> > I've been playing around with the tigon3 driver and a broadcom
-> > 5307 [5703, I meant] gigabit NIC in my IBM ebony... No luck so far.
-and
-> Ok, I have determined that my problem lies in user-land, not
-> the kernel.
+> To enable MTD on a board, do we still need /dev/flash?
 
-Heh.  The reason it couldn't ping it's own IP address?
-I forgot to ifconfig the loopback interface, duh.
+No.
 
-	ifconfig lo 127.0.0.1
+> In other words, is there any relationship between /dev/flash and
+> MTD? I found that only on Denx distribution of 2.4.4 there is such a
+> device '/dev/flash'. Thanks.
 
-makes it all work.  (Sometimes the easy ones are the hardest.)
-Thanks,
--- steve
+The /dev/flash device entries use a stand alone flash driver that
+isn't part of MTD.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
