@@ -1,68 +1,50 @@
-Date: Thu, 28 Jun 2001 06:43:20 -0400 (EDT)
-From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-Reply-To: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
-To: Paul White <pwhite@networkrobots.com>
-Cc: jtm@smoothsmoothie.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: (allocating non-cachable memory) (or More on the i82596)
-In-Reply-To: <200106281622.f5SGMW810376@stimpy.networkrobots.com>
-Message-ID: <Pine.LNX.3.95.1010628062229.5112E-100000@november.bhjjh.erols.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Thu, 28 Jun 2001 14:47:24 +0200
+From: "karanth karanth" <karanthk@lycos.com>
+Message-ID: <CIBMLCKCKHCODAAA@mailcity.com>
+Mime-Version: 1.0
+Reply-To: karanthk@lycos.com
+Subject: kernel panic...........
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hrm... well, that's not the answer that I wanted, but it does explain a
-lot :-/
+Hai,
+I have been using mpc823 with 2.2.14 kernel, below shows the output message of the kernel panic.
 
-It sounds like you know a lot more about what's going on here, Paul, but
-since it sounds like we're in the same boat, I'm more than willing to help
-in whatever way I can (especially since I have nothing better to do until
-I get the ethernet controller working, and that just isn't happening
-without this fixed :)
+Boot
 
-And thanks for the heads up that setting PAGE_NO_CACHE doesn't work- I'd
-just tried disabling caches entirely and was about to go in and start
-mucking with lower level things- starting with a BAT entry :)
+loaded at	: 00000000 	000141B4
+board data at	: 00202344	00202374
+zimage at	: 0038A000	0007E0B1
+avail ram		: 002141B4	0038A000
 
-Back to the debugger...
---Gus
+Linux/PPC load: console=ttyS0, 19200n8!
 
-On Thu, 28 Jun 2001, Paul White wrote:
+Uncompressing Linux...done
+hold_residual=00600100
+Now booting the kernel
+###########################
+NIP 00000000 XER: E000B97F LR: C0006564 REGS: c00f7e50 TRAP: 0400
+MSR: 08209032 EE: 1 PR: 0 FP:0 ME: 1  IR/DR: 11
+TASK = c00f6000[1] 'swapper'  mm->pgd c017f000 Last syscall = -1
+last math 00000000
 
->
-> Justin,
->
-> >From my recent experience, this does not work.  We have a device on our
-> PCI bus which is DMAing to SDRAM, and so far I can't get anything to
-> work without cache coherency support in the system controller.
->
-> If you find anything out, please let me know.  I may end up adding a new
-> memory queue for non-cacheable memory, and just use another BAT entry
-> for some pre-defined amount of memory for a non-cacheable pool.  A new
-> flag to kmalloc() could then be used to get non-cacheable memory.  Does
-> anyone know if anything like this already exists, or if theres a much
-> easier way around this??  I should hopefully get cache coherency
-> working, but we have been unable to so far.  If I end up doing the work,
-> I"ll post the patches here.
->
-> Btw..  I attempted to disable cache, as well as simply set the RAM bat's
-> to PAGE_NO_CACHE, however this does not work because the PowerPC will
-> throw alignment exceptions whenever a cache instruction is called on
-> either a non-cached memory region, or if caching is disabled.  Just
-> wanted to give you a heads up on this.
->
-> Paul W.
->
->
-> At 04:52 AM 6/28/2001 -0400, Justin (Gus) Hurwitz wrote:
-> >
-> >Did yo ever get a reply to this? That sounds like just what I want to do
-> >(well, it sounds just like what our vxworks code does to do what I want to
-> >do, which I guess is good enough).
-> >
-> >TIA,
-> >--Gus
+GPR00:	00000078  C00F7F40  C00F6000  00000E00    00000000    00000E000  00000000  C00CE857
+GPR08:	00000024  C00D0000  FF002068  C00B3AC8 956DF039   000000000  00000000   00100000
+GPR16:	04000000  FF000000   0000006E   00000000    00020000    00202344    00000000   02008000
+GPR24:	00200000  00080080    00000000   00600015    00600000    00000000    C00C0000  C00C0000
+Call backtrace:
+00000000
+Instruction DUMP:
+kernel panic: kernel access of bad area pc 0 lr c0006564 address 0 tst swapper/1
+Rebooting in 180 secound ...
+########################
+can anybody tell me what could be the reason of the crash.
+
+Thanking you,
+kk.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
