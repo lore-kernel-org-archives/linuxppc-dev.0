@@ -1,59 +1,37 @@
-Date: Mon, 26 Mar 2001 05:26:05 +0100
-Subject: Re: Sound stoppage
+Date: Mon, 26 Mar 2001 05:30:18 +0100
+Subject: Re: Sound skips
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-	"Michael R. Zucca" <mrz5149@acm.org>
-Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+To: Giuliano Pochini <pochini@denise.shiny.it>
+Cc: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010326043026.49B822F06E@apollo.valhalla.net>
+Message-Id: <20010326043028.A162C2F090@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Mon, Mar 26, 2001,  Hollis R Blanchard wrote:
-> On Sun, 25 Mar 2001, Michael R. Zucca wrote:
+>> there are a variety of things that can block for between 16 & 300 ms (not
+>> necessarily IRQs).
 >>
->> I'm having a problem with sound stopping when I'm trying to use it at the
->> same time as X.
->>
->> Machine lowdown:
->> PowerCenter 132 with a Sonnet 750 upgrade.
+>> what size fragments are you using?
 >
-> I used to have this problem, also on a PowerCenter 132.
->
-> I haven't used that machine in a while, but I believe such problems were
-> fixed with Iain Sandoe's dmasound patches & backport. I don't remember the
-> link offhand; check http://penguinppc.org/dev/pmac.
+> 2K. I have to rise it to 8KB to work fine. My friend with the G4 still have
+> very few interruptions even with 8KB.
 
-the last 2.2.x stuff is linked from: (and also via penguinppc.org).
+OK.... if you can't do with such large fragments ....
 
-http://www.drfruitcake.com/linux/linuxppc.html
+ You might want to try Andrew Morton's Low-Latency patch (URL:
+ http://www.uow.edu.au/~andrewm/linux/schedlat.html#downloads )
 
-*note* there is a dbdma problem that is *not* fixed with the ed21 patch to
-2.2.18. (one day I'll apply the 2.4.x stuff back to the 2.2.18) - or if
-someone else is interested in trying a merge - I can point them in the right
-direction.
+it makes things quite a lot better - but we still have a way to go on PPC
+before we can achieve sub-ms block-free operation.  Another thing on the
+audio TODO list ;-)
 
-===== as of now...
+let me/us know how you do if you try it (last time I did, the patches
+applied cleanly to the PPC BK tree) - you (could at the time) ignore the
+x86-specific mods to head.S.
 
-You'd be better off with 2.4.x: (patches + a kernel binary/mods at)
-
-ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/
-
-==== Gotchas that remain:
-
-1/ the 2.4.x patches will not build-in (stupid mistake on my part - I
-renamed a CONFIG_XXX - but not everywhere - oops).
-
-2/ Some PowerCenter machines have a dbdma problem (hardware-related) in
-addition to those fixed in the 2.4.x patches.  There is a fix for this "in
-the works" - sorry it's a bit slow coming (there's a few waiting) but I'm a
-bit bogged down in rent-paying work ATM :-(.
-
-I'll post as soon as the PowerCenter fix is avail.
-
-ciao,
+HTH,
 Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
