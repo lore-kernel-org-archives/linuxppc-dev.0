@@ -1,57 +1,35 @@
-Message-ID: <3D255F86.4060206@cambridgebroadband.com>
-Date: Fri, 05 Jul 2002 09:57:42 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-ID: <3D25E245.70303@embeddededge.com>
+Date: Fri, 05 Jul 2002 14:15:33 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: "Kappl, Hannes" <hkappl@harris.com>
+To: "Walser, Martin" <mwalser@harris.com>
 Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: set a limit for the cache
-References: <8D4C69676E66D511A1CB00508BBBB1922C4173@ranmx1.ran.harris.com>
+Subject: Re: no link changed interrupt
+References: <8D4C69676E66D511A1CB00508BBBB1921BCF4D@ranmx1.ran.harris.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kappl, Hannes wrote:
+Walser, Martin wrote:
 
->  Hi,
->
->  I am using kernel 2.4.4. I have 32M RAM with a 10M Ramdisk. Now my problem is
-> that
->  the Ramdisk is cached in the RAM(4 - 8M!). Is it possible to set the size of
-> the
->  cache to a limit or to disable the cache complete?
->
->
->
->    7:13pm  up 34 min,  0 users,  load average: 0.12, 0.33, 0.30
->  22 processes: 21 sleeping, 1 running, 0 zombie, 0 stopped
->  CPU states:  0.9% user,  4.3% system,  0.0% nice, 94.7% idle
->  Mem:   30612K av,   9216K used,  21396K free,   9904K shrd,      0K buff
->  Swap:      0K av,      0K used,      0K free                  5392K cached
->
->   PID USER     PRI  NI  SIZE  RSS SHARE STAT  LIB %CPU %MEM   TIME COMMAND
->   107 root      14   0   836  836   644 R       0  4.5  2.7   0:00 top
->
+> Is there another way to get a link change without a hardware interrupt?
+
+The only way to guarantee a link chnage interrupt is to use a PHY and
+board design that supports a hardware interrupt.  Some boards/PHYs do
+this, others do not, and it is a board specific design.  While you could
+poll the PHY status at regular intervals, it would depend upon the PHY
+status registers to properly publish/latch this information.  There isn't
+sufficient information in the generic PHY registers to detect link change,
+so again this is software that will have to be implemented unique to your
+PHY (it's proprietary registers) and board design.
+
+The only reason the FEC (or any 8xx/82xx Ethernet controller) needs to
+see a link change is to properly configure full/half duplex.  It will
+adapt to the different link speeds and other link attributes.
 
 
-
-I'm confused, top says that you have 21.4M free.  If your 10M ramdisk was being cached in 4M of RAM
-then surely you'd have at most (32-14)=18M free?
-
-While we're on the topic of RAM usage, can anyone tell me how you find out how the shrd memory (see
-top output above) is broken down into seperate libraries.
-
-Thanks,
-
-Alex
-
->
->  best regard
->  Hannes
->
->
->
->
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
