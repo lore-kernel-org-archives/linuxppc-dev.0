@@ -1,51 +1,45 @@
-Date: Tue, 28 Mar 2000 19:33:46 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: michdaen@iiic.ethz.ch
-cc: "William H. Schultz" <whschult@uncc.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree86 4.0 working as fbdev on Voodoo3
-In-Reply-To: <20000328160043.23755.qmail@web110.yahoomail.com>
-Message-ID: <Pine.LNX.4.21.0003281913410.29598-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: ajoshi@shell.unixbox.com
+Cc: roikawa@rr.iij4u.or.jp, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Some issues to resolve with XFree 4.0 yet
+In-Reply-To: Your message of "Mon, 27 Mar 2000 10:05:58 -0800 (PST)"
+	<Pine.LNX.4.10.10003270958530.10064-100000@shell.unixbox.com>
+References: <Pine.LNX.4.10.10003270958530.10064-100000@shell.unixbox.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20000329015122J.roikawa@rr.iij4u.or.jp>
+Date: Wed, 29 Mar 2000 01:51:22 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 28 Mar 2000, Michel D?nzer wrote:
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+Subject: Re: Some issues to resolve with XFree 4.0 yet
 
+> On Tue, 28 Mar 2000, Ryuichi Oikawa wrote:
 >
-> --- "William H. Schultz" <whschult@uncc.edu> wrote:
-> >
-> > I don't know if it's because I moved my existing /usr/X11R6
-> > directory before installing, but XFree86 v4 finally works on
-> > my Voodoo3.  Granted, it is incredibly slow (slower than
-> > v3.3.6), but at least it works--for now.
+> > BTW, I noticed an interesting x11perf score. x11perf -scroll500 marked ~300/sec
+> > for ATI Rage128RE connected to 66MHz bus on B&W G3 rev.1, but ~600/sec for an
+> > old Matrox Millennium II to 33MHz bus, measured at 32bpp/24bit depth.
 >
-> Doesn't the tdfx driver work?
->
+> are you using the patch I posted last week?  If not, then I suggest you
+Yes, I am. But Rage128RE score was only ~300/sec at 1280x1024x32bpp/75Hz.
+(The score is very sensitive to actual(not virtual) screen size and refresh rate).
 
-  Beyond endianess problems the tdfx driver uses PIO which isn't
-working under ppc right now (and unless the kernel people decide
-on a way to export iobase to userland some time soon PIO might
-take a while until it gets supported)
-
+> do.  I fixed the improper load/stores in r128 and it shows a 200% increase
+> in almost all x11perf tests.  example:
 >
-> > The major problem that I'm having is that the keyboard isn't
-> > mapped properly.  The mouse works, so I can logout when I
-> > use startx, but I can't log in if I use gdm (or xdm for that
-> > matter).  I can't do a ctrl-alt-del to kill the X-Server
-> > either, as it isn't recognizing the keys properly.
+> (jack howarth tested these on his g4/450 (rage 128pro?)):
 >
-> The Xkb extension doesn't work on PPC yet (a fix by Kostas is on the way :).
+> before:
+> Scroll 500x500 pixels:	583.0/sec
 >
-> Add Option "XkbDisable" to the Keyboard Section.
->
+> after:
+> Scroll 500x500 pixels:	1060.0/sec
 
-The default xkb rules were missing mac info, you can get the patch from
-http://entropy.crashing.org/~howarth/XFree86_v4.0/SOURCES/XFree86-4.0-keysym.patch
-which fixes that and also cleans up the macintosh symbols a bit
+Regards,
 
-  Kostas
-
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
