@@ -1,45 +1,95 @@
+Message-ID: <20040519232252.10109.qmail@web11604.mail.yahoo.com>
+Date: Wed, 19 May 2004 16:22:52 -0700 (PDT)
+From: Shamile Khan <shamile@yahoo.com>
+Subject: Xilinx EMAC - cannot ping
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ELDK 3.0 C++ Problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 19 May 2004 16:38:41 CDT."
-             <6F45E974A11B294383FD819C76719D8701984F@txex2ku01>
-Date: Thu, 20 May 2004 01:17:02 +0200
-Message-Id: <20040519231707.ABD1EC109F@atlas.denx.de>
+Cc: shamile@yahoo.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <6F45E974A11B294383FD819C76719D8701984F@txex2ku01>
-Carlo Parravicini wrote:
->
-> The problem is with your statement, "new int (1000)". This should be
-> "new int [1000]". You are telling the compiler to initialize 1 integer
-> to 1000 instead of allocating 1000 integers. Replace the parens with
-> brackets and it should work.
+Hi,
 
-Yes, this was one of the problems with his code.
+I have a Memec FG456 evaluation board with P160 module. I
+am using Xilinx ethernet core (with default configuration
+in mhs file) and the open source linux driver for Xilinx
+EMAC. It seems that the ethernet device is detected
+correctly but I cannot seem to ping any machine in my
+network. I can ping myself though. Here are some diagnostic
+results.
 
-Anotrher is that the length in the memset() is probably wrong:
+1) insmod the driver
+bash-2.05# insmod a.out
+eth0: Xilinx EMAC #0 at 0xFEFE8000 mapped to 0xC3008000,
+irq=31
 
-> >   int *p = new int (10000);
-> >   memset ( p, 0, 10000);
+2)  ifconfig
+bash-2.05# ifconfig eth0 192.168.0.55
+bash-2.05# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 00:60:08:27:11:7B
+          inet addr:192.168.0.55  Bcast:192.168.0.255
+Mask:255.255.255.0
+          inet6 addr: fe80::260:8ff:fe27:117b/10 Scope:Link
+          UP BROADCAST RUNNING  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0
+frame:0
+          TX packets:7 errors:0 dropped:0 overruns:0
+carrier:0
+          collisions:0 txqueuelen:100
+          RX bytes:0 (0.0 b)  TX bytes:414 (414.0 b)
+          Interrupt:31
 
-This clears only a small part of the (wanted?) array.
+lo        Link encap:Local Loopback
+          LOOPBACK  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0
+frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0
+carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+
+sit0      Link encap:IPv6-in-IPv4
+          NOARP  MTU:1480  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0
+frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0
+carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+
+3) bash-2.05# mii-tool -v
+eth0: negotiated 100baseTx-FD flow-control, link ok
+  product info: vendor 00:10:18, model 30 rev 4
+  basic mode:   autonegotiation enabled
+  basic status: autonegotiation complete, link ok
+  capabilities: 100baseTx-FD 100baseTx-HD 10baseT-FD
+10baseT-HD
+  advertising:  100baseTx-FD 100baseTx-HD 10baseT-FD
+10baseT-HD flow-control  link partner: 100baseTx-FD
+100baseTx-HD 10baseT-FD 10baseT-HD flow-control
+
+4) interrupts
+bash-2.05# cat /proc/interrupts
+           CPU0
+ 30:       8046     Xilinx INTC  Level  serial
+ 31:          7     Xilinx INTC  Level  eth0
+BAD:          0
+
+5) Running ethereal on host which I am pinging to, I can
+see ARP requests from my linux target sent to the host but
+nothing is sent back to target.
+
+Any ideas on the source of the problem?
+
+Regards,
+Shamile
 
 
-The whole code looks broken.
 
-Best regards,
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Our OS who art in CPU, UNIX be thy name.
-Thy programs run, thy syscalls done,
-In kernel as it is in user!
+Yahoo! Domains – Claim yours for only $14.70/year
+http://smallbusiness.promotions.yahoo.com/offer
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
