@@ -1,34 +1,30 @@
-Date: Wed, 13 Feb 2002 13:09:45 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@gatwood.net>
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: G4 boot crash problems with 2.4 "stable"
-In-Reply-To: <20020213190744.31608@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.3.96.1020213125526.27925B-100000@gatwood.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SUNGEM config
+Date: Wed, 13 Feb 2002 22:12:43 +0100
+Message-Id: <20020213211243.28959@smtp.wanadoo.fr>
+In-Reply-To: <87u1slf5wf.fsf@theorie.physik.uni-muenchen.de>
+References: <87u1slf5wf.fsf@theorie.physik.uni-muenchen.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 13 Feb 2002 benh@kernel.crashing.org wrote:
-
-> >Is there a 2.4 kernel source tarball around that is known to boot on
-> >Sawtooth (using BootX)?  Is there a way to yank the OpenPIC support?
 >
-> BootX isn't supported on any newworld mac. You should boot from OF,
-> using yaboot.
+>Precisely.  That's what the ifd daemon does, it polls the device once
+>every second via that ioctl in order to see whether it is connected or
+>not.
 
-BootX works fine for me with every 2.2 kernel I've tried.  It only fails
-for 2.4 TOT builds.  I very much doubt the boot mechanism is at fault.
+Well, we have a chicken & egg problem then. I shut down the device when
+the interface is down for more than about 10 seconds. At that point,
+it's isn't possible to get the link state since even the PHY is powered
+off. So ifd cannot detect the link up condition. Either I fake the ioctl
+and return no link, or I power it back up each time, preventing basically
+the chip to ever be power managed.
 
-
-Later,
-David
-
----------------------------------------------------------------------
-                    Check out my weekly web comic:
-                     http://www.techmagazine.org
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
