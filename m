@@ -1,60 +1,48 @@
-Date: Thu, 19 Oct 2000 18:19:11 -0700
-From: Matt Porter <mmporter@home.com>
-To: Xavier Grave <grave@ipno.in2p3.fr>
-Cc: Alois Fertl <alois_fertl@talknet.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: initial console
-Message-ID: <20001019181911.A1175@cx258813-a.chnd1.az.home.com>
-References: <39EE00CA.BE9889DC@talknet.de> <Pine.LNX.4.21.0010191410170.8107-100000@ipnpcu5>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@linuxcare.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.21.0010191410170.8107-100000@ipnpcu5>; from grave@ipno.in2p3.fr on Thu, Oct 19, 2000 at 02:16:35PM +0200
+Message-ID: <14831.41519.899373.33270@argo.linuxcare.com.au>
+Date: Fri, 20 Oct 2000 12:38:55 +1100 (EST)
+To: Scott Hankin <shankin@rational.com>
+Cc: phandel@cise.ufl.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-test10 boot failure on Powerbook G3
+In-Reply-To: <p04320400b61508915079@[172.21.170.210]>
+References: <Pine.LNX.4.21.0010191246070.6734-100000@like.mine.nu>
+	<p04320400b61508915079@[172.21.170.210]>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 19, 2000 at 02:16:35PM +0200, Xavier Grave wrote:
->
-> On Wed, 18 Oct 2000, Alois Fertl wrote:
-> >
-> > The problem you are seeing here is probably prep_init in prep_setup.c
-> > not copying the arguments passed by the boot loader into the kernels command
-> > line. Your root=/dev/sda5 is probably ignored.
-> > Look at your early log messages during boot. There should be a line
-> > "Boot arguments: ..." telling you those things seen by the kernel.
-> Indeed, The kernel argument I give is :
-> root=/dev/sda5
-> and during the boot when I look more closely :
-> PReP architecture
-> Boot arguments: /dev/sda1
->
-> > In case the arguments aren't as you typed them, try putting the following
-> > lines at the beginning of prep_init:
-> >
-> > +       if (r6) {
-> > +               *(char *)(r7 + KERNELBASE) = 0;
-> > +               strcpy(cmd_line, (char *)(r6 + KERNELBASE));
-> > +       }
-> Ok, this is fine my kernel boots ! Thank you very much.
-> > What hardware is this running on? If it is Motorola VME this failure is only
-> > the starting point and other trouble will follow. There are additional fixes
-> > but I can't verify them against a working source at the moment. test9 and
-> > test10
-> > from fmlabs currently both panic during init as soon as the process starts
-> > using the hard drive (this is on a PowerStack).
->
-> I have a MVME2303 from motorola diskless + a PMC with a 53c895 pci board
-> for my disk. With the 2.2.17 kernel all works well.
-> And now with the latest fsmlabs + your hack all function !
+Scott Hankin writes:
 
-Sorry, I had this change locally but hadn't pushed it yet. :)  The other
-option on PReP is to build with /dev/nvram support and then (on a
-PPCBUG system) use 'gevedit bootargs' to set a kernel argument command
-line like "root=/dev/sda5".  That's often more convenient then hard
-coding in your parameters like with the PReP cmd_line config option.
+> It turned out that the pc was in do_install_cmap, and lr was in
+> atyfb_set_var.  The latter calls the former near the end of the
+> routine (check out drivers/video/atyfb.c:2940) but as to why it's
+> bombing, I have no clue.
+
+Looking at the code for that routine:
+
+static void do_install_cmap(int con, struct fb_info *fb)
+{
+    struct fb_info_aty *info = (struct fb_info_aty*)info;
+
+that first statement doesn't make sense, change it to:
+
+    struct fb_info_aty *info = (struct fb_info_aty*) fb;
+
+and that should fix it.
+
+BTW, I now have copies of my rsync trees at penguinppc.org, which will
+hopefully have more bandwidth available than ppc.samba.org did.  The
+tree at penguinppc.org::linux-pmac-devel has this bug fixed.
+
+Paul.
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
