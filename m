@@ -1,36 +1,33 @@
-Message-ID: <3958BBF1.20E543AB@aiinet.com>
-Date: Tue, 27 Jun 2000 10:36:33 -0400
-From: Matt Gessner <mattg@aiinet.com>
+Message-ID: <3958DA7D.B158E228@netx4.com>
+Date: Tue, 27 Jun 2000 12:46:53 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 8260, FCC and local bus
+To: Tom Roberts <tjroberts@lucent.com>
+CC: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Query: kernel version for MPC750/MPC7400
+References: <7283DE19D141D111AD0E00A0C95B195502C5F5F2@mail2.aiinet.com> <3957DEFF.9064056E@netx4.com> <3958B37C.1F280F3F@lucent.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello list,
+Tom Roberts wrote:
 
-Has anyone done anything with mapping local bus memory
-so that it can be used for FCC BD's and buffers?
+> How about on an embedded MPC750 or MPC7400? Before joining this
+> list I discovered Kernel version 2.2.15 on Yellowdog and have been
+> using that.
 
-I **thought** I had it right, but my driver eventually
-causes the machine to hang (EST SBC8260).
+That should work.  The question was directed toward 8xx processors,
+so I thought I would answer that.
 
-I had ioremap'd it, and put va's and pa's where each belonged
-(va's for the kernel's tracking stuff and pa's for the CPM stuff).
+> There are zillions of references to CONFIG_8xx throughout the source.
 
-Alas, to no avail.
+All old, broken, out of date.  All of the updates in the "stand-alone"
+8xx kernels were too much to be allowed into the "official" kernel
+sources.  With 2.4.xx coming, I think I will just make that one
+work and not fight to get the changes into 2.2.
 
-Has anyone had any success with this, and if so, would you be
-willing to share?
 
-TIA,
-
---
-Matt Gessner, mattg@aiinet.com--NOSPAM
-Senior Software Engineer, R&D
-Applied Innovation, Inc.
-614-798-2000
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
