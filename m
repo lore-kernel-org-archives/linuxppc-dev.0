@@ -1,65 +1,52 @@
-Message-ID: <3CAABAB0.5030000@pacbell.net>
-Date: Wed, 03 Apr 2002 08:17:52 +0000
-From: Armin <akuster@pacbell.net>
+Message-ID: <8D4C69676E66D511A1CB00508BBBB19215796D@ranmx1.ran.harris.com>
+From: "Fend, Matthias" <mfend@harris.com>
+To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: pcmcia problems
+Date: Wed, 3 Apr 2002 03:55:32 -0500 
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Workaround for USB DMA bugs
-References: <20020403024321.GN1026@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
-> Well, I'm not sure I'd want to pollute the tree with this sort of
-> hack, but on the other hand it makes things work that wouldn't
-> otherwise.
->
-> Does anyone think it's a good idea to commit the following patch:
->
-> diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/mm/cachemap.c linux-grinch/arch/ppc/mm/cachemap.c
-> --- /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/mm/cachemap.c	Thu Mar 14 13:49:01 2002
-> +++ linux-grinch/arch/ppc/mm/cachemap.c	Wed Apr  3 11:51:30 2002
-> @@ -137,7 +137,18 @@
->  	case PCI_DMA_NONE:
->  		BUG();
->  	case PCI_DMA_FROMDEVICE:	/* invalidate only */
-> +#ifdef CONFIG_USB
-> +		/* The USB stack is broken in that it uses DMA buffers
-> +                   on the stack which are on the stack and not
-> +                   cacheline aligned.  That means cache invalidates
-> +                   before DMA transfers corrupt the stack on machines
-> +                   without DMA-consistent cache.  This is a nasty
-> +                   workaround until the USB layer is fixed (apparently
-> +                   done in 2.5). */
-> +		flush_dcache_range(start, end);
-> +#else
->  		invalidate_dcache_range(start, end);
-> +#endif
->  		break;
->  	case PCI_DMA_TODEVICE:		/* writeback only */
->  		clean_dcache_range(start, end);
->
->
-> --
-> David Gibson			| For every complex problem there is a
-> david@gibson.dropbear.id.au	| solution which is simple, neat and
-> 				| wrong.  -- H.L. Mencken
-> http://www.ozlabs.org/people/dgibson
->
->
->
->
->
+hello everybody,
 
-Ah yes,  We have done something simular (internally) and had the same
-reservations. This will help me with the ocp usb drivers i am working
-on.   I would like to see some way of reminding us that this was done.
-let say a config option for 4xx_usb_dma_workarround.
-.
+i'm trying to run pcmcia service (ISDNCard (Fritz PCMCIA V2.0) on a custom
+mpc860 board.
 
--armin
+i started with pcmcia-cs-3.1.33 i changed the  PCMCIA_MEM_WIN_BASE in
+m8xx_pcmcia to 0xE0000000
+i also implemented the adapter methods for the voltage selection
 
+in /arch/ppc/mm/init.c  MMU_init(void)
+i added the line
+  ioremap(0xE0000000,0x1000);
+
+i load the modules pcmcia_core.o ds.o and m8xx_pcmcia.o
+
+the iopins (CD,VS,WP..) seem to work fine (tested with cardctl status 0)
+
+but if i try to run
+> ./cardctl ident 0
+i only get:
+> no product info available
+> function: 2 (serial)
+>sh-2.03#
+
+if i turn debug on i get this message
+cs: overrun in get_next_tuple for socket 0
+
+
+so now it don't know if it is a software problem or a hardware problem...
+
+Q1: any ideas what i could try in next step
+
+Q2: what is the difference between MEM_BASE and IO_BASE
+
+Q3: cardmgr always think that he detects an anonyoumous memory and start this
+service .. is this caused by the
+bad cis reading or is this another problem?
+
+thx matthias
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
