@@ -1,33 +1,31 @@
-Date: Tue, 29 Jun 2004 10:45:21 -0400 (EDT)
+Date: Tue, 29 Jun 2004 11:12:16 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Sylvain Munaut <tnt@246tnt.com>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: kernel option "Command line partition table parsing" 
-In-Reply-To: <20040629143715.2AF7EC109F@atlas.denx.de>
-Message-ID: <Pine.LNX.4.60.0406291044020.25188@localhost.localdomain>
-References: <20040629143715.2AF7EC109F@atlas.denx.de>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: ok ... which source trees are the "right" choices?
+Message-ID: <Pine.LNX.4.60.0406291107530.25353@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 29 Jun 2004, Wolfgang Denk wrote:
+   based on wolfgang's recent reference to the linuxppc_2_4_devel
+source tree at DENX, one has to ask -- how does one choose between the
+various source trees to stay on top of things?
 
-> In message <40E164A6.8060502@246tNt.com> you wrote:
->>
->> I'd suggest having a look at the comment on top of
->>
->> drivers/mtd/cmdlinepart.c
->>
->> But I'm not sure if rpxlite.c . From what I see, it may require to add
->> a "probe" to look at the command line. Someone ?
->
-> It's tested and working in our version of the linuxppc_2_4_devel tree.
+   so far, i've established that, for the 2.6 kernel, i just keep
+pulling the latest stuff from ppc.bkbits.net/linuxppc-2.5.
 
-ok, that explains why i couldn't find it -- i'm working with the
-linuxppc-2.5 bk tree.
+   but what about the 2.4 kernel?  besides the denx source (which,
+based on experience, would be at the top of my list in terms of
+choice), there's a whack of 2.4-based trees at ppc.bkbits.net.
+
+   and i've already confused myself this morning by looking at one
+source tree while the discussion was referring to a different one.
+dang.
+
+   so ... what's the recommendation?  at the moment, it seems that i'd
+want the denx 2.4 devel tree, and the bkbits 2.5 tree.  thoughts?
 
 rday
 
