@@ -1,41 +1,29 @@
-Message-ID: <3B7830D8.3D9E4C45@aps.anl.gov>
-Date: Mon, 13 Aug 2001 14:56:08 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
+Message-ID: <3B7838A6.96B885AC@acm.org>
+Date: Mon, 13 Aug 2001 13:29:26 -0700
+From: Ira Weiny <iweiny@acm.org>
 MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: Matt Porter <mporter@mvista.com>, Dan Malek <dan@mvista.com>,
-	James F Dougherty <jfd@GigabitNetworks.COM>,
-	linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu,
-	jfd@cs.stanford.edu
-Subject: Re: MPC8240 EPIC Driver (Attached)
-References: <200108110718.AAA01730@krakatoa.gigabitnetworks.com> <3B75C40B.8BCDDD2B@mvista.com> <3B77F899.5964F88F@aps.anl.gov> <20010813055451.A22232@cx258813-a.chnd1.az.home.com> <3B7815BC.8F2F180C@mvista.com>
+To: linxuppc-emb <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCI IDE Adapter for PPC/Linux
+References: <200108130720.AAA03800@krakatoa.gigabitnetworks.com> <3B780C61.2060605@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Mark A. Greer" wrote:
+Yes we are using a board with the 20265 and 20262 in our Walnut.
+Further we have the 20265 working on our custom board.  Although the
+custom board still has some flakes to work out...
+
+Ira Weiny
+
+Matthew Locke wrote:
 >
-> The changes to the openpic code for supporting serial interrupt mode are very minor.
-
-Actually IIRC they're already present in the version shipped with
-HHL-2.0.  I don't remember making any changes for that at all on the
-MVME2100 support, but my memory has been known to be faulty.
-
-> What I mean is a table where you specify the irq, the offset fo the regs from the base
-> address, the sensitivity, and the polarity all separately.  Also the appropriate
-> extensions to support serial interrupt mode (e.g., MVME2100 uses that).  With a table
-> format something like that, you can avoid the sparse and negative irq's on the
-> 8240/107 and still keep things pretty clean looking.
-
-That sounds right.  It could also use the NIRQ field of the Feature
-Reporting Register to cross-check that the table given is the correct size
-for the chip it's controlling, and have some way of specifying the
-presence or absensce of a cascaded i8259 (presumably with its own table).
-
-- Andrew
---
-The world is such a cheerful place when viewed from upside-down
-It makes a rise of every fall, a smile of every frown
+> The Promise Ultra-66 is known to work on several ppc platforms in
+> hhl-2.4.2.  Do you have the DMA options turned on in the kernel?
+>
+> btw, if you are a MV customer contact support as this something we
+> support on the walnut and several other ppc platforms.
+>
+> James F Dougherty wrote:
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
