@@ -1,36 +1,41 @@
-Subject: Internal interrupts on the MPC107
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain
-Date: 28 May 2003 11:49:46 +0100
-Message-Id: <1054119003.23151.23.camel@newt>
-Mime-Version: 1.0
+Message-ID: <3ED496F9.4090402@embeddededge.com>
+Date: Wed, 28 May 2003 07:01:13 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Jean-Denis Boyer <jdboyer@m5t.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PATCH: arch/ppc/8xx_io_fec.c
+References: <AB5AF73EAF23304EA1B932174137CED7030368@m5tmail.m5t.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have an interrupt driven driver for the I2C controller of the MPC107
-and MPC8245:
+Jean-Denis Boyer wrote:
 
-http://www.humboldt.co.uk/mpc10xi2c.html
+> I tested on revisions B3 and D4, and did not see any problem.
+> Anyway, fec_stop was already disabling the FEC,
+> so if it was a problem, it would have broken there.
 
-In this driver I attempt to find the interrupt vector for I2C by reading
-it directly out of the EPIC hardware in the driver initialisation code:
+OK.  Just remember I mentioned this and be ready to fix it
+when someone complains. :-)
 
-	i2c_vec = readl(epic_base + 0x11020) & 0xff;
+> Do you mean for the mixed tabs/spaces? :-( Sorry for that one...
+> I will fix and resubmit as soon as everyone agree on the changes.
 
-This works fine on my custom board based on the linuxppc_2_4_devel
-kernel, but caused problems for an end user using a 2.4.17 kernel from
-Montavista. On that kernel, the EPIC register at offset 0x11020
-contained 0. Another user with an unknown kernel found 0 in the
-register, but was able to make progress by hardcoding the IRQ number 20.
+Yes, and there is a Linux coding standards document that would be
+nice if people followed:
 
-Does anybody have any suggestions for a generic solution? I'd like to
-get the driver into the kernel at some point, but this part of the code
-seems a bit too ugly for now.
+	if (condition) {
 
-- Adrian Cox
-http://www.humboldt.co.uk/
+not,
+	if(condition){, or if( condition ){, or other weird variations
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
