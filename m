@@ -1,44 +1,37 @@
+From: Darin.Johnson@nokia.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16148.33584.75625.416464@nanango.paulus.ozlabs.org>
-Date: Wed, 16 Jul 2003 08:41:52 +1000 (EST)
-From: Paul Mackerras <paulus@samba.org>
-To: Steve Boorman <steveb@baydel.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hangup booting Linux on PPC440GP
-In-Reply-To: <3F13FA14.16183.5C9485B@localhost>
-References: <3F13FA14.16183.5C9485B@localhost>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [RFC] consistent_sync and non L1 cache line aligned buffers
+Date: Tue, 15 Jul 2003 16:04:24 -0700
+Message-ID: <F0B628F30F48064289D8CCC1EE21B7A80C48A8@mvebe001.americas.nokia.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Boorman writes:
+> IMHO, the easiest solution is
+> alignment of buffers.....plus it's likely to be a performance
+> improvement.
 
-> 2) I would not have thought my simple printf of some text
-> would use floating point code.
+True, it's the easiest solution for the kernel developer, but
+requires more work from driver authors.  Which is ok, *if* it's
+well documented and everyone knows buffers must be aligned,
+and that's the problem.  I think some people implicitly understand
+these issues, and assume that everyone else thinks the same way.
+The driver authors on the other hand often come from completely
+different environments and may be porting code that's been working
+fine.
 
-Since printf can print floating point values, it (or one of its
-subroutines) would be likely to have some floating point instructions
-in it.  Now, even if those instructions don't get executed with the
-particular arguments you use, just the fact that they are present will
-very likely cause gcc to put instructions to save some FP regs onto
-the stack at the beginning of the function.  It's those FP store
-instructions which you would be hitting.
+My headache example was the 4 byte buffer that MPC860 CPM
+was using to talk to an I2C device, there just wasn't an
+elegant solution...
 
-> 3) I expected the kernel to panic with some form of illegal
-> instruction trap if floating point instructions were being
-> attempted with no emulator code present.
-
-There is a check in the kernel which only allows any given signal to
-be delivered to the init process if it has established a handler for
-that signal.  That even applies to SIGILL (illegal instruction) and
-SIGSEGV (segmentation violation).  So, if init hits an illegal
-instruction, it takes an exception, the kernel generates a SIGILL
-which then gets dropped, and then we return to the init process at the
-same instruction and the cycle repeats.
-
-Yes we should do something more sensible.
-
-Paul.
+A big snag is that problems in this area are not readily apparent,
+and bugs may not surface early.  "Option 1", to provide assertions,
+has some appeal when I think about it, because it'll point out
+problems that may arise on other architectures (ie, the author
+develops on PowerPC with a 'smart' invalidate_dcache_region, but
+then the code mysteriously fails twice a week on a pentium).
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
