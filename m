@@ -1,58 +1,42 @@
-Message-ID: <011901c17bc0$58e08150$337ceccb@dasan.com>
-From: "Young-Han, Kim" <yhkim@da-san.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: [Q]Latest Linux Kernel(2.4.1x) for 405GP
-Date: Mon, 3 Dec 2001 15:04:03 +0900
+Message-ID: <937610FE9B70D511B3E700508B8B65770E53CA@MAIL1>
+From: Shie Erlich <shie_e@elbit.co.il>
+To: "Linuxppc-Embedded mailing list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: 64 bit memory access - again ...
+Date: Mon, 3 Dec 2001 13:14:43 +0200 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+	charset="windows-1255"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  Hi!
+( i know this has been talked about before, but i couldn't get
+  a complete answer from reading the posts, so ... )
 
-  I'm looking for latest linux kernel 2.4.1x for 405GP.
-  The linux-2.4.16 of kernel.org has comlie errors.
-  If you know the location, please answer to me.
+i'm porting linux to a powerPC750 and have the following problem:
+we have a piece of hardware whose memory region can only be
+written or read to using 64bit memory access.
+(i know it's a bad design, but as usual, it's not up to me ;-)
+
+as far as i know, there are 2 ways to do a 64bit access on a 750:
+1) use the FPU and do a floating point access
+2) something about using a cache line and flushing it (don't know
+   anymore about this one)
+
+i also know that floating point in the kernel is a big NO, but if no other
+choice is found, i'll have to do it. my questions are:
+
+a) what is the recommended way of doing a 64bit access in the linux kernel ?
+b) if the fpu is the way to go, what do i need to do so that the kernel does
+not
+    trap my floating point access ? details here would be greatly
+appriciated ;-)
 
 
-Best Regards
-Young-Han, Kim
+any help anyone can offer will be great,
 
+                            thanks
+ 			shie erlich
 
--
--                              ?
--                             '''
--                            (o o)
-- -----------------------oOO--(_)--OOo-----------------------
-- == English Version ==
-- Young-Han, Kim
-- Senior Research Engineer
--
-- E-Mail : yhkim@da-san.com
-- Direct : ++ 82 2 3484 6579
-- H.P    : ++ 82 19 254 7566
--
--                        DASAN Co., Ltd.
-- 6F KOSMO Tower 1002, Daechi-dong, Kangnam-ku, Seoul, Korea
--                         Zip : 135-280
--                    Tel : ++ 82 2 3484 6500
--                    Fax : ++ 82 2 3484 6501
--                    http://www.da-san.com
-- ===========================================================
-- == Korean Version ==
-- 김영한   선임연구원 / 기술연구소
-- E-Mail : yhkim@da-san.com
-- 직통   : 02-3484-6579
-- 핸드폰 : 019-254-7566
--
--                        (주)다산인터네트
--           서울시 강남구 대치동 1002 코스모 타워 6층
--                    우편번호 : 135-280
--                    Tel : 02-3484-6500
--                    Fax : 02-3484-6501
--                    http://www.da-san.com
------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
