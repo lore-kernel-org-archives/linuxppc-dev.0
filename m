@@ -1,160 +1,122 @@
-Message-ID: <36A3045A.8DC883DD@siemens.at>
-Date: Mon, 18 Jan 1999 10:52:26 +0100
-From: Helmut Buchsbaum <helmut.buchsbaum@siemens.at>
-MIME-Version: 1.0
-To: Dan Malek <dmalek@jlc.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: FADS823 - the neverending story
-References: <369F2600.4525430D@siemens.at> <369F72E8.3C25AC87@jlc.net>
+Message-ID: <XFMail.990118130140.gthomas@cygnus.co.uk>
 Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <36A0E079.F90619F5@jlc.net>
+Date: Mon, 18 Jan 1999 13:01:40 -0000 (GMT)
+From: Gary Thomas <gthomas@cygnus.co.uk>
+To: Dan Malek <dmalek@jlc.net>, Michael Meissner <meissner@cygnus.com>
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+Cc: linuxppc-dev@lists.linuxppc.org, linux-kernel@vger.rutgers.edu,
+        Cort Dougan <cort@persephone.cs.nmt.edu>,
+        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
+        Michael Meissner <meissner@cygnus.com>,
+        Johnnie Peters <jpeters@phx.mcd.mot.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+
+On 16-Jan-99 Dan Malek wrote:
 > 
-> Helmut Buchsbaum wrote:
+> Johnnie Peters wrote:
 > 
-> > I tried using initrd (with Dan's root file system mbxroot.tar.gz) and
-> > rootnfs, but none of these configurations started up an initial shell.
+>> I think this is the same problem I was seeing.  This machine is also the known as
+>> the Utah.  I fixed this in arch/ppc/boot/misc.c.  Here is the diff:
+>>
+>> Michael Meissner wrote: 454c454
+>> <       if (( (unsigned long)zimage_start <= 0x01000000 ) && initrd_start)
+>> ---
+>> >       if ( (unsigned long)zimage_start <= 0x01000000 )
 > 
-> What sort of errors do you get?  Anything printed on the console?
-> If not, dump the memory associated with 'log_buf'.
-
-
-Unfortunately no errors on console or in log_buf, just the standard
-printouts when the kernel boots.
-
+> Wait a minute.....this isn't the problem.  Making this change will
+> break other machines.
 > 
-> > The kernel itself is idle and obviously reschedules process 1 again and
-> > again, but this seems kind of stuck after executing SET_PAGE_DIR :-(
 > 
-> How do you know this?  If you are trying to use mpc8bug or something over
-> the BDM, you better stop it.  The kernel changes all of the processor
-> state mpc8bug thinks isn't changing.  You go back in with mpc8bug and
-> it can't find anything.  You could be doing more damage with it than finding
-> useful information.
-
-
-
-I just added a number of printk's to get an idea what's going on: the
-one I added in SET_PAGE_DIR right before setting the M_TWB register is
-the last I ever saw (on console and in log_buf!). I certainly use
-mpc8bug to download and debug but the only weird behaviour I get is that
-the CPU never stops when I set a breakpoint after having set M_TWB in
-SET_PAGE_DIR, although single stepping works!
-What processor state is changed by the kernel you think mpc8bug doesn't
-expect to? I have a small script to load and setup the board for
-starting the kernel:
-
-Hardreset the board:                       rh
-Load the boot loader:                      load
-arch/ppc/boot/zImage.initrd
-Load the symbols of the kernel itself:     load vmlinux :js
-Hands off any int's handled by the kernel: rms der fc9b83ff
-
-Starting with 'go' decompresses the kernel, starts it (network, uart,
-RAM disk driver, etc.. is started and RARP request and mounting root
-succeed) and then the kernel execve's /sbin/init (or (/bin/sh)) and then
-I tracked the whole process down (loading the binary and ld.so.1) to
-SET_PAGE_DIR where I loose control due to not being able to set
-brekpoints any more! When I stop the CPU by pressing Ctrl-C there are
-two possibilities:
-1. it can't be stopped (only via NMI): it seems as if I stopped the
-kernel right in a moment when it loops around in TLB interrupt (which I
-suspect due to the register settings). Of course I can't continue in
-this case.
-2. it's just doing the idle loop or rescheduling!
-
-To summarize: I can' get across that M_TWB setting in SET_PAGE_DIR to
-get any useful information.
-
-So I commented out that M_TWB setting, just to see where we go: it just
-proceeds like we would expect until the wrong M_TWB setting strikes! But
-there are no debugging problems any more!
-
-Since I discovered that my CPU revision handles data and instruction
-cache incorrectly (which I turned off, of course) I suspect additional
-difficulties in the memory controller (e.g. MMU translation without
-cache) and that's why I'm still waiting for my CPU's!!
-
-
+>> > > > }       loaded at:     00400400 00415FD0
+>> > > > }       relocated to:  00600000 00615BD0
+>> > > > }       zimage at:     0040A400 0049A889
+>> > > > }       avail ram:     00400000 00600000
 > 
-> > Since there is an increasing number of success stories for embedded 8xx
-> > boards, I more and more suspect the FADS itself....
+> For whatever reason, at the end of the memory relocation process,
+> we force the available ram buffer to the location above.  What happened
+> in this case is the load image was copied into memory into the space
+> we assumed was to be used for free memory.
 > 
-> The FADS has always been a disaster for me.  The only way I have ever
-> booted it is with my own flash rom code and a kernel from a PCMCIA flash card.
->
+> This boot process has become a nightmare.  At first glance it looks
+> pretty generic, but it is full of assumptions about how specific types
+> of systems load images.  There are actually two different loading
+> locations, above 8 Meg (physical) for most machines or at exactly
+> 2 Meg for small memory systems like the 8xx boards.  When you load
+> the initial image between these locations, as in this example, the boot
+> process is unlikely to work.
+> 
+> The initial boot code is built to run at either 1 Meg or 6 Meg.  When started
+> it relocates itself to those locations.  We should clean up the code in
+> misc.c to do something similar.  The only restriction in this case would be
+> the boot code (plus bss, which people often forget) must not overlap the
+> zImage or the ramdisk.  In other words, the correct thing to do is not
+> force the abosolute location of the free memory.  We already go through
+> the arithmetic to find some free memory, so why not just use it?
+> 
+> In this case, removing the fragment of code:
+> 
+>     #ifndef CONFIG_MBX
+>         /* this is safe, just use it */
+>         /* I don't know why it didn't work for me on the MBX with 20 MB
+>          * memory.  I guess something was saved up there, but I can't
+>          * figure it out......we are running on luck.  -- Dan.
+>          */
+>         avail_ram = (char *)0x00400000;
+>         end_avail = (char *)0x00600000;
+>#endif
+> 
+> would likely work.  Just change the #ifdef above to #if 0.  Let me know
+> what happens in this case.
+> 
+> 
+> Thanks.
+> 
+> 
+>     -- Dan
 
-Probably I adapt the flash prom code for my FADS823 as soon as I have
-access to a PCMCIA flash card ;-)
+Here's what I got to work (patches):
 
+diff -ur /tmp/linux-2.2.0p5/arch/ppc/boot/misc.c /usr/src/linux-2.2.0p5/arch/ppc/boot/misc.c
+--- /tmp/linux-2.2.0p5/arch/ppc/boot/misc.c     Mon Dec 21 16:37:20 1998
++++ /usr/src/linux-2.2.0p5/arch/ppc/boot/misc.c Sun Jan 17 12:15:03 1999
+@@ -411,7 +417,7 @@
+        if ( INITRD_OFFSET )
+                end_avail = (char *)0x01000000;
+        else
+-               end_avail = (char *)0x00400000;
++               end_avail = (char *)0x00800000;
  
-> > Now I wonder which CPU revision Dan used in his successful port for the
-> > 823-based Bright Star Engineering ip-Engine board.
-> 
-> The silicon mask is 5F98S.  I don't know how this maps to "Rev" numbers.
-> I'll print out the revision register next time I have a chance.
-> 
+        /* let residual data tell us it's higher */
+        if ( (unsigned long)residual > 0x00800000 )
+@@ -522,6 +528,7 @@
+ 
+ #ifndef CONFIG_MBX
+        /* this is safe, just use it */
++#if 0 /* Hah!  This is really wrong on PreP boxes with OF */
+        /* I don't know why it didn't work for me on the MBX with 20 MB
+         * memory.  I guess something was saved up there, but I can't
+         * figure it out......we are running on luck.  -- Dan.
+@@ -529,6 +536,7 @@
+        avail_ram = (char *)0x00400000;
+        end_avail = (char *)0x00600000;
+ #endif
++#endif
+        puts("avail ram:     "); puthex((unsigned long)avail_ram); puts(" ");
+        puthex((unsigned long)end_avail); puts("\n");
+ 
+I'll try upgrading to 2.2.0p7 tonight and see how that works.
 
+I haven't been able to get the PS/2 mouse working yet.  Also, I'll try to stitch
+in the code I had in the 2.0.XX kernels to handle/fake residual data on the PreP
+boxes - so I can have my 64M RAM back :-)
 
-So there is hope for me, since my revsion 0 chip has silicon mask 1F98S
-!!
+Please note: I'm either 'gthomas@cygnus.co.uk' or 'gdt@linuxppc.org', not 'gdt@cygnus.com'.
 
-
-> > BTW, one of the major problems I had, is adapting the CPU's internal
-> > register structure...
-> 
-> The biggest problem should have been the "uart" driver.  Several people have
-> complained about this.  Of the few (or one :-) that actually suggested a change,
-> it just moved configuration complexity from one place to another.
-> 
-> > ........ So why don't we use seperate typdefs
-> > (e.g. immap860_t, immap823_t,..) and #define'ing them properly (#define
-> > immap_t immap860_t)?
-> 
-> I am currently working on both USB and video for the 823.  I am changing
-> the immap to accomodate this.  There are more similarities than differences
-> among the processors and my programming preference is unions of structures
-> in this case rather than separate data types.
-> 
-
-I'd appriciate unions, too. There's just no time for me to rewrite your
-drivers to use unions and besides, I only have an 860 and an 823 manual!
-I just try to get the kernel up and running within the few hours that
-are left to do 'off-project' work, since I'd like to prove that Linux at
-one of our embedded systems makes sense!
-
-Video for the 823 is on my list, too. As soon as I have a running
-embedded environment (probably I can manage to get an alternative to the
-FADS!) I'd be really interested in your work!
-
-> ...
-> One of my original goals, and one I would like to maintain, is minimal kernel
-> size.  Oh, it would be so nice to add all of the run time board and processor
-> configuration detection so we could have one 8xx kernel.  However, in this
-> embedded environment every processor cycle and memory byte is precious.
-> For LinuxPPC to be successful in this environment we must keep this goal,
-> and none of us want the alternative to LinuxPPC in this environment :-).
-> 
-
-I'd prefer a configurable kernel, too. In an embedded environment you
-usually know what hardware your software is running on, so stick to
-compile time configuration ;-). 
-
-
---  Helmut
-
-*********************************************************
-* Helmut Buchsbaum               * Siemens AG Austria   *
-* Tel:   ++43-1-1707-36686       * EZE PN 5             *
-* Fax:   ++43-1-1707-55169       * Erdberger Laende 26  *
-*                                * A-1030 Vienna/Europe *
-*********************************************************
-* mailto:Helmut.Buchsbaum@siemens.at                    *
-*        buc@eze22.siemens.co.at                        *
-*********************************************************
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
