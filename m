@@ -1,113 +1,170 @@
-Date: Sun, 18 Jan 2004 15:32:25 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: OF properties access ?
-Message-ID: <20040118143225.GA6717@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston> <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston> <20040118120722.GA4603@iliana> <1074468096.795.27.camel@gaston>
+Date: Sun, 18 Jan 2004 15:44:12 +0100
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: multiple separate pci bridges ...
+Message-ID: <20040118144412.GA6897@iliana>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1074468096.795.27.camel@gaston>
 From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 19, 2004 at 10:21:36AM +1100, Benjamin Herrenschmidt wrote:
+On Mon, Jan 19, 2004 at 10:24:52AM +1100, Benjamin Herrenschmidt wrote:
 >
-> On Sun, 2004-01-18 at 23:07, Sven Luther wrote:
-> > On Sat, Jan 17, 2004 at 02:48:11PM +1100, Benjamin Herrenschmidt wrote:
-> > >
-> > > >
-> > > > But this doesn't reply me on why my attempts to read back integer values
-> > > > from OF property only result in the machine hanging, and since it is
-> > > > really early on, i don't even get serial console output to have an idea
-> > > > why :/
-> > > >
-> > > > in particular i cloned the code reading l2cr-value, and changed it to
-> > > > l2cr and instead of reading the value, i got only kernel silently dying.
-> > >
-> > > Show me the code and the relevant device-tree bits.
+> > Ok, i have done this. I have followed the recomendations of the hardware
+> > guy, and did the following :
 > >
-> > Ok, here is the code that dies :
-> >
-> > void pegasos_set_l2cr(void) {
+> >   device 0, function 0 : read access to bytes 0-15, read returns 0 on
+> >   regs > 15. Write access fails silently.
 >
-> Grrr... please put the { on a different line
+> Show the code (just in case...)
 
-Ok. (altough i think this is a subject of philosophical debate :)
 
-> >         struct device_node *root = find_path_device("/");
-> >         char *machine;
-> >         struct device_node *np;
+  #define PEG2_PCI_OP(rw, size, type, op, mask, btrw)
+  int __chrp
+  peg2_##rw##_config_##size(struct pci_dev *dev, int offset, type val)
+  {
+          struct pci_controller *hose = dev->sysdata;
+          u32 msr;
+          u32 data;
+          volatile unsigned int *f118 = hose->cfg_peg2_magic;
+          volatile unsigned int *f11c = (unsigned int *) f118 + 1;
+
+          /* We won't write on device 0 and only read byte 0-15 of func 0 */
+          if (dev->bus->number == 0 || dev->bus->number == 0x10) {
+                  if (dev->devfn == 0) {
+                          if (!(btrw & 1) && (offset > 15)) {
+                                  val = (type) 0x0;
+                                  return PCIBIOS_SUCCESSFUL;
+                          } else if (btrw & 1) {
+                                  return PCIBIOS_SUCCESSFUL;
+                          }
+                  } else if ((dev->devfn >> 3) == 0) {
+                          return PCIBIOS_DEVICE_NOT_FOUND;
+                  }
+          }
+
+	  if (btrw & 2) {
+                /* Disable cpu interrupts */
+                msr = mfmsr();
+                mtmsr(msr & ~MSR_EE);
+                /* Enable PCI -> AGP idsel mapping */
+                cfg_write(0x8000, f118, u32, out_be32);
+          }
+
+          data = 0x80000000 | ((dev->bus->number - hose->bus_offset) << 16)
+                    | (dev->devfn << 8) | (offset & 0xff);
+          cfg_write(data, hose->cfg_addr, u32, out_le32);
+          cfg_##rw(val, hose->cfg_data + (offset & mask), type, op);
+
+          if (btrw & 2) {
+                /* Enable PCI -> AGP idsel mapping */
+                cfg_write(0x8000, f11c, u32, out_be32);
+                /* Disable cpu interrupts */
+                mtmsr(msr);
+          }
+          return PCIBIOS_SUCCESSFUL;
+  }
+
+btrw is 0 for reads and 1 for writes. The second bit (0 or 2) also
+encodes if we are on the pci or agp bus, to enable th agp config access
+magic.
+
+> >   device 0, function 1-7 : both read and writes fail with
+> >   PCIBIOS_DEVICE_NOT_FOUND.
 > >
-> >         /* On Pegasos, enable the l2 cache if needed, as the OF forgets * it */
+> > Additionnally, i have nullified the ressources with :
+> > 	dev->resource[i].flags = 0;
+> > 	dev->resource[i].start = 0;
+> > 	dev->resource[i].end = 0;
+> > from the pcibios_fixup (not the right place, but i don't know where it
+> > should be done instead).
 >
-> Check if root isn't NULL...
+> A quirk is one of the functions in the table in pci.c but you can
+> use the fixup too at this point...
 
 Ok.
 
-> >         machine = get_property(root, "model", NULL);
+> > This allows me to see the host bridge on both buses, and radeonfb works
+> > fine :
+> >
+> > $ lspci
+> > 00:00.0 Host bridge: Galileo Technology Ltd.: Unknown device 6460 (rev 03)
+> > 00:01.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host Controller (rev 46)
+> > 00:05.0 SCSI storage controller: LSI Logic / Symbios Logic 53c810 (rev 23)
+> > 00:0c.0 ISA bridge: VIA Technologies, Inc. VT8231 [PCI-to-ISA Bridge] (rev 10)
+> > 00:0c.1 IDE interface: VIA Technologies, Inc.  VT82C586A/B/VT82C686/A/B/VT8233/A/C/VT8235 PIPC Bus Master IDE (rev 06)
+> > 00:0c.2 USB Controller: VIA Technologies, Inc. USB (rev 1e)
+> > 00:0c.3 USB Controller: VIA Technologies, Inc. USB (rev 1e)
+> > 00:0c.4 Non-VGA unclassified device: VIA Technologies, Inc. VT8235 ACPI (rev 10)
+> > 00:0c.5 Multimedia audio controller: VIA Technologies, Inc. VT82C686 AC97 Audio Controller (rev 40)
+> > 00:0c.6 Communication controller: VIA Technologies, Inc. Intel 537 [AC97 Modem] (rev 20)
+> > 00:0d.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II] (rev 51)
+> > 10:00.0 Host bridge: Galileo Technology Ltd.: Unknown device 6460 (rev 03)
+> > 10:08.0 VGA compatible controller: ATI Technologies Inc: Unknown device 5964 (rev 01)
+> >
+> > But :
+> >
+> > $ hexdump /proc/bus/pci/10/00.0
+> > 0000000 ab11 6064 0700 b022 0300 0006 2000 0000
+> > 0000010 20df 85cf 20df 85cf 20df 85cf 20df 85cf
+> > *
+> > 0000040
+> >
+> > Why in hell do i have 0x20df85cf on all four bars of the config space
+> > addresses 0x10 to 0x1f ?
 >
-> Check if machine isn't NULL...
+> I don't know, make sure you are "filtering" things properly... You
+> should return 0xff on anything after 0x10 I suppose (though you
+> may want to return 0 for the BARs, I have to dbl check).
 
-Ok.
+I am returning 0 for all of function 0. I dropped the whole struct
+pci_dev ressource thingy, and they are well nullified. My limited
+understanding of those pci issues let me make a guess though. I think
+that either the stuff in the struct pci_dev is set later on (the BARs
+are modifiable i think), or those values are read from the struct
+pci_dev before i nullify them.
 
-> >         if (strncmp(machine, "Pegasos", 7) == 0) {
-> >                 /* Enable L2 cache if needed */
-> >                 np = find_devices ("cpus");
-> >                 if (np == 0)
-> >                         np = find_type_devices("cpu");
-> >                 if (np != 0) {
-> >                         unsigned int *l2cr = (unsigned int *)
-> >                                 get_property (np, "l2cr", NULL);
+> > Finally, X works, altough DRI freezes after a second or two with my
+> > radeon 9200SE, while it works for a Radeon 7500, but this is probably a
+> > DRI issue.
 >
-> The above got you a _pointer_ to the value, the code below uses
-> that point directly as the value, which is obviously wrong
+> Which version of DRI ? Do you have the interrupt routing working
+> properly ?
 
-Arg, i copied the wrong version.
+Mmm, maybe i should also allow to read (and write ?) the config 32-bit
+word at 0x3c, those include the Interrupt Line and Pin, as well as the
+Max_lat and Min_Gnt.
 
-> >                         if (!(l2cr & 0x80000000)) {
-> >                                 _set_L2CR(0);
-> >                                 _set_L2CR(l2cr | 0x80000000);
-> >                         }
+Maybe some of the first 16 bytes would also need to be modifiable, and
+there should be no harm in allowing read of the subsytem id and vendor
+id ?
+
+As for the DRI version, i use the drm module from the linuxppc-2.4 tree,
+using the v2.4.24 TAG to checkout, and the rest of the XFree86 stuff,
+including the mesa libraries, from the 4.3.0-0pre1v5 experimental
+package, rebuild with the Radeon 9200SE patch from Michel Daenzer.
+
+The freeze happens when i first launch glxinfo, or when i first start
+moving a window around (using a debian/unstable default gnome desktop).
+I don't remember well, but i think it would also freeze when let running
+for a time, but i am not sure. The box is still available trough ssh,
+but killing the X server doesn't restore the fbdev console, and freeze
+the box.
+
+> > What makes me wonder, is that X needs around 20 seconds to launch, which
+> > could not be something normal. It usually takes 5-8 seconds only.
+> > Something strange is going on.
 >
-> The above should have been...
->
-> 			if (l2cr && !((*l2cr) & L2CR_L2E)) {
-> 				_set_L2CR(0);
-> 				_set_L2CR((*l2cr) | L2CR_L2E);
-> 			}
+> Yah, XFree log could be useful.
 
-In reality, i had both the code using l2cr, and the one using *l2cr, and
-even a version like the pmac_setup code, which copied the content of the
-l2cr pointer to a l2cr_value int, but none worked.
-
-> Now that is said providing your algorithm is right, that is the
-> device-tree provides you with an "l2cr" property containing the
-> right settings but not the enable bit, and matching what your CPU
-> is doing. If the device-tree has L2E set but not the CPU, you
-> may want to do things differently...
-
-Well, i have bugged the OF people, and they have indeed set the L2E bit
-in future versions of the OF. Mostly what happens right now, is that L2E
-is not set (i get a something around 30% decrease in compilation time
-when doing the l2cr=0x80000000 thingy) and the l2cr property returns 0.
-
-I also have had similar troubles with the /proc/pci@C0000000/display
-bus_number property, altough it didn't die there.
-
-> > $ hexdump /proc/device-tree/cpus/PowerPC,74x7/l2cr
-> > 0000000 0000 0000
->
-> So you "l2cr" value is just 0... Setting it to 0x80000000 means enabled
-> without any setting bit... that might actually be correct for on-die L2
-> though, check the CPU spec anyway. It is correct for my 7455
-
-It is either a 7447 or a 750Cxe. It is correct for both, and we have
-been using the l2cr=0x80000000 option as kernel boot option since ages.
-It quickly becomes old to have to type this per hand each time though,
-as we have no boot loader (yet).
+Ok, i uploaded it at http://people.debian.org/~luther/XFree86.0.log,
+since the list was not able to cope with it. I didn't see anything anormal
+there though. Altough some of the bus ressources seem to be checked even
+if i nullified them.
 
 Friendly,
 
