@@ -1,31 +1,38 @@
-From: Arturo Nunez <artnpp@cs.ucf.edu>
-Message-Id: <200209252009.QAA02361@iris.cs.ucf.edu>
-Subject: Cisco 26xx routers ??
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Wed, 25 Sep 2002 16:09:23 -0400 (EDT)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Julien EYRIES <julien.eyries@thales-bm.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: search for LCD pannel (1x16 or 2x16) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 25 Sep 2002 11:22:56 +0200."
+             <3D918070.10009@thales-bm.com>
+Date: Wed, 25 Sep 2002 22:47:48 +0200
+Message-Id: <20020925204753.1C43AFA8E@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Folks:
+In message <3D918070.10009@thales-bm.com> you wrote:
+>
+> I'm searching for a LCD panel ( about 1x16 or 2x16 characters, black and
+> white only ) that my MPC8260 could use  .
 
-	I was browsing some emails on the list and read an email from Iain Young
-	related with the use of Linuxppc for the Cisco 2600's series routers..
+Most display of this sort come with some sort of serial interface.
 
-	Does anybody has success doing that ??
+> Is there some support for them in the linux kernel (I use linux 2.4.4
+> from Denx) ?
 
-	All comments or suggestions are very welcome...
+The UART driver is working just fine...
 
-	Best Regards,
+Best regards,
+
+Wolfgang Denk
 
 --
-----------------------------------------------------------------
-Arturo Nunez					| Mathematics is the supreme
-School of Computer Science      | nostalgia of our time ...
-University of Central Florida   |
-(407)-823-3228 (O)				|
-----------------------------------------------------------------
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Hi there! This is just a note from me, to you, to tell you, the  per-
+son  reading this note, that I can't think up any more famous quotes,
+jokes, nor bizarre stories, so you may as well go home.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
