@@ -1,102 +1,123 @@
-Message-Id: <200008161925.MAA00373@tallis.jrware.com>
-Content-Type: text/plain
-MIME-Version: 1.0 (NeXT Mail 3.3 v148.2.1)
-From: Frank Jas <frank@jrware.com>
-Date: Wed, 16 Aug 2000 12:25:36 -0700
+Date: Wed, 16 Aug 2000 19:29:39 +0000 (Local time zone must be set--see zic manual page)
+From: Thorsten Sprenger <root@informatik.tu-muenchen.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Signal mask restore anomaly
-Reply-To: frank@jrware.com
+Subject: xf4 and lombard
+Message-ID: <Pine.LNX.4.21.0008161915300.78-200000@anubis.local>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="133632-656489213-966454179=:78"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Under certain circumstances, a signal blocked while a
-signal handler is executing will not be restored.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
+
+--133632-656489213-966454179=:78
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+hi !
+
+i have compiled xfree 4.0.1 with the latest xfree86-pmac tree from
+linuxppc.org. as kernel i use the latest pmac-stable and pmac-devel from
+linuxcare. when starting the x-server i get a dark screen, final beep and
+- after 180 seconds - the system reboots (kernel panic?).
+
+the ati driver doesn't recognize the real amount of videoram, even if i
+use the 'VideoRam'-option. i have attached the some parts of my
+XF86Config.0.log file (the system i use at the moment is really bad - no
+cut'n paste).
+
+does anyone know how to solve this problem ?
+
+thank you very much in advance !
+/thorsten
 
 
-This is my kernel info:
+--133632-656489213-966454179=:78
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="XFree86.0.log"
+Content-ID: <Pine.LNX.4.21.0008161929390.78@anubis.local>
+Content-Description: 
+Content-Disposition: attachment; filename="XFree86.0.log"
+Content-Transfer-Encoding: BASE64
 
-Linux 2.2.6-15apmac #1 Mon May 31 03:54:09 EDT 1999 ppc unknown
-
-The behavior does not occur under Intel versions (2.2.5-15smp).
-
-
-Below is a program that tests out the use of signal masks
-with sigaction().  It sets up a handler for SIGINT and
-SIGTSTP.  The handler for SIGTSTP adds SIGINT to
-the signal mask for that handler.  So while the SIGTSTP
-handler is executing, occurences of SIGINT will be
-blocked until the handler returns.  SIGTSTP will also
-be blocked.
-
-
-#define _POSIX_SOURCE 1
-#define _GNU_SOURCE 1
-
-#include <signal.h>
-#include <errno.h>
-#include <stdio.h>
-
-void on_intr (signum)
-	int signum ;
-{
-	printf("\n    Interrupted with signal %d. \n", signum) ;
-}
-
-void on_tstp (signum)
-	int signum;
-{
-	printf ("\n     Handler for SIGTSTP wants text or ^C or ^Z: ") ;
-	getchar () ;
-}
-
-void main ()
-{
-	struct sigaction  new_intr_action;
-	struct sigaction  new_tstp_action;
-	int    c ;
-
-	sigemptyset (&new_intr_action.sa_mask);
-	new_intr_action.sa_handler = on_intr;
-	new_intr_action.sa_flags   = SA_RESTART;
-
-	sigaction  (SIGINT, &new_intr_action, 0);
-
-	sigemptyset (&new_tstp_action.sa_mask);
-	sigaddset   (&new_tstp_action.sa_mask, SIGINT);
-	new_tstp_action.sa_handler = on_tstp;
-	new_tstp_action.sa_flags   = SA_RESTART;
-
-	sigaction  (SIGTSTP, &new_tstp_action, 0);
-
-	printf("Starting main input loop enter text or ^Z or ^C:\n") ;
-
-	while ((c = getchar ()) != EOF) {
-		putchar (c);
-	}
-}
-
-
-The following execution sequence leads to the anomalous behavior.
-
-
-Trigger the SIGTSTP handler with a ^Z
-While executing the handler, deliver a ^Z and ^C
-Hit return to return from the handler.
-Another instance of the SIGTSTP handler should execute.
-Hit return to return from that instance of the handler.
-Notice that the SIGINT handler does not execute and should have.
-Any subsequent SIGINT are apparently blocked.
-
-Apparently the nested occurence of SIGTSTP effected the restore
-of the SIGINT mask, and the handling of the pending SIGINT.
-
-The same behavior will result using 'kill' from another window
-to send the signals.
-
-Please let me know if this is not the appropriate venue for this
-post.
-
-Frank Jas
+Li4uLi4uLi4NCihJSSkgVW5sb2FkTW9kdWxlOiAic2NhbnBjaSINCihJSSkg
+VW5sb2FkaW5nIC91c3IvWDExUjYvbGliL21vZHVsZXMvbGlic2NhbnBjaS5h
+DQooLS0pIFBDSTogKDA6MTc6MCkgQVRJIE1hY2g2NCBMSSByZXYgMjIwLCBN
+ZW0gQCAweDgxMDAwMDAwLzI0LCAweDgxZmZmMDAwLzEyLCBJL08gQCAweDBj
+MDAvOA0KKElJKSBBZGRyZXNzYWJsZSBidXMgcmVzb3VyY2UgcmFuZ2VzIGFy
+ZQ0KCVswXSAtMQkweDAwMDAwMDAwIC0gMHhmZmZmZmZmZiAoMHgwKSBNWEIN
+CglbMV0gLTEJMHgwMDAwMDAwMCAtIDB4MDAwMGZmZmYgKDB4MTAwMDApIElY
+Qg0KKElJKSBPUy1yZXBvcnRlZCByZXNvdXJjZSByYW5nZXM6DQooSUkpIEFj
+dGl2ZSBQQ0kgcmVzb3VyY2UgcmFuZ2VzOg0KCVswXSAtMQkweDgwODAwMDAw
+IC0gMHg4MDg3ZmZmZiAoMHg4MDAwMCkgTVhCDQoJWzFdIC0xCTB4ODA4ODIw
+MDAgLSAweDgwODgyZmZmICgweDEwMDApIE1YQg0KCVsyXSAtMQkweDgxZmZm
+MDAwIC0gMHg4MWZmZmZmZiAoMHgxMDAwKSBNWEIoQikNCglbM10gLTEJMHg4
+MTAwMDAwMCAtIDB4ODFmZmZmZmYgKDB4MTAwMDAwMCkgTVhCKEIpDQoJWzRd
+IC0xCTB4MDAwMDBjMDAgLSAweDAwMDAwY2ZmICgweDEwMCkgSVhCKEIpDQoo
+SUkpIEFjdGl2ZSBQQ0kgcmVzb3VyY2UgcmFuZ2VzIGFmdGVyIHJlbW92aW5n
+IG92ZXJsYXBzOg0KCVswXSAtMQkweDgwODAwMDAwIC0gMHg4MDg3ZmZmZiAo
+MHg4MDAwMCkgTVhCDQoJWzFdIC0xCTB4ODA4ODIwMDAgLSAweDgwODgyZmZm
+ICgweDEwMDApIE1YQg0KCVsyXSAtMQkweDgxZmZmMDAwIC0gMHg4MWZmZmZm
+ZiAoMHgxMDAwKSBNWEIoQikNCglbM10gLTEJMHg4MTAwMDAwMCAtIDB4ODFm
+ZmZmZmYgKDB4MTAwMDAwMCkgTVhCKEIpDQoJWzRdIC0xCTB4MDAwMDBjMDAg
+LSAweDAwMDAwY2ZmICgweDEwMCkgSVhCKEIpDQooSUkpIE9TLXJlcG9ydGVk
+IHJlc291cmNlIHJhbmdlcyBhZnRlciByZW1vdmluZyBvdmVybGFwcyB3aXRo
+IFBDSToNCihJSSkgQWxsIHN5c3RlbSByZXNvdXJjZSByYW5nZXM6DQoJWzBd
+IC0xCTB4ODA4MDAwMDAgLSAweDgwODdmZmZmICgweDgwMDAwKSBNWEINCglb
+MV0gLTEJMHg4MDg4MjAwMCAtIDB4ODA4ODJmZmYgKDB4MTAwMCkgTVhCDQoJ
+WzJdIC0xCTB4ODFmZmYwMDAgLSAweDgxZmZmZmZmICgweDEwMDApIE1YQihC
+KQ0KCVszXSAtMQkweDgxMDAwMDAwIC0gMHg4MWZmZmZmZiAoMHgxMDAwMDAw
+KSBNWEIoQikNCglbNF0gLTEJMHgwMDAwMGMwMCAtIDB4MDAwMDBjZmYgKDB4
+MTAwKSBJWEIoQikNCi4uLi4uLi4uLg0KKElJKSBBVEk6IEFUSSBkcml2ZXIg
+KHZlcnNpb24gNS4zLjUpIGZvciBjaGlwc2V0czogYXRpLCBhdGl2Z2ENCigt
+LSkgQ2hpcHNldCBBVEkgTWFjaDY0IDNEIFJhZ2UgTFQgUHJvIChQQ0kpIGZv
+dW5kDQooSUkpIHJlc291cmNlIHJhbmdlcyBhZnRlciB4Zjg2Q2xhaW1GaXhl
+ZFJlc291cmNlcygpIGNhbGw6DQoJWzBdIC0xCTB4ODA4MDAwMDAgLSAweDgw
+ODdmZmZmICgweDgwMDAwKSBNWEINCglbMV0gLTEJMHg4MDg4MjAwMCAtIDB4
+ODA4ODJmZmYgKDB4MTAwMCkgTVhCDQoJWzJdIC0xCTB4ODFmZmYwMDAgLSAw
+eDgxZmZmZmZmICgweDEwMDApIE1YQihCKQ0KCVszXSAtMQkweDgxMDAwMDAw
+IC0gMHg4MWZmZmZmZiAoMHgxMDAwMDAwKSBNWEIoQikNCglbNF0gLTEJMHgw
+MDAwMGMwMCAtIDB4MDAwMDBjZmYgKDB4MTAwKSBJWEIoQikNCkZvdW5kIGEg
+TWFjaDY0IG9uIGEgUG93ZXJQQw0KKFdXKSAqKioqSU5WQUxJRCBNRU0gQUxM
+T0NBVElPTioqKiogYjogMHg4MTAwMDAwMCBlOiAweDgxZmZmZmZmIGNvcnJl
+Y3RpbmcHDQpvd24NCglbMF0gLTEJMHg4MWZmZjAwMCAtIDB4ODFmZmZmZmYg
+KDB4MTAwMCkgTVhCDQoJWzFdIC0xCTB4MDAwMDBjMDAgLSAweDAwMDAwY2Zm
+ICgweDEwMCkgSVhCDQooSUkpIHdpbmRvdzoNCglbMF0gLTEJMHgwMDAwMDAw
+MCAtIDB4ZmZmZmZmZmYgKDB4MCkgTVhCDQooSUkpIHJlc1NpemU6DQoJWzBd
+IC0xCTB4MDAwMDAwMDAgLSAweGZmZmZmZmZmICgweDApIE1YQg0KKElJKSB3
+aW5kb3cgZml4ZWQ6DQoJWzBdIC0xCTB4MDAwMDAwMDAgLSAweGZmZmZmZmZm
+ICgweDApIE1YQg0KKElJKSByZXNvdXJjZSByYW5nZXMgYWZ0ZXIgcHJvYmlu
+ZzoNCglbMF0gLTEJMHgwMTAwMDAwMCAtIDB4MDFmZmZmZmYgKDB4MTAwMDAw
+MCkgTVhCKEIpDQoJWzFdIC0xCTB4ODA4MDAwMDAgLSAweDgwODdmZmZmICgw
+eDgwMDAwKSBNWEINCglbMl0gLTEJMHg4MDg4MjAwMCAtIDB4ODA4ODJmZmYg
+KDB4MTAwMCkgTVhCDQoJWzNdIC0xCTB4ODFmZmYwMDAgLSAweDgxZmZmZmZm
+ICgweDEwMDApIE1YQihCKQ0KCVs0XSAwCTB4MDAwYTAwMDAgLSAweDAwMGFm
+ZmZmICgweDEwMDAwKSBNU0INCglbNV0gMAkweDAwMGIwMDAwIC0gMHgwMDBi
+N2ZmZiAoMHg4MDAwKSBNU0INCglbNl0gMAkweDAwMGI4MDAwIC0gMHgwMDBi
+ZmZmZiAoMHg4MDAwKSBNU0INCglbN10gLTEJMHgwMDAwMGMwMCAtIDB4MDAw
+MDBjZmYgKDB4MTAwKSBJWEIoQikNCglbOF0gMAkweDAwMDAwM2IwIC0gMHgw
+MDAwMDNiYiAoMHhjKSBJU0INCglbOV0gMAkweDAwMDAwM2MwIC0gMHgwMDAw
+MDNkZiAoMHgyMCkgSVNCDQooSUkpIFNldHRpbmcgdmdhIGZvciBzY3JlZW4g
+MC4NCihJSSkgTG9hZGluZyBzdWIgbW9kdWxlICJmYmRldmh3Ig0KKElJKSBM
+b2FkTW9kdWxlOiAiZmJkZXZodyINCihJSSkgTG9hZGluZyAvdXNyL1gxMVI2
+L2xpYi9tb2R1bGVzL2xpbnV4L2xpYmZiZGV2aHcuYQ0KKElJKSBNb2R1bGUg
+ZmJkZXZodzogdmVuZG9yPSJUaGUgWEZyZWU4NiBQcm9qZWN0Ig0KCWNvbXBp
+bGVkIGZvciA0LjAuMSwgbW9kdWxlIHZlcnNpb24gPSAwLjAuMQ0KCUFCSSBj
+bGFzczogWEZyZWU4NiBWaWRlbyBEcml2ZXIsIHZlcnNpb24gMC4yDQooLS0p
+IEFUSSgwKTogRGVwdGggMjQsICgrKykgZnJhbWVidWZmZXIgYnBwIDI0DQoo
+PT0pIEFUSSgwKTogUkdCIHdlaWdodCA4ODgNCig9PSkgQVRJKDApOiBEZWZh
+dWx0IHZpc3VhbCBpcyBUcnVlQ29sb3INCk1hcHBpbmcgTU1JTyBAIDB4MTdm
+ZjAwMCB3aXRoIHNpemUgMHgxMDAwDQp0ZXN0aW5nIG1taW8gdy8gc2NyYXRj
+aCByZWdzLi4uDQpTQ1JBVENIX1JFRzAgPSAweDANClNDUkFUQ0hfUkVHMCA9
+IDB4MTIzNDU2NzgNClNDUkFUQ0hfUkVHMSA9IDB4MA0KU0NSQVRDSF9SRUcx
+ID0gMHhkZWFkYmVlZg0KQ2hpcCBUeXBlID0gMHgwLCBSZXYgPSAweDANCigt
+LSkgQVRJKDApOiBWaWRlb1JhbTogNyBrQnl0ZSAoT0ZGKQ0KKD09KSBBVEko
+MCk6IFVzaW5nIGdhbW1hIGNvcnJlY3Rpb24gKDEuMCwgMS4wLCAxLjApDQoo
+SUkpIEFUSSgwKTogUG93ZXJCb29rRzM6IFVzaW5nIGhzeW5jIHJhbmdlIG9m
+ICAgMS4wMC0zMDAuMDAga0h6DQooSUkpIEFUSSgwKTogUG93ZXJCb29rRzM6
+IFVzaW5nIHZyZWZyZXNoIHJhbmdlIG9mICAgMS4wMC0zMDAuMDAgSHoNCihJ
+SSkgQVRJKDApOiBNYXhpbXVtIGNsb2NrOiAgODAuMDAgTUh6DQo=
+--133632-656489213-966454179=:78--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
