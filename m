@@ -1,34 +1,28 @@
-Message-ID: <3ADE42E8.6552066B@mutoh.co.jp>
-Date: Thu, 19 Apr 2001 10:44:08 +0900
-From: Hideo Noda <Hideo_Noda@mutoh.co.jp>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PPC405GPWalnutPciBusMaster
-Content-Type: text/plain; charset=iso-2022-jp
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 19 Apr 2001 9:51:18 +0800
+From: byf <byfmail@yeah.net>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Can I use RiscWatch to load ppcboot?
+Mime-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
+Message-Id: <20010419015349.90F841CA867CB@smtp.yeah.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hello,
 
-I am trying to install Intel eepro100 onto WalnutPPC405GP.
-Basic PCI settings seem good but no frame is transmitted.
-The environment is WalnutPPC305GP with HardHatLinux 2.4.2 from
-MonraVista.
+I am working for walnut 405GP, it has a ROM Monitor and RiscWatch.
+now I want to use PPCBoot to overwrite ROM Monitor,
+Can I use RiscWatch to load PPCBoot to flash or to ram and run it?
 
-I can read or write eepro configuration registers and other control
-registers via PCI memory space.
-But Bus Master operations do not seem functional. I am confirmed that
-MASTER operation bit in eepro100 is enabled.
-I think some more settings are needed for PPC405GP built-in PCI control
-registers and/or Walnut board jumpers/dipswitches.
+or can I use a kernel with mtd support to finish this?
+I have no BDI2000.
 
-Has anyone tried PCI cards with BUS MASTER operations for Walnut
-PPC405GP?
+Thank you!
 
-Thanks in advance,
-
-Hideo
+                                  byf
+                             byfmail@yeah.net
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
