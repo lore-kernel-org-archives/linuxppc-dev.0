@@ -1,28 +1,26 @@
-Message-ID: <3851A289.226B892C@yahoo.com>
-Date: Sat, 11 Dec 1999 09:02:01 +0800
-From: Wang Yong <wung_y@yahoo.com>
-MIME-Version: 1.0
+Message-ID: <19991212014800.9853.qmail@web307.mail.yahoo.com>
+Date: Sat, 11 Dec 1999 17:48:00 -0800 (PST)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: glibc 1.99-8xx include files?
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: switch mmu context when jump into kernel
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-powerpc 4xx use mmu context(called TID(0~255)) when translate virtual
-addr to physical addr. a SPR named PID hold this context, so i think
-once i enable the addr translate, i have to set PID to
-current->mm->context
-to make translating work correctly. and it should be set to 0 when
-interrupt or system call arise.
-but after studying the kernel source i downloaded from tivo for a long
-time, i don't find any code to do that job. i think it mostly should be
-in these place: transfer_to_handler and int_return but it not. is the
-kernel missing something?
+It appears that the glibc header files in the
+mbxroot.full.tgz filesystem on the ftp site are for
+glibc version 2.0.  I'm using the glibc-1.99 version
+with the 8xx patches.  If anyone has the matching
+header files for this library, could you please post
+them somewhere.  I can't seem to find them anywhere.
 
-i am sorry if i post this message twice, my netscape got some problem.
+My code is including the 2.0 headers, but linking to
+the 1.99 library.  It's not very happy :-)
 
-Wang
+Thanks,
+Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
