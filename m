@@ -1,14 +1,11 @@
-Return-Path: <JasonVeith@Borgess.com>
-Received: from Borgess.com (wg.borgess.com [198.108.143.250])
-	by ozlabs.org (Postfix) with ESMTP id D248F2BF07
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Dec 2004 17:17:14 +1100 (EST)
-From: JasonVeith@Borgess.com
-To: linuxppc-dev@ozlabs.org
-Message-ID: <876ab7a8b5a29df6fc73fac28e2f8c8341cbb46c@Borgess.com>
-Date: Fri, 24 Dec 2004 01:00:17 -0500
+Return-Path: <evilninja@gmx.net>
+Message-ID: <41CAC150.5040903@gmx.net>
+Date: Thu, 23 Dec 2004 14:00:00 +0100
+From: Christian <evilninja@gmx.net>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
-Subject: Jason Veith/BMC/BHA is out of the office.
+To: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: 2.6-BK compile errors 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,13 +15,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+hi,
 
+compiling latest 2.6-BK kernel every day with a crosscompile toolchain, 
+there are errors for the ppc32 (PReP) here since yesterday.
+details here:
 
+http://nerdbynature.de/bits/sheep/latest-kernel/errors-2.6-ppc-BK.log
+http://nerdbynature.de/bits/sheep/latest-kernel/warnings-2.6-ppc-BK.log
+http://nerdbynature.de/bits/sheep/latest-kernel/make-2.6-ppc-BK.log
+http://nerdbynature.de/bits/sheep/latest-kernel/config-ppc-2.6.10-rc3
 
+this was made with:
 
-I will be out of the office starting  12/23/2004 and will not return until
-01/01/2006.
+powerpc-604-linux-gnu-gcc 3.4.2
 
-I have officially resigned my position at Borgess.  Please contact the Help
-Desk with any emergency issues.  They will be able to forward you to the
-correct person.  Thank you.
+GNU ld version 2.15
+   Supported emulations:
+    elf32ppclinux
+    elf32ppc
+    elf32ppcsim
+
+tell me, if more details are needed.
+
+thanks,
+Christian.
