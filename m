@@ -1,32 +1,33 @@
-Date: Wed, 27 Jan 1999 22:09:58 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: clearinghouse for your patches - I want your patches!
-Message-ID: <Pine.LNX.3.96.990127220455.22171B-100000@persephone.cs.nmt.edu>
+Message-ID: <36B02D03.1741187F@wanadoo.fr>
+Date: Thu, 28 Jan 1999 10:25:23 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: clearinghouse for your patches - I want your patches!
+References: <Pine.LNX.3.96.990127220455.22171B-100000@persephone.cs.nmt.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-There are a lot of patches to linux/ppc that I can't absorb into the main
-tree quickly enough.  It'll be increasingly difficult for me to change
-things now that 2.2 is out.
+Cort Dougan wrote:
+> 
+> There are a lot of patches to linux/ppc that I can't absorb into the main
+> tree quickly enough.  It'll be increasingly difficult for me to change
+> things now that 2.2 is out.
 
-I get a lot of requests for the very features that a lot of these patches
-provide so I'd like to give some space to them at linuxppc.cs.nmt.edu.
-Web and ftp so people can find what they need easily and quickly.
+Just curious: 
 
-I'd also like to be able to look through the patches often so I don't
-stomp on the changes they make or redo the work.  It'll also help
-synchronize things since several people out there are doing the same
-things and it's a lot easier for you to sync among yourselves rather than
-me communicate with all of you individually :)
+Will the patches that were already in the vger tree before the official
+release of 2.2.0 make it into mainstream 2.2 soon? I am talking about
+those that were in the last vger snapshot (pre9 = 2.2.0-final) that
+managed to escape before the door was closed (it's on your site,
+anyway). For example, atyfb-v1.101 vs 1.98 in the official 2.2.0, or
+BenH's patches to drivers/macintosh/mac_keyb.c.
 
-Can the people out there with patches please send me mail?  I'd like to
-set you up with some web/ftp space and an account so you can drop things
-off easily.
-
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
