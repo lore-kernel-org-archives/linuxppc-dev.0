@@ -1,57 +1,92 @@
-Message-ID: <38ED9676.A2FDA745@lanl.gov>
-Date: Fri, 07 Apr 2000 02:04:06 -0600
-From: Ben Sapp <bsapp@lanl.gov>
-Reply-To: bsapp@lanl.gov
+Message-ID: <002b01bfe2b0$2a05ae00$57c809c0@nt4srv87>
+Reply-To: "john zhan" <r3587@sina.com>
+From: "john zhan" <r3587@sina.com>
+To: "Kwansuk Kim" <kskim@neowave.co.kr>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <NEBBKFENMLEDKDHMEHPJIEOOCAAA.kskim@neowave.co.kr>
+Subject: Re: network tools don't work
+Date: Sat, 1 Jul 2000 00:28:01 +0800
 MIME-Version: 1.0
-To: Kwansuk Kim <kskim@neowave.co.kr>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is the ramdisk mounted?
-References: <NEBBKFENMLEDKDHMEHPJIEOGCAAA.kskim@neowave.co.kr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have seen these errors before on an MVME2301.   My problem was caused
-by not having the proper devices in /dev.  I had to add /dev/console and
-/dev/ttyS0.  Output from my (working) machine:
+hi, kim
+I experienced similar case.
+That's your shared objs and your applications are not accordant.
+Build apps and kernel with same version of glibc.
+also,make sure you have same version libc.so.6 in /lib of your target rootfs .
 
- sh-2.03# ls -l /dev/console /dev/ttyS0
-crw--w--w-   1 root     root       5,   1 Jul  8 07:19 /dev/console
-crw--w--w-   1 root     root       4,  64 Apr 13 08:39 /dev/ttyS0
+regards.
+john zhan.
 
-I also have to give the command boot option:
 
-console=/dev/ttyS0
 
-Now it works.   Good Luck.
+----- Original Message -----
+From: Kwansuk Kim <kskim@neowave.co.kr>
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Sent: Tuesday, July 11, 2000 7:47 PM
+Subject: network tools don't work
 
-Kwansuk Kim wrote:
+
 >
-> I just mounted the ramdisk with a warning.
+> After getting bash prompt, I determined wheather network is working, but it doesn't.
+> It tells there is no protocol.
 >
-> Is there any problem with unchecked fs? But I copied the image to host 'dd if=ramdisk.image of=/dev/ram' and I worked well. (It was given 2.2.13 kernel on linuxppc.org)
+> ----------
 >
-> Anyway, actual problem appeared at calling at init process. I saw the source and it seems if there is no init then the kernel calls /bin/sh.
+> init-2.00# ./ifconfig lo 127.0.0.1
+> 127.0.0.1: Resolver Error 0 (no error)
+> Usage: ifconfig [-a] [-i] [-v] interface
+>                 [inet address]
+>                 [hw] [ax25 address]
+>                 [metric NN] [mtu NN]
+>                 [trailers] [-trailers]
+>                 [arp] [-arp]
+>                 [netmask aa.bb.cc.dd]
+>                 [dstaddr aa.bb.cc.dd]
+>                 [mem_start NN] [io_addr NN] [irq NN]
+>                 [[-] broadcast [aa.bb.cc.dd]]
+>                 [[-]pointopoint [aa.bb.cc.dd]]
+>                 [up] [down] ...
+> init-2.00# ping 210.105.51.96
+> ping: unknown protocol icmp.
+> init-2.00#
 >
-> Of coarse, the shell is in the image, but the kernel couldn't find it.
+> ----------
 >
-> ---------------------------
+> But I set configure file to support TCP/IP protocol.
+> It's startup message.
 >
-> Now booting the kernel
+> ---------------
+>
+> POSIX conformance testing by UNIFIX
+> Linux NET4.0 for Linux 2.2
+> Based upon Swansea University Computer Society NET3.039
+> NET4: Unix domain sockets 1.0 for Linux NET4.0.
+> NET4: Linux TCP/IP 1.0 for NET4.0
+> IP Protocols: ICMP, UDP, TCP, IGMP
+> TCP: Hash tables configured (ehash 32768 bhash 32768)
+> Starting kswapd v 1.5
+> Serial driver version 4.27 with no serial options enabled
+> ttyS00 at 0x03f8 (irq = 4) is a 16450
+> ttyS01 at 0x02f8 (irq = 3) is a 16450
+> ttyS02 at 0x03e8 (irq = 4) is a 16450
+> CPM UART driver version 0.02
+>
 > ttyS00 at 0x0380 is a SMC
 > ttyS01 at 0x0100 is a SCC
 > ttyS02 at 0x0200 is a SCC
 > pty: 256 Unix98 ptys configured
-> RAM disk driver initialized:  16 RAM disks of 4096K size
-> eth0: CPM ENET Version 0.2, 00:01:c4:00:00:b1
-> RAMDISK: Compressed image found at block 0
-> EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-> VFS: Mounted root (ext2 filesystem).
-> Freeing unused kernel memory: 28k init
-> Warning: unable to open an initial console.
-> Kernel panic: No init found.  Try passing init= option to kernel.
-> Rebooting in 180 seconds..
+>
+> .....
+>
+> Is something wrong?
+>
+> I used ramdisk root file system, and ramdisk image was obtained from linuxppc.org. (about 4Meg, library version is 1.99)
+>
 >
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
