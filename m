@@ -1,34 +1,28 @@
-Message-ID: <408FEBB6.105@nortelnetworks.com>
-Date: Wed, 28 Apr 2004 13:36:54 -0400
-From: Chris Friesen <cfriesen@nortelnetworks.com>
+From: "Tameen Khan" <tameen@cisco.com>
+To: "'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>
+Cc: "'linuxppc-dev list'" <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: stack frame for interrupts/exceptions in PPC
+Date: Wed, 28 Apr 2004 10:41:32 -0700
+Message-ID: <008d01c42d48$0baae1a0$273147ab@amer.cisco.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
-Subject: confused about HID1 bits and G5
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <1083118036.20092.30.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm looking at 2.6.5, in the setup for the G5, specifically the HID1 register.
+> > > I am tryting to implement kernel backtracing for PPC.
+>
+> What do you mean ? There is already working backtrace code in
+> the kernel, both in the Oops code and in xmon.
 
-According to the docs for the chip, the default setting is all zeros, and the preferred setting is
-0xFD3C200000000000.
+Did not know that. Am new to linux and ppc.
+I'm porting lkcdutils for PPC. It picks up a kernal core dump and among
+other things has to generate backtraces from it.
 
-The only place I see HID1 being set is in __power4_cpu_preinit, and it executes the following:
-
-
-	mfspr	r0,SPRN_HID1
-	li	r11,0x1200		/* enable i-fetch cacheability */
-	sldi	r11,r11,44		/* and prefetch */
-	or	r0,r0,r11
-	mtspr	SPRN_HID1,r0
-	mtspr	SPRN_HID1,r0
-	isync
-
-It appears that we're relying on the firmware to set up a lot of the bits in this register--is there
-any reason we aren't forcing particular values?
-
-Chris
+Thanks for the info
+Tameen
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
