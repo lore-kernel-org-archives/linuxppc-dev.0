@@ -1,41 +1,31 @@
-Date: Wed, 24 Feb 1999 13:40:19 -0500 (EST)
-From: Tom Vier <nester@erols.com>
-Reply-To: Tom Vier <thomassr@erols.com>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Franz Sirl <Franz.Sirl@munich.netsurf.de>,
-        mklinux-development-system@public.lists.apple.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: egcs-1.1.1-1c bug (was Re: major ksyms problem)
-In-Reply-To: <99022322220600.00836@ns1102.munich.netsurf.de>
-Message-ID: <Pine.LNX.4.05.9902241335420.6173-100000@localhost.erols.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 24 Feb 1999 15:39:40 -0500
+From: Mayan Moudgill <mayan@watson.ibm.com>
+Message-Id: <9902242039.AA29018@mayan.watson.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ramdisks, anyone?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 23 Feb 1999, Franz Sirl wrote:
 
-> >it is an egcs bug. egcs-1.1.1-1c failss to build working bsd_comp.o,
-> >ppp_deflate.o, and hfs.o; egcs-1.0-2e.ppc.rpm builds it perfectly. i'm
-> >getting a newer build of egcs right now, to see if it's fixed.
-> 
-> What is the problem with these modules? Give a better description on what you
-> mean with "working"? They work perfectly for me with a self-compiled 2.2.1
-> kernel, and I compiled working modules with multiple kernel versions
-> since the 
-> egcs-1.1 alpha phase.
-> If your only problem is the "unhandled relocation type", install a newer
-> modutils package (>=2.1.121), that will fix it.
+I am trying to build a small initrd, with a linuxrc that does something.
+Does somebody have such a ramdisk.image available?
+Or even some suggestions on what to do?
 
-yup, that fixed it. 8) i wonder what changed in egcs between 1.0 and
-1.1.1 that makes the problem arise.
+I started off by trying to make bash my /linuxrc. Bash
+required ld.so.1, which required libc.so.2, etc....
 
---
-Tom Vier - 0x82B007A8
-thomass@erols.com        | goto the Zero Page at:
-Tortured Souls Software  | http://www.erols.com/thomassr/zero/
+This occupied more the 4MB. At that point the /dev/ram on the
+machine I was building the ramdisk started giving problems -
+If I built a bigger /dev/ram, after umount, dd would only
+read the first 4MB.  is there something magical about 4M for ramdisks?
 
+So I'm stuck..............
+
+HELP!!!!!!!
+
+:)
+Mayan
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
