@@ -1,57 +1,38 @@
-From: "Jacky Wang" <jacky@premierme.com.tw>
-To: <boehringer@snom.de>
-Cc: "May Ling List" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: I need help getting pcmcia working with a FADS board
-Date: Tue, 23 Apr 2002 15:54:21 +0800
-Message-ID: <NFBBLKLHNAGPKBMPDMALGELDKAAA.jacky@premierme.com.tw>
+Date: Tue, 23 Apr 2002 11:25:45 +0200
+From: Michael Baumann <miba@peppercon.de>
+Reply-To: Michael Baumann <miba@peppercon.de>
+Message-ID: <7195197386.20020423112545@peppercon.de>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: 405GP i2c slave handling
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3CC4FE89.35DBC766@snom.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sven,
+Hi,
 
-Thanks ^_^
-I will test it ASAP .
+   I am trying to get i2c slave behaviour to work (currently only
+   writes to our device) but run into some problems:
+   When reading/writing with two of our boards everything works
+   fine, but when working with the device I actually want to address
+   (an IPMI BMC on an Intel SDS2 Board) the first bytes are received
+   correctly, but after this the BMC sends the message again and (the
+   most strange one) before this I get my own address byte in the
+   slave receive buffer, which absolutely should not happen.
+   So I guess our device behaves wrong in some way while
+   receiving/acknowledging the bytes. I am using the 405 IIC
+   interface, not the direct control of clock/data.
 
-Is it work with kernel 2.4.19pre6 patch?
-BTW, if it work with pcmcia-cs 3.1.33?
-
-Jacky
-
------Original Message-----
-From: boehrisv@post.webmailer.de [mailto:boehrisv@post.webmailer.de]On Behalf Of Sven Boehringer
-Sent: Tuesday, April 23, 2002 2:26 PM
-To: Jacky Wang
-Cc: May Ling List
-Subject: Re: I need help getting pcmcia working with a FADS board
-
-
-Hi Jacky,
-
-Matthew provided me with a patch for getting the pcmcia working.
-I still have not enough time to test that patch. Here it goes:
+   Did anyone work with i2c as slave and/or has some hints for me?
 
 
-Regards,
+CU,
+Michael
 
-	Sven
-
-
-Jacky Wang wrote:
->
-> Hi everyone,
->
-> I need help getting pcmcia working with a FADS board.
->
-> Did someone finish the driver?
-> If Yes, would you mind to share it with me?
->
-> Jacky
->
+--
+mailto:miba@peppercon.de
+icq: 24709334
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
