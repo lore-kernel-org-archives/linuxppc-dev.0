@@ -1,15 +1,29 @@
-Message-ID: <3E3085EF.8060203@mvista.com>
-Date: Thu, 23 Jan 2003 17:16:47 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: Dan Douglass <ddouglass@adventnetworks.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Sandpoint X3 with MPC755
-References: <CD5CA14300A9D54A8D13D58CD3C87B4256E8F5@advcorp-exc01.advent.com>
-In-Reply-To: <CD5CA14300A9D54A8D13D58CD3C87B4256E8F5@advcorp-exc01.advent.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Sandpoint X3 with MPC755
+Date: Thu, 23 Jan 2003 18:21:09 -0600
+Message-ID: <CD5CA14300A9D54A8D13D58CD3C87B4256E8F6@advcorp-exc01.advent.com>
+From: "Dan Douglass" <ddouglass@adventnetworks.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Mark,
+
+Thanks, I do not have the kernel source from the development tree. I will download it. However, it appears that the Sandpoint boards supported in U-Boot are for the 8240 and the 8245. I guess that is where my work will begin.
+
+Thanks again,
+Dan
+
+-----Original Message-----
+From: Mark A. Greer [mailto:mgreer@mvista.com]
+Sent: Thursday, January 23, 2003 6:17 PM
+To: Dan Douglass
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Sandpoint X3 with MPC755
 
 
 Dan Douglass wrote:
