@@ -1,69 +1,50 @@
-Mime-Version: 1.0 (Apple Message framework v612)
-In-Reply-To: <1076361029.763.13.camel@gaston>
-References: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org> <1076361029.763.13.camel@gaston>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <015F12CA-5CC6-11D8-B40D-000A95B30208@tiscalinet.it>
-From: Costantino Pistagna <valvoline@tiscalinet.it>
-Subject: Re: ibook G4 Status Report
-Date: Wed, 11 Feb 2004 20:10:50 +0100
-To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 11 Feb 2004 20:31:47 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Hank <compdata@alltel.net>
+Cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>
+Subject: Re: compiiler failure 2/11/04 on Macintosh Quadra 840AV: linux-m68k
+ -r 2.4.24
+In-Reply-To: <402A7B08.9090904@alltel.net>
+Message-ID: <Pine.GSO.4.58.0402112028570.28274@waterleaf.sonytel.be>
+References: <402A7B08.9090904@alltel.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Feb 9, 2004, at 10:10 PM, Benjamin Herrenschmidt wrote:
-
+On Wed, 11 Feb 2004, Hank wrote:
+> Changed the options in config to compile for the input hid.
 >
->> Since my ibook is a 12" equipped, i really need to use the video
->> output
->> with my 17" LCD.
->>
->> Any clues ? and/or usefull start point ?. i've tried to look inside
->> xfree drivers sources,
->> but without any good results. Seems that radeon9200 does not provide,
->> any type of
->> multiple screen support.
->
-> You have a VGA or DVI output ? VGA I think ? It should work with
-> Michel Danzer packages but it will be an analog output, not as good
-> as a fully digital.
+> mac_hid.c: In function `mac_hid_sysctl_keycodes':
+> mac_hid.c:298: `ppc_md' undeclared (first use in this function)
+> mac_hid.c:298: (Each undeclared identifier is reported only once
+> mac_hid.c:298: for each function it appears in.)
+> mac_hid.c: In function `mac_hid_init_hw':
+> mac_hid.c:484: `ppc_md' undeclared (first use in this function)
+> make[3]: *** [mac_hid.o] Error 1
+> make[2]: *** [first_rule] Error 2
+> make[1]: *** [_subdir_macintosh] Error 2
+> make: *** [_dir_drivers] Error 2
 
-yep, you're right! I was unhappy in my previous message. I've an analog
-VGA
-monitor connected to my ibook. All i want to do is use my external CRT
-monitor
-with X or consoleFB. I've googled for "Michel Danzer", but without any
-success at all.
-any clues ?
+Hmm, someone stuck too many PPC-isms in that file ;-)
 
-> XFree doesn't drive properly a DVI output on a laptop yet, though
-> I got it to work with a small userland hack I use to "fix" the chip
-> after X configured it ;)
->
+Try replacing `ppc_md.ppc_kbd_sysrq_xlate' by `mach_kbd_translate' and see
+whether that works.
 
-no matter for DVI output, yet. thanks at all.
+BTW, apparently much of the initialization is duplicated in
+arch/m68k/mac/config.c and drivers/macintosh/mac_hid.c and thus needs some
+clean ups.
 
-> Note that you may also have a problem with XFree not setting the proper
-> divider for your internal panel when used without UseFBDev. Same issue,
-> I have a userland "fix" for that since fixing it in XFree itself isn't
-> quite simple at this point.
+Gr{oetje,eeting}s,
 
-I've noticed this problem. the only way to get XFree working properly,
-is
-to use the UseFBDev directive into XF86Config. Unfortunately, this
-directive
-seems to get in troubles with dualhead XF86Config (i've used the one
-that i'm
-using in my desktop, equipped with a Rage128): the panels are waiting
-for
-something with a black screen. If it's usefull, i'm using an XFree
-4.3.0 binary
-merged with gentoo/ppc.
+						Geert
 
-cheers,
 --
-[ Costantino Pistagna (PhD) :: unict :: dmi ]
-[ gpg key on pgp.mit.edu :: keyid  1d67b4dd ]
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
