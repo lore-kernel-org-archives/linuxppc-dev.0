@@ -1,27 +1,29 @@
-Message-ID: <20000316193235.9637.qmail@web1201.mail.yahoo.com>
-Date: Thu, 16 Mar 2000 11:32:35 -0800 (PST)
-From: Calum Robinson <calum_robinson@yahoo.com>
-Subject: title bar colors in kde fixed?
-To: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 16 Mar 2000 22:15:58 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: michdaen@iiic.ethz.ch
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to workonppcwithr128
+In-Reply-To: <20000316112537.6597.qmail@web124.yahoomail.com>
+Message-ID: <Pine.LNX.4.10.10003162214240.10090-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I edited the source file gradientFill.C to fix the
-colors of the title bars in KDE. They were drawing the
-wrong colors.
+> > > Weird. Are you sure the `81fff000' is not caused by some fixup routine
+> > > that changed the unassigned `fffff000' into `81fff000'?
+> >
+> > What part of the kernel would do that kind of fixup?
+>
+> *_fixup in arch/ppc/kernel/*_pci.c
 
-It should read (you'll find it)
- *p++;
- *p++ = blue >> 16;
- *p++ = green >> 16;
- *p++ = red >> 16;
+The only function in pmac_pci.c does no such thing. Next question: how
+would I modify the bus mappings from aty_init?
 
-I know its a silly bug but if it annoyed anyone else
-there it is. I think its a Little/Big endian
-conversion problem.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
