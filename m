@@ -1,67 +1,69 @@
-Date: Mon, 11 Dec 2000 09:27:18 -0600 (CST)
+Date: Mon, 11 Dec 2000 09:32:27 -0600 (CST)
 From: Brian Ford <ford@vss.fsi.com>
-To: Graham Stoney <greyham@research.canon.com.au>
+To: "Gessner, Matt" <mattg@aiinet.com>
 cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.5 or 2.4 kernel profiling
-In-Reply-To: <20001211114533.A2691@brixi.research.canon.com.au>
-Message-ID: <Pine.GSO.4.21.0012110920300.24199-100000@eos>
+Subject: RE: 66 Mhz bus clock for EST8260?
+In-Reply-To: <7283DE19D141D111AD0E00A0C95B195502581E41@mail2.aiinet.com>
+Message-ID: <Pine.GSO.4.21.0012110927360.24199-100000@eos>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 11 Dec 2000, Graham Stoney wrote:
+How many people have actually done this on an EST board?  I don't doubt
+that the chip can do it, but I have my doubts about the EST PLL
+(clock) filter circuits being correct to begin with, let alone conforming
+to the errata.
 
-> Hi Brian,
->
-> On Thu, Dec 07, 2000 at 12:11:07PM -0600, Brian Ford wrote:
-> > I am trying to do some kernel profiling on my EST8260 to determine the
-> > bottle neck in TCP and UDP thruput, but I can't seem to get any profile
-> > information.
->
-> When I first attempted a similar thing with the 2.2 kernel on our 855T based
-> board, I found that the trivial do_profile routine needed to collect data for
-> /proc/profile kernel profiling wasn't implemented for the ppc architecture.
-> As far as I can see, it still isn't implemented on linux-2.4.0-test11, but it
-> is in the linuxppc_2_3 tree at http://www.fsmlabs.com/linuxppcbk.html .
-> I really wish the seperate architecture maintainers had got together to
-> eliminate all the duplicated do_profile functions like I did in my 2.2 patch
-> at:
->     http://members.nbci.com/greyhams/linux/patches/2.2/profile.patch
->
-> Unfortunately I guess it was easier for the PPC guys to just copy the
-> do_profile function (yet again!) like everyone else did.  Oh well, maybe in
-> 2.5...
->
-Thanks.  I did get it to work with the bitkeeper sources.  My problem was
-that the grep command that produced the System.map file didn't get along
-with Solaris grep.
+On Mon, 11 Dec 2000, Gessner, Matt wrote:
 
-I agree with you about the profiling stuff.  Did you post this idea to the
-main kernel mailing list?  Maybe that would be the place to tackle this
-issue.
-
-> Back to TCP, I found I could improve raw TCP throughput by 15-20% on the 855T
-> by DMAing received data directly into the kernel socket buffers.  The
-> improvement in performance from eliminating the extra copy between the ring
-> buffer and socket buffer isn't staggering, since the CPU still needs to do
-> a pass through the data to calculate the IP checksum, which unfortunately the
-> 855T's FEC can't do for me.  Nevertheless, it does make things a little faster
-> and I would imagine a similar technique would work on the 8260; you can get a
-> feel for what is involved from my 2.2 FEC speedup patch at:
->     http://members.nbci.com/greyhams/linux/patches/2.2/fecdmaskb.patch
+> I had no problem at all getting this to work at 66MHz.
+> DO NOT RUN THE CPM FASTER THAN 133MHZ (at least on the chips I had,
+> it NEVER worked).
 >
-Thanks.  I had already hacked something like this together.  It would be
-great to finalize these and get them into the real sources.
+Yes.  I'd gladly settle for 200/133/66.
 
-I also turned checksumming off for testing purposes.  It helped some, but
-I think my bottle neck is that I can't get the bus to run faster than 33
-Mhz reliably.  If I could get the bus clocked at what it is rated, I might
-be better off.
-
-I don't think the 8260 CPM can do the checksums either.  Pitty.  It seems
-like there is plenty of power in there.
+> In fact, I clocked my 166/133/66 chip at 300MHz :-)
+> That baby RUNS!  Heh.
+>
+> > -----Original Message-----
+> > From: Brian Ford [mailto:ford@vss.fsi.com]
+> > Sent: Friday, December 08, 2000 1:47 PM
+> >
+> > Is there any magic in getting the EST8260 board to work with
+> > a 66 Mhz bus clock?  I haven't had good luck with a Linux or vxWorks
+> > image.
+> >
+> > My board has a 200/166/66 rev A.1 chip.
+> >
+> > I boot using a vxWorks bootrom.  I have made a few corrections to the
+> > bootrom so the decrementer frequency is set correctly from the user
+> > dip switches in addition to setting the core, cpm, and bus speeds.
+> >
+> > The scenerio is as follows:
+> >
+> > 1.) Burn configuration word to change MODCK_H from 0x0001 to 0x0101
+> > 2.) Swap oscillators 33.0 -> 66.0 Mhz
+> > 3.) Set MODCK[1-3] switches to 0x111 (200/133/66)
+> > 4.) Mirror 3.) on user switches for vxWorks bootrom to read
+> > 5.) Hack head_8260.S to put immr in place for Linux
+> > 6.) Set linux board info in embed_config.c to 200/133/66/66
+> > (core,cpm,bus,brg) making sure there is real space allocated for it
+> > instead or whatever was in r3 when vxWorks booted us.
+> > 6.) Reboot.
+> >
+> > vxWorks bootrom runs fine and downloads Linux or vxWorks.
+> >
+> > Linux pannics just before giving me a shell prompt somewhere
+> > in tty init.
+> >
+> > vxWorks appears to come up fine, but the muxDevBind fails for the Fast
+> > Ethernet and thus no network communications.  Even though the bootrom
+> > just downloaded us successfully over the same interface.
+> >
+> > Has anyone had any luck with the 66 Mhz bus clock?
+> >
 
 --
 Brian Ford
