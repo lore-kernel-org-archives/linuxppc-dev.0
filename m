@@ -1,106 +1,41 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Improved copy_page() function, about 30% speed up for mpc860!
-Date: Fri, 28 Feb 2003 18:31:19 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLAELBFKAA.joakim.tjernlund@lumentis.se>
+Date: Fri, 28 Feb 2003 19:03:23 +0100 (CET)
+From: Marius Groeger <mag@sysgo.de>
+To: Kamaraj P <kamarajp@future.futsoft.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Information about Library Optimizer 
+In-Reply-To: <000001c2df25$1a61db80$3c06140a@future.futsoft.com>
+Message-ID: <Pine.LNX.4.52.0302281859120.25295@mag.devdep.sysgo.de>
+References: <000001c2df25$1a61db80$3c06140a@future.futsoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-reply-to: <IGEFJKJNHJDCBKALBJLLOEKGFKAA.joakim.tjernlund@lumentis.se>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Forget the copy_page below. I used a non cache aligned buffer :-(
+On Fri, 28 Feb 2003, Kamaraj P wrote:
 
-However if I enable the use of "dcbz" and remove "dcbt" in the
-orginal copy_page() and use a cache aligned test buffer,
-I still get a speedup of 30% or more on my mpc860 board.
+>      Does Any body Used Library Optimizer ?
+> if so , can any one  give some example how to use it ..
 
-I think a new CONFIG option is apropiate where one can turn
-on the use of "dcbz" for 8xx. OK?
+I have strong doubts about tools like this - amazingly well though how
+it may actually do the job in a certain setup. Building a monolithic
+block of software first, and then rip it apart again just doesn't seem
+right to me.
 
- Jocke
+> Is there any other way to reduce the library size ..
 
-> Hi all
->
-> I have been playing with the copy_page() function in arch/ppc/kernel/misc.S
-> and gained about 30% speed up for my mpc860, rev D4 MHz.
->
-> This is what i did:
-> - Use dcbz on 8xx but clear ahead one cache line(performance is really crappy
->   if I don't clear ahead). This is the biggest improvement.
-> - Use prefetch for 8xx as well.
->
-> I know that dcbz is buggy for some 8xx CPUs but I don't know which ones.
-> For me works just fine, except in copy_tofrom_user(don't know why).
->
-> I would like to get some feedback & test results both for 8xx and non 8xx.
-> Please include exact CPU and revision.
->
->  Thanks
->          Jocke
->
-> _GLOBAL(copy_page)
-> 	addi	r3,r3,-4
-> 	addi	r4,r4,-4
-> 	li	r5,4
-> #if MAX_COPY_PREFETCH > 1
-> 	/* This will prefetch past end of page, does not seem to be a problem? */
-> 	li	r0,MAX_COPY_PREFETCH
-> 	li	r11,4
-> 	mtctr	r0
-> 11:	dcbt	r11,r4
-> 	addi	r11,r11,L1_CACHE_LINE_SIZE
-> 	bdnz	11b
-> #else /* MAX_L1_COPY_PREFETCH == 1 */
-> 	dcbt	r5,r4
-> 	li	r11,L1_CACHE_LINE_SIZE+4
-> #endif /* MAX_L1_COPY_PREFETCH */
-> 	dcbz	r5,r3 /* older 8xx CPUs may have buggy dcbz instructions, if so try "dcbt r5,r3" instead */
-> 	addi	r5,r5,L1_CACHE_LINE_SIZE
-> 	li	r0,4096/L1_CACHE_LINE_SIZE-1 /* All, but the last cache line of data due dcbz below */
-> 	mtctr	r0
-> 1:
-> 	dcbt	r11,r4
-> 	dcbz	r5,r3 /* zero the cache line after the one that is beeing copied
-> 		       * older 8xx CPUs may have buggy dcbz instructions, if so try "dcbt r5,r3" instead */
-> 	COPY_16_BYTES
-> #if L1_CACHE_LINE_SIZE >= 32
-> 	COPY_16_BYTES
-> #if L1_CACHE_LINE_SIZE >= 64
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> #if L1_CACHE_LINE_SIZE >= 128
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> #endif
-> #endif
-> #endif
-> 	bdnz	1b
-> /* Copy the last cache line of data */
-> 	COPY_16_BYTES
-> #if L1_CACHE_LINE_SIZE >= 32
-> 	COPY_16_BYTES
-> #if L1_CACHE_LINE_SIZE >= 64
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> #if L1_CACHE_LINE_SIZE >= 128
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> 	COPY_16_BYTES
-> #endif
-> #endif
-> #endif
-> 	blr
->
->
->
->
+If you're really short on memory, you should consider using an
+alternative library solution like uClibc.
 
+Just my 2 cents.
+
+Regards,
+Marius
+
+-----------------------------------------------------------------------------
+Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
+Software Engineering     Embedded and Real-Time Software    www.sysgo.de
+Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
+FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
