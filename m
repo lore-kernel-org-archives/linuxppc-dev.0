@@ -1,7 +1,7 @@
-Message-ID: <20020717212758.16528.qmail@web11505.mail.yahoo.com>
-Date: Wed, 17 Jul 2002 14:27:58 -0700 (PDT)
+Message-ID: <20020717213437.80862.qmail@web11504.mail.yahoo.com>
+Date: Wed, 17 Jul 2002 14:34:37 -0700 (PDT)
 From: Khai Trinh <kqtrinh@yahoo.com>
-Subject: inter-driver communication
+Subject: irq in Linux
 To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -11,15 +11,12 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi folks,
 
-Are there ways in the linux kernel that allows
-driver-driver communications (ie: one driver
-interrupts another driver in an embedded application)?
+Can I register two devices irq numbers in a single
+device driver? If that's possible, then I can write a
+smart isr to figure out the interrupt is from which
+device and handle the irq accordingly.
 
-I have a driver that handles one device. When it is
-interrupted, I would like then to interrupt the other
-driver to handle the interrupt request?
-
-Any suggestion is welcome and appreciated.
+Any inputs would be appreciated...
 
 Thanks,
 --Khai
