@@ -1,34 +1,33 @@
-In-Reply-To: <20040827221204.GB30360@smtp.west.cox.net>
-References: <1093602389.1862.54.camel@localhost> <20040827221204.GB30360@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A3F2DB9A-F88A-11D8-8E7D-003065F9B7DC@embeddededge.com>
-Cc: paulus@samba.org, Adrian Cox <adrian@humboldt.co.uk>,
-	linuxppc-dev@lists.linuxppc.org
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: [PATCH,RFC] PPC32 Machine Check Handling
-Date: Fri, 27 Aug 2004 20:38:54 -0400
-To: Tom Rini <trini@kernel.crashing.org>
+Subject: Re: [PATCH] md raid autodetection on mac partitions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040806075918.GA11638@sunbeam2>
+References: <20040806075918.GA11638@sunbeam2>
+Content-Type: text/plain
+Message-Id: <1093731673.2638.189.camel@gaston>
+Mime-Version: 1.0
+Date: Sun, 29 Aug 2004 08:21:13 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Aug 27, 2004, at 6:12 PM, Tom Rini wrote:
+On Fri, 2004-08-06 at 17:59, Harald Welte wrote:
+> Hi!
+>
+> It took me some time to discover that there is no provision in the mac
+> parition handling code for autodetection of md raid arrays.
+>
+> Is there any particular reason why this isn't implemented?
+>
+> I've now added a new partition type 'Linux_raid_autodetect', which can
+> be used for md autodetect.
 
->> The PowerMac and Qspan specific code is moved into platform files.
->> There
->> don't seem to be any boards in the tree that actually use Qspan PCI.
+Hi Harald, just found this patch, sorry for the delay.
 
-The MBX-860, RPC Classic (with PCI enabled) are two well known
-boards that use the Qspan.  I don't know many people that use those
-boards, I'm just listing them for documentation purposes :-)  There
-are also some custom boards that use it, but I suspect it won't
-affect them.
+Why just not "Linux_raid" ?
 
-Thanks.
-
-
-	-- Dan
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
