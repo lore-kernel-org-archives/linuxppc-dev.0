@@ -1,57 +1,33 @@
-Message-ID: <3BD9B30C.929F4747@midrivers.com>
-Date: Fri, 26 Oct 2001 13:01:32 -0600
-From: Mark Pilon <mpilon@midrivers.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: will the real ppc kernel please stand up
+Date: Fri, 26 Oct 2001 12:52:37 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Mark Pilon <mpilon@midrivers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: will the real ppc kernel please stand up
+Message-ID: <20011026125237.A14005@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BD9B30C.929F4747@midrivers.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BD9B30C.929F4747@midrivers.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I know we've been over this before, but I was following some
-advice to get the latest development kernel via pengiunppc.org, via
-rsync:
+On Fri, Oct 26, 2001 at 01:01:32PM -0600, Mark Pilon wrote:
 
-rsync -avz --delete source.mvista.com::<tree> <directory>,
-where <tree> is one of:
+> naively hoping to get something stable, I pulled linuxppc_2_4, configured
+> it for ppc4xx / walnut and attempted to build it.  no luck:
 
-                        linuxppc_2_4
-                        linuxppc_2_4_devel
+The '2_4' tree doesn't have working 4xx support.
 
-naively hoping to get something stable, I pulled linuxppc_2_4, configured
-it for ppc4xx / walnut and attempted to build it.  no luck:
-powerpc-linux-gcc -D__KERNEL__
--I/home/mpilon/ppc_tools/BUILDS/linuxppc_2_4/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
--fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char -msoft-float
--pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -mcpu=403    -c -o
-ppc4xx_pic.o ppc4xx_pic.c
-{standard input}: Assembler messages:
-{standard input}:83: Error: unsupported relocation type
-{standard input}:84: Error: unsupported relocation type
-{standard input}:111: Error: unsupported relocation type
-{standard input}:128: Error: unsupported relocation type
-{standard input}:145: Error: unsupported relocation type
-{standard input}:149: Error: unsupported relocation type
-{standard input}:64: Error: unsupported relocation type
-make[1]: *** [ppc4xx_pic.o] Error 1
+[snip]
+> does anyone know where & how to get a reasonably recent snapshot of
+> the development tree which builds?
 
-does anyone know where & how to get a reasonably recent snapshot of
-the development tree which builds?
-
-"reasonably recent" could be a month or 2 old ... I'd rather have
-something which builds and runs than the bleeding edge ...
-
-Mark
+linuxppc_2_4_devel should be fine.  linuxppc_2_4 has never had working
+4xx support.
 
 --
-Mark Pilon
-
-Minolta-QMS
-P.O. Box 37
-Fallon, MT.  59326-0037
-
-1-406-853-0433
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
