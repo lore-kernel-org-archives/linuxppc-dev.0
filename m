@@ -1,13 +1,12 @@
-Return-Path: <mmporter@cox.net>
-Date: Wed, 19 Jan 2005 07:04:46 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
+Return-Path: <hch@lst.de>
+Date: Wed, 19 Jan 2005 15:10:48 +0100
+From: Christoph Hellwig <hch@lst.de>
 To: Sachin P <sachinpc@gmail.com>
-Message-ID: <20050119070445.A448@home.com>
+Message-ID: <20050119141048.GA13254@lst.de>
 References: <66164fbc0501190353485dc8e4@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <66164fbc0501190353485dc8e4@mail.gmail.com>;
-	from sachinpc@gmail.com on Wed, Jan 19, 2005 at 05:23:17PM +0530
+In-Reply-To: <66164fbc0501190353485dc8e4@mail.gmail.com>
 Cc: Linuxppc-dev@ozlabs.org
 Subject: Re: consistent_alloc() on PPC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,6 +26,5 @@ On Wed, Jan 19, 2005 at 05:23:17PM +0530, Sachin P wrote:
 > Is there any function/patch/macro, equivalent to
 > phy_to_virt()/virt_to_phy() for memory returned by consistent_alloc()?
 
-iopa()
-
--Matt
+Don't ever use concistant_alloc directly.  Always use
+dma_alloc_coherent() which will give you both virtual and bus address.
