@@ -1,20 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id B48702BDB2
+Return-Path: <jonathan@jonmasters.org>
+Received: from smtp.mailbox.co.uk (smtp.mailbox.co.uk [195.82.125.32])
+	by ozlabs.org (Postfix) with ESMTP id 3640B2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Sep 2004 04:51:14 +1000 (EST)
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 28 Sep 2004 13:21:16 EDT."
-	<Pine.LNX.4.60.0409281317590.11302@localhost.localdomain>
-Date: Wed, 29 Sep 2004 16:22:35 +0200
-Sender: wd@denx.de
-Message-Id: <20040929142240.AC2C5C1430@atlas.denx.de>
-Resent-Message-Id: <20040929174103.D2F31C1430@atlas.denx.de>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: I2C/SPI/SMC relocation patch works for both SMC 1 and 2? 
+	Thu, 30 Sep 2004 05:49:49 +1000 (EST)
+Message-ID: <415AC52E.8010507@jonmasters.org>
+Date: Wed, 29 Sep 2004 15:22:38 +0100
+From: Jon Masters <jonathan@jonmasters.org>
+MIME-Version: 1.0
+To: Mark Chambers <markc@mail.com>
+References: <20040928094327.B1532@home.com><Pine.LNX.4.21.0409291256250.3154-100000@aqua.aspd.pwr.wroc.pl>
+	<35fb2e59040929045822511b4b@mail.gmail.com>
+	<002001c4a627$7575db50$0301a8c0@chuck2>
+In-Reply-To: <002001c4a627$7575db50$0301a8c0@chuck2>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>, linuxppc-embedded@ozlabs.org
+Subject: Re: 2.6.x on 405CR
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,34 +25,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <Pine.LNX.4.60.0409281317590.11302@localhost.localdomain> you wrote:
-> 
-> > It relates to the SMC which parameter RAM  location  is  in  conflict
-> > with the SPI/I2C parameter RAM, i. e. SMC1.
-> 
-> huh?  what does SMC1 relocation have to do with either of I2C or SPI? 
+Mark Chambers wrote:
 
-Ooops. You are right. Please s/SPI\/I2C/SCC2  ethernet/  !  Before  I
-tell  more  such  nonsense  let's  quote  the  description that comes
-included with  the  patch:  "model  allows  concurrent  operation  of
-Ethernet  and  SMC(UART)  and  I2C/SPI  by  solving the parameter RAM
-conflict caused by the fact that  some  of  the  Ethernet  parameters
-overlay the SMC(UART) and I2C/SPI parameters."
+> And just to make the point - it's not the JTAG hardware which is or is not
+> VM capable, it's the debugger using the hardware which must be smart
+> enough to read the MM tables and do the translations for you.
 
-> i don't see how SMC1 can be "in conflict with the SPI/I2C parameter 
-> RAM" as you claim.  can you explain that?
+Yes of course :-).
 
-If you use SCC2 for ethernet, it's parameter RAM will use  the  DPRAM
-from  offset  3E00  to  offset  3EA4;  without  relocation  the  SMC1
-parameter RAM uses offsets 3E80 to 3EB4, thus you have a conflict for
-the 3E80...3EA4 area.
+> Maybe if you post what hardware you have somebody would know of a gdb port that
+> supports it.  Don't let them blow you off on this - they're wasting your
+> time and their money if you don't have a proper debugger.  Just tell them we all
+> said you need one.
 
-Best regards,
+I've managed so far without one but agree it's a good idea to get one.
 
-Wolfgang Denk
+;-).
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The IQ of the group is the lowest IQ of a member of the group divided
-by the number of people in the group.
+Jon.
