@@ -1,54 +1,50 @@
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: CAN and MPC855T/860T 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 26 Oct 2001 09:49:31 +0200."
-             <3BD9158B.D3067C74@imc-berlin.de>
-Date: Fri, 26 Oct 2001 10:06:23 +0200
-Message-Id: <20011026080628.D625310CDA@denx.denx.de>
+Message-ID: <3BD9238D.6080009@humboldt.co.uk>
+Date: Fri, 26 Oct 2001 09:49:17 +0100
+From: Adrian Cox <adrian@humboldt.co.uk>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: CAN and MPC855T/860T
+References: <20011026080628.D625310CDA@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3BD9158B.D3067C74@imc-berlin.de> you wrote:
+Wolfgang Denk wrote:
+
+
+> IMHO there are two Open Source projects that look interesting:
 >
-> I know that TQ Components integrated two intel 82527 on their TQMs /
-> STK8xxL.
-> But I couldn't find any sources supporting them by now.
-
-You didn't ask before...
-
-> Could you please give me some pointers to driver source code.
-
-Actually, the driver source code is just one part of the issue.  What
-are you going to do with it?
-
-IMHO there are two Open Source projects that look interesting:
-
-   1. http://home.wanadoo.nl/arnaud/
-   2. http://www.esstin.uhp-nancy.fr/~tissered/CanFestival/
-
-The first provides generic CAN support  for  a  couple  of  controler
-boards  and chips. We have a (preliminary version of) a device driver
-for it running on the TQ modules.
-
-The second project implements (parts of)  the  CANopen  protocol  and
-integrates  with  RTLinux. However, it is a non-trivial job to get it
-running on the TQ hardware, and I'm not sure if the  effort  is  well
-invested.
+>    1. http://home.wanadoo.nl/arnaud/
 
 
-See also:
+Two days ago I got this code working using a SJA1000 chip on a PowerPC
+system. It's very "interesting" code, for the following reasons:
 
-	http://www.microcontrol.net/CANpie/
+1) Its initialisation is back to front. Most Linux subsystems you load a
+hardware driver which calls a function to register itself. With this you
+load the CAN subsystem which takes module arguments telling it which
+hardware drivers to use.
 
-Wolfgang Denk
+
+2) When the interrupt handlers call worker functions, they pass the
+parameters through global variables rather than as function parameters.
+
+3) It has two different ways of keeping track of its circular buffers,
+by an index or by pointers. Different routines use different methods,
+with hilarious consequences. (This may particularly cause problems for
+users of Pelican mode.)
+
+4) It has several loops with udelays() in them. One of these gets called
+by an interrupt handler.
+
+I'm not entirely sure what to do with my changes, as I also integrated
+it into the kernel tree (the target system doesn't use modules).
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Of course there's no reason for it, it's just our policy.
+Adrian Cox   http://www.humboldt.co.uk/
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
