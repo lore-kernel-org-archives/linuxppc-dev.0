@@ -1,39 +1,42 @@
-Date: Thu, 13 Jul 2000 14:22:02 -0400
-From: Josh Huber <huber@mclinux.com>
-To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: > 512 MB of ram on G4?
-Message-ID: <20000713142202.A1289@mclx.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
+Date: Thu, 13 Jul 2000 11:23:31 -0700
+Subject: Re: Xfree 4.0.1 dual head attempt
+From: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
+To: <daenzerm@student.ethz.ch>
+CC: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B5935733.2DB%wtholliday@ucdavis.edu>
+In-Reply-To: <396DB817.4C2D82F1@relog.ch>
+Mime-version: 1.0
+Content-type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---RnlQjJ0d97Da+TV1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> From: Michel Dänzer <daenzer@relog.ch>
+> A gdb backtrace mey be interesting, at least with a static server.
 
-Hey, I'm trying to put 1GB of ram in an Apple G4 box here, but I'm having
-trouble.  Anything higher (well, in increments of 256M) is dumping me into
-xmon early on boot (before the fbcons is initialized).
+Well, I'm not all that familiar with debugging this low level stuff. When I
+tried running the X server within gdb, the whole system crashed. I suppose I
+need to figure out how to enable debug options and recompile.
 
-Any thoughts?  I'm unable to use xmon because of the USB
-keyboard...unfortunately.  Too bad Apple didn't put a real serial port on
-these machines :(
+>> (==) ServerLayout "DualHead"
+>> (**) |-->Screen "Screen0" (0)
+>> (**) |   |-->Monitor "Monitor0"
+>> (**) |   |-->Device "r128"
+>> (**) |-->Screen "Screen1" (1)
+>> (**) |   |-->Monitor "Monitor0"
+>> (**) |   |-->Device "r128.1"
+>
+> You are using the same Monitor for both Screens. Have you tried using
+> different ones? (All in terms of XF86Config ;)
+>
+>
+> Michel
+>
 
-Thanks,
---=20
-Josh
-6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
-61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+The XF4 docs say that sharing the monitor def is ok. Still, I will separate
+the defs and try again.
 
---RnlQjJ0d97Da+TV1
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+- Taylor
 
-
---RnlQjJ0d97Da+TV1--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
