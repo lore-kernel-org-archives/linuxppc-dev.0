@@ -1,45 +1,39 @@
-Message-ID: <37E72316.B63EBD9E@wanadoo.fr>
-Date: Tue, 21 Sep 1999 08:17:58 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <37E72B24.E8E0B143@loomer.com>
+Date: Mon, 20 Sep 1999 23:52:24 -0700
+From: Hugh Caley <hcaley@loomer.com>
 MIME-Version: 1.0
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.whatever and hfs
-References: <v03130302b40ca89cb4be@[192.168.1.1]>
+To: trini@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org,
+        linuxppc user <linuxppc-user@lists.linuxppc.org>
+Subject: 3.3.5 Feedback
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"David D. Kilzer" wrote:
-> 
-> David Riley <happyoscar42@usa.net> wrote:
-> >The current vger 2.3 kernel (whatever it is, maybe 2.3.18) compiles
-> >without a hitch, except at the end when it's linking it all up and it
-> >dies with an unresolved symbol "update_vm_chache" in hfs.o.  I'd like to
-> >be able to use hfs with my 2.3 kernel; is there a fix for this?
-> 
-> Yes.  Someone must rewrite the HFS code to use the new unified buffer code.
-> I think both minixfs and ext2fs have been rewritten, but HFS and other
-> 'foreign' file systems have not been rewritten.
-> 
-> The short-term solution is not to include support for HFS in your kernel.
-> 
-> The long-term solution is to fix HFS to work with the new unified buffer
-> code.  Unfortunately, the HFS maintainer is busy and may not be able to fix
-> this until well into 2.4.
+Just thought you would like some feedback, Tom.  I installed the 3.3.5 RPMS on
+my Lombard laptop today.
 
-So in the next stable kernel version, we will not have HFS support and,
-of course, even less HFS+ support! Is there really nobody in the
-linuxppc developers community who can do this? The current maintainer
-has been inactive since 7 months (see the archives from February), so he
-could not really object if someone else took over.
+As you mentioned, I can use 15 bpp now.  However, the server will not start if
+I use bpp 24; it will start if I use bpp 32, but this has the same problems I
+had with that color mode before, i.e. apps like Lyx will not start.
 
-> Personally, I think that, "if you break it, you fix it," but apparently
-> this doesn't always apply to kernel internals.
+I had been using the patched XF68_FBDev file from Kevin Hendrick's Java site
+(I hope I got his name right), which allowed running using bpp 24 and was able
+to run those apps I mentioned.
 
-And never has applied to the PPC port, unfortunately.
+Xconfigurator doesn't seem to work with this machine.  Whenever it goes to
+test the X server it errors out saying there is something wrong with the
+config.
+
+Let me know if I can tell you anything else.
+
+Hugh
 
 --
-Martin
+Hugh Caley, Unix Administrator
+Babcock & Brown, San Francisco
+510-524-1672
+hughc@babcockbrown.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
