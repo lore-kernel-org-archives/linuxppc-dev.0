@@ -1,42 +1,25 @@
-Date: Tue, 4 Sep 2001 17:30:21 +0200
-From: Xavier Grave <grave@ipno.in2p3.fr>
-To: bwaite@cspi.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mvme5100 one more time...
-Message-ID: <20010904173021.C1530@ipnpcu5.in2p3.fr>
-References: <85256ABD.004F8D50.00@pine.cspi.com> <200109041504.LAA27920@orchid.cspi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-In-Reply-To: <200109041504.LAA27920@orchid.cspi.com>; from bwaite@cspi.com on mar, sep 04, 2001 at 16:56:07 +0200
+Message-ID: <3B952E0B.8E29E1C7@nortelnetworks.com>
+Date: Tue, 04 Sep 2001 15:39:55 -0400
+From: "Christopher Friesen" <cfriesen@nortelnetworks.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: low latency patches for PPC?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Shame on me !
+I'm wondering if anyone has PowerPC versions of Ingo Molnar's (or Andrew
+Morton's) low latency patches?  The closer to 2.2.17 the better...
 
-I forgot to set the env variable...
+Thanks,
 
-After setting it my zImage.pplus give this result :
-I have the usual linuxppc/load....
-
-Thanks to every body for your help !
-
-Xavier
-
-Le mar, 04 sep 2001 16:56:07, Brian Waite a écrit :
->
-> Make sure you have set this env variable:
-> Network PReP-Boot Mode Enable [Y/N] = Y?
->
->
-> use env and  accept the defaults for everything else. Once you set Prep
-> boot
-> mode to Y hit '.' to exit the env variable settings. Make sure you say
-> 'Y'
-> when it asks you if you want to reset. Then try booting.
+Chris
 
 --
-33 (0) 1 69 15 79 59
-De chacun selon ses forces, a chacun selon ses besoins
+Chris Friesen                    | MailStop: 043/33/F10
+Nortel Networks                  | work: (613) 765-0557
+3500 Carling Avenue              | fax:  (613) 765-2986
+Nepean, ON K2H 8E9 Canada        | email: cfriesen@nortelnetworks.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
