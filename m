@@ -1,72 +1,72 @@
-Date: Sat, 15 Jan 2000 10:05:26 +0100
-From: Olaf Hering <olh@suse.de>
-To: Giuliano Pochini <pochini@denise.shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: sysrq support
-Message-ID: <20000115100525.J25867@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <387F5993.D88AF466@denise.shiny.it>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="zYM0uCDKw75PZbzx"
-In-Reply-To: <387F5993.D88AF466@denise.shiny.it>
+Message-Id: <200001151456.PAA00587@piglet.grunz.lu>
+Date: Sat, 15 Jan 2000 15:56:32 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Network trouble
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi all,
 
---zYM0uCDKw75PZbzx
-Content-Type: text/plain; charset=us-ascii
+For some time now, I've beenm experiencing horible network performance.
+Often, TCP connections would hang; browsing sites would be horribly
+slow, whereas a ping or traceroute shows no problems whatsoever.
 
-On Fri, Jan 14, Giuliano Pochini wrote:
+I've had one FTP transfer from dev.linuxppc.org, that got me 1 kB/S,
+whereas at the same time from my provider's machine, I got 20 kB/s. So
+I think the Internet itself is not to blame.
 
-> 
-> 
-> Is sysrq supported ?  On my Pmac7300 2.2.14 compile dies with:
-> 
-> keyboard.c: In function `handle_scancode':
-> keyboard.c:252: structure has no member named `ppc_kbd_sysrq_xlate'
+My net connection is via a router and ISDN to my provider; I've had a
+look at the router: no bad packets or anything that would indicate
+problems.
 
-SysRq is broken since 2.2.14pre5.
+So I've started looking at my local box, and I've seen the following in
+netstat:
 
-The attached patch should fix it. I guess the patch can go into the main
-kernel...
+[mlan@piglet ~]$ netstat -an
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp       24      0 piglet:1179             devel.linuxppc.org:ftp  ESTABLISHED 
 
-It is only tested on a PowerMac, the mbx_setup.c maybe need some changes
-(definition of SYSRQ_KEY). 
+tcp    16060      0 piglet:1256             mcp:ftp-data            ESTABLISHED 
+tcp        0      0 piglet:1256             *:*                     LISTEN      
+tcp        0      0 piglet:1255             mcp:ftp                 ESTABLISHED 
 
-Gruss Olaf
+tcp        0   2896 localhost:3128          localhost:1111          ESTABLISHED 
+tcp        0      0 localhost:1111          localhost:3128          ESTABLISHED 
 
--- 
- $ man 1 current_release
+So I've seen large queues build up, even for local connections ??? I'm
+running squid as a local proxy; and I've often seen netscape <-> squid
+connections that were'nt shut down properly, thus:
 
-BUGS
-       Users never read manuals...
+[mlan@piglet ~]$ netstat -an
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State      
+tcp        0      0 127.0.0.1:3128          127.0.0.1:1101          FIN_WAIT2   
+tcp        1      0 127.0.0.1:1101          127.0.0.1:3128          CLOSE_WAIT  
+tcp        0      0 127.0.0.1:3128          127.0.0.1:1092          FIN_WAIT2   
+tcp        1      0 127.0.0.1:1092          127.0.0.1:3128          CLOSE_WAIT  
 
---zYM0uCDKw75PZbzx
-Content-Type: application/x-gunzip
-Content-Disposition: attachment; filename="zzz_ppc_sysrq.dif.gz"
-Content-Transfer-Encoding: base64
+I'm running kernel 2.2.13 on a PowerMac 7600, with nothing else special
+network-wise. My ethernet interface stats don't show anything weird
+neither.
 
-H4sICISAdjgCA3p6el9wcGNfc3lzcnEuZGlmAOWYX2+bMBDAn+FTWOtLUkoChEAg29StTadu
-Xfcn2qQ9IQecxioh1ECXSu13nw0JcyhQ6KI9bJUK7XF3xne/u3Pi4fkcyAm5BD4OkrWs9bSe
-qvemyXTSh8Rd9MPQ7V8jEiC/D8MkciIUJ2HPfazei+4iclNrJMqy3HIdYQpj8B4GAIyAoti6
-ag8MoCmKIkqS9KyXEM4IzjyaQNNszbKVQebx+BjIhqYfmUDKbsfHIhCoG2fp9a5nnpMEaB0i
-N0b0zxC8ApffLi7Guyo+8iKQ/5Sq4ADHzuJnQUXmVdJdOGsfxkjINaStBrtVagERHOA58NAc
-B8jrnHy6PDt/57y9+OCcTr4756eTLri/r3nsfPx0+u1i0hXzTbDlsIfYyjiIftKV0nAyEft/
-LHotGHIXJGzNEG/UkCHeZD8M1XnUbZVjSB8dGUCiV1VJETrAgesnHgIvYbTsQ2/WW7wuShd3
-HoGpXJRo/mh+wCY3H9+8Oz9xpj+mX7+wR7zRNbqbrSDxmJ10gAKaCFHiPL+I8RL1Fi94kb9y
-oe9gclOQ45E2tJgs24HJqkC31KNRVgV1jIfuVjouaBZRzzQ30nFKasVOZaGmHjI3nJAVxxPV
-UW6TLuZ8mPygGsp6qLN3SuMoCHQrD/QX+RHKYmJZLCZDRW8SkyVsHJSN6h9HZeOnXVgqjHbj
-YliP4nKQx2WoKmlcVGMbl8ao7ImUlqA8g5NKTB7d2/TC5WzduhVyNg07IWexn0ZY43BoKwbX
-B9W0D6rlfZC6KemDlMeFh8K/3wmzNzaGad8zrJLp/0+wnPO6r2NCG+BDmt3WxPNGDZHnTfbD
-/I5H/gA5oJPf1szf0A8NBj29mmXMIw/DGbwrAX+OYJwQVF8SNdSDNrSnJ101nfGGOmrQtwvj
-bF/TrO0we84sqxxlXC20gpig9idY3qgpxJzJniCu8TigzZvr3Gbauc0jqwTi1E1wS+CyBFYC
-b1Gwj+7dmueRoTGeR7SF/8/nkIdamDfh69OoyxkZ28hXUlRtUgFytUEBOnVkD9WnMW7sT7Hs
-gfobYnPAeKDXDGIaomycgWK0O9WZoB+DRRmtY1pAIAkifEWnIfBXwRXIUzGuBb3GKOe8fwgI
-ilYJcRGAPgM7xqsAHPZ3X5mgmwRFMb1f0cedbqtE50OkcZhzi4ZpzvWf16yq3e1+X6Obtsqf
-Ma3sg+r2vHa7wp4gdA635d3t5BlwF5CAVDYuKG7Ku9thwu4TVb7rTzgsKdOiSglYOycxgRLw
-+eQc4ICCNocuiljyfwFl6lNYmxMAAA==
+Anybody have any clue what's going on? Bug in the PPC networking code?
 
---zYM0uCDKw75PZbzx--
+Thanks
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
