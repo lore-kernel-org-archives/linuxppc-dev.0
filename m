@@ -1,30 +1,32 @@
-Date: Tue, 25 Feb 2003 21:18:43 -0700
-From: Matt Porter <porter@cox.net>
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
+Message-Id: <5.1.0.14.2.20030225202432.0377ac88@mail.ebshome.net>
+Date: Tue, 25 Feb 2003 20:25:33 -0800
+To: linuxppc-embedded@lists.linuxppc.org
+From: Eugene Surovegin <ebs@ebshome.net>
 Subject: Re: Kernel Preemption patch
-Message-ID: <20030225211843.B11988@home.com>
-References: <995FF289C9D69747A09E42992644595405B23686@penguin.adic.com> <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>
+In-Reply-To: <20030225211843.B11988@home.com>
+References: <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>
+ <995FF289C9D69747A09E42992644595405B23686@penguin.adic.com>
+ <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5.1.0.14.2.20030224135756.0465b778@mail.ebshome.net>; from ebs@ebshome.net on Mon, Feb 24, 2003 at 02:29:18PM -0800
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Feb 24, 2003 at 02:29:18PM -0800, Eugene Surovegin wrote:
-> I can make a patch for 2.4.19 PPC devel tree snapshot with all those
-> patches and my fixes if you want.
+At 08:18 PM 2/25/2003, Matt Porter wrote:
 
-Thanks.  I placed Eugene's patch at ftp://source.mvista.com/pub/linuxppc/
+>I placed Eugene's patch at ftp://source.mvista.com/pub/linuxppc/
 
-There should be a pointer from penguinppc.org to this site in the
-near future.  Hopefully, that will make it more noticeable.
+This patch is against 2.4.19 PPC devel kernel (bk cset 1.1091.1.23, 3rd of
+August 2002).
+It contains the following:
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+1) preempt kernel (preempt-kernel-rml-2.4.19-rc5-3.patch + MV fixes)
+2) lock-break (lock-break-rml-2.4.18-1.patch)
+3) rtsched (rtsched-2.4.16-1.0.patch + my fixes)
+4) LTT (linux trace toolkit) (0.9.5a release)
+
+Eugene
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
