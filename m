@@ -1,55 +1,53 @@
-Date: Tue, 8 Dec 1998 01:59:10 -0500
-From: Daniel Jacobowitz <drow@cs.cmu.edu>
-To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: EGCS 1.1.1 FYI
-Message-ID: <19981208015910.A18662@drow.res.cmu.edu>
-References: <schinder@pobox.com> <199812071128.GAA01786@smtp2.mindspring.com> <9812071511.AA34514@marc.watson.ibm.com> <13932.21810.162591.80793@onyx.nowhere.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <13932.21810.162591.80793@onyx.nowhere.net>; from Ralf Weidemann on Mon, Dec 07, 1998 at 11:22:42PM +0100
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04011702b2928a54e303@[209.86.155.254]>
+In-Reply-To: <v04011702b2914dc3594d@[209.86.156.28]>
+Date: Tue, 8 Dec 1998 00:38:39 -0800
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        paulus@cs.anu.edu.au, daveray@wellsfargo.com
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Complete fix for PB 2400 16-bit video problem
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Dec 07, 1998 at 11:22:42PM +0100, Ralf Weidemann wrote:
-> 
-> >>>>> "David" == David Edelsohn <dje@watson.ibm.com> writes:
-> >>>>> "Paul J Schinder" writes:
->     Paul> So are Gary Thomas' patches still necessary?
-> 
->     David> 	The trampoline patch now has become a shared library
->     David> compatibility issue for glibc-1.99 support.  It only is
->     David> necessary until LinuxPPC cuts over to glibc-2.1 which will
->     David> require other binary incompatible changes at the same time.
-> 
-> Can someone clarify where the problem is exact with native
-> egcs and libc-1.99 ? I use egcs-1.1.1 since the weekend and
-> it seems to work fine. I had no trouble to build some shared
-> lib stuff like in the latest jade or sgml-tools. This packages
-> didn't compile with older version I tried (also Gary's egcs-1.1b),
-> but that were generell compiler issues, I think.
-> 
-> But on the other side I also tried to run the SeaMonkeyBrowser
-> (Mozilla) from recent cvs-sources. Building went fine, but the
-> beast didn't run. I get only a simple "Aborted" message on the
-> console and it seems to crash somewhere in the startup code.
-> So maybe this is somehow related ?
-> 
-> Had someone luck to run a recent version of Mozilla at all on
-> LinuxPPC ?
+I figured out why 16-bit doesn't work in the console today.  I wasn't
+checking "Advanced driver options" in the console setup screen (I use make
+menuconfig).  This resulted in CONFIG_FBCON_CFB16 (I think that's the name)
+not getting set, which .  Perhaps the CONFIG_FBCON_CFBxx settings should
+default to Y?
 
-No.  There's a bug that at least one person (Anthony Tong) is working
-on finding, something with the shared libraries, I think.  SeaMonkey
-has its own set of problems, in addition - I recommend playing with
-classic mozilla instead.
 
-Dan
+Also, since I proved in my earlier message that I didn't know how to use
+diff, and got told about it :), here is a better diff for
+drivers/video/chipsfb.c.  This will patch it to correctly change bitdepth.
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|     CMU, CS class of 2002      |
-|   Debian GNU/Linux Developer    __   Part-Time Systems Programmer  |
-|         dan@debian.org         |  |        drow@cs.cmu.edu         |
-\--------------------------------/  \--------------------------------/
+
+---------cut-----------------
+--- chipsfb.orig.c	Mon Dec  7 00:24:13 1998
++++ chipsfb.c	Mon Dec  7 01:27:17 1998
+@@ -358,6 +358,7 @@
+ 		if (con == currcon) {
+ 			write_cr(0x13, 200);		// 16 bit display
+width (decimal)
+ 			write_xr(0x81, 0x14);		// 15 bit
+(TrueColor) color mode
++			write_xr(0x82, 0x00);		// disable palettes
+ 			write_xr(0x20, 0x10);		// 16 bit blitter mode
+ 		}
+
+@@ -379,6 +380,7 @@
+ 		if (con == currcon) {
+ 			write_cr(0x13, 100);		// 8 bit display
+width (decimal)
+ 			write_xr(0x81, 0x12);		// 8 bit color mode
++			write_xr(0x82, 0x08);		// Graphics gamma
+enable
+ 			write_xr(0x20, 0x00);		// 8 bit blitter mode
+ 		}
+---------cut-----------------
+
+  Tim Seufert
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
