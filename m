@@ -1,45 +1,66 @@
-Date: Fri, 07 Feb 2003 19:43:27 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: [PATCH] 8xx_io/uart.c
-In-reply-to: <A60FFE6CA339C742BE11C311EA8BFF540164DD@mdsms2.inside.mdsroc.com>
-To: "Ruhland, Paul" <PRuhland@microwavedata.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLKEBBFKAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23657@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Kernel build: not recognizing 'tlbre' instruction
+Date: Fri, 7 Feb 2003 11:03:09 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> The pasting into the console bug is actually caused in
-> 'drivers/char/n_tty.c' (standard tty line discipline) by not handling a
-> failed call to 'opost(...)' (if returns -1 if tx buffer is full and char
-> must be retried) in 'echo_char()'.  The pasted data is received fine....just
-> the echo fails.
+(1) Regarding tool chain defining -m405:
 
-got the same here.
+    I'm using Denx ELDK ppc_4xx, so by definition isn't my
+    predefined compiler flag -mcpu=403. Shouldn't the out of
+    the box ELDK (for ppc_4xx) take care of this? Or does it
+    need to change from 403 --> 405?
 
+(2) Regarding kernel tree without:
+
+	ifdef CONFIG_4xx
+	CFLAGS := $(CFLAGS) -Wa,-m405
+	endif
+
+    in arch/ppc/Makefile.
+
+    The kernel trees that I have all have this set. Is the suggestion
+    to comment this out, or find a kernel without it? If it's the latter,
+    is there a nifty way to do this other than trial and error?
+
+-- Brian
+
+-----Original Message-----
+From: Matt Porter [mailto:porter@cox.net]
+Sent: Friday, February 07, 2003 12:33 PM
+To: brian.auld@adic.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel build: not recognizing 'tlbre' instruction
+
+On Fri, Feb 07, 2003 at 08:23:43AM -0800, brian.auld@adic.com wrote:
+> When I try to build this 'custom kernel', I get the following error:
 >
-> >From 'drivers/char/n_tty.c':
-> ================================================
-> /* Must be called only when L_ECHO(tty) is true. */
->
-> static void echo_char(unsigned char c, struct tty_struct *tty)
-> {
-> 	if (L_ECHOCTL(tty) && iscntrl(c) && c != '\t') {
-> 		put_char('^', tty);
-> 		put_char(c ^ 0100, tty);
-> 		tty->column += 2;
-> 	} else
-> 		opost(c, tty);
-> }
-> ===============================================
->
+> ...
+> Unrecognized opcode: 'tlbre' in the file arch/ppc/kernel/misc.S
 
-Great, do you have a fix?
+Your toolchain probably does not define -m405 and you must have a
+kernel tree that does not have an arch/ppc/Makefile with the
+following:
 
-    Jocke
+	ifdef CONFIG_4xx
+	CFLAGS := $(CFLAGS) -Wa,-m405
+	endif
 
+> General question: Is there a way to get previous versions of
+> linuxppc_2_4_devel kernels?
+
+Do a "bk help" with the "clone" and "tag" args for an explanation on
+how to clone a tree at a specific changeset or tag.
+
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
