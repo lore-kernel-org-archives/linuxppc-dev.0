@@ -1,37 +1,26 @@
-Date: Tue, 18 Sep 2001 10:25:20 +0200
-From: Jure Menart <jure@kom.org>
-To: qiuqingjun <qiuqingjun@263.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: When does the linuxrc script execute?
-Message-ID: <20010918102520.A12303@hannanges.teden-mladih.com>
-References: <004801c13eaa$b35d8ea0$0200a8c0@aiwa>
+Message-Id: <sba745ea.073@mail.frequentis.com>
+Date: Tue, 18 Sep 2001 13:02:06 +0200
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC860(T) uart SCCs
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <004801c13eaa$b35d8ea0$0200a8c0@aiwa>; from qiuqingjun@263.net on Sun, Sep 16, 2001 at 08:25:17PM +0800
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-On Sun, Sep 16, 2001 at 08:25:17PM +0800, qiuqingjun wrote:
-> I downloaded the source code of linux-2.2.14 and simple-ramdisk.image.gz from
-> ftp://ftp.denx.de/pub/LinuxPPC/usr/src/.
-> In ramdisk, there is a file named /linuxrc which includes some shell scripts, but why it is NOT executed when system boot?
+Hallo!
+Iwork with an custom board MPC860T kernel 2.4.5. I will use all 4 SCC as uart RS485/RS232. The problem is, that SCC1 and SCC2 works fine and SCC3 and SCC4 not:
+I mapped SCC1 to BRG1 (ttyS0) SCC2 to BRG2 (ttyS1)....
+SCC3 and SCC4 doesn't generate any interrupt. If I write in a loop something to Port ttyS2 for example the driver fills the buffer set the Ready bit in the bd, and nothing else happens, no output. When the wrap happens the Ready bit is still set, and the program hangs up. It looks like the SCC won't send any data.
 
-could you be more specific - your system can't really boot without /linuxrc,
-because shell is called in it.
-So you system doesn't boot I guess? If I'm correct, where does it stop?
+sicr is set to 0x1b120900 so I think there is no fault.
 
-BTW. linuxrc is executed when kernel preparing namespace, that is after all
-initializations, preparing devices... it is in 'init' thread.
+anyone any ideas?
 
---
-Ah, kakor pot je nase zivljenje,
-temna, zavita,                                             LP, Jure
-brez dalj -
-V prsi zabodeno hrepenenje,
-negativni total.
---
+Thanks for help
+
+Gerhard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
