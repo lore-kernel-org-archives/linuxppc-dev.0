@@ -1,45 +1,41 @@
-Message-ID: <3988AE4C.97DF2AE@student.ethz.ch>
-Date: Thu, 03 Aug 2000 01:27:08 +0200
+Message-ID: <3988AE56.BBA10EFA@student.ethz.ch>
+Date: Thu, 03 Aug 2000 01:27:18 +0200
 From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: LinuxPPC X Server
-References: <Pine.LNX.4.10.10008021445040.427-100000@cassiopeia.home>
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org, Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Updated DMASOUND patches
+References: <200008021950.UAA23533@hyperion.valhalla.net>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
->
-> > > >> >Great, I'd happily beta-test and/or help, will that be in your
-> > > >> >rsync-tree or in 2.4?
-> > > >>
-> > > >> It's far from finished yet. It will be in 2.4 bk tree once done
-> > > >
-> > > >Cool, so it will be in our APUS 2.4 tree :)
-> > >
-> > > Well, I don't see what good Uni-North AGP bridge support can be to APUS
-> > > machines, but if you think it's cool ...
-> >
-> > I don't have a bitkeeper tree, but the APUS tree is based on it, so I can
-> > build the agpgart stuff from there.
->
-> APUS doesn't even have AGP.
+Iain Sandoe wrote:
 
-I know.
+> 2.4.0-test5
+>
+> This is much more flaky **with identical code**  there is no crashing (yet)
+> - but a strong tendency for almost any activity to cut off the sound.
+> opening the mixer control is a really good way of doing it.  Once the panel
+> is open you can restart the sound and all is hunky-dory... but...
 
-May I still build the agpgart module for my Pismo from the APUS 2.4 tree
-(which happens to reside on the Pismo BTW ;) ? Please? :)
+I've noticed that 2.4.0-test4 is much more sluggish than any 2.2 kernel I've
+used. Turning on DMA for the HD (yep, didn't do it automatically) helps a bit,
+but not totally.
+
+
+> I guess I'm a little suspicious of the new wait-queue stuff (that's really
+> the only major change to the sound side).
+
+There's a whole new kernel around the sound driver ;)
 
 
 Michel
 
 
 --
-So many Christians, so few lions.
+The three Rs of Microsoft support: Retry, Reboot, Reinstall.
 ______________________________________________________________________________
 Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
 Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
