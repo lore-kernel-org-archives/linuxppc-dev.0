@@ -1,54 +1,73 @@
-Date: Thu, 1 Jul 1999 21:05:22 -0400 (EDT)
-From: Anirudh Joshi <ajoshi@Glue.umd.edu>
-To: Barrie Spence <barrie@calvin.demon.co.uk>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: cc/gcc/egcs kernel compilation options?
-In-Reply-To: <199907012249.XAA05762@calvin.demon.co.uk>
-Message-ID: <Pine.GSO.4.10.9907012103260.4766-100000@digital.eng.umd.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <BFC0587634C3D111AACB00805FA766FA02C1C608@exchny12.ny.smb.com>
+From: "Velasquez, Carlos" <carlos.velasquez@ssmb.com>
+To: "'Tom Rini'" <trini@disparity.net>
+Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: kernel args for video mode..
+Date: Fri, 2 Jul 1999 10:45:41 -0400 
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Tom (and everyone else),
 
-	we use -msoft-float (notably for kernel builds) becuase the kernel
-has problems with fpu ops and things go crazy, build without -msoft-float
-and you'll find out :)
-	i'm not sure if -mcpu=60X will do much good for kernel builds,
-but for most others it should be fine, all it does is add a bunch of
-'good' optimizations suggested.
+Thanks for the help, it worked!
+Here is a weird thing: It worked well for a few times, then I went back to
+the default by checking the "No Video Drivers" option to do some fiddling
+around. When I decided to stay with the kernel arguments, the screen boots
+up somewhat hazy and light, and the Linux Penguin's colors are all different
+shades of grey. Any ideas on what is happening?
 
+I can't find the command fbset at all. Linux reports back that it is an
+unknown command. Is it in an  RPM I forgot to install? Where can I download
+it from?
 
+Carlos
 
-ani
+P.S. I looked at the macmodes.h file and I noticed that the cmode settings
+for 8/16/32 bit depth was #DEFINED as 0/1/2 respectively. Should I be using
+these values instead of 8, 16, or 32 like so:?
 
+video=imsttfb:video:16,cmode:2
 
+______________________________________________________________________
+C.F. Velasquez
+Asst. Vice President
+Global Database and Technology Division
+Salomon Smith Barney, Inc.
 
-
-On Thu, 1 Jul 1999, Barrie Spence wrote:
-
+> -----Original Message-----
+> From:	Tom Rini [SMTP:trini@disparity.net]
+> Sent:	Thursday, July 01, 1999 1:27 PM
+> To:	Velasquez, Carlos
+> Cc:	'linuxppc-dev@lists.linuxppc.org'
+> Subject:	Re: kernel args for video mode..
 > 
-> As a PPC newbie, why do we need/use "-msoft-float"? Is this 
-> to handle some processor implementations that don't have 
-> floating-point hardware? (and if so, does it have any overhead 
-> on the 603/604/G3 Macs?). If it does have some cost, could it 
-> not be enabled in the same way as on Intel?
+> On Thu, 1 Jul 1999, Velasquez, Carlos wrote:
 > 
-> Next question, is there any advantage to building a kernel
-> with "-mcpu=604 -mtune=604"? (or whatever is most appropriate).
+> > So how do I specify it as kernel arguments? should I say:
+> > video=tt128mb8 , vmode = XX , cmode =YY  (where XX and YY are the
+> resolution
+> > and bit depth respectively) or instead of commas, do I use semi-colons
+> or
+> > colons or what?
 > 
-> Thanks,
-> 	Barrie
+> video=imsttfb:vmode:XX,cmode:XX where vmode is one of the ones defined in
+> /usr/src/linux/include/video/macmodes.h, and cmode is 8/16/32.
 > 
+> > Also, do I uncheck the "Don't use Video driver" choice box? What happens
+> if
+> > I keep it checked ? Finally, how (if possible) do I change video and
+> color
+> > modes once I am already booted up? Can I do this on the fly?
 > 
-> --
-> Barrie Spence			Sanity Clause? There is no Sanity Clause
-> Home: barrie@calvin.demon.co.uk		Telephone +44 1506 442304
-> Play: b.spence@computer.org		
-
+> You uncheck it once you have a video= line to give the kernel.  No Video
+> Driver over rides any video args you tell it.  You can change things on
+> the fly in the console with fbset (fbset -h) and in X you can change from
+> known resolutions with control-keypad- +/- (i think, been a while..)
 > 
-
+> ---
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
