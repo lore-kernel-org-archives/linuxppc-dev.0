@@ -1,45 +1,41 @@
-Message-ID: <39788564.5F9E2282@embeddededge.com>
-Date: Fri, 21 Jul 2000 13:16:20 -0400
-From: Dan Malek <dan@netx4.com>
+From: mark@sps.la.asu.edu
+Subject: Porting linux ppc to new platform
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Sun, 23 Jul 2000 20:12:13 -0700 (MST)
 MIME-Version: 1.0
-To: Paolo Scaffardi <arsenio@tin.it>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: What kernel for a MPC823FADS and PCMCIA?
-References: <001101bff2ec$b3efbce0$640a0a0a@server>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <E13GYf7-0000Lz-00@sps.la.asu.edu>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paolo Scaffardi wrote:
->
-> I have a MPC823FADS and i want to make a simple Linux box with ETHERNET and
-> PCMCIA support.
+  Hello,
 
-OK.
-
-> What is the right kernel to use and patches to make the PCMCIA working on
-> the board?
-
-I don't know of any kernel ready to run for this.  You may want to
-scan the mailing list archives looking for some patches for the FADS
-boards.
+  I apologize if there is a FAQ for this loaded question, but I did not
+immediately see one.
 
 
-> I'm very confused... i probably had to buy another board... MVista doesn't
-> support my board... why?!?!?!
-
-The FADS boards have always been a challenge to support.  The hardware
-wasn't terribly reliable (just look at the "floating" lines that are
-supposed to be tied to some power or ground), and you spend lots of time
-debugging what you think is a software problem that really isn't.
-
-MontaVista has a variety of support and service options.  Have you
-contacted one of their business development or sales people to ask
-this question?  You get free support when people like me have free time,
-or generous people pay for the development of open source software.
+  I have been playing with linux for about 5 years and playing with the
+kernel for about 1, but only on x86.
 
 
-	-- Dan
+  Recently I have begun working with ppc and have ported vxWorks to our
+platform and am now interested in porting linux.  I have gotten the RPX
+lite board to boot, but then I really did not have to do anywork.
+
+  What I'm intrested in is others who have ported linux to embedded platforms
+so that I might ask them the amount of work invovled and where is a good
+place to begin.  This will be on a board with no available firmware or drivers,
+although I can perform enough low level configuration to bring up vxWorks.
+
+  Is there specific memory layout required, what types of cpnfiguration is
+neccessary at the hardware layer (immr, sypcr, icdct, mamr level stuff, etc.).
+What do I need to do vs. what is done in the ppc kernel after it is capable
+enough to load a C program.  Is there a powerpc equivalent to lilo,
+or is this even needed.  Can I just jump to main.c?
+
+  I have many more questions, but if these aqre answered by a FAQ I'll hold off until I can investigate more.
+
+Thank you
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
