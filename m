@@ -1,39 +1,47 @@
-Message-ID: <1080392704316.mikko.alutoin.43848.uGS3d1btYeEEn83ShTq8Yg@luukku.com>
-Date: Sat, 27 Mar 2004 15:05:04 +0200 (EET)
-From: Mikko Alutoin <mikko.alutoin@luukku.com>
-To: Dan Malek <dan@embeddededge.com>,
-	Mikko Alutoin <mikko.alutoin@luukku.com>
-Subject: Re: Problem with MMU again
-Cc: linuxppc-embedded@lists.linuxppc.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Graf Alex <alex.graf@siemens.com>
+To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <791B3205DB661A42B4BFE5464A7D1D0204B36E24@chzugexch01.abatos.com>
+Subject: AW: IDE, PCMCIA and MAX_HWIFS... ?
+Date: Mon, 29 Mar 2004 09:52:37 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+With one Slot (Card) you have to set MAX_HWIFS to 1.
 
-I traced over the rfi-instruction for a reason: I was not able to break at start_kernel, but setting a breakpoint at start_here worked ok. Also, tracing over the rfi with a working kernel took me directly to start_kernel. So I thought MMU was to blame, but little did I know...
+Alex
 
-Thanks for the reply, I'll try your advice when I get back to work on Monday.
+-----Urspr¸ngliche Nachricht-----
+Von: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
+Gesendet: Donnerstag, 25. M‰rz 2004 18:00
+An: LinuxPPC
+Betreff: IDE, PCMCIA and MAX_HWIFS... ?
 
-Cheers, Mikko
 
-> You are chasing ghosts.  There is nothing wrong with the MMU
-> initialization.
-> There are just times during the initialization that the system and the
-> BDI2000
-> are not exactly in sync.  This is one of them.
->
-> Let the code run, do some post-mortem debugging (like dumping out the
-> console log buffer for starters).  Work backward from the failure
->  instead
-> of trying to step into it (pun intended) :-)
->
->
-> 	-- Dan
->
->
+
+Hi there,
+
+if I have one IDE interface on my embedded PPC board and I might use a PC
+Card HDD in the PCMCIA socket, then do I have to override the define
+MAX_HWIFS with 1 or 2 ?
+
+So do I need some kind of a place holder for the IDE interface that might
+appear via PCMCIA Card service?
+
+Thanks a million.
+
+
+--
+Steven Scholz
+
+imc Measurement & Control               imc Meﬂsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
