@@ -1,25 +1,26 @@
-Message-ID: <E1836A7F3557D311A14000805F9F36FC0151885E@usdfo011.usac.danfoss.net>
-From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+Message-ID: <7E8519F1A7C0D211B0D200A0C93AA60F08447D0B@ntmail.iskratel.si>
+From: Langus Matevz RDHW_EXT <langus@iskratel.si>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Setting i2c_i2brg 
-Date: Thu, 14 Feb 2002 21:38:00 +0100
+Subject: starting with Linux on EST SBC8260
+Date: Thu, 14 Feb 2002 21:49:56 +0100
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All,
-I am using an Embedded Planet MPC823e platform attempting to get I2C
-operational. How do you relate setting the SCL clock speed with the
-following variable i2c->i2c_i2brg ? It is currently set to 7 but I can find
-no documentation showing what speed this runs the I2C I/F or what the
-choices for the bus would be.
+Hello!
 
-Regards,
-     Michael Pergola
-     Software Engineer
-     Baltimore, MD  21236     (410) 931-6778 x4259
+I would like to ask you, how much effort would it be required to get Linux
+running on EST SBC8260. Since this is a very widely used board, probably a
+lot of peope have already ported Linux on it.
 
+Is there a step-by-step guide what should be compiled/installed/done to get
+it running?
+I am new to LinuxPPC but I have done a lot with VxWorks and pSOS on the same
+processor, so your opinion would really be helpful.
+
+Thanks,
+  Matevz Langus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
