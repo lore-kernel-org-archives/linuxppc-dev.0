@@ -1,51 +1,60 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Steven Hanley <sjh@wibble.net>,
-        Linux PPC Dev
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: agpgart? or how to use dri?
-Date: Thu, 1 Feb 2001 12:29:39 +0100
-Message-Id: <19341227050123.16989@mailhost.mipsys.com>
-In-Reply-To: <20010201184806.A5957@chiru.svana.org>
-References: <20010201184806.A5957@chiru.svana.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 1 Feb 2001 11:50:15 -0500
+From: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>
+To: Chris Boot <bootc@worldnet.fr>
+Cc: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao mode
+Message-ID: <20010201115015.A11149@allspice.cs.swarthmore.edu>
+References: <20010130165710.B22219@allspice.cs.swarthmore.edu> <B69DFE88.9197%bootc@worldnet.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B69DFE88.9197%bootc@worldnet.fr>; from bootc@worldnet.fr on Wed, Jan 31, 2001 at 05:40:24PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Wed, Jan 31, 2001 at 05:40:24PM +0100, Chris Boot <bootc@worldnet.fr> wrote:
 >
->Trying to get the dri stuff to build (this is an X 4.02 tree checked out
->from the branch Gareth announced two days ago)
+> >> It might be something PPC specific as well and have nothing to do with
+> >> Paul's drivers.
+> >
+> > This is why I asked in a previous email whether anyone had ever burned
+> > a disk in DAO mode successfully on a pmac or in fact on any powerpc
+> > machine, but I've received no responses.  Hmm, maybe I should try to
+> > conduct a quick survey of this on linuxppc-user and/or debian-powerpc.
 >
->The problem seems to be the kernel module. When I have agpgart enabled in
->the kernel the r128 kernel module builds, when I dont have apgart enabled
->only the tdfx module will build, this is doing a make in the
->xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/ directory in the
->X source
->
->The problem here of course is agpgart wont build on ppc
->
->in /usr/src/linux/drivers/char/agp/agpgart_be.c there is a flush_dcache
->function defined, and it is only defined for alpha, ia64 and i386.
->
->I dont know what the culprit is, but I assume thee dri stuff can be built
->without agpgart on ppc or some scuh, this kernel tree is the 2.4.1 bk
->rsynced about half an hour ago.
->
->Any hints on getting the dri kernel module to build to the extent that it
->can be insmod'd and used?
->
+> Well, I can't write a dao disk on my Panasonic CW-7502.  cdrecord complains
+> that it can't send the cue sheet, but the SCSI bus doesn't die in any way, I
+> can still mount and use disks on it afterwards (I only have the built-in
+> CD-ROM and my CD-R on it).  I can provide exactly what cdrecord says and any
+> other info if you wish.
 
-The current agpgart driver won't work on PPC, the Apple AGP host bridge
-is not supported.
+That would be great -- any additional info that we can get helps.  Is
+there a 200 second wait before it fails, or does it fail immediately?
 
-The new DRI support announced by Gareth is using the PCI GART which
-doesn't need the AGP capabilities. Don't enable either AGP or DRI in your
-kernel, and build the kernel r128 DRM module from XFree sources. You need
-to use the CVS branch posted earlier by Gareth. I slightly hacked my own
-to build since I lack the glide libs necessary for the 3dfx stuff to compile.
+> This is on a Performa 5400/180 with an early pull of the 2.4.0 kernel from
+> bk.  Everything seems to be working fine, except for this (which isn't too
+> important for me).
 
-Ben.
+What SCSI driver do you use?  (If you don't know offhand, you should be
+able to tell from the kernel boot messages.)
 
+If you're willing to do a little bit more work, could you compile a
+kernel with all the SCSI debugging support (there are two config
+options) enabled, and before you try to burn a disk in DAO mode, type
+(as root) "echo scsi log all > /proc/scsi/scsi"?  (The logging will be
+turned off again when you next reboot.)  And then send us the resultant
+syslog?
+
+My working hypothesis is that there is something powerpc specific that
+derails the send_cue_sheet command, but the lockup is because of the
+mesh driver not handling the error well.  If this is correct, these
+would both be good problems to fix.
+
+Thanks,
+Daniel
+
+--
+Daniel E. Eisenbud
+eisenbud@cs.swarthmore.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
