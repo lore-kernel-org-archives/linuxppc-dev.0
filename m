@@ -1,37 +1,28 @@
-Date: Thu, 3 Jun 1999 15:23:46 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: brad@turbolinux.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: rsync kernel compile fails
-In-Reply-To: <199906030558.PAA00552@tango.anu.edu.au>
-Message-ID: <Pine.LNX.4.05.9906031521390.731-100000@pc.wackyland.com>
+Message-ID: <37570085.B57F660@wanadoo.fr>
+Date: Fri, 04 Jun 1999 00:24:05 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul.Mackerras@cs.anu.edu.au
+CC: linuxppc-dev@lists.linuxppc.org, cort@ppc.kernel.org
+Subject: Re: Bug in vger 2.2.10 and 2.3.4 (Re: Problems with vger 2.3.3/4)
+References: <374D8E2A.48871830@wanadoo.fr> <3755213D.3BB3C8B6@wanadoo.fr> <199906030250.MAA04127@tango.anu.edu.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 3 Jun 1999, Paul Mackerras wrote:
+Paul Mackerras wrote:
 
-> I have a 2.3.4 kernel working but without USB.  I plan to work on
-> getting the new USB stuff working on the iMac soon.  But in the
-> meantime maybe I need to get a recent 2.2.x kernel working with the
-> old UUSBD stack.  What I might do actually is kludge the USB keyboard
-> driver to convert all the keycodes to ADB keycodes, instead of
-> continuing with the multi-keyboard patch.
+> In fact that patch is correct but you also need this patch (which I'm
+> about to check into vger):
+[...]
 
-It's actually not too hard to do.  (I did it to a vger tree for a while).
-Just gotta backport the keyboard changes from 2.2.8 (or was it 7 when usb
-went in?) and then fix a few problems that will no doubt show up w/ the
-multikeyboard patch.  It'll work, and should be good enough until one of
-the OHCI drivers in the new USB stack works w/ ppc (tho I suspect it might
-be a bit of a pain, w/ the kernel_thread link problem, or whatever it
-was...)
+2.3.5 is now running OK.
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+Thanks
 
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
