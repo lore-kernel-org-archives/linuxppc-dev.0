@@ -1,34 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Martin Schaffner <maschaffner@gmx.ch>
+From: Frank Murphy <murphyf+linux-ppc@f-m.fm>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: Linux kernel / USB keyboard scancode problems
+Date: Wed, 27 Aug 2003 09:48:04 +0200
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <9970.1061935809@www44.gmx.net>
-References: <9970.1061935809@www44.gmx.net>
-Message-Id: <1061967699.612.36.camel@gaston>
-Mime-Version: 1.0
-Date: Wed, 27 Aug 2003 09:01:39 +0200
-Subject: Re: getting linux 2.6.0-test4 to compile on an ibook2
-Content-Type: text/plain
+References: <200308231409.24503.murphyf+linux-ppc@f-m.fm> <200308262124.04906.murphyf+linux-ppc@f-m.fm> <20030826200303.GA14385@iram.es>
+In-Reply-To: <20030826200303.GA14385@iram.es>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200308270948.04190.murphyf+linux-ppc@f-m.fm>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2003-08-27 at 00:10, Martin Schaffner wrote:
-> Hello,
+On Tuesday 26 August 2003 10:03, Gabriel Paubert wrote:
+> On Tue, Aug 26, 2003 at 09:24:02PM +0200, Frank Murphy wrote:
+> > On Tuesday 26 August 2003 11:35, Gabriel Paubert wrote:
+> > > X does its own mapping of raw keycodes to keycodes, and the mapping
+> > > is surjective (arghh). The option CustomKeyCodes in X allows you to
+> > > bypass this mapping (medium raw modes) but I believe it is deprecated.
 >
-> Today I compiled linux 2.6.0-test4 with almost the same options as the
-> currently running 2.4. except for sound support. I had to change 8 lines in the
-> code to be able to do so. Below is the patch. One line change concerns ARM
-> instead of PowerPC, but the change is because of an architecture-independant API
-> change, so I'm including it anyway.
+> On a PC, the Menu key sends e0 5d (and obviously e0 dd for key up). The
+> linux keycode is 127 but the X one is 117.
 
-There are patches significantly updating 2.6 for PowerMac that are
-pending in Linus incoming queue. I suggest you use the tree at
+Could you tell me what the keycodes are for Print Screen/SysRq, Scroll Lock,
+and Pause are on your keyboard? Just so I can track what F13, F14, & F15
+could be.
 
-bk://ppc.bkbits.net/linuxppc-2.5
+> The following might be sufficient (just a wild guess, and it will
+> certainly break if you don't use linux keycodes):
 
-Until all this is merged upstream
+Thanks for your guessed fix. I'll have to look at what you've done, but, wow,
+it's pretty cryptic.
 
-Ben.
+> BTW, I'd also like to keep somewhere the state of the fn key in the
+> ADB keyboard driver. I've seen a MacOS utility which allows you to
+> use the trackpad as a scroll wheel while the fn button is pressed.
+> Thta's what I'd ike to copy.
+
+Huh. That would be pretty cool. Perhaps the real numlock state as well (if
+that's even possible).
+
+Frank
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
