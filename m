@@ -1,38 +1,38 @@
-Subject: TCP/IP performance on the 855T/860T
-To: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
-Date: Fri, 30 Jun 2000 11:33:09 +1000 (EST)
-In-Reply-To: <395B9171.76934B4E@netx4.com> from "Dan Malek" at Jun 29, 2000 02:12:01 PM
+Message-ID: <395C0759.9C8A6C83@netx4.com>
+Date: Thu, 29 Jun 2000 22:35:05 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: TCP/IP performance on the 855T/860T
+References: <20000630013309.7F172BB@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000630013309.7F172BB@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek writes:
-> The bottleneck is the protocol and application processing in the PPC core.
+Graham Stoney wrote:
 
-So has anyone had a chance to look at where exactly in the TCP/IP stack the
-bottleneck is since this was last discussed?  Surely a 50 MHz part with an
-on-chip 100 Mbps Ethernet controller has enough grunt to keep up with a single
-TCP/IP connection.
+> So has anyone had a chance to look at where exactly in the TCP/IP stack the
+> bottleneck is since this was last discussed?
 
-> Just write a program (nttcp works) to benchmark using the local
-> loopback device.  That will tell you what the processor can
-> accomplish.
+Yes, you can do a few things with TCP/IP windows to help a little,
+but it is only a few percent.
 
-Thanks for the suggestion. I ran my tcp test through the loop device on the
-50 MHz 860T CLLF board, and it gives a little over 4 Mbytes/sec. So Dan's
-absolutely right as usual; the problem isn't in the FEC, it's in the protocol
-stack. Somewhere. Any suggestions?
+> ....  Surely a 50 MHz part with an
+> on-chip 100 Mbps Ethernet controller has enough grunt to keep up with a single
+> TCP/IP connection.
 
-Thanks,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+There isn't any other processor that will do it at that speed.
+Dig out an old 486 and try the local loopback test......You wouldn't
+be surprised if it can't keep up.
+
+>  Any suggestions?
+
+...8260....
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
