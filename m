@@ -1,31 +1,33 @@
-From: Keith Owens <kaos@ocs.com.au>
-To: paulus@linuxcare.com.au
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [RFC] 2.4.0-test6-pre2 Merge softirq, local_irq_count, local_bh_count 
-In-reply-to: Your message of "Sat, 05 Aug 2000 17:14:36 +1000."
-             <14731.48860.794336.528961@argo.linuxcare.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Sat, 05 Aug 2000 17:37:14 +1000
-Message-ID: <28786.965461034@ocs3.ocs-net>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Takashi Oe <toe@unlserve.unl.edu>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: rtc again...
+Date: Sat, 5 Aug 2000 13:25:31 +0200
+Message-Id: <20000805112531.1840@192.168.1.10>
+In-Reply-To: 
+ <Pine.LNX.3.96LJ1.1b7.1000804195419.649B-100000@ofey.earthlink.net>
+References: 
+ <Pine.LNX.3.96LJ1.1b7.1000804195419.649B-100000@ofey.earthlink.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 5 Aug 2000 17:14:36 +1000 (EST),
-Paul Mackerras <paulus@linuxcare.com.au> wrote:
->Seems to work ok on uniprocessor PPC.  The 2.4 kernels have problems
->on SMP PPC boxes at the moment so I haven't tested it on SMP.
+>
+>As Geert has pointed out, hwclock can give UTC or local time to /dev/rtc,
+>why don't we just let userland deal with this local time issue.  What I
+>mean is for pmac_set_rtc_time(), let's change:
 
-Thanks for that.  Linus rolled the patch into 2.4.0-test6-pre4.
+That would give us back what we had at the beginning. This way, userland
+is solely responsible for this setup, which means it will be wrong on 50%
+of user machines (but that's user fault isn't it ?) and which means the
+kernel will boot with a wrong time, at least until the userland init
+script takes over.
 
->Have you done any measurements, with lmbench or whatever, to measure
->how much performance improvement you get with the patch?
+I don't see why it's such a mess to simply read the default values from
+xpram so we are consistent with MacOS. But everything in Linux is a mess
+anyway...
 
-No, it was not really driven by performance considerations.  SGI wanted
-to add a syscall count for performance and fail over monitoring.  Linus
-said he would accept the syscall count if we cleaned up softirq at the
-same time, instead of having two statistic cache lines per cpu.
-
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
