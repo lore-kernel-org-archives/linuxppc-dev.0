@@ -1,41 +1,40 @@
-Date: Wed, 1 Oct 2003 14:48:32 -0500 (CDT)
-From: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Message-ID: <3F7B38AE.4020406@embeddededge.com>
+Date: Wed, 01 Oct 2003 16:27:26 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
 To: Kent Borg <kentborg@borg.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Where to Put Ethernet MAC Addresses?
-In-Reply-To: <20031001153209.D688@borg.org>
-Message-ID: <Pine.LNX.4.44.0310011446270.23959-100000@spider.ancor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <20031001153209.D688@borg.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 1 Oct 2003, Kent Borg wrote:
-> In boards where there is ethernet but no manufacturered in MAC address
-> in the ethernet hardware, where does one get it?  Does this become a
-> userland problem to be handled in init scripts?  It seems that
-> ethernet initialization could also set the "manufacturer" MAC address,
-> and it might be stored in flash next to the Linux image, or in some
-> extra SPD bits, etc.
->
+Kent Borg wrote:
+
 > What are the various right ways to do this?
 
-Serial PROM.
+As Gary mentioned, most are handled in some way by the boot rom.
+Many people put them in the boot rom flash (or rom if anyone uses
+that anymore), and on PowerPC we use the first level linux bootloader
+to recover this information and create some form of data record
+that is passed to the kernel driver for further initialization
+if necessary.
 
-Check if the ethernet part allows reading the MAC directly from
-a small serial PROM. Many board manufacturers have processes for
-programming serial proms for this type of thing.
+User 'init' scripts are usually too late, especially if you want
+to use tftp in the rom for debug, or dhcp discovery.
 
-Otherwise, just have the processor read the serial PROM and program
-it into the ethernet MAC.
+There isn't any standard way, sometimes in flash, sometimes in
+serial EEPROM along with other data.  Sometimes the mac address
+is derived from the serial number.  It all depends upon what you
+have available and how you may want to upgrade programmable devices
+with new software in the field (you normally don't want to be erasing
+mac addresses or serial numbers or such information as part of
+programming new boot rom code).
 
--Bret
 
---
-Bret Indrelee                 QLogic Corporation
-Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
