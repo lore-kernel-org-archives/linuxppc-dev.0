@@ -1,58 +1,63 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Martin Costabel <costabel@wanadoo.fr>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Benh-2.4.4-pre3 kills linuxconf
-Date: Thu, 19 Apr 2001 22:12:34 +0200
-Message-Id: <20010419201234.23660@smtp.wanadoo.fr>
-In-Reply-To: <3ADF422F.CBC1EC7@wanadoo.fr>
-References: <3ADF422F.CBC1EC7@wanadoo.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 19 Apr 2001 22:43:32 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] gettimeofday stability
+Message-ID: <20010419224332.A1021@ibrium.se>
+References: <20010412010756.A668@ibrium.se> <Pine.HPX.4.10.10104161316490.1891-100000@gra-ux1.iram.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.HPX.4.10.10104161316490.1891-100000@gra-ux1.iram.es>; from paubert@iram.es on Mon, Apr 16, 2001 at 01:25:56PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->For a long time, I have been using linuxconf to switch between home and
->office configurations on my iBook. This worked up to kernel version
->2.4.4-pre1 (rsynced from the benh tree on April 12). With 2.4.4-pre3,
->rsynced yesterday, linuxconf doesn't work any more. When I type
->"linuxconf", it just sits there and waits, doing nothing. When I stop it
->with ^C, then subsequent calls of linuxconf come back immediately saying
->"Broken pipe." The kernel config is the same in both cases.
+On Mon, Apr 16, 2001 at 01:25:56PM +0200, Gabriel Paubert wrote:
+> > Ideally, TB should not be touched. Indeed, MOL can run without
+> > touching TB (but DEC is essential). However, TB needs to be
+> > modified for 'save session' feature to work. Basically, the RAM
+> > and cpu state of MacOS is flushed to disk. At a later time,
+> > MacOS can be restarted instantly. The problem is that MacOS can't
+> > deal with the TB skip that occurs if the timebase is not restored
+> > (no big surprise there).
 >
->Has anyone seen this?
+> By touching the TB, you'll also break all other Linux applications which
+> may have a valid use for the TB.
 
-No, but I don't use linuxconf...
+The only noticeable effect is a small clock drift originating from
+the loading and restoring of the timebase (and of course, only when
+MOL is running). Whatever MOL puts into TB/DEC is completely
+invisible to other processes.
 
->I am trying newer kernels mainly because of the recent improvements in
->the pmud and the firewire subsystems. I am still hoping that one day my
->iBook will be able to sleep *and* wake up correctly. Until now it
->sleeps, but usually crashes after wakeup, or at least the network
->system, ethernet and airport, is dead until the next reboot. My firewire
->disk (the old 10GB IBM travelstar, free after I upgraded the iBook to
->20GB, put into a firewire+USB enclosure) doesn't work either, even with
->all the recent ieee1394 patches applied :-(
+Anyway, I'll see if I can locate and patch away the use of
+the timebase register in MacOS - that would allow the
+save-session feature to work without having to touch the TB.
 
-Well, I didn't notice the ethernet problem. Does it happen if you
-ifconfig the interface down before sleep and back up after sleep ?
-Airport is known to not survive to sleep, you have to bring it down
-before and back up after. If you forget, bringing in down and back up
-should get it back as well.
+> BTW: how do you handle multiple MOL sessions ?
 
-Does it work with another kernel or without sleep ? I have not yet
-written any specific code to handle firewire sleep, so it's possible that
-it doesn't survive well to sleep. In that case, you can also try
-rmmod'ing the IEEE1394 host controller driver before sleep and insmod'ing
-it back up after wakup.
+Mutli-session support was actually added a few days ago -
+a matter of making sure the MOL kernel module keeps session
+specific data in a single struct, passed as a parameter.
 
-Tell me if any of these helps.
+> > Anyway, the negative offset check is desirable even if it is
+> > only the DEC that is touched.
+>
+> No, it is not, is is a textbook case of curing the symptom instead of the
+> cause.
 
-Also, do you experience crashes (not related to the above issues) when
-sleeping from X ? I know there are still some problems related to console
-sleep.
+Well, what I was looking for was a change to remove the assumption
+that the timer code was the sole user of the DEC register. Pauls
+change seems fix that neatly.
+
 
 Regards,
-Ben.
 
+/Samuel
+
+
+----------------------------------------------------------
+ E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
+  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
+----------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
