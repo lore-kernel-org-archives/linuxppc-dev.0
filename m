@@ -1,22 +1,15 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
-	by ozlabs.org (Postfix) with ESMTP id AF2122BDA0
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15805.mail.cnb.yahoo.com (web15805.mail.cnb.yahoo.com
+	[202.165.102.85]) by ozlabs.org (Postfix) with SMTP id F14D02BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Dec 2004 07:15:12 +1100 (EST)
-Date: Mon, 6 Dec 2004 13:15:00 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20041206131500.A9960@home.com>
-References: <45ABD2373C33C4459D42B40EC4F346F204912B38@FTWMLVEM03.e2k.ad.ge.com>
-	<35B36824-47B6-11D9-8BFE-000393DBC2E8@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <35B36824-47B6-11D9-8BFE-000393DBC2E8@freescale.com>;
-	from kumar.gala@freescale.com on Mon, Dec 06, 2004 at 12:39:49PM
-	-0600
-Cc: "Barbier, Renaud \(GE Infrastructure\)" <Renaud.Barbier@ge.com>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: 440GX MMU
+	Tue,  7 Dec 2004 22:36:26 +1100 (EST)
+Message-ID: <20041207113615.9141.qmail@web15805.mail.cnb.yahoo.com>
+Date: Tue, 7 Dec 2004 19:36:15 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Subject: What's the problem could be?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,19 +20,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 06, 2004 at 12:39:49PM -0600, Kumar Gala wrote:
-> The TS provides an additional bit of address space on Book-E processors 
-> (440, e500, etc).  An exception automatically clears the MSR[IS, DS] 
-> fields which are used to compare against the TLB's TS field.
-> 
-> It was the case at one point in time (may still be) that on 440, the 
-> interrupt context was TS = 0, everything else was TS = 1.  Matt was 
-> going to (or may have) changed it so everything is TS = 0 so we could 
-> save a few TLB entries.
+Hi, all
 
-It's changed in 2.6 (all AS=0), in 2.4 I never got around to finishing
-the update to the MMU handling. Since then, 2.6 has gone way beyond
-2.4 in features/fixes so I don't intend to do anything more with
-2.4. Patches are welcome for linuxppc-2.4, though.
+An system application crash running on 2.4.18 was
+happened on my custom 8xx board every now and then,
+especially recently. Yeah, the probelm is becoming
+more and more obvious. Personally, I deem it as an
+default of application software because there are some
+complicated application softwares like GUI and a
+browser. But I also suspect that my custom keyboard
+did it because there were about 70-80 PCMCIA
+interrupts created once I hit just one key. I used
+PCMCIA interrupt to accept the rubber keyboard input.
+Still one thing, for development convenience, I just
+use one SDRAM init setting and process for bus freq.
+at 24MHZ/48MHZ. Which one could be the killer? Any
+other possibility?
 
--Matt
+Thanks in advance!
+
+=====
+Best regards,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
