@@ -1,38 +1,39 @@
-Date: Tue, 15 Jul 2003 07:12:29 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Steve Boorman <steveb@baydel.com>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hangup booting Linux on PPC440GP
-Message-ID: <20030715071229.A6208@home.com>
-References: <3F13FA14.16183.5C9485B@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3F13FA14.16183.5C9485B@localhost>; from steveb@baydel.com on Tue, Jul 15, 2003 at 12:56:52PM +0100
+Subject: Re: DENX ELDK Kernel 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 15 Jul 2003 16:01:12 +0200."
+             <3F140928.60403@imc-berlin.de>
+Date: Tue, 15 Jul 2003 16:16:03 +0200
+Message-Id: <20030715141608.A765AC6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Please fix your mailer to set a lower linewrap value, it is
-difficult to compose a reply.
+In message <3F140928.60403@imc-berlin.de> you wrote:
+>
+> If I'd built the ELDK from scratch and used Linux-2.4.20 include files
+> to build "glibc (and all the rest of the target ELDK apps)" I should
+> build my "applications against the newer Linux kernel"! Shouldn't I?
 
-On Tue, Jul 15, 2003 at 12:56:52PM +0100, Steve Boorman wrote:
-> 1) Using ebony_defconfig as the kernel config file should, I would have thought, set
-> CONFIG_MATH_EMULATION=y but it does not.
+Yes.
 
-It assumes that one is using an optimized userland for 4xx.  This
-means that the expectation is that you have soft-float binaries.
-Most people are using ELDK or MVL.
+> And in general: shouldn't I used a glibc that "matches" the kernel
+> version?
 
-> 3) I expected the kernel to panic with some form of illegal
-> instruction trap if floating point instructions were being
-> attempted with no emulator code present.
+If you want to be absolutely safe, yes. But so far we have  not  seen
+any  real  problems when - for example - running the 2.4.4 built libs
+and tools on a 2.4.20+ kernel.
 
-Good point.  Maybe we should add in an illegal instruction warning
-on the no mathemu path in the 4xx program check exception.
+Best regards,
 
-Regards,
+Wolfgang Denk
+
 --
-Matt Porter
-mporter@kernel.crashing.org
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+God may be subtle, but He isn't plain mean.         - Albert Einstein
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
