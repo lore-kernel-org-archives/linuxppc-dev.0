@@ -1,20 +1,16 @@
-Return-Path: <tavi@cs.pub.ro>
-Received: from mail.cs.pub.ro (prof.cs.pub.ro [141.85.37.3])
-	by ozlabs.org (Postfix) with ESMTP id B836B67AAA
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id A5EDC67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Feb 2005 02:18:52 +1100 (EST)
-Received: from [10.39.1.15] (unknown [10.39.1.15])
-	by mail.cs.pub.ro (Postfix) with ESMTP id 7906A3FA0EF
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Feb 2005 16:55:42 +0200 (EET)
-From: Octavian Purdila <tavi@cs.pub.ro>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 8 Feb 2005 16:56:24 +0200
+	Wed,  9 Feb 2005 04:45:47 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200502081656.25023.tavi@cs.pub.ro>
-Subject: linux kernel PPC 405GP stucked after running init
+	charset="utf-8"
+Date: Tue, 8 Feb 2005 11:45:44 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592B1@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: 8266 SMC uart corruption
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,116 +21,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Hi list,
-
-I am playing with an embedded system based on an IBM PPC 405GP. So far I made 
-the kernel boot, but it gets stuck after running the the init process 
-(busybox). Any hints?
-
-I notice that ShowRegs does not output anything, and I traced this behavior to 
-pt_regs passed as NULL in the serial irq routine. Is this normal? 
-
-Thank you,
-tavi
-
-SysRq : Show Regs
-SysRq : Show State
-
-                                               sibling
-  task             PC      pid father child younger older
-busybox       R running     0     1      0     2               (NOTLB)
-ksoftirqd/0   S 00000000     0     2      1             3       (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c001a228] ksoftirqd+0xa4/0xc8
- [c00281e8] kthread+0xb8/0xc0
- [c000594c] kernel_thread+0x44/0x60
-events/0      S 00000000     0     3      1     4       8     2 (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c0023a40] worker_thread+0x1fc/0x220
- [c00281e8] kthread+0xb8/0xc0
- [c000594c] kernel_thread+0x44/0x60
-khelper       S 00000000     0     4      3             5       (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c0023a40] worker_thread+0x1fc/0x220
- [c00281e8] kthread+0xb8/0xc0
- [c000594c] kernel_thread+0x44/0x60
-kblockd/0     S 00000000     0     5      3             6     4 (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c0023a40] worker_thread+0x1fc/0x220
- [c00281e8] kthread+0xb8/0xc0
- [c000594c] kernel_thread+0x44/0x60
-pdflush       S 00000000     0     6      3             7     5 (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c0030f44] __pdflush+0xb0/0x1e4
- [c0031098] pdflush+0x20/0x30
- [c00281e8] kthread+0xb8/0xc0
- [c000594c] kernel_thread+0x44/0x60
-pdflush       S 00000000     0     7      3             9     6 (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c0030f44] __pdflush+0xb0/0x1e4
- [c0031098] pdflush+0x20/0x30
- [c00281e8] kthread+0xb8/0xc0
- [c000594c] kernel_thread+0x44/0x60
-aio/0         S 00000000     0     9      3                   7 (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c0023a40] worker_thread+0x1fc/0x220
- [c00281e8] kthread+0xb8/0xc0
- [c000594c] kernel_thread+0x44/0x60
-kswapd0       S 00000000     0     8      1            10     3 (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c00375cc] kswapd+0x84/0xa0
- [c000594c] kernel_thread+0x44/0x60
-mtdblockd     S 00000000     0    10      1                   8 (L-TLB)
-Call trace:
- [c0005a70] __switch_to+0x48/0x70
- [c00a4928] schedule+0x2e8/0x684
- [c009885c] mtd_blktrans_thread+0x18c/0x1c4
- [c000594c] kernel_thread+0x44/0x60
-SysRq : Show Memory
-Mem-info:
-DMA per-cpu:
-cpu 0 hot: low 2, high 6, batch 1
-cpu 0 cold: low 0, high 2, batch 1
-Normal per-cpu: empty
-HighMem per-cpu: empty
-
-Free pages:       14240kB (0kB HighMem)
-Active:1 inactive:173 dirty:0 writeback:0 unstable:0 free:3560 slab:57 
-mapped:14 pagetables:2
-DMA free:14240kB min:512kB low:640kB high:768kB active:4kB inactive:692kB 
-present:16384kB pages_scanned:0 all_unreclaimable? no
-protections[]: 0 0 0
-Normal free:0kB min:0kB low:0kB high:0kB active:0kB inactive:0kB present:0kB 
-pages_scanned:0 all_unreclaimable? no
-protections[]: 0 0 0
-HighMem free:0kB min:128kB low:160kB high:192kB active:0kB inactive:0kB 
-present:0kB pages_scanned:0 all_unreclaimable? no
-protections[]: 0 0 0
-DMA: 6*4kB 3*8kB 1*16kB 1*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 
-0*2048kB 3*4096kB = 14240kB
-Normal: empty
-HighMem: empty
-Free swap:            0kB
-4096 pages of RAM
-0 pages of HIGHMEM
-3576 free pages
-265 reserved pages
-14 pages shared
-0 pages swap cached
+TW9yZSBJbmZvOg0KVGhpcyBzZWVtcyB0byBiZSByZWxhdGVkIHRvIGNwbV91YXJ0X3N0b3BfdHgo
+KQ0KVGhlcmUgc2VlbXMgdG8gYmUgYW4gZXhjZXNzaXZlIGFtb3VudCBvZiBzdG9wcyBhbmQgc3Rh
+cnRzIGdvaW5nIG9uDQpJbiB0aGUgZm9sbG93aW5nLCBJIHByaW50IGFuIFwgZm9yIGVhY2ggdGlt
+ZSBzdG9wX3R4IGlzIGNhbGxlZCwgYW5kIGEgLyBmb3Igc3RhcnRfdHgNCg0KLS0tLS0tLS0tDQpF
+WFQzLWZzOiBtb3VudGVkIGZpbGVzeXN0ZW0gd2l0aCBvcmRlcmVkIGRhdGEgbW9kZS4NClZGUzog
+TW91bnRlZCByb290IChleHQzIGZpbGVzeXN0ZW0pLg0KRnJlZWluZyB1bnVzZWQga2VybmVsIG1l
+bW9yeTogMjg4ayBpbml0DQpcL0lcL1RcL8K3XC92ZXJzXC9pXC9vbiAyXC8uXC84NSBiXC9vXC9v
+dGluXC/CoC8NClwvQWN0aVwvdlwvYXRpblwvZ1wvIGFsbFwvIFwvc3dhcFwvIFwvZmlsZVwvc1wv
+L3BhclwvdFwvaXRpb1wvblwvcy4uLlw8Nj5BZGRpbmcgMTAyODE1Mmsgc3dhcCBvbiAvZGV2L2hk
+YTIuICBQcmlvcml0eToxIGV4dGVudHM6MQ0KLyAgICAgICBcL1sgIFwvT0tcLyAgXVwvDQpcL01v
+dW5cL3RcL2luZyBcL3BcL3JvYyBcL2ZcL2lsZSBcL3NcL3lzdGVcL21cLy4uLlwvICAgIFwvWyAg
+XC9PS1wvICBdXC8NClwvTW91blwvdFwvaW5nIFwvclwvb290IFwvZlwvaWxlIFwvc1wveXN0ZVwv
+bVwvIGluIFwvclwvZWFkLVwvb1wvbmx5IFwvbVwvb2RlLlwvLlwvLlwvDQoNCi0tLS0tLS0tLS0N
+CkFuZCBzbyBvbi4NCg0KSWYgSSBwdXQgaW4gYSB1ZGVsYXkoMTAwMDApIGF0IHRoZSBlbmQgb2Yg
+Y3BtX3VhcnRfc3RvcF90eCwgYWxsIG91dHB1dCBwcmludHMgT0ssIGJ1dCBzbG93Lg0KDQoyLjYu
+NyBhbmQgcHJpb3IgZG9lcyBub3QgdXNlIHRoZSBzdG9wIGF0IGFsbCBmb3JtIHdoYXQgSSBjYW4g
+c2VlLg0KIA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJ1bmUgVG9y
+Z2Vyc2VuIA0KPiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSAwMSwgMjAwNSAwODo0Mg0KPiBUbzog
+bGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KPiBTdWJqZWN0OiA4MjY2IFNNQyB1YXJ0IGNv
+cnJ1cHRpb24NCj4gDQo+IEhpDQo+IA0KPiBIYXMgYW55Ym9yZHkgZWxzZSBzZWVuIGNvcnJ1cHRp
+b24gb2YgdGhlIG91dHB1dCBmcm9tIFNNQzEgDQo+IHdoZW4gdXNlZCBhcyBzZXJpYWwgY29uc29s
+ZT8NCj4gVGhpcyBvbmx5IG9jY3VycyBpbiBpbiAyLjYuOCBhbmQgbGF0ZXIgKHdoZW4gdGhlIENQ
+TSBzZXJpYWwgDQo+IGRyaXZlcnMgZ290IG1vdmVkKQ0KPiBBbmQgaXQgb25seSBvY2N1cnMgd2hl
+biBpbml0IGlzIHdyaXRpbmcgdG8gc2NyZWVuLiAyLjYuNyBhbmQgDQo+IGVhcmxpZXIgd29ya3Mg
+cGVyZmVjdGx5Lg0KPiBJdCBoYXBwZW5zIGF0IGFsbCBiYXVkcmF0ZXMgdGVzdGVkICg5NjAwIGFu
+ZCAxMTUyMDApDQo+IA0KPiBBbnlib2R5IHNlZW4gc29tZXRoaW5nIHNpbWlsYXIgYW5kL29yIGhh
+dmUgYSBjbHVlIHdoZXJlIHRvIA0KPiBzdGFydCBsb29raW5nIGZvciB0aGlzPw0KPiBJIGhhdmUg
+bG9va2VkIGF0IHRoZSBzZXJpYWwgZHJpdmVycywgYW5kIGNhbm5vdCBmaW5kIGFueSANCj4gZGlm
+ZmVyZW5jZXMgbGFyZ2UgZGlmZmVyZW5jZXMgZnJvbSB3aGVudGhleSBzdGlsbCB3ZXJlIGluIA0K
+PiBhcmNoL3BwYy84MjYwX2lvIHRvIHRoZSBvbmVzIGluIGRyaXZlcnMvc2VyaWFsL2NwbV91YXJ0
+DQo+IA0KPiBDYXB0dXJlOg0KPiANCj4gRnJlZWluZyB1bnVzZWQga2VybmVsIG1lbW9yeTogMjg4
+ayBpzrV0DQo+IEnilqBUOiB2ZXJzaW9uIDIuODUgYm9vdOKImWcNCj4gLi4uDQo+IEnilqBUwqBF
+bnRlcmluZyBydW5sZXZlbDogMw0KPiANCj4gDQo+IFRoZXNlIGxpbmVzIGFyZSB0aGUgb25seSBv
+bmVzIHRoYXQgZ2V0IGNvcnJ1cHRlZC4gQWxsIG90aGVyIA0KPiBvdXRwdXQgKGtlcm5lbCBwcmlu
+dG91dHMsIGNvbnNvbGUgYW5kIHN0YXJ0dXAgc2NyaXB0cykgYXJlIG5vcm1hbC4NCg==
