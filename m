@@ -1,54 +1,45 @@
-Message-ID: <004c01bf642b$a7c8a8a0$0e01a8c0@betamax.azkoul.com>
-From: "Brad Douglas" <brad@neruo.com>
-To: <khendricks@ivey.uwo.ca>, "Benjamin Herrenschmidt" <bh40@calva.net>,
-        "anthony tong" <atong@uiuc.edu>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: [linux-fbdev] Re: Fwd: Re: still no accelerated X ($#!$*)
-Date: Fri, 21 Jan 2000 11:22:00 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <200001211732.MAA24780@mal-ach.watson.ibm.com>
+To: linuxppc-dev@lists.linuxppc.org
+cc: khendricks@ivey.uwo.ca
+Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
+Date: Fri, 21 Jan 2000 12:32:39 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------Original Message-----
-From: Benjamin Herrenschmidt <bh40@calva.net>
+asm volatile ("stwbrx %1,%2,%3; eieio"
+	: "=m" (*(volatile unsigned *)(base_addr+regindex))
+	: "r" (regdata), "b" (regindex), "r" (base_addr));
 
->
->>Okay, I went and looked at the latest aty128fb.c code and it does not use
->>eieio
->>anywhere.  I looked at ealier verions of this file and it at one time had
->>eieio
->>but they have since been removed.
->>
->>I also looked and the endian conversion routines do not use the output
->>contraint approach you took but do include the memory clobber on the
-writes.
->
->I just looked at atyfb.c and aty128fb.c in my source tree (atyfb is
->2.2.14 one and aty128fb is the latest backport done by atong) and neither
->uses eieio nor mb(), wmb(), ...
->
->This looks bogus to me. I've spotted a few cases where those calls should
->be in.
->
->We can either put the eieio back in the access functions (less optimal,
->but we can also fix the constraints to get rid of the memory clobber as
->discussed previously), or we can fill the code with carefuly placed mb()
->and wmb() but this requires more knowledge of the chipset than I actually
->have.
->
->I'll put back eieio() in the access macros for my kernels until a
->definitive answer pops up on this issue.
+asm volatile ("lwbrx %0,%1,%2; eieio"
+	: "=r"(val)
+	: "b"(regindex), "r"(base_addr),
+	  "m" (*(volatile unsigned *)(base_addr+regindex)));
 
+BTW, one of the main stylistic points which confused me yesterday is that
+the inlined assembly statement associates variable "regindex" with the
+second parameter of the instruction and varable "base_addr" with the third
+parameter of the instruction.  As long as the second parameter is not
+assigned to register r0, the two are commucative in their function, so
+this is not an error.
 
-I'm forwarding this to Anthony...
+	In the instruction architecture, the second parameter is intended
+to be the base and the third as the index, so it is confusing for someone
+familiar with the POWER and PowerPC instruction set to read the order in
+which the parameters are assigned.  Instructions loading from addresses
+with displacements, e.g.,
 
-Thanks,
+	lwz %0,%1(%2)
 
-Brad Douglas
-brad@neruo.com
+specify the displacement second and the base register last, so the
+ordering can get confused.  That was what threw me off yesterday in my
+haste.
 
+David
+===============================================================================
+David Edelsohn                                      T.J. Watson Research Center
+dje@watson.ibm.com                                  P.O. Box 218
++1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
