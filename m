@@ -1,46 +1,33 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A42889041D6CE0@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "'Frank Przybylski '" <fp@vas-gmbh.de>,
-	Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>,
-	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: insmod / add-symbol-file
-Date: Fri, 7 Dec 2001 13:05:54 +0100 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 7 Dec 2001 08:09:23 -0700
+From: Matt Porter <mporter@mvista.com>
+To: lishaohu <tk20@taikebj.com.cn>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Wind River's PPMC755 board
+Message-ID: <20011207080923.A25485@beef.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BF4A430.51201C5B@taikebj.com.cn>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-When I use -O, I still have the same problems.
+On Fri, Nov 16, 2001 at 01:29:20PM +0800, lishaohu wrote:
+> My name is Shaohu li
+>
+> I am thinking to port linux upon Wind River's PPMC755 board. Where
+> can I get the source codes which can be easily ported toWind River's
+> PPMC755 board? I am looking for help.
 
-Without optimization, insmod complains that in_8 and out_8 are unresolved. I
-removed the code that needs this, so that it could load. But unfortunately,
-the same problem. :-<<
+Details on retrieving the linuxppc_2_4_devel tree can be found at
+http://penguinppc.org/dev/kernel.shtml
 
-Thanks,
-Fred
+See the many examples of similar ports within.  The WRS PPMC755
+would be a minimal effort...nothing new there.  There's really
+nothing astonishingly new in any 7xx/74xx embedded designs today.
 
------Original Message-----
-From: Frank Przybylski
-To: Goddeeris Frederic; linuxppc-embedded@lists.linuxppc.org
-Sent: 12/7/01 12:24 PM
-Subject: Re: insmod / add-symbol-file
-
-Hi Goddeeris,
-
-> I use the gcc and gdb from the MontaVista CDK 2.0 for
-> PPC_8xx. I compiled
-> the module with "-O2 -g" options.
-
-Have you tried to compile with "-O -g" options instead of "-O2 -g"?
-I'd guess optimization 'confuses' gdb symbols. Maybe have a try even
-without -O,
- as I only know for sure that the kernel needs an optimization step to
-get some things
-properly setup.
-
-hth
- Frank
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
