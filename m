@@ -1,18 +1,21 @@
 Return-Path: <kumar.gala@freescale.com>
-Received: from motgate4.mot.com (motgate4.mot.com [144.189.100.102])
-	by ozlabs.org (Postfix) with ESMTP id 8146E2BDA0
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id A22802BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Oct 2004 07:05:33 +1000 (EST)
-In-Reply-To: <20041015205903.1653.qmail@web53804.mail.yahoo.com>
-References: <20041015205903.1653.qmail@web53804.mail.yahoo.com>
+	Sat, 16 Oct 2004 07:13:13 +1000 (EST)
+In-Reply-To: <20041015165538.GB4131@logos.cnet>
+References: <20041015165538.GB4131@logos.cnet>
 Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <F1131EDD-1EED-11D9-BAB6-000393DBC2E8@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <04442B50-1EEF-11D9-BAB6-000393DBC2E8@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 15 Oct 2004 16:05:28 -0500
-To: "annamaya" <annamaya@yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Floating point error on a MPC8280 based board
+Date: Fri, 15 Oct 2004 16:13:10 -0500
+To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
+Cc: "Nei A. Chiaradia" <nei.chiaradia@cyclades.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Wanda Rosalino <wanda.rosalino@cyclades.com>,
+	Regina Kodato <regina.kodato@cyclades.com>
+Subject: Re: [PATCH] PRxK sub-architecture
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,31 +26,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-One guess with be some possible memory corruption.
+(realized after the fact that this belonged on linuxppc-embedded)
+
+A few comments:
+
+1. Any reason for the duplicated header between include/asm-ppc/prxk.h 
+& arch/ppc/platforms/prxk.h?
+2. Does flash.h really belong in include/asm-ppc?
 
 - kumar
 
-On Oct 15, 2004, at 3:59 PM, annamaya wrote:
-
->
->
-> When I try to reboot my system on a MPC8280 eval
-> board, I see the floating point error. Does anyone
->  know why is this happening?
->
-> bash-2.05b# reboot -f
->  Restarting system
->  floating point used in kernel (task=3Dcf458000,
-> pc=3Dff000104)
->
-> Thank you.
->  -Navin.
->
-> __________________________________________________
-> Do You Yahoo!?
->  Tired of spam?=A0 Yahoo! Mail has the best spam protection around
-> http://mail.yahoo.com
-> _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+[snip]
