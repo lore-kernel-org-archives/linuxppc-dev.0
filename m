@@ -1,31 +1,38 @@
-Message-Id: <5.1.0.14.0.20010817172909.00ab9c90@spudcentral.com>
-Date: Fri, 17 Aug 2001 17:29:39 -0600
-To: Mark Hatle <fray@mvista.com>
-From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
-Subject: Re: init fails w/ new build of gcc & glibc
-Cc: Mark Pilon <mark.pilon@minolta-qms.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3B7DA593.E10E4E71@mvista.com>
-References: <3B7D82D5.DD98A109@minolta-qms.com>
- <5.1.0.14.0.20010817160848.00abfec0@spudcentral.com>
- <5.1.0.14.0.20010817164756.00ab8b40@spudcentral.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Jim Thompson <jim@SmallWorks.COM>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15229.53478.867522.930647@zaphod.smallworks.com>
+Date: Fri, 17 Aug 2001 21:20:22 -0500
+To: pdecker@wavewireless.com
+Cc: linuxppc-embedded@lists.linuxppc.org, a16975@motorola.com,
+	mlocke@mvista.com, trini@kernel.crashing.org
+Subject: RE: Is there a PCI based 802.11b device driver for ppc linux?
+In-Reply-To: <0E97488D670BD411B8BD00C0F03BDF64AD6593@SPEEDCOM3>
+References: <0E97488D670BD411B8BD00C0F03BDF64AD6593@SPEEDCOM3>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 06:15 PM 8/17/2001 -0500, Mark Hatle wrote:
->> To summarize for me (and others), "leave kernel parameters as they stand" means
->>
->> CONFIG_MATH_EMULATION=y and compile with -msoft-float
->
->If the kernel source uses -msoft-float leave it, if it does not leave
->it.. ;)  Don't fool with kernel CFLAGS unless you _REALLY_ know what you
->are doing.
+Philip Decker writes:
+ >
+ > If Liu plans to use a mini-PCI 802.11b radio, and that radio is based on
+ > Prism 2.5, and it uses the ISL3874 MAC/BBP (which interfaces directly to the
+ > PCI Bus), then there is no Linux driver yet (that I'm aware of).
 
+Working on it.  (Yes, on PowerPC.)
 
-OK, you got it.  Thanks for the help, have a great weekend!
+ > On the other hand, if his mini PCI radio is Prism II, or Prism 2.5 but using
+ > the ISL3873 MAC/BBP, then that radio contains a PCI to PCMCIA bridge and the
+ > existing Linux drivers will work.
+ >
+ > I don't know about Linux drivers for Agere/Lucent Orinoco/WaveLAN mini-PCI
+ > radio.
+ >
+ > If Liu's question had nothing to do with mini-PCI radios then, in the
+ > immortal words of E. Litella, "Never mind".
 
+(non-mini) PCI Prism 2.5 cards exist too.  :-)
+
+Jim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
