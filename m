@@ -1,44 +1,26 @@
-Message-Id: <199905061917.MAA10016@soda.CSUA.Berkeley.EDU>
+Message-Id: <199905070519.BAA01244@borg.mit.edu>
 To: Brad Boyer <flar@cegt201.bradley.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB under LinuxPPC 
-In-Reply-To: Your message of "Wed, 05 May 1999 22:29:23 CDT."
-             <199905060329.WAA28970@cegt201.bradley.edu>
-Date: Thu, 06 May 1999 12:17:39 -0700
-From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Question about SMP 
+Reply-To: locutus@MIT.EDU
+In-Reply-To: Your message of "Thu, 06 May 1999 23:42:45 CDT."
+             <199905070442.XAA11076@cegt201.bradley.edu>
+Date: Fri, 07 May 1999 01:19:47 -0300
+From: "Charles E. Leiserson, Jr." <locutus@MIT.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+What model PowerMac do you have?
 
- 
-> Do you always use BootX?  I've never even tried it...
+I have a 2.2.7 kernel that runs very nicely on a PowerMac 7300/400MP.  It's been tried by several others on different machines, and it has worked.
 
-I normally start Linux using BootX from within MacOS. For some reason
-this seems to work better than using OF to boot. My guess is that the
-nPower init or the MacOS init sets up the SMP card correctly.
+You can find it at ftp://borg.mit.edu/pub/linux/ppc/kernels/multiprocessor/ along with its various support files (ie. System.map, modules, .config, etc.).  They're all gzipped and ready to use.  Don't forget to untar modules.tar.gz from / :)
 
-The downside to this is that you need a MacOS partition. The upside
-for me is that I finally found something to do with my old 250 MB hard
-drive.
- 
-> Thanks.  If you have any modules, could you include them too?  I'd
-> appreciate it.
+If it works, you can compile your own from the .config file provided.  Good luck!
 
-Try to download on of the images from the URL:
 
-http://www.CSUA.Berkeley.EDU/~ranga/downloads/linuxPPC/kernels/
-
-All of the images are the same. You should plain vmlinux, a gzip'ed
-version and a sit.hqx version. As a warning, I will probably get rid
-of the vmlinux image sometime next week since it is so large.
-
-I don't have any modules, *almost* everything is compiled into the
-kernel.
-
-HTH,
-
-----ranga <ranga@soda.berkeley.edu>
+					- Ricky
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
