@@ -1,24 +1,35 @@
-Date: Wed, 3 Sep 2003 14:39:38 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <3F5739D2.7080203@gdatech.co.in>
+Date: Thu, 04 Sep 2003 18:40:42 +0530
+From: "s.lavanya" <s.lavanya@gdatech.co.in>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: KGDB behavior in 2.4.23-pre2 / 2.6.0-test4+
-Message-ID: <20030903213938.GA19846@ip68-0-152-218.tc.ph.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: MPC 8245 JTAG related problems
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all.  In 2.4.23-pre2 and 2.6.0-test4 the default behavior of KGDB
-in the PPC kernel changed.  Previously, if KGDB was selected, it would
-default to a breakpoint early on, and passing 'nokgdb' would stop it.
-It has been changed to match what the docs on
-http://kgdb.sourceforge.net/ say (as well as a few other arches), and
-KGDB will only have a default breakpoint if 'gdb' is passed on as a
-parameter.
+With reference to the BSDL file MPC8345BSDL2.txt there are some
+clerifications
+needed.
+(i) In the BSDL file the boundary length specified is BOUNDARY_LENGTH
+of MPC8245: entity is 507 but while testing, it seems to be there are only
+506 cells in the JTAG chain between the TDI and TDO lines.
+(ii) In the BSDL file(Page 12) there is a function control = control cell
+with resetb reset to "input". Kindly give the explaination.
+(iii) Similary in the same page it is writen safe = value in control cell to
+make input normally = 0 for bidir and control. Kindly give the explaination
+(iv) dsval = diabling(input) value what do you mean by this?
+Kindly send me mail as soon as possible to s.lavanya@gdatech.co.in
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+We want to program the flash memory through the 8 bit JTAG interface.
+Update DR does not affect the expected pins. For example WE_L pin, I am
+setting as 0. But it remains in 1. Always WE_L remains in high. Similar is
+the case with the datapins. (We use MDH0 to MDH7) as our
+SDRAM data lines. (I have doubts in the number shifts whether it is 506 or
+507 including the exit DR shift) Will you please help me out by giving the
+sample JTAG code which we can modify and use. Please give the details about
+the direction control of bidir signals and resetb.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
