@@ -1,47 +1,33 @@
-Message-ID: <39357BC5.A0B3E713@ccrl.mot.com>
-Date: Wed, 31 May 2000 15:53:25 -0500
-From: Steve Rossi <srossi@ccrl.mot.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Michel Dänzer <daenzerm@student.ethz.ch>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 3D accel on PPC
+Date: Fri, 1 Jan 1904 10:12:31 +0100
+Message-Id: <19040101091231.12085@mailhost.mipsys.com>
+In-Reply-To: <394DD484.6036B7DA@student.ethz.ch>
+References: <394DD484.6036B7DA@student.ethz.ch>
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: allocating non-cacheable regions
-References: <39104A07.D997B6C5@ccrl.mot.com> <3910838C.986942D6@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm back on this ... with another question. Following the examples in
-commproc.c and enet.c - does setting the _PAGE_NO_CACHE flag
-for a page table entry also invalidate any cached data for that page?
-I am observing a write-though behavior when I write to addresses in
-the _PAGE_NO_CACHE page but when I read from addresses marked
-as _PAGE_NO_CACHE it appears to be retrieving data from the cache
-not from memory. Is this expected behavior? How can I make it so that
-reads as well as writes to a particular page bypass the cache?
+On Mon, Jun 19, 2000, Michel Dänzer <daenzerm@student.ethz.ch> wrote:
 
-Thanks,
-Steve
-
-Dan Malek wrote:
-
-> Steve Rossi wrote:
-> >
-> > How do I allocate a region of memory that is flagged as being
-> > non-cacheable?
 >
-> For an example, look at the commproc.c or enet.c driver in the
-> arch/ppc/8xx_io directory.  When pages are allocated, the PTEs are
-> tracked down and marked non-cache.
->
+>XF 4.0.1 will include DRI support for Rage128. However, it needs agpgart to
+>work, so no luck on PPC yet :(
 
---
--------------------------------------------------------
-Steven K. Rossi                     srossi@ccrl.mot.com
-Staff Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
+Their implementation is not able to work at all without an AGP GART ?
+That's brain-dead ! what about all the 3D PCI cards out there ? And all
+the machines that simply don't have a working AGP ? AGP should be an
+optimisation, not a requirement !
+
+I have all the details (I think) to implement support for the Uni-N GART
+in the new Core99 macs, I'll give this a try one of these days. But that
+would be plain stupid not to support "classical" operations via PCI.
+
+Ben.
 
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
