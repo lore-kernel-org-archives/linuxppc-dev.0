@@ -1,49 +1,77 @@
-Date: Sat, 17 Jun 2000 10:55:56 -0700
-From: Daniel Jacobowitz <drow@false.org>
+Date: Sun, 18 Jun 2000 09:11:59 -0400 (EDT)
+From: "Peter R. Wood" <pwood@gordon.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: quik-1.3.1and 2.2.16_pmac-stable ?
-Message-ID: <20000617105556.A20227@drow.them.org>
-References: <20000617010541.B508@olis.north.de> <20000616233416.1720@mailhost.mipsys.com> <20000617022046.C508@olis.north.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20000617022046.C508@olis.north.de>; from cl.en@gmx.net on Sat, Jun 17, 2000 at 02:20:46AM +0200
+Subject: Broken CDROM in 2.4.0-test1
+In-Reply-To: <200006180500.AAA06295@lists.linuxppc.org>
+Message-ID: <Pine.LNX.4.21.0006180859410.707-100000@dyn-133-196.gordon.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jun 17, 2000 at 02:20:46AM +0200, Claus Enneper wrote:
->
->  >:
->  >: Ah, yes, it's a different issue. You should probably use a more recent
->  >: quik (2.0+) to work with recent kernels. Old quik doesn't like the new
->  >: kernel entry point (without the pseudo-xcoff hack).
->
-> is there any binary available?
-> quik-2.0-0d.src.rpm from Yellow Dog Linux <bugs@terraplex.com> complains:
->
-> make[1]: Entering directory `/usr/src/redhat/BUILD/quik-2.0/util'
-> gcc -O2 -o elfextract elfextract.c
-> In file included from /usr/include/linux/elf.h:5,
->                  from elfextract.c:7:
-> /usr/include/asm/elf.h:43: parse error before `elf_vrreg_t'
-> /usr/include/asm/elf.h:43: warning: data definition has no type or storage class/usr/include/asm/elf.h:44: parse error before `elf_vrregset_t'
-> /usr/include/asm/elf.h:44: warning: data definition has no type or storage classmake[1]: *** [elfextract] Error 1
-> make[1]: Leaving directory `/usr/src/redhat/BUILD/quik-2.0/util'
-> make: *** [all] Error 1
-> Bad exit status from /var/tmp/rpm-tmp.35142 (%build)
+Hi all,
 
-Grab the .orig.tar.gz and .diff.gz from a Debian mirror (under
-dists/potato/main/source/base/*).
+I've been testing out kernel 2.4.0-test1-ac18 on my LinuxPPC
+system.  Specifically I have a SuperMac J700/180, with the stock 604e
+processor, 80 megs ram, and a Belkin USB card.  Everything is actually
+working quite well, except it seems that support for my CDROM drive is
+broken. This has happened with some earlier kernels. For example,
+somewhere back in 2.2, it worked fine, then a few revisions later, it was
+broken, and then it was fixed again.  My current 2.2 kernel is 2.2.16, and
+my SCSI CDROM works fine in there.  However in 2.4.0-test1-ac18, when I
+try to mount any CDROM (hfs, iso9660, etc), I get this error:
 
-And can someone please fix that vrreg_t bug?  Vector128 is only defined
-if __KERNEL__, so elf_vrreg_t should only be defined if __KERNEL__.
+/dev/cdrom: Input/output error
+mount: I could not determine the filesystem type, and none was specified
 
-Dan
+I have tested the same CD's under the 2.2.16 kernel, and in MacOS, and
+have no problems there. It only seems to be in 2.4.0-test1... it also
+happened before I put the ac18 patch on.
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+I get kernel messages such as these when I try to mount CDROM's:
+
+Jun 18 08:58:20 *** kernel: MSDOS: Hardware sector size is 2048
+Jun 18 08:58:20 *** kernel: fatfs: bogus cluster size
+Jun 18 08:58:20 *** kernel: VFS: Can't find a valid MSDOS
+filesystem on dev 0b:00.
+Jun 18 08:58:20 *** kernel: MSDOS: Hardware sector size is 2048
+Jun 18 08:58:20 *** kernel: fatfs: bogus cluster size
+Jun 18 08:58:20 *** kernel: VFS: Can't find a valid MSDOS
+filesystem on dev 0b:00.
+Jun 18 08:58:20 *** kernel: sr.c:Bad 2K block number requested (2
+1) I/O error: dev 0b:00, sector 2
+Jun 18 08:58:20 *** kernel: hfs_fs: unable to read block
+0x00000002 from dev 0b:00
+Jun 18 08:58:20 *** kernel: hfs_fs: Unable to read superblock
+Jun 18 08:58:20 *** kernel: sr.c:Bad 2K block number requested (0
+1) I/O error: dev 0b:00, sector 0
+Jun 18 08:58:20 *** kernel: hfs_fs: unable to read block
+0x00000000 from dev 0b:00
+Jun 18 08:58:20 *** kernel: hfs_fs: Unable to read block 0.
+
+The Kernel detects this data about my drive at startup:
+
+mesh: target 3 synchronous at 5.0 MB/s
+  Vendor: MATSHITA  Model: CD-ROM CR-506     Rev: 8S05
+  Type:   CD-ROM                             ANSI SCSI revision: 02
+Detected scsi CD-ROM sr0 at scsi0, channel 0, id 3, lun 0
+
+And reports loading the Uniform CD-ROM driver Revision: 3.11
+
+I did compile all the necessary SCSI support into the kernel, including
+SCSI CDROM with vendor-specific extensions, as well as all the possible
+filesystems that I typically use.
+
+Any ideas?
+
+Peter
+
+p.s. Please cc: any replies to me as I receive the list in digest mode.
+
+--
+Peter R. Wood				pwood@gordon.edu
+Gordon College				http://www.cs.gordon.edu/~pwood/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
