@@ -1,34 +1,110 @@
-Date: Wed, 11 Jul 2001 08:58:35 -0400 (EDT)
-From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20010711134520.31259.qmail@web14202.mail.yahoo.com>
+Date: Wed, 11 Jul 2001 06:45:20 -0700 (PDT)
+From: Brian Boerner <bboerner@yahoo.com>
+Subject: libc.so.6: cannot open shared object file: No such file or directory
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: How fast should a bogomip be
-Message-ID: <Pine.LNX.3.95.1010711084748.21073D-100000@november.bhjjh.erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-First off- let me run for cover while saying that I know bogomips are
-relatively arbitrary numbers.
+IBM Walnut 405GP. Linux is MontaVista
+linuxppc-2.5.405, which looks like a 2.4.2 kernel.
 
-I've seen numbers that indicate on 6xx series processors bogomips is
-usually about 2/3 the processor speed- so about 66.6 for a 100Mhz
-processor. I hope this is accurate, because that's what I'm getting.
+I've searched the archives and either I'm not very
+efficient at navigating them, or I couldn't find
+anything that helped out.
 
-But, about what should I expect for a 6xx (603e) 100Mhz processor running
-without cache? I've been trying to disable cache so I can continue
-development until the kernel supports propper allocation of non-cacheable
-memory (on a 603e with broken memory controller). When I run the kernel
-with code changes that *should* disable the cache the bootup process does
-feel marginally slower, and bogomips goes down a whopping .64 (from 66.56
-to 65.92). It then crashes with a segfault in kupdated (when in _wake_up).
-And I've been scratching my head trying to figure out a) whether the
-caches are actually disabled b) what causes that segfault, and c) how the
-two are related.
+I did see one post mentioning that you needed a
+symbolic link from the hardhat devkit to /. I was a
+bit unclear on this and didn't see anything about this
+in the mvista cdk documentation. I may have missed it,
+anything is possible at this point.
 
-Any feedback it appreciated,
---Gus
+Does anyone have any idea why init is being killed
+off? It complains libc.so.6 isn't being found? It's
+certainly in the ramdisk. I'm sure folks have run into
+this before.
+
+Checking memory address: 02000000
+  System RAM check complete
+
+EMAC0 Ethernet Test OK.
+Serial Port 2 [S2] test complete - TEST PASSED
+ENET Speed is 100 Mbs...
+HALF duplex connection
+Booting from [ENET] Ethernet     ...
+Sending bootp request ...
+
+
+Loading file "vmlinux.img" ...
+Sending tftp boot request ...
+Transfer Complete ...
+Loaded successfully ...
+Entry point at 0x200000 ...
+Initial RAM disk at 0x01db0000 (?  bytes)
+Linux version 2.4.2 (bmb@linuxdev) (gcc version 2.95.2
+19991030 (2.95.3 prerelease/franzo)) #17 Wed Jul 11
+09:37:21 EDT 2001
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/ram
+time_init: decrementer frequency = 499999980/60
+Warning: real time clock seems stuck!
+Calibrating delay loop... 199.47 BogoMIPS
+Memory: 28212k available (1052k kernel code, 472k
+data, 56k init, 0k highmem)
+Dentry-cache hash table entries: 4096 (order: 3, 32768
+bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096
+bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768
+bytes)
+Inode-cache hash table entries: 2048 (order: 2, 16384
+bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society
+NET3.039
+Starting kswapd v1.8
+pty: 256 Unix98 ptys configured
+block: queued sectors max/low 18669kB/6223kB, 64 slots
+per queue
+RAMDISK driver initialized: 16 RAM disks of 12288K
+size 1024 blocksize
+loop: enabling 8 loop devices
+eth0: PPC405 EMAC 100 Mbs Half duplex MAC
+00:04:ac:e3:12:38
+RAMDISK: Compressed image found at block 0
+Serial driver version 5.02 (2000-08-09) with
+MANY_PORTS SHARE_IRQ SERIAL_PCI enabled
+ttyS00 at 0x0000 (irq = 0) is a 16550A
+ttyS01 at 0x0000 (irq = 1) is a 16550A
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 2048 bind
+2048)
+Reset ethernet interfaces
+eth0: PPC405 Enet open completed
+IP-Config: Incomplete network configuration
+information.
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+BMB: handle is null
+EXT2-fs warning: checktime reached, running e2fsck is
+recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 56k init 4k openfirmware
+Kernel panic: Attempted to kill init!
+init: error in loading shared libraries: libc.so.6:
+cannot open shared object file: No such file or
+directory
+Rebooting in 180 seconds..
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
