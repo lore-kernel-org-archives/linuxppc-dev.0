@@ -1,30 +1,40 @@
-Subject: Re: fail to disable MMU on ppc 8241
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: llee <llee@huawei.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <40834DC0.2030408@huawei.com>
-References: <40834DC0.2030408@huawei.com>
-Content-Type: text/plain
-Message-Id: <1082352050.1689.9.camel@gaston>
-Mime-Version: 1.0
-Date: Mon, 19 Apr 2004 15:20:51 +1000
+Message-ID: <4083E17A.7030501@lucent.com>
+Date: Mon, 19 Apr 2004 08:26:02 -0600
+From: Mike Wellington <wellington@lucent.com>
+MIME-Version: 1.0
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: ppc4xx_find_bridges( ) hangs kernel on Xilinx ML300  (PCI)
+References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+In-Reply-To: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-04-19 at 13:55, llee wrote:
-> Hi, there,
-> I boot linux (2.6.3) on my ppc 8241 through vxworks bootloader. I'd got
-> a port (on address 0x70020006) to constrol three LEDs, so I could know
-> where the kernel going. But after the disable_mmu is called, I lost
-> control to the LEDs, Any suggestion on this? As I know, vxworks use a
-> one-to-one mapping MMU setup, I should must constrol the LEDs through
-> the same address.
+Hi-
+   I am trying to port the Xilinx PCI code to
+an embedded linux kernel.  The code calls
+ppc4xx_find_bridges( ) during the kernel initialization
+and hangs the kernel.
 
-With mmu off, I suspect the 8241 acts as if the entire address space
-was cacheable, which is a BAD THING for IOs typically.
+   I built the GPL 2.4 kernel from the Open Source
+archives and it hangs also.
 
-Ben.
+   Then I copied ppc405_pci.c from the GPL source
+to my kernel tree and copied  head_4xx.S from the
+GPL source to my kernel tree and it still
+hangs.
 
+   I'm starting to wonder if there is something
+wrong with the PCI support for the Xilinx OCP PCI
+core.
+
+   Does anybody have a working PCI device on a
+Xilinx Virtex-II Pro using the Xilinx-supplied
+PCI core?
+
+-mike wellington
+  wellington@lucent.com
+  anyplatform@bithead.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
