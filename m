@@ -1,51 +1,64 @@
-Message-ID: <B162270C965FD511AB9600B0D0B0AB4206461D@NAPA>
-From: Hua Ji <hji@netscreen.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: About tlbia MACRO,
-Date: Fri, 20 Jul 2001 12:13:32 -0700
+Message-ID: <3B592E7F.17F170F8@genetel.co.kr>
+Date: Sat, 21 Jul 2001 16:25:56 +0900
+From: hychon <hychon@genetel.co.kr>
+Reply-To: hychon@genetel.co.kr
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: how to get a physical address from  the mmaped address area?
+Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-when reading source codes, got a question. Wish get some help. Thanks in
-advance.
+I want to "how to get a physical address from  the mmaped address area !
+"
 
-File: ./arch/ppc/kernel/ppc_asm.h
---------------------------------------------------------
-#if !defined(CONFIG_4xx) && !defined(CONFIG_8xx)
-#define tlbia					\
-	li	r4,1024;			\
-	mtctr	r4;				\
-	lis	r4,KERNELBASE@h;		\
-0:	tlbie	r4;				\
-	addi	r4,r4,0x1000;			\
-	bdnz	0b
-#endif
---------------------------------------------------------
+Hi !!
 
-As we know, if with 4xx CPU, tlbia instruction is **implemented and is used
-to invalidate ALL tlb entries.
-For 6xx CPUs, we will use the above defined macro to use tlbie to one by one
-invalidate tlb entries.
+I am working a HDLC program (not device driver) as Embedded Linux
+system  , that  used  SCC2 on the MPC860T target board .
 
-My question is:
+I worked initialzed  SCC2 and allocat memory buffer  with the
+kernel-2.2.13 based on PowerPC arch .
 
->From the above codes, I can only see that ONLY 4M virtual memories starting
-from 0xC0000000 to 0xC0400000 got invalidated. (1024*4k). Thus, I am
-confusing: How can we say this above macro will invalidate ALL tlb
-entries???
+In my program,  I allocated  the BD (Buffer Descriptor)  in  a temporary
 
-With the above macro, we only promise: If and ONLY if any entry containing
-the kernel image addresses from 0xC0000000 to 0xC0400000, it will be
-invalidated. For the rest, it won't and still stay in TLB buffer. For
-example, if there **happen** to have an TLB entry containing virtual address
-0x00001000. This will not be able to get invalidated.
+place of DPMEM.
 
-Am I right? Thanks,
+ RxTxBD = (BDRINGS *)(&IMMR->udata_bd[0x600]);
+      IMMR->PRAM[PAGE2].pg.scc.h.rbase = (UHWORD)&RxTxBD->RxBD[0];   /*
+1 */
+      IMMR->PRAM[PAGE2].pg.scc.h.rbase =
+(UHWORD)0x2E00;                                /* 2 */
 
-Mike
+ case 1 :  BD state not change and down .the system
+ case 2 :  BD state are change
+
+I think that  the RBASE and TBASE in SCC PARAM is a physical address of
+Buffer Descriptor
+
+I want to get a place of BD  in  DPMEM itself  and  retun  as  physical
+address. (as if ,  CPM  get a BD pointer  in commproc.c file )
+
+Question1) How to get  a place(pointer) of BD  in DPMEM  and give RBASE
+(TBASE)  the physical address ?
+
+ And Buffer are allocated  in a virtual area , by following
+    mem_addr_buf1 = mmap(0,1024,(PROT_READ|PROT_WRITE),MAP_SHARED,
+mem_buf1,0x100000);
+    buf = (unsigned char *)mem_addr_buf1;
+
+ when  I write  buf  as  Buffer addr of BD,  that do not change  Buffer
+(BD) state
+
+I think that  don't find the buffer address
+and the Buffer pointer of BD structure was recognized as physical
+address of  the Buffer (buf) .
+
+Question2) How to get a buffer address pointer of BD struct (a place of
+Buffer) from kernel (virtual address) as physical address?
+
+Help me !
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
