@@ -1,39 +1,45 @@
-Date: Mon, 27 Mar 2000 10:05:58 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Some issues to resolve with XFree 4.0 yet
-In-Reply-To: <20000328024133B.roikawa@rr.iij4u.or.jp>
-Message-ID: <Pine.LNX.4.10.10003270958530.10064-100000@shell.unixbox.com>
+Message-Id: <200003271858.UAA01181@piglet.grunz.lu>
+Date: Mon, 27 Mar 2000 20:58:25 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: LongTrail PCI resource assignment
+To: schmitz@opal.biophys.uni-duesseldorf.de
+cc: geert@linux-m68k.org, paubert@iram.es, bh40@calva.net,
+        linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.10003271850230.1727-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 28 Mar 2000, Ryuichi Oikawa wrote:
+On  27 Mar, this message from Michael Schmitz echoed through cyberspace:
+> Anyway,
+> this is what I found in arch/ppc/kernel/pci.c:
+>
+> int pci_assign_resource(struct pci_dev *dev, int i)
+> {
+[snip]
+> 	}
+>
+> pci_assign_resource() is duplicated (sort of) in drivers/pci/setup-res.c
+> where the correct PCIBIOS_MIN_* limits are applied. That function calls
+> pcibios_update_resource() to do the actual bit twiddling. Is 2.3.48 too
+> dated for your patch to apply?
 
-> BTW, I noticed an interesting x11perf score. x11perf -scroll500 marked ~300/sec
-> for ATI Rage128RE connected to 66MHz bus on B&W G3 rev.1, but ~600/sec for an
-> old Matrox Millennium II to 33MHz bus, measured at 32bpp/24bit depth.
+Yeah; you might consider moving to 2.3.99.... pci_assign_resource() is
+gone from arch/ppc/kernel/pci.c.
 
-are you using the patch I posted last week?  If not, then I suggest you
-do.  I fixed the improper load/stores in r128 and it shows a 200% increase
-in almost all x11perf tests.  example:
+Have fun!
 
-(jack howarth tested these on his g4/450 (rage 128pro?)):
+Michel
 
-before:
-Scroll 500x500 pixels:	583.0/sec
-
-after:
-Scroll 500x500 pixels:	1060.0/sec
-
-
-> Ryuichi Oikawa
-> roikawa@rr.iij4u.or.jp
-
-ani
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
