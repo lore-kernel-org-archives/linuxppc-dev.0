@@ -1,30 +1,20 @@
-Message-Id: <200210031539.KAA38110@popmail.austin.ibm.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Anyone built a PPC cross compiler on debian?
-Date: Thu, 3 Oct 2002 10:42:55 -0500
-References: <20021003035445.GA2987@dd.nec.com.au>
-In-Reply-To: <20021003035445.GA2987@dd.nec.com.au>
-MIME-Version: 1.0
+Date: Thu, 3 Oct 2002 18:19:49 +0200
+Mime-Version: 1.0 (Apple Message framework v482)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: PrPMC800
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <F0A416BC-D6EB-11D6-8F3F-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wednesday 02 October 2002 22:54, Erik Christiansen wrote:
->    Penguinppc.org's "Cross Development mini-howto for PPC Linux" failed
-> to build on my x86 debian woody host, due to an autoconf bug. (Thanks to
-> Hollis Blanchard for identifying this.)
-[snip]
->    While I toss a coin to choose between trying to build binutils in a
-> manual hack, or dealing with RPMs on debian, is there another option
-> that should be considered?
+I recently bought a few Motorola PrPMC800 boards, has anybody succeeded
+with running linux on these beasts?
 
-Don't misunderstand... yes there's a configure.in bug, but it's only
-triggered by you missing something you need (this is frequently i18n stuff).
-So another option for you is to install the missing package.
+Regards
 
--Hollis
+Anders Blomdell
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
