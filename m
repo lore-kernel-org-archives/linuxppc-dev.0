@@ -1,44 +1,50 @@
-To: "Jeremy Rosen" <Rosen.Jeremy@tms-pty.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Memory requirements 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 16 Oct 2001 13:41:17 +1100."
-             <sbcc391b.064@tms-pty.com>
-Date: Tue, 16 Oct 2001 08:52:17 +0200
-Message-Id: <20011016065222.39FEE10889@denx.denx.de>
+Message-ID: <3BCC3EEE.35029A2F@midrivers.com>
+Date: Tue, 16 Oct 2001 08:06:38 -0600
+From: Mark Pilon <mpilon@midrivers.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: libc not finding atexit() w/ -lm
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <sbcc391b.064@tms-pty.com> you wrote:
->
-> Hello everybody, I am trying to put a Linux on a FADS860T board, and I
-> have no idea of the quantity of memory I will need....
+all,
 
-This depends on your application, and which functions you  need  from
-the kernel.
+I'm attempting to link a .o containing the whetstone benchmark
+to a package of stand-alone (runs pre-linux) diags and, depending
+where in LD's args I stick -lm:
 
-> could anyone give me an idea of minimal and reasonable memory
-> requirement for these kind of boards...
+whetstone.o: In function `whetstone_main':
+whetstone.o(.text+0x414): undefined reference to `sin'
+whetstone.o(.text+0x420): undefined reference to `cos'
+whetstone.o(.text+0x434): undefined reference to `cos'
+.
+.
+.
 
-Minimum for a running system with very small application:
-	1MB flash, 4 MB RAM.
-Medium configuration as used in many shipping products like ISDN
-routers, Bluetooth Lan Access Points, etc.:
-	2 MB flash, 8 MB RAM
-Comfortable system for development (sufficient to compile the Linux
-kernel native on the target):
-	4 MB flash, 16 MB RAM
+OR,
 
-Wolfgang Denk
+/home/mpilon/ppc_tools/ppc_home/powerpc-linux/lib/libc.so.6: undefined
+reference to `atexit'
+make[1]: *** [mercury] Error 1
+make[1]: Leaving directory `/home/mpilon/mercury/diagboot'
 
+-- I suspect I'd get the latter error if I fixed the first.
+
+I built my own tools so I suspect a path problem or lack of a patch;
+I searched the linuxppc-embedded list but found nothing for 'atexit'
+
+all help appreciated,
+
+Mark
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Every program has at least one bug and can be shortened by  at  least
-one instruction - from which, by induction, one can deduce that every
-program can be reduced to one instruction which doesn't work.
+Mark Pilon
+
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
+
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
