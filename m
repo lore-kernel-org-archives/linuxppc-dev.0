@@ -1,84 +1,172 @@
-Date: Sat, 10 Jun 2000 18:20:14 -0600
-From: Cort Dougan <cort@fsmlabs.com>
-To: rodgersg@us.ibm.com
-Cc: linuxppc-dev@lists.linuxppc.org, bh40@calva.net, paulus@linuxcare.com,
-        geert@linux-m68k.org, paubert@iram.es, dburcaw@terraplex.com,
-        hollis@linuxppc.com, drdoc@netcene.com, gdt@linuxppc.org,
-        dan_bethe@yahoo.com, khendricks@ivey.uwo.ca, tgall@us.ibm.com,
-        trini@kernel.crashing.org, jcarr@linuxppc.com, jhaas@linuxppc.com,
-        devel@yellowdoglinux.com, tomcook@us.ibm.com
-Subject: Re: PowerPC BOF at Ottawa Linux Symposium July 19
-Message-ID: <20000610182014.H31097@medea.fsmlabs.com>
-References: <OF1ED8D32F.3AA2FD26-ON852568F9.0061D9AD@pok.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF1ED8D32F.3AA2FD26-ON852568F9.0061D9AD@pok.ibm.com>; from rodgersg@us.ibm.com on Fri, Jun 09, 2000 at 03:03:16PM -0400
+Message-ID: <394306A3.3D4DFE85@mandrakesoft.com>
+Date: Sat, 10 Jun 2000 23:25:23 -0400
+From: Jeff Garzik <jgarzik@mandrakesoft.com>
+MIME-Version: 1.0
+To: cort@fsmlabs.com, paulus@linuxcare.com, dan@synergymicro.com
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: PATCH: ncr885e PPC patch look ok to you?
+Content-Type: multipart/mixed;
+ boundary="------------A99C6FEDAB0E26089069FF2F"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I won't be in Ottawa but I have a suggestion for something to talk about
-there if anyone would be interested in it.  Could you have a brainstorming
-session about how to re-structure the chip/architecture portions of
-arch/ppc/?  I know there are several solutions out there for
-arch/ppc/{chrp,prep,embedded,pmac} and arch/ppc/{4xx,6xx,8xx} but would
-like to find a solution that fits everyones needs (or at least satisfies
-several of them.
+This is a multi-part message in MIME format.
+--------------A99C6FEDAB0E26089069FF2F
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I'd like to start the work sometime in 2.5.
+Does this patch, against 2.4.0-test1-ac13, look ok to you guys?
 
-} I introduced the idea of a PowerPC Linux BOF on linuxppc-workstation
-} and someone said I should also post it on linuxppc-dev.
-} The idea is to have a meeting of people interested in PowerPC
-} Linux on the first day (July 19) of the Ottawa Linux Symposium
-} from 5-7PM eastern time.   This doesn't appear to conflict
-} with any other meetings at the Symposium.
-}
-} There are some people who would like to attend a PowerPC
-} Linux BOF, but will not be in Ottawa.   So I decided to get an
-} 800 dial-in conference number for people to call in and talk/listen.
-} I know how hard it is to hear on those things, but it will be helpful
-} if people on the phone can do a 5 minute talk on the work they
-} are doing with respect to PowerPC Linux and to share
-} their concerns with everyone.     So if you are not going to
-} Ottawa and want to join the PowerPC BOF, send me e-mail
-} so I can send you the 800 number.   Also, if there is enough
-} interest, I will get an international number for Europe.   Although
-} it will be pretty late for Europe.   You should also e-mail me
-} if you are going to Ottawa in person so I can buy enough pizza
-} and beverages.
-}
-} I have asked the symposium organizers if a BOF at 5-7pm on the
-} first day (July 19) is OK and I have not heard anything back yet.
-} I will wait for some response and if OK,  I will reserve a room at the
-} Conference Centre with a conference phone.
-}
-} Please send me ideas for what people would like to cover at
-} the meeting.  I was hoping to create a top10 list of tactical and
-} strategic work items for PowerPC Linux.    For example one item
-} might be the port of QuickTime Player to Linux PPC.   If this
-} meeting is successful, we can review these lists every year.
-} I will be glad to serve as secretary and post them on these
-} news groups.
-}
-} You may ask, "who am I to be organizing this?"  This is probably
-} the first time you've seen my name.   I have been quietly listening
-} to linuxppc-dev and linuxppc-workstation for about a year.
-} My interest is running Linux on high-end PowerPC servers.
-} I know we will never get there without all the work that was done
-} for the Mac and other PowerPC platforms.    I am still getting up
-} to speed technically, but I do bring some organizational skills.
-} I recently lead a team of people to port Linux to the POWER4
-} microprocessor.    Paul Mackerras and Tom Gall were on that
-} team.   These names should be more familiar to people on this
-} news group.
-}
-} If anyone else wants to help organize this meeting,
-} please let me know.   The more the better.
-}
-} Have fun!
-}
-} Greg Rodgers (rodgersg@us.ibm.com)
-} 914-892-1319  Tie 532-1319
+It includes the following changes for 2.3/2.4:
+
+* Use init_etherdev's second argument to allocate automatically a
+private structure for each board instance.  This eliminates some code
+during board init
+
+* do not loop on pci_find_device and then break out of the loop, because
+we only support finding and initializing a single board
+
+* use pci_enable_device to wake up device, and turn on PIO and MMIO
+areas as necessary
+
+* do not read base address registers and IRQ line directly from
+hardware.  Read from struct pci_dev instead.  Use pci_resource_xxx where
+appropriate to wrap direct pci-dev struct access.
+
+* use pci_set_master to set busmastering and raise min latency, removing
+code which did it "the manual way"
+
+NOTE:  Maybe a PPC kernel expert can tell me whether pci_enable_device
+on PPC actually enabled PIO/MMIO regions correctly?  If so, this patch
+can, in addition to the change above, also remove the "manual" setting
+of the PIO bit in PCI_COMMAND.
+
+Regards,
+
+	Jeff
+
+
+
+
+
+
+--
+Jeff Garzik              | Liberty is always dangerous, but
+Building 1024            | it is the safest thing we have.
+MandrakeSoft, Inc.       |      -- Harry Emerson Fosdick
+--------------A99C6FEDAB0E26089069FF2F
+Content-Type: text/plain; charset=us-ascii;
+ name="ncr885e.patch"
+Content-Disposition: inline;
+ filename="ncr885e.patch"
+Content-Transfer-Encoding: 7bit
+
+Index: drivers/net/ncr885e.c
+===================================================================
+RCS file: /g/cvslan/linux_2_3/drivers/net/ncr885e.c,v
+retrieving revision 1.1.1.9
+diff -u -r1.1.1.9 ncr885e.c
+--- drivers/net/ncr885e.c	2000/05/21 10:52:34	1.1.1.9
++++ drivers/net/ncr885e.c	2000/06/11 03:19:15
+@@ -1144,18 +1144,11 @@
+ 	unsigned char *p;
+ 	int  i;
+
+-	dev = init_etherdev(NULL, 0 );
+-
+-	/* construct private data for the 885 ethernet */
+-	dev->priv = kmalloc( sizeof( struct ncr885e_private ), GFP_KERNEL );
+-
+-	if ( dev->priv == NULL ) {
+-		release_region( ioaddr, NCR885E_TOTAL_SIZE );
++	dev = init_etherdev( NULL, sizeof( struct ncr885e_private ) );
++	if (!dev)
+ 		return -ENOMEM;
+-	}
+
+-	sp = (struct ncr885e_private *) dev->priv;
+-	memset( sp, 0, sizeof( struct ncr885e_private ));
++	sp = dev->priv;
+
+ 	/* snag the station address and display it */
+ 	for( i = 0; i < 3; i++ ) {
+@@ -1210,7 +1203,8 @@
+ 	unsigned short cmd;
+ 	unsigned char irq, latency;
+
+-	while(( pdev = pci_find_device( PCI_VENDOR_ID_NCR,
++	/* use 'if' not 'while' where because driver only supports one device */
++	if (( pdev = pci_find_device( PCI_VENDOR_ID_NCR,
+ 					PCI_DEVICE_ID_NCR_53C885_ETHERNET,
+ 					pdev )) != NULL ) {
+
+@@ -1219,11 +1213,13 @@
+ 			printk( KERN_INFO "%s", version );
+ 		}
+
++		if (pci_enable_device(pdev))
++			continue;
++
+ 		/* Use I/O space */
+-		pci_read_config_dword( pdev, PCI_BASE_ADDRESS_0, &ioaddr );
+-		pci_read_config_byte( pdev, PCI_INTERRUPT_LINE, &irq );
++		ioaddr = pci_resource_start (pdev, 0);
++		irq = pdev->irq;
+
+-		ioaddr &= ~3;
+ 		/* Adjust around the Grackle... */
+ #ifdef CONFIG_GEMINI
+ 		ioaddr |= 0xfe000000;
+@@ -1237,28 +1233,16 @@
+
+ 			chips++;
+
++			pci_set_master (pdev);
++
+ 			/* Access is via I/O space, bus master enabled... */
+ 			pci_read_config_word( pdev, PCI_COMMAND, &cmd );
+
+-			if ( !(cmd & PCI_COMMAND_MASTER) ) {
+-				printk( KERN_INFO "  PCI master bit not set! Now setting.\n");
+-				cmd |= PCI_COMMAND_MASTER;
+-				pci_write_config_word( pdev, PCI_COMMAND, cmd );
+-			}
+-
+ 			if ( !(cmd & PCI_COMMAND_IO) ) {
+ 				printk( KERN_INFO "  Enabling I/O space.\n" );
+ 				cmd |= PCI_COMMAND_IO;
+ 				pci_write_config_word( pdev, PCI_COMMAND, cmd );
+ 			}
+-
+-			pci_read_config_byte( pdev, PCI_LATENCY_TIMER, &latency );
+-
+-			if ( latency < 10 ) {
+-				printk( KERN_INFO "  PCI latency timer (CFLT) is unreasonably"
+-					" low at %d.  Setting to 255.\n", latency );
+-				pci_write_config_byte( pdev, PCI_LATENCY_TIMER, 255 );
+-			}
+ 		}
+ 	}
+
+@@ -1401,14 +1385,10 @@
+
+ static void __exit cleanup_module(void)
+ {
+-	struct ncr885e_private *np;
+-
+ 	if ( root_dev ) {
+-
+ 		unregister_netdev( root_dev );
+-		np = (struct ncr885e_private *) root_dev->priv;
+ 		release_region( root_dev->base_addr, NCR885E_TOTAL_SIZE );
+-		kfree( root_dev->priv );
++		kfree( root_dev );
+ 		root_dev = NULL;
+ 	}
+ }
+
+--------------A99C6FEDAB0E26089069FF2F--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
