@@ -1,43 +1,51 @@
-Date: Wed, 3 Oct 2001 11:32:45 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kent Borg <kentborg@borg.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: BK to CVS?
-Message-ID: <20011003113245.B18196@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011003130559.F31866@borg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011003130559.F31866@borg.org>
+Date: Wed, 3 Oct 2001 14:22:06 -0500 (CDT)
+From: Grant Erickson <erick205@umn.edu>
+To: dmalek@mvista.com, linuxppc-embedded@lists.linuxppc.org
+Subject: [PATCH]: linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c
+Message-Id: <Pine.SOL.4.20.0110031419450.10159-200000@garnet.tc.umn.edu>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-559023410-684387517-1002136926=:10159"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Oct 03, 2001 at 01:05:59PM -0400, Kent Borg wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
-> We use cvs internally and I am trying to get all the daily patches out
-> of Bitkeeper and into a cvs module.  Are others doing this?  Is it
-> reasonable?  If so, how are you doing it?
+---559023410-684387517-1002136926=:10159
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Doing this daily isn't too horrid.  Use the rsync version and tag
-a tree daily.  Thats more or less what I do.
+Please accept the attached patch to ppc4xx_setup.c. It attempts to make
+the 4xx 'progress' method more consistent with other subarchitectures and,
+at the very least, makes it respectful of the kernel 'quiet'
+flag--important when you want a fast kernel boot.
 
-> I tried using "bk export" to generate a patch file I could apply to my
-> cvs tree, but there are Id keywords that cvs honored the last time
-> around making the patch not apply properly.
+Regards,
 
-Yeap.  One thing you can try is to un-export the keywords first.  Ie
-change them back into BK Id: %x% %..%
+Grant Erickson
 
-> Finally, I tried writing some perl to post-process the "bk export"
-> patch to remove the simple Id changes.  Cool, but bunches of files, at
-> least in yesterday's pull, have changes up near the Id and so are part
-> of the same patch hunk, and catching that in a perl script is going to
-> be a lot harder.
-
-Smaller hunks and change 'em back into the unexported form?
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+ Grant Erickson                       University of Minnesota Alumni
+  o mail:erick205@umn.edu                                 1996 BSEE
+  o http://www.umn.edu/~erick205                          1998 MSEE
+
+---559023410-684387517-1002136926=:10159
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="ppc4xx_setup.c.patch"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.SOL.4.20.0110031422060.10159@garnet.tc.umn.edu>
+Content-Description: 
+Content-Disposition: attachment; filename="ppc4xx_setup.c.patch"
+
+LS0tIGxpbnV4cHBjXzJfNF9kZXZlbC9hcmNoL3BwYy9rZXJuZWwvcHBjNHh4
+X3NldHVwLmMJTW9uIE9jdCAgMSAxNDo0MDoyMiAyMDAxDQorKysgbGludXhw
+cGNfMl80X2RldmVsL2FyY2gvcHBjL2tlcm5lbC9wcGM0eHhfc2V0dXAuYy5O
+CVdlZCBPY3QgIDMgMTI6MDc6MTIgMjAwMQ0KQEAgLTM0NCw3ICszNDQsNyBA
+QA0KIHZvaWQNCiBwcGM0eHhfcHJvZ3Jlc3MoY2hhciAqcywgdW5zaWduZWQg
+c2hvcnQgaGV4KQ0KIHsNCi0gICAgICAgIHByaW50aygiPDE+LS0tLS0tLS0t
+LSAgcHJvZ3Jlc3M6ICAweCV4ICVzXG4iLCBoZXgsIHMpOw0KKyAgICAgICAg
+cHJpbnRrKCIlc1xuXHIiLCBzKTsNCiB9DQogDQogLyoNCg==
+---559023410-684387517-1002136926=:10159--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
