@@ -1,33 +1,44 @@
-To: "Oliver Fuchs" <olivers.lists@gmx.net>
+Message-ID: <412F4618.8050705@intracom.gr>
+Date: Fri, 27 Aug 2004 17:32:56 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Jaap-Jan Boor <jjboor@aimsys.nl>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Does ext2 based on MTD acceptable for Embedded Development? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 27 Aug 2004 12:05:44 +0200."
-             <412F2398.313.E2BE91@localhost>
-Date: Fri, 27 Aug 2004 16:24:47 +0200
-Message-Id: <20040827142452.2658DC109F@atlas.denx.de>
+Subject: Re: ushort fcc_fcce
+References: <Pine.LNX.4.44.0408271130100.16734-100000@linpc003.aimsys.nl>
+In-Reply-To: <Pine.LNX.4.44.0408271130100.16734-100000@linpc003.aimsys.nl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <412F2398.313.E2BE91@localhost> you wrote:
+Jaap-Jan Boor wrote:
+> hi,
 >
-> > We do, and it works perfect. You just want to make sure to  mount  it
-> > read-only.
-> Is there an advantage to use ext2 instead of cramfs for read only fs?
+> Why is
+> include/asm-ppc/immap_8260.h:   ushort  fcc_fcce;
+>
+> and not uint fcc_fcce, as e.g. the fcc event register
+> in hdlc mode uses 32 bits.
+>
+> thanks,
+>
+> Jaap-Jan
+>
+>
+>
+>
+>
 
-Boot time, as you don't need to uncompress the stuff.
+Yep, this is correct.
 
-Best regards,
+FYI in the fec_8xx it is accessed as 32bits anyway.
 
-Wolfgang Denk
+Patch?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Windows95 = graphical user interface for a single-threaded  interrupt
-handler (DOS)
+Regards
+
+Pantelis
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
