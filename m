@@ -1,28 +1,33 @@
-From: John_McRoberts@Mitel.COM
-To: "PAULO SELEME CORREA PAULO" <paulo.correa@siemens.com.br>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256AE6.004907C3.00@kanmta01.software.mitel.com>
-Date: Mon, 15 Oct 2001 14:19:40 +0100
-Subject: Re: ethernet driver source
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3BCB7685.4060208@ixiacom.com>
+Date: Mon, 15 Oct 2001 16:51:33 -0700
+From: Bryan Rittmeyer <bryan@ixiacom.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: status of PPC405<->mainstream kernel merge?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-From:  John McRoberts@MITEL on 10/15/2001 02:19 PM GDT
-at the linux menuconfig:
+Hi guys,
 
-turn on the 10/100 network interfaces and disable all the entries.
+I'm wondering what the status is of the 405GP/405CR support in the
+"mainstream"  Linux kernels. Is it ready for production use? If not,
+what's the newest-but-stable PPC405 kernel availible right now?
 
-The go to the MPC860 specific stuff where lo and behold you'll find that the CPM
-and FEC have both appeared.
+We've been using linux-2.4.2-mvista_04-12-01 off of Montavista's FTP
+site, and have hit some serious problems regarding its VM behavior
+under OOM. I want to upgrade to something newer to take advantage
+of all the upstream bug fixes, and also to be able to debug/develop
+against (more) current kernels....
 
-Enable the one you require.
+Regards,
 
-Took me a while but I got there in the end....
+Bryan
 
-John
+--
+Bryan Rittmeyer
+mailto:bryan@ixiacom.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
