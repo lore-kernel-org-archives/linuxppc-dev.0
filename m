@@ -1,49 +1,29 @@
-Message-Id: <5.0.2.1.2.20040504164521.05116c10@bhawley.mailhost.luminex.com>
-Date: Tue, 04 May 2004 16:50:58 -0700
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <4098B547.5070101@euronet.nl>
+Date: Wed, 05 May 2004 11:35:03 +0200
+From: Jos Beck <jos_beck@euronet.nl>
+MIME-Version: 1.0
 To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-From: Brian Hawley <bhawley@luminex.com>
-Subject: Next steps
-In-Reply-To: <20040504214623.49B32C109F@atlas.denx.de>
-References: <Your message of "Tue, 04 May 2004 23:15:08 +0200." <20040504211508.GA2510@mars.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: I2C implementation on MPC8260
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We've finally gotten the 2.5 kernel to boot using u-boot [ 2.6.3 doesn't,
-nor did 2.4 variants ] on a PPC440GP
-on the Ebony board.
+Hi,
 
-At this point, it is trying to talk to a dhcp/bootp server and get a NFS
-root filesystem.
+I am trying to get some i2c devices (RTC, EEPROM) to run on an MPC8260
+with kernel version 2.4.21.
+I have seen some fragmented information in the kernel source
+documentation and on this mailing list, but it's not clear to me what
+parts I can use and what I have to write myself.
 
-Eventually, we'll be porting this to a custom board with some other chip
-set support on it.
+Could anyone tell me where and how to start?
 
-Our application will essentially be data acquisition and
-transmission.  We'll be talking to the chipset to
-suck data off [ and push data ] and on the other side push/pull data from
-the PCI bus.
 
-Linux is probably overkill for this, but we wanted a development platform
-we could extend in the future
-more readily.
+Thanks,
 
-I'm curious as to the direction people think we should take at this
-point.  Should we be trying to set up
-a root NFS filesystem [ presumably because it is easier to change -- and
-then moving it to an initrd ? ]?
+Jos
 
-What do we need on the NFS filesystem...
-
-What resources can you point me to to help us make the transition to the
-next level.
-
-Any help is appreciated,
-
-Thanks.
-
--- Brian
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
