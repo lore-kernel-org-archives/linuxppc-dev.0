@@ -1,51 +1,38 @@
-Date: Tue, 28 Mar 2000 10:49:40 -0500 (EST)
-From: "Min Shin (CS)" <shin@csee.usf.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC and Pismo Powerbook
-In-Reply-To: <20000328115126.003377@mailhost.mipsys.com>
-Message-ID: <Pine.GSO.4.05.10003281041030.24048-100000@grad>
+Message-ID: <20000328160043.23755.qmail@web110.yahoomail.com>
+Date: Tue, 28 Mar 2000 08:00:43 -0800 (PST)
+From: Michel "D?nzer" <mdaenzer@yahoo.com>
+Reply-To: michdaen@iiic.ethz.ch
+Subject: Re: XFree86 4.0 working as fbdev on Voodoo3
+To: "William H. Schultz" <whschult@uncc.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm not a Linux expert at all and I tried to download the files that you
-have at ppclinux.apple.com/~benh.  But, I some difficulty setting  stuff
-up.  So, I'll explain what I did, and perhaps you can give me a lift.
-Then, I'll write it up and post it on the web on how to set it up for the
-beginners. :)
+--- "William H. Schultz" <whschult@uncc.edu> wrote:
+>
+> I don't know if it's because I moved my existing /usr/X11R6
+> directory before installing, but XFree86 v4 finally works on
+> my Voodoo3.  Granted, it is incredibly slow (slower than
+> v3.3.6), but at least it works--for now.
 
-* SETTING :
-- Powerbook 400Mhz + 192MB RAM...
-- Mac OS 9.0.2
-- Attempt to use 1 harddrive to setup LinuxPPC2000.
+Doesn't the tdfx driver work?
 
-* STEPS :
-1.  partitioned the HD into three partititions: MacOS, Linux, Swap
-2.  download the image file of LinuxPPC2000 from the mirror site and
-placed it in the swap disk.
-3.  using 'diskcopy", installed the linuxppc2000 image in the swap disk
-	creating LinuxPPC 2000 install directory.
-4.  downloaded the kernels from ppclinux.apple.com/~benh at swap disk
-	vmlinux...
-	system.map...
-	modules...
-	patches...
 
-5.  downloaded yaboot from ppclinux.apple.com/~benh as well.
-	-> to boot yaboot?
-	- but I saw yaboot in Linuxppc2000 install directory as well.
-	But reading the file, it seems as it's assuming to read boot file
-		from CD rom.
+> The major problem that I'm having is that the keyboard isn't
+> mapped properly.  The mouse works, so I can logout when I
+> use startx, but I can't log in if I use gdm (or xdm for that
+> matter).  I can't do a ctrl-alt-del to kill the X-Server
+> either, as it isn't recognizing the keys properly.
 
-6.  ran LinuxPPC installer.
-7.  reboot, but it will go with BootX.
+The Xkb extension doesn't work on PPC yet (a fix by Kostas is on the way :).
 
-Would you tell me what are the other steps that I need to take?  Such as
-where to place those four files, if I need to uncompress them...
+Add Option "XkbDisable" to the Keyboard Section.
 
-Thanks
+
+Michel
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
