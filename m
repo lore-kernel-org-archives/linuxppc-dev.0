@@ -1,14 +1,12 @@
 Mime-Version: 1.0
-Message-Id: <v04220801b64a66c6a467@[10.0.0.42]>
-In-Reply-To: 
- <Pine.LNX.4.10.10011282036580.22745-100000@opal.biophys.uni-duesseldorf.de
- >
+Message-Id: <v04220800b64a66157aaa@[10.0.0.42]>
+In-Reply-To: <p0433010ab649bafec687@[206.6.156.5]>
 References: 
- <Pine.LNX.4.10.10011282036580.22745-100000@opal.biophys.uni-duesseldorf.de
- >
-Date: Wed, 29 Nov 2000 00:15:59 -0800
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Stefan Jeglinski <jeglin@4pi.com>
+  <Pine.LNX.4.10.10011282036580.22745-100000@opal.biophys.uni-duesseld
+ orf.de> <p0433010ab649bafec687@[206.6.156.5]>
+Date: Wed, 29 Nov 2000 00:33:12 -0800
+To: Stefan Jeglinski <jeglin@4pi.com>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 From: "Timothy A. Seufert" <tas@mindspring.com>
 Subject: Re: usb wheel mouse, XF4.0
 Cc: linuxppc-dev@lists.linuxppc.org
@@ -17,33 +15,40 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 8:39 PM +0100 11/28/00, Michael Schmitz wrote:
->>  ... not that there isn't a simple trick, and not that I've exhausted
->>  all my possibilities yet, but my level of exasperation is rather high
->>  at the moment... so far I'm chalking it up mostly to usb still being
->>  not really built into the stable kernel.
+At 2:55 PM -0500 11/28/00, Stefan Jeglinski wrote:
+
+>I take it you're saying that PCI USB cards are not being officially
+>supported, but they may work. Otherwise I don't get your comment. The
+>backport into 2.2.18 (which will be defined as stable when it is no
+>longer pre status) seems to include config options for many keyspan
+>devices, among others. Are these not PCI cards? I could clearly be
+>dead wrong here, I'm now surmising.
+
+Keyspan does not make any PCI USB cards.  The only PCI cards they
+make are serial cards.  Their USB stuff is all peripherals (such as
+an IR remote widget, USB to serial adapters, etc.).  The config
+options you're seeing are drivers for their USB peripherals.
+
+>>What exactly is on the PCI USB card?
 >
->Wrong: support for USB PCI cards not being built into the stable kernel.
->Support for recent Mac builtin USB controllers (OHCI) is just fine.
+>It's an Orangelink USB/Firewire card, 2 usbs, 2 firewire ports.
 
-Wrong.  PCI USB cards are exactly the same thing as built-in
-controllers, because the built-in controllers are PCI devices too.
+ From one of your later emails, it looks like this card is composed of
+a PCI-to-PCI bridge, a NEC FireWire host controller, and an Opti OHCI
+USB controller.
 
-The OHCI driver should support literally any standards compliant OHCI
-USB controller found on PCI, whether it's integrated into a
-multifunction IO chip or on a card.  If it doesn't work, there's a
-bug somewhere, either in the hardware (in which case it probably
-doesn't comply to the standard) or in the driver (most likely
-initialization related).
+There are definitely outstanding problems with initialization of
+devices behind PCI bridges, so the fact that your USB controller is
+behind one is quite significant.
 
-The same principle applies to UHCI.  UHCI could work on PPC, but
-nobody has ever bothered, because the installed base of UHCI
-controllers on PPC boxes approximates zero.  Apple's built-in USB is
-always OHCI, and their MacOS drivers only support OHCI, so anybody
-who wants to market a PCI USB card for Macs uses a OHCI chip to take
-advantage of the drivers written by Apple.
-
-x86 boxes can use either type of controller.
+BTW, unless Opti has been revising it, the Opti OHCI USB chip on that
+card is the same one Apple used on the motherboards of early iMacs
+and the Blue&White G3.  I have a SIIG USB PCI card which uses that
+chip and it has always worked flawlessly under Linux for me, in an
+Old World Mac (beige G3).  So I'd say that once this issue with Linux
+assigning the same IRQ to the Opti chip and your 2940UW gets
+resolved, there's a high probability that it will work without any
+problems.
 
    Tim Seufert
 
