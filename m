@@ -1,38 +1,37 @@
-Date: Wed, 31 Mar 1999 10:23:34 -0500 (EST)
-From: John Buswell <johnb@one.net>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: "Charles E. Leiserson, Jr." <locutus@MIT.EDU>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.5 on an iMac 
-In-Reply-To: <Pine.LNX.3.96L.990330223921.27821A-100000@unix48.andrew.cmu.edu>
-Message-ID: <Pine.LNX.3.96.990331102220.2854h-100000@shell>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <37023590.741A85E6@pop.agri.ch>
+Date: Wed, 31 Mar 1999 16:47:44 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Mime-Version: 1.0
+To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Help about Reboot
+References: <004301be7b50$e165d520$66f102de@sjzhu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 30 Mar 1999, Hollis R Blanchard wrote:
-
-> It doesn't; check the Readme for the latest BootX. Obviously, BootX found
-> enough of the kernel to boot from it...
-
-My problem wasn't bootx related, the problem was related to the ide
-drivers in the linux source tree, I pulled the ide driver source from the
-linux-pmac source tree and patched up to 2.2.5 and it works fine.
-
-check: http://w3.one.net/~johnb/imaclinux/
-
-under the kernel howto.
-
-Regards
 
 
-John Buswell
-Systems Administrator
-OneNet Communications, Inc.
-(513) 618-1000 - johnb@one.net
+Shuangjun Zhu wrote:
+> 
+> Hello, everyone
+>   I build the kernel version 2.2.2 on my PowerStack machine.
+> But when I execute the command "reboot", the system seems
+> to hang up after it print the message "Restarting system.",
+> it has not RESTART. If I use the kernel verion 2.1.57,
+> everything is OK. Does anyone know about it?
+> Any suggestion is appreciated !
+> Thanks in advanced!
 
+what about 'shutdown -r now' ?
+
+Andreas
+-- 
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
+-----------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
