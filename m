@@ -1,56 +1,51 @@
-Date: Mon, 7 Jun 2004 02:26:22 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Marius Groeger <mgroeger@sysgo.com>
-Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20040605002915.GA17603@gate.ebshome.net>
+References: <20040605002915.GA17603@gate.ebshome.net>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2E7C06A3-B893-11D8-92B4-000393DBC2E8@freescale.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+From: Kumar Gala <kumar.gala@freescale.com>
 Subject: Re: [RFC] Simple ioremap cache
-Message-ID: <20040607092622.GA31404@gate.ebshome.net>
-References: <20040605002915.GA17603@gate.ebshome.net> <Pine.LNX.4.56.0406070931180.3147@mag.sysgo.com> <20040607084812.GA5808@gate.ebshome.net> <Pine.LNX.4.56.0406071100110.11623@mag.sysgo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.56.0406071100110.11623@mag.sysgo.com>
+Date: Mon, 7 Jun 2004 09:58:48 -0500
+To: Eugene Surovegin <ebs@ebshome.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jun 07, 2004 at 11:12:42AM +0200, Marius Groeger wrote:
-> > > To do this, I think you also need
-> > > to flag a bigger virtual page size to the MMU, eg. program a different
-> > > PAGESZ_* value (see include/asm-ppc/mmu.h). If you don't, the MMU has to
-> > > manage diffent chunks all the same, they just happen to be virtually
-> > > contiguous.
-> >
-> > I don't follow you here, sorry. Could you give some examples with
-> > the real TLB contents for the cases you are describing?
+> I have several questions on how we can enhance my simple hack so it
+> can be
+> acceptable into mainline:
 >
-> What I mean is to merge/coaelsce individual mappings within the same
-> IO area. Eg., consider an IO area with multiple resources at
-> 0xd000.0000 spanning more than one 4k page. Now, driver A requests
-> access to a page at 0xd0000.0100, and driver B wants to access
-> 0xd0003.0400. Usually, this would lead to 2 diffent mapping entries
-> for the following phys base/size pairs (0xd0000.0000, 0x1000);
-> (0xd0003.0000, 0x1000). With optimization, this could be handled by
-> one mapping at 0xd0000.0000 spanning a 16k page. It's a bit like when
-> BATs are used to cover larger chunks.
->
-> Again, this was an idea we had a while ago. I don't know how much real
-> remedy is in implementing it. There once was also talk about a "big
-> TLB" patch. I haven't checked if this is already part of 2.5/2.6.
+> 0) Do we really need such stuff in mainline :) ?
 
-Yeah, I see now.
+I see no reason, its helpful for a number of embedded archs (4xx, 8xx,
+e500)
 
-This kind of coalescing might be useful for PCI device drivers ioremaps (I saw
-some adjacent mappings on tipb - I _think_ they were different PCI peripherals)
+> 1) Should this feature be enabled for all ppc32 archs or only for 4xx?
+> I
+> made ioremap profile for 2.6.6 kernel running on my G4 Powerbook and
+> haven't noticed a lot of ioremap regions overlap (there was one
+> instance where
+> my patch would have helped if I've increased cache size to 32 entries).
 
->
-> > What do you mean "just mapping entries" ? TLB slots contain these "mapping
-> > entries", that's the whole purpose of TLB.
->
-> Yes, but 4xx allows for variable sized TLBs.
+This may be due to use of BATs on PPC Classic.
 
-Sure, these big TLBs are even used for kernel lowmem mappings on 4xx (again to
-save some TLB misses :)
+> 2) Should we cache allocation bigger than 4K? From Ebony and tipb
+> profiles it
+> doesn't seem advantogeous. Maybe other CPUs can benefit from the
+> bigger sizes.
 
-Eugene
+I think 4K is reasonable, I think this optimization is mainly for PPCs
+w/ integrated periphs.
+
+> 3) Should cache size (currently hardcoded to 10 entries) be made
+> configurable?
+
+Seems pointless to make it proper kernel config param.  If someone
+wants to change it they can always change the code themselves for there
+purposes.
+
+- kumar
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
