@@ -1,24 +1,22 @@
-Date: Thu, 4 Apr 2002 14:38:01 -0900
-From: Ethan Benson <erbenson@alaska.net>
+Subject: Screen stays on in sleep mode (round ibook)
+From: Eaden McKee <eaden@webtec.co.nz>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: changelog for benh kernels
-Message-ID: <20020404143801.D1524@plato.local.lan>
-References: <20020404211714.GE5088%breakfast@10.am>
+Content-Type: text/plain
+Date: 06 Apr 2002 06:36:18 +1200
+Message-Id: <1018031780.582.6.camel@LiMac>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020404211714.GE5088%breakfast@10.am>; from breakfast@10.am on Thu, Apr 04, 2002 at 10:17:14PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 04, 2002 at 10:17:14PM +0100, mallum wrote:
->
-> Is there a changelog for benh kernel patches ?
+Hi,
+I reported this on debianppc, but was told to bring it here.
+I am using 2.4.19-pre5-ben0 from ppckernels.org, and when I shut the
+lid, or it times out and goes into sleep mode, The sleep light is
+flashing, but the screen stays on.It is a 300mhz blueberry round ibook.
+Please CC to me as I am not subscribed.
+Regards
+Eaden
 
-no
-
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
