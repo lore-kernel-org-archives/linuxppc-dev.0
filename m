@@ -1,41 +1,51 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org,
-	yellowdog-devel@lists.yellowdog.com
-Subject: Support for new Dual G4 1 Gig machines?
-Date: Mon, 28 Jan 2002 14:40:33 -0500
+Date: Mon, 28 Jan 2002 20:45:31 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Momchil Velikov <velco@fadata.bg>,
+	Kaoru Fukui <k_fukui@highway.ne.jp>, hozer@drgw.net,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Broken asm/div64.h macro
+In-Reply-To: <20020128152813.GG19960@opus.bloom.county>
+Message-ID: <Pine.GSO.4.21.0201282042470.2836-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Message-Id: <20020128193614.HBJP10563.tomts19-srv.bellnexxia.net@there>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 28 Jan 2002, Tom Rini wrote:
+> On Mon, Jan 28, 2002 at 10:16:28AM +0200, Momchil Velikov wrote:
+> > >>>>> "Kaoru" == Kaoru Fukui <k_fukui@highway.ne.jp> writes:
+> >
+> > Kaoru> On 27 Jan, Troy Benjegerdes wrote:
+> > >> Did you actually try compiling PPC this way??
+> > >>
+> > >> vsprintf.o(.text+0x494): undefined reference to `__umoddi3'
+> > >> vsprintf.o(.text+0x494): relocation truncated to fit: R_PPC_REL24
+> > >> __umoddi3
+> > >> vsprintf.o(.text+0x4ac): undefined reference to `__udivdi3'
+> > >> vsprintf.o(.text+0x4ac): relocation truncated to fit: R_PPC_REL24
+> > >> __udivdi3
+> >
+> > Kaoru> libgcc.a has those libraries.
+> >
+> > Yeah, but we don't link with libgcc.a. (which I forgot).
+>
+> Er, but isn't it (sort-of) considered a bug if the kernel links with
+> libgcc.a ?  I think the consensious on l-k would be yes.
 
-I have not been keeping up wih the latest processor and driver support in
-the kernels or on the status and stability of dual processor boxes.
+So you copy the code from the libgcc sources, cfr. arch/m68k/lib/.
 
-But I just ordered a brand new Dual 1 GHZ G4 machine from Apple with an
-ATI 7500 video card (I also have an ATI Radeon Mac PCI card).
+Gr{oetje,eeting}s,
 
-So can anyone update date me if the version of the G4 in the latest Apple
-machines is supported?
+						Geert
 
-How stable is SMP support under PPC Linux?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-I know I can get the ATI Radeon 32M Mac edition card to work to work with
-my FlatPanel under ppc linux, but I have no idea about the ATI 7500 and
-the FlatPanel display?
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-Any information on required patches or kernel version to make this thing
-work when it comes would be greatly appreciated.  I will have the use of
-my old machine to rebuiold kernels and things for about a week after the
-new machine arrives (before it become's my wife's new machine) and would
-like to get everything I can built in advance.
-
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
