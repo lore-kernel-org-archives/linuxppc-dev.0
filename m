@@ -1,86 +1,38 @@
-Date: Wed, 19 Sep 2001 15:35:31 -0400
-From: macdonldc@netscape.net (Craig MacDonald)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problem booting linux-2.4.4-2001-07-23 on EST SBC8260 with ppcboot 1.0.4
-Message-ID: <3A1B61D1.1F74491E.031B03A1@netscape.net>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Wed, 19 Sep 2001 15:57:42 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@mvista.com>
+Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
+Subject: Re: CPCI-405 port (PPC405GP)
+Message-ID: <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BA8DF9E.FD235CF6@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to get linux 2.4 running on an EST SBC8260.
-It seems others have this board working correctly, so
-I must be doing something wrong.
-It works up to executing the rfi in turn_on_mmu, but
-it doesn't seem to reach start_here.
+On Wed, Sep 19, 2001 at 02:10:38PM -0400, Dan Malek wrote:
 
-I have modified linux to use the correct bd_info structure
-in ppcboot.h and the immr_base value. Below is some information
-from ppcboot.
+> > Well, do you forsee the need to put in board-specific defines?
+>
+> This isn't the right way.  If you notice the way the ports work,
+> everything 4xx (or 8xx, or 6xx, or whatever), include the single
+> header file, in this case ppc4xx.h.  This include file will select
+> the proper board specific file.  The board specific file, contains,
+> well, the stuff specific to a board.
 
+Er, yes.  But if there's nothing specific to the CPCI405, why add in an
+empty file and the
+#ifdef CONFIG_CPCI405
+#include <asm/cpci405.h> /* Empty */
+#endif
+in ppc4xx.h?
 
-PPCBoot 1.0.4 (Aug 12 2001 - 07:16:41)
-
-MPC8260 Reset Status: External Soft
-
-MPC8260 Clock Configuration
- - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq 100-300
- - dfbrg 0, corecnf 0x0a, busdf 3, cpmdf 1, plldf 0, pllmf 1
- - vco_out  132000000, cpm_clk   66000000, bus_clk   33000000
- - scc_clk   33000000, brg_clk   33000000, cpu_clk  132000000
-
-CPU:   MPC8260 (Rev 01, Mask A.1 1K22A-XC) at 132 MHz
-Board: EST SBC8260
-DRAM:  32 MB
-FLASH:  4 MB
-BEDBUG Ready
-In:    serial
-Out:   serial
-Err:   serial
-
-bdinfo
-------------------------
-memstart    = 0x00000000
-memsize     = 0x02000000
-flashstart  = 0xfff00000
-flashsize   = 0x00400000
-flashoffset = 0x00040000
-sramstart   = 0x00000000
-sramsize    = 0x00000000
-immr_base   = 0x0f000000
-bootflags   = 0x00000001
-intfreq     =    132 MHz
-busfreq     =     33 MHz
-ethaddr     = 00:02:6A:00:00:55
-  IP addr     = 10.0.0.62
-  baudrate    =  19200 bps
-getc        = 0x01fd0ec8
-tstc        = 0x01fd0ef8
-putc        = 0x01fd0e18
-puts        = 0x01fd0e84
-printf      = 0x01fcd57c
-install_hdlr= 0x01fd1a74
-free_hdlr   = 0x01fd1b14
-malloc      = 0x01fcbfe4
-
-TFTP from server 10.0.0.12; our IP address is 10.0.0.62
-Filename 'linux'.
-Load address: 0x100000
-Loading: /
-done
-Bytes transferred = 458355 (6fe73 hex)
-free        = 0x01fcc4d8
-## Booting image at 00100000 ...
-   Image Name:   linux 2.4
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    458291 Bytes = 447 kB = 0 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-
-Thanks,
-Craig MacDonald
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
