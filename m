@@ -1,41 +1,25 @@
-Message-ID: <20030603000005.28931.qmail@web21003.mail.yahoo.com>
-Date: Mon, 2 Jun 2003 17:00:05 -0700 (PDT)
-From: kas turi <inox_kas@yahoo.com>
-Subject: dlopen causes the program to crash
-To: linuxppc-embedded@lists.linuxppc.org
+From: "dong in kang" <dkang@east.isi.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: bdiGDB configuration file for PPC750 and MPC107 bridge chip
+Date: Mon, 2 Jun 2003 20:07:58 -0400
+Message-ID: <001101c32964$30770240$45a97241@Minjoo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-reply-to: <1054554408.20568.86.camel@newt>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-   I am running timesys linux 2.4.7-timesys-3.1.180 on
-my 8260 board.  I have written a small program that
-invokes dlopen and tries to access the shared library.
-The program is linked with libdl-2.1.3.so.
-The program is shown below:
+ I switched from bdi for Codewarrior to bdi for GDB.
+Their configuraion files seem to be different.
+Could anybody send me a configuration file of bdiGDB for a system having
+PPC750 and MPC107 bridge chip?
+The configuration file with bdi software is not good enough.
 
-#include <dlfcn.h>
-#include <stdio.h>
+ Thanks,
 
-main()
-{
-        void *handle;
-
-        printf ("Before dlopen\n");
-        handle = dlopen ("/lib/libpthread.so.0",
-RTLD_NOW);
-        printf ("dlopen done\n");
-
-        dlclose(handle);
-}
-
-When I run on the target I get "Illegal instruction"
-at dlopen even though libpthread.so.0 is present in
-/lib directory.
-
-Any idea why the dlopen causes the program to crash?
+ Dong-In
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
