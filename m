@@ -1,63 +1,68 @@
-Date: Sat, 5 Aug 2000 09:44:50 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc again...
-In-Reply-To: <20000805112531.1840@192.168.1.10>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000805092052.649D-100000@ofey.earthlink.net>
+Date: Sat, 5 Aug 2000 21:22:24 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: dri-devel@lists.sourceforge.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kind of success! (r128 on PPC (Re: LinuxPPC X Server))
+In-Reply-To: <398ADB57.9ABEDC6F@student.ethz.ch>
+Message-ID: <Pine.LNX.4.21.0008041831040.29474-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 5 Aug 2000, Benjamin Herrenschmidt wrote:
+On Fri, 4 Aug 2000, Michel [iso-8859-1] Dänzer wrote:
 
-> >
-> >As Geert has pointed out, hwclock can give UTC or local time to /dev/rtc,
-> >why don't we just let userland deal with this local time issue.  What I
-> >mean is for pmac_set_rtc_time(), let's change:
 >
-> That would give us back what we had at the beginning. This way, userland
-> is solely responsible for this setup, which means it will be wrong on 50%
-> of user machines (but that's user fault isn't it ?) and which means the
-> kernel will boot with a wrong time, at least until the userland init
-> script takes over.
+> [For the linuxppc-dev people: this is about the DRI CVS trunk]
+>
+> Kostas Gewrgiou wrote:
+>
+> > > GL clients even seem to attempt direct rendering now, however I get one of
+> > > two different errors every time:
+> > >
+> > > Error: Rage 128 timed out... exiting
+> > >
+> > > Error: Could not submit packet... exiting
+> >
+> >   From what i see the problem is probably in the R128_READ/WRITE macros in
+> > r128_drv.h you need byteswapping functions there (and memory barriers as
+> > usual).
+>
+> That did it, thanks! I changed those macros to use the same inline functions
+> which are used for MMIO_{IN,OUT} on PPC, and here we go!
+>
 
-Hmm, nothing has been changed with pmac_get_rtc_time().  So, if it is
-broken now, it was broken before....  Seriously, pmac_get_rtc_time() is
-the one responsible for giving you the correct time at boot time, isn't
-it?
+Great news :)
 
-Does xtime need to be in UTC?  If so, is it feasible to let
-ppc_md.time_init() give an offset in seconds from UTC to the time given by
-RTC?
+> The remaining problems are:
+>
+> 16 bit doesn't work neither with fbdev (colors completely off - does aty128fb
+> still use 15 bit in fact?) nor without (at least the grey tones are right
+> there - wrong endianness?)
 
-  void __init time_init(void)
-  {
-	unsigned long flags;
-+ 	int offset = 0;
-  	if (ppc_md.time_init != NULL)
-  	{
-  		offset = ppc_md.time_init();
-  	}
-	...
-  	write_lock_irqsave(&xtime_lock, flags);
-- 	xtime.tv_sec = ppc_md.get_rtc_time();
-+ 	xtime.tv_sec = ppc_md.get_rtc_time() + offset;
-  	write_unlock_irqrestore(&xtime_lock, flags);
-	...
+Yes aty128fb still doesn't support 16 bit, you could run the r128 driver
+without fbdev to get 16 bits, but the code to switch the framebuffer to do
+byteswapping is missing so the colors will be wrong (easy to add though).
 
-Oh, and change time_sleep_notify() in pmac_time.c accordingly.
+> At 32 bit, it flickers badly on my Pismo, probably because it only has 8 megs
+> of VRAM. (These messages appear in the log:
+> (EE) r128(0): Unable to reserve depth buffer
+> (EE) r128(0): Unable to reserve texture space in frame buffer
+> ) Curious how it works out for people with more...
 
-> I don't see why it's such a mess to simply read the default values from
-> xpram so we are consistent with MacOS. But everything in Linux is a mess
-> anyway...
+Not enough memory for all the buffers indeed, you could try with a lower
+res (if prismo allows that) to save some memory.
 
-Maybe because pmac's RTC is in local time for one?
+>
+> About performance: It's much better than software rendering (at least for big
+> windows) of course, however not too fast with lots of polygons. AGP GART would
+> definitely be a good thing I guess (Ben: hint, hint :)
+>
 
+Do you have any numbers from gears, glquake etc ??
 
-Takashi Oe
+   Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
