@@ -1,40 +1,55 @@
-Reply-To: <joakim.tjernlund@lumentis.se>
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: WRITE_THRU  on 8xx missing
-Date: Thu, 5 Sep 2002 00:27:10 +0200
-Message-ID: <IGEFJKJNHJDCBKALBJLLMEDAFGAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-reply-to: <IGEFJKJNHJDCBKALBJLLGECHFGAA.joakim.tjernlund@lumentis.se>
+Date: Wed, 4 Sep 2002 16:43:06 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Brian Kuschak <bkuschak@yahoo.com>
+Cc: Allen Curtis <acurtis@onz.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: bitkeeper changesets
+Message-ID: <20020904234306.GN761@opus.bloom.county>
+References: <20020904141511.GK761@opus.bloom.county> <20020904172646.94693.qmail@web40202.mail.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020904172646.94693.qmail@web40202.mail.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I just noticed that _PAGE_WRITETHRU is defined in the linuxppc_2_4 tree but not in
-the linuxppc_2_4_devel tree, which is the one I am using :-(. Has this "function" been removed ,
-never to return or is the devel tree in a flux now for mpc8xx?
-
-If it has been removed, please reconsider adding it again. Now that burstable flash devices are
-common and there is a flash based FS(JFFS2) in the kernel, I think there will be a need for
-this functionality.
-
-     Joakim
+On Wed, Sep 04, 2002 at 10:26:46AM -0700, Brian Kuschak wrote:
 
 >
+> --- Tom Rini <trini@kernel.crashing.org> wrote:
+> > Revision numbers are not constant.  BK keys are.
+> > 'bk help key2rev'.
+> >
 >
-> I am trying to create a cached memory mapping which is in WRITETHRU using ioremap().
-> But in the latest PPC kernel for a mpc8xx target there is no flag for WRITETHRU (_PAGE_WRITETHRU).
+> So I assume this is the correct way of getting a
+> unique, unchanging revision key corresponding to a
+> particular ChangeSet:
 >
-> Why is it gone? Is there a replacement flag?
-> I want to use this mapping to do burst reads but single writes for a flash device.
+>    bk changes -r1.1091.1.23 -nd:KEY:
+>    or
+>    bk prs -r1.1091.1.23 -nd:KEY:
 >
->  Joakim
+>    ======== ChangeSet 1.1091.1.23 ========
+>    paulus@samba.org|ChangeSet|20020803062658|55132
 >
+> This changeset removes the -rc5 from EXTRAVERSION in
+> the top-level Makefile.  But I can't I convert this
+> key back to the revision number:
 >
+> echo "paulus@samba.org|ChangeSet|20020803062658|55132"
+> |bk key2rev Makefile
 >
->
+> Can't find
+> paulus@samba.org|ChangeSet|20020803062658|55132 in
+> SCCS/s.Makefile
 
+You want to do:
+echo "paulus@samba.org|ChangeSet|20020803062658|55132" | bk key2rev ChangeSet
+
+It confused me the first time too. :)
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
