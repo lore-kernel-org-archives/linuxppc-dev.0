@@ -1,19 +1,41 @@
-Date: Thu, 08 Jun 2000 18:42:29 -0400
-From: Alain Birtz <abz@videotron.ca>
-Subject: get_user, put_user and asm/uaccess.h problem
+Date: Thu, 08 Jun 2000 18:55:27 -0400
+From: sat <satadru@umich.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Reply-to: abz@videotron.ca
-Message-id: <39402154.1D8190E4@videotron.ca>
-MIME-version: 1.0
-Content-type: text/plain; x-mac-creator=4D4F5353; x-mac-type=54455854; charset=us-ascii
+Subject: GeeK: more proof... 
+Message-ID: <2712820046.960490527@[192.168.0.69]>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I need to use get_user and put_user in a small module. These functions
-are defined in asm/uaccess.h
-But #include asm/uaccess.h generate a lot of error (about 3 page).
-How can I fix it ?
+Can I apply the standard patch from 2.2.15 to 2.2.16 in Paul's CVS kernel?
 
+---------- Forwarded Message ----------
+Date: Thursday, June 08, 2000 1:23 AM -0400
+From: Dug Song <dugsong@monkey.org>
+To: backrow@citi.umich.edu
+Subject: GeeK: more proof...
+
+this is amazingly bad.
+
+http://sendmail.net/?feed=000607linuxbug
+
+    A serious bug has been discovered in the Linux kernel that can be used
+    by local users to gain root access. The problem, a vulnerability in
+    the Linux kernel capability model, exists in kernel versions up to and
+    including version 2.2.15. According to Alan Cox, a key member of the
+    Linux developer community, "It will affect programs that drop setuid
+    state and rely on losing saved setuid, even those that check that the
+    setuid call succeeded."
+
+-d.
+
+---
+http://www.monkey.org/~dugsong/
+
+
+
+---------- End Forwarded Message ----------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
