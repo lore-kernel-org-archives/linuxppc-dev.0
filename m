@@ -1,31 +1,58 @@
-Date: Mon, 22 Mar 1999 22:27:51 -0500
-From: Michael Meissner <meissner@cygnus.com>
-To: Cort Dougan <cort@ppc.kernel.org>
-Cc: Michael Meissner <meissner@cygnus.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: new bootloader
-Message-ID: <19990322222751.A24222@tiktok.cygnus.com>
-References: <19990316205531.A8459@tiktok.cygnus.com> <Pine.LNX.3.96.990317010455.25975A-100000@persephone.cs.nmt.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.96.990317010455.25975A-100000@persephone.cs.nmt.edu>; from Cort Dougan on Wed, Mar 17, 1999 at 01:05:03AM -0700
+Message-ID: <000701be74e5$42dcc510$753c02cb@arsenic.scu.edu.au>
+From: "B" <bkay6i@chec.scu.edu.au>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Quick Question
+Date: Tue, 23 Mar 1999 15:26:01 +1100
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0004_01BE7541.7521DC70"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Mar 17, 1999 at 01:05:03AM -0700, Cort Dougan wrote:
-> Try the latest.  The OF and booting problem should be fixed.
+This is a multi-part message in MIME format.
 
-I tried 2.2.4-pre6.  It still has the problem that there is no way to setup the
-command line before booting like Gary's fixes had support for (and it ignores
-the command line that I setup with OF on the PowerStack-II).  It does recognize
-128meg of memory, and it does reboot cleanly.  I haven't tried it yet on the
-original PowerStack with PPC1BUG (but that machine doesn't have a disk
-anymore, and I stripped some of its memory for my router).
+------=_NextPart_000_0004_01BE7541.7521DC70
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Michael Meissner, Cygnus Solutions
-PO Box 98, Ayer Massachusetts, USA 01432-0098
-meissner@cygnus.com
+I was just wondering whether LinuxPPC 5.0, will be able to read and =
+write to HFS Plus drives. I have had a look through your sites but could =
+not find any info on this.
+
+Any information you could provide me with would be greatly appreciated.
+
+Brad
+
+------=_NextPart_000_0004_01BE7541.7521DC70
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD W3 HTML//EN">
+<HTML>
+<HEAD>
+
+<META content=3Dtext/html;charset=3Diso-8859-1 =
+http-equiv=3DContent-Type>
+<META content=3D'"MSHTML 4.72.3110.7"' name=3DGENERATOR>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT color=3D#000000 size=3D2>I was just wondering whether =
+LinuxPPC 5.0, will=20
+be able to read and write to HFS Plus drives. I have had a look through =
+your=20
+sites but could not find any info on this.</FONT></DIV>
+<DIV><FONT color=3D#000000 size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT color=3D#000000 size=3D2>Any information you could provide me =
+with would=20
+be greatly appreciated.</FONT></DIV>
+<DIV><FONT color=3D#000000 size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT color=3D#000000 size=3D2>Brad</FONT></DIV></BODY></HTML>
+
+------=_NextPart_000_0004_01BE7541.7521DC70--
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
