@@ -1,35 +1,26 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Problems running PING, Telnet 
-Date: Tue, 5 Feb 2002 18:07:15 -0500
-Message-ID: <FF6CF34C346E724596A2FB5CAAB2C4978842CF@voyager.ops.infiniswitch.com>
-From: "Wright, David" <dwright@infiniswitch.com>
-To: "murali nagarajan" <muralin@gdatech.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 5 Feb 2002 16:14:36 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: John Tyner <jtyner@cs.ucr.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cannot get tree with rsync
+Message-ID: <20020205231436.GV32707@opus.bloom.county>
+References: <Pine.LNX.4.30.0202050934260.5889-100000@hill.cs.ucr.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.30.0202050934260.5889-100000@hill.cs.ucr.edu>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: murali nagarajan [mailto:muralin@gdatech.com]
-> Sent: Tuesday, February 05, 2002 5:03 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Problems running PING, Telnet
-> We have the following difficulties:
->                                    ----------
-> - PING command does not work
->   The erro message I get is   "ping: unknown protocol icmp"
->
-> - Telnet program does not work which tells me that the
-> service is unknown.
->    The error message I get is "telnet: tcp/telnet: unknown service"
->
-> What can be the issue?
+On Tue, Feb 05, 2002 at 09:40:29AM -0800, John Tyner wrote:
 
-Sounds as though your system lacks /etc/services and /etc/protocols
-files, so the socket opens are failing.
+> Is anyone else having problems getting the linuxppc_2_4_devel tree from
+> source.mvista.com.
 
-  -- David Wright, InfiniSwitch Corp.
+Can you re-try this now?  I just upgraded rsync on the machine.
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
