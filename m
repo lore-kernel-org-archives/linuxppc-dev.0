@@ -1,46 +1,36 @@
 From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <akpm@osdl.org>
-Cc: "Tom Rini" <trini@kernel.crashing.org>,
+To: "Paul Mackerras" <paulus@samba.org>,
+	"Dan Malek" <dan@embeddededge.com>
+Cc: "Pantelis Antoniou" <panto@intracom.gr>,
+	"Tom Rini" <trini@kernel.crashing.org>,
+	"Kumar Gala" <kumar.gala@motorola.com>, "Wolfgang Denk" <wd@denx.de>,
 	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: [PATCH] MachineCheck exception broken for MPC 8xx CPU's
-Date: Tue, 25 May 2004 11:26:58 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEMEMICIAA.joakim.tjernlund@lumentis.se>
+Subject: RE: [PATCH] Driver for FECs on motorola DUET (87x/88x)
+Date: Tue, 25 May 2004 11:49:48 +0200
+Message-ID: <JPEALJAFNGDDLOPNDIEEAEMKCIAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="US-ASCII"
+In-Reply-To: <16562.40219.697070.194257@cargo.ozlabs.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Andrew
+> Given that the 860 manual says that the 860 sets DAR and DSISR on a
+> machine check, I think Joakim's patch is desirable.  I assume other
+> 8xx processors do also.
+>
+> Paul.
 
-The Machine Check exception handler is broken on MPC 8xx CPU's
-This patch should fix it.
-Tom Rini asked me to send it to you.
+I wonder if this applies to head.S also? I don't have a manual
+handy, but since the Alignment exceptions are identical, I guess
+that DAR & DSISR are also set for the CPUs that uses head.S?
 
-Regards
-  Joakim Tjernlund
+Currently only 8xx uses these in the machine check exception, but I
+think the these registers should be accurate. They may be useful for
+debugging if nothing else.
 
-Signed-off-by: Joakim Tjernlund
-
-===== arch/ppc/kernel/head_8xx.S 1.20 vs edited =====
---- 1.20/arch/ppc/kernel/head_8xx.S	Tue Apr 20 22:39:28 2004
-+++ edited/arch/ppc/kernel/head_8xx.S	Tue May 25 11:01:24 2004
-@@ -207,6 +207,14 @@
- 	EXCEPTION(0x100, Reset, UnknownException, EXC_XFER_STD)
-
- /* Machine check */
-+	. = 0x200
-+MachineCheck:
-+	EXCEPTION_PROLOG
-+	mfspr r4,DAR
-+	stw r4,_DAR(r11)
-+	mfspr r5,DSISR
-+	stw r5,_DSISR(r11)
-+	addi r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x200, MachineCheckException)
-
- /* Data access exception.
+ Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
