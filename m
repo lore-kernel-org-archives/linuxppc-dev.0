@@ -1,35 +1,42 @@
-Date: Wed, 26 Sep 2001 12:57:56 -0700
+Date: Wed, 26 Sep 2001 14:54:30 -0700
 From: Matt Porter <mporter@mvista.com>
-To: "Prasad, Siva" <Siva.Prasad@smartm.com>
-Cc: "'Tom Rini'" <trini@kernel.crashing.org>,
+To: Paul Mackerras <paulus@samba.org>
+Cc: "Mark A. Greer" <mgreer@mvista.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mtmsr...
-Message-ID: <20010926125756.A28204@cx258813-a.chnd1.az.home.com>
-References: <35C119252057D511BB9F0003476BF8A208E5C4@freexc01.smartm.com>
+Subject: Re: Adding 'bus_offset' to pci_controller
+Message-ID: <20010926145429.B28204@cx258813-a.chnd1.az.home.com>
+References: <3BB24A6B.BADCF16E@mvista.com> <15282.23932.770208.130313@cargo.ozlabs.ibm.com> <3BB2639D.A44BCA16@mvista.com> <3BB264BC.8E7291FE@mvista.com> <15282.31220.632378.644634@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <35C119252057D511BB9F0003476BF8A208E5C4@freexc01.smartm.com>; from Siva.Prasad@smartm.com on Wed, Sep 26, 2001 at 03:46:55PM -0700
+In-Reply-To: <15282.31220.632378.644634@cargo.ozlabs.ibm.com>; from paulus@samba.org on Thu, Sep 27, 2001 at 10:59:32AM +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 26, 2001 at 03:46:55PM -0700, Prasad, Siva wrote:
+On Thu, Sep 27, 2001 at 10:59:32AM +1000, Paul Mackerras wrote:
 >
-> 'PowerBoot' is the firmware I am using.
+> Mark A. Greer writes:
 >
-> I preferred to use 2.2.14 because, it has PowerCore option, where I can use
-> 750  with minimal changes.
+> > Wait, I can't b/c then *everyone* will have this subtraction happen and
+> > everyone but me would be broken.
+> > With a separate field, I don't mess up other  board ports.
 >
-> I am not making any calls to firmware after that. This 'mtmsr' instruction
-> is third instruction and it hangs with out finishing. What might be the
-> problem that I have to fix to get this working.
+> Well, how many other boards are there out there that use
+> indirect_pci.c and have more than one host bridge?  Anyone?
 
-Force's PowerBoot doesn't properly clean up caches before handing
-control over to an external program.  You are probably having
-cache problems that we have run into on some COTS Force boards.
-I had to disable, flush, reenable L1 icache on the 680/G4, for
-example.  linuxppc_2_4_devel's simple bootloader has a specific
-CONFIG_PCORE option for this, in fact.
+The CPC710 ports, K2 and Adirondack.  Soon to be a large number of
+boards with GT64620 since it seems to be the high-end system
+controller of choice for embedded 7xx/74xx these days and
+everybody wants Linux.
+
+> > Another way to go would be to #ifdef your suggestion into indirect_pci.c
+> > for my board only.
+> > Which do you prefer?
+>
+> Not the ifdef. :)  Either make your own version of the indirect_pci
+> routines or add the field.
+
+New field seems better than dupping 98% of indirect_pci, IMHO.
 
 --
 Matt Porter
