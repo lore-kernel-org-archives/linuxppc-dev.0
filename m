@@ -1,30 +1,33 @@
-Message-Id: <199911200225.TAA15989@somnet.sandia.gov>
-Subject: Partitioning a Sawtooth?
-To: linuxppc-dev@lists.linuxppc.org
-Date: Fri, 19 Nov 1999 19:25:26 -0700 (MST)
-Cc: svspire@somnet.sandia.gov (Shannon V Spires)
-In-Reply-To: <199911190559.XAA23488@lists.linuxppc.org> from "Linux PPC Developer Digest" at Nov 18, 99 11:59:29 pm
-From: svspire@sandia.gov (Shannon Spires)
-Reply-To: svspire@sandia.gov
+Date: Fri, 19 Nov 1999 22:20:58 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Eric Dorland <dorland@lords.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Floppy problems
+In-Reply-To: <19991119205819.A676@HSE-MTL-ppp4368.qc.sympatico.ca>
+Message-ID: <Pine.LNX.3.96L.991119222014.8832A-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry if this question is basic, but how do you partition a Sawtooth's
-drive?
+On Fri, 19 Nov 1999, Eric Dorland wrote:
+> 
+> There seems to be a problem with the SWIM3 controller on my PowerMac G3.
+> Whenever I try to do any floppy realted operation (mount, dd, whatever) it
+> gives me this error:
+> 
+> end_request: I/O error, dev 02:00 (floppy), sector 36
+> 
+> does anyone know what this means or has had similar problems?
+> 
+> I'm running R5 on a a kernel I compiled myself, but not with anything
+> outrageous, just a few patches. I've got a G3/266, and I'm running linux off
+> a internal scsi drive.
 
-I'd like to try Benjamin's new kernel
-(http://calvaweb.calvacom.fr/bh40/test.html) on my Sawtooth. However, I
-can't figure out how to partition the drive. Pdisk (0.7a4) can't even see
-the ATA drive. And so far, I haven't found a newer version.
+Are you *positive* your floppy's good? Have you tried others?
 
-What's the procedure?
+-Hollis
 
-TIA!
--- 
-Shannon Spires
-svspire@sandia.gov
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
