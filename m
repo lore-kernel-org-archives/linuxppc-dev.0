@@ -1,50 +1,39 @@
-Message-ID: <3BE7F72A.7050803@drea.dnd.ca>
-Date: Tue, 06 Nov 2001 12:43:54 -0200
-From: Gavin Hemphill <hemphill@drea.dnd.ca>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 6 Nov 2001 16:16:36 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: <hemphill@drea.dnd.ca>,
+	<yellowdog-general@lists.yellowdoglinux.com>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Ti Powerbooks and YDL 2.1 - Problems
-References: <3BE7D31A.6040902@drea.dnd.ca> <20011106124602.29928@smtp.adsl.oleane.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <3BE78CB0.54E8C9F8@wanadoo.fr>
+Message-ID: <Pine.LNX.4.33.0111061612410.13471-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ben:
-	No problem, I can mount ISO cd's with the 2.2.19 (yellowdog) kernels
-(those were the easiest for me to recover via ftp).  There are NO error
-messages relating to ATAPI in dmesg with either the 2.2.19 or 2.4.10
-(again yellowdog latest kernel).  I've tried it with your latest rsyncd
-last night and have the same problem.  The error message in messages
-with all the 2.4.x kernels on the Ti Powerbook only is "cdrom: PID xxxx
-must open device O_NONBLOCK!" "open failed".  On the Wallstreet, Pismo,
-and G4 tower there are no error messages and the mount succeeds.
-	G++
+> > Well I've just spent an interesting two days documenting a problem with
+> > the Ti Powerbooks and the 2.4 series kernels.  I have access to two
+> > 500Mhz Ti's with the Matshita DVD-ROM SR-8187 drives.  When I tried to
+> > follow Dan Burcaw's experimental instructions on doing a yup update of
+> > YDL2.0 to 2.1 I ran into the problem that a mount of any CD returned the
+> > error message "wrong media type" (I hadn't used the CD at all since
+> > moving to the 2.4 series kernels).
+>
+> Did you try to mount it via the loop device:
+>
+>  mount -o loop -t hfs /dev/cdrom /mnt/wherever
+>
+> If this works, then you hit a kernel bug that was discussed 2 weeks ago
+> on linuxppc-dev
 
-Benjamin Herrenschmidt wrote:
+This isn't a bug but a new feature :-) At least it's part of a new feature
+(reblocking for filesystems where hardware blocksize doesn't match
+filesystem blocksize via loopback) introduced in recent 2.4 kernels
+(which-shoud-really-be-renamed-2.5 (tm)).
 
->>	 I'd agree if it were an hfs cdrom. However, what I'm trying to do is
->>mount an ISO9660 cdrom (i.e. mount -t iso9660 /dev/cdrom /mnt/cdrom).
->>Now the same CD rom can be mounted on a Wallstreet, a Pismo, a G4 733
->>(when the superdrive is swapped out for a sony CDROM) all of which are
->>running the same kernel as the Ti Powerbook.  I guess I wasn't clear
->>enough in the description that this issue seems to be strictly related
->>to the Matshita SR-8187.  The other machines were installed from the
->>same install CD's etc.
->>
->
-> Ah, ok, sorry, seems we have 2 different problems going on there...
->
-> You say the same CD-ROM drive works with a 2.2.x kernel ?
->
-> What 2.2.x version exactly ? Do you see any error from the ATAPI
-> layer in dmesg ?
->
-> Ben.
->
->
->
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
