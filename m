@@ -1,17 +1,18 @@
-Return-Path: <colin@colino.net>
-Received: from paperstreet.colino.net (colino.net [213.41.131.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4C3DD2BDF2
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Nov 2004 06:08:41 +1100 (EST)
-Date: Fri, 26 Nov 2004 20:07:54 +0100
-From: Colin Leroy <colin@colino.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20041126200754.1123e8f8@jack.colino.net>
-In-Reply-To: <1101439228.4633.74.camel@gaston>
+	by ozlabs.org (Postfix) with ESMTP id 610012BEA0
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Nov 2004 09:03:56 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Colin Leroy <colin@colino.net>
+In-Reply-To: <20041126200754.1123e8f8@jack.colino.net>
 References: <1101439228.4633.74.camel@gaston>
+	<20041126200754.1123e8f8@jack.colino.net>
+Content-Type: text/plain
+Date: Sat, 27 Nov 2004 09:03:30 +1100
+Message-Id: <1101506610.28048.23.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: "David S. Miller" <davem@redhat.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Jeff Garzik <jgarzik@pobox.com>
@@ -25,20 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 26 Nov 2004 at 14h11, Benjamin Herrenschmidt wrote:
+On Fri, 2004-11-26 at 20:07 +0100, Colin Leroy wrote:
+> On 26 Nov 2004 at 14h11, Benjamin Herrenschmidt wrote:
+> 
+> Hi Ben, 
+> 
+>  	if (found_mii_phy(gp) && gp->phy_mii.def->ops->suspend)
+> -		gp->phy_mii.def->ops->suspend(&gp->phy_mii, 0 /* wake on lan options */);
+> +		gp->phy_mii.def->ops->suspend(&gp->phy_mii);
+> 
+> Shouldn't this if() have an "&& !wol" clause ?
+> At least it doesn't work without it, and works with it, here on 5221 PHY.
+> 
+> Thanks for your work. Will post a patch applying to 2.6.9+sleep_patch soon 
+> for the possibly interested people.
 
-Hi Ben, 
+You are right. It happens to work in both case with the 5201 I have
+here, but that may be because the superisolate code doesn't quite work
+on it ...
 
- 	if (found_mii_phy(gp) && gp->phy_mii.def->ops->suspend)
--		gp->phy_mii.def->ops->suspend(&gp->phy_mii, 0 /* wake on lan options */);
-+		gp->phy_mii.def->ops->suspend(&gp->phy_mii);
+Anyway, I do _not_ intend to keep the driver in this state. I dislike
+the fact that I have to udelay() between 10 and 100usec (depending on
+the machine) at IRQ time with a spinlock held every second when polling
+for the link.
 
-Shouldn't this if() have an "&& !wol" clause ?
-At least it doesn't work without it, and works with it, here on 5221 PHY.
+I will move the link poll to task level so it can schedule instead. But
+the problem is complex. There is a problem with kenrel autoconfig
+(ipconfig) which doesn't schedule and should probably be fixed. Also to
+do what I want to do (which is to also switch the clock off when the
+iface is up, but the link down), I'll have locking issues with set_mtu()
+and set_multicast() calls which happen to be called with a spinlock
+held.
 
-Thanks for your work. Will post a patch applying to 2.6.9+sleep_patch soon 
-for the possibly interested people.
-
--- 
-Colin
-  http://www.colino.net/
+Ben.
