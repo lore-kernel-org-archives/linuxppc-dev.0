@@ -1,41 +1,38 @@
-Message-ID: <39D4B5FB.F2F88B00@student.ethz.ch>
-Date: Fri, 29 Sep 2000 17:32:11 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
-CC: costabel@wanadoo.fr, mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
-References: <39CE25AF.E29D265F@wanadoo.fr> <39CE286A.E63425A6@student.ethz.ch>
-	 <39D47072.2CC1E9A6@student.ethz.ch> <20000930002437Z.kohkichi@venus.dti.ne.jp>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14804.46688.113509.984458@esb.bbn.com>
+Date: Fri, 29 Sep 2000 11:33:52 -0400
+From: R Shapiro <rshapiro@bbn.com>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Cc: Michel Ddnzer <daenzerm@student.ethz.ch>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
+In-Reply-To: <Pine.LNX.4.10.10009291631490.15714-100000@zirkon.biophys.uni-duesseldorf.de>
+References: <14804.42077.837821.274373@esb.bbn.com>
+	<Pine.LNX.4.10.10009291631490.15714-100000@zirkon.biophys.uni-duesseldorf.de>
+Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kohkichi Hosoda wrote:
->
-> >>>>> On Fri, 29 Sep 2000 12:35:30 +0200, Michel Dänzer <daenzerm@student.ethz.ch> said:
->
-> >> http://n.ethz.ch/student/daenzerm/download/X4-fbdev-test.tar.bz2
-> >>
-> >> Beware: DON'T use this with an accelerated driver right
-> >> now.
->
-> Michel> This warning should be obsolete now, I've updated the tarball
->
-> I tried your binary with ati driver from
-> penguinppc.org::xfree86-pmac on iMac revB.  It worked for 15
-> bit color but did not used to work for 24 bit color.  After
-> installation of your binary, it works well!!
+Michael Schmitz writes:
+ > That's not fixable at the X level (well, technically it is but I can't
+ > figure out how and the X people refuse to consider that method). You will
+ > need to boot via OF and yaboot (or equivalent oldworld) directly
 
-That's great! How did it fail before?
+I tried miBoot.  Is that equivalent from the X perspective?  I can't
+get X to run with any driver at all, old or new, when the machine is
+booted with miBoot.
 
-
-Michel
+I haven't yet found a way to quik-boot this ide-only beige g3.  I've
+been given some suggestions of things to try, but they guy who
+actually owns this machine needs to do real work on it today.  I don't
+know when I'll get to play with OF/quik booting.
 
 
 --
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+rshapiro@bbn.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
