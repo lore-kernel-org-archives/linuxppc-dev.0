@@ -1,49 +1,39 @@
-Message-Id: <v03010d05b2d1936a8f9b@[209.96.179.197]>
-In-Reply-To: <l03130300b2d0a1474a03@[172.16.10.14]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 24 Jan 1999 22:31:59 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <kbhend@dogwood.tyler.wm.edu>
-Subject: Help from Kernel Gurus needed!!!
+Date: Sun, 24 Jan 1999 23:11:14 -0600 (CST)
+From: Ken Roberts <ken@worldnet.att.net>
+Reply-To: Ken Roberts <ken.r@worldnet.att.net>
+To: Tom Harrington <tph@rmi.net>
+cc: Robin Colgrove <robin@louis.bidmc.harvard.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux and Mac together (Was: Re: mac-on-linux project status)
+In-Reply-To: <199901250055.RAA20183@shell.rmi.net>
+Message-ID: <Pine.LNX.3.96.990124230812.434A-100000@dancer.at.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>> Maybe I am just not understanding this but if both MkLinux and OS X run on 
+>> top of the Mach microkernel, could they both be running simultaneously? If 
+>
+>In principle, yes,  Mach is capable of running multiple server operating 
+>systems at the same time.  I have no idea what's involved in making this
+>happen, but supposedly one of the advantges of a microkernel-based Linux
 
-I could really use some help from you kernel gurus out there.  In Sun's JDK
-1.2 green_threads implementation, their signal handlers are passed a
-pointer to a  context structure that allows them to see what the signal
-mask was immediately before the signal was delivered.
+this was explained to the mklinux list quite some time back.  i believe this
+will not work because mklinux and osx use different versions of the mach kernel.
 
-We need to do the same thing in the ppc port.  So in a signal handler I
-would like some way of knowing the address of the sigcontext structure
-where the old mask is stored.
+from what i remember, mklinux uses a more recent kernel than the official apple
+stuff.  the interfaces are different enough so that the two worlds are
+incompatible.
 
-I have looked in arch/ppc/kernel/signal.c and I can find the place where
-the structure is built, I just can't figure out a way to find it easily on
-the stack.
 
-This same info is easy to find on x86 since it is on the stack right before
-the value of sig (the signal number) which is passed on the stack.
-
-Any ideas here?  I could do a sigsetjmp to easily get the values of r1 and
-lr if either of those can be used to find the location of the sigcontext
-structure on the stack by working backwards.
-
-Any help of ideas here would be greatly appreciated.
-
-Thanks,
-
-Kevin
-
-----------------------------------------------------------
-Kevin B. Hendricks
-Associate Professor, Operations & Information Technology
-School of Business, College of William & Mary
-Williamsburg, VA 23187, kbhend@dogwood.tyler.wm.edu
-http://business.tyler.wm.edu
+--------------------------------------------------------------------------------
+Ken Roberts                                               ken.r@worldnet.att.net
+"A mechanism of world intercommunication will be devised, embracing the whole
+planet, freed from national hindrances and restrictions, and functioning with
+marvelous swiftness and perfect regularity."
+                                                        (Shoghi Effendi, 1936)
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
