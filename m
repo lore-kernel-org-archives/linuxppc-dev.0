@@ -1,31 +1,44 @@
-Message-ID: <3C03CCD9.9040004@humboldt.co.uk>
-Date: Tue, 27 Nov 2001 17:26:49 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
+Subject: Re: TiBook, 1394, iPod working (sort of  ;-)
+To: erbenson@alaska.net (Ethan Benson)
+Date: Tue, 27 Nov 2001 09:28:47 -0800 (PST)
+Cc: linuxppc-dev@lists.linuxppc.org (linuxppc)
+In-Reply-To: <20011126231944.E10071@plato.local.lan> from "Ethan Benson" at Nov 26, 2001 11:19:45 PM
 MIME-Version: 1.0
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: VT82C686B IDE and Linux/PPC woes
-References: <0111271710.AA24459@ivan.Harhan.ORG>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20011127172847.33B512B54A@marcus.pants.nu>
+From: flar@pants.nu (Brad Boyer)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov wrote:
+Ethan Benson wrote:
+> On Mon, Nov 26, 2001 at 05:33:51PM -0800, Ira Weiny wrote:
+> > 1) How are things with HFS+?  I don't know much but have done some poking
+>
+> for all appearances its abandoned.  the only sign of anything
+> happening with it is someone starting a sourceforge account for it,
+> all this has is the very pre-alpha development code which pretty much
+> just spews errors and panics the kernel, the same code that was
+> released about a year ago or so.
 
- > Adrian Cox <adrian@humboldt.co.uk> wrote:
+That would be me. I've almost got stuff working for a 2.4.x kernel,
+which is what is in CVS for that project. I haven't had it crash
+at all after my last block of rewrites, but it still doesn't work
+properly. It seemed more important to fix the crashes, since I wasn't
+going to get very far with it crashing all the time. I haven't had
+much time to work on it recently.
 
+http://sourceforge.net/projects/linux-hfsplus/
 
- >> Could there be something wrong with your ppc_ide_md.ide_init_hwif
- >> function?
+> i don't know much about this, its probably not significant, certainly
+> not to linux since it has zero support for any revision of HFS+,
+> outside of the userland hfsplusutils.
 
- > Aha, I didn't have one. I wrote one:
+Well, according to Apple's documentation, the only version of HFS+
+is version 4, so I have no idea what's up with that...
 
-You're probably lacking the other IDE setup functions as well, then.
-Take a look at the sandpoint code as an example.
-
---
-Adrian Cox   http://www.humboldt.co.uk/
+	Brad Boyer
+	flar@allandria.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
