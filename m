@@ -1,35 +1,66 @@
-Date: Wed, 1 Mar 2000 21:01:38 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: bogus ttyS02
-Message-ID: <Pine.LNX.4.05.10003012100350.516-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: John L Grantham <jgrantha@hannover.sgh-net.de>
+Cc: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
+        linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC vs. RedHat???
+In-Reply-To: Message from John L Grantham <jgrantha@hannover.sgh-net.de>
+   of "Wed, 01 Mar 2000 20:31:28 +0100." <12QEqB-1C1jJQC@fmrl00.sul.t-online.de>
+References: <12QEqB-1C1jJQC@fmrl00.sul.t-online.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Wed, 01 Mar 2000 12:07:14 -0800
+From: Renaud Dreyer <rdreyer@math.berkeley.edu>
+Message-Id: <20000301200714.D5165381A8@bourbaki>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi,
+>
+> On 1/3/00 8:28 pm, David A. Gatwood at dgatwood@deepspace.mklinux.org was
+> inspired to say:
+>
+> >
+> >On Wed, 1 Mar 2000, John L Grantham wrote:
+> >
+> >> On 1/3/00 6:17 pm, David A. Gatwood at dgatwood@deepspace.mklinux.org was
+> >> inspired to say:
+> >>
+> >> >
+> >> >On Wed, 1 Mar 2000, Info wrote:
+> >> >
+> >> >> I need to buy a workstation for Linux development (C++,JAVA,PERL,etc)
+> >> >> and would like to buy a Mac instead of Wintel.
+> >> >>
+> >> >> -Is LinuxPPC 2000 on par with RedHat 6.1?
+> >> >
+> >> >That's what all the PPC Linux distros are based on, yes.
+> >>
+> >> <nitpick>Not Debian...</nitpick>
+> >
+> >Is the Debian distribution a working distribution now?  I'd gotten the
+> >impression that it was still a work-in-progress.
+>
+> Define "working". :-)
+>
+> Seriously, my impression (admittedly I haven't tried Debian yet, though I
+> have no pressing need to do so--even though I would like to try out
+> apt-get...) is that it's working, but still officially in beta.
 
-Since a while 2.3.x kernels detect one serial port too much on my CHRP box.
-Anyone else (CHRP, PReP) seeing this?
+It's working great right now on my PowerMac 7300. The installation
+was a breeze (it might be a bit more complicated if you have a newer
+machine though) and it's really nice to have a system that more or
+less upgrades itself, and is pretty much on par with the Intel
+(and Sparc, and m68k, and Alpha and...) distribution.
 
-| ttyS00 at 0x03f8 (irq = 4) is a 16550A
-| ttyS01 at 0x02f8 (irq = 3) is a 16550A
-| ttyS02 at 0x03e8 (irq = 4) is a 16450
+> Statement from Debian: "Debian/PowerPC is considered to be stable as of
+> February, 1998, and is currently being consolidated for release. More
+> than 90% of the Debian packages are available, with the remaining
+> packages being processed. Debian/PowerPC will be officially released with
+> the next version of Debian (2.2; code-named potato)."
 
-The last one is bogus.
+Potato has been frozen and should be officially released very soon.
+Ciao,
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+            Renaud
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
