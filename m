@@ -2,19 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D61D32BDF2
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Nov 2004 10:27:49 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A11AC2BDEB
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Nov 2004 18:09:31 +1100 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-In-Reply-To: <Pine.LNX.4.44.0411231224150.7434-100000@zirkon.biophys.uni-duesseldorf.de>
-References: <Pine.LNX.4.44.0411231224150.7434-100000@zirkon.biophys.uni-duesseldorf.de>
+To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Wed, 24 Nov 2004 10:27:03 +1100
-Message-Id: <1101252423.24531.23.camel@gaston>
+Date: Wed, 24 Nov 2004 18:09:05 +1100
+Message-Id: <1101280145.4511.4.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: TEST: Sleep patch #4
+Cc: gentoo-ppc-user@gentoo.org
+Subject: TEST: Sleep patch #5
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Ok, here's the 5th version of the sleep patch for ATI based albooks &
+iBook G4. Other machine users, please test too as it may cause
+regressions (or improvements) as well.
 
-> Looking at radeon_base.c:radeon_screen_blank() (line 1045) we have:
-> 
->                         val &= ~(LVDS_BL_MOD_EN);
->                         udelay(100);
->                         val &= ~(LVDS_ON | LVDS_EN);
->                         OUTREG(LVDS_GEN_CNTL, val);
-> 
-> 
-> Is there an OUTREG(LVDS_GEN_CNTL, val); missing before the udelay(100) ??
-> 
-> That's in the panel blank code, not the unblank code though. Doesn't seem
-> to hurt to put the OUTREG in.
+Not many changes since last version, I don't know why sometimes, the
+panel doesn't come back properly (though a new sleep cycle tends to fix
+it) and I have no fix for the USB issues. However, I added some hacks to
+the cache flush code based on what Apple does in Darwin that may help
+make the thing more robust, and I added a hook mecanism that allow the
+video to be restored _very_ early on wakeup, pretty much before
+everything else, thus making it easier to spot & debug crashes on
+wakeup.
 
-won't hurt, dunno if it will help tho... could also be a different
-issue, like the spread spectrum PLL not locking properly or something
-like that ... I don't really know.
+There are still pending issues, like cpufreq on some machines will
+"think" it's running at full speed on wakeup while it's in fact running
+at slow speed (thankfully not the opposite), I will try to fix those in
+the next iteration.
+
+http://gate.crashing.org/~benh/albook-ibookg4-sleep-5.diff
 
 Ben.
