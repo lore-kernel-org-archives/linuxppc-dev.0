@@ -1,46 +1,48 @@
-Message-ID: <3ABE49FF.8DD46595@denise.shiny.it>
-Date: Sun, 25 Mar 2001 21:41:51 +0200
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Sound skips
-References: <20010324194439.431FB2EFE9@apollo.valhalla.net>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200103252008.OAA17663@lists.linuxppc.org>
+Subject: Re: st corruption
+From: Guillaume Laures <guillaume.laures@noos.fr>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Tony Mantler <nicoya@apia.dhs.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.05.10103252120020.13875-100000@callisto.of.borg>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 25 Mar 2001 22:08:13 +0200
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+Le 25 Mar 2001 21:21:20 +0200, Geert Uytterhoeven a écrit :
+> On 25 Mar 2001, Guillaume Laures wrote:
+> > > merida:/home/nicoya# md5sum testfile
+> >
+> > 13b37214355ea84d906a54bb14c1c0be  testfile
+> >
+> > > merida:/home/nicoya# tar -c testfile >/dev/st0
+> > > merida:/home/nicoya# mv testfile testfile.1
+> > > merida:/home/nicoya# tar -x </dev/st0
+> > > merida:/home/nicoya# md5sum testfile
+> >
+> > 13b37214355ea84d906a54bb14c1c0be  testfile
+> >
+> > uname -a :
+> > Linux shiner.gom.net 2.2.18-snd-bkport #26 Wed Feb 28 23:19:57 CET 2001
+> > ppc unknown
+> >
+> > So no prob here either with close hardware.
 >
-> > When I play music under high load the sound has a lot of
-> > short interruptions. It seems not to be related with I/O. I tried
-> > Alsaplayer
->
-> this is with Takashi Iwai's driver (it's the only one AFAIK)
->
-[...]
->
-> which OSS driver are you using?
-> dmasound?
+> Thanks! Do you also have a 2.4.x kernel around?
 
-Yes.
+Not yet for this machine, but soon. I'll keep you tuned.
 
-> with or without my patches ?
+I may do test on my G4 with an external enclosure (2.4.3-pre3, scsi =
+sym53c1010-33-0 through sym53c8xx-1.7.3a-20010304)
 
-Plain 2.4.2. I'm d/l-ing your patches now. I'll let you know.
+Later,
 
-> > I don't know what causes that (ints kept disabled too much time ?)
-> > but if someone has a patch to try I'me here.
->
-> there are a variety of things that can block for between 16 & 300 ms (not
-> necessarily IRQs).
->
-> what size fragments are you using?
 
-2K. I have to rise it to 8KB to work fine. My friend with the G4 still have
-very few interruptions even with 8KB.
+--
+GoM
 
-Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
