@@ -1,52 +1,47 @@
-Date: Tue, 26 Oct 1999 14:52:55 -0700 (PDT)
-Message-Id: <199910262152.OAA02956@sade.ddi.com>
-From: Jim Terman <terman@ddi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-To: Kumar Gala <kumar@chaos.ph.utexas.edu>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 26 Oct 1999 18:03:54 -0400
+From: Tom Vier <thomassr@erols.com>
+To: Rob Barris <rbarris@quicksilver.com>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: question about altivec registers
-In-Reply-To: <Pine.LNX.4.10.9910252336320.2381-100000@chaos.ph.utexas.edu>
-References: <199910252051.NAA07105@sade.ddi.com>
-	<Pine.LNX.4.10.9910252336320.2381-100000@chaos.ph.utexas.edu>
+Message-ID: <19991026180354.A6577@zero>
+References: <199910252231.PAA08775@sade.ddi.com> <Pine.LNX.4.10.9910251916060.5902-100000@modemcable220.93-200-24.mtl.mc.vi deotron.net> <v03010d0cb43a9d52cd3e@[192.168.1.16]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <v03010d0cb43a9d52cd3e@[192.168.1.16]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Will the linuxppc kernal as it is right now save the AltiVec registers
-if we enable the MSR VEC bit.  I've been trying to follow the other messages
-on this subject, but I'm not clear.
+On Mon, Oct 25, 1999 at 04:53:52PM -0700, Rob Barris wrote:
 
-Kumar Gala writes:
-> 
-> The linux kernel as is will not effect the AltiVec registers in any way.
-> However, there is a minor change to the kernel that will be required.  You
-> will need to enable the MSR VEC bit (bit 6 in the MSR) to tell the
-> processor that the AltiVec Unit is available (this is similar to the MSR
-> FP bit).  If the bit is not set the processor will generate an AltIVec
-> Unavailable exception which will be trapped (incorrectly) as an unknown
-> 0xf00 exception
-> 
-> the 0xf00 exception is for the performance monitors
-> and 0xf20 in the AltiVec unavailable exception.
-> 
-> All if these details are documented in the AltiVec Programming Environ
-> Manual (available from the Motorola Website).  
-> 
-> If you need any help getting a simple kernel up and running for running
-> single altiVec enabled processes let me know.
-> 
-> - kumar gala
-> 
-> 
-> ignorance is bliss.
-> 
-> 
-> 
+>    I worked this out once, the extra 512 bytes of register context,
+> multiplied by (say) a thousand context switches per second only add up to
+> about a MB of memory traffic per second - a fraction of a percent of the
+> available memory bandwidth in a G4 machine.  Most of that will sit in cac=
+he
+> anyway depending on the working set size of the processes involved.
+
+couldn't you just do lazy context saves? ie, disable the vector ops by 
+default; when a proc tries to use a vector op catch the exception, mark the
+proc as vector using and enable vectors. when a context switch occurs,
+mark the proc as vector enable, disable vectors, continue (and re-enable
+when you switch the proc's context back in). it's a little more complicated
+when more than one proc wants vectors. in that case, before you re-enable
+vectors, check to see if the vector regs need their context switched.
+
+or maybe that complexity isn't worth bandwidth/latency it saves.
+does linux/ppc do lazy FPU context saves this way?
+
+if you don't do lazy vector saves, i would think it would raise context
+switch times a sizable amount. there's four times as much data in those
+128bit regs as there are in the 32bit GPRs.
+
 -- 
-______________________________________________________________________________
-Jim Terman       |   323 Vintage Park Dr.   |   Voice: (650) 356-5446
-terman@ddi.com   |   Foster City, CA        |   Fax:   (650) 356-5490
-Diab-SDS, Inc.   |   94404                  |   web site - http://www.ddi.com
+Tom Vier - 0x27371A1C
+thomassr@erols.com
+http://users.erols.com/thomassr/zero/
+
+DSA Key fingerprint:
+42D4 82D6 6DF5 77EC 1251  30D2 D9E7 E858 2737 1A2C
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
