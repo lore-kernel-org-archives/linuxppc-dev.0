@@ -1,75 +1,38 @@
-Date: Mon, 22 Mar 2004 18:47:26 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kumar Gala <kumar.gala@motorola.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Matt Porter <mporter@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC] "indirect" DCR access (40x, BookE)
-Message-ID: <20040323024726.GA2939@gate.ebshome.net>
-References: <20040312014800.GA25455@gate.ebshome.net> <405124A3.3040002@embeddededge.com> <20040312030502.GA25644@gate.ebshome.net> <24019-11838@sneakemail.com> <20040312045451.GA25876@gate.ebshome.net> <1921A482-7431-11D8-AFB6-000393DBC2E8@motorola.com> <1079668852.909.88.camel@gaston>
+Message-Id: <200403230445.i2N4j7kZ030569@ms.usish.com>
+From: "Jack Liu" <Jack_liu@usish.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: OpenPIC problem:OpenPIC not work at 0xFC000000 on MPC8245 platform
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1079668852.909.88.camel@gaston>
+Content-Type: text/plain
+Date: Tue, 23 Mar 2004 12:44:12 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Mar 19, 2004 at 03:00:53PM +1100, Benjamin Herrenschmidt wrote:
-> I much prefer Eugene's idea.
+hi,all
+  I encounted a problem when I assign EUMB to 0xFC000000 not
+0xFDF00000. When EUMB at 0xFDF00000, it OpenPIC works ok. However
+when I change it to 0xFC000000, EPIC seems not work. I am not sure
+this is related to MAPB options. Because the following comments in
+ppc/kernel/mpc10x_common.c:
 
-During discussion with Ben on IRC he suggested that having two
-different DCR access wasn't a good idea and better if we use GCC
-__builtin_constant_p extension to decide what version to call.
+/*
+	 * Want processor accesses of 0xFDxxxxxx to be mapped
+	 * to PCI memory space at 0x00000000.  Do not want
+	 * host bridge to respond to PCI memory accesses of
+	 * 0xFDxxxxxx.  Do not want host bridge to respond
+	 * to PCI memory addresses 0xFD000000-0xFDFFFFFF;
+	 * want processor accesses from 0x000A0000-0x000BFFFF
+	 * to be forwarded to system memory.
+	 *
+	 * Only valid if not in agent mode and using MAP B.
+	 */
+  What does "Want processor accesses of 0xFDxxxxxx to be mapped to PCI
+memory space at 0x00000000." mean? Does this 0xFDxxxxxx have anything to
+do with EUMB?
 
-New patch version can be found http://kernel.ebshome.net/dcr-2.6-2.diff
-
-Here is only _new_ part for review:
-
-===== include/asm-ppc/reg_booke.h 1.5 vs edited =====
---- 1.5/include/asm-ppc/reg_booke.h     Fri Feb 13 07:24:55 2004
-+++ edited/include/asm-ppc/reg_booke.h  Mon Mar 22 17:44:02 2004
-@@ -10,20 +10,33 @@
- #define __ASM_PPC_REG_BOOKE_H__
-
- #ifndef __ASSEMBLY__
-+#include <linux/compiler.h>
-+
- /* Device Control Registers */
-+void __mtdcr(int reg, unsigned int val);
-+unsigned int __mfdcr(int reg);
- #define mfdcr(rn) mfdcr_or_dflt(rn, 0)
- #define mfdcr_or_dflt(rn,default_rval)                                 \
-        ({unsigned int rval;                                            \
--       if (rn == 0)                                                    \
-+       if (unlikely(rn == 0))                                          \
-                rval = default_rval;                                    \
-        else                                                            \
--               asm volatile("mfdcr %0," __stringify(rn) : "=r" (rval)); \
-+               if (__builtin_constant_p(rn))                           \
-+                       asm volatile("mfdcr %0," __stringify(rn)        \
-+                                     : "=r" (rval));                   \
-+               else                                                    \
-+                       rval = __mfdcr(rn);                             \
-        rval;})
-
- #define mtdcr(rn, v)                                                   \
- do {                                                                   \
--       if (rn != 0)                                                    \
--               asm volatile("mtdcr " __stringify(rn) ",%0" : : "r" (v)); \
-+       if (likely(rn != 0)){                                           \
-+               if (__builtin_constant_p(rn))                           \
-+                       asm volatile("mtdcr " __stringify(rn) ",%0"     \
-+                                     : : "r" (v));                     \
-+               else                                                    \
-+                       __mtdcr(rn, v);                                 \
-+       }                                                               \
- } while (0)
-
- /* R/W of indirect DCRs make use of standard naming conventions for DCRs */
-
-Thanks,
-
-Eugene
+  Can anybody give me your vaulable advice?
+Best regards
+Jack Liu
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
