@@ -1,26 +1,23 @@
-Message-ID: <39B4B90C.94379F1F@dgt-lab.com.pl>
-Date: Tue, 05 Sep 2000 11:12:44 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
+Message-ID: <006d01c0171a$66f9a840$0a00010a@paoloweb>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: HARDHAT: hhl-relocation... how to use it?
+Date: Tue, 5 Sep 2000 11:19:30 +0200
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: falc-lh + mpc823
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anyone used FALC-LH chip (PEB2255 from Siemens) connected to
-MPC823?
+I suppose hhl-relocation can be used to reconfigure the standard directory
+of the compiler toolkit but it seems it cannot be run (it looks for
+hhl-relocation.real).
 
-Do You have any idea how to make it run?
+Any suggestion?
 
-I found only some falc references in pc300 driver (linux-2.2.17),
-but it uses PCI a lot (i don't have PCI of course).
+Thanx,
+Paolo.
 
-
---
-* * * * * * * * * * * * *
-* per pedes ad astra !  *
-* * * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
