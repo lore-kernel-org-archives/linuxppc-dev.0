@@ -1,32 +1,43 @@
-Message-ID: <3E6CB1CB.8020502@embeddededge.com>
-Date: Mon, 10 Mar 2003 10:39:55 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <81A66F72DCACD511B0600002A551BFCB4E9D62@kuumex05.barco.com>
+From: =?iso-8859-1?Q?=22Callebaut=2C_Beno=EEt=22?= <benoit.callebaut@barco.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: possible bug in __wait_on_buffer 
+Date: Mon, 10 Mar 2003 16:56:31 +0100
 MIME-Version: 1.0
-To: Donald MacArthur <dmacarth@ufl.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Changing Console Baud Rate
-References: <NDBBIHDFKLJKGJJGMFJOOECACHAA.dmacarth@ufl.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Donald MacArthur wrote:
+Hi,
 
-> I am currently working with an embedded planet MPC850 credit card board.  I
-> am also using the GPL timesys linux kernel.  I recently tried to change the
-> console baud rate in the kernel boot parameter from 9600 to 19200 yet when
-> the kernel booted up there was no change.  Any ideas on further
-> modifications required to change the console baud rate?
+I use cramfs to load the root of my system (MPC8245 based), All is good
+excepted that the kernel crash on the line
+run_task_queue(&tq_disk);
+I checked if this queue(tq_disk) was used elsewhere( ie something put a task
+in queue) but found only a raid5 driver using it.
+So I disabled it. After that I received a decrementer interrupt on place.
+A workaround consisting of a loop like this :
+long j = jiffies+ 2* HZ;
+while (jiffies < j ) schedule();
+doesn't work.
+Does someone encountered the same problem or is there a bug in another part
+of the code ?
 
-The console baud rate is taken from the board information structure, which
-is initalized from the boot rom environment.  The kernel console baud rate
-will match the boot rom baud rate (it kind of needs to do this support
-debugging modes).  If you want a different kernel baud rate, change the
-boot rom baud rate.
+Regards,
+----------------------------------------------------------------------------
+------
+Benoit Callebaut
+Software Development Engineer
+Barco | Control Rooms
+Noordlaan 5, 8520 Kuurne, Belgium
 
+Tel 	+32(0)56 36 84 28
+Fax 	+32(0)56 36 86 05
 
-	-- Dan
+mailto:benoit.callebaut@barco.com
+http://www.barcocontrolrooms.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
