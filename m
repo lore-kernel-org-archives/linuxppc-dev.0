@@ -1,18 +1,27 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from scaup.mail.pas.earthlink.net (scaup.mail.pas.earthlink.net
-	[207.217.120.49]) by ozlabs.org (Postfix) with ESMTP id 6F3932BDB3
+Return-Path: <daveg@sonartech.com.au>
+Received: from sonartech.com.au (newgate.sonartech.com.au [203.28.130.2])
+	by ozlabs.org (Postfix) with ESMTP id 306012BDAB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Sep 2004 03:27:53 +1000 (EST)
-Date: Tue, 28 Sep 2004 13:21:16 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20040928152214.CC499C1430@atlas.denx.de>
-Message-ID: <Pine.LNX.4.60.0409281317590.11302@localhost.localdomain>
-References: <20040928152214.CC499C1430@atlas.denx.de>
+	Wed, 29 Sep 2004 08:43:54 +1000 (EST)
+Message-ID: <4159E96D.5040207@sonartech.com.au>
+Date: Wed, 29 Sep 2004 08:45:01 +1000
+From: David Gardiner <daveg@sonartech.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: I2C/SPI/SMC relocation patch works for both SMC 1 and 2? 
+To: Matt Porter <mporter@kernel.crashing.org>
+References: <4153A362.8010604@sonartech.com.au>
+	<AE8972FB-0E3A-11D9-BC8B-000A95A4DC02@kernel.crashing.org>
+	<4158DD68.2060707@sonartech.com.au>
+	<20040927221323.A30581@home.com>
+	<C617C694-1110-11D9-8370-000A95A4DC02@kernel.crashing.org>
+	<20040927224825.B30772@home.com>
+	<7C908338-1113-11D9-8370-000A95A4DC02@kernel.crashing.org>
+	<20040927231438.D30772@home.com>
+	<415908DC.3090409@sonartech.com.au>
+	<20040927235948.G30772@home.com>
+In-Reply-To: <20040927235948.G30772@home.com>
+Content-Type: multipart/mixed; boundary="------------020408030705030802050304"
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: powerpc with gigabit card hanging
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +32,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 28 Sep 2004, Wolfgang Denk wrote:
+This is a multi-part message in MIME format.
+--------------020408030705030802050304
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> In message <Pine.LNX.4.60.0409280836340.9825@localhost.localdomain> you wrote:
->>
->>    but the PDF file doesn't refer explicitly to SMC1, just to the
->> generic SMC(UART).  does this mean that the same instructions to
+
+>only the PMCSPAN IDSEL routing is missing. Don't know what your 2.4
+>  
 >
-> It relates to the SMC which parameter RAM  location  is  in  conflict
-> with the SPI/I2C parameter RAM, i. e. SMC1.
+linuxppc_2_4_devel
 
-huh?  what does SMC1 relocation have to do with either of I2C or SPI? 
-i'm looking at the PRAM memory map right now, and whether or not you 
-choose to relocate SMC1 seems independent from whether you choose to 
-relocate both (or either) of I2C or SPI.
+>kernel looks like or your current map in your 2.6 port.
+>  
+>
+Thanks Matt, that was pretty easy once I knew where to look, being that 
+the gigabit was on the span card and they were all set to zero and in 
+the linuxppc_2_4_devel tree they weren't, anyway the patch is attatched. 
+I don't want anything to be done with this patch as I still would like 
+to "try" and fold the mvme5100 into pplus and I'm only attatching it in 
+case I get hit by a bus.
 
-i don't see how SMC1 can be "in conflict with the SPI/I2C parameter 
-RAM" as you claim.  can you explain that?
+dodah,
+dlg
+ 
 
-rday
+--------------020408030705030802050304
+Content-Type: text/plain;
+ name="irq.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="irq.patch"
+
+--- play-2.6.9.patched.changed.compile/arch/ppc/platforms/mvme5100.c.orig	2004-09-29 08:25:47.549383101 +1000
++++ play-2.6.9.patched.changed.compile/arch/ppc/platforms/mvme5100.c	2004-09-29 08:25:54.199430187 +1000
+@@ -81,7 +81,7 @@ mvme5100_map_irq(struct pci_dev *dev, un
+ 		{ 28, 25, 26, 27 },	/* IDSEL 17 - PMC Slot 2 */
+ 		{  0,  0,  0,  0 },	/* IDSEL 18 - unused */
+ 		{ 29,  0,  0,  0 },	/* IDSEL 19 - Enet 2 */
+-		{  0,  0,  0,  0 },	/* IDSEL 20 - PMCSPAN */
++		{ 25, 26, 27, 28 }, /* IDSEL 20 - PMCSPAN */
+ 	};
+ 
+ 	const long min_idsel = 11, max_idsel = 20, irqs_per_slot = 4;
+
+--------------020408030705030802050304--
