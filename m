@@ -1,17 +1,17 @@
-Message-ID: <38FD06B2.EC638512@erols.com>
-Date: Tue, 18 Apr 2000 21:06:58 -0400
-From: Nelson Abramson <pogtal@erols.com>
-MIME-Version: 1.0
+Date: Tue, 18 Apr 2000 21:16:33 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
 To: "Francis G. McCabe" <fgm@fla.fujitsu.com>
-CC: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Putting linuxPPC on my new pismo
-References: <38FD00AA.6C423CB@fla.fujitsu.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <38FD00AA.6C423CB@fla.fujitsu.com>
+Message-ID: <Pine.LNX.3.96L.1000418211600.12914A-100000@unix48.andrew.cmu.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Francis G. McCabe" wrote:
+On Tue, 18 Apr 2000, Francis G. McCabe wrote:
 
 > I realize that there has been a lot of discussion about this. However, I
 > havent seen my problem mentioned.
@@ -21,19 +21,9 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 >
 > hda: lost interrupt
 
-If you searched the archives for your error message, you would find the
-answer you seek (it is not a powerbook only problem).
+Don't use BootX; you have to use yaboot.
 
-Make sure you are using yaboot to boot the powerbook, not bootX.  Using
-bootX on the newworld machines causes that problem to occur.
-
-HTH
---Nelson Abramson
-
---
-"Apparently if you play the Windows NT CD backwards you hear satanic messages"
-"You think that's bad, if you play it forwards it installs Windows NT!"
---orlando
+-Hollis
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
