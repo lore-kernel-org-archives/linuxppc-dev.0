@@ -1,55 +1,23 @@
-Message-ID: <399CBAE0.7EFDF429@embeddededge.com>
-Date: Fri, 18 Aug 2000 00:26:08 -0400
+Message-ID: <399CC44F.C8CE6E2A@embeddededge.com>
+Date: Fri, 18 Aug 2000 01:06:23 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Pravin Pathak <pkpathak@dnrc.bell-labs.com>
-CC: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: What is embedded linux ?
-References: <399B0FCD.A6E0A6BE@dnrc.bell-labs.com>
+To: Joe Green <jgreen@mvista.com>
+CC: "M. Tim Jones" <mtj@mtjones.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Doc/Serial problems in HHL 1.2?
+References: <399B9874.99CF5C1C@mtjones.com> <00081708394601.01481@minotaur.mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pravin Pathak wrote:
->
-> Hi All !
-> I have a silly question. How does embedded linux works without disk
-> support ?
+Joe Green wrote:
 
-Don't confuse disk with file system......
+> ....  I don't think we have an 860CLLF LSP, but the mbx860 or
+> linuxplanet configs should be close.
 
-> I mean from where it loads shell and other application task images
-> without any file system
-> support ?
-
-Don't confuse disk with file system.....
-
-> .... For VxWOrks/pSOS have a single object file. How about Embedded
-> Linux ?
-
-There are both a number of possible file systems (the structure of the
-persistent data) and possible storage devices (the place where the
-data is actually stored).
-
-You can use the standard Linux ext2 file system on a ramdisk or in
-flash, one of the flash file systems that will update flash sectors
-and potentially compress the data, or even a file system on a
-compact flash (or PCMCIA) device.
-
-You can compress a ram disk as part of a flash image, and have it
-automatically uncompressed and loaded into ram when the system boots.
-
-There are many options and your choice depends upon your requirements.
-
-> I am confused on this matter. Or it always need some kind of file
-> support like NFS to boot ?
-
-The NFS is used as a root file system because it is convenient for
-development and also consistent across most platforms because everyone
-supports Ethernet.  It isn't required, but is certainly the fastest
-development path.
+Yes, there is a LSP for the 860 CLLF.  It is called:
+	hhl-ppc_8xx-cllf-lsp-2.2.14-1.2.2-3.noarch.rpm
 
 
 	-- Dan
