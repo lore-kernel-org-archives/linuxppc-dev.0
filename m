@@ -1,30 +1,38 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: R Shapiro <reshapiro@mediaone.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: current recommended versions of glibc/egcs/binutils for R5?
-Date: Sun, 1 Aug 1999 15:58:53 +0200
-Content-Type: text/plain
+Message-Id: <v03110700b3ca439d2553@[209.183.130.185]>
+In-Reply-To: <99080116025601.00416@ns1102.munich.netsurf.de>
 References: <14244.17697.552036.29509@ipa.ne.mediaone.net>
-In-Reply-To: <14244.17697.552036.29509@ipa.ne.mediaone.net>
-MIME-Version: 1.0
-Message-Id: <99080116025601.00416@ns1102.munich.netsurf.de>
+ <14244.17697.552036.29509@ipa.ne.mediaone.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 1 Aug 1999 14:38:31 -0400
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+Subject: gdb broken under linuxppc r5 tools 
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am Son, 01 Aug 1999 schrieb R Shapiro:
->What are the currently recommended *stable* versions of glibc, egcs
->and binutils in R5?  Should I stick with the installed versions:
->
-> glibc 2.1.1-6c, egcs 1.1.2-12c, binutils 2.9.1.0.990418-1c
->
->or use the newer versions available on linuxppc.org:
->
-> glibc 2.1.2-1a, egcs 1.1.2-12f, binutils-2.9.4.0.8-1a
+Hey,
 
-I consider the newer versions stable and told the distribution maintainers
-about it.
+Does anyone know what's up with gdb lately?  It used to be quite stable but
+since I upgraded to the glibc, binutils, egcs, gdb from Linuxppc R5 cd, I
+can't seem to set any breakpoints in shared libraries (or they show up
+someplace else at random).  Functions are missing (or don't show up) and if
+I try to disassemble one function in a shared library, I often get another.
 
-Franz.
+I really need a working stable gdb.
+
+Has anyone else run into this.  If so, exactly what versions of gdb, glibc,
+binutils, egcs are stable together, especially when working with shared
+libraries?
+
+Thanks,
+
+Kevin
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
