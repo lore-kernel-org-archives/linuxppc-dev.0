@@ -1,58 +1,33 @@
-To: tguilliams@sbs.com
+Date: Thu, 15 May 2003 11:59:53 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Tom Guilliams <tguilliams@sbs.com>
 Cc: Linux PPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ELDK build.sh seg faults 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "15 May 2003 10:09:34 PDT."
-             <1053018568.22337.1115.camel@corona>
-Date: Thu, 15 May 2003 20:06:06 +0200
-Message-Id: <20030515180611.91606C6092@atlas.denx.de>
+Subject: Re: linuxppc_2_4_devel: 2.4.20 rc2 - where's pImage build?
+Message-ID: <20030515185953.GC11565@ip68-0-152-218.tc.ph.cox.net>
+References: <1052969438.14900.8.camel@aurora.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1052969438.14900.8.camel@aurora.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1053018568.22337.1115.camel@corona> you wrote:
+On Wed, May 14, 2003 at 08:30:38PM -0700, Tom Guilliams wrote:
+
 >
-> > Which version of (native_ RPM is running on your system?
->
-> The seg fault occurs during the build_package() for the target rpms
-> which uses the ELDK SRPM included - rpm 4.0.3 from
-> SRPMS/rpm-4.0.3-1.03b.src.rpm I believe.  Might be confused.  Need to
-> trace out the build.sh better.
+> Anyone know why the BOOT_TARGET define for "pImage" in arch/ppc/Makefile
+> was taken out?  Are we not going to support the build rule for
+> U-Boot/PPCBoot anymore other than building it manually (gzip vmlinux
+> then use "mkimage").
 
-Again: which version of _native_ RPM is running on your system?
-
-> The spec files run from bash (aka, /bin/sh).  My RedHat 7.2 version is -
->
-> % /bin/sh --version
-> GNU bash, version 2.05.8(1)-release (i386-redhat-linux-gnu)
-> Copyright 2000 Free Software Foundation, Inc.
->
-> What version are you using?
-
-On the build host (RH-7.1):
-
-# bash --version
-GNU bash, version 2.04.21(1)-release (i386-redhat-linux-gnu)
-Copyright 1999 Free Software Foundation, Inc.
-
-> OK, I'll see what I can find out. My working build machine had been
-> Redhat 7.2 two months ago but now, something's wrong.  I thought I'd try
-> it on 8.0 to see if it would shed light but it didn't.
-
-Make sure you run "up2date"...
-
-
-Best regards,
-
-Wolfgang Denk
+Probably a bad merge.  Wasn't there a patch / request a while back to
+update things (or just add it for 2.5?  I forget) that never got back to
+me.  Anyhow, I'll try and put this back next week (finals week this
+week) and see if I can get it up to Marcelo, provided someone else can
+verify that it works right.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Roses are red
-Violets are blue
-Some poems rhyme
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
