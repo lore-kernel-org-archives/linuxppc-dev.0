@@ -1,82 +1,114 @@
-Subject: 405LP - Beech with SSX firmware
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: embedded list <linuxppc-embedded@lists.linuxppc.org>
-Cc: Bishop Brock <bcbrock@us.ibm.com>
-Content-Type: multipart/mixed; boundary="=-A9S+ux9kGTgoaiL9VuN+"
-Date: 20 Dec 2002 17:36:00 -0600
-Message-Id: <1040427361.1096.27.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
+Date: Sat, 21 Dec 2002 15:25:40 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: New invalidate/clean/flush_dcache functions
+In-reply-to: <3E034380.1080404@tataelxsi.co.in>
+To: linuxppc-embedded@lists.linuxppc.org
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLCEABFJAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-A9S+ux9kGTgoaiL9VuN+
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+[Resending again as it did not reach the list, is it me or problems with the list?]
 
-Hi, this patch (copied from Arctic) allows Beech to boot with SSX
-firmware. If there's a way to detect OpenBIOS vs PIBS (I've asked for
-confirmation) then I think the Beech and Arctic ifdefs could be combined
-in the file. There may not be though, and in the meantime this works.
+How about adding new xxx_dcache_range() functions functions to PPC.
+Below is my suggestion which is more logical and more efficient:
 
-Please apply to _2_4_devel.
 
--Hollis
---
-PowerPC Linux
-IBM Linux Technology Center
+static inline void invalidate_dcache_region(void *adr, unsigned long len)
+{
+	if(len == 0) return;
+	len = ((len-1) >> LG_L1_CACHE_LINE_SIZE) +1;
+	do {
+		asm  ("dcbi     0,%0" : : "r" (adr));
+		adr += L1_CACHE_LINE_SIZE;
+	} while(--len > 0);
+}
 
---=-A9S+ux9kGTgoaiL9VuN+
-Content-Disposition: attachment; filename=405LP-beech-ssx.diff
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; name=405LP-beech-ssx.diff; charset=ISO-8859-1
+static inline void clean_dcache_region(void *adr, unsigned long len)
+{
+	if(len == 0) return;
+	len = ((len-1) >> LG_L1_CACHE_LINE_SIZE) +1;
+	do {
+		asm  ("dcbst     0,%0" : : "r" (adr));
+		adr += L1_CACHE_LINE_SIZE;
+	} while(--len > 0);
+	asm  ("sync" : : );
+}
 
-=3D=3D=3D=3D=3D arch/ppc/boot/simple/embed_config.c 1.20 vs edited =3D=3D=
-=3D=3D=3D
---- 1.20/arch/ppc/boot/simple/embed_config.c	Sun Dec 15 20:02:08 2002
-+++ edited/arch/ppc/boot/simple/embed_config.c	Wed Dec 18 15:53:18 2002
-@@ -868,12 +868,33 @@
- #endif
-=20
- #ifdef CONFIG_BEECH
--static void
--get_board_info(bd_t **bdp)
-+/* Several bootloaders have been used on Beech. We assume either
-+ * SSX or OpenBIOS */
-+
-+#define SSX_BIOS_ADDR 		0xFFFF0000
-+#define SSX_BIOS_GET_BOARD_INFO 0
-+
-+struct ssx_bios_id {
-+	unsigned int boot_branch;	/* Branch to bootcode */
-+	char ssx_bios[8];		/* "SSX BIOS" (no \0) */
-+	void (*bios_entry_point)(unsigned int, bd_t *); /* Call bios_entry_point(=
-cmd, &data) */
-+};
-+
-+extern int memcmp(const void *s1, const void *s2, size_t n);
-+
-+static void get_board_info(bd_t **bdp)
- {
--	typedef void (*PFV)(bd_t *bd);
--	((PFV)(*(unsigned long *)BOARD_INFO_VECTOR))(*bdp);
--	return;
-+	struct ssx_bios_id *ssx =3D (struct ssx_bios_id *)SSX_BIOS_ADDR;
-+
-+	/* Check for SSX signature */
-+
-+	if (memcmp(&ssx->ssx_bios, "SSX BIOS", 8) =3D=3D 0) {
-+		ssx->bios_entry_point(SSX_BIOS_GET_BOARD_INFO, *bdp);
-+	} else {
-+		/* It's not SSX, so assume OpenBIOS */
-+		typedef void (*PFV)(bd_t *bd);
-+		((PFV)(*(unsigned long *)BOARD_INFO_VECTOR))(*bdp);
-+	}
- }
-=20
- void
+static inline void flush_dcache_region(void *adr, unsigned long len)
+{
+	if(len == 0) return;
+	len = ((len-1) >> LG_L1_CACHE_LINE_SIZE) +1;
+	do {
+		asm  ("dcbf     0,%0" : : "r" (adr));
+		adr += L1_CACHE_LINE_SIZE;
+	} while(--len > 0);
+	asm  ("sync" : : );
+}
 
---=-A9S+ux9kGTgoaiL9VuN+--
+int *ptr1;
+char *ptr2;
+void *ptr3;
+
+main()
+{
+	unsigned long len1 = 1600;
+	unsigned long len2 = 900;
+	unsigned long len3 = 702;
+
+	invalidate_dcache_region(ptr1, len1);
+	clean_dcache_region(ptr2, len2);
+	flush_dcache_region(ptr3, len3);
+}
+
+/* Assembler output:
+ppc_8xx-gcc -O2 -S inv_dcache.c -mregnames inv_dcache.c
+
+        .file   "inv_dcache.c"
+gcc2_compiled.:
+        .section        ".text"
+        .align 2
+        .globl main
+        .type    main,@function
+main:
+        li %r0,100
+        mtctr %r0
+        lis %r9,ptr1@ha
+        lwz %r9,ptr1@l(%r9)
+.L39:
+        dcbi     0,%r9
+        addi %r9,%r9,16
+        bdnz .L39
+        li %r0,57
+        mtctr %r0
+        lis %r9,ptr2@ha
+        lwz %r9,ptr2@l(%r9)
+.L30:
+        dcbst     0,%r9
+        addi %r9,%r9,16
+        bdnz .L30
+        sync
+        li %r0,44
+        mtctr %r0
+        lis %r9,ptr3@ha
+        lwz %r9,ptr3@l(%r9)
+.L36:
+        dcbf     0,%r9
+        addi %r9,%r9,16
+        bdnz .L36
+        sync
+        blr
+.Lfe1:
+        .size    main,.Lfe1-main
+        .comm   ptr1,4,4
+        .comm   ptr2,4,4
+        .comm   ptr3,4,4
+        .ident  "GCC: (GNU) 2.95.3 20010315 (release/MontaVista)"
+
+*/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
