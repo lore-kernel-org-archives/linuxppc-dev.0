@@ -1,191 +1,557 @@
-Message-ID: <3E006F8B.1040109@intracom.gr>
-Date: Wed, 18 Dec 2002 14:52:27 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC05F4E@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: ifconfig: SCC1 enet0 not showing up
+Date: Wed, 18 Dec 2002 09:56:52 -0500
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: New style dpalloc/hostalloc routines (bitkeeper)
-References: <3E006C54.3050909@intracom.gr>
-In-Reply-To: <3E006C54.3050909@intracom.gr>
-Content-Type: multipart/mixed;
- boundary="------------080107000503070504090602"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------080107000503070504090602
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Pantelis Antoniou wrote:
+I have a MPC860 FADS based board running kernel 2.4.
 
->
-> This is the gnu-style diff patch.
->
-> This patch is against the current linuxppc_2_4_devel tree.
->
->
->
->
->
-Again, patch compressed.
+My Ethernet is not showing up ... I have compiled in enet support ... fixed
+my port pins ... but when I do ifconfig I see only:
+
+# ifconfig
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
 
 
---------------080107000503070504090602
-Content-Type: application/x-gunzip;
- name="new_cpm_alloc.bitkeeper.patch.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="new_cpm_alloc.bitkeeper.patch.gz"
+At start my enet scc is configured properly ... I am pretty sure because I
+see:
+## Transferring control to Linux (at address 00000000) ...
+Linux version 2.4.20-pre8 ...
+Kernel command line: root=/dev/ram rw
+ip=192.168.104.101:192.168.103.151:192.168.104.1:255.255.255.0:BigMoney::off
+...
+eth0: CPM ENET Version 0.2 on SCC1, 00:22:2e:ff:67:de
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 1024 bind 1024)
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 1425k freed
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 44k init
+....
 
-H4sICGZpAD4AA25ld19jcG1fYWxsb2MuYml0a2VlcGVyLnBhdGNoALw8+1fbxtI/23/FNr2H
-2mAbyW9D4IQQknBKgEPS+/V+TY+OLK2xil6VZMC97v3b78zs6i2bR8ilCdVjd3Z23jM7yo/s
-l5AHezVfdyOv/iP76IXRXs3RDXrQsdwo0F0eda4DeHnlefByVw+MuXXLw93pza5tuYt73ze0
-rtbXTH7L7bZu256h+XpkzOsw6RIv2C0Pwr2a2uklT6Klz/dqVycffjk7uqrXDw7Y8Vx3r/ln
-HrGDg7rhBdGbWRR6f3RmoWPr07BjeM4qGbPqKooK/w2VkToaTFbqZDTprQbGWJ0OJ2PD1Hvq
-uNetm9fWNPTcN3/p9x34m5/fVbvqSOkjmFV3qCj9+jumdlR1ojKlu6vCnzFT+3tqb6+r7ijd
-PUVhRJY3VfRhO2PWVupv2Qthflw32JFpsnDh+wCRzbyAufyOhdHS5sz0icy7c+AXXbHAW0SW
-y0OYdje3gMB+4Pk8sJfM0V39mjOHO16wbDHdNRm8cKyIRXNuBWwRcma5zPHMhc3DTv1nNph0
-1XH9MuVIvf3En3pd0ZX64TpioAjtgtjsju/vNcvbPfbcmXUN5MwQp6eok1WvO+x3V9NJz+SD
-Ke+NlclM7U83sGEzaOT4GP6qPWXVH/eGE0DxCbCCOdf9jpFCAlQH3VW3O1K6K9NQlPFo2DfG
-U7M3VAbfDLi3Gg66kzGhCBrzZmrZdhtY1jb0qDO1Pc8BWi7caLmyXMNemHxXD502QgUSO8B+
-ozMneqqAWLfXV7rKSh0Nx+pqOlUnXXM85eZYUQYzcxOqm2HnCKoMR71H8PyGBy638VK7CZdO
-KPadcF2ZrPr9UVddTbr9Gdf7/bE57I1G096jCFoNPIvmsDsYjJ7D93mRPcpQ7Y5XU2VsmgPe
-Vc3+VNdHz+B7AXB/NRh3B/3Ha0/CEqOoPt3eSB2vZqPJmBuDbr+r9Cbd8ewpGOZhZ+kIQt97
-DLsloE/6DZ9ZNi+iqHbBCK9mY5X3RpOBoRu9IX8krysg5+Rx0u+O1yP41op+5hws4S6PjF3b
-u7623GvNu8kiOO71V8N+bzBedfv9LpBPh5/JZgpughuj1wPxVicg1uT41s3Y4Ae/Bfk6+hMe
-vDG8+w7g/ADCSMx+fzgYrlRwT2NykaPxsxxkl7XVl3WQZwJZFnlM4v0GnJ4rrztecM10w+B+
-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
---------------080107000503070504090602--
+Am I missing some kernel config (see below)?
+
+Jim
+
+#
+# Automatically generated by make menuconfig: don't edit
+#
+# CONFIG_UID16 is not set
+# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_HAVE_DEC_LOCK=y
+
+#
+# Code maturity level options
+#
+CONFIG_EXPERIMENTAL=y
+
+#
+# Loadable module support
+#
+# CONFIG_MODULES is not set
+
+#
+# Platform support
+#
+CONFIG_PPC=y
+CONFIG_PPC32=y
+# CONFIG_6xx is not set
+# CONFIG_4xx is not set
+# CONFIG_POWER3 is not set
+# CONFIG_POWER4 is not set
+CONFIG_8xx=y
+# CONFIG_PPC_STD_MMU is not set
+CONFIG_SERIAL_CONSOLE=y
+# CONFIG_RPXLITE is not set
+# CONFIG_RPXCLASSIC is not set
+# CONFIG_BSEIP is not set
+CONFIG_FADS=y
+# CONFIG_TQM823L is not set
+# CONFIG_TQM850L is not set
+# CONFIG_TQM855L is not set
+# CONFIG_TQM860L is not set
+# CONFIG_FPS850L is not set
+# CONFIG_TQM860 is not set
+# CONFIG_SPD823TS is not set
+# CONFIG_IVMS8 is not set
+# CONFIG_IVML24 is not set
+# CONFIG_SM850 is not set
+# CONFIG_MBX is not set
+# CONFIG_WINCEPT is not set
+# CONFIG_ALL_PPC is not set
+# CONFIG_SMP is not set
+CONFIG_MATH_EMULATION=y
+CONFIG_EMBEDDEDBOOT=y
+
+#
+# General setup
+#
+# CONFIG_HIGHMEM is not set
+# CONFIG_ISA is not set
+# CONFIG_EISA is not set
+# CONFIG_SBUS is not set
+# CONFIG_MCA is not set
+# CONFIG_PCI_QSPAN is not set
+# CONFIG_PCI is not set
+CONFIG_NET=y
+# CONFIG_SYSCTL is not set
+# CONFIG_SYSVIPC is not set
+# CONFIG_BSD_PROCESS_ACCT is not set
+CONFIG_KCORE_ELF=y
+CONFIG_BINFMT_ELF=y
+CONFIG_KERNEL_ELF=y
+# CONFIG_BINFMT_MISC is not set
+# CONFIG_HOTPLUG is not set
+# CONFIG_PCMCIA is not set
+
+#
+# Parallel port support
+#
+# CONFIG_PARPORT is not set
+# CONFIG_PPC_RTC is not set
+# CONFIG_CMDLINE_BOOL is not set
+
+#
+# Memory Technology Devices (MTD)
+#
+# CONFIG_MTD is not set
+
+#
+# Plug and Play configuration
+#
+# CONFIG_PNP is not set
+# CONFIG_ISAPNP is not set
+
+#
+# Block devices
+#
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_DEV_XD is not set
+# CONFIG_PARIDE is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_CISS_SCSI_TAPE is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_NBD=y
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_BLK_STATS=y
+
+#
+# Multi-device support (RAID and LVM)
+#
+# CONFIG_MD is not set
+# CONFIG_BLK_DEV_MD is not set
+# CONFIG_MD_LINEAR is not set
+# CONFIG_MD_RAID0 is not set
+# CONFIG_MD_RAID1 is not set
+# CONFIG_MD_RAID5 is not set
+# CONFIG_MD_MULTIPATH is not set
+# CONFIG_BLK_DEV_LVM is not set
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+# CONFIG_NETLINK_DEV is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_FILTER is not set
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+# CONFIG_IP_PNP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+# CONFIG_INET_ECN is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_IPV6 is not set
+# CONFIG_KHTTPD is not set
+# CONFIG_ATM is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+
+#
+# Appletalk devices
+#
+# CONFIG_DEV_APPLETALK is not set
+# CONFIG_DECNET is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_LLC is not set
+# CONFIG_NET_DIVERT is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_FASTROUTE is not set
+# CONFIG_NET_HW_FLOWCONTROL is not set
+
+#
+# QoS and/or fair queueing
+#
+# CONFIG_NET_SCHED is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+
+#
+# ATA/IDE/MFM/RLL support
+#
+# CONFIG_IDE is not set
+# CONFIG_BLK_DEV_IDE_MODES is not set
+# CONFIG_BLK_DEV_HD is not set
+
+#
+# SCSI support
+#
+# CONFIG_SCSI is not set
+
+#
+# Network device support
+#
+CONFIG_NETDEVICES=y
+
+#
+# ARCnet devices
+#
+# CONFIG_ARCNET is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_ETHERTAP is not set
+
+#
+# Ethernet (10 or 100Mbit)
+#
+CONFIG_NET_ETHERNET=y
+# CONFIG_MACE is not set
+# CONFIG_BMAC is not set
+# CONFIG_GMAC is not set
+# CONFIG_SUNLANCE is not set
+# CONFIG_SUNBMAC is not set
+# CONFIG_SUNQE is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_LANCE is not set
+# CONFIG_NET_VENDOR_SMC is not set
+# CONFIG_NET_VENDOR_RACAL is not set
+# CONFIG_NET_ISA is not set
+# CONFIG_NET_PCI is not set
+# CONFIG_NET_POCKET is not set
+
+#
+# Ethernet (1000 Mbit)
+#
+# CONFIG_ACENIC is not set
+# CONFIG_DL2K is not set
+# CONFIG_E1000 is not set
+# CONFIG_MYRI_SBUS is not set
+# CONFIG_NS83820 is not set
+# CONFIG_HAMACHI is not set
+# CONFIG_YELLOWFIN is not set
+# CONFIG_SK98LIN is not set
+# CONFIG_TIGON3 is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PLIP is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+
+#
+# Wireless LAN (non-hamradio)
+#
+CONFIG_NET_RADIO=y
+# CONFIG_STRIP is not set
+# CONFIG_WAVELAN is not set
+# CONFIG_ARLAN is not set
+# CONFIG_AIRONET4500 is not set
+# CONFIG_AIRONET4500_NONCS is not set
+# CONFIG_AIRONET4500_PROC is not set
+CONFIG_HERMES=y
+# CONFIG_NET_WIRELESS is not set
+
+#
+# Token Ring devices
+#
+# CONFIG_TR is not set
+# CONFIG_NET_FC is not set
+# CONFIG_RCPCI is not set
+# CONFIG_SHAPER is not set
+
+#
+# Wan interfaces
+#
+# CONFIG_WAN is not set
+
+#
+# Amateur Radio support
+#
+# CONFIG_HAMRADIO is not set
+
+#
+# IrDA (infrared) support
+#
+# CONFIG_IRDA is not set
+
+#
+# ISDN subsystem
+#
+# CONFIG_ISDN is not set
+
+#
+# Old CD-ROM drivers (not SCSI, not IDE)
+#
+# CONFIG_CD_NO_IDESCSI is not set
+
+#
+# Console drivers
+#
+
+#
+# Frame-buffer support
+#
+# CONFIG_FB is not set
+
+#
+# Input core support
+#
+# CONFIG_INPUT is not set
+# CONFIG_INPUT_KEYBDEV is not set
+# CONFIG_INPUT_MOUSEDEV is not set
+# CONFIG_INPUT_JOYDEV is not set
+# CONFIG_INPUT_EVDEV is not set
+
+#
+# Macintosh device drivers
+#
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+# CONFIG_SERIAL is not set
+# CONFIG_SERIAL_EXTENDED is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_UNIX98_PTY_COUNT=256
+
+#
+# I2C support
+#
+CONFIG_I2C=y
+# CONFIG_I2C_ALGOBIT is not set
+# CONFIG_I2C_ALGOPCF is not set
+# CONFIG_I2C_ALGO8XX is not set
+CONFIG_I2C_CHARDEV=y
+CONFIG_I2C_PROC=y
+
+#
+# Mice
+#
+# CONFIG_BUSMOUSE is not set
+# CONFIG_MOUSE is not set
+
+#
+# Joysticks
+#
+# CONFIG_INPUT_GAMEPORT is not set
+# CONFIG_QIC02_TAPE is not set
+
+#
+# Watchdog Cards
+#
+# CONFIG_WATCHDOG is not set
+# CONFIG_NVRAM is not set
+# CONFIG_RTC is not set
+# CONFIG_DTLK is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+
+#
+# Ftape, the floppy tape device driver
+#
+# CONFIG_FTAPE is not set
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+
+#
+# File systems
+#
+# CONFIG_QUOTA is not set
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_REISERFS_FS is not set
+# CONFIG_REISERFS_CHECK is not set
+# CONFIG_REISERFS_PROC_INFO is not set
+# CONFIG_ADFS_FS is not set
+# CONFIG_ADFS_FS_RW is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BEFS_DEBUG is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EXT3_FS is not set
+# CONFIG_JBD is not set
+# CONFIG_JBD_DEBUG is not set
+# CONFIG_FAT_FS is not set
+# CONFIG_MSDOS_FS is not set
+# CONFIG_UMSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_JFFS_FS is not set
+# CONFIG_JFFS2_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_TMPFS is not set
+CONFIG_RAMFS=y
+# CONFIG_ISO9660_FS is not set
+# CONFIG_JOLIET is not set
+# CONFIG_ZISOFS is not set
+# CONFIG_JFS_FS is not set
+# CONFIG_JFS_DEBUG is not set
+# CONFIG_JFS_STATISTICS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_NTFS_FS is not set
+# CONFIG_NTFS_RW is not set
+# CONFIG_HPFS_FS is not set
+CONFIG_PROC_FS=y
+# CONFIG_DEVFS_FS is not set
+# CONFIG_DEVFS_MOUNT is not set
+# CONFIG_DEVFS_DEBUG is not set
+# CONFIG_DEVPTS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_QNX4FS_RW is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_EXT2_FS=y
+# CONFIG_SYSV_FS is not set
+# CONFIG_UDF_FS is not set
+# CONFIG_UDF_RW is not set
+# CONFIG_UFS_FS is not set
+# CONFIG_UFS_FS_WRITE is not set
+
+#
+# Network File Systems
+#
+# CONFIG_CODA_FS is not set
+# CONFIG_INTERMEZZO_FS is not set
+CONFIG_NFS_FS=y
+# CONFIG_NFS_V3 is not set
+# CONFIG_ROOT_NFS is not set
+CONFIG_NFSD=y
+# CONFIG_NFSD_V3 is not set
+# CONFIG_NFSD_TCP is not set
+CONFIG_SUNRPC=y
+CONFIG_LOCKD=y
+# CONFIG_SMB_FS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_NCPFS_PACKET_SIGNING is not set
+# CONFIG_NCPFS_IOCTL_LOCKING is not set
+# CONFIG_NCPFS_STRONG is not set
+# CONFIG_NCPFS_NFS_NS is not set
+# CONFIG_NCPFS_OS2_NS is not set
+# CONFIG_NCPFS_SMALLDOS is not set
+# CONFIG_NCPFS_NLS is not set
+# CONFIG_NCPFS_EXTRAS is not set
+# CONFIG_ZISOFS_FS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+# CONFIG_ATARI_PARTITION is not set
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+# CONFIG_BSD_DISKLABEL is not set
+# CONFIG_MINIX_SUBPARTITION is not set
+# CONFIG_SOLARIS_X86_PARTITION is not set
+# CONFIG_UNIXWARE_DISKLABEL is not set
+# CONFIG_LDM_PARTITION is not set
+# CONFIG_SGI_PARTITION is not set
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+# CONFIG_EFI_PARTITION is not set
+# CONFIG_SMB_NLS is not set
+# CONFIG_NLS is not set
+
+#
+# Sound
+#
+# CONFIG_SOUND is not set
+
+#
+# MPC8xx CPM Options
+#
+CONFIG_SCC_ENET=y
+CONFIG_SCC1_ENET=y
+# CONFIG_SCC2_ENET is not set
+# CONFIG_SCC3_ENET is not set
+# CONFIG_FEC_ENET is not set
+# CONFIG_ENET_BIG_BUFFERS is not set
+# CONFIG_SMC2_UART is not set
+# CONFIG_USE_SCC_IO is not set
+# CONFIG_8xx_COPYBACK is not set
+# CONFIG_8xx_CPU6 is not set
+# CONFIG_UCODE_PATCH is not set
+
+#
+# USB support
+#
+# CONFIG_USB is not set
+
+#
+# Bluetooth support
+#
+# CONFIG_BLUEZ is not set
+
+#
+# Library routines
+#
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+
+#
+# Kernel hacking
+#
+# CONFIG_DEBUG_KERNEL is not set
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
