@@ -1,43 +1,45 @@
-Message-ID: <39AF15FE.3DDE5D49@m2tech.co.nz>
-Date: Fri, 01 Sep 2000 14:35:42 +1200
-From: ben bodley <benb@m2tech.co.nz>
+Message-ID: <081f01c013db$364aa100$1952df8d@SOYANG>
+From: "Hyun-Joon Cha" <tachyon@postech.ac.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: cpm_enet_down and MAC address change.
+Date: Fri, 1 Sep 2000 15:09:39 +0900
 MIME-Version: 1.0
-To: embedded list <linuxppc-embedded@lists.linuxppc.org>
-Subject: grey area open-source issues..
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="EUC-KR"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all,
+Hello.
 
-i have a few questions regarding the publishing of linux kernel source
-code.. i know its a little off topic, but i'm sure many developers here
-will have experienced some sort of issues when it comes to a customer
-paying for kernel development, and wanting to keep certain ip in-house..
+In shell, I can't do down ethernet interface.
+======================================
+# ifconfig eth0 down
+dev_close: bug eth0 still running
 
-the thing is, i have ported a lot of code over to linux, that has an
-object only license (ie. we cannot give away the source code, but object
-code is fine).. the linux kernel however is under the GPL license, and
-having modified parts of it, i must make this code available publically
-with the product..
+I checked ethernet driver and found that there are empty code for it.
 
-the code i have ported has to be compiled into the kernel..
+At cpm_enet_close of arch/ppc/8xx_io/enet.c
+===========================================
+static int
+cpm_enet_close(struct device *dev)
+{
+        /* Don't know what to do yet.
+        */
 
-i can't give it away as i break one license, but break another if i dont
-make it public..
+        return 0;
+}
 
+So, I can't down ethernet interface on Linux for MPC850 and can't change MAC addr at runtime also.
 
+Then how can I make it possible? or do someone make module for ethernet and serial driver for MPC?
 
-what is the story here??, and is there exceptions for modules??
+Maybe it's a good idea to modularize it and make a configuration header file for parallel IO pins to SCCs and SMCs to port Linux easy.
 
-cheers for any insights,
+If anybody know it or have a idea please answer.
 
-ben
-
---
-/\\------------------------------------------------------------------
-ben.bodley/.m2technologyltd.nz/.benb@m2tech.co.nz/.64.9.4448307ext130
+Thanks in advance.
+Have a nice day.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
