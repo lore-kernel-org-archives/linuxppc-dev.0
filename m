@@ -1,21 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0320867A8C
+Return-Path: <jchapman@katalix.com>
+Received: from ptb-relay02.plus.net (ptb-relay02.plus.net [212.159.14.213])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7FB1367A87
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Mar 2005 18:23:00 +1100 (EST)
-In-Reply-To: <1110925103.5937.107.camel@ad.doubleclick.net>
-References: <1110907039.24673.12.camel@rhino.az.mvista.com>
-	<1110915063.5937.93.camel@ad.doubleclick.net>
-	<583185c11becaca3ce73e4010c18154d@freescale.com>
-	<1110925103.5937.107.camel@ad.doubleclick.net>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <dfbb0a3397338a3abfc2f93450311b9b@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 16 Mar 2005 01:22:48 -0600
-To: "Jason McMullan" <jason.mcmullan@timesys.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: 440EP FPU patch
+	Wed, 16 Mar 2005 20:46:55 +1100 (EST)
+Message-ID: <42380075.1070206@katalix.com>
+Date: Wed, 16 Mar 2005 09:46:29 +0000
+From: James Chapman <jchapman@katalix.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+References: <42376A46.2090605@mvista.com>
+	<20050315225050.4a236b3e.akpm@osdl.org>
+In-Reply-To: <20050315225050.4a236b3e.akpm@osdl.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.11] ppc32: update Radstone ppc7d platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +26,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jason,
+Andrew Morton wrote:
 
-Is it possible to make this against a newer tree (like a current bk 
-pull).  The patch doesn't apply cleanly against head.S, which I'm 
-guessing is due to the SPRN changes pushed upstream recently.
+> "Mark A. Greer" <mgreer@mvista.com> wrote:
+> 
+>> +ppc7d_fixup_i2c_pdata(struct platform_device *pdev)
+>> +{
+>> +	struct mv64xxx_i2c_pdata *pdata;
+>> +	int i;
+>> +
+>> +	pdata = pdev->dev.platform_data;
+>> +	if (pdata == NULL) {
+>> +		pdata = kmalloc(GFP_KERNEL, sizeof(*pdata));
+> 
+> 
+> I'll switch those kmalloc args around for you.
 
-If I can apply it cleanly, I will get it pushed upstream.
-
-- kumar
-
-On Mar 15, 2005, at 4:18 PM, Jason McMullan wrote:
-
-> On Tue, 2005-03-15 at 15:09 -0600, Kumar Gala wrote:
->> 1. Change config option to CONFIG_PPC_FPU
->> 2. split out altivec support into a separate file, most likely just
->> move it into vector.S
->> 3. Get ride of the C++ comments
->
-> Changes made, as per your suggestions, and new patch attached.
->
-> -- 
-> Jason McMullan <jason.mcmullan@timesys.com>
-> TimeSys Corporation
->
-> <cpu-ppc-fpu.patch>
+Wow, I'm surprised it ever worked! Thanks!
