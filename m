@@ -1,23 +1,37 @@
-From: "Florian Schirmer" <jolt@tuxbox.org>
-To: <dan@embeddededge.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: 2.5 on MPC823
-Date: Thu, 5 Jun 2003 09:47:10 +0200
-Message-ID: <000101c32b36$ac2bb600$0100a8c0@space.taytron.net>
+Message-ID: <3EDEF6DA.2060001@intracom.gr>
+Date: Thu, 05 Jun 2003 10:52:58 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Florian Schirmer <jolt@tuxbox.org>
+Cc: dan@embeddededge.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.5 on MPC823
+References: <000101c32b36$ac2bb600$0100a8c0@space.taytron.net>
+In-Reply-To: <000101c32b36$ac2bb600$0100a8c0@space.taytron.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Florian Schirmer wrote:
 
-Dan, any news on 2.5 && MPC823? I know you where working on it. Did you
-manage to get arch/ppc/kernel/head_8xx.S thing up an running?
+>Hi,
+>
+>Dan, any news on 2.5 && MPC823? I know you where working on it. Did you
+>manage to get arch/ppc/kernel/head_8xx.S thing up an running?
+>
+>Thanks,
+>   Florian
+>
+>
+>
+>
+>
+>
+Let me second that.
 
-Thanks,
-   Florian
+Regards
+
+Pantelis
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
