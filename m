@@ -1,100 +1,119 @@
-Message-ID: <3F38DEC4.8050708@imc-berlin.de>
-Date: Tue, 12 Aug 2003 14:34:12 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
+Subject: Build issues with 2.6.0-test3
+From: Gary Thomas <gary@mlbassoc.com>
 To: Dan Malek <dan@embeddededge.com>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
-	Brad Parker <brad@parker.boston.ma.us>
-Subject: Re: Questions about ARP
-References: <3F33BC10.8060407@imc-berlin.de> <3F33EADE.4010908@embeddededge.com>
-In-Reply-To: <3F33EADE.4010908@embeddededge.com>
-Content-Type: multipart/mixed;
- boundary="------------030301040909050603050005"
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <3F38DEC4.8050708@imc-berlin.de>
+References: <3F33BC10.8060407@imc-berlin.de>
+	 <3F33EADE.4010908@embeddededge.com>  <3F38DEC4.8050708@imc-berlin.de>
+Content-Type: multipart/mixed; boundary="=-WcTWBjANnHkk6tah2nTa"
+Message-Id: <1060696614.31273.419.camel@hermes>
+Mime-Version: 1.0
+Date: 12 Aug 2003 07:56:55 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------030301040909050603050005
-Content-Type: text/plain; charset=us-ascii; format=flowed
+--=-WcTWBjANnHkk6tah2nTa
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Dan Malek wrote:
+I'm trying to build 2.6.0-test3 for some embedded boards and, as
+reported before, there are compile problems.  The attached patches
+fix these, but also bring up some questions:
 
- > Steven Scholz wrote:
- >
- >> But when I connect my MPC8xx board with Linux it seems that Linux is
- >> not responding to the ARP requests done by the Windows machine.
- >> Result: Both machine end up with the same IP address.
- >
- >
- > Fortunately, Linux isn't Windows......you are going to find lots of
- > Windows "standard" protocols that aren't documented nor supported by
- > anyone else.
- >
- >> Did I miss something?
- >
- >
- > Well, Microsoft did.....there is RFC2131 that describes how you are
- > supposed to use an ARP to respond to a duplicate IPv4 used on the
- > network.  It is commonly used to ensure you don't have systems
- > manually configured or not honoring leases when DHCP is handing out
- > dynamic IP addresses.  Everyone else seems to implement this properly.
+* How best to handle optional support?  One of the patches fixes
+  a problem of a missing system call (sys_pciconfig_iobase).  In
+  this case, the platform I was building for has no PCI, so it's
+  not configured in.  The way I fixed it was to conditionalize
+  the syscall table.  An alternate way would be to have a module
+  which is compiled if CONFIG_PCI is *not* set (or alternately
+  have arch/ppc/kernel/pci.c always be compiled and export the
+  appropriate functions that just return -ENOSYS).  Comments?
+* I have a number of boards/platforms that I support that have
+  not been moved into 2.6.  Can I just send patches for those
+  as well?
+* Has anyone succeeded in building & running 2.6 (or late 2.5)
+  on any embedded boards (8xx/8260/405)?
 
-Finaly I found the point you're talking about.
-Linux is answering the ARP packets with Source Address 0.0.0.0 (see net/ipv4/arp.c):
+Thanks.
 
-         /* Special case: IPv4 duplicate address detection packet (RFC2131) */
-         if (sip == 0) {
-                 if (arp->ar_op == htons(ARPOP_REQUEST) &&
-                     inet_addr_type(tip) == RTN_LOCAL)
-                         arp_send(ARPOP_REPLY,ETH_P_ARP,tip,dev,tip,sha,dev->dev_addr,dev->dev_addr);
-                 goto out;
-         }
+--
+Gary Thomas <gary@mlbassoc.com>
+MLB Associates
 
-Windows is checking for duplicate addresses using ARP packets with source _and_
-destination address set to the address in question. So of course Linux won't answer it!
-
-But I can't find a single word in the RFC2131 (http://www.faqs.org/rfcs/rfc2131.html)
-saying that the Source Address _must_ set to 0.0.0.0!!!!
-
-So the attached patch will make M$ Windows happy and APIPA working.
-
-Thanks,
-
-Steven
-
---------------030301040909050603050005
-Content-Type: text/plain;
- name="linux-2.4.20-APAPI.patch"
+--=-WcTWBjANnHkk6tah2nTa
+Content-Disposition: attachment; filename=diffs
+Content-Type: text/x-patch; name=diffs; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.4.20-APAPI.patch"
 
-+ diff -u ./net/ipv4/arp.c.APAPI ./net/ipv4/arp.c
---- ./net/ipv4/arp.c.APAPI	Tue Aug 12 13:00:59 2003
-+++ ./net/ipv4/arp.c	Tue Aug 12 14:32:40 2003
-@@ -760,6 +760,18 @@
- 		goto out;
- 	}
+Index: arch/ppc/8260_io/enet.c
+===================================================================
+RCS file: /home/gthomas/my_cvs/develop/linuxppc-2.5/arch/ppc/8260_io/enet.c,v
+retrieving revision 1.1
+diff -u -5 -p -r1.1 enet.c
+--- arch/ppc/8260_io/enet.c	12 Aug 2003 12:18:15 -0000	1.1
++++ arch/ppc/8260_io/enet.c	12 Aug 2003 13:32:35 -0000
+@@ -611,10 +611,11 @@ static void set_multicast_list(struct ne
+ static int __init scc_enet_init(void)
+ {
+ 	struct net_device *dev;
+ 	struct scc_enet_private *cep;
+ 	int i, j;
++        int err;
+ 	unsigned char	*eap;
+ 	unsigned long	mem_addr;
+ 	bd_t		*bd;
+ 	volatile	cbd_t		*bdp;
+ 	volatile	cpm8260_t	*cp;
+Index: arch/ppc/8260_io/uart.c
+===================================================================
+RCS file: /home/gthomas/my_cvs/develop/linuxppc-2.5/arch/ppc/8260_io/uart.c,v
+retrieving revision 1.1
+diff -u -5 -p -r1.1 uart.c
+--- arch/ppc/8260_io/uart.c	12 Aug 2003 12:18:15 -0000	1.1
++++ arch/ppc/8260_io/uart.c	12 Aug 2003 13:30:40 -0000
+@@ -2389,11 +2389,11 @@ void kgdb_map_scc(void)
+ 	up->smc_mrblr = RX_BUF_SIZE;		/* receive buffer length */
+ 	up->smc_maxidl = RX_BUF_SIZE;
+ }
+ #endif
 
-+#define MAKE_MS_WINDOWS_HAPPY
-+#ifdef MAKE_MS_WINDOWS_HAPPY
-+	/* Special case: IPv4 duplicate address detection packet (MS Windows) */
-+	if (inet_addr_type(sip) == RTN_LOCAL) {
-+		printk("ARP: IPv4 duplicate address detection packet (MS Windows)\n");
-+		if (arp->ar_op == htons(ARPOP_REQUEST) &&
-+		    inet_addr_type(tip) == RTN_LOCAL)
-+			arp_send(ARPOP_REPLY,ETH_P_ARP,tip,dev,tip,sha,dev->dev_addr,dev->dev_addr);
-+		goto out;
-+	}
+-static kdev_t serial_console_device(struct console *c)
++static struct tty_driver *serial_console_device(struct console *c, int *index)
+ {
+ 	*index = c->index;
+ 	return serial_driver;
+ }
+
+Index: arch/ppc/kernel/misc.S
+===================================================================
+RCS file: /home/gthomas/my_cvs/develop/linuxppc-2.5/arch/ppc/kernel/misc.S,v
+retrieving revision 1.1
+diff -u -5 -p -r1.1 misc.S
+--- arch/ppc/kernel/misc.S	12 Aug 2003 12:18:16 -0000	1.1
++++ arch/ppc/kernel/misc.S	12 Aug 2003 13:44:25 -0000
+@@ -1326,13 +1326,19 @@ _GLOBAL(sys_call_table)
+ 	.long sys_truncate64
+ 	.long sys_ftruncate64
+ 	.long sys_stat64	/* 195 */
+ 	.long sys_lstat64
+ 	.long sys_fstat64
++#ifdef CONFIG_PCI
+ 	.long sys_pciconfig_read
+ 	.long sys_pciconfig_write
+ 	.long sys_pciconfig_iobase 	/* 200 */
++#else
++	.long sys_ni_syscall /* sys_pciconfig_read */
++	.long sys_ni_syscall /* sys_pciconfig_write */
++	.long sys_ni_syscall /* sys_pciconfig_iobase 	/* 200 */
 +#endif
-+
- 	if (arp->ar_op == htons(ARPOP_REQUEST) &&
- 	    ip_route_input(skb, tip, sip, 0, dev) == 0) {
+ 	.long sys_ni_syscall		/* 201 - reserved - MacOnLinux - new */
+ 	.long sys_getdents64
+ 	.long sys_pivot_root
+ 	.long sys_fcntl64
+ 	.long sys_madvise	/* 205 */
 
-
---------------030301040909050603050005--
+--=-WcTWBjANnHkk6tah2nTa--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
