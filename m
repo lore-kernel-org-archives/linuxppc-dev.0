@@ -1,28 +1,45 @@
-Message-Id: <200011021802.MAA20456@lists.linuxppc.org>
-Date: Thu, 2 Nov 2000 13:02:26 -0500
-Reply-To: khendricks@ivey.uwo.ca
-Content-Type: text/plain;
-	charset=us-ascii
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-Version: 1.0 (Apple Message framework v337)
-Subject: Who is porting OpenOffice (StarOffice) to PPC?
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
+Date: Thu, 2 Nov 2000 19:06:36 +0100
+Message-Id: <19340927113820.10453@192.168.1.2>
+In-Reply-To: <3A01A2FA.8E8E4A0B@execpc.com>
+References: <3A01A2FA.8E8E4A0B@execpc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>> Well, the kernel sleep code is supposed to take care of that, but
+>> apparently, that code is also causing the panic...
+>
+>any possibility that the VFS layer causing more serious problems here?
+>Comments
+>before cdrom.c:media_changed() seem to hint at a potential race
+condition, and
+>if the pmac-ide sleep code tries doing the VFS-sync itself, it might
+aggrivate
+>matters.  Should/Is VFS being kicked automagically by the cdrom code, or
+might
+>we need some syncing or buffering code in ide-pmac.c to prevent a panic?
 
-I checked out the porting mailing lists at OpenOffice.org and saw some activity on behalf of linux on ppc.
+The sleep code in via-pmu.c does a sync, and the sleep code ide-pmac.c
+locks the IDE request queue preventing any other request from coming in
+until it's unlocked on wakeup. I did this part. Michael did the VFS
+stuffs, I must admit I didn't look at the VFS layer in depth myself.
 
-Does anyone now who is coordinating this effort?
+>Could also be that the wakebay app/hack runs on the drive after DMA was
+>re-enabled.  I assume there is no problem with the media change acting on a
+>non-mediabay disk, which it appears to me it would be doing.
 
-Do any of the distributions have people working on this port and if so how can I help?
+Well, the devices beeing powered down, it can't harm to send them a media
+change.
 
-Any info here would be greatly appreciated.
+>BTW, pmud 0.7.1 uses wakebay by default.  my PDQ doesnt have the panic
+problem
+>either.
 
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
