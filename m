@@ -1,34 +1,48 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: iweiny@pacbell.net
-Date: Thu, 26 Apr 2001 16:52:18 -0700 (PDT)
-Subject: Kernel driver debugging
-To: linuxppc-embedded@lists.linuxppc.org (linuxemb)
-Message-id: <200104262352.QAA01767@batcave2.batcave>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: iweiny@pacbell.net
+Cc: linuxppc-embedded@lists.linuxppc.org (linuxemb)
+Subject: Re: Kernel driver debugging 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 26 Apr 2001 16:52:18 PDT."
+             <200104262352.QAA01767@batcave2.batcave>
+Date: Fri, 27 Apr 2001 02:13:45 +0200
+Message-Id: <20010427001350.760232792B@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am looking for the best way to debug kernel modules/drivers.
+In message <200104262352.QAA01767@batcave2.batcave> you wrote:
+>
+> I am looking for the best way to debug kernel modules/drivers.
 
-I am trying to get a PCI Audio Card (Creative SBLive) working just to do some
-testing.  (ie don't want to spend a lot of time on PCI or this particular
-card.)
+Get a decent debugger :-)
 
-In addition we would like to have a way to read registers and other values from
-the hardware as we go forward.
+> In addition we would like to have a way to read registers and other values from
+> the hardware as we go forward.
 
-What is the best solution?
+That's one of the basic factions of any BDM/JTAG debugger...
 
-Are there any good docs on-line for xmon, kgdb, and/or kdb?
+> What is the best solution?
 
-I have also read about BDM4GDB and BDI2000.  Is BDI2000 worth the cost?  Are
-there other BDM's for the 405 which work well with Linux?
+Get yourself a BDI2000.
 
-Thanks again,
-Ira Weiny
-Digital Home Technologies
+> I have also read about BDM4GDB and BDI2000.  Is BDI2000 worth the cost?  Are
+> there other BDM's for the 405 which work well with Linux?
 
+The BDM4GDB is working only  with  MPC8xx  CPU's  (at  least  in  the
+current version). I don't know of any effort to adapt it for the 40x.
+
+And yes, the BDI2000 is worth every single dollar you pay for it.
+
+Feel free to contact me for details...
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Defaults are wonderful, just like fire.
+                  - Larry Wall in <1996Mar6.004121.27890@netlabs.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
