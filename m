@@ -1,31 +1,36 @@
-Message-ID: <373E5B31.79E6A0AD@wanadoo.fr>
-Date: Sun, 16 May 1999 07:44:17 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-Reply-To: costabel@wanadoo.fr
+Date: Sun, 16 May 1999 13:27:28 +0200 (CEST)
+From: =?ISO-8859-1?Q?Kolbj=F8rn_Barmen?= <kolla@nvg.ntnu.no>
+To: KiPyo Ryu <kpryu@sei.co.kr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: vger
+In-Reply-To: <37408ECA.5918C324@sei.co.kr>
+Message-ID: <Pine.LNX.4.10.9905161325480.27713-100000@daneel.nvg.ntnu.no>
 MIME-Version: 1.0
-To: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Frame buffer weirdness?
-References: <Pine.LNX.3.96.990515174202.20309D-100000@net178019.hcv.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kevin Hendrickson wrote:
+On Tue, 18 May 1999, KiPyo Ryu wrote:
+
 > 
-> OK, I've been noticing this problem ever since I moved to linuxppc-pre-R5.
-[..]
-> So any ideas on either of these problems? I haven't checked out dev rel
-> 1.0 yet. Is it any different/better?
+> Hi, all.
+> 
+> What does that word mean 'vger'?
 
-Can't help you with your problems which seem to be video driver config
-related, but DR-1.0 won't help, I guess. Its versions of the programs
-(XFree and gnome) you were talking about are the same as you have
-installed.
+Voyager, with missing oya?
+I suspect from "Star Trek, the movie" :)
 
---
-Martin
+
+"V-ger seeks creator, why doesnt creator answer?"
+
+
+
+ Kolbjørn Barmen |    a3k/o6o/6o4e/AmigaOS/MacOS/LinuxPPC   |    // T e a m
+ <kolla@nvg.org> | a12ooCT/o3o/Linux-m68k  a6oo/o3o/AmigaOS | \XX/ A M I G A
+ Nettverksgruppa |    "I met the Amiga and fell in love..." | <amiga.nvg.org>
+             »» Norwegian University of Technology and Science ««
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
