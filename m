@@ -1,27 +1,38 @@
-Message-ID: <3D57DDEA.8070001@hermes.si>
-Date: Mon, 12 Aug 2002 18:10:18 +0200
-From: Ivica Babarovic <ivica.babarovic@hermes.si>
-Reply-To: ivica.babarovic@hermes.si
+Message-ID: <3D5803A3.7060708@dslextreme.com>
+Date: Mon, 12 Aug 2002 11:51:15 -0700
+From: akuster <akuster@dslextreme.com>
+Reply-To: akuster@dslextreme.com
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: USB support
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] Two little fixes for linuxppc_devel-2.4.19
+References: <3D526BCF.5090809@elsoft.ch>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+David Müller (ELSOFT AG) wrote:
+> Hello
+>
+> The attached patch fixes the following issues:
+>
+>     - arch/ppc/kernel/ocp.c
+>        missing export of "ocp_get_pm"
+>
+>
+>     - drivers/net/ibm_ocp/ibm_ocp_enet.h
+>        shifting of PM bits is done in wrong direction
+>
+>
+> Dave
+>
 
-I'm new to this list. :)
+Great, looks good
 
-I'd just like to know if usb and uhci or ohci
-support for TQM board with MPC860 is already
-implemented somewhere.
-I'm using 2.4.4 kernel from DENX and when I include
-support for any of (X)HCI options it will not compile.
+Thanks David,
 
-
-by, ivo
+Armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
