@@ -1,43 +1,32 @@
-Date: Thu, 24 Jan 2002 11:20:05 -0800
-From: Ira Weiny <iweiny@acm.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Walnut base board PCI problems
-Message-Id: <20020124112005.75d4b366.iweiny@acm.org>
-In-Reply-To: <20020118191321.7708fdaf.iweiny@acm.org>
-References: <20020118191321.7708fdaf.iweiny@acm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <007b01c1a560$3e368b50$1a11efcb@industrialDiv.hanasys.co.kr>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Ramdisk Question
+Date: Fri, 25 Jan 2002 14:22:11 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank you all for you help.
+I am porting linux on a custom mpc755 board.
+I used linuxppc_2_4 from montavista rsync,
+and simple-ramdisk.tar.gz from denx ftp.
+The kernel stops after the following messages.
+...
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 554k freed
+EXT2-fs warning: checktime reached, running e2fsck is recommended
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 76k init
+...
 
-It turns out that the one board which was working had correct strapping with
-the PCI Sync clock at 33MHz.
+It boots well until execve("/bin/sh",argv_init,envp_init); of init() of init/main.c
+Is there anything that I shouldn't forget to boot from ramdisk?
 
-A mix up in manufacturing allowed our other boards to be straped with a 16MHz
-clock.  For those of you who don't know even if the PCI bus is in Asyncronous
-mode the Sync clock must be >= to the bus speed.  In our case 33MHz.
-
-Thanks so much for the input, it is always the simple ones which are hard to
-find.
-
-Ira Weiny
-iweiny@acm.org
-
-On Fri, 18 Jan 2002 19:13:21 -0800
-Ira Weiny <iweiny@acm.org> wrote:
-
->
-> It has been some time since I have written to the list with a question so
-> forgive me if this deficient in some way.
->
-> We have a custom 405GP board which is basically a Walnut platform minus some of
-> the peripherals like keyboard/mouse, FPGA, etc.
->
-> We manufactured 10 boards and one works.  The others all display the same
-> behavior below.
->
+Thank you in advance.
+- Sangmoon Kim -
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
