@@ -1,99 +1,89 @@
-From: Wulf Hofbauer <wh@echo.chem.tu-berlin.de>
-Subject: yet another bug in atyfb.c
-To: linuxppc-dev@lists.linuxppc.org
-Date: Tue, 3 Aug 99 12:21:54 MESZ
-Message-Id: <E11BbjL-0004vi-00@mail.zrz.tu-berlin.de>
+Message-ID: <37A68EC1.BDE6FF5F@cable.a2000.nl>
+Date: Tue, 03 Aug 1999 08:40:01 +0200
+From: Otto Moerbeek <otto@cable.a2000.nl>
+MIME-Version: 1.0
+To: linuxppc-dev-digest@lists.linuxppc.org
+CC: otto@cable.a2000.nl
+Subject: 2.2.10 kernel and Apple USB ISO keyboards
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-ABSTRACT: atyfb.c doesn't work when compiled with gcc-2.95 due to incorrect
-inline assembly code.
+Hi,
 
-EXPLANATION: atyfb.c - as of Kernel 2.2.10 - uses the following constructs
-for accessing little-endian words in Mach32 controller space:
+I tried the 2.2.10 kernel, following Robert Shaws advice on
+<http://www.inficad.com/~rshaw/>. It seems like we are really moving 
+towards a compile out of the box for the Blue G3's!
 
-    asm("lwbrx %0,%1,%2" : "=r"(val) : "r" (regindex), "r" (temp));
+But I had some problems: my Apple ISO USB keyboard refused to work 
+properly: the backquote/tilde, backslash/bar and keypad equals keys 
+did not work. I traced the problem down the way the USB keyboard 
+driver works and made a patch. I tested this patch only on my Dutch
+keyboard, but as far as I know the ISO keyboards only different 
+in the key labeling, and the patch should not hurt ANSI (US) 
+keyboards. See below for the patch. Please note that this patch should
+be applied after the 2.2.10 pmac patch, that can be found on the above
+mentioned page.
 
-and
+I also have another problem: I have a single button standard Apple USB
+mouse. Using the 2.2.6 kernel the clear and keypad equal keys were
+mapped to mouse button 2 and 3. This is not done anymore by the new USB
+driver in 2.2.10. The 2.2.6 UUSB driver does this translation at a
+really low level, so no mapping in the X server is needed. As this seems
+rather a dirty trick, I prefer to resolve this problem in the X server. 
+It seems however that only the Xpmac server has the feature to map key 
+events to button events, not the others like XF86_FBDev, the one I am 
+using now. Any ideas on this?
 
-    asm("stwbrx %0,%1,%2" : : "r" (val), "r" (regindex), "r" (temp) :
-        "memory");
+Regards,
+Otto
 
-This is meant to access a word at address regindex+temp. If regindex
-happens to be held in register r0, the address calculation is off as
-r0 is defined as a null operand. This problem shows up with gcc-2.95 which
-seems to use better register allocation code and _does_ keep regindex in
-r0 at times.
 
-The way of how the respective functions aty_ld_le32 and aty_st_le32
-seems also strange to me, and I suspect it is incorrect.
-
-Here's a proposed fix that works for me. I also changed the sparc code
-to honour volatility of IO space, but couldn't check if this affects
-the kernel. It would be nice if someone familiar with sparc could have a
-look at this.
-
-Here's the fix:
-
---- atyfb.c.orig        Wed Jul 21 00:04:40 1999
-+++ atyfb.c     Tue Aug  3 12:13:42 1999
-@@ -466,18 +466,18 @@
- };
- 
- 
--static inline u32 aty_ld_le32(volatile unsigned int regindex,
-+static inline u32 aty_ld_le32(unsigned int regindex,
-                              const struct fb_info_aty *info)
+--- linux-2.2.10/drivers/usb/keymap-mac.c       Mon Aug  2 18:20:03 1999
++++ linux-2.2.10-otto/drivers/usb/keymap-mac.c  Tue Aug  3 05:45:57 1999
+@@ -1,3 +1,23 @@
++/*
++ * History:
++ * - Tue Aug  3 1999
++ *   Changes made by Otto Moerbeek <otto@cable.a2000.nl> to properly
++ *   handle the Apple ISO Mac USB keyboard, that has a slightly different
++ *   layout and an extra key as compared to the ANSI (US) USB keyboard:
++ *
++ *   The following entrie were changed:
++ * 
++ *   - entry 0x32 from 0x00 to to 0x2a (backslash/bar)
++ *   - entry 0x64 from 0x00 to 0x32 to (backquote/tilde)
++ *   - entry 0x67 from 0x00 to 0x51 (KP_Equal in X11, no PC equivalent 
++ *     known to me, set it to 0x51, which is unused as far as I know) 
++ * 
++ *   Known problem: both the paragraph/plusminus key and the
++ *   backquote/tilde key are mapped to the same keycode. This cannot
++ *   be changed without breaking the keymappings for ANSI keyboards.
++ * 
++ */
++
+ unsigned char usb_kbd_map[256] = 
  {
-     unsigned long temp;
-     u32 val;
+     0x00,  0x00,  0x00,  0x00,  0x80,  0x0b,  0x08,  0x02,
+@@ -9,7 +29,7 @@
+     0x14,  0x15,  0x17,  0x16,  0x1a,  0x1c,  0x19,  0x1d,
+     0x24,  0x35,  0x33,  0x30,  0x31,  0x1b,  0x18,  0x21,
  
- #if defined(__powerpc__)
--    temp = info->ati_regbase;
--    asm("lwbrx %0,%1,%2" : "=r"(val) : "r" (regindex), "r" (temp));
-+    temp = info->ati_regbase+regindex;
-+    asm("lwbrx %0,0,%1" : "=r" (val) : "r" ((volatile u32*)temp), "m" (*(volatile u32*)temp));
- #elif defined(__sparc_v9__)
-     temp = info->ati_regbase + regindex;
--    asm("lduwa [%1] %2, %0" : "=r" (val) : "r" (temp), "i" (ASI_PL));
-+    asm("lduwa [%1] %2, %0" : "=r" (val) : "r" ((volatile u32*)temp), "i" (ASI_PL));
- #else
-     temp = info->ati_regbase+regindex;
-     val = le32_to_cpu(*((volatile u32 *)(temp)));
-@@ -485,18 +485,17 @@
-     return val;
- }
+-    0x1e,  0x2a,  0x00,  0x29,  0x27,  0x32,  0x2b,  0x2f,
++    0x1e,  0x2a,  0x2a,  0x29,  0x27,  0x32,  0x2b,  0x2f,
+     0x2c,  0x39,  0x7a,  0x78,  0x63,  0x76,  0x60,  0x61,
  
--static inline void aty_st_le32(volatile unsigned int regindex, u32 val,
-+static inline void aty_st_le32(unsigned int regindex, u32 val,
-                               const struct fb_info_aty *info)
- {
-     unsigned long temp;
+     0x62,  0x64,  0x65,  0x6d,  0x67,  0x6f,  0x69,  0x6b,
+@@ -18,7 +38,7 @@
+     0x3b,  0x3d,  0x3e,  0x47,  0x4b,  0x43,  0x4e,  0x45,
+     0x4c,  0x53,  0x54,  0x55,  0x56,  0x57,  0x58,  0x59,
  
- #if defined(__powerpc__)
--    temp = info->ati_regbase;
--    asm("stwbrx %0,%1,%2" : : "r" (val), "r" (regindex), "r" (temp) :
--       "memory");
-+    temp = info->ati_regbase+regindex;
-+    asm("stwbrx %1,0,%2" : "=m" (*(volatile u32*)temp) : "r" (val) , "r" ((volatile u32*)temp));
- #elif defined(__sparc_v9__)
-     temp = info->ati_regbase + regindex;
--    asm("stwa %0, [%1] %2" : : "r" (val), "r" (temp), "i" (ASI_PL) : "memory");
-+    asm("stwa %0, [%1] %2" : : "r" (val), "r" ((volatile u32*)temp), "i" (ASI_PL) : "memory");
- #else
-     temp = info->ati_regbase+regindex;
-     *((volatile u32 *)(temp)) = cpu_to_le32(val);
-
-
-- Wulf
-
---
- ________________________________________________________
-! Dipl. Phys. Wulf Hofbauer  (wh@echo.chem.tu-berlin.de) !
-! Max-Volmer-Institut     Technische Universitaet Berlin !
-! Strasse des 17. Juni 135     10623 Berlin      Germany !
-!________________________________________________________!
+-    0x5b,  0x5c,  0x52,  0x41,  0x00,  0x00,  0x00,  0x00,
++    0x5b,  0x5c,  0x52,  0x41,  0x32,  0x00,  0x00,  0x51,
+     0x69,  0x6b,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+ 
+     0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
