@@ -1,45 +1,45 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF68_FBDev under MkLinux?
-From: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
-In-Reply-To: Your message of "Sun, 6 Dec 1998 16:13:38 +0100 (MET)"
-	<Pine.LNX.4.02.9812061549490.323-100000@cassiopeia.home>
-References: <Pine.LNX.4.02.9812061549490.323-100000@cassiopeia.home>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <19981207225752U.khosoda@venus.dti.ne.jp>
-Date: Mon, 07 Dec 1998 22:57:52 +0900
+Message-ID: <366BEB45.C28@post.uni-bielefeld.de>
+Date: Mon, 07 Dec 1998 15:50:45 +0100
+From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
+MIME-Version: 1.0
+To: Hubert Figuiere <Hubert.Figuiere@solsoft.fr>
+CC: Patrik Jonsson <patrik@ucolick.org>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: New XF68_FBDev - how to download?
+References: <Pine.LNX.4.03.9812041606410.26444-100000@mercator.cs.kuleuven.ac.be> <Pine.SUN.3.95.981205180529.7735A-100000@helios.ucolick.org> <19981207120905.B2395@dirkpitt.solsoft.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> On Sun, 6 Dec 1998 16:13:38 +0100 (MET), Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be> said:
+Hubert Figuiere wrote:
+> 
+> According to Patrik Jonsson <patrik@ucolick.org>:
+> >
+> > On Fri, 4 Dec 1998, Geert Uytterhoeven wrote:
+> >
+> > > New version at:
+> > >
+> > >     http://www.cs.kuleuven.ac.be/~geert/bin/XF68_FBDev-accel-ppc-19981204-2.gz
+> >
+> > Hi all,
+> > how in the world do you get this file? When I try to save it in netscape,
+> > it strips the .gz suffix, but doesn't seem to unzip the file. I can't
+> > execute OR run gunzip on the thing I get...
+> > I hate downloading binaries with netscape! Does anyone have any advice
+> > here?
+> 
+> Try with lynx:
+> 
+> lynx \
+> http://www.cs.kuleuven.ac.be/~geert/bin/XF68_FBDev-accel-ppc-19981204-2.gz \
+> -dump >XF68_FBDev-accel-ppc-19981204-2.gz
 
->> Did you fix the problem with the non-working option (alt)
->> keys?  In the XF68_FBDev of the new R5beta linuxppc, it
->> is still there.  For me (PM6400, standard Apple keyboard
->> and 1-button mouse), XF68_FBDev is pretty much useless.
+I like "wget" to get http/ftp files from the shell. 
+wget \
+http://www.cs.kuleuven.ac.be/~geert/bin/XF68_FBDev-accel-ppc-19981204-2.gz
 
-Geert> What about the XF68_FBDev from XFree86 3.3.3?
-
-Hi,
-
-I just installed Xfree86-3.3.3 and XF68_FBDev on PowerMac
-8500/120 (standard Apple keyboard, 1-button mouse and
-linuxpmac 2.1.125).  The situation was the same as Martin.
-So, I added adb_buttons=1 in boot-file and restarted the
-system.  Then it seems to me that option key itself acts
-like right button.  However, there is no middle button
-emulation.
-
-Somebody in this list I can't remember (sorry) wrote that
-adb_buttons=1 option enable the right option- and control-
-keys to emulate mouse buttons.  Unfortunately, my standard
-Apple keyboard has left option- and control- keys but does
-not have right ones. :-(
-
-Kohkichi Hosoda
-
-E-mail address: khosoda@venus.dti.ne.jp
+Jens
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
