@@ -1,29 +1,39 @@
-Message-ID: <3B6C73B6.D5718249@iiic.ethz.ch>
-Date: Sun, 05 Aug 2001 00:14:14 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: Bastien Nocera <hadess@hadess.net>
+Date: Sat, 4 Aug 2001 15:21:19 -0700 (MST)
+From: Jeff Rugen <jprugen@earthlink.net>
+To: Troy Benjegerdes <hozer@drgw.net>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: DRI on an iBook2
-References: <20010804225709.A861@localhost.localdomain> <3B6C64A7.9040005@hadess.net> <3B6C65CE.708@hadess.net>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: bogus SCSI timeouts and ntpd...
+In-Reply-To: <20010804121840.G17468@altus.drgw.net>
+Message-ID: <Pine.LNX.4.21.0108041518010.11122-100000@raptor.earthlink.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bastien Nocera wrote:
+On Sat, 4 Aug 2001, Troy Benjegerdes wrote:
 
-> I forgot to ask. Does anyone know when the DRM drivers would be updated
-> in the main kernel tree ? Ben, would you include that in your tree ?
-> (given that what's in right now is useless on any PPC/Pmac machines anyway)
+>
+> I have recently started getting what appear to be 'bogus' SCSI timeouts
+> after a crash and reboot, when my raid1 is re-syncing. (which amounts to
+> copying disk1 of the raid to disk2 of the raid.)
+>
+> This didn't start happening until I started running ntpd at bootup..
+>
+> I suspect something is broken somewhere such that when ntp adjusts the
+> time by a small amount, the SCSI layer (and generic timer code??) gets
+> confused and thinks that SCSI command have timed out.
+>
 
-They will either be updated or removed entirely in the end. There has been a
-lot of discussion about compatibility and other technical problems on
-dri-devel and lkml.
+<snip etc.>
 
+I mailed the list a while ago about the ncr53c8xx SCSI driver hanging the
+system with SCSI timeouts a while ago on a Motorola PowerStack with the
+2.4.x kernels.  I am running xntpd at boot time.  I can (will) try
+disabling it and seeing if a 2.4.x kernel stays up for a longer period of
+time (typically less than 6 hours previously).
 
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+Jeff Rugen
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
