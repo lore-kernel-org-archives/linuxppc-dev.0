@@ -1,34 +1,46 @@
-Date: Tue, 17 Jul 2001 10:14:20 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Ethan Blanton <eblanton@cs.ohiou.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Clock drift on an iBook2
-Message-ID: <20010717101420.B2878@opus.bloom.county>
-References: <20010717102730.B22214@localhost.localdomain> <20010717165032.5490@smtp.adsl.oleane.com> <20010717130425.G22214@localhost.localdomain>
+Date: Tue, 17 Jul 2001 13:15:57 -0400
+From: Ethan Blanton <eblanton@cs.ohiou.edu>
+To: Armando Di Cianno <diciaa@rpi.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.7preX - unresolved symbols/compilation problem
+Message-ID: <20010717131557.H22214@localhost.localdomain>
+References: <20010717091235.G29799@garmonbozia.productivitynet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010717130425.G22214@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="LQAwcd5tHl0Qlnzi"
+In-Reply-To: <20010717091235.G29799@garmonbozia.productivitynet.com>; from diciaa@rpi.edu on Tue, Jul 17, 2001 at 09:12:35AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jul 17, 2001 at 01:04:25PM -0400, Ethan Blanton wrote:
-> Benjamin Herrenschmidt spake unto us the following wisdom:
-> > >I have a new iBook2 and I'm having *severe* clock drift problems -- on
-> > >the order of several seconds gained per minute.  I'd like to get this
-> > >taken care of, and it seems to be a linux problem as OSX appears to
-> > >have a stable clock.
-> >
-> > Are you using MOL or do you experience this with nothing special running ?
->
-> Nothing special...   I tried using ntpd to fix the problem, but it
-> didn't seem to be able to set the system time and I'm not sure why.
+--LQAwcd5tHl0Qlnzi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Does your kernel have CONFIG_PPC_RTC enabled? (_not_ CONFIG_RTC).
+Armando Di Cianno spake unto us the following wisdom:
+> I started with an ultra-basic install of YellowDog 2.0 on my TiBook (I
+> wanted the glibc 2.2, and I like compiling everything else by hand).
+> However, now that everything is up to par, I tried compiling both the benh
+> and bk 2.4.7preX trees, and while they compile, upon reboot, all modules
+> complain about unresolved symbols, even though cat'ng System.map reveals
+> that those symbols are there (stuff like printk!!!).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I had this problem, too, when I just updated and then 'make oldconfig;
+make dep vmlinux...'d it.  However, a 'make distclean' and then
+reconfiguring fixed it for me.
+Ethan
+
+--=20
+If I've told you once, I've told you once
+And once is all that you needed.
+		-- The Refreshments, "Carefree"
+
+--LQAwcd5tHl0Qlnzi
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--LQAwcd5tHl0Qlnzi--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
