@@ -1,28 +1,41 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20040423071128.1B2EFC133F@atlas.denx.de>
-Subject: libjpeg
-To: Wolfgang Denk <wd@denx.de>
+To: bhupinder sahran <bhup_sah@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFD3D32938.2CFCB9D9-ON85256E82.005D844D-85256E82.005E41BA@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Mon, 26 Apr 2004 13:09:31 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Subject: Re: High resolution timer in driver 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 26 Apr 2004 09:41:04 PDT."
+             <20040426164104.21828.qmail@web41503.mail.yahoo.com>
+Date: Mon, 26 Apr 2004 20:06:49 +0200
+Message-Id: <20040426180654.5C035C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Wolfgang,
+In message <20040426164104.21828.qmail@web41503.mail.yahoo.com> you wrote:
+>
+> I am writting a device driver. I have a requirement
+> that i need a timer base interrupt serive routine
+> which shall be called 1024 times in a second. But my
 
-I'm trying to build Qtopia-free 1.7 using ELDK 3.0 and I noticed it does
-not contain a jpeg library which is required by Qtopia/QPE.  Do you know
-anyone who've already built that for the ELDK?  Otherwise I'll have to
-build it myself.
+Find an unused timer on your processor, install an interrupt  handler
+for it, and finally programm it in periodic mode with f=1024 Hz.
 
-Regards,
+Where is the problem?
 
-David Ho
-Nanometrics Inc.
+> understanding is saying that i can call it only once
+> in a second through generic linux timer.
 
+This is definitely wrong. Wrong twice, at least.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+They say a little knowledge is a dangerous thing,  but it is not  one
+half so bad as a lot of ignorance.   - Terry Pratchett, _Equal Rites_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
