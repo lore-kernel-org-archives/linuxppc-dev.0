@@ -1,60 +1,72 @@
-Message-ID: <3BAEB0CA.5DF89FB0@mvista.com>
-Date: Mon, 24 Sep 2001 00:04:26 -0400
-From: Dan Malek <dan@mvista.com>
+From: g.ramakrishna@exgate.tek.com
+Message-ID: <301A812E6528D511A8F70008C71E578616C939@AP-BANG-M02>
+To: wd@denx.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Can not boot linux-2.4.4 using ppcboot-1.0.4 
+Date: Mon, 24 Sep 2001 06:14:53 -0700
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Josh Huber <huber@alum.wpi.edu>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
-Subject: Re: CPCI-405 port (PPC405GP)
-References: <20010923180012.755801009E@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+Hi Wolfgang,
 
-> Where can I get more information what it will look like in  2.5?
+I had already changed the board info in the kernel according to
+include/ppcboot.h
+of ppcboot-1.0.4. It still fails to start the kernel. It stops at "rfi"
+instruction in "turn_on_mmu" in the file "arch/ppc/kernel/head_8xx.S"
 
->From my understanding it will be similar to the current implementation,
-but will pass pointers/info in registers rather than stuffing it
-into a "well known" memory location.
+	turn_on_mmu:
+      	  mfmsr   r0
+	        ori     r0,r0,MSR_DR|MSR_IR
+      	  mtspr   SRR1,r0
+	        lis     r0,start_here@h
+      	  ori     r0,r0,start_here@l
+	        mtspr   SRR0,r0
+      	  SYNC
+	        rfi                             /* enables MMU */
 
-There should be some discussion in the archives.
+I had earlier tried booting the 2.2.13 kernel. It had booted successfully
+by just changing the board info.
+I am using the same IMMR value in both ppcboot and the linux kernel. Will
+this give
+some problems ?
 
-> Keep in mind that PPCBoot is in use for 50+ boards from  many  diffe-
-> rent hardware manufacturers. And the number is growing every week.
-
-That's why we keep suggesting a piggyback loader is always used rather
-than trying to boot vmlinux (or compressed version of it) directly.
-We currently support lots of boards that don't use PPCboot, the
-kernel interface has changed a couple of times (most recently the
-clock speed stuff), and it didn't affect any of the boot roms.
-
-You could just leave the PPCboot interface as it is, write a supporting
-function for it in the current embed_config.c file, and just use the
-same code we use on all of the other embedded boards.
-
-> Or is there even a discussion of this stuff where one  can  at  least
-> inject  ideas  or point out thinks that might cause problems - BEFORE
-> everything is cast in stone?
-
-The discussion has pretty much died away.  We just have to find time
-to implement it.  The intention is to provide a single standard interface
-to the kernel, that is flexible and extensible.  The bi_recs are basically
-a tag and information, you can ignore anything you don't understand in the
-list and provide defaults for things you don't see in the record list.
-Many of the piggyback loaders already support the first version of this,
-the "well known" memory location made it a challenge for the 8xx boards,
-so I was slow doing anything about it until Ben suggested the change to
-use the registers to pass the record start/end information.  This will
-break the existing kernel calling interface, so everyone has to change to
-use the same thing.
+Thanks & Regards,
+Ramakrishna, G
 
 
-	-- Dan
+
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Sunday, September 23, 2001 11:30 PM
+To: Ramakrishna, G
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can not boot linux-2.4.4 using ppcboot-1.0.4
+
+
+In message <301A812E6528D511A8F70008C71E578616C92E@AP-BANG-M02> you wrote:
+>
+> I am trying to boot Linux-2.4.4 kernel using ppcboot-1.0.4.
+> It hangs after printing "## Transferring control to Linux (at address
+> 00000000) ..."
+
+This is a FAQ. See the PPCBoot mailing list archive.
+
+The usual reason is that you missed to adapt your board  header  file
+used  in  the  LInux  kernel  to  match the definition of the bd_info
+structure as passed by PPCBoot. Usually  you  can  just  delete  this
+definition  from  your  board header file and include <asm/ppcboot.h>
+instead.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I'd rather be led to hell than managed to heaven.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
