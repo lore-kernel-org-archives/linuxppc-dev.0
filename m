@@ -1,25 +1,57 @@
-From: Simon Winwood <sjw@cse.unsw.edu.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Wed, 21 Nov 2001 10:45:17 +1100
-Subject: Walnut boottime issues
-Message-ID: <20011121104517.A12111@cse.unsw.edu.au>
-Mime-Version: 1.0
+Message-ID: <3BFAF4E0.6A42BAA0@mvista.com>
+Date: Tue, 20 Nov 2001 16:27:12 -0800
+From: Armin Kuster <akuster@mvista.com>
+MIME-Version: 1.0
+To: Venkat Raghu <venkatraghu2002@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc405_eth_rxde...
+References: <20011120225157.25787.qmail@web20402.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	Hi, the latest bitkeeper linuxppc_2_4_devel kernel is broken
-for walnut (and any other board using misc-embedded.c in arch/ppc/boot/simple)
+Venkat Raghu wrote:
+>
+>    Hi
+>
+>      I need help in understanding about following
+>    interrupt handlers:
+>    ppc405_eth_txde
+>  and   ppc405_eth_rxde.
+>
+>   What operation exactly triggers these?
 
-	Specifically, the ZIMAGE_START and ZIMAGE_SIZE macros are wrong (0)
-and have been replaced by {__image}_{begin, end}.
+AFAIK, when the emac detects a problem with either rx or tx descriptors
+after being sent to the MAL then the approperate interrupt handler is
+used.
 
-	The command line stuff also appears to be broken (the kernel doesn't
-get the command line properly)
+> What is the
+>   effect after these handlers have been called, like
+>   whether these handlers reset the drivers etc?
 
-	Is there a fix pending, or should I do it?
+The rx/tx descriptors should be clear/reset for normal use.
 
-	Simon
+>What
+>  happens to the traffic that comes when this is in
+>  this interrupt mode.
+
+Packects may be dropped.
+
+>
+>   Any pointer or links wil be helpful.
+
+see 405GP user manual
+
+>
+>   Kindly mail back to venkatraghu2002@yahoo.com.
+>   I didt subscribe to this list.
+>
+>   Thank You
+>   Raghava.
+>
+
+
+ -- armin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
