@@ -1,24 +1,22 @@
-Message-ID: <392618FC.F6678E68@embeddededge.com>
-Date: Sat, 20 May 2000 00:47:56 -0400
+Message-ID: <39261941.335B46D6@embeddededge.com>
+Date: Sat, 20 May 2000 00:49:05 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: diekema_jon <diekema@bucks.si.com>
-CC: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: EST SBC8260 Linux memory mapping rules
-References: <m12szKb-001SyZC@bucks>
+To: "RAJESH.B.V" <rajeshbv@trinc.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cross compiling of bash for 8xx
+References: <3.0.1.32.20000520100736.006c7434@pop.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-diekema_jon wrote:
+"RAJESH.B.V" wrote:
 
-> I have loaded the zImage bits at the link address on the SBC8260,
-> and that works just fine.
+> can any one suggest me the solutions for the above..
 
-Well, you must have some pretty damn magical tools, because that
-certainly will not work based upon the way the code is written.
-What do consider the "link address" and "works"?
+ftp.mvista.com
+
 
 
 	-- Dan
