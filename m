@@ -1,43 +1,48 @@
-Date: Wed, 16 Dec 1998 14:56:42 +0100
-From: massin@col.bsf.alcatel.fr (Raphael Massin)
-Message-Id: <199812161356.OAA01863@c5s144.clb>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Linux with MPC860
+Date: Wed, 16 Dec 1998 08:52:21 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+Reply-To: Jeff Rugen <jrugen@primenet.com>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: clgenfb
+Message-ID: <Pine.BSI.3.96.981216084200.11954A-100000@usr08.primenet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all,
 
-I am currently trying to use Linux on my MPC860 based board from an archive
-working without any problem on another board based on MPC860.
-The system clock speed is different on the two boards : 48MHz on my board
-and 25MHz on the other.
-The system is stable at 25MHz, at 48MHz i have a problem and the kernel crashes
-after a few seconds. If i disconnect the ethernet, there is no more crash.
+Well, I'm starting to get some success.  Thanks Geert, for all your help so
+far.  This morning I was finally able to boot and get a login prompt with
+the clgenfb framebuffer compiled into the kernel (and no VGA console at
+all).  I now need to go back through and get rid of debug printks I've
+sprinkled everywhere and get the colors to work with the logo (the penguin
+had blue feet) and some other cleanup.  Most importantly, I figure it would
+be a good idea to match my coding style with the rest of the modified file.
 
-Nevertheless, before my crash, the target can be 'pinged' and the UART works
-very well.
+I have a couple questions now.
+1) clgenfb.c has some code that will only work on the APUS (and/or m68k?) --
+it expects a zorro2 board and uses the kernel_map() function -- and my
+modifications assume the Motorola PowerStack memory layout, since I don't
+know a way to find the video memory otherwise.  Because of this, I have some
+#ifdef/#ifndef blocks.  Should I use CONFIG_PREP or CONFIG_APUS or something
+else for these blocks?  (I'd prefer to use the same #ifdef everywhere).
+Currently I'm using #ifdef/#ifndef CONFIG_PREP around the specified parts.
 
-I made the following modifications to take into account the 48MHz system clock
-frequency:
-1) in arch/ppc/kernel/time.c (mbx_calibrate_decr)
-	* the OSCM is used instead of the system clock to clock the decrementer
-	 => no need to set bit 6 of SCCR
-	* correct decrementer_count
-2) in arch/ppc/boot/mbxtty.c (serial_init)
-	* a 48MHz source clock is used instead of a 25MHz source clock
-	=> modify accordingly BRGC1
-3) in arch/ppc/8xx_io/commproc.c (mbx_cpm_setbrg)
-	* idem => modify BRG_INT_CLK macro
-4) in arch/ppc/8xx_io/enet.c
-	* CLK2 and CLK3 are used for ethern emission/reception
-	=> modify PAPAR, PADIR and SICR
-	* port D, pin 12 is used to enable ethernet
+2) When I have something working that I'm comfortable with, what should I do
+next?  I assume it would be good to have someone else using the clgenfb
+driver use my version on APUS/wherever, and also get someone else on the
+PowerStack?)  Any volunteers for this?  Is there a better way than others to
+provide diffs?  (I'm going off the vger tree, so not sure what I should make
+a diff against -- the main modifications are clgenfb.c, prep_setup.c, and a
+couple Config.in files (so you can select the clgenfb driver on prep).
 
-These are my modifications, do you think i forgot something ?
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
 
-	Raphael
+...Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
