@@ -1,12 +1,28 @@
-Message-ID: <27309.216.110.51.8.1071865134.squirrel@www.orkun.us>
-Date: Fri, 19 Dec 2003 14:18:54 -0600 (CST)
-Subject: Free ppc linux configuation tool?
-From: "listmember@orkun.us" <listmember@orkun.us>
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F10E4F46C@amer25.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'listmember@orkun.us'" <listmember@orkun.us>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Free ppc linux configuation tool?
+Date: Fri, 19 Dec 2003 13:23:25 -0700
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Erm, make menuconfig at the base of your kernel tree?
+Or were you looking for something else?  E.g. Embedix
+(now out of business, I think) had a Windows-style
+wizard interface, which as I recall was merely shellac
+on make xconfig.
+
+-----Original Message-----
+From: listmember@orkun.us [mailto:listmember@orkun.us]
+Sent: Friday, December 19, 2003 1:19 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Free ppc linux configuation tool?
+
 
 
 Sorry for duplicate posting, I forgot to specify a subject first time...
