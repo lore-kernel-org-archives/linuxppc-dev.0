@@ -1,32 +1,44 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
-Message-Id: <v04204d00b32c2391b876@[206.163.71.146]>
-In-Reply-To: <19990401012034H.roikawa@rr.iij4u.or.jp>
-References: <Pine.HPP.3.96.990330131656.1043J-100000@gra-ux1.iram.es>
- <19990401012034H.roikawa@rr.iij4u.or.jp>
-Date: Sat, 3 Apr 1999 17:17:10 -0800
-To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
-From: Joel Klecker <espy@debian.org>
-Subject: Re: Blue G3 and machine check
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <199904042044.WAA03236@piglet.cpu.lu>
+Date: Sun, 4 Apr 1999 22:44:23 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: [ANNC] New release of PlanB
+To: video4linux-list@redhat.com, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-user@lists.linuxppc.org, linux-pmac@samba.anu.edu.au
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 01:20 +0900 1999-04-01, Ryuichi Oikawa wrote:
-[snip]
->I put precompiled kernel(2.2.1) on
-> 
->ftp://ppc.linux.or.jp/pub/users/oikawa/linux-pmac/bluemacg3/vmlinux-2. 
->2.1-challenger2.gz
->I was given many useful advice on this by Benjamin Herrenschmidt.
+Hi all,
 
-Any chance you could put up a proper diff for the sources used to 
-build that kernel? I'd really appreciate it. Thanks.
--- 
-Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
-<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
-<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
+I just uploaded a new version of the PlanB driver to my site:
+
+http://www.cpu.lu/~mlan/ftp/planb-0.06.tgz
+
+It now includes support for grabbing to disk. It contains a patch for
+the official 2.2.5 kernel sources.
+
+Please try it out and let me know of any bugs or problems you see. I'd
+like to send this to the gurus for inclusion in the official kernel
+sources.
+
+More info can be found here:
+
+http://www.cpu.lu/~mlan/planb.html
+
+Have fun!
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
