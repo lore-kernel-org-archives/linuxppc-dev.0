@@ -1,54 +1,43 @@
-Message-ID: <4016760E.50009@g-house.de>
-Date: Tue, 27 Jan 2004 15:30:38 +0100
-From: Christian Kujau <evil@g-house.de>
+Date: Tue, 27 Jan 2004 15:32:26 +0100 (CET)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
+	Patrick Mochel <mochel@digitalimplant.org>,
+	Nigel Cunningham <ncunningham@users.sourceforge.net>,
+	<ncunningham@clear.net.nz>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
+In-Reply-To: <1075199877.5659.190.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0401271400530.5220-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: linux-2.4-benh compiling error
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> > I don't mind the wait for memory being freed. Copying more pages with
+> > interrupts disabled would mean a higher chance for PMU lockup, won't it?
+>
+> It's also possible that there is a bug and it just crashes :)
+>
+> Also, I do suspend devices before the page copy, and I quickly hacked a
+> PMU sysdev that should suspend ADB interrupts (at least) so that should
+> be fine, except if you have a brightness request in flight maybe ?
 
-hi,
+I haven't. I've added another pmu_suspend/pmu_resume around the bulk of
+pmdisk_save, that seems to have improved things (but not completely). It's
+executed outside your sysdev calls, so it shouldn't really improve things.
 
-i was about to compile linux-2.4-benh (fresh tree fetched via rsync)
-when errors occured:
+> The whole PMU suspend thing must be reworked I suppose. (And the battery
+> monitoring thing "paused" as well, we must wait for async PMU requests,
+> that is at least battery requests and backlight ones to stop)
 
-[...]
-make[3]: Entering directory
-`/data/MP3/scratch/kernel/linux-2.4-benh/drivers/char'
-gcc -D__KERNEL__ -I/data/MP3/scratch/kernel/linux-2.4-benh/include -Wall
-- -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
-- -fomit-frame-pointer -I/data/MP3/scratch/kernel/linux-2.4-benh/arch/ppc
-- -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized
-- -mmultiple -mstring   -nostdinc -iwithprefix include
-- -DKBUILD_BASENAME=defkeymap  -c -o defkeymap.o defkeymap.c
-defkeymap.c:1: error: parse error before "defkeymap"
-In file included from
-/data/MP3/scratch/kernel/linux-2.4-benh/include/linux/types.h:15,
-~                 from defkeymap.c:6:
-/data/MP3/scratch/kernel/linux-2.4-benh/include/linux/posix_types.h:38:
-warning: type defaults to `int' in declaration of `__kernel_fd_set'
-/data/MP3/scratch/kernel/linux-2.4-benh/include/linux/posix_types.h:38:
-warning: data definition has no type or storage class
+Battery requests might have been underway; pmud is running. If I read
+pmu_suspend() right, pending battery requests should result in pmu_suspend
+waiting for them to finish?
 
-line-wrapping sucks, heres the full log and more info:
+	Michael
 
-http://nerdbynature.de/bits/sheep/2.4.24-benh/make.log
-http://nerdbynature.de/bits/sheep/2.4.24-benh/config
-http://nerdbynature.de/bits/sheep/2.4.24-benh/ver_linux
-
-i was told the 2.4-benh tree could fix some PReP annoyances (sp?) too,
-so i wanted to try it out.
-
-Thank you for your time,
-Christian.
-
-- --
-BOFH excuse #259:
-
-Someone's tie is caught in the printer, and if anything else gets
-printed, he'll be in it too.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
