@@ -1,6 +1,6 @@
-Date: Fri, 29 Mar 02 15:59:44 PST
+Date: Fri, 29 Mar 02 16:42:22 PST
 From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0203292359.AA12953@ivan.Harhan.ORG>
+Message-Id: <0203300042.AA13129@ivan.Harhan.ORG>
 To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [Linux-galileo] ev64260 bi_rec patch
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -9,31 +9,55 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Mark A. Greer <mgreer@mvista.com> wrote:
 
-> I have other things to do so I won't be able to finish today.  In case
-> someone wants to work on this over the weekend, attached is a patch of
-> what I have so far.  It implements the example bi_rec's emailed before
-> for the ev64260 board.  Feel free to use it or do a better job.
+> It *is* in the kernel source (and not the bootloader).
 
-Looks OK except for 2 major problems:
+I don't understand what you are talking about.
 
-1. You are using find_bootinfo() in EV-64260 platform_init to find the bi_recs.
-This is bad, as the magic location where find_bootinfo looks for the bi_recs is
-unavailable to bootloaders outside the linux source tree. Instead I have
-adopted the convention (which Tom Rini has accepted for the K2 port and
-implemented in the wrapper) to pass the physical address of bi_recs to the
-kernel in R3. You should use r3 + KERNELBASE in platform_init to find the
-bi_recs. This works with the wrapper just as well as find_bootinfo(), but is
-much nicer for external bootloaders.
+find_bootinfo looks for bi_recs in a magic location in memory. An external
+bootloader has no way of knowing where in memory that is and thus can't put
+bi_recs in a place where the kernel will find them. A port that uses
+find_bootinfo() can't be booted by anything except the wrapper.
 
-2. You are also using find_bootinfo() in the gt64260_eth driver to find its
-bi_recs. In addition to the problems mentioned above, this has the extra
-problem in that find_bootinfo's magic location, or any other bootloader's
-location for that matter, has certainly been overwritten at this point. If you
-want to peek at bi_recs after platform_init(), you have to have setup.c or
-something copy them into memory that the kernel will retain.
+> Also, 15 of the *_setup.c
+> files in arch/ppc/platforms call find_bootinfo
 
-Because of problem #2 your code will most certainly not work as it is right
-now.
+That's because no one has bothered so far to boot any of those 15 ports with
+any bootloader other than the wrapper. And that's in turn because I haven't
+worked on any of those ports. :-) See k2_setup.c and adir_setup.c for the
+difference.
+
+> including ev64260_setup.c before I
+> modified it.
+
+In my patch I changed it.
+
+> I think the R3 way of doing things is out of date now but maybe Tom
+> can elaborate.
+
+It can't be out of date w.r.t. find_bootinfo(), as first everyone used the
+latter then I screamed and screamed and screamed and got the K2 port changed.
+
+As the wrapper now puts its bi_recs in the magic location *and* sets R3 to
+point to them, either way will work for you, but the R3 way makes it work for
+me too.
+
+> You may have a point here.
+
+This is not a may, it's certain.
+
+> I thought the bi_rec's were left around but I need to
+> verify.
+
+They aren't.
+
+> I took a quick look and didn't see it being reused but I may have missed it.
+
+You won't see the kernel explicitly reusing the bi_recs memory because it
+doesn't even know where that memory is! The bootloader can put the bi_recs
+absolutely anywhere in memory. They can be parsed in platform_init because
+Linux memory management hasn't started yet, but once it's started the memory
+belongs to Linux and you can't expect some random bytes in the middle of memory
+to be preserved for eternity.
 
 MS
 
