@@ -1,34 +1,26 @@
-Message-ID: <20040115160607.73987.qmail@web11006.mail.yahoo.com>
-Date: Thu, 15 Jan 2004 08:06:07 -0800 (PST)
-From: Xupei Liang <tliang@yahoo.com>
-Subject: RE: Unused sectors in the ATA drive
-To: "M?sz?ros_Lajos" <ludwigm@siemens.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <37D0F88E70D96C428C19EEB865701A3801FD0B48@buda902a.siemens.hu>
+Message-ID: <4006BC60.5060408@jonmasters.org>
+Date: Thu, 15 Jan 2004 16:14:24 +0000
+From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: FOSDEM 2004
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks. I concord with you.
+Hi there,
 
-Regards,
+I am travelling thusly:
 
-Terry L.
+	Friday 20/02/2004 depart Waterloo -> Brussels 14:05.
+	Monday 23/02/2004 depart Brussels -> London 17:27.
 
---- Mészáros_Lajos <ludwigm@siemens.com> wrote:
-> 1. Yes.
->     You have to share this area with many (old,
-> mainly DOS oriented)
-> viruses.
-> 2. No.
->     Intelligent programmers (like You and I) don't
-> use unused areas.
->
-> > -----Eredeti üzenet-----
-> > Feladó: Xupei Liang [mailto:tliang@yahoo.com]
-> [snip]
+If anyone else is coming from the UK and would like to meet up then they
+might find a lot of fellow geeks on the first train above :-).
 
+Cheers,
+
+Jon.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
