@@ -1,52 +1,33 @@
+Message-ID: <3C6D08DC.9070104@capflow.com>
+Date: Fri, 15 Feb 2002 14:10:52 +0100
+From: Laurent Pinchart <laurent.pinchart@capflow.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Setting i2c_i2brg 
-Date: Fri, 15 Feb 2002 10:24:02 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E31459473@kolkrabbi.flaga.is>
-From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
-To: "Pergola, Michael" <MichaelPergola@Danfoss.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+To: dan@embeddededge.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SCC or SMC for console ?
+References: <3C6BF3B1.2040906@capflow.com> <3C6BFF02.5070905@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Reply-To: laurent.pinchart@capflow.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is covered in chapter 16.13 of the reference manual for the
-mpc823e,
-especially in 16.13.7 "Programming the I2C Controller"
-Check 16.13.7.5 where they discuss the I2BRG register.
+>
+>
+>> I need 4 serial ports at runtime, and was wondering if I should rather
+>> use 2SMC + 2SCC or 4 SCC (or 1SMC + 3SCC).
+>
+> Always use SCCs for real work and the SMC for console and other low
+> speed things (like connected to low bit rate TDM).
 
-I believe you can run it at any speed upto 115kb/s (you might even get
-higher
-but then it is device specific)
+4 SCC then, and 1 SMC for console. Both SMC1 and SMC2 I/Os are available
+on the design (I only need serial ports + FEC ethernet).
 
-Hope this helps,
+I'd like to use 2 serial ports for RS232 (should be really
+straightforward), and the other 2 for RS485 (with of course no flow
+control). Is there something I should know ?
 
-K.D.
+Laurent Pinchart
 
-> -----Original Message-----
-> From: Pergola, Michael [mailto:MichaelPergola@Danfoss.com]
-> Sent: 14. febrúar 2002 20:38
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Setting i2c_i2brg
->
->
->
-> All,
-> I am using an Embedded Planet MPC823e platform attempting to get I2C
-> operational. How do you relate setting the SCL clock speed with the
-> following variable i2c->i2c_i2brg ? It is currently set to 7
-> but I can find
-> no documentation showing what speed this runs the I2C I/F or what the
-> choices for the bus would be.
->
-> Regards,
->      Michael Pergola
->      Software Engineer
->      Baltimore, MD  21236     (410) 931-6778 x4259
->
->
->
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
