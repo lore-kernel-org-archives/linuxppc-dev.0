@@ -1,12 +1,31 @@
-Message-ID: <403F672C.9000009@euronet.nl>
-Date: Fri, 27 Feb 2004 16:50:04 +0100
-From: Jos Beck II <jos_beck@euronet.nl>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Real time clock
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Real time clock
+Date: Fri, 27 Feb 2004 10:55:47 -0500
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B4C33114@tarpon.mangrovesystems.com>
+From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+To: "Jos Beck II" <jos_beck@euronet.nl>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Check this file:
+
+Documentation/powerpc/todc.txt
+
+Regards,
+ 
+Muhammad Sarwar
+Mangrove Systems Inc.
+
+
+-----Original Message-----
+From: Jos Beck II [mailto:jos_beck@euronet.nl]
+Sent: Friday, February 27, 2004 10:50 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Real time clock
 
 
 Hi,
