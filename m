@@ -1,27 +1,36 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 8260 CPM DP ram free function
-Date: Mon, 24 May 2004 11:03:49 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAE3@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Tom Rini" <trini@kernel.crashing.org>,
-	"Wolfgang Denk" <wd@denx.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <40B1FB42.1040306@intracom.gr>
+References: <40A38968.6060701@intracom.gr> <40A4C04A.8060508@intracom.gr> <F8A7B640-A5F0-11D8-9559-003065F9B7DC@embeddededge.com> <40B1FB42.1040306@intracom.gr>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <505FCE42-ADA6-11D8-B485-003065F9B7DC@embeddededge.com>
+Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@motorola.com>, Wolfgang Denk <wd@denx.de>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH] Driver for FECs on motorola DUET (87x/88x)
+Date: Mon, 24 May 2004 13:18:03 -0400
+To: Pantelis Antoniou <panto@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I suppose once Dan's comments are addressed, since I thought
-> he's been the biggest objector to all of the previous
-> implementations (or, my memory is faulty, and every one of
-> them just fell on the ground), we can push this out, at least
-> for cpm2 stuff.
+On May 24, 2004, at 9:40 AM, Pantelis Antoniou wrote:
 
-I have fixed the #ifdefs Dan complained about, but I cannot really do
-much about changing hostalloc to kfree for the stuff in the kernel,
-since hostalloc gets called a few times before kalloc is initialized.
+> Before I submerge into the assembly of head_8xx.S does anyone have any
+> ideas?
 
-What else should I do before resubmitting?
+I just used head.S, which works fine on the 82xx, as a model for the
+code in head_8xx.S.  I've been looking at some "common" PPC cache
+management functions that I'm not certain are doing the proper thing
+on the 8xx.  I'm suspecting some data corruption problems due to
+improper effects of cache instructions.
+
+There are some optimizations we can do to head_8xx.S, but I don't
+think there is anything incorrect in it.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
