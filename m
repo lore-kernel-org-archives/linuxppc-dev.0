@@ -1,33 +1,27 @@
-Date: Thu, 25 Jan 2001 23:35:58 +0100 (MET)
-From: Roman Zippel <zippel@fh-brandenburg.de>
+Message-Id: <200101252239.RAA04412@mal-ach.watson.ibm.com>
 To: Gabriel Paubert <paubert@iram.es>
-cc: Dan Malek <dan@mvista.com>, mgreer@mvista.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_HIGHMEM on PPC
-In-Reply-To: <Pine.HPX.4.10.10101252142420.22074-100000@gra-ux1.iram.es>
-Message-ID: <Pine.GSO.4.10.10101252326450.1114-100000@zeus.fh-brandenburg.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+cc: Dan Malek <dan@mvista.com>, Roman Zippel <zippel@fh-brandenburg.de>,
+        mgreer@mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_HIGHMEM on PPC 
+In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
+   of "Thu, 25 Jan 2001 22:51:16 +0100." <Pine.HPX.4.10.10101252142420.22074-100000@gra-ux1.iram.es>
+Date: Thu, 25 Jan 2001 17:39:45 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>>>>> Gabriel Paubert writes:
 
-On Thu, 25 Jan 2001, Gabriel Paubert wrote:
+Gabriel> BATS are a good idea, but variable page size are another, superior IMHO,
+Gabriel> possibility. It seems to be what Power4 has from what David said a few
+Gabriel> days ago. I don't know how they mix variable page size with hash tables
+Gabriel> and failed to find any detailed documentation...
 
-> > Heh....64Gbyte is nothing, just a few more bits beyond 32....you
-> > don't need 64-bits for this.  In fact, I had a revelation last
-> > night where I thought we could even do this quite transparently
-> > on PowerPCs with VSIDs or even context registers, anything that
-> > implictly gives us a few more bits of virtual address.  Later
-> > on that.....
->
-> You've seen the light, yes it is the way to go at least on 6xx/7xx[x]...
+	The variable page sizes are determined on a segment by segment
+basis.  The segment type determines how to interpret the page table --
+whether it maps 4KB or 16MB.
 
-Could someone enlighten me, too? :)
-
-bye, Roman
-
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
