@@ -1,21 +1,27 @@
-Message-ID: <001b01c1d149$74e86690$6649a8c0@LEIYINGDU>
-From: "Leiying Du" <ldu@solectek.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Kernel Debug Info
-Date: Thu, 21 Mar 2002 18:29:56 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <01C1D10E.0CF64CE0.sgeorgiev@pixelmaths.com>
+From: Stefan Georgiev <sgeorgiev@pixelmaths.com>
+Reply-To: "sgeorgiev@pixelmaths.com" <sgeorgiev@pixelmaths.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: simple schematics with 405CR
+Date: Thu, 21 Mar 2002 19:24:40 -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How could I dump the kernel debug info on the console instead of syslog?
-Like,
-printk(KERN_NOTICE "cs: unable to map card memory!\n");
-Thanks,
+I'm looking for reference schematic with PowerPC-405CR and small number of components.
+CPU
+FLASH-ROM
+SDRAM
+RS-232 interface
+generic interface to connect additional components.
 
-Leiying
+Any link to internet site is also helpful
+
+Regards
+
+Stefan
+
+03/21/2002
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
