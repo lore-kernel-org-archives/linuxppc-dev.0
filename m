@@ -1,42 +1,24 @@
-Message-ID: <3F2E9DB9.5030509@windriver.com>
-Date: Mon, 04 Aug 2003 18:54:01 +0100
-From: Richard Danter <richard.danter@windriver.com>
-MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+From: Rakesh jagota <j.rakesh@gdatech.co.in>
+Reply-To: j.rakesh@gdatech.co.in
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: 750/107 - PCI or Interrupt problem?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: ppc405
+Date: Tue, 5 Aug 2003 09:34:37 +0530
+MIME-Version: 1.0
+Message-ID: <3rei6m2mr5lqbm8.050820030924@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+Hi all,
+I am working on custom design board based on IBM 405 powerPC based. I am
+looking for browser, can anyone sugggest me the link for the browser. I am
+working ln linux. I am using linux source code from montavista.
 
-I have made some progress in porting Linux 2.4.x to a wrPPMC7xx board.
-Yipee!
+Thanks & Regards,
 
-But now I have hit another problem...
-
-It seems the kernel finds the ethernet card plugged into one of the PCI
-slots. All the diagnostics seem to work too. In fact, it even sends out
-a BOOTP request, as I can see it logged on my server.
-
-The problem is it does not seem to be getting the BOOTP reply. It
-eventually times out. But I can see from my server that a reply is being
-sent.
-
-At the moment I think the problem is most likely in my <board>_pci.c
-code or <board>_setup.c. I don't get any hardware interrupts (ie setting
-a hardware breakpoint on 0x0500 does not stop the CPU) and I would have
-expected that... or am I way off track here?? I am also unsure if I have
-set up my pci_irq_table or <board>_openpic_initsenses structures correctly.
-
-Any suggestions where I should be looking in the code??
-
-Hopefully if this part works then I get an IP address and can mount my
-NFS root filesystem...
-
-Thanks
-Rich
+Rakesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
