@@ -1,35 +1,68 @@
-Message-Id: <199911140940.BAA29983@easystreet01.easystreet.com>
-Date: Sun, 14 Nov 1999 01:40:50 -0800
-Subject: Would HFS+ read only capability be useful?
-From: "Dave Camp" <dave@thinbits.com>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Sun, 14 Nov 1999 05:41:53 -0600 (CST)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: "David W. Patmore" <dwp@bluesteelnet.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: G4 + Linux + PCI device + x86 driver = 0
+In-Reply-To: <NDBBKOPFGLPEGICBJFDIAEDMCCAA.dwp@bluesteelnet.com>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.991114053033.20492G-100000@ofey.inetnebr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Since HFS+ development seems to be stalled, I was thinking of throwing my 
-hat in the ring. Now, before you call me crazy...
+On Sat, 13 Nov 1999, David W. Patmore wrote:
 
-I've got the HFS+ spec. I've got code I wrote for MacOS that was going to be
-used for a disk repair program I was working on, but has been put on hold
-due to a lack of free time to complete it. The code implements objects for
-reading/manipulating the bitmap, volume header, both B*Tree's, extent lists,
-HFS wrapper volumes, etc. It also has a nice caching system built into it.
+[...]
+> The original x86 (Redhat 6.0) driver uses virt_to_bus() to get the address
+> to write to.  In LinuxPPC, that function is not available (not in name
+> table).  I guess that I'm supposed to use ioremap(), but that doesn't seem
+> to do it for me either.
+> 
+> Code snip:
+> 	ul_reg_addr = p_dev->base_address[0];
+> 
+> 	pul_remapped =ioremap( ul_reg_addr, 32 );
+> 
+> 	printk( "pcidrv: base addr %08X \n", ul_reg_addr );
+> 	printk( "pcidrv: pul_remapped %08X \n", pul_remapped );
+> 	printk( "pcidrv: remapped data: %08X \n", *pul_remapped );
+> 
+> 	iounmap( pul_remapped );
+> 
+> The outcome of running this code is:  pci base address (0x80890000),
+> remapped (0xC8271000), data (0xFFFFFFFF).  The data is a status word which I
+> expect to be not
+> all "F"s.  Note that iounmap is "TBD" in the source, so each time the code
 
-There is enough code, I would think, to implement read only data fork access
-for HFS+ volumes without much trouble.
+Most likely, you need to enable I/O or/and memory access by hand.  OF
+probably didn't enable it automatically.  For example,
 
-Problem is, I don't know anything about Linux coding, or more specifically,
-what the API looks like for adding a file system module (or whatever the
-proper term is).
+	(void) pci_read_config_word(p_dev, PCI_COMMAND, &command);
+	if (!(command & PCI_COMMAND_IO)) {
+		command |= PCI_COMMAND_IO;
+		(void) pci_write_config_word(p_dev, PCI_COMMAND, command);
+		(void) pci_read_config_word(p_dev, PCI_COMMAND, &command);
+		if (!(command & PCI_COMMAND_IO)) {
+			printk(KERN_DEBUG "IO access enable failed\n");
+			return 0;
+		}
+	}
+	if (!(command & PCI_COMMAND_MEMORY)) {
+		command |= PCI_COMMAND_MEMORY;
+		(void) pci_write_config_word(p_dev, PCI_COMMAND, command);
+		(void) pci_read_config_word(p_dev, PCI_COMMAND, &command);
+		if (!(command & PCI_COMMAND_MEMORY)) {
+			printk(KERN_DEBUG "Memory access enable failed\n");
+			return 0;
+		}
+	}
 
-Would this be useful? If so, can someone suggest a book or two on coding in
-this area of Linux? Also, are there Unicode API's in Linux (since HFS+ uses
-Unicode to store filenames)?
+This would make *pul_remapped return something different, I'd think.  See
+other ppc drivers for more details.  You may need additional PCI fixups.
 
-Thanks,
-Dave
+
+Takashi Oe
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
