@@ -1,25 +1,16 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 982B067A6E
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jan 2005 10:47:12 +1100 (EST)
-Date: Thu, 20 Jan 2005 16:47:08 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Message-ID: <20050120234708.GF2626@smtp.west.cox.net>
-References: <20050118161515.GI28724@smtp.west.cox.net>
-	<93780AB0-696D-11D9-81BE-003065F9B7DC@embeddededge.com>
-	<20050118181330.GJ28724@smtp.west.cox.net>
-	<41ED5C51.8020809@mvista.com>
-	<20050118190848.GM28724@smtp.west.cox.net>
-	<41ED66D0.2090506@mvista.com>
-	<20050119180841.GP28724@smtp.west.cox.net>
-	<41F01A23.2090907@mvista.com>
-	<20050120225321.GB2626@smtp.west.cox.net>
-	<41F03CEA.2030703@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41F03CEA.2030703@mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 44E4E67A5C
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jan 2005 10:54:08 +1100 (EST)
+Message-ID: <41F0449C.5020603@mvista.com>
+Date: Thu, 20 Jan 2005 16:54:04 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <41EC29A8.1040703@mvista.com> <1106259956.18397.10.camel@gaston>
+In-Reply-To: <1106259956.18397.10.camel@gaston>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,23 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 20, 2005 at 04:21:14PM -0700, Mark A. Greer wrote:
-> Tom Rini wrote:
-> 
-> >Why ask the user for something you know he wants?  If they've selected
-> >GENRTC and are using the board, they'll probably want GENRTC to work.
-> >It's exactly what you described except the user won't have to know about
-> >anything going on.
-> 
-> If that's the way you want to go then it should depend on having the rtc 
-> "driver" selected and rtc.h should look something like:
+Benjamin Herrenschmidt wrote:
 
-I don't know how we talked past eachother, but it would look exactly
-like it did in your patch.  The only thing is that you don't ask the
-user, you make use of what the user told you already.  This is a nice
-new feature of the 2.6 kconfig system.  This is what I'm asking you to
-change from your first patch.
+>
+>The patch is going backward since it disables the ability to have
+>runtime selection of the RTC chip.
+>
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Its only "backwards" from a narrow PPC point of view.  Without a major 
+rewrite of the rtc infrastructure, these are the choices:
+
+a) Make a ppc-only solution using ppc_md.xxx.
+b) Make a generic solution either by writing an entire driver 
+duplicating code that's in genrtc (e.g., ds1302) or interface to the 
+bottom of genrtc (e.g., my rtc code).  The only limitation is that you 
+can't select different rtc chips at runtime.
+
+Choosing a) give you more flexibility within PPC but is PPC only; 
+choosing b) is generic but assumes its the only rtc chip that will be 
+used by whatever kernel binary its put in.
+
+I chose b) and to reuse the genrtc code.  In a sane world, reusing code 
+is considered a good thing...
+
+Its obvious that you and Tom prefer a).  That's fine but if I switch to 
+a), I know the first comment I'll get when I post the driver to lmkl 
+will be, "Why would you make this ppc-specific when you could have made 
+it generic?"  Will you and Tom then defend that decision for me?
+
+Also, this is not board-specific as you and Tom have tried to suggest.  
+Assuming I change the #ifdef in rtc.h to remove the option as I think 
+Tom and I are agreeing upon, you select the i2c algo/adapter, the 
+i2c/rtc client and its there.  Where are the "gross hacks for every board"?
+
+Mark
