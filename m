@@ -1,47 +1,46 @@
-Date: Wed, 22 Nov 2000 12:33:17 +0100
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-Subject: Re: controlfb problem (on XFree86-4.0.1 off the penguinppc.org
- development tree)
-To: mlan@cpu.lu
-Cc: jens_tingleff@yahoo.com, linuxppc-dev@lists.linuxppc.org,
+Message-Id: <200011221853.TAA00740@piglet.grunz.lu>
+Date: Wed, 22 Nov 2000 19:53:37 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: controlfb problem (on XFree86-4.0.1 off the penguinppc.org deve
+ lopment tree)
+To: daenzerm@student.ethz.ch
+cc: jens_tingleff@yahoo.com, linuxppc-dev@lists.linuxppc.org,
         ajoshi@unixbox.com
-Message-id: <3A1BAEFD.2964C5AA@student.ethz.ch>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <200011212143.WAA00749@piglet.grunz.lu>
+In-Reply-To: <3A1BAEFD.2964C5AA@student.ethz.ch>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
->
-> On  21 Nov, this message from Jens Tingleff echoed through cyberspace:
-> >> That problem I fixed for me with a patch you can find here:
-> >>
-> >> http://www.cpu.lu/~mlan/linux/dev/xf4.html
-> >>
-> >
-> > Actually, I did roll this patch into my modifications. Could it be that
-> > the development tree on penguinppc.org doesn't have these patches at
-> > the moment?
->
-> That could be; I never got any positive feedback of any patch that fixes
-> this problem getting close enough to official XFree to be swallowed ;-)
->
-> The patch I'm using isn't clean enough for that... and it might even not
-> work for all resolutions/depths; never tried...
+Hi all,
 
-AFAICS everything except the very last chunk (is it important?) of your patch
-has been integrated in one form or another into XFree86 CVS as a patch of mine
-(the one I asked you to test, Michel) was accepted. Have you looked at the
-XFree86 CVS lately?
+On  22 Nov, this message from Michel Dänzer echoed through cyberspace:
+> AFAICS everything except the very last chunk (is it important?) of your patch
+> has been integrated in one form or another into XFree86 CVS as a patch of mine
+> (the one I asked you to test, Michel) was accepted. Have you looked at the
+> XFree86 CVS lately?
 
+No; I'm running XF precompiled from Franz's site, and the test modules
+you asked about some time ago were binary incompatible to that XF
+version. A long time ago I had an XF4 source tree in a 'compilable'
+state; but that was 4.0. I then tried to patch it to 4.0.1, and failed
+miserably ;-) It has remained in the same state since then...
+
+Anyway, these patches getting integrated is good news. But I think right
+now I'll patiently wait for RPMs rather than compile myself :-)
+
+Cheers
 
 Michel
 
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
