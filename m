@@ -1,43 +1,38 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 2 Apr 2003 12:46:22 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Matt Porter <porter@cox.net>,
-	Jean-Denis Boyer <jdboyer@mediatrix.com>,
-	kas turi <inox_kas@yahoo.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Disabling data cache
-Message-ID: <20030402194622.GA30107@ip68-0-152-218.tc.ph.cox.net>
-References: <2702075D4DE2B043BF5EB82E9CFAD45B763543@mail1.mediatrix.com> <20030402094037.A31751@home.com> <3E8B3895.5050908@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E8B3895.5050908@embeddededge.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Dan Malek <dan@embeddededge.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Disabling data cache 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 02 Apr 2003 12:46:22 PDT."
+             <20030402194622.GA30107@ip68-0-152-218.tc.ph.cox.net>
+Date: Wed, 02 Apr 2003 22:19:09 +0200
+Message-Id: <20030402201914.6C7F2C587C@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Apr 02, 2003 at 02:23:01PM -0500, Dan Malek wrote:
+In message <20030402194622.GA30107@ip68-0-152-218.tc.ph.cox.net> you wrote:
 >
-> Matt Porter wrote:
+> > It was orginally done for 8xx processors.  I suspect someone (I don't
+> > think it was me) :-) tried to consolidate 8xx and 82xx CPM configurations
+> > and messed it up.
 >
-> >On Wed, Apr 02, 2003 at 09:28:21AM -0500, Jean-Denis Boyer wrote:
-> >
-> >>There is a kernel configuration option for that: CONFIG_DCACHE_DISABLE.
-> >>In the kernel configuration UI, look into the section 'MPC8260 CPM
-> >>Options'.
-> >
-> >
-> >There is no code backing that option in linuxppc_2_4_devel, it is useless.
->
-> It was orginally done for 8xx processors.  I suspect someone (I don't
-> think it was me) :-) tried to consolidate 8xx and 82xx CPM configurations
-> and messed it up.
+> My guess and recollection is that the 8260 version of this was to
+> disable the DCACHE in a certain manner, because of buggy silicon on a
+> specific board.  Someone unmerged this bit of code later I think.
 
-My guess and recollection is that the 8260 version of this was to
-disable the DCACHE in a certain manner, because of buggy silicon on a
-specific board.  Someone unmerged this bit of code later I think.
+It might have been me. We had problems on  the  first  prototypes  of
+TQM8260 boards; the board configuration with L2 cache would only work
+with  DC turned off. The problem disappeared with later silicon, so I
+never checked again what happened with the code.
+
+Wolfgang Denk
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Intel told us the Pentium would have "RISK" features...
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
