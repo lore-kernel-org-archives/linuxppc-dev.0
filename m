@@ -1,55 +1,69 @@
-Date: Fri, 25 Jun 1999 12:11:11 +1000
-Message-Id: <199906250211.MAA04916@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: ad@MPIfR-Bonn.MPG.de
-CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-In-reply-to: <3771D987.C59A9374@mpifr-bonn.mpg.de> (message from Albrecht
-	=?iso-8859-1?Q?Dre=DF?= on Thu, 24 Jun 1999 09:08:55 +0200)
-Subject: Re: Help: Porting PCI driver from Linux/Intel -> PPC
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <3771D987.C59A9374@mpifr-bonn.mpg.de>
+Message-Id: <v03110700b398a5992950@[209.96.179.153]>
+In-Reply-To: <199906220307.NAA01278@farrago.anu.edu.au>
+References: <Pine.LNX.3.95.990621201542.23566A-100000@pacific.pht.com>
+ (message from Brad Midgley on Mon, 21 Jun 1999 20:37:08 -0600 (MDT))
+ <Pine.LNX.3.95.990621201542.23566A-100000@pacific.pht.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 24 Jun 1999 23:37:36 -0400
+To: Paul.Mackerras@cs.anu.edu.au, linuxppc-users@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+Subject: Machine Check in Kernel Mode with Paul's 2.2.10 on B+W G3
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Albrecht =?iso-8859-1?Q?Dre=DF?= <ad@MPIfR-Bonn.MPG.de> wrote:
+Hi,
 
-> 	I wrote a driver for a pci dsp card, which works fine on several Intel/
-> Linux boxes both with 2.0.x and 2.2.x.  This encouraged to make a test with my
-> PMac 7300/166, running R5 with the stock 2.2.6 kernel.  I compiled and inserted
-> the driver --- and got a kernel panic :-(
+Well I just received my B+W G3 yesterday and Paul's 2.2.10 kernel
+annoucement seemed like fate so I tried to boot with it to no avail:
 
-A machine check?  That will happen if you try to access an I/O port
-which doesn't respond.
+Here are some of the interesting things the error report had to say:
 
-> Maybe I missed some setup which is needed with LinuxPPC but not with Intel?  Or
+System: Brand new B+W G3 with 12 gig ATI drive and Adatec AIC-7850 scsi
+host adapter found at PCI 2/0 with a 3 gig scsi Quantum drive with R5/YDL
+on it (which will boot fine on my PowerTower 180e).
 
-PCI cards don't automatically their memory and I/O accesses enabled on
-powermacs.  Arguably the generic PCI stuff in the kernel should turn
-on memory and I/O accesses, and it should probably also check that the
-addresses assigned by Open Firmware are sane.
+Partion check:
+  sda: sda1 sda2 sda3 sda4 sda5 sda6 sda7 sda8   (sda5 is the root partition)
+  sdb: scsidisk I/O error: dev 08:10 sector 0
+  unable to read partition table  (this is my zip drive without a disk in it)
+  hda: hda timeout waiting for DMA
 
-> Now I try to insmod my driver, which reads the configuration space (using calls
-> to pci_read_config_dword) and dumps it, reads irq and board revision, reads the
-> base adresses of the five io regions, and reads one io address via inl().  The
+Machine check in kernel mode
+Caused by (from msr): regs c01a4c18 Unknown values in msr
 
-Ideally you should use pci_find_device and then use the base_address
-and irq fields from the pci_dev structure it returns.  And for
-powermacs, you will need to set the bit in the config-space control
-register to enable I/O accesses.
+Here are some register values:
+   NIP: C00BDE58  LR: C00BDE14  MSR: 00009030  Trap: 0200
+Task= c01a2f58[0] 'swapper' mm->pgd
+Last syscall: 112
 
-> * lspci reports irq #25, but the value in the config space is 1
+Backtrace: C00BDE14 COO13C04 C001C850 C0003B68 C001F460 C00069F4 ...
 
-Use pci_dev->irq instead, it should be correct.
 
-> * the regions 0 to 3 are 256 bytes each, so they would overlap if the values
->   reported would be correct.
+>From looking at the booting log messages, everything seems fine up to the
+very end (it finds the scsi drive, finds the partitions, finds the USB hub,
+USB mouse, etc).  There does not seem to be anything unusual until the DMA
+timeout message waiting for hda.
 
-Possibly OF's fault.  I assume that if you write 0xffffffff into those
-base address registers, you get back 0xffffff01, indicating 256 bytes
-of I/O space?
+Any ideas here?  I used Paul's System.map to try and track down the
+offending routines but none of the backtrace addresses line up exactly with
+any of the map entry points (am I missing an offset here?)
 
-Paul.
+Any ideas here would be greatly appreciated.  My entire JDK build tree for
+glibc 2.1 is on the hard drive I am trying to boot from but my wife now has
+my old machine (PT 180e) and I can't go begging to borrow that machine
+back, so please any help in getting Linux to boot with this machine would
+be greatly appreciated.
+
+Thanks,
+
+Kevin
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
