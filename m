@@ -1,23 +1,17 @@
-Return-Path: <jonathan@jonmasters.org>
-Received: from mailhub-node1.mailbox.net.uk (mailhub-node1.mailbox.net.uk
-	[195.82.125.30]) by ozlabs.org (Postfix) with ESMTP id BA48D2BD6A
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id 90D892BD6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Oct 2004 01:07:11 +1000 (EST)
-Message-ID: <41616707.6070901@jonmasters.org>
-Date: Mon, 04 Oct 2004 16:06:47 +0100
-From: Jon Masters <jonathan@jonmasters.org>
+	Tue,  5 Oct 2004 01:31:11 +1000 (EST)
+Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
+	1.3.167) for linuxppc-embedded@ozlabs.org; 4 Oct 2004 11:31:05 -0400
+Date: Mon, 4 Oct 2004 11:24:24 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Message-ID: <Pine.LNX.4.60.0410041110320.13645@dell.enoriver.com>
 MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-References: <35fb2e59040930165327f2dd59@mail.gmail.com>
-	<87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com>
-	<20041001220648.GJ21896@smtp.west.cox.net>
-	<4160E898.9080905@intracom.gr>
-	<20041004142909.GA27376@smtp.west.cox.net>
-	<20041004074105.A11487@home.com>
-In-Reply-To: <20041004074105.A11487@home.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: bi_recs
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Subject: what is the protocol for getting patches into the tree?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,16 +22,89 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Matt Porter wrote:
 
-> Same here, I see that no one has raised a technical issue with the
-> flattened device tree method. Since it is a working mechanism AND it
-> unifies the arch, it's the clear choice over reinventing the wheel.
-> All we need is an implementation.
+   (i emailed dan m. offline about this earlier, but i have no way of 
+knowing if he's the right person to ask, so i'll post here and try to 
+settle this once and for all.)
 
-Well don't go writing it as I'll get there sometime soon - just need 
-chance to fit it in with worky stuff this week. If you don't see a patch 
-from me by the weekend then you're welcome to hit me with large pointy 
-sticks at next OLS.
+   *what* does it take to get a patch into the bk-managed kernel source 
+tree at http://ppc.bkbits.net:8080/linuxppc-2.5.  originally, as i was 
+learning the ropes here and started to make suggestions, i was told, 
+in no uncertain terms, to "submit a patch".
 
-Jon.
+   once i figured out what i wanted, i did indeed start submitting 
+patches.  and, without exception (as far as i can tell), every one of 
+them was discarded without acknowledgement or any reason for 
+rejection.  at this point, i'm sure you can appreciate that the 
+frustration level is starting to build.  it's not terribly productive 
+to be told to submit patches, when whatever time i put into doing so 
+turns out to be a complete waste of time.
+
+   is this even the right place for such patches?  or should i be 
+submitting to the LKML list proper?  or what?  i'm more than willing 
+to follow the instructions for doing this the right way, i just need 
+to know what the right way is.
+
+   what follows is (for ... what ... the third time?), an attempt to 
+just extend the smc_uart struct in commproc.h to add a relocation 
+pointer.  there's no reason i can think of why this shouldn't be 
+applied.  it can't possible break anything, it adds functionality, and 
+it makes that struct consistent with the I2C and SPI structs that have 
+analogous relocation pointers.  what's not to accept?  (it also makes 
+an aesthetic change to that file to define reserved chunks of structs 
+with a standard "char", rather than with the really hideous practice 
+of using int, short or whatever size the reserved space happens to 
+represent.  but if people are offended by that *change*, i'll be happy 
+to take it out.  i just want the gosh-darned relocation pointer.)
+
+   i can submit sizable patches that try to do several related things 
+at once, or i can do it two lines at a time.  given the standard 
+protocol over at LKML, am i expected to just keep submitting the same 
+patch over and over, again and again, repeatedly, until it gets in? 
+some guidance here would be appreciated.  is there a code word?  a 
+secret handshake?  what?
+
+   and now, the patch.  if there's a problem with this (format, 
+functionality, whatever), can someone explain it so i can fix it and 
+try again?  that's all i'm asking.  (this patch was generated by 
+running "bk -r diffs -u".  if it should be done another way, i'd be 
+happy to learn about that, too.)
+
+
+
+
+
+
+--- linuxppc-2.5/include/asm-ppc/commproc.h	2004-09-16 13:08:12.000000000 -0400
++++ linuxppc-2.5-new/include/asm-ppc/commproc.h	2004-09-16 13:40:52.000000000 -0400
+@@ -145,6 +145,8 @@
+  	ushort	smc_brkec;	/* rcv'd break condition counter */
+  	ushort	smc_brkcr;	/* xmt break count register */
+  	ushort	smc_rmask;	/* Temporary bit mask */
++	char	res1[8];	/* Reserved */
++	ushort	smc_rpbase;	/* Relocation pointer */
+  } smc_uart_t;
+
+  /* Function code bits.
+@@ -475,8 +477,7 @@
+  */
+  typedef struct scc_uart {
+  	sccp_t	scc_genscc;
+-	uint	scc_res1;	/* Reserved */
+-	uint	scc_res2;	/* Reserved */
++	char	res1[8];	/* Reserved */
+  	ushort	scc_maxidl;	/* Maximum idle chars */
+  	ushort	scc_idlc;	/* temp idle counter */
+  	ushort	scc_brkcr;	/* Break count register */
+@@ -560,9 +561,9 @@
+  	ushort	iic_tbptr;	/* Internal */
+  	ushort	iic_tbc;	/* Internal */
+  	uint	iic_txtmp;	/* Internal */
+-	uint	iic_res;	/* reserved */
++	char	res1[4];	/* Reserved */
+    	ushort	iic_rpbase;	/* Relocation pointer */
+-	ushort	iic_res2;	/* reserved */
++	char	res2[2];	/* Reserved */
+  } iic_t;
+
+  #define BD_IIC_START		((ushort)0x0400)
