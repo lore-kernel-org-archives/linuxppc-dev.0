@@ -1,62 +1,54 @@
-To: "Joao Vicente" <joao.vicente@spectel.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem Programming Flash using BDI2000 on MPC8260ADS board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 15 Aug 2003 09:59:30 BST."
-             <DEF39A0710293E489D45B10E06645CBD021EA386@dub-msx1.spectelcorp.com>
-Date: Fri, 15 Aug 2003 19:17:01 +0200
-Message-Id: <20030815171706.1B0BDC59E4@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 15 Aug 2003 11:00:41 -0700
+From: Ron Bianco <ronb@lcsaudio.com>
+Subject: RE: MPC7410 doesn't work with linux-2.4.20-denx
+In-reply-to: <20030815084215.BE92CC59E4@atlas.denx.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <000301c36357$240d93c0$4d00a8c0@warp-speed>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Joao,
+I'm curious as to what an MPC8260 is doing on a board based on an MPC7410?
+Is this a dual processor board?
 
-in message <DEF39A0710293E489D45B10E06645CBD021EA386@dub-msx1.spectelcorp.com> you wrote:
+Ron
+
 >
-> ### Problem #1
-> Again after erasing the whole flash, the prog command (see below) shows
-> progress and returns a valid response
-
-This doesn't sound like a problem to me :-)
-
-> BDI>prog 0xff800000 u-boot.srec SREC
-> Programming u-boot.srec , please wait ....
-> Programming flash passed
+> Dear Christian,
 >
-> however, when reading back the flash the contents of the flash still
-> display all FF's
-
-Note that the "prog" command does not list a  load  address,  but  an
-OFFSET.  The  u-boot.srec file already contains a load address, which
-matches the TEXT_BASE defined in your board/*/config.mk file - if you
-add a offset of  0xff800000  you  are  programming  the  image  to  a
-different location than you expect.
-
-Also, I don;t think that 0xff800000 is where you  want  to  burn  the
-image  to.  For the MPC8260ADS board, TEXT_BASE is set to 0xFFF00000,
-so this is what you should try.
-
-Finally, it makes little sense to waste your  time  with  a  S-Record
-file - programming a binary image will be much faster.
-
-So try:
-
-	prog 0xFFF00000 u-boot.bin BIN
-
-[untested, as I don't have such a board]
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I'm a programmer: I don't buy software, I write it.
-                                                  -- Tom Christiansen
+> in message <200308141128.h7EBSnQ06089@mailgate5.cinetic.de> you wrote:
+> >
+> > I'm currently trying to get linux running on an embedded board:
+> > 	* MPC7410 Rev.1.4
+> > 	* PowerQUICC (MPC 8260)
+> > 	* RAM: 128 MB
+> > 	* Flash: 64 MB
+> > 	* Kernel: 2.4.20-denx
+> >
+> > For some reason, it doesn't boot properly. It says "Now booting Linux",
+> > after that something triggers a hard reset. For the last 2 weeks I tried
+>
+> A couple of questions:
+>
+> * Which bootloader are you using?
+> * Are you sure that the SDRAM initialization is correct?
+> * Are you sure the information passed from the bootloader to the Linux
+>   kernel (memory size, clocks, ...) is correct?
+> * Finally: did you disable the software watchdog?
+>
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+> If you fail to plan, plan to fail.
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
