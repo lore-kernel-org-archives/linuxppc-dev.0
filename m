@@ -1,16 +1,31 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id E52DE2BDB7
+Return-Path: <tony.p.lee@gmail.com>
+Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.205])
+	by ozlabs.org (Postfix) with ESMTP id BB1462BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 10 Oct 2004 07:55:26 +1000 (EST)
-Date: Sat, 9 Oct 2004 14:55:21 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: akpm@osdl.org
-Message-ID: <20041009145521.A21783@home.com>
+	Sun, 10 Oct 2004 14:26:45 +1000 (EST)
+Received: by mproxy.gmail.com with SMTP id 76so154633rnk
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 09 Oct 2004 21:26:37 -0700 (PDT)
+Message-ID: <470b6397041009212664b9c80e@mail.gmail.com>
+Date: Sat, 9 Oct 2004 21:26:37 -0700
+From: Tony Lee <tony.p.lee@gmail.com>
+To: jonathan@jonmasters.org
+In-Reply-To: <35fb2e59041009122710ab6d53@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH][PPC32] Configure PPC440GX L2 cache based on CPU rev
+Content-Type: text/plain; charset=US-ASCII
+References: <000001c4aace$245a5060$6500a8c0@PortatileLG>
+	<35fb2e5904100508157a393ee2@mail.gmail.com>
+	<4162C649.6060900@ru.mvista.com>
+	<35fb2e590410051507367017a@mail.gmail.com>
+	<41641222.6080405@ru.mvista.com>
+	<470b63970410071534422f6617@mail.gmail.com>
+	<4165DB83.8080001@jonmasters.org>
+	<470b6397041007195371655afb@mail.gmail.com>
+	<35fb2e59041009122710ab6d53@mail.gmail.com>
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Luca Giuliani <l.giuliani@tiscali.it>, linuxppc-embedded@ozlabs.org
+Subject: Re: Linux on Memec Virtex II Pro V4P7 Rev. 3
+Reply-To: Tony Lee <tony.p.lee@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,103 +36,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This patch enables/disables the PPC440GX L2 cache based on
-errata which prevents reliable operation on certain CPU
-revisions and speed grades.
+On Sat, 9 Oct 2004 20:27:15 +0100, Jon Masters <jonmasters@gmail.com> wrote:
+> On Thu, 7 Oct 2004 19:53:52 -0700, Tony Lee <tony.p.lee@gmail.com> wrote:
+> 
+> > The problem I saw was that I can't turn off the interrupt at all.
+> 
+> On the Memec board? really?
+> 
 
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+No, not on Memec,  just on our own HW.    I have the memec board, but
+I don't have time to play on that one.   I got to debug the HW one week after
+I was hired.    As far as I can tell, our linux for memec board doesn't load
+the sysace driver.
 
-===== arch/ppc/platforms/4xx/ocotea.c 1.7 vs edited =====
---- 1.7/arch/ppc/platforms/4xx/ocotea.c	2004-10-08 18:57:01 -07:00
-+++ edited/arch/ppc/platforms/4xx/ocotea.c	2004-10-08 19:46:25 -07:00
-@@ -81,7 +81,7 @@
- {
- 	seq_printf(m, "vendor\t\t: IBM\n");
- 	seq_printf(m, "machine\t\t: PPC440GX EVB (Ocotea)\n");
--
-+	ibm440gx_show_cpuinfo(m);
- 	return 0;
- }
- 
-@@ -299,15 +299,6 @@
-         mtspr(SPRN_DBCR0, (DBCR0_TDE | DBCR0_IDM));
- #endif
- 
--	/*
--	 * Determine various clocks.
--	 * To be completely correct we should get SysClk
--	 * from FPGA, because it can be changed by on-board switches
--	 * --ebs
--	 */
--	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
--	ocp_sys_info.opb_bus_freq = clocks.opb;
--
- 	/* Setup TODC access */
- 	TODC_INIT(TODC_TYPE_DS1743,
- 			0,
-@@ -350,8 +341,17 @@
- 	if (r3)
- 		__res = *(bd_t *)(r3 + KERNELBASE);
- 
--	/* Disable L2-Cache due to hardware issues */
--	ibm440gx_l2c_disable();
-+	/*
-+	 * Determine various clocks.
-+	 * To be completely correct we should get SysClk
-+	 * from FPGA, because it can be changed by on-board switches
-+	 * --ebs
-+	 */
-+	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
-+	ocp_sys_info.opb_bus_freq = clocks.opb;
-+	
-+	/* Disable L2-Cache on broken hardware, enable it otherwise */
-+	ibm440gx_l2c_setup(&clocks);
- 
- 	ibm44x_platform_init();
- 
-===== arch/ppc/syslib/ibm440gx_common.c 1.1 vs edited =====
---- 1.1/arch/ppc/syslib/ibm440gx_common.c	2004-05-14 19:00:24 -07:00
-+++ edited/arch/ppc/syslib/ibm440gx_common.c	2004-10-08 19:35:02 -07:00
-@@ -171,6 +171,19 @@
- 	asm volatile ("sync; isync" ::: "memory");
- }
- 
-+void __init ibm440gx_l2c_setup(struct ibm44x_clocks* p)
-+{
-+	/* Disable L2C on rev.A, rev.B and 800MHz version of rev.C,
-+	   enable it on all other revisions
-+	 */
-+	u32 pvr = mfspr(PVR);
-+	if (pvr == PVR_440GX_RA || pvr == PVR_440GX_RB ||
-+	    (pvr == PVR_440GX_RC && p->cpu > 667000000))
-+		ibm440gx_l2c_disable();
-+	else
-+		ibm440gx_l2c_enable();
-+}
-+
- int __init ibm440gx_get_eth_grp(void)
- {
- 	return (SDR_READ(DCRN_SDR_PFC1) & DCRN_SDR_PFC1_EPS) >> DCRN_SDR_PFC1_EPS_SHIFT;
-===== arch/ppc/syslib/ibm440gx_common.h 1.1 vs edited =====
---- 1.1/arch/ppc/syslib/ibm440gx_common.h	2004-05-14 19:00:24 -07:00
-+++ edited/arch/ppc/syslib/ibm440gx_common.h	2004-10-08 19:36:03 -07:00
-@@ -4,7 +4,7 @@
-  * PPC440GX system library
-  *
-  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-- * Copyright (c) 2003 Zultys Technologies
-+ * Copyright (c) 2003, 2004 Zultys Technologies
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -36,6 +36,9 @@
- 
- /* Disable L2 cache */
- void ibm440gx_l2c_disable(void) __init;
-+
-+/* Enable/disable L2 cache for a particular chip revision */
-+void ibm440gx_l2c_setup(struct ibm44x_clocks*) __init;
- 
- /* Get Ethernet Group */
- int ibm440gx_get_eth_grp(void) __init;
+
+> > Once I start one write command, the ISR keep coming in.
+> 
+> Ouch.
+
+Tell me about it.  It tooks me 3+ days to id this.
+
+> Perhaps. But that's down to your hardware guys to check the error
+> output from your synthesis tool to see if this weirdly has happened.
+> Our board doesn't have lines hard tied together, if that was the
+> notion you were offering.
+
+I tried to synthesize chipscope into into our VP20.  But don't have
+much time for it now.  It is less of a priority since the sysace is working 
+now for 1.5 months (without ISR).  Also, we use linux as Xilinux dev environment
+but the chipscope only work in Windows platform.  Our HW folks
+don't have time to touch Windows side of Xilinx tools.  It make it
+more difficult to debug SW/HW integration issue.
+
+
+> 
+> > I try turn off the ISR on write with SYSACE register and
+> > the ppc interrupt control register.  None of them worked.
+> 
+> Did you do it as per my patch, or what?
+
+No, where can I find your patch?
+
+> 
+> Yes. We come up in 8 seconds to my firmware, and total boot time is
+> around 20 seconds, without any effort to make it less. That includes
+> cunning DHCP+ZeroConf scripts I wrote.
+> 
+
+That's about right,  We don't do DHCP, it comes up a bit faster.
+
+-- 
+-Tony
+Having a lot of fun with Xilinx Virtex Pro II reconfigurable HW + ppc + Linux
