@@ -1,43 +1,67 @@
-Date: Wed, 16 Jun 2004 09:52:58 -0500 (CDT)
-From: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
-To: Mark Chambers <markc@mail.com>
-Cc: Bret Indrelee <Bret.Indrelee@qlogic.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Hardware interrupts routines
-In-Reply-To: <009501c453ad$b6be50f0$0301a8c0@chuck2>
-Message-ID: <Pine.LNX.4.44.0406160950550.11299-100000@spider.ancor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Jean-Christophe Dubois <jdubois@mc.com>
+To: Garcia =?ISO-8859-1?Q?J=E9r=E9mie?= <GARCIAJ@3il.fr>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <85E6ED5B5EC32F439702305CC417E12D9E2A80@email.3il.fr>
+References: <85E6ED5B5EC32F439702305CC417E12D9E2A80@email.3il.fr>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1087397989.3411.43.camel@fr-jdubois1.ad.mc.com>
+Mime-Version: 1.0
+Date: Wed, 16 Jun 2004 16:59:49 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 16 Jun 2004, Mark Chambers wrote:
-> But isn't he going to have to write a device driver in order to call
-> request_irq()?
+Hello Jérémie
 
-He is going to have to write a loadable module, which may or may not
-have the normal driver entry points. If he is handling a PCI device,
-he definately should be writing a device driver.
+A good reference for you would be:
 
--Bret
+http://www.xml.com/ldd/chapter/book/bookindexpdf.html
 
-> You can't just call request_irq() from an application, can
-> you?
+In particular:
+http://www.xml.com/ldd/chapter/book/pdf/ch09.pdf
 
-That is correct.
+Enjoy
 
-> If not, is there any way to grab an interrupt other than writing a
-> device driver?
+JC
 
-Any kernel code (i.e. loadable module) can call the routine.
-
--Bret
-
---
-Bret Indrelee                 QLogic Corporation
-Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
+On Wed, 2004-06-16 at 16:28, Garcia Jérémie wrote:
+> Hi everybody !
+> As you guess I need some help... Indeed I'm a newbie in Linux embedded development and I have to work on a linux ppc based board project.
+> In fact, I have to adapt an existing VxWorks application to a linux montavista hardhat application.
+> My problem is the following : I need to find a linux equivalent routine of the intConnect() VxWorks routine. You can see the man page of taht function below :
+>
+> >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+> NAME
+>
+> intConnect( ) - connect a C routine to a hardware interrupt
+> SYNOPSIS
+>
+> STATUS intConnect
+>     (
+>     VOIDFUNCPTR * vector,   /* interrupt vector to attach to */
+>     VOIDFUNCPTR   routine,  /* routine to be called */
+>     int           parameter /* parameter to be passed to routine */
+>     )
+>
+> DESCRIPTION
+>
+> This routine connects a specified C routine to a specified interrupt vector. The address of routine is generally stored at vector so that routine is called with parameter when the interrupt occurs. The routine is invoked in supervisor mode at interrupt level. A proper C environment is established, the necessary registers saved, and the stack set up.
+>
+> The routine can be any normal C code, except that it must not invoke certain operating system functions that may block or perform I/O operations.
+>
+> This routine generally simply calls intHandlerCreate( ) and intVecSet( ). The address of the handler returned by intHandlerCreate( ) is what actually goes in the interrupt vector.
+>
+> This routine takes an interrupt vector as a parameter, which is the byte offset into the vector table. Macros are provided to convert between interrupt vectors and interrupt numbers, see intArchLib.
+>
+> <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+>
+> The only hardware interrupts routine I found through my investigations is the request_irq(...). But the problem is that request_irq do not allow me to pass an argument to the handler... So is there a routine that allows it or is there a way to adapt the request_irq() to my case.
+> I thougt to declare a global variable to store my param but I use multitasking. So bad way...
+>
+>
+> Thanks a lot for helping the newbie that I am...
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
