@@ -1,117 +1,103 @@
-Date: Wed, 26 Mar 2003 10:11:34 -0800
-From: Till Straumann <strauman@slac.stanford.edu>
-Subject: Re: dcbz works on 862 everywhere!
-To: Dan Malek <dan@embeddededge.com>
-Cc: joakim.tjernlund@lumentis.se,
+Message-ID: <3E81F6FD.2000407@embeddededge.com>
+Date: Wed, 26 Mar 2003 13:52:45 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: joakim.tjernlund@lumentis.se
+Cc: Till Straumann <strauman@SLAC.Stanford.EDU>,
 	Tom Rini <trini@kernel.crashing.org>,
 	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3E81ED56.7050105@slac.stanford.edu>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <IGEFJKJNHJDCBKALBJLLGEHAFLAA.joakim.tjernlund@lumentis.se>
- <3E810DA7.1060605@slac.stanford.edu> <3E81C4B3.2080006@embeddededge.com>
+Subject: Re: dcbz works on 862 everywhere!
+References: <IGEFJKJNHJDCBKALBJLLIEHKFLAA.joakim.tjernlund@lumentis.se>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Joakim Tjernlund wrote:
 
-> Till Straumann wrote:
->
->> I found that 'dcbz' (while failing to set DAR)
->> indeed sets MD_EPN correctly. Hence, Jocke's fix
->> (copy EPN[0:19]->DAR) would handle that.
->
->
->
-> After sleeping for a couple of days and consuming large
-> amounts of medicine to cure a cold, I think I understand
-> why copying these bits around seems to "fix" problems.
->
-> It's all related to the sequence of TLB miss/error exceptions
-> that I had been describing all along.  The first thing that
-> is going to most likely happen is you will get a TLB miss to
-> load a PTE  into the TLB.  It will be marked valid but not
-> dirty (not writable).  Immediately upon performing the rfi
-> you will get a TLB Error to handle the dirty PTE update.
-> By copying the bits from MD_EPN to the DAR in the miss handler,
-> the Error handler will have at least a 4K boundary aligned DAR
-> and it will execute correctly to update the dirty state.  At
-> this point, it will appear to "work" properly (even though
-> it is likely the dcbz didn't execute) because the system will
-> at least keep running (for a while).
+> hmm, why would not dcbz execute properly? Surely the instruction is restarted
+> when the DTLB Miss/Error handler return?
 
-I'm not sure whether to agree with this analysis. I thought
-you said that TLB Error correctly set DAR? Hence you would
-get
+Write a test to verify it.  I know there were cases in the past when
+it didn't work.  You would notice it when you expected to have some
+zero initialized spaces that weren't.
 
- - TLB Miss, copy EPN to DAR (DAR is semi-correct, i.e. to
-    a page boundary).
- - RFI, dcbz is restarted
+> In a earlier mail you said the there was a case where the "normal" instructions
+> would not set MD_EPN in the DTLB Error handler and that it was documented.
+> What case is this and where can I find this documentation?
 
---- here, task switching could occur ---
+Well, it's more of an interpretation of the documentation and discussions
+with Motorola engineers.
 
- - TLB Error because the page was not writable (but, according
-   to your earlier mail, DAR should be correct now).
- - copy DAR-> EPN, lookup PTE, replace TLB
- - RFI, dcbz is restarted and eventually executed.
+> What this boils down to is that you don't known what register, DAR or MD_EPN to
+> trust in the DTLB Error handler, right?
 
-Under the premise that TLB Miss always sets EPN correctly
-and TLB Error always sets DAR correctly, this should work
-even if a task switch (or IRQ) sneaks in.
+The registers we are discussing belong to two distinct functional areas.
+The Mx_xxx registers are all part of the mmu functional unit and can serve
+to be hardware assist to the software TLB management.  The DAR, DSISR, SRRx
+and so on are part of the PowerPC core, set during exceptions and used by
+fault handlers to determine the course of action for fault repair.  The
+latter function is PowerPC generic, the former is unique to the 8xx
+implementation.
 
->
-> If you have a situation where you get a TLB Error without
-> a matching TLB miss (very rare, but they can happen as the
-> result of swapping, copy on write, certain other page table
-> updates), then you are hosed.
+I do not know why DAR is sometimes not set properly during some types
+cache operation exceptions.  In general, cache operation exceptions
+have been unpredictable in various ways across all of the different
+silicon revisions.  Sometimes a dcbz to uncached space was ignored,
+sometimes it generated an alignment exception (which is the correct
+behavior), sometimes it generated tlb error exceptions, for example.
 
-Again: I thought you said that TLB Error _does_ set DAR?
+In all cases except some cache instructions, the DAR is properly set
+for tlb error exceptions.  It has to be or the system won't function
+properly, so there isn't any question as to whether we can trust it.
 
-> The DAR will contain some information
-> from a previous exception, we will likely end up on a "hung"
-> system continually taking TLB Error exceptions because we
-> can't fix them properly.  This is basically what happens
-> without the bit copying "fix".
->
->
->> My older idea (fixing up MD_EPN and DAR based
->> on the faulting instruction opcode and the involved
->> GPR contents) should work even if we have neither
->> a valid MD_EPN nor DAR.
->
->
-> All of the TLB exception handlers must have minimal instructions.
-> The ones in Linux are too big already.  The very little you would
-> gain from making a dcbz/dcbt work correctly would be lost many,
-> many, many times over in a more complex TLB exception handler.
+For TLB miss exceptions, the Mx_xxx hardware assist registers work
+properly, as documented, to minimize the number of instructions needed
+to determine what PTE to load.  The TLB miss exception has exactly
+one function, to as quickly as possible locate the PTE from the table
+hierarchy and stuff the bits into the MMU.  That's it and it should
+really be implemented in five lines of code.
 
- From a performance standpoint, perhaps (although I believe that
-working around the problem is more of a 'size' than execution path
-length increase). But you gain the huge advantage that you don't
-have to carefully screen any software you intend to port for cache
-instructions.
+The interpretation of the value of the Mx_xxx registers during TLB Error
+exceptions has always been under discussion.  Sometimes you can read they
+should work like the TLB miss case, but since we aren't processing a
+TLB miss exception, perhaps they aren't set.  Perhaps when it appears to
+work it is the result of residual information from a previous TLB miss,
+other times we know it has been set as the result of the exception.  In
+any case, we know if we copy the bits from the DAR into the MD_EPN, we
+can then use the hardware assist of these registers to perform the PTE
+lookup just like the TLB miss function.
 
->
-> Copying bits from MD_EPN to DAR doesn't set the DAR "correctly",
-> it only gives you the page boundary.  This is going to further
-> confuse debuggers or signal handlers if you actually have an
-> addressing bug that is detected by one of these instructions.
+We optimize the update of the usage and dirty indicators in the PTE
+right in the TLB Error exception function to more closely emulate "real"
+PPC processors.  This way, we can use the same fault processing functions.
+If we didn't wish to do this, we could simply call an 8xx specific version
+of do_fault, in which case it doesn't matter what is in the Mx_xxx registers
+because we would do a software lookup using DAR.  It wouldn't be as efficient
+and we couldn't use a common PPC function, but we wouldn't have to question
+the workings of the silicon in this case.
 
-The 'fixup' workaround would provide a correct DAR, however.
+So, we can always trust DAR, it's just that MD_EPN is left to your interpretation
+of the documentation and depends upon the implementation of the functions.
 
--- Till
+> Maybe Till Straumann's suggestion to set the DAR register to a known "bad" address
+> when leaving an exception. Then test for this bad address in the DTLB error handler
+> to decide what register to trust?
 
->
->
-> The only update I would like to see to TLB exception handlers is
-> the removal of code due to streamlining of the page table organization.
->
-> Thanks.
->
->
->     -- Dan
->
+Not necessary.
+
+By not "correctly" tracking usage and dirty pages, as we did in the past,
+it caused us to never generate DTLB Error exceptions unless it was truly
+an access to a non-recoverable bad address or if the page was swapped out.
+I would just set 'used' on every instruction page and 'used + dirty' on
+every data page allocation.  A static embedded system would just converge on
+this point anyway, but in more dynamic systems it cost more real memory.
+
+Of course, the 8xx has custom cache management/control functions that
+have always seemed to work properly.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
