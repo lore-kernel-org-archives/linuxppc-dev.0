@@ -1,33 +1,47 @@
-Date: Fri, 7 Dec 2001 08:09:23 -0700
-From: Matt Porter <mporter@mvista.com>
-To: lishaohu <tk20@taikebj.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Wind River's PPMC755 board
-Message-ID: <20011207080923.A25485@beef.az.mvista.com>
-Mime-Version: 1.0
+Message-ID: <3C10E6C0.923FA543@ssh.com>
+Date: Fri, 07 Dec 2001 17:56:48 +0200
+From: Arto Vuori <avuori@ssh.com>
+MIME-Version: 1.0
+To: Jean-Denis Boyer <jdboyer@mediatrix.com>
+Cc: "'Ricardo Scop'" <scop@digitel.com.br>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Dan Malek <dan@embeddededge.com>, andy_lowe@mvista.com
+Subject: Re: Kernel oops while routing
+References: <F1BED55F35F4D3118C0F00E0295CFF4DFF9E7F@mail.mediatrix.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BF4A430.51201C5B@taikebj.com.cn>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Nov 16, 2001 at 01:29:20PM +0800, lishaohu wrote:
-> My name is Shaohu li
+Jean-Denis Boyer wrote:
+> IMHO, I could suggest an easier patch, that would result in modifying only
+> one line of code, without changing the 'tx_full' logic. In function
+> fcc_enet_start_xmit, instead of checking the ready bit (which is bad), we
+> could only check if cur_tx has reached dirty_tx, and then call
+> netif_stop_queue. Does it make sense?
+
+I have fixed our version of the driver with very similar modifications.
+Since that it has not leaked any memory while it has been under testing
+for several months.
+
 >
-> I am thinking to port linux upon Wind River's PPMC755 board. Where
-> can I get the source codes which can be easily ported toWind River's
-> PPMC755 board? I am looking for help.
+> BTW, I worked hard last week in debugging the fcc_enet driver. It was not
+> handling correctly some transmission errors, resulting in the transmitter
+> completely stopping, without restarting. This is related to an errata
+> (CPM37) from Motorola about the 8260, concerning the way of restarting the
+> transmitter. If someone is interested, I can release a patch for that.
+>
 
-Details on retrieving the linuxppc_2_4_devel tree can be found at
-http://penguinppc.org/dev/kernel.shtml
+I have noticed the same problem on old kernel versions. I think i
+mentioned about it on the mailing list and i understood that it had been
+already fixed on later versions, but i didn't check the status of the
+latest driver version.
 
-See the many examples of similar ports within.  The WRS PPMC755
-would be a minimal effort...nothing new there.  There's really
-nothing astonishingly new in any 7xx/74xx embedded designs today.
+- Arto
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Arto Vuori
+email: avuori@ssh.com
+mobile:	+358 40 754 5223
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
