@@ -1,49 +1,42 @@
-Message-ID: <3DC2BAD9.5020907@embeddededge.com>
-Date: Fri, 01 Nov 2002 12:33:13 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <20021101191357.62463.qmail@web40912.mail.yahoo.com>
+Date: Fri, 1 Nov 2002 11:13:57 -0800 (PST)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: 4xx watchdog handling
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: bkuschak@yahoo.com
 MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dc* (Data Cache)  instructions in mem*() and *_page() functions
- not used on 8xx
-References: <IGEFJKJNHJDCBKALBJLLAEIPFHAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+Regarding the way 2.4.19 handles the 4xx watchdog:
 
-> Dan, could you add the missing code for 8xx to detect the exception conditions when
-> the cache instructions faulted? I would like to give it a try.
+The 4xx timer interrupt, the PIT, is the lowest
+priority exception (18). All the external IRQs come in
+at a higher priority (16).  This is opposite of x86,
+where the timer ISR is highest priority (0).
 
-It's not very high on my list of things to do.  As I recall, the VM fault
-handler may need knowledge of a dcbz fault and use a different method to
-determine the address.  I also have this funny feeling that it isn't a
-restartable operation, so we may have to emulate the instruction when
-the fault occurs.
+This would seem to negate the effectiveness of drivers
+which implement "work limits" in their ISRs (like many
+ethernet drivers).  These drivers do an RFI after
+doing a certain amount of work, leaving the interrupt
+pending and returning later to finish up.  In the case
+of 4xx, a pending PIT interrupt would not be serviced
+due to its lower priority.  In the case of heavy IRQ
+load, the watchdog can expire.
 
-I know you can write a test that would show this to be a performance
-benefit, which would just copy/zero lots of data, but that's not a real
-world application.
+Has anyone considered implementing the 4xx watchdog
+interrupt itself as the place to refresh the watchdog?
+ We could still use the existing method of a heartbeat
+counter decremented each time, but just do the
+refreshing in a watchdog ISR rather than the timer
+ISR.  This way the watchdog could be reliably
+refreshed even during heavy IRQ loads.
 
-IMHO, it's lots of work for little, if any, gain.  It has some specific
-uses in specialized applications, but I don't think it's a general speed up
-solution.
+Any comments?
 
- > Maybe add a new CONFIG option to allow 8xx to use these optimizations when
-> explicitly enabled.
-
-How would you know when to do this?  It seldom appeared in any errata
-so you couldn't know for certain if a particular chip version would
-allow this.  I suspect people (like I have chosen to do) will just never
-use the optimization because the software will always work in this case.
-I don't like solutions that depend on luck or trial and error.
-
-I'll do some research into this again, it's been many years since I
-thought about it.
-
-	-- Dan
+-Brian
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
