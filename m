@@ -1,27 +1,58 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: jim <jduey@ccc-dcs.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PCI and DMA
-Date: Wed, 28 Aug 2002 20:58:41 +0000
+Message-ID: <009601c24efa$32b61720$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Fw: Password on ELDK nfs booting 
+Date: Thu, 29 Aug 2002 10:20:01 +0900
 MIME-Version: 1.0
-Message-Id: <20020829021107.5924F38C2D@server.weathercom.com>
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi folks,
+Hi,
+Sorry, I sent the following mail with the wrong encoding to this list.
 
-I've got a problem doing DMA over the PCI bus.  After I've done a DMA write
-to the device, the kernel hangs when I do a pci_read_config_byte for that
-device.  I've determined that when pci_read_config_byte is called, execution
-makes it to the call to the read_byte function of the pci_ops structure.
-(This function is pointed to by pdev->bus->ops->read_byte.)  What I can't
-seem to find is the code that is actually doing the read from the device
-configuration space.  Can somebody point me to it?  This is on a 405GP Walnut
-board.
+----- Original Message -----
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: "leeyang" <leeyang@ycig.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, August 28, 2002 7:01 PM
+Subject: Re: Password on ELDK nfs booting
 
-Thanks,
-Jim
+
+>
+> Hi
+> I succeeded in login after installing the tinylogin.
+> I plan to use tinylogin.
+>
+> >
+> > I can login with eldk,the only problem I encountered
+> > is that  /eldk/ppc_8xx/dev/ is alomost empty!only 3 unimportant
+> > files,when installed with eldk installl scripts.
+> > so when I boot with nfs it reports "can not create console".
+> > After I cp some dev from my host,it is ok now:)
+> >
+> Execute /mnt/cdrom/ELDK_MKDVICE instead, as the readme said.
+>
+> > The other thing is can not telnet to the NFS board,it
+> > always says
+> > "
+> > Trying 192.168.1.3...
+> > Connected to 192.168.1.3 (192.168.1.3).
+> > Escape character is '^]'.
+> > telnetd: All network ports in use.
+> > "
+> > then close connection.
+> >
+> > anybody run into the same thing?
+> >
+> In my case telnet is OK even when the serial port doesn't work.
+> Please check that your files have proper owner.
+> Excute /cdrom/mnt/ELDK_FIXOWNER if not on /opt/eldk directory.
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
