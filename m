@@ -1,17 +1,17 @@
 Return-Path: <benny@cellvision.com.cn>
 Received: from out01.east.net (unknown [202.130.225.2])
-	by ozlabs.org (Postfix) with ESMTP id 6D3822BDB5
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 15:20:31 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 607062BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 15:21:06 +1100 (EST)
 Received: from unknown (HELO smtp01.east.net) ([202.130.225.4])
 	(envelope-sender <benny@cellvision.com.cn>)
 	by 0 (qmail-ldap-1.03) with SMTP
-	for <linuxppc-dev@ozlabs.org>; 2 Jan 2005 12:04:26 +0800
-Message-ID: <003d01c4f082$612d7400$1100a8c0@BENNY>
+	for <linuxppc-dev@ozlabs.org>; 2 Jan 2005 12:05:00 +0800
+Message-ID: <004a01c4f082$76c652a0$1100a8c0@BENNY>
 From: "Benny Liu" <benny@cellvision.com.cn>
 To: "Sylvain Munaut" <tnt@246tNt.com>
 References: <008c01c4f005$bc1e94c0$1100a8c0@BENNY>
 	<41D721E1.8000007@246tNt.com>
-Date: Sun, 2 Jan 2005 12:20:23 +0800
+Date: Sun, 2 Jan 2005 12:21:00 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
