@@ -1,55 +1,47 @@
-Subject: Re: Why not kmalloc() ??
-From: sanjeev ramachandran <sanjeev.ramachandran@fci.com>
-To: Magnus Damm <damm@opensource.se>
-Cc: Rupesh S <rupeshs@myw.ltindia.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1089977681.27006.90.camel@kubu.opensource.se>
-References: <s0f7edc2.025@EMAIL>
-	 <1089977681.27006.90.camel@kubu.opensource.se>
-Content-Type: text/plain
-Message-Id: <1089979617.1055.19.camel@bng-d000218>
-Mime-Version: 1.0
-Date: 16 Jul 2004 17:36:59 +0530
+From: "Kevin P. Dankwardt" <k@kcomputing.com>
+To: <arun@ossi.co.in>, <penguinppc-team@lists.penguinppc.org>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Context Switch in Real Time  Linux Vs VxWorks (or any other RTOS)
+Date: Fri, 16 Jul 2004 07:12:59 -0500
+Message-ID: <KCEOLLHGFJIAFNAMGACHIECKDPAA.k@kcomputing.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+In-Reply-To: <000001c46af2$642f7c40$e100a8c0@arunprasad>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+There are a number of approaches to real-time in Linux. There are also
+several different task/thread/process models from which to choose. Some
+involve kernel space and some allow for user space. Some are open source and
+some are proprietary. One has to decide on a number of factors before
+choosing the solution best suited.
 
-Bingo , But there is another function called dpalloc which does the same
-job of allocating from the dual port ram. The host alloc function
-allocates from the host page address that is passed when the cpm is
-resetted. How are the dpalloc and hostalloc different.
+If you are comfortable with the flat memory model of VxWorks then a kernel
+space solution may be acceptable. Kernel space solutions such as RTAI have
+quite low "context switch" and quite fast interrupt response time.
+
+For more information I'd recommend starting by reading (my) articles from
+Embedded Linux Journal:
+
+http://www.linuxdevices.com/articles/AT5997007602.html
+http://www.linuxdevices.com/articles/AT5503476267.html
+http://www.linuxdevices.com/articles/AT6320079446.html
+
+Best of luck,
+Kevin Dankwardt
 
 
-San
 
 
-On Fri, 2004-07-16 at 17:04, Magnus Damm wrote:
-> On Fri, 2004-07-16 at 11:25, Rupesh S wrote:
-> > Hi,
-> >
-> > I just figured out that I need to use m8xx_cpm_hostalloc() to allocate memory for "buffer" that needs to be attached to the "Buffer Descriptor" of an  MPC8xx CPM peripheral (like IIC, SPI, SCC etc). Instead, if I try to use kmalloc() or a static memory allocation, my driver isn't working.
-> >
-> > 1) Can somebody throw some light on what exactly is the difference between m8xx_cpm_hostalloc() and kmalloc().
->
-> kmalloc allocates from the kernel memory pool, ie your sdram.
-> you usually have several megabytes of sdram.
-> hostalloc allocates memory from the internal dpram area in the mpc8xx
-> processor. a mpc8xx-processor usually has around 4-8 kilobyte dpram.
->
-> > 2) Why is the difference important in ppc linux ?
->
-> the dpram (dual port ram) is used to communicate with the cpm devices
-> such as scc:s and smc.s found inside processors from the mpc8xx family.
-> the powerpc core has access to one side, the cpm has access to the other
-> side of the dual port memory. sort of anyway.
->
-> consult your friendly mpc8xx manual for further info.
->
-> /magnus
->
->
+>I'd like to compare the features of Linux and VxWorks with respect to the
+>Real Time capabilities. I am little concerned about Linux's Context
+>Switching.
+
+>I'd like to get your opinion on this. Even if I want to move to Linux, I'll
+>have to convince my management. So, any pointers on comparison of Linux Vs
+>VxWorks with respect to Real Time capabilities would be highly appreciated.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
