@@ -1,41 +1,31 @@
-Date: Mon, 19 Jul 1999 12:36:28 +1000
-Message-Id: <199907190236.MAA01193@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: stp9@cornell.edu
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <378EDC2F.D323B91B@cornell.edu> (message from Stephen Travis Pope
-	on Fri, 16 Jul 1999 00:16:10 -0700)
+Date: Sun, 18 Jul 1999 22:53:43 -0400 (EDT)
+From: Tom Rini <trini@disparity.net>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: stp9@cornell.edu, linuxppc-dev@lists.linuxppc.org
 Subject: Re: USB on "Bronze" PowerBook?
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <378EDC2F.D323B91B@cornell.edu>
+In-Reply-To: <199907190236.MAA01193@tango.anu.edu.au>
+Message-ID: <Pine.BSF.3.96.990718225201.50420H-100000@silver.teardrop.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Stephen Travis Pope <stp9@cornell.edu> wrote:
+On Mon, 19 Jul 1999, Paul Mackerras wrote:
 
-> I use Linux PPC v5 on a 400 MHz "Lombard" PowerBook and it's *great* --
-> my only problem is that I can't use an external USB keyboard and mouse. 
+> Stephen Travis Pope <stp9@cornell.edu> wrote:
+> > Are all Mac USB stacks made for the older interface chips? 
 > 
-> Is there a kernel hacker out there who could enlighten me as to the
-> issues involved in getting this to work? (I'm UNIX kernel literate, but
-> haven't looked into USB support.)
+> Not deliberately. :-)
 
-I don't know of any particular reason why it wouldn't work.  Have you
-tried my 2.2.10 precompiled kernel, which has the new USB drivers in
-it?  (It's at ftp://sunsite.anu.edu.au/pub/linux/linux-pmac/
-kernel-binary/v2.2.10.)
+The new PBs have a different OHCI chip (not an OPTi, name escapes me right
+now). which neither inkays or the current stack seem to have much/any luck
+with.
 
-> Are all Mac USB stacks made for the older interface chips? 
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
-Not deliberately. :-)
-
-> Is anyone currently working on getting this to work? (If yes, do you
-> want some help?)
-
-All I need is one of the new powerbooks. :-) :-)
-
-Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
