@@ -1,35 +1,46 @@
-Date: Wed, 13 Oct 1999 08:12:44 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Claude Robitaille <crobitaille@videotron.ca>
-cc: Lou Langholtz <ldl@chpc.utah.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: How to get latest vger 2.2 sources???
-In-Reply-To: <Pine.LNX.4.10.9910122133500.439-100000@localhost.localdomain>
-Message-ID: <Pine.GSO.4.10.9910130811490.21530-100000@dandelion.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 13 Oct 1999 08:14:56 +0200
+From: Christophe Lizzi <lizzi@csti.fr>
+Message-Id: <199910130614.IAA29151@devl58>
+To: linuxppc-dev@lists.linuxppc.org, doyle@primenet.com
+Subject: Re: PowerPC function returning long long
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 12 Oct 1999, Claude Robitaille wrote:
-> I am the one who just asked how to get linux from on.openprojects.net
+
+> I was playing with the inline assembler and the ppc
+> timebase facility and created the following function -
+
+> Is there a better way to write the return statement?
 > 
-> To get 2.2, the answer I got was:
-> 
-> start downloading 2.3
-> then stop it using ctrl-C
-> cvs update -dP -rlinux_2_2
+> Is there a register constraint for a long long register
+> (like the "A" constraint for the x86 which returns the
+> 64 bit data in edx:eax)?
 
-Doesn't `cvs -z3 checkout -rlinux_2_2 linux' work?
+64 bit values are returned in r3:r4.
 
-Greetings,
+I'm definitively not an asm guru, but the following code works:
 
-						Geert
+/*
+  from PowerPC Microprocessor Family: The Programming Environments,
+       section 2.2: PowerPC VEA Register Set - Time Base,
+       IBM Microelectronics - Motorola.
+*/
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+unsigned long long timebase(void)
+{
+    asm( "isync" );   /* discard prefetched instructions */
+    /* the loop ensures that a consistent pair of values is obtained */
+    asm("loop:"     ); 
+    asm("mftbu 3"   ); /* load r3 from TBU       */
+    asm("mftb  4"   ); /* load r4 from TBL       */
+    asm("mftbu 5"   ); /* load r5 from TBU       */
+    asm("cmpw  5, 3"); /* compare r5 and r3      */
+    asm("bne   loop"); /* loop if carry occured  */
+}
 
+--Christophe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
