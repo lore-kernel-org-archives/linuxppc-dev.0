@@ -1,51 +1,29 @@
-Date: Mon, 26 Jun 2000 00:43:59 -0700 (PDT)
-From: Miles Lane <miles@speakeasy.org>
-To: Adam Lebsack <lebsack@mac.com>
-cc: daenzerm@student.ethz.ch, linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF86Config 4.0
-In-Reply-To: <a04320401b57cb5cfa010@[192.168.0.3]>
-Message-ID: <Pine.LNX.4.21.0006260041280.595-100000@agate.speakeasy.org>
+Date: Mon, 26 Jun 2000 03:10:40 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: cort@fsmlabs.com
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Hash not zero-filled in hash_init()?
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000626025411.21802D-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If you want to help with the development of XFree86,
-go to www.xfree86.org and read the instructions regarding
-how to join the XFree86 development team.  There's a form
-you must request, fill out and then submit to the Board or
-Directors for approval.  Then you get access to mailing
-lists and source code.  There are rules you must agree to
-abide by and so on.
+Hi,
 
-	Miles
+I have been experiencing random problems with 2.3/2.4 kernels, and, after
+weeks of struggle, I found that the main culprit was an uninitialized hash
+table.  Specifically, __clear_user(Hash, Hash_size) is commented out in
+hash_init() of arch/ppc/mm/init.c.
 
-On Mon, 26 Jun 2000, Adam Lebsack wrote:
+Does anyone know why it should be commented out?  On NuBus Power Macs, due
+to its discontiguous memory nature, the hash table location happens to be
+at the same location all the time, and there is a very good chance that
+some stale PTE remain from boot to boot.
 
->
-> At 9:16 PM +0200 6/22/00, Michel Dänzer wrote:
-> >Adam Lebsack wrote:
-> >>
-> >>  What is the status on xf86config for 4.0?  Is anybody working on
-> >>  this?  It would be nice to be on par with the x86 world when
-> >>  configuring X.
-> >
-> >There is a new tool in the works, it's called xf86cfg, it's written in perl
-> >and should be working in 4.0.1 which should be out in a few weeks' time.
-> >
-> >It will be graphical and should work on all platforms :)
-> >
->
->
-> How can I become involved in its development?  Is it in CVS?
->
-> thanks again,
->
-> Adam
->
->
->
+
+Takashi Oe
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
