@@ -1,42 +1,36 @@
-Date: Thu, 29 Nov 2001 01:19:41 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+Date: Wed, 28 Nov 2001 16:06:15 -0900
+From: Ethan Benson <erbenson@alaska.net>
+To: Joseph Manojlovich <manojlov@cse.psu.edu>,
 	linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_ALL_PPC
-Message-ID: <20011129011941.A10393@suse.de>
-References: <3C0561FE.80489F5E@vnet.ibm.com> <20011128221928.8366@smtp.wanadoo.fr> <15365.29851.123004.897729@gargle.gargle.HOWL>
+Subject: Re: 'make rpm' Failing due to i386 bug
+Message-ID: <20011128160615.I10071@plato.local.lan>
+References: <20011127233224.C23109@cardassian.cse.psu.edu> <20011128104926.C28956@cpe-24-221-152-185.az.sprintbbd.net>
 Mime-Version: 1.0
+In-Reply-To: <20011128104926.C28956@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Wed, Nov 28, 2001 at 10:49:26AM -0700
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15365.29851.123004.897729@gargle.gargle.HOWL>; from paulus@samba.org on Thu, Nov 29, 2001 at 10:34:51AM +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 29, Paul Mackeras wrote:
-
+On Wed, Nov 28, 2001 at 10:49:26AM -0700, Tom Rini wrote:
 >
-> Benjamin Herrenschmidt writes:
+> On Tue, Nov 27, 2001 at 11:32:24PM -0500, Joseph Manojlovich wrote:
 >
-> > It's a difficult choice ;)
-> >
-> > What about CONFIG_COMMON_PPC ? Still a bit misleading, but probably
-> > better than CONFIG_ALL_PPC...
+> > Hey all. I was using the latest stable branch from source.mvista.com,
+> > and noticed that 'make rpm' wasn't working. Looking closer, I noticed
+> > that a supporting script, scripts/mkspec, is quite 386 specific. It
+> > makes an rpm spec file that assumes the kernel image is compressed,
+> > which with ppc it isn't (for me at least).
 >
-> You know, what I am really tempted to do is to split out prep again
-> and have a CONFIG_PPC_OPENFIRMWARE to indicate pmac and chrp and
-> anything else that has a working OF.  But Olaf would kill me... :)
+> You could try %ifarch ppc ... %else .. %endif.  Tho we do have a
+> 'bzImage' target, and yaboot might even do the 'zimages' on pmac as well
+> as chrp now.  Talk to Alan Cox since this is his script anyhow.
 
-Hmm, why? :)
-
-
-
-Gruss Olaf
+no we have a zImage target, not bzImage which is a i386 specific hack
+to work around that braindamaged architecture.
 
 --
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
