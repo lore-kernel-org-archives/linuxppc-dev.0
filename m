@@ -1,60 +1,91 @@
-To: "sun-zj" <sun-zj@tdk-tech.com>
+Subject: Re: MPC8260 bad interrupts
+From: Jon Diekema <diekema@cideas.com>
+Reply-To: diekema@cideas.com
+To: li <slowforce@21cn.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: how to Compile linuxppc 2.5 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 07 Feb 2004 12:22:55 +0800."
-             <20040207042455.C5FFD42EB0@denx.de>
-Date: Sat, 07 Feb 2004 11:15:27 +0100
-Message-Id: <20040207101532.DC73BC109B@atlas.denx.de>
+In-Reply-To: <n2959792844041.01982@webmail1.inner-21cn.com>
+References: <n2959792844041.01982@webmail1.inner-21cn.com>
+Content-Type: text/plain
+Message-Id: <1076164075.2531.2.camel@smoke.agre.smiths.aero>
+Mime-Version: 1.0
+Date: Sat, 07 Feb 2004 09:27:56 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040207042455.C5FFD42EB0@denx.de> you wrote:
->
-> Sorry for wrong information, I get the linuxppc_2.5 from
-> bk://ppc.bkbits.net/linuxppc-2.5 not from Denx.:(  But I want to know
-> whether I can make  kernel from the source even if it is not from your
-> sites. When I make the FADS_config, It complains the no FADS_config rules
+On Sat, 2004-02-07 at 02:59, li wrote:
 
-Of course you can use the ELDK to compile _any_ kernel source tree.
+> but lots of bad interrupts occured when ATM transvier
+> starts
+> so does any one got similar problem with me?
 
-> exist, but the directory arch/ppc/configs has FADS_config.
+Subject: ppc826x BAD interrupts
 
-Many things have changed in 2.5/2.6. Please try:
+Looking at /proc/interrupts, I see a large number of "BAD" interrups
+on both my MPC8260 board.
 
-	-> make ARCH=ppc CROSS_COMPILE=ppc_8xx- FADS_defconfig
-	-> make ARCH=ppc CROSS_COMPILE=ppc_8xx- uImage
+# cat /proc/interrupts
+           CPU0
+  4:         16   8260 SIU   Edge      uart
+  5:          0   8260 SIU   Edge      uart
+ 33:        179   8260 SIU   Edge      fenet
+ 40:         27   8260 SIU   Edge      uart
+ 41:       4530   8260 SIU   Edge      RxSCC2
+ 42:       4528   8260 SIU   Edge      RxSCC3
+ 43:       4529   8260 SIU   Edge      TxSCC4
+BAD:         49 <<====== this the problem
 
-But don't expect that this will actually work.
+The source of this count is ppc_spurious_interrupts which is
+incremented in the arch/ppc/kernel/irq.c if:
 
-Even with the latest version (2.6.2) will end  up  with  errors  like
-this:
+    1) there is no interrupt handler installed
 
-arch/ppc/kernel/ppc_ksyms.c:351: `request_8xxirq' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:351: initializer element is not constant
-arch/ppc/kernel/ppc_ksyms.c:351: (near initialization for `__ksymtab_request_8xxirq.value')
+    2) SIVEC is showing zero (no interrupts pending)
 
+Looking into the problem it would appear that the problem is the later
+case and the get_irq() function in ppc8260_pic.c is indeed reading a
+zero from the SIVEC.
 
-> another question how can I get linuxppc_2_5 from your sites?
+----------
 
-At the moment you cannot. We don't support this  yet.  IMHO  the  2.6
-kernel is not ripe yet for real-life use.
+This problem was discussed on mailing list before also and you can
+eliminate this problem by inserting a sync instruction at a certain
+place in the 8260 interrupt handling code. See, for example,
+http://lists.linuxppc.org/linuxppc-embedded/200211/msg00139.html
 
-> Thanks very much for your great works on PPC!!!
+Add a __asm__ volatile("sync"); at the end of the m8260_mask_and_ack
+function in arch/ppc/kernel/ppc8260_pic.c to fix it.
 
-You are welcome.
+Regards,
+Muhammad Sarwar
+Mangrove Systems Inc.
 
-Best regards,
+----------
 
-Wolfgang Denk
+static void m8260_mask_and_ack(unsigned int irq_nr)
+{
+        int     bit, word;
+        volatile uint   *simr, *sipnr;
+
+        bit = irq_to_siubit[irq_nr];
+        word = irq_to_siureg[irq_nr];
+
+        simr = &(immr->im_intctl.ic_simrh);
+        sipnr = &(immr->im_intctl.ic_sipnrh);
+        ppc_cached_irq_mask[word] &= ~(1 << (31 - bit));
+        simr[word] = ppc_cached_irq_mask[word];
+        sipnr[word] = 1 << (31 - bit);
+
+        /*
+         * Add a "sync" instruction to avoid spurious or bad interrupts
+         * at the end of m8260_mask_and_ack().
+         */
+        __asm__ volatile("sync");
+}
 
 --
-See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Each honest calling, each walk of life, has its own  elite,  its  own
-aristocracy based on excellence of performance. - James Bryant Conant
+-------------------\\----------------------\\----------------------------
+Jon Diekema         |  Custom IDEAS         |  http://www.cideas.com/
+diekema@cideas.com  |  Grand Rapids, MI     |
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
