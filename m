@@ -1,67 +1,32 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <01C19DC3.ED0B5150.svacca@valcom.com>
-From: Steven Vacca <svacca@valcom.com>
-Reply-To: "svacca@valcom.com" <svacca@valcom.com>
-To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: mpc860 vs. mpc860T 
-Date: Tue, 15 Jan 2002 12:55:35 -0500
+Message-ID: <3C448FDD.7BB2CFA0@mvista.com>
+Date: Tue, 15 Jan 2002 13:23:57 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: Clifford van Dyk <clifford@peralex.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Marvell/Galileo GT-64260 system controller data sheets
+References: <3C4438AC.7030203@peralex.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes!  Yes!  Success!
+Clifford van Dyk wrote:
 
-I transferred the CONFIG_8xx_CPU6 patches from the
-linuxPPC sources into my kernel and that solved my
-problems with the old version of the 860T.
-
-"Thanks a quadrillion for your help!"
-     /
-  \O/
-   \/      <---- Steven
- _/\_
-
-
-
------Original Message-----
-From:	Wolfgang Denk [SMTP:wd@denx.de]
-Sent:	Tuesday, January 15, 2002 9:37 AM
-To:	svacca@valcom.com
-Subject:	Re: mpc860 vs. mpc860T
-
-In message <01C19DA6.994D3370.svacca@valcom.com> you wrote:
+> Hello
 >
-> I did a complete search for CONFIG_8xx_CPU6, and
-> truncated variations, in my mpc8xx-2.2.13 kernel, and
-> could not find it.  It doesn't show up as a cfg option either.
-> Even a grep on CONFIG_8xx doesn't show anything
-> resembling that.  Could it be in there and accessible
-> in an alternative way?
+> I noticed a mention of the Marvell/Galileo GT-64260 system controller in
+> a previous post. I have been trying for more than 2 weeks (email, fax,
+> telephone) to obtain data sheets for the device, with no success. If
+> anyone is able to assist me in obtaining the data sheets, please could
+> you contact me.
 
-Sorry, I never checked RH's sources (which are pretty old anyway);  I
-have no idea if they provide alternative configuration options.
+I believe all of that documentation is still under NDA.
+You'll have to arrange that with Marvell.
 
-You can grab some  of  the  other  8xx  enabled  source  trees  (like
-MontaVista's  or  ours - see ftp://ftp.denx.de/pub/LinuxPPC/usr/src/)
-and extract the necessary changes (or compare if they _are_ available
-in your RH code, but under a different name.
+Wish I had a better answer...
 
-There are only 4 files affected:
+Mark
 
-	arch/ppc/8xx_io/Config.in
-	arch/ppc/kernel/head.S
-	arch/ppc/kernel/time.h
-	include/asm-ppc/pgtable.h
-
-Hope this helps,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-This is now.  Later is later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
