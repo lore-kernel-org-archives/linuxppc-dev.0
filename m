@@ -1,13 +1,24 @@
-Message-ID: <37D0F88E70D96C428C19EEB865701A38E27342@buda902a.siemens.hu>
-From: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.hu>
-To: "linuxppc-embedded@lists.linuxppc.org (Elektronikus levelek)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: kernel on MPC8260ADS - character losing
-Date: Mon, 27 May 2002 14:19:25 +0200
+Message-ID: <6B546A602AD2D211BFF00008C7A4288905844088@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: kernel on MPC8260ADS - character losing
+Date: Mon, 27 May 2002 14:23:35 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+ I think this is a known issue. If I am not mistaken, you will find
+multiple threads about it.
+Do you use SMC2?
+
+-----Original Message-----
+From: Mészáros Lajos
+To: linuxppc-embedded@lists.linuxppc.org (Elektronikus levelek)
+Sent: 5/27/02 2:19 PM
+Subject: kernel on MPC8260ADS - character losing
 
 
 Hello!
@@ -54,5 +65,6 @@ SSrrnnkwp 18 MMAA  iirreein00 tS nSC t000,BG
 Did anybody experience such effect with serial port?
 
 	Ludwig
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
