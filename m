@@ -1,40 +1,68 @@
-Message-ID: <77FE4A1FA59FF947845A42194AD667627730BD@uswaumsx07medge.med.ge.com>
-From: "Eisenhut, Daniel (MED)" <Daniel.Eisenhut@med.ge.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Check stop failure on 8270 i2c
-Date: Mon, 16 Feb 2004 16:30:30 -0600
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Mon, 16 Feb 2004 18:08:02 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux on MPC5200 - LITE5200EVAL
+Message-ID: <20040217010802.GA9519@zenos.farnsworth.org>
+References: <402E0D8C.4080801@246tNt.com> <20040214145308.9E915C108D@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040214145308.9E915C108D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've ran into a strange problem that I'm not sure even how to
-troubleshoot.
-Hopefully, someone can lead me in the right direction...  I working on a
-custom board with an 8270 processor running linuxppc_2_4_devel (2.4.23)
+On Sat, Feb 14, 2004 at 02:53:03PM +0000, Wolfgang Denk wrote:
+>
+> In message <402E0D8C.4080801@246tNt.com> you wrote:
+> >
+> > The weird problem with u-boot ( not booting If I set bootargs manually )
+> > and the kernel crash are both solved. It was a compiler issue. I used a
+> > toolchain I used to build binaries for a "normal" mac based on gcc 3.4 (
+> > cvs ) and it was a really bad idea.
+>
+> I see.
+>
+> >  - The PCI slot is 3.3 v and apparently I don't have a single PCI card
+> > that seems to work on it ... When I plug one ( that I thought was 3.3v
+> > ), nothing boot, sometimes even the led don't power on ...
+>
+> Be careful to put it correctly. The slot bracket has  to  be  on  the
+> side where the UART / USB / CAN connctors are. Do not insert the card
+> with the slot bracket pointing to the IDE connector.
+>
+> Also be VERY carefully  which  card  you  insert.  make  sure  it  is
+> _really_ a 3.3V compatible card. [I fried a board by trying a Digitus
+> "DC  SER2 Rev. 2.0 Serial PCI I/O Card" - this card has the key slots
+> for a 3.3/5V combi card, but the V_I/O pins are connected to  the  5V
+> rail. The RAM chips didn't like to see 5V ...]
+>
+> >  - When I change options in the kernel to support new stuff I need, like
+> > activating USB host & IDE controller, the kernel don't boot at all ( or
+> > at least, I don't see on the serial console it does ). It's the same
+> > problem with activating drivers for the PCI bus ... What is weird is
+> > that it's not an error on boot, it's just that after u-boot messages,
+> > there is nothing at all.
+>
+> Can you attach a debugger? Or even try  a  post-mortem  dump  of  the
+> logbif area? Both PCI and USB are working fine for me.
+>
+> > I'm not sure my hardware is fully OK, but I did mtest on u-boot  for
+> > about 10 hours and it didn't complained. It's a fresh new board from
+> > motorola...
+>
+> Maybe you can ask for a replacement. Your problems don't look  normal
+> to me.
 
-I've converted the 8260 i2c driver from U-Boot to a Linux module to talk
-with our rtc.  Everything works great as I can read and write to the
-rtc.
-But occasionally the system resets due to a check stop state in the
-processor.  I've determine that this occurs sometime during or between
-setting the STR bit in the i2com register and going to sleep waiting for
-an interrupt (which was added since it just busy waits in U-Boot).
+I've seen the same symptoms Sylvain described on the five Lite5200
+boards that I have tried.  Eepro100 network cards work fine, but the 3
+brands of IDE cards I tried are not even visible in PCI config space.
+U-boot doesn't see them and Linux doesn't see them, booted either from
+dBUG or U-boot.
 
-If I have debug output turned on, this checkstop reset occurs after
-about
-15-30 calls to "hwclock".  (Each clock read makes about 13 i2c
-transfers)
-But if I turn off debugging, it fails after about 1-5 calls.  Obviously
-there is some kind of race condition going on here.
+Actually, one Lite5200/IDE combo comes close.  Parts of the IDE cards
+PCI config info do read correctly sometimes.  Different parts each time.
+I think this is likely a hardware issue with Lite5200 boards.
 
-Has anyone seen this problem before?  Any suggestions on how to proceed
-to
-troubleshoot this problem?  (And yes I do have a BDI2000)
-
-Thanks for your help...
-Dan
+-Dale Farnsworth
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
