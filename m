@@ -1,47 +1,38 @@
-Date: Wed, 14 Nov 2001 11:08:42 +0100
-From: Richard Zidlicky <rz@linux-m68k.org>
-To: Jun Sun <jsun@mvista.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	"Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
-	Linux/MIPS Development <linux-mips@oss.sgi.com>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [RFC] generic MIPS RTC driver
-Message-ID: <20011114110842.A473@linux-m68k.org>
-References: <Pine.GSO.4.21.0111122055010.10720-100000@mullein.sonytel.be> <3BF0371F.8040575B@linux-m68k.org> <20011113144240.B669@linux-m68k.org> <3BF15F55.AABB383C@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BF15F55.AABB383C@mvista.com>; from jsun@mvista.com on Tue, Nov 13, 2001 at 09:58:45AM -0800
+Date: Wed, 14 Nov 2001 11:24:21 +0100
+From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Subject: Re: ppc 405 floating point math emulation
+To: Steven Mueller <diffusor@ugcs.caltech.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-id: <3BF24655.F41E57EB@inn.ericsson.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <20011113155956.B7553@spew.ugcs.caltech.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Nov 13, 2001 at 09:58:45AM -0800, Jun Sun wrote:
-> Richard Zidlicky wrote:
+Steven Mueller wrote:
 >
-> > Btw the interrupt need not to be hardware, for the Q40 I test
-> > a rtc register once per jiffie and generate a "soft interrupt".
-> > It could be done generic at least for m68k.
-> >
+> Hello,
 >
-> I have written an experiemntal ptimer driver to do just this and potential
-> more.  Such a device is useful for real-time programming (e.g., when you try
-> to implement a periodic user task).
->
-> See http://linux.junsun.net/realtime-linux/preemption-test
->
-> The driver is architecture independent (i.e., linux-common code)
->
-> Due to the different programming needs behind periodic timers (or user-level
-> timer) and RTC operations, my vote for future work is to leave them as two
-> separate drivers.  To me, RTC is really just to read/write RTC clock.
+> I'm interested in building a kernel with math emulation enabled for an
+> embedded IBM ppc 405.  (It'd be nice to allow customers to run ppc
+> apps on our cards without having to recompile them with soft float
+> support.)
 
-RTC_UIE is needed (or at least very useful) to set the clock, so it belongs
-into a rtc driver if it can be implemented. General purpose timers are
-different story, btw what is wrong with setitimer that you have chosen
-to implement an additional driver for it?
+Yes it's nice. I'am running a full debian testing installation over nfsroot
+on my cards.
 
-Richard
+> If anyone has already developed a solution for this, would you please
+> consider posting the patch?  Thank you!
+
+Just remove the printing or uppgrade to the devel tree it could use some more
+testing.
+
+--
+Kenneth Johansson
+Ericsson Business Innovation AB   Tel: +46 8 404 71 83
+Viderögatan 3                     Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
