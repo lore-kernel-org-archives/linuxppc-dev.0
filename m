@@ -1,47 +1,50 @@
-Date: Tue, 30 May 2000 12:34:34 -0400 (EDT)
-From: "Mark S. Mathews" <mark@absoval.com>
-To: Dan Malek <dan@netx4.com>
-cc: Matthew Locke <mlocke@jps.net>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: rpx_cfg() copy to NVRAM?
-In-Reply-To: <3933EAF2.B966B675@embeddededge.com>
-Message-ID: <Pine.LNX.3.96.1000530123136.8139B-100000@tristar.cc.absoval.com>
+Message-ID: <3933FD49.3B33F5EF@embeddededge.com>
+Date: Tue, 30 May 2000 13:41:29 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Brown, David (dbrown03)" <DBrown03@harris.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Questions about 8xxrom
+References: <BE1C564723B3D21191FD0000F840E39801D8154E@rfcmx2.rfc.comm.harris.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks Dan,  I'm using ffffff89, don't think that last bit matters much
-since SW is turned off anyway.
-;-)
+"Brown, David (dbrown03)" wrote:
 
-BTW: I'll send the mods to head.S and embed_config.c later today, once I'm
-sure they work.
+> .....  But 8xxrom was
+> intended to work with disk in addition to flash, so I started exploring why
+> ELF-loading didn't work.
 
-Thanks,
--Mark
+There have been lots of changes since I originally wrote the code.  I
+didn't have the disk loading, but I can speculate on the trouble.
 
-On Tue, 30 May 2000, Dan Malek wrote:
+If you are trying to load zImage, it simply isn't going to work.  I
+am exhausted at explaining why, but one more time.......
 
-> Matthew Locke wrote:
->
-> > SYPCR needs to be set to turn the watchdog off. Can't remember the value and
-> > I don't have the docs in front of me.
->
-> 0xffffff88
->
->
->
-> 	-- Dan
->
+The zImage is simple.  It is not an ELF image.  Strip the 64k header
+from the image.  Load the bits at or above 0x00200000.  Jump to the
+first instruction.
+
+If you are loading from a disk, which I presume has a file system, you
+know the size of the file.  Just load it.  I know originally the loader
+knew it had to load at or above 0x00200000.......It also knew it was
+loading a zImage, and if the ELF header was found knew what it could
+believe or not and how to start a zImage.  I don't know what the code
+looks like today, as I am still using the old stuff from years ago.
 
 
-Mark S. Mathews
+> c) The problem with initrd decompression was that the board descriptor data
+> was copied explicitly to 0x200000 which happened to be in the middle of
+> initrd.
 
-AbsoluteValue Systems      Web:    http://www.absoval.com
-P.O. Box 941149            e-mail: mark@absoval.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
+It shouldn't be.  You didn't follow the instructions.....Load the zImage
+at or above 0x00200000, jump to the first instruction.  FYI, 8260 is
+load at or above 0x00480000.
 
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
