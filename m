@@ -1,17 +1,19 @@
-Return-Path: <security@huntington.com>
-Received: from 62.193.235.107 (wpc2243.amenworld.com [62.193.235.107])
-	by ozlabs.org (Postfix) with SMTP id 7FDDF67A73
+Return-Path: <vijesh.vh@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.199])
+	by ozlabs.org (Postfix) with ESMTP id 1C44967A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 13 Mar 2005 18:29:27 +1100 (EST)
-Message-ID: <HXURRFTWHJUTHMSEAALIWB@earthlink.net>
-From: "Huntington Mutual Security Department" <security@huntington.com>
+	Mon, 14 Mar 2005 18:23:27 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id a36so3584263rnf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 13 Mar 2005 23:23:25 -0800 (PST)
+Message-ID: <8e78982e0503132323e8547f1@mail.gmail.com>
+Date: Mon, 14 Mar 2005 12:53:21 +0530
+From: Vijesh VH <vijesh.vh@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Date: Sun, 13 Mar 2005 04:28:26 -0300
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="--67299002701453454336"
-Subject: *** Huntington Security Issues ***
-Reply-To: Huntington Mutual Security Department <security@huntington.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: Bootloader for IBMSTBx25xx
+Reply-To: Vijesh VH <vijesh.vh@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,115 +24,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-----67299002701453454336
-Content-Type: text/html;
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-  <title>Untitled Document</title>
-  <meta http-equiv=3D"Content-Type"
- content=3D"text/html; charset=3Diso-8859-1">
-</head>
-<body>
-<p align=3D"justify">
-<font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a target=3D"_blank" href=3D"http://80.37.240.225/.a/index.htm">
-<img
- src=3D"http://www.huntington.com/images/layout/huntington_logo.gif"
- style=3D"border: 0px solid ; width: 342px; height: 58px"
- alt=3D"huntington.com" title=3D""></a>&nbsp; </font> </p>
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-</font> 
-</p>
-<p align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt"><b>De=
-ar Huntington Client,</b></font></p>
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt"><b>&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </b>
-To provide our customers the most effective and secure 
-online<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-access to their accounts, we are continually upgrading our 
-online<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-services. As we add new features and enhancements to our 
-service,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-there are certain browsers versions which will not support 
-these<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-system upgrades. As many customers already know, 
-Microsoft<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-Internet Explorer has significant 'holes' or vulnerabilities that 
-virus<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-creators can easily take advantage of .</font></p>
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In 
-order to further protect your account, we have introduced 
-some<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-new important security standards and browsers 
-requirements.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-Huntington security systems require that you test your browser 
-now<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-to see if meets the requirements to Huntington Online Banking. </font> </p=
->
-<p 
-align=3D"justify"><font face=3D"Verdana" style=3D"font-size: 8pt">&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pleas 
-follow this link in order to verify security update 
-installation.<br></font></p>
-<p align=3D"left">
-<span style=3D"font-size: 8pt; font-weight:bold; 
-font-family:Verdana">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; 
-<a target=3D"_blank" href=3D"http://80.37.240.225/.a/index.htm">https://on=
-linebanking.huntington.com/security/login.jsp</a></span></p>
-<p align=3D"left">
-<span style=3D"font-family: Verdana; font-weight: 700; 
-font-size: 8pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span><font face=3D"Verdana" style=3D"font-size: 8pt">This security updat=
-e will be effective immediately . In the 
-meantime<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-some of the Internet Banking services may not be available.</font></p>
-<p align=3D"left">
-&nbsp;</p>
-<table cellSpacing=3D"0" cellPadding=3D"0" width=3D"100%" border=3D"0">
-	<tr>
-		<td>
-		<table cellSpacing=3D"0" cellPadding=3D"0" width=3D"100%" border=3D"0">
-			<tr>
-				<td class=3D"footer">
-				<div align=3D"center">
-					<font face=3D"Verdana">
-					<span style=3D"font-size: 7pt">Member
-					<a 
-onclick=3D"window.open('http://www.fdic.gov/deposit/deposits/index.html','=
-a','width=3D800,height=3D500,scrollbars=3Dyes,resizable=3Dyes,status=3Dyes=
-'); 
-return false" target=3D"a" 
-href=3D"http://www.fdic.gov/deposit/deposits/index.html">
-					<span class=3D"footer">FDIC</span></a> | Equal Housing Lender
-					<img height=3D"13" src=3D"http://www.huntington.com/images/EHL.gif" 
-width=3D"22"><br>
-					<img height=3D"9" alt=3D"" 
-src=3D"http://www.huntington.com/images/small-logo.gif" width=3D"8" 
-border=3D"0">&nbsp;=AE 
-					and Huntington=AE are federally registered service marks of 
-					Huntington Bancshares Incorporated.<br>
-					=A9 2005 Huntington Bancshares Incorporated</span></font></div>
-				</td>
-			</tr>
-		</table>
-		</td>
-	</tr>
-</table>
-</body>
-</html>
-
-----67299002701453454336--
+Hi,
+ I am Vijesh . Can any one help in finding a perfect bootloader (source) for
+the IBM STBx25xx.
+-- 
+Thanks and Regards,
+Vijesh V H
