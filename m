@@ -1,39 +1,101 @@
-Date: Wed, 5 Sep 2001 21:20:50 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@mvista.com>
-Cc: andrew may <acmay@acmay.homeip.net>,
-	John Tyner <jtyner@cs.ucr.edu>, linuxppc-commit@source.mvista.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: patch for mktree.c on cross compiles
-Message-ID: <20010905212050.K18940@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010905120613.I14548@ecam.san.rr.com> <3B968E75.A63F26EA@mvista.com>
+Date: Thu, 6 Sep 2001 15:19:23 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Init code for ppc405 enet
+Message-ID: <20010906151923.F20279@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B968E75.A63F26EA@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 05, 2001 at 04:43:33PM -0400, Dan Malek wrote:
-> andrew may wrote:
-> > I would think everything in arch/ppc/boot/utils should be checked
-> > for endian problems on cross compiles.
->
-> Are the network-host macros the right things to use?  That's what
-> always comes to mind for me, but I suspect there is a more standard
-> set of macros from 'endian.h' or something........If it's OK with
-> everyone I'll check it in, but it does look kind of weird.
+The following patch adds module init code to the ppc405 enet driver,
+so that it no longer needs additions to Space.c to be initialised.
 
-Well, after some quick digging, here's what I found.  If we include
-<asm/byteoder.h>, and deal with some __'s, which are exported outside
-of the kernel, we can use these.  But, it's getting late and my brain
-is giving up after being fried for a while today, so I could be wrong,
-but I _think_ we can use asm/byteorder.h, possibly make some changes
-to mkbugboot/mkprep/mktree and it'll just work (The first two only work
-on big endian or x86.  Not other LE machines, I think :))
+diff -urN ../linuxppc_2_4_devel/drivers/net/ppc405_enet.c linux-bungo/drivers/net/ppc405_enet.c
+--- ../linuxppc_2_4_devel/drivers/net/ppc405_enet.c	Tue Aug 28 15:06:46 2001
++++ linux-bungo/drivers/net/ppc405_enet.c	Thu Sep  6 11:50:16 2001
+@@ -31,6 +31,7 @@
+  */
+
+ #include <linux/module.h>
++#include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/string.h>
+@@ -54,7 +55,6 @@
+
+ #include "ppc405_enet.h"
+
+-int		ppc405_enet_probe(struct net_device *);
+ static int	ppc405_enet_probe1(struct net_device *);
+ static int	ppc405_phy_speed(void);
+ static int	ppc405_phy_duplex(void);
+@@ -95,27 +95,7 @@
+ static volatile int	ppc405_enet_ack_slot = 0;
+ static volatile int	ppc405_enet_rx_slot = 0;
+
+-
+-/*
+- * Maintain the initial probe as a sub function just in case it is wished
+- * to have this driver as a module later.
+- */
+-int ppc405_enet_probe_done = 0;
+-
+-
+-
+-int
+-ppc405_enet_probe(struct net_device *dev)
+-{
+-	if (ppc405_enet_probe_done)
+-		return -ENODEV;
+-
+-	ppc405_enet_probe1(dev);
+-
+-	ppc405_enet_probe_done = 1;
+-	return 0;
+-}
+-
++static struct net_device ppc405_enet_dev;
+
+ static int
+ ppc405_enet_open(struct net_device *dev)
+@@ -1265,6 +1245,28 @@
+ 	return  crc_value;
+ }
+
++static int __init init_ppc405_enet(void)
++{
++	int rc;
++
++	rc = ppc405_enet_probe1(&ppc405_enet_dev);
++	if (rc)
++		return rc;
++
++	rc = register_netdev(&ppc405_enet_dev);
++	if (rc)
++		return rc;
++
++	return 0;
++}
++
++static void __exit exit_ppc405_enet(void)
++{
++	unregister_netdev(&ppc405_enet_dev);
++}
++
++module_init(init_ppc405_enet);
++module_exit(exit_ppc405_enet);
+
+ /*
+  * Local variables:
+
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
