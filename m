@@ -1,61 +1,32 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <E62DBC698514D511A1AC0003470C1314EE2BFC@exchange.mvis.com>
-From: Keith Outwater <Keith_Outwater@mvis.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Recommendations for LXT971A PHY MII interrupt connection 
-Date: Wed, 26 Dec 2001 15:56:30 -0800
+Message-ID: <01139FC052A0D411900B00508B9535FC047BC37F@ZCH07EXM04.corp.mot.com>
+From: Liu HongXun-a16975 <a16975@motorola.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: The relationship between hhl 2.0 and FEC driver
+Date: Thu, 27 Dec 2001 19:31:11 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the info Wolfgang!
-As far as interrupt assignments go, the design is totally flexible as it
-hasn't gone to fab yet.
-Your statements below seem to imply that the Linux kernel doesn't' want or
-need the MII interrupt. Is this correct?
+Hi, all,
+I am trying to make the FEC driver work under HardHat 2.0 for ppc. But it is really aching.
+My board is based on MPC 857T. It has both FEC and UTOPIA interface.
+The UTOPIA uses the Port D as its data channel. And the FEC uses the PCMCIA Slot A instead.
+Actually, I have made the FEC work under the common linux 2.4.2, also under linux 2.4.4 from Wolf.
+But when I tried to make it work under hhl 2.0, also based on linux 2.4.2, it failed.
+I even tried to use the work fec.c under linux 2.4.4 to replace the on under hhl 2.0, but no use.
+I wonder what is the problem? what should I do to let fec.c work under hhl 2.0?
+Any suggestions are really appreciated!
 
- Keith
+Aside words: why can't I set the UT bit of Port D PAR? when I try to set that bit, the kernel just
+bother on this statement and will not go on.
 
-in message <E62DBC698514D511A1AC0003470C1314EE2BF3@exchange.mvis.com> you
-wrote:
->
-> Does anyone have specific recommendations as to the best way to connect an
-> Ethernet PHY's MII
-> management I/F interrupt to the processor?  I'm using an Intel LXT971A
-PHY.
+Thanks very much
 
-Ummm... what are your options? All designs look pretty similar to me,
-the main difference being the interrupt pin they chose  for  the  PHY
-interrupt, if any.
+Rolf
 
-> For example, are the general purpose external interrupts on IRQ[0:6] or
-the
-> CPM interrupts on port C preferred?
-
-Softwarewise, it's easier to use one of the IRQ pins.
-
-> Is there a specific pin or interrupt that is preferred?
-
-No.
-
-> PS: (this is a bit off topic linux-wise, but related:  Wolfgang, what's
-the
-> preferred method as far a ppcboot is concerned?)
-
-Being lazy, the preferred  (by  me)  method  is  not  to  use  a  PHY
-interrupt  at  all  :-) You need the PHY interrupt only in cases when
-you need to get informed about link status changes. Few  applications
-really  need  this  type of information (although it's "interesting",
-especially during board bring-up).
-
-Hope this helps,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Bradley's Bromide: If computers get too  powerful,  we  can  organize
-them into a committee - that will do them in.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
