@@ -1,30 +1,30 @@
-Date: Thu, 4 May 2000 17:57:33 +0200 (CEST)
+Date: Thu, 4 May 2000 18:07:07 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Steven Hanley <sjh@wibble.net>,
-        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.3.99-pre6 sound hfs
-In-Reply-To: <391090D5.2F3BEF7E@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.10005041754250.30927-100000@opal.biophys.uni-duesseldorf.de>
+To: Mario Scarpa <m.scarpa@mondonet.net>
+cc: Gabriel Ricard <g_ricard@yahoo.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard hard freeze (still there)
+In-Reply-To: <39116DF7.4CD7FFBD@mondonet.net>
+Message-ID: <Pine.LNX.4.10.10005041802480.30927-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > So was I until I saw Alan's laundry list. I haven't followed 2.3
-> > development lately but I recall mention of further changes to the VFS.
-> > Maybe a diff between 2.3.<last working> and 2.3.<recent> vfat or ext2 code
-> > shows up something.
+> > include a wandering mouse pointer: i.e. when I am
+> > typing rapidly, X will occasionally think I've clicked
+> > the mouse button and the focus goes to where the
+> > pointer was located.
 >
-> >From my personal mail archive, I see that HFS was already broken in
-> 2.3.18 last September.
+> Same for me. And it is really annoying to write the
+> emails two or three times ;-)
+> My mouse is a brand x 5$ usb mouse with three buttons...
 
-And it got fixed enough to be working again at least in 2.3.48 - that fix
-(or rather workaround) may have been broken again lately.
-
-I'll have a look at the diff as soon as I get around to rsyncing
-2.3.<recent>. I don't really have much of a clue on VFS though :-(
+That's Xpmac or FBDev? I'm using FBDev on 2.2.15pre9 and have no such
+problems. And I can't imagine mouse data ending up as keyboard data except
+for Xpmac (where mouse data are fed to the X tty prefixed by a special
+escape char. Make X choke and drop the escape char, and you probably get
+what you described. Or get a garbled keyboard char, similar effect).
 
 	Michael
 
