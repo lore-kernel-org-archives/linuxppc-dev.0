@@ -1,40 +1,34 @@
-Date: Tue, 24 Aug 1999 14:56:45 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9908241456210.17842-100000@mercator.cs.kuleuven.ac.be>
+Date: Tue, 24 Aug 1999 15:05:58 +0200
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: BootX enhancement request
-In-Reply-To: <19990824110229.025988@mail.mipsys.com>
-Message-ID: <Pine.LNX.4.10.9908241456210.17842-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <19990824150558.006009@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Aug 1999, Benjamin Herrenschmidt wrote:
-> On Tue, Aug 24, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
-> >The second is that macos is now using mode numbers > 20.  I haven't
-> >worked out the correspondence yet.
-> 
-> MacOS no longer relies on the nvram setting. Video drivers are free to
-> put whatever they want in their own device tree node, and usually store
-> an nvram value for the mode there, but this is proprietary and depends on
-> the driver. MacOS itself now stores the various infos in a preferences
-> file. The old "Monitors" control panel still updates the old pram
-> location with a mode value but the meaning is not guaranteed (can be
-> driver specific).
+On Tue, Aug 24, 1999, Geert Uytterhoeven
+<Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
-Thus I can remove the nvram code from atyfb?
+>Thus I can remove the nvram code from atyfb?
 
-Greetings,
+Depending on the version of MacOS, and if the user uses or not the old
+"Monitors" control panel, it may still be useful. On my PowerBook, I
+always had to set the resolution in the kernel command line, but I think
+that the vram stuff still works on my 8500 (controlfb). 
 
-						Geert
+I beleive the nvram code is useless on iMacs and blue G3s.
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
+--GAG19404.935596886/motgate.mot.com--
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
