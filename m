@@ -1,20 +1,76 @@
-Message-ID: <3CB6F072.B068FC40@lvl7.com>
-Date: Fri, 12 Apr 2002 10:34:26 -0400
-From: Neil Horman <nhorman@lvl7.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: regarding the 2.4.19pre6 kernel
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: tlbwe, rfci instructions and gcc cross assembler
+Date: Fri, 12 Apr 2002 09:43:05 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167CFB1@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@COMPAQ.com>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hey again!
-	Please disregard my last question regarding the compilation failure of
-do_mounts.c in the 2.4.19pre6 source tree.  After looking through the change
-logs, I found that a recent merge which removed the line:
-#include <linux/init.h>
-Was the culprit.  Sorry.
-Neil :)
+Tom Rini [mailto:trini@kernel.crashing.org] wrote:
+
+> On Thu, Apr 11, 2002 at 04:53:18PM -0500, Cameron, Steve wrote:
+>
+> [snip]
+> > strace /usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__
+> -D__KERNEL__ -I/home/scameron/ppc/testdir/include   -c -o
+> head_4xx.o head_4xx.S
+>
+> -Wa,-m405 is missing here.
+
+Where should it go?
+
+I tried all possibilities I could think of with no luck:
+
+[scameron@quandary kernel]$ cat x
+/usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__ -D__KERNEL__ -I/home/scameron/ppc/testdir/include -c -o head_4xx.o head_4xx.S -Wa,m405
+/usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__ -D__KERNEL__ -I/home/scameron/ppc/testdir/include -c -Wa,m405 -o head_4xx.o head_4xx.S
+/usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__ -D__KERNEL__ -I/home/scameron/ppc/testdir/include -Wa,m405 -c  -o head_4xx.o head_4xx.S
+/usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__ -D__KERNEL__ -Wa,m405 -I/home/scameron/ppc/testdir/include  -c  -o head_4xx.o head_4xx.S
+/usr/local/ppc/bin/powerpc-linux-gcc -D__ASSEMBLY__ -Wa,m405 -D__KERNEL__ -I/home/scameron/ppc/testdir/include  -c  -o head_4xx.o head_4xx.S
+/usr/local/ppc/bin/powerpc-linux-gcc -Wa,m405 -D__ASSEMBLY__  -D__KERNEL__ -I/home/scameron/ppc/testdir/include  -c  -o head_4xx.o head_4xx.S
+
+[scameron@quandary kernel]$ sh x
+Assembler messages:
+Error: can't open m405 for reading
+m405: No such file or directory
+head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+Assembler messages:
+Error: can't open m405 for reading
+m405: No such file or directory
+head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+Assembler messages:
+Error: can't open m405 for reading
+m405: No such file or directory
+head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+Assembler messages:
+Error: can't open m405 for reading
+m405: No such file or directory
+head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+Assembler messages:
+Error: can't open m405 for reading
+m405: No such file or directory
+head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+Assembler messages:
+Error: can't open m405 for reading
+m405: No such file or directory
+head_4xx.S:111: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:112: Error: Unrecognized opcode: `tlbwe'
+head_4xx.S:420: Error: Unrecognized opcode: `rfci'
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
