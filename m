@@ -1,48 +1,40 @@
-Date: Wed, 26 Mar 2003 08:57:52 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: dcbz works on 862 everywhere!
-In-reply-to: <3E810DA7.1060605@slac.stanford.edu>
-To: Till Straumann <strauman@SLAC.Stanford.EDU>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLCEHGFLAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <000901c2f37c$44a2a800$337ceccb@dasan.com>
+From: "Young-Han, Kim" <yhkim@da-san.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <20030326070322.93F25C58BA@atlas.denx.de>
+Subject: Re: MPC 8xx as SPI slave... 
+Date: Wed, 26 Mar 2003 18:44:17 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Hi guys.
+Dear Wolfgang Denk,
 
-Thanks Till, you are the first one who actually tested
-my fix.
+  Thanks for your reply...
 
-> I revitalized my old test environment on a
-> mpc860t (XPC860TZP50B5 / 3J21M to be precise).
+> This could be a cache issue. Which source is your SPI driver based on?
 
-hmm, B5 rev is pretty buggy. Good that it works on
-this silicon as well.
+  Also, I was doubt the cache problem.
+  I'll  check again...
+  My code is based on your lwmon_spi.c just basic function.
 
->
-> I found that 'dcbz' (while failing to set DAR)
-> indeed sets MD_EPN correctly. Hence, Jocke's fix
-> (copy EPN[0:19]->DAR) would handle that.
 
-Did you try any of the other dcxx instructions as well?
+> Does the 8xx transfer data at all? You know, SPI has a very, very low
+> priority onthe CPM, so it will be starved  by  any  other  I/O  (like
+> ethernet and especially USB).
 
-> My older idea (fixing up MD_EPN and DAR based
-> on the faulting instruction opcode and the involved
-> GPR contents) should work even if we have neither
-> a valid MD_EPN nor DAR.
+  Just transmit the previous data of TX BD not on time.
+  I'll check the priority...
 
-Yes, I tried to do that. I never got past how to convert the
-virtual address in SRR0 to physical so I could read the instruction
-and decode it.
 
->
-> -- Till.
+  Thanks!
 
+Best Regards
+Young-Han, Kim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
