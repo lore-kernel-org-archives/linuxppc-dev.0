@@ -1,32 +1,26 @@
-Message-ID: <3DAC3828.5010005@embeddededge.com>
-Date: Tue, 15 Oct 2002 11:45:44 -0400
-From: Dan Malek <dan@embeddededge.com>
+From: "gguevel" <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem with module installation under 2.4.x kernel
+Date: Tue, 15 Oct 2002 18:25:11 +0200
+Message-ID: <000001c27467$6fd3cc00$3101a8c0@DOMAIN>
 MIME-Version: 1.0
-To: Laurent Mohin <laurent.mohin@acterna.com>
-Cc: Ralph Blach <rcblach@us.ibm.com>, Matt Porter <porter@cox.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to change endian attribute for a memory region
-References: <OF780A3997.14F8A90A-ONC1256C53.00523F95@eni.wago.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Laurent Mohin wrote:
+I worked under Linux 2.2.x Kernel and I have no problem with the module
+generation.
 
-> That was the purpose of my question. Has anybody written this IOremap_LE
-> function?
+Now under Linux 2.4.x Kernel, I can compile modules and install them but
+I have the following warning while running "insmod xxxx"
+Warning: loading xxxx will taint the kernel: no license.
 
-If you are accessing this from a user space mapped frame buffer, it isn't
-an ioremap() function but rather a generic Linux VM function.
+Does anyone know what I must add to my module to avoid this warning ?
 
-Other platforms have solved this "problem" of mapping frame buffers,
-perhaps you should be asking the question on the X server mailing lists.
-
-Thanks.
-
-
-	-- Dan
+Thanks
+Gérard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
