@@ -1,32 +1,28 @@
-Date: Wed, 10 Dec 2003 15:43:41 +0100
-Message-ID: <3FBD5348000912F8@mssbzhh-int.msg.bluewin.ch>
-From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
-Subject: 405 TLB miss reduction
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Subject: Re: the door is closing for 2.4
+From: Hubert Figuiere <hub-linux-ppc@trantor.staff.proxad.net>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <16334.33020.624995.521330@cargo.ozlabs.ibm.com>
+References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=iso-8859-15
+Message-Id: <1071070737.29574.38.camel@trantor.staff.proxad.net>
+Mime-Version: 1.0
+Date: Wed, 10 Dec 2003 16:38:57 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+On jeu, 2003-12-04 at 01:34, Paul Mackerras wrote:
 
-we are suffering from TLB misses on a 405GP processor, eating up to
-10% of the CPU power when running our (rather big) application. We
-can regain a few percent by using the kernel option CONFIG_PIN_TLB
-but we are thinking about further kernel modifications to reduce
-TLB misses. What comes into my mind is:
+> So if you have a board that you want to see supported by the official
+> 2.4 tree, and it isn't already, let me know.  I will need someone to
+> commit to maintaining the port on an ongoing basis before I send it to
+> Marcelo, though.
 
- - using a kernel PAGE_SIZE of 8KB (instead of 4KB).
- - using large-page TLB entries.
+PrPMC 750 support would be nice to be merged in.
 
-Has anybody already investigated the effort or benefit of such
-changes or knows about other (simple) measures (apart from
-replacing the hardware)?
-
-TIA.
-
-Wolfgang.
-
+Hub
+--
+Hubert Figuière - Freebox SA. - +33 1 73 50 2 563
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
