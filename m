@@ -1,29 +1,32 @@
-Date: Sun, 11 Feb 2001 12:09:46 -0600
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BMAC stuff - update
-Message-Id: <20010211120946.3ec040f2.jpgarcia@execpc.com>
-In-Reply-To: <20010211014716.458cd27c.jpgarcia@execpc.com>
-References: <20010211043822.8854.qmail@kunk.jriver.com>
-	<20010211001334.54abdf4f.jpgarcia@execpc.com>
-	<20010211014716.458cd27c.jpgarcia@execpc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <3A871C0D.7DB5B8FA@mvista.com>
+Date: Sun, 11 Feb 2001 18:11:09 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: BMAC stuff - what I have
+References: <20010211043822.8854.qmail@kunk.jriver.com> <20010211001334.54abdf4f.jpgarcia@execpc.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 11 Feb 2001 01:47:16 -0600, "Joseph P. Garcia" <jpgarcia@execpc.com> wrote:
+"Joseph P. Garcia" wrote:
 
->
-> let this be a lesson to me to be more vigalant in testing.  The patch posted earlier seems to work for me now. (2.4.2pre2)
+> If it is true that the iMac has the same Tx problem,
 
-but now at home, the processor was loaded by the system for a bit, and ethernet doesn't seem to work nearly as well.  Friend has a switched hub, here I do not.
+Yes, they do.  That is why we started working on it.  I just
+tracked down some of the info from Darwin, and had someone else
+work on it for a while.
 
-But this seems closer.
+> ... Anyone know dbdma well enough to approach a fix? :)
 
---
-Joseph P. Garcia
-http://www.execpc.com/~jpgarcia
+Yeah, but I don't have the time right now.  It's on the list of
+things to do, but it doesn't bother me enough to stop other things
+and fix it.  Since you asked, I thought I would at least give you
+what I had so you wouldn't have to start from zero :-).
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
