@@ -1,41 +1,49 @@
-Subject: Re: ncurses problem in telnet/serial console.
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: Omanakuttan <omanakuttan@tataelxsi.co.in>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3F0ACE50.90908@tataelxsi.co.in>
-References: <3F0ACE50.90908@tataelxsi.co.in>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 08 Jul 2003 21:14:48 +0200
-Message-Id: <1057691688.3430.269.camel@spawn>
-Mime-Version: 1.0
+To: "Stephan Linke" <Stephan.Linke@epygi.de>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: parallel I/O ports & opend darin pins on MPC8xx 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 08 Jul 2003 17:31:35 +0200."
+             <FCEAKDJJAPHPLJFINDAJOEFEDEAA.Stephan.Linke@epygi.de>
+Date: Tue, 08 Jul 2003 23:36:57 +0200
+Message-Id: <20030708213702.030BEC6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2003-07-08 at 15:59, Omanakuttan wrote:
-> [root@pandatel12 ~]#
-> When we telnet to the port 23, the error we get it
+Dear Stephan,
+
+in message <FCEAKDJJAPHPLJFINDAJOEFEDEAA.Stephan.Linke@epygi.de> you wrote:
 >
-> [root@pandatel12 ~]# telnet 10.1.28.44
-> Trying 10.1.28.44...
-> Connected to 10.1.28.44 (10.1.28.44).
-> Escape character is '^]'.
-> Error opening terminal: vt100.
-> Connection closed by foreign host.
-> [root@pandatel12 ~]#
+> on one of our boards we are using one of the I/O pins in open drain mode. This leads to some problems in combination with other
 
-You do not have support for vt100 can it be more obvious.
+Please don't use such long lines, they are hard to read.
 
-Start your program with
+> drivers that write to the ports data register. Since they can not detect the current output value of the open drain pin. They only
+> see the status of the I/O pin no matter who forces the value the CPM or another device connected to the open drain pin. After
+> writing back the value read from the I/O data register this value is forced by CPM which is normaly wrong.
 
-"TERM=kljdf /bin/mdi"
+This is a feature. It allows you to detect the the state of  the  pin
+which can be pretty useful.
 
-and see what happens.
+> Did anyone run into that problem in the past? What was your solution? Any thing else but NOT using open drain pins?
+
+It is _not_ a problem, it is a feature, and a useful one.
+
+Solution? What is so difficult about latching your output value in  a
+variable?
+
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Ericsson AB                       Tel: +46 8 719 70 20
-Tellusborgsvägen  90              Fax: +46 8 719 29 45
-126 25 Stockholm                  ken@switchboard.ericsson.se
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It is practically impossible to teach good programming style to  stu-
+dents that have had prior exposure to BASIC: as potential programmers
+they are mentally mutilated beyond hope of regeneration.   - Dijkstra
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
