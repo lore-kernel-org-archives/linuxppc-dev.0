@@ -1,46 +1,46 @@
-From: "Kim, Kwansuk" <kskim@neowave.co.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: serial console on 405GP 
-Date: Thu, 7 Mar 2002 11:42:12 +0900
-Message-ID: <OMENKEONFDLIGLHPFALBIEDACHAA.kskim@neowave.co.kr>
+Message-ID: <20020307070148.89600.qmail@web12803.mail.yahoo.com>
+Date: Wed, 6 Mar 2002 23:01:48 -0800 (PST)
+From: satya kumar <i_satya@yahoo.com>
+Subject: Undefined refence error
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <3C867302.7080202@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear, everyone!
+Hai All,
+My First mail to this group.Not a master , only a
+newbie ,so please bear with me.
+I have successfully compiled the binutils, gcc for
+powerpc. Now I went for compiling glibc, which is
+giving some problems, so I left it and proceeded with
+compiling the kernel.
+Now it is giving following error message when I do
+make zImage
+mm/mm.o: In function `__free_pages_ok':
+mm/mm.o(.text+0xdee4): undefined reference to
+`__test_and_change_bit'
+mm/mm.o(.text+0xdee4): relocation truncated to fit:
+R_PPC_REL24 __test_and_change_bit
+mm/mm.o: In function `rmqueue':
+mm/mm.o(.text+0xe0f8): undefined reference to
+`__change_bit'
+mm/mm.o(.text+0xe0f8): relocation truncated to fit:
+R_PPC_REL24 __change_bit
+mm/mm.o(.text+0xe190): undefined reference to
+`__change_bit'
+mm/mm.o(.text+0xe190): relocation truncated to fit:
+R_PPC_REL24 __change_bit
+make: *** [vmlinux] Error 1
 
-I'm poring linux-2.4.18-pre7 (from penquinppc.org) on my customized board (with IBM 405GP)
 
-My board has no keyboard, so I'm using serial console on UART0.
-I ported ppcboot, and it works well.
+Please help me out.I am stuck. I am compiling it for a
+MPC860 board. I have selected the machine type as MBX
+during configuring/compiling kernel( Is it right).
 
-When I ported linux on my board, there happened some problem.
 
-After init forks sash (standalone shell as you know),
-I can see the prompt of the sash but the character sent wasn't delivered to sash.
-So what character I send to the sash. It never respond.
-
-I watch for the serial source (driver/char/serial.c) and enabled DEBUG option and the character sent
-was received by kernel.
-
-I don't know why the characters are disappeared.
-
-Anyone know the reason?
-
-Please, help me.
-
- ==============================================
-     Just for fun...
-                                                  - Linus Torvalds
- ==============================================
-  Kwansuk Kim
-  Engineer, NeoWave Inc.
-  Tel   +82-31-380-4927    Fax +82-31-380-4747
-  E-mail: kskim@neowave.co.kr
-==============================================
+Try FREE Yahoo! Mail - the world's greatest free email!
+http://mail.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
