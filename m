@@ -1,40 +1,45 @@
-Date: Thu, 7 Oct 1999 10:55:23 +0200 (MET DST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-cc: pac1@tiac.net, linuxppc-dev@lists.linuxppc.org,
-        yellowdog-general@lists.yellowdoglinux.com
-Subject: Re: Who develops and supports the XF68_FBDev X server?
-In-Reply-To: <199910070840.KAA02341@simul.biophys.uni-duesseldorf.de>
-Message-ID: <Pine.GSO.4.10.9910071054070.24804-100000@dandelion.sonytel.be>
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Message-Id: <199910070927.LAA02521@simul.biophys.uni-duesseldorf.de>
+Subject: Re: ADB probing
+In-Reply-To: <Pine.LNX.4.10.9910061626290.10804-100000@opus.bloom.county> from Tom Rini at "Oct 6, 1999 04:47:22 pm"
+To: trini@kernel.crashing.org (Tom Rini)
+Date: Thu, 7 Oct 1999 11:27:51 +0200 (CEST)
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 7 Oct 1999, Michael Schmitz wrote:
-> > > Who does support XF68_FBDev server?
-> > 
-> > Me (more or less).
-> 
-> That's what I thought - but I had the strange notion the fbdev server
-> was supported by xfree? 
+> I've run into a wierd problem with ADB stuff, and I wonder if anyone has
+> an idea on how to work/fix this.  What I'm trying to do right now is fix
+> up kudzu so it can probe for things on the ADB bus.  Right now it does
+> what all the other old config tools did, and pokes at /dev/adbmouse.  The
+> problem is right now this works if there's any adb device present (one of
 
-I hope it will. For 4.0, that sounds logical, since `fbdev' will be just
-another probe type like `vga'.
+That's right - currently /dev/adbmouse can be opened regardless of a mouse
+being present. We'd need a way of checking whether a mouse device is present
+on the ADB bus (look for a handler ID of 1,2 or 4 in the registered ADB
+devices; all information you need is present in the ADB driver). Or use a
+global variable set by the ADB driver when it registers a mouse. 
 
-I guess they put the `unsupported' in the FAQ to avoid being flooded with
-people trying to change video modes with vesafb. BTW, the same `support
-problem' applies to offb on PPC :-)
+All this will only work if the ADB bus is automatically rescanned when a new
+device is detected (if that's possible; does the ADB driver detect new
+devices?). 
 
-Greetings,
+> the machines I checked only has an adb kbd, tho adbmouse suport is
+> compiled in).  Also, is there any way to see if the machine has an adb
+> keyboard installed?  Thanks..
 
-						Geert
+Only by poking /dev/adb and sending talk requests and reading the handler
+IDs. That might be the easier way of detecting the mouse, too. Sample code
+from adb.c:
 
---
-Geert Uytterhoeven ----------------- Sony Suprastructure Center Europe (SUPC-E)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint Stevens Woluwestraat 55
-Phone +32-2-7248632 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+	adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
+			(i << 4) | 0xf);
+	adb_handler[i].handler_id = req.reply[2];
 
+
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
