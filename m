@@ -1,10 +1,10 @@
-Date: Tue, 11 May 1999 19:56:16 -0400 (EDT)
+Date: Tue, 11 May 1999 20:01:38 -0400 (EDT)
 From: Tom Rini <tmrini@ntplx.net>
 To: Duraid Madina <duraid@fl.net.au>
 cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Does Linux PPC support the new 'Lombard/101' Powerbook G3s?
 In-Reply-To: <3738B389.BFBF8CFA@fl.net.au>
-Message-ID: <Pine.LNX.4.05.9905111954570.651-100000@pc.wackyland.com>
+Message-ID: <Pine.LNX.4.05.9905112000440.651-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -18,10 +18,9 @@ On Wed, 12 May 1999, Duraid Madina wrote:
 > what is the minimum amount of disk space that must be assigned to the
 > MacOS to be able to boot LinuxPPC?
 
-The 2 lbs lighter PBs?  If they're just a bit lighter/faster (nothing too
-new, right?) it should.  Again, if they haven't changed much then yes, you
-can OF boot it I think.  Otherwise a small (100mb or less?) MacOS install
-is needed for BootX.
+And after looking at MOSR (the /101 part confused me..) it'll take a bit
+of work no doubt.  But hopefully they'll have the Linux Tech job filled so
+we might get details(!) or even seeded for HW(!!!).
 
 ---
 Tom Rini (TR1265)
