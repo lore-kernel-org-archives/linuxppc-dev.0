@@ -1,45 +1,36 @@
-Date: Tue, 17 Jul 2001 13:32:05 -0400
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Clock drift on an iBook2
-Message-ID: <20010717133205.A22391@localhost.localdomain>
-References: <20010717165032.5490@smtp.adsl.oleane.com> <20010717165231.25195@smtp.adsl.oleane.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
-In-Reply-To: <20010717165231.25195@smtp.adsl.oleane.com>; from benh@kernel.crashing.org on Tue, Jul 17, 2001 at 06:52:31PM +0200
+Date: Tue, 17 Jul 2001 13:35:28 -0500 (EST)
+From: Paul Harrison <pfh@csse.monash.edu.au>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Turning on sound in the new iBook
+Message-ID: <Pine.LNX.4.33.0107171325290.754-100000@mandarin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---xHFwDpU9dbj6ez1V
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+A few people have asked me about this, so i thought i would post it here:
+I have sound working on the new iBook, mostly from looking at the Darwin
+source.
 
-Benjamin Herrenschmidt spake unto us the following wisdom:
-> Something else you can try: in arch/ppc/kernel/pmac_time.c, comment
-> out the call to via_calibrate_decr() (and the return too) so that
-> we use the device-tree "timebase-frequency" instead, and tell us if
-> it makes any difference.
+The basic steps were:
+- powering up the sound system and one of the amps by writing to some
+ports
+- setting up the digital equalizer using I2C
+- using the dmasound_pmac module for actual sound output
 
-That seems to have improved it *greatly*.   I know have a drift (only
-sampled after a few minutes, so somewhat inaccurate -- but accurate
-enough to tell that it's no longer seconds/minute) more on a par with
-what I have come to expect.
-Ethan
+Full details here:
 
---=20
-If I've told you once, I've told you once
-And once is all that you needed.
-		-- The Refreshments, "Carefree"
+http://yoyo.cc.monash.edu.au/~pfh/ibook/sound.html
 
---xHFwDpU9dbj6ez1V
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+This is all really, really hacked together. It should all probably be put
+together in one or two nice neat kernel modules at some stage.
 
+--
+Paul Harrison
 
---xHFwDpU9dbj6ez1V--
+Email: pfh@csse.monash.edu.au
+Web:   http://yoyo.cc.monash.edu.au/~pfh/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
