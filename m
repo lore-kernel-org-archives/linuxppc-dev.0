@@ -1,28 +1,31 @@
-Subject: Re: Fix for autonegotiation of ppc 40x ethernet driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ronald Wahl <rwa@peppercon.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <m365j0863r.fsf@gandalf.peppercon.de>
-References: <m3brss87p4.fsf@gandalf.peppercon.de>
-	 <1065602490.30751.84.camel@gaston>  <m365j0863r.fsf@gandalf.peppercon.de>
-Content-Type: text/plain
-Message-Id: <1065603389.30756.88.camel@gaston>
+Date: Wed, 8 Oct 2003 07:49:40 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: maurie <maurie@risc.sps.mot.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Vga on sandpoint
+Message-ID: <20031008144940.GA29203@ip68-0-152-218.tc.ph.cox.net>
+References: <000a01c38ce9$4c8ec740$9b7c520a@sps.mot.com>
 Mime-Version: 1.0
-Date: Wed, 08 Oct 2003 10:56:29 +0200
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <000a01c38ce9$4c8ec740$9b7c520a@sps.mot.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I wont force a single mode. I want to limit the advertising to a
-> limited _range_. So autonegotiation is still enabled - just with a
-> limited range. The forcing of a mode (i.e. disabling autonegotiation)
-> is working already without this patch.
+On Tue, Oct 07, 2003 at 10:40:13AM -0500, maurie wrote:
 
-Ah ok. Well... we indeed need to and the two masks then, though it
-should be possible to find a phy-specific way to get the exact
-speed that was actually selected...
+> 	I am attempting to get pci vga working on the sandpoint platform
+> using dink32 to start linux.  I have tried several S3 cards with no video
+> success.  The kernel has vga driver support for SIS and ATI support, but
+> these are classified as experimental and will not compile, undefined
+> externals for __floatsidf, __divdf3, __adddf3, __fixunsdfsi, __muldf3, and
+> __vmalloc.
 
-Ben.
+I have used a Matrox Millenium I successfuly on a Motorola Sandpoint.
+Newer cards, if you buy a PCI version, should also work.
 
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
