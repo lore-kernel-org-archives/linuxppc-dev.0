@@ -1,32 +1,31 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4D414C7E@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Michael Habermann'" <MHabermann@gmx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Reducing glibc with mklibs.sh
-Date: Mon, 29 Oct 2001 17:36:30 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Mon, 29 Oct 2001 15:22:14 -0800
+Mime-Version: 1.0 (Apple Message framework v472)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: Linux on an NCD X Terminal?
+From: Hans Johnson <hjohnson@sfu.ca>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <C9448467-CCC3-11D5-9A1D-0030655A0600@sfu.ca>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It looks like mklibs.sh does not find the map file for libm.
+Hi Folks,
 
-In your script:
-> cp *.map ../lib/
-might be bad, because the makefile of glibc produces libm.map,
-while mklibs.sh looks for libm_pic.map (the name differs).
+Just wondering if anyone has attempted a port of PPC Linux to the NCD
+EXplora X Terminals? I just picked one up cheap ($10) and upon opening
+it up, discovered that it seems to be constructed out of essentially
+standard components.
 
-Either you rename the file when copying it, or you modify mklibs.sh.
+it has a PPC 403GCX CPU, an S3 Trio64 video chipset, an AMD PCNet fast
+ethernet chipset, and a National Semiconductor I/O controller.  I'm not
+sure what it has for a PCMCIA controller, but it does have a slot.
 
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+Anyway, just curious if has attempted this before. I think this could be
+a really neat little box, if it had an operating system. :)
+
+Peace,
+
+Hans
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
