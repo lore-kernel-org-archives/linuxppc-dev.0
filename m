@@ -1,49 +1,47 @@
+Date: Thu, 1 Feb 2001 18:48:06 +1100
+From: Steven Hanley <sjh@svana.org>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: agpgart? or how to use dri?
+Message-ID: <20010201184806.A5957@chiru.svana.org>
+Reply-To: Steven Hanley <sjh@wibble.net>
 Mime-Version: 1.0
-Message-Id: <p04330101b69ea5b8618f@[24.163.36.97]>
-In-Reply-To: <19341226073701.30276@mailhost.mipsys.com>
-References: <p04330102b69d64c82c08@[24.163.36.97]>
- <19341226073701.30276@mailhost.mipsys.com>
-Date: Thu, 1 Feb 2001 00:41:46 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        <linuxppc-dev@lists.linuxppc.org>
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: Re: continuing XF402 (atimisc) problems
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  >I've been over this on the -user list and the YDL list, and cc-ed Ani
->>a few times with it (no response). No one seems to have a clue as to
->>the cause of the problem, which is described concisely at:
->>
->><http://lists.linuxppc.org/listarcs/linuxppc-user/200101/msg00672.html>
->>
->>(more detail available if necessary)
->>
->>This is on a 6500 (on-board RageII) with a RagePro PCI card. I have
->>tried rolling my own XF402 build, with Ani's driver updates, and get
->>the exact same XFree log result. I've also tried several of kfukui's
->>402 rpms, including use of his "old drivers," again with exactly the
->>same result.
->
->Check that you have the correct fbdevhw module and that it's loaded in
->your XF86Config file.
+All
 
+Trying to get the dri stuff to build (this is an X 4.02 tree checked out
+from the branch Gareth announced two days ago)
 
-I tried adding
+The problem seems to be the kernel module. When I have agpgart enabled in
+the kernel the r128 kernel module builds, when I dont have apgart enabled
+only the tdfx module will build, this is doing a make in the
+xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/ directory in the
+X source
 
-	Load	"fbdevhw"
+The problem here of course is agpgart wont build on ppc
 
-in the Modules section of XF86Config-4. There appeared to be no error
-from this in the XF log, but I still got the same atimisc failure
-(both 2.2.18 and 2.4.1). I'm not sure how I would check if fbdevhw is
-the right version. I assume it is, simply because my attempts to
-build XF402 seem to behave consistently, and I doubt kfukui has
-constructed his several versions of rpm incorrectly. Granted, these
-may be not good reasons to trust I have the right version :-)
+in /usr/src/linux/drivers/char/agp/agpgart_be.c there is a flush_dcache
+function defined, and it is only defined for alpha, ia64 and i386.
 
+I dont know what the culprit is, but I assume thee dri stuff can be built
+without agpgart on ppc or some scuh, this kernel tree is the 2.4.1 bk
+rsynced about half an hour ago.
 
-Stefan Jeglinski
+Any hints on getting the dri kernel module to build to the extent that it
+can be insmod'd and used?
+
+	See You
+	    Steve
+
+--
+sjh@wibble.net http://wibble.net/~sjh
+Look Up In The Sky
+    Is it a bird?   No
+        Is it a plane    No
+            Is it a small blue banana?
+Yes
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
