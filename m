@@ -1,33 +1,37 @@
-Message-ID: <39F8762D.B7569B16@mvista.com>
-Date: Thu, 26 Oct 2000 14:21:33 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Julia Elbert <jelbert@enerdyne.com>
-CC: "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: cpm interrupts
-References: <67505026E29DD311A9AA00508B7315F350A579@EXCHANGE>
+Date: Thu, 26 Oct 2000 11:57:04 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Kyle Harris <kharris@nexus-tech.net>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: BDM recommendations
+Message-ID: <20001026115704.C12151@cx258813-a.chnd1.az.home.com>
+References: <39F86C2D.C242473B@nexus-tech.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <39F86C2D.C242473B@nexus-tech.net>; from kharris@nexus-tech.net on Thu, Oct 26, 2000 at 01:38:53PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Julia Elbert wrote:
-
-> Is there any way to see what cpm interrupts are actually registered after
-> the drivers load?
-
-No, I probably should do something that works with /proc......
-
-> This happens after my kernel boots. I call ifconfig to bring up hdlcppp2 and
-> I get this message.
+On Thu, Oct 26, 2000 at 01:38:53PM -0400, Kyle Harris wrote:
 >
->         CPM interrupt c00af4dc replacing c00af4dc
+> Hi,
+>
+> I'm looking to purchase a new BDM emulator. Does anyone have
+> suggestions. I've been using EST's for several years on the 68xxx
+> platform and have been very pleased with it. But, of course, the PPC is
+> not supported with my current model and they recommend upgrading to
+> visionProbe for support ($$$).
 
-You are installing the interrupt handler again.  The c00af4dc is the
-address of the interrupt handler.......
+Sounds like time to upgrade to a BDI2000 (http://www.abatron.ch).  For
+your money you get a quality Ethernet JTAG probe with a telnet/GDB
+frontend and the best support I have every received from any tools
+vendor (HMI, EST, and Applied included).
 
+Going EST buys you into the famous Windriver support vacuum. :)
 
-	-- Dan
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
