@@ -1,33 +1,72 @@
-Message-Id: <5.1.0.14.0.20011120081828.03bcedb0@pop.gmx.de>
-Date: Tue, 20 Nov 2001 08:31:28 +0800
-To: linuxppc-embedded@lists.linuxppc.org
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: Re: About floating point exception!
-In-Reply-To: <20011119091232.84575.qmail@web15004.mail.bjs.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF70E57CE@AMWMAIL>
+From: Lucinda Schafer <lucsch@adaptivemicro.com>
+To: "'zjuzhou@yahoo.com.cn'" <zjuzhou@yahoo.com.cn>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Cc: Cindy Peters <cinpet@adaptivemicro.com>
+Subject: NIP at 1FFC
+Date: Tue, 20 Nov 2001 07:53:32 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 05:12 PM 11/19/2001 +0800, =?gb2312?q?Dross=20Zhou?= wrote:
->  Here is dump message:
->  Oops: Kernel Mode Software FPU Emulation, sig: 8
->  NIP: 00001FFC XER: 00000000 LR: 00000590 SP:
->  C05DDBC0
+We have dealt with a similar kernel panic with the NIP always being at
+1FFCh. After literally weeks of trying to figure it out, I put in a
+"band-aid" of sorts that seems to work with no ill effects. You might want
+to try it, as well.
 
-The floating point exception is to emulate floating point machine
-instructions on processors without floating-point unit. Each time the
-processors tries to execute a instruction it doesn't know, this exception
-is thrown to let the operating system do a software emulation.
+The NIP gets decremented somehow as it jumps to 2000h on a syscall. I only
+found one place in the kernel where the NIP purposely gets decremented, but
+I couldn't make a hard connection to explain the problem.
 
-In your case, this means that this unknown instruction has been found at
-the instruction pointer (NIP) 00001FFC. If it is really a floating-point
-instruction and the FP-emulation is enabled in the kernel, you don't get an
-error message. So at 0x1ffc must be an completely unknown intruction. This
-is often caused by accessing invalid memory.
+We posted this problem previously, and it got dismissed by others as a
+hardware problem.
 
-Probably you have a problem with your device driver or with the signal handler.
+In the powerpc-linux/linux/arch/ppc/kernel/head.S file, add the lines marked
+/*LES 7/25/00*/ as shown:
 
+	STD_EXCEPTION(0x1300, Trap_13, InstructionBreakpoint)
+	STD_EXCEPTION(0x1400, SMI, SMIException)
+	STD_EXCEPTION(0x1500, Trap_15, UnknownException)
+	STD_EXCEPTION(0x1600, Trap_16, UnknownException)
+	STD_EXCEPTION(0x1700, Trap_17, TAUException)
+	STD_EXCEPTION(0x1800, Trap_18, UnknownException)
+	STD_EXCEPTION(0x1900, Trap_19, UnknownException)
+	STD_EXCEPTION(0x1a00, Trap_1a, UnknownException)
+	STD_EXCEPTION(0x1b00, Trap_1b, UnknownException)
+	STD_EXCEPTION(0x1c00, Trap_1c, UnknownException)
+	STD_EXCEPTION(0x1d00, Trap_1d, UnknownException)
+	STD_EXCEPTION(0x1e00, Trap_1e, UnknownException)
+	STD_EXCEPTION(0x1f00, Trap_1f, UnknownException)
+
+	. = 0x1FFC				/*LES 7/25/00*/
+	bl	transfer_to_handler	/*LES 7/25/00*/
+
+	STD_EXCEPTION(0x2000, RunMode, RunModeException)
+	STD_EXCEPTION(0x2100, Trap_21, UnknownException)
+	STD_EXCEPTION(0x2200, Trap_22, UnknownException)
+	STD_EXCEPTION(0x2300, Trap_23, UnknownException)
+	STD_EXCEPTION(0x2400, Trap_24, UnknownException)
+	STD_EXCEPTION(0x2500, Trap_25, UnknownException)
+	STD_EXCEPTION(0x2600, Trap_26, UnknownException)
+	STD_EXCEPTION(0x2700, Trap_27, UnknownException)
+	STD_EXCEPTION(0x2800, Trap_28, UnknownException)
+	STD_EXCEPTION(0x2900, Trap_29, UnknownException)
+	STD_EXCEPTION(0x2a00, Trap_2a, UnknownException)
+	STD_EXCEPTION(0x2b00, Trap_2b, UnknownException)
+	STD_EXCEPTION(0x2c00, Trap_2c, UnknownException)
+	STD_EXCEPTION(0x2d00, Trap_2d, UnknownException)
+	STD_EXCEPTION(0x2e00, Trap_2e, UnknownException)
+	STD_EXCEPTION(0x2f00, Trap_2f, UnknownException)
+
+	. = 0x3000
+
+
+Lucinda Schafer
+Staff Software Engineer
+Adaptive Micro-Ware, Inc.
+Fort Wayne, IN
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
