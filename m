@@ -1,86 +1,43 @@
-Message-Id: <200106281624.f5SGOL810414@stimpy.networkrobots.com>
-Date: Thu, 28 Jun 2001 09:28:28 -0700
-To: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>,
-	jtm@smoothsmoothie.com
-From: Paul White <pwhite@networkrobots.com>
-Subject: Re: (allocating non-cachable memory) (or More on the i82596)
-Cc: linuxppc-embedded@lists.linuxppc.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <3B3B634F.E6B9FBFC@mvista.com>
+Date: Thu, 28 Jun 2001 10:03:11 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Neil Wilson <NWILSON@Airspan.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Sandpoint 3 + MPC7450 + HHL2
+References: <E69FF45ADA3BD511A25900047623CC4F12AA76@JUPITER>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Justin,
+Neil Wilson wrote:
 
->From my recent experience, this does not work.   We have a device on our
-PCI bus which is
-DMAing to SDRAM, and so far I can't get anything to work without cache
-coherency
-support in the system controller.
+> Got it working now....
+>
+> Not sure if these fixes are just Sandpoint3 or MPC7450 or the combination,
+> but...
+>
+> 1) The openpic_init call in sandpoint_init_IRQ needs the offset argument to
+> get the SIO int setup.
 
-If you find anything out, please let me know.  I may end up adding a new
-memory queue
-for non-cacheable memory, and just use another BAT entry for some
-pre-defined amount
-of memory for a non-cacheable pool.  A new flag to kmalloc() could then be
-used to
-get non-cacheable memory.  Does anyone know if anything like this already
-exists, or
-if theres a much easier way around this??  I should hopefully get cache
-coherency
-working, but we have been unable to so far.  If I end up doing the work,
-I"ll post the patches
-here.
+Are you sure you want to do this???  The intsenses stuff in sandpoint_setup.c
+is the way it is for a very good reason.  Can you send me your patch so I can
+take a look?  Also, can you send the switch settings that you are using.
 
-Btw..  I attempted to disable cache, as well as simply set the RAM bat's to
-PAGE_NO_CACHE,
-however this does not work because the PowerPC will throw alignment
-exceptions whenever a
-cache instruction is called on either a non-cached memory region, or if
-caching is disabled.
-Just wanted to give you a heads up on this.
+> 2) I also needed to add a enable of the TBEN in HID0 (bit 0x04000000) just
+> to get the kernel to think about booting at all - I put this in the
+> decompress_kernel function.
 
-Paul W.
+I think that your sandpoint-specific boot head.S or somewhere else like that
+would be a much better choice than the ppc-generic decompress_kernel routine.
 
+> Do these sort of changes need pushing into the source tree ?, and if so
+> would anyone care to explain how a newcommer does this, thanks.
 
-At 04:52 AM 6/28/2001 -0400, Justin (Gus) Hurwitz wrote:
->
->Did yo ever get a reply to this? That sounds like just what I want to do
->(well, it sounds just like what our vxworks code does to do what I want to
->do, which I guess is good enough).
->
->TIA,
->--Gus
->
->On Tue, 26 Jun 2001 jtm@smoothsmoothie.com wrote:
->
->>
->> I am looking for a solution to a similar problem. I am writing a
->> driver for an FCC on the 8260 in transparent mode, and need
->> to allocate buffer memory. The buffer memory will get filled
->> via DMA, and therefore must not be cached. Will the following work
->> correctly?
->>
->> 	vaddr = kmalloc(BUF_SIZE, GFP_DMA);
->> 	paddr = __pa(vaddr);
->>
->> Thanks.
->> --
->> Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
->> monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
->> 		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
->
->
->
--------------------------------------------------------------
-Network Robots, Inc.         /--\               Paul H. White
-                           / ____ \
-4695 Chabot Dr. #200      / ( oo ) \       Software Developer
-Pleasanton, CA 94588     /   ----   \             Engineering
-(925) 924-8600           \   ----   /          (925) 580-4883
-                          \  V--V  /
-                           \      /
-                             \--/
+Let's hold off on this until people who have sandpoints can take a look.
+
+Mark
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
