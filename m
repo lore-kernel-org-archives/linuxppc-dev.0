@@ -1,74 +1,34 @@
-Message-ID: <3F61558F.EB3269C2@gdatech.co.in>
-Date: Fri, 12 Sep 2003 10:41:43 +0530
-From: Rakesh Jagota <j.rakesh@gdatech.co.in>
-MIME-Version: 1.0
-To: Andrew H Pham <apham@us.ibm.com>
-Cc: PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PPC 405
-References: <OF7C040EFE.8193D1AD-ON87256D9E.004AC2E5-86256D9E.004B099E@us.ibm.com>
+Date: Fri, 12 Sep 2003 08:50:16 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: "Curtis, Allen (by way of Allen Curtis <acurtis@onz.com>)" <Allen.Curtis@Thales-IFS.com>,
+	PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC8266ADS patch
+Message-ID: <20030912155016.GG13672@ip68-0-152-218.tc.ph.cox.net>
+References: <5.2.1.1.2.20030910174452.02767580@192.168.1.10> <3F5FEFA0.1080809@embeddededge.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3F5FEFA0.1080809@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi all,
-We are using linux from montvista (linux-2.4.17_mvl21). We are
-working on custom design board based on vulcan chip -stbx25xx
-(IBM405 ppc). The board name is redwood6.
-
-I am getting the following values
-
-in fuction:  handle_scancode()
-fg_console=0
-ttytab[fg_console]=NULL;
-
-what change i have  to do to get the keys on my serial console.
-Thanks in advance
-Rakesh
-
-Andrew H Pham wrote:
-
-> Rakesh,
+On Wed, Sep 10, 2003 at 11:44:32PM -0400, Dan Malek wrote:
 >
-> What kernel are you using?
+> Curtis, Allen (by way of Allen Curtis ) wrote:
 >
-> Andrew Pham
+> > Here is a patch to make MPC8266ADS its own platform. Instead of creating a
+> > new platforms/ads8266.h header, ....
 >
-> [ Rakesh Jagota <j.rakesh@gdatech.co.in> writes: ]
-> >
-> > i am trying to integrate IR keyboard to a custom board.
-> > I am having serial console on the boad.
-> >
-> > when i am calling handle_scancode in keyboard.c
-> > this statement,
-> >
-> >  void handle_scancode(unsigned char scancode, int down)
-> >  {
-> >  -----
-> >  tty = ttytab? ttytab[fg_console]: NULL;
-> >  ;
-> >  }
-> >
-> > returns tty=NULL
-> >
-> >           __init kbd_init(void)
-> >  {
-> >   ------
-> >   ------
-> >   ttytab = console_driver.table;
-> >  }
-> >
-> > in this fuction also ttytab[fg_console] is still NULL
-> >
-> > Is serial console is enough to keyboard?
-> >
-> > i have frambuffer support on my board. (without HW
-> >       graphic accelerator)
-> >
-> > How to enable the frambufffer console on my board.
-> >       (i am attaching the config file below)
-> [ omitted ]
->
+> Will the "other issues to be addressed" cause the need for more definitions
+> or further #ifdefs in the existing file?  If so, let's just go ahead and
+> create the new file now and just add to it later.
 
+And, better yet, why not just pull all of the ADS8266 bits in _devel now
+out to 2.4 proper?  (And, pretty please, for 2.6 as well? :))
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
