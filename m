@@ -1,29 +1,40 @@
-Message-ID: <3ADF426A.5E9C0EBD@sgi.com>
-Date: Thu, 19 Apr 2001 14:54:18 -0500
+Message-ID: <3ADF4386.3DCF6725@sgi.com>
+Date: Thu, 19 Apr 2001 14:59:02 -0500
 From: Steven Hein <ssh@sgi.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: 860 RTC support
-References: <3ADE0222.BF7F539C@sgi.com> <3ADE0501.321052F9@mvista.com> <3ADF1377.72242D3B@sgi.com> <3ADF3970.C015DB5D@mvista.com> <20010419124455.O13403@opus.bloom.county>
+References: <3ADE0222.BF7F539C@sgi.com> <3ADE0501.321052F9@mvista.com> <3ADF1377.72242D3B@sgi.com> <3ADF3970.C015DB5D@mvista.com> <3ADF3EA4.20802034@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Dan Malek wrote:
 >
-> I think I understand the question/problem too.  We'll see what else I've
-> got to work on as well. :)  Just checking, Steven have you tried to
-> enable the "PPC_RTC" driver and gotten this same incorrect behavior?
+> Well, hell.....what I used to do is now considered "userland
+> business."  I guess the right thing to do is create a /dev/rtc
+> that will manage the MPC8xx RTC.  Sorry I missed this as the
+> kernel evolved.
 >
+I know this isn't under your control, but......
 
-Tom,
+If this is the case (that setting the RTC is properly done through
+/dev/rtc using hwclock, etc.), then doing a "date --set" no longer
+sets the RTC, correct?  And it will never cause the RTC to be set?
 
-The only place I see references to PPC_RTC is in some of the PPC
-"defconfig" files. I don't see any other places where that is
-references in the 2.4.3 kernel.....
+.....Seems to me that separating the setting of the RTC from setting
+the kernel/system time is a Bad Idea.....There's probably more to it
+than that, or maybe "date --set" isn't considered a proper way to
+manipulate the system clock anymore (maybe it never was   :).
 
-Steve
+--
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
+Silicon Graphics, Inc.
+1168 Industrial Blvd.                 Phone: (715) 726-8410
+Chippewa Falls, WI 54729              Fax:   (715) 726-6715
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
