@@ -1,38 +1,40 @@
-Message-Id: <9902141703.AA37524@marc.watson.ibm.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bootstrap stuffs 
-In-Reply-To: Message from Benjamin Herrenschmidt <bh40@calva.net>
-   of "Sun, 14 Feb 1999 15:02:35 +0100." <19990214150235.030449@smtp.calvacom.fr>
-Date: Sun, 14 Feb 1999 12:03:40 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+In-Reply-To: <9902141703.AA37524@marc.watson.ibm.com>
+Date: Sun, 14 Feb 1999 19:58:05 +0100
+To: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: bootstrap stuffs
+Message-Id: <19990214195805.018190@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Benjamin Herrenschmidt writes:
+On Sun, Feb 14, 1999, David Edelsohn <dje@watson.ibm.com> wrote:
 
->> Are all of those "sync" instructions necessary in your code?
+>	For correctness, "sync" must be used, but for best performance,
+>"sync" should be used sparingly, only when necessary.
 
-Benjamin> Just paranoid. They were added around the interrupt switching to make
-Benjamin> sure to sync an eventual second processor and everything else before
-Benjamin> switching the MMU off. I beleive that for disabling the MMU, andi. is
-Benjamin> probably more efficient than my ori/andc pair, could you just explain my
-Benjamin> why you added &0xffff at it ?
+Ok thanks. In this specific case (jump to bootstrap), I don't really care
+about the performance loss introduced by a sync, I'll keep one just after
+the mtmsr to make sure that the interrupt switch is fully done before I
+hack with srr0 and the MMU.
 
-	"andi." only operates on halfword, so one needs to make sure that
-the constant is valid or the assembler will complain.  (~ 0x8000) will
-produce values in the upper half of the 32-bit word.  PowerPC immediate
-instructions apply to either the upper-half or lower-half of a 32-bit
-word. 
+For the relocatable code, I'll still unvestigate the issue for my own
+education, but I beleive I don't need it anymore, I just wrote most of
+the code in asm this morning ;-) (PPC asm is frightening at fist, but
+finally it was not so difficult).
 
-	For correctness, "sync" must be used, but for best performance,
-"sync" should be used sparingly, only when necessary.
+So thanks David and Michael (and thanks again to Terry Greeniaus), I now
+have all the elements I need to do what I want.
 
-	Michael's comment about the -mrelocatable flag are a more detailed
-answer to your question.
 
-David
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
