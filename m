@@ -1,52 +1,30 @@
+Message-ID: <4047B907.5070902@embeddededge.com>
+Date: Thu, 04 Mar 2004 18:17:27 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: uncached user space mapping with mmap() ???
-Date: Fri, 5 Mar 2004 12:02:34 +1300
-Message-ID: <A3240F62EF3C2749B1A25D3BC9548F4103EED2@ExchWENZ02.wenz.global.vpn>
-From: "Richard Williams" <richard_williams@stratexnet.com>
-To: "Dan Malek" <dan@embeddededge.com>,
-	"Steven Scholz" <steven.scholz@imc-berlin.de>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+To: Richard Williams <richard_williams@stratexnet.com>
+Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: uncached user space mapping with mmap() ???
+References: <A3240F62EF3C2749B1A25D3BC9548F4103EED2@ExchWENZ02.wenz.global.vpn>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Richard Williams wrote:
 
->> How could I do this on an MPC8xx?
->
->Open /dev/mem and just map the physical address of your
->registers.  You don't even need your own driver.  If you
->are mapping outside of the range of real memory, the mem
->driver will automatically give you uncached access.
+> I just tried this using pread....
 
-I just tried this using pread but it wont let me seek to memory locations >= 0x80000000. perror returns "Invalid argument". The seek offset is a signed long int which indicates that it was intended to be limited to less then 0x80000000.
+No, no.
 
-How do you access 3rd and 4th GB memory?
+Open /dev/mem and use mmap() to map your physical address:
 
-Richard
+   mmap(NULL, <page_size_bytes>, (PROT_READ|PROT_WRITE), MAP_SHARED, mem_fd, phys_addr);
 
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan
-Malek
-Sent: Friday, March 05, 2004 6:00 AM
-To: Steven Scholz
-Cc: LinuxPPC
-Subject: Re: uncached user space mapping with mmap() ???
-
-
-
-Steven Scholz wrote:
-
-> How could I do this on an MPC8xx?
-
-Open /dev/mem and just map the physical address of your
-registers.  You don't even need your own driver.  If you
-are mapping outside of the range of real memory, the mem
-driver will automatically give you uncached access.
+Then, use the pointer returned from mmap() as the base of your
+registers.
 
 
 	-- Dan
