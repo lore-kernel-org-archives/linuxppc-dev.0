@@ -1,13 +1,24 @@
-Return-Path: <mmporter@cox.net>
-Date: Sat, 25 Sep 2004 11:56:29 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Stephen Rothwell <sfr@ozlabs.org>
-Message-ID: <20040925115629.C11580@home.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A6D4F2BD6A
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Sep 2004 09:13:35 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20040925175739.GJ2107@smtp.west.cox.net>
 References: <20040923164655.0472a8b9.sfr@ozlabs.org>
+	<20040923233035.GH27238@smtp.west.cox.net>
+	<36b714c80409231731257ca5d0@mail.gmail.com>
+	<29D00F8B-0DC8-11D9-A0FB-000A95A0560C@penguinppc.org>
+	<DA7E9084-0DED-11D9-A74B-003065F9B7DC@embeddededge.com>
+	<20040924164146.GG2107@smtp.west.cox.net>
+	<1096081145.475.12.camel@gaston> <1096081315.576.15.camel@gaston>
+	<20040925175739.GJ2107@smtp.west.cox.net>
+Content-Type: text/plain
+Message-Id: <1096153951.475.23.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040923164655.0472a8b9.sfr@ozlabs.org>;
-	from sfr@ozlabs.org on Thu, Sep 23, 2004 at 04:46:55PM +1000
+Date: Sun, 26 Sep 2004 09:12:31 +1000
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: New mailing list specifically for embedded PowerPC development
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,58 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 23, 2004 at 04:46:55PM +1000, Stephen Rothwell wrote:
-> Hi all,
+On Sun, 2004-09-26 at 03:57, Tom Rini wrote:
+> On Sat, Sep 25, 2004 at 01:01:56PM +1000, Benjamin Herrenschmidt wrote:
 > 
-> After some representations, I have created linuxppc-embedded@ozlabs.org
-> for the discussion of all things to do with the development of Linux on
-> embedded PowerPC platforms.
+> > On Sat, 2004-09-25 at 12:59, Benjamin Herrenschmidt wrote:
+> > > I specifically asked for the split.
+> > 
+> > Oh, and another reason, which, though, is also a signal/noise
+> > ratio matter. I expect most patches addressing ppc32 to be CCed
+> > to linuxppc-dev. This is important for distro people to keep track
+> > of bug fixes that went in after the kernel version they decided to
+> > freeze on.
 > 
-> General Linux on PowerPC development discussions should, of course, remain
-> on this list.
+> Are you referring to the pmac distro people, the embedded distro people
+> or the 'other' distro people here?
 
-Let's try this a different way. :) Could you please add the following
-text to the mailman list pages? Any objections? I think this will clarify
-list usage as BenH would like it.
+The non-embedded ones
 
-linuxppc-dev
-------------
-This is the Linux on PowerPC developers' mailing list. It is
-free and open to all those interested in development of Linux
-on PowerPC hardware, but discussions/patches should pertain to
-software development for the kernel core ppc32 support and
-CHRP/Pmac/PReP platforms.   Any discussions/patches regarding
-embedded procesoors/platforms should be directed to the
-linuxppc-embedded list.
-
-Patches are welcomed, but please refrain from posting excessively
-large ones (40K is currently the limit for the entire message).
-Large patches should be made available at an accessible FTP or
-web site and the URL posted to this list. The list owner reserves
-the right to implement filtering of list messages, unsubscribe
-offenders, and/or otherwise prevent posting of messages to enforce
-the list charter.
------------------
-
-linuxppc-embedded
------------------
-This is the Linux on PowerPC embedded developers' mailing list.
-It is free and open to all those interested in development
-of Linux on embedded PowerPC hardware, but discussions/patches
-should pertain to software development for the kernel core ppc32
-embedded processor support and any driver/chip/board support for
-ppc32 based embedded systems. Any discussions/patches regarding
-generic core ppc32 support should be directed to the linuxppc-dev
-list.
-
-Patches are welcomed, but please refrain from posting excessively
-large ones (40K is currently the limit for the entire message).
-Large patches should be made available at an accessible FTP or
-web site and the URL posted to this list. The list owner reserves
-the right to implement filtering of list messages, unsubscribe
-offenders, and/or otherwise prevent posting of messages to enforce
-the list charter.
------------------
-
-Regards,
-Matt
+Ben.
