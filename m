@@ -1,29 +1,32 @@
-Date: Mon, 8 Mar 1999 10:58:09 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "Randall R. Schulz" <rrschulz@cris.com>
+Date: Mon, 8 Mar 1999 11:14:13 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Offer of Work on Blue G3 Port
-In-Reply-To: <v04011700b301bd4f1962@[206.173.232.34]>
-Message-ID: <Pine.LNX.4.03.9903081057550.8012-100000@mercator.cs.kuleuven.ac.be>
+Subject: Re: boot loader
+In-Reply-To: <Pine.LNX.3.96.990306180241.11833A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.HPP.3.96.990308110527.3871H-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2 Mar 1999, Randall R. Schulz wrote:
-> 	8.5 Gb SCSI (advertised as 9!)
 
-http://physics.nist.gov/cuu/Units/binary.html
 
-Greetings,
+On Sat, 6 Mar 1999, Cort Dougan wrote:
 
-						Geert
+> 
+> I haven't seen any candidate bootloaders so I'm starting with the current
+> arch/ppc/boot/
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Sorry about that. I did not have much time lately.
+
+> 
+> I did some cleanups today and committed them to cvs.  I'll put a tar file
+
+Which cvs ? 
+
+	Gabriel. 
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
