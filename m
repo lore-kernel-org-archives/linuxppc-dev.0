@@ -1,31 +1,37 @@
-Message-ID: <37FD998B.3D0E62B0@chpc.utah.edu>
-Date: Fri, 08 Oct 1999 01:13:16 -0600
-From: Lou Langholtz <ldl@chpc.utah.edu>
+Date: Fri, 8 Oct 1999 10:01:46 +0200 (MET DST)
+From: Nick Hibma <nick.hibma@jrc.it>
+Reply-To: Nick Hibma <nick.hibma@jrc.it>
+To: jingai <jingai@earthlink.net>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        linuxppc-user <linuxppc-user@lists.linuxppc.org>,
+        linux-usb <linux-usb@suse.com>
+Subject: Re: [linux-usb] Continuing USB Problems
+In-Reply-To: <199910080148.SAA15697@snipe.prod.itd.earthlink.net>
+Message-ID: <Pine.GS4.4.10.9910080959580.3456-100000@elect8>
 MIME-Version: 1.0
-To: Takashi Oe <toe@unlserve.unl.edu>
-Cc: Benjamin Herrenschmidt <bh40@calva.net>, Paul.Mackerras@cs.anu.edu.au,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: update on macserial/DMA
-References: <Pine.LNX.3.96LJ1.1b7.991005234830.1210A-100000@ofey.inetnebr.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe wrote:
+ > UMAX S900 (PowerMac clone), Entrega 4-port USB card (two root hubs, I 
+ > believe), Contour Designs Unimouse, and a MacAlly iKey keyboard.
 
-> Hi,
->
-> I re-wrote the serial DMA support code today and put the patch against
-> samba/vger linux-2.2.12 source trees (as of tonight) at
-> ftp://ppc.linux.or.jp/pub/users/toe/serial/.
-> I think the patch includes most of macserial patches (Ben's and Lou's
-> are in there, for sure) that I know of. . .
+Nope, one root hub (OHCI) and a Texas Instruments behind on 1 of the
+root ports. I haven't checked yet whether the other root port could be
+used as well.
 
-We should probably also clean up the two unneeded buf[64] allocations. These
-would be at lines 1535 and 1572 in Takashi Oe's macserial.c file. They've
-been left over for a few rounds now and I don't see how they're needed for
-anything.
+
+ > usb-ohci: 2 root hub ports found
+ > ohci_connect_change on port 0
+ > USB new device connect, assigned device number 1
+ > ohci_control_msg: timed out on pipe 80000080 cmd 80 6 100 0 8
+
+It looks like a problem in the hub driver.
+
+Nick
+-- 
+ISIS/STA, T.P.270, Joint Research Centre, 21020 Ispra, Italy
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
