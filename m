@@ -1,68 +1,86 @@
-Message-Id: <200008300937.KAA26644@hyperion.valhalla.net>
-Date: Wed, 30 Aug 2000 10:37:53 +0100
-Subject: Re: [PATCH] via-cuda (CUDA_COMBINED_FORMAT_IIC)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: mlan@cpu.lu
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Wed, 30 Aug 2000 11:48:11 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michel Lanners <mlan@cpu.lu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: asm in OF?
+In-Reply-To: <200008291737.TAA00677@piglet.grunz.lu>
+Message-ID: <Pine.HPX.4.10.10008301050220.15978-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Michel,
-
->> With the modified driver posted, the CUDA_COMBINED_FORMAT_IIC command
->> recognises that there is a device at address 0x8a - but returns all 0xff
->> bytes instead of the hoped for register contents :-(
->
-> Ah, ok. So you have been able to see the device... Are you sure that it does
-> return register contents? I'm no I2C specialist, but for PlanB, the video
-> chip on I2C can only return a single byte on a read request, not a stream of
-> data (like a register file). Also, that chip uses bit 0 of the address as
-> R/W flag, and, IIRC, bit 0 set to one indicates read. So, have you tried
-> reading from address 0x8b?
-
-I'm no i2c specialist either :-)  [just doing the Linux standard - learning
-about it as a consequence of wanting to to something completely different]
-
-The LSB being 1/0 (R/~W) is specified by the i2c standard.  The TDA7433
-should be able to do auto-increment (by setting 0x10 as the sub-address).
-However... I'm not sure (exactly) of the syntax of the
-CUDA_COMBINED_FORMAT_IIC command - I posted darwin-dev... but no useful
-replies.
-
->> I checked the TDA7433 data sheet and it should be able to do
->> COMBINED_FORMAT...
->
-> What exactly is COMBINED_FORMAT?
-
-Allows you to write to the chip followed by read (or vice versa) without
-changing i2c bus mastership - so you do something like
-
-aa ss <dd> aa|1  - which tells device aa that you want sub address ss (and
-maybe want to write data <dd> and then you read it...
-
->From the name of the command - I might have thought that I could read the
-regs with GET_SET_IIC - but I can't seem to make that work for any chip
-address (the COMBINED_FORMAT_IIC *does* work for a number of the addresses).
+On Tue, 29 Aug 2000, Michel Lanners wrote:
 
 >
->> Yes, there are different implementations for i2c on different models...
->> CUDA, PMU (PlanB and other mac-IO implementations).... and on the newer
->> machines "cereal" (and multiple i2c busses)...  if the ability to probe the
->> i2c bus is useful, I guess we'll have a few more drivers to update... :-)
+> Hi all,
 >
-> We could even provide a generic I2C interface (isn't that available on i386
-> already?)... Give the different buses numbers, ala PCI, have a list of
-> devices found on the bus, etc... Wouldn't that be a nice overkill? ;-))
+> Does anybody know how to embed machine code into an OF script (into
+> nvramrc, that is)? I suppose OF doesn't have an assembler built-in, so
+> machine code would be the only option.
 
-A common method is a good idea (in spite of your smilie...)   At the moment
-we have umpteen platform-dependent ways of doing power-down etc. etc.
+All the OF I have seen had the capability to build new words in asm, with
+a `code' definition IIRC. Maybe Apple's OF are crippled ?
 
-Apple have a "Platform Expert" motif where you call PE_read_IIC() and it
-buries the actual 'which driver' issue underneath...
+> For the curious, what I'm trying to do is get my box (7600 upgraded with
+> G3/300) to boot again from my IBM disk on the MESH SCSI bus. Right now,
+> it does that only if I run the G3 below 200 MHz, or the bus speed around
+> 40 MHz. Anything faster, and I can't access that disk on the MESH bus.
+> The external (53c96) is o, however... but much slower.
+>
+> So, I wanted to check whether using the L1 cache throttling mechanism to
+> slow down the CPU during boot would help anything... I can then release
+> the brake later, once Linux is up (which doesn't have any problem with
+> the MESH).
+>
+> To use the cache throttling, I need to access the ICTC register, but
+> there is no OF method to do that. So I would have to code one myself...
+>
+> Since it seems the OF MESH driver is at fault, I could try to patch that
+> one, but that seems like an even harder task...
+>
+> I could also try and copy other special register access methods (like
+> hid0@ and hid0!) if I knew how...
 
-Iain.
+On one of my MVME2600 boxes (the only one which I can still switch to Open
+Bug^WFirmware):
+
+ok see hid0@
+code hid0@
+e49110     stwu    r28,-4(r31)
+e49114     mfspr   r28,hid0
+e49118     bcctr   always
+ok see hid0!
+code hid0!
+e4912c     sync
+e49130     isync
+e49134     mtspr   hid0,r28
+e49138     isync
+e4913c     sync
+e49140     lwz     r28,0(r31)
+e49144     addi    r31,r31,4
+e49148     bcctr   always
+ok
+
+The syntax to build with an unknwown SPR is strange:
+code ictc@
+stwu r28,-4(r31)
+33f mfspr r28,*
+bcctr 20,0
+
+generates the correct code, since I don't have ictc spr defined.
+Otherwise mfspr 28,ictc might work. After this, I have:
+
+ok see ictc@
+code ictc@
+edcc5c     stwu    r28,-4(r31)
+edcc60     mfspr   r28,spr1017
+edcc64     bcctr   always
+ok
+
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
