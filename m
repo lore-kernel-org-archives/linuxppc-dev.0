@@ -1,56 +1,72 @@
-From: Jim Thompson <jim@musenki.com>
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A039C3797@SERVER1>
+From: Subodh Nijsure <SNijsure@SkyStream.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Reliable way of reseting 8xx
+Date: Fri, 8 Feb 2002 08:41:35 -0800 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15459.65390.787694.577725@gargle.gargle.HOWL>
-Date: Fri, 8 Feb 2002 10:40:14 -0600
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: Dan Malek <dan@embeddededge.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC107 I2C
-In-Reply-To: <20020208162309.395f7c2f.adrian@humboldt.co.uk>
-References: <20020208094057.799c099a.adrian@humboldt.co.uk>
-	<3C63F5A4.5070608@embeddededge.com>
-	<20020208162309.395f7c2f.adrian@humboldt.co.uk>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Adrian Cox writes:
->
-> On Fri, 08 Feb 2002 10:58:28 -0500
-> Dan Malek <dan@embeddededge.com> wrote:
->
-> > Adrian Cox wrote:
-> >
-> > > Does anybody know of an I2C driver for the MPC107?  The only clue I
-> > > found on Google (searching for "MPC107 linux i2c") was a post by Dan
-> > > Malek saying "I believe the code is lurking around somewhere".
-> >
-> > I wrote that :-)?  Must have been one of my more foggy days.  Any time
-> > a question like that is asked I scan the archives looking for tidbits of
-> > information.  I must have found someone that posted something about it.
->
-> Apparently so:
->
-> http://www.geocrawler.com/archives/3/8358/2001/9/0/6707253/
->
-> > I believe there is (was, it's harder to find these days without registration)
-> > software on Motorla's website to do this.  I tend to avoid sites that
-> > require a) registration and, b) Internet Exploder to work properly, so I
-> > don't know what is on their website these days.
->
-> I'll take a look. I find Motorola's website a complete pain to navigate,
-> so I try to avoid it as well. Searching for "+linux +i2c +mpc107" on
-> Motorola's site finds 5 documents, none of them relevant.
+Hello,
 
-No linux drivers, but the moto code (for the 8240) is in the ppcboot
-tree these days, and I know that gbios has enough of i2c up to read
-SODIMMs.
+On my 8xx board standard reboot doesn't seem to reboot the system. It resets
+the processor but it seems that
+8xx is entering debug mode. So I wrote following function which I thought
+could fix the problem. It
+"seems" to be working, can someone verify if my 8xx reset function below is
+correct?
 
-Did my question about EUMBBAR and the 8245's serial port(s) not make
-it out to the list?
+My understanding is the following I need to clear bit CHSTPE, enable the
+checkstop reset and cause
+a intentional machine check...
 
-Jim
+
+
+{
+	int nr = 0;
+	ulong msr, der, addr;
+	/* Ref. Page 15-31, Page 37-46 */
+
+#define SET_REGISTER( str, val ) \
+({ unsigned long __value = (val); \
+  asm volatile( str : : "r" (__value)); \
+    __value; })
+
+#define GET_REGISTER( str ) \
+({ unsigned long __value; \
+	asm volatile( str : "=r" (__value) : ); \
+	__value; })
+#define  SET_DER(val)    SET_REGISTER( "mtspr 149,%0", val )
+#define  GET_DER()       GET_REGISTER( "mfspr %0,149" )
+
+	der = GET_DER();
+	SET_DER(der & ~0x20000000 );	/* CLEAR THE CHSTPE bit in DER
+register */
+	immap->im_clkrst.car_plprcr |= 0x00000080; /* Checkstop Reset enable
+*/
+	/* Interrupts and MMU off */
+	__asm__ volatile ("mtspr    81, 0");
+	__asm__	volatile ("mfmsr    %0" : "=r"(msr));
+	msr &= ~0x1030;
+	__asm__ volatile ("mtmsr    %0" :: "r"(msr) );
+
+	/*
+	* Trying to execute the next instruction at a non-existing address
+	* should cause a machine check, resulting in reset??
+	*/
+	addr = ~0x0;
+	((void (*)(void ))addr)();
+	return nr;
+}
+
+
+
+/Subodh Nijsure
+Software Manager - Network Media Routers
+SkyStream Networks
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
