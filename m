@@ -1,57 +1,69 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Microcode patching
-Date: Mon, 11 Nov 2002 12:29:07 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E3193812E@kolkrabbi.flaga.is>
-From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@medcare.is>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: gdbserver and gdb cross debug?
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: jack.sun@bmrtech.com
+Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <3DCF5E9B.406F7565@bmrtech.com>
+References: <200210260458.g9Q4wpq15745@ftp1.mvista.com>
+	<3DCF5E9B.406F7565@bmrtech.com>
+Content-Type: text/plain
+Date: 11 Nov 2002 14:12:02 +0100
+Message-Id: <1037020322.22840.70.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I can deffinitly recomend the driver Joakim sent here. Works much better than the stock driver.
+On Mon, 2002-11-11 at 08:39, sjk wrote:
+>
+> Hi,
+>
+> I am porting Linux on EP405 board. So I use gdbserver and gdb to debug
+> applications,but only the first
+> breakpoint could be stopped.Then if i press 'step', the program will
+> execute to end straightforwardly . Any other breakpoints could not break
+> the execution.
+>
+> Please give me some advice!
 
-K.D.
+I did some testing on the devel source and with gdb from debian I got
+the same result. Strangely doing a next works ??
 
-> -----Original Message-----
-> From: Joakim Tjernlund [mailto:joakim.tjernlund@lumentis.se]
-> Sent: 8. nóvember 2002 15:56
-> To: Christian Schroeder; linuxppc-embedded@lists.linuxppc.org
-> Cc: reklies@mazet.de; linz@mazet.de
-> Subject: RE: Microcode patching
->
->
->
-> Hi
-> >
-> > Hi all,
-> >
-> > I've got a question regarding the mpc8xx microcode patches in
-> > arch/ppc/8xx_io/micropatch.c. We do need usb host mode, i2c and
-> > ethernet operation at the same time. As I understood, i can't load
-> > the microcode patches for usb sof generation and iic/spi together,
-> > because they "live" at the same address. Now my question:
-> What occurs
-> > if I don't load the ii2/spi patch. I do need the usb sof timing, but
-> > does the i2c-Interface work without the iic/spi patch ? As I read on
-> > the motorola webserver, the iic/spi is needed for
-> concurrent operation
-> > of scc ethernet and i2c. Does i2c work correctly without
-> the patch if
-> > I don't use ethernet ?
->
-> I2C will work fine without I2C microcode patch if you don't
-> use ethernet on SCC1
->
-> Also, I submitted a new i2c-algo-8xx.c driver to this list
-> about 2 weeks ago. It contains
-> sevral bug fixes and improvements. It's not in linuxppc BK
-> yet, but I think it will be soon.
->
->     Jocke
->
->
+I turned off bdi and kgdb but still got the same problem. From reading
+kernel/ptrace.c it dose look like the only problem should be single
+step. The problem is probably that there exist some return path to user
+space where we miss restoring the msr or debug register but I have to
+look deeper into this.
+
+Do somebody have testing code for ptrace?? running gdb is a bit heavy
+I'm not even sure it's the single step that is wrong.
+
+Also I tried to cross compile gdb5.2 and that did not work as I want
+both host and target to be the same and build to be set to i386 but host
+and build is the same in the makefile :(
+
+Has anybody tried the bdi2000 is that also broken now ?
+
+What version and patches do people use for gdb on 4xx ?
+
+Strace do not use singlestep but still fails spectacularly when I tested
+with my main application. I did not expect tracing an app to make this
+app fail to run. tracing simple shell commands like ls works just fine.
+
+What type of problems should I expect to have with strace ?
+
+
+
+/me really should get my toolchain in order but print(f|k) is so much
+easier to use than first fix the debugger :(
+
+
+
+--
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
