@@ -1,20 +1,18 @@
-Return-Path: <jean.nicollerat@microdev.ch>
-Received: from srv.brk07.com (srv.brk07.com [213.221.157.88])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25FDC67A6C
+Return-Path: <jcd@tribudubois.net>
+Received: from mc.com (iris-63.mc.com [63.96.239.141])
+	by ozlabs.org (Postfix) with ESMTP id 36CCE67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 20:26:45 +1100 (EST)
-From: "Jean Nicollerat MD" <jean.nicollerat@microdev.ch>
-To: <wd@denx.de>
-Date: Thu, 17 Mar 2005 10:27:07 +0100
-Message-ID: <HMECJAKDCPLOGPDHNAHEAEKHCAAA.jean.nicollerat@microdev.ch>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20050317083415.4BCD5C1510@atlas.denx.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@ozlabs.org>
-Subject: RE: RTC with TQM823L 
+	Thu, 17 Mar 2005 21:04:45 +1100 (EST)
+From: Jean-Christophe Dubois <jcd@tribudubois.net>
+To: scarayol@assystembrime.com
+In-Reply-To: <OFF0E6C961.C5D53940-ONC1256FC7.002D9E1C@brime.fr>
+References: <OFF0E6C961.C5D53940-ONC1256FC7.002D9E1C@brime.fr>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 17 Mar 2005 10:57:20 +0100
+Message-Id: <1111053440.5587.31.camel@fr-jdubois1.ad.mc.com>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mapping large amount of memory on physical addresses
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,81 +23,82 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for your answer.
-I'm used to program on processor without OS. I want try linux to use linux
-to have have LCD, ethernet, USB, ... , dirvers.
-I have to read message that comme on the CAN bus every 2ms. Then I have to
-show values on the LCD and transfers some message on the RS232.
-I need a timer to the check the reception of the messages.
-I seem it is difficult with linux. I will try with the RTAI.
+Hello Sophie,
 
-regards
-Jean Nicollerat
+If you really need the 36MB block in DV to be a physically contiguous
+memory block one possible simple solution would be to exclude both high
+memory blocks from Linux at boot time with mem=3D220M on the cmdline.
 
-regards
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de]
-Sent: Thursday, March 17, 2005 9:34 AM
-To: Jean Nicollerat MD
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: RTC with TQM823L
+Then you could write 2 simple mapping drivers for the DV and MC memory
+blocks. This would allow you to map the 2 areas from user space and copy
+data back and forth. The drivers you would write would not do ioremap()
+but rather remap_page_range() in the implementation of the mmap()
+function.
 
+Now I am not sure if you want to use the PPC to transfer data between
+the 2 areas or if you have some other hardware mean to do it. If so you
+could also integrate this in your driver.
 
-In message <HMECJAKDCPLOGPDHNAHECEKFCAAA.jean.nicollerat@microdev.ch> you
-wrote:
->
-> I need to have an interrup every 10ms in my application running in linux.
+Now if you don't really care if the 36MB block is physically contiguous
+(but only logically contiguous and physically scattered), you would
+write only the MC driver part and use standard memory allocation for the
+36MB block (with the drawback that you will not be necessarily sure to
+be able to allocate such memory block as it would not be
+pre-allocated/reserved and it depends if there is enough free space at
+the allocation time. So pre-allocation at boot time could be your best
+bet anyway).
 
-This is  an  oxymoron.  Interrups  are  processed  in  kernel  space,
-applications  are running in userspace. You cannot process interrupts
-in aplication code.
+Regards
 
-> I try to use the RTC modules but with the code :
->
-> 	fd = open ("/dev/rtc", O_RDONLY);
->
-> 	if (fd ==  -1) {
-> 		perror("/dev/rtc");
-> 	}
-> 	/* Turn on update interrupts (one per second) */
-
-You mentioned you wanted signals (not interrupts) every 10  millisec,
-not every second -- what exactly is it that you want?
-
-> 	retval = ioctl(fd, RTC_UIE_ON, 0);
-...
->   ioctl : invalide argument # for then line :"retval = ioctl(fd,
-RTC_UIE_ON,
-> 0);"
-
-Which means that the driver does not support this ioctl.
-
-> Can somebody help ? why it is not working or a better way to get function
-> called each 10ms
-
-You can use setitimer. But be  warned.  Your  requirement  of  having
-signals  every  10 milliseconds means that there is a serious problem
-with your software design. You  are  doing  someting  really,  really
-wrong.  To  me  it  sounds  as if you try to implement your own timer
-based control loop in user space with an insane  smapp  period.  This
-will  never  work  reliably (as there is no guarantee that your tasks
-will be scheduled in time), and will waste a lot of CPU power.
-
-Never take existing software  designs  from  other  operating  system
-environments  and  put them without thinking into a Unix environment.
-Often there are much better and more efficient approaches in Unix.
-
-
-Just in case you really must stick with that 10  millisecond  raster:
-in  this  case  you  will  probably have to use RTAI (especially on a
-resource-limted CPU like the 823).
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The trouble with our times is that the future is not what it used  to
-be.                                                     - Paul Valery
+JC
+ =20
+On Thu, 2005-03-17 at 09:51 +0100, scarayol@assystembrime.com wrote:
+> Hello,
+>=20
+> Could you help me : I work on embedded Linux on a MPC885 processor
+> (PowerPC). On my embedded system, i have 2 different components of RAM. O=
+ne
+> (name =3D DV, total size of 256 MB ) is only accessed by the processor, t=
+he
+> other (name =3D MC, size =3D 2MB on the top of the RAM) is also access by=
+ an
+> FPGA. I want to do data transferts between each others. For that, I have =
+to
+> allocate a big structure on DV for a size of 36 MB.
+> - Could I do like that to have contiguous memory on DV ?
+> For MC, it would be more complicated : I have to map on the physical
+> adresses of MC (for example 1300 0000-13FF FFFF) in order to be sure that
+> the memory will be really allocated on MC and not on DV (as there is enou=
+gh
+> place on DV).
+> - How can I do that ?
+> - Do I have to write a driver and use ioremap on the physical address of =
+MC
+> (with reserving the top of memory with 'mem=3D' at boot time) ? Can i use
+> physical addresses with ioremap or is it only virtual addresses ?
+> I think i can reserve the memory early in boot via the bootmem allocator
+> but i think it isn't with physical addresses only an amount of memory and
+> it's only forbdrivers directly linked in  the kernel image and i want a
+> module.
+> - Is there another solution to do that ?
+>=20
+> Thank you really for your help.
+>=20
+> Best regards.
+>=20
+> ----------------------------------------------------------
+> Sophie CARAYOL
+>=20
+> TECHNOLOGIES & SYSTEMES
+> 50 rue du Pr=C3=A9sident Sadate
+> F - 29337 QUIMPER CEDEX
+>=20
+> T=C3=A9l: +33 2 98 10 30 06
+> mailto:scarayol@assystembrime.com
+> ----------------------------------------------------------
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
