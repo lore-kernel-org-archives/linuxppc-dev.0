@@ -1,42 +1,26 @@
-Subject: Re: Howto login without PAM authentication?
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <F100yCBCpIP6EeaLQBs00012c26@hotmail.com>
-References: <F100yCBCpIP6EeaLQBs00012c26@hotmail.com>
-Content-Type: text/plain
-Date: 18 Dec 2002 10:14:52 +0000
-Message-Id: <1040206492.31830.4414.camel@zambia>
-Mime-Version: 1.0
+Message-ID: <3E00559F.2000808@galileo.co.il>
+Date: Wed, 18 Dec 2002 13:01:51 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
+MIME-Version: 1.0
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Roland Dreier <roland@topspin.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Discovery II (was Re: Support for Arctic platform (405LP based))
+References: <20021213043628.GI21319@zax.zax>	<20021212215126.V23952@duath.fsmlabs.com>	<20021213151808.GI19456@opus.bloom.county>	<20021215121526.M30941@duath.fsmlabs.com>	<15869.5023.549830.146265@argo.ozlabs.ibm.com>	<20021215174120.E30568@duath.fsmlabs.com>	<20021216150442.GJ6095@opus.bloom.county>	<20021216150839.GK6095@opus.bloom.county> <52smwyorqi.fsf_-_@topspin.com> <3DFDCB00.7060509@mvista.com>
+In-Reply-To: <3DFDCB00.7060509@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Enrico,
+> Rabeeh Khoury from Marvell has done a port to it and put it in the
+> linux-galileo tree.  I have no hardware to test it but Rabeeh says that
+> its been working fine for him for some time.
 
-I don't know about ELDK - we're using SELF - but I suspect that it uses
-busybox.  If so, then just build "login" as part of busybox (to do this
-you must edit the busybox/Config.in file,) then add the following line
-to your /etc/inittab:
 
-ttyS0::respawn:/sbin/login
-
-This is what we have done and we don't have any PAM libraries on our
-system at all.
-
-Alex
-
-PS We're using a plain /etc/password file without shadowing
-
-On Tue, 2002-12-17 at 09:14, Enrico Serretti wrote:
->
-> Hi all,
-> we are using ELDK environment. We would like use login authentication
-> without PAM libraries. Had anybody done it ?
->
-> Thanks,
-> Enrico.
->
->
+I have the DB-64360 (Development board based on MV64360 part) working
+fine with the support for the development board and the gigE ethernet.
+I mainly have tested this with 7455 CPUs. I also tested it with dual 7455
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
