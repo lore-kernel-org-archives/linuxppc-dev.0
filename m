@@ -1,41 +1,44 @@
-Date: Sun, 3 Jan 1999 15:49:21 -0700 (MST)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: linuxppc-user@lists.linuxppc.org
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: GNOME Linux/PPC RPMS 
-Message-ID: <Pine.LNX.3.96.990103154837.21152A-100000@newhope.terraplex.com>
+Date: Sun, 3 Jan 1999 19:31:49 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+Reply-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Sam Quigley <osquigle@cs.uchicago.edu>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: FTP Problems
+In-Reply-To: <o9un240gfbb.fsf@yeenoghu.cs.uchicago.edu>
+Message-ID: <Pine.LNX.3.96L.990103184911.3513C-100000@unix49.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey everyone,
+On 3 Jan 1999, Sam Quigley wrote:
 
-I have the 0.99.{0,1} RPMS built for Linux/PPC.
-They are available at ftp://linuxppc.cs.nmt.edu/pub/linuxppc/gnome/ppc/
+> > OK, so it can't open the RPMS database, right? Can you switch to virtual
+> > console 3 (Cmd-F3) or 4 and see if there's a specific error listed? That
+> > might be a little more helpful than the installer errors message.
+> 
+> I have this problem too: the error reported is, on console 3:
+> 
+> * ugFindUpgradePackages() ...
+> * failed opening /mnt/var/lib/rpm/packages.rpm
+> 
+> the installer warns that 'an error occurred during step "Choose
+> packages to upgrade"', but also has a stray line reading
+> "/mnt/var/lib/rpm/nameindex.rpm:" on the background.  (this is,
+> presumably, an error message from something other than the installer)
+> 
+> I can cat packages.rpm fine from the console.
 
-This is the main distribution site for GNOME RPMS for the Linux/PPC
-platform.
+Hmm. I am *not* an expert on the RedHat installer, but what's in packages.rpm?
+And how about nameindex.rpm?
 
-If there are any Linux/PPC specific bugs that you find while using GNOME,
-please let me know.
+I expect we'll get a little help once people get settled after MacWorld. Which
+reminds me, I was hoping I could get a list of the various people working on
+R5 and what they're doing. Just curious, plus it would make it easy to have a
+dialogue with the person(s) working on the RedHat installer.
 
-Please note, these RPMS are linked against glibc 2.0.108 and
-gtk+ 1.1.11, but if someone would like to build the latest GNOME stuff for
-an older version of glibc, please let me know and we'll get the RPMS up on
-the site.
-
-Dan
-
-
-Terra Firma Design & Terra Soft Solutions
-
- voice   (970) 416-9821 in Fort Collins
- email   dburcaw@terraplex.com
- website http://www.terraplex.com/
-
-
+-Hollis
 
 
 
