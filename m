@@ -1,40 +1,41 @@
-Message-ID: <398A1BE9.BFAFDF57@cyclades.com>
-Date: Thu, 03 Aug 2000 18:27:05 -0700
-From: "Edson Ap. Seabra" <seabra@cyclades.com>
+Message-ID: <006c01bffdbc$802f0f70$1a0210ac@r2d2>
+From: "Todd C. Larsen" <tlarsen@openbits.net>
+To: "LinuxPPC Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: What 405 and MPC740/MPC106 reference boards should I buy for LinuxPPC embedded development?
+Date: Thu, 3 Aug 2000 19:34:22 -0700
 MIME-Version: 1.0
-To: Linux List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Ramdisk using libc5
-References: <20000725004105.DDC919D@elph.research.canon.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am having two problems running the  "mklibs.sh":
+I'm interested in purchasing reference or evaluation boards for two
+different PowerPC implementations that are reasonably good choices
+as LinuxPPC targets.
 
-1) The script asks for files libxxx_pic.a and I do not know how to generate or to get them...
+The first target is an IBM 405GP.  I've noticed that MontaVista has
+been working with the Walnut board, and I'm wondering if this is
+the best (or just *only*) evaluation board to use.
 
-2) The script calls a command "readlink" that is not available  in the Red Hat Linux 6.0
+The second target is an MPC740 with the MPC106 PCI bridge.  I've
+worked with the Yellowknife (both X2 and X4) in the past, with
+MPC603e and (I think) MPC740 PGA modules, but not with LinuxPPC.
+Was LinuxPPC ever running on the Yellowknife?
 
-Beside this I have replaced many files from the directory bin by the busybox. I could save about 0.5M.
+I've noticed that the Yellowknife may no longer be available (the
+documentation pages indicate they are "archival use only").  Is
+there another alternative for the MPC740/MPC106 combination,
+perhaps something from IBM?  The Sandpoint board won't work for
+me because there doesn't seem to be an MPC740/MPC106 module.
 
-Regards.
-Edson.
+For this second combination, the board doesn't need to be an
+evalation board per se, so I'm open to suggestions.
 
-Graham Stoney wrote:
-
-> Edson Ap. Seabra writes:
-> > This helps a lot. The libc now has 1.03 Mb ... I guess libc still have a lot
-> > of code that I don't need.  I have to find a easy way to strip them.
->
-> There is a magic script named mklibs.sh which removes unused functions from     the shared C library in the Debian Boot Floppies package, at:
->     ftp://ftp.us.debian.org/debian/dists/potato/main/source/admin/boot-floppies_2.2.16.tar.gz
->
-> Let us know how you go!
->
-> Regards,
-> Graham
->
+Thanks.
+______________________________________________________________________
+   Todd Larsen                                 realtime4aim  [AIM]
+   tlarsen@openbits.net
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
