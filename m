@@ -1,39 +1,36 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04020a08b57676893fce@[129.116.176.243]>
-In-Reply-To: <XFMail.000621153237.pochini@shiny.it>
-References: 
- <Pine.LNX.4.21.0006200827480.1155-100000@pegmatite.iu13.k12.pa.us>
-Date: Wed, 21 Jun 2000 08:44:33 -0500
-To: Giuliano Pochini <pochini@shiny.it>, linuxppc-dev@lists.linuxppc.org
-From: Mike DeSimone <desimone@arlut.utexas.edu>
-Subject: Re: Slow Adaptec
+Message-Id: <200006211723.NAA01191@p2.parker.boston.ma.us>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: lastest fsmlabs "linuxppc_2_3" won't build for 8XX
+Date: Wed, 21 Jun 2000 13:23:55 -0400
+From: Brad Parker <brad@parker.boston.ma.us>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Is there any boot parameter or so to make it work in "ultra" mode ?
+The lastest bk 2.3 tree (linuxppc_2_3) on the fsmlabs server won't build
+for 8XX.  This is the "-test1-ac21" tree (I love these version #'s)
 
-I think what you want is in this clip from
-/usr/src/linux/drivers/scsi/aic7xxx.c:
+arch/ppc/kernel/setup.c defines 3 globals conditionally.  If CONFIG_8XX is
+set they dont' get defined.  I just duped the defines from inside the
+conditional and now it compiles & links...  I have no idea if this is
+the right thing (yet - I'm about to boot it :-)
 
- *  A Boot time option was also added for not resetting the scsi bus.
- *
- *    Form:  aic7xxx=extended
- *           aic7xxx=no_reset
- *           aic7xxx=ultra
- *           aic7xxx=irq_trigger:[0,1]  # 0 edge, 1 level
- *           aic7xxx=verbose
- *
+-brad
 
-So you might try aic7xxx=ultra or aic7xxx=ultra,verbose.
+brad@hp kernel]$ bk diffs -u setup.c
+===== setup.c 1.38 vs edited =====
+--- 1.38/arch/ppc/kernel/setup.c	Mon Jun 19 15:01:47 2000
++++ edited/setup.c	Wed Jun 21 13:19:16 2000
+@@ -165,6 +165,10 @@
+ 	0,			/* orig-video-isVGA */
+ 	16			/* orig-video-points */
+ };
++
++int dcache_bsize;
++int icache_bsize;
++int ucache_bsize;
+ #endif /* !CONFIG_4xx && !CONFIG_8xx */
 
-I have no idea if this works or will even do anything; I just remember
-running across this when trying to debug a tape drive problem.
-_______________________________________________________________________________
-Mike DeSimone        Applied Research Laboratories: The University of Texas
-Research Engineer    Mail to: PO Box 8029       Shipments to: 10000 Burnet Rd.
-Sonar Development             Austin, TX 78713                Austin, TX 78758
-Office (512) 835-3061-------FAX (512) 835-3259--------desimone@arlut.utexas.edu
+ void machine_restart(char *cmd)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
