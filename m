@@ -1,26 +1,28 @@
-Message-ID: <20030406153032.55866.qmail@web41408.mail.yahoo.com>
-Date: Sun, 6 Apr 2003 08:30:32 -0700 (PDT)
+Message-ID: <20030406175811.8467.qmail@web41403.mail.yahoo.com>
+Date: Sun, 6 Apr 2003 10:58:11 -0700 (PDT)
 From: Aurel Wisse <aurel_wisse@yahoo.com>
-Subject: Status of OPTi 82C861
-To: linuxppc-dev@lists.linuxppc.org
+Subject: Stiatus of OPTi 82C861 controller
+To: linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+	linuxppcdev <linuxppc-dev@lists.linuxppc.org>,
+	yddev <yellowdog-devel@lists.terrasoftsolutions.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does somebody know the status of the development
-status for the workaround for the bug of this USB
-controller since 2.4.20-ben9?
+>From what I can see, there is no workaround yet in the
+usb-ohci source for the bug in the hc. However, there
+is a workaround in  the Darwin source which I want to
+look at (on an iMac).
 
-Otherwise, If I want to give it a shot, on which
-source shoud I work? 2.4.20-ben9 or 2.5.??
+Questions:
+If I want to work on this, which source tree should I
+use, the 2.4.21 or the 2.5.??
 
-I heard that the ohci code is about to be completely
-rewritten. I just want to make sure not to work in
-obsolete code.
-
-Thx,
+Anybody knows whether OPTi is out of business? The
+links to their Support and Contact pages don't work
+anymore.
 
 Aurel
 
