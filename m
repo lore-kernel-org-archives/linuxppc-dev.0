@@ -1,54 +1,63 @@
-Date: Fri, 10 Aug 2001 10:38:04 +0200 (CEST)
+Date: Fri, 10 Aug 2001 10:41:39 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Matt Porter <mporter@mvista.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Hollis <hollis-lists@austin.rr.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP and generic PCI resource assignment
-In-Reply-To: <20010809091402.A11768@beef.az.mvista.com>
-Message-ID: <Pine.LNX.4.05.10108101034110.2083-100000@callisto.of.borg>
+To: Hollis Blanchard <hollis@austin.ibm.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: VGA console endian bug
+In-Reply-To: <20010809115233.D23147@austin.ibm.com>
+Message-ID: <Pine.LNX.4.05.10108101040060.2083-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 9 Aug 2001, Matt Porter wrote:
-> On Thu, Aug 09, 2001 at 12:18:33PM +0200, Benjamin Herrenschmidt wrote:
-> > >At any rate, relocating PCI resource 1 on this controller from 0x0 to
-> > >0x01000000 causes my VGA console to go backwards endian. I don't know why
-> > >this would be the case... Re-moving it back to 0x0 fixes the symptom. Any
-> > >ideas on why this could happen? I think VGA is all IO, no memory at all?
-> >
-> > VGA is both IO and memory. It's possible that your VGA card is so broken
-> > that it only use the low-order bits of addresses and use the high addresses
-> > as flags, for example to access a "bug endian" aperture :) That would suck
-> > as it would mean you actually have address aliasing going on on the bus,
-> > possiby causing weird conflicts.
-> >
-> > >I'm curious about PCIBIOS_MIN_MEM... Why does that exist, and why was it
-> > >given that value?
-> >
-> > Note sure, I don't really like the way it's used and hard coded....
+On Thu, 9 Aug 2001, Hollis Blanchard wrote:
+> These two patches came from Daniel Berlin on July 9. They completely resolve
+> the VGA console backwards-endian problem for me on PPC. If they have Geert's
+> seal of approval ;) can they be committed?
 >
-> That "generic" code has caused me a number of problem on many PCI
-> equipped embedded platforms (not just PPC ones).  The algorithm
-> used to pick PCI Mem space addresses ignores the fact that there are
-> specific areas in CPU address space captured to generate mem cycles.
-> >From my read of the code, it simply picks any old address that's
-> not claimed by another resource starting at PCIBIOS_MIN_MEM.  That's
-> braindead and probably just another x86ism that'll work on those
-> platforms.
+> -Hollis
+>
+> --- linuxppc_2_4_devel/include/asm-ppc/vga.h.old	Thu Aug  9 11:49:23 2001
+> +++ linuxppc_2_4_devel/include/asm-ppc/vga.h	Thu Aug  9 11:49:42 2001
+> @@ -37,6 +37,9 @@
+>
+>  #define VT_BUF_HAVE_MEMCPYW
+>  #define scr_memcpyw	memcpy
+> +#define VT_BUF_HAVE_MEMCPYF
+> +#define scr_memcpyw_to memcpy
+> +#define scr_memcpyw_from memcpy
+>
+>  #endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
 
-You should initialize the parent pointers in the PCI bus structure with
-pointers to resources containing the correct region.
+The first I cannot approve: if scr_{write,read}w() swap bytes, how can it work
+if scr_memcpyw_{to,from}() don't swap bytes?
 
-I once hardcoded the parents for the LongTrail, but that code is gone. Now it
-tries to set up the parents from information in the OF device, which works
-more or less. There are (or were, read as in `were the last time I tried it, a
-few months ago) still some problems, though. One of them is that the hardcoded
-ISA motherboard resources (i8259 and legacy stuff) are requested before PCI
-resources are done, and that the PCI bus parent resources were not requested
-and thus don't appear in the full resource tree.
+> --- linuxppc_2_4_devel/drivers/video/fbcon.c.old	Thu Aug  9 11:45:10 2001
+> +++ linuxppc_2_4_devel/drivers/video/fbcon.c	Thu Aug  9 11:46:23 2001
+> @@ -2028,13 +2028,13 @@
+>  	if (!conp->vc_can_do_color)
+>  	    *p++ ^= 0x0800;
+>  	else if (conp->vc_hi_font_mask == 0x100) {
+> -	    u16 a = *p;
+> +	    u16 a = scr_read(p);
+>  	    a = ((a) & 0x11ff) | (((a) & 0xe000) >> 4) | (((a) & 0x0e00) << 4);
+> -	    *p++ = a;
+> +	    scr_write(a, p++);
+>  	} else {
+> -	    u16 a = *p;
+> +	    u16 a = scr_read(p);
+>  	    a = ((a) & 0x88ff) | (((a) & 0x7000) >> 4) | (((a) & 0x0700) << 4);
+> -	    *p++ = a;
+> +	    scr_write(a, p++);
+>  	}
+>  	if (p == (u16 *)softback_end)
+>  	    p = (u16 *)softback_buf;
+
+Approved :-)
+
+And where's the 3rd patch? I once posted a patch to fix a similar bug in
+drivers/char/console.c.
 
 Gr{oetje,eeting}s,
 
