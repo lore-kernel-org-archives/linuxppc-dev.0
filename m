@@ -2,12 +2,14 @@ Subject: Re: ATM driver for 8260 (linux 2.4.x)
 From: James Campbell <jcampbell@omnigon.com>
 To: linuxppc-embedded@lists.linuxppc.org
 Cc: linux-atm-general@lists.sourceforge.net
-In-Reply-To: <3C1DC1F3.844C7B18@cambridgebroadband.com>
+In-Reply-To: <3C1E205B.C68F12AF@cambridgebroadband.com>
 References: <20011215162000.1813.qmail@web9705.mail.yahoo.com>
 	<3C1DC1F3.844C7B18@cambridgebroadband.com>
+	<1008606453.1383.1.camel@skoll.omnigon.com>
+	<3C1E205B.C68F12AF@cambridgebroadband.com>
 Content-Type: text/plain
-Date: 17 Dec 2001 08:27:33 -0800
-Message-Id: <1008606453.1383.1.camel@skoll.omnigon.com>
+Date: 17 Dec 2001 08:52:02 -0800
+Message-Id: <1008607923.1310.3.camel@skoll.omnigon.com>
 Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -15,37 +17,36 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hello,
 
-I've ported the 860sar for the MPC8260 under 2.4.16.
+I'll change it so you can have either the 8260 or the 860 using one
+driver, the changes really are not that dramatic.
 
-It currently supports AAL0, AAL1, Semi-working Forward Error Correction
-AAL1 and AAL5.
-
-Let me clean it up a bit, and I'll post a patch.
+As far as AAL1 is concerned, the product we are making is very sensitive
+to bad data, so QoS is very important to us.  AAL1 at this time is sort
+of kludgy, but it works, most of the time. =]  We are using an offshoot
+of tornado codes in forward error correcting to just hose a pipe, which
+works real well with atm.  Its a patch off ATM 0.78, if anyone is
+interested.
 
 Cheers,
 
 James Campbell
 
-On Mon, 2001-12-17 at 01:59, Alex Zeffertt wrote:
+
+On Mon, 2001-12-17 at 08:42, Alex Zeffertt wrote:
 >
-> Hello None (!)
+> Bloody hell, that was quick.
 >
-> I have written a driver for the 860 (http://mpc860sar.sourceforge.net).  This supports linux 2.4.4.
-> If you fail to find something written specifically for the 8260 you may want to try porting this.
+> Did you make a lot of changes?  If the answer is no, then maybe you could make it a configuration
+> option in arch/ppc/atm/Config.in.  If you can do this in a way that doesn't effect the code when the
+> user chooses 860 (as opposed to 8260), I'll put it up on sourceforge CVS.
 >
 > Alex
 >
-> None Atall wrote:
-> >
-> > Where can I find a ATM driver for 8260,
-> > for 2.4.x kernel? Has anyone imported any?
-> > I have a Motorola ADS 8260 board.
-> >
-> >                            Thanks.
-> >                             D. Meidanis
-> >
+> PS What do you mean when you say it supports AAL1?  I thought that linux currently only supported
+> AAL0 and AAL5.
 >
 >
+
 --
 James Campbell          -|-   Embedded Systems Engineer
 jcampbell@omnigon.com   -|-     Omnigon International
