@@ -1,15 +1,19 @@
-Return-Path: <TNghiem@oerlikon.ca>
-Received: from mail.oerlikon.ca (unknown [205.233.198.228])
-	by ozlabs.org (Postfix) with ESMTP id DFBF12BEA0
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Nov 2004 08:43:24 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Tue, 2 Nov 2004 16:31:06 -0500
-Message-ID: <AE20493C16DE7F46BC29B257C8D708D3202B4F@mail.oerlikon.ca>
-From: "Nghiem, Tien" <TNghiem@oerlikon.ca>
-To: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-Subject: PCI's clock on Lite5200
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B00D22BDF2
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Nov 2004 12:57:16 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arrigo Benedetti <arrigo@bologna.vision.caltech.edu>
+In-Reply-To: <4187D1DE.90203@vision.caltech.edu>
+References: <4187D1DE.90203@vision.caltech.edu>
+Content-Type: text/plain
+Date: Wed, 03 Nov 2004 12:49:27 +1100
+Message-Id: <1099446567.31630.21.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: G5 clock frequency scaling
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,22 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Everyone,
+On Tue, 2004-11-02 at 10:28 -0800, Arrigo Benedetti wrote:
+> Does anyone know if the current IBM 970 chips in dual G5 Powermacs and 
+> Xserves is under any clock frequency
+> scaling control? In other words, is the clock freuquency always 
+> guardanteed to be the nominal, or it may change
+> based on temperature? If this is the case, does the linux kernel have 
+> any control on it?
 
-I have successfully boot Linux 2.4.22 on my Lite5200 Evaluation Board =
-with the ELDK, the PCI's clock is 66MHz. I would like to change it to =
-33MHz. The register to be modified is the CDM register but I cannot =
-found where I can modify it in the source code. Could anyone tell me =
-where it is?
+The current desktop models have a "clock slewing" capability which isn't
+used by the kernel at this point. So the machine stays at the speed it
+had when booting.
 
-Thank you
+However, it's been observed that the firmware tend to boot at max speed
+when auto-booting, and at lowest speed (1.3Ghz generally observed) when
+entering the OF manual command line interface.
 
-Tien Nghiem
-Software Developer
-
-Oerlikon Contraves Inc.
-225, Boul.Seminaire Sud
-St-Jean-sur-Richelieu(Quebec)
-J3B 8E9
-
-Tnghiem@oerlikon.ca
+Ben.
