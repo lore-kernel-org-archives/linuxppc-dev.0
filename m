@@ -1,38 +1,54 @@
-To: Dan Malek <dan@mvista.com>
-Cc: Kevin Fry <kevin@carts.com>, Laura Dean <tralad@yahoo.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ramdisk for rpx-lite 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 30 Apr 2001 17:56:01 EDT."
-             <3AEDDF71.28439605@mvista.com>
-Date: Tue, 01 May 2001 00:21:26 +0200
-Message-Id: <20010430222131.9EAC32814D@denx.denx.de>
+Message-ID: <3AEDEABC.F288060C@mvista.com>
+Date: Mon, 30 Apr 2001 18:44:12 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: "Albert D. Cahalan" <acahalan@cs.uml.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org, cort@fsmlabs.com,
+	Alexandre.Nikolaev@matrox.com
+Subject: Re: ppc little-endian port
+References: <200104302214.f3UMEsn143131@saturn.cs.uml.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3AEDDF71.28439605@mvista.com> you wrote:
->
-> Kevin Fry wrote:
-> >
-> > I too am looking for a pre-setup ramdisk .  But I'm looking for the one
-> > mentioned that exists for Monta Vista. 2.4.0 kernel.
->
-> I don't know who would have mentioned such a thing, because I'm not
-> aware of one.  I just install a few of the RPMs, strip the libraries,
+"Albert D. Cahalan" wrote:
 
-We have an example ramdisk image on our FTP server (to be  used  with
-PPCBoot, but you can strip off the 64 byte header easily:
-	dd if=SIMPLE-PPCBOOT-ramdisk of=ramdisk.image.gz bs=64 skip=1
-);  see ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SIMPLE-PPCBOOT-ramdisk
+> Huh? This is the linuxppc-embedded list if I'm not mistaken.
 
-Wolfgang Denk
+Well, it was originally created for developers to discuss embedded
+PowerPC Linux kernel issues.  It wasn't appropriate to discuss that
+on the workstation list, although some of us participate on all lists
+to ensure nothing is missed.  This list has since turned into a support
+desk function, which isn't the intention.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-To be a winner, all you need to give is all you have.
+> Do you mean that this discussion belongs on a list where the
+> workstation developers can participate?
+
+No, not even there.  There are developer lists for tools, libraries
+and applications.  You need to find the places where the developers
+for the compilers, binutils, libraries and such hang out.  We seldom
+discuss any of that here, unless there is some kernel interface issue
+that has to be coordinated with them.
+
+
+> Dropping little-endian would seriously piss off Motorola's #2
+> customer for high-end PowerPC chips.
+
+...and who may that be?  A #2 customer should have high visibility
+here (and I've seen the list, so I would like to know where people
+really think they are on it).
+
+> The normal order of the world is little-endian, given the
+> dominance of PCI and PC data formats. Big-endian is a mistake
+> that won't die because it was written into network standards.
+
+You don't get out much, do you :-)?  Lighten up a little, this
+is supposed to be fun.......We could argue all day, but there was
+lots of computer work done before PCI and PCs.  I'm more than old
+enough to know, so just leave it at that.......
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
