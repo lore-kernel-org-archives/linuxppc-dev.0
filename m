@@ -1,41 +1,46 @@
-From: acmay@acmay.homeip.net
-Date: Tue, 24 Jul 2001 00:38:52 -0700
-To: Gwyn Judd <b.judd@xtra.co.nz>
-Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: make dep fails at acpi
-Message-ID: <20010724003852.B28401@sink.san.rr.com>
-References: <20010724151400.A25666@thislove>
+Date: Tue, 24 Jul 2001 10:51:14 +0200
+From: Sven Dickert <Sven.Dickert@planb.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: sound runs double speed on rs6k
+Message-ID: <20010724105114.A17706@remote.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010724151400.A25666@thislove>; from b.judd@xtra.co.nz on Tue, Jul 24, 2001 at 03:14:00PM +1200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jul 24, 2001 at 03:14:00PM +1200, Gwyn Judd wrote:
->
-> This is from the kernel source recently rsync'd from mvista. 'make dep'
-> fails like this about 10 seconds in:
->
->
-> make -C acpi fastdep
-> make[4]: Entering directory `/home/gwyn/Projects/kernel/drivers/acpi'
-> gcc -D__KERNEL__ -I/home/gwyn/Projects/kernel/include -Wall
-> -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
-> -fno-strict-aliasing -fno-common -D__powerpc__ -fsigned-char
-> -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
-> -D_LINUX -I/include -E -D__GENKSYMS__ acpi_ksyms.c
-> | /sbin/genksyms  -k 2.4.7 >
-> /home/gwyn/Projects/kernel/include/linux/modules/acpi_ksyms.ver.tmp
-> acpi_ksyms.c:27: acpi.h: No such file or directory
-> acpi_ksyms.c:28: acdebug.h: No such file or directory
+Hi,
 
-Short answer update your version of make.
+  I try to set up a working kernel on the following machine:
+IBM RS/6000 7020-001 also named 40P, seems to be compatible to
+IBM PowerSeries 6015 also named PPS400. The machine is one-on-one
+completely PreP as mentioned in
+ftp://ftp.austin.ibm.com/pub/technology/spec/srp1_10?.ps.Z
+I think the 40P was some sort of reference implentation of the
+PreP standard. The machine boots 2.4.6. with some modifications:
+http://www.remote.org/sven/ppc/40p.patch
 
-Notice the -I/include and the fact the headers are missing.
-The acpi stuff uses -I$(CURDIR)/include. I don't think older versions of make
-don't support this. You could hack the make files to not use this
-if you don't want to update make.
+  At the moment I'm working on sound support. I changed
+-#define CAROLINA_IRQ_EDGE_MASK_HI   0xA4  /* IRQ's 8-15 [10,13,15] */
++#define CAROLINA_IRQ_EDGE_MASK_HI   0xA0  /* IRQ's 8-15 [10,13,15] */
+in arch/ppc/kernel/prep_pci.c
+I found this 'patch' at http://penguinppc.org/dev/prep/tp850.diff
 
+  Now the system is not longer 'hanging' in userspace when I cat a .au file
+to /dev/audio, instead sound is played at external speakers. But it is
+played at _double_ speed. I've never listened to U2 as fast as
+Michael Schuhmacher drives cars :)
+
+  I can patch ad1848_set_speed in drivers/sound/ad1848.c to set
+22050 instead of 44100 when speed of audio-device is choosen, but this
+seems to be a poor hack, not solving the real problem.
+
+  There is strange thing, that cat /proc/pci shows me a second device
+at irq 10, same irq cs4231 uses.
+
+  Have you any idea, knowledge about timers, bus speed or something that
+I can change to get a slower sound?
+
+Thank you for your attention, Sven
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
