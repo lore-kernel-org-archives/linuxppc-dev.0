@@ -1,32 +1,36 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: "unhandled relocation type 18" ???
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Date: Mon, 05 Mar 2001 20:09:21 +0100
-Message-Id: <20010305190926.8ED2E287EA@denx.denx.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Giuliano Pochini <pochini@denise.shiny.it>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Console text selection bug
+Date: Mon, 5 Mar 2001 22:35:53 +0100
+Message-Id: <19350128150737.3378@smtp.wanadoo.fr>
+In-Reply-To: <3AA12536.DAF3B1A7@denise.shiny.it>
+References: <3AA12536.DAF3B1A7@denise.shiny.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>When I select text in console it's scrambled. I looked at the
+>aty128 sources, but I didn't find anything about it. Where is
+>the code that manages selection/cut/paste ?
+>
+>The selected text is scrambled in this way: every char has
+>the bits 1,2,3 swapped with bits 5,6,7 respectively (bits
+>numbered left to right). I don't know what can cause this
+>strange behaviour... I thought the console screen was a
+>simple array of char/colour pairs.
 
-when trying to "insmod" a  kernel  module  that  uses  floating-point
-functions  like  "sin", we get error messages:
+It's an endian bug in fbcon when accessing the text/attribute buffer.
 
-	unhandled relocation type 18
+I think someone posted a fix for it, You may have more luck asking on
+the fbdev mailing list to the fbdev maintainers what's up.
 
-This is on a MPC8xx CPU with kernel 2.4.x, modutils-2.4.1; the module
-and all code linked with it was compiled with "-msoft-float".
+I think it's related to fbcon_invert_region() not using the access
+macros and directly tapping the buffer, causing attributes & text
+to be messed up.
 
-
-[Before you ask why we are doing something like that: it's for RTAI.]
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Why is an average signature file longer than an average Perl script??
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
