@@ -1,42 +1,57 @@
+In-Reply-To: <v04011701b2ba429e00af@[209.86.156.161]>
+Date: Thu, 7 Jan 1999 12:59:44 +0100
+To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
+        "Timothy A. Seufert" <tas@mindspring.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Great IDE perf (WAS: Strange PMAC IDE performance)
+Message-Id: <19990107125944.017660@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04011702b2ba47551c9a@[209.86.156.161]>
-Date: Thu, 7 Jan 1999 03:34:27 -0800
-To: linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Hack to chipsfb to support external monitor
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I really, really needed external monitor support for use of my 2400 at
-work, so I did a cheap hack to chipsfb to get it going.  Basically I added
-a chipsfb_setup() routine to chipsfb.c (and the appropriate entry in
-fbmem.c) which looks for a kernel command line parameter "mac1024".  If it
-gets it, it sets a global variable named mac1024 to 1.  I then sprinkled
-checks on mac1024 throughout chipsfb: basically, if it is 1, chipsfb
-assumes that you booted through BootX and had MacOS configured for a
-1024x768 8-bit display on the external monitor port.  It will not touch any
-65550 registers except for palette.
+On Thu, Jan 7, 1999, Timothy A. Seufert <tas@mindspring.com> wrote:
 
-The last is actually why I did this -- booting with "no video driver"
-checked works, except that offb doesn't know where the palette registers
-are and can't set them, so X is pretty miserable.  I looked at doing
-something similar to the offb aty hacks, but it looked like it would not
-have been as simple (I needed to find/map the PCI I/O space of the 65550 to
-set up the pointer to the palette registers, and it turns out to be awkward
-to do that in offb due to the way it is structured).
+>This works on the PowerBook 2400 as well.  It so happens that the IDE
+>controllers also sit at 0xf3020000 and 0xf3021000 on the O'Hare.  The value
+>of the register at offset 0x200 is slightly different under MacOS:
+>0x221025.  I tried both values, it didn't seem to make a difference.  I did
+>a quick hack to ide-pmac.c (it just stuffs the value in, no questions
+>asked, though it does actually use the correct base address instead of hard
+>coding 0xf3020000) and that worked.  Performance is up to 5.6 MB/s (was in
+>the region of 1.6 before).
 
-As hacks go it's fairly clean, but it's still a hack.  I plan to make an
-attempt at doing this the right way later, but I thought I'd let people
-know since there may be others who really need 1024x768 on the external
-monitor port *now*.  If anybody is interested let me know and I'll get you
-the diffs.
+Great ! I also included this initialisation in my latest set of patch and
+test kernel but currently, I test against "heathrow-ata" in the
+compatible property, so it won't do it on your machine. Could you tell me
+the value of the compatible property of the ATA on the 2400 ? I'll add
+similar code with 0x221025 for OHare and 0x211025 for heathrow, just to
+be safe.
 
-It does at least lay the groundwork for having chipsfb support command line
-parameters, so it's not all bad.  :)
+>Any guesses about the meaning of this register?  It feels wrong somehow to
+>just ape MacOS without knowing what's really going on.  :)
 
-  Tim Seufert
+Good question ;-) I'm wondering if this could configure the timing of the
+DMA engine on the data port. I tried with my CD-ROM and it works too (I
+didn't hdparm it but at least, the CD mounts weel and I didn't see any
+problem). It would be great to test with really slow devices however (my
+CD is a very fast one).
+
+Another question about IDE: Does someone have any info about IDE ZIP
+drives ? I received a mail from someone which is having all sorts of
+trouble with a ZIP in the expansion bay. Looks like the beast is not
+correctly answering ATAPI commands sent by the driver (yeah, ATAPI, I
+thought a ZIP would be plain IDE or floppy-IDE but apparently, his drive
+is recognized as an ATAPI one).
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
