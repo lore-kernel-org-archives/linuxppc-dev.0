@@ -1,34 +1,45 @@
-Message-ID: <39B2D53F.9FBABB70@m2tech.co.nz>
-Date: Mon, 04 Sep 2000 10:48:31 +1200
+Message-ID: <39B2D928.2BCF9CB@m2tech.co.nz>
+Date: Mon, 04 Sep 2000 11:05:12 +1200
 From: ben bodley <benb@m2tech.co.nz>
 MIME-Version: 1.0
-To: Stephen B Johnson <stevebj@inxpress.net>
+To: "Johnson, Stephen B." <stevebj@artesyncp.com>
 CC: embedded list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: kernel panic on mcp750
-References: <39B28BB4.A52E1E69@inxpress.net>
+Subject: Re: emacs and X on embedded Linux
+References: <F9102D41F595D311ACA7009027DE2C84967344@c3po.heurikon.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Stephen B Johnson wrote:
+"Johnson, Stephen B." wrote:
 
-> I'm observing a kernel panic when booting the kernel on a Motorola
-> MCP750.  The panic indicates "Kernel panic: No init found.  Try passing
-> init= option to kernel."
+> I've only seen one version of embedded Linux the runs emacs & X on the PPC
+> architecture. I used it on the Artesyn PM/PPC running a distribution from
+> Protologos (www.protologos.com).  I know the guys at Protologos and they had
+> to fix some things in the kernel to get it all working, but it only took a
+> couple of hours to get everything working.
 >
-> However, I pass init=3 as a parameter.
+> In this case, everything can be done with a native PPC instead of the cross
+> development involved with Monte Vista.
 >
-> Any suggestions?
+> Doesn't anybody else want this capability?
+>
+>
 
-by passing 'init=3' to the kernel, you are telling it to try and load a program called '3'.. is this what you want?? or do you want to
-load a shell interpreter such as bash??
+a lot of people develop boards running a bit slower than 450MHz..  hence
+'embedded linux'.. sure if developing an extremely powerful custom board that
+comfortably runs X, development tools, etc, it would probably be helpful, but
+gets away from many peoples reasons for using embedded hardware (ie. low
+ram/flash usage, small size, low cost cpu, etc)..
 
-init=3 does not change the runlevel..
+our custom board runs far slower than 450MHz, still, it runs X and
+applications.. however, i would never bother compiling software on it, as i
+have a G4 for that..
 
 cheers,
 
 ben
+
 
 --
 /\\------------------------------------------------------------------
