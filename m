@@ -1,36 +1,34 @@
-To: "murali nagarajan" <muralin@gdatech.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPCBOOT & PPCLinux version compatibility 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 29 May 2002 16:43:20 PDT."
-             <022d01c2076a$a7b0b9e0$0900a8c0@Domain.invalid>
-Date: Thu, 30 May 2002 02:24:06 +0200
-Message-Id: <20020530002411.8302E11973@denx.denx.de>
+Message-ID: <3CF6C96E.BD1DAA3A@synergymicro.com>
+Date: Thu, 30 May 2002 17:53:02 -0700
+From: Bill Fincke <willy@synergymicro.com>
+Reply-To: willy@synergymicro.com
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: GT64260 ethernet driver - long term stability?
+References: <200205100459.XAA27925@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Murali,
+Has anyone exercised the gt64260_eth.c driver (from the MontaVista
+BK tree) for any length of time?  I ported it and have been using
+it successfully for several weeks, but find that it can't sustain
+continuous file transfers for more than a few hours.
 
-in message <022d01c2076a$a7b0b9e0$0900a8c0@Domain.invalid> you wrote:
->
-> We want to port Linux 2.4.18 using ppcboot on our custom board with 8245.
+I'm running a loop with ftp putting/getting a 24-MB file to a remote
+Linux system, and find that after a few hours, the "put" times out.
+It happens on any of the 3 ports, and to/from several different
+systems (G4 Mac or PC).  I run the test on the same system through
+a I82559 chip and it runs all weekend.
 
-Fine.
+The only clue I have it that the driver reports a flurry of RX CRC
+errors when the timeout occurs.  After ftp quits, I can ping the
+remote system, but the RX packets seem to be mismatched with the
+TX (ping reports once a second, but instead of ~100 usec transit
+time, it reports 1.000 sec, or 2.000 sec, or 3.000 sec, as if it's
+getting RX packets that are 1, 2, 3 seconds old).
 
-> Can someone advise if we can use the latest ppcboot 1.1.5 for this kernel
-> version 2.4.18. If not which version of ppcboot we should use?
-
-You _can_ use .1.5, but I'd recommend the top-of-CVS  version  (which
-is 1.1.6 minus a couple of days :-)
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"At least they're __________EXPERIENCED incompetents"
+Anyone else seen anything like this?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
