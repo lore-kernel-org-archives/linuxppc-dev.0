@@ -1,30 +1,45 @@
-Message-ID: <3DD11A09.B58EDAE0@imc-berlin.de>
-Date: Tue, 12 Nov 2002 16:11:05 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Stephan Linke <Stephan.Linke@epygi.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Using ioctl from with the kernel ???
-References: <FCEAKDJJAPHPLJFINDAJCEACCLAA.Stephan.Linke@epygi.de>
+Date: Tue, 12 Nov 2002 08:22:56 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ppc_8xx-gcc 2.95.3 Monta Vista does not do ANY loop unrolling
+Message-ID: <20021112152255.GF658@opus.bloom.county>
+References: <IGEFJKJNHJDCBKALBJLLGEOFFHAA.joakim.tjernlund@lumentis.se>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLGEOFFHAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Stephan,
+On Tue, Nov 12, 2002 at 10:40:41AM +0100, Joakim Tjernlund wrote:
 
-> Your right IOCTL is not applicable for this. You can simply call the driver
-> functions directly. If these functions are called different from different
-> context(s) (like your driver and the IOCTL function) you have to add some
-> protection mechanism. (The code is not reentrant right?) You may try
-> spin_lock() for this job (linux/spinlock.h). If you are calling the
-> functions from interrupt contect too some extra protection is required...
+> I optimized the crc32() in JFFS2(fs/jffs2/crc.h) by manually unrolling
+> the crc32 loop. This gave me a speed increase of 22% in mounting JFFS2 FS
+>
+> Later Alan Cox pointed out that my changes makes x86 run slower and it turns
+> out that on x86 and a fairly new gcc will automatically unroll loops 'where appropriate'
+>
+> Removed my hand coded unrolling and added -funroll-loops to the JFFS2 Makefile,
+> I got similar results as my hand coded unrolling (a little better).
+>
+> I therefore conclude that ppc_8xx-gcc 2.95.3 from Monta Vista does not do ANY unrolling
+> unless you specify -funroll-loops. Doing this for the whole kernel is NOT a good idea,
+> it will run slower due to big increase of size.
 
-Thanks for your reply.
+I'm sort-of supprised that gcc-2.95.x (or gcc-*, for that matter) will
+unroll some loops with only -O2 since the info page on gcc-3.2 and
+gcc-2.95 both say that -funroll-loops isn't turned on my any of the -O
+levels.
 
-But how could I call the ioctl handler of the driver?
-I would need some (dummy) inode...
+So I suspect someone decided that small loops can safely be unrolled on
+i386 at some optimization level, but that same decision (with possibly
+good reason) was not made for PPC32.  So it's a gcc feature, not a
+MVista-specific issue.
 
-Steven
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
+[ disclaimer: I work for MVista. ]
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
