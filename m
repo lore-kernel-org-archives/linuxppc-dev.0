@@ -1,8 +1,8 @@
-Date: Thu, 4 Apr 2002 21:47:39 +0200
+Date: Thu, 4 Apr 2002 21:52:09 +0200
 From: Albrecht Dre? <albrecht.dress@arcor.de>
 To: Linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Awacs Burgundy sound w/ 2.4.18?
-Message-ID: <20020404194739.GE30247@regulus>
+Subject: SCSI system freeze w/2.4.18
+Message-ID: <20020404195209.GG30247@regulus>
 Mime-Version: 1.0
 Content-Type: text/plain; format=flowed; charset=ISO-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -12,71 +12,26 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 [I already posted this to the users list, but apparently nobody had a
 solution...]
 
-I upgraded an old rev. 1 iMac (bondi blue) to 2.4.18 from kernel.org, and
-this somehow broke sound support. Everything used to work with
-2.2.17pre-something, and the *same* mixer/xmms/cd player config now stays
-silent on both the headphones and the built in speakers; even the console
-beep doesn't work. Also, it is not possible to change any settings using
-aumix or any other mixer program (xmixer, gmix).
+I upgraded my PowerMac 7300 from 2.4.6-pre3 to (stock) 2.4.18, and since
+then I have a nasty scsi problem: Trying to read data from the cd drive
+without a cd loaded (e.g. "dd if=/dev/scd0 of=/dev/null bs=1 count=1")
+freezes the machine. I usually use this command in a shutdown script to
+detect and eventually eject a floppy and a cd. This worked perfectly before,
+but hangs without *any* notice in the logs in 2.4.18.
 
-I add some further information below and hope that somebody can give me
-hints to resolve the problem. Any help is really welcome!!!
+I am almost sure that this is a SCSI problem, as the same script works still
+nicely on an iMac (which has a ide cd drive) with 2.4.18.
 
-Thanks in advance,
+System details are--
+	PowerMac 7300/166, CD attached to internal scsi bus (MESH),
+	verbose scsi logging enabled, mesh compiled into the kernel,
+	LinuxPPC 2000, upgraded to Halloween release,
+	kernel 2.4.18 from kernel.org, plus post-release elf patch,
+	built with gcc-2.95.2, glibc 2.1.3
+
+Thanks in advance for any help,
 
 	Albrecht.
-
-
-~~~~~~~~~~
-
-The dma sound driver is built into the kernel, and it is recognised upon
-startup (2.4.18 from kernel.org, built w/ gcc 2.95.3). However, I got the
-same results with the sound stuff built as modules:
-
------
-PowerMac Burgundy  DMA sound driver rev 016 installed
-Core driver edition 01.06 : PowerMac Built-in Sound driver edition 00.07
-Write will use    4 fragments of   32768 bytes as default
-Read  will use    4 fragments of   32768 bytes as default
------
-
-Roughly the same kernel config works with an Awacs PowerMac 7300 (seems as
-if a have a collection of old machines ;-)).
-
-The output of /dev/sndstat looks a little strange to me:
-
------
-[root@island /root]# cat /dev/sndstat
-PowerMac Burgundy DMA sound driver rev 016 :
-Core driver edition 01.06 : PowerMac Built-in Sound driver edition 00.07
-44100 s: s/sec
-HW AFMTS: signed 16 bit BE signed 16 bit LE
-                  === Formats & settings ===
-Parameter                 soft                hard
-Format   :    signed 16 bit LE    signed 16 bit BE
-Samp Rate:         44100 s/sec         44100 s/sec
-Channels :                mono              stereo
-                  === Sound Queue status ===
-Allocated: Buffers  Size
-     write:       4 32768
-      read:       0     0
-Current  : MaxFrg FragSiz MaxAct Frnt Rear Cnt RrSize A B S L  xruns
-     write:      4    4096      4    0   -1   0      0 0 0 0 0      5
-      read:      0       0      0    0    0   0      0 0 0 0 0      0
------
-
-Finally, here is the constant output of aumix (== any attempt to change
-settings is ignored silently):
-
------
-[root@island /root]# aumix -q
-vol 100, 100
-speaker 0, 99
-line 100, 100, P
-mic 0, 0, P
-cd 100, 100, P
-pcm2 76, 0
------
 
 
 --
