@@ -1,37 +1,27 @@
-Subject: PPC750 cPCI Hotplug
-From: Matt Dew <mattd@seakr.com>
 To: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain
-Message-Id: <1090262208.29910.254.camel@mattd.seakr.com>
+Subject: HoWTO support a device connected to the MDIO interface (using I2C)
+From: "vishal" <vishal@isofttech.com>
+Reply-To: "vishal" <vishal@isofttech.com>
+Content-Type: text/plain; charset=utf-8
 Mime-Version: 1.0
-Date: Mon, 19 Jul 2004 12:36:48 -0600
+Message-Id: <20040720152805.49737518.vishal@isofttech.com>
+Date: Tue, 20 Jul 2004 15:28:05 +0530
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
-I've searched the archives, the web and every thing else I can think of
-to no avail.   I'm hoping someone here might be able to help me out.
+Hi All,
+  I am a bit lost out here and i need some direction. I have a device
+that is connected to my MPC 8270 board via the MDIO/SMI interface. I now
+wish to provide two kernel API's mdio_read, mdio_write to allow some
+kernel code to read and write data to this device on the MDIO bus. the
+interface uses an I2C bit banging algorithm. Can any one guide ma as
+to how i need to go about writing my requirements? any pointers would
+really help this newbie. What do i need to do? I am using the ELDK from
+www.denx.de. Linux kernel 2.4.24
 
-I have a Motorola PPC750 with a Raven chipset in a compact PCI test
-rack.  I've got the 2.4.19 kernel with the ppc patch applied and it
-works very well.
-
-The problem is that I can not get PCI hotplugging to work.
-
-I'm using Xilinx FPGAs on some other boards in the test rack. The FPGAs
-have PCI cores but when I configure them after powerup, the kernel does
-not see them.  I have hotplug support compiled in the kernel.
-
-I've tried several different kernels, with no luck.
-
-I've noticed there is no CONFIG_HOTPLUG_PCI option for ppc like there is
-for other architectures, just CONFIG_HOTPLUG.
-
-Does anyone have hotplug working on a ppc750? Is it even possible?
-
-thanks for any help,
-Matt
-
+Thanks in advance.
+regards,
+Vishal
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
