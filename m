@@ -1,39 +1,28 @@
-Message-ID: <B1DF47D78E82D511832C00B0D021B520083DE6@SAKTHI>
-From: Srinivasa Rao V <veeru@ctd.hcltech.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Tundra PowerSpan initialization
-Date: Mon, 13 Aug 2001 15:14:19 +0530
+Subject: Re: NFS mounting timeout
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="iso-8859-2"
+Date: Mon, 13 Aug 2001 11:47:15 +0200
+Message-ID: <566C53CBBECCFF4D8D31B380F7B345FB016647@PICARD.nc1701.de>
+From: "Frank Przybylski" <fp@vas-gmbh.de>
+To: "Pawel Zawora" <pzawora@fideltronik.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi Pawel,
 
-My board is MPC8260 based board and I had been trying to initialize the
-Tundra PowerSpan Registers.
-Single PCI PowerSpan contains a lot of Registers like the
-	PCI-1 Register Image Base Address Register
-	PCI-1 Target Image X Base Address Registers
-	PCI-1 Target Image X Translation Address Registers
+> I use rom file system as a root fs. When I try to mount nfs in my root
+> fs an error occurs.
+> (mount -t nfs 192.168.1.1:/nfs /nfs)
+> After about 2 minutes kernel writes: "portmaper: time out".
+> What I should do?
 
-	Processor Bus Slave Image X Translation Address Registers
-	Processor Bus Slave Image X Base Address Registers.
+Check if the portmapper is running (both sides, server AND client), if
+not start it (usually /sbin/portmap).
 
-The PowerSpan manual does not give full details of what each corresponds to.
-I am confused as to what address ranges to be entered for what.
-I tried various sets of address ranges in which one looks like
-				PB_SI0_TADDR = 0x00000000; PB_SI0_BADDR =
-0x40000000;
-			          	P1_BST0 = 0x00000000 size 32MB;
-P1_BST1 = 0xFF000000 size 16MB; ...
-When I try to access the PCI location 0x40000000 the system hangs.
-
-If anyone has any idea on this, please help me out.
-
-Thanks in advance,
-Srini
+hth
+ Frank
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
