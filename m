@@ -1,62 +1,44 @@
-Message-Id: <l03130308b39f11c8f40e@[209.226.106.187]>
+Message-Id: <l03130307b39f217826bc@[216.67.1.236]>
+In-Reply-To: <l03130308b39f11c8f40e@[209.226.106.187]>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 29 Jun 1999 20:44:14 -0400
-To: linuxppc-dev@lists.linuxppc.org
-From: Eric Dorland <dorland@lords.com>
-Subject: Problems with the atyfb driver on Power Mac G3
+Date: Tue, 29 Jun 1999 21:30:03 -0400
+To: Eric Dorland <dorland@lords.com>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: Problems with the atyfb driver on Power Mac G3
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I posted this message (see below) to the user list, but didn't get much of
-a response. Because it's more a bug in the atyfb driver I thought you guys
-would have more luck. My apologies if you've seen this message already.
+At 8:44 PM -0400 6/29/99, Eric Dorland wrote:
+>Through playing with the mclk and pll arguments (mclk:68,pll:200) I can
+>reduce the amount of "pixel dancing", but when there is a lot of movement
+>on the screen it is still quite noticable. I got these values from sheer
+>experimenting, and could be slowing cooking my chip for all I know.
 
+I'm experiencing the same problem on my PowerCenter 132 with my ATI VR-Pro.
+I have a feeling that there is a bug in the Rage-Pro support.
 
->From reading the list recently, it seems a lot of Powerbook G3 are having
-problems with the atyfb driver. I'm also having problems, but with my Power
-Mac G3 266 rev. 2 using its onboard Rage Pro card and 2 MB of VRAM. When I
-boot up with the kernel argument video=atyfb:vmode:13,cmode:16 I get
-"dancing pixels", or snow if you prefer, down one side of the screen as
-illustarted by this rather crude drawing:
+I've also had trouble with the acceleration causing garbage on the screen
+in 16 bit mode when I drag windows.
 
--------------------------
-| .			|
-| .			|
-| .			|
-| .			|
-| .			|	The dots are the dancing pixels, which
-| .			|	flicker on and off.
-| .			|
-| .			|
-| .			|
--------------------------
+It's entirely possible that we don't have the memory layout quite correct
+or something. To add insult to injury I also have an Adaptec Ultra SCSI PCI
+card and a 4 Gig drive that Linux is booting off of. I've had some random
+files show up like "?:" including the quote characters. Maybe there are
+deeper PCI problems or is this just a bug in the Adaptec driver? (With a
+the R5 2.2.6 kernel and a 2.3.6 custom compile).
 
-These pixels flicker on and off down the left side the screen in an
-extremely irritating fashion in the console and X. When I boot up using the
-above arguments using the 2.3.6 kernel I get a line stating:
+I've been meaning to look into the code but I haven't had the time. Anybody
+have some clues? My card *used* to work under 2.1.24 when I added the
+support to the original driver ;-)
 
-atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 2M SGRAM, 14.31818 MHz
-XTAL, 230 MHz PLL, 100 Mhz MCLK
-
-Through playing with the mclk and pll arguments (mclk:68,pll:200) I can
-reduce the amount of "pixel dancing", but when there is a lot of movement
-on the screen it is still quite noticable. I got these values from sheer
-experimenting, and could be slowing cooking my chip for all I know.
-
-Has anyone with a Power Mac (especially with a similar set up) exprienced
-similar problems? Any solutions? BTW the atyfb driver in the 2.1.130 kernel
-worked very well, these problems started when I began using the 2.2.x
-kernels. Anyone know what might have changed between the two or have a copy
-of atyfb.c from the 2.1.130 kernel (Geert maybe :).
-
-PS: I realise I could use "No video driver" and use Xpmac and force mach64
-acceleration, but I would much rather use XF68_FBDEV so I can change
-resolutions from linux and such. Also, I'm stubborn.
-
-Eric Dorland
-mailto:dorland@lords.com
+_______________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+_______________________________________________________________________
 
 
 
