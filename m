@@ -1,48 +1,36 @@
-Message-Id: <200006062158.XAA00842@piglet.grunz.lu>
-Date: Tue, 6 Jun 2000 23:58:47 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: [patch] VRAM detection in controlfb
-To: schmitz@opal.biophys.uni-duesseldorf.de
-cc: nicoya@apia.dhs.org, drow@false.org, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.10006062147140.1984-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <393D7854.8CF53542@erols.com>
+Date: Tue, 06 Jun 2000 18:16:52 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: rboder@grn.georet.net
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: G4 configuration
+References: <393D6256.89D44EA6@grn.georet.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Ryan Boder wrote:
 
-On   6 Jun, this message from Michael Schmitz echoed through cyberspace:
->> Anyways, that's the long answer. The short answer is: no, you probably
->> don't want to cache the framebuffer.
->
-> Thanks for the long answer, and all those nasty gremlins have actually
-> been observed long time ago when people started to play with the
-> framebuffer drivers. At least on m68k, the framebuffer address space was
-> set non-cacheable right from the start (in head.S). I would hope that
-> somehow translated to PPC as well :-)
+> Does anyone have a .config to configure a kernel that is stable on the
+> G4 sawtooth? I have the current stable source but every kernel I compile
+> freezes and corrupts my root file system. If anyone has one will you
+> please mail it to me?
 
-That's what fbmem.c does in its default mmap(). However, at least for
-control (and maybe other comparable video implementations as well), you
-get much better performance on scroll and other fb-to-fb copy
-operations, without visible inconvenients, when the framebuffer is set
-to write-through caching.
+The .config that comes with Paul's tree (via rsync) should compile and run
+your sawtooth just fine.  It worked for me...
 
-For fun, I tried write-back caching as well. Makes for some really nice
-visual effects when your killed netscape starts to fade away as the
-cache gets slowly flushed ;-))) And it doesn't even get you any speed
-improvement...
+If you are using that one and still having problems, you may want to do
+some more investigation.
 
-Michel
+HTH
+--Nelson Abramson
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--
+"Apparently if you play the Windows NT CD backwards you hear satanic messages"
+"You think that's bad, if you play it forwards it installs Windows NT!"
+--orlando
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
