@@ -1,56 +1,80 @@
-Message-Id: <200007052245.AAA24265@denx.local.net>
-To: "TWG - pat, mark & steve" <twg@world.std.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems with HardHat/NFS root filesystems 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 05 Jul 2000 12:27:57 EDT."
-             <Pine.SGI.3.95.1000705121641.27740C-100000@world.std.com>
-Date: Thu, 06 Jul 2000 00:45:48 +0200
+Date: Wed, 5 Jul 2000 23:47:32 -0400 (EDT)
+From: Jamie Guinan <guinan@bluebutton.com>
+Reply-To: guinan@bluebutton.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: IDE quirk
+Message-ID: <Pine.LNX.4.21.0007052235430.3700-100000@gemini.home.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.SGI.3.95.1000705121641.27740C-100000@world.std.com> you wrote:
->
-> Thanks, Wolfgang, for your response.  It helped somewhat.  Here's what I
-> discovered:
->
-> 1. I am also unable to run ash.static
+I've been tinkering with the IDE drive on my MBX board.
+The path to the drive goes,
 
-Then shread libs are not your primary problem.
+MPC821 <----> QSpan PCI Bridge <----> WinBond W83C553F <===> Drive
 
-> 2. I forgot to mention another error message (actually, I thought it was
-> trivial but it's not), I also get a "Warning: unable to open an initial
-> console" error message.
+I have things semi-working, but there is a problem with writing
+to the drive.  If I do a raw dump into /dev/hda, say using the
+2.2.13 kernel "README" file,
 
-OK - that's a different issue, then.
+  # dd if=README of=/dev/hda
 
+(that file is about 26 blocks long (13k)) it *appears* to write fine,
+but there is a problem.  If I read back 2MB of data, I will see what
+I wrote,
 
-> In /etc/exports, I export the volume as /opt/hardhat.....
->
-> However, when I do an "exportfs -av" the exported volume shows up as
-> /usr/opt/hardhat.....
-> I specified /opt/hardhat... in /etc/dhcpd.conf
->
-> I think, therefore, that NFS is not allowing access to the proper
-> directories, and that's why it can't find an init (or a /dev/console!)
->
-> Am I on the right track?
+# dd if=/dev/hda of=RES01 bs=1k count=2000
 
-I think so - most probably your target can't see the files it  needs.
-You should be able find out by running some network analyzer (tcpdump
-might be enough for the job; ethereal will make it more convenient).
+(examine on host NFS system)
+00000000: 094c 696e 7578 206b 6572 6e65 6c20 7265  .Linux kernel re
+00000010: 6c65 6173 6520 322e 322e 7878 0a0a 5468  lease 2.2.xx..Th
+00000020: 6573 6520 6172 6520 7468 6520 7265 6c65  ese are the rele
+...
 
-The quick test is to fix your configuration and try it out :-)
+but if I repeat the read, I see the following,
 
-Wolfgang Denk
+# dd if=/dev/hda of=RES02 bs=1k count=2000
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If it went on at this rate, in several billion  years  he'd  be  rich
-beyond his wildest dreams!            - Terry Pratchett, _Soul Music_
+00000000: 094c 0000 7578 0000 6572 0000 6c20 0000  .L..ux..er..l ..
+00000010: 6c65 0000 6520 0000 322e 0000 0a0a 0000  le..e ..2.......
+00000020: 6573 0000 6172 0000 7468 0000 7265 0000  es..ar..th..re..
+
+Every other halfword does not "stick" on the drive.  I confirmed this
+by reading the data back with EPPCBug's "iop" command.  I believe that in
+the first case above, the data was being read out of the drive cache
+and/or Linux buffer cache so it looked fine, but after reading back 2MB
+the drive cache (/Linux buffer cache) gets flushed so the real data is
+being pulled in.  The drive cache is only 58KB.
+
+Reading/writing sectors with "iop" works fine on this system under
+EPPCBug (data sticks between cold boots), so I believe that the data
+path is Ok.
+
+So I'm trying to figure out what is preventing the data from "commiting"
+to the hard drive under Linux.  I went as far as printk'ing the
+bytes and register contents in
+
+  arch/ppc/kernel/m8xx_setup.c:m8xx_ide_outsw()
+
+and everything looks fine just before it hits the disk with ide_outsw().
+
+I'll keep digging, but if anyone knows any magic to get this to behave
+properly, please share.  I'm going to look at PIO mode settings next...
+
+Info:
+  MontaVista 2.2.13 kernel with hacks to bring IDE alive.
+  MontaVista CDK target image NFS root directory, /dev/hda* entries
+    created manually.
+  gcc version 2.95.2 19991024 (release), built from raw sources.
+
+I can post test programs/debug output if that would help.  There
+is just so much I figured I'd wait for some intial feedback before
+posting any of it.
+
+Thanks,
+-Jamie
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
