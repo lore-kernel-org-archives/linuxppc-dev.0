@@ -1,53 +1,53 @@
-Message-ID: <002901c28b5a$55f60820$0200a8c0@telia.com>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Hans Feldt" <Hans.Feldt@uab.ericsson.se>, <dan@embeddededge.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>, <scop@digitel.com.br>,
-	<thomas@corelatus.com>
-References: <IGEFJKJNHJDCBKALBJLLAEPLFHAA.joakim.tjernlund@lumentis.se> <001c01c28b4b$28665b80$4f158a86@default>
-Subject: Re: [PATCH] arch/ppc/8xx_io/enet.c, version 2
-Date: Wed, 13 Nov 2002 22:19:21 +0100
+Message-ID: <3DD2CE30.6090708@embeddededge.com>
+Date: Wed, 13 Nov 2002 17:12:00 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+Cc: Hans Feldt <Hans.Feldt@uab.ericsson.se>,
+	linuxppc-embedded@lists.linuxppc.org, scop@digitel.com.br,
+	thomas@corelatus.com
+Subject: Re: [PATCH] arch/ppc/8xx_io/enet.c, version 2
+References: <IGEFJKJNHJDCBKALBJLLAEPLFHAA.joakim.tjernlund@lumentis.se> <001c01c28b4b$28665b80$4f158a86@default> <002901c28b5a$55f60820$0200a8c0@telia.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> ----- Original Message -----
-> From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
->
-> > You may be right, perhaps one must invalidate the whole buffer before giving it
-> > to the CPM/DMA. Suppose you reuse a buffer which has been modified before it
-> > was freed and the dcache must write back data to free up space and the buffer,
-> > which now is owned by the CPM, get written to.
->
-> I beleive this could happen. Since IP does not perform checksumming
-> but relies on the link (don't know this really) in that matter, I guess
-> the application could get wrong data...
+Joakim Tjernlund wrote:
 
-OK, anyone against? Dan?
+> OK, anyone against? Dan?
 
->
-> > I have not seen any corrupted packets and you are the first to report
-> > any problems.
->
-> Did you run any data integrity tests?
-No, normal use, lots of pings etc.
+I'm currently looking at the patches and I'll be integrating something
+that hopefully works :-)
 
->
-> > What modifications have you done?
->
-> I haven't used your driver patch. I used the __idea__ of delaying the
-> invalidate to the point where you know how much has been received. This was
-> in an RTOS ATM driver for a 405. An integrity test showed that some few
-> packets was wrong. Data was changed by means of cache lines.
+This isn't something new that hasn't been tried before.  The problem
+in the past with non-coherent processors, incoming DMA, and skbufs is
+the buffers would share cache lines with other data which would get
+corrupted as the result of the invalidate for the DMA.  Typically,
+data that was corrupted were flags and control information for the IP
+stack, and under "normal" use you wouldn't notice this.  However,
+forwarding/bridging applications would fail to work properly and you
+would sometimes see packet retransmits that weren't necessary.
 
-Did you notice any difference in performance when moving the invalidate call?
+The "trick" is to ensure you allocate a larger than necessary sk buffer
+and then align the start and end such that they consume entire cache
+lines.  There has been sufficient discussion about this that I hope
+the sk buffer mechanism will allow this alignment now, as it didn't
+work well in the past.  This is what I want to check out when I
+apply and test the patches.
 
-Any other problems with the patch?
+This isn't necessary on the 8260 family due to cache snooping, but it
+is required on the 8xx.
 
-Dan, would you like a new patch or will you fix this?
+Of course, a packet checksum still needs to be performed, and if it
+is done as part of the data copy (and if the IP stack doesn't do it
+again), it would seem that this implementation rather than DMA would
+be more efficient.
 
-         Jocke
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
