@@ -1,40 +1,49 @@
-Message-ID: <3E49278D.3020306@embeddededge.com>
-Date: Tue, 11 Feb 2003 11:40:45 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Murray Jensen <Murray.Jensen@csiro.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] 8xx_io/uart.c
-References: <30768.1044926029@ull>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "AUBERT Cedric" <cedric_aubert@softhome.net>
+Cc: "LinuxPPC Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: U-Boot question 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 11 Feb 2003 09:03:34 +0100."
+             <NEEAIENMOLHNBKKFKIDMMEEICAAA.cedric_aubert@softhome.net>
+Date: Tue, 11 Feb 2003 18:36:42 +0100
+Message-Id: <20030211173647.641B8C5E20@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Murray Jensen wrote:
+In message <NEEAIENMOLHNBKKFKIDMMEEICAAA.cedric_aubert@softhome.net> you wrote:
+>
+> I am in the state "while(learning){ .... }" of the U-Boot Porting Guide in
+> the README file.
+...
+> The option CFG_SDRAM_BASE is the physical start address of SDRAM.
+> Okay, I understand that. But it's written _Must_ be 0 here.
 
-> If you simply looked at the code you would see the problem we are talking
-> about. What are you suggesting? That kgdb and xmon will _NEVER_ send a
-> character with decimal value 10 via my_console_write()?
+Right. Linux on PowerPC expects RAM to start at 0.
 
-I've looked at it.  I know it well.  I wrote it.  I know how its used.
-xmon and kgdb format their own strings/packets and expect read/write of
-a simple uart fifo.
+> How can I do if my SDRAM ( on a MPC860 Board ) start at 04000000 ???
 
-> http://lists.linuxppc.org/linuxppc-embedded/200205/msg00268.html
+Just define a memory map where your SDRAM starts  at  0.  The  memory
+controller is programmed in software, so you can chose any memory map
+you like.
 
-Well, ahhh, there isn't anything mentioned there about fixing bugs.  From
-your description it's all about yet another scc uart configuration method.
-I have lots of those on the shelf, all conflicting, that always seem to
-be useful to the person/platform/application.  The easiest way to keep
-everyone (un)happy is to leave things alone.  I used to apply those,
-a new one every other week, and the only person happy about it was the
-last one that had the patch applied.  :-)
+> PS : Sorry to don't post to the U-Boot mailing list but I have a failure
+> notice each time
+> I try to post on it. (550-Envelope sender verification failed)
 
-You can pull the uart "bugfix" from the 2_4_devel tree now, if you wish.
+Then fix this!
 
 
-	-- Dan
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The use of Microsoft crippleware systems is a sin that  carries  with
+it its own punishment.
+         -- Tom Christiansen in <6bo3fr$pj8$5@csnews.cs.colorado.edu>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
