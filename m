@@ -1,40 +1,44 @@
-Message-Id: <v04003a06bae9957ba064@[192.168.1.4]>
-In-Reply-To: <20030515190158.GD11565@ip68-0-152-218.tc.ph.cox.net>
-References: <20030515074214.GA787@plato.local.lan>
- <20030515074214.GA787@plato.local.lan>
+Subject: Re: set_rtc_time() cleanup / normalization
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Wolfgang Denk <wd@denx.de>, Dan Malek <dan@embeddededge.com>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20030515184412.GA22327@iram.es>
+References: <20030515180427.GB20958@iram.es>
+	 <20030515182129.270C0C6092@atlas.denx.de>  <20030515184412.GA22327@iram.es>
+Content-Type: text/plain
+Message-Id: <1053027458.2978.60.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 15 May 2003 14:11:42 -0500
-To: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-From: "Tony 'Nicoya' Mantler" <nicoya@apia.dhs.org>
-Subject: Re: [PATCH] educate users about x86 specific kludges instead of
- hiding thier ignorance
+Date: 15 May 2003 21:37:39 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 2:01 PM -0500 5/15/03, Tom Rini wrote:
->(and, btw, 'bzImage' on m68k is,
->or was anyhow, a bzip2 image adding to the fun)
+On Thu, 2003-05-15 at 20:44, Gabriel Paubert wrote:
 
-Yeah, that would be my fault. :)
+> Hmm, in this case. My current plan is to implement the documented
+> behaviour, whatever it takes (time, among other things), since
+> I am deeply convinced that it is the correct behaviour.
+>
+> So far, all the arguments that I've seen in favor of removing
+> thos code boil down to the fact that developers are too lazy
+> to implement it correctly.
 
-I wrote that in before I had access to an x86 linux machine, so I was not
-aware that "bzImage" meant "work around stupid bios/realmode limitations"
-and not "use bz2 compression".
+Ok, so here are my concerns, if you can address them cleanly, I'm
+ok with that ;)
 
-Speaking of which, is it even possible these days to build a kernel small
-enough for (non-b) zImage on x86? I think it's been a while since I've even
-made one that can fit on a floppy.
+I want things like PMU or Cuda based RTC (or i2c based one) to
+be able to schedule in get/set_rtc_time(), thus those shouldn't be
+called at interrupt time. Maybe a flag "rtc_irq_safe" in ppc_md that
+when clear would cause you to defer processing to a work queue ? Or
+maybe we can simply unconditionally defer ?
 
+We need also to move the initial reading of the RTC a bit later
+in the boot process, I'm not too sure what would happen if we
+schedule that early, and we may want to wait for things like i2c
+to be available.
 
-Cheers - Tony 'Nicoya' Mantler :)
-
-
---
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
