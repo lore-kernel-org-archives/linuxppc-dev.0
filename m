@@ -1,14 +1,27 @@
-Message-ID: <20030328210016.49138.qmail@web41207.mail.yahoo.com>
-Date: Fri, 28 Mar 2003 13:00:16 -0800 (PST)
-From: Prakash kanthi <pkanthi@yahoo.com>
-Subject: Re: Virtex-II Pro tlbia exception
-To: "Kerl, John" <John.Kerl@Avnet.com>,
+Message-ID: <C78540EA349B2D4BB83D1B0AD748E26F1BE4BF@amer20.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Prakash kanthi'" <pkanthi@yahoo.com>,
+	"Kerl, John" <John.Kerl@Avnet.com>,
 	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <C78540EA349B2D4BB83D1B0AD748E26F1BE4BE@amer20.avnet.com>
+Subject: RE: Virtex-II Pro tlbia exception
+Date: Fri, 28 Mar 2003 14:01:52 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+$ grep -i mmu *.mhs
+system.mhs:  PORT tiec405mmuen = net_gnd
+
+Thanks!!!!
+
+-----Original Message-----
+From: Prakash kanthi [mailto:pkanthi@yahoo.com]
+Sent: Friday, March 28, 2003 2:00 PM
+To: Kerl, John; 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: Virtex-II Pro tlbia exception
 
 
 John,
