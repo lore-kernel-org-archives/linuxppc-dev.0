@@ -1,27 +1,46 @@
-Date: Sun, 10 Aug 2003 12:22:29 -0400
-Subject: Re: [PATCH] 2.6 timebase synchronization
-From: Mark Guertin <mguertin@macdiscussion.com>
-To: Untitled <linuxppc-dev@lists.linuxppc.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <BB5BE984.12A6%mguertin@macdiscussion.com>
-In-Reply-To: <1060508348.13388.20.camel@gaston>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Miles Lane <miles.lane@comcast.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.6.0-test3-bk1 -- include/asm/smp.h:61: error: `NR_CPUS' undeclared (first use in this function)
+Date: Sun, 10 Aug 2003 11:42:16 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200308101142.16491.miles.lane@comcast.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 8/10/03 5:39 AM, "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-wrote:
+  CC      kernel/timer.o
+In file included from include/linux/smp.h:17,
+                 from include/linux/kernel_stat.h:6,
+                 from kernel/timer.c:22:
+include/asm/smp.h: In function `any_online_cpu':
+include/asm/smp.h:61: error: `NR_CPUS' undeclared (first use in this function)
+include/asm/smp.h:61: error: (Each undeclared identifier is reported only once
+include/asm/smp.h:61: error: for each function it appears in.)
+make[1]: *** [kernel/timer.o] Error 1
 
-> Remaining are some older core99 machines, the 4-way DayStar oldworld
-> machines, and afaik, that's all...
+CONFIG_PPC=y
+CONFIG_PPC32=y
+CONFIG_6xx=y
 
-As always, my Daystar quad is around, and if you want/need testing on it
-just let me know.  I also have a couple of Powersurge 2-way as well.
+CONFIG_PM=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_PPC_STD_MMU=y
+CONFIG_PPC_MULTIPLATFORM=y
 
-Mark (Gerk)
+CONFIG_PPC_CHRP=y
+CONFIG_PPC_PMAC=y
+CONFIG_PPC_PREP=y
+CONFIG_PPC_OF=y
+CONFIG_SMP=y
+CONFIG_NR_CPUS=2
+CONFIG_ALTIVEC=y
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_PROC_INTF=y
+CONFIG_CPU_FREQ_24_API=y
+CONFIG_CPU_FREQ_PMAC=y
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
