@@ -1,38 +1,24 @@
-Message-ID: <39379C61.E33FF001@pop.agri.ch>
-Date: Fri, 02 Jun 2000 13:37:07 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Date: Fri, 2 Jun 2000 11:01:24 -0500
+From: Grant Erickson <grant@borg.umn.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Linux/PPC Installer Source Code
+Message-ID: <Pine.SGI.4.21.0006021058070.183027-100000@tigris.borg.umn.edu>
 MIME-Version: 1.0
-To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: 7200 & bitkeeper/linuxcare devel?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-has anyone gotten a bitkeeper 2.4.0test1-ac7 or a linuxcare 2.3.99p9 to
-boot under a 7200?
-I try this with absolutley no luck. The last linuxcare was a 2.3.99p6
-which I got to boot. Unfortunately I missed the updates between p6 and
-p9. Both kernels run under a wallstreet. I use BootX 1.2.2 since I'm not
-able to get quik working :-(.
+Is the source code available for the Linux/PPC 1999 installer (based on
+the Red Hat installer)? I've scoured the Linux/PPC 1999 CD and can't seem
+to locate it among the other source code and SRPMs.
 
-The only thing I see on the screen:
-booting...
-setup_arch: enter
-setup_arch: bootmem
-arch: exit
+I'm particularly interested in looking at loading software onto "virgin"
+embedded boards and/or field upgrade strategies for embedded boards with
+semi-frequent software upgrade requirements.
 
-I played with bk sccstool to track down the relevant changes, but it
-seems that I have to learn a lot with this bk tool. Also, there are many
-changes from 2.3.99p6 until 2.4.0test1-ac7 so it's really difficult to
-find out.
+Thanks,
 
-Any hints would be great.
-
-Thanks
-
-Andreas
+Grant Erickson
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
