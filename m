@@ -1,20 +1,38 @@
-Message-ID: <39526A13.FA7D9FEA@grn.georet.net>
-Date: Thu, 22 Jun 2000 15:33:39 -0400
-From: Ryan Boder <rboder@grn.georet.net>
-Reply-To: rboder@grn.georet.net
-MIME-Version: 1.0
+Message-ID: <20000622230254.29672.qmail@ww184.netaddress.usa.net>
+Date: 22 Jun 00 18:02:54 CDT
+From: jeramy b smith <ultrapenguin@netscape.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: avenrun[3]
-Content-Type: text/plain; charset=us-ascii
+Subject: Time to review the Developer's Directory
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-What exactly do the three values in avenrun[] do? I know they are the
-load averages but I can't find any more info than that. What exactly is
-a load average? Avenrun[] is declared in sched.c if I am being too
-vauge.
+The developer's directory has gotten a bit dated and since it will be a part
+of the new linuxppc.org site, we need to make sure it is fairly up to date.
 
-Ryan
+URL of the test site:
+http://penguinppc.org
+URL of the developers area:
+http://penguinppc.org/devzone/
+URL of the the developers directory:
+http://penguinppc.org/devzone/devdir
+
+The formatting of the directory will change to accomodate readability but for
+now we need to make sure that it is up to date. Developer's who are no longer
+active need to be dropped and projects need to be brought up to current.
+
+Remember, once this site becomes linuxppc.org and starts getting a lot of
+hits; you don't want to have your name misspelled or have the wrong project in
+your credit.
+
+-Jeramy
+
+PS: If someone wants space for a section of development information on the
+site, just email me. The embedded section was only added because someone
+_asked_. If you think you have info other developer's can use and are willing
+to maintain it yourself, send me a mail.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
