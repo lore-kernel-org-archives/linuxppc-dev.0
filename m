@@ -1,69 +1,45 @@
-Message-ID: <3F1D5B74.8040604@mvista.com>
-Date: Tue, 22 Jul 2003 10:42:44 -0500
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: C Doyle <cdoyle35@hotmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Boa Cross Compile for MPC8266ADS?
-References: <Law10-F14oFLaqSOc7w000291b9@hotmail.com>
-In-Reply-To: <Law10-F14oFLaqSOc7w000291b9@hotmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 23 Jul 2003 10:07:22 +1200
+From: Robin Gilks <robin.gilks@tait.co.nz>
+Subject: Re: Clock rate on MPC8xx CPUs
+In-reply-to: <3F1B4BA1.6000204@tait.co.nz>
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3F1DB59A.60603@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
+References: <3F1B4BA1.6000204@tait.co.nz>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Slightly off subject, but any reason you are working on Boa.  (I have
-not used it myself.)  But I know thttpd is small and is capable of
-running CGI applications.  (It also cross compiles properly.)  :)
-
-Back to your original question...
-
-Assuming the application build infrastructure isn't on crack
-(unfortunatly a lot of apps are...) you will need to set:
-
-CC=cross compiler
-AS=cross assembler
-LD=cross linker
-AR=cross ar (optional)
-RANLIB=cross ranlib (optional)
-CPP=cross cpp (optional)
-CXX=cross C++ (g++) compiler
-NM=cross nm (optional)
-STRIP=cross strip
-
-Then make sure that when you run configure you have --host= set to
-"powerpc-linux".  You may also want to set --build= to whatever your
-host architecture is.  ("gcc -dumpmachine" is an easy way to get the
-fill canonical name.)
-
-Now ASSUMING the application's configure script is correct the system
-should be now setup to build.  Just type make and your should get a
-working application.  (Of course it's rarely this simple.. For instance
-you may have to manually pass configure values into the configure step
-to work around things it can't automatically determine for cross
-compilation.)
-
---Mark
-
-C Doyle wrote:
+Robin Gilks wrote:
 >
-> Hello all,
-> I'm a student working with Motorola for a dissertation project. I'm
-> using the MPC8266ADS-PCI development board to write a device driver for
-> a usb peripheral. What I'm intending to do is use the Boa Webserver to
-> throw up a webpage and run cgi-scripts to configure the device driver
-> from a remote host and also give some Tx/Rx/Error reporting. I'm quite
-> new to the embedded world and I can't seem to get Boa to cross compile
-> for the board. I'm using the hardahat devkit cross compiler but when I
-> point the Make file to the compiler its not happy. Is there anyone who
-> has already compiled this for the MPC8266 and can I use the ./configure
-> shell script with flags to tell it I want to cross compile? Any help
-> would be greatly appreciated as the homepage only describes the setup
-> with the default ./configure script. Thanx
+> Greetings
 >
+> Can anyone shed some light on a question of clock rates?
 >
+> We're playing with the mpc866ads board and currently running both the
+> CPU core and bus at 50MHz to keep things simple. As a result it seems
+> that the internal Linux time is 50% out despite passing the clock rate
+> from u-boot as being 50MHz.
 >
->
+> Since the mpc866 can run its core at x2 the bus rate, does the timer
+> setup in Linux for this port assume that the CPU _will_ be running at x2
+> from the rate passed at boot time or is there something else
+> 'interesting' with this new '866 CPU :-))
+
+Further questions on the same subject...
+
+Does anyone have a utility that will report the CPU clock rate - we have
+confirmed that the bus is running at 50MHz and that the timers are
+accurate (so must also be running from the 50MHZ external bus) - but we
+still have no definitive value for the clock rate of the CPU core...
+
+--
+Robin Gilks
+Senior Design Engineer              Phone: (+64)(3) 357 1569
+Tait Electronics                          Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
