@@ -1,33 +1,64 @@
-Date: Wed, 17 Feb 1999 10:59:21 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: Andreas Tobler <toa@pop.agri.ch>
-cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: back to gcc under pre-R5
-In-Reply-To: <36CA7AC0.F2F7596D@pop.agri.ch>
-Message-ID: <Pine.LNX.4.05.9902171057310.980-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199902171603.KAA28972@wolfram.com>
+To: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: bugs building stuff.. somewhere.. (was: back to gcc under pre-R5)
+In-reply-to: <XFMail.990217133431.gdt@linuxppc.org> 
+References: <XFMail.990217133431.gdt@linuxppc.org>
+Date: Wed, 17 Feb 1999 10:03:54 -0600
+From: Brian Downing <bdowning@wolfram.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 Feb 1999, Andreas Tobler wrote:
+On Wed, 17 Feb 1999 13:34:31 -0000 (GMT), Gary Thomas writes:
+ > There are no current RPMs for GCC to my knowledge.  The last ones I made
+ > nearly two years ago and gave up on shortly thereafter because EGCS was
+ > much superior.
+ > 
+ > What bug in EGCS is so terrible that you are considering this move?
+ > Which version of EGCS have you tried?
+ > 
+ > There will be EGCS-1.1.2 in the very near future which has many PowerPC
+ > problems fixed, perhaps you can wait.
 
-> is it possible to get back to gcc under pre-R5? If so. where can I get the (S)RPMS?
+I've had similar problems building software.  I'm not sure where the
+problem is, but I cannot compile this software statically.  I wouldn't
+care, but for it to be useful, it must be able to run on all PPC
+platforms.
 
-Erm, gcc 2.7.2.3?  You could, but that's more buggy then egcs. :)
+When I link dynamically, everything works fine, everywhere that I've
+built it - unfortunately binary portability is a little low.
 
-> And how much do it affect when I build the libstdc++ with fno-vtable-thunks?
-> Do I have to rebuild the whole system, since the new glibc needs vtables?
-> It's only because egcs has bug which is for my subject killing.
+When I try to link it statically, I get a bunch of ld errors from
+libc.a about "tried to relocate __pthread_mutex_lock" and other various
+__pthread_* calls.  No binary is generated.  I tried to compile a
+non-reentrant version of glibc with no linuxthreads (since I'm building
+statically and the software isn't threaded I figured it was worth a try).
+Unfortunately glibc doesn't appear to build without linuxthreads anymore
+- even with --disable-sanity-checks.  I've even gone so far as to ifdef
+out the offending calls in glibc (for testing), and other similar errors
+show up for different places in glibc.  I don't have the exact errors
+on hand right now, but I can get them if anyone thinks they would help.
 
-What bug are you running into?  It's better to get 'em fixed now then try
-to work around 'em...
+Of course, I've tried compiling on MkLinux, and it builds fine, but a
+different component dumps core when built there.  Of course, the same
+component when compiled statically on LinuxPPC-pre-r5, will run on
+MkLinux, but NOT LinuxPPC-r4 (Illegal Instruction).
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+So maybe I should ask the evil question:  Just how binary compatible
+are the various PPC kernels and distributions.
 
+(Built on a PowerBook G3 266, with linuxppc-pre-r5, with egcs-1.1.1 and
+the latest snapshot I could build, with glibc-2.0.108 and glibc-2.1,
+and with some other variations made for the heck of it.)
+
+So anyway, sorry for the sob story, but in the last two weeks I've seen
+more failed builds for dumb reasons... :)
+
+-bcd
+--
+**               Brian Downing
+**  UNIX Systems Administrator
+**        bdowning@wolfram.com
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
