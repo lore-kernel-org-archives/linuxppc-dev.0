@@ -1,40 +1,48 @@
-From: m.venkatraj@exgate.tek.com
-Message-ID: <301A812E6528D511A8F70008C71E578601FCF559@ap-bang-m02.india.tek.com>
-To: wd@denx.de
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: problems with NFS root for ADS860 
-Date: Thu, 11 Mar 2004 00:20:16 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <200403111144.i2BBiOM4015518@ms.usish.com>
+From: "Jack Liu" <Jack_liu@usish.com>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
+	"m.venkatraj@exgate.tek.com" <m.venkatraj@exgate.tek.com>
+Subject: Re: problems with NFS root for ADS860
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Thu, 11 Mar 2004 19:43:15 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Wolfgang,
+Dear all
+    Currently I am porting linux to a new MPC8241 board. I am using
+Motorola sandpoint porting code as a reference. So I modified
+ppc/platforms/Sandpoint*.* file to adapt to the new board. I just
+replace these four files(I am using 2.4.21 ppc kernel).
+    Also, I am using MPC8241's UART.So I also changed setup_io_mappings
+function to
+	"io_block_mapping(0xfc000000, 0xfc000000, 0x02000000, _PAGE_IO); "
 
-> Instead of seaching the web a simple local lookup would have done:
->
-> -> grep 101 /usr/include/*/errno.h
-> /usr/include/asm/errno.h:#define        ENETUNREACH     101
->   /* Network is unreachable */
->
-> "Network is unreachable". Does that ring a bell?
+   Do I still need to make other changes? In my understanding , porting
+linux in ppc platform is register the following files.
+	ppc_md.setup_arch = sandpoint_setup_arch;
+	ppc_md.show_cpuinfo = sandpoint_show_cpuinfo;
+	ppc_md.irq_cannonicalize = sandpoint_irq_cannonicalize;
+	ppc_md.init_IRQ = sandpoint_init_IRQ;
+	ppc_md.get_irq = sandpoint_get_irq;
+	ppc_md.init = sandpoint_init2;
 
-Thanks a lot!
-Coming to think of it, my box and the NFS server are not on the same subnet.
-Could this be an issue?
+	ppc_md.restart = sandpoint_restart;
+	ppc_md.power_off = sandpoint_power_off;
+	ppc_md.halt = sandpoint_halt;
+	ppc_md.time_init = NULL;
+	ppc_md.set_rtc_time = NULL;
+	ppc_md.get_rtc_time = NULL;
+	ppc_md.calibrate_decr = todc_calibrate_decr;
 
-The box has IP 192.158.98.116, whereas the server is 192.158.97.38. But then
-I am specifying the net mask as 255.255.252.0, also tried 255.255.0.0.
-Neither helped.
+	ppc_md.find_end_of_memory = sandpoint_find_end_of_memory;
+	ppc_md.setup_io_mappings = sandpoint_map_io;
 
-The box IS able to read from the network, because u-boot picks up the kernel
-image via tftp from the same server. I am clueless....
+  	Am I correct on this?  Please help me on this.
 
-Thanks a ton for helping me thru.
-
-Venkat
-
+Best regards
+Jack
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
