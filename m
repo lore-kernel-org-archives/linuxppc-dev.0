@@ -1,49 +1,22 @@
-Message-ID: <383ADB77.C06460C4@mvista.com>
-Date: Tue, 23 Nov 1999 10:22:47 -0800
-From: Christian Zankel <chris@mvista.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: cort@fsmlabs.com, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bootloader & head.S weirdness & restructuring
-References: <19991122120429.031138@mailhost.mipsys.com> <19991122143732.B12973@hq.fsmlabs.com> <3839CF18.5D600DE@mvista.com> <19991122165535.A13360@hq.fsmlabs.com> <383A0AA4.1E4227DC@mvista.com> <19991122204001.A14117@hq.fsmlabs.com> <383A3610.BF976EDF@netx4.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96L.991123131603.3509E-100000@unix47.andrew.cmu.edu>
+Date: Tue, 23 Nov 1999 19:28:27 +0100
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
+        linuxppc-dev@lists.linuxppc.org, cort@fsmlabs.com
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: bootable CD's (Re: bootloader & head.S weirdness (patch))
+Message-Id: <19991123192827.032457@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Dan,
+On Tue, Nov 23, 1999, Hollis R Blanchard <hollis+@andrew.cmu.edu> wrote:
 
-Dan Malek wrote:
-> Cort Dougan wrote:
-> > Yes, I do walk along that path quite often :)
+>That's TurboLinux. And they use miBoot.
 
-> > } head.S. (Try to walk along the 'path' of the 8xx implementation).
-> 
-> OK, I am a little clueless at this hour.  As it appears you are
-> making fun of the way I wrote that code, perhaps you should
-> provide a suggestion.  I have more, the 82xx looks just like
-> that :-)......I am off to look at the m68k tree......
+Yes, but miBoot is a BootX derivative and works only on old-world macs
+(with MacOS ROM in real ROM). 
 
-I'm sorry, I didn't want to make fun or criticize any of you. In fact, I
-think you did a very good job. And I don't want to touch most of the
-code at all. I just would like to rearrange them slightly. So, what I
-wanted to say is, that when I first brought up linux on that board I
-went through several files and whenever I found a #if(n)def CONFIG_8xx I
-knew that I had to add another condition. That was what I meant with
-'walking along the patch of the 8xx implementation'. However, that might
-end up in having very long lines like this one
-#if (CONFIG_8xx = 1) || (CONFIG_BOARDA = 1) || CONFIG_BOARD_C = 1) [...]
-at several positions in several files.
-
-So, basically, what I wanted to ask you about, is, what you think about
-rearranging some small part of the sources into dedicated machine
-dependent files and if it is doable and if you know of any constraints
-about the way to do it. Or, if you would suggest just to add another
-machine into the current code.
-
-
-Thanks,
-Christian
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
