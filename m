@@ -1,39 +1,35 @@
-Date: Wed, 28 Nov 2001 16:43:06 -0700
+Date: Wed, 28 Nov 2001 16:44:23 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_ALL_PPC
-Message-ID: <20011128164306.D29541@cpe-24-221-152-185.az.sprintbbd.net>
-References: <15365.24592.409195.392505@gargle.gargle.HOWL>
+Subject: Re: A little fix
+Message-ID: <20011128164423.E29541@cpe-24-221-152-185.az.sprintbbd.net>
+References: <0111281705.AA27318@ivan.Harhan.ORG>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15365.24592.409195.392505@gargle.gargle.HOWL>
+In-Reply-To: <0111281705.AA27318@ivan.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 29, 2001 at 09:07:12AM +1100, Paul Mackerras wrote:
+On Wed, Nov 28, 2001 at 09:05:56AM -0800, Michael Sokolov wrote:
 >
-> I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
-> linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
-> use that).
+> Tom,
 >
-> Does anyone object to this?
+> I think you've goofed a little bit again:
+>
+> ChangeSet@1.699, 2001-11-27 15:44:22-07:00, trini@opus.bloom.county
+>   'bootinfo' is wrong, 'bi_record' is right, whoops.
+>
+>   arch/ppc/boot/common/misc-simple.c
+>     1.12 01/11/27 15:44:21 trini@opus.bloom.county +3 -5
+>     struct bootinfo -> struct bi_record.
+>
+> After this change misc-simple.c doesn't compile due to a missing semicolon, and
+> even if it compiled it would return the wrong address (we need the start of
+> bi_recs, not the end). The fix is below.
 
-Yes.  For historical note, the old 2_5 tree had CONFIG_WORKSTATION_PPC,
-which suited most people.  But there's the fact that most of the
-7xx/74xx boards in _devel now can take a video card and be a
-'workstation' too. :)
-
-How about we don't do this in 2_4 (or 2_4_devel) at all since it'll be a
-bit of a maintance headache (2.4.x, x <= A is CONFIG_ALL_PPC, > A might
-be XXX or ALL_PPC, and >= B it got into kernel.org, ick..).
-
-Perhaps we could even go as far as doing CONFIG_OPENFIRMWARE_PPC for
-chrp/pmac/pop, bring back CONFIG_PREP for 'PReP', and work on doing
-plaform support along the lines of Y/N instead of group A, B, or C.
-
-Or barring all of that messy work, CONFIG_COMMON_PPC :)
+D'oh.  Not my day... Thanks.
 
 --
 Tom Rini (TR1265)
