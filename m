@@ -1,46 +1,39 @@
-Date: Fri, 4 Oct 2002 12:49:30 -0500
-Subject: Re: RFC: generic vector unit support?
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v546)
-Cc: <linuxppc-dev@lists.linuxppc.org>
-To: Daniel Jacobowitz <drow@false.org>
-From: Kumar Gala <kumar.gala@motorola.com>
-In-Reply-To: <20021003213143.GA9675@nevyn.them.org>
-Message-Id: <A1FE3890-D7C1-11D6-9BAC-003065BFB10E@motorola.com>
+Date: Fri, 4 Oct 2002 21:00:38 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Cisco Aironet 340
+To: BlakesleeS@embeddedplanet.com
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <D73A25AA6E54D511AD74009027B1110F2C864F@ORION>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E17xXgq-00006u-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thursday, October 3, 2002, at 04:31  PM, Daniel Jacobowitz wrote:
-
-> On Thu, Oct 03, 2002 at 04:20:14PM -0500, Kumar Gala wrote:
->> I am not sure about what to do about ptrace.  We extended the
->> interface
->> to have two new request types (PTRACE_GETVRREGS, PTRACE_SETVRREGS)
->> which return the full altivec state (all registers, vscr, vrsave).  We
->> could overload these request types to return all the 'vector' state
->> depending on which processor we are.  This would mean debuggers would
->> have to know which processor we are to know how big of a buffer to
->> have
->> for ptrace calls, the memory layout, etc.
+On  30 Sep, this message from Steven Blakeslee echoed through cyberspace:
 >
-> I'd rather see you do it the other way around:  Add PTRACE_GETSPEREGS
-> in the e500, so that the debugger can use ptrace to figure out which
-> registers are available.
+> Hello,
+> I am trying to get a CISCO AIRONET 340 to run on an Embedded Planet CLLF
+> BW31.  I have the latest card service running and I have been able to get an
+> ATA FLASHDISK working but when I plug in the CISCO AIRONET 340 I get an
+> oops.  When you see "Machine check in kernel mode." is when I physically
+> plugged the card into the socket.  Has anybody had problem or been able to
+> get a CISCO AIRONET 340 working.
 
-This seems reasonable, make life easier on the debugger.
+I have had zero problem with my Aironet 350 on an Apple TiBook...
 
->
->> We also extend generic vector idea to allow dumping of altivec/SPE
->> register state into core files (which we do not do currently).
->
-> That's a great idea.  Again, I think Altivec and SPE registers should
-> be tagged differently even though they can't coexist.
+Cheers
 
-I was thinking, by doing this we can add a dump_vector into the generic
-code that handles the creation of core files.
+Michel
 
-- kumar
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
