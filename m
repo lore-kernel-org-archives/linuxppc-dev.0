@@ -1,32 +1,34 @@
-Date: Thu, 27 Jan 2000 21:39:02 +0100
-From: Hartmut Koptein <koptein@inwestnet.de>
-To: Nelson Abramson <pogtal@erols.com>
-Cc: Kevin Puetz <puetzk@iastate.edu>, linuxppc-dev@lists.linuxppc.org,
-        debian-powerpc@lists.debian.org
+Message-ID: <3890B567.D856104E@erols.com>
+Date: Thu, 27 Jan 2000 16:15:19 -0500
+From: Nelson Abramson <pogtal@erols.com>
+MIME-Version: 1.0
+To: ramp@oddjob.uchicago.edu
+CC: Kevin Puetz <puetzk@iastate.edu>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Mozilla M13 Release Build Available
-Message-ID: <20000127213902.H509@isis.de>
-References: <E12DusK-0007We-00@puetz.penguinpowered.com> <3890AA00.36DE0DCD@erols.com>
-Mime-Version: 1.0
+References: <Pine.LNX.4.10.10001271441430.1687-100000@xpol.uchicago.edu>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3890AA00.36DE0DCD@erols.com>; from pogtal@erols.com on Thu, Jan 27, 2000 at 03:26:40PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> When I try and run "./mozilla", it starts, and then stops w/ the
-> error: "./mozilla-bin: error in loading shared libraries: libelf.so.0: cannot open
-> shared object file: No such file or directory "  Obviously this (or atleast seems
-> like) a dependency error.  I have libelf installed (I rpmed a new copy jik), but
-> the file definately does NOT exist on my hard drive.  What package should this
-> file be part of..?  I checked libelf, it doesn't supply it...
+ramp@oddjob.uchicago.edu wrote:
 
-For debian:  many .so.X sym-links comes from the -dev packages. Try
+> To get the required libelf.so.0 do the following
+>
+> # cd /usr/lib ; ls -l libelf.*
+>     This should show libelf.a
+>
+> # ld -shared -o libelf.so.0 --whole-archive libelf.a
+>     will create the dynamic library needed.
+>
+> I went beyond this and stuff started happening but seemed to hang.
+> Maybe it was doing something?
 
-  /devel/libelfg0-dev_0.7.0-1.deb
+Excellent suggestion.  After also installing the new libstdc++, it's up and running.
+ Beyond excellent :)
 
-Thnx,
 
+--Nelson Abramson
 
-    Hartmut
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
