@@ -1,38 +1,56 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Message-ID: <398FB055.9FDC4B64@ncal.verio.com>
+Date: Tue, 08 Aug 2000 00:01:41 -0700
+From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
+To: Takashi Oe <toe@unlserve.unl.edu>
+CC: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org,
+        matthias pfisterer <matthias.pfisterer@gmx.de>
+Subject: Re: CDDA playback on Pismo (and other newer models)
+References: <Pine.LNX.3.96LJ1.1b7.1000807235036.689a-100000@ofey.earthlink.net>
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14735.40732.68586.256772@argo.linuxcare.com.au>
-Date: Tue, 8 Aug 2000 15:48:12 +1000 (EST)
-To: Tom Gall <gall@rochcivictheatre.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: request region in the wrong spot?
-In-Reply-To: <398DD9BB.30521791@rochcivictheatre.org>
-References: <398DD9BB.30521791@rochcivictheatre.org>
-Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom,
-
->   I propose moving this 6 request region calls to
+Takashi Oe wrote:
 >
->   arch/ppc/kernel/setup.c in ppc_init()
 >
->   which is called by init/main do_basic_setup() fairly early.
+> Ultimately, byte swapping and conversion should take place in esd, but
+> there is a bit of problems in its API (maybe easily extensible but it
+> looks convoluted somehow), and API change will break the binary
+> compatibility with the existing apps quite possibly.  Well, esd is an
+> alpha app, so the changes are somewhat expected, but...
+
+Legacy can be a bitch..., on the other hand it writes my paycheck.
+
+They might manage backwards compatibilty by defaulting to the current
+behavior if functions to provide a more complete format description
+aren't called. Anyone on the list have connections with the
+enlightenment/eSound camp?
+
+> Anyhow, attached is a quick hack to the xmms' esd plugin (s<->u conv is
+> completely untested).
 >
->   Is this a reasonable fix?
 
-I suggest you instead put the calls in chrp_init2 in chrp_setup.c.  I
-have just about got 2.4.0-test6-pre6 working on the longtrail chrp
-here, have a look at the linuxcare.com.au::linux-pmac-devel tree.
+Thanks, I'll give it a try. Hopefully we can get it propagated back
+into the XMMS cvs tree, so this isn't a reoccuring issue.
 
-Paul.
+BTW, I've started debugging the Xmms_CdRead plugin, it abends
+the input thread with a corrupted Xlib call. What I've found so
+far is that the problem originates in a call that passes data to
+the analyzer displays. A parm is getting corrupted on the last
+call in a series, it's a constant, so a likely heap corruption.
+But of course it only happens if a particular file
+(~/xmms/input.c) is compiled with -O2 (gcc 2.95.2) ;-)
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+Once the offending file is compiled without optimization it plays
+CD's fine with the ATAPI CDDA i/f. The analyzer displays just
+display fairly uniform noise, would think endiness but the
+visualization data handler has a routine to convert to NE (the
+.wav input module data displays correctly). This could be related
+to the problem that is causing the abend in the call the
+analyzer data input call.
+
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
