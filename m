@@ -1,48 +1,40 @@
-Subject: Re: ssh on ppc 405gp?
-From: Dave Strout <dstrout@linuxfoundary.com>
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030520132322.D67E0C6162@atlas.denx.de>
-References: <20030520132322.D67E0C6162@atlas.denx.de>
-Content-Type: text/plain
-Date: 20 May 2003 09:34:59 -0400
-Message-Id: <1053437700.20954.30.camel@dstrout.nsw.enterasys.com>
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Oh no! . . . "Embedded Linux" doesn't exist
+Date: Tue, 20 May 2003 08:10:41 -0700
+Message-ID: <7D036BD3216A084DB1BD9D62BCEAF29035946D@mail1irv.inside.istor.com>
+From: "Ken Chou" <kchou@istor.com>
+To: <karim@opersys.com>, <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well, I can run tcpdump on either interface with no issues, so I'm
-pretty sure everything is running OK.  In fact, I can tcpdump on the ppc
-box for port 22 while I try it, and all the tcp checksums are OK, so I
-don't think it's at the hardware / driver layer.
+Hi Karim,
 
-I'll go through and add some debugging code to see where / what is wrong
-with the packets.
+I feel that same that "embedded Linux" is an adjective.
+Your article makes the point more clear.
 
-thanks,
-dave.
+Often, I tried to use "Linux inside" or "Linux embedded" to describe our
+embedded systems that use Linux as operating system.  Yet, it gives the
+impression that we are putting a desktop into an embedded system.
 
-On Tue, 2003-05-20 at 09:23, Wolfgang Denk wrote:
-> In message <1053434650.21004.7.camel@dstrout.nsw.enterasys.com> you wrote:
-> >
-> > Thanks for the lead.  I've actually tried that, and I get:
-> > Disconnecting: Corrupted check bytes on input.
+Hopefully, the "Embedded Linux" has more strict meaning when we use as
+noun again.
+
+Ken Chou
+
+> -----Original Message-----
 >
-> Are you absolutely sure that your network interface (and the rest  of
-> the  system, like RAM) is working correctly? This looks somewhat like
-> data corruption...
+> Oh no! . . . "Embedded Linux" doesn't exist -- Karim
+> Yaghmour, author of "Building Embedded Linux Systems," has
+> published an interesting opinion column at O'Reilly Network
+> (the publisher of his book), in which he suggests that
+> "Embedded Linux" doesn't really exist, other than within the
+> "hype" fostered by "marketoids." "Embedded Linux is the stuff
+> of glitzy announcements, hype, and other marketing mumbo
+> jumbo," writes Yaghmour, a strong advocate of open source software.
 >
-> Best regards,
->
-> Wolfgang Denk
->
-
-
---
-Dave Strout
-
-dstrout@linuxfoundary.com    301/869-0818(h)  240/731-2727(c)
-
+> http://linux.oreillynet.com/pub/a/linux/2003/05/12/embedlinux.html
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
