@@ -1,160 +1,75 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B81481355E7@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Virtex-II Pro/405 MMU-cache interaction?
-Date: Wed, 30 Apr 2003 18:15:54 -0700
+Message-ID: <20030502010935.57319.qmail@web40905.mail.yahoo.com>
+Date: Thu, 1 May 2003 18:09:35 -0700 (PDT)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: gcc 2.95.3 powerpc bug
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+We found an optimizer bug in 2.95.3.  (unreported
+until now?)  Posted to gcc-GNATS, but the gcc folks
+said they don't plan a fix for such an old compiler.
+Does anyone on this list have a patch for this
+already?
 
-I have a puzzler which I hope someone can shed some
-light on.
+Basically, the dead-code optimization removes the
+wrong code, leaving instructions which should be
+optimized out and removing instructions which should
+have been left in there.  Happens with -O2 and -Os,
+but not -O1.
 
-For our Virtex-II Pro development board, we have two
-bit files:  one with SDRAM at address 0x00000000 and
-few peripherals, and another with SDRAM at address
-0x80000000 and many periperhals.  (I won't go into
-why; the details don't concern this mailing list.)
+Example below:  inst at offset 14 should have been
+removed, but instead the loop count initialization has
+been incorrectly removed (r31 is not initialized
+before offset 24).
 
-I've successfully ported ELDK to the SDRAM-at-0 system.
-It runs great; I have a BusyBox prompt and commands
-are functional.
+Regards,
+Brian
 
-Also, our simple debug monitor runs fine with SDRAM at
-either 0x00000000 or 0x80000000.  Exhaustive memory tests
-pass with cache on or off, for both systems.  It only
-remains to get Linux running as well with the second
-bit file as it does with the first.  (Why bother?  The
-reason is that with the second bit file, I have access
-to the flash for non-volatile storage.)
+#include <stdio.h>
+static void func(int a, int b)
+{
+   0:   94 21 ff f0     stwu    r1,-16(r1)
+   4:   7c 08 02 a6     mflr    r0
+   8:   93 c1 00 08     stw     r30,8(r1)
+   c:   93 e1 00 0c     stw     r31,12(r1)
+  10:   90 01 00 14     stw     r0,20(r1)
+    int err;
+    unsigned int port;
 
-(Side note:  With the SDRAM at address 0, on the PLB bus,
-memory performance is about 3x faster than when using
-the bit file with SDRAM at 0x80000000 on the OPB bus.
-This is believed to be due to propagation delay through
-the PLB-to-OPB bridge.)
+    switch (b) {
+  14:   28 04 00 04     cmplwi  r4,4
+        case 0:
+        case 1:
+                err = 1;
+                break;
+        case 2:
+        case 3:
+                err = 2;
+                break;
+        case 4:
+        default:
+                err = 3;
+    }
 
-For the SDRAM-at-0x80000000, of course I needed to make
-the necessary mods to the tophys and tovirt macros for
-assembly code, and ___pa and ___va for C code, as well
-as misc. fixups in the boot wrapper (e.g. misc-embedded.c
-gunzips to a hard-coded 0 address).
+    for (port = 0; port < 5; port++)
+        printf("port: %d\n", port);
+  18:   7f e4 fb 78     mr      r4,r31
+  1c:   38 7e 00 00     addi    r3,r30,0
+  20:   48 00 00 01     bl      20 <func+0x20>
+  24:   3b ff 00 01     addi    r31,r31,1
+  28:   28 1f 00 04     cmplwi  r31,4
+  2c:   40 81 ff ec     ble     18 <func+0x18>
+}
+  30:   80 01 00 14     lwz     r0,20(r1)
+  34:   7c 08 03 a6     mtlr    r0
+  38:   83 c1 00 08     lwz     r30,8(r1)
+  3c:   83 e1 00 0c     lwz     r31,12(r1)
+  40:   38 21 00 10     addi    r1,r1,16
+  44:   4e 80 00 20     blr
 
-Having made those changes, the early init code runs
-fine -- i.e. machine_init() and MMU_init(), before
-start_kernel.  Note that this code runs with a pair
-of 16MB TLB mappings that cover all of the 32MB SDRAM.
-During this time, the "real" mappings are prepared
-in SDRAM -- 1st level in swapper_pg_dir (here, at
-0xc011d000) and 2nd level (here, at 0xc015f000).
-
-Here is the puzzler:
-
-*	While the MMU is still on, in MMU_init et al.,
-	I can see data 0xc015f000 at 0xc011dc00.  Also
-	I see ASCII text at 0xc011e000 (cmd_line).
-
-*	In head_4xx.S, after return from MMU_init,
-	the MMU is briefly switched off and a tlbia
-	is done.  Here, I still see ASCII text at
-	0x8011e000, but I read zeroes at 0x8011dc00!!
-
-	(Note:  In perhaps 1 of 20 or 30 runs, I
-	will successfully data at 0x8011dc00 here.)
-
-	When the MMU is switched back on and head_4xx.S
-	rfi's to start_kernel, the first ITLB miss (which
-	is expected) fails to read page-table data from
-	swapper_pg_dir at 0x8011dc00, so there is now
-	an endless cycle of exceptions.
-
-*	Here is the odd part:  Leaving the SDRAM intact
-	(our board has SRAM), I now download our debug
-	monitor to SRAM, and use it to view the SDRAM.
-
-	And here, I manually set up TLB entries mapping *not*
-	0xc0000000 => 0x80000000 like Linux did, but rather
-	0x80000000 => 0x80000000 like Linux did.
-
-	The result is clear:
-
-	avmon> tlb enable
-	avmon> $b 0x8011dc00 0x10
-	8011dc00: c0 15 f0 00  c0 16 00 00  c0 16 10 00  c0 16 20 00 |
-.............. .
-
-	avmon> tlb disable
-	avmon> $b 0x8011dc00 0x10
-	8011dc00: 00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00 |
-................
-
-	avmon> tlb enable
-	avmon> $b 0x8011dc00 0x10
-	8011dc00: c0 15 f0 00  c0 16 00 00  c0 16 10 00  c0 16 20 00 |
-.............. .
-
-	avmon> tlb disable
-	avmon> $b 0x8011dc00 0x10
-	8011dc00: 00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00 |
-................
-
-	avmon> tlb enable
-	avmon> $b 0x8011dc00 0x10
-	8011dc00: c0 15 f0 00  c0 16 00 00  c0 16 10 00  c0 16 20 00 |
-.............. .
-
-That is, the data goes away when the MMU is off, but comes back again
-when the MMU is on!
-
-I thought this might be cache staleness, but the weird thing is that:
-*	The kernel populated swapper_pg_dir with 0xc011dc00 virtual mapping.
-*	At physical address 0x8011dc00, the data is gone.
-*	When I map to a *different* virtual address, namely virtual
-0x8011dc00,
-	the data returns -- so I don't see how some cache line for
-0xc011dc00
-	could be used, given that I'm reading from a different virtual
-address
-	and getting the same data.
-
-Has anyone any advice?  I've been through the IBM 405 errata document and
-haven't seen anything that seems to apply ... any and all advice is
-appreciated.
-
-Thanks.
-
-For reference, here are my actual console printouts:
-
-MMU_init: total_lowmem 02000000
-adjust_total_lowmem: total_memory=02000000 total_lowmem=02000000
-max_low_mem=30000000
-MMU_init: total_lowmem 02000000
-MMU_init: total_lowmem 02000000
-MMU:hw init
-swapper_pg_dir @ c011dc00 = 00000000
-MMU:mapin
-mapinram: total_lowmem = 02000000
-MMU:mapin_ram done
-swapper_pg_dir @ c011dc00 = c015f000
-MMU:setio
-board_io_mapping: a0000000 => fdfff000  (Note:  ioremap() for my UART)
-swapper_pg_dir @ c011dc00 = c015f000
-MMU:exit
-spd @ c011dc00 = c015f000
-hi                   (Note:  this is in head_4xx.S with the MMU still on)
-3:c011dc00:c015f000  (swapper_pg_dir data still vislble)
-3:c011e000:636f6e73  (cmd_line data visible)
-ph                   (Note:  this is in head_4xx.S with the MMU off now)
-4:8011dc00:00000000  (swapper_pg_dir data is *invisible*)
-4:8011e000:636f6e73  (cmd_line data is visible)
-
-(Note: At this point XMD reveals an endless cycle of ITLB misses, since
-the ITLB miss handler can't read swapper_pg_dir.  Nothing more prints
-to the screen.)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
