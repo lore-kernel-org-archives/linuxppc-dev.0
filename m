@@ -1,27 +1,42 @@
-Date: Wed, 13 Jan 1999 16:03:39 -0800 (PST)
-From: Ryan Mack <mackman@alz.com>
-To: linuxppc-dev@lists.linuxppc.org
-cc: mackman@alz.com
-Subject: Interrupt Key Support?
-Message-ID: <Pine.LNX.4.05.9901131559160.596-100000@mackman.caltech.edu>
+Date: Wed, 13 Jan 1999 20:12:35 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: a sun <asun@saul9.u.washington.edu>
+cc: "David A. Gatwood" <marsmail@globegate.utm.edu>,
+        linuxppc-dev@lists.linuxppc.org, bh40@calva.net
+Subject: Re: Porting to NuBus PowerMacs
+In-Reply-To: <199901131910.LAA28570@saul9.u.washington.edu>
+Message-ID: <Pine.LNX.4.04.9901132008180.926-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Having been recently frustrated with the lock ups of the accellerated
-FBDev X server, I've been thinking about alternative ways to rebooting my
-system. GPM doesn't work when the hardware crashes, and telnetting from
-another machine is a hassle. I was curious what possiblity there would be
-to implement kernel-level or daemon-level support for the "Interrupt" key
-present on most PowerMacs and PowerBooks. It seems if this could fuction
-as a soft-reboot command (or any other cofigurable command) it would save
-a lot of frustration of hard-rebooting in a networkless enviroment or save
-time anywhere else. Just a though, I know too little about ppc hardware to
-judge how hard it would be. Thanks.
+> well, my "oh so clever plan" is actually to use the gestalt
+> information to mock up something that i pass to the m68k interrupt
+> routines. presto! no more uglification of irq.c. given the
+> similarities between the apus stuff and the nubus powermac stuff, i'm
+> actually turning the nubus powermacs into a variant of apus for now. a
+> lot of my fiddling actually ends up making some minor changes to the
+> m68k code and calling that instead. 
 
--Ryan Mack
+Cort is in the process of rewriting irq.c, and I have a (somewhat large)
+patch based on Corey Minyard's work which redid irq.c and most all the
+machine dependant functions. You might want to take a look at this, since
+I suspect it might make help reduce the 'uglification'.
+
+it's at 
+
+ftp://ftp.microux.com/pub/linux/linuxppc-rework-troy-2.patch.gz
+
+Btw, I have a 7100/80 I'd like to try this on if you ever get it working
+;)
+
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
