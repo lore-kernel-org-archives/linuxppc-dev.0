@@ -1,30 +1,27 @@
-Message-ID: <3CEA25C8.3030400@fiberlogic.com>
-Date: Tue, 21 May 2002 18:47:36 +0800
-From: "Lin, Nan-Hung" <carl@fiberlogic.com>
+Subject: 405GP TLBHI "E" field
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Console problem with MPC855T + Linux 2.4.3
-Content-Type: text/plain; charset=Big5
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Tue, 21 May 2002 10:04:21 -0400
+Message-ID: <3D296C067098F149B11A8F4FC37C054606F4E8@EXVS1.ops.infiniswitch.com>
+From: "Curry, Diane" <dcurry@infiniswitch.com>
+To: "Linuxppc Newsgroup (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I run the linux 2.4.3 on a MPC855T-based system
-with the SMC1 as the console. The baud rate of
-the SMC1 is 38400 bps.
+Hello,
+  I'm running 2.4.14pre3 on a custom ppc405GP board that has a little-endian device
+on the peripheral bus.  I've modified the finish_tlb_load code path to recognize the
+physical address of the device and set the "E" bit in the tlb entry for the page.
+The driver and device work fine using this feature, but what I did in finish_tlb_load
+is not a reasonable solution.  Is there a kernel interface callable from a driver
+that can be used to specify the endianness of a memory range, and set the "E"
+bit appropriately?  If not, are there any plans to implement this capability?
 
-The console works fine for a few days (weeks
-sometimes) from the system booting up. Then,
-the console does not accept any input. At the
-same time, the console still output (it shows
-messages correctly).
+Thanks, in advance.
 
-What's the problem ?
-Please help.  Thanks
-
-
------------------------------------------------
-Carl Lin                    carl@fiberlogic.com
+Diane Curry
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
