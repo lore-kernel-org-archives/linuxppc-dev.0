@@ -1,42 +1,49 @@
-Message-Id: <200003242241.XAA00516@piglet.grunz.lu>
-Date: Fri, 24 Mar 2000 23:41:32 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: LongTrail PCI resource assignment
-To: bh40@calva.net
-cc: tas@mindspring.com, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20000324141255.013260@mailhost.mipsys.com>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Date: Sat, 25 Mar 2000 00:27:45 +0100
+To: "Henry A. Worth" <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: OF compatible serial PCMCIA cards?
+Message-Id: <20000325002745.023968@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  24 Mar, this message from Benjamin Herrenschmidt echoed through cyberspace:
->
-> On Fri, Mar 24, 2000, Timothy A. Seufert <tas@mindspring.com> wrote:
->
->>If there was a really, really good reason to keep OF up to date
->>(like, say, if we could break back into the OF console like you can
->>on Sparcs), then it would be OK.  Otherwise it is most likely
->>unnecessary bloat, and leads to potential confusion (and bugs).  Is
->>there any such reason on ppc?
->
-> After thinking a bit more about this, I beleive we could simply add a
-> property to the nodes of cards for which we change the bus number,
-> indicating the new linux pci dev infos. The way, we keep the "reg"
-> property intact (it may be useful for rebuilding OF path).
+On Fri, Mar 24, 2000, Henry A. Worth <haworth@ncal.verio.com> wrote:
 
-Good idea. Fits what I said before about special code ;-)
+>Does anyone know of any PCMCIA serial I/O cards that
+>would be compatible with OF for use as the OF and/or
+>XMON/Linux consoles? This would be for the PB2000.
+>
+>I ran across a site a with links to PCMCIA cards with
+>Mac support.  It had a link to www.socketcom.com, which
+>a local store stocks, but the socketcom site did not
+>have word-one about Mac support. Their serial cards are
+>16550 based, any hope that OF would support it or at
+>least enable the interface so XMON and the kernel
+>could use the port at boot?
 
-Michel
+Well, I don't think you'll find what you search. I beleive OF can only
+use the zilog SCCs in the Apple ASIC. Any other solution would require a
+cardbus card with an OF ROM containing OF methods for the serial port.
+And I'm not even sure OF can actually use the cardbus at all.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+However, for xmon, you can probably use any PCMCIA serial card, configure
+manually the TI bridge setup at boot (may be a bit nasty) and write xmon
+support for this serial port (not too difficult).
+
+Paul also hacked a way to tie two modem together with a cross-over cable
+that works with the internal modem. I don't remember which command you
+have to use on the remote modem but looks at what xmon does in
+arch/ppc/xmon/start.c when the modem stuff is enabled.
+>
+>There's also a telnet package in OF, what's that about?
+>Is it possible to telnet into OF?
+
+Well, OF can do already bootp and tftp... maybe they have a full IP stack
+with a telnet client/server ?
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
