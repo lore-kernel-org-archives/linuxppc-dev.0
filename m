@@ -1,45 +1,36 @@
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFFA00C@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Gabriel Paubert'" <paubert@iram.es>
-Cc: "'Troy Benjegerdes'" <hozer@drgw.net>,
-	"'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
-	"'Paul Mackerras'" <paulus@samba.org>
+Message-Id: <5.1.0.14.2.20020510110227.0236c938@falcon.si.com>
+Date: Fri, 10 May 2002 11:06:21 -0400
+To: linuxppc-embedded@lists.linuxppc.org
+From: Jerry Van Baren <vanbaren_gerald@si.com>
 Subject: RE: Bogomips and loops_per_jiffy
-Date: Fri, 10 May 2002 10:54:50 -0400
+In-Reply-To: <NCBBIINEHIPFGJPLBEIFOEMJDGAA.acurtis@onz.com>
+References: <F1BED55F35F4D3118C0F00E0295CFF4DFFA00A@mail.mediatrix.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gabriel, (sorry to all for the previous incomplete mail!)
+The 8260's 1 second timer is only useful if your hardware clocks the "RTC"
+clock input at the proper rate.  A lot of embedded boards don't bother
+because the usefulness of having another crystal on the board just to clock
+a counter is very tenuous.
 
-> I don't yet understand this explanation. Jiffy stamp is
-> initialized in time_init, in the line:
+gvb
+
+
+At 07:23 AM 5/10/2002 -0700, Allen Curtis wrote:
+
+>FYI: There is a 1 second timer in the 8260 that could be used. (Assuming
+>that I understand what you are referring to) I am not sure why m8260_setup.c
+>just sets/returns a global variable but there is/was a note there mentioning
+>the 1 second timer. This is what we are using. It is actually started in our
+>BIOS but could be done just as easily in the setup routine.
 >
-> last_jiffy_stamp(0) = tb_last_stamp = stamp;
+> > My platform uses an 8260 processor, and AFAIK there is no RTC.
+> > The function
 >
-> and then jiffy_stamp is simply a temporary copy of
-> last_jiffy_stamp in the interrupt handler.
+>
 
-Mmmm! You are right! I was annoyed of always getting the message,
- "Warning: real time clock seems stuck!"
-and it also caused a 1-2 seconds delay before getting something printed to
-the serial port on boot up. So I set the value of ppc_md.get_rtc_time to
-NULL, since I have no RTC. That is why I never enter this code in time_init.
-It correctly removed the annoying message, but brought this insidious bug.
-
-Regards,
-
---------------------------------------------
- Jean-Denis Boyer, B.Eng., System Architect
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
