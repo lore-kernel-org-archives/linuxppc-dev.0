@@ -1,75 +1,44 @@
-Date: Sat, 7 Jul 2001 01:15:40 -0500
-From: Colin Gibbs <colin@rmconsulting.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: pcmcia broken in recent benh kernel
-Message-ID: <20010707011540.B9329@localhost>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="5gxpn/Q6ypwruk0T"
+Message-Id: <200107080655.IAA00892@piglet.grunz.lu>
+Date: Sun, 8 Jul 2001 08:55:22 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: IBM Microdrive PCCard on TiBook (ide-cs module)
+To: iweiny@acm.org
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <3B460601.6A3AA7D9@acm.org>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---5gxpn/Q6ypwruk0T
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On   6 Jul, this message from Ira Weiny echoed through cyberspace:
+> 3) I have found that the io_base addresses is 0x1000 (as set in my
+> config.opts file) and this is what is passed to the ide_register
+> function.  Changing this address does not seem to change it's behavior
+> though.  (??)
 
-With a recent benh kernel I get this message on card insertion:
-  cs: unable to map card memory!
+Here's what I have in config.opts on my TiBook:
 
-This seems to be caused by changes to the pci code. In the old kernel
-(2.4.4-pre3) I have this in /proc/iomem:
+include port 0x1000-0x10ff, port 0x1400-0x14ff
+include memory 0x80400000-0x807ff000, memory 0xf3000000-0xf33ff000
 
-80081000-80081fff : usb-ohci
-80082000-80082fff : usb-ohci
-a0000000-a0003fff : aty128fb MMIO
-a4000000-a7ffffff : aty128fb FB
+This seems to work well; a modem card gets ports at 0x1000 and dos work
+OK...
 
-With the new kernel (2.4.6-pre8) I get this:
+Note however that IDE on PowerMacs is a bit of a mess; things like you
+need PowerMac built-in IDE support compiled in to get an IDE add-on
+board working even though the box in questions doesn't have any built-in
+IDE...
 
-80000000-9fffffff : /pci@f2000000
-  80000000-8007ffff : Apple Computer Inc. KeyLargo Mac I/O
-  80080000-80080fff : Texas Instruments PCI1211
-  80081000-80081fff : Apple Computer Inc. KeyLargo USB (#2)
-    80081000-80081fff : usb-ohci
-  80082000-80082fff : Apple Computer Inc. KeyLargo USB
-    80082000-80082fff : usb-ohci
-  80400000-807fffff : PCI CardBus #02
-a0000000-afffffff : /pci@f0000000
-  a0000000-a0003fff : ATI Technologies Inc Mobility M3 AGP 2x
-    a0000000-a0003fff : aty128fb MMIO
-  a4000000-a7ffffff : ATI Technologies Inc Mobility M3 AGP 2x
-    a4000000-a7ffffff : aty128fb FB
-f1000000-f1ffffff : /pci@f0000000
-f3000000-f3ffffff : /pci@f2000000
-  f3000000-f33fffff : PCI CardBus #02
-f5000000-f5ffffff : /pci@f4000000
-  f5000000-f5000fff : Apple Computer Inc. UniNorth FireWire
-  f5200000-f53fffff : Apple Computer Inc. UniNorth GMAC
+Michel
 
-The attached patch fixes things for me. It uses the check_region/
-check_mem_region in the pcmcia code which descents the resource
-tree instead of check_resource which does not.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Colin
-
---5gxpn/Q6ypwruk0T
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="rsrc_mgr.c.patch"
-
---- linux-2.4-benh/drivers/pcmcia/rsrc_mgr.c	Tue Apr  3 05:48:39 2001
-+++ linux-build/drivers/pcmcia/rsrc_mgr.c	Fri Jul  6 00:01:46 2001
-@@ -104,8 +104,8 @@
-
- ======================================================================*/
-
--#define check_io_resource(b,n)	check_resource(&ioport_resource, (b), (n))
--#define check_mem_resource(b,n)	check_resource(&iomem_resource, (b), (n))
-+#define check_io_resource(b,n)	check_region((b), (n))
-+#define check_mem_resource(b,n)	check_mem_region((b), (n))
-
- /*======================================================================
-
-
---5gxpn/Q6ypwruk0T--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
