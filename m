@@ -1,51 +1,29 @@
-Message-ID: <3906E062.EB20B459@relog.ch>
-Date: Wed, 26 Apr 2000 14:26:10 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Message-ID: <3906E33F.89D2E839@mondonet.net>
+Date: Wed, 26 Apr 2000 11:38:23 -0100
+From: Mario Scarpa <m.scarpa@mondonet.net>
 MIME-Version: 1.0
-To: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
+To: Bernhard Reiter <bernhard@intevation.de>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree 4.0 dual monitor on AGP G4
-References: <200004240616.XAA02709@pop3.ucdavis.edu>
-	 <39058023.39877695@relog.ch> <3905650C.FBCBB453@ucdavis.edu>
-	 <3905CD24.A0FC8A9F@relog.ch> <3905E436.124D745E@ucdavis.edu>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: Lombard hard freeze
+References: <20000424161311.23404.qmail@web1705.mail.yahoo.com>
+	<20000424191708.C16557@cheops.usf.Uni-Osnabrueck.DE>
+	<39058B20.7D29A470@mondonet.net>
+	<20000425144459.E22219@cheops.usf.Uni-Osnabrueck.DE>
+	<390594BF.97FD809E@mondonet.net>
+	<20000426142256.J2544@cheops.usf.Uni-Osnabrueck.DE>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"W. Taylor Holliday" wrote:
+> The first diagostic of the problem is, that it is a usb problem.
 
-> I modified the config file you sent me to use the secondary monitor only
-> (since XFree wouldn't parse the dual monitor layout section),
+I would say the _very first_ ;-)
+I noticed another interesting thing: the freeze almost always
+happened whit heavy network activity. All the tries to reproduce
+the problem failed for now (as usual, when you dload something
+not useful ;)). Will keep on trying.
 
-Dang, gotta look at the syntax for the Layout Section again :)
-
-BTW you can quickly choose a Screen Section with the -screen command line
-option.
-
-
-> and unfortunately the kernel still crashed. Right now trying to get
-> both monitors working is getting ahead of myself - i'm first shooting to get
-> the secondary one working alone.
-
-Very sensible.
-
-> Unfortunately, the XFree86 4.0 docs say that PCI id's are mandatory for
-> dual-head configs.
-
-So? You have specified them.
-
-> Oh and it dies before it writes to the logfile. So I have no clue what to do
-> next. Suggestions?
-
-- remount (at least) the partition containing /var/log in sync mode (to get at
-  least something from the log)
-
-- run X with -probeonly
-
-
-Michel
-
+Mario.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
