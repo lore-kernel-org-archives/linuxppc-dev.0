@@ -1,39 +1,42 @@
 Content-Type: text/plain;
   charset="iso-8859-1"
 From: Ricardo Scop <scop@vanet.com.br>
-To: Ken Applebaum <applebaumk@embeddedplanet.com>
+To: Dan Malek <dan@embeddededge.com>,
+	Ricardo Scop <scop@vanet.com.br>
 Subject: Re: Linuxppc and MPC8255 routing performance
-Date: Tue, 13 Nov 2001 14:03:48 +0300
-References: <D73A25AA6E54D511AD74009027B1110F04F5E1@ORION>
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F04F5E1@ORION>
+Date: Tue, 13 Nov 2001 15:38:47 +0300
 Cc: linuxppc-embedded@lists.linuxppc.org
+References: <D73A25AA6E54D511AD74009027B1110F04F5E1@ORION> <01111314034801.01064@scop.digitel.com.br> <3BF1522D.1010706@embeddededge.com>
+In-Reply-To: <3BF1522D.1010706@embeddededge.com>
 MIME-Version: 1.0
-Message-Id: <01111314034801.01064@scop.digitel.com.br>
+Message-Id: <01111315384703.01064@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, Ken
+On Tuesday 13 November 2001 20:02, Dan Malek wrote:
 
-On Monday 12 November 2001 18:28, Ken Applebaum wrote:
-> ricardo,
+> Ricardo Scop wrote:
+> > Nevertheless, I'm aware that using local bus memory for I/O data flowing
+> > between CPM and CPU may improve performance in some Linux applications,
+> > so I would like to experiment with this.
 >
-> does your board have both banks of memory populated?
->
+> You don't need this as a solution to your performance troubles.  I have
+> been experimenting with using this space for socket buffers, but unless
+> you have something else on the bus consuming the cycles, I haven't seen
+> any benefit.  It could be very useful for custom network applications,
 
-If you mean 'both banks" as a memory bank at the local bus and another at the
-60x bus, the answer is yes, our prototype hardware has them, for hardware
-debugging purposes. But I didn't enable the use of the local memory bank in
-Linux so far, because we didn't originally intend to use it in our final
-product...
+Gee, sorry... I meant _network_ applications, indeed. And, thank you for your
+advice.
 
-Nevertheless, I'm aware that using local bus memory for I/O data flowing
-between CPM and CPU may improve performance in some Linux applications, so I
-would like to experiment with this. Unfortunatelly, I'm very new to Linux, so
-I don't know how to configure it for using local memory. If you have any
-ideas...
+As for our performance troubles, there have been some improvements; we were
+making some mistakes regarding both FCC and PHY programming. After fixing
+those, we're able to achieve more than 50 Mbits/s in a _real_ FTP transfer,
+which is more than enough for our router application.  We are still
+conducting more performance tests with netperf, and will publish the resuts
+when available.
 
-Thanks.
+Thanks,
 
 ~Ricardo
 
