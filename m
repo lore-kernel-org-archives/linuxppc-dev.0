@@ -1,12 +1,12 @@
-Message-ID: <3C97C1EE.60D106FA@mvista.com>
-Date: Tue, 19 Mar 2002 17:55:42 -0500
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Message-ID: <3C97C301.B5A95C8B@mvista.com>
+Date: Tue, 19 Mar 2002 18:00:17 -0500
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
 To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org, mporter@mvista.com,
-	linux-galileo@source.mvista.com
-Subject: Re: [PATCH] My GT-64260 enhancements
-References: <0203200046.AA08257@ivan.Harhan.ORG>
+Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+References: <0203200043.AA08228@ivan.Harhan.ORG>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
@@ -14,21 +14,33 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Michael Sokolov wrote:
 
-> OK, guys, here again is my patch to bi_rec'ize the EV-64260-BP port, the common
-> GT-64260 code, and the GT-64260 Ethernet driver in linuxppc_2_4_devel (against
-> 2_4_devel because it adds two new bi_recs to the master official bi_rec list in
-> bootinfo.h) with all controversial parts removed, just the bi_rec'ization.
+> Mark A. Greer <mgreer@mvista.com> wrote:
 >
-> I ask Matt Porter, the maintainer listed in linuxppc_2_4_devel/MAINTAINERS to
-> either push this patch into linuxppc_2_4_devel or give a good reason not to.
+> > I like what Michael has done but want to add more and change the
+> > BI_GT64260_ETH_CFG to a more generic BI_ETH_CFG.
+>
+> I disagree. I don't see how a generic BI_ETH_CFG is possible. See how I've
+> implemented BI_GT64260_ETH_CFG in arch/ppc/kernel/setup.c:parse_bootinfo: it
+> injects the information from this record directly into the gt64260_eth driver,
+> which is where this information is needed.
 
-No, Matt is not the maintainer for any of the 64260 code.  If anyone is, it would be me (or Troy) and I will
-resist pushing such a patch until there is agreement on what the set of bi_recs will be and there is a patch
-that implements *all* of them.  However, if there is no agreement in the next few days, I will push it since it
-is a step in the right direction.
+My point is that "you way" would change to a more generic way for all enet driver.
 
-If enough people object to my position then I will apply it.  Alternatively, if you can convince someone else
-to push it for you, more power to you.
+The BI_ETH_CFG has already been shot down so we don't need to worry about it
+anyway.
+
+> Next when someone wants to do the same for, say, 8260 Ethernet, they'll have to
+> add BI_8260_ETH_CFG or whatever. I don't see any other way: what if I built a
+> board with an 8260 CPU and a GT-64260 attached to the 60x bus coming out of the
+> 8260 (such a board was in the works at SBS before I left) and both 8260 and GT
+> Ethernets are used? What will parse_bootinfo() do with a BI_ETH_CFG then? Is it
+> going to inject the MAC address into the 8260 Ethernet driver, into the GT
+> Ethernet driver, or where? How do you make sure that each Ethernet interface
+> gets the MAC address that belongs to it?
+
+This is a good point and this is an issue with any generic ethernet bi_rec
+scheme.  At this point, I'm back to preferring what you've done since...well...its
+done and I don't see anyone else caring much about this for other drivers.
 
 Mark
 
