@@ -1,63 +1,98 @@
-To: Erik Christiansen <erik@dd.nec.com.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Boot Loader 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 09 Dec 2002 17:05:09 +1100."
-             <20021209060509.GA5743@dd.nec.com.au>
-Date: Mon, 09 Dec 2002 08:43:47 +0100
-Message-Id: <20021209074352.78A33C6267@atlas.denx.de>
+Message-ID: <3DF45D05.5030003@intracom.gr>
+Date: Mon, 09 Dec 2002 11:06:13 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@au1.ibm.com>
+Cc: joakim.tjernlund@lumentis.se, Matt Porter <porter@cox.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Regarding consistent_alloc
+References: <20021206085909.B17918@home.com>	<IGEFJKJNHJDCBKALBJLLCEJGFIAA.joakim.tjernlund@lumentis.se> <15857.15826.513311.884408@argo.ozlabs.ibm.com>
+In-Reply-To: <15857.15826.513311.884408@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20021209060509.GA5743@dd.nec.com.au> you wrote:
+Paul Mackerras wrote:
+
+>Joakim Tjernlund writes:
 >
->    Had a look at http://sourceforge.net/projects/u-boot , as recently
-> mentioned by Jerry Van Baren, but the site states "This Project Has Not
-> Released Any Files", and the cvs repository link states "Only project
-> developers can access the CVS tree via this method."
+>
+>>m8xx_cpm_hostalloc() does not keep the DMA handle and __pa() does not work
+>>on addresses returned by m8xx_cpm_hostalloc(). I just found that out the
+>>hard way when upgrading from MV 2.4.2 to linuxppc_2_4_devel 2.4.20. My SPI driver
+>>hung as soon you tried to read something.
+>>
+>
+>Then m8xx_cpm_hostalloc should be changed so it returns the DMA
+>address along with the virtual address (of the uncached mapping).
+>
+>An alternative which will work, at least at present, is to use iopa()
+>on the virtual address.  However, that assumes that DMA bus addresses
+>are identical to CPU physical addresses.  That is true at the moment
+>on all embedded PPC platforms that I know of currently, but there is
+>no guarantee that it will always be true.  That is why I think it is
+>better to make a practice of saving the DMA address that you get back
+>from consistent_alloc and using that.
+>
+>Paul.
+>
+>
+>
+>
+>
+Since I'm the one that started this thread let me make a few points.
 
-It is correct that we haven't released an official version of  U-Boot
-yet, but as you can see from the project page it is based on PPCBoot,
-which has been around for _some_ time.
+1. The comment that consistent_alloc is tied to the PCI bus is valid,
+since the dma_handle is returned by a call to virt_to_bus(), with
+the virt_to_bus() being:
 
-And of course the CVS repository  _is_  available  to  everybody  for
-anonymous CVS access. The page you quote is pretty clear:
+/*
+ * The PCI bus is inherently Little-Endian.  The PowerPC is being
+ * run Big-Endian.  Thus all values which cross the [PCI] barrier
+ * must be endian-adjusted.  Also, the local DRAM has a different
+ * address from the PCI point of view, thus buffer addresses also
+ * have to be modified [mapped] appropriately.
+ */
+extern inline unsigned long virt_to_bus(volatile void * address)
+{
+#ifndef CONFIG_APUS
+        if (address == (void *)0)
+                return 0;
+        return (unsigned long)address - KERNELBASE + PCI_DRAM_OFFSET;
+#else
+        return iopa ((unsigned long) address);
+#endif
+}
 
-	Anonymous CVS Access
+Also the consistent_sync() takes as a direction argument values like
+PCI_DMA_FROMDEVICE.
 
-        This project's SourceForge.net CVS repository can be checked
-        out through anonymous (pserver) CVS with the following
-        instruction set. The module you wish to check out must be
-        specified as the modulename. When prompted for a password for
-        anonymous, simply press the Enter key.
+It has something obviously to do with a PCI bus. My board, and I believe most of the boards with a 8xx do not have a PCI bus.
 
-	cvs -d:pserver:anonymous@cvs.u-boot.sourceforge.net:/cvsroot/u-boot login
+Is it possible to modify consistent_alloc to be something more
+generic?
 
-	 cvs -z3 -d:pserver:anonymous@cvs.u-boot.sourceforge.net:/cvsroot/u-boot co modulename
+2. I have a requirement to have my drivers loaded as modules.
+m8xx_cpm_hostalloc has a very simplistic implementation, which
+makes it unsuitable for something like that. I have some patches
+that fix both m8xx_cpm_hostalloc and 8xx_cpm_dpalloc by implementing
+a proper heap, with free space management and coalescing.
+What is the proper way to push them, and to whom?
 
-         Updates from within the module's directory do not need the
-	-d parameter.
+3. I have already posted my QMC driver, and I'm in the process
+of writting some documentation and usage scenarios.
+Could someone please have a look and get back to me.
+I'm open to suggestions, and I would very much like to have it
+included in the tree.
+I know it is not perfect but still as it stands there are no QMC
+drivers in the tree.
 
-Developer access is indeed for developers only.
-
->    Until the U-Boot surfaces, would this be a good way to go, when faced
-> with a custom board?
-
-No.  You  should  not  spend  time  on  a  project  which  has   been
-discontinued. Just download the latest (top of tree) version from the
-U-Boot CVS server.
-
-Best regards,
-
-Wolfgang Denk
+Regards
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Ernest asks Frank how long he has been working for the company.
-        "Ever since they threatened to fire me."
+Pantelis Antoniou
+INTRACOM S.A. Greece
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
