@@ -1,59 +1,63 @@
-Message-ID: <19990120154321.N3026@maxime.u-strasbg.fr>
-Date: Wed, 20 Jan 1999 15:43:21 +0100
-From: Sven LUTHER <luther@maxime.u-strasbg.fr>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        luther@dpt-info.u-strasbg.fr
-Cc: Michel Daenzer <michdaen@iiic.ethz.ch>, nardinoc@CS.UniBO.IT,
-        Linux/APUS <linux-apus@sunsite.auc.dk>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: [pm2fb] update 990110 - first public release ;)
-Reply-To: luther@dpt-info.u-strasbg.fr
-References: <19990120144929.E3026@maxime.u-strasbg.fr> <Pine.LNX.4.03.9901201514370.24625-100000@mercator.cs.kuleuven.ac.be>
-Mime-Version: 1.0
+Message-ID: <XFMail.990120152136.gdt@linuxppc.org>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.03.9901201514370.24625-100000@mercator.cs.kuleuven.ac.be>; from Geert Uytterhoeven on Wed, Jan 20, 1999 at 03:17:26PM +0100
+MIME-Version: 1.0
+In-Reply-To: <36A520DE.DCC9F600@phx.mcd.mot.com>
+Date: Wed, 20 Jan 1999 15:21:36 -0000 (GMT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Johnnie Peters <jpeters@phx.mcd.mot.com>
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+Cc: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>
+Cc: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
+        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
+        Dan Malek <dmalek@jlc.net>, Cort Dougan <cort@persephone.cs.nmt.edu>,
+        Michael Meissner <meissner@cygnus.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 20, 1999 at 03:17:26PM +0100, Geert Uytterhoeven wrote:
-> On Wed, 20 Jan 1999, Sven LUTHER wrote:
-> > On Wed, Jan 20, 1999 at 02:37:20PM +0100, Geert Uytterhoeven wrote:
-> > > On Wed, 20 Jan 1999, Sven LUTHER wrote:
-> > > > > > > Yes. The X server must not do video mode initialization, but call the frame
-> > > > > > > buffer device instead.
-> > > > > > 
-> > > > > > what then is the stuff you initialize in the mach64 accel init stuff ?
-> > > > > 
-> > > > > Like you say, that's _accel_ _engine_ init stuff, not _graphics_ _engine_ init
-> > > > > stuff. The graphics engine takes care of the video mode (programmed in the
-> > > > > fbdev in the kernel), while the X server has to program the accel engine.
-> > > > 
-> > > > in the case of the permedia 2, the engine is only one long pipeline, so the graphic and
-> > > > accel engine are the same ?
-> > > 
-> > > Are you sure about that?
-> > 
-> > I think yes, all units are in one pipeline, the same for 2D and 3D, and only this units are documented in
-> > the TI docs, but then i guess by graphic engine you mean the one responsible for 
-> > sending data to the monitor ? it is the last unit of the pipeline.
+
+On 20-Jan-99 Johnnie Peters wrote:
 > 
-> I don't have the Permedia2 docs here, but I don't see any reason why the
-> graphics engine is supposed to be at the end of the pipeline. You don't change
-> the graphics engine configuration when drawing data, you have to initialize the
-> video mode (pixel clock, resolution, timings) only once.
+> I will volunteer to try the patches on:
+> 
+> Blackhawk
+> Comet
+> Utah
+> Mequite
+> MTX
+> VME2600/2700/3600
+> 
+> just as soon as they are available.
+> 
 
-i guess we are not speaking about the same things then, ... i will have to look at the docs again.
+I have put up all my patches against 2.2.0p7 at:
+  ftp://ftp.linuxppc.org/gary/diffs-2.2.0p7-Jan20
+These are diffs against the virgin 2.2.0-pre7.
 
-> Yes. But if you want to use the accel engine in X, you have to implement the
-> reinit function. Well, that's XF68_FBDev, XF86_SVGA automagically does this :-)
+This includes the changes to fix boot problems on my Utah box,
+as well as the changes to get the PS/2 mouse working again.
 
-One more reason to go with XF86_SVGA, isn't it ?
+I also did some restructuring of the PPC main configuration menu
+so that Pmac questions are ignored if you aren't configuring for
+a PowerMac.  I also added a configuration option to set the default
+kernel boot line, passed to the bootstrap code.
 
-Friendly,
+Note: I have had persistent problems with the cache test in the
+NCR driver.  It seems to work fine if I just ignore it, so I also
+left it that way.  I also had to "tone down" the driver a lot,
+the default of WIDE+20Mhz just doesn't cut it on my drives :-)
 
-Sven LUTHER
+
+
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
