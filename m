@@ -1,65 +1,32 @@
-Message-ID: <3D5163B0.6326FF0C@broadcom.com>
-Date: Wed, 07 Aug 2002 11:15:12 -0700
+Message-ID: <3D5163D8.74BEBCF3@broadcom.com>
+Date: Wed, 07 Aug 2002 11:15:52 -0700
 From: "James Dougherty" <jfd@broadcom.com>
 MIME-Version: 1.0
-To: "Cameron, Steve" <Steve.Cameron@hp.com>
-Cc: linuxppc-embedded@lists.linuxppc.org, jfd@broadcom.com,
-	mchan@broadcom.com
-Subject: Re: Tigon3 driver, broadcom 5307, 440GP, working?
-References: <45B36A38D959B44CB032DA427A6E10640167D01C@cceexc18.americas.cpqcorp.net>
+To: "Greg Allen" <gallen@arlut.utexas.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: i2c on mpc824x
+References: <p05111b03b976f51d6997@[10.8.16.89]>
 Content-Type: text/plain;
  charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-
-AFAIK, the TIGON3 driver in the latest 2_4_devel kernel does
-not work with 5703. I did a code review of both the broadcom
-and tigon3 driver and found that the open-source driver doesn't
-have all the workarounds and, it doesn't support all the chips/board
-flavors that are out there...
-
-This brings up the bigger question of why people aren't using
-the Broadcom OpenSource driver? I've used it successfully now
-with all the latest chips (5700, 5701, 5703).
-
-What does it take to add BSP and driver support to the 2_4_devel
-tree?
-
-			Thanks,
-			-James
-
-
+I second the request :-)
+There is someone working on it, I will let him remain
+anonymous.
 >
-> On Wed, Jul 24, 2002 at 01:29:23PM -0500, I wrote:
-> >
-> > I've been playing around with the tigon3 driver and a broadcom
-> > 5307 gigabit NIC in my IBM ebony... No luck so far.  The driver compiles
-> > and even loads, I can run ifconfig(busybox really) to configure
-> > the NIC,  and if I pull the network cable, the driver seems to
-> > notice (get log messages about link is down, link is up) but so
-> > far, I can't actually transmit or receive any packets.
-> >
-> > Anyone had any luck with this combination?
+> I noticed that ppcboot has the mpc824x i2c working now. They lifted
+> Motorola's DINK32 driver and hacked it in.
 >
-> Ok, I have determined that my problem lies in user-land, not
-> the kernel.  Using the same kernel, but with a more elaborate
-> start-up scripts/root filesystem (those from DENX ELDK-1.0)
-> it works fine.
->
-> Using my minimal rootfs, with busybox, tinylogin, it doesn't
-> work.  Is there anything needed to get the broadcom 5703 going
-> besides ifconfig?
->
-> Well, I now have a root filesystem that works and one that
-> doesn't so I can slowly make one more like the other until
-> I see which piece is the culprit/magic.
+> Is anyone working to bring mpc824x i2c support to the linux kernel?
 >
 > Thanks,
->
-> -- steve
+> -Greg
+> --
+>   Gregory E. Allen, MSEE Engineering Scientist
+>   Applied Research Laboratories: The University of Texas at Austin
+>   Please help find my missing daughter: http://FindSabrina.org/
 >
 
 --
