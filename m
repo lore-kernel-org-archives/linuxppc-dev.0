@@ -1,39 +1,47 @@
-Date: Fri, 21 Sep 2001 01:28:11 -0400 (EDT)
-Message-Id: <200109210528.f8L5SBb443059@saturn.cs.uml.edu>
-From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: dan@mvista.com, mbs@mc.com
+Date: Fri, 21 Sep 2001 00:45:58 -0500
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Mark Salisbury <mbs@mc.com>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: ppc LE questions (seeking help hand info pointers)
+Message-ID: <20010921004558.Q12992@altus.drgw.net>
+References: <3BAA0E6F.5050503@mc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BAA0E6F.5050503@mc.com>; from mbs@mc.com on Thu, Sep 20, 2001 at 11:42:39AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek writes:
+> question 4. assuming I was willing to deliver a clean, complete LE
+> enabling patch (including devices that are relevant to me), as a compile
+> time config option and maintain that patch, what would be the primary
+> obstacle to inclusion in the main line.
 
-> Another technical reason is as the processor family moves forward,
-> less and less little endian support is provided. In the case of
-> the 7450, there are instructions that trap to the kernel to be
-> emulated in LE mode, that are executed in the core in BE mode.
+I think the primary obstacle is that we already have enough problems
+breaking obscure machines (embedded, or some old PReP box) whenever
+something gets changed.
 
-Quit spreading FUD. The 7450 has _better_ LE support than the 7400
-and 7410 did. With the 7450, misaligned LE memory operations now
-perform just as well as misaligned BE memory operations.
+I suspect it's going to be a signifigant workload to keep a 'ppcle'
+up-to-date, and most importantly, working.. you may be better off
+maintaining a patch for LE support for the near future.
 
-I checked the errata too. Total BE/LE differences I found:
+I for one, would like to see how small one could get a clean, working LE
+patch for linux.
 
+If the code isn't intrusive, and forces us to clean up abstraction layers
+in headers and such, it could probably be a good thing.
 
-1. TLBMISS always has a BE address. Motorola's example code for
-   software TLB reloads has a "xori" instruction to deal with this.
+This whole discusion is mostly academic and (in this case) somewhat
+incendiary until someone shows up with working code.
 
-2. No string/multi load/store instructions in LE mode.
-   According to Motorola's 32-bit arch book, these instructions
-   are expected to be slow anyway. (They sure aren't RISC!)
-   Indeed, the 7450 doesn't handle them well even in BE mode.
+My suggestion is go make it work, and if you find ways to clean up the
+general PPC code in the process, this will definitely help.
 
-3. The MPC106 chip ("Grackle" host bridge) won't work.
-
-4. The MPC107 chip (another host bridge) won't tolerate unaligned data.
-
-5. LE mode enables address munging. :-)
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Shulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
