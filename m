@@ -1,95 +1,37 @@
-Subject: Re: OF properties access ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040118120722.GA4603@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston>
-	 <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston>
-	 <20040118120722.GA4603@iliana>
-Content-Type: text/plain
-Message-Id: <1074468096.795.27.camel@gaston>
+Subject: Re: multiple separate pci bridges ...
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1074503490.4547.52.camel@gaston>
+References: <20040118144412.GA6897@iliana> <1074503490.4547.52.camel@gaston>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1074468194.9699.209.camel@thor.asgaard.local>
 Mime-Version: 1.0
-Date: Mon, 19 Jan 2004 10:21:36 +1100
+Date: Mon, 19 Jan 2004 00:23:15 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2004-01-18 at 23:07, Sven Luther wrote:
-> On Sat, Jan 17, 2004 at 02:48:11PM +1100, Benjamin Herrenschmidt wrote:
-> >
-> > >
-> > > But this doesn't reply me on why my attempts to read back integer values
-> > > from OF property only result in the machine hanging, and since it is
-> > > really early on, i don't even get serial console output to have an idea
-> > > why :/
-> > >
-> > > in particular i cloned the code reading l2cr-value, and changed it to
-> > > l2cr and instead of reading the value, i got only kernel silently dying.
-> >
-> > Show me the code and the relevant device-tree bits.
+On Mon, 2004-01-19 at 10:11, Benjamin Herrenschmidt wrote:
 >
-> Ok, here is the code that dies :
+> > The freeze happens when i first launch glxinfo, or when i first start
+> > moving a window around (using a debian/unstable default gnome desktop).
+> > I don't remember well, but i think it would also freeze when let running
+> > for a time, but i am not sure. The box is still available trough ssh,
+> > but killing the X server doesn't restore the fbdev console, and freeze
+> > the box.
 >
-> void pegasos_set_l2cr(void) {
+> Could be irq not working...
 
-Grrr... please put the { on a different line
+Only the 3D drivers use the IRQ, it's not involved when moving around
+windows. Or do you mean a badly configured IRQ causing a flood or
+something?
 
->         struct device_node *root = find_path_device("/");
->         char *machine;
->         struct device_node *np;
->
->         /* On Pegasos, enable the l2 cache if needed, as the OF forgets * it */
 
-Check if root isn't NULL...
-
->         machine = get_property(root, "model", NULL);
-
-Check if machine isn't NULL...
-
->         if (strncmp(machine, "Pegasos", 7) == 0) {
->                 /* Enable L2 cache if needed */
->                 np = find_devices ("cpus");
->                 if (np == 0)
->                         np = find_type_devices("cpu");
->                 if (np != 0) {
->                         unsigned int *l2cr = (unsigned int *)
->                                 get_property (np, "l2cr", NULL);
-
-The above got you a _pointer_ to the value, the code below uses
-that point directly as the value, which is obviously wrong
-
->                         if (!(l2cr & 0x80000000)) {
->                                 _set_L2CR(0);
->                                 _set_L2CR(l2cr | 0x80000000);
->                         }
-
-The above should have been...
-
-			if (l2cr && !((*l2cr) & L2CR_L2E)) {
-				_set_L2CR(0);
-				_set_L2CR((*l2cr) | L2CR_L2E);
-			}
-
-Now that is said providing your algorithm is right, that is the
-device-tree provides you with an "l2cr" property containing the
-right settings but not the enable bit, and matching what your CPU
-is doing. If the device-tree has L2E set but not the CPU, you
-may want to do things differently...
-
->                 }
->         }
-> }
-
-> And finally :
->
-> $ hexdump /proc/device-tree/cpus/PowerPC,74x7/l2cr
-> 0000000 0000 0000
-
-So you "l2cr" value is just 0... Setting it to 0x80000000 means enabled
-without any setting bit... that might actually be correct for on-die L2
-though, check the CPU spec anyway. It is correct for my 7455
-
-Ben.
+--
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
