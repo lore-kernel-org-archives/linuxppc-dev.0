@@ -1,62 +1,31 @@
-Date: Wed, 8 Aug 2001 08:59:41 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: daenzer@debian.org
-Cc: R Shapiro <reshapiro@mediaone.net>, Olaf Hering <olh@suse.de>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: lcd17 kernel patches?
-In-Reply-To: <3B708C81.DE87DDC2@iiic.ethz.ch>
-Message-ID: <Pine.LNX.4.05.10108080858440.13482-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Date: Wed, 8 Aug 2001 18:36:26 +1000
+From: Steven Hanley <sjh@svana.org>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: [off topic] switching cpus
+Message-ID: <20010808183626.A31418@shiva.marian>
+Reply-To: Steven Hanley <sjh@wibble.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 8 Aug 2001, Michel Dänzer wrote:
-> Geert Uytterhoeven wrote:
-> > On Mon, 6 Aug 2001, Michel Dänzer wrote:
-> > > R Shapiro wrote:
-> > > > Olaf Hering writes:
-> > > >  > The correct fix is either "video=1280x1024-8@60" as kernel arg (that
-> > > >  > may work)
-> > > >
-> > > > OK, I just had time to rebuild 2.4.8-pre3-ben0 with the patch undone.
-> > > > This video arg with that kernel doesn't solve the problem.  I still
-> > > > get no video on boot.
-> > >
-> > > Wouldn't it have to be video=aty128fb:1280x1024-8@60 anyway, and is the
-> > > modedb
-> >
-> > video=mode specifies the global mode, for all fbdevs that use modedb.
->
-> Ah, cool. So what's your theory on why it didn't work for R?
->
->
-> > > even used on PPC yet?
-> >
-> > That's not the right question :-) Modedb doesn't depend on the architecture,
-> > but on the driver.
->
-> I meant to say 'in aty128fb on PPC'. Last time I looked, the call to find a
-> mode was disabled for PPC.
->
-> > PowerMac/CHRP has even extra modedb support in macmodes.
->
-> Would that explain the disabled direct call?
+All
 
-If it calls mac_fb_find_mode() instead, that's fine, since it falls back to
-fb_find_mode() if the mode name doesn't match mac*.
+I have a 7300/200 which is broken (faulty mother board), a perfectly working
+7200/120 and a 7200/75 to play with, I am wondering is it feasible to pull the
+cpu out of the 7300/200 and put it in the 7200/120 and have everything still
+work? or is this not something that should be played with?
 
-Gr{oetje,eeting}s,
-
-						Geert
+        See You
+            Steve
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+sjh@wibble.net http://wibble.net/~sjh
+Look Up In The Sky
+    Is it a bird?   No
+        Is it a plane    No
+            Is it a small blue banana?
+Yes
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
