@@ -1,80 +1,35 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Dan Malek <dan@mvista.com>
-Subject: Re: drivers - modules versus compiled in?
-Date: Thu, 1 Nov 2001 13:11:30 -0500
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <20011031211539.SIZF7882.tomts5-srv.bellnexxia.net@there> <3BE18AE4.1070507@mvista.com> <20011101175923.FDKP6233.tomts6-srv.bellnexxia.net@there>
-In-Reply-To: <20011101175923.FDKP6233.tomts6-srv.bellnexxia.net@there>
-MIME-Version: 1.0
-Message-Id: <20011101180859.NUCU21717.tomts13-srv.bellnexxia.net@there>
+Date: Thu, 1 Nov 2001 11:56:19 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	linuxppc-commit@source.mvista.com
+Subject: Re: Incoming to hostme.bitkeeper.com:/ua/repos/p/ppc/linuxppc_2_4_devel
+Message-ID: <20011101115619.A25864@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011101001030.EFA5510094@hostme.bitkeeper.com> <3BE1932E.DB7956CA@linux-m68k.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BE1932E.DB7956CA@linux-m68k.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, Nov 01, 2001 at 07:23:42PM +0100, Roman Zippel wrote:
+> Hi,
+>
+> > ChangeSet@1.559, 2001-10-31 17:09:57-07:00, trini@opus.bloom.county
+> >   Minor cleanups wrt isa_{io,mem}_base and pci_dram_offset, from
+> >   Roman Zippel <zippel@linux-m68k.org>
+>
+> You missed the declaritions in mpc8xx.h, that change is in the other
+> patch. Sorry, I didn't mention it, I didn't resent the parts that
+> applied cleanly.
 
-I forgot to include my info:
+Arg, not my day.  Can you split up the rest of the changes into seperate
+patches (01, 02, 0n) and make it vs the _devel tree?  It'll help stop me
+from doing things like that. :)
 
-Kernel 2.4.10-ac6
-PowerMac B+W G3 with 512Meg with every pci slot filled
-(Adaptec SCSI Card, Radeon 32Meg Mac Edition PCI Card, and an AsanteFast
-10/100 NIC (the one I am trying to get to work better).
-
-Thanks,
-
-Kevin
-
-On November 1, 2001 01:01, Kevin B. Hendricks wrote:
-> Hi Dan,
->
-> The driver in question is the tulip nic driver with my modifications to
-> support the PNIC_II chip (but most of the driver is common acrosss other
-> chips that tulip supports including transmit and receive buffer code,
-> which I have not touched)
->
-> The funny thing is that when compiled as a module, it works flawlessly.
-> But when I compile it into the kernel, it seems a bit flakey and some
-> received packets get lost somehow (I can see the transmitted packets
-> generating link activity on the switch, but nothing seems to come the
-> other way).  The driver debug messages all look sane and it looks like
-> the driver is working but not data is ever returned from the card.
->
-> This driver does use DMA and does allocate buffer space for it.
->
-> Given the "virt_to_bus()' issue you describe, I would expect the
-> compiled in kernel to be the working one and not the one built as a
-> module.
->
-> Are there any mechanisms that would help isolate a module's memory from
-> corruption that don't exist when compiled into a kernel?
->
-> Thanks,
->
-> Kevin
->
-> On November 1, 2001 12:48, you wrote:
-> > Kevin B. Hendricks wrote:
-> > > Are the allocated memory areas differnt?
-> >
-> > Yes, this is usually why you may see different behavior.  First,
-> > the module itself is allocated from kernel memory that other errant
-> > pointers could access that wouldn't otherwise.  Usually, the problem
-> > is related to buffers or data structures the driver allocates that
-> > are further used for DMA operations.  Things like 'virt_to_bus()'
-> > won't work on static objects in a module, while it will in a
-> > compiled driver.
-> >
-> > > Any hints as to what might have changed?
-> >
-> > Provide some hints to us :-).  What type of system, what
-> > kernel, what driver?
-> >
-> > Thanks.
-> >
-> >
-> > 	-- Dan
->
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
