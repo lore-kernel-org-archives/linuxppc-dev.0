@@ -1,62 +1,66 @@
-Date: Sun, 26 Mar 2000 00:21:14 +0100
-From: Martin Mares <mj@ucw.cz>
-To: Michel Lanners <mlan@cpu.lu>
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>, Ani Joshi <ajoshi@shell.unixbox.com>
+Subject: Re: Some issues to resolve with XFree 4.0 yet
+Date: Sat, 25 Mar 2000 18:50:09 -0500
+Content-Type: text/plain
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI bus numbering?
-Message-ID: <20000326002114.F620@albireo.ucw.cz>
-References: <200003242239.XAA00513@piglet.grunz.lu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200003242239.XAA00513@piglet.grunz.lu>
+References: <Pine.LNX.4.10.10003230911180.6826-100000@shell.unixbox.com> <00032313263100.01328@localhost.localdomain>
+In-Reply-To: <00032313263100.01328@localhost.localdomain>
+MIME-Version: 1.0
+Message-Id: <00032519041300.00635@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+Hi Kostas,
 
-> 2. Is there an easy way (again, short of walking the list of buses) to
-> get the next free bus number? Problem is: the newer Macs have a weired
-> host bridge called UNI-North, which in fact has three separate PCI
-> buses, but they are all labeled bus 0. In the PMac PCI ficup code, we
-> may want to renumber that and make them three separate buses.
+Okay, with the patch I posted last night for setting crtc.pitch in aty128fb.c,
+mode switching now works fine but the "panning" ioctl is on the "todo" list yet.
+Thanks to Geert for pointing out you can't change virtual resolutions on the
+fly with XFree (I was about to try! ;-)
 
-   There is no generic function for that, but you can easily use
-pci_bus_exists() defined in drivers/pci/pci.c.
+You then asked me to look at getting it to work without using the FBDev.  Given
+my earlier patch which calculates XCLK using OF supplied values in the pll
+registers, all you need to do to use it without FBDev is to simply comment out
+the calls to vgaHWSave and vgaHWRestore in r128_driver.c.
 
-> 3. What addresses are IO-space resources supposed to contain? Bus
-> physical? Kernel virtual? On x86 platforms, it doesn't matter, but all
-> other platforms lack anything special about IO space, so they access it
-> as normal memory-mapped IO (albeit in very small chunks ;-).
+>From that point on, everything works like a charm.
 
-   I/O resources should contain exactly the addresses accepted
-by inb() and friends. It's upon each port maintainer to decide what
-type of addresses he likes for that.
+My question is as follows, under ppc should we ever be doing anything with
+vgaHWSave and vgaHWRestore.  Can I simply ifdef them out for all __powerpc__
+machines?
 
-> On PowerMacs, the IO space on a PCI bus is mapped by the host bridge to
-> a regular memory region; so obviously there's an address translation
-> involved. With multiple host bridges (or UNI-North, for that
-> matter), there can be multiples of such translations. Hence, a simple
-> offset applied in inb() and friends doesn't help. The bridge init code
-> ioremap()s the IO space, and those are the addresses you want a driver
-> to use to acces the IO ports. Therefore it makes sense to put those
-> addresses into pci_dev's resources.
+If not, is there any way to determine under which powerpc machines that an r128
+card actually can use vgaHWSave and vgaHWRestore.
 
-   Yes, the most natural thing you can do is to use kernel virtual addresses
-for I/O resources in struct pci_dev. There should be no problems with
-that, only maybe with userspace programs wanting to access the I/O
-ports.
+I think the only outstanding issue on r128 is the damn flashing white square
+when cursor images are changed.  I have looked and looked at this but I can't
+figure out why this is happening unless a big white square is someone's
+idea of a transparent cursor! ;-)
 
-> Which means that the hotplug resource (re)allocation code needs to know
-> about this, so it can convert the IO-port virtual address into physical,
-> de-offset it and write it into the BAR's.
+I have to start spending time on some other projects for awhile (i.e. real
+life research project that needs to get underway) so I wanted to wrap things up
+with the r128 driver for awhile.
 
-   Should not be a problem -- everything can be manipulated in PPC
-specific code.
+If and when I get some time, I would be happy to take a shot at taking the r128
+source and making it a mach64 source just in case you think that would be of
+use (i.e. someone else hasn't done that yet and the old ati driver has not been
+converted to work yet).
 
-				Have a nice fortnight
+Thanks,
+
+Kevin
+
+
+
+
 --
-Martin `MJ' Mares   <mj@ucw.cz>   http://atrey.karlin.mff.cuni.cz/~mj/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-"All computers run at the same speed... with the power off."
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
