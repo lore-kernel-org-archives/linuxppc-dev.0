@@ -1,97 +1,37 @@
-Date: Fri, 14 Jun 2002 10:24:19 +1000
+Date: Fri, 14 Jun 2002 10:33:30 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Tom Rini <trini@kernel.crashing.org>
+To: Armin <akuster@pacbell.net>
 Cc: Dan Malek <dan@embeddededge.com>,
-	Eugene Surovegin <ebs@innocent.com>,
+	Paul Mackerras <paulus@samba.org>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] pci_alloc_consistent in an interrupt context
-Message-ID: <20020614002419.GM4228@zax>
-References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com> <20020613205824.GX13541@opus.bloom.county> <3D0912F4.4020300@embeddededge.com> <20020613215635.GB13541@opus.bloom.county>
+Subject: Re: First cut at large page support on 40x
+Message-ID: <20020614003330.GN4228@zax>
+References: <20020604035947.GH2762@zax> <3CFCFC20.80101@embeddededge.com> <15614.37065.549142.218906@argo.ozlabs.ibm.com> <3CFEE9A3.5060300@embeddededge.com> <15614.63160.272890.683586@argo.ozlabs.ibm.com> <3CFF1624.2070808@embeddededge.com> <20020612035203.GQ25800@zax> <3D06E702.4000709@embeddededge.com> <20020612064344.GT25800@zax> <3D08E0CD.4040806@pacbell.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020613215635.GB13541@opus.bloom.county>
+In-Reply-To: <3D08E0CD.4040806@pacbell.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jun 13, 2002 at 02:56:35PM -0700, Tom Rini wrote:
+On Thu, Jun 13, 2002 at 11:13:33AM -0700, Armin wrote:
 >
-> On Thu, Jun 13, 2002 at 05:47:32PM -0400, Dan Malek wrote:
-> > Tom Rini wrote:
+> David Gibson
 > >
-> > >..... But I don't see (immediatly) why the change to
-> > >pci_alloc_consistent was needed as well.
+> >Heh, so instead we got a half-assed re-implementation (with a whole
+> >bunch of extraneous pointless crap) in the form of the OCP layer.
 > >
-> > It was a mistake on my part......when CONFIG_NOT_COHERENT_CACHE is used,
-> > the consisten_alloc() returns the dma_handle, and we have to ensure we
-> > don't do the virt_to_bus later to get it (because it will be wrong once
-> > iopa() is discarded :-)
 >
-> Ah..  So this part is a correct and necessary fix, separate from the
-> rest of the patch?
+> Crap...this pointless crap has made it easier to add driver support to
+> new IBM 4xx processors. And the Idea goes beyond PPC :)  Cosmetic
+> changes don't help make things not half-assed and mature.  Flushing the
+> idea, API's and usage does.
 
-That's right.  But I think the patch below is a better fix for the
-problem.  It makes consistent_alloc()/consistent_free() just do the
-right thing for both cache coherent and cache non-coherent processors,
-so we can get rid of the ifdef in pci_alloc_consistent() and
-pci_free_consistent().
-
-diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/pci-dma.c linux-grinch/arch/ppc/kernel/pci-dma.c
---- /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/pci-dma.c	Sat Jan 19 19:07:14 2002
-+++ linux-grinch/arch/ppc/kernel/pci-dma.c	Fri Jun 14 10:23:01 2002
-@@ -25,25 +25,16 @@
-
- 	if (hwdev == NULL || hwdev->dma_mask != 0xffffffff)
- 		gfp |= GFP_DMA;
--#ifdef CONFIG_NOT_COHERENT_CACHE
- 	ret = consistent_alloc(gfp, size, dma_handle);
--#else
--	ret = (void *)__get_free_pages(gfp, get_order(size));
--#endif
-
--	if (ret != NULL) {
-+	if (ret != NULL)
- 		memset(ret, 0, size);
--		*dma_handle = virt_to_bus(ret);
--	}
-+
- 	return ret;
- }
-
- void pci_free_consistent(struct pci_dev *hwdev, size_t size,
- 			 void *vaddr, dma_addr_t dma_handle)
- {
--#ifdef CONFIG_NOT_COHERENT_CACHE
- 	consistent_free(vaddr);
--#else
--	free_pages((unsigned long)vaddr, get_order(size));
--#endif
- }
-diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/include/asm-ppc/io.h linux-grinch/include/asm-ppc/io.h
---- /home/dgibson/kernel/linuxppc_2_4_devel/include/asm-ppc/io.h	Sat May 11 02:02:08 2002
-+++ linux-grinch/include/asm-ppc/io.h	Fri Jun 14 10:21:11 2002
-@@ -458,8 +458,17 @@
- #define dma_cache_wback(_start,_size)		do { } while (0)
- #define dma_cache_wback_inv(_start,_size)	do { } while (0)
-
--#define consistent_alloc(gfp, size, handle)	NULL
--#define consistent_free(addr, size)		do { } while (0)
-+static inline void *consistent_alloc(int gfp, size_t size, dma_addr_t *dma_handle)
-+{
-+	void *vaddr;
-+
-+	vaddr = kmalloc(size, gfp);
-+	if (vaddr)
-+		*dma_handle = virt_to_bus((unsigned long) vaddr);
-+	return vaddr;
-+}
-+
-+#define consistent_free(addr, size)		kfree(addr)
- #define consistent_sync(addr, size, rw)		do { } while (0)
- #define consistent_sync_page(pg, off, sz, rw)	do { } while (0)
-
-
-
+No actually.  It's become easier to add driver support to new IBM 4xx
+processors because of the several sensible and useful ideas that have
+gone in along with all the extraneous pointless crap.  All my ocp
+patches have had the aim of leaving the former intact while
+(gradually) removing the latter.
 
 --
 David Gibson			| For every complex problem there is a
