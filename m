@@ -1,47 +1,29 @@
-Message-ID: <3AFAC0BD.2C822E4E@mvista.com>
-Date: Thu, 10 May 2001 12:24:29 -0400
+Message-ID: <3AFAC193.F7B1FE96@mvista.com>
+Date: Thu, 10 May 2001 12:28:03 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+To: mschmid@ascona.de
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_5 source tree (and others)
-References: <21780.989483882@msa.cmst.csiro.au>
+Subject: Re: Is CONFIG_8xx the right setting for MPC8240
+References: <OF6B040367.6AA70D4B-ONC1256A48.003D8A75@ascona.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Murray Jensen wrote:
+mschmid@ascona.de wrote:
 
-> ......Could someone in the
-> know please post a quick update what this means, and perhaps what the
-> future holds wrt 2.4/2.5 linuxppc (embedded)?
+> Is it wrong to select CONFIG_8xx for a MPC8240 CPU ?
 
-Tom Rini has done lots of this work, so I'll rely on him to respond.
-He is trying to finish up some finals at school, so it may take a day
-or so.
+Yes, it is.....
 
-> I guess I should actually ask about what I want :-) The linuxppc_2_5 tree
-> had a "drivers/i2c/i2c-algo-8xx.c" file which has disappeared from 2_4_devel.
+> I know that the sandpoint board or one of them also uses a MPC8240 but i
+> don't know if CONFIG_8xx is used for that sandpoint board.
 
-Right.  Tom is working with the real authors of the I2C software so
-we get approval to just check this in all of the way to the main
-kernel tree.  I was able to drop it into the _2_5 tree because I
-didn't have to ask.  If you still have the _2_5 tree around, just
-make a patch to 2.4_devel and keep on going.  It should show up for
-real pretty soon.  I have also modified this for the 8260, and I
-am going to have to look for it and get that checked in, too :-).
-I still think bit-banging software for I2C is faster and more
-efficient than using the CPM......at least for single master mode.
-
-> And while I am at it, I have searched the archives for info about IDMA
-> and it appears that it is a do it yourself job
-
-Well, yes...Implicitly, all CPM devices use IDMA, so just copy one
-of those and gut it for your own use.  All an IDMA driver would do is
-set up buffer descriptors.  All of the device control and buffer
-management is unique to the device, so I still can't grok a "generic"
-IDMA driver.
+The 8240 is a CHRP/60x configuration.  Just select a 60x processor,
+configure PCI, and your board peripherals.  Use the Sandpoint setup
+as an example for your board configuration.  Any 8240 board should
+be running Linux in just a couple of hours.........
 
 
 	-- Dan
