@@ -1,64 +1,33 @@
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16545.27647.651552.393992@cargo.ozlabs.ibm.com>
-Date: Wed, 12 May 2004 10:12:47 +1000
+Message-ID: <16545.27905.567056.12888@cargo.ozlabs.ibm.com>
+Date: Wed, 12 May 2004 10:17:05 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Amit Shah <amitshah@gmx.net>, linuxppc-dev@lists.linuxppc.org
+To: Amit Shah <amit.shah@codito.com>
+Cc: huailin@xtrj.org, Dan Malek <dan@embeddededge.com>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: IBM 750GX SMP on Marvell Discovery II or III?
-In-Reply-To: <517E783F-A362-11D8-942E-003065F9B7DC@embeddededge.com>
-References: <c7nb0l$5e3$1@sea.gmane.org>
-	<16544.4592.978105.177882@cargo.ozlabs.ibm.com>
-	<3B3163BD-A2F0-11D8-95B9-003065F9B7DC@embeddededge.com>
-	<16544.16999.648530.393071@cargo.ozlabs.ibm.com>
-	<517E783F-A362-11D8-942E-003065F9B7DC@embeddededge.com>
+In-Reply-To: <200405112301.30665.amit.shah@codito.com>
+References: <20040511172318.88343.qmail@web21412.mail.yahoo.com>
+	<200405112301.30665.amit.shah@codito.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek writes:
+Amit Shah writes:
 
-> But, read the following sentence.  "Any bus activity caused by other
-> cache instructions results directly from performing the operation on
-> the MPC750 cache."  A dcbz has to be broadcast, others do not because
-> their operations appear just as standard load/store ops.
->
-> The only thing we should have to do in software is the icbi, which is
-> no big deal to broadcast.
+> It's pretty strange then that people would come up with boards based on
+> dual-processors of the 7xx family (like the IBM Argan board or the Xcalibur
+> boards). Any idea how they use it or what are they intended for?
 
-I don't think you are right, but it would be nice if you can prove me
-wrong. ;)
+I think it's the usual hardware designers' attitude that any bugs in
+the hardware can be worked around in software.  And they can, it's
+just that to address the problems properly is going to take effort,
+and no-one has yet had the time, energy and motivation to sit down and
+do that (and do it in a way which is sufficiently clean and well
+though out to be accepted into the Linux kernel).  Fortunately Apple
+never did a 750-based SMP system. :)
 
-Consider this scenario: an application is modifying some instructions
-(for example, ld.so modifying a PLT entry).  It modifies the
-instructions, and then just before it does its dcbst; sync; icbi;
-isync sequence, it gets scheduled on the other CPU.  It goes ahead and
-does the dcbst.  However, the relevant cache lines aren't in the the
-cache (they are in the E state in the other CPU's cache), so nothing
-gets written out to memory.  After doing the sync; icbi; isync it goes
-to execute the instructions and gets the old instructions, not the new
-ones.
-
-The dcbst won't cause any stores to memory in this scenario.  It will
-cause a dcbst address-only broadcast but that won't (according to my
-reading of the manual) cause the other CPU to write back its copy of
-the relevant cache line, since the dcbst isn't snooped.
-
-The only workaround I can see for this is to completely flush the D
-and I caches of both CPUs whenever we schedule a process on a
-different CPU from that on which it last ran.  Triple yuck.
-
-> My experience has been that MPC750s work in a SMP environment
-> on a 60x bus.  Maybe I was just lucky?  The way I read the manual,
-> they should work with a proper memory controller.
-
-I think that the sorts of problems I am talking about wouldn't show up
-very often.  Generally I think that these problems would just cause
-the system to be a bit flaky rather than stop it from working at all.
-If you didn't have L2 caches that would make the problems show up less
-frequently, too.
-
-Regards,
 Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
