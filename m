@@ -1,77 +1,68 @@
-From: Michel Lanners <mlan@mcp.cpu.lu>
-Message-Id: <200008301344.PAA10410@mcp.cpu.lu>
-Subject: Re: asm in OF?
-To: paubert@iram.es (Gabriel Paubert)
-Date: Wed, 30 Aug 2000 15:44:03 METDST
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.HPX.4.10.10008301050220.15978-100000@gra-ux1.iram.es>; from "Gabriel Paubert" at Aug 30, 100 11:48 am
+Message-Id: <200008300937.KAA26644@hyperion.valhalla.net>
+Date: Wed, 30 Aug 2000 10:37:53 +0100
+Subject: Re: [PATCH] via-cuda (CUDA_COMBINED_FORMAT_IIC)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: mlan@cpu.lu
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Gabriel,
+Hi Michel,
 
-> All the OF I have seen had the capability to build new words in asm, with
-> a `code' definition IIRC. Maybe Apple's OF are crippled ?
-
-Apple's OF seems to have that capability as well (I think, guess and hope ;-).
-However, it does _not_ seem to have an assembler built-in. The 'code' word
-is defined all right.
-
-> On one of my MVME2600 boxes (the only one which I can still switch to Open
-> Bug^WFirmware):
+>> With the modified driver posted, the CUDA_COMBINED_FORMAT_IIC command
+>> recognises that there is a device at address 0x8a - but returns all 0xff
+>> bytes instead of the hoped for register contents :-(
 >
-> ok see hid0@
-> code hid0@
-> e49110     stwu    r28,-4(r31)
-> e49114     mfspr   r28,hid0
-> e49118     bcctr   always
+> Ah, ok. So you have been able to see the device... Are you sure that it does
+> return register contents? I'm no I2C specialist, but for PlanB, the video
+> chip on I2C can only return a single byte on a read request, not a stream of
+> data (like a register file). Also, that chip uses bit 0 of the address as
+> R/W flag, and, IIRC, bit 0 set to one indicates read. So, have you tried
+> reading from address 0x8b?
 
-When I do a 'see hido@', I only get:
- >0 see hid0@ code hid0 ok
- >0
+I'm no i2c specialist either :-)  [just doing the Linux standard - learning
+about it as a consequence of wanting to to something completely different]
 
-What I can do is look at the hex dump of the hid0@ word, and that gives me asm
-statements like for you (except that in Apple's OF, r20 holds the top stack
-item ;-). The fact that ' ' hid0@ dis' gives me a hex dump and not a
-disassembly is another evidence that Apple's OF doesn't know anything about
-asm....
+The LSB being 1/0 (R/~W) is specified by the i2c standard.  The TDA7433
+should be able to do auto-increment (by setting 0x10 as the sub-address).
+However... I'm not sure (exactly) of the syntax of the
+CUDA_COMBINED_FORMAT_IIC command - I posted darwin-dev... but no useful
+replies.
 
-> ok see hid0!
-> code hid0!
-> e4912c     sync
-> e49130     isync
-> e49134     mtspr   hid0,r28
-> e49138     isync
-> e4913c     sync
-> e49140     lwz     r28,0(r31)
-> e49144     addi    r31,r31,4
-> e49148     bcctr   always
-> ok
-
-Apple's code looks very similar....
-
-> The syntax to build with an unknwown SPR is strange:
-> code ictc@
-> stwu r28,-4(r31)
-> 33f mfspr r28,*
-> bcctr 20,0
+>> I checked the TDA7433 data sheet and it should be able to do
+>> COMBINED_FORMAT...
 >
-> generates the correct code, since I don't have ictc spr defined.
-> Otherwise mfspr 28,ictc might work.
+> What exactly is COMBINED_FORMAT?
 
-I will try this tonight, but I doubt I will be able to enter this as asm
-words. Do you know the alternate syntax? Would something lime this work:
+Allows you to write to the chip followed by read (or vice versa) without
+changing i2c bus mastership - so you do something like
 
-code 60000000 l, 6000000 l,
+aa ss <dd> aa|1  - which tells device aa that you want sub address ss (and
+maybe want to write data <dd> and then you read it...
 
-as a sequence of 2 NOP's? How do you terminate a 'code' sequence?
+>From the name of the command - I might have thought that I could read the
+regs with GET_SET_IIC - but I can't seem to make that work for any chip
+address (the COMBINED_FORMAT_IIC *does* work for a number of the addresses).
 
-Thanks a lot
+>
+>> Yes, there are different implementations for i2c on different models...
+>> CUDA, PMU (PlanB and other mac-IO implementations).... and on the newer
+>> machines "cereal" (and multiple i2c busses)...  if the ability to probe the
+>> i2c bus is useful, I guess we'll have a few more drivers to update... :-)
+>
+> We could even provide a generic I2C interface (isn't that available on i386
+> already?)... Give the different buses numbers, ala PCI, have a list of
+> devices found on the bus, etc... Wouldn't that be a nice overkill? ;-))
 
-Michel
+A common method is a good idea (in spite of your smilie...)   At the moment
+we have umpteen platform-dependent ways of doing power-down etc. etc.
 
---
-.sig eater at work
+Apple have a "Platform Expert" motif where you call PE_read_IIC() and it
+buries the actual 'which driver' issue underneath...
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
