@@ -1,53 +1,45 @@
-Message-ID: <3D647E5E.9060708@dslextreme.com>
-Date: Wed, 21 Aug 2002 23:02:06 -0700
+Message-ID: <3D648252.4010807@dslextreme.com>
+Date: Wed, 21 Aug 2002 23:18:58 -0700
 From: akuster <akuster@dslextreme.com>
 Reply-To: akuster@dslextreme.com
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: request_irq() bug in ENET driver?
-References: <20020821045259.GG18818@zax>
+To: Todd Poynor <tpoynor@mvista.com>
+Cc: jim <jduey@ccc-dcs.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Question about ppc4xx_dma.h
+References: <20020820203619.A456239211@server.weathercom.com> <3D62CE63.1030606@dslextreme.com> <3D63EC67.4000302@dslextreme.com> <3D641186.2020800@mvista.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
-> This code comes from ppc405_enet_open():
+Todd Poynor wrote:
 >
-> 	if (!(get_mal_dcrn(fep->mal, DCRN_MALTXCASR))) {
->  		request_irq(BL_MAC_WOL,ppc405_eth_wakeup,0,"OCP EMAC Wakeup",dev);
-> 		request_irq(BL_MAL_SERR,ppc405_eth_serr,0,"OCP EMAC MAL SERR",dev);
-> 		request_irq(BL_MAL_TXDE,ppc405_eth_txde,0,"OCP EMAC TX DE ",dev);
+> Noticed that the order of clearing the old transfer mode bits and
+> setting the p_dma_ch->mode bits is reversed in the new patch, not sure
+> if this causes problems:
 >
-> 		request_irq(BL_MAL_RXDE,ppc405_eth_rxeob,0,"OCP EMAC RX DE",dev);
+> +       tmp_cntl |= (p_dma_ch->mode | DMA_CH_ENABLE);
+> +
+> +       switch (dmanr) {
+> +       case 0:
+> +               control = mfdcr(DCRN_DMACR0);
+> +               control |= tmp_cntl;
+> +               control &= ~(DMA_TM_MASK | DMA_TD);     /* clear all
+> mode bits */
 >
-> 		request_irq(BL_MAL_TXEOB,ppc405_eth_txeob,0,"OCP EMAC TX EOB",dev);
-> 		request_irq(BL_MAL_RXEOB,ppc405_eth_rxeob,0,"OCP EMAC RX EOB",dev);
-> 	}
+> This seems to set and then clear the p_dma_ch->mode bits in control
+> prior to writing to the DMACR, a problem?
 >
-> ppc405_eth_rxeob is being registed twice, both for the MAL_RXEOB and
-> for the MAL_RXDE interrupts, and ppc405_eth_rxde() is registered
-> never.  Is there a reason for this, or is it just a bug?
 >
 > --
-> David Gibson			| For every complex problem there is a
-> david@gibson.dropbear.id.au	| solution which is simple, neat and
-> 				| wrong.
-> http://www.ozlabs.org/people/dgibson
->
->
->
->
+> Todd
 >
 
-David,
+Todd,
 
-Its a bug Eugene pointed out to me a while back, patch tomorrow for this
-and other changes Eugene sent me.
+yeap, looks like it.
 
-Armin
+armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
