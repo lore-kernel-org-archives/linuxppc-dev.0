@@ -1,66 +1,57 @@
-Date: Tue, 2 Apr 2002 21:30:17 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: Andrew Bradley <andrew-bradley@ntlworld.com>,
+	Chris Friesen <cfriesen@nortelnetworks.com>
 Subject: Re: any problems with gcc 3.0/3.1 and compiling 2.4.18 on ppc?
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v481)
-Cc: Chris Friesen <cfriesen@nortelnetworks.com>,
-	linuxppc-dev@lists.linuxppc.org
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-From: Andrew Bradley <andrew-bradley@ntlworld.com>
-In-Reply-To: <200204022214.46035@enzo.bigblue.local>
-Message-Id: <71B77C10-4678-11D6-8E25-0030654F879C@ntlworld.com>
+Date: Tue, 2 Apr 2002 22:33:49 +0200
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <56A4AB3C-4677-11D6-8E25-0030654F879C@ntlworld.com>
+In-Reply-To: <56A4AB3C-4677-11D6-8E25-0030654F879C@ntlworld.com>
+MIME-Version: 1.0
+Message-Id: <200204022233.49023@enzo.bigblue.local>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Franz,
-
-It looks like only me that has this intermittent problem with GCC 3.x.
-Building or using.
-I have:-
-	glibc-2.2.4-53
-	binutils-2.11.90.0.29-14 and tried binutils-2.12
-
-I was wondering whether I was the only one building GCC 3.x on apple
-hardware.
-
-What surprises me is that the  "gcc version 2.95.3 20010319 (2.95.4CVS +
-prerelease/franzo/20010912)"
-is stable enough to build a kernel but not gcc 3.x on my system.
-
-Any tips on finding this intermittent problem I have with every GCC 3.x
-on my 8500 ?
-
-Regards
-Andrew
-
-On Tuesday, April 2, 2002, at 09:14  pm, Franz Sirl wrote:
-
+On Tuesday 02 April 2002 22:22, Andrew Bradley wrote:
+> Hi Chris,
 >
-> On Tuesday 02 April 2002 22:06, Chris Friesen wrote:
->> We're looking at moving to gcc 3.x for 2.4.18, and are trying to decide
->> what version to use.  It appears that there were some ppc-specific
->> fixes
->> that went in to 3.1, and I'm not sure if they were ported back to 3.0.
->>
->> Has anyone had any successes or failures using either of these
->> versions on
->> 2.4.18 on ppc?
->> Any gotchas?
+> I recently built the  2.4.18+patch kernel (patch details where on
+> http://www.penguinppc.org/) using "gcc version 2.95.3 20010319 (2.95.4
+> CVS + prerelease/franzo/20010912)" with out a hitch.
+> But my main goal is to use g++ 3.x as my default compiler to mimic GCC
+> 3.0.2 on my solaris and linux systems I be using since November.
+> I tried  (http://www.suse.com/~aj/gcc30.html) and found that there seems
+> to be an intermittent crash with the compiler.
 >
-> Both 3.0.4 and the upcoming 3.1 are fine for use with the current PPC
-> 2.4
-> kernels. There is only one known issue with inlined functions that take
-> and
-> return 64-bit values, these may lead to extreme stack usage. A fix for
-> this
-> might go into 3.1pre CVS during the next days.
-> After this has been decided I'll upload gcc-3.1pre RPMS and announce
-> them.
->
-> Franz.
->
->
->
+> I also tried building many of the snap shots. My last try was
+> gcc-20020318.
+> The Intermittent crashes sometimes go a way when I retry.
+> stage1/xgcc -Bstage1/ -B/usr/local/powerpc-unknown-linux-gnu/bin/ -c
+> -DIN_GCC    -g -O2 -W -Wall -Wwrite-strings -Wstrict-prototypes
+> -Wmissing-prototypes -Wtradi
+> ../../gcc-20020318/gcc/expmed.c: In function `expand_mult':
+> ../../gcc-20020318/gcc/expmed.c:2574: internal error: Segmentation fault
+> Please submit a full bug report,
+> with preprocessed source if appropriate.
+> See <URL:http://www.gnu.org/software/gcc/bugs.html> for instructions.
+> make[2]: *** [expmed.o] Error 1
+> make[2]: Leaving directory `/root/snap_shot/config/gcc'
+> make[1]: *** [stage2_build] Error 2
+> make[1]: Leaving directory `/root/snap_shot/config/gcc'
+> make: *** [bootstrap] Error 2
+
+Are you sure you don't have any HW problems here? I'm building the compiler
+nearly daily on 2 different machines without such problems.
+
+> I also tried downloading code sourcery's snap shots at
+> http://www.codesourcery.com/gcc_binary_snapshots.
+> The gcc-20020318 was incomplete.
+
+The build machine had some troubles, should be fixed now.
+
+Franz.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
