@@ -1,76 +1,67 @@
-Message-ID: <3B60D970.7080201@brocade.com>
-Date: Thu, 26 Jul 2001 20:01:04 -0700
-From: Amit D Chaudhary <amitc@brocade.com>
+Message-ID: <3B610FAB.DBD87F1C@xilinx.com>
+Date: Thu, 26 Jul 2001 23:52:27 -0700
+From: "Peter Ryser" <Peter.Ryser@xilinx.com>
 MIME-Version: 1.0
-To: Andrew Dixon <andrew.dixon@seranoa.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: root=/dev/ram0
-References: <3B607757.6D4BFE4A@seranoa.com> <01072616453702.25105@sarge> <3B608CA5.2A774BD9@seranoa.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+References: <3B607757.6D4BFE4A@seranoa.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi Andy,
+
+configure your kernel with
+- ramdisk support
+- ramdisk support as boot device
+- extended fs 2 support
 
 
-Can you give the following details,
-Are you trying to load it as initrd? Not I assume, else confirm that
-CONFIG_BLK_DEV_INITRD=y
+make a minimal ramdisk consisting of the files/directories
+/linuxrc
+/dev/console
+where
+/linuxrc is a copy of sash
+/dev/console is created with: mknod /dev/console c 5 1
 
-Incase you are setting /dev/ram0 as the rootfs using rdev or equivalent,
-how does the rootfs end up on the ramdisk when the kernel starts up?
+compress the ramdisk and move it to
+linux/arch/ppc/boot/tree/ramdisk.image.gz
 
-Amit
+There are two different ways to set the kernel command line (eventually in
+linux/arch/ppc/boot/tree/main.c)
+- leave it empty (do it this way for a start)
+- set it to: root=/dev/ram0 init=/linuxrc rw
 
-ps - Did not mean to skip the list.
+Build the kernel: make zImage.initrd
+
+Download the image and boot.
+
+I hope this helps
+
+- Peter
 
 Andrew Dixon wrote:
 
-> Paul Ruhland wrote:
+> Hi All,
+> I'm trying to mount a compressed ramdisk image on /dev/ram0 and run my
+> root filesystem from there.  My problem is that when I try to boot I get
+> the following error:
 >
->>Andrew,
->>
->>First make sure you are passing the correct boot args to the kernel:
->>
->>   root=/dev/ram0
->>
->>Is this echoed by the kernel during boot?
->>
+>     VFS: Cannot open root device "ram0" or 01:00
+>     Please append a correct "root=" boot option
 >
-> Yup.
+> earlier in the boot process the ram disks are recognized:
 >
+>     RAMDISK driver initialized: 16 RAM disks of 4096K size 1024
+> blocksize
 >
->>Also, make sure you have 'Second extended filesystem' support
->>('CONFIG_EXT2_FS=y' in .config) compiled into your kernel.
->>
->>
+> I'm using kernel 2.4.5-pre3 from Ben H's source.
 >
-> I definitely do
->
->
->>That's really all I can suggest without more information.
->>
->>
->
-> What other informatin would be useful?  This has got me stumped.  The
-> ramdisk support in the kernel seems to be working OK.  I booted the
-> system up with an nfs mounted root partition and did the following:
->
-> 	#dd if=/dev/zero of=/dev/ram0 bs=1k count=4096
-> 	#dd if=/fs of=/dev/ram0    (fs is my filesystem image)
->
-> This went off without a hitch so I tried mounting /dev/ram0:
->
-> 	#mount /dev/ram0 /mnt
->
-> also fine and when I look in /mnt the filesystem looks OK too.
+> Anyone know why the kernel isn't able to open /dev/ram0?
 >
 > Thanks,
 > Andy
->
->
->
 >
 
 
