@@ -1,57 +1,48 @@
-Message-Id: <v04003a03b474c17e6e53@[216.81.20.25]>
-In-Reply-To: 
- <Pine.LNX.3.96.991208172006.11794D-100000@deepspace.mklinux.org>
-References: <v04003a02b47493b8bdac@[216.81.20.25]>
+Message-ID: <19991209044138.23512.qmail@www0i.netaddress.usa.net>
+Date: 8 Dec 99 22:41:37 CST
+From: jeramy b smith <ultrapenguin@netscape.net>
+To: jrestemeier@currantbun.com,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [Open Sourced Glide on Linux PPC]
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 8 Dec 1999 21:45:54 -0600
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-From: Tony Mantler <eek@escape.ca>
-Subject: Re: Non-OF Ports (was Re: Need developer to help move JDK ppc
- port forward)
-Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 7:24 PM -0600 12/8/99, David A. Gatwood wrote:
-[...]
->Heheh.  Stay tuned on the 5200.  My finals are over, and I have a few
->things left to do before I'm free for a while.  I've tracked down more
->information about the booting failures and I've started moving through the
->MkLinux code from the early stuff by checkout date trying to figure out
->exactly where it stopped starting to boot.  As soon as I've figured out
->what's wrong there, it should be trivial to get these machines at least
->partially working.
->
->We (MkLinux) already have an interrupt handler for them that I think is
->mostly right, along with hooks for the hardware addresses of every
->significant chip on the motherboards (there aren't very many), so the
->remainder of the porting is details.  I have a 6214 in my dorm room that I
->want to get off the floor, hence porting should go much faster now.  ;-)
+> Questions:
+> - Has anybody had any success compiling Glide/Linux/PPC/VooDoo1 ?
+> - Is this isa_io_base thingy changed in newer kernels, or did I just mix
+> up my configuration ? I don't really like downloading kernels/patches
+> through my slow connections, so I'd like to be sure...
+> 
+> Thanks,
+> Jens
 
-The interrupt handling in
-<http://www.mklinux.org/cgi-bin/cvsweb/osfmk/src/mach_kernel/ppc/POWERMAC/interr
-upt_performa.c?rev=1.6> looks like what I was hoping I wouldn't have to
-write. Somehow I can't picture apple using a 'check every IRQ source on
-interrupt' method for routing between the 68k and PPC interrupt styles, but
-I guess I wouldn't put it past them. (It also leaves the question of where
-does the NMI go)
+I tried this beast today.
+First:
+I noticed 3dfx set x86 CFLAGS in the spec.The spec does this though for
+glibc20 compat libs. I simply commented these lines and their respective
+install lines in the spec.
 
-Beyond that, Linux/Mac68k has plenty of code for the Q630 that can be
-recycled for my 5200.
+Second:
+swlib/include/make/3dfx.mak
+This girl contains the default CFLAGS which are 486 specific. They are beside
+the CNODEBUG.
+I waxed em.
 
-But before that, I'd really like to more fully understand the Capella chip
-in both it's cache controlling and interrupt functions, so I can support it
-properly.
-
-
-Cheers - Tony :)
+Third:
+Ran into the same P6 fence message and some other weird looking messages at
+the same place you did. My guess is that there is some inline ASM jammed in
+there. The only ASM I know is IBM 370 so I was lost at this point. I *should*
+have look at the c file and seen if there was an alternate c routine for the
+inline ASM stuff. The sources I have have OS defs for HPUX and Solaris so
+their might be portable c routines in the code. Basically, if your OSTYPE is
+Linux they assume your using x86.
 
 
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
+Afterword:
+I hit the 3dfx sourceforge at sourceforge.net but nothing has been posted yet.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
