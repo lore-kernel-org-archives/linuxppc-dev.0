@@ -1,40 +1,43 @@
-Message-Id: <200101280019.QAA15270@mail.turbolinux.com>
-Date: Sun, 28 Jan 2001 00:27:31 -0000
-To: linuxppc-dev@lists.linuxppc.org
-Subject: powerbook doubles as a frying pan
-From: Brad Midgley <brad@turbolinux.com>
-Reply-To: brad@turbolinux.com
+Date: Sat, 27 Jan 2001 19:59:24 -0500
+From: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Amit Chaudhary <amitc@brocade.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao mode
+Message-ID: <20010127195924.A19744@allspice.cs.swarthmore.edu>
+References: <20010126160441.B16573@allspice.cs.swarthmore.edu> <Pine.LNX.4.10.10101262206390.1670-100000@zirkon.biophys.uni-duesseldorf.de> <20010127163115.B2695@allspice.cs.swarthmore.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010127163115.B2695@allspice.cs.swarthmore.edu>; from eisenbud@cs.swarthmore.edu on Sat, Jan 27, 2001 at 04:31:15PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi,
+On Sat, Jan 27, 2001 at 04:31:15PM -0500, Daniel Eisenbud <eisenbud@cs.swarthmore.edu> wrote:
+> On Fri, Jan 26, 2001 at 10:32:35PM +0100, Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de> wrote:
+> > # same to a separate screen
+> > *.info;mail.none;authpriv.none;local0.none		/dev/tty7
+> >
+> > is what keeps a not-too-cluttered log (copy of /var/log/messages) on tty7
+> > of our server. kern.notice to some tty would probably be enough for you.
+> >
+> > > and not to any files so syslogd won't freeze when SCSI goes?  Is there
+> >
+> > So put just that one line redirecting log output to /dev/tty7 into
+> > syslog.conf temporarily and kill -1 syslogd before starting the test.
+>
+> I'll try this variation in a few minutes.
 
-the only time i ever noticed the fan on my powerbook turn on was when i could smell something
-burning... it was while i was running a long-running java program which was cpu-bound. the program
-was probably going for about a half hour.
+This worked, but I didn't get any useful log output until I started
+getting error 600 from the SCSI midlevel and errors from ext2fs.  I'm
+going to try again, making sure that I have dmesg set as high as
+possible, and see if I can get anything else.  Otherwise, is it time to
+start scattering printk()'s around the mesh driver?
 
-i shut the machine down as soon as i realized where the smell was coming from. after that it
-wouldn't boot. the tech says the ethernet chip had a "blister" on it. replacing the logic board
-cost almost $600.
-
-is everyone *totally* sure that activating the fan is entirely handled in hardware? is there no
-register for controlling the threshold?
-
-/proc/cpuinfo does not report the temperature (i'm not sure the hardware can report it).
-
-for now, i put it to sleep whenever it gets hot. i suppose i should put sleep statements in
-anything that is cpu bound to save the machine. also i pull out the pc card if it's not in use to
-help with ventilation.
-
-(what a day i'm having... i just got it back and spent the day trying to find out why java would
-not run. after examing working- and non-working-strace's i noticed that the date was set to 1904.
-the java vm will not initialize with a date like that. maybe it's because sun realizes that no
-java machine was known to be working in the year 1904.)
+-Daniel
 
 --
-Brad
-brad@turbolinux.com      http://www.turbolinux.com/~brad/
-
+Daniel E. Eisenbud
+eisenbud@cs.swarthmore.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
