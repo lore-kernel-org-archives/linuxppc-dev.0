@@ -1,56 +1,35 @@
-Date: Fri, 7 Jan 2000 10:05:49 -0800 (PST)
-From: Mark Vojkovich <mvojkovich@varesearch.com>
-To: XFree86 Devel <devel@XFree86.Org>
-cc: Shuangjun Zhu <r44089@email.sps.mot.com>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Question about the video device driver
-In-Reply-To: <Pine.GSO.4.10.10001071005530.10461-100000@dandelion.sonytel.be>
-Message-ID: <Pine.LNX.4.04.10001070959040.28797-100000@silicon.su.valinux.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Larry McVoy <lm@bitmover.com>
+Date: Fri, 7 Jan 2000 12:42:29 -0800
+Message-Id: <200001072042.MAA24660@work.bitmover.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: BK reader/writer locking
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+mea culpa.  I had writer locks at the repository level working but not
+reader locks.  So you could get inconsistent data if you did a pull or
+a resync while someone else was pushing.  
 
+A pass at fixing this is in hq.fsmlabs.com:/home/lm/bk so please pull that
+to your local machine and "cd src; make production".  This has already been
+done on hq so you should be back in business on the shared repository.
 
-On Fri, 7 Jan 2000, Geert Uytterhoeven wrote:
+By the way, I dunno if you know it, but you guys rate pretty much 24x7 
+support.  Here's how to get it:
 
-> On Fri, 7 Jan 2000, Shuangjun Zhu wrote:
-> > The video of MPC823 FADS board only support YCbYCr mode,
-> > so how can I write a device driver for the video of MPC823 FADS board,
-> > to enable the X?
-> > 
-> > Any suggestion? 
-> > Thanks in advanced.
-> 
-> This sounds like an interesting project.
-> 
-> How many bits per pixel are available? If it's not too much you can create a
-> staticcolor visual and consider it to be a simple paletted video mode (with a
-> static palette). However, IIRC, XFree86 doesn't support staticcolor hardware,
-> but support for that is probably closer than support for YCbCr.
+a) ALWAYS send help requests to dev@bitmover.com - contrary to public
+   opinion, BK is not just me.  Andrew, Rick, Kim, and Aaron also
+   work here and are good and helping and fixing bugs.
 
-   We support static color visuals just fine.  But there will be
-a problem if the hardware doesn't have a macroblock size of 1x1.
-It's required that you can get read the data back without losing
-information.  If you are sharing chroma between pixels that's
-not going to work.
+b) If you don't get an ACK pretty quickly, and you are being held up,
+   you can call my business line which is in the US at 415-401-8808.
+   If you are stalled and you are sure it is a BK problem, for the time
+   being you can call 24 hours/day, I'll get up.  I know some of you are
+   in Europe so I pretty much have to deal with the timezone difference.
 
-> 
-> I see you write YCbYCr? So the color components are subsampled like digital
-> broadcast video? In that case things become more complex because of the
-> different resolutions for the luminance and chrominance channels.
-> 
-> All this combined, I think the best solution is to use the virtual frame buffer
-> feature of XFree86 3.9.x (draw in a piece of memory as large as the screen) and
-> update the screen image by converting the changed parts from RGB to YCbYCr.
+Cheers,
 
-   Yes, shadowfb should work fine for this if the hardware can do the
-conversion from RGB data stored in system memory.
-
-
-				Mark.
-
+--lm
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
