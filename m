@@ -1,40 +1,61 @@
-Subject: Re: 405LP RTC reset
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: embedded list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <20021218211556.GA8947@zax.zax>
-References: <1040150612.10740.111.camel@granite.austin.ibm.com>
-	<20021218005542.GC3666@zax.zax>
-	<1040225939.29647.11.camel@granite.austin.ibm.com>
-	<20021218211556.GA8947@zax.zax>
-Date: 18 Dec 2002 15:49:46 -0600
-Message-Id: <1040248187.30597.47.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+Message-ID: <20021219001423.47019.qmail@web41207.mail.yahoo.com>
+Date: Wed, 18 Dec 2002 16:14:23 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: After Uncompresseing Linux..., what's next
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <200212180101.gBI11p816867@p2.parker.boston.ma.us>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2002-12-18 at 15:15, David Gibson wrote:
-> On Wed, Dec 18, 2002 at 09:38:53AM -0600, Hollis Blanchard wrote:
-> >
-> > The only issue I can think of here is the firmware setting it
-> > incorrectly or not at all. In that case, a few seconds will be expanded
-> > or compressed, but that's better than time running too fast or slow
-> > forever, right?
->
-> That's true.  Still, I think it might be worth testing what the rate
-> is set to when we come in, and printing a warning if it's not what we
-> expect before we adjust it.  If it just silently corrects it I could
-> imagine it being pretty nasty to track down why the device is
-> losing/gaining time each boot.
+Hi there,
 
-Sounds like a very good idea. I'll add it to my list unless someone
-beats me to it. :)
+I was trying to load linuxppc_2_4_devel onto my board.
+It goes through the board info read, UART init and
+Uncompressing the linux kernel. But after that, i do
+not see any messages and board hangs.
 
--Hollis
---
-PowerPC Linux
-IBM Linux Technology Center
+Here is the UART output:
+------------------------------------
+OS Booting...
+
+loaded at:     00400000 0060D1CC
+board data at: 00000030 00000044
+relocated to:  00405C24 00405C38
+zimage at:     00406290 004A08FF
+initrd at:     004A1000 006097CA
+avail ram:     0060E000 007F8000
+
+Linux/PPC load: console=ttyS0,9600 console=tty1 ip=on
+root=/dev/xsysace/disc0/pa
+rt3 rw
+Uncompressing Linux...done.
+Now booting the kernel
+-------------------------------------------
+
+After the last line, it hangs. I get a feeling that,
+the uncompressing process is not writing in the memory
+starting from 0x00000000 and, after uncompressing, it
+is jumping into 0x00000000 and is not able to find
+anything.
+
+My questions are,
+1. How can i make sure that, the uncompressing process
+is going to start writing the data from 0x00000000.
+
+2. How big a space this uncompressing process needs?
+And also how much overall memory is required for
+running linux. I just have 8MB SDRAM.
+
+3. What is the next step in the booting process? Which
+Device (eth, pci, ide, ???) Initialization?
+
+Your help is appreciated.
+
+thanks,
+Prakash
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
