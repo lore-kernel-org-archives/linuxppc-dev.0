@@ -1,29 +1,37 @@
-Message-ID: <39F6FCBD.F364A535@mpifr-bonn.mpg.de>
-Date: Wed, 25 Oct 2000 17:31:09 +0200
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Message-ID: <F14441D40E5AD3118886005004607AD10BDE13@MAIL1>
+From: "Halfmann, Klaus" <khalfmann@libra.de>
+To: linuxppc-dev@lists.linuxppc.org, linux-fsdevel@vger.kernel.org
+Subject: Releasing Version 1.0.2 of hfsplusutils
+Date: Wed, 25 Oct 2000 17:32:40 +0200
 MIME-Version: 1.0
-To: Josh Huber <huber@mclx.com>
-CC: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: powerbook pcmcia troubles
-References: <20001025112219.C14268@missioncriticallinux.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Josh Huber wrote:
-> I'm having some problems with pcmcia on my powerbook.  I've got a
-> Wallstreet and pcmcia is working fine with this, but on my new
-> powerbook things aren't so good.
-[snip]
->      PCI irq 22 test failed
+on 	ftp://penguinppc.org/users/hasi/hfsplusutils-1.0.2-3.ppc.rpm
 
-Did you read/follow the instructions on this page:
+resp.	ftp://penguinppc.org/users/hasi/hfsplusutils-1.0.2-3.src.rpm
 
-http://www.mpifr-bonn.mpg.de/div/iri/Archiv/LinuxPPC/PCMCIA.html
+You can download rpms of version 1.0.2 of my hfsplusutils.
 
-Hope this helps, Albrecht.
+The new version was neccessary because on large volumes
+(> 2Gb) I must use lseek64.
 
---
+Changes:
+	Correctly checks for the existance
+	of the backup volume record.
+
+	has a btree node cache (does not speed up very much)
+	has a blockiterator for files that speeds up hpcopy
+		(especially with fragmented files)
+
+	hpfsck is in the src-rpm but not int the binaries,
+	as of now it does not check much.
+
+	General code cleanup in preparing for write access.
+
+Helpers welcome
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
