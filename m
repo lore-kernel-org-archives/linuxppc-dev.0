@@ -1,106 +1,50 @@
-Message-ID: <38C91091.DFFA1DC2@cray.com>
-Date: Fri, 10 Mar 2000 09:11:13 -0600
-From: Mike Wolf <mwolf@sgi.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: ?'s on user code for embedded PPC
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v03110700b4eec4979817@[129.100.29.243]>
+In-Reply-To: <v03110701b562ab7246aa@[129.100.29.243]>
+References: <38C7A233.DC4C803C@iiic.ethz.ch>
+ <Pine.LNX.4.21.0003060013070.30614-100000@idd-01.imbc.gr>
+ <00030822191300.00546@localhost.localdomain>
+ <38C7A016.8C2ED4C8@iiic.ethz.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 10 Mar 2000 10:33:24 -0500
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
+        Michel Dänzer   <michdaen@iiic.ethz.ch>,
+        Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
+    cwithr128
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
-  I'm trying to boot the IBM 403.  I'm working off of Grant Ericksons
-changes and using snoop I see it is getting to the point of loading
-libc-1.99.so and it hangs.
 
-I have asked Grant questions in the past and here is a comment he made
-about libc:
+So Xfree 4.0 final is out but without the very last minute cache flushing
+changes Kostas made.
 
-"Not really. The trick with the 403 is that all the userland stuff needs
-to
-be compiled using -msoft-float because of the lack of an FPU. Further,
-the
-C library may need to be hacked as was done for the 8xx-based stuff
-because of the 16-byte cache lines.
+So we should probably get some official patch out there that includes a few
+elements:
 
-Dan Malek <dan@netx4.com> has done LOTS of work in this area and could
-probably offer some valuable insight. You might* even try to use his
-minimal mbxroot file system image as a starting point."
+1. Either:
+       - user defined cache line size during compile
+   or:
+       - flush a cache range in address increments of 8
 
-I've also noticed that the user code is not as hardware dependant that
-most of the code is compiled other PPC's running linux and then used for
-the embedded application.  So I got the mbxroot libraries and shell and
-tried running them without success.
+to handle the variable line cache size
 
-Should this have worked?
+2. And something to figure out if we are on a 601 machine in the
+NuBus X100 machines to properly do a "sync or eieio" so that XFree86 4.0
+cache flushing and synchronization for io has some chance of working under
+MkLinux R1.
 
-I've also attempted cross-compiling the TiVo library.  I have a cross
-compiler set up on a system running Irix6.5 and a cross compiler setup
-on a sun sparc 5 running RedHat 6.0.  The cross compiler uses:
-binutils-2.9.5.0.22.tar.gz
-gcc-2.95.2.tar.gz
-gcc-core-2.95.2.tar.gz
-glibc-2.1.2.tar.gz
-glibc-crypt-2.1.2.tar.gz
-glibc-linuxthreads-2.1.2.tar.gz
+David can you tell me how the 601 problems with sync and eieio are
+detected and handled in user space apps under MkLinux?
 
-The error I get is:
-powerpc-linux-gcc ../sysdeps/powerpc/elf/crtbegin.S -c -I. -I..
--I../libio  -I/opt/home/mwolf/src/tivo/toolchain/libc-ppc
--I../sysdeps/powerpc/elf -I../des-crypt/sysdeps/unix
--I../linuxthreads/sysdeps/unix/sysv/linux
--I../linuxthreads/sysdeps/pthread -I../linuxthreads/sysdeps/unix/sysv
--I../linuxthreads/sysdeps/unix -I../sysdeps/unix/sysv/linux/powerpc
--I../sysdeps/unix/sysv/linux -I../sysdeps/gnu -I../sysdeps/unix/common
--I../sysdeps/unix/mman -I../sysdeps/unix/inet -I../sysdeps/unix/sysv
--I../sysdeps/unix -I../sysdeps/posix -I../sysdeps/powerpc
--I../sysdeps/wordsize-32 -I../sysdeps/ieee754 -I../sysdeps/libm-ieee754
--I../sysdeps/generic -I../sysdeps/stub  -D_LIBC_REENTRANT
--DUSE_NEW_MALLOC -include ../libc-symbols.h     -DHAVE_INITFINI
--DASSEMBLER  -o
-/opt/home/mwolf/src/tivo/toolchain/libc-ppc/csu/crtbegin.o
-powerpc-linux-gcc ../sysdeps/powerpc/elf/crtend.S -c -I. -I..
--I../libio  -I/opt/home/mwolf/src/tivo/toolchain/libc-ppc
--I../sysdeps/powerpc/elf -I../des-crypt/sysdeps/unix
--I../linuxthreads/sysdeps/unix/sysv/linux
--I../linuxthreads/sysdeps/pthread -I../linuxthreads/sysdeps/unix/sysv
--I../linuxthreads/sysdeps/unix -I../sysdeps/unix/sysv/linux/powerpc
--I../sysdeps/unix/sysv/linux -I../sysdeps/gnu -I../sysdeps/unix/common
--I../sysdeps/unix/mman -I../sysdeps/unix/inet -I../sysdeps/unix/sysv
--I../sysdeps/unix -I../sysdeps/posix -I../sysdeps/powerpc
--I../sysdeps/wordsize-32 -I../sysdeps/ieee754 -I../sysdeps/libm-ieee754
--I../sysdeps/generic -I../sysdeps/stub  -D_LIBC_REENTRANT
--DUSE_NEW_MALLOC -include ../libc-symbols.h     -DHAVE_INITFINI
--DASSEMBLER  -o /opt/home/mwolf/src/tivo/toolchain/libc-ppc/csu/crtend.o
-gmake[2]: *** No rule to make target
-`/opt/home/mwolf/src/tivo/toolchain/libc-ppc/csu/crtbeginS.o', needed by
-`others'.  Stop.
-gmake[2]: Leaving directory
-`/opt/home/mwolf/src/tivo/toolchain/libc/csu'
-gmake[1]: *** [csu/others] Error 2
-gmake[1]: Leaving directory `/opt/home/mwolf/src/tivo/toolchain/libc'
-gmake: *** [all] Error 2
+Thanks,
 
+Kevin
 
-Is this a problem with the version of the libc I'm trying to compile
-with
-my cross compiler?
-
-Would this be easier to compile on a PPC running linux?  If so I'm
-thinking
-about getting a G4 tower and running YellowDog on it.  I'm assuming any
-G4 I'd purchase today would be a 'sawtooth' and I noticed that Ben
-Bodley is
-reporting problems with this booting.  Any suggestions for a reliable
-system
-and PPC release.  It doesnt need to be high powered, I dont need to run
-MacOS, I would prefer to have only the linux loaded.
-
---
-Mike Wolf
-Cray Research
-655-F Lone Oak Drive, Eagan, MN 55121
-mwolf@cray.com          (651)683-5313
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
