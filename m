@@ -1,21 +1,16 @@
-Return-Path: <Martin.Krause@tqs.de>
-Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
-	by ozlabs.org (Postfix) with ESMTP id 95A922BF14
+Return-Path: <Ed.Goforth@gd-ais.com>
+Received: from vaff01-fes.gd-ais.com (vaff01.veridian.com [137.100.144.2])
+	by ozlabs.org (Postfix) with SMTP id B1AC22BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jan 2005 01:46:45 +1100 (EST)
-Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
-	by mail.tqs.de (Postfix) with ESMTP id AE7EE3CD0
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 15:46:34 +0100 (CET)
+	Fri, 14 Jan 2005 02:13:48 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 13 Jan 2005 15:46:34 +0100
-Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B31@TQ-MAILSRV-1>
-From: "Martin Krause" <Martin.Krause@tqs.de>
-To: <Jens-Peter.Oswald@kayser-threde.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: AW: TQM860L hangs after soft reboot
+	charset="us-ascii"
+Date: Thu, 13 Jan 2005 10:14:20 -0500
+Message-ID: <9A48EF7239039B48834A3F6B644B0C71EF8750@vaff06-mail01.ad.gd-ais.com>
+From: "Goforth, Edward" <Ed.Goforth@gd-ais.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: board with no RTC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,35 +21,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Jens-Peter,
+Thanks to everyone who responded.  Now that a RTC is not a requirement,
+can anyone offer advice on what I will need to do to get the kernel
+(2.4.18) to play nice?
 
-linuxppc-embedded-bounces@ozlabs.org wrote on Donnerstag, 13. Januar
-2005 13:37:=20
-> Hi all,
-> We've designed a custom board for an TQM860L module from
-> TQ-Components.=20
-> Now the following behaviour occurs:
-> After a soft reset (from linux or bootloader u-boot) the board hangs.
-> Only a hard reset (power cycle or RESIN# pin low of TQ-Modul) wakes
-> it up.
 
-RESIN# is routed to pin PORESET# of the CPU (with some reset logic in =
-between).
+Thanks,
+Ed
 
-> In the evaluation board STK8xxL from TQ the modul boots normally
-> after a soft reset. I assume it might be a forgotten pullup- or pull
-> down in our custom board.
 
-Try a look at the user manual: MPC860UM 3/2003, REV 2, Table 11-1.MPC860 =
-
-Reset Responses and the following chapter.
-
-> By the way, how does linux handle a soft reset?
-
-U-Boot uses the checkstop reset (caused by a machine check after=20
-trying to execute an instruciton at a non-existing address).
-
-Hope this was somewhat of a help.
-
-Regards,
-Martin
+> -----Original Message-----
+> From: Ed.Goforth@gd-ais.com [mailto:Ed.Goforth@gd-ais.com]=20
+> Sent: Wednesday, January 12, 2005 6:26 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: board with no RTC
+>=20
+>=20
+> We have a 440gx based custom board.  I have learned that it does not
+> have a RTC. Has anyone had any success with a board without a=20
+> RTC, or is
+> it even possible?  How much of a problem will this cause? =20
+>=20
+> Should we get the board respun with a RTC?  We would prefer=20
+> using a 2.4
+> kernel, but would certainly go to a 2.6 kernel if that made things
+> easier.
+>=20
+> Thanks in advance for any advice.
+>=20
+> Ed Goforth
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
