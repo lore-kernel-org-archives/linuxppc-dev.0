@@ -1,31 +1,33 @@
-Mime-Version: 1.0
-Message-Id: <a05010404b703232d1b66@[192.168.240.10]>
-Date: Wed, 18 Apr 2001 13:04:19 +0200
-To: linuxppc-dev@lists.linuxppc.org
-From: Alain RICHARD <alain.richard@equation.fr>
-Subject: benh 2.4.4-pre3, Titanium and AirPort
-Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
+Message-ID: <3ADD7D28.45D39EA5@wanadoo.fr>
+Date: Wed, 18 Apr 2001 13:40:25 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Tony Mantler <nicoya@apia.dhs.org>,
+	"michel   =?iso-8859-1?Q?d=E4nzer?=" <michdaen@iiic.ethz.ch>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
+References: <20010418090307.B0BF42EFB5@apollo.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am currently using Benjamin Herrenschmidt 2.4.4-pre3 kernel on my
-Titanium. The only problem I am currently experiencing is that the
-kernel PCMCIA i82365.c driver do not recognized the PCI cardbus
-adaptator.
+> The SysRq situation is more difficult to understand - but the code is very
+> readable (nice stuff from Franz) - I just need to draw myself a picture
+> (gave up at 3am this morning).
+>
+> How about a revolution  ;-?
+>
+> Could we come to a consensus about a key to use that will work for both
+> Laptops & desktops?
+>
+> How about <Power> ?  It seems to send keycode 0x7f (or 0x7e on 3400)...
 
-Is there any solution (patch) to get it recognized ?
-
-Also as the current airport driver is now based on the orinoco_cs
-(and hermes) driver that depends on PCMCIA support, I am unable to
-get airport working. Is there any solution to get it working without
-PCMCIA ?
+Very good idea. Except that it is already hijacked by xmon, IIUC. Maybe
+one could make the use of SysRq and of xmon mutually exclusive :-)
 
 --
--------------------------------------------------------
-Alain RICHARD <mailto:alain.richard@equation.fr>
-EQUATION SA <http://www.equation.fr/>
-Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
-Applications client/serveur, ingénierie réseau et Linux
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
