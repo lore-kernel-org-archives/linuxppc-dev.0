@@ -1,58 +1,74 @@
-Date: Wed, 15 Dec 1999 09:53:58 -0700 (MST)
-From: Stephen Edie <sedie@terraplex.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCNET32 driver
-In-Reply-To: <19991215174442.007768@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.9912150949200.27113-100000@newhope.terraplex.com>
+From: À¯Èñ¿­ <heeyeoly@etri.re.kr>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: How to modify for mutant Board
+Date: Thu, 16 Dec 1999 14:33:21 +0900
+Message-ID: <NDBBJFGPOMLHIKIPDKGJOENJCAAA.heeyeoly@etri.re.kr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0007_01BF47D2.80BDF460"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ben,
+This is a multi-part message in MIME format.
 
-These problems show up on both our IBM RS/6000 F50 and IBM RS/6000 B50.
-In the case of the F50, the problem is apparent on the add-in card.  (I
-believe the built in Ethernet only supports 10mbit)  It doesn't happen in
-10mbit mode, however... only 100mbit.
+------=_NextPart_000_0007_01BF47D2.80BDF460
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: base64
 
-Unfortunately, I have never worked with an Ethernet driver so I have no
-idea where to start playing with parameters.  :)
+SGkhDQoNCldlIGFyZSBnb2luZyB0byBhZGFwdCBsaW51eHBwYyBmb3Igb3VyIEFjY2VzcyBwb2lu
+dC4NCkJ1dCBvdXIgYm9hcmQgdHlwZSBpcyBub3Qgb25lIG9mIHRoZSBzdGFuZGFyZCB0eXBlLCBz
+dWNoIGFzIE1CWCxSUFgtbGl0ZS4NCg0KSG93IHRvIG1vZGlmeSBhbmQgd2hlcmUgY2FuIEkgZ2V0
+IGluZm9ybWF0aW9uIGZvciBtdXRhbnQgQm9hcmQ/DQoNCj09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCll1LCBIZWV5ZW9sDQpXaXJlbGVzcyBBVE0g
+TEFOIFRlYW0NClJvdXRlciBUZWNobm9sb2d5IERlcGFydG1lbnQNClN3aXRjaGluZyAmIFRyYW5z
+bWlzc2lvbiBUZWNobm9sb2d5IExhYm9yYXRvcnkNCkVUUkkNClRlbDogCSs4Mi00Mi04NjAtMTMz
+NA0KRmF4OiAJKzgyLTQyLTg2MC01MjEzDQpQQ1M6IAkwMTgtMjg3LTIyMDcNCkVtYWlsOgloZWV5
+ZW9seUBldHJpLnJlLmtyLCBoZWV5ZW9seUBjaG9sbGlhbi5uZXQNCj09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCg0K
 
-Stephen
+------=_NextPart_000_0007_01BF47D2.80BDF460
+Content-Type: application/ms-tnef;
+	name="winmail.dat"
+Content-Disposition: attachment;
+	filename="winmail.dat"
+Content-Transfer-Encoding: base64
 
-Terra Soft Solutions, Inc.
-   Yellow Dog Linux
-   "The Ultimate Companion for a Dedicated Server"
-   http://www.yellowdoglinux.com/
+eJ8+IhUFAQaQCAAEAAAAAAABAAEAAQeQBgAIAAAAtQMAAAAAAAC4AAEIgAcAGAAAAElQTS5NaWNy
+b3NvZnQgTWFpbC5Ob3RlADEIAQ2ABAACAAAAAgACAAEGgAMADgAAAM8HDAAQAA4AIQAAAAQAJQEB
+A5AGAKQGAAAlAAAACwACAAEAAAALACMAAAAAAAMAJgAAAAAACwApAAAAAAADADYAAAAAAB4AcAAB
+AAAAHwAAAEhvdyB0byBtb2RpZnkgZm9yIG11dGFudCBCb2FyZAAAAgFxAAEAAAAWAAAAAb9Hhw2Y
+mzhKOLOWEdOVcACQJ4d4EgAAAgEdDAEAAAAZAAAAU01UUDpIRUVZRU9MWUBFVFJJLlJFLktSAAAA
+AAsAAQ4AAAAAQAAGDgBO0wOHR78BAgEKDgEAAAAYAAAAAAAAAOwnrQhCe9MRlW8AkCeHeBLCgAAA
+CwAfDgEAAAACAQkQAQAAAEUCAABBAgAAcwMAAExaRnXKEHnZAwAKAHJjcGc5NDkDAPgLYG5nMTAz
+M8kOtmZlDzA0MgH3AqQTA+MCAGNoCsBzZXR8MCAHEwKDAFAEVRGXMeQyOQMwJ2IAUBRQAODVFFA4
+FEEyAoMyAuMTf5UUjH0KgXYIkHdrC4D0ZDQMYGMAUAsDDvQQMOELpiBIaSEKogqECoCYV2UgCsAb
+YGdvC4CQZyB0bxtwZGEFMQJsC4B1eHBwYyDPAhAFwAhhEjBjYweQBCCScBvRdC4alEJ1BUDPHYIG
+4AsRHBB5cBtgBAAoIG5vHxFuG2BvZnUcEGgbYHMBkBiAH5YsGyEwGMBoG3AEIE1CWCAsUlBYLRyw
+dGXzHoUalEhvB+AcIQRhBpBmeRtwGIAgdyEQG5Fj3QORSRuwEgAgEG4dQQDA7HRpAiAdM20fAABw
+BUB6Qh+CPxLCGqkK9BWAIJ49Kb8qzyvfGpRZdSIQskgJ4HllBvAa9WkJcAJsHfJBVE0gTEHATiBU
+ZWFtGpQIAL8fAASQL2ERsCBQCQBnJQB0RGUKsXQHgAIwGpRTrQPwdBGwG+ImL2ByAHHubQQBJuIw
+iUwBoAWwJsCFBbB5GpRFVFJJGpQZL3BsOgMwAZEgKzgEMi0QMC04NjAtjjEPUBigGqNGYXg2Txgt
+NTI3YBqUUENTATg1MDE4LTI4N7s6wAHQNzUVAMADEDo2Y7MhEC2zeUASAAUQLglw+C5rciIQPGcR
+sAbwHLD9AHAuIKAxxSvvQG9BfyzlFyklKFUX4QBEIAAAAAsAAYAIIAYAAAAAAMAAAAAAAABGAAAA
+AAOFAAAAAAAAAwADgAggBgAAAAAAwAAAAAAAAEYAAAAAEIUAAAAAAAADAAeACCAGAAAAAADAAAAA
+AAAARgAAAABShQAAjmoBAB4ACYAIIAYAAAAAAMAAAAAAAABGAAAAAFSFAAABAAAABAAAADkuMAAe
+AAqACCAGAAAAAADAAAAAAAAARgAAAAA2hQAAAQAAAAEAAAAAAAAAHgALgAggBgAAAAAAwAAAAAAA
+AEYAAAAAN4UAAAEAAAABAAAAAAAAAB4ADIAIIAYAAAAAAMAAAAAAAABGAAAAADiFAAABAAAAAQAA
+AAAAAAALAA2ACCAGAAAAAADAAAAAAAAARgAAAACChQAAAQAAAAsAOoAIIAYAAAAAAMAAAAAAAABG
+AAAAAA6FAAAAAAAAAwA8gAggBgAAAAAAwAAAAAAAAEYAAAAAEYUAAAAAAAADAD2ACCAGAAAAAADA
+AAAAAAAARgAAAAAYhQAAAAAAAAsAW4AIIAYAAAAAAMAAAAAAAABGAAAAAAaFAAAAAAAAAwBcgAgg
+BgAAAAAAwAAAAAAAAEYAAAAAAYUAAAAAAAACAfgPAQAAABAAAADsJ60IQnvTEZVvAJAnh3gSAgH6
+DwEAAAAQAAAA7CetCEJ70xGVbwCQJ4d4EgIB+w8BAAAAggAAAAAAAAA4obsQBeUQGqG7CAArKlbC
+AABQU1RQUlguRExMAAAAAAAAAABOSVRB+b+4AQCqADfZbgAAAEM6XFdJTkRPV1NcTG9jYWwgU2V0
+dGluZ3NcQXBwbGljYXRpb24gRGF0YVxNaWNyb3NvZnRcT3V0bG9va1xvdXRsb29rLnBzdAAAAAMA
+/g8FAAAAAwANNP03AAACAX8AAQAAADMAAAA8TkRCQkpGR1BPTUxISUtJUERLR0pPRU5KQ0FBQS5o
+ZWV5ZW9seUBldHJpLnJlLmtyPgAAAwAGEFRiWpEDAAcQyQEAAAMAEBAAAAAAAwAREAAAAAAeAAgQ
+AQAAAGUAAABISVdFQVJFR09JTkdUT0FEQVBUTElOVVhQUENGT1JPVVJBQ0NFU1NQT0lOVEJVVE9V
+UkJPQVJEVFlQRUlTTk9UT05FT0ZUSEVTVEFOREFSRFRZUEUsU1VDSEFTTUJYLFJQWC1MAAAAAKhp
 
-
-On Wed, 15 Dec 1999, Benjamin Herrenschmidt wrote:
-
-> On Wed, Dec 15, 1999, Stephen Edie <sedie@terraplex.com> wrote:
-> 
-> >When running in 100mbit mode, the PCNET32 driver reports the following
-> >error message:
-> >
-> >eth0:TX FIFO error! Status 02e3
-> >
-> >With this messages present, we have seen a number of problems from
-> >TCP connections being closed after a few bytes of transfer to very poor
-> >performance (1-mbit throughput) to not working at all.  Is there a quick
-> >way to fix this problem perhaps?  We would like to get some of our
-> >in-house CHRP machines running at the full 100mbit and we have some
-> >customers who require 100mbit throughput as well.
-> 
-> Which pcnet32 chip are you using ? There are some issues with
-> auto-negociation on some integreated-PHY models, and you may have to
-> adjust a few of the chip parameters. I used the pcnet32 driver with an
-> AMD 973 on an ARM platform and it worked just fine (after I fixed the
-> cache coherency issues but those won't happen on PPC).
-> 
-> 
-> 
+------=_NextPart_000_0007_01BF47D2.80BDF460--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
