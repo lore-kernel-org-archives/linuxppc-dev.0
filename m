@@ -1,5 +1,5 @@
-Message-ID: <3BD38FC3.8040206@metaparadigm.com>
-Date: Mon, 22 Oct 2001 11:17:23 +0800
+Message-ID: <3BD39166.7020600@metaparadigm.com>
+Date: Mon, 22 Oct 2001 11:24:22 +0800
 From: Michael Clark <michael@metaparadigm.com>
 MIME-Version: 1.0
 To: Tom Rini <trini@kernel.crashing.org>
@@ -14,10 +14,7 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 Tom Rini wrote:
 
 > On Mon, Oct 22, 2001 at 10:31:49AM +0800, Michael Clark wrote:
-
 [snip]
-
->
 >>Why does the eth0 link come up so late? Is it possible to make the
 >>broadcom driver wait for link before returning from the initialisation
 >>function?
@@ -26,8 +23,8 @@ Tom Rini wrote:
 > What driver did you use?
 
 
-Not exactly sure: I have MACE, BMAC and GMAC compiled in. After matching
-the log messages to the dirver source, it looks like GMAC.
+Okay, changed to BMAC and it works okay - should BMAC detection come
+before GMAC?
 
 ~mc
 
