@@ -1,57 +1,60 @@
-Message-ID: <3E43E9A9.2080600@imc-berlin.de>
-Date: Fri, 07 Feb 2003 18:15:21 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: was: FEC on MPC860T & race condition
-References: <3E395B40.9090506@imc-berlin.de> <3E39898E.5060804@embeddededge.com> <3E3A3EE9.7000608@imc-berlin.de> <20030203210959.GA7857@ip68-0-152-218.tc.ph.cox.net> <3E3F7C29.8030807@imc-berlin.de> <20030204160401.GA30936@ip68-0-152-218.tc.ph.cox.net> <3E3FE6D0.1010600@imc-berlin.de> <20030204193224.GB3522@ip68-0-152-218.tc.ph.cox.net> <3E436221.8040903@imc-berlin.de> <20030207171222.GA21351@ip68-0-152-218.tc.ph.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Fri, 07 Feb 2003 18:21:32 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: [PATCH] 8xx_io/uart.c
+In-reply-to: <3E43DA00.7030808@embeddededge.com>
+To: Dan Malek <dan@embeddededge.com>
+Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLCEBAFKAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini schrieb:
-> On Fri, Feb 07, 2003 at 08:37:05AM +0100, Steven Scholz wrote:
+> Joakim Tjernlund wrote:
 >
->>Tom Rini wrote:
->>
->>>...
->>>Okay.  Moving along the process, I have a comment:
->>>
->>>
->>>
->>>>@@ -2285,6 +2278,39 @@
->>>>	fep->old_status = 0;
->>>>#endif	/* CONFIG_USE_MDIO */
->>>>
->>>>+#ifdef CONFIG_USE_MDIO
->>>>+# ifndef PHY_INTERRUPT
->>>>+#  error Want to use MII, but PHY_INTERRUPT not defined!
->>>>+# endif
->>>>+	/* before requesting the irq, we should wait until PHY is discovered
->>>>+	 * to avoid race conditions
->>>>+	 */
->>>>+	while (!fep->phy_id_done) {
->>>>+		udelay(5);
->>>>+	}
->>>
->>>
->>>I believe this is wrong, in that trying to udelay() here is a bad idea.
->>>I don't have the time right now, but I suspect google, or #kernelnewbies
->>>might be able to suggest a more appropriate way of waiting here.
->>>
->>>Or perhaps classes have fried my mind, and this is correct.
->>
->>No. I bet you're right.
->>But can you make any suggestion on how to wait for some I/O to become ready?
+> > Found a bug in the serial driver. my_console_write() uses the wrong address in early console writes.
+> > Removed some warnings as well.
 >
->
-> How about what Dan mentioned, with a function pointer and whatnot?
+> Well......console write doesn't get called this early.  The purpose
+> of these address modifications in other parts of the driver are for
+> kgdb using the serial port for early debugging.
 
-As I admitted in my mail to Dan, I am not sure if I understand excactly what mean...
+Early printk's will call it too.
 
-Steven
+>
+> I'd really like some supporting documentation (like a kernel panic
+> or other reproducable error) before you declare something a "bug",
+> along with showing the same test fixed the problem.
+
+I can not reproduce an error. 3-4 times I experienced a hang after "calibrating delay loop ..."
+which I can't explain.
+
+Now, why do you do the same thing just a few lines up if it wasn't needed?
+
+How about checking your own facts and provide an accurate analysis before
+bitching at me for trying to help out?
+
+>
+> > Please can you change TX_NUM_FIFO to 8 and TX_BUF_SIZE to 96,
+> > since chars are lost when pasting text into the console otherwise.
+>
+> What makes 96 a big enough number?  If you want to do this locally,
+> that's fine, but only flow control can guarantee you won't overflow
+> a serial port of any fifo depth.  I don't want to arbitrarily make
+> this fifo so large as there are other processing/latency/memory
+> tradeoffs.  The SMC is not a high performance interface and it
+> consumes lots of CPM cycles.
+
+I tested my how much I had increase them until I didn't lose any chars.
+I don't think this has anything to do with HW flow control. The
+smc runs out of BD's when trying to echo back the chars.
+
+I don't see how this would consume more CPM cycles. Yes, it will use
+a little more dpram but there is room for it.
+
+ Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
