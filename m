@@ -1,72 +1,45 @@
-Date: Wed, 9 Oct 2002 12:14:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Todd Poynor <tpoynor@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021009021403.GQ32555@zax>
-References: <20021002014219.GF1848@zax> <NCBBIINEHIPFGJPLBEIFEEMFDMAA.acurtis@onz.com> <20021002053422.GL1848@zax> <20021002100312.A2240@home.com> <20021003011044.GB1102@zax> <20021003081439.C4643@home.com> <20021004024832.GG1933@zax> <3D9DDEE9.5070909@mvista.com> <20021008041758.GG32555@zax> <3DA3347B.1000004@mvista.com>
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: andrew may <acmay@acmay.homeip.net>,
+	Matt Porter <porter@cox.net>,
+	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20021009015828.GO32555@zax>
+References: <20020930040143.GF10265@zax> <20021001052121.GV10265@zax>
+	<3D995EC0.2000500@elsoft.ch> <20021002014219.GF1848@zax>
+	<3D9AA452.5070004@elsoft.ch> <20021003011233.GC1102@zax>
+	<20021006052314.GG27824@acmay.homeip.net> <20021006183120.A17129@home.com>
+	<20021008041419.GF32555@zax> <20021008052136.GA26470@acmay.homeip.net>
+	<20021009015828.GO32555@zax>
+Content-Type: text/plain
+Date: 09 Oct 2002 12:35:17 +0200
+Message-Id: <1034159717.1600.89.camel@spawn>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DA3347B.1000004@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Oct 08, 2002 at 12:39:39PM -0700, Todd Poynor wrote:
+On Wed, 2002-10-09 at 03:58, David Gibson wrote:
 >
-> David Gibson wrote:
->
-> >>Rainier (NP4GS3) PMM1 is setup specially in the existing code, is this
-> >>no longer needed?
-> >
-> >
-> >Well, I don't know if it's necessary - it's not there, because I
-> >didn't notice the difference in the Rainier code before.  Now that I
-> >do look at it, I'm confused: it appears to be setting up both PMM0 and
-> >PMM1 to map from the same PLB addresses, but the manual specifically
-> >prohibits overlapping PMM ranges.
->
-> And the code used for MontaVista's products has diverged somehow; it has
-> an empty bios_fixup but code in a different place that does something
-> different:
->
-> 	/* plb address 0x8000 0000 will be set to pci address 0x8000 0000
-> 	which
-> 	   corresponds to PCI 9030 Dev 0x10 BAR4 */
-> 	out_le32((void*)PMM1LA,0x80000000);
-> 	out_le32((void*)PMM1MA,0xFFFE0001);    /* PLB range is 128KB */
-> 	out_le32((void*)PMM1PCILA,0x80000000);
-> 	out_le32((void*)PMM1PCIHA,0x00000000);
+> That's all very well if you've got PPCboot, but lots of boards have
+> firmware which is, lets face it, shite.  The kernel has to be able to
+> deal with this case.  And since it has to deal with it for the case of
+> crappy firmware, is there any point turning it off for the case of
+> decent firmware?
 
-Well, it may be in a different place, but it looks like it has the
-same problem.  It is still establishing a PCI window at PLB address
-0x80000000, which is the same address used for the PMM0 window - or is
-that also different in the MV kernel?
+I think it's a good idea to isolate the kernel as much as possible from
+the bootloader. This way you cut down on strange bugs that could depend
+not on the kernel but on the firmware.
 
-> I'll try to figure out the story on this, but everything NP4GS3-related
-> seems to be murky...  NP4GS3 will probably need a custom bios_fixup that
-> does the above (among other things), can worry about that platform later.
+What do we really gain by trusting the firmware for anything but the
+most basic stuff like some timing values and dram setup.
 
-I'd be trying to work out what that mapping's actually for, first.  I
-still can't see how it can possibly work - if there are overlapping
-PMM windows, what actually happens to accesses in that (PLB) range?
-
-> >>This code is fragile and tends to break on certain platforms in ways
-> >>that can't be explained by the available documentation.  I can help test
-> >>the unified version on Walnut/Sycamore/Ash if needed.
-> >
-> >
-> >Do you mean the existing code, or my proposed patch (or both).  That
-> >would be great if you could test the code on those machines -  I don't
-> >have a Sycamore or Ash, and I'd have to drag the Walnut out again to
-> >test on it.
->
-> Yes, I can test your proposed code on those machines.
 
 --
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
