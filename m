@@ -1,68 +1,96 @@
-Message-ID: <3C57F9AC.9040008@elsoft.ch>
-Date: Wed, 30 Jan 2002 14:48:28 +0100
-From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
-MIME-Version: 1.0
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74F8C0FE2@NTCORREO>
+From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: [PATCH] 3 patches against linuxppc_dev-2.4.18-pre7
-Content-Type: multipart/mixed;
- boundary="------------010703050109080107060507"
+Subject: Out of memory ?
+Date: Wed, 30 Jan 2002 15:58:07 +0100
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------010703050109080107060507
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+ Hi all,
 
-Hello
+  I have a custom board based in the MPC823e.
+  I am using mvista ftpserver who works OK in the FADS but, when i try to do
+it in my custom board it says that it is out of memory. But with the meminfo
+it says that i have memory.
 
-The attached patch fixes the following issues:
-
-    - arch/ppc/kernel/ppc4xx_pic.c
-       fixed constant in ppc405_pic_get_irq()
-       (should be NR_AIC_IRQS as in ppc403_pic_get_irq())
-
-    - arch/ppc/kernel/ppc_ksyms.c
-       added "consistent_sync_page"
-
-    - drivers/net/ppc405_enet.c
-       fixed old style register definitions in debug code
+  Can anybody help me?
+  Thanks in advance
 
 
-Dave
+  # cat meminfo
+        total:    used:    free:  shared: buffers:  cached:
+Mem:   6381568  2576384  3805184  1208320  1048576   593920
+Swap:        0        0        0
+MemTotal:         6232 kB
+MemFree:          3716 kB
+MemShared:        1180 kB
+Buffers:          1024 kB
+Cached:            580 kB
+Active:           1604 kB
+Inact_dirty:         0 kB
+Inact_clean:         0 kB
+Inact_target:       24 kB
+HighTotal:           0 kB
+HighFree:            0 kB
+LowTotal:         6232 kB
+LowFree:          3716 kB
+SwapTotal:           0 kB
+SwapFree:            0 kB
 
 
 
---------------010703050109080107060507
-Content-Type: application/octet-stream;
- name="linuxppc.patch.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="linuxppc.patch.bz2"
 
-QlpoOTFBWSZTWYbOJ9AAAeDfgCkwW3//+3+//uS/7/9qUAR5621Up5qyABhqRNGjTTQNBphA
-AyAAGRoGgYhg4BhGE0xDAIBkAMI0yZMIwENBIiQp5Kekb1TZTan6k8poDamQyDQZGj1NA0NG
-QbUqn4iZTJtQ9IaBkAMTINNNA0MjQNDIEkSZMqn40IyCZQ0TTajQGmj0jTagAabUyPUzirxs
-12s5yCvllIHEXMhSoRLUtbBfuUyWyRAWObHBytdTDqlQilQ4W9MGKlt00W2nDrqZaMQM1+T6
-sWF1IQcawQDFee/rukB27wuPY7+45nZBGLoIkY9ZLdNLN3TF+ZLG79/QYDcq28dpdBbBgBz4
-H/8CygoROSAcUMdisTReYWATnOzCXwEKAXWMAnV4v4V8akQ6beXO/3m28kjadUgg57jQLj0X
-I4nwRMhwG0EAaV0wf03BMzdylF8QYQQwgHw83J2Ye9bvnCHgvxgWLWJAgoOzebqoedVBxgRu
-F4xMr5AmVraRVmNb2GHm349sMikzNLhHiWNqFCDEZhhoH2iy03juO5kHnWODSI+8t8ujM35z
-+ldTi5CqePKCHsyf4hLLg2OHA2/JI+MKyyhVXTrTcKMDIMsSqsizGOGW2kKVLZSaQGQEUVNe
-VFJ2+9ItBFWaQ7OiMsICmT9DkxgsqPSLYwGcnvddVc23VUiqq/i7/AjOV7MyNAVsNHCLKkxs
-TGJrupwbSXEASBQDAP4PnpqUo1JHyKL7KqR0aFiSNdyZx6pDJYx5O0jhuTmHfIKiUCj0EHEi
-OxhkzClFjfMleyCdGxAgRGfWiTJEROoxdi9iIrtRlYoLfC8FBXDhejI2uvaYKVUak1RKmCe8
-eKQU9fSwactNCzhsh3k8GTJTDxQ4S91jI9K+wGYDu83pkI61HJwCfyWL/kEgeMlJTsGY1kk2
-LMTqJCSOgVfaqRclynSYdewWwnzm7ofK8/Gg/Ivxf0ysiBQBwtvblVSGqtE5S7EMbrgGFTuF
-b3kmBlxidqcnlQMj1WBFGCKCqcLEBzRruXK3wx2nPOa61g6qLdimOSCJjyZI0LTVNqf6iIXB
-gmD2krIK7BXiLADCALVAyOIGqZUqVfGleaDooU3G7MAcDnlATrYiiMkZLRUtWuOZMZXImZr9
-6BxOjAXTNYBzMFqargwDhktyiggURLgbGQ3ChNkImFUUyojwICuzyLO0Ue4IG+JG9GsR1pmh
-6aBbmrAZBgVEcUdAy5BZePNie1APCDM5CBpMEmDAqDdDMux3Tep05YMwzhpLZnVG+9LbkY8i
-GyJxqV+jaGjFMbwqYodGDYCs8jG5VshknfuVqzLvEK9ti4cH3xFr0o8a4o3Mr5bxXlQZkMzH
-ECMROEEMWAFiCAUvKNIVsrcxcEB5aQ05ySJszIGZKUUwxX1KHGYTimFGv8XckU4UJCGzifQA
+# chroot /nfs/CNC8055_FTPSERVER/
 
---------------010703050109080107060507--
+
+BusyBox v0.60.0 (2001.09.18-16:26+0000) Built-in shell (msh)
+Enter 'help' for a list of built-in commands.
+
+# inetd -d
+ADD : echo proto=tcp, wait.max=0.40, user.group=root.(null) builtin=100141dc
+server=internal
+ADD : echo proto=udp, wait.max=0.40, user.group=root.(null) builtin=100141ec
+server=internal
+ADD : discard proto=tcp, wait.max=0.40, user.group=root.(null)
+builtin=100141fc server=internal
+ADD : discard proto=udp, wait.max=0.40, user.group=root.(null)
+builtin=1001420c server=internal
+ADD : daytime proto=tcp, wait.max=0.40, user.group=root.(null)
+builtin=1001423c server=internal
+ADD : daytime proto=udp, wait.max=0.40, user.group=root.(null)
+builtin=1001424c server=internal
+ADD : chargen proto=tcp, wait.max=0.40, user.group=root.(null)
+builtin=1001425c server=internal
+ADD : chargen proto=udp, wait.max=0.40, user.group=root.(null)
+builtin=1001426c server=internal
+ADD : ftp proto=tcp, wait.max=0.40, user.group=root.(null) builtin=0
+server=/bin/ftpd
+someone wants ftp
+accept, ctrl 3
+kmod: runaway modprobe loop assumed and stopped
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 29 (inetd).
+Out of Memory: Killed process 30 (inetd).
+request_module[net-pf-1]: waitpid(31,...) failed, errno 1
+Out of Memory: Killed process 30 (inetd).
+Out of Memory: Killed process 30 (inetd).
+Out of Memory: Killed process 30 (inetd).
+Out of Memory: Killed process 30 (inetd).
+Out of Memory: Killed process 30 (inetd).
+Out of Memory: Killed process 30 (inetd).
+Out of Memory: Killed process 30 (inetd).
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
