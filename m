@@ -1,52 +1,60 @@
+Date: Thu, 19 Oct 2000 18:19:11 -0700
+From: Matt Porter <mmporter@home.com>
+To: Xavier Grave <grave@ipno.in2p3.fr>
+Cc: Alois Fertl <alois_fertl@talknet.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: initial console
+Message-ID: <20001019181911.A1175@cx258813-a.chnd1.az.home.com>
+References: <39EE00CA.BE9889DC@talknet.de> <Pine.LNX.4.21.0010191410170.8107-100000@ipnpcu5>
 Mime-Version: 1.0
-Message-Id: <p04320400b61508915079@[172.21.170.210]>
-In-Reply-To: <Pine.LNX.4.21.0010191246070.6734-100000@like.mine.nu>
-References: <Pine.LNX.4.21.0010191246070.6734-100000@like.mine.nu>
-Date: Thu, 19 Oct 2000 16:51:44 -0400
-To: phandel@cise.ufl.edu
-From: Scott Hankin <shankin@rational.com>
-Subject: Re: 2.4.0-test10 boot failure on Powerbook G3
-Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.21.0010191410170.8107-100000@ipnpcu5>; from grave@ipno.in2p3.fr on Thu, Oct 19, 2000 at 02:16:35PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 1:06 PM -0700 10/19/00, phandel@cise.ufl.edu wrote:
->On Thu, 19 Oct 2000, Scott Hankin wrote:
+On Thu, Oct 19, 2000 at 02:16:35PM +0200, Xavier Grave wrote:
 >
->>  vector: 300 at pc = c016d060, lr = c016c8f4, msr = 9032, sp = c07b1cc0
->>  [c07b1c10]
->>  dar = 7ac, dsisr = 40000000
->>  current = c07b0000, pid = 1, comm = swapper
->>  mon>
+> On Wed, 18 Oct 2000, Alois Fertl wrote:
+> >
+> > The problem you are seeing here is probably prep_init in prep_setup.c
+> > not copying the arguments passed by the boot loader into the kernels command
+> > line. Your root=/dev/sda5 is probably ignored.
+> > Look at your early log messages during boot. There should be a line
+> > "Boot arguments: ..." telling you those things seen by the kernel.
+> Indeed, The kernel argument I give is :
+> root=/dev/sda5
+> and during the boot when I look more closely :
+> PReP architecture
+> Boot arguments: /dev/sda1
 >
->As Ben has suggested, take a look in the System.map file that was created
->to see where the problem is.  I've seen the same thing on my PowerCenter,
->and it turned out to be in do_fork(), but I haven't had the time to check
->out why that is dying.
+> > In case the arguments aren't as you typed them, try putting the following
+> > lines at the beginning of prep_init:
+> >
+> > +       if (r6) {
+> > +               *(char *)(r7 + KERNELBASE) = 0;
+> > +               strcpy(cmd_line, (char *)(r6 + KERNELBASE));
+> > +       }
+> Ok, this is fine my kernel boots ! Thank you very much.
+> > What hardware is this running on? If it is Motorola VME this failure is only
+> > the starting point and other trouble will follow. There are additional fixes
+> > but I can't verify them against a working source at the moment. test9 and
+> > test10
+> > from fmlabs currently both panic during init as soon as the process starts
+> > using the hard drive (this is on a PowerStack).
+>
+> I have a MVME2303 from motorola diskless + a PMC with a 53c895 pci board
+> for my disk. With the 2.2.17 kernel all works well.
+> And now with the latest fsmlabs + your hack all function !
 
-It turned out that the pc was in do_install_cmap, and lr was in
-atyfb_set_var.  The latter calls the former near the end of the
-routine (check out drivers/video/atyfb.c:2940) but as to why it's
-bombing, I have no clue.
+Sorry, I had this change locally but hadn't pushed it yet. :)  The other
+option on PReP is to build with /dev/nvram support and then (on a
+PPCBUG system) use 'gevedit bootargs' to set a kernel argument command
+line like "root=/dev/sda5".  That's often more convenient then hard
+coding in your parameters like with the PReP cmd_line config option.
 
-Ben suggested:
->Looks like the driver is beeing passed garbage for the console number or
->the currcon. You can try adding some debug xmon_printf to atyfb.c to
->locate what's going on. I suspect a latent bug that is always present but
->will appear or not depending on the random content of memory.
-
-I'm in the process of adding xmon_printf statements to see what is
-coming in.  I'll try and take it from there.  Is there a way of
-forcing a mon> dump?
-
-- Scott
-
------------------------------
-Scott Hankin (shankin@rational.com)  In the beginning, there was nothing, then
-Rational Software                    God said, "Let there be light."  And there
-20 Maguire Road                      was light.  There was still nothing, but
-Lexington, MA 02421                  you could see it a lot better.
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
