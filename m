@@ -1,65 +1,33 @@
-From: "Ron Bianco" <ronb@junction.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: linux 2.4.x, PPC and  openPIC interrupt priorities
-Date: Tue, 30 Jan 2001 20:35:29 -0800
-Message-ID: <000501c08b3f$3d4645f0$4d012ac7@warp-speed>
+Message-ID: <00933BFA237CD2119B3400409543582704A2AE@MEV01>
+From: Ian Abbott <abbotti@mev.co.uk>
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: which errno should I use
+Date: Wed, 31 Jan 2001 18:48:23 -0000
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Tuesday, January 30, 2001 4:53 PM, Ralph Blach
+<rcblach@raleigh.ibm.com> wrote:
 
-Can anyone please tell me what, if any, distribution of 2.4.x linux is 'best' as a
-starting point for porting to our custom 8240 board?  I realize 2.4.x, especially for
-PPC, is being updated daily.   Any advice will be greatly appreciated.
-I'm also somewhat aware of RTlinux and others, but don't have time to search, read
-and compare the plethora of tech doc on kernel versions, changes, and PPC gotchas
-right now.
+> I am writing a character device driver.  I want this device driver to
+> return an error if the user request less than say 1024 byte of data.
+> What errno should I use?  Is it legal to return an error if not enouth
+> bytes are requested?
 
-The 8240 is basically an enhanced 603 with an open PIC compatible EPIC and PCI etc.
-on chip.
+I have a similar driver that wants exactly one long's worth of data to
+be read. If the supplied buffer is smaller than a long, I return 0,
+otherwise I return sizeof(long) (assuming their are no other errors).
+Admittedly this does not let the user level distinguish "buffer too
+small" from "no data", but I let the programmer at the user level deal
+with that! Just mention it in the documentation for your driver, if
+there is any.
 
-Can anyone also tell me if the 2.4.x-testx kernel now, indirectly at least, handles
-'external' interrupt priorities according to the way the open pic registers are
-programmed.
-i.e. it allows a lower priority interrupt handler to be interrupted by a higher
-priority int?
-
-Instead of the old 2.2.x and 2.3.x way of disabling external ints via the MSR  EE bit
-until ANY int handler returns.
-
-The EPIC will only assert the int signal to the CPU if a higher priority int comes
-along, so the linux interrupt
-dispatching code should, ideally, NOT globally disable ints via MSR[EE] when calling
-a handler, for PPC anyway.
-
-We are currently testing with HHL 2.3.16-sandpoint8240 and are finding too much
-interrupt 'jitter' to be able to service our special PCI device properly while SCSI
-disk accesses using the sym53c8xx driver, are going on.
-
-Max.  latency has been found to be >300usec, which is too long for our special device
-which interrupts every 167usec.
-
-We have only 3 external ( PCI ) interrupts on our board.
-
-Ethernet - i82559 lowest priority
-SCSI     - 52c895 next
-special  - highest priority
-
-As far as I can tell so far, neither the eepro100 and sym53c8xx drivers disable ints
-themselves.
-
-Desperately yours, Ron
-
-Ron Bianco
-Computer Systems Technologist
-Level Control Systems
-email: ronb@junction.net
-phone: 250-549-2558 Ext 8
-web:  www.lcsaudio.com
-
+Wolfgang Denk suggested EINVAL. I didn't use that as the man page for
+read(2) says that means "fd is attached to an object which is unsuitable
+for reading." There's no harm in overloading this meaning though. Just
+document what your driver does.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
