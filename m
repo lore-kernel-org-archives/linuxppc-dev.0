@@ -1,32 +1,45 @@
-Date: Thu, 13 Dec 2001 10:04:46 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Peter Bergner <bergner@brule.borg.umn.edu>
-Cc: Adam C Powell IV <hazelsct@mit.edu>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Why require CONFIG_BOOTX_TEXT for so much of offb?
-Message-ID: <20011213170446.GG28967@cpe-24-221-152-185.az.sprintbbd.net>
-References: <3C158758.5020608@mit.edu> <20011212130522.A238707@brule.borg.umn.edu> <20011213020019.GC28967@cpe-24-221-152-185.az.sprintbbd.net> <20011213105809.A244378@brule.borg.umn.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011213105809.A244378@brule.borg.umn.edu>
+Date: Fri, 14 Dec 2001 00:17:00 -0500 (EST)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 7450 bugs & fixes
+In-Reply-To: <3C153D33.353AC3C8@wvi.com>
+Message-ID: <Pine.LNX.4.33.0112140004070.21952-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Dec 13, 2001 at 10:58:09AM -0600, Peter Bergner wrote:
-> Tom Rini wrote:
-> : BOOTX_TEXT != BootX now tho.  It's for writing on the screen early on.
-> : Perhaps some name changing, define moving and a new header for ppc64?
->
-> That doesn't seem to be used for prom_prints(), so what early screen
-> prints would these be?
+Once upon a time, BenH wrote:
+> After reading the 7450 errata book, I'm now trying to figure out what
+>need to be done for our kernel to work properly on these. I'd appreciate
+>any input from other people here as some of the errata exact
+>consequences aren't that clear to me.
 
-Well, take a look at arch/ppc/kernel/btext.c.  I _think_ one of the
-things this lets you do is if you drop into xmon you can still use the
-screen.
+ Could this be the reason why my Dual 800 is crashing a lot? It is running
+2.4.17-pre2, PostgreSQL 7.1, Apache 1.3.20 with 1GB of RAM, 512 MB swap
+and hardly gets any work. This machine has crashed hard probably about 5
+times in the last 2 weeks and I can't find anything in the logs (not sure
+where else to look).
+
+ Is anyone running this machine successfully or have the same experiences
+as me? Any info would be much appreciated.
+
+Cheers,
+
+Chris
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
