@@ -1,38 +1,78 @@
-Date: Mon, 10 Feb 2003 11:06:04 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Harald Welte <laforge@gnumonks.org>
-Cc: Manuj Dhingra <manuj_dhingra@ae.gatech.edu>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: VGA out/External Monitor on ibook 2
-In-Reply-To: <20030209104414.GW13269@naboo.fugue.com>
-Message-ID: <Pine.LNX.4.33.0302101055260.10914-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 10 Feb 2003 11:14:53 +0100
+From: Magnus Damm <damm@opensource.se>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: kevin.hendricks@sympatico.ca, linuxppc-dev@lists.linuxppc.org
+Subject: Re: aty128fb and EDID
+Message-Id: <20030210111453.52322aba.damm@opensource.se>
+In-Reply-To: <Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be>
+References: <200302091940.10202.kevin.hendricks@sympatico.ca>
+	<Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > case 2: Monitor not connected at boot up
-> > The external monitor is "wavy". I turn the LCD off (m3mirror from benh)
-> > and play around with timings, resolutions etc. The "waviness" gets more or
-> > less but I could not find setting to make it stable. BTW, it is true for
-> > both a CRT and flat-panel. Internal-LCD is fine (at 1024x768).
->
-> Yes, I can confirm this behaviour.  It's really annoying because I
-> cannot use my iBook2 for any of my presentations at conferences... and
-> I'm really too lazy to carry a second old x86 notebook with me.
->
-> > Has this been solved? If not, how can I help?
->
-> I'm not aware of any solution :(
+> > Steal the code from the radeon dirver in the kernel.  It finds and parses
+> > the EDID block in OF for ppc linux systems for LCD.
 
-Someone lately posted a message detailing the problem (either here or on
-debian-powerpc): the hsync and vsync pulses appear to be OK (correct
-frequency) but have a phase jitter. Does that ring a bell with anyone
-here? Does anyone know which PLL setting the hsync position is derived
-from?
+Yes, thanks. That's the short-term solution.
+The problem is that the radeon driver only parses the "detail timings".
+I want to support all timings including "established timings" and
+"detailed timings".
+And then it gets more complex...
 
-	Michael
+> I guess you actually meant:
+>
+> | Move the code out of the radeon driver and make it sufficiently generic so it
+> | can be used by the aty128 and other drivers?
 
+Yes. Here's my grand plan:
+
+1. Rearrange modes from modedb.c/macmodes.c into separate files for:
+   * Standard VGA modes
+   * Tweaked VGA modes (modex)
+   * VESA modes
+   * Archtecture-specific modes
+   (* A mode calculator)
+   This includes adding add/remove functions to be able to insmod/rmmod
+   modules runtime.
+
+2. Add EDID parsing code.
+   The code should be able to list "established timings" and "standard timings".
+   Modes should be built from "detail timings".
+   Getting the EDID structure could be done in several ways:
+   * Through Open Firmware (mac and maybe others)
+   * Through the BIOS
+   * Via I2C bitbanging (requires special support by the fb-driver)
+
+3. Add code that gets information from the EDID parser and looks through the
+   modes available and then creates a list of supported modes.
+
+4. Add architecture-specific code that looks up the model and then returns a
+   list of supported modes. This should be used if the machine doesn't have EDID
+   information. (See aty128db.c and machine_is_compatible()).
+
+5. Add code that takes the modes from 3 or 4 above and throws it at the fb-driver
+   that looks them through and marks the supported modes with what colour-
+   depths that are supported.
+
+6. Add a "mode" variable for each framebuffer.
+   This should make it possible to switch between the following states:
+   * Safe - only modes that are listed by the monitor are accepted.
+   * Standard - old standard modes that might work
+   * Expert - funky timings that might blow your monitor
+   The "Safe" mode is default.
+   I don't know yet how the "mode"-variable should be controlled. /proc?
+
+7. Add support to(/from) vga=ask. The user should be able to switch between
+   the modes listed in 6 above.
+
+And then we have VDIF... Feedback is very welcome.
+
+/ magnus
+
+BTW: I found some EDID data here:
+http://www.google.com/search?hl=sv&ie=UTF-8&oe=UTF-8&q=EDID+site%3Aftp.penguinppc.org&lr=
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
