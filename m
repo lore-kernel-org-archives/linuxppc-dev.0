@@ -1,36 +1,69 @@
-Message-ID: <006301c026da$4c52e180$0a00010a@paoloweb>
-From: "Paolo Scaffardi" <arsenio@tin.it>
-To: "linuxppc-emb" <linuxppc-embedded@lists.linuxppc.org>
-Subject: /dev/tty - device not configured?
-Date: Mon, 25 Sep 2000 12:20:45 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: Ruedi.Hofer@ascom.ch
+Date: Mon, 25 Sep 2000 16:24:58 +0100 (CED)
+Subject: Limon & PowerQUICC II, Booting the kernel
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: kernel@linux01.hasler.ascom.ch
+Message-id: <0G1G0093N5EZUI@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_41PqGbsqhsWW8+BPUvGmnw)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-i am using HardHat kernel 2.2.14 and i have this problem: i cannot open
-/dev/tty, because the system reports me 'device not configured'. I am using
-the 8xx
-serial_console...
+--Boundary_(ID_41PqGbsqhsWW8+BPUvGmnw)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
-I discovered that the problem is given by 'tty_open' in 'tty_io.c', that
-reports the error -ENXIO when a someone tries to open the device with major
-5 0, and current->tty is NULL. I think the problem is why that variable is
-NULL instead of anything else.
+Hi
 
-Any idea? Where it should be initialized?
+I have Limon up and running. I managed to set up the host in order
+to serv the linux kernel.
+The kernel I download is the ordinary kernel from Montavista HH1.2.
+I prepared the zImage in the following way:
+1. I stripped off the elf header. (dd if=zImage of=stripZImage bs=64k skip=1)
+2. I run it through mklimon to add the limon specific header.
 
-CAN ANYONE TELL ME IF THIS HAPPENS TO HIM, TOO?
+After I've loaded the kernel I can see the kernel in the RAM from addr 0.
 
-THANX anyone!
+When I issue the 'run' command the target crashes.
 
-- may the pinguin b with u -
+---------------- Linux Monitor 1.4.2-SBC-8260 ----------------
+limon>
+limon>
+limon> load
+BOOTP/TFTP from server 10.1.20.2; our IP address is 10.1.20.1.
+Filename '/usr/src/nfs/limonZImage'.
+Loading: >.................................................................<
+done.
+limon>
+limon> debug
+limon> dw
+00000000   48000005  7c6b1b78  7cb92b78  38600040  H...|k.x|.+x8`.@
+00000010   7c600124  3c800040  60840000  7c6802a6  |`.$<..@`...|h..
+00000020   3863fffc  7c681b78  7c032000  40820028  8c..|h.x|. .@..(
+00000030   3c800040  60840000  3ca00040  60a5b274  <..@`...<..@`..t
+00000040   38a50003  7ca42850  54a5f0be  7ca72b78  8...|.(PT...|.+x
+limon>
+limon>
+limon> run
+... crash
 
-Have a nice day,
-Paolo Scaffardi.
-AIRVENT SAM s.p.a. - RIMINI - ITALY
 
+Question:
+
+1. Is my kernel image munging correct?
+
+2. Is the start address 0 correct?
+
+3. Some data are transferred from limon to the kernel.
+ - Does Limon handle this correctly?
+ - Where are these data located?
+
+
+Thank you for any help
+
+Ruedi
+
+--Boundary_(ID_41PqGbsqhsWW8+BPUvGmnw)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
