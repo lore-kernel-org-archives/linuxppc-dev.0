@@ -1,20 +1,24 @@
-Message-ID: <000901c0a72b$3b43b820$4d1f76d8@kennedy>
-From: "Prashant Patel" <pmpatel@trinetcommunication.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: usb question
-Date: Wed, 7 Mar 2001 11:22:48 -0600
+Message-ID: <3AA70389.CA046BFA@mvista.com>
+Date: Wed, 07 Mar 2001 22:59:05 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Lionel TAILLURAT <Lionel.TAILLURAT@ecrin.com>
+Cc: ppc_mailing_list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Which kernel for an MBX860 ?
+References: <002e01c0a704$cfea4b00$a66d34c0@oleane.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Everybody
-      Is usb host controller supported fully for the MPC823 processor ?
+Lionel TAILLURAT wrote:
 
-Thanks
-Prashant Patel
+> I plan to use Linux with an MBX 860, which kernel should I use ?
 
+The latest 2.4.x tree.  Check out http://penguinppc.org for all of
+the information.  You will likely end up pulling BK trees from FSM Labs.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
