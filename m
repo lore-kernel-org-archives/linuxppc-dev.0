@@ -1,58 +1,39 @@
-Message-Id: <4.2.0.56.19990623163213.042ffa40@mail.lauterbach.com>
-Date: Wed, 23 Jun 1999 16:37:25 +0200
-To: Troy Benjegerdes <hozer@drgw.net>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: dl-load.c (ld.so) bug??
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.04.9906211749280.27642-100000@narn.local.drgw.n
- et>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Wed, 23 Jun 1999 09:23:37 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@mvista.com>
+To: Kevin Puetz <kp11901@cedarnet.org>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PowerBook sleep, first try
+In-Reply-To: <199906231305.IAA26387@www.cedarnet.org>
+Message-ID: <Pine.LNX.3.96.990623091811.16972F-100000@mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 00:52 22.06.99 , Troy Benjegerdes wrote:
+On Wed, 23 Jun 1999, Kevin Puetz wrote:
+
+> Cool! Is there any hope of this working on the desktop machines that can 
+> sleep? (I like my machine getting quiet when not in use, though I can live
+> without.).
+
+A desktop sleep is pretty different from a PowerBook sleep.  When a
+desktop machine is asleep, it can still services network requests, and is
+essentially still running, it just shuts a few things down.  The key there
+is to figure out how to spin down and spin up the hard drive without
+getting confused by the long delay on data access.  Then, when you do a
+desktop sleep, you just cut the video sync, spin down the drives, and set
+it up so that if there's any access to the drive, you spin it up long
+enough to do the access, then wait a few seconds for the access to finish,
+then spin back down.  Presumably, there's other stuff dealing with the
+ADB, as far as shutting down other unused hardware and putting the
+processor in a low speed setting or something, but I have no idea there.
+Somebody else with actual cuda knowledge could probably say more in that
+department.
 
 
->testcase:
->
->#include <stdio.h>
->int main(void){
->         char * ptr;
->         printf("hello world\n");
->         fflush(stdout);
->         ptr = (char *)malloc(100);
->         free(ptr);
->}
->
->
->compile this with:
->gcc test.c -lefence -g -static
->
->On a PPC glibc-2.1 box, this segfaults in dl-load.c:564
->
->On a x86 Red Hat 6.0 system, it works fine (
->[troybenj@mos6 troybenj]$ ./a.out
->
->   Electric Fence 2.0.5 Copyright (C) 1987-1998 Bruce Perens.
->hello world
->[troybenj@mos6 troybenj]$
->
->
->Either dl-load.c has a serious bug, or ElectricFence is broken on PPC.
->I suspect it's the former, and if so, this would explain the weird
->segfaults I've been seeing.
->
->Can someone that knows glibc better please confirm or deny this for me?
-
-This bug is fixed already in cvs-glibc. I've put up mostly untested RPMS 
-for a newer glibc under <ftp://dev.linuxppc.org/users/fsirl/R5>.
-
-It might be that the new IP of dev is still not fully propagated, so use 
-169.207.1.122 directly in that case.
-
-Franz.
+Later,
+David
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
