@@ -1,34 +1,29 @@
-Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ira Weiny <iweiny@acm.org>
-Cc: Manuj Dhingra <manuj_dhingra@ae.gatech.edu>,
-	linuxppc <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20030312235040.4ca0d0ce.iweiny@acm.org>
-References: <20030310164855.GC11462@haar.ae.gatech.edu>
-	 <20030312235040.4ca0d0ce.iweiny@acm.org>
-Content-Type: text/plain
-Message-Id: <1047542929.827.58.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-Date: 13 Mar 2003 09:08:50 +0100
+Message-ID: <XFMail.20030313092851.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <20030311202811.A13099@suse.de>
+Date: Thu, 13 Mar 2003 09:28:51 +0100 (CET)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Olaf Hering <olh@suse.de>
+Subject: Re: Debugging
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Well with your 2.4.15-pre7-ben0 the external monitor was working with my
-> TiBook.  Worked quite well.  I did not set the external monitor the same as the
-> LCD 'cause the refresh rates were different but I could turn on the external
-> and the LCD off and use the external quite well.  So I can tell you that
-> worked.
+On 11-Mar-2003 Olaf Hering wrote:
+>
+>  On Tue, Mar 11, Giuliano Pochini wrote:
+>
+>> I'm using 2.4.21p4 on a blue G3. I recompiled Kernel, modules, ALSA
+>> to be sure System.map is the right one.
+>
+> Get an ADB keyboard and use that for xmon.
 
-Ok, it's a side effect of initializing the second head from OF. Newer
-kernel do that to make sure both heads are properly POSTed on all
-cards, but that results in OF setting the card in 2 split heads mode
-causing the simple tweak used by m3mirror to fail.
+:( I sold it a few months ago. Can macs without ADB run xmon ?
 
-I'm afraid I won't fix this, we really need real support for the
-second head for mirroring.
 
-Ben.
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
