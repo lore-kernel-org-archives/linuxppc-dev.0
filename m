@@ -1,36 +1,78 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Henry Worth <haworth@ncal.verio.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Darwin AGPGART?
-Date: Fri, 20 Apr 2001 12:36:12 +0200
-Message-Id: <19031231231335.5698@mailhost.mipsys.com>
-In-Reply-To: <3ADF63A5.C4FC9969@ncal.verio.com>
-References: <3ADF63A5.C4FC9969@ncal.verio.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 20 Apr 2001 12:01:07 +0100
+Subject: [measurement] (was Re: XF4 (mach64) help please)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ani Joshi <ajoshi@shell.unixbox.com>,
+	linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010420110718.439952EFB0@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I wrote:
+> On  Thu, Apr 19, 2001, Geert Uytterhoeven wrote:
+>> On Thu, 19 Apr 2001, Iain Sandoe wrote:
+>>> On Thu, Apr 19, 2001,  Ani Joshi wrote:
+>>> > On Thu, 19 Apr 2001, William Blew wrote:
+>>> >> On Thu, 19 Apr 2001, Iain Sandoe wrote:
+>>> >> > 2/  how difficult would it be to plumb the scroll acceleration back
+into
+>>> the
+>>> >> > console driver?  (would one need access to the NDA stuff?) -- the
+> scrolling
+>>> >> > of console is a real problem in blocking sound :-/
+>>> >>
+>>> >> For mach64 at least, I would start by porting the CopyScreen2Screen XXA
+>>> >> operation into the kernel and then using it during scrolling.
+>>> >
+>>> > This is already done by atyfb in the kernel,
+>>>
+>>> then why is the atyfb scroll (and fbdevhw) _so_ much slower than the X
+>>> 'native' driver ... the same reason as below?
+>>
+>> Because xterm uses jump scroll? Try scrolling line by line in X11.
 >
->Looks like the uniNorth AGP GART finally made it into the Darwin
->CVS (xnu-4-2/iokit/Drivers/pci/drvApplePCI/AppleMacRiscPCI.[ch]
->and generic i/f defs in xnu-4-2/iokit/IOKit/pci/IOAGPDevice.h).
->Before I dig too deeply into this, has anyone looked into it
->yet?
+> hmmm.  I was comparing "before" and "after" changing to Ani's new ati_drv.o
+> (before was using libfbdevhw.a) - in all other respects the configuration
+> was identical.
+>
+> this is mach64 (3DU Pro) on G3/beige - the difference seemed to be striking
+> enough to comment (but I guess I could wind it back and do an X11Perf).
 
-It was there for some time ;)
+       with libfbdevhw.a           with new ati_drv.o/atimisc_drv.o
 
-I did look at it, I did also implement a driver for it, and ...
-it didn't work. Basically, it looks like UniNorth AGP cannot
-make the AGP aperture visible to the CPU. (It may not be the
-case with all UniNorth versions, but it was on the G4 I tested
-with).
+-scroll500    51.8/sec                76.5/sec
+-shmput500    14.2/sec                25.4/sec
 
-That mean that some hacking similar to what the DRI driver does
-for PCIGART is necessary to use it (that is doing mappings of
-memory instead of mapping the AGP aperture itself).
+doesn't seem that different, I suppose, but this is...
 
-Ben.
+cat test.txt  10.382 sec               5.132 sec
+
+I guess that's what I've noticed on things like kernel builds.
+
+>>> >however the problem lies in
+>>> > the entire fbcon layer where there is some improper locking/interrupts
+>>
+>> Read: the entire console layer. Fbcon cannot (read: couldn't) use interrupts
+>> because the upper console layer disables (disabled) interrupts.
+>>
+>>> > going on there.  This was discussed here and on linux-fbdev a few months
+>>> > ago and I believe will be addressed in 2.5.
+>>>
+>>> and there is a (temporary) fix for it (I believe) involving a patch from
+>>> Andrew Morton - (which I haven't had time to try on PPC yet).  Will that fix
+>>> the slow console scroll as well?
+>>
+>> It's supposed to. Haven't tried it yet, though.
+>
+> I will ASAP - AFAICT the various blocking issues are the main problem with
+> (pmac) sound now.
+
+I've fetched AM's latest console patch (2.4.3-pre8) and will try applying it
+later and re-run the libfbdevhw.a test.
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
