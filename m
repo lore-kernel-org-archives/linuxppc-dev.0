@@ -1,48 +1,85 @@
-Message-ID: <3C59B86A.E24F89A1@mvista.com>
-Date: Thu, 31 Jan 2002 13:34:34 -0800
-From: Scott Anderson <scott_anderson@mvista.com>
+From: "Bob Piatek" <bobtek@fishcamp.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Cc: "'Tom Rini'" <trini@kernel.crashing.org>
+Subject: RE: unresolved symbol
+Date: Mon, 31 Dec 2001 14:47:28 -0800
+Message-ID: <000501c1924d$1fd40410$a2341204@P4>
 MIME-Version: 1.0
-To: gopi@india.tejasnetworks.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: why is tty->pgrp set to -1 for console?
-References: <Pine.LNX.4.21.0201312050570.1490-100000@tn100build.india.tejasnetworks.com>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20011231153213.GB28513@cpe-24-221-152-185.az.sprintbbd.net>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-gopi@india.tejasnetworks.com wrote:
->   What is the correct procedure to follow to get around this problem
-> and get ctrl-c working on console?
+Tom,
 
-It looks like everyone is taking a swing at this one, so I think I'll
-join in.  First off, the easiest way I've found to track down why
-ctrl-c doesn't work is to just run "ps -j".  For ctrl-c to work, you
-need a controlling terminal (the TTY column) and a process group.  If
-you have a '?' in the TTY column, ctrl-c won't work.  In the past I
-have seen this happen because of this code in drivers/char/tty_io.c:
-        if (device == SYSCONS_DEV) {
-                struct console *c = console_drivers;
-                while(c && !c->device)
-                        c = c->next;
-                if (!c)
-                        return -ENODEV;
-                device = c->device(c);
-                filp->f_flags |= O_NONBLOCK; /* Don't let /dev/console block */
-                noctty = 1;
-        }
-Note that O_NOCTTY (no controlling terminal) is forced on whenever
-/dev/console is opened (noctty = 1).  Possible workarounds:
-  1) Run getty on something other than /dev/console.  For example,
-     if you console is on the first serial port, run getty on /dev/ttyS0.
-     I believe this is the "correct" answer.
-  2) You could also change getty to do a TIOCSCTTY ioctl explicitly after
-     it has opened the terminal.
-  3) You could remove the forcing of noctty on from tty_io.c
+I'm using YellowDog Linux 2.1 for my development system.  I don't think
+the modutils update is needed for 2.1 and, indeed, I can compile and
+'insmod' modules on my host system just fine.
 
-    Scott Anderson
-    scott_anderson@mvista.com   MontaVista Software Inc.
-    (408)328-9214               1237 East Arques Ave.
-    http://www.mvista.com       Sunnyvale, CA  94085
+My problem is that I can't load modules on my embedded system.  Sorry I
+wasn't clear about that in my posting.  I am using the kernel from:
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4.4-2001-11-24.tar.bz2
+
+and ramdisk:
+
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/simple-ramdisk.image.gz
+
+and have ported it to my custom hardware running with an MPC860.  BTW...
+thanks to all who have contributed software for this effort especially
+the PPCBoot project!
+
+Correct me if I'm wrong, but it looks like the problem is caused by the
+kernel not exporting the symbols that are needed by the module and not
+in the actual module itself.  Is it that I built the kernel wrong
+somehow, or maybe the libraries in 'simple-ramdisk' image aren't
+sufficient, or is it something else?
+
+Bob
+
+
+fishcamp engineering
+105 W. Clark Ave
+Orcutt, CA  93455
+TEL: 805-937-6365
+FAX: 805-937-6252
+
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf Of Tom
+Rini
+Sent: Monday, December 31, 2001 7:32 AM
+To: Bob Piatek
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: unresolved symbol
+
+
+On Sun, Dec 30, 2001 at 05:02:43PM -0800, Bob Piatek wrote:
+
+> When attempting to load a module via 'insmod' I get the following:
+>
+> insmod unresolved symbol kmalloc
+> insmod unresolved symbol unregister_chrdev
+> insmod unresolved symbol register_chrdev
+> ...
+> insmod unresolved symbol printk
+>
+>
+> It seems that there was another person with the same problem on Sept
+24,
+> 2001 to this list.  However, the solution to the problem was not
+posted
+> to the list.
+
+It sounds like you're running YellowDog Linux 2.0, and thus need to
+install the modutils update.
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
+
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
