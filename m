@@ -1,38 +1,63 @@
-Date: Mon, 3 Jan 2000 12:27:09 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Andreas Tobler <toa@pop.agri.ch>
-cc: Linux-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: asm-m68k/setup.h in setup.h
-In-Reply-To: <386B6101.BDCEC7B3@pop.agri.ch>
-Message-ID: <Pine.LNX.4.10.10001031221310.15311-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3870FE3E.4BEEF230@talknet.de>
+Date: Mon, 03 Jan 2000 20:53:34 +0100
+From: Alois Fertl <alois_fertl@talknet.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LinuxppcDev <linuxppc-dev@lists.linuxppc.org>
+CC: Cort Dougan <cort@ppc.kernel.org>
+Subject: Solution for IRQ problems on 2nd Controller
+Content-Type: multipart/mixed;
+ boundary="------------450455A3AC80EFBEAACDC7D8"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I'm playing with buildkernel from http://www.pobox.com/~wstearns/buildkernel/
-> That is a 'program' which should make it easy to build a kernel. I have
-> to find out......
-> 
-> Now this script removes all other archs from the kernel tree. Especially
-> the asm-m68k in the include directory.
-> When building the kernel it fails because asm-m68k/setup.h is not available.
+This is a multi-part message in MIME format.
+--------------450455A3AC80EFBEAACDC7D8
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-That's what you get for using 'smart' tools. Complain to the buildkernel
-author, please. 
+Some time ago there was a message on the list discussing problems
+if more than one irq is pending from the second 8259. On the Blackhawk
+I suffer this problem very badly, scsi, network and mouse are all via
+the second controller. The problem is with 2.3.x kernels. 2.2 versions
+had it fixed doing a loop until no more irqs are present on the second
+controller.
 
-> I saw that asm-ppc/setup.h includes this file. 
-> In asm-ppc/setup.h m68k_num_memory and m68k_memory are defined. These
-> two are declared extern in asm-m68k. 
-> Are there other things needed from asm-m68k/setup.h?
+The attached patch implements a workaround for the problem by disabling
+all irqs from the second chip for a very short time 
+(in i8259_mask_and_ack_irq()) and than re-enabling the usual ones. Doing
+so seems to re-issue the required edge on the line going to the first
+controller.
 
-There will be a lot of other things needed even from arch/m68k if you want
-to build kernels for the APUS PPC upgrades for Amigas. The m68k_num_memory
-and m68k_memory variables should only be included in the PPC build if
-support for APUS is configured though. The APUS people have a separate 
+It is probably nor the cleanest way of handling the problem but up
+to now the one which solves the problem on my Blackhawk.
+The patch is relative the the 2.3.35 version from cvs.on.openprojects.net
 
-	Michael
+	Alois.
+--------------450455A3AC80EFBEAACDC7D8
+Content-Type: text/plain; charset=us-ascii;
+ name="i8259.patch"
+Content-Disposition: inline;
+ filename="i8259.patch"
+Content-Transfer-Encoding: 7bit
+
+--- arch/ppc/kernel/i8259.c.dist	Sat Jan  1 20:30:53 2000
++++ arch/ppc/kernel/i8259.c	Mon Jan  3 20:17:00 2000
+@@ -52,9 +52,10 @@
+         if (irq_nr > 7) {                                                   
+                 cached_A1 |= 1 << (irq_nr-8);                                   
+                 inb(0xA1);      /* DUMMY */                                     
++                outb(0xff,0xA1);                                           
+                 outb(cached_A1,0xA1);                                           
+-                outb(0x20,0xA0);        /* Non-specific EOI */             
+-                outb(0x20,0x20);        /* Non-specific EOI to cascade */
++                outb(0x20,0xA0);        /* Non-specific EOI to cascade */
++                outb(0x20,0x20);        /* Non-specific EOI */
+         } else {                                                            
+                 cached_21 |= 1 << irq_nr;                                   
+                 inb(0x21);      /* DUMMY */                                 
+
+--------------450455A3AC80EFBEAACDC7D8--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
