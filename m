@@ -1,41 +1,27 @@
-Message-ID: <369F5EB6.E34F17E8@mucmot.muenchen.europe.mcd.mot.com>
-Date: Fri, 15 Jan 1999 16:28:55 +0100
-From: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>
-MIME-Version: 1.0
-To: Michael Meissner <meissner@cygnus.com>
-CC: Cort Dougan <cort@persephone.cs.nmt.edu>, linux-kernel@vger.rutgers.edu,
-        linuxppc-dev@lists.linuxppc.org, gdt@cygnus.com
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-References: <Pine.LNX.3.96.990113130844.3715A-100000@persephone.cs.nmt.edu>
-Content-Type: text/plain; charset=us-ascii
+From: Alan Cox <alan@cymru.net>
+Message-Id: <199901151610.QAA16497@snowcrash.cymru.net>
+Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
+To: Paul.Mackerras@cs.anu.edu.au
+Date: Fri, 15 Jan 1999 16:10:47 +0000 (GMT)
+Cc: alan@cymru.net, jskov@cygnus.co.uk, cort@persephone.cs.nmt.edu,
+        linuxppc-dev@lists.linuxppc.org, Jes.Sorensen@cern.ch,
+        linux-apus@sunsite.auc.dk
+In-Reply-To: <199901150157.MAA01789@tango.anu.edu.au> from "Paul Mackerras" at Jan 15, 99 12:57:32 pm
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Cort Dougan wrote:
-> 
-> It looks like your zImage is being stomped on before it can be
-> decompressed.  I'll take a look at the boot loader code and see why it
-> isn't adjusting your free ram section.  You might want to try changing to
-> load address in the PPCBug to be near the top of memory in the mean time.
-I guess this system is running "PowerPC Open Firmware". You can change the
-load address via the firmware menu:
-  Administrative Options...
-    ---> Modify the Configuration Settings...
-          ---> Edit Configuration Variables
-step to the parameter "load-base" and enter a new value (decimal).
-One other problem is the this firmware version obviously does not provide
-residual data. So Linux will probably not find the PCI devices correctly.
+> was that it basically said "an interrupt or another processor might
+> have changed memory, so don't keep values from memory cached in
+> registers".  With wmb() on SMP, this seems to be extended to include
+> "make sure other cpus can see the values we just wrote".  I don't know
+> exactly how rmb() differs from mb().
 
-> 
-> }       loaded at:     00400400 00415FD0
-> }       relocated to:  00600000 00615BD0
-> }       zimage at:     0040A400 0049A889
-> }       avail ram:     00400000 00600000
-> }
-> }       Linux/PPC load: console=tty0 console=ttyS0,9600n8 root=/dev/sda2 mem=127M
-> }       Uncompressing Linux...done.
-> }       Now booting the kernel
+	rmb()	Do not re-order reads across this point (CPU or compiler)
+	wmb() 	Do not re-order writes across this point (CPU or compiler)
+	mb()	Do not re-order reads or write across this point
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
