@@ -1,93 +1,102 @@
-To: Dan Malek <dan@mvista.com>
-Cc: Wolfgang Denk <wd@denx.de>, jtm@smoothsmoothie.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260 console problems 
-In-reply-to: Your message of "Thu, 22 Feb 2001 18:51:20 -0500"
-             <3A95A5F8.DF6FB60B@mvista.com>
+Message-ID: <3A966727.B5E50F07@raleigh.ibm.com>
+Date: Fri, 23 Feb 2001 08:35:35 -0500
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 23 Feb 2001 23:10:11 +1100
-Message-ID: <27883.982930211@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+To: Andreas Schreckenberg <ASchreckenberg@dspace.de>
+Cc: Tulika Pradhan <tulikapradhan@hotmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ramdisk for initrd
+References: <LAW2-F77fTJ9w9wPzJ000001e45@hotmail.com> <3A96709D.481683D4@dspace.de>
+Content-Type: multipart/mixed;
+ boundary="------------6032D2F879793D332B0A3F63"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 22 Feb 2001 18:51:20 -0500, Dan Malek <dan@mvista.com> writes:
->...the bd_info stuff
->is going to disappear and follow the new boot record method used by
->other PPC booters.  That is the first major step to removing the whole
->variety of different boot loaders.
+This is a multi-part message in MIME format.
+--------------6032D2F879793D332B0A3F63
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I support this, as long as the "new boot record method" is documented
-somewhere so that we can make ppcboot conform to it.
+Andreas
 
->...The serial port goes through no less than three
->different initializations (on the 8xx/8260) as new "layers" of software
->are brought up.  In order for KGDB to work early in the kernel code,
->the mbxboot/*tty.c functions create deep fifos and initialize the serial
->port in a way that the early kernel functions understand.
+I think this is better for making a ramdisk.
 
-Isn't the "deep fifos" stuff done by "kgdb_map_scc()" as well?
+dd if=/dev/zero of=./ramdisk.img bs=1k count=1000
+/sbin/mke2fs -q -F -m 0 ./ramdisk.img
+mkdir /mnt/foo
+mount -o loop ./ramdisk.img /mnt/foo
+cd /mnt/foo
+tar xzf ~-/ram.tgz
 
->You will
->have to do the same thing in PPCBoot before calling the kernel for
->this to work.
+Andreas Schreckenberg wrote:
+>
+> Tulika Pradhan wrote:
+> >
+> > hi !
+>
+> Hi,
+>
+> > i need a minimal ramdisk image for booting up linux on a embedded ppc board.
+> > i tried monteVista site (as i saw a mail in the mailing list archive), but i
+> > already have a development platform so, how can i download a ramdisk image
+> > without downloading CDK. I use Red Hat linux v6.2 and ppc 603e processor.
+> >
+> > Any help would be great.
+>
+> I use the following script for a 4MB ramdisk:
+> You must be "root" and have ramdisk support
+>
+> dd if=/dev/zero of=/dev/ram bs=1k count=4096
+> mke2fs -vm0 /dev/ram 4096
+> mkdir -p /mnt/ram
+> mount /dev/ram /mnt/ram
+> (cd file_system; cp -a * /mnt/ram)
+> umount /mnt/ram
+> rmdir /mnt/ram
+> dd if=/dev/ram of=fs_images/ramdisk.image bs=1k count=4096
+> gzip -v9f ramdisk.image
+>
+> First create a directory called "file_system"
+> and copy the files you need into it.
+>
+> you create a initial console in file_system/dev with
+> mknod c 5 1 file_system/dev
+>
+> and a shell in file_system/bin, file_system/etc, or file_system/sbin...
+> (I use the static sash from MontaVista, rename it as init)
+>
+> hope you can use this
+>
+> bye
+> Andreas
+> --
+>           Life's not fair. But the root password helps ! :-)
+>                    http://schrecky.home.pages.de
+>                Open minds. Open sources. Open future.
+>
+--------------6032D2F879793D332B0A3F63
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
 
-This appears to work fine with ppcboot already, at least with my 8260
-based system and the changes to the 8260 serial driver that I posted
-not that long ago (which adds support for kgdb, among other things).
-ppcboot uses single byte fifos. kgdb_map_scc() replaces these with
-"deep fifos".
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;15936
+fn:Ralph Blach
+end:vcard
 
->Regardless of how a board and boot rom store
->and provide information, the code in the "boot" directory collects
->this into a standard format and presents it to the kernel.
+--------------6032D2F879793D332B0A3F63--
 
-OK, this is fine, I support this - as long as this "standard format" is
-clearly defined somewhere (I suppose it will be simple enough to read the
-code) so that ppcboot can implement it and do the same "presentation" to
-the kernel, thus by-passing the "boot" directory code. If it is a well
-known standard, then maybe over time all ppc boot code from all manufacturers
-will implement it ("We support Linux"). And if it is the same as a lot of
-existing boot loaders use (as you suggest above), all the better because
-this will mean they support Linux without any work.
-
-One thing that concerns me... Will the "new boot record method" be flexible
-and allow any sort of information to be passed through to Linux, for any part
-of Linux, not just the boot phase? For example, I might have a loadable module
-which requires information from the low level boot code, information which the
-boot phase of Linux doesn't care about. i.e. the structure and content of this
-"new boot record method" should not be fixed. It should be "extensible".
-
-Real life example required... Our boards will all have an i2c serial eeprom,
-the contents of which will be read by the boot rom code, and possibly
-changed and/or re-formatted. I want to pass this information via the "new
-boot record method" up to Linux, which saves it somewhere for use by a
-loadable module (or modules). I currently place the info into the board
-information struct that ppcboot passes to Linux (it is, after all, board
-information :-). If I don't do it this way, then I will have to write code
-for Linux to do it (either at boot time, or in the init of the loadable
-module(s)) which is a duplication.
-
-It boils down to this: some things belong in the boot code, and some things
-belong in Linux (a good example is configuring the memory controller for
-accessing SDRAM, vs configuring the MMU for accessing virtual memory). Once
-you decide that something belongs in the boot code, then a mechanism is
-required to communicate information about that "thing" up to Linux (another
-good example is the location of the Internal Memory Map - I am currently
-running my 8260 kernel with IMAP_ADDR defined as ((bd_t *)__res)->bi_immr_base).
-
-I see the stuff in the "boot" directory in Linux as simply "glue" between the
-real boot code and Linux. It should be kept as small and as simple as possible.
-And boot code that conforms to the "standard boot record method", won't
-need the "glue".
-
-Is anything I've said above in conflict with what you had in mind? Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
