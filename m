@@ -1,30 +1,58 @@
-Date: Wed, 9 Aug 2000 00:08:03 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Backlight control on Lombard PB
-In-Reply-To: <Pine.SOL.3.95.1000808191003.1384C-100000@juliet>
-Message-ID: <Pine.LNX.4.10.10008090004530.22030-100000@opal.biophys.uni-duesseldorf.de>
+Date: Tue, 8 Aug 2000 18:19:47 -0400 (EDT)
+From: Henry Worth <haworth@ncal.verio.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CDDA playback on Pismo (and other newer models)
+Message-ID: <Pine.SOL.4.10.10008081713340.9223-100000@ncal.verio.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I saw a couple of posts from people who seem to have the recent kernels
-> (2.2.17pre1[3-5]-ben1) running on a 1999 Powerbook.
-> Unfortunately, I have still the same problems with the backlight control
-> that first appeared with 2.2.17pre10-ben1, i.e.
->
->  1. {Fn-,}F[12] don't adjust brightness
->  2. After wakeup from sleep, the backlight remains dark
+Well, my Pismo which was increasingly unstable this weekend
+is now refusing to boot even from the MacOS CD's. So I probably
+won't be able to work on this for at least a few days. I'm
+hoping it will boot after having the battery out a few hours
+(it worked a couple times this weekend) and that
+reinitalizing the firmware and MacOS partitions will help,
+if that or a full disk initialization doesn't help it will
+probably be off to the shop.
 
-Should be fixed in BenH's current tree, he said he was going to do it this
-past weekend. The pmu backlight controller didn't get registered on the
-Lombard (and possibly Wallstreet) because the backlight-control property
-is missing on these machines.
+But, just before it powered itself off last night, I found
+the likely cause of the abends from the xmms_CdRead plugin.
+It's actually in the xmms package code in ~/xmms/input.c. I
+don't have the sources available, but can describe the
+problem for anyone who's interested in trying to fix it.
 
-	Michael
+There is a routine near the top of the file that uses GTK
+byte swapping macros to perform the LE to NE conversion.
+The problem is the classic macro mistake of passing
+complex expressions with side effects as macro parms. In
+this case it's of the form something like (this is from
+memory):
+
+  left[i] = GINT16_FROM_LE( (*ptr++) );
+  right[i] = GINT16_FROM_LE( (*ptr++) );
+
+The macro expands to use the argument several times
+(see the *SWAP* macros in glib.h), so the pointer is
+incremented too many times causing a seg fault. The
+non-optimized case just happened to have enough readable
+memory following the buffer to not fault (and optimizations
+on the loop probably had impacts as well), similarly the
+.wav player plugin uses a different buffering scheme that
+just accidentally avoids faults (likewise the x86 was probably
+lucky due to different run-time conditions, provided the
+MACRO doesn't simply end up a NOP).
+
+The fix is to find all such occurences and do the incrementing
+outside the macro call. I think I've seen similar code in other
+parts of the package, so a general inspection is in order. This
+should also fix the visualization displays and make the xmms_CdRead
+plugin usable for the analog CD challenged Macs.
+
+Good Luck,
+Henry
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
