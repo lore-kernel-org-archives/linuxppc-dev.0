@@ -1,61 +1,57 @@
-From: acurtis@directvinternet.com
-Reply-To: <acurtis@directvinternet.com>
-To: <mlan@cpu.lu>, <acurtis@directvinternet.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: PCI/SCSI help
-Date: Mon, 5 Aug 2002 23:15:09 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFIEGCDKAA.acurtis@directvinternet.com>
+Message-ID: <3D4FBE55.71B00BF7@irisa.fr>
+Date: Tue, 06 Aug 2002 14:17:25 +0200
+From: Romain Dolbeau <dolbeau@irisa.fr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <E17bxUO-00009x-00@piglet.grunz.lu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Trouble compiling 2.5.30 on old powermac
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > PCI Autoconfig: Device 15, Vendor 0x1000, Class 0x1000001
-> > PCI Autoconfig: Found Bus 0, Device 15, Function 0
-> > PCI Autoconfig: BAR 0x10, I/O, size=0x100, address=0x7ffff00
-> > PCI Autoconfig: BAR 0x14, Mem size=0x400, address=0x7fffc00
->                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> These two overlap. Firmware in Intel mode with separate IO and mem
-> spaces?
+Hello all,
 
-It would appear that these overlap but since we are talking about base
-addresses on the PCI bus and different types of bus cycles, it is ok.
+first of all, a big thanks to all hackers for the 2.4.x
+releases that have been fine for me for a looong time :-)
 
-> > sym53c8xx: at PCI bus 0, device 15, function 0
-> > sym53c8xx: 0x07fffc00 = pci_get_base_address(base)
-> > sym53c8xx: 0x07ffc000 = pci_get_base_address(base_2)
->
-> What's it doing with these values? Where does it get them from? Those
-> are the original, un-moved addresses. Both BAR and pci_dev should have
-> been changed by pcibios_fixup_resources(). Have a look at that code and
-> see why the corrected base addresses are not written back.
+But to be able to port the "pm3fb" driver to 2.5, I need
+a 2.5.x kernel. None of those I tried compiled.
+Michel Dänzer suggested posting my problems here, so here
+it is.
 
-On the PCI bus itself the Memory and I/O addresses are 0 based so these BAR
-values are ok. From the host bus the addresses are 0x4ffffc00 and
-0x4fffc000.
+The box is an old 7500 upgraded with a 192Mhz 604e, running
+Debian (used to be "woody", now it's "sarge"). binutils come
+from Debian "sid" as I need the newer binutils for 2.5.
+Additional hardware include an old mac-flashed Matrox
+Millenium, and a Formac Proformance III video card (the one
+that need pm3fb).
 
-> > sym53c8xx: 53c895a detected
-> > sym53c895a-0: rev 0x1 on pci bus 0 device 15 function 0 irq 19
-> > sym53c8xx: device->slot.base = 0x07fffc00
-> > sym53c8xx: device->slot.base_2 = 0x07ffc000
->                                  ^^^^^^^^^^^^
-> Nope, wrong again.
+Source tree is linuxppc-2.5 from source.mvista.com,
+through rsync.
 
-Yup, these are the BAR's. The host addresses to the PCI bus are translated
-into 0 based addresses on the bus.
+1) at least 3 non-essential drivers cannot compile:
+   the mac serial port, the mac floppy drive, and the
+   external SCSI bus (53C94, MESH compiles). I can
+   provide the errors if they're needed.
 
-> > sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
-> > sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
-> > sym53c8xx: 0xf0ccff07 = cpu_to_scr(0x07ffccf0) /* just byte swapping */
->              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> I hope it's not byteswapping an address here?
+2) arch/ppc/kernel/process.c fails with:
+#####
+  gcc -Wp,-MD,./.process.o.d -D__KERNEL__ -I/usr/src/linuxppc-2.5/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common -I/usr/src/linuxppc-2.5/arch/ppc -msoft-float -pipe -ffixed-r2
+-Wno-uninitialized -mmultiple -mstring -nostdinc -iwithprefix include    -DKBUILD_BASENAME=process   -c -o process.o process.c
+process.c: In function `set_fpexc_mode':
+process.c:426: `PR_FP_EXC_PRECISE' undeclared (first use in this function)
+process.c:426: (Each undeclared identifier is reported only once
+process.c:426: for each function it appears in.)
+make[2]: *** [process.o] Error 1
+make[2]: Leaving directory `/usr/src/linuxppc-2.5/arch/ppc/kernel'
+#####
 
-That is a good question. PCI is little-endian, PowerPC is big-endian. When
-should the addresses be swapped. When aren't they swapped by the lower
-levels?
+Thanks in advance for any informations/advices/fixes/...
 
+--
+DOLBEAU Romain               |  Energy derives from both
+ENS Cachan / Ker Lann        |    the plus and negative
+Thesard IRISA / CAPS         |       -- Metallica,
+dolbeaur@club-internet.fr    |           'Eye of the Beholder'
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
