@@ -1,34 +1,25 @@
-Message-ID: <3A1AA7D3.A808331C@mvista.com>
-Date: Tue, 21 Nov 2000 08:50:27 -0800
-From: Matthew Locke <mlocke@mvista.com>
-MIME-Version: 1.0
-To: t.shantha.laxmi@exgate.tek.com
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: init problems with 2.4.0 kernel
-References: <21F9768AF088D211BF1C0008C71E578601686C92@ap-bang-m02.india.tek.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <4.2.0.58.20001121122723.009e2850@shell13.ba.best.com>
+Date: Tue, 21 Nov 2000 12:30:42 -0800
+To: linuxppc-embedded@lists.linuxppc.org
+From: Ron Avisa <ravisa@base2software.com>
+Subject: ramdisk.image
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-t.shantha.laxmi@exgate.tek.com wrote:
-> It is a ppc board running linux kernel 2.4.0-test2-1.2.2-1. I have
-> downloaded the kernel from the mvista site. I am using CDK1.0(again got from
-> mvista) as the root filesystem. With my earlier version of the kernel
-> (2.2.13), I was not facing this problem.
->
-> Any help will be greatly appreciated,
-> - Shantha
->
+Finally managed to get my 860 ppc custom board to boot linux via ppcboot
+all the way
+upto the spawning of  the init processes.
 
-First let me say that 2.4 is still considered an unstable kernel.
-Montavista only supports the 2.4 kernel for a couple of arch that are
-only in 2.4.  If you are looking to upgrade your kernel for a product
-release, stick with 2.2.14. otherwise, always use the latest 2.4 kernel
-and expect something to be broken.
+Can someone tell me where I can find a ramdisk.image for ppc that has init,
+login and
+minimum other components i may need such as the /dev dirs etc.
 
+Thanks,
 
-Matthew Locke
-Montavista Software
+Ron
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
