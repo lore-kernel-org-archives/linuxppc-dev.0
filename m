@@ -1,30 +1,66 @@
-Message-Id: <200006231135.NAA00733@piglet.grunz.lu>
-Date: Fri, 23 Jun 2000 13:35:31 +0200 (CEST)
+Message-Id: <200006231224.OAA00765@piglet.grunz.lu>
+Date: Fri, 23 Jun 2000 14:24:07 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: Status of hfs support as of 2.4.0-test1-ac21
-To: khalfmann@libra.de
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <F14441D40E5AD3118886005004607AD10BDD30@mail.libra.de>
+Subject: Accessing IO space via resources
+To: linuxppc-dev@lists.linuxppc.org
+cc: Martin Mares <mj@suse.cz>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Klaus,
+Hi all,
 
-On  23 Jun, this message from Halfmann, Klaus echoed through cyberspace:
-> Is there anything else i _must_ check for a fs to be considered
-> stable ?
+Lots of discussion lately about IO issues on non-ia32 ;-)
 
-Did you try accessing CDRoms ith their 2K block size? While late
-2.3.99/2.4 kernels have always been able to access hfs disks in a more
-or less stable way, CDRoms have not been working for a very long time...
+Anyway, here is another problem related to IO space:
 
-The LinuxPPC 2K CDs are an example of such hfs CDs.
+Until a few kernel versions ago, ioremap() of the IO region on PCI buses
+happened to return the same virtual address as the physical address
+requested to be mapped.
 
-Thanks
+This was good, as it kept a potential problem hidden: the fact that
+drivers want to access IO regions directly, without going through an
+ioremap(). On ia32, with its separate IO address space, it's never a
+problem since inb() and friends access the IO space directly, and
+there's no remapping involved.
+
+However, on non-ia32 platforms, IO space is regular memory space and
+needs to be ioremp()'ed into kernel virtual address space. Now, the way
+drivers find out about IO ports is most of the time via pci_dev resource
+regions. These regions therefore need to contain kernel virtual
+addresses. Strictly speaking, this was not the case. In standard
+kernels, they contain the bus physical address, and inb() and friends
+apply the needed offset to access the ports relative to kernel virtual
+of port 0. In essence, it's this:
+
+inb(port) == in_8(port + ioremap(bridge_offset(port_0)))
+
+bridge_offset being the offset added by the PCI bridge.
+
+Since bridge_offset is static, this works for a single bus only. I had
+therefore modified the PCI fixup code to replace (port) in the resources
+with (port + bridge_offset). This worked since the IO space was
+ioremp()'ed 1:1.
+
+Now, in the latest 2.4.0-ac kernels, ioremap() returns different
+addresses, not 1:1 the original address anymore. And of course this
+breaks the above scheme. (I've not looked into why this is so... I
+suppose it's not a bug?)
+
+Of course, I could fix the resources to show the remapped addresses, but
+that would break the resource tree, since the entire tree shows phys
+addresses. It would be harder as well to re-assign resources, since
+before writing the new addresses out into PCI base regs, the correction
+stuff needs to be undone. That would be workable, however.
+
+So, what is the way to go? Let IO resources show kernel virtual, where
+MEM resources show phys? Do some (inefficient, if at all possible) magic
+in inb()? Something else?
+
+Thanks for all comments, ideas and suggestions.
 
 Michel
 
