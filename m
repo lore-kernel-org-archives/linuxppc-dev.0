@@ -1,54 +1,55 @@
-Message-ID: <3AE919BA.950AACA@motorola.com>
-Date: Fri, 27 Apr 2001 08:03:22 +0100
-From: "John Traill" <john.traill@motorola.com>
+Message-ID: <002701c0cef0$3ab09da0$8021690a@huawei.com>
+From: "machael thailer" <dony.he@huawei.com>
+To: "Stefano Coluccini" <s.coluccini@caen.it>,
+	"Toshimitsu Murakami" <murakami@realvision.co.jp>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <NDBBIFIMCKPOADMAJOKMGENNCPAA.s.coluccini@caen.it>
+Subject: Re: PrPMC750 board supported?
+Date: Fri, 27 Apr 2001 16:01:13 +0800
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260 SCC as Console
-References: <3AE859E4.8CF5063A@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Does you PvPMC750 board use powerpc 750 CPU?
 
-I should have been more specific - Do you have a patch for the ADS8260 ?
+Thank you very much.
+
+machael thailer
 
 
-Dan Malek wrote:
+----- Original Message -----
+From: "Stefano Coluccini" <s.coluccini@caen.it>
+To: "Toshimitsu Murakami" <murakami@realvision.co.jp>;
+<linuxppc-embedded@lists.linuxppc.org>
+Sent: Friday, March 09, 2001 4:51 PM
+Subject: RE: PrPMC750 board supported?
+
+
 >
-> John Traill wrote:
+> > Hello,
 > >
-> > Does anyone have a patch ( Or is working on one ) to use an SCC as a console ?
+> > I am porting Linux (2.2 or 2.4) to PrPMC750 board.
+> > But the Linux cannot boot yet from Network boot.
+> > Does anyone know how it can boot?
+> >
+> > My environment is:
+> > Kernel  MontaVista CDK 1.2 (2.2.14 or 2.4-test2)
+> > Kernel 2.4.3-pre2
+> > Moniter  PPCBug
+> >
 >
-> Yes.  The linuxppc_2_5 kernel has all of the right pieces.  I have
-> since made some changes that allow this to be selected as a configuration
-> option, and the patches are in the pipeline back to the FSM Labs trees.
+> The experimental 2_5 kernel at fsmlabs support the PrPMC750. I have not
+> tested it, but I'm working on a 'similar' board and it works fine.
 >
-> When using the SCC Console, the driver doesn't support SMC serial
-> ports due to some configuration conflicts I haven't yet resolved.
-> So far, I haven't seen hardware that uses an SCC console and SMC serial
-> ports, which places fixing this rather low on my list.
+> Bye.
 >
-> What board are you working on?  I have a Linux port for the ADS8260.....
+> Stefano.
 >
->         -- Dan
+>
 >
 
---
-
-Regards, John
-___________________________________________________________________________
-
-John Traill                                   Motorola
-Ph.   : +44 (0)1355 355494                    Colvilles Road
-Fax.  : +44 (0)1355 261790                    East Kilbride G75 OTG
-email : johnt@burton.sps.mot.com              Scotland
-      : R17296@email.sps.mot.com
-
-[x] General Business Use
-[ ] Motorola Internal Use Only
-[ ] Motorola Confidential Proprietary
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
