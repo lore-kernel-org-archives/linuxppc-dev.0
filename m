@@ -1,67 +1,129 @@
-Date: Wed, 17 Feb 1999 23:38:21 -0500 (EST)
-From: Thomas Riemer <triemer@apt4g.a3nyc.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Douglas Godfrey <dvdoug@tiac.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Food for thought
-In-Reply-To: <Pine.HPP.3.96.990218032415.482P-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.3.96.990217232756.31942A-100000@apt4g.a3nyc.com>
+Message-ID: <XFMail.990218075424.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <199902172350.AAA17911@www.luebeck.netsurf.de>
+Date: Thu, 18 Feb 1999 07:54:24 -0000 (GMT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: marcos otero garcia <marcos.oterogarcia@luebeck.netsurf.de>
+Subject: RE: MKLinux on Performa 6200
+Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hmmm... here's some food for thought... 
 
-Suppose it were possible to have a distributed source control system...
+On 17-Feb-99 marcos otero garcia wrote:
+> My Questions:
+> Does the Installatin not run because of the MK Linux Booter v1.4? What about other Booters
+> Do I have a chance on running Linux on the Performa 6200?
+> What about alternative System?
 
-By distributed, I mean the particular interesting properties:
+Terribly sorry, but at this point there is no Linux (of any type) available
+for that machine.  I have one myself and it just sits here, unused :-(
 
-1.  checkins all happen on a small number of machines/users...
-     delegated by tree... i.e.
-          linux/include   -> vger
-          linux/arch/mips -> ftp.linux.sgi.com
-      etc...
-
-2.  checkouts all happen on mirrored machines...
-
-Would that solve the problem?
-
------------------------------------------------------------------------
-Given enough eyeballs all bugs seem shallow.
-
-On Thu, 18 Feb 1999, Gabriel Paubert wrote:
-
+On 17-Feb-99 marcos otero garcia wrote:
+> 
+> Hey,
+> 
+> my name is Marcos I´m mailing from Luebeck-Germany.
+> 
+> I tried to install MK Linux DR3 on a Macintosh Performa 6200. I´ve read in the ReadMe and in the faqomatic of the
+> darmouth university that the Performa 6200 is not supported to run with MKLinux. I´ve asked me if its a problem of
+> the less SCSI HD´s and wrote a mail to covile@apple.com. This Adress I have found in the faqomatic. I gotn´t a reply
+> yet.
+> 
+> So I tried it my way. I connected an Quantum 1GB xternal SCSI HD, made a swap Partition and one filesystem-partition,
+> copied the extensions, controll panles etc. and restarted my older Performa.
+> The Mac comes up and started Linux
+> 
+> "--- Sorry you need to upgrade your this MKLinux Booter to boot OSF MK Kernel. ---"
+> 
+> I want to run the Performa as a DialIn webserver/like an intranetsever where friends and customers can Dial dircetly
+> in and get information about me. Maybe it will be posibble to access it from the internet using the Network and
+> Backbone of the local ComputerClub "ON" .
+> I tried to configure it on MacOS but the tools are not very functionally and under System 8.5 not fast except using
+> AppleShare IP or Mac OS X Server. But these tools are to expensive for a student - like me, and without one of these
+> I can´t configure an PPP DialIn (to the Performa) connection.
+> Many friends got me on Linux. I´ve found MKLinux for Macintosh or PPC based systems.
+> 
+> Now im have spent many time on configurating this server. And I don´t need an AppleTalk Server to print or backup my
+> Data. The only use I have for it to try it for an webserver. I´ve spent many money on a good LinuxBook and bought an
+> xternal SCSICase for the HD because the Performa got no internal SCSI. In the article i´ve read about unsupported
+> IDE-controllers.
+> and i want to run a Linux System or another good Server on my older Performa. Currently I´m working on a G3 Yosemite.
+> 
+> My Questions:
+> Does the Installatin not run because of the MK Linux Booter v1.4? What about other Booters
+> Do I have a chance on running Linux on the Performa 6200?
+> What about alternative System?
+> 
+> I´ve looked in several mailinglist etc. but nothing found
+> 
+> Here the Screen as it appears when trying to install Linux
+> ----------------------------------------------------------------------------------------------------------------------
+> -----------------
+> 
+> Mach3.0  VERSION(PMK1.1): gilbert <osfmk> Wed Jun 10 17:45:07 PDT 1998; mach_kernel/PRODUKTION (venus.apple.com)
+> 
+> Sorry! You need to upgrade your MKLinux Booter to boot this OSF MK kernel.
+> (it can be found in your MacOS Systemfolder: Extensions Folder)
+> Mach Microkernel is booting on a Power Macintosh Performa (unsupported) class machine
+> mem_size = 64M
+> vm_page_bootstrap: 15328 free Pages
+> panic: Unsupported class for Interrupt dispatcher
+> 
+> No debugger configured - dumping debug information
+> 
+> version string : Mach3.0  VERSION(PMK1.1): gilbert <osfmk> Wed Jun 10 17:45:07 PDT 1998; mach_kernel/PRODUKTION
+> (venus.apple.com)
+> 
+> backtrace: 0025f31c 00212454 00268874 0026b0e8 0025efc4 00226e04 0025ecec 0025e3d4
+> 
+> please report the above messages to
+> bugs@mklinux.apple.com and reboot your machine
+> 
+> ----------------------------------------------------------------------------------------------------------------------
+> ---------------------
+> Technical Spec of "my"Performa 6200
+> 
+> PowerPC 603 CPU with 75MHZ
+> 64 MD SIMM RAM
+> running under System 8.5
+> using an 4GB internal IDE Seagate with MacOs System HFS-Standard (HDT Driver)
+> and an xternal 1GB Quantum 1080 S Empire for Linux (700 for filesystem, 64 MB for swap) and MacOS (250MB partition
+> for System and other LINUXinstaller files)
+> 
+> an Asante Maccon 10BaseT CommSlotI EthernetAdapter
+> 
+> for more information - I think you have a datasheet about all Mac Modells. If not mail me
+> ----------------------------------------------------------------------------------------------------------------------
+> --------------------
+> 
+> Please help me. Now I´m over two days reading books preparing the Hardware, surfing the web for Info.
+> I´´ve Spent 350DM (will be about 150 EUR) on HardWare and Books. My girlfriend says that I´m getting silly.
+> There must be a way to use this performa as a good Server with Linux.
+> Hardware with the same manufacturing date is supported too and Linux runs on cheap PC System´s for less then 1000 DM
+> (maybe 500 EUR).
 > 
 > 
 > 
-> On Wed, 17 Feb 1999, Douglas Godfrey wrote:
-> 
-> > This sounds like a case for snail mail. If someone at one of the mirror
-> > sites has a CD-ROM burner and can burn a CD from the current CVS tree
-> > once a month. $5.00 plus $2.00 shipping and handling for a CD is probably
-> > less than the Phone connection time charges to download the new updates
-> > at 20 bytes/sec.
-> 
-> I'm on the education/research network so I don't pay for the connection. 
-> And I often download between 3 and 5am like now when I'm up at the
-> telescope, it's so much faster (up to 100kB/s). 
-> 
-> I don't know why but I feel like discriminated when the net approaches its
-> saturation level :-). Strange enough, I have reasonably fast connection to
-> the rest of Europe but the U.S. during daytime is simply hopeless (and the
-> U.K. too, but traceroute enlighetened me once showing that the shortest
-> path between Holland and London goes through New York and Washington, and
-> that my notions of geography were hopelessly antiquated ;-))
-> 
-> However, my main point is that I am not going back to using vger under any
-> circumstances (hmmm... if there were an incentive of a few million bucks,
-> I might reconsider my position ;-))
-> 
-> 	Regards,
-> 	Gabriel.
+> If there is no way to run Linux on the Performa 6200 tell me what to do with the machine!
 > 
 > 
+> Please excuse my bad english. I hope I get an answer. 
+> 
+> Thanks for interest and help...
+> 
+> now I´m exhausted - I will go to bed
+> 
+> 
+> cu
+> 
+> 
+> [[ This message was sent via the linuxppc-user mailing list. Replies are ]]
+> [[ not forced back to the list, so be sure to  Cc linuxppc-user  if your ]]
+> [[ reply is of general interest. To unsubscribe from linuxppc-user, send ]]
+> [[ the message 'unsubscribe' to linuxppc-user-request@lists.linuxppc.org ]]
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
