@@ -1,30 +1,36 @@
-To: Wojciech Kromer <krom@dgt-lab.com.pl>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linux-2.4.18 & copy-back cache mode 
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: HHL setserial and MPC8xx SCC/SMC 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 08 Mar 2002 15:41:54 +0100."
-             <3C88CDB2.7070905@dgt-lab.com.pl>
-Date: Fri, 08 Mar 2002 16:22:44 +0100
-Message-Id: <20020308152249.B9AC9109EF@denx.denx.de>
+In-reply-to: Your message of "Fri, 08 Mar 2002 15:31:25 +0100."
+             <3C88CB3D.4752A3E1@imc-berlin.de>
+Date: Fri, 08 Mar 2002 17:00:23 +0100
+Message-Id: <20020308160028.930BF109EF@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C88CDB2.7070905@dgt-lab.com.pl> you wrote:
+In message <3C88CB3D.4752A3E1@imc-berlin.de> you wrote:
 >
-> Anyone could send me UPM table for CAS_LATENCY==3. I'm not sure if burst is realy needed. Now its disabled, because I do not have correct UPM table for this.
+> i tried to use setserial (version 2.17, 27-Jan-2000) that comes with HHL
+> 2.0 on my custom board (MPC855T).
 
-Browse the PPCBoot sources;  I  added  a  configuration  for  TQM8xxL
-modules   at   66   MHz  (cpu-bus  1:1)  recently;  also,  the  LWMON
-configuration runs at 66 MHz 1:1.
+I think setserial is pretty much specific to "PC" type hardware.
+It has not even a minimal understanding of MPC8xx systems.
+
+> PS: Actually I was just looking for an easy way to test my serial
+> ports...
+
+Run some data through them ;-)
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Every time history repeats itself the price goes up.
+Concept, n.:    Any "idea" for which an outside consultant billed you
+more than $25,000.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
