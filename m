@@ -1,24 +1,51 @@
-Reply-To: <kamarajp@future.futsoft.com>
-From: "Kamaraj P" <kamarajp@future.futsoft.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Information about Library Optimizer 
-Date: Fri, 28 Feb 2003 17:59:55 +0530
-Message-Id: <000001c2df25$1a61db80$3c06140a@future.futsoft.com>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C06BF@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: john@corelis.com, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Good Books
+Date: Fri, 28 Feb 2003 08:42:36 -0500
 MIME-Version: 1.0
-In-Reply-To: <004801c2df08$90e5b1e0$0400a8c0@pc002>
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
-     Does Any body Used Library Optimizer ?
-if so , can any one  give some example how to use it ..
-Is there any other way to reduce the library size ..
+I highly recommend this book.
 
-Thanks in Advance
-Kamaraj
+-----Original Message-----
+From: Dr. Craig Hollabaugh [mailto:craig@hollabaugh.com]
+Sent: Thursday, February 27, 2003 9:24 PM
+To: john@corelis.com; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Good Books
+
+
+
+At 05:05 PM 2/27/2003 -0800, John Chan wrote:
+>
+>Hello, Folks,
+>
+>I am looking for reference books which are related to PPC 440GP or/and
+>embedded PPC or/and Linux on PPC. Do you have any suggestion?
+
+John,
+
+My book, Embedded Linux: Hardware, Software and Interfacing, uses a PPC860
+(Embedded Planet RPX-CLLF) in numerous interfacing examples. This might help
+with general PPC issues, not specifically the 440 though.
+
+Craig
+
+
+
+
+___________________________________________________________
+Dr. Craig Hollabaugh                   craig@hollabaugh.com
+Author of Embedded Linux
+
+P.O. Box 1405
+Ouray, CO 81427-1405        See my "kitchen sink" resume at
+970 325 4810 home            www.hollabaugh.com/resume.html
+970 325 0509 office
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
