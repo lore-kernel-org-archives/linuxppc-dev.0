@@ -1,33 +1,38 @@
-Date: Thu, 21 Jan 1999 00:00:37 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Ranjit Deshpande <ranjitd@sco.COM>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI-PCI bridges
-In-Reply-To: <Pine.SCO.3.96.990120111039.13973A-100000@mammoth.sco.com>
-Message-ID: <Pine.LNX.3.96.990120235850.29068A-100000@persephone.cs.nmt.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 20 Jan 1999 23:58:04 -0800
+Message-Id: <199901210758.XAA14846@dm.cobaltmicro.com>
+From: "David S. Miller" <davem@dm.cobaltmicro.com>
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+CC: davies@maniac.ultranet.com, becker@cesdis1.gsfc.nasa.gov,
+        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org
+In-reply-to: 
+	<Pine.LNX.4.03.9901202221410.28223-100000@mercator.cs.kuleuven.ac.be>
+	(message from Geert Uytterhoeven on Wed, 20 Jan 1999 22:28:13 +0100
+	(CET))
+Subject: Re: de4x5 vs. tulip on PPC
+References: <Pine.LNX.4.03.9901202221410.28223-100000@mercator.cs.kuleuven.ac.be>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-They appear to be.  I'm trying them out now.
+   Date: 	Wed, 20 Jan 1999 22:28:13 +0100 (CET)
+   From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
 
-}1. Are the changes I made valid ? I don't claim to be an expert on PPC
-}   hardware. And this was my first hack of the Linux kernel on any
-}   architecture.
+   On my machine, de4x5.c works, while tulip.c doesn't.
 
-I'm just speaking for myself, it was an oversight.  Paul may have left it
-out for a reason, though.
+   Machine is a CHRP/PPC box, Ethernet is 21041 based D-Link DE-530CT.
 
-}2. Is there a reason for PCI-PCI bridges not being supported by the newer  
-}   kernels ?
+ ...
 
-It shouldn't need any changes.  Does access to the other registers work?
+   So at least the Ethernet HW address is in the wrong endiannes for tulip.c.
 
-}3. Why is the tulip code not reading the EEROM ? I'm using the standard
-}   drivers/net/tulip.c. Does it require any PMAC specific changes ?
+   Are there people who can use tulip.c on a big endian machine?
 
+Nope, I gave up a long time ago using anything other than de4x5.c on
+sparc machines. 
+
+Later,
+David S. Miller
+davem@dm.cobaltmicro.com
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
