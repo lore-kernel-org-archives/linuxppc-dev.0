@@ -1,40 +1,34 @@
-Date: Thu, 23 Mar 2000 12:17:08 +0100
-From: ce <cesli@ewetel.net>
-To: DeRobertis <derobert@erols.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: stty crtscts < /dev/ttyS1 [603ev]
-Message-ID: <20000323121707.B3929@olis.north.de>
-Reply-To: cl.en@gmx.net
-References: <l03130302b4fd80d3a908@[216.164.130.191]> <38D8EF56.17970FBC@astro.wisc.edu> <l03130300b4ff357b23e8@[216.164.129.33]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <l03130300b4ff357b23e8@[216.164.129.33]>; from DeRobertis on Wed, Mar 22, 2000 at 09:49:42PM -0500
+Date: Thu, 23 Mar 2000 13:11:38 +0100 (MET)
+From: "Ingvar Hagelund; UiO" <ingvar@unik.no>
+To: Jeff Carr <jcarr@mail.linuxppc.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: LinuxPPC-2000: Bug in the RH installer
+In-Reply-To: <Pine.LNX.4.10.10001211706220.29354-100000@mail.linuxppc.org>
+Message-ID: <Pine.GSO.4.10.10003231305220.9897-100000@odin.unik.no>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- Matt Haffner }  >Try this syntax: "stty -F /dev/ttyS1 crtscts". There's a comment in the
- Matt Haffner }  >info doc for stty that letting the shell open the device may block in
- Matt Haffner }  >certain situations.
- DeRobertis }
- DeRobertis }  Does not help. Same problem. Let me clarify "freeze", though. I mean it
- DeRobertis }  takes out the machine -- the kernel does not run processes. The machine
- DeRobertis }  might as well be turned off; it'd do as much good.
- DeRobertis }
- DeRobertis }  Unfortunately, no oopses. No backtraces. No entries in
- DeRobertis }  /var/log/messages. Nothing. It just dies.
- DeRobertis }
- DeRobertis }  A rather serious kernel bug, IMO.
- DeRobertis }
- DeRobertis }  cc'd to l-k. It's 2.2.14 running on a ppp-603ev.
+The CD-ROM images spread to the LinuxPPC mirrors over the world are in hfs
+format. The Red Hat installer tries to mount the CD-ROM as an 9660 image.
+This won't of course work, and causes problems, for example for RS/6000
+owners like myself.
 
- same story on my pb3400_603ev, but an old one, even with 2.1.85 as far as I remember correctly. The second try to influence ttyS0 via stty [now 2.2.14] stops everything as you described, a little bit annoying. Perhaps a problem of our special RS?
-People like Paul M. have been working with a pb3400, do you know others?
+A simple solution would be to change the RH installer so that it mounts
+with "-t auto" instead of "-t iso9660". Then it will detect the CD-ROM
+properly, both for iso9660 and hfs CD-ROMs.
 
-greetings Claus
+Regards
+Ingvar
 
---
->45. Id. at 50-51; Lewinsky 8/6/98 GJ at 21.
->On this occasion, the President ejaculated. Lewinsky 8/26/98 Depo. at 50-51.
+------------------------------------------------------------------------
+Ingvar Hagelund             Phone: (+47) 22740512
+E-mail: ingvar@unik.no      WWW: http://www.ifi.uio.no/~ingvarha
+Adress: Ringshusveien 10,   N-1176  OSLO, NORWAY
+Experience GNU/Linux!
+-------------------------------------------------------------------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
