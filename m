@@ -1,20 +1,28 @@
-Message-ID: <385179C1.F699B552@ittc.ukans.edu>
-Date: Fri, 10 Dec 1999 16:08:01 -0600
-From: jmauro <jmauro@ittc.ukans.edu>
+Message-ID: <3851A289.226B892C@yahoo.com>
+Date: Sat, 11 Dec 1999 09:02:01 +0800
+From: Wang Yong <wung_y@yahoo.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Loading Linux on an MBX board without EPPC-bug
+Subject: switch mmu context when jump into kernel
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've been trying to load linux onto a MBX860 board, but the instructions
-say to use EPPC-Bug, but all my board starts with is raw-bug and nothing
-else.  Is this board useable for Linux, or do I/can I restore EPPC-bug
-some how?  Thanks for any help you can give me.
+powerpc 4xx use mmu context(called TID(0~255)) when translate virtual
+addr to physical addr. a SPR named PID hold this context, so i think
+once i enable the addr translate, i have to set PID to
+current->mm->context
+to make translating work correctly. and it should be set to 0 when
+interrupt or system call arise.
+but after studying the kernel source i downloaded from tivo for a long
+time, i don't find any code to do that job. i think it mostly should be
+in these place: transfer_to_handler and int_return but it not. is the
+kernel missing something?
 
-James
+i am sorry if i post this message twice, my netscape got some problem.
+
+Wang
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
