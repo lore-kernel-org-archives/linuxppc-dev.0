@@ -1,35 +1,39 @@
-From: cpg@aladdin.de
-Subject: Re: PCI-to-parallel port problem
-To: berke@kis.uni-freiburg.de
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-ID: <OF270176E6.48AE87B6-ONC12569B9.006050DF@aladdin.de>
-Date: Mon, 18 Dec 2000 18:35:38 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-Id: <v04003a00b66419331ca3@[24.70.162.12]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 18 Dec 2000 13:58:02 -0600
+To: linuxppc-dev@lists.linuxppc.org
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: 2.4.0-test13-pre3 pukes on 9600/200mp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I just today rsynced the latest from
+rsync://penguinppc.org/linux-pmac-devel, compiled and ran it, and I get the
+following on boot:
 
-On 12/18/2000 05:55:30 PM CET Thomas Berkefeld wrote:
->
->I have FASTPCI 4008 PCI parallel port card from Dolphin Peripherals. To
->use the card,
->the manual tells to modprobe parport_pc.o with io-address and irq.
->Unfortunatley
->parport_pc.c cannot be compiled with
->kernel 2.4.0-test11 on my G4 Mac  (a header is missing).
+...
+arch: exit
+found cpu 1
+smp_commence
+cpu 0: vector: 200 at pc = f3b8, lr = 3a0, msr = 41000, sp = c01ab240
+[c01ab190]
 
-You can copy the parport.h file from another architecture
-subdirectory, I think they are (at least on i386, alpha and ia64)
-the same. Then it should compile at least.
+f3b8 is exactly "hash_page_out" in the system map, a rather smp-only chunk
+of asm. 3a0 appears to be in the DSI exception handler.
 
-But when I compiled the parport modules they didn't find the
-ports. I haven't looked much further into it yet...
+I've been using 2.4.0-test11 before this quite successfully (also rsynced
+from the same source). I unfortunatley didn't think to keep the sources
+around to look for differences.
 
-regards,
-chris
+
+Cheers - Tony 'Nicoya' Mantler :)
+
+
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
