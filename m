@@ -1,26 +1,38 @@
-Date: Tue, 25 Sep 2001 17:17:43 -0700
-From: Larry McVoy <lm@bitmover.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: T1 line is here
-Message-ID: <20010925171743.H28189@work.bitmover.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 26 Sep 2001 00:24:38 -0400 (EDT)
+From: "Peter R. Wood" <prwlists@cephas.dyndns.org>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: pci probs with recent linuxppc_2_4_devel kernel
+Message-ID: <Pine.LNX.4.33L2.0109260016160.20753-100000@woburn.dyndns.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Our new T1 line is installed and working.  We'll be updating the repo
-server so that it resolves to the T1 line in the next day or two; we'll
-leave the old address connected as well so things will continue to work
-while the DNS entries time out.
+Hi all,
 
-It should be pretty zippy, the router in our office with the repository
-server is 192.132.92.1 and pings from Cort's machine are 41 milliseconds,
-pings to the east cost are 60 milliseconds.  Those are both 30 ms less
-than our DSL line, so not only is the bandwidth better, the latency seems
-better as well.
+I've been having some problems with recent linuxppc_2_4_devel kernels.
+Specifically, my PCI bus and devices don't seem to be recognized properly.
+I have a SuperMac J700, with a 3c905 ethernet card and an ati rage 128
+video card.. neither of them seems to be recognized:
+
+Unknown bridge resource 0: assuming transparent
+Unknown bridge resource 1: assuming transparent
+Unknown bridge resource 2: assuming transparent
+PCI: Cannot allocate resource region 0 of device 00:0d.0
+PCI: Cannot allocate resource region 2 of device 00:0d.0
+PCI: Cannot allocate resource region 0 of device 00:10.0
+etc...
+
+Is there a patch available to fix this? Right now I am using an older
+kernel, since the kernel in its current state doesn't enable my video or
+ethernet cards.
+
+Thanks,
+
+Peter
+
 --
----
-Larry McVoy            	 lm at bitmover.com           http://www.bitmover.com/lm
+Peter R. Wood - prwlists@cephas.dyndns.org - http://cephas.dyndns.org/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
