@@ -1,31 +1,44 @@
-Date: Wed, 18 Dec 2002 11:59:24 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Hollis Blanchard <hollis@austin.ibm.com>
-Cc: embedded list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 405LP EBC setup fix
-Message-ID: <20021218005924.GD3666@zax.zax>
-References: <1040151079.1100.119.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1040151079.1100.119.camel@granite.austin.ibm.com>
+Message-Id: <200212180101.gBI11p816867@p2.parker.boston.ma.us>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: bug in early_uart_init()?  linuxppc_2_4_devel
+Date: Tue, 17 Dec 2002 20:01:51 -0500
+From: Brad Parker <brad@parker.boston.ma.us>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Dec 17, 2002 at 12:51:18PM -0600, Hollis Blanchard wrote:
-> EBC0_B0CR should be set as 16-bit; through an ifdef merging typo it is
-> currently set incorrectly as 8-bit. This prevents 405LP wakeup from
-> succeeding and needs to be fixed.
->
-> Please apply to _2_4_devel and 2.5.
+I think there's a bug in early_uart_init() from linuxppc_2_4_devel.
+It sets up a structure and calls early_serial_setup() which crashes
+because "req->line" is huge.
 
-I've applied this to _2_4_devel, but not to 2.5 (I'm not really
-up-to-date on 2.5 at the moment).
+early_uart_init() does
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+  ...
+  serial_req.line = rs_table[0].port;
+  ...
+
+and then calls early_serial_setup() in drivers/char/serial.c, which
+uses "line" as an index into rs_table. I'm not sure how that's
+supposed to work, since in my case port is 0xf40005f0 :-) As a hack I
+changed it to
+
+  ...
+  serial_req.line = rs_table[0].magic;
+  ...
+
+since the magic # is zero (and seems to be often an index). And that
+works, but it's a hack.  Seems like "port" will always be a rather
+largish hex number.
+
+What's up with ocp_uart?  Is there a document which describes what the
+ocp code is trying to do?
+
+This is a for a ibm 403GCX, so the following are defined
+
+CONFIG_40x=y
+CONFIG_4xx=y
+CONFIG_403GCX=y
+
+-brad
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
