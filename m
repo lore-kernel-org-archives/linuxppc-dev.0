@@ -1,50 +1,76 @@
-Date: Mon, 14 Jun 2004 20:07:34 +0200
-From: Olaf Hering <olh@suse.de>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] fix missing option in binutils version check
-Message-ID: <20040614180734.GB3247@suse.de>
-References: <20040605074341.GA15279@suse.de> <20040608112556.GA21447@suse.de> <20040610001605.GH18212@smtp.west.cox.net> <20040614091530.GA18482@suse.de> <20040614162359.GA7798@smtp.west.cox.net> <20040614173841.GA3247@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20040614173841.GA3247@suse.de>
+Date: Mon, 14 Jun 2004 20:29:22 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Leigh Brown <leigh@solinno.co.uk>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH][RFC] Make /proc/interrupts show the correct edge/level
+  status for PReP machines
+In-Reply-To: <1604.80.7.99.14.1087234184.squirrel@www.solinno.co.uk>
+Message-ID: <Pine.GSO.4.58.0406142028330.1555@waterleaf.sonytel.be>
+References: <1604.80.7.99.14.1087234184.squirrel@www.solinno.co.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- On Mon, Jun 14, Olaf Hering wrote:
-
+On Mon, 14 Jun 2004, Leigh Brown wrote:
+> Although the edge/level status of the interrupts are set up correctly
+> for PReP machines, we neglect to set the status in the irq_desc
+> array.  This patch does that.
 >
->  On Mon, Jun 14, Tom Rini wrote:
+> Before:
 >
-> > > Everyone who wants to build the latest and greatest kernel can also
-> > > update binutils, its a no-brainer.
-> >
-> > ... which does, or doesn't compile a kernel?  Does the latest and
-> > greatest binutils and gcc automatically pass down -many, or does it fail
-> > to compile because the assembler needs -many, but it's not being passed
-> > along.  That's what I asked.
+>            CPU0
+>   2:          0   i8259     Edge      82c59 secondary cascade
+>   4:        876   i8259     Edge      serial
+>  15:       1202   i8259     Edge      sym53c8xx, eth0
 >
-> plain gcc 3.2.3 + binutils 2.15.91.0.1 is a challenge, because it passes
-> -mppc instead of -many.
+> Before:
+>
+>            CPU0
+>   2:          0   i8259     Edge      82c59 secondary cascade
+>   4:     171211   i8259     Edge      serial
+>  15:    5153584   i8259     Level     sym53c8xx, eth0
+>
+>
+> diff -urNX .diffex linux-2.6.6-prev/arch/ppc/platforms/prep_pci.c
+> linux-2.6.6/arch/ppc/platforms/prep_pci.c
+> --- linux-2.6.6-prev/arch/ppc/platforms/prep_pci.c	2004-06-12
+> 10:26:18.000000000 +0100
+> +++ linux-2.6.6/arch/ppc/platforms/prep_pci.c	2004-06-12
+> 10:35:20.000000000 +0100
+> @@ -1051,11 +1051,18 @@
+>  		}
+>  	} else if ( _prep_type == _PREP_IBM ) {
+>  		unsigned char irq_edge_mask_lo, irq_edge_mask_hi;
+> +		unsigned short irq_edge_mask;
+> +		int i;
+>
+>  		setup_ibm_pci(&irq_edge_mask_lo, &irq_edge_mask_hi);
+>
+>  		outb(inb(0x04d0)|irq_edge_mask_lo, 0x4d0); /* primary 8259 */
+>  		outb(inb(0x04d1)|irq_edge_mask_hi, 0x4d1); /* cascaded 8259 */
+> +
+> +		irq_edge_mask = (irq_edge_mask_hi << 8) | irq_edge_mask_lo;
+> +		for (i = 0; i < 16; ++i, irq_edge_mask >> 1)
+                                         ^^^^^^^^^^^^^^^^^^
+Shouldn't that be `irq_edge_mask >>= 1'?
 
-We should fix it like that:
+> +			if (irq_edge_mask & 1)
+> +				irq_desc[i].status |= IRQ_LEVEL;
+>  	} else {
+>  		printk("No known machine pci routing!\n");
+>  	 	return;
 
-diff -purN linux-2.6.7-rc3-bk6.orig/arch/ppc/Makefile linux-2.6.7-rc3-bk6/arch/ppc/Makefile
---- linux-2.6.7-rc3-bk6.orig/arch/ppc/Makefile	2004-06-14 15:23:35.000000000 +0200
-+++ linux-2.6.7-rc3-bk6/arch/ppc/Makefile	2004-06-14 19:46:25.336997085 +0200
-@@ -22,6 +22,7 @@ CPP		= $(CC) -E $(CFLAGS)
+Gr{oetje,eeting}s,
 
- cflags-$(CONFIG_4xx)		+= -Wa,-m405
- cflags-$(CONFIG_PPC64BRIDGE)	+= -Wa,-mppc64bridge
-+cflags-$(CONFIG_ALTIVEC)	+= -Wa,-maltivec
-
- CFLAGS += $(cflags-y)
-
+						Geert
 
 --
-USB is for mice, FireWire is for men!
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-sUse lINUX ag, nÜRNBERG
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
