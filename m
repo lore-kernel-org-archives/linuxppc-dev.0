@@ -1,24 +1,31 @@
-Return-Path: <srivatsan@deccanetworld.com>
-Received: from gatekeeper.deccanetworld.com (mail.deccanetworld.com
-	[203.196.146.50])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 562F82BDEB
+Return-Path: <jostein.pettersen@westerngeco.com>
+Received: from mail.slb.com (eurmta02.montrouge.eur.slb.com [163.187.152.23])
+	by ozlabs.org (Postfix) with ESMTP id 83ABF2BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Dec 2004 02:36:14 +1100 (EST)
-Received: from gatekeeper.deccanetworld.com (localhost [127.0.0.1])
-	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
-	ESMTP id iB9FMnEN004033
-	for <linuxppc-embedded@ozlabs.org>; Thu, 9 Dec 2004 20:52:49 +0530
-From: "Srivatsan" <srivatsan@deccanetworld.com>
-To: "'Geert Uytterhoeven'" <geert@linux-m68k.org>
-Date: Thu, 9 Dec 2004 21:02:21 +0530
-Message-ID: <000301c4de04$46817060$4501a8c0@bgcw301>
-MIME-Version: 1.0
-In-Reply-To: <Pine.GSO.4.61.0412091627120.9956@waterleaf.sonytel.be>
-Content-type: multipart/mixed; boundary="=_IS_MIME_Boundary"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8280 Linux Kernel Patch
+	Fri, 10 Dec 2004 03:00:32 +1100 (EST)
+Received: from pmxchannel-daemon.eurmta02.montrouge.eur.slb.com by
+	eurmta02.montrouge.eur.slb.com
+	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+	id <0I8G00F0DP1YE0@eurmta02.montrouge.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Thu, 09 Dec 2004 15:44:22 +0000 (GMT)
+Received: from wgmail3.oslo.eur.slb.com
+	(wgmail3.oslo.eur.slb.com [134.32.44.153]) by
+	eurmta02.montrouge.eur.slb.com
+	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+	with ESMTP id <0I8G001UWP1VM8@eurmta02.montrouge.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Thu, 09 Dec 2004 15:44:20 +0000 (GMT)
+Received: from OSL-1205-PC.westerngeco.com (localhost [127.0.0.1])
+	by wgmail3.oslo.eur.slb.com (Switch-2.2.8/8.11.1) with ESMTP id
+	iB9FhXE22528 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 09 Dec 2004 16:43:33 +0100 (MET)
+Date: Thu, 09 Dec 2004 16:43:41 +0100
+From: Jostein Pettersen <jostein.pettersen@westerngeco.com>
+To: linuxppc-embedded@ozlabs.org
+Message-id: <5.1.0.14.2.20041209153709.02cfa5f8@wgmail3.oslo.eur.slb.com>
+MIME-version: 1.0
+Content-type: multipart/alternative;
+	boundary="Boundary_(ID_9A1n6qV6SFgqMd/OFU4qiA)"
+Subject: Software routing in 8275
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,67 +37,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=_IS_MIME_Boundary
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+--Boundary_(ID_9A1n6qV6SFgqMd/OFU4qiA)
+Content-type: text/plain; charset=us-ascii; format=flowed
+Content-transfer-encoding: 7BIT
 
-I am sorry about that 
+Hi,
 
-With Best Regards,
-C.R.Srivatsan
+We consider using a MPC8275 running Embedded Linux to route two 100MB/s 
+Ethernet links in software. The traffic will mostly be incoming on the two 
+FE links and outgoing on the PCI bus, which is connected to a gigabit 
+routing chip (can't connect the two FE links to the routing chip directly, 
+since it only has GE ports).
 
------Original Message-----
-From: geert@sonycom.com [mailto:geert@sonycom.com] On Behalf Of Geert
-Uytterhoeven
-Sent: Thursday, December 09, 2004 8:58 PM
-To: Srivatsan
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8280 Linux Kernel Patch
+My question is:
+Will the MPC8275 be able to handle 2xFE full speed?
 
-On Thu, 9 Dec 2004, Srivatsan wrote:
-> Can anyone give me pointers where I can find patch for supporting
-> MPC8280 processor for Linuxppc Kernel 2.4.20(has support for MPC8260)?
+Doing the calculations about bus speeds etc, it looks ok, but I know Linux 
+does not like high interrupt rates. Is there a rule of thumb about what's 
+the maximum recommended interrupt rate at a given clock speed?
 
-> 
-> The help would be highly appreciated.
-
-When replying, please reply _below_ the part your replying to, and cut
-away
-superfluous text (especially when replying to a digest).
-
-> When replying, please edit your Subject line so it is more specific
-> than "Re: Contents of Linuxppc-embedded digest..."
-
-Perhaps these simple rules of netiquette can be added here as well?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
-geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker.
-But
-when I'm talking to journalists I just say "programmer" or something
-like that.
-							    -- Linus
-Torvalds
+Hope to hear from you,
+Regards
+Jostein Pettersen
 
 
+--Boundary_(ID_9A1n6qV6SFgqMd/OFU4qiA)
+Content-type: text/html; charset=us-ascii
+Content-transfer-encoding: 7BIT
 
+<html>
+Hi,<br><br>
+We consider using a MPC8275 running Embedded Linux to route two 100MB/s
+Ethernet links in software. The traffic will mostly be incoming on the
+two FE links and outgoing on the PCI bus, which is connected to a gigabit
+routing chip (can't connect the two FE links to the routing chip
+directly, since it only has GE ports).<br><br>
+My question is:<br>
+<b>Will the MPC8275 be able to handle 2xFE full speed?</b> <br><br>
+Doing the calculations about bus speeds etc, it looks ok, but I know
+Linux does not like high interrupt rates. Is there a rule of thumb about
+what's the maximum recommended interrupt rate at a given clock speed?
+<br><br>
+Hope to hear from you,<br>
+Regards<br>
+Jostein Pettersen<br><br>
+</html>
 
-********************************DISCLAIMER**********************************
-
-This e-mail and any attachment is for authorised use by the intended
-recipient(s) only. It may contain proprietary material, confidential
-information and/or be subject to legal privilege of Deccanet Designs Ltd.
-If you have received this message in error, please notify the originator
-immediately. If you are not the intended recipient, you are notified that
-you are strictly prohibited from retaining, using, copying, altering or
-disclosing the contents of this message.
-
-****************************************************************************
---=_IS_MIME_Boundary--
+--Boundary_(ID_9A1n6qV6SFgqMd/OFU4qiA)--
