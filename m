@@ -1,88 +1,204 @@
-Subject: Re: Possible bug in flush_dcache_all on 440GP
+Subject: 405GP Networking issue
 To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFF6BB8794.C62B49D5-ON87256CDB.0052212D@us.ibm.com>
-From: Ralph Blach <rcblach@us.ibm.com>
-Date: Fri, 28 Feb 2003 10:00:54 -0500
+Message-ID: <OF81D7CF16.F89A8DA5-ON87256CDB.00561B6D@us.ibm.com>
+From: Mark Wisner <markwiz@us.ibm.com>
+Date: Fri, 28 Feb 2003 10:41:29 -0500
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This comment is from Thomas Sartorius,
+Kishinami,
+You are correct, the 405GP's EMAC will discard any bad packets or packets
+that do not meet it's address match mechanism. There is one exception. If
+the packet received gets a good address match and the packet is large but
+has an FCS error, it may pass the bad packet to the MAL. The MAL will
+create an EOB interrupt and the RX_EOB routine should then look at the
+descriptors status bits to see that it is a bad packet.  This is determined
+by the RX threshold value. Once the EMAC starts to send a packet to the MAL
+it will continue to send it, even though it fails the FCS check at the end
+of the packet. Once it starts a packet it runs to completion. SW then needs
+to detect the bad packet by the status bits.
+
+The real question is, why are you receiving what the EMAC thinks are bad
+packets?
+
+If you can isolate the board on a hub with only the ping traffic in
+question it will make things easier to debug. Most of the time when this
+type of thing happens, you have noise between the PHY and the EMAC on the
+MII bus. Here is the way I shoot these types of things.
+1) Put the EMAC in promiscous mode, enable the reception of every bad
+packet it can. You do this by setting the RMR reg. Look at the open routine
+for the device. I think the RMR reg is set there.
+2) Go to the RX_EOB routine where it checks the status bits in the
+descriptor. If it detects a bad packet, print the packet out. Look for any
+odd bit patterns. You may have a noisy bit.
+
+Remember, if the MII itnerface is so messed up that the preamble does not
+get deteceted correctly the EMAC will not see the packet at all. When I
+have it this type of problem, I pull out the Smartbit tester and embed data
+patterns in the packet that may fake the EMAC to think it has a preamble.
+For example, if I think I am dropping bit 0, I will send in a pattern of
+all 5's in the packet for a while and then a F.  By using different data
+paterns you can determing the problem bit or bits. I have also seen where
+there was to much load on a line so it did not switch as it should.
+
+You should send your problem to PPCSUPP@us.ibm.com, IBM support. Send them
+a shapshot of what you captured on the MII interface. Also, a scope capture
+showing the RX_DV( I think that is the name of the MII signal that marks
+the beginning of a RX packet)  line and a data line so they can see how
+they switch together. If the ctl line is late or the data line is early,
+you can get some weird results.
+
+Mark K. Wisner
+Advisory Software Engineer
+IBM Microelectronics
+3039 Cornwallis Rd
+RTP, NC 27709
+Tel. 919-254-7191
+Fax 919-543-7575
+---------------------- Forwarded by Mark Wisner/Raleigh/IBM on 02/28/2003
+10:36 AM ---------------------------
+
+Mark Wisner
+02/28/2003 09:10 AM
+
+To:    kishinami@cs.fujitsu.com.jp
+cc:
+From:  Mark Wisner/Raleigh/IBM@IBMUS
+Subject:    405GP Networking issue
 
 
-Eugene is correct about the "generic" way requiring that you load twice as
-many memory locations as would fit in the cache, in order to guarantee that
-any previous "dirty" contents get written to memory and removed from the
-cache.
+Kishinami,
+You are correct, the 405GP's EMAC will discard any bad packets or packets
+that do not meet it's address match mechanism. There is one exception. If
+the packet received gets a good address match and the packet is large but
+has an FCS error, it may pass the bad packet to the MAL. The MAL will
+create an EOB interrupt and the RX_EOB routine should then look at the
+descriptors status bits to see that it is a bad packet.  This is determined
+by the RX threshold value. Once the EMAC starts to send a packet to the MAL
+it will continue to send it, even though it fails the FCS check at the end
+of the packet. Once it starts a packet it runs to completion. SW then needs
+to detect the bad packet by the status bits.
 
-Note that his second suggestion regarding dccci requires that the processor
-be in supervisor mode, and assumes that there is no dirty data left in the
-cache at the time of the dccci (or else one doesn't care about causing such
-dirty data to be written back to memory).
+The real question is, why are you receiving what the EMAC thinks are bad
+packets?
 
-An alternative (and likely faster) method is to use a series of dcbz
-instructions (as many as there are lines in the cache) to a series of
-"safe" addresses for which it is known that the cache does not currently
-contain dirty data, and then use dccci at the end to eliminate this dirty
-data without causing any of it to be written back to memory.  This
-technique should be much faster as it avoids having to actually read any
-memory locations into the cache.
+If you can isolate the board on a hub with only the ping traffic in
+question it will make things easier to debug. Most of the time when this
+type of thing happens, you have noise between the PHY and the EMAC on the
+MII bus. Here is the way I shoot these types of things.
+1) Put the EMAC in promiscous mode, enable the reception of every bad
+packet it can. You do this by setting the RMR reg. Look at the open routine
+for the device. I think the RMR reg is set there.
+2) Go to the RX_EOB routine where it checks the status bits in the
+descriptor. If it detects a bad packet, print the packet out. Look for any
+odd bit patterns. You may have a noisy bit.
 
-Another alternative is to use a loop that does a series of dcread/dcbf
-instructions, where the information that is read into the GPR by the dcread
-is then used by the dcbf to cause that line to be cast-out and invalidated.
-Depending on the possible state of the cache, it might be necessary to test
-the valid bit read by the dcread before trying to use the value for the
-dcbf, to avoid any MMU exceptions.
+Remember, if the MII itnerface is so messed up that the preamble does not
+get deteceted correctly the EMAC will not see the packet at all. When I
+have it this type of problem, I pull out the Smartbit tester and embed data
+patterns in the packet that may fake the EMAC to think it has a preamble.
+For example, if I think I am dropping bit 0, I will send in a pattern of
+all 5's in the packet for a while and then a F.  By using different data
+paterns you can determing the problem bit or bits. I have also seen where
+there was to much load on a line so it did not switch as it should.
 
-One thing to note with regards to any of the techniques:  you probably need
-to guarantee that interrupts do not occur during the sequence to make sure
-that the cache is cleanly flushed when the routine is finished.
+You should send your problem to PPCSUPP@us.ibm.com, IBM support. Send them
+a shapshot of what you captured on the MII interface. Also, a scope capture
+showing the RX_DV( I think that is the name of the MII signal that marks
+the beginning of a RX packet)  line and a data line so they can see how
+they switch together. If the ctl line is late or the data line is early,
+you can get some weird results.
 
-One more thing to note with regards to any of the techniques:  you need to
-concern yourself with possible MMU exceptions during the sequence.
+Mark K. Wisner
+Advisory Software Engineer
+IBM Microelectronics
+3039 Cornwallis Rd
+RTP, NC 27709
+Tel. 919-254-7191
+Fax 919-543-7575
+---------------------- Forwarded by Mark Wisner/Raleigh/IBM on 02/28/2003
+08:34 AM ---------------------------
 
-One last thing to note:  if you're using any of the techniques other than
-the dcread/dcbf sequence, then you need to concern yourself with the
-"victim limit" values, and whether or not the cache has been partitioned
-into "normal". "transient", and "locked" regions.  The techniques described
-all presume that "normal" storage access operations will cause the "victim
-index" value to walk through all the values from 0 to 63, but if the cache
-has been partitioned, this will not be the case.
+Ralph Blach
+02/28/2003 08:22 AM
 
-In the end, I would suggest that the "safest", most robust technique is to
-use the dcread/dcbf sequence loop, with proper testing of the dcread result
-(e.g., for a valid bit) before executing the dcbf, and with proper MMU
-setup ahead of time to make sure you don't get MMU exceptions during the
-sequence.
-
-One last thing:  Eugene suggests that "40x" processors have 32-byte cache
-lines, but that is not the case for the 403 and 401 (they have 16-byte
-cache lines).
+To:    Mark Wisner/Raleigh/IBM@IBMUS
+cc:
+From:  Ralph Blach/Raleigh/IBM@IBMUS
+Subject:    405GP Networking issue
 
 
-Segher Boessenkool <segher@koffie.nl>@lists.linuxppc.org on 02/26/2003
-10:39:05 AM
+
+---------------------- Forwarded by Ralph Blach/Raleigh/IBM on 02/28/2003
+08:22 AM ---------------------------
+
+KISHINAMI Masaya <kishinami@cs.fujitsu.co.jp>@lists.linuxppc.org on
+02/28/2003 07:27:56 AM
 
 Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
 
 
-To:    Eugene Surovegin <ebs@ebshome.net>
-cc:    linuxppc-embedded@lists.linuxppc.org
-Subject:    Re: Possible bug in flush_dcache_all on 440GP
+To:    linuxppc-embedded@lists.linuxppc.org
+cc:
+Subject:    405GP Networking issue
 
 
 
 
-Eugene Surovegin wrote:
+Dear all, it's first time to post.
 
-> I believe there is a bug in flush_dcache_all implementation for not cache
-> coherent processors.
->
-> This function uses simple algorithm to force dcache flush by reading
-> "enough" data to completely reload the cache:
+We are debugging a custom board designed based on the 405GP
+(200MHz) and have a problem not being sent ECHO REPLY ping
+packet from custom board to our PC via repeater hub on the
+heavy traffic under 10Mbps and half duplex condition.
+We used the latest version of ibm_ocp LAN device driver at
+that time from kernel 2.4.21-pre3 and ported it to work on
+the kernel 2.4.18 because it costs many time to boot our
+custom board on the latest one. The board works fine unless
+not be such a case.
+
+Following are the our simplest duplication process and the
+results.
+
+1. Connect the repeater hub to backbone LAN.
+2. Connect custom board, test PC to ping and other PCs to the
+   repeater hub to the full. This case, 10 or more PCs are
+   connected to repeater hub and each PC works normally by
+   using network.
+3. Increase the traffic by using ftp command. The ftp data was
+   never addressed to the custom board.
+4. Ping from our PC to custom board at one time.
+5. The 60% pings were lost such condition.
+6. We investigated the ping lost case.
+   - LAN protocol analyzer captured the ECHO REQUEST which was
+     address to custom board. It shows ECHO REQUEST was issued
+     from our PC to LAN cable.
+   - Logic analyzer captured the same ping packet which was
+     already been captured by LAN analyzer between PHY(Intel
+     LXT971A) and EMAC. It shows ECHO REQUEST was reached just
+     before the EMAC.
+   - The LAN device driver's receive buffer did not receive the
+     ECHO REQUEST by using printk command. We suspected that the
+     ECHO REQUEST was not issued to the MAL(Memory Access Layer),
+     therefore ECHO REQUEST was not translated to the receive
+     buffer.
+
+At the same time, many 4 byte short packet(0x000000f0) which was
+not addressed to custom board was received to the LAN device driver's
+receive buffer with error status. According to 405GP manual, EMAC
+discards the packet which is not of its own.
+
+Have anyone experienced a problem like this?
+Any help would be appreciated.
+
+Regards, Kishinami.
+
+-----
+KISHINAMI Masaya
+Fujitsu Limited (Japan)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
