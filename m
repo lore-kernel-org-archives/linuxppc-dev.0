@@ -1,64 +1,88 @@
-Date: Mon, 19 Nov 2001 10:28:14 -0500
-Subject: Re: xfree86/fbdevhw not sending right mode to radeonfb.c
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v475)
-Cc: =?ISO-8859-1?Q?Michel_D=E4nzer?= <michdaen@iiic.ethz.ch>,
-	<linuxppc-dev@lists.linuxppc.org>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Message-Id: <0C3CA45D-DD02-11D5-8379-0030654D6A26@ivey.uwo.ca>
+Subject: Re: PPC FPU handling [was: Re: NaN patch]
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: Keith Whitwell <keith_whitwell@yahoo.com>
+Cc: linuxppc-dev@lists.linuxppc.org, devel@xfree86.org,
+	Brian Paul <brian_e_paul@yahoo.com>,
+	"mesa3d-dev@lists.sourceforge.net" <mesa3d-dev@lists.sourceforge.net>,
+	"Torrey T. Lyons" <torrey@mrcla.com>
+In-Reply-To: <3BFA7A67.79E95609@yahoo.com>
+References: <a05101008b81db33a53db@[216.86.206.219]>
+	<3BF9667F.747AD52@yahoo.com> <3BF8314B.95111448@yahoo.com>
+	<3BFA1ADD.8B8E8F29@yahoo.com>  <3BFA7A67.79E95609@yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 19 Nov 2001 18:02:18 +0100
+Message-Id: <1006189338.32090.0.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Kostas,
-
-> > I am willing to dig deeper to track this one down if someone can point
-> > me to the code that parses the mode info from the XF86Config-4 file
-> and
-> > loads it into the mode structure.
+On Tue, 2001-11-20 at 16:44, Keith Whitwell wrote:
+> Keith Whitwell wrote:
+> >
 >
-> Hello Kevin,
+> > >
+> > > I'd consider adding NaN-checking code to the indirect rendering path,
+> > > since it's slow anyway but am hesitant to add it to client-side (and
+> > > hardware) code for performance reasons.
+> > >
+> >
+> > Well rather than doing this, can we isolate where the bug is and wrap that
+> > section in START_FAST_MATH/END_FAST_MATH.  I'm pretty sure this sort of
+> > explicit NaN checking isn't in the SI, and if you think about what code is in
+> > the indirect path but not the direct path, it doesn't add up to much -
+> > certainly not worth this heavyhanded approach.  Alternately there might be
+> > some code that could be slightly tweaked to avoid the crashes.
+> >
 >
-> Take a look at xf86parseModesSection(),xf86parseModeLine() etc
-> in xc/programs/Xserver/hw/xfree86/parser/Monitor.c
-> and also at configMonitor()
-> in xc/programs/Xserver/hw/xfree86/common/xf86Config.c
+> OK.  There is no implementation of START_FAST_MATH/END_FAST_MATH for PPC (this
+> is a macintosh-specific problem).
+
+No, it's not. :) But it's funny you mention this, the following code in
+mmath.h doesn't look right to me:
+
+/* The mac float really is a float, with the same precision as a
+ * single precision 387 float.
+ */
+#if defined(macintosh)
+#define HAVE_FAST_MATH
+#endif
+
+
+Shouldn't that rather be #if defined(__powerpc__) ?
+
+
+>  One is required for this and every
+> architecture which runs Mesa, otherwise there is a need for a check on every
+> single float that comes into the api, which is in the squillions.  Have a look
+> at mmath.h in xc/extras/Mesa/src, and try and do something similar.
 >
-> You might want to take a look at the  *Mode*.c files in ..../common
-> as well.
->
+> The big requirement is to turn off the ieee inf/nan exceptions (on the x86 we
+> also stop the fpu keeping excess precision).  Turn the exceptions off in
+> START_FAST_MATH (and back to their original state in END_FAST_MATH) and your
+> problem should go away.  The documentation of these macros only talks about
+> precision in 3.4.2, but is accurate in 4.0.
 
-Okay, I looked at that code and unless the xf86getSubToken is
-broken somehow, then the correct info is being placed in the
-linked list of modes.
 
-So something is either stepping on that memory after that point
-or  maybe the ValidateMode routine is messing it up somehow.
+Also, further down:
 
-By the way, this has nothing to do with fbdevHW since I can see the
-same missing mode information in RADEONModeInit when I do *NOT*
-use useFBDev.  It is just that RADEONModeInit is better at filling in the
-blanks properly given its access to the info structure timing info used
-for
-DFP.
+#if defined(__i386__) || defined(__sparc__) || defined(__s390x__) || \
+    ( defined(__alpha__) && ( defined( __IEEE_FLOAT ) || !defined( VMS )
+) )
+#define USE_IEEE
+#define IEEE_ONE 0x3f7f0000
+#endif
 
-Can anyone else confirm this?
 
-To check, simply turn on DEBUG in xfree86 in the fbdevhw.c file and
-include
-your own custom modeline or mode and set useFBDev in your XF86Config-4
-and
-compare what xfree86 hands to fbdevhw.c in the form of the mode to your
-original mode line.
+Shouldn't these be defined for __powerpc__ too, or isn't the PPC FPU
+IEEE conformant (or what do these defines mean anyway)?
 
-I just want to make sure others are seeing the problem too before I jump
-in
-farther and try to find out why or how the mode info is being stepped on.
 
-Thanks,
+Looking forward to any insights...
 
-Kevin
 
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
