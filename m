@@ -1,31 +1,43 @@
-Message-Id: <l03130306b3026e83e6a8@[35.9.15.82]>
-In-Reply-To: <9903021553.AA29088@mayan.watson.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 2 Mar 1999 23:45:36 -0500
-To: mayan <mayan@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
-From: mukesh agrawal <agrawal@ais.org>
-Subject: Re: Turning off paging to disk?
+Date: Wed, 3 Mar 1999 16:19:26 +1100
+Message-Id: <199903030519.QAA01628@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: Loic.Prylli@ens-lyon.fr
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <199901301505.QAA14745@porto.ens-lyon.fr> (message from Loic
+	Prylli on Sat, 30 Jan 1999 16:05:36 +0100 (MET))
+Subject: Re: bug in arch/ppc/mm/init.c
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <199901301505.QAA14745@porto.ens-lyon.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 10:53 AM -0500 3/2/99, mayan wrote:
->How does one turn off paging to disk?
->
->I am booting with root=/dev/ram, with no disk, and I was
->wondering how to disable swapping (or at least fool Linux
->into swapping from memory to memory :)
+Loic Prylli <Loic.Prylli@ens-lyon.fr> wrote:
 
-iirc, swapping is activated by the program swapon. look through your
-startup sequence to figure out when this is activated, and disable it. or,
-if you just need to disable swapping temporarily, i believe there's a
-swapoff program. finally, if you comment out the lines in /etc/fstab that
-indicate what your swap partition(s) are, then swapon probably won't do
-anything.
+> The init function of some drivers use ioremap, which may call
+> MMU_get_page (if the target zone cross a 4Mbyte/s bounday(. But
+> MMU_get_page is marked as an initfunc, so it is no longer
+> present->panic.
 
+You're right, MMU_get_page shouldn't be an initfunc.
 
+> Here one possible solution:
+> 
+> --- arch/ppc/mm/init.c~ Thu Jan  7 21:06:57 1999
+> +++ arch/ppc/mm/init.c  Sat Jan 30 16:01:17 1999
+> @@ -883,7 +883,7 @@
+>         }           
+>  }
+>  
+> -__initfunc(static void *MMU_get_page(void))
+> +static void *MMU_get_page(void)
+>  {
+>         void *p;
+>  
 
+Looks good to me.
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
