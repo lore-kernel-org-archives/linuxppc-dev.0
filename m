@@ -1,66 +1,47 @@
-Message-ID: <3727628A.80F872F4@fi.infn.it>
-Date: Wed, 28 Apr 1999 21:33:30 +0200
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Extremely near to a working syste
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14119.28843.240109.664411@onyx.nowhere.net>
+Date: Wed, 28 Apr 1999 22:33:47 +0200 (CEST)
+From: Ralf Weidemann <ralfw@gatekeeper.informatik.fh-dortmund.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: mesh problem ?
+Reply-To: Ralf Weidemann <ralfw@gatekeeper.informatik.fh-dortmund.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I have today installed a new drive, so I'm not sure if it is
+a problem with the drive itself or maybe a mesh problem. I
+got several system lockups until yet and the below I got while
+I tried to fsck the disk after an ealier crash. After rebooting
+I tried again fsck the drive and all went fine. 
 
-Thanks to the many helps that I get, I'm now extremely near to a working
-system on a MVME2301 board.
+Hmm, should I get a new drive or could it be a mesh problem ?
+This is a wide scsi drive with an adapter if it somehow matter.
 
-I successfully cross-compiled a PPC kernel using a RedHat 5.2 on a PC,
-and I could boot from this, I also setup the bootp and nfs server on my
-machine having the kernel finding the root directory on my PC. 
+Ralf
 
-The only thing I'm lacking is a ppc root tree. I tried to use a debian
-tree that I take from here: 
-ftp://ftp.debian/org/pub/debian/dists/potato/main/disks-powerpc/2.1.8-1999-02-24/base2_2.tgz
-but what I had (after booting) is:
 
-[snip]
-Sending BOOTP requests....eth0: media is TP.
-. OK
-IP-Config: Got BOOTP answer from 192.84.146.24, my address is
-192.84.146.131
-IP-Config: Gateway not on directly connected network.
-Looking up port of RPC 100003/2 on 192.84.146.24
-Looking up port of RPC 100005/1 on 192.84.146.24
-VFS: Mounted root (NFS filesystem) readonly.
-Freeing unused kernel memory: 60k init 4k pmac 8k open firmware
-INIT: version 2.76 booting
-INIT: No inittab file found
+Vendor: IBM      Model: DDRS-39130W      Rev: S97B
+Type:   Direct-Access                    ANSI SCSI revision: 02
 
-Enter runlevel: 1
-INIT: Entering runlevel: 1
-INIT: no more processes left in this runlevel
+Apr 28 21:03:32 onyx kernel: scsi : aborting command due to timeout : pid 83500, scsi0, channel 0, id 0, lun 0 Read (10) 00 00 7e 94 5b 00 00 10 00 
+Apr 28 21:03:32 onyx kernel: mesh_abort(c7fc2e00)
+Apr 28 21:03:32 onyx kernel: mesh: state at c7fd1878, regs at cd01d000, dma at cd01fa00
+Apr 28 21:03:32 onyx kernel:     ct=   0 seq= c bs=   0 fc= 0 exc= 0 err= 0 im= 7 int= 0 sp=f0
+Apr 28 21:03:32 onyx kernel:     dma stat=e0 cmdptr=7fbe010
+Apr 28 21:03:32 onyx kernel:     phase=0 msgphase=0 conn_tgt=1 data_ptr=1024
+Apr 28 21:03:32 onyx kernel:     dma_st=0 dma_ct=0 n_msgout=0
+Apr 28 21:03:32 onyx kernel:     target 0: req=c7fc2e00 goes_out=0 saved_ptr=0
+Apr 28 21:08:48 onyx syslogd 1.3-3: restart.
+Apr 28 21:08:49 onyx kernel: klogd 1.3-3, log source = /proc/kmsg started.
+Apr 28 21:08:50 onyx kernel: Loaded 13413 symbols from /boot/System.map.
+Apr 28 21:08:50 onyx kernel: Symbols match kernel version 2.2.6.
+Apr 28 21:08:50 onyx kernel: No module symbols loaded.
+Apr 28 21:08:50 onyx kernel: device tree used 16108 bytes
+Apr 28 21:08:50 onyx kernel: Total memory = 128MB; using 512kB for hash table (at c0200000)
+Apr 28 21:08:50 onyx kernel: Linux version 2.2.6 (root@onyx) (gcc version egcs-2.91.66 19990314 (egcs-1.1.2 release)) #7 Fri Apr 23 00:42:57 CEST 1999
 
-and here it hangs. I never used debian, but effectively there is no
-/etc/inittab in the tree, I have to get one of there something missing?
-(or it seems to me that the mount was fine, but I'm wrong ?
-
-I also try to make a RedHat tree, but the problem is that also by giving
-the --root=/... option (and the --ingnorearch also) I cannot execute the
-postinstallation scripts: while I was installing libraries this was not
-a problem, because they simply call ldconfig and I skipped they with
---noscripts, but when I try to install other packages (like bash for
-example) they execute  more complex scripts, that I have to do by hand,
-and before to do this for all the packages, I would like to know if
-there a cleaner (and faster) way to do this work.
-
-Thanks you againg for all the help, I could'nt even believe to be
-capable to get a so near working system in so few time!
-
-Bye
--- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
