@@ -1,35 +1,34 @@
-Message-ID: <3C94E3A8.9080301@embeddededge.com>
-Date: Sun, 17 Mar 2002 13:42:48 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Date: Sun, 17 Mar 02 12:10:43 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0203172010.AA01807@ivan.Harhan.ORG>
+To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [PATCH] My GT-64260 enhancements
-References: <0203171816.AA01595@ivan.Harhan.ORG>
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov wrote:
+Dan Malek <dan@embeddededge.com> wrote:
 
-> But if you don't specify the baud rate in any way, it'll default to 9600 except
-> on the EV-64260-BP.
+> So, I don't see the problem.  A default is specified and you can change it,
+> just like lots of other configurations.
 
-You haven't experienced enough of the universe :-).  Most boards default
-to the setting provided by a boot rom.  Many of the boards I have use
-115200 to speed up the embedded boot process but still allow debug output.
+The problem is that there is a
 
-Maybe you guys working on these boards ought to discuss some common
-solution instead of trying to use the "last patch changes the default
-behavior" technique :-).
+define_int CONFIG_SERIAL_CONSOLE_BAUD 115200
 
-> That option works of course.
+line in arch/ppc/config.in for "$CONFIG_EV64260" = "y" but not for any other
+almost-non-embedded-standard-computer 6xx/7xx/74xx board, which is
+discriminatory and undemocratic.
 
-So, I don't see the problem.  A default is specified and you can change it,
-just like lots of other configurations.
+Having "$CONFIG_GT64260" = "y" imply support for CONFIG_SERIAL_TEXT_DEBUG is
+also discriminatory and undemocratic. Should we also imply the same then for
+"$CONFIG_CPC700" = "y" -o "$CONFIG_CPC710" = "y" -o "$CONFIG_UNINORTH" = "y",
+etc?
 
-	-- Dan
+I mean I don't mind if defaults are changed globally, it's just the
+discriminatory treatment of GT-64260 that I violently object to. Oh, and having
+a separate BK tree and mailing list for it too isn't something I'm fond of.
 
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
