@@ -3,34 +3,33 @@ From: Toni Van Remortel <t.vanremortel@ha.be>
 Reply-To: t.vanremortel@ha.be
 To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <3F710B1D00088333@mssbzhh-int.msg.bluewin.ch>
+In-Reply-To: <1066377138.735.48.camel@toni>
 References: <3F710B1D00088333@mssbzhh-int.msg.bluewin.ch>
+	 <1066377138.735.48.camel@toni>
 Content-Type: text/plain
-Message-Id: <1066377138.735.48.camel@toni>
+Message-Id: <1066381142.735.75.camel@toni>
 Mime-Version: 1.0
-Date: Fri, 17 Oct 2003 09:52:19 +0200
+Date: Fri, 17 Oct 2003 10:59:29 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Op vr 17-10-2003, om 09:33 schreef Wolfgang Grandegger:
-> Hi,
+Op vr 17-10-2003, om 09:52 schreef Toni Van Remortel:
+> Op vr 17-10-2003, om 09:33 schreef Wolfgang Grandegger:
+> >  ftp://ftp.denx.de/pub/RTAI/contrib/fp_ppc_8xx.tar.bz2
+> > It links statically with the libm and the soft-float
+> > library derived from libgcc.
+> >
+> > Hope it's useful.
 >
-> this has been discussed recently. For RTAI on MPC 8xx we
-> provide the following example:
->
->  ftp://ftp.denx.de/pub/RTAI/contrib/fp_ppc_8xx.tar.bz2
->
-> It links statically with the libm and the soft-float
-> library derived from libgcc.
->
-> Hope it's useful.
+> Seems useful. Let's check it out deeper and implement it into my module.
+> I'll keep you informed.
 
-Seems useful. Let's check it out deeper and implement it into my module.
+It compiles, it runs. Very nice. Thank you a lot for the example. I had
+only to add the extra linking to my compile command.
 
-I'll keep you informed.
+Regards,
 
-Tnx!
 --
                            Toni Van Remortel
               Wetenschappelijk Medewerker - D-science lab
