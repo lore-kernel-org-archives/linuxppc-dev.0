@@ -1,89 +1,119 @@
-Message-ID: <39A8379C.E4EBB33A@wanadoo.fr>
-Date: Sat, 26 Aug 2000 23:33:16 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Date: Sat, 26 Aug 2000 23:44:21 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: David Monro <davidm@amberdata.demon.co.uk>
+cc: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PCI resource initialisation
+In-Reply-To: <39A826A6.D551486F@amberdata.demon.co.uk>
+Message-ID: <Pine.HPX.4.10.10008262304590.29062-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org, paulus@linuxcare.com.au
-Subject: Re: Patches for 2.4.0-test7
-References: <39A7C246.7BB137EB@wanadoo.fr> <20000826164101.5951@192.168.1.10>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Sat, 26 Aug 2000, David Monro wrote:
 
-> >- The patch for drivers/macintosh/Makefile is necessary for successful
-> >compilation if you have CONFIG_ADBMOUSE, but not CONFIG_ADB_KEYBOARD,
-> >which is possible with the latest version of the new input layer. (Not
-> >that the adbmouse works for me if I choose CONFIG_INPUT_ADBHID=y, but
-> >that's another story).
 >
-> AFAIK, CONFIG_ADBMOUSE cannot be selected without CONFIG_ADB_KEYBOARD in
-> the current bk tree. I'm also doing additional config fixes, so that ADB-
-> less pmacs can remove all the ADB stuffs and keep the PMU for example.
-> CONFIG_ADB_KEYBOARD is not displayed when CONFIG_INPUT_ADBHID is, etc...
-
-Someone recently wrote that one could have both /dev/adbmouse and
-/dev/input/mice working at the same time, so I tried this, too. And I
-*could* select CONFIG_ADBMOUSE without CONFIG_ADB_KEYBOARD, only it
-didn't compile due to undefined variables. My patch fixes these, but
-indeed it is probably better to change the config.in files to forbid
-this choice.
-
-> >I have 3 other pet peeves that I would like to recall:
-> >
-> >- I think the new input layer with CONFIG_INPUT_ADBHID=y and
-> >CONFIG_MAC_ADBKEYCODES=y on an ISO (=European) ADB keyboard gives the
-> >wrong keycodes for the 2 keys with codes 10 and 50. Wrong in the sense
-> >that they differ from what all other kernels from the oldest times up to
-> >linux-pmac-devel before yesterday were giving. The tables,
-> >mac_keycodes[]
-> >in drivers/input/keybdev.c and adb_to_linux_keycodes[] in
-> >drivers/macintosh/adbhid.c, are probably correct. But then
-> >adbhid_input_register() in drivers/macintosh/adbhid.c swaps the 2 keys
-> >if it detects an ISO ADB keyboard. IMHO the swapping should occur for
-> >USB
-> >keyboards and not for ADB keyboards. I had some discussion with Franz
-> >which was not conclusive.
+> Hi,
 >
-> They need to be fixed in the userland keymaps. We had it wrong at first.
-> Some keyboards have those actually swapped, and Franz cold should be ok
-> (it was tested with all sorts of keyboards, AFAIK, and now, a fixed
-> keymap should give good results everywhere).
-
-I wouldn't mind changing the keymaps, but I really would like to use the
-same keymaps for 2.2.x kernels, for 2.4.0-test kernels with
-CONFIG_ADB_KEYBOARD and with CONFIG_INPUT_ADBHID.
-
-> >- Paul's pmac-devel kernel still eats the LD_LIBRARY_PATH environment
-> >variable, therefore stopping Mozilla from running. This is so weird (but
-> >consistent since several months) that I have not the faintest idea where
-> >it could come from. It is a feature of linux-pmac-devel, not present in
-> >linux-bk-devel.
+> I need to make some changes to the way we do our PCI resource allocation
+> :-)
 >
-> The two kernels are now in sync. Do you still have the problem ?
-
-Yes, it is still there, I just verified. There must be some difference
-between Paul's kernel and the bitkeeper tree that causes this. Here is
-another strange observation:
-
-I type "printenv", and LD_LIBARY_PATH is listed with the other env
-variables (with "env", it does not get listed). Now I use the newly
-recovered strace (see below) to try to understand what printenv does
-differently from env. Well, "strace printenv" does not show
-LD_LIBARY_PATH any more!
-
-> >- Finally: The ptrace code in 2.4.0-testX has a bug that prevents strace
-> >from working. I have no idea what's wrong, but it would be nice to have
-> >a working strace again.
+> Currently the code goes like this (in pci.c:pcibios_init()):
 >
-> AFAIK, Paul pushed a fix for that in bk a couple of days ago.
-
-Yes, sorry, you are right. strace works again. I had tried it with a
-kernel from 2 days ago. I see now Paul's yesterday's 1-line fix in
-arch/ppc/kernel/entry.S. Very good!
+>         pci_scan_bus(0, &generic_pci_ops, NULL);
+>         if (ppc_md.pcibios_fixup)
+>                 ppc_md.pcibios_fixup();
+>         pcibios_claim_resources(&pci_root_buses);
 >
-> Ben.
+> So we find all the devices, hack any we don't like, and then grab all
+> the resources. This means that we pretty much accept whatever the
+> firmware provides, which includes leaving any uninitialised resources
+> alone. This doesn't work properly on IBM 850 machines because the
+> firmware doesn't initialise any devices it doesn't recognise, and also
+> (for example) doesn't bother initialising the memory mapped resource of
+> the built-in ethernet (presumably because they expected people to use
+> the IO resource instead, which in fact we do).
+
+For PrePboot I took the decision to reassign all PCI resources before te
+kernel even ahd a chance to run. It works quite well for me, but I had no
+choice since I basically switch from a PreP to a CHRP mapping. Actually
+given the variety of hardware we are trying to supprt, I suspect that
+pushing a few things into the bootloaders (like reading the OF tree if
+available) can only be better.
+
+>
+> The 2.4 kernel does provide a function,
+> pci_assign_unassigned_resources(), which will find pci resources which
+> haven't been claimed yet and do the appropriate thing with them.
+
+Not always, unfortunately.
+
+> As I see it we have a few choices:
+>
+> do:
+> 	pci_scan_bus(0, &generic_pci_ops, NULL);
+>         if (ppc_md.pcibios_fixup)
+>                 ppc_md.pcibios_fixup();
+>         pcibios_claim_resources(&pci_root_buses);
+> 	pci_assign_unassigned_resources();
+>
+> which should allocate any left alone by the original code, and does
+> work, but still means we have to hack the original resources (eg on IBM
+> 850s the SCSI hos adapters seem to always get allocated IO port
+> resources above 0x20000000, which we relocate in a not very safe manner
+
+You mean completely unsafe, it has caused hangs in some cases.
+
+> down to 0x01000000). It also assumes we don't need to do any more fixups
+> for the newly discovered resources.
+
+>
+> or we could do:
+> 	pci_scan_bus(0, &generic_pci_ops, NULL);
+> 	pci_assign_unassigned_resources();
+>         if (ppc_md.pcibios_fixup)
+>                 ppc_md.pcibios_fixup();
+>
+> which results in the kernel completely reassigning all the PCI
+> resources. This should mean that the resources all get allocated in
+> areas that we would like to find them in, and means that the
+> pcibios_fixup code should be a little simpler. This is my preferred
+> solution, but I guess might break something.
+>
+> Note that I can't really do this just for the PReP code; if I put the
+> pci_assign_unassigned_resources() call in the prep_pcibios_fixup()
+> function it will completely remap the bus and claim all the resources,
+> and then pcibios_claim_resources() will walk the tree trying to claim
+> each resource again and get a conflict on every resource!
+>
+> Of course we could simply make pcibios_init() another arch-dependant
+> function - what do people think?
+
+I am fed up with all these arch dependant functions, to the point that
+I am convinced that ppc_md should disappear.
+
+> On a related, is it true to say that every driver which uses ioremap()
+> to map memory on cards into virtual space needs to have isa_mem_base
+> added to the base address before it will work? As far as I can tell
+> virtually no drivers do this at the moment; I note a rather
+> dirty-looking hack in chrp_pci.c where we hack the resource entries for
+> the matrox card so that the driver doesn't need rewriting. Or should we
+> simply do this for all memory resources on all cards?
+
+Yes, you should do it. Actually I had something like this in my tree, but
+it's now disabled since I switch the hardware to a CHRP map.
+
+The resource code is still insufficient, there should be a way to have the
+physical address, the bus address and in some cases the kernel virtual
+address of a given resource. For I/O space, which is permanently mapped,
+the resource should contain a kernel virtual address (the existence of
+isa_io_base in itself is an aberration, have you counted how many lwz
+instructions in the kernel access it ?). For memory resources, it should
+contain a processor physical address which is the input to ioremap.
+
+	Regards,
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
