@@ -1,39 +1,37 @@
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DADE@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B06DADE@ismail.innsys.innovsys.com>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0B459F74-AB70-11D8-A4CD-003065F9B7DC@embeddededge.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: 8260 CPM DP ram free function
+Date: Fri, 21 May 2004 16:52:06 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAE2@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Dan Malek" <dan@embeddededge.com>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: 8260 CPM DP ram free function
-Date: Fri, 21 May 2004 17:44:32 -0400
-To: "Rune Torgersen" <runet@innovsys.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On May 21, 2004, at 1:35 PM, Rune Torgersen wrote:
+> Will you please get rid of those #ifdefs?  If the code works,
+> just use it, if not, don't ask for a patch to be applied.
+> There is no reason for this.
 
+Ok
 
-> I hope someone on this list can push the following patch to one of the
-> ppc trees.
+> The "host" functions should simply be removed and drivers
+> should use kmalloc()/kfree(), manage their own alignment
+> restrictions, since the 82xx is cache coherent.
 
-Will you please get rid of those #ifdefs?  If the code works, just
-use it, if not, don't ask for a patch to be applied.  There is no
-reason for this.
+Not sure how easy that would be. The host_alloc and dp_alloc gets called
+at few times _before_ kmem_cache_init() is called, so a kmalloc call
+panic()s the kernel.
+I know, because I tried to use kmalloc for handling the linked lists for
+the dp_alloc/free functions.
 
-> The functions that are added are m8260_cpm_dpfree() and
-> m8260_cpm_hostfree()
+It would make allocating buffers in drivers easier.
 
-The "host" functions should simply be removed and drivers should
-use kmalloc()/kfree(), manage their own alignment restrictions, since
-the 82xx is cache coherent.
+> Let's clean this up and do it right if we are going to do it at all.
+Cleaning up is always good.
 
-Let's clean this up and do it right if we are going to do it at all.
-
-Thanks.
-
-	-- Dan
-
+Any more suggestions before I remove the #ifdefs and resubmit?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
