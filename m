@@ -1,38 +1,39 @@
-Message-ID: <39648F99.A06629CF@amulet.co.jp>
-Date: Thu, 06 Jul 2000 22:54:33 +0900
-From: Hollis Blanchard <hollis@amulet.co.jp>
+Date: Thu, 6 Jul 2000 07:38:01 -0700 (PDT)
+From: Matt Brubeck <mbrubeck@hmc.edu>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Multi-boot advice.
+In-Reply-To: <200007052323.AAA07099@hyperion.valhalla.net>
+Message-ID: <Pine.GSO.4.21.0007060724510.17224-100000@turing.cs.hmc.edu>
 MIME-Version: 1.0
-To: Michael Lundkvist <ml@epact.se>
-CC: linuxppc-dev@lists.linuxppc.org, aeb@veritas.com
-Subject: Re: Going from 2.2.12 to 2.2.17pre10
-References: <qphfa3ie20.fsf@erbium.epact.se>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Lundkvist wrote:
+On Thu, 6 Jul 2000, Iain Sandoe wrote:
 
-[snip]
-
-> So it seems like the byte order is wrong. Does anyone know why this
-> happens?
+> I've just got a G4/500 - and I want to configure it to boot:
 >
-> Please don't tell me my 2.2.12 partitioned disk is wrong. :)
+> LinuxPPC.
+> MacOS (9)
+> MacOS (X) / Darwin
+>
+> Does anyone know if there is one boot method that will do all three?
 
-Something like that. This came up a while back (around 2.2.13 I think)
-on the -workstation list. I didn't pay enough attention at the time, but
-I think it switched from being always little-endian to being
-native-endian. At least, I don't recall any x86 folks screaming about
-it... ;)
+Yes. New-world machines like yours have a built-in graphical multibooter.
+Hold down option during boot, and you get a button for each bootable
+volume found by open firmware. For this to work with Linux, you must be
+using an OF-bootable partition with yaboot, such as the one set up by ybin
+<http://www.alaska.net/~erbenson/ybin/>. In the latest version, there's
+even a cute penguin icon for the yaboot button.
 
-I think without reformatting your only option is to use 'hda=swapdata'.
+This method is somewhat slow, and you *must* hold down option to boot into
+any OS other than your default. Because I rarely boot out of Linux,
+however, I use it on my iMac 350 to tri-boot with MacOS 9 and Darwin.
 
-> Where do I go for the best LinuxPPC 2.4 kernel for MVME-boards? Is it
-> fsmlabs Bitkeeper repository?
+I believe this should work on the iBook, AGP G4, slot-loading iMacs, and
+Firewire PowerBooks. Can anyone verify or correct this?
 
-Probably. If that doesn't work shop around. ;)
-
--Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
