@@ -1,34 +1,33 @@
-Date: Thu, 19 Apr 2001 15:40:55 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Hein <ssh@sgi.com>
-Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 860 RTC support
-Message-ID: <20010419154055.R13403@opus.bloom.county>
-References: <3ADE0222.BF7F539C@sgi.com> <3ADE0501.321052F9@mvista.com> <3ADF1377.72242D3B@sgi.com> <3ADF3970.C015DB5D@mvista.com> <20010419124455.O13403@opus.bloom.county> <3ADF426A.5E9C0EBD@sgi.com> <20010419130646.P13403@opus.bloom.county> <3ADF490B.54CE4AFF@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ADF490B.54CE4AFF@sgi.com>; from ssh@sgi.com on Thu, Apr 19, 2001 at 03:22:35PM -0500
+Message-ID: <01C0C905.51FB0A40@DESKTOP>
+From: Paul W <paul_w@telocity.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: do_page_fault question
+Date: Thu, 19 Apr 2001 19:16:38 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Apr 19, 2001 at 03:22:35PM -0500, Steven Hein wrote:
+I brought up the 2.2.14 kernel (from Monta Vista) on an 860.
+The only changes I made had to do with my board's uniqueness
+in the serial and ethernet I/O. The kernel boots fine wit
+an nfs root file system (one from Monta Vista) or an initrd
+disk image. But once I get to init() I get swamped by messages
+from do_page_fault() (here are the first 5):
 
-> I'd love to help here, but I can't find the source
-> you're talking about!!
->
-> I've looked in the mvista's 2.2.14 kernel, and in the LSP's
-> for rpxlite and mbx860, plus the real 2.4.3 kernel, and I
-> see no reference to PPC_RTC in drivers/macintosh or
-> arch/ppc/config.in!
->
-> Where should I be looking........?
+address: 30025e30 nip:c000a7c8 code: 000048a6 data
+address: 30025e30 nip:c000a7c8 code: 82000000 write I/O data
+address: 10016fe8 nip:c000a7c8 code: 000048a6 data
+address: 10016fe8 nip:c000a7c8 code: 82000000 write I/O data
+address: 30010200 nip:30010200 code: 4000d032 604 tlb&htab miss instr
 
-Er, one of the BK trees, or anything 2.4.x'ish that works normally
-on your board.
+I took out the printk that's doing this and found that things
+are working (shell comes up, I can enter commands and do things).
+Any suggestions on how to fix this correctly would be appreciated.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Thanks,
+Paul Westenkirchner
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
