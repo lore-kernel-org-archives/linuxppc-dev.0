@@ -1,121 +1,59 @@
-From: Cort Dougan <cort@fsmlabs.com>
-Date: Tue, 2 Dec 2003 14:57:01 -0700
-To: Brian Kuschak <bkuschak@yahoo.com>
-Cc: Eugene Surovegin <ebs@ebshome.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 440gx ethernet lockup
-Message-ID: <20031202215701.GP23095@host115.fsmlabs.com>
-References: <20031121071157.GA7078@gate.ebshome.net> <20031202210118.39431.qmail@web40901.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031202210118.39431.qmail@web40901.mail.yahoo.com>
+Message-ID: <3FCD52F4.8040009@jonmasters.org>
+Date: Wed, 03 Dec 2003 03:05:24 +0000
+From: Jon Masters <jonathan@jonmasters.org>
+MIME-Version: 1.0
+To: Peter Vandenabeele <peter.vandenabeele@mind.be>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: The wonders of 2.4.23 [WAS: Re: [Fwd: ppc4xx Ports]]
+References: <3FB416F9.7080303@jonmasters.org> <20031114002023.GA9509@gate.ebshome.net> <3FB423AB.80805@jonmasters.org> <20031114004805.GA9585@gate.ebshome.net> <20031126165238.O7373@mind.be>
+In-Reply-To: <20031126165238.O7373@mind.be>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-ppcsup seems to be pretty busy lately.  I've pushed them on some important
-issues and they take action but it seems that there are a lot of very
-important issues right now.
 
-} I found the problem.  Our SEEPROM was misconfigured to
-} set the MAL clock to PLB/4.  This resulted in a MAL
-} clock of 41MHz, apparently too slow...  After changing
-} the MAL clock to PLB/1, the system ran for days
-} without any problems.  Unfortunately I couldn't find
-} any IBM docs which specify requirements for the MAL
-} clock, and IBM still hasn't responded.
-}
-} BTW, is anyone else having trouble with ppcsupp
-} lately?
-}
-} Brian
-}
-}
-} > > > What kernel version? What board? Eval or your
-} > custom
-} > > > one?
-} > > > If the custom one, did you try your test on
-} > eval?
-} > > >
-} > >
-} > > It's based on 2.4.19 linuxppc_2_4 plus IBM's
-} > > 440gx_nova_fp patch.
-} >
-} > I got impression that IBM patch wasn't of a good
-} > quality (the one
-} > against mvl 2.4.17).
-} > linuxppc-2.4 tree has some changes for EMAC4, not
-} > sure they
-} > were in IBM's patch.
-} >
-} > > Custom hardware.  During
-} > > previous testing on eval board there was a loss of
-} > > connectivity, which in hindsight could have been
-} > this
-} > > problem.  I'm working on reproducing it on the
-} > eval
-} > > board.
-} > >
-} > > > How long does it usually take to get into lock
-} > up
-} > > > state?
-} > > >
-} > > > I've just ran your "find" cmd for 10 minutes on
-} > our
-} > > > 440GX board
-} > > > without any problems.
-} > > >
-} > >
-} > > With aforementioned command, <5000 to 300,000
-} > packets,
-} > > if MSWM bit is disabled or enabled, respectively.
-} > > Only happens if nfs is mounted tcp, udp mode
-} > doesn't
-} > > seem to trigger it, or at least not as quickly.
-} >
-} > Hmm, I was testing NFS over UDP for 40 min. Not sure
-} > I can easily test
-} > NFS over TCP. What about netperf?
-} >
-} > > > What clock mode are you using (533/152, 500/166
-} > or
-} > > > smth else)?
-} > > > Do you have L2C enabled? If yes, please check
-} > > > L2C0_SR for parity
-} > > > errors (we have some problems with several our
-} > 440GX
-} > > > boards).
-} > > >
-} > >
-} > > 666/166.
-} >
-} > You may want to try lower speeds. May help to
-} > isolate problem :)
-} >
-} > > CONFIG_440GX_L2_INSTRUCTION=y
-} > > CONFIG_440GXL2_CACHE=y
-} > >
-} > > I'll check on the parity errors, although I'm not
-} > sure
-} > > how that could lockup the EMAC.
-} >
-} > Well, you can get corrupted code with impredictable
-} > results. We are
-} > still investigating these L2C parity errors. I saw
-} > several times
-} > something similar to your situation when EMAC was
-} > stuck on faulty
-} > board, although I didn't look at it hard.
-} >
-} > Eugene.
-} >
-} >
-}
-}
+Hi Peter,
 
---
-Cort Dougan
-Director of Engineering, FSMLabs
-Office: (505) 838-9109
+I changed kernel versions on my in house working port to 2.4.23 having
+spent too long doing:
+
+	* Getting my head around the 405 TLB code in Linux[0].
+	* Fixing lots of pointless bits in 2.4.21.
+
+[ The kernel was upgraded to 2.4.21 at some point. ]
+
+So having realised the pointlessness of fixing stuff which is now in
+2.4.23 I switched over and magically things are improved[1]. This is
+fantastic because I no longer need to fix up the system call handler to
+save register number 7 or add in tlbia stuff or many other things.
+
+This kernel also adds fixed TLB entries for serial uart and I finally
+decided that a lot of old changes to head_4xx.S were now in the true
+stock kernel so I could switch to those instead. I still need to do
+kludging for the MSR (!ME here) and cacheing weirdness but hey.
+
+I think we can soon start talking about the stuff we are doing and get
+some basic support for 405D PVR, xintc and random other bits in the
+stock kernel even if there is not full support for Virtex II Pro.
+Finally we can probably do with adding the UTLB errata fixes.
+
+Hopefully it will not be long before I am able to do a lot of this stuff
+now that the system I am working on is approaching stability with only
+busybox init troubles and a custom distribution I am working on left
+prior to the holidays. Hmmm... it is 03:00 now so back to bed.
+
+Anyway here is another happy 2.4.23 user.
+
+Jon.
+
+[0] My copy of UTLK and various other documentation is now completely
+covered in pen marks, probably coffee stains etc.
+
+[1] I did track down the problem I was having with floating point which
+cunningly turned out not to be a problem with that but with the UTLB
+faults following a SHARED page not actually being shared correctly,
+generating a later instruction fault on the second access.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
