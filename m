@@ -1,38 +1,45 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04020a03b34a30bcec3e@[18.248.0.159]>
-Date: Mon, 26 Apr 1999 11:08:27 -0400
+Date: Mon, 26 Apr 1999 17:28:24 +0200 (CEST)
+From: Alexander Larsson <alex@signum.se>
 To: linuxppc-dev@lists.linuxppc.org
-From: Dana Spiegel <danas@mit.edu>
-Subject: B&W G3 booting, but no X
+Subject: Flash drivers and filesystem
+Message-ID: <Pine.LNX.4.04.9904261714550.31075-100000@tammy.signum.se>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-So I have my new B&W G3 400 booting with linuxppc using the yellowdog
-kernel. The install went flawlessly, and I can boot into linux using bootX
-1.0.1.
+I've noticed a lot of people on this list seem to use the ppc 8xx port in
+embedded systems, running from flash memory. There have been some
+questions about it.
 
-here's the problem: I got the iMac XF68 framebuffer X server, but I can't
-get it to work properly. I tried the default XF86Config, but it complains
-there are no usable X modes. I also tried the imac XF86Config, which of
-course only has resolutions up to 1024x768. It said it couldn't find any
-usable resolutions either.
+Therefore i give you:
+ftp://ftp.signum.se/pub/alex/flash.diff
 
-I run my monitor at 1600x1200@75Hz in 24bit color (nice video card). Can I
-get X to work properly? I'd like to keep this resolution (but would be
-willing to run in 16bit color if necessary).
+The Flash drivers include:
+ General detection of CFI compliant flash memories. 
+ A general interface for flash-drivers
+ Specific support for AMD Flash-chips (only tested on Am29LV017B 4x8bib
+  configuration) 
+ Implemented char device over the flash interface which can read & write
+  to flash, writing on erase-sector boundaries implies automatic erase,
+  ioctls exists to force sector erase and to get information about the
+  chips.
 
-Also, what about compiling XFree86 SVGA server to support the ATI chipset
-natively? Can this be done?
+FTL, for flash filesystems:
+ FTL layer which implements a 512 byte blockdevice with wear-leveling from
+ the flash-device (or parts of it). This is a modified version of the ftl
+ code from the pcmcia code (taken with permission). 
+ This can be used to place a normal ext2fs fs in flash. For optimum
+ performance some modifications to ext2fs whould be done so that it
+ frees blocks in the ftl layer that are not used by the fs. 
+ Note that there *might* be patent problems using this code in the US.
 
-thanks,
+/ Alex (alex@signum.se)
 
-                                 Dana Spiegel
+ 
+ 
 
-                                 Massachusetts Institute of Technology
-                                 danas@mit.edu
-                                 617/225-6404
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
