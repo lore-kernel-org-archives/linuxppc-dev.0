@@ -1,38 +1,43 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: 12 Jun 2002 10:00:16 -0000
-Message-ID: <20020612100016.15037.qmail@webmail25.rediffmail.com>
-MIME-Version: 1.0
-From: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-Reply-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ramdisk image start not initialisied
-Content-type: text/plain;
-	format=flowed
+To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ramdisk image start not initialisied 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "12 Jun 2002 10:00:16 -0000."
+             <20020612100016.15037.qmail@webmail25.rediffmail.com>
+Date: Wed, 12 Jun 2002 12:29:14 +0200
+Message-Id: <20020612102919.DE382102F8@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
-    i am using monta vista cdk 2.0 code porting it to my board
-   I am compiling zImage.initrd for my mpc8260,
-  its saying "Couldnt't find valid ramdisk image  "
+Hi Somshekar,
 
-  i am trying to trace where rd_ramdisk_start is initialised i am
-not getting it,
+in message <20020612100016.15037.qmail@webmail25.rediffmail.com> you wrote:
+>
+> i think i am not attaching proper ramdisk image
+> any idea where can i get ramdisk image for 8260 or
+> what should i do
 
-  actually in ramdisk_startup routine rd_ramdisk_start is set but
-this routine is not called
+I've put a PPCBoot ramdisk image for MPC8260  systems  for  our  SELF
+configuration  (see  ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/) on
+our FTP server, see
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/pRamdisk.8260
 
-i think i am not attaching proper ramdisk image
-any idea where can i get ramdisk image for 8260 or
-what should i do
+To strip the PPCBoot header for a raw compressed  ramdisk  image  use
+something like this:
 
+	dd if=pRamdisk.8260 of=initrd.gz bs=64 skip=1
 
-  please help me ,any idea where i am going worng ,or i need to
-set
-  thanks for advice in advance
-regards
-somshekar
+Hope this helps,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The IQ of the group is the lowest IQ of a member of the group divided
+by the number of people in the group.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
