@@ -1,48 +1,30 @@
-Message-ID: <38D9E551.DC17CDA2@da-san.com>
-Date: Thu, 23 Mar 2000 18:35:13 +0900
-From: Young-Han Kim <yhkim@da-san.com>
+Date: Thu, 23 Mar 2000 11:36:31 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Claude Robitaille <crobitaille@videotron.ca>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Residual data
+In-Reply-To: <Pine.LNX.4.10.10003221041370.525-100000@localhost.localdomain>
+Message-ID: <Pine.HPX.4.10.10003231135030.14656-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: www.ppc.kernel.org and gcc for PPC(Cross Compiler) ...
-Content-Type: text/plain; charset=EUC-KR
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Reader,
+On Wed, 22 Mar 2000, Claude Robitaille wrote:
 
-  Hi!
+>
+> hi,
+>
+>
+> anyone knows where to find a complete reference for the "residual data
+> standard"?
 
-  Nowadays, have you been visit the http://www.ppc.kernel.org ?
-  Currently, I can't access the www.ppc.kernel.org...
-  If someone know the reason, please answer to me...
+Yes, they are somewhere on an IBM site (ftp.austin.ibm.com ?). But dno't
+believe what you find in the residual data,  it's often wrong and needs
+to be "interpreted".
 
-  I want to find the gcc compiler(base on i386) for PPC(Cross Compiler).
-  If someone know the site, please answer to me...
+	Gabriel.
 
-  Thanks for in advance !
-
-
-Best Regards
-Young-Han, Kim
-
---
--
--                              ?
--                             '''
--                            (o o)
-- -----------------------oOO--(_)--OOo-----------------------
-- Young-Han, Kim
-- Research Engineer
--
-- E-Mail : yhkim@da-san.com
-- Direct : ++ 82 2 3484 6579
-- H.P    : ++ 82 19 254 7566
--
--                        DASAN Co., Ltd.
--                        Research Center
-- 6F KOSMO Tower 1002, Daechi-dong, Kangnam-ku, Seoul, Korea
--                         Zip : 135-280
-- ===========================================================
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
