@@ -1,38 +1,51 @@
-Message-ID: <3C9A1D3B.1587502F@lvl7.com>
-Date: Thu, 21 Mar 2002 12:49:47 -0500
-From: Neil Horman <nhorman@lvl7.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Question regarding the clear_page function
-References: <3C99D513.5740FDAF@lvl7.com> <3C9A13B9.1060008@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: "Kerl, John" <John.Kerl@Avnet.com>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC8xx, FEC and DP83847 !? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 21 Mar 2002 18:58:52 +0100."
+             <3C9A1F5C.61673202@imc-berlin.de>
+Date: Thu, 21 Mar 2002 19:25:38 +0100
+Message-Id: <20020321182543.80EB9109F3@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-got it.  Thanks Dan!
-Neil
+In message <3C9A1F5C.61673202@imc-berlin.de> you wrote:
+>
+> Ok. Since there are special options in DENX kernel for LXT, AMD and QS I
+> thought special support for these PHYs is neccessary. Maybe only if you
+> want to use the vendor specific special registers of the PHYs in
+> addition to the standart MII register!?
 
-Dan Malek wrote:
+It depends on hwat you have to do, and an the PHY.
+
+In most cases ypu can just switch off the whole MDIO stuff  and  rely
+on  autonegotiation; the only thing you lose is a kernel message when
+the link status changes. Of course this requires sane hardware, which
+is not always the case :-(
+
+> > The Motorola reference boards use port D for MII, but we
+> > used PCMCIA/port A pins instead.
 >
-> Neil Horman wrote:
->
-> > .....  My question is, why is this not the case for the
-> > 8XX series as well?
->
-> The behavior of this instruction during faults and exceptions has often
-> been incorrect and the different silicon revisions behave differently.
-> Rather than track all of the different silicon variants, install and
-> test all of the patches, it is easier to just not use it.
->
-> > ....  I'm asking because I'm testing a modifed kernel in which
-> > we use the dcbz instruction rather than 4 stores, and we curious as to what
-> > consequences I might expect.
->
-> You are probably experiencing them :-).
->
->         -- Dan
->
+> Why would you probably do this?
+> I supposed you're using PORT D for something else!?
+
+Probably.
+
+> It would be really interessting to know...
+
+See the ICU862 configuration in our sources. They do the same  thing,
+and had similar problems...
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+       There is enough for the need of everyone in this world,
+       but not for the greed of everyone.     - Mahatma Gandhi
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
