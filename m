@@ -1,42 +1,51 @@
-Date: Mon, 10 Feb 2003 10:06:02 -0500
-From: Manuj Dhingra <manuj_dhingra@ae.gatech.edu>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Mon, 10 Feb 2003 17:24:21 +0100 (CET)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Manuj Dhingra <manuj_dhingra@ae.gatech.edu>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: VGA out/External Monitor on ibook 2
-Message-ID: <20030210150602.GA9933@haar.ae.gatech.edu>
-References: <Pine.LNX.4.33.0302101055260.10914-100000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset=ISO-8859-1
-In-Reply-To: <Pine.LNX.4.33.0302101055260.10914-100000@opal.biophys.uni-duesseldorf.de>
+In-Reply-To: <20030210150602.GA9933@haar.ae.gatech.edu>
+Message-ID: <Pine.LNX.4.44.0302101721560.23854-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Feb 10, 2003  05:06 Monday Michael Schmitz wrote:
-> > > case 2: Monitor not connected at boot up
+> > Someone lately posted a message detailing the problem (either here or on
+> > debian-powerpc): the hsync and vsync pulses appear to be OK (correct
+> > frequency) but have a phase jitter.
 >
-> Someone lately posted a message detailing the problem (either here or on
-> debian-powerpc): the hsync and vsync pulses appear to be OK (correct
-> frequency) but have a phase jitter.
+> Unless somebody else posted it too, that would be me. And I now realise
+> that it was based on your suggestion (on debian-powerpc) a year back!
 
-Unless somebody else posted it too, that would be me. And I now realise
-that it was based on your suggestion (on debian-powerpc) a year back!
-Owen asked: How was it using OFFB? The phase is steady with the OFFB.
+Possible - I've suggested someone take a scope and debug this more than
+once :-)
 
-> Does that ring a bell with anyone
-> here? Does anyone know which PLL setting the hsync position is derived
-> from?
+> Owen asked: How was it using OFFB? The phase is steady with the OFFB.
 >
-> 	Michael
+> > Does that ring a bell with anyone
+> > here? Does anyone know which PLL setting the hsync position is derived
+> > from?
+> >
+> > 	Michael
+>
+> Is it possible that the lcd and crt *have to be* on different
+> controllers? From what I understand,  OF and OSX set it up that way but we
 
-Is it possible that the lcd and crt *have to be* on different
-controllers? From what I understand,  OF and OSX set it up that way but we
-don't. As I have no documentation, this is just  a conjecture.
-Still I would like to do just that. But I am constrained by the lack of
-documentation. Pointers anybody? Maybe people who desire a dual-head would
-like to help :)
+Yep, that's entirely possible. Maybe we can't get the proper specs for
+both on one controller.
 
-regards,
--manuj
+> don't. As I have no documentation, this is just  a conjecture.
+> Still I would like to do just that. But I am constrained by the lack of
+> documentation. Pointers anybody? Maybe people who desire a dual-head would
+> like to help :)
+
+I'd talk to Michel Dänzer about this. The XFree people might have figured
+something out on other (i386) architectures. XFree developers have access
+to at least some ATI docs.
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
