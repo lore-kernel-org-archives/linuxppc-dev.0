@@ -1,32 +1,47 @@
+Message-ID: <20040122011300.66373.qmail@web21408.mail.yahoo.com>
+Date: Wed, 21 Jan 2004 17:13:00 -0800 (PST)
+From: Huailin Chen <chen_huailin@yahoo.com>
+Subject: FYI: Free Online Book: Inside Linux Kernel and PowerPC 
+To: Powerpc Linux <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <200401211946.17969.amitkale@emsyssoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16399.8399.251173.659871@cargo.ozlabs.ibm.com>
-Date: Thu, 22 Jan 2004 12:01:03 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Etsushi Kato <ekato@ees.hokudai.ac.jp>
-Cc: Hollis Blanchard <hollisb@us.ibm.com>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: local_irq_enable() problem...
-In-Reply-To: <60A99FA3-4BF7-11D8-A780-00039394E428@ees.hokudai.ac.jp>
-References: <10F0AFAD-4B61-11D8-8D03-000A95A0560C@us.ibm.com>
-	<60A99FA3-4BF7-11D8-A780-00039394E428@ees.hokudai.ac.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Etsushi Kato writes:
+Hi, team,
 
-> Is there any way to check whether exception handling code is working
-> correctly?  Register usage in head.S and entry.S seems to be changed
-> from 2.4, so perhaps I missed porting some part.
+I tried to collect some documents related to linux and
+ppc. And did some document(I'm not yet confident
+enough to say: kernel analysis) about linux ppc
+machine dependent part.
 
-Yes - the main difference is that we now don't save all the registers
-on the common interrupt/exception entries.  We only save the volatile
-registers, since the C code saves and restores all the nonvolatile
-registers.  We do this for external interrupt, decrementer and system
-call, at least.  Other exception entries that are likely to result in
-sending a signal to the current process save all the registers.
+It's far away being good. But wish helpful and
+meantime get some feedback so that I could make a
+better job.
 
-Paul.
+The ToC is:
+-------------
+Chapter 1 Embedded PowerPC Family
+Chapter 2: Programming Model
+Chapter 3: PowerPC EABI
+Chapter 4: PowerPC Interrupt/Exception
+Chapter 5: PowerPC 4xx Reset and Initialization
+Chapter 6: Synchronization Requirements
+Chapter 7: Linux Kernel Bootup and Initialization
+Chapter 8: Kernel Initialization
+Chapter 9: Kernel Setup---start_kernel
+Chapter 10: Kernel Exception Handler
+Chapter 11 Kernel Memory Management
+Chapter 12: Kernel Process Management
+Chapter 13 Interrupt Handling routines
+Chapter 14 System Call handling
+Chapter 15: PowerPC EABI Cross Compiler
+
+Regards,
+
+Huailin, Chen
+www.xtrj.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
