@@ -1,27 +1,26 @@
-Message-ID: <368BBBF9.E9824C8B@madison-web.com>
-Date: Thu, 31 Dec 1998 13:01:29 -0500
-From: Jason Haas <jhaas@madison-web.com>
-Reply-To: jhaas@linuxppc.org
+Date: Thu, 31 Dec 1998 12:06:15 -0600 (CST)
+From: Tom Rini <trini@globe.linuxppc.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: temporary freeze with Debian init
+In-Reply-To: <Pine.LNX.4.03.9812311219300.21390-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <Pine.LNX.3.96.981231120534.11019A-100000@globe>
 MIME-Version: 1.0
-To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: 2.2-pre2 kernel posted
-References: <19981226140951Z12607245-2991+1183@samba.anu.edu.au> <v03010d03b2ad6f849c7f@[209.96.178.13]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We've put a new 2.2 development kernel up on ftp.linuxppc.org.  It
-should run on any machine. 
+On Thu, 31 Dec 1998, Geert Uytterhoeven wrote:
 
-ftp://ftp.linuxppc.org/linuxppc/linuxppc-pre-R5/RedHat.installer/vmlinux-2.2.0-pre2
+>     NET3: Unix domain sockets 0.16 for Linux NET3.038.
 
-The RAM disk image has also been modified:
+Unix domain sockets as a module perhaps?
 
-ftp://ftp.linuxppc.org/linuxppc/linuxppc-pre-R5/RedHat.installer/ramdisk.image.gz
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
-Enjoy.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
