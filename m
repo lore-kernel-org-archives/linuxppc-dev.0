@@ -1,58 +1,62 @@
-Date: Tue, 9 Apr 2002 12:47:21 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Incoming to helium.harhan.org:/home/linuxppc/linuxppc_2_4_alt
-Message-ID: <20020409194721.GI1331@opus.bloom.county>
-References: <20020409145222.GB710@opus.bloom.county> <0204091923.AA23957@ivan.Harhan.ORG>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0204091923.AA23957@ivan.Harhan.ORG>
+Date: Tue, 9 Apr 02 12:52:40 PDT
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0204091952.AA24042@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_GENERIC_PPC32
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Apr 09, 2002 at 12:23:57PM -0700, Michael Sokolov wrote:
->
-> Tom Rini <trini@kernel.crashing.org> wrote:
->
-> > Well, take a look at what the file used to look like in _devel.  It was
-> > around 30-40 lines of that.  Which is not nice to look at.
->
-> So what's more important, a pretty look or better functionality for the user?
->
-> > Well, it's a much better system if you want to group unlike hardware
-> > together in one kernel. :)
->
-> Which is what I want to do, and which is the RTTD for distributions like
-> Debian.
+Tom Rini <trini@kernel.crashing.org> wrote:
 
-Taking debian as an example here.  You certainly wouldn't stick a zImage
-for every board into 1 package.  Why?  It'd be a 20mb package and as it
-is a few people dislike the number of vmlinux's in the -pmac package.
-So you only 'win' if you have a common, _bootable_ image on all of these
-boards.   And while it is possible that there could be a common
-firmware, I'm not holding my breath. :)
+> Most of the code is actually rather
+> clean.  The Sandpoint is actally a good candidate for some sort of run-time
+> checks since it's a development board and the X2/X3 (and X3b) do differ in
+> some ways.  I actually think the Spruce thing is a red-herring, but maybe the
+> Spurce Paul/David Gibson have is different than the one mporter has access to.
 
-And the other point is that this makes it less clean to add in a new
-board port.
+But the point is that these two ports as they are right now aren't suitable for
+CONFIG_GENERIC_PPC32 because of #ifdefs in them. An #ifdef-ectomy would mean
+splitting the Sandpoint port into two ports, X2 and X3 with different _machine
+codes, selected at run time. I don't know what to do for the Spruce. Does that
+board have a spec saying what the baud clock is supposed to be? If there is,
+assume the value from the spec and fix the boards that don't meet the spec. If
+there is no right value and both values are equally legit, that's a screwed-up
+board that standard OSes like Debian Linux/PPC don't need to support, so don't
+bother putting it in the generic kernel.
 
-> > Well, if ISA slots exist on the board, and should be working, they
-> > should just work.  And when BenH merges in prep/chrp, it'll be needed.
-> > But the question is do you really want to offer this up on machines
-> > where it's not tested?
+> > I think the way I've handled serial in CONFIG_GENERIC_PPC32 is neat and the
+> > RTTD.
 >
-> I want to have configurable CONFIG_PCI and CONFIG_ISA support for
-> CONFIG_GENERIC_PPC32. Generic means that things like this must be
-> configurable.
+> This works great if you let the firmware deal with the serial port.  I
+> need to play abit more with it I suspect, but using early_serial_setup()
+> becomes less than ideal, w/o some trickery anyhow, ifyou have to use
+> arch/ppc/boot/common/ns16550.c
 
-But what if they aren't really configurable?  You could turn off
-CONFIG_PCI, but I don't think you'd get too far on most[1] systems.
+Ahh, the arch/ppc/boot morass is a fly in the ointment again... Well, you know
+my solution: remove the fly. When you have just vmlinux, early_serial_setup()
+is the ideal solution as that's precisely what it's designed for. It's doing
+things the right way, the way they were meant to be done.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+You were just talking about making make zImage spit out a pile of zImages for
+different boards by compiling the wrapper many times in different
+configurations. Just instantiate the wrapper's ns16550 driver per board.
 
-[1]: Most, not all, most.  I know there's 8xx and others...
+> > I don't see it as ugly, I think it's quite beautiful.
+>
+> Adding an #ifdef per board?
+
+Yes. It's a lot more beautiful than getting link errors about platform_init
+multiply defined or <x>_init undefined.
+
+> So you're more one of those hardware people inflicting really wierd
+> designs on us software people, aren't you? :)
+
+Actually I've been very outspoken about strictly following standards and not
+making frivolous designs some others are fond of. Also since I intend to run
+standard OSes on any hardware I design and I'm the one writing that OS support,
+I plan for that in advance in the hardware design stage.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
