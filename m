@@ -1,54 +1,45 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Message-ID: <20000225000750.19162.qmail@web1002.mail.yahoo.com>
+Date: Thu, 24 Feb 2000 16:07:50 -0800 (PST)
+From: Dan Bethe <dan_bethe@yahoo.com>
 Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc with r128
-Date: Thu, 24 Feb 2000 17:25:41 -0500
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <Pine.LNX.4.21.0002241917120.2343-100000@idd-01.imbc.gr>
-In-Reply-To: <Pine.LNX.4.21.0002241917120.2343-100000@idd-01.imbc.gr>
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Message-Id: <00022417315801.00485@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+	Hi there Kevin.  Thanks for your good work.  I was wondering if we can
+have similar benefits for users of ATI Rage LT Pro in the Powerbook G3
+Series.
+	And I assume that when you say you have full acceleration on Rage 128,
+that this is just 2D acceleration.  And do you mean that the
+acceleration implements all features of the card?  Or just that it's a
+lot better than without acceleration support?
+	I would be willing to help pay/motivate someone on a gift basis for 2D
+and 3D acceleration of ATI Rage LT Pro.  I'm serious.
+	I got either no response or no conclusive info from the people on the
+fbdev mailing list, to whom I was originally pointed by someone on
+linuxppc-dev.  The only other spot I can find for acceleration is
+http://glx.on.openprojects.net.  The source rpm doesn't build for me,
+and is blatantly hardcoded biased toward IA32.  It does list ATI Rage
+LT and ATI "mobility", but I don't know what to do to get it to build
+for me.
+	What is ATI "mobility" anyway?
 
-I have been looking at my mouse problems in XF 3.9.18 and put some debug
-statements into Xserver/hw/xfree86/input/mouse/mouse.c to look at the raw
-characters being read from /dev/usbmouse.
+	Finally, here's a recent link to the ATI Linux developer kit:
 
-They seemed to pretty much be garabage and out of sync.  Sometimes the head of
-the character buffer showed mouse button events and sometimes other buffer
-positions showed the events.   Also, the mouse.c driver tries to read 4
-characters from the usb mouse while the Xpmac mouse driver I wrote only reads 3
-bytes at a time.
+http://www.ati.com/na/pages/resource_centre/dev_rel/linux.html
 
-So the IMPS/2 protocol is just getting garbage to process into buttons, and dx,
-dy, dz.
+	And the recent Slashdot article about it, moderated up to useful
+commentary:
 
-Is this a known problem?
+http://slashdot.org/article.pl?sid=00/02/23/0848227&mode=nested
 
-I looked back to xf3.9.17 and it defaulted to my legacy mouse driver but xf
-3.9.18 won't seem to do that  (the mouse module is forcibly loaded by XFree86
-Xserver whether you want it to or not).
+	Thank you!
 
-Any ideas here would be greatly appreciated?
-
-Has anyone been able to get a usb mouse working with xf 3.9.18?
-
-Thanks,
-
-Kevin
-
-
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
-
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
