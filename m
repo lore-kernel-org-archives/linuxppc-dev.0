@@ -1,17 +1,100 @@
-Date: Thu, 02 Jan 2003 16:57:22 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: gcc optimizes loops badly.
-In-reply-to: 
- <8608421EC5CBD511B5090002A55C004802618343@uswaumsx04medge.med.ge.com>
-To: "Eisenhut, Daniel (MED)" <Daniel.Eisenhut@med.ge.com>
+Message-ID: <8608421EC5CBD511B5090002A55C004802618344@uswaumsx04medge.med.ge.com>
+From: "Eisenhut, Daniel (MED)" <Daniel.Eisenhut@med.ge.com>
+To: "'joakim.tjernlund@lumentis.se'" <joakim.tjernlund@lumentis.se>
 Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>,
 	"Petersen, David (MED, GEMS-IT)" <David.Petersen@med.ge.com>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLEEBIFJAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Subject: RE: gcc optimizes loops badly.
+Date: Thu, 2 Jan 2003 10:12:23 -0600 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Jocke,
+
+   It just happens that I have a ppc cross compiler using gcc v3.2.1
+handy.  "-mregnames" worked fine with it.  Here's the output file:
+
+
+	.file	"testcode.c"
+	.section	".text"
+	.align 2
+	.globl crc32org
+	.type	crc32org,@function
+crc32org:
+	cmpwi %cr0,%r5,0
+	addi %r5,%r5,-1
+	beqlr- %cr0
+	addi %r5,%r5,1
+	lis %r9,crc32_table@ha
+	mtctr %r5
+	la %r10,crc32_table@l(%r9)
+.L18:
+	lbz %r0,0(%r4)
+	srwi %r11,%r3,8
+	addi %r4,%r4,1
+	xor %r0,%r3,%r0
+	rlwinm %r0,%r0,2,22,29
+	lwzx %r9,%r10,%r0
+	xor %r3,%r9,%r11
+	bdnz .L18
+	blr
+.Lfe1:
+	.size	crc32org,.Lfe1-crc32org
+	.align 2
+	.globl crc32do_while
+	.type	crc32do_while,@function
+crc32do_while:
+	cmpwi %cr0,%r5,0
+	beqlr- %cr0
+	lis %r9,crc32_table@ha
+	mtctr %r5
+	la %r10,crc32_table@l(%r9)
+.L25:
+	lbz %r0,0(%r4)
+	srwi %r11,%r3,8
+	addi %r4,%r4,1
+	xor %r0,%r3,%r0
+	rlwinm %r0,%r0,2,22,29
+	lwzx %r9,%r10,%r0
+	xor %r3,%r9,%r11
+	bdnz .L25
+	blr
+.Lfe2:
+	.size	crc32do_while,.Lfe2-crc32do_while
+	.align 2
+	.globl crc32do_while_dec
+	.type	crc32do_while_dec,@function
+crc32do_while_dec:
+	cmpwi %cr0,%r5,0
+	beqlr- %cr0
+	lis %r9,crc32_table@ha
+	mtctr %r5
+	la %r10,crc32_table@l(%r9)
+	addi %r4,%r4,-1
+.L32:
+	lbzu %r0,1(%r4)
+	srwi %r11,%r3,8
+	xor %r0,%r3,%r0
+	rlwinm %r0,%r0,2,22,29
+	lwzx %r9,%r10,%r0
+	xor %r3,%r9,%r11
+	bdnz .L32
+	blr
+.Lfe3:
+	.size	crc32do_while_dec,.Lfe3-crc32do_while_dec
+	.ident	"GCC: (GNU) 3.2.1"
+
+
+-----Original Message-----
+From: Joakim Tjernlund [mailto:joakim.tjernlund@lumentis.se]
+Sent: Thursday, January 02, 2003 9:57 AM
+To: Eisenhut, Daniel (MED)
+Cc: Linuxppc-Embedded@Lists. Linuxppc. Org; Petersen, David (MED,
+GEMS-IT)
+Subject: RE: gcc optimizes loops badly.
 
 
 Hi Daniel
@@ -38,7 +121,8 @@ PS.
 > Jocke,
 >
 >    The option "-mregnames" no longer exists in version 3.2 of gcc.  I
-> couldn't find anything equivalent.  I ran it without that option (gcc -S
+> couldn't find anything equivalent.  I ran it without that option (gcc
+-S
 > -O2 testcode.c) and produced the following on a i686 RedHat 7.3 box
 > using gcc 3.2  (gcc 3.2.1 is the latest release I believe)
 >
@@ -168,11 +252,13 @@ PS.
 >
 > I have spent some time to optimize the crc32 function since JFFS2 uses
 > it heavily. I found that
-> gcc 2.95.3 optimizes loops badly, even gcc 2.96 RH produces better code
+> gcc 2.95.3 optimizes loops badly, even gcc 2.96 RH produces better
+code
 > for x86 in some cases.
 >
 > So I optimized the C code a bit and got much better results.
-> Now I wounder how recent(>= 3.2) gcc performs. Could somebody run gcc -S
+> Now I wounder how recent(>= 3.2) gcc performs. Could somebody run gcc
+-S
 > -O2 -mregnames on
 > functions below and mail me the results?
 >
