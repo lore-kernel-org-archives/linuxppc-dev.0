@@ -1,83 +1,43 @@
-Date: Fri, 4 May 2001 16:23:55 +0200
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sven LUTHER <luther@dpt-info.u-strasbg.fr>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+	<linuxppc-dev@lists.linuxppc.org>, <debian-powerpc@lists.debian.org>
 Subject: Re: Success! (was Re: External Monitor under Pismo)
-Message-ID: <20010504162355.B14881@lambda.u-strasbg.fr>
-References: <20010504160604.A14752@lambda.u-strasbg.fr> <Pine.LNX.4.05.10105041612120.2886-100000@callisto.of.borg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.10105041612120.2886-100000@callisto.of.borg>; from geert@linux-m68k.org on Fri, May 04, 2001 at 04:14:36PM +0200
-From: Sven LUTHER <luther@dpt-info.u-strasbg.fr>
+Date: Fri, 4 May 2001 16:54:22 +0200
+Message-Id: <20010504145422.25284@mailhost.mipsys.com>
+In-Reply-To: <Pine.LNX.4.05.10105041612120.2886-100000@callisto.of.borg>
+References: <Pine.LNX.4.05.10105041612120.2886-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 04, 2001 at 04:14:36PM +0200, Geert Uytterhoeven wrote:
-> On Fri, 4 May 2001, Sven LUTHER wrote:
-> > On Fri, May 04, 2001 at 03:57:29PM +0200, Benjamin Herrenschmidt wrote:
-> > > >> Note that if you don't want to mess with XFree, I recently added the
-> > > >> ability to control the CRT & LCD outputs of the Rage M3 to aty128fb in my
-> > > >> rsync tree. The tool to control it is on www.penguinppc.org/~benh
-> > > >
-> > > >BTW, the recently released ibook is said to only have the capacity to mirror,
-> > > >not act as an independent display ? can that be or is it something limited in
-> > > >the mac drivers ? It has a 8MB embedded rage mobility 128, same as the
-> > > >titanium i think.
-> > >
-> > > Don't know. Note that the support I added to aty128fb uses one head only. It
-> > > just allow you to turn on/off the LCD and CRT output, but it's only mirroring.
-> >
-> > So mirroring will work, i guess.
-> >
-> > for dual head you will need X, isn't it, fbdev seems broken (well at least
-> > those using fbgen) for dualhead anyway. Don't know if aty128fb uses fbdev.
->                                                                       ^^^^^
-> 								      clgen
-> No, it doesn't.
-
-a, so multi headed may work there ?
-
-> > BTW, how does the rage 128 work, it has 1 accel engine that draws to the
-> > framebuffer memory, and one or more ramdac or digital out ports that send the
-> > fb data to the displays.
 >
-> I think so.
 >
-> If you point the second CRTC to the same frame buffer region, you'll have
-> mirrorring, else you have two different heads.
+>If you point the second CRTC to the same frame buffer region, you'll have
+>mirrorring, else you have two different heads.
 
-so if the mac driver would just permit the CRTC to point to one fb region,
-then this would enable only mirroring.
+In most cases (like what I do with aty128fb), you don't even need to use the
+second CRTC. Just enable both outputs and let them source from the first CRTC.
 
-> > So i suppose the you will need to use a trick similar to the matrox one to get
-> > dual headed accelerated X to work.
+>> So i suppose the you will need to use a trick similar to the matrox one
+>to get
+>> dual headed accelerated X to work.
 >
-> Yep. The same is true for atyfb (yes, I should add mirrorring/dualhead support
-> for the Mobility in my Vaio :-).
+>Yep. The same is true for atyfb (yes, I should add mirrorring/dualhead
+support
+>for the Mobility in my Vaio :-).
 >
-> > But could it be possible to block this in hardware, and thus force mirroring
-> > only operation ?
+>> But could it be possible to block this in hardware, and thus force
+mirroring
+>> only operation ?
 >
-> I suppose yes.
-
-This would mean a new die or something such, just to block one feature. I
-think it is more probable that it is only a driver issue, i think.
-
-> > How many different rage 128 mobility are around anyway ?
+>I suppose yes.
 >
-> No idea. I just at the ATI website earlier today, and they seem to have new
-> variants called M4 and Radeon Mobility.
+>> How many different rage 128 mobility are around anyway ?
+>
+>No idea. I just at the ATI website earlier today, and they seem to have new
+>variants called M4 and Radeon Mobility.
 
-Well, the M4 is just the rage 128 mobility with AGP 4 support, the one used in
-the latest batch of imacs. the radeon mobility is another beast altogether,
-and is not a rage 128 chip, but a radeon one. I don't know of it beeing used
-into anythin, though i guess it may be used in the next powerbook (with 16MB
-embeded framebuffer memory).
-
-Friendly,
-
-Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
