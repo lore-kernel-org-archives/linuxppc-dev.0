@@ -1,36 +1,42 @@
-Date: Fri, 26 May 2000 23:36:39 +0200
-Subject: CMD646
-From: "Florent" <flobo@iname.com>
+Date: Fri, 26 May 2000 19:01:59 -0400
+From: Alain Birtz <abz@videotron.ca>
+Subject: Shared memory between module and application: is it possible ?
 To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20000526214631.35D0F86C6D@postfix3.free.fr>
+Reply-to: abz@videotron.ca
+Message-id: <392F0267.C7933983@videotron.ca>
+MIME-version: 1.0
+Content-type: text/plain; x-mac-creator=4D4F5353; x-mac-type=54455854; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+How application can do to exchange data with module ?
 
-What has changed with the IDE CMD646 chipset driver ?
-It used to work on my B&W G3 with kernel 2.2.14, but
-it fails with 2.3.99, at least with my .config
-file...
-With 2.3.99pre9, it prints error messages "hda:
-interrupt lost", but it detects all of my partitions
-- including the root one . So it seems to be close to
-work excepted it is extremely slow.
+I know how to share memory between two application,
+but when I try to make the samething with module and application
+I get header confict:
 
-I can still boot and use my computer when I put my hard
-drive on the second IDE bus which is not a CMD646, but I
-don't think it is the good solution...
+----------------
+In file included from /usr/include/sys/shm.h:24,
+                 from mod_l1.c:9:
+/usr/include/unistd.h:193: conflicting types for `ssize_t'
+/usr/include/linux/types.h:37: previous declaration of `ssize_t'
+In file included from /usr/include/sys/shm.h:25,
+                 from mod_l1.c:9:
+/usr/include/sys/types.h:46: conflicting types for `ino_t'
+/usr/include/linux/types.h:11: previous declaration of `ino_t'
+/usr/include/sys/types.h:57: conflicting types for `dev_t'
+/usr/include/linux/types.h:10: previous declaration of `dev_t'
+/usr/include/sys/types.h:72: conflicting types for `nlink_t'
+/usr/include/linux/types.h:13: previous declaration of `nlink_t'
+In file included from /usr/include/sys/types.h:193,
+                 from /usr/include/sys/shm.h:25,
+                 from mod_l1.c:9:
+/usr/include/sys/select.h:51: conflicting types for `fd_set'
+/usr/include/linux/types.h:9: previous declaration of `fd_set'
+----------------
 
-What is up with CMD64x on powermacs ? Has someone a
-working .config file ? Or do I need to apply some
-patches ?
-Is there a known unsolved problem here ?
+What can I do to fix it ?
 
-Thanks.
-
-Florent
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
