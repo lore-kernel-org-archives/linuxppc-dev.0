@@ -1,35 +1,37 @@
-Date: Sun, 8 Aug 1999 22:18:28 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: mlan@cpu.lu, hedrick@Astro.Dyer.Vanderbilt.Edu, drow@false.org, mj@ucw.cz,
+Date: Mon, 9 Aug 1999 15:33:41 +1000
+Message-Id: <199908090533.PAA13699@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: dgatwood@mvista.com
+CC: mlan@cpu.lu, hedrick@Astro.Dyer.Vanderbilt.Edu, drow@false.org, mj@ucw.cz,
         linuxppc-dev@lists.linuxppc.org
+In-reply-to: <Pine.LNX.3.96.990808221738.17464H-100000@mvista.com>
+	(dgatwood@mvista.com)
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-In-Reply-To: <199908090513.PAA09905@tango.anu.edu.au>
-Message-ID: <Pine.LNX.3.96.990808221738.17464H-100000@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.3.96.990808221738.17464H-100000@mvista.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 9 Aug 1999, Paul Mackerras wrote:
+David A. Gatwood <dgatwood@mvista.com> wrote:
 
-> > I've solved the problem by adding the right offset directly to the
-> > io-port values as found in the kernel's PCI structures. I think this
-> > needs more serious rework, though. Paul, are you the author of the
-> > PowerMac IDE stuff? So we can work this out... 
-> 
-> Yep, for my sins. :-) :-)
-> 
-> Also, does anyone know how a quick way to get the best DMA cycle
-> timing values in a tuneproc?
+> You mean for IDE?  Check the MkLinux driver.  One of Apple's folks ported
+> some OS X (server?) code in for IDE DMA timings a couple months back.
 
-You mean for IDE?  Check the MkLinux driver.  One of Apple's folks ported
-some OS X (server?) code in for IDE DMA timings a couple months back.
+I saw some code in the macosx driver that looks in the driveid and
+figures it all out - is that what you mean?
 
+I guess I was asking whether there was already some nifty function in
+the Linux kernel that did for DMA modes what ide_get_best_pio_mode
+does for PIO modes.
 
-David
+Also, do you have a cvsweb server for your cvs repository?  I don't
+want to have to checkout 10s of MB of source just to look at a couple
+of files. :-)  (See http://samba.org/cvs.html if you haven't come
+across cvsweb before.)
 
+Regards,
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
