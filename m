@@ -1,42 +1,49 @@
-Date: Thu, 10 May 2001 09:10:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Message-ID: <3AFABDFC.B70C0775@mvista.com>
+Date: Thu, 10 May 2001 12:12:44 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Lee <kdlee@sei.co.kr>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_5 source tree (and others)
-Message-ID: <20010510091031.A27558@opus.bloom.county>
-References: <21780.989483882@msa.cmst.csiro.au>
-Mime-Version: 1.0
+Subject: Re: hda: lost interrupt
+References: <001901c0d8ed$43a4daa0$16b260d2@sei.co.kr>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <21780.989483882@msa.cmst.csiro.au>; from Murray.Jensen@cmst.csiro.au on Thu, May 10, 2001 at 06:38:02PM +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 10, 2001 at 06:38:02PM +1000, Murray Jensen wrote:
+Lee wrote:
+>
+>     I have the custom mpc860 board ported with linux version 2.2.13.
+> My custom board looks like a Motorola MBX board because it has a ATA-type
+> IDE disk drive interfaced through QSPAN PCI-Bridge and W83C553F.
 
-> Hi, I see that the linuxppc_2_5 bk tree has disappeared from fsmlabs, and
-> has been replaced with a linuxppc_2_4_devel tree. Could someone in the
-> know please post a quick update what this means, and perhaps what the
-> future holds wrt 2.4/2.5 linuxppc (embedded)?
+There have been lots of changes to the IDE and interrupt controller
+software since 2.2.13.  It barely worked correctly back then, and
+is certainly broken now because the PCMCIA and compact Flash devices
+are much more popular IDE peripherals than a real disk connected
+through PC-style bridges.
 
-I was hoping Cort would mention this here, but 2_5 has been 'dead' for a
-while and is finally gone too.  There's still mirrors of it however.
-It will exist again, but when 2.5.0 appears and will be based off the
-linux_2_4 tree or so.  Right now 2_4_devel isn't up to date wrt 8xx/4xx, and
-some new boards 2_5 had.  I'm working on it. :)
+> Currently, I am trying to upgrade our linux kernel using linux version 2.4.0.
+> But I am having trouble with a problem regarding to the IDE disk drive.
 
-> I guess I should actually ask about what I want :-) The linuxppc_2_5 tree
-> had a "drivers/i2c/i2c-algo-8xx.c" file which has disappeared from 2_4_devel.
-> I need an i2c driver for linuxppc for the 8260 and figured this would be a
-> good place to start. So the question really is what has happened to the 8xx
-> i2c driver in the fsmlabs linuxppc_2_5, and has anyone ported this to (or done
-> one independently for) the 8260?
+...and if you get it to work it will likely break everything else.
+We also rely heavily on the MBX boot rom to initialize the bridges,
+so when it works there it still isn't likely to work on other boards
+that may even use the same parts connected in exactly the same way.
 
-These are in 2_4_devel as of last night.  I'm also trying to get ahold of the
-i2c maintainers so that it can be in linus' tree eventually.
+There are some modifications in the 2.2.13 (and subsequent) kernels
+for generic IDE changes that are necessary to make this work at all.
+These changes were never accepted upstream, so you are going to have
+a unique kernel that isn't likely to have this support in general.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+All of the people I know that are actually using disk drives on MPC8xx
+systems have simply created a small, inexpensive piece of logic right
+on the 8xx bus or buffered directly to the PCMCIA interface.  The
+QSpan plus PCI/ISA parts just to get an IDE interface is not cost
+effective in real products.  In these configurations, the standard
+IDE or PCMCIA software "just works."
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
