@@ -1,73 +1,41 @@
-Message-ID: <39852FD8.81721638@relog.ch>
-Date: Mon, 31 Jul 2000 09:50:48 +0200
+Message-ID: <3985329D.A1708D6B@relog.ch>
+Date: Mon, 31 Jul 2000 10:02:37 +0200
 From: Michel Dänzer <daenzer@relog.ch>
 Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: SteffenH@hyperion-software.de, takashi oe <toe@unlserve.unl.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC X Server
-References: <200007302032.VAA26494@hyperion.valhalla.net>
+To: Keith Owens <kaos@melbourne.sgi.com>
+CC: Thomas Graichen <graichen@innominate.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: SGI XFS on ppc
+References: <15081.965025257@ocs3.ocs-net>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+Keith Owens wrote:
 
-> > Before building, you should have copied xc/config/cf/{xf86site,host}.def
-> >
-> > Then edit the newly created host.def - you probably only want to build the
-> > server and drivers, and choose the drivers you want.
->
-> Oh-oh.
->
-> This was a step missing from the instructions :-(
->
-> Maybe I complied a lot more than necessary (and hence the time)...
+> Does ppc support modules?
 
-Probably.
+Yes.
 
 
-> Would I need to build all the apps once (so that they are compatible?).
+> I know that modutils has an obj-ppc.c file but I don't think I have ever
+> seen any ppc bug reports for modutils.
 
-Not absolutely. Servers and clients should be compatible at any version each
-(apart from a few issues, of course ;)
-
-
-> After that, I suppose, I just rebuild the driver when the rsync changes...
-
-Yep, make -C xc/programs/Xserver should do. (And copying the modules to the
-ModulePath again)
+Maybe because it works fine? :)
 
 
-> > For DRI, you may have to edit even more files in config/cf/, AFAIK DRI is
-> > only built on i386 by default.
->
-> Do I also need to enable different support in the kernel?
-> (e.g. /dev/agpart support ?)
+> If ppc does use modutils then we need lines like this in
+> arch/ppc/vmlinux.lds.
 
-That would be good, but AFAIK there's no such thing for our hardware yet.
-
-You'll have to go to
-xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel and do make -f
-Makefile.linux (won't build out of the box - I've added '#include
-<asm/pgtable.h> to drmP.h and changed the function in r128_dma.c containing
-i386 assembly to just call mb() - anyone knows if this makes sense?) and then
-modprobe r128.o
-
-
-> (I have ATI{mach64,r128}/IMSTT support enabled by default - since these are
-> the cards I have).
-
-Only the r128 is even theoretically supported by DRI ATM.
+Can't comment on this.
 
 
 Michel
 
 
 --
-Pauli's exclusive, Heisenberg's uncertain, and Schroedinger just waves.
+Apologies are so hard to give. Would you accept some potatoes instead?
 ______________________________________________________________________________
 Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
 Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
