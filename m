@@ -1,47 +1,47 @@
-Subject: Re: Runtime Altivec detection
-From: Albert Cahalan <albert@users.sourceforge.net>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: damm@opensource.se, hollis@austin.ibm.com,
-	benh@kernel.crashing.org, ningerso@ruralcenter.org
-Content-Type: text/plain
-Date: 08 Mar 2003 23:01:47 -0500
-Message-Id: <1047182509.1900.246.camel@cube>
+Date: Mon, 10 Mar 2003 11:48:55 -0500
+From: Manuj Dhingra <manuj_dhingra@ae.gatech.edu>
+To: Nathan Ingersoll <ningerso@ruralcenter.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
+Message-ID: <20030310164855.GC11462@haar.ae.gatech.edu>
 Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-For those of you needing to get at ELF note info
-to determine CPU features and other things, here
-is the code procps-3.1.x has been using. You'll
-need the appropriate ID code; here I use AT_CLKTCK
-to determine USER_HZ. Pass the ID code into this
-function, and you get back the ELF note value.
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
+>
+> On Fri, 2003-03-07 at 18:57, Ira Weiny wrote:
+> > Well I decided it was time to get up to date on my TiBook.
+> >
+> > 2) m3mirror does not work?  This one really puzzles me.  lcd:0 turns
+> off the
+> >    LCD screen but crt:1 does not turn on the outside monitor.  I
+> rebooted into
+> >    Mac OS and the external port works.  The only thing I can think of
+> is that I
+> >    did use the S-video port on Mac OS to show some pictures.  Is there
+> >    something in OF which Mac OS would set which would make the external
+> port
+> >    not work with m3mirror?
+>
+> Well... All it does is to enable the port by sending it the same signal
+> as the LCD. This works approx. well on the Pismo, but not with the tipb.
+>
+> Somebody, I think, is working on proper mirroring based on setting up
+> the second CRTC.
+>
 
-//////////////////////////////////////////////////////////////////////////
-#ifndef AT_CLKTCK
-#define AT_CLKTCK       17    // frequency of times()
-#endif
+Well I am, but I have not seen this one before. With Ben's m3mirror and
+corresponding ioctls, crt:1 did turn on the external display, it was just
+not stable.
+Could you please boot with external monitor plugged in at power on and
+pass video=aty128fb:crt:1,lcd:1 as additional boot parameters?
 
-#define ERROR_CODE 42  // choose something better!
-
-extern char** environ;
-
-// for ELF executables, notes are pushed before environment and args
-static unsigned long find_elf_note(unsigned long findme){
-  unsigned long *ep = (unsigned long *)environ;
-  while(*ep++);
-  while(*ep){
-    if(ep[0]==findme) return ep[1];
-    ep+=2;
-  }
-  return ERROR_CODE;
-}
-
-// Usage:
-// Hertz = find_elf_note(AT_CLKTCK);
-
-////////////////////////////////////////////////////////////////////////
-
+cheers,
+manuj
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
