@@ -1,48 +1,52 @@
+Date: Wed, 30 Jan 2002 10:44:35 +0100
 Subject: Re: Support for new Dual G4 1 Gig machines?
-From: Eric Leblond <eric@regit.org>
-To: Christopher Murtagh <christopher.murtagh@mcgill.ca>
-Cc: yellowdog-devel@lists.yellowdoglinux.com,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.33.0201281521410.9879-100000@blues.wcg.mcgill.ca>
-References: <Pine.LNX.4.33.0201281521410.9879-100000@blues.wcg.mcgill.ca>
-Date: 30 Jan 2002 08:00:15 +0100
-Message-Id: <1012374015.23794.18.camel@porky>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Mime-Version: 1.0 (Apple Message framework v480)
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <linuxppc-dev@lists.linuxppc.org>
+From: Alain RICHARD <alain.richard@equation.fr>
+In-Reply-To: <20020129190809.18610@mailhost.mipsys.com>
+Message-Id: <F83E36A3-1565-11D6-8E33-0030657D0D7C@equation.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-le lun 28-01-2002 à 21:34, Christopher Murtagh a écrit :
-> On Mon, 28 Jan 2002, Jim Potter wrote:
-> >I've been running SMP YDL on a dual 500 for over a year;  it's quite
->  Actually, this depends on what you are doing with the machine. My desktop
-> machine is a Dual-450 and it has been running very well. However, I had a
-> Dual-800 and a Dual-500 that I tried to put into production, and they both
-> crashed often. I had mentioned the 800 to BenH and he suspected a problem
+Just for information, why do you consider sungem better than gmac ? What
+kind of functionnalities is it supposed to better handle than gmac ?
 
+Also about the video cards, there is two options :
 
-The thing is that I was unable to boot. It hangs at the start at :
-	smp_core99_kick_cpu done
+- ATI Radeon 7500 (32 Mo)
+- NVIDIA GeForce4 MX (64 Mo of RAM)
 
-Maybe was it a misconfiguration in the OpenFirmware :
-when I list the value of the vars in OF, i've got two vars :
-	betty_cpu0 passed
-	betty_cpu1 ......
-Oops, I can't log today on the computer, I don't remember the second
-value :-( which was different from the first.
-I test it on 2 G4 with exactly the same hardware configuration.
+Is there any clue about the support of each one ?
 
-By the way, MacOS 9.2 was highly unstable : it often hangs on netscape.
+For information, I have used NVidia cards under intel linux boxes and it
+is very boring having to get the driver from Nvidia and to patch the
+kernel and the XFree with their driver. Also I don't think they produce a
+driver for ppc linux.
 
-Cheers,
---
-Eric Leblond
-Mail: regit@regit.org
-Page Linux : http://www-anp.lip6.fr/~leblond/linux/
-*---------------------------------------------------------------------------*
- Computers are like air conditioners. They don't work when Windows are
-open.
-*---------------------------------------------------------------------------*
+Le mardi 29 janvier 2002, à 08:08 , benh@kernel.crashing.org a écrit :
+
+>
+>>
+>>> You should also use sungem preferably to the old gmac driver.
+>>
+>> Do you suspect that this is what is causing my crashes when the box is
+>> exposed to moderately high network volume?
+>
+> Maybe, only tests will prove me right or wrong.
+>
+> Ben.
+>
+>
+>
+>
+-------------------------------------------------------
+Alain RICHARD <mailto:alain.richard@equation.fr>
+EQUATION SA <http://www.equation.fr/>
+Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
+Applications client/serveur, ingénierie réseau et Linux
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
