@@ -1,37 +1,101 @@
-Subject: Re: aty128fb and EDID
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>,
-	Magnus Damm <damm@opensource.se>,
+Subject: Re: aty128fb and EDID
+Date: Mon, 10 Feb 2003 07:36:09 -0500
+Cc: Magnus Damm <damm@opensource.se>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be>
 References: <Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be>
-Content-Type: text/plain
-Message-Id: <1044873260.11921.24.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-Date: 10 Feb 2003 11:34:20 +0100
+In-Reply-To: <Pine.GSO.4.21.0302101034180.25020-100000@vervain.sonytel.be>
+MIME-Version: 1.0
+Message-Id: <200302100736.09901.kevin.hendricks@sympatico.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2003-02-10 at 10:35, Geert Uytterhoeven wrote:
+Hi,
+
+When I contribuited it originally, I did not know that I should have made
+it generic.
+
+It is simply one small routine, it could be duplicated easily as a first
+step.
+
+Kevin
+
+On February 10, 2003 04:35, Geert Uytterhoeven wrote:
 > On Sun, 9 Feb 2003, Kevin B. Hendricks wrote:
-> > Steal the code from the radeon dirver in the kernel.  It finds and parses
-> > the EDID block in OF for ppc linux systems for LCD.
+> > Steal the code from the radeon dirver in the kernel.  It finds and
+> > parses the EDID block in OF for ppc linux systems for LCD.
 >
 > I guess you actually meant:
+> | Move the code out of the radeon driver and make it sufficiently
+> | generic so it can be used by the aty128 and other drivers?
+> |
+> > It works fine with my 17 in lcd display.
+> >
+> > Kevin
+> >
+> > On February 9, 2003 06:26, Magnus Damm wrote:
+> > > Hi,
+> > >
+> > > I recently bought a Cube G4 and got a 17" Apple Studio Display (CRT,
+> > > ADC) with it. However, that combination seems hard to use out of the
+> > > box if you want to use something else than the open firmware
+> > > framebuffer.
+> > >
+> > > The thing is that the monitor only supports two modes:
+> > > 1600x1200 64Hz
+> > > 1280x1024 75Hz
+> > >
+> > > This gives me no picture at all when I try to use the aty128 driver.
+> > >
+> > > However, when I hardcode this video mode as default things work out
+> > > ok: /* default modedb mode */
+> > > /* 1600x1200, 64Hz, Non-Interlaced */
+> > > static struct fb_videomode defaultmode __initdata = {
+> > >         refresh:        64,
+> > >         xres:           1600,
+> > >         yres:           1200,
+> > >         pixclock:       5952,
+> > >         left_margin:    304,
+> > >         right_margin:   24,
+> > >         upper_margin:   38,
+> > >         lower_margin:   1,
+> > >         hsync_len:      184,
+> > >         vsync_len:      3,
+> > >         sync:           3,
+> > >         vmode:          FB_VMODE_NONINTERLACED
+> > > };
+> > >
+> > > The information above was built from my EDID file.
+> > >
+> > > To create some kind of generic solution I need to add EDID support
+> > > to the aty128 driver, or even better - a generic framebuffer layer.
+> > >
+> > > My question to you is:
+> > > All probing that is done by checking if "machine_is_compatible()",
+> > > could that all be replaced by EDID code?
+> > >
+> > > If you could send me your EDID files with together with information
+> > > about your machine and monitor I would be really happy. Then I could
+> > > parse them and see if they contain enough information. If you don't
+> > > find any EDID file then I would be glad to know that too.
+> > >
+> > > These machines are extra interesting:
+> > > * PowerMac2,1 first r128 iMacs
+> > > * PowerMac2,2 summer 2000 iMacs
+> > > * PowerMac4,1 january 2001 iMacs "flower power"
+> > > * iBook SE
+> > > * PowerBook Firewire (Pismo), iBook Dual USB
+> > > * PowerBook Titanium
+> > >
+> > > I find my EDID file in /proc/device-tree/pci/ATY,Rage128Pd@10/EDID
 >
-> | Move the code out of the radeon driver and make it sufficiently generic so it
-> | can be used by the aty128 and other drivers?
-
-That code is also shared by rivafb. It's rather LCD/DFP specific for
-now, I would _much_ prefer some more generic EDID parser. So far,
-I haven't been able to find any specification of the edid block,
-this is annoying as I'd like to deduce a proper default mode for
-CRTs as well, and some informations about backlight ranges (if any
-in the EDID).
-
-Ben.
+> Gr{oetje,eeting}s,
+>
+> 						Geert
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
