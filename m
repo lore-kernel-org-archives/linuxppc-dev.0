@@ -1,44 +1,30 @@
-Date: Fri, 12 Oct 2001 07:32:23 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems building 2.4.10-ac11?  Am I missing a ppc specific patches
-Message-ID: <20011012073223.O21564@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011012124823.GGKC27994.tomts14-srv.bellnexxia.net@there>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011012124823.GGKC27994.tomts14-srv.bellnexxia.net@there>
+Date: Fri, 12 Oct 01 08:30:40 PDT
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0110121530.AA00265@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org, mod+linuxppc-dev@mclx.com
+Subject: Re: PPC+southbridge designs
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Oct 12, 2001 at 08:50:33AM -0400, Kevin B. Hendricks wrote:
+mod+linuxppc-dev@mclx.com wrote:
 
-> I seem to have trouble building Alan's 2.4.10-ac11.
->
-> First pc_keyb.c is missing the follwoing line:
->
-> #include <linux/pm.h>
+> How many existing PPC-based machines incorporate one
+> of those kitchen-sink southbridge chips like the VIA
+> VT82C686B that are normally found in x86-based machines?
 
-Hopefully fixed soon..
-
-> I compared this with Ben's version of agpgart_be.c and the ac version
-> seems to be missing a lot of ppc specific pieces that are in Ben's tree.
-
-agpgart only works for us in Ben's tree.  'Normal' dri stuff should be
-OK tho. (PCIgart).
-
-[snip]
-> Is there a ppc specific version of the AC tree anyplace, that I should be
-> grabbing?  Or have the stability issues in the VM in the Linus tree been
-> fixed?  I noticed that Linus was already at 2.4.12 and even that needed
-> patches.
-
-The diff vs linuxppc_2_4 and -ac11/-ac12 wasn't too interesting.  vs
-2.4.12-ac1 is even less so (since we did a good merge into 2.4.11).
+SBS, the company I work for, has recently built a dual PPC 750CXe board in an
+ATX form factor called Adirondack that has a VT82C686B on it. I'm SBS's Linux
+software engineer and I've ported Linux 2.4 to the Adirondack. The port is in
+the linuxppc_2_4_devel tree.
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Michael Sokolov				5791 VAN ALLEN WAY
+Software Engineer			CARLSBAD CA 92008-7321 USA
+SBS Technologies, Inc.			Phone: +1-760-438-6900 x2347
+Communications Products			    or  1-888-SBS-COMM x2347
+					Fax:   +1-760-438-6985
+					E-mail: msokolov@sbs.com
+					     or msokolov@ivan.Harhan.ORG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
