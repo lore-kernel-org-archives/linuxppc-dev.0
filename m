@@ -1,14 +1,25 @@
-Message-ID: <3D63A994.EF67FC03@opensource.se>
-Date: Wed, 21 Aug 2002 16:54:12 +0200
-From: Magnus Damm <damm@opensource.se>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F2C852E@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Magnus Damm'" <damm@opensource.se>, John.Fisher@nec.com.au
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: cygwin and embedded linux
+Date: Wed, 21 Aug 2002 11:07:49 -0400
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+viosoft has done it
+
+-----Original Message-----
+From: Magnus Damm [mailto:damm@opensource.se]
+Sent: Wednesday, August 21, 2002 10:54 AM
 To: John.Fisher@nec.com.au
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: cygwin and embedded linux
-References: <000301c248e8$9a2ce040$37d34c93@neca.nec.com.au>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
 
 
 > Is anyone seriously trying to do embedded Linux development for power PC
@@ -37,11 +48,13 @@ John Fisher wrote:
 > Is anyone seriously trying to do embedded Linux development for power PC
 > using Cygwin as the host?
 >
-> I'm trying to get linux running on proprietary MPC850/860/8260 boards. I'll
+> I'm trying to get linux running on proprietary MPC850/860/8260 boards.
+I'll
 > start with either the 850 or the 860 board as I'm more familiar with these
 > processors than with the 8260.
 >
-> I have the Macraigor blackbird BDM interface for the MPC850/860. I have both
+> I have the Macraigor blackbird BDM interface for the MPC850/860. I have
+both
 > an Agilent ethernet based probe and the Wind River Vision Probe II for the
 > 8260.
 >
@@ -56,5 +69,6 @@ John Fisher wrote:
 > John Fisher
 > NEC Australia Pty Ltd
 >
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
