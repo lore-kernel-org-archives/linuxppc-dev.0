@@ -1,50 +1,64 @@
-In-Reply-To: <199910081233.OAA03575@simul.biophys.uni-duesseldorf.de>
-Date: Fri, 8 Oct 1999 15:06:17 +0200
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: ADB probing
-Message-Id: <19991008150617.016099@mailhost.mipsys.com>
+From: schinder@pobox.com
+Date: Fri, 8 Oct 1999 09:30:25 -0400
+To: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: What's up with gcc 2.95.1 and "__va_arg_type_violation"
+Message-ID: <19991008093025.A3784@pobox.com>
+References: <99100721144003.26148@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <99100721144003.26148@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Oct 8, 1999, Michael Schmitz
-<schmitz@opal.biophys.uni-duesseldorf.de> wrote:
+On Thu, Oct 07, 1999 at 09:08:16PM -0400, Kevin Hendricks wrote:
+} 
+} Hi,
+} 
+} When attempting to run the latest build of the jdk, I get the following error
+} message (but only on non-debug builds).
+} 
+} Unsatisfied Link error: __va_arg_type_violation
 
->Thanks, I forgot that sleeping will power down all ADB devices. That still
->doesn't force a bus reset but a bus reset may not be what we want anyway. 
+If you turn off the optimizer, it will stop complaining.  I ran into this
+building xemacs.
 
-Yes, sleep powers down all ADB devices, and that's why the ADB code
-contains a sleep notifier which will do a bus reset on wakeup. The adb
-code will then re-do the probing and re-adressing and notify it's own
-clients (mac_keyb.c drivers) via it's own notifier that the bus was reset
-so they get a chance to re-initialize their various devices.
-The /dev/adb code will also catch bus reset commands and do the same
-thing. I still think that we should try to do something more complex than
-a reset+reprobe.
+} 
+} Figuring, I simply forgot some new piece of glibc 2.1.2, I used 
+} 
+} nm -o `find /lib -name "*"` | grep va_arg_type  
+}  
+} (for /lib, /usr/lib, /usr/local/lib, /opt/lib, etc)
+} 
+} and this damn routine simply does not exist on my machine.
+} 
+} Any ideas of where one might look to fulfill this thing.  This is new with
+} gcc-2.95.1 and/or glibc 2.1.2
+} 
+} 
+} By the way, native threads still do not work with the very latest glibc 2.1.2
+} because of the new semaphore functions.  If I force linking to the old
+} semaphore functions, everything starts working again.
+} 
+} I am building a debug glibc 2.1.2 and I will try to find the source of the
+} problem.
 
->Can we add a SysRQ code for this? Speaking of which, what is the magic sysrq 
->key on a Lombard, or the shutdown key combo? I couldn't find that in the
->keyboard driver ...
+Take a look at /usr/lib/ppc-redhat-linux/2.95.1/include/va-ppc.h.
+It's in there.  I don't know why; I suspect it's part of an upcoming
+fix of varargs.  The egcs that comes with Yellow Dog (and I assume
+LinuxPPC) doesn't have this problem.
 
->That's about what I've been discussing with some (including Paul and hpa)
->about two years ago. We could add adbkeyb (raw keyboard data) and adbmouse
->(the busmouse device) and possibly adbtablet for good measure and give up 
->that hijacked misc minor 10, finally. 
->
->I can help writing and testing this on a Powerbook, I just don't have a
->desktop Mac to connect multiple ADB devices to. 
-
-My idea was to work on this this Sunday, but if you want to write it now,
-feel free to do so ;) I can test it on various configurations at work.
+} 
+}  Any ideas here would be greatly appreciated.
+} 
+} Thanks,
+} 
+} Kevin
+} 
 
 -- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
+Paul Schinder
+schinder@pobox.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
