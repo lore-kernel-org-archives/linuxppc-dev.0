@@ -1,78 +1,56 @@
-Message-ID: <403E3170.3030507@ru.mvista.com>
-Date: Thu, 26 Feb 2004 20:48:32 +0300
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: Jeff Angielski <jeff@theptrgroup.com>
-Cc: Stephen Williams <612dlag102@sneakemail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Activating SystemACE support
-References: <10318-29667@sneakemail.com> <1077811344.4225.12.camel@localhost.localdomain>
-In-Reply-To: <1077811344.4225.12.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: MMU Problem bringing up kernel with PPC 603 chip
+From: Bob Beck <beck@assurtech.com>
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040227103636.78365C0655@atlas.denx.de>
+References: <20040227103636.78365C0655@atlas.denx.de>
+Content-Type: text/plain
+Message-Id: <1077830593.4199.7.camel@budweiser>
+Mime-Version: 1.0
+Date: 27 Feb 2004 11:23:13 +1400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jeff Angielski wrote:
-> On Wed, 2004-02-25 at 22:54, Stephen Williams wrote:
->
->>I have a board that, like the Xilinx ml300 board, has a SystemACE
->>chip on it. I would like to activate the existing SystemACE drivers
->>support in the kernel, but it is not clear to me how I pass to the
->>drivers the base address and IRQ that has been assigned. Does anyone
->>has any suggestions?
->>
->
->
-> The SystemACE driver is currently written as a subset of the
-> CONFIG_XILINX_OCP code.  So the easiest thing is to just add another
-> xparameters_xxxx.h and have it conditionally included into the
-> arch/ppc/platforms/xilinx_ocp/xparameters.h file.  Put your board
-> specific information in that file and you should be fine from there.
+All,
 
-Yes, this is what is expected for new boards.
-When writing about how the existing SystemACE driver gets the base
-address etc. from xparameters_ml300.h I haven't meant editing this file
-to match someone's board configuration. Probably I should better refer
-to xparameters.h.
+I'm bringing up my 1st kernel on a proprietary board
+using a PPC 603E chip.
 
->
-> You might have to also munge the config.in files and/or Makefiles to
-> make sure everything gets included that needs to be there to support the
-> SystemACE.
->
-> Incidentally, I would be interested in hearing what kind of transfer
-> rates people are seeing using the SystemACE.  I have run some Bonnie
-> tests on the filesystem on my MPC8266 board and it is pretty slow.
 
-This is what I've got for ML300 (CPU clock is 300MHz, 1GB IBM MicroDrive disk):
+The kernel is configured using the 6xx/7xx ppc selection.
 
-Version  1.03      ------Sequential Output------ --Sequential Input- --Random-
-                     -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine        Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-192.168.119.11  20M           33448  96 31978  99           +++++ +++ 5342.4  97
-192.168.119.11  20M           35652 100 33523  99           +++++ +++ 5685.3  95
-192.168.119.11  20M           +++++ +++ 27207  69           40435  57 5758.6  90
-192.168.119.11  20M           17465  51 27585  80           +++++ +++ 6479.5  96
-192.168.119.11  20M           40164 100 38478  99           +++++ +++ 6604.3  98
-                     ------Sequential Create------ --------Random Create--------
-                     -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-files:max:min        /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-192.168.119.11   16   189  96 +++++ +++  5909  74   191  92 26963  82   614  88
-192.168.119.11   16   172  86 32531  99  7948  99   206  91 +++++ +++   747  90
-192.168.119.11   16   195  87 +++++ +++  9156 100   207  90 +++++ +++   749  90
-192.168.119.11   16   194  87 +++++ +++  6574  72   210  91 +++++ +++   719  87
-192.168.119.11   16   189  86 +++++ +++  9152  99   208  91 +++++ +++   748  90
+The kernel starts executing at __start in head.S and
+branches to early_init(). I have stubbed out the call
+to prom_init() since this is an embedded system and
+not a power mac (as the comments at the top of the
+prom.c file indicate).
 
->
-> Jeff Angielski
-> The PTR Group
->
->
->
+The code returns to head.S and branches to mmu_off.
+Here is the code for mmu_off.
 
-Best regards,
-Andrei Konovalov
+mmu_off:
+	addi	r4, r3, __after_mmu_off - _start
+	mfmsr	r3
+	andi.	r0,r3,MSR_DR|MSR_IR		/* MMU enabled? */
+	beqlr
+	andc	r3,r3,r0
+	mtspr	SRR0,r4
+	mtspr	SRR1,r3
+	sync
+	RFI
+
+This executes all the way to the "RFI" instruction,
+but never comes back to the place in the code that
+called mmu_off.
+
+Why is the "return from interrupt" going out into
+space ? Any suggestions ?
+
+
+Best Regards,
+
+Bob Beck
+beck@assurtech.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
