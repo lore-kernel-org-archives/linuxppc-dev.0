@@ -1,17 +1,17 @@
-Return-Path: <nlv11891@natlab.research.philips.com>
-Message-ID: <001501c52b0a$0ee36ca0$9c9c9182@ddns.htc.nl.philips.com>
-From: "S. van Beek" <nlv11891@natlab.research.philips.com>
-To: "Peter Ryser" <Peter.Ryser@xilinx.com>,
-	"S. van Beek" <nlv11891@natlab.research.philips.com>
-References: <002001c52aef$d29dbb70$9c9c9182@ddns.htc.nl.philips.com>
-	<4239A41E.7040200@xilinx.com>
-Date: Thu, 17 Mar 2005 16:57:44 +0100
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
+	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id 54BAA67A70
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 18 Mar 2005 03:17:47 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff672
-	board
+	charset="us-ascii"
+Date: Thu, 17 Mar 2005 17:17:36 +0100
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D16@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: looking for a model for building CRAMFS(?)-based system
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,69 +22,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> How did you add the Flash (EMC) peripheral? Did you use the Base System
-> Builder to generate your hardware?
+Robert P. J. Day wrote:
+> now this is the sticky part.  imagine this system out in the field,
+> where you need to make an update to something in the initrd in the
+> root filesystem.
 
-Yes, we started a new project using the base system builder with the same
-options as the previous (working) project and flash, so the address range
-should be ok. I'll check tomorrow, right now its time to go home ;)
+You could get away with mirrored partitions, having version N and N-1
+in flash, so a rollback is possible. But static partitions suck,
+they are either too big (space wasted), either too small (!!).
 
-Regards,
-Sander
+Here's an idea I'd enjoy having feedback from: why not dedicating
+the whole flash to a jffs2 space, allowing a kind of "dynamic"=20
+partitioning with the composing filesystems in image files accessed
+trough
+loop devices? For example, the base system (libc, busybox, startup=20
+scripts, ..) would be packed as a cramfs/squashfs file, put in the jffs2
+storage. This image file would be mounted as root fs in 2 steps through=20
+a loop device, thanks to a small patch against linux/init/do_mounts.c.=20
+I've named this idea "Initial loopback (initlo) support", patch's
+available.
+Choosing the rootfs image is done through kernel command line.=20
+For example, let's say /dev/mtdblock0 is the jffs2 storage, and the real
+rootfs is a cramfs image file "rev1/rootfs.img" (from base of
+mtdblock0).
+The command line would be:
+		root=3D/dev/mtdblock0 lofile=3Drev1/rootfs.img
+After bootup, the rootfs.img is the rootfs /, and the mtdblock0 space
+is pivoted to /initlo, hence still accessible.
+It's easy to have whatever number of rootfs versions, switching from=20
+one another, and updating the kernel command line only when install
+succeeded (=3Dno power fail,..).
+During normal operation, the jffs2 storage is kept read-only for safety.
 
------ Original Message ----- 
-From: "Peter Ryser" <Peter.Ryser@xilinx.com>
-To: "S. van Beek" <nlv11891@prle>
-Cc: <Linuxppc-embedded@ozlabs.org>
-Sent: Thursday 17 March 2005 16:37
-Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff672
-board
+Only during install it is remounted read-write.
+Applications can be packaged the same way (image file). jffs2 will be
+happy
+to store also configuration files/data and at least 2 kernel versions
+(for=20
+safe update). Great monitors like U-Boot are able to load the kernel
+image
+(and other firmwares) from jffs2. The jffs2 loader is portable.
 
+Note: these filesystems in a filesystem look inefficient (read slow
+startup),
+but who cares, you're already relying on compression. Please note that
+once
+loaded in pagecache, the system runs at full speed. cramfs/squashfs are
+at
+advantage here over initrd, because only needed files make it into the
+pagecache.
 
-> How did you add the Flash (EMC) peripheral? Did you use the Base System
-> Builder to generate your hardware?
->
-> If you configure the hardware manually and use the OPB EMC make sure
-> that you add the address range to the PLB2OPB bridge.
->
-> - Peter
->
->
-> S. van Beek wrote:
->
-> > Hello there,
-> >
-> > This is our first post on this list, hi all!
-> > We're two Dutch students working with a Virtex-II pro ff672 board from
-> > Memec with the Communications 2 module. We've compiled a simple kernel
-> > wich comes with MontaVista Linux 3.1 (2.4.20) with ethernet and a
-> > serial port. It mounts its root filesystem over NFS and everything
-> > seems to work nicely. The next step we wanted to make was
-> > adding support for the Flash on the com board. We added the IP to the
-> > hardware and loaded the new bitstream in the FPGA. Next thing, we
-> > enabled support for MTD devices in the kernel. After that, the kernel
-> > did not seem to boot anymore. It stopped at the message 'Now booting
-> > the kernel'. So we read some documentation about debugging. We
-> > recompiled this kernel with the -g -ggdb options and removed the -O
-> > (optimalization) flag. Then we did not even see the ppc boot loader
-> > messages anymore when trying to boot. So we tried to compile the first
-> > kernel (with only serial and ethernet support) -wich worked fine
-> > before- with debugging and it gave us the same result.. no output at
-all.
-> > Can anyone give us some hints on what we can try more to find out what
-> > is going wrong?
-> >
-> > Regards,
-> > Sander van Beek
-> > Daniel van Os
-> >
-> >------------------------------------------------------------------------
-> >
-> >_______________________________________________
-> >Linuxppc-embedded mailing list
-> >Linuxppc-embedded@ozlabs.org
-> >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
->
->
->
+Comments welcome
+
+--=20
+Stephane
