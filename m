@@ -1,67 +1,69 @@
-Date: Mon, 15 Apr 2002 08:46:15 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_GENERIC_PPC32
-Message-ID: <20020415154615.GH10015@opus.bloom.county>
-References: <15542.55726.605404.888541@argo.ozlabs.ibm.com> <0204121902.AA01888@ivan.Harhan.ORG>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0204121902.AA01888@ivan.Harhan.ORG>
+Message-Id: <a04310101b8e0b0f04111@[199.170.89.178]>
+In-Reply-To: <20020415050103.6412@mailhost.mipsys.com>
+References: <a04310102b8e086debdbe@[199.170.89.178]>
+ <20020415050103.6412@mailhost.mipsys.com>
+Date: Mon, 15 Apr 2002 11:48:55 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: Jeff Walther <trag@io.com>
+Subject: PPB Bug in PowerSurge:  was: 9600 maturity
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Apr 12, 2002 at 12:02:19PM -0700, Michael Sokolov wrote:
+At 06:01 +0100 04/15/2002, benh@kernel.crashing.org wrote:
 
-> So perhaps we could get CONFIG_GENERIC_PPC32 into 2_4_devel just like this,
-> I'll do the ELF section magic and address the serial concerns below, but
-> without touching bi_recs at all for now?
-
-Since pmac/chrp/prep haven't been ported over to CONFIG_GENERIC_PPC32
-what are you planning on moving exactly?   You said the GT-64260 work
-would be its own 'moral battle' and you don't 'own' K2 and Adirondack
-anymore either remember...
-
-> > One solution to the problem of the serial driver as a module is to
-> > have the serial.o module have an empty rs_table (so it assumes no
-> > ports when it loads),
+>>I have found that any PCI card which has its own PPB hangs the
+>>machine (with a few exceptions) in the lower four slots.  i.e. if you
+>>create a hierarchy of two PPBs Apple's PCI implementation bails.
+>>
+>>Jeff Walther
 >
-> This is exactly what will happen in 2_4_alt if you build the serial driver as a
-> module for CONFIG_GENERIC_PPC32.
+>Yes, this is a known bug of older OFs, though an OF patch is floating
+>around to fix it (dunno how to find it though).
 >
-> > and then have a ppc_serial module which does
-> > whatever magic is needed to find out about the serial ports on the
-> > system and calls register_serial for each one.
->
-> How about making it prepchrp_serial instead?
+>Note that recent 2.4 kernels may be able to work around OF bugs here.
 
-If I'm reading this thread right, we would always need to do this since
-we would always give the serial driver an empty table (and have a very
-terse <asm/serial.h>.
+Thank you for that information, Ben.  I'm really more of a MacOS guy
+and subscribed to these lists out of an interest in low level
+hardware issues.  There doesn't seem to be any other forum that
+discusses hardware specifically, so you guys (and other Linux/Darwin
+lists) who sometimes must program to the hardware are the next best
+thing.
 
-> I would say that only a few
-> systems would want that and it shouldn't be imposed on the rest of the PPC
-> world. PMacs wouldn't need anything in rs_table at all, as they have no
-> built-in NS16550 serial ports, the ISA serial port definitions currently given
-> by <asm/serial.h> for CONFIG_ALL_PPC are for PReP and CHRP.
+Do you have suggestions on where I might begin a hunt for such an OF
+patch?  I assume this is something that one could load in NVRAM under
+any OS that will take care of the bug until the next time the NVRAM
+is reset?
 
-Again, if I'm following Paul correctly, <asm/serial.h> will just setup
-the space for things and not have any definitions at all for the ports.
+There is an email list (SuperMacs) at lowendmac.com of Umax users and
+this is an issue that has been a big pain for most of us because our
+lower four slots are behind one PPB.  Any device that adds another
+creates a problem.    It became especially acute with the
+introduction of the FW/USB cards.
 
-> And for all the
-> systems I'm working with the point is moot as the serial driver must be
-> compiled in for the console. So I think having the serial driver as a module
-> and having it access hard-wired serial ports would be a very rare need, perhaps
-> only for PRePs and CHRPs with video consoles. Therefore I would suggest having
-> such a special module only for those rare cases where it's needed, and letting
-> the rest not worry about supporting it.
+I didn't know it was an Apple bug when I first ran into the problem
+and figured it could be a problem with OF or the Bandit or the DEC
+21052 chip.  So I replaced the DEC 21052 with the Intel 21152AB, the
+Intel 21152BA, the TI PCI2550, and the Hint HB1-SE33P.  After all
+those PPBs had the same symptoms I was convinced it was an Apple
+problem.  I was willing to entertain the notion that all the older
+PPBs might have the same bug, especially because the Intel is the
+descendant of the DEC, but the Hint is a relatively new design.
 
-I think what we can do is have the code which sets up the serial driver
-work both when it's in a module and when it's compiled in.
+If someone knows how to patch the OF in the ROM for the PowerSurge I
+can get the patched ROM code written into Flash Memory chips that are
+pin compatible with the Mask ROMs on the PowerSurge machines.  If
+anyone is actually interested in this, it would probably be best to
+use the Kansas ROM code as the base.  I've but Kansas ROMs in the
+clones (Umax and PCC PTP) and in 7500/8500 machines and it works fine
+and eliminates the speculative processing issue with G3 processors.
+The Kansas ROM works with any PowerSurge machine as far as I can
+tell.  Unfortunately, it doesn't solve the PPB problem.  :-(
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Jeff Walther
+
+P.S.  Apologies for veering off topic for the list.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
