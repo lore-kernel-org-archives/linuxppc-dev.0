@@ -1,77 +1,75 @@
-Date: Wed, 17 Jul 2002 11:24:42 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: consistent_alloc() revisited
-Message-ID: <20020717012442.GA22786@zax>
-References: <20020716021313.GQ22786@zax> <3D3428FF.5090401@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D3428FF.5090401@embeddededge.com>
+From: "Jim Lin" <jimmlin@solomon.com.tw>
+To: "linuppc" <linuxppc-embedded@lists.linuxppc.org>,
+	"Georg Klug" <gklug@giga-stream.de>, <clark@esteem.com>,
+	<jcampos@mvista.com>
+Subject: RE: Poor 8xx SCC Ethernet mode performence..
+Date: Wed, 17 Jul 2002 11:39:14 +0800
+Message-ID: <NFBBLLKCILMGHKJGDFGHEEMGCCAA.jimmlin@solomon.com.tw>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="big5"
+In-Reply-To: <FFECLICFNBJAHONLGAKMKEGICFAA.gklug@giga-stream.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jul 16, 2002 at 10:09:03AM -0400, Dan Malek wrote:
+Hi :
+
+After I change 10/100 T hub . It's speed up to 370KBps at Half duplex. 480 KBps at Full duplex in NFS envirment.
+I had work follow ..
+
+1. 10/100 HUB turn to Halt duplex because RTL 8201 not  support auto-negotiaon.
+    I check our hardware component PHY Rtl 8201. It's not support  auto-negotiation when it's wired SMI .
+
+2.enable  SCC_PMSR_FDE | SCC_PMSR_LPB  , and Tested FTP Transfer again through 10/100 T HUB at Full           duplex .  It's about 200KBps.It's collision between HUB and RTL8201..
+
+3.enfore FTP host nic running at 10 Full duplex  mode ,  pulg cross line between  FTP host and custom board .
+   It's got 470 KBps .
+
+4. Due to custom board running in  NFS  envirment . It's cost some throughput.. now I trying test it without NFS envirment.
+    If I got more  information  I will post again.
+
+
+Thanks and Regards
+
+Sent: Tuesday, July 16, 2002 8:28 PM
+To: Jim Lin
+Subject: AW: Poor 8xx SCC Ethernet mode performence..
+
+
+Hi Jim,
+
+> I  was testing SCC ethernet performance at our 850 custom board and
+> found somting interesting.
 >
-> David Gibson wrote:
+> 1. Tested FTP  Transfer about 20MB file with 10T hub  I got  about
+> 250 k bps (someting poor ..)
+
+Yes that is poor, indeed.
+
+> 2. and I found the hhl20 arch/ppc/8xx_io/enet.c source code NOT
+> enable full duplex ..
+>      and I had  pmsr  added SCC_PMSR_FDE | SCC_PMSR_LPB .. and
+> compiling , tested FTP Transfer again.
+>      I got about 200 Kbps!
 >
-> >In addition, the following seem to me like desirable (to a greater or
-> >lesser extent) properties for consistent_alloc():
-> >	a. one of the return values can be used as a single "handle"
-> >so that consistent_free() only needs one parameter.
->
-> We want the implementation API to be identical across all architectures.
-> Until there is a consistent way of handling devices that are on local
-> processor busses, platforms with these types of devices may call these
-> functions directly.    This is particularly true of some host USB
-> controllers
-> on embedded systems that don't have PCI busses.
+> I do not understand what is happen? Has anyone experience this?
 
-Well, the unified device tree stuff should give us that.
+The other performance is also poor.
 
-> >	b. works on both cache coherent and non cache coherent
-> >machines
->
-> The original purpose of the consistent_* functions was to provide support
-> for processors that aren't cache coherent.  The pci_* (and any other
-> functions)
-> can call these if appropriate, but I still believe the decision should  be
-> made at a higher level.  Obviously, these consistent_* functions will
-> be implemented differently on non- or cache coherent processors, and across
-> different architectures.  The PCI functions (or others) should still do
-> their
-> thing as they always have, and call these consistent_* functions when
-> appropriate.
+First I think you should check your whole ethernet. If you really have
+2 stations at a 10BaseT Hub, you definetely need half duplex traffic. It
+might be that not all station are half duplex connected, so there would be
+collisions and even late collisions on the network that could not be
+detected. This would make the performance decrease.
 
-I know that's their original purpose, but it's *really easy* to make
-consistent_* work on cache coherent chips too, so why not do it.
-It'll make our life easier when we get an OCP device appearing on a
-cache coherent chip.
+Probably your hub has a collision LED This would make it easier for you to
+debug the situation.
 
-> >	c. be able to use highmem pages
->
-> You think there will be non-coherent processors with this much memory? :-)
+What about installing a little switch with 10/100 connectors? Then you
+could use full duplex on each connector and that would boost your
+performance.
 
-I think it's possible, yes.
-
-> >-	if (in_interrupt())
-> >-		BUG();
-> >+	BUG_ON(in_interrupt());
->
-> We should be able to call these functions from interrupt, let's push
-> the remainder of the changes though get_free_pages() to make this happen.
-
-As far as I can tell there's no problem with get_free_pages() (or
-rather, alloc_pages()), except that we need to add GFP_ATOMIC to the
-flags if we're in interrupt context.
-
-The problems are in get_vm_area() which does a kmalloc() without
-GFP_ATOMIC and in map_page() which can sleep.
-
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+Georg Klug
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
