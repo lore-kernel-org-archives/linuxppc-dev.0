@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 451F567A6D
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 11:06:50 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chris Friesen <cfriesen@nortel.com>
-In-Reply-To: <4251CEA4.6070604@nortel.com>
-References: <4251CEA4.6070604@nortel.com>
-Content-Type: text/plain
-Date: Tue, 05 Apr 2005 11:03:25 +1000
-Message-Id: <1112663005.26086.134.camel@gaston>
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp1.wanadoo.fr (smtp1.wanadoo.fr [193.252.22.30])
+	by ozlabs.org (Postfix) with ESMTP id 3A70667A64
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 15:42:55 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0103.wanadoo.fr (SMTP Server) with ESMTP id D3CDF1F926A5
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 07:42:47 +0200 (CEST)
+Date: Tue, 5 Apr 2005 07:39:31 +0200
+To: Christian <evilninja@gmx.net>
+Message-ID: <20050405053930.GD4604@pegasos>
+References: <20050328232355.GA1982@pegasos>
+	<20050331142813.GH25923@smtp.west.cox.net>
+	<20050331184549.GA28069@pegasos> <4251D5BA.5080905@gmx.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: somewhat OT -- trying to build code on the fly then run it
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <4251D5BA.5080905@gmx.net>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: linuxppc-dev@ozlabs.org, Tom Rini <trini@kernel.crashing.org>
+Subject: Re: PREP sym53c8xx sym53c8xx brokeness due to
+	2.6.9-rc1-bk1	introduced residual data patch ...
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,107 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-04-04 at 17:32 -0600, Chris Friesen wrote:
-> I'm writing a testcase to test some code we wrote to allow userspace to 
-> flush the whole dcache and invalidate the whole icache.  This requires 
-> me to write self-modifying code.  For the first stage I'm just trying to 
-> build a routine (that just increments r3 and returns) on the heap and 
-> then call it.
+On Tue, Apr 05, 2005 at 02:03:06AM +0200, Christian wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Everything seems to be fine right up until I jump to the code that I've 
-> written, then I get a segfault.  The debugger shows my registers and 
-> data values are as expected, and the page of memory has xwr permissions.
+> Sven Luther wrote:
+> >>># This is a BitKeeper generated diff -Nru style patch.
+> >>>#
+> >>># ChangeSet
+> >>>#   2004/08/16 10:35:18-07:00 trini@kernel.crashing.org
+> >>>#   ppc32: On PReP, use residual data for PCI dev -> IRQ, and use it.
+> >
+> > I got through all the changesets one by one, and it is most definitively this
+> > one. i unapply it and it works, i apply it and it breaks.
 > 
-> Can anyone tell me what I'm missing?  I'm sure its something simple.
+> i can confirm this one.
 > 
-> Thanks,
+> the changesets are listed here:
+> http://linux.bkbits.net:8080/linux-2.6/patch@1.1803.125.6
 > 
-> Chris.
+> ...and because i had some troubles getting a GNU diff-style patch with
+> /usr/bin/bk, i made one against 2.6.11.6:
 > 
+> http://nerdbynature.de/bits/hal/2.6.11.6/1.1803.125.6.diff
 > 
-> PS.  Here's my current test code.
+> more info and dmesg under:
 > 
-> #include <errno.h>
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <sys/ioctl.h>
-> #include <unistd.h>
-> #include <stdio.h>
-> #include <stdio.h>
-> #include <sys/mman.h>
+> http://nerdbynature.de/bits/hal/2.6.11.6/
 > 
-> /* these next two lines are the hex equivalents of the instructions:
->   * addi r3,r3,1
->   * blr
->   */
-> unsigned int incr_code[] = {
-> 	0x38630001,
-> 	0x4e800020
-> };
-> 
-> int dotest(unsigned long *addr)
-> {
->          int i=0;
->          asm volatile (" \n\
->                  mr 3,%1 \n\
->                  bla %2  \n\
->                  mr %0,3 \n"
->                  : "=r" (i)
->                  : "r" (i), "r" (addr));
->          return i;
-> }
+> to summarize: i don't know exactly which changes, but *some* changes had
+> to be made to arch/ppc/platforms/prep_pci.c to get the network card
+> working [1] again (network code kept locking up the machine). after this
+> issue was resolved, i too noticed the scsi errors [2] others were
+> complaing about.
 
-bla can only be used for small addresses (or very high addresses), and
-it doesn't take a register argument but an absolute address. You want
-something different, more like
+The issue seems obvious, the patch adds some different way of setting the
+irqs, based on the residual data, which fails to do what it should on the
+powerstack, and thus the irqs are fully left uninitialized. 
 
-	mtctr %2
-	bctrl
+Friendly,
 
-Though you also need to add proper "clobber" constraints to indicate to
-the compiler what will be clobbered by the routine you are calling (look
-at the syscall macros of the kernel for an example of rather standard
-clobber lists).
-
-> void alter_opcode(unsigned long *addr, unsigned long opcode)
-> {
-> 	unsigned long offset = 0;
-> 	
-> 	asm volatile(
->                  "stw    %1,0(%0)  \n\t"
->                  "dcbf   %0,%2     \n\t"
->                  "sync             \n\t"
->                  "icbi   %0,%2     \n\t"
->                  "sync             \n\t"
->                  "isync            \n\t"
->                      :: "r" (addr), "r" (opcode), "r" (offset));
-> }
-> 
-> int main()
-> {
-> 	unsigned long *addr;
-> 	void *p = mmap(0, 4096, PROT_EXEC|PROT_WRITE|PROT_READ,
-> 		MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-> 	if (p == MAP_FAILED) {
-> 		perror("mmap");
-> 		goto error;
-> 	}
-> 	
-> 	addr = (unsigned long *)p;
-> 	
-> 	alter_opcode(addr, incr_code[0]);
-> 	alter_opcode(addr+1, incr_code[1]);
-> 	
-> 	printf("%d\n", dotest(addr));
-> 	return 0;
-> 	
-> error:
-> 	return -1;
-> }
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Sven Luther
