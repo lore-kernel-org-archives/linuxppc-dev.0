@@ -1,81 +1,59 @@
-Date: Wed, 30 Aug 2000 22:02:10 +0300
-From: Alex Shnitman <alexsh@hectic.net>
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <39AD5E8E.E3C244D8@mvista.com>
+Date: Wed, 30 Aug 2000 12:20:47 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+Reply-To: mgreer@mvista.com
+MIME-Version: 1.0
+To: Alex Shnitman <alexsh@hectic.net>
+CC: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Linux on Motorola Sandpoint/PPMC7400
-Message-ID: <20000830220210.C5340@hectic.net>
-References: <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC2AB9.D47ADE73@mvista.com> <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC0BF9.38DB6A9A@mvista.com>
-Mime-Version: 1.0
+References: <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC2AB9.D47ADE73@mvista.com> <20000828225504.B23679@hectic.net> <39AAF258.B43B901@mvista.com> <20000829201347.A30190@hectic.net> <39AC0BF9.38DB6A9A@mvista.com> <20000830215856.B5340@hectic.net>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <39AC0BF9.38DB6A9A@mvista.com>; from mgreer@mvista.com on Tue, Aug 29, 2000 at 12:16:09PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi again,
+Alex Shnitman wrote:
 
-I'm trying to load a kernel with an initrd image. I have two questions.
+> Hi, Mark!
+>
+> On Tue, Aug 29, 2000 at 12:16:09PM -0700, you wrote the following:
+>
+> > > I downloaded the kernel and tried it. It starts booting, but it hangs
+> > > right after initializing the the OpenPIC. :-( I'll download the source
+> > > code tonight and try to look at it, although I don't have much hopes
+> > > gotta learn though.
+> > >
+> > > Is there any book that you recommend to get me started? Any other
+> > > docs/tips?
+> >
+> > Oops, I should have included the sandpoint switch settings.  For
+> > this version of the kernel, the sandpoint switches must be set as
+> > follows:
+> >
+> > S4,S3: up, down
+> > S5: down
+> > S6: down (yours is probably up which is why it hung in openpic)
+> >
+> > Try this and see if it helps.
+>
+> It did! The kernel boots fine now all the way through.
+>
+> Thanks a lot!
+>
+> Another question: what would be the best way to go about booting Linux
+> from the flash? Would flashing the kernel in instead of the dink32
+> monitor do the trick, or does dink32 do some important initializations
+> that are needed for the kernel to boot?
 
-First, I'm locating the kernel (via the s-records) at 400000. It then
-relocates to 800000. I'm refering to this output:
+Yeah, at the moment, it does rely on DINK to do some initial setup (memory
+controller, et. al.).  If you want, you can put that in the code yourself and
+then you can get rid of DINK.  If you don't want to do that, you can still put
+the kernel in flash (somewhere that doesn't overwrite DINK or the execption
+vectors) as long as you have enough flash on your PPMC module.  You can then
+do something like "env BOOT=<address>" to cause DINK to automatically jump to
+that address--that's should be the address of the linux ppc bootloader--and
+the kernel will boot up for you without your intervention.
 
-DINK32_MAX >>go 400000
-loaded at:     00400000 00414E20
-relocated to:  00800000 00814E20
-zimage at:     0040B000 00489577
-relocated to:  00815000 00893577
-initrd at:     00489577 00533299
-relocated to:  00893577 0093D299
-avail ram:     00400000 00800000
-
-After that it boots fine.
-
-If I try to locate it at 800000 to begin with, it fails like this:
-
-DINK32_MAX >>go 800000
-loaded at:     00800000 00814E20
-zimage at:     0080B000 00889577
-initrd at:     00889577 00933299
-avail ram:     00400000 00800000
-
-Linux/PPC load: root=/dev/ram
-Uncompressing Linux...bad gzipped data
-exit
-
-Does that make sense to anyone? Not that it disturbs me, but I'm just
-curious.
-
-Second, I'm trying to load an initrd image. I put the compressed
-filesystem image in arch/ppc/boot/ramdisk.image.gz and then did "make
-zImage.initrd", which created zvmlinux.initrd which I'm loading.
-However during bootup it says this:
-
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: registered device at major 7
-loop: enabling 8 loop devices
-RAMDISK: Couldn't find valid RAM disk image starting at 0.
-Freeing initrd memory: 4194301k freed
-
-Why does it look at offset 0? Isn't "make zImage.initrd" supposed to
-update the ramdisk word to the correct offset?
-
-I tried to pass offsets with the ramdisk_start parameter, but I don't
-know exactly what to put there. I tried different byte offsets
-(e.g. take the offset from the above relocation messages, or the
-offset from objdump extracting the initrd section from
-zvmlinux.initrd), but then thought that probably this parameter
-expects block offsets. Now, none of these numbers divide by 1024 so I
-can't make block numbers out of them.
-
-What am I doing wrong?
-
-
---
-Alex Shnitman                            | http://www.debian.org
-alexsh@hectic.net, alexsh@linux.org.il   +-----------------------
-http://alexsh.hectic.net    UIN 188956    PGP key on web page
-       E1 F2 7B 6C A0 31 80 28  63 B8 02 BA 65 C7 8B BA
-
-"Everything that can be invented has been invented."
-	-- Charles Duell, head of the U.S. Patent Office, 1899
+Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
