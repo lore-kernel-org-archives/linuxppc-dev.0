@@ -1,51 +1,59 @@
-Message-ID: <38EB79F9.6EED0003@astro.wisc.edu>
-Date: Wed, 05 Apr 2000 12:38:02 -0500
-From: Matt Haffner <haffner@astro.wisc.edu>
-Reply-To: haffner@astro.wisc.edu
+Message-ID: <38EB8412.132D57F0@erols.com>
+Date: Wed, 05 Apr 2000 14:21:06 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-To: Arnaud Gomes-do-Vale <arnaud@carrosse.frmug.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree 4 & sound problems
-References: <m3u2hgy78f.fsf@melchior.fleming.u-psud.fr>
+Subject: Re: Hard freezing w/ mp3s [Was: Re: XFree 4 & sound problems]
+References: <20000405190131.025451@mailhost.mipsys.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Arnaud Gomes-do-Vale wrote:
+Benjamin Herrenschmidt wrote:
+
+> That's really interesting since there is no bug I know of. Can you please
+> tell me:
 >
-> Matt Haffner <haffner@astro.wisc.edu> wrote :
-> > I'm a little confused why there is a problem with XFree 4 and sound
-> > since I wouldn't think XFree does anything with it, but I'm getting hard
-> > freezes when playing MP3's in XMMS and mpg123 whenever I do significant
-> > X actions (switching desktops, starting Netscape, mousing a menu, etc.).
-> > If I just let things go and don't touch anything, it plays fine. The
-> > freeze requires a reset button reboot--the machine is not reachable at
-> > all (i.e. it's not just X).
->
-> Are you shure this is an X11 or kernel related problem ?
-> For me it sounds like you are using ESD evironment (for
-> example gnome and/or Enlightment WM). The Enlighment
-> Sound Daemon in some cases can't access /dev/sound while
-> something else use it (eg: xmms with OSS output or mpg123)
-> so X events associated with sounds in E or Gnome waits until
-> the sound can be played.
+>   - The exact machine model
 
-I know exactly what you are talking about, since I used to get this when
-we had to run xmms with the OSS module in 1999, but I've been using ESD
-since 2K was released. But this is much more severe than those hiccups.
-I don't have Gnome sounds on (and ditched E a while ago). I can make it
-happen as easy as start a song playing in xmms and then launch netscape
-(even from the command line). As soon as the first window starts to
-render, freeze...
+Sawtooth G4 450
 
-Thanks for the reply though.
+>   - Did the problem began with a specific kernel or did you always had it
 
-mh
+Not sure.  I have only used your 2.2.15 to install and now 2.2.15pre14 that
+I compiled (I am working on getting 2.3.99 to boot correclty)
+
+>   - Do you use the "nap" mode for power management ? (assuming it's a
+> powerbook)
+
+It's a desktop.
+
+It happens seemingly randomly, and generally only after being on for a while.
+And I am 99% sure it only happens when I start tweaking w/ multiword and
+unmask irq..
+
+I even wrote down the exact xmon output one time :-)
+    vector: 300  at pc=C003e6d0, msr=9032, sp=08459c60 [c8459bb0]
+    dar=d453d724, dsisr=40000000
+    current=c8458000, pid=6536, comm=slocate
+
+I guess that is the slocate one...
+
+I understand the basic information in that (I have taken my cpu and assembly
+classes), but definately not enough to debug wtf it means is wrong.  I have
+deduced the error from the fact that it happens during a period of data
+transfer (mp3s or a database execution; the latter only happened once)
+and that I am almost certain it only happens when I play with the ide
+settings...
+
+--Nelson Abramson
+
+
 --
-Matt Haffner                      /|------|\    University of Wisconsin
-Dept. of Astronomy               /|--------|\            Madison
-haffner@astro.wisc.edu          /|----------|\
-           WHAM project -- http://www.astro.wisc.edu/wham
+Shouldn't people be arrested and persecuted for engaging in their
+constitutional rights?  http://www.opendvd.org
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
