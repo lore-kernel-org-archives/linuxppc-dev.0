@@ -1,46 +1,58 @@
-From: August Hoerandl <ahoerandl@gmx.at>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: power saving
-Date: Thu, 10 May 2001 12:36:12 +0200
-Content-Type: text/plain;
-  charset="us-ascii"
-References: <3AF638AC.659C8A1F@centurysys.co.jp> <3AF6FC60.D5FE49D9@mvista.com>
-In-Reply-To: <3AF6FC60.D5FE49D9@mvista.com>
-MIME-Version: 1.0
-Message-Id: <01051012361202.02674@linuxhoe>
+Date: Thu, 10 May 2001 03:45:38 -0700
+From: Matt Porter <mporter@mvista.com>
+To: machael thailer <dony.he@huawei.com>
+Cc: Dan Malek <dan@mvista.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Uncompress Ok, but cannot run linux kernel...
+Message-ID: <20010510034537.A7488@cx258813-a.chnd1.az.home.com>
+References: <001d01c0d5c8$27ae8c60$8021690a@huawei.com> <3AF6F323.7944F695@mvista.com> <000901c0d8fe$78abed40$8021690a@huawei.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <000901c0d8fe$78abed40$8021690a@huawei.com>; from dony.he@huawei.com on Thu, May 10, 2001 at 11:08:21AM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Monday 07 May 2001 09:49 pm, Dan Malek wrote:
-> Tania Oka wrote:
-> > I would like to reduce power consumption on a custom MPC855T board.
+On Thu, May 10, 2001 at 11:08:21AM +0800, machael thailer wrote:
 >
-> This has been asked before, and you can read about it in mailing
-> list archives.
-
-checked this - found nothing very specific
-
-> Basically, the MPC8xx processors have a dynamic power management
-> system that doesn't gain much from just doing something in the idle()
-> loop.  The majority of the power is consumed by peripherals.  If they
-> are not enabled, they automatically power down.  All of the MPC8xx
-> drivers "do the right thing" on open and close to power up/down
-> peripherals.
+> > machael thailer wrote:
+> > > ..... But I met
+> > > some urgent problems ...
+> > >     I modified the bootloader codes according to arch/ppc/mbxboot/head.S
+> >
+> > For starters, you shouldn't be using this "boot loader" for a 750.....
+> > How did you configure a kernel to get there in the first place?
+> > A 750 should be a CHRP (or PReP, if you have to.....), which will
+> > direct you to a working "chrpboot" boot loader.
 >
-> If you have some very low power standby requirement, you need to add
-> lots of power management software to do things like power down/up
-> any external peripherals on your board, put DRAM in autorefresh
-> mode, shut down the clocks and put the processor into a deep sleep.
+> If I use  "chrpboot " bootloader, I have to provide many functions in my
+> boot codes according to CHRP specifications:
+>
+> 1  "prom"(promptr) functions which can provide with "/chosen" ,"claim" and
+> "getprop" services etc in arch/ppc/chrpboot/start.c and in
+> arch/ppc/kernel/prom.c .
+> 2  device-trees for my custom board.
+>
+> Are these functions all necessary for booting the linux kernel?
 
-yes - thats what i would like to do ;-)
+You're doing this all wrong.  There have been a bunch of good examples
+of ports to non-CHRP/PReP/Pmac 6xx/7xx/74xx hardware in the linuxppc_2_5
+tree for a while now.  Most of them have just been moved into the
+new linuxppc_2_4_devel tree.  See the K2, MVME5100, MCPN765, PCore,
+PrPMC750, F1, etc. ports for details on how to quickly and easily do
+a port to a custom board.
 
-> You could look at some of the PowerMac power management code for
-> design ideas.
+> And do I have to  modify arch/ppc/mm/init.c=>MMU_init() and
+> arch/ppc/kernel/setup.c=>identify_machines() to suit my cases?
+> I notice that in identify_machines(), there are many types initializations
+> functions such as pmac_init(),prep_init(),chrp_init(),apus_init(),
+> oak_init(),m8xx_init(),m8260_init(). Do I have to provide my own ***_init()
+> functions?
 
-could anyone be a little more specific to get me to the right files ?
+Yes.
 
-Regards
-Gustl
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
