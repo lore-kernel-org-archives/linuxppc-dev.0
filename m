@@ -1,62 +1,81 @@
-Message-ID: <20000308184054.18047.qmail@web1703.mail.yahoo.com>
-Date: Wed, 8 Mar 2000 10:40:54 -0800 (PST)
-From: Gabriel Ricard <g_ricard@yahoo.com>
-Subject: Website Resources Survey
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Date: Wed, 8 Mar 2000 12:47:16 -0600
+From: Grant Erickson <grant@borg.umn.edu>
+To: Michel Lanners <mlan@cpu.lu>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+        Matt Porter <mmporter@home.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
+In-Reply-To: <200003072200.XAA00434@piglet.grunz.lu>
+Message-ID: <Pine.SGI.4.21.0003081136360.51665-100000@brule.borg.umn.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok folks, hopefully John L. Grantham, designer of the
-LinuxPPC.com website, and I will be teaming up soon to
-bring you a new website for LinuxPPC.org where we can
-gather up all the LinuxPPC resources and put them in a
-single, centralized resource for you all to enjoy.
-Before we go about doing this, I'd like to ask you all
-some questions, and run some ideas by you.
+Thanks for all the assistance on this issue thus far. This has been an
+interesting trial under the guise of "life is just unnecessarily hard when
+hardware designers fail to do things the right way."
 
-Firstly, I really want to know what you'd all like to
-see available on LinuxPPC.org. This is an open
-question, and is directed at both developers and
-endusers. I encourage all of you to take a little bit
-of time and really think about this since it is very
-important to have a stable knowledgebase for the
-PowerPC port of Linux, at least IMHO it is.
+My system:
+	Power Macintosh G3 300
 
+So, after playing with a few other PCI cards, I find:
 
-Secondly, since this site is going to be much more
-dynamic that the current site (thanks to PHP), I'd
-like to make, what were, static resources, more
-dynamic. I.E. one of my ideas is to create a status
-system for supported and unsupported hardware alike.
-This can have several features including kernel
-support on said systems, what bootloaders work, tips &
-tricks, enduser comments/advice, a link to searching
-the mailing lists for info on said hardware, etc, etc.
+                 ---------------------------------------------------------
+     Board Slot  |      0      |      1      |      2      |      3      |
+                 ---------------------------------------------------------
+Pin  Product     |  IRQ   Dev  |  IRQ   Dev  |  IRQ   Dev  |  IRQ    Dev |
+                 ---------------------------------------------------------
+ A   AMD Lance   |   25    15  |   24    14  |   23    13  |   --     -- |
+ A   ATI Rage*   |   --    --  |   --    --  |   --    --  |   22     18 |
+ A   Prisa NetFX |   25    15  |   24    14  |   23    13  |   --     -- |
+ A** My Device   |   --    15  |   --    14  |   --    13  |   --     -- |
+                 ---------------------------------------------------------
 
-Another feature I'd like to add to the site is related
-to the recent page put up on penguinppc.org, the
-"Who's Who" list. I'd like to make something like this
-that is a little more interactive, in order to connect
-the users to the developers better. Hopefully this can
-assist users in directing
-feedback/questions/suggestions/etc to the proper
-people.
+  * The ATI Rage is soldered onto the motherboard.
+ ** My brain-dead PCI device uses INTA# but doesn't advertise it via the
+    PCI_INTERRUPT_PIN register.
 
+So after experimenting with this for a while, I think* that I can assign
+the interrupt based on the PCI device the card is assigned.
 
-Well, I guess that's about all I've got to say for
-now. So, please, if you've got some extra time, look
-over what I've said and get back to me so that we can
-all work together to make the PowerPC platform a more
-viable solution for running Linux.
+Also, regarding memory address space resources, is there a routine I can
+call that says "Assign this card some resource space because it hasn't
+been assigned one yet"?
 
-Thanks!
+Thanks again,
+
+Grant
 
 
-=====
-Gabriel Ricard
-g_ricard@yahoo.com
+On Tue, 7 Mar 2000, Michel Lanners wrote:
+> On   7 Mar, this message from Grant Erickson echoed through cyberspace:
+> > The device has an interrupt at INTA#. Unfortunately, the device being dumb
+> > as it is, doesn't utilize the interrupt pin register to advertise that it
+> > does in fact have an interrupt there. So, I assume that once again, the
+> > PROM doesn't give it one.
+>
+> Of course not... how should it know? But....
+>
+> > Is there a way, in Linux, for me to programmatically and manually assign
+> > an interrupt to this device as might have been done in the PROM? I'm
+> > guessing I have to twiddle some registers in the North Bridge, correct?
+>
+> As far as I know, yes, it depends on the host bridge. However, I don't
+> think there's any bridge configuration involved here, as the interrupt
+> pin routing would rather be done in hardware.
+>
+> If this is in a PowerMac (at least those previous to UMA), then there
+> is a fixed IRQ per physical slot. All 4 PCI interrupt lines are OR'ed
+> together per slot.
+>
+> However, there are other IRQ routing schemes as well... the above being
+> the easiest one, because the IRQ value can be hardcoded based on the
+> slot, which you can determine by software.
+>
+> Plus, there are ways to determine an unknown IRQ by letting the device
+> generate an interrupt, and seing what IRQ it comes in on. You might
+> find more info in 'Linux Device Drivers' by Alessandro Rubini.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
