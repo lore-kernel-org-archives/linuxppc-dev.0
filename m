@@ -1,21 +1,21 @@
-From: zjuzhou@163.net
-MIME-Version: 1.0
-Message-Id: <3ADD2B1B.09829@bjapp1>
-Date: Wed, 18 Apr 2001 13:50:19 +0800 (CST)
+Message-Id: <200104181129.HAA07606@odonnell.lowell.mclinux.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: How can i begin ?
+From: mod+linuxppc-embedded@std.com
+Subject: Re: Possible bug in serial.c?
+Date: Wed, 18 Apr 2001 07:29:24 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all
-	My target borad is using MPC850DE and i use Hard Hat linux & CDK 1.2.
-Because this borad is customed by others.My hardhat linux is for RPXlite  borad(using MPC850 also).I must porting it to my borad, and i don't know how to begin
-?
-	i can't access linuxppc.org web(because firewall), although this question must have been asked before.
-	Thanks.
+>Since 'i' is an index into the rs_table[], shouldn't this be:
+>
+>        if (i >= NR_PORTS)
+>                return(-ENOENT);
 
-Dross.Chou
+
+Speaking of rs_table[] and such, I'd be grateful for a
+clear explanation of the async_struct and serial_state
+structs - what are each intended for?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
