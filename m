@@ -1,57 +1,47 @@
-Message-ID: <022601c1ae91$34c80820$0900a8c0@Domain.invalid>
-From: "murali nagarajan" <muralin@gdatech.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Problem with ping/telnet
-Date: Tue, 5 Feb 2002 14:05:03 -0800
+From: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15456.23060.255087.831957@igor.jsc.nasa.gov>
+Date: Tue, 5 Feb 2002 16:17:56 -0600
+To: Hollis Blanchard <hollis@austin.ibm.com>
+Cc: jeffrey.d.kowing1@jsc.nasa.gov, linuxppc-dev@lists.linuxppc.org
+Subject: Re: io.h and I/O port access from user space
+In-Reply-To: <1012945690.1265.11.camel@granite>
+References: <15456.16854.183292.343027@igor.jsc.nasa.gov>
+	<1012945690.1265.11.camel@granite>
+Reply-To: jeffrey.d.kowing1@jsc.nasa.gov
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Hollis Blanchard writes:
+ > I guess the obvious question is do you have ISA slots in the system
+ > you're trying to build for? And you don't want to use the in-kernel
+ > stuff? Do you really *need* isapnptools? :)
 
-We have a custom designed board G4 MPC7450 with GT64260 Galileo controller.
-We have been able to port the Linux on this board. But we do have some
-issues for which I will appreciate if some one could help me.
+Well, since you ask and at the risk of further demonstrating my
+ignorance:
 
-Implementation details:
------------------------
-We have used Mission Critical Linux 2.4.5-Pre 5 (derived from debian distro)
-and PPCBoot 1.0.4 as our base versions. I used the file system meant for NFS
-mount from the mission critical linux web site. We made necessary
-modifications to the software to work on our custom design.
+Yes, I have ISA slots - well, actually, I have a PC/104 stack.
 
-I am able to boot Linux successfully with a NFS mounted file system and a
-Ramdisk (I could test upto 128MB size) based file system. But this was
-possible only when I bypassed the /sbin/init and run the "Bash" shell
-directly. I made changes to init/main.c to run the shell directly after
-successful opening of the /dev/console. Bypassing of /sbin/init at boot time
-is inevitable until we integrate a MPSC port based serial console driver
-with our linux system. We have a crude one (emulates the low level UART
-functions using MPSC) that just works.
+Specifically, I've got an inhouse 603ev/MPC106 board on a PC/104 form
+factor running a linuxppc 2.4.x kernel.  I've been using an Adastra
+NSP-104 PC/104 module as my network interface card.  That card,
+besides its ethernet chip, also has a Super I/O PC87338 chip that
+controls two serial ports (i.e. SCC1 and SCC2).  Naturally, I just had
+to use those two serial ports, and, of course, it doesn't have nice
+little jumpers to set IRQ and IO base addresses.  Instead, it wants to
+be configured using Plug-n-Play which I obviously know nothing about.
+Anyways, I thought, hey, I'll investigate by using this nifty
+isapnptools package.  Silly me.
 
-We have the following difficulties:
-                                   ----------
-- PING command does not work
-  The erro message I get is   "ping: unknown protocol icmp"
+But beyond my specific problem, I guess it got me to wondering in
+general about the proper way to write user space programs using
+inb/outb (and in my wildest fantasies of submiting a patch for
+isapnptools).
 
-- Telnet program does not work which tells me that the service is unknown.
-   The error message I get is "telnet: tcp/telnet: unknown service"
-
-What can be the issue? I suspect if any of the boot script is not done. I
-ran manually /etc/init.d/rcS and /etc/rc3.d/* (my inittab says run level 3)
-from the bash prompt. This did not help to solve my above problem.
-
-I assume that TCP/IP is fine because I have performed NFS mount of the root
-file system and can access all the files. The booted OS seems to be stable
-as I have run some complex Linux applications and also able to build new
-Linux images.
-
-
-With best regards,
-Murali
-
+--
+Jeff Kowing
+jeffrey.d.kowing1@jsc.nasa.gov
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
