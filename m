@@ -1,41 +1,60 @@
-Date: Tue, 27 May 2003 13:13:43 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PATCH: arch/ppc/8xx_io_fec.c
-Message-ID: <20030527201343.GM3453@ip68-0-152-218.tc.ph.cox.net>
-References: <AB5AF73EAF23304EA1B932174137CED702FB6D@m5tmail.m5t.com> <20030527165824.GG3453@ip68-0-152-218.tc.ph.cox.net> <3ED3BDA0.3030208@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ED3BDA0.3030208@embeddededge.com>
+Message-ID: <3ED3C82F.30402@cfl.rr.com>
+Date: Tue, 27 May 2003 16:18:55 -0400
+From: C <sorex@cfl.rr.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MPC8266ADS missing every other character on the console port; u-boot
+ 0.3.0, eldk, kernel 2.4.4
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, May 27, 2003 at 03:33:52PM -0400, Dan Malek wrote:
+I've checked for a solution to this problem here, the ppcboot-user's mailing
+list, and Google but I haven't found my answer yet.
 
-> Tom Rini wrote:
->
-> >Dan, do you see any problems with this?
->
-> Yes.  There are silicon revisions that require the FEC to
-> be enabled for the MDIO to operate.  I don't remember if it was
-> listed in errata or in some of the early supplements.  This code
-> change may work in this particular case, but I know it's required
-> for some parts.  I have not looked at the detail of the patch
-> and the code it moves to see if this is done elsewhere.
+The following link chronicles the same behavior but the answers don't seem to apply.
 
-How would you suggest working around both this problem, and the problems
-that Jean-Denis reported?  Having either be broken for the sake of the
-other can't be acceptiable, can it? :)
+http://lists.linuxppc.org/linuxppc-embedded/200203/msg00238.html
 
-> The code formatting looks like crap, so that needs to be fixed.
+This thread from the ppcboot-users mailing is relevant as well.
+http://www.geocrawler.com/mail/thread.php3?subject=%5BPpcboot-users%5D+Linux+console+messages+garbled&list=4205
 
-That's trivial 'tho. :)
+The problem is that I'm missing every other character on the console port which
+looks like this (captured using Tera Term Pro's log function):
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+ >> ## Transferring control to Linux (at address 00000000) ...
+
+ >> tlmmr  6B sn 4Bfrhs al a 070)iu eso .. ro@y)(c eso .532001 peees/rno2001) 8
+u a 71:12 D 03nnd  oapgs 06oe0:49 ae.oe1:0pgs
+ >> zn()  ae.enlcmadln:ro=dvrmr
+ >> Wrig eltm lc em tc
+
+I'm using u-boot-0.3.0 which has CONFIG_CONS_ON_SCC defined as opposed to
+CONFIG_CONS_ON_SMC.  I presume the 'make MPC8266ADS_config' set that up.
+
+I modified arch/ppc/8260_io/uart.c so that SCC1 corresponds with
+CONFIG_SERIAL_CONSOLE_PORT.  However, this did not fix the problem.
+
+my rs_table looks like this:
+
+ >> #define CONFIG_SERIAL_CONSOLE_PORT  0
+ >>
+ >>    .
+ >>    .
+ >>    .
+ >>
+ >> static struct serial_state rs_table[] = {
+ >>    { 0, 0, PROFF_SCC1, SIU_INT_SCC1, 0, SCC_NUM_BASE + 0},  /* SCC1 ttyS 2 */
+ >>    { 0, 0, PROFF_SCC2, SIU_INT_SCC2, 0, SCC_NUM_BASE + 1},  /* SCC2 ttyS 3 */
+ >>    { 0, 0, PROFF_SCC3, SIU_INT_SCC3, 0, SCC_NUM_BASE + 2},  /* SCC3 ttyS 4 */
+ >>    { 0, 0, PROFF_SCC4, SIU_INT_SCC4, 0, SCC_NUM_BASE + 3},  /* SCC4 ttyS 5 */
+
+Can anyone shed some light on this issue?
+
+Thank you,
+Chris Gembarowski
+Semper-Ubi-Sub-Ubi
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
