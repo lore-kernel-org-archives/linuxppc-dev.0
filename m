@@ -1,39 +1,60 @@
-Message-ID: <3BAA9F5F.D216AD44@carts.com>
-Date: Thu, 20 Sep 2001 19:01:03 -0700
-From: Kevin Fry <kevin@carts.com>
+Message-ID: <35C119252057D511BB9F0003476BF8A208E5B0@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PPC 750 booting... exception
+Date: Thu, 20 Sep 2001 19:54:53 -0700
 MIME-Version: 1.0
-To: Mark Hatle <fray@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Init acting strange
-References: <001e01c140ac$88e8b830$fb5a01d9@crtc.corp.mot.com> <3BA7FE96.CA24D4EE@carts.com> <3BA7FFAA.11B7B890@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the help, I was in fact missing /bin/login, and then found I was
-missing the libpam libraries in /lib/security after checking the log files.
+Hi,
 
-thanks a lot!
+I am trying to boot custom board with PPC 750.
 
-Kevin Fry
+* I tftp'd the zImage into the target and when I give "go" command, it gives
+exception error. I can't understand what is going on. Below are the copy
+paste of it. I am using "powerboot" as the boot loader.
 
-Mark Hatle wrote:
+- When I got the kernel from bk source (or from HHL 1.2), I had to
+explicitly say "n" to CONFIG_FB in arch/ppc/config.in. If not, I was getting
+compilations errors. Does this has any thing to do with booting.
 
-> Kevin Fry wrote:
-> >
-> > I've been trying to get init working for a while now but I can't getting
-> > logging in to work correctly, and I'm out of ideas, maybe someone can help
-> >
-> > I'm using HHL 2.0 and the ramdisk is made from the target app rpms. I'm using
-> > the default passwd file. Do shadow passwords or anything like that need to be
-> > compiled in the kernel for the hhl2.0 login stuff to work??
->
-> Look at your log files, located in /var/log/.  You should see some type
-> of an error message.  My guess from your question is that you are
-> missing /bin/login, the shadow tools.
->
-> --Mark
+- I also tried with HHL 1.2 version (kernel 2.2.14). I was having the same
+problem of exception there also.
+
+* I know this is a basic question...
+What is "Prep" and "Chrp". zImage built had these two suffixes to it.
+
+Can some one please help me out.
+
+Thanks in advance.
+
+PowerBoot> netload zImage 400000 10.149.4.228 10.149.4.28
+ Ethernet controller diagnostics...pass
+ Init Ethernet Controller MII-Port and PHY-Device
+ PHY-Device at 100MB/s negotiated
+ LAN-controller at address FE880000 set to Ethernet 12:00:34:23:56:45
+ Transmitting ARP-REQUEST... Reception of ARP-REPLY
+ Transmitting TFTP-REQUEST to server 00:60:08:5A:F0:AC, IP 10.149.4.28
+ PACKET:1080 - loaded $00400000..$00486E65 (552550 bytes)
+
+PowerBoot> go 400000
+
+exception occured: 0x700
+SRR0 = 0x00400000
+SRR1 = 0x0008B030
+MSR  = 0x00000030
+DAR  = 0x00000000
+HID0 = 0x8010C004
+HID1 = 0x70000000
+L2CR = 0xBD080000
+*** Program Exception ***
+PowerBoot>
+
+-- Siva
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
