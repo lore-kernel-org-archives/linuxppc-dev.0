@@ -1,31 +1,61 @@
-Date: Thu, 4 Jan 2001 13:31:37 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: network driver order changes in 2.4
-Message-ID: <20010104133135.A22381@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200101041317.NAA24882@hyperion.valhalla.net>
+Date: Thu, 04 Jan 2001 13:17:11 +0000
+Subject: Re: problems when recompiling dmasound modules
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: "Michel Ddnzer" <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, Jan 4, 2001, Geert Uytterhoeven wrote:
+> On Thu, 4 Jan 2001, Iain Sandoe wrote:
+>> > Whenever I rebuild my linux-pmac-devel tree when the kernel version changed
+I
+>> > get bitten by this:
+>> > The sound modules don't get rebuilt so their version doesn't match the
+kernel
+>> > version and they can't be insmoded.
+[...]
+>> and viola!
+>> it seemed to work as before...
+>>
+>> (so maybe that wasn't what you were saying at all ;-)
+>
+> Real men
+heeeey.... ;-)
+>don't have the time to do `make mrproper' and `make menuconfig' every
+> time the kernel changed,
 
-I have a second network card in my beige G3 which needs the dc4x5.o
-driver. In 2.2 the internal card is eth0 and the second card is eth1.
-In test13-ac4 it is reversed. One solution is to have all drivers as
-modules, but ...
+true enough - although for those of us using rsync (even when doing your cp
+-rl method for maintaining trees) it often takes less time than figuring out
+which changes to options depend on which *when the version changes*.
 
-Is there a way to change the driver init order?
+(and, OK, I don't often hand-edit .config - but every now and then ;-)....
 
+> so they rely on `make oldconfig' and `make dep'
+> instead...
 
+vi Makefile, change EXTRAVERSION to append -ids (my usual kinda practice)...
 
-Gruss Olaf
+make oldconfig dep vmlinux modules
 
---
- $ man clone
+ - builds dmasound_core & dmasound_awacs
 
-BUGS
-       Main feature not yet implemented...
+make_install creates a new /lib/modules/2.4.0-test13-pre3-ids and the
+modules appear to be installed...
+
+so... it seems to work for me.
+
+> Sorry Michel, no clue...
+
+IIRC there was, about 8 months ago, a problem with modversions.h
+dependencies in the dmasound driver...  it doesn't seem to be there in the
+set of code I just pulled.
+
+so... am I still missing the problem?
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
