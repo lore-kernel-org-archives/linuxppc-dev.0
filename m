@@ -1,50 +1,44 @@
-Message-ID: <20020921142733.24474.qmail@kunk.jriver.com>
-Subject: Re: cdrecord, cdrdao failing with scsi bus reset
-In-Reply-To: <20020921142023.24406.qmail@kunk.jriver.com>
+Date: Sat, 21 Sep 2002 13:26:12 -0800
+From: Ethan Benson <erbenson@alaska.net>
 To: linuxppc-dev@lists.linuxppc.org
-Date: Sat, 21 Sep 2002 09:27:33 -0500 (CDT)
-From: Robert E Brose II <bob@kunk.jriver.com>
-Cc: benh@kernel.crashing.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: Robert E Brose II <bob@kunk.jriver.com>
+Subject: Re: Missing iBook HD driver?
+Message-ID: <20020921212612.GM10776@plato.local.lan>
+References: <20020920201320.14193.qmail@kunk.jriver.com> <20020921115219.9126@192.168.4.1>
+Mime-Version: 1.0
+In-Reply-To: <20020921115219.9126@192.168.4.1>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> benh@kernel.crashing.org ("Benjamin Herrenschmidt") Said:
+On Sat, Sep 21, 2002 at 01:52:19PM +0200, Benjamin Herrenschmidt wrote:
 >
-> > Robert Brose said:
-> >I got it off of this list myself, I think it was originally for
-> >2.4.3. I've just kept remaking it as I put new kernels on
-> >my machine as it seems to never have made it to the official
-> >kernel. It patches several scsi drivers but the only ones that
-> >affect Mac users are  the 53c94 and mesh drivers.
+> >After corresponding with Ben H. on this and doing some testing
+> >I reached the conclusion that:
 > >
-> >http://www.jriver.com/~bob/daofix-2.4.17.diff
+> >If you have a dvd/cd-rw combo drive on a 600 mhz ibook the
+> >stock 2.4 kernels will not recognise it. Ben has fixed this in
+> >his kernel and I found an old reference in the faq-o-matic
+> >(to an iMac) that you can work around it by specifying
 > >
-> >Is against the 2.4.17 kernel. I just tried it on the latest
-> >benh 2.4 kernel (2.4.20-pre7) and it patched ALTHOUGH there
-> >were offsets in the mesh driver which seems to have been worked
-> >on lately. I haven't verified that it works past the 2.4.19
-> >kernel I'm currently using. YMMV.
+> >hda=16383,16,63
+> >
+> >as a kernel arg when booting from the install cd. I thought
+> >I'd drop the info here so others can search it out when they
+> >run into the same problem...
 >
-> Interesting. I don't think this patch does things the right
-> way though, but I'll see what I can do with it.
->
-> Ben.
+> I don't recommend the kernel arg thing. There is indeed
+> a workaround that seem to work properly in my current tree,
+> I'll try to get that merged upstream.
 
-If I remember right the author of the patch was trying to reduce
-the redundancy of the same code in several scsi drivers and do
-a more generic setting of the scsi direction flag. This is a pretty
-common problem, I've seen the same limitation in the Adaptec 3200
-driver as well as in other OS. It would be great if some kind
-of fix got into the main tree, THANKS!!
+booting without any CD in that drive will also fix the problem.  that
+of course means for initial install you need to boot via tftp or so,
+unless your fast enough to remove the CD right after yaboot reads the
+kernel, but before the kernel gets far enough to puke (that may not
+work anyway).
 
-Bob
 --
-/~\ The ASCII       | Robert E. Brose II    N0QBJ
-\ / Ribbon Campaign | http://www.qbjnet.com/
- X  Help cure       | mailto:bob@qbjnet.com
-/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
