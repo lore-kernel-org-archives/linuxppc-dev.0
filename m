@@ -1,48 +1,36 @@
-Subject: Re: multiple separate pci bridges ...
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040119134831.GA21093@iliana>
-References: <20040118144412.GA6897@iliana>
-	 <1074443601.9704.164.camel@thor.asgaard.local>
-	 <20040119134831.GA21093@iliana>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1074520948.9700.248.camel@thor.asgaard.local>
-Mime-Version: 1.0
-Date: Mon, 19 Jan 2004 15:02:28 +0100
+In-Reply-To: <20040116195406.GA25566@iram.es>
+References: <20040114161107.GM2658@adapter.n0skillz.org> <20040114181350.B40506@forte.austin.ibm.com> <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040115115023.GA12001@iram.es> <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040116195406.GA25566@iram.es>
+Mime-Version: 1.0 (Apple Message framework v609)
+Message-Id: <64789114-4A89-11D8-9C4D-000A95A4DC02@kernel.crashing.org>
+Cc: linas@austin.ibm.com, valvoline <valvoline@vrlteam.org>,
+	linuxppc-dev@lists.linuxppc.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Broadcom BCM94306
+Date: Mon, 19 Jan 2004 15:11:36 +0100
+To: Gabriel Paubert <paubert@iram.es>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-01-19 at 14:48, Sven Luther wrote:
-> On Sun, Jan 18, 2004 at 05:33:21PM +0100, Michel Dänzer wrote:
-> >
-> > You may want to try my dri-trunk-sid packages.
->
-> Just tried (all three packages) and my Radeon 9200 SE is not recognized :
->
-> (II) PCI: 10:08:0: chip 1002,5964 card 148c,2073 rev 01 class 03,00,00 hdr 00
-> ...
-> (WW) ATI:  PCI/AGP Mach64 in slot 16:8:0 could not be detected!
-> (EE) No devices detected.
+> Anyway, since you seem to have ties inside IBM ;-), you might
+> know why they do not even give a list of differences of the
+> 970 implementation.
 
-Hmm.
+I guess the documentation is just not ready for public consumption.
+I don't really know.
 
-daenzer@thor|14:50:01> grep 5964 /var/log/XFree86.0.log
-        ATI Radeon 9200 5962 (AGP), ATI Radeon 9200SE 5964 (AGP),
+> I know from another source that the 970 does
+> not have BATs, but supports large pages with a size of 16MB.
 
-If you have Driver "ati" in the Device section, does "radeon" make a
-difference?
+The BAT thing at least is documented (and has been documented
+_for ever_ -- see the PEM, the 970 is a 64-bit chip.  Get the
+rev 2.0 PEM from the 970 doc page).
 
-> Time for you to make another snapshot ?
-
-Give me the time, and/or fix all the bugs (or at least the important
-ones) in current DRI/Mesa CVS...
+The large page thing is cpu specific afaik (from memory).
 
 
---
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
+Segher
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
