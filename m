@@ -1,40 +1,33 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC5200Lite and PCI issues...
-Date: Mon, 1 Mar 2004 10:56:29 +0100
-References: <20040301091304.6AF90C0655@atlas.denx.de>
-In-Reply-To: <20040301091304.6AF90C0655@atlas.denx.de>
+From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: IPV4 conformance and bit DF configuration
+Date: Mon, 1 Mar 2004 12:22:51 +0100
+Message-ID: <000001c3ff7f$947c00f0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Message-Id: <200403011056.29515.g.jaeger@sysgo.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Monday 01 March 2004 10:12, Wolfgang Denk wrote:
-> In message <200403010920.12424.g.jaeger@sysgo.com> you wrote:
-> > Ah I see, thanks for this hint. My major problem seems, that some PCI
-> > cards esp. grafic adapter simply did not appear in the PCI list of i.e.
-> > u-boot. The cards work fine in a EBONY EVA board.
->
-> Are these really 3.3V cards? (sorry, I don't  know  the  ebony  board
-> that well)
+Hi,
 
-Yes.
+I work on a custom 8260 board with a 2.4.18 Linux kernel.
 
-> > Are there any known problems with PCI timings or is the power supply
-> > the problem?
->
-> There is a known issue with SDRAM  timings  which  probably  explains
-> most  of  the  problems  people  experience,  but I don't think it is
-> related to your PCI troubles.
+I have two questions  about IPV4.
 
-Probably not, but can you be more specific on that SDRAM problems, any known
-workarounds?
+Where can I found, if it exists, a list of conformance between the IPV4 and
+the RFCxxx.
 
-Regards,
-  Gerhard
+I want to set the DF (Don't Fragment bit) in an UDP socket without accessing
+the IP header.
+I don't find a setsockopt function to do it like for TOS or TTL.
+
+
+Any ideas about that ?
+
+Thanks all
+Gérard Guével
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
