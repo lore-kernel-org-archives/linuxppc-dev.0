@@ -1,20 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 2337767A65
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id F39C767A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Mar 2005 04:21:29 +1100 (EST)
-In-Reply-To: <20050321163904.GT8345@smtp.west.cox.net>
-References: <20050321163904.GT8345@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <4ae19fb229974e099a8472158be9482f@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 21 Mar 2005 11:21:28 -0600
-To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: Kumar Gala <galak@freescale.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] ppc32: Report chip version in common /proc/cpuinfo
-	handling
+	Tue, 22 Mar 2005 04:40:52 +1100 (EST)
+Date: Mon, 21 Mar 2005 09:40:49 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <20050321174049.GA11734@gate.ebshome.net>
+References: <20050321152728.GS8345@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050321152728.GS8345@smtp.west.cox.net>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc44x: Remove PVR_440G* and change usages
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,36 +25,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Mon, Mar 21, 2005 at 08:27:29AM -0700, Tom Rini wrote:
+> The following patch changes the usages of PVR_440* into strcmp's with
+> the cpu_name field, and removes the defines altogether.  The Ebony
+> portion was briefly tested.
+> 
+> Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+> 
+>  arch/ppc/platforms/4xx/ebony.c    |   13 ++++---------
+>  arch/ppc/syslib/ibm440gx_common.c |    7 ++++---
+>  include/asm-ppc/reg.h             |    6 ------
+>  3 files changed, 8 insertions(+), 18 deletions(-)
+> --- 1.11/arch/ppc/platforms/4xx/ebony.c	2005-03-04 23:41:48 -07:00
+> +++ edited/arch/ppc/platforms/4xx/ebony.c	2005-03-08 15:22:19 -07:00
+> @@ -97,15 +97,10 @@
+>  	 * on Rev. C silicon then errata forces us to
+>  	 * use the internal clock.
+>  	 */
+> -	switch (PVR_REV(mfspr(PVR))) {
+> -		case PVR_REV(PVR_440GP_RB):
+> -			freq = EBONY_440GP_RB_SYSCLK;
+> -			break;
+> -		case PVR_REV(PVR_440GP_RC1):
+> -		default:
+> -			freq = EBONY_440GP_RC_SYSCLK;
+> -			break;
+> -	}
+> +	if (strcmp(cur_cpu_spec[0]->cpu_name, "440GP Rev. B") == 0)
+> +		freq = EBONY_440GP_RB_SYSCLK;
+> +	else
+> +		freq = EBONY_440GP_RC_SYSCLK;
+>  
+>  	ibm44x_calibrate_decr(freq);
+>  }
+> --- 1.3/arch/ppc/syslib/ibm440gx_common.c	2004-11-07 19:08:31 -07:00
+> +++ edited/arch/ppc/syslib/ibm440gx_common.c	2005-03-21 08:20:17 -07:00
+> @@ -221,9 +221,10 @@
+>  	/* Disable L2C on rev.A, rev.B and 800MHz version of rev.C,
+>  	   enable it on all other revisions
+>  	 */
+> -	u32 pvr = mfspr(PVR);
+> -	if (pvr == PVR_440GX_RA || pvr == PVR_440GX_RB ||
+> -	    (pvr == PVR_440GX_RC && p->cpu > 667000000))
+> +	if (strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. A") == 0 ||
+> +			strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. B") == 0
+> +			|| (strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. C")
+> +				== 0 && p->cpu > 667000000))
 
-On Mar 21, 2005, at 10:39 AM, Tom Rini wrote:
 
-> On Fri, Mar 18, 2005 at 06:26:52PM -0600, Kumar Gala wrote:
->
-> >
-> > You asked me to look at doing the following.=A0 I just want to make=20=
+While I applaud Tom's quest to eliminate _useless_ PVR defines I think 
+this change looks strange.
 
-> sure
-> > this is what we want to do (and call it).=A0 I'm a little concerned=20=
+It substitutes simple and clear (for those who are reading this code) 
+check to something more involved without good reason, IMHO.
 
-> that
-> > 'chip' is not necessary the right name in light of TSI10x and =
-MV64x60
-> > being described by ppc_sys in the future.
->
-> "chip" or "chip(set)" or anything else is fine with me (I'm horrible =
-at
->  names).=A0 But I don't like:
->
-> > +#if defined (CONFIG_85xx) || defined (CONFIG_83xx)
-> > +=A0=A0=A0=A0 if (cur_ppc_sys_spec->ppc_sys_name)
-> > +=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 seq_printf(m, "chip\t\t: %s\n",=20=
+Also, it adds additional "point of failure" making this code more 
+fragile. We never used those CPU ID strings anywhere in the kernel 
+code before, people are used to the fact that they don't matter much 
+(maybe only for user-mode) and it's possible that during some future 
+"cleanup" code will break. One could say that we aren't allowed to 
+change such strings because something in user-mode could break, and 
+while I agree with that, I don't think it's good argument to _add_ 
+additional point where code could break.
 
-> cur_ppc_sys_spec->ppc_sys_name);
-> > +#endif
->
-> ifdef'ing this.=A0 If the field is set, we should print it.
-
-The only reason this is ifdef'd is that cur_ppc_sys_spec does not=20
-always exist on all platforms built.
-
-- kumar=
+--
+Eugene
