@@ -1,19 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 927612BD3C
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2004 06:44:31 +1000 (EST)
-In-Reply-To: <EA78B62757AF1E4799828249310AC4CA071D280D@stca206a.bus.sc.rolm.com>
-References: <EA78B62757AF1E4799828249310AC4CA071D280D@stca206a.bus.sc.rolm.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <FE5AE866-081B-11D9-96BB-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 16 Sep 2004 16:07:10 -0400
-To: "Smith, Craig" <craig.d.smith@siemens.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Linux 2.6.x on 8xx status
+Return-Path: <jeffm@suse.com>
+Received: from locomotive.unixthugs.org (locomotive.csh.rit.edu
+	[129.21.60.149]) by ozlabs.org (Postfix) with ESMTP id 7C7BF2BD3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 17 Sep 2004 07:06:47 +1000 (EST)
+Message-ID: <414A011E.9040001@suse.com>
+Date: Thu, 16 Sep 2004 17:09:50 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+MIME-Version: 1.0
+To: Jeff Mahoney <jeffm@suse.com>
+References: <4149F2A9.9040601@suse.com>
+In-Reply-To: <4149F2A9.9040601@suse.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Linux/PPC Mailing List <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] Hotplug for openfirmware/macio devices
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,17 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Sep 16, 2004, at 2:56 PM, Smith, Craig wrote:
+Jeff Mahoney wrote:
+|
+| Hey all -
+|
+| Many devices on the macintosh hardware platform are hidden behind a
+| macio asic that places devices beyond the PCI bus for hotplug. Loading
+| the driver manually works fine, but we have this wonderful hotplug
+| system now. Why should macio be a second class citizen?
+|
+| At least for me, the most noticable one was my airport card, but there
+| may be others. I only have an ibook and a powermac.
+|
+| Attached are three patches, which do the following:
+| * kernel-of-hotplug.diff; against 2.6.9-rc2 (mainline)
 
-> Can someone please tell me the current "status" of the
-> 2.6.9-rc2 kernel source
+| Take a look if you're interested. My familiarity with the PPC world is
+| peripheral at best. I'd love feedback.
 
-It's not working for 8xx.  There are some subtle VM problems
-that I just have not had the time to track down.  A couple
-of us work on it as our time permits.  The 2.6 kernel
-works OK for 82xx and 85xx processors.  Some particular
-board ports may be missing, but the processor support
-is there along with a few board ports.
+As a quick note, it's been pointed out to me that some of the drivers
+won't compile as is.
 
-	-- Dan
+I only compile tested with the drivers I use, so stuff slipped by. I'll
+have an updated kernel patch in a little bit.
+
+- -Jeff
+
+- --
+Jeff Mahoney
+SuSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+
+iD8DBQFBSgEeLPWxlyuTD7IRArijAJwOG/8WGId3foGajgKTu3/s4gRJMQCePHMq
+CggbvmovKdA0YBkED6aLkJs=
+=6pUe
+-----END PGP SIGNATURE-----
