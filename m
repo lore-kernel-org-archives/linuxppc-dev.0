@@ -1,52 +1,59 @@
-Date: Wed, 5 Nov 2003 23:07:16 -0800
-From: Brad Boyer <flar@allandria.com>
-To: Jeff Walther <trag@io.com>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Date: Thu, 6 Nov 2003 08:18:16 -0500
 Subject: Re: IRQS on 6 Slot Macs
-Message-ID: <20031106070716.GB17235@pants.nu>
-References: <1067842481.17970.8.camel@gaston> <a04310106bbcd1501d614@[199.170.89.118]> <1067937269.680.92.camel@gaston> <a04310102bbcda40d92fc@[199.170.89.159]> <1067985081.707.124.camel@gaston> <a04310101bbce0854283b@[199.170.89.118]> <1068000383.692.132.camel@gaston> <a04310100bbce446f4c17@[199.170.89.149]> <1068016722.12704.148.camel@gaston> <a04310103bbcedf04902a@[199.170.89.149]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <a04310103bbcedf04902a@[199.170.89.149]>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
+Cc: linuxppc-dev@lists.linuxppc.org
+To: Brad Boyer <flar@allandria.com>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+In-Reply-To: <20031106070716.GB17235@pants.nu>
+Message-Id: <AED94E45-105B-11D8-A7D0-003065D401D8@acm.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 05, 2003 at 11:39:33AM -0600, Jeff Walther wrote:
-> At 18:18 +1100 11/05/2003, Benjamin Herrenschmidt wrote:
-> >> The SCSI cell in CURIO is a 53C94, but CURIO provides SCSI, ethernet
-> >> and serial port support all in one chip.   So the pinout of the 53C94
-> >> doesn't tell one about the pinout of CURIO, except it does identify
-> >> some of the pins which must be present on CURIO somewhere.
->
-> CURIO is an interesting chip.   It has the unenhanced SCSI (53C94),
-> MACE and ESCC all on one chip.   It's an AMD chip and has no Apple
-> markings on it at all, which implies that it is a generally available
-> AMD product.   Checking their listings of datasheets, one finds
-> several similar chips and a part number series that would include the
-> 79C950 but no listing for the datasheet for the CURIO/79C950.
-> Usually when Apple has a chip made just for Apple it has Apple
-> markings on it somewhere.   So I'm uncertain what the deal is with
-> CURIO.
->
-> Anyway, it wasn't a case of splitting an ASIC.   As closely as GC and
-> CURIO work together that's a reasonable conclusion.   But CURIO was
-> used in the x100 NuBus PowerMacs before they put it in the x500
-> series.   So CURIO had a couple of years of history before GC showed
-> up.
+On Thursday, November 6, 2003, at 02:07  AM, Brad Boyer wrote:
 
-I just looked, and the Quadra 840AV has a chip on the motherboard with
-an AMD logo and the part number AM79C950KC. And as a noteworthy fact,
-the AV models were the only 68k models to have a number of features,
-including using the MACE ethernet and having DMA on the serial ports.
-All the other 68k Macs with onboard Ethernet use the sonic driver.
-Supposedly the AV models also had an AMD chip controlling the floppy
-drive, but this is the only AMD labelled chip. Perhaps it has more
-features than SCSI, Ethernet, and serial? There are several very
-large Apple ASICs, tho...
+Sorry to butt-in but I've done a little work on the AV's for NetBSD.
 
-	Brad Boyer
-	flar@allandria.com
+> And as a noteworthy fact,
+> the AV models were the only 68k models to have a number of features,
+> including using the MACE ethernet and having DMA on the serial ports.
+
+Most of the I/O on the AV's had DMA. Unfortunately, the DMA engine is a
+bit brain dead. It's not descriptor based. Each I/O item has a channel
+and two sets of registers that indicate physical start address and
+transfer length. I think each channel has a "done" interrupt so I
+suppose it's possible to fake descriptor DMA in software.
+
+> All the other 68k Macs with onboard Ethernet use the sonic driver.
+> Supposedly the AV models also had an AMD chip controlling the floppy
+> drive, but this is the only AMD labelled chip.
+
+The floppy on the AV's is controlled by the NEC uPD72070. The only
+surviving documentation I could find was in Japanese! After a little
+translation it seems the chip is pretty much the same as a typical PC
+floppy controller but some of the commands to the chip take an extra
+byte or two. I think this is because the chip can handle both GCR and
+MFM.
+
+>  Perhaps it has more
+> features than SCSI, Ethernet, and serial? There are several very
+> large Apple ASICs, tho...
+
+The video on those machines is very complex. In fact, I think it's the
+same video subsystem (Civic) that is on the HPV card of the x100
+PowerMacs. There's also DMA sound, a NuBus bridge, and, of course,
+there's the DSP.
+
+All in all it's an interesting little machine. If I had more time I'd
+be writing drivers for it :-)
+
+--
+----------------------------------------------
+  Michael Zucca - mrz5149@acm.org
+----------------------------------------------
+  "I'm too old to use Emacs." -- Rod MacDonald
+----------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
