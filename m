@@ -1,51 +1,75 @@
-Date: Tue, 2 Nov 1999 13:01:08 -0500 (EST)
-From: Elliot Lee <sopwith@redhat.com>
-To: Eric Dorland <dorland@lords.com>
-cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: esound for PPC
-In-Reply-To: <19991011231039.A526@HSE-MTL-ppp4363.qc.sympatico.ca>
-Message-ID: <Pine.LNX.4.10.9911021252090.32674-100000@lacrosse.corp.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <381f2fd9382470a6@villosa.wanadoo.fr> (added by villosa.wanadoo.fr)
+Date: Tue, 02 Nov 1999 19:32:19 +0100
+Subject: Newworld OF boot
+From: "Florent" <flobo@iname.com>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 11 Oct 1999, Eric Dorland wrote:
+Has anyone succeeded in booting newworld macintoshes (ie the iMac or the B&W
+G3) using OF ?
+I've looked at the mailing list archive and this topic has already been
+discuted here, but as far as I read, there was no solution found.
+Because I can't believe Apple has crippled OF for non-MacOS booting, I'm
+sure there is a way to turn around.
 
-> Which old set of patches? I've tried Elliot's 0.2.15 and it doesn't fix 
-> the playing of 16bit sounds. BTW, you need a patch to be able to compile 
-> Elliot's 0.2.15. It seems the configure file assumes that a ppc linux is 
-> MkLinux, and uses its driver instead of OSS. It appears its MkLinux that has 
-> the little-endian sound driver, not linuxppc. Anyway the attached patch 
-> changes removes the MkLinux testing (I don't know how to tell the
-> difference), and just uses OSS.
+Here is what I know and what I've tried :
 
-I've applied the configure.in change (configure itself is a generated
-file, along with Makefile.in etc., so sending patches to these is
-pointless :)
+- Quik doesn't works on newworld, but it is not the only way to boot under
+OF.
 
-I skipped the esdplay.c/esdfile.c ones because I had other solutions (such
-as removing that code entirely.
+- OF can load files from HFS, HFS+, iso9660, FAT... filesystems (included in
+/packages)
 
-If you ever see any code doing a 'setvirtualbyteorder', that line probably
-should probably just be nixed altogether. There is only one place that
-ever needs doing, and that is inside libesd.
+- OF can execute at least ELF and XCOFF binaries.
 
-Anyways, I have put up
-ftp://people.redhat.com/sopwith/esound-0.2.16.tar.gz - this will probably
-become the final thing if you and other people have no problems with it.
-It is not yet final, so don't go sticking it into public download dirs or
-anything. :)
+- the root of a MacOS disk I can see under OF is the System folder. (I can
+see that with "dir hd:,5\\", where 5 is the number of my MacOS partition)
 
-You will also want to make sure you have gnome-libs 1.0.53 (from October
-GNOME) or newer, since I know there was an endianness fix in the 1.0.40
-series.
+- I can boot MacOS by typing "boot hd:,5\\Mac%20OS%20ROM".
 
-Thanks,
--- Elliot
-Do not meddle in the affairs of dragons,
-for you are crunchy and good with ketchup. 
+- When I try "boot hd:,5\\vmlinux" (there is a linux kernel in my system
+folder), the kernel is recognised as an elf binary, OF writes some
+informations about it, but it fails and replies : CLAIM failed.
 
+- I can sucessfuly load smaller ELF binaries without CLAIM errors.
+
+Next, I've examined the MacOS ROM file (there is something about it at
+http://developer.apple.com/technotes/tn/tn1167.html)
+Just open it with a disk track editor or a text editor :
+
+This file contains the following :
+
+- An header with some informations and a forth boot script
+
+- an ELF bootstraff code
+
+- a MacOS ROM image.
+
+The script seems to create and/or modify /rom/macos and
+/rom/AAPL,toolbox-image,lzss. Then it loads the ELF code.
+According to Apple, the ELF code (called Trampoline code) is specific to OF
+and does the transition between OF and the ROM image.
+
+I can successfuly run any Forth script loaded from the hard disk. This would
+be a way to make a nice dual-boot menu.
+
+In the past (before BootX), I used to boot LinuxPPC on a floppy where there
+was an XCoff kernel (boot fd:\\vmlinux.coff). How can I compile an XCoff
+kernel to try it ?
+
+I've heard that FreeBSD is bootable under newworld's OF. Is the kernel an
+ELF file, too ? Or is it like MacOS Rom file ?
+
+
+--
+Il est maintenant temps de clore votre connection et de reprendre une vie
+normale.
+Mon e-mail : FloBo@iName.com (Florent Boudet)
+Mon e-mail secondaire : FloBo@Rocketmail.com (je ne le regarde jamais)
+Mon QG : http://www.multimania.com/flobo/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
