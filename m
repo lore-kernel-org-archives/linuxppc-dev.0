@@ -1,175 +1,35 @@
-Message-ID: <3F3BBCED.7060304@embeddededge.com>
-Date: Thu, 14 Aug 2003 12:46:37 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Jan Damborsky <jan.damborsky@devcom.cz>
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Ethernets on SCC2 and SCC3 on mpc8xx
-References: <20030813164727.97DFBC59E4@atlas.denx.de> <3F3B2C84.7020506@devcom.cz>
-Content-Type: multipart/mixed;
- boundary="------------080407030004040303030202"
+Date: Thu, 14 Aug 2003 09:54:03 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: linuxppc-2.5 CONFIG_BOOT_LOAD undefined
+Message-ID: <20030814165403.GT807@ip68-0-152-218.tc.ph.cox.net>
+References: <20030813075108.GA25714@suse.de> <20030814160526.GS807@ip68-0-152-218.tc.ph.cox.net> <20030814164518.GA24671@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030814164518.GA24671@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------080407030004040303030202
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, Aug 14, 2003 at 06:45:18PM +0200, Olaf Hering wrote:
 
-Jan Damborsky wrote:
+>  On Thu, Aug 14, Tom Rini wrote:
+>
+> > Are you sure you sent the correct .config ?
+>
+> maybe I screwed it, here is it again.
+> boots on an ibook1 at least.
 
-> So I will modify driver to work with both ethernets.
+The problem is that PPC_MULTIPLATFORM does not go into
+arch/ppc/boot/simple/, except for one file.  The log you posted shows it
+trying to link a zvmlinuz in there.
 
-Attached is a patch for an old driver that I have given to many
-people over the past couple of years that all promised they would
-update the current source.  This never happened, so if anyone else
-wants to try, have at it.
+By chance do all of your tools meet the requirements in
+Documentation/Changes  ?  Assuming that's been kept up to date.
 
-I don't like this patch due to the amount of code in the header
-file that can only increase as more boards are added.  Please
-remove this code and place it int some file, like enet_init.c or
-something like that.
-
-Thanks.
-
-
-	-- Dan
-
---------------080407030004040303030202
-Content-Type: application/x-gzip;
- name="enet_patch.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="enet_patch.gz"
-
-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
-JEy4G4/MOY6XfIXzOl5wW0QM1ek0ODyQpwG3T+e8YI57l5e/wnkQUygBxiCJeHDWorQ+Eu+q
-mXyXmo04BQ2V8RSpUogsw8/1eBn7iUHC6EPG+cMJiwqUKDzB4TnzxR0OlsG6KKwK+rJQtMtZ
-0+qobQ14AwdmJ7k8InMED+z6uwyVnN2UQVHMeQUjf8TAPZ57cGRi2jam5A0GEjx6WCpkyTZ5
-CFcozZOoYsEVg6ecWPBTsv3qJVzWJfBc+lTcuwK9z/Vng4L+UvBKtDfW0v0TjOWcTvNzSt7j
-LFbfc0cXQ3Gu+SIEQ8aoiVuXi78ycpG9vokXvFNNg23sTYKTBmY76g76I56HQzacwtcG3va7
-uDkl728j1i+UW61UE8we+uz8W/f6YtgbDM/OB8mjd2Bhz24usHW1tszn1dbml+FgcWfuUlNu
-wqfckNzBz/Xmoouf7cCtFc3jeTgQGZfD2Ry6LbX8btB8vk9KIsBh9MwRYF3FGJs6Ml9G7pxa
-RvQiPmrBxgkxicA6a7VgA5sbj42J2djMrI1wYv6b4QQveZFsAyAneEAEBaszURo3EKNHsNO5
-EI18KnLeyH3Bu4nkv+R8VCwZ1myqsBAUpjr5KXssAgKt0cDKjNLR9qWrUpgDQ40vkwKj2O6u
-+uq/oyOefsc61fd2SE0djV1dZa9UlvhxdMJuQGmuoCT+Kjpzf0W/TlFqWEdIKDX0xyOJlHHs
-CDcL9P/eClT7J1kZbQBLmsAZvaVq4uZdaENM4FGAhCWHtVlrmdX+ueC6pSavW67muRsqy9Te
-VJYW79SlWl/mZuXqCPr6EbTsCHpmBH1pBP3JEZrrR9CzIzQzIzSXRmhmR8hwVvn8vObXjbc7
-OVTJ5ld+qxM7V5sa0zpHjQb8Bx/2O6WbX/M3OjtH2v6R1k6bXxtqgyma2tLIWVP2eGfmKTlY
-UWCbzsQx07s/5LHw7rqki/Ml+tqUr+9rUwr72pTn9bUpX9LXpjyrr015bl+b8uy+NuV5fW1K
-yb42KfAX6GtTyvW1ZVXsq/valBfpa1NK9LUpG/valI19bcoz+tqUZ/S1KWX72pSyfW1K2b62
-rDS/sq9Neam+NuUr+tqUjX1tysa+NqVkX5tSsq9NKd/XppTua1Oe19cm5Ly3JrX6AjemlJe5
-3q+80PV+5YWu9ytL1/s5E0td+FqBKrzwtQpVeJNrdcjCi4fK8gWt4uv9K2DF171WwIqveymk
-QF997VD5+uteeelsvu5VALr22mHiiS7vIHm9X3mR6/3KF13vT24aFVzvL6uyrVIqe/jrqeyG
-S94llLZVTmkPudKWvypdTk/49f61esJzYCW0ZP31fuV51/t/B8lr5SSv/76S/5Lr/UqOlxuv
-9y+Drr/en53209f7fwWd5df71+rsh/Obm2vi1wcnCHyZ5Y/4LUBs3QYPkBSbqyydpODFp7r7
-pwb+JrZHyHFl4Xqx1WV4w8F071oqOHytIiHpq5xtZRCbiNhmS3tCjMgFt7QjEDF8tBBxrHeK
-MYcFmDphxgKz2chjdgXmijzSycYRYprtYsQVCaXsoRHNVjFegWPV4nihGBDiD+FwLwtQ58Jm
-maWirIulrXNxZ4GbNgFLGbJvSSJLowFTafdyI3V2pTFW5UxtITImh+nKLWu8DvwHO7T8Bw85
-rB0sy4aTAQMGSwYqkszhMhlMfVjBIxHZzxM5E0SkbdMEEY0IaK9logRwLa29vJJlbF1g60XY
-reKR+fR1Mf3W2qlbjRWtzrFRT9avPc1GoeLrnUb5d1N+w+jr3yd82fD3Kv4MYF4wgBFVuv9w
-PXxhv+APoYfFfzflD6yH+HdT1urh+5PhdV9q4hdG0mJR3WbpkPq9EfvhYB5OCmLqIh0tUhjp
-Fen/au9adhqIYeB5/6JHqohCg1QKiAPcOCDxC9CWCxJCPCQO8O80ifPYxE6cbNUWxA2VeJOs
-Z+Opd+wqVjRD7RI88mgYypVHwKX0dEAzOOx5BEzK2EmM2ODE1hIpZbg4Q+1Qpgs8SpvNMcpH
-EW7gUVJH0jnFozbxfb1PomRMPUgWPQ3cN1X38/SfRf8uFi1nIYuehizan1Drfx6q98L60zRx
-jpVTh3qMoC7NvOzvnPpK6z1UzZP+Q4ky3Cfjm9urO63HMvrUGmUcORpXxkXv1ftnc6NQ7g/c
-FSOeGSzVE50WKrdI9RhWX5e6WLdNqifqXK9zPNtxrbfwDcqDUnDhJciEnEwU5GTgXaaMEHzY
-ICNM11Fnw5URFh4GVLKXfSAwGSFpQMkI6RkoGWEWkGlScj+g+LamobpjG8w0UhPpAtLpOfQF
-NKSiK6KWAdsUhkmaJ70SZ5j1CTIsPy2khQqz4qPiSf0oNQ6Hz9KtIMkpXWSs7B2tM7ILxK0e
-Xlf3T3AgKYdL6/ATcDgrQknvf16MkiEebNnM4/LTVQ+osqaXj/c1qCerCRSz6RzVOLuu9M5C
-zqx0XwmbcHkuNcZfZBHpkof0YCnPurLJqcQq74bLPrbgLG9E4cyu3SKt+y7FbSStsx/n5EZC
-dpMCHAI4UwFeinPFcZECvBgGrQI8OzBQgHPd77Mp+wGALQbK4IHZycHcf2BJf0G2j90OQgzp
-BmGllq4ZhBjWC0IMbQUh8p0grFot1/bFFN7vGr7HFl3wK0c4pvn9LETXZWHKamlBW7N6WtDm
-aFMLge+w3NUiv1NuA4vyE9p8AVYLC2L7aA+Lau9SbSgG97Eo8Ve6pkPtddHf6zUKZuI8PwiT
-nOYLrctcjnFWVzLBV5UHYB32ZOR8WY++hkv08UdfAN8/gsAq8MkIPLIefvQlXGVPnt4WQoBp
-TZKJAeSJfjS054ptbJELDT4eBLAmu7NEQ/D2LAm5yT6q5JSyPKd0k+K+ij31A46vQG85dgAA
-
---------------080407030004040303030202--
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
