@@ -1,56 +1,50 @@
-Message-ID: <20021214003254.94837.qmail@web11501.mail.yahoo.com>
-Date: Fri, 13 Dec 2002 16:32:54 -0800 (PST)
-From: Khai Trinh <kqtrinh@yahoo.com>
-Subject: DMA question for ppc440 PCI board
-To: linuxppc-embedded@lists.linuxppc.org
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC05F11@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: kernel 2.4 smc1 problems ... advice please ...
+Date: Sat, 14 Dec 2002 14:37:06 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi folks,
+Hello,
 
-Does anyone out there work on 440 based PCI board?
+I am cuurently trying to boot up the linux kernel using ppcboot 1.16 and the
+2.4 kernel with only smc1 uart support as a start on an MPC860 FADS derived
+board.
 
-I have a DMA problem with the 440 DMA controller. In
-our application, the 440 based PCI board is living in
-a Solaris host platform. Our PCI board is running with
-linux version 2.4.17. So, there are Host software,
-driver and embedded linux software, driver, etc...We
-want to move data in and out between the Host and the
-board. We have defined a messaging system to allow
-host software to send messages to the embedded
-software. When it comes to time to do DMA, the host
-sends a DMA request message containing the PCI bus
-address and size of the DMA transfer to the embedded
-software.
+So far I have:
+- ppcboot running great
+- tftpboot graps my kernel puts in RAM
+- bootm starts my kernel ... BUT no serial activity ...
 
-When the embedded software starts programming the DMA
-controller, the 440 requires that the PCI bus address
-be mapped to the 440 PLB local bus address. There are
-3 sets of POM registers on the 440 supposed to allow
-us to remap the PCI bus address into PLB local
-address. I did that. But when I started programming
-the DMA src register with the PCI mapped PLB address,
-and the dst register with the locally allocated
-buffer, and enable DMA, no DMA is taken place? What am
-I missing? Please advice...
+I am using the vision ICE currently to debug the kernel start up but it has
+a problem stepping through the 'rfi' etc when memory protection is running.
 
-I can even tried to use ioremap64() and pass it with
-the mapped LPB address to get kernel virtual address.
-The kernel address looks good (ie: c0228000). The one
-big problem is that the moment I dereferenced the
-virtual pointer using readl, the kernel panic...
+So currently I can only really peek at the PC and see that I am indeed
+excuting kernel code.
 
-That suggested to me that somehow I wasn't able to
-perform the map correctly.
+I believe my memory map is ok:
+MEM        VIRT        PHYS
+RAM        0xc0000000  0x00000000
+IMMR       0xff000000  0xff000000
 
-I would be appreciated if anyone out there can give me
-advice on this problem I have.
+My pc seems to get beyond start_kernel ... but I don't see the kernel banner
+printed or anything ... with an ocillioscope I don't see any serial activity
+at all after I exit ppcboot ...
 
-Thanks,
---Khai
+I have check the following so far to the best of my abilities (until I get a
+BDI 2000) ... and the MMU looks ok ... and my SMC port B settings are ok as
+well.
 
+Does anyone have any tips that could help me out? For some reason I think
+either my MMU is not set to what I think it is ... or my SMC config has
+tanked ...
+
+Regards,
+Jim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
