@@ -1,49 +1,43 @@
-Message-ID: <39679C6C.CC794B77@denise.shiny.it>
-Date: Sat, 08 Jul 2000 17:26:04 -0400
-From: Giuliano Pochini <pochini@denise.shiny.it>
-MIME-Version: 1.0
-To: Nelson Abramson <pogtal@erols.com>
+Message-Id: <200007082206.XAA15459@hyperion.valhalla.net>
+Date: Sat, 08 Jul 2000 23:06:40 +0100
+Subject: Re: X still locks up
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Gwyn Judd <b.judd@xtra.co.nz>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bG3+damaged CD=crash
-References: <XFMail.000706092421.pochini@shiny.it> <396499F3.491EA41@erols.com>
-Content-Type: text/plain; charset=us-ascii
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > My blue-G3 hangs completely when I try to read a CDROM with some
-> > errors. The whole system freezes and the only cure is reboot (no
-> > logs, no errors, no panics, no oops). My older 7300 simply told
-> > it couldn't read the disk. Is it a known bug ?
+Sat, Jul 8, 2000  Gwyn Judd wrote:
+> On Fri, Jul 07, 2000 at 12:53:32PM +0200, Benjamin Herrenschmidt wrote:
+[...]
+>>
+>> Can you give a try to my current rsync tree (linuxcare.com.au::linux-
+>> pmac-benh) and tell me if it helps ?
 >
-> Maybe it's a bad CD?
+> Okay I got that kernel working but it crashed overnight :(. Seems like
+> the problem is still there. It seems to happen most often when I'm
+> listening to streaming mp3's (ie. internet radio stations or the like)
+> if that helps.
 
-Yes, it IS bad.
+Three things:
 
-> Chances are if it crashes one machine and another
-> won't read it, that the CD-ROM itself is bad, not the reader....
-> If you
-> purchased the CD (as opposed to burning it yourself), get in contact with
-> the LinuxPPC people and ask for an exchange...
+1/ did you try the backported audio stuff I posted yesterday - there were
+some issues that were resolved between 2.2.xx and 2.3/4.xx these should be
+present in the backport.  It does work OK against 2.2.17pre10-ben1.
 
-Ehmm, no.  This CDROM is a backup copy of all junk I d/l from the net. It's
-content is not important. What I mean is thet if I try to read a file Linux
-creashes.
+2/ You could try separating out audio, X, & network-related fault areas by
+running each area separately for a while?
 
-cp /mnt/cdrom/foobar.tgz /home/pochini/    ---> Linux hangs completely
+3/ It tends to look (as Michel said yesterday) potentially like a hardware
+problem.  I assume you have no over-clocking or stuff like that going on?
+(unlikely on PPC I agree but I thought I'd ask).
 
-Doing the same on the old 7300 w/ SCSI CD reader if tells me it can't read the
-disk and continues working happily.
+BTW I've never had a random lock-up on Xpmac...
 
-> > Perhaps I'll buy a SCSI CD, I hate IDE junk.
->
-> Your 7300 (I think, and AppleSpec backs me up) has a SCSI CD-ROM, so it's
-> probably not the drives.
-
-The problem is the pmac IDE software driver. Trying to read the same CDROM om
-my PC gives an error and does not crash.
-
-
-Bye.
+good luck,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
