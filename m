@@ -1,33 +1,36 @@
-Date: Mon, 19 Jul 1999 15:41:59 -0600 (MDT)
-From: Brad Midgley <brad@pht.com>
-To: Hartmut Koptein <Hartmut.Koptein@t-online.de>
-cc: Matt Porter <mmporter@home.com>, VALETTE Eric <valette@crf.canon.fr>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: cdrecord (Re: Is the vger 2.2 kernel branch dead)
-In-Reply-To: <19990719230733.X25323@isis.isis.de>
-Message-ID: <Pine.LNX.3.95.990719153617.1369A-100000@pacific.pht.com>
+Message-ID: <37939E1D.1964B05@phx.mcd.mot.com>
+Date: Mon, 19 Jul 1999 14:52:29 -0700
+From: Johnnie Peters <jpeters@phx.mcd.mot.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Porter <mmporter@home.com>
+CC: VALETTE Eric <valette@crf.canon.fr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Is the vger 2.2 kernel branch dead
+References: <Pine.LNX.3.96.990719133758.6567C-100000@liberty.chnd1.az.home.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-on the topic of cdrecord, i found i can burn to CDRW media but not CDRs
-(it dies with "retryable errors" when closing the CDR)  this is on a
-7500's external bus with paul's 2.2.10 and a ricoh MP6201S firmware 2.20
-using Cdrecord release 1.8a22. has anyone else seen this?
+Matt Porter wrote:
+> 
+> On Mon, 19 Jul 1999, VALETTE Eric wrote:
+> 
+> > I tried to upgrade here and no changes during one month!!!
+> > As there still some important bugs in 2.2.10++, I wonder
+> > why nothing happens???
+> 
+> Perhaps nobody has submitted any bug fixes?
+> 
+> --
 
-> #define SHMMAX 0x1000000                /* max shared seg size (bytes) */
+Actually that is not true.  Motorola has submitted changes to both Paul
+and Cort that have not made it into vger.  Last I know the sources in
+vger would not boot on Motorola platforms other than Blackhawks and
+Utahs.
 
-this one can be fixed in userspace. in /etc/rc.d/rc.sysinit:
+I'd very much like to get the changes in.
 
-# set shmmax to allow cdrecord to work
-echo 6000000 >/proc/sys/kernel/shmmax
-
-Brad
-brad@pht.com | http://www.pht.com/~brad/
-
-
+Johnnie
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
