@@ -1,37 +1,81 @@
-Message-ID: <3BA18C7C.F2D4B343@india.infogain.com>
-Date: Fri, 14 Sep 2001 10:20:04 +0530
-From: ashish anand <ashisha@india.infogain.com>
-MIME-Version: 1.0
-To: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: "Kernel logical address"  vs "Physical"
-References: <6B546A602AD2D211BFF00008C7A42889041D6BDE@hrtades2.atea.be>
+Date: Fri, 14 Sep 2001 16:05:04 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Board names for 4xx
+Message-ID: <20010914160504.H3851@zax>
+References: <20010914144403.G3851@zax>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010914144403.G3851@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I have been working on a PPC platform, running Linux 2.2. This platform has
-> a register where you can enable different options and where you can control
-> several LED's. The vendor mentions that this register is mapped in memory at
-> FA400000.
+On Fri, Sep 14, 2001 at 02:44:03PM +1000, David Gibson wrote:
 >
-> When I write (in a driver)
->
-> char *p=0xFA40000;
->
-> *p = ..; (I know I should use writeb to be more portable.)
->
-> it seems to work; the leds can be manipulated. But as FA400000 is a physical
-> address, I thought that it had to be *p=__va(0xFA40000);
->
-> Who can help me out? Where do I find a nice document about this?
+> The patch below allows publishing the type of board the kernel is
+> running on in /proc/cpuinfo (under "machine") for 4xx machines.  It
+> displays Walnut boards as "IBM Walnut" and (currently) all others
+> simply as "4xx".  Adding other boards is trivial - just a #define in
+> the relevant header file.  It also eliminates a warning in
+> ppc4xx_setup.c
 
-actually when you refer to adress mentioned 0xFA400000 in driver this address is already virtual adress hence no need to  use __va macro.
-this address was originally a physical adress and unaccessible from device untill earlier in code
-a call for ioremap would have taken place.
-after ioremapping it is a virtual address and can be used nicely in a driver.
-transaction for this address would be valid as processor has now a entry for it and would be decoded by host bridge and forwarded to LED.
-without ioremapping if you use you will get a kernel panic.
+Oops.  The patch below does the same thing, only not broken (forgot a
+file the first time around).
+
+diff -urN ../linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c linux-bungo/arch/ppc/kernel/ppc4xx_setup.c
+--- ../linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c	Mon Sep 10 11:57:26 2001
++++ linux-bungo/arch/ppc/kernel/ppc4xx_setup.c	Wed Sep 12 16:33:15 2001
+@@ -86,7 +86,7 @@
+ #endif
+
+ #define BOOT_WDT_DEFAULT_PERIOD		120	/* 2 minutes */
+-extern board_setup_arch(void);
++extern void board_setup_arch(void);
+
+ void __init
+ ppc4xx_setup_arch(void)
+@@ -165,6 +165,8 @@
+ 	int len = 0;
+ 	bd_t *bip = (bd_t *)__res;
+
++	len += sprintf(len + buffer,
++		       "machine\t: %s\n", PPC4xx_MACHINE_NAME);
+ #ifdef CONFIG_STB03xxx
+ 	len += sprintf(len + buffer,
+ 			"plb bus clock\t: %dMHz\n",
+diff -urN ../linuxppc_2_4_devel/include/asm-ppc/ppc4xx.h linux-bungo/include/asm-ppc/ppc4xx.h
+--- ../linuxppc_2_4_devel/include/asm-ppc/ppc4xx.h	Thu Aug 16 04:45:34 2001
++++ linux-bungo/include/asm-ppc/ppc4xx.h	Wed Sep 12 16:30:11 2001
+@@ -26,6 +26,10 @@
+ #include <asm/walnut.h>
+ #endif
+
++#ifndef PPC4xx_MACHINE_NAME
++#define PPC4xx_MACHINE_NAME	"4xx"
++#endif
++
+ /* IO_BASE is for PCI I/O.
+  * ISA not supported, just here to resolve copilation.
+  */
+diff -urN ../linuxppc_2_4_devel/include/asm-ppc/walnut.h linux-bungo/include/asm-ppc/walnut.h
+--- ../linuxppc_2_4_devel/include/asm-ppc/walnut.h	Thu Aug 16 04:45:34 2001
++++ linux-bungo/include/asm-ppc/walnut.h	Wed Sep 12 16:29:23 2001
+@@ -78,6 +78,7 @@
+ /* Generic 4xx type
+ */
+ #define _MACH_4xx (_MACH_walnut)
++#define PPC4xx_MACHINE_NAME	"IBM Walnut"
+
+ #endif /* __WALNUT_H__ */
+ #endif /* __KERNEL__ */
+
+
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
