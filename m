@@ -1,59 +1,176 @@
-Message-ID: <20040315105019.26478.qmail@web12502.mail.yahoo.com>
-Date: Mon, 15 Mar 2004 02:50:19 -0800 (PST)
-From: Stergios Spanos <stergios_s@yahoo.com>
-Subject: Kernel 2.6.3 performance issue on MPC8260
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Caching in the MPC107, linux 2.6
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040313170708.GA20738@smtp.west.cox.net>
+References: <1079088369.691.43.camel@newt>
+	 <20040313170708.GA20738@smtp.west.cox.net>
+Content-Type: text/plain
+Message-Id: <1079380996.1677.2.camel@newt>
+Mime-Version: 1.0
+Date: Mon, 15 Mar 2004 20:03:16 +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everybody!
+On Sat, 2004-03-13 at 17:07, Tom Rini wrote:
 
-We are currently migrating to kernel 2.6.3 on our
-MPC8260 custom board.
-The porting has been successfully completed.
-Nevertheless we are facing some performance problems.
+> Instead do:
+> BEGIN_FTR_SECTION
+> 	ori	r8,r8,_PAGE_COHERENT
+> END_FTR_SECTION_IFSET(CPU_FTR_745X_MPC107)
+>
+> And have the code that sets SPEC7450 also check for an MPC107.
 
-The board is to be impement layer 3 routing (over
-Ethernet) functionality. Here is the description of
-the problem.
+Something like this?
 
-We are testing the layer 3 routing performance of the
-board. When we try to route let's say 300,000 packets
-over a certain time period
-through the processor , it is not able to handle all
-the load and only routes around 200,000 packets. This
-is fine and is due to the processor/software
-limitations. This shows however that the "routing
-limit" of the processor is around 200,000.
 
-The strange thing that happens is that when we try to
-route a smaller amount of data e.g 100,000 packets,
-the processor still cannot manage to route all of them
-and still routes only 90,000 packets.
+diff -Nru a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+--- a/arch/ppc/Kconfig	Mon Mar 15 19:59:58 2004
++++ b/arch/ppc/Kconfig	Mon Mar 15 19:59:58 2004
+@@ -627,9 +627,13 @@
+ 	depends on 6xx && (LOPEC || SANDPOINT)
+ 	default y
 
-My question is why does the proccessor refuses to
-route 100,0000 (or even less) packets since it is able
-to route much more packets (200,000) over the same
-period of time.
++config MPC10X_BRIDGE
++        bool
++	depends on FORCE || SANDPOINT
++
+ config MPC10X_STORE_GATHERING
+ 	bool "Enable MPC10x store gathering"
+-	depends on FORCE || SANDPOINT
++	depends on MPC10X_BRIDGE
 
-The same set of tests has been performed on the board
-using a 2.4.20 kernel. The results were more
-predictable. Again when we try to route 300,000
-packets over a certain period of time the processor
-routes only around 200,000 (this is its limit). But
-when we try to route 180,000 packets, the processor
-routes them all fine.
+ config CPC710_DATA_GATHERING
+ 	bool "Enable CPC710 data gathering"
+diff -Nru a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
+--- a/arch/ppc/kernel/cputable.c	Mon Mar 15 19:59:58 2004
++++ b/arch/ppc/kernel/cputable.c	Mon Mar 15 19:59:58 2004
+@@ -53,6 +53,12 @@
+ #define PPC_FEATURE_ALTIVEC_COMP       	0
+ #endif
 
-At the time of the test the processor in not loaded
-with any other tasks.
++#ifdef CONFIG_MPC10X_BRIDGE
++#define CPU_FTR_745X_MPC107_COMP        CPU_FTR_745X_MPC107
++#else
++#define CPU_FTR_745X_MPC107_COMP        0
++#endif
++
+ struct cpu_spec	cpu_specs[] = {
+ #if CLASSIC_PPC
+     { 	/* 601 */
+@@ -225,7 +231,8 @@
+     	0xffffffff, 0x80000200, "7450",
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+-	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450,
++	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
++        CPU_FTR_745X_MPC107_COMP,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+@@ -235,7 +242,7 @@
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ 	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-	CPU_FTR_L3_DISABLE_NAP,
++	CPU_FTR_L3_DISABLE_NAP | CPU_FTR_745X_MPC107_COMP,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+@@ -244,7 +251,8 @@
+     	0xffff0000, 0x80000000, "7450",
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+-	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR,
++	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
++        CPU_FTR_745X_MPC107_COMP,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+@@ -253,7 +261,8 @@
+     	0xffffff00, 0x80010100, "7455",
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+-	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS,
++	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS |
++        CPU_FTR_745X_MPC107_COMP,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+@@ -263,7 +272,8 @@
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ 	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-	CPU_FTR_L3_DISABLE_NAP | CPU_FTR_HAS_HIGH_BATS,
++	CPU_FTR_L3_DISABLE_NAP | CPU_FTR_HAS_HIGH_BATS |
++        CPU_FTR_745X_MPC107_COMP,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+@@ -273,7 +283,7 @@
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ 	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-	CPU_FTR_HAS_HIGH_BATS,
++	CPU_FTR_HAS_HIGH_BATS | CPU_FTR_745X_MPC107_COMP,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+@@ -283,7 +293,7 @@
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_NAP |
+ 	CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+ 	CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+-	CPU_FTR_HAS_HIGH_BATS,
++	CPU_FTR_HAS_HIGH_BATS | CPU_FTR_745X_MPC107_COMP,
+ 	COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
+ 	32, 32,
+ 	__setup_cpu_745x
+diff -Nru a/arch/ppc/mm/hashtable.S b/arch/ppc/mm/hashtable.S
+--- a/arch/ppc/mm/hashtable.S	Mon Mar 15 19:59:58 2004
++++ b/arch/ppc/mm/hashtable.S	Mon Mar 15 19:59:58 2004
+@@ -346,8 +346,12 @@
+ 	rlwimi	r5,r5,32-2,31,31	/* _PAGE_USER -> PP lsb */
+ 	ori	r8,r8,0xe14		/* clear out reserved bits and M */
+ 	andc	r8,r5,r8		/* PP = user? (rw&dirty? 2: 3): 0 */
+-#ifdef CONFIG_SMP
++#ifndef CONFIG_SMP
++BEGIN_FTR_SECTION
++#endif
+ 	ori	r8,r8,_PAGE_COHERENT	/* set M (coherence required) */
++#ifndef CONFIG_SMP
++END_FTR_SECTION_IFSET(CPU_FTR_745X_MPC107)
+ #endif
 
-Any advice will be greatly appreciated.
+ 	/* Construct the high word of the PPC-style PTE (r5) */
+diff -Nru a/arch/ppc/mm/ppc_mmu.c b/arch/ppc/mm/ppc_mmu.c
+--- a/arch/ppc/mm/ppc_mmu.c	Mon Mar 15 19:59:58 2004
++++ b/arch/ppc/mm/ppc_mmu.c	Mon Mar 15 19:59:58 2004
+@@ -137,10 +137,12 @@
+ 	int wimgxpp;
+ 	union ubat *bat = BATS[index];
 
-Thanks!
+-#ifdef CONFIG_SMP
+ 	if ((flags & _PAGE_NO_CACHE) == 0)
+-		flags |= _PAGE_COHERENT;
++#ifndef CONFIG_SMP
++                if (cur_cpu_spec[0]->cpu_features & CPU_FTR_SPEC7450)
+ #endif
++		        flags |= _PAGE_COHERENT;
++
+ 	bl = (size >> 17) - 1;
+ 	if (PVR_VER(mfspr(PVR)) != 1) {
+ 		/* 603, 604, etc. */
+diff -Nru a/include/asm-ppc/cputable.h b/include/asm-ppc/cputable.h
+--- a/include/asm-ppc/cputable.h	Mon Mar 15 19:59:58 2004
++++ b/include/asm-ppc/cputable.h	Mon Mar 15 19:59:58 2004
+@@ -75,6 +75,7 @@
+ #define CPU_FTR_DUAL_PLL_750FX		0x00004000
+ #define CPU_FTR_NO_DPM			0x00008000
+ #define CPU_FTR_HAS_HIGH_BATS		0x00010000
++#define CPU_FTR_745X_MPC107             0x00020000
 
-Stergios.
+ #ifdef __ASSEMBLY__
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
