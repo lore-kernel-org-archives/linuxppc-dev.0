@@ -1,51 +1,55 @@
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: "Kerl, John" <John.Kerl@Avnet.com>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MPC8xx, FEC and DP83847 !? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 21 Mar 2002 18:58:52 +0100."
-             <3C9A1F5C.61673202@imc-berlin.de>
-Date: Thu, 21 Mar 2002 19:25:38 +0100
-Message-Id: <20020321182543.80EB9109F3@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9F62@mail.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: MPC8xx, FEC and DP83847 !?
+Date: Thu, 21 Mar 2002 13:43:16 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C9A1F5C.61673202@imc-berlin.de> you wrote:
->
-> Ok. Since there are special options in DENX kernel for LXT, AMD and QS I
-> thought special support for these PHYs is neccessary. Maybe only if you
-> want to use the vendor specific special registers of the PHYs in
-> addition to the standart MII register!?
+Steven,
 
-It depends on hwat you have to do, and an the PHY.
+> > - The DP83847 can not drive an external IRQ on the PPC,
+> while LXT can.
+> So does that mean, that the kernel can't detect link changes?
+Exactly!
 
-In most cases ypu can just switch off the whole MDIO stuff  and  rely
-on  autonegotiation; the only thing you lose is a kernel message when
-the link status changes. Of course this requires sane hardware, which
-is not always the case :-(
+However, I have added a call back, driven by the timer interrupt,
+to periodically check for link changes. Of course, it can not
+be detected as fast as with interrupt, but it will be correct
+in most applications.
 
-> > The Motorola reference boards use port D for MII, but we
-> > used PCMCIA/port A pins instead.
->
-> Why would you probably do this?
-> I supposed you're using PORT D for something else!?
+Detecting link changes at run-time is not absolutely neccessary,
+except for the duplex mode, because the FEC must be aware of it.
 
-Probably.
+> Is there any special reason why your code is not in a recent
+> kernel (e.g DENX)?
+You are the first one to ask for it ;-)
+Really, I have sent it in the past (without the timer call back),
+along with a bug fix. But someone at MVista (Tom Rini, I think),
+decided not to integrate it for now, since only a few (or no) people
+were using it, and it did not follow extensive testing.
 
-> It would be really interessting to know...
+And BTW, Mr. Denx just asked me for the patch a few minutes ago.
 
-See the ICU862 configuration in our sources. They do the same  thing,
-and had similar problems...
 
-Wolfgang Denk
+Another cool thing I have added to the 8xx FEC driver is the standard IOCTL
+interface,
+to manipulate the PHY through the mii-tool program (net-tools package).
+If someone wants it, I will prepare a patch.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-       There is enough for the need of everyone in this world,
-       but not for the greed of everyone.     - Mahatma Gandhi
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., System Architect
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
