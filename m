@@ -1,44 +1,52 @@
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux/m68k <linux-m68k@lists.linux-m68k.org>
-Subject: Re: Mac/m68k patches?
-References: <Pine.GSO.4.10.10012121010320.1109-100000@escobaria.sonytel.be>
-From: Jes Sorensen <jes@linuxcare.com>
-Date: 12 Dec 2000 19:11:47 +0100
-In-Reply-To: Geert Uytterhoeven's message of "Tue, 12 Dec 2000 10:12:18 +0100 (MET)"
-Message-ID: <d3bsuhldb0.fsf@lxplus015.cern.ch>
+Message-Id: <200012121901.UAA00875@piglet.grunz.lu>
+Date: Tue, 12 Dec 2000 20:01:07 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: AW: Sound on an iBook?
+To: iain@sandoe.co.uk
+cc: barrow_dj@yahoo.com, linuxppc-dev@lists.linuxppc.org,
+        schmitz@opal.biophys.uni-duesseldorf.de, khalfmann@libra.de
+In-Reply-To: <200012081959.TAA30962@hyperion.valhalla.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Geert" == Geert Uytterhoeven <geert@linux-m68k.org> writes:
+Hi all,
 
-Geert> 	Hi, I have these Mac/m68k patches in my patchqueue which
-Geert> affect PowerMac as well.  Anyone who has a problem with them,
-Geert> or can I send them to Linus?
-
->diff -urN linux-2.4.0-test12/drivers/macintosh/adbhid.c linux-m68k-2.4.0-test12/drivers/macintosh/adbhid.c
->--- linux-2.4.0-test12/drivers/macintosh/adbhid.c	Sun Sep 17 18:48:05 2000
->+++ linux-m68k-2.4.0-test12/drivers/macintosh/adbhid.c	Tue Dec 12 09:02:45 2000
->@@ -855,8 +855,10 @@
+On   8 Dec, this message from Iain Sandoe echoed through cyberspace:
+> we are all quite familiar with i2c.
 >
-> static int __init adbhid_init(void)
-> {
->+#ifndef CONFIG_MAC
-> 	if ( (_machine != _MACH_chrp) && (_machine != _MACH_Pmac) )
-> 	    return 0;
->+#endif
+> the new thing here is the particular Apple hardware, registers etc. used to
+> implement the bus interface... another set of stuff we may have to deduce
+> the hard way.
 >
-> 	led_request.complete = 1;
->
+> it's not the cuda - the iBook doesn't have a cuda - AFAIK.  (PMU, I expect).
 
-Would be nice to turn that into a macro define in inclue/asm so we can
-get rid of that ugly #ifdef. Doing something like
-_machine_type(<type>) that return 0 on a match and -1 for no match or
-similar.
+You might want to look for the aproach Apple used when implementing I2C
+in the planb ASIC (that was in the 7500/8500 machines, back around
+'94-'95). This I2C interface talks to a single chip on the bus (the
+SAA7196 video decoder), and it goes like this: write the target device
+register subaddress into some register, wait a bit, write the data into
+another register, and off it goes into the target device.
 
-Jes
+There is a third register that monitors the SAA7196's only readable
+register, a status register.
+
+FWIW, register address is at 0x200, data is at 0x204, and status at
+0x208 into planb's address space.
+
+Of course, KeyLargo might work in an entirely different way...
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
