@@ -1,39 +1,49 @@
-Message-ID: <398E4300.4E84850F@ncal.verio.com>
-Date: Sun, 06 Aug 2000 22:02:56 -0700
-From: Henry Worth <haworth@ncal.verio.com>
+Message-ID: <398E5748.10E48750@student.ethz.ch>
+Date: Mon, 07 Aug 2000 08:29:28 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-To: Takashi Oe <toe@unlserve.unl.edu>
-CC: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org,
-        Matthias Pfisterer <Matthias.Pfisterer@gmx.de>
-Subject: Re: CDDA playback on Pismo (and other newer models)
-References: <Pine.LNX.3.96LJ1.1b7.1000806202004.689I-100000@ofey.earthlink.net>
-Content-Type: text/plain; charset=us-ascii
+To: Tom Gall <gall@rochcivictheatre.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patches, Bugs etc ..
+References: <398DADDF.61D21A9E@rochcivictheatre.org>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe wrote:
->
-> On Sun, 6 Aug 2000, Henry Worth wrote:
->
-> [...]
-> > This won't help in the esd case, it always sets the device to
-> > AFMT_S16_BE for 16 bit data on big endian systems (also doesn't deal
-> > with
-> > unsigned 16 bit data streams). Whereas the XMMS esd output plugin always
-> > passes the data through unchanged (little endian in the case of .wav).
->
-> Does xmms' esd output plugin work with 16bit .wav at all on x86?  Since
-> sox works just fine with 16bit .wav, and it doesn't do any byte swapping
-> either as far as I know (which is not much admittedly), I'm very much
-> inclined to think xmms+esd is plain broken with respect to 16bit wav.
->
-> Takashi Oe
+Tom Gall wrote:
 
-The esd daemon sets the output to native endiness, so on an x86
-everyone is little endian and all should be well, but I haven't
-tried it.
+>   I've created a project on Source Forge with the idea that it would be
+> perfect for tracking bugs, patches, projects and so on based on the
+> conversations that were going on here a couple of days ago.
+>
+>   Located at: http://sourceforge.net/projects/ppclinux/  or
+>               https://sourceforge.net/projects/ppclinux/  if you are
+> logged in
+>
+>   The facilities are here for CVS, releasing files, forums, mailing
+> lists, support requests etc etc. Sourceforge does alot. I turned off
+> CVS, forums, mailing lists etc as these are things that are already
+> being done in the PowerPC Linux community and I didn't think there was
+> any need for the duplication of effort unless maybe someday there is
+> desire to change over.
+>
+>   Hopefully this is a good thing and I certainly welcome your input. If
+> there are others that would like to pitch in and help with this that'd
+> be great.
 
-Henry
+We've also started a SourceForge project (called linux-apus) some months ago
+for everything APUS, and our experience has been good so far. APUS development
+has come to a new life, and the SourceForge folks are very supportive.
+
+
+Michel
+
+
+--
+If the box says `Windows 95 or better'', it should run on Linux, right?
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
