@@ -1,30 +1,33 @@
-Message-Id: <m116Um8-0000WZC@tri-yann.crf.canon.fr>
-Date: Tue, 20 Jul 1999 09:57:20 +0200 (CEST)
-From: "VALETTE Eric" <valette@crf.canon.fr>
-To: mmporter@home.com
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: 
-	<Pine.LNX.3.96.990719133758.6567C-100000@liberty.chnd1.az.home.com>
-	(message from Matt Porter on Mon, 19 Jul 1999 13:39:05 -0700 (MST))
-Subject: Re: Is the vger 2.2 kernel branch dead
-References: <Pine.LNX.3.96.990719133758.6567C-100000@liberty.chnd1.az.home.com>
+Message-Id: <199907200927.SAA04143@mail.cc.tohoku.ac.jp>
+MIME-Version: 1.0
+Date: Tue, 20 Jul 1999 18:27:37 +0900
+From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [Q] Any changes of PS/2 mouse on 2.2 kernel ?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Matt" == Matt Porter <mmporter@home.com> writes:
+Hi.
 
-Matt> On Mon, 19 Jul 1999, VALETTE Eric wrote:
+I set X on PowerStack, but PS/2 mouse hungs all systems.
+After moves (about 100 dots) pointer, all of the system is halted,
+not reboot.
+Kernel 2.1.125 works PS/2 better than 2.2.x.
 
->> I tried to upgrade here and no changes during one month!!!
->> As there still some important bugs in 2.2.10++, I wonder
->> why nothing happens???
+When changes PS/2 code on kernels?
+Or, this trouble is based on some libraly change?
 
-Matt> Perhaps nobody has submitted any bug fixes?
+P.S. I heard that serial mouse will do when use X on R5.
 
-At least I did...
-
--- eric
+Best regards.
+----------------------
+Kaz Aoshima = PReP station
+Material deveropment, Faculty of engineering, 
+Tohoku University, Japan
+E-mail:aoshimak@mail.cc.tohoku.ac.jp
+#I am appreciate if you could tell me suggestions
+ for my bad English expressions.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
