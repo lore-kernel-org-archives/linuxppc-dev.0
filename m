@@ -1,44 +1,44 @@
-Message-Id: <199907282103.RAA28451@thanatopsis.mit.edu>
-To: Alain Birtz <abz@videotron.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Realloc() problem with Efence 
-In-Reply-To: Your message of "Wed, 28 Jul 1999 16:48:42 CDT."
-             <379F7AB9.E8D230CE@videotron.ca>
-Date: Wed, 28 Jul 1999 17:03:39 -0300
-From: Nicholas T Ingolia <ingolia@MIT.EDU>
+Date: Wed, 28 Jul 1999 13:05:39 -0700 (MST)
+From: Matt Porter <mporter@phx.mcd.mot.com>
+To: Wolfgang Denk <wd@denx.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Motorola Web Site 
+In-Reply-To: <199907281336.PAA20067@denx.muc.de>
+Message-ID: <Pine.LNX.4.10.9907281254550.30083-100000@fwrsl-11.phx.mcd.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
+On Wed, 28 Jul 1999, Wolfgang Denk wrote:
+> In message <m119OXL-0000WZC@tri-yann.crf.canon.fr> you write:
 
-Hello...
+<snip things that jpeters can respond to>
 
-realloc() may move the memory being realloated.  To quote from the man page,
+> 3) Is Motorola going to extend it's Linux support to the embedded controllers
+>    (MPC8xx, MPX82xx) ?
 
-       realloc() returns a pointer to the newly allocated memory,
-       which is suitably aligned for any kind of variable and may
-       be  different from ptr...
+I'm not speaking for Motorola Computer Group, but the idea is to support
+all current systems under Linux.  For MPC8xx and  MPC82xx processors,
+this means the MBX (8xx) and the announced MVME2100 (82xx).
 
-It doesn't (and couldn't) mutate the pointer temp_c_buf directly.
+Keep in mind that the various evaluation boards for 8xx and 82xx are
+produced by Motorola Semiconductor Processor Sector and any support for
+those products would have to come from them.  I can tell you I have zero
+contact with them and don't even know if they can pronounce Linux. :)
 
-Thus, you probably want to re-write your code to do
+> 4) Running a diff against the original 2.2.10 distribution results in
+>    *all* files  being  different;  why  were  all  the  $Id$  strings
+>    changed?
 
-temp_c_buf = realloc(temp_c_buf, 5000 + 5000);
+The patch creator forgot the -kk option in cvs to ignore tag changes.  I
+passed this on...
 
-- --Nicholas Ingolia
-ingolia@mit.edu
------BEGIN PGP SIGNATURE-----
-Version: PGPfreeware 5.0i for non-commercial use
-Comment: Processed by Mailcrypt 3.5.3, an Emacs/PGP interface
-Charset: noconv
+--
+Matt Porter                                       Motorola Computer Group
+matt_porter@mcg.mot.com                           CIBU Linux Support
 
-iQCVAwUBN59h+gRHXKx72OUhAQEkNAP/bYZO+zzGI2bDBRuCYabEfaxo8/EAffTN
-hliGzKLwhhEetuvrUNv+pam5qBXGb3OLWWAZdRmypEvPXfYP/w3wGlJlGKWxAbGm
-WhBJkzwVWEkqKmqADiClP7ucJcMIYkMcLLVcCBnVEsjoPFDumoc2ncEe6beeRDIB
-gma/mrLVmZs=
-=tyhG
------END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
