@@ -1,47 +1,39 @@
-Subject: Kernel panic: No init found.?? Try passing init= option to kernel
-From: "Mike G." <gohas@actinium.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Content-Type: text/plain
-Message-Id: <1060827870.1060.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 14 Aug 2003 10:29:59 +0800
+Message-ID: <3F3AF502.2030300@mvista.com>
+Date: Wed, 13 Aug 2003 21:33:38 -0500
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: "Mike G." <gohas@actinium.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel panic: No init found.?? Try passing init= option to kernel
+References: <1060827870.1060.20.camel@localhost.localdomain>
+In-Reply-To: <1060827870.1060.20.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
-Can someone give me a clue what's going on?  I been trying to figure out
-what wrong with this kernel. Is it because of the squashfs system which
-I am trying to use.  I know this is quite a common problem and I have
-been search old news archive but to no avail. Please help
+Mike G. wrote:
+> Hi there,
+> Kernel panic: No init found.  Try passing init= option to kernel.
 
-OUTPUT:-
+That message indicates one of a few things happened.
 
-Int flash0: Using Static image partition definition
-Creating 5 MTD partitions on "Int0":
-0x00000000-0x00080000 : "kernel"
-0x00080000-0x00180000 : "ramdisk"
-0x00180000-0x00300000 : "user1"
-0x00300000-0x00380000 : "uboot"
-0x00380000-0x00400000 : "user2"
-VFS: Mounted root (squashfs filesystem) readonly.
-Freeing unused kernel memory: 36k init
-Kernel panic: No init found.  Try passing init= option to kernel.
+The first is it could not find any default init programs to run.
 
+the second is whatever "init=" that you passed in was not found.
 
-I have check, the init is located at this location in the Ramdisk.
+or...
 
-/bin/init -> ../etc/rc
+third, the most common, you have a bad dependency, so when it tries to
+run init the dynamic loader fails, (shell loader fails in the case of a
+shell script.)  Something is causing the program not to run properly.
 
-But I am not sure the file system is mounted correctly.  Or is it
-something wrong with the MTD because I customize the Flash mapping
-myself.
+The way I usually debug this is to install ash.static on the system, set
+my kernel command line to have init=/bin/ash.static..  boot up and then
+attempt to run the "real" init manually so I can get the descriptive
+error messages.
 
-Thank you in advance!
-
-
---
-Mike G. <gohas@actinium.org>
+--Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
