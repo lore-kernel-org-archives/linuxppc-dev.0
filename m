@@ -1,33 +1,32 @@
-Date: Tue, 10 Jun 2003 10:02:09 -0500
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 10 Jun 2003 17:12:18 +0200
+From: Robert Schwebel <robert@schwebel.de>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: init does not run on 405GP system
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: linuxppc-dev@lists.linuxppc.org
-To: Robert Schwebel <robert@schwebel.de>
-From: Hollis Blanchard <hollisb@us.ibm.com>
-In-Reply-To: <20030610141047.GU9379@pengutronix.de>
-Message-Id: <8263E99D-9B54-11D7-8E3D-000A95A0560C@us.ibm.com>
+Message-ID: <20030610151217.GV9379@pengutronix.de>
+References: <20030610141047.GU9379@pengutronix.de> <8263E99D-9B54-11D7-8E3D-000A95A0560C@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <8263E99D-9B54-11D7-8E3D-000A95A0560C@us.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tuesday, Jun 10, 2003, at 09:10 US/Central, Robert Schwebel wrote:
->
-> I'm currently porting u-boot and Linux to an IBM 405GP based board. The
-> problem is now that init seems not to be running and does not give any
-> output. Up to that point where init should make some noise the kernel
-> boots smoothly (serial console), I see all output and NFS-Root is
-> mounted via an Intel 82559 network chip. The kernel threads are also
-> running, I see kupdated & friends being put into the run queue from
-> time
-> to time.
+On Tue, Jun 10, 2003 at 10:02:09AM -0500, Hollis Blanchard wrote:
+> That's where I've seen output stop when I've forgotten to put a getty
+> on /dev/ttyS0 in /etc/inittab...
 
-That's where I've seen output stop when I've forgotten to put a getty
-on /dev/ttyS0 in /etc/inittab...
+But that cannot be the reason why a hello_world does not work and why I
+do not see the sys_write() syscall being called at all. Btw, init on my
+other rootfs is busybox init. I suppose I should always see someting
+useful when init is starting.
 
+Robert
 --
-Hollis Blanchard
-IBM Linux Technology Center
-
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Braunschweiger Str. 79,  31134 Hildesheim, Germany
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+    Phone: +49-5121-28619-0 |  Fax: +49-5121-28619-4
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
