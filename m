@@ -1,22 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 97ED867A6D
+Return-Path: <greg.weeks@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 8608167A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Mar 2005 06:22:18 +1100 (EST)
-Date: Tue, 15 Mar 2005 11:22:16 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Message-ID: <20050315192216.GB18588@gate.ebshome.net>
-References: <1110907039.24673.12.camel@rhino.az.mvista.com>
-	<1110912458.24527.27.camel@rhino.az.mvista.com>
-	<1110913134.24673.32.camel@rhino.az.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1110913134.24673.32.camel@rhino.az.mvista.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 3/3] PPC440EP IBM EMAC support
+	Wed, 16 Mar 2005 06:23:53 +1100 (EST)
+Message-ID: <42373644.4060006@timesys.com>
+Date: Tue, 15 Mar 2005 14:23:48 -0500
+From: Greg Weeks <greg.weeks@timesys.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+References: <4237320D.9040200@timesys.com> <423732E1.2090906@mvista.com>
+In-Reply-To: <423732E1.2090906@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [patch] mpc8560ads mtd map
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,31 +22,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 15, 2005 at 11:58:54AM -0700, Wade Farnsworth wrote:
-> This patch adds support to the IBM EMAC ethernet driver for the 440EP.
-> 
-> Regards,
-> Wade Farnsworth
-> 
-> Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
-> 
+Mark A. Greer wrote:
 
-> --- linux-2.6.11-bk7/drivers/net/ibm_emac/ibm_emac_phy.c	2005-03-02 00:38:13.000000000 -0700
-> +++ linux-2.6.11-bk7-440ep/drivers/net/ibm_emac/ibm_emac_phy.c	2005-03-11 16:32:01.000000000 -0700
-> @@ -27,6 +27,12 @@
->  
->  #include "ibm_emac_phy.h"
->  
-> +#ifdef CONFIG_BAMBOO
-> +#define BAMBOO_REV0 (mfspr(PVR) == PVR_440EP_RA)
-> +#else
-> +#define BAMBOO_REV0 0
-> +#endif
-> +
+> Greg Weeks wrote:
+>
+>>
+>> Add an MTD map for the flash on the mpc8560ads board.
+>>
+>> Signed-off-by: Greg Weeks <greg.weeks@timesys.com> 
+>
+>
+>
+> <snip>
+>
+> Most of the code in this patch can be eliminated if you set up the 
+> table in your platform file and use the proper CONFIG_MTD_xxx options.
+>
+> Mark
+>
+Yep, I pulled this off our 2.6.4 kernel tree. I think it should be in 
+the platform code, but I've not tried moving it yet. That should get rid 
+of the map file and the Kconfig changes to support it.
 
-I really don't like it. Chip revision doesn't imply which board 
-this code is running on. Please, think of some other way to do this or 
-drop this completely.
-
---
-Eugene
+Greg Weeks
