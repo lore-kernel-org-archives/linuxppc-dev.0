@@ -1,16 +1,17 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15603.mail.cnb.yahoo.com (web15603.mail.cnb.yahoo.com
-	[202.165.102.57]) by ozlabs.org (Postfix) with SMTP id E93CA2BC0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Oct 2004 01:00:16 +1000 (EST)
-Message-ID: <20041025150013.35506.qmail@web15603.mail.cnb.yahoo.com>
-Date: Mon, 25 Oct 2004 23:00:12 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
-	Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-dev@ozlabs.org, steven.scholz@imc-berlin.de
-Subject: Re: Linux 2.6.x on 8xx status
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
+	by ozlabs.org (Postfix) with ESMTP id 833602BC0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Oct 2004 01:33:39 +1000 (EST)
+Date: Mon, 25 Oct 2004 08:33:37 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Message-ID: <20041025153337.GE25154@smtp.west.cox.net>
+References: <20041024160923.GA22167@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20041024160923.GA22167@suse.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] write gas check tmp file to O= directory
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sam Song <samlinuxppc@yahoo.com.cn> wrote：
-> BTW, out of curiousness, I just pulled from
-> linux-2.4 and compiled 2.4.28-pre4 on 8xx but end 
-> with some making errors as follows. Did you 
-> encounter it? Some guys like me are more interested
-> in 2.4.x on 8xx.
+On Sun, Oct 24, 2004 at 06:09:23PM +0200, Olaf Hering wrote:
 
-Oh, I feel so sorry to all of you for the former
-misleading message I did on Sat, 16 Oct. It turned out
-to be the kernel configuration problem. Now I can
-compile a right 2.4.28-rc1 on RPXlite DW.
+> the tmp file should be in the O= directory.
 
-I should thank John Whittington for his hints.
+It is already.  By changing AS_ALTIVEC to be just $(shell pwd) and
+adding an echo to checkbin we see:
+echo /home/trini/work/kernel/pristine/amit-kgdb/linux-2.6.9/lopec
 
-Sorry for bothering you all.
+So this isn't an issue.
 
-=====
-Best regards,
+> 
+> btw, why does the mftb check not use '$?'?
 
-Sam
+It was either that I saw different binutils fail with different exit
+codes, or testing for 03041 looked better than '0304255' or whatever the
+exit code was.
 
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
