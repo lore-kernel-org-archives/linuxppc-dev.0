@@ -1,47 +1,53 @@
-Message-ID: <4102DF54.9060007@att.net>
-Date: Sat, 24 Jul 2004 15:14:44 -0700
-From: "DeLaGarza, Robert" <robdlg@att.net>
-MIME-Version: 1.0
+Message-ID: <20040725030003.5401.qmail@web15204.mail.bjs.yahoo.com>
+Date: Sun, 25 Jul 2004 11:00:03 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Could 2_4_devel support RPXlite DW LCD panel? 
 To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8245 Error No. 26
-References: <KCEOLLHGFJIAFNAMGACHMEMODPAA.k@kcomputing.com> <000f01c47172$591008d0$0301a8c0@chuck2>
-In-Reply-To: <000f01c47172$591008d0$0301a8c0@chuck2>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <20040723172210.5B396C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-With regard to "Error No. 26" (quoted below), has any work been done in
-the kernel or serial drivers to compensate for this error?
+Hi,
 
-I've observed problems only when both UARTs were enabled, so I suppose
-one solution is to enable only one UART.
+I want to port 2_4_devel on RPXlite DW with
+framebuffer support and tried linuxppc_2_4_devel in
+linuxppc official BK tree and DENX tree repectively
+but failed.Could anyone try it before?Worked?
 
+----[The config part of frame buffer support]----
+...
+CONFIG_RPXLITE=y
+...
+CONFIG_FB=y
+CONFIG_DUMMY_CONSOLE=y
+...
+CONFIG_FB_8xx_LCD=y
+...
+CONFIG_FB_RPX_LCD_NEC=y   ---[Linuxppc BK tree]
+CONFIG_NEC_NL6448AC33=y   ---[DENX CVS tree]
+...
+CONFIG_FBCON_ADVANCED=y
+...
+CONFIG_FBCON_CFB8=y
+CONFIG_FBCON_CFB16=y
+...
+CONFIG_FBCON_FONTS=y
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+...
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+...
 
+-----------------------------------------------
 
-Error No. 26: Concurrent writes occur to the UART registers when
-UAFR[0] is set
+Anyinput would be appreciated!
 
-Detailed Description:
-The UART Alternate Function Register (UAFR) enables software to write
-concurrently to both UART1 and UART2 registers with the same write
-operation. However, this action occurs when the UARTs are individually
-written to, but in addition, concurrent writes to the UART registers
-occur as a result of writing to other EUMBAR registers, including the
-error injection registers, when UAFR[0] is set.
+Best regards,
 
-Projected Impact:
-Concurrent writes occur to the UART registers when UAFR(0) is set and
-EUMBAR registers are written to.
-
-Work Arounds:
-Set UAFR(0) only for concurrent writes to UART registers. Clear this bit
-immediately afterwards.
-
-Projected Solution:
-No plans to fix.
-
-http://www.freescale.com/files/32bit/doc/errata/MPC8245CE.pdf
-
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
