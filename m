@@ -1,30 +1,29 @@
-To: Jure Menart <jure@kom.org>
-Cc: qiuqingjun <qiuqingjun@263.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: When does the linuxrc script execute? 
-In-Reply-To: Your message of "Tue, 18 Sep 2001 10:25:20 +0200."
-             <20010918102520.A12303@hannanges.teden-mladih.com>
+To: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC860(T) uart SCCs 
+In-Reply-To: Your message of "Tue, 18 Sep 2001 13:02:06 +0200."
+             <sba745ea.073@mail.frequentis.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Date: Thu, 20 Sep 2001 09:23:51 +0200
+Date: Thu, 20 Sep 2001 09:23:56 +0200
 From: Wolfgang Denk <wd@denx.de>
-Message-Id: <20010920072356.EC9D11009C@denx.denx.de>
+Message-Id: <20010920072402.0C0991009C@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-> could you be more specific - your system can't really boot without /linuxrc,
-> because shell is called in it.
+> Iwork with an custom board MPC860T kernel 2.4.5. I will use all 4 SCC as uart RS485/RS232. The problem is, that SCC1 and SCC2 works fine and SCC3 and SCC4 not:
 
-You are wrong. It depends on the kernel configuration and some other things.
+See our kernel version on ftp://ftp.denx.de/pub/LinuxPPC/usr/src .
+The uart driver included works on all 6 possible serial ports (2 x SMC,
+4 x SCC) simultaneous, with support for hardware flow controll on all
+4 SCC ports.
 
-> BTW. linuxrc is executed when kernel preparing namespace, that is after all
-> initializations, preparing devices... it is in 'init' thread.
-
-If you run in a "standalone shell" environment, there is nothing that will
-even bother to check if a /linuxrc exists.
+I've sent a patch for current kernel versions (2.4.10-pre?) to Tom Rini
+several days ago. Don't know when it will make it into the official
+source tree, if ever.
 
 Wolfgang Denk
 
