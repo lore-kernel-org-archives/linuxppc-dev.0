@@ -1,27 +1,30 @@
-Date: Wed, 23 Aug 2000 13:51:59 +0200 (CEST)
+Date: Wed, 23 Aug 2000 13:58:07 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org, dmj+@andrew.cmu.edu
-Subject: Re: Control fb problem on 8500
-In-Reply-To: <39A2F6C7.F2743BF7@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10008231350530.380-100000@cassiopeia.home>
+To: David Monro <davidm@amberdata.demon.co.uk>
+cc: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: prep problems - a couple of questions
+In-Reply-To: <39A36A26.1291926E@amberdata.demon.co.uk>
+Message-ID: <Pine.LNX.4.10.10008231355010.380-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 22 Aug 2000, Michel [iso-8859-1] Dänzer wrote:
-> Michel Lanners wrote:
-> > supposing someone actually finds out how control's hardware cursor works,
-> > and supposing someone would actually take the time to implement this,
-> > wouldn't we need to provide a XFree driver as well? I guess plain fbdevhw
-> > doesn't support hw cursor...
+On Wed, 23 Aug 2000, David Monro wrote:
+> I'm encountering a couple of problems with 2.4.0-test3+ on PReP systems.
+> I've finally traced the major one down to the following: calling
+> request_region() in prep_setup_arch() causes the machine to stop.
+> Tracing it a little deeper, it is the call to kmalloc() inside
+> request_region() which actually fails. I'm guessing this is caused by
+> the changes to the slab allocator in 2.4.0-test3.
 >
-> Don't think that there are fbdev ioctls to control it either.
+> So it looks like we can't afford to call request_region() this early in
+> the game. Can anybody tell me when it is first safe to use it?
 
-Actually there are, but they are highly experimental since about 4 years :-)
-Only Amifb should support them more or less.
+Change all early calls to `request_region(...)' to calls to
+`request_resource(&ioport_resource, ...)', also passing pointers to your own
+preinitialized `struct resource's.
 
 Gr{oetje,eeting}s,
 
