@@ -1,37 +1,34 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Takashi Oe <toe@unlserve.unl.edu>,
-        linuxppc-dev
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: LinuxPPC X Server
-Date: Mon, 31 Jul 2000 16:07:48 +0200
-Message-Id: <20000731140748.1481@mailhost.mipsys.com>
+Message-ID: <39858A95.3BF7DEE0@pop.agri.ch>
+Date: Mon, 31 Jul 2000 16:17:57 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CONFIG_PPC != Mac
+References: <39821DD7.ED0DA0A2@embeddededge.com>
+	 <39821DD7.ED0DA0A2@embeddededge.com>
+	 <v04003a00b5a8c0b923e3@[24.66.67.194]>
+	 <v04003a01b5a8c8c70822@[24.66.67.194]>
+	 <4.3.2.7.2.20000731140051.0351ff00@mail.munich.netsurf.de> <4.3.2.7.2.20000731152113.03e44d60@mail.lauterbach.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> >> - A likely timeframe for first 3D Drivers
->> >>   to be released, which optimally should
->> >>   not be more than 3 months from now
->>
->> >Again, what is not working for you?  What have you tried to get them
->> >working for you and how did it fair?
->>
->> I cannot try getting something to work what does not exist. And appearently
->> there are no GLX- or DRI-Drivers for ATI Rage (or any other hardware) yet.
->> I am talking about Hardware Accelerated Mesa3D here...
->
->Ok, you should say so (3D support for older video cards like ATI Rage) in
->your previous message then.  As you may know, DRI drivers already exist
->for mga, r128, tdfx, i810 in source form.
->
+Franz Sirl wrote:
 
-I'm working on a /dev/agpgart implementation for new machines. But DRI
-should be already port-able using the PCI GART provided by most ATI
-chipsets. Any volunteer ?
+> 2.4 users are not innocent :-). As I said, just don't turn on
+> CONFIG_ADBMOUSE. I'm doing that right now, cause the kernel uses linux
+> keycodes already internally now, and they will show up externally somewhere
+> during 2.5, so doing it for 2.4 with backwards compatibility on by default
+> is the best thing to do.
 
-Ben.
+Turning CONFIG_ADBMOUSE off results in a nice kernel panic with two additional
+keyboards connected to the adb-port of my wallstreet :-) (No additional mouse
+connected)
 
+With only the internal kbd it works so far even with the new LAYER maps.
+
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
