@@ -1,33 +1,34 @@
-Message-ID: <3A3F9363.1040105@galileo.co.il>
-Date: Tue, 19 Dec 2000 18:57:07 +0200
-From: Rabeeh Khoury <rabeeh@galileo.co.il>
-Reply-To: rabeeh@galileo.co.il
+Date: Tue, 19 Dec 2000 18:02:31 +0100 (MET)
+From: Tobias Otto-Adamczak <tobias.otto-adamczak@e-technik.tu-chemnitz.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Device driver FAQ/Information
+In-Reply-To: <64AFC0D37B2ED411BAB300508B6D90A019AAC1@AVALANCHE>
+Message-ID: <Pine.LNX.4.30.0012191801490.20443-100000@pandora.hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Booting the kernel
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+> Dan Winkler wrote:
+> I know most drivers used the Dual port ram to send the data but would
+> it work just as easily with external ram.
 
-I'v developed a network loader for our embedded systems that downloads a
-kernel through network. Before branching to the kernel entry point
-(logical address 0x0) I have I/D BAT2 already mapping 0xc0000000 to
-0x00000000 . The problem is that the kernel hangs in lots of places in
-arch/ppc/kernel/head.S file . For example all the mmu_off stuff ,
-changing the BATs etc...
+The internal DP RAM is very limited so many device drivers use external
+RAM for their data buffers. Don't confuse with the buffer descriptors
+which are held in the DP RAM. Using DP RAM for buffers may speed up your
+system a little bit (?).
 
-The question is what is the idial situation that the kernel will most
-like ? What should be the situation of the BATs / MMU ?
-What is initrd_start / end ? and what should I put in r4 / r5 ?
+> The macros which I am confused with are the __va __pa etc...  Can I
+> find an explaination of this anywhere....
 
-Any other piece of information provided might help bringing the boot
-puzzle up !
+This is due to the fact that the core (the Linux kernel if you want) uses
+address translation while the CPM does not. So if kernel code wants to
+tell CPM about a RAM address it has to translate from his view of memory
+(virtual addresses) to CPM's view (physical addresses). Thats what
+__pa(addr) is for and vice versa.
 
-Regards,
-Rabeeh
+Ciao - Tobias
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
