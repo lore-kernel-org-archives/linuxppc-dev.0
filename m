@@ -1,28 +1,57 @@
-Date: Thu, 15 Jul 1999 10:36:43 +0200 (CEST)
+Date: Thu, 15 Jul 1999 10:45:42 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "Michael R. Zucca" <mrz5149@acm.org>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Minor atyfb problems/observations
-In-Reply-To: <l03130301b3b2ec750e23@[216.67.46.46]>
-Message-ID: <Pine.LNX.4.10.9907151033260.15826-100000@mercator.cs.kuleuven.ac.be>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MESH problems in 2.2.x
+In-Reply-To: <199907140509.PAA21467@tango.anu.edu.au>
+Message-ID: <Pine.LNX.4.10.9907151045030.15826-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 14 Jul 1999, Michael R. Zucca wrote:
-> Ok, with the latest fifo patch in place I no-longer get the flickering
-> pixels on the left side of my screen. However, I think there's another
-> problem which may not be X-Server related.
+On Wed, 14 Jul 1999, Paul Mackerras wrote:
+> Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+> > Just made some diff between 2.1.130 and the `broken' kernels. The following
+> > two things make me suspicious:
+> > 
+> > Index: drivers/scsi/mesh.c
+> > @@ -1643,6 +1643,7 @@
+> >  static void
+> >  mesh_completed(struct mesh_state *ms, Scsi_Cmnd *cmd)
+> >  {
+> > +#if 0
+> >  	if (ms->completed_q == NULL)
+> >  		ms->completed_q = cmd;
+> >  	else
+> > @@ -1651,6 +1652,9 @@
+> >  	cmd->host_scribble = NULL;
+> >  	queue_task(&ms->tqueue, &tq_immediate);
+> >  	mark_bh(IMMEDIATE_BH);
+> > +#else
+> > +	(*cmd->scsi_done)(cmd);
+> > +#endif
+> >  }
+> >  
+> >  /*
+> > 
+> > Why did Dave (mesh.c 1.20, according to the vger CVS logs, which don't help me
+> > much) do this?
 > 
-> I use the drag-style for windows which draws an outline of the window
-> rather than a solid window.
-> When I do this I get a sort of flickering of black down the left side when
-> I'm dragging the window
-> around. What could be the cause of that problem?
+> I made that change, I think maybe I sent it straight to Linus and it
+> got into vger via the official releases or something.
+> 
+> The point was that I realized, looking at the scsi code (which has
+> changed quite a bit since I wrote the original mesh driver) that the
+> scsi done routine was going to schedule a BH handler anyway so there
+> was no point in mesh.c having complexity to arrange for that.  I was
+> cleaning up the SMP locking in mesh.c at the time and making that
+> change was an alternative to getting the locking right for the
+> completed_q stuff.
 
-The FIFO again.
+But on my UP box, changing the `#if 0' to `#if 1' fixed all my MESH
+problems...
 
 Greetings,
 
