@@ -1,64 +1,41 @@
-Message-ID: <3FCF19C3.9070205@dgt-lab.com.pl>
-Date: Thu, 04 Dec 2003 12:25:55 +0100
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
-MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: memory problem with fec on 8250
-References: <3FCD956B.8030604@gazeta.pl> <3FCEF441.2030808@dgt-lab.com.pl> <20031204091536.GA1050@gate.ebshome.net> <3FCF0252.7070202@dgt-lab.com.pl> <20031204101901.GB1050@gate.ebshome.net> <3FCF0E68.4010303@dgt-lab.com.pl> <20031204105532.GA2065@gate.ebshome.net>
-In-Reply-To: <20031204105532.GA2065@gate.ebshome.net>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: RAMDISK Segv 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 04 Dec 2003 06:34:08 EST."
+             <3FCF1BB0.9060005@catapult.com>
+Date: Thu, 04 Dec 2003 12:43:35 +0100
+Message-Id: <20031204114340.42AD1C5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-U¿ytkownik Eugene Surovegin napisa³:
+In message <3FCF1BB0.9060005@catapult.com> you wrote:
+>
+> Thanks, I'll build busy box from scratch with my
+> distro and see how that goes.  The Arabella free
+> package seems to do a few thing s different, such
+> as dpr allocation...
 
->On Thu, Dec 04, 2003 at 11:37:28AM +0100, Wojciech Kromer wrote:
->
->
->>i have to check end-of-trasmit interrupt code, but it seems to be good,
->>and it's common used driver (i hope so)
->>
->>
->
->Yep, quick look didn't reveal anything suspicious.
->
->To quickly check TX skb leak theory I'd add one counter and
->  1) increment it in fcc_start_xmit, and increment it for each
->     transmitted packet (e.g. at line 450)
->
->  2) decrement it in fcc_enet_interrupt right after dev_kfree_skb_irq
->     (at line 593).
->
->Make this counter accessible from user mode, e.g. through /proc and
->run your test :)
->
->
->
-so i made such test, theese are results:
+??
 
-bash-2.05# cat /proc/interrupts
-           CPU0
- 19:        157   8260 SIU   Edge      dsp_msg
- 33:      81139   8260 SIU   Edge      fenet
- 34:          0   8260 SIU   Edge      fenet
- 40:       3909   8260 SIU   Edge      uart
- 42:        134   8260 SIU   Edge      uart
- 43:          0   8260 SIU   Edge      uart
-BAD:      14481
+> IMMR is 0xF000_0000   with virt=phys
+> BCSR is 0xF450_0000    this seems a little strange
 
-bash-2.05# cat /proc/kdebug
-tx_skb_alloc=53384 tx_skb_free=29058
+This is probably correct, other MPC82xxADS boards use the same.
 
-_anyone_ knows why there is such difference between allocs and frees in
-fcc_enet.c
+Sorry, I don't have such hardware, so I can't help.
 
+Best regards,
 
+Wolfgang Denk
 
 --
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Uuencode/uudecode is just a mickey-mouse archiver.
+                       - Doug Gwyn in <1995Mar4.011139.22820@arl.mil>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
