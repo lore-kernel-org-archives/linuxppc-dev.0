@@ -1,39 +1,31 @@
-Message-ID: <004101c16d8d$3e64e320$7b80a984@serial>
-Reply-To: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
-From: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
-To: "'Linuxppc-Embedded '" <linuxppc-embedded@lists.linuxppc.org>
-Cc: "Brad Parker" <brad@parker.boston.ma.us>
-References: <200111141233.HAA74509@p2.parker.boston.ma.us>
-Subject: RPX-Lite: USB microcode and SPI/IIC microcode.
-Date: Thu, 15 Nov 2001 12:23:14 +0800
+Message-ID: <3BF35805.5000702@embeddededge.com>
+Date: Thu, 15 Nov 2001 00:52:05 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Brad Bonkoski <bradb59@home.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ADS 8260
+References: <3BF31908.7E591B3B@home.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Brad Bonkoski wrote:
 
-Please help me!
-Now, I'm using SPI/IIC microcode patch to run SPI and Ethernet
-concurrently. Thus, I could not load USB microcode patch to send
-SOF.
 
-Would you give me any idea to solve this problem?
+> I noticed that in the current linuxppc_2_4_devel kernel tree there is no
+> longer an option for the ADS8260 platform.  Is one of the other 8260
+> boards compatible with this one, if so which one?
 
-Could I load USB microcode patch before I run USB host driver,
-then reload SPI/IIC microcode when I unload USB host driver?
-Of course, I cannot run SPI or IIC when running USB host driver.
+Sorry, I have some updates that I have yet to pull out of the HHL 2.0
+distribution into this kernel.  The changes are trivial, I just haven't
+done it.  Maybe over the weekend..........or you could just download
+the HHL 2.0 Journeyman edition for the ADS8260 and send me the patches :-).
 
-Do you think that this way is applicable?
 
-Do Motorola guys have any microcode patch for all SPI/IIC and USB_SOF? If
-they have, it's really realy nice.
 
-Urgent help needed,
-Thank you very much,
-Jari Nguyen Trung Thanh
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
