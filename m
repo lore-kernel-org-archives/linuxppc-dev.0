@@ -1,49 +1,47 @@
-To: Kapil Konde <kapilkk@yahoo.com>
-Cc: linuxppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Installing rtlinux on mpc860 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 07 Aug 2001 18:17:21 +0530."
-             <3B6FE359.29C966C5@yahoo.com>
-Date: Tue, 07 Aug 2001 15:03:00 +0200
-Message-Id: <20010807130305.B735610CB8@denx.denx.de>
+Message-ID: <3B6FE878.30B2351C@raleigh.ibm.com>
+Date: Tue, 07 Aug 2001 09:09:12 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
+MIME-Version: 1.0
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: linuxppc.org
+Content-Type: multipart/mixed;
+ boundary="------------D652425125A76092D203AB6B"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3B6FE359.29C966C5@yahoo.com> you wrote:
->
->         I am new to rtlinux. I want to install rtlinux on mpc860 board.
-> I have a mpc860T mdppro board. Can somebody guide me on which rtlinux I
-> should use and what are the steps that I will require to perform to
-> install the rtlinux on board.
+This is a multi-part message in MIME format.
+--------------D652425125A76092D203AB6B
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-We have a patch for RTLinux-3.0 on our  FTP  server,  as  well  as  a
-kernel  that is known to work with this patch (there are other, newer
-kernel versions as well, but these might need a little work  adapting
-the  patch).  Included  with  the  patch  comes  a `README.DENX' with
-detailed description of the patch and installation procedure.
+What has happened to linuxppc.org.
 
-Please note that there is also  a  patch  for  RTAI-24.1.4.  We  will
-maintain  RTAI  support  in  the  future,  but  may (or may not) drop
-support for RTLinux (no technical reasons, just because of the patent
-issue).
+I cant seem to get to it anymore.
 
-Please see:
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4.4-2001-05-12.tar.bz2
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/rtlinux-3.0-denx.tar.bz2
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/rtai-24.1.4-denx.tar.bz2
-and maybe:
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4.4-2001-07-23.tar.bz2
+Chip
+--------------D652425125A76092D203AB6B
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
 
-Hope this helps,
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;15936
+fn:Ralph Blach
+end:vcard
 
-Wolfgang Denk
+--------------D652425125A76092D203AB6B--
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Weekends were made for programming.                 - Karl Lehenbauer
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
