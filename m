@@ -1,24 +1,29 @@
-Message-ID: <3EA90E57.8050709@dgt-lab.com.pl>
-Date: Fri, 25 Apr 2003 12:30:47 +0200
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
+Message-ID: <3EA90FF8.2000701@imc-berlin.de>
+Date: Fri, 25 Apr 2003 12:37:44 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: execve inside irq?
+To: Wojciech Kromer <krom@dgt-lab.com.pl>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: execve inside irq?
+References: <3EA90E57.8050709@dgt-lab.com.pl>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-anyone knows ho to call execve inside irq
+Wojciech Kromer schrieb:
+>
+> anyone knows ho to call execve inside irq
+>
+> i just want to execve("/sbin/poweroff"....) in case of pressing power
+> button on my board
 
-i just want to execve("/sbin/poweroff"....) in case of pressing power
-button on my board
+Since I did not find a better solution yet I start a new kernel thread
+that takes care of poweroff when getting the power button interrupt.
+In this new thread I then send a SIGUSR1 to init, but you could
+probably call "execve("/sbin/poweroff"....) " as well.
 
-
---
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
