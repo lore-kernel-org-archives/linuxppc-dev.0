@@ -1,39 +1,34 @@
-Message-ID: <3804499E.291265F@arcormail.de>
-Date: Wed, 13 Oct 1999 09:58:07 +0100
+Message-ID: <3804503F.74B93796@arcormail.de>
+Date: Wed, 13 Oct 1999 10:26:27 +0100
 From: Michael Fenske <michael.fenske@arcormail.de>
 Reply-To: michael.fenske@arcormail.de
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-CC: linuxppc-dev@lists.linuxppc.org
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+CC: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: Problem with glibc-2.1.3-0a.src.rpm ?
-References: <3803A7BC.4175E431@arcormail.de> <99101300580600.00880@ns1102.munich.netsurf.de>
+References: <3803A7BC.4175E431@arcormail.de>
+		 <3803A7BC.4175E431@arcormail.de> <v03110700b4298a016f5d@[209.183.131.16]>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
+"Kevin B. Hendricks" wrote:
 > 
-> Did you install all parts of gcc-2.95.1? cpp is easily forgotten. What output
-> do you get from 'egcs -v' and 'gcc -v'?
+> 1. goto /usr/lib/gcc-lib and search downwards and remove all of the old
+> egcs subdirectories hanging around (just leave the latest gcc ones from
+> Franz's gcc-2.95.1
 
-I have installed the following parts:
+I removed them already.
 
-  cpp-2.95.1-0a
-  gcc-2.95.1-0a
-  gcc-c++-2.95.1-0a
-  gcc-objc-2.95.1-0a
+> 
+> 2. add a symbolic link
+>    ln -s 2.95.1 gcc-2.95.1
 
-egcs -v returns
-
-  bash: egcs: command not found  // what a surprise ;-)
-
-gcc -v returns
-
-  Reading specs from /usr/lib/gcc-lib/ppc-redhat-linux/2.95.1/specs
-  gcc version 2.95.1 19990809 (prerelease)
+I made this link and tried rebuilding glibc-2.1.3.0a again. But the
+configure script continues to believe I have egcs installed.
 
 Michael
-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
