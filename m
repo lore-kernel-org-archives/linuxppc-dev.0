@@ -1,20 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 064F52BF07
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id 5C4792BF12
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 04:41:57 +1100 (EST)
-Date: Wed, 5 Jan 2005 09:41:54 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Laurent Lagrange <lagrange@fr.oleane.com>
-Message-ID: <20050105174154.GB14485@gate.ebshome.net>
-References: <000001c4f32b$cfe37470$5201a8c0@GEG2400>
+	Thu,  6 Jan 2005 04:48:40 +1100 (EST)
+Date: Wed, 5 Jan 2005 10:48:38 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: alebas@televes.com, Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050105174838.GF4213@smtp.west.cox.net>
+References: <1102585377.41b81e218d6df@webmail.televes.com:443>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000001c4f32b$cfe37470$5201a8c0@GEG2400>
+In-Reply-To: <1102585377.41b81e218d6df@webmail.televes.com:443>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8260 strange virtual addresses returned by kmalloc()
+Subject: Re: Kernel 2.6.10 running on mpc8272ads
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,40 +23,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 05, 2005 at 02:38:12PM +0100, Laurent Lagrange wrote:
-> Hi and Happy New Year to all,
+On Thu, Dec 09, 2004 at 10:42:57AM +0100, alebas@televes.com wrote:
+
+> Hi to all,
 > 
-> I use a Linux 2.4.25 kernel on a MPC8260 custom board with 128MB of RAM.
-> PCI is activated and my drivers are loaded as modules.
-> The RAM is mapped at 0xC0000000 as usual.
+> Finally I got my mpc8272ads board running the 2.6.20-rc1 kernel.
+> The trick was:
 > 
-> On MPC8XX I used kmalloc and iopa to get the physical addresses of the
-> allocated buffers.
-> On MPC82XX I used kmalloc and __pa for the same thing and it worked fine
-> with previous kernel.
-> 
-> But now, when I want to use kmalloc, I get addresses like 0xC9xxxxxx.
-> The __pa gives me physical addresses 0x09xxxxxx which are out of my physical
-> RAM.
-> I tried old iopa function and got some real physical addresses and the
-> module works.
-> The virt_to_bus gives me too addresses like  0x09xxxxxx
-> (ie substract kernel base address 0xC0000000 as usual).
-> 
-> I don't understand why I get virtual addresses which seem to be out of my
-> memory and why it runs.
+> First, I had to comment out the BCSR modification for second UART
+> in m82xx_board_init function (arch/ppc/platforms/pq2ads.c). As
+> suggested by Dan Malek, MMU is still off at this point.
 
-Yeah, this looks strange, please, check that this address is really 
-from kmalloc and not from vmalloc.
+Indeed.  While I had a PQ2FADS for a bit, I had to do that as well.
+Kumar, what/why is that needed exactly?  Did I screw up in re-working
+the 82xx init stuff and it needs to happen a bit later in boot?
 
-Also, check that PAGE_OFFSET is really 0xc000'0000.
-
-> More, I have a global variable which is a little buffer. It is also mapped
-> at a 0xC9xxxxxx address.
-
-Is this global variable in the loaded module? If yes, this is normal, 
-because modules are loaded into vmalloced space and you cannot use 
-__pa for such addresses.
-
---
-Eugene
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
