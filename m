@@ -1,36 +1,42 @@
-Message-ID: <39E193B3.7974B5C6@relog.ch>
-Date: Mon, 09 Oct 2000 11:45:23 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Message-ID: <F14441D40E5AD3118886005004607AD10BDDDD@MAIL1>
+From: "Halfmann, Klaus" <khalfmann@libra.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ibook ttyS0 (modem), and pppd problem, linux-2.2.17pre20ben2
+Date: Mon, 9 Oct 2000 12:45:26 +0200 
 MIME-Version: 1.0
-To: Topi Kanerva <tkanerva@ees2.oulu.fi>
-CC: Giuliano Pochini <pochini@denise.shiny.it>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: can't boot 2.4.0-t9
-References: <Pine.GSO.4.21.0010091229310.24725-100000@stekt6>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="windows-1252"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Topi Kanerva wrote:
+Conrad H Ziesler [mailto:cziesler@umich.edu] wrote:
 
-> I don't know about the drivers/scsi stuff, because I have a pismo
-> (and hence no scsi), but for sure none of the 2.4.0-testx kernels
-> have worked for me in terms of X: if I start X (4.0.1c), the
-> lcd screen goes black, or then just completely wild.
+> The first time i run pppd after reboot, everything works great.
 >
-> Can anyone else with a pismo confirm this?
+> however, if the remote host abruptly hangs up, then all future pppd
+> instances yield the following trace in syslog:
+>
+> Oct  7 18:35:15 mwatt pppd[7318]: pppd 2.3.11 started by root, uid 0
+> Oct  7 18:35:19 mwatt pppd[7318]: Hangup (SIGHUP)
+> Oct  7 18:35:19 mwatt pppd[7318]: Connect script failed
+>
+> that is, pppd aborts without ever running chat.
+> nothing i seem to do fixes this except reboot.
 
-Not me. It has always worked fine for me. But then I use the other distro (see
-.sig ;)
+I have just the same problem and help myself as follows:
+I compiled macserial as a module. So when this problem
+hits me I do a rmmod/insmod on macserial and everything
+is fine again.
 
+This problem appeard in all 2.2 kernels I had until now.
+Of course this is a bug in the macserial driver
+(and it may already be known) ...
 
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
+|       |                  Klaus Halfmann       khalfmann@libra.de
+|       |
+|    i  | --.  r---  -- |  Libra Software GmbH  Tel +49 (0)621 41997-15
+|    |  b-- |  |    a-- |  Erzbergerstr. 17     Fax +49 (0)621 41997-30
+L--- |  --- |  |    .---.  68165 Mannheim
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
