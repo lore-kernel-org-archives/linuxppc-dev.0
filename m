@@ -1,49 +1,32 @@
-To: jbates@paradise.co.uk
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ELDK on MPC8260ADS board, Machine check in kernel 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 11 Dec 2003 12:50:47 GMT."
-             <OJEPIMKHOKJAJIDJLJBNMEIMCAAA.jbates@paradise.co.uk>
-Date: Thu, 11 Dec 2003 18:30:40 +0100
-Message-Id: <20031211173045.41413C5F5F@atlas.denx.de>
+Date: Thu, 11 Dec 2003 10:36:17 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>,
+	Dan Malek <dan@embeddededge.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405 TLB miss reduction
+Message-ID: <20031211103617.B26110@home.com>
+References: <3FBD5348000912F8@mssbzhh-int.msg.bluewin.ch> <3FD75312.7070701@embeddededge.com> <3FD84905.5090802@bluewin.ch> <3FD89FC3.3020301@jonmasters.org> <3FD8A1A8.2060409@bluewin.ch> <3FD8A411.9000102@jonmasters.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3FD8A411.9000102@jonmasters.org>; from jonathan@jonmasters.org on Thu, Dec 11, 2003 at 05:06:25PM +0000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear James,
-
-in message <OJEPIMKHOKJAJIDJLJBNMEIMCAAA.jbates@paradise.co.uk> you wrote:
+On Thu, Dec 11, 2003 at 05:06:25PM +0000, Jon Masters wrote:
 >
-> I am trying to get linux running on my standard MPC8260ADS board but I have
-> hit a dead end.
+>
+> Wolfgang Grandegger wrote:
+>
+> | I found "Documentation/vm/hugetlbpage.txt" in linuxppc-2.5 from BK.
+>
+> Yeah I have that too but want to know whether there is a resource I am
+> missing where this stuff is getting discussed and sorted.
 
-Reading the FAQ's and mailing list archives is recommended.
+In the past, there's been lots of discussion about hugetlb support on
+lkml. google for it.
 
-> I am getting a "Machine check in kernel mode." error about the time that
-> ramdisks are setup.
-
-Try updating U-Boot to a recent  version,  or  at  least  change  the
-#define  for CFG_BCSR into 0xF4500000 (instead of the silly 04500000)
-in "include/configs/MPC8260ADS.h" (also change  CFG_LSDRAM_BASE  into
-0xFD000000 while you are at it).
-
-> I am using the linuxppc_2_4_devel eldk which I checked out this week and
-> u-boot 0.4.0. I have added the boot output at the end of this message for
-> those that are interested. I have also attempted to make some sense of the
-> backtrace from the System.map
-
-It would have been nice if  you  hadd  added  the  results  of  these
-attempts, too.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A metaphor is like a simile.
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
