@@ -1,60 +1,55 @@
-Return-Path: <bouncefilter+linuxppc-embedded=wd=denx.de@lists.linuxppc.org>
-Message-ID: <3FAB51D2.104@iti.fi>
-Date: Fri, 07 Nov 2003 10:03:30 +0200
-From: Kate Alhola <kate@iti.fi>
-MIME-Version: 1.0
-To: Tord Andersson <Tord.Andersson@combitechsystems.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_mpc5200 / 5200lite zImage now working
-References: <004B1D7A5257174C9044A1B7BD0E60ED447034@ratatosk.combitechsystems.com>
-In-Reply-To: <004B1D7A5257174C9044A1B7BD0E60ED447034@ratatosk.combitechsystems.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kate Alhola <kate@iti.fi>
+Cc: Tord Andersson <Tord.Andersson@combitechsystems.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	u-boot-users@lists.sourceforge.net
+Subject: Re: linuxppc_2_4_mpc5200 / 5200lite zImage now working 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 07 Nov 2003 10:03:30 +0200."
+             <3FAB51D2.104@iti.fi>
+Date: Fri, 07 Nov 2003 12:57:22 +0100
+Message-Id: <20031107115727.CAD69C5F59@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tord Andersson wrote:
-
->Kate,
+In message <3FAB51D2.104@iti.fi> you wrote:
 >
->Thanks for sharing your experiences with the MPC5200Lite card.
->Would it be possible for you to explain the steps you took to replace
->dbug with u-boot. Did you use dbug or a bdm?
->I am about to do the same thing, and fear that I might end up with a
->"dead" card if
->things go wrong : )
->
-I actually did not eplace it all. I just compiled and programmed u-boot
-to flash in diferent
-address than 0xfff00000 I used 0xff800000 but it is not a good choice
-because it
-leaved big hole between dbug and uboot.May be the 0xfff40000 will be
-more sensible choice.
+> >Thanks for sharing your experiences with the MPC5200Lite card.
+> >Would it be possible for you to explain the steps you took to replace
+> >dbug with u-boot. Did you use dbug or a bdm?
+> >I am about to do the same thing, and fear that I might end up with a
+> >"dead" card if
+> >things go wrong : )
+> >
+> I actually did not eplace it all. I just compiled and programmed u-boot
+> to flash in diferent
+> address than 0xfff00000 I used 0xff800000 but it is not a good choice
 
-Then i just loaded s-record image to RAM and copied it to flash in right
-address.
-To load it in diferent address that it is intended you should use -o option
-because dbug can't load directly to flash.
+This is not an optimal way to solve this.
 
-Now, when i am more familiar  with u-boot and if i wish replace dbug
-i recommend to first compile u-boot to ram address and then use ram-running
-u-boot to erase dbug and program u-boot on the place. Of cource this kind of
-procedures allways have risk to make dead board and then you will need
-a WERY EXPENSIVE bdm tools reprogram it. So, loading u-boot
-to alternate address is safest way.
-Only inconvicienc of ths is that u-buut must be started grom dbug and so
-one
-extra step is needed.
+I just checked in patches  for  U-Boot  to  allow  for  a  "low-boot"
+configuration,  i.  e.  you  can configure and built U-Boot using the
+commands "make MPC5200LITE_LOWBOOT_config;make all" and then  program
+it at the low end of the flash (0xFF000000). After switching the boot
+high/low  jumper  ("B  H/L") the board will boot directly into U-Boot
+and all you need to switch back to dBUG is to switch the jumper back.
+
+It may take a while until the new version of U-Boot shows up  on  the
+CVS  server; the patch against U-Boot version 1.0.0 is also available
+at ftp://ftp.denx.de/pub/u-boot/lowboot-1.0.0.patch.gz
 
 
-Kate
+Best regards,
+
+Wolfgang Denk
 
 --
-+==================================================================+
-! Kate Marika Alhola  Internet Technologies International Oy       !
-! kate@iti.fi         Phone +358 400 740701 Fax   +358 9 8138715   !
-! kate@iki.fi	      http://www.iti.fi    http://www.iki.fi/kate  !
-+==================================================================+
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+: ... and it's got weird formatting - Notepad, Write, Works  3  can't
+: decipher it, and it's too big to go in DOS Edit. Help!
+Install an operating system. :-)                  -- Tom Christiansen
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
