@@ -1,33 +1,42 @@
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Message-Id: <199910111228.OAA06049@simul.biophys.uni-duesseldorf.de>
-Subject: Re: ADB probing
-In-Reply-To: <Pine.LNX.4.10.9910081604290.30742-100000@web1.turbolinux.com> from Brad Midgley at "Oct 8, 1999 04:07:41 pm"
-To: brad@turbolinux.com (Brad Midgley)
-Date: Mon, 11 Oct 1999 14:28:11 +0200 (CEST)
-Cc: dgatwood@mvista.com, bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+Message-Id: <199910111812.UAA00352@piglet.cpu.lu>
+Date: Mon, 11 Oct 1999 20:12:06 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: busmaster/latency for video
+To: Geert.Uytterhoeven@sonycom.com
+cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.GSO.4.10.9910110828450.9144-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> How does all this discussion fit in with the work being done on the input
-> system which will allow multiple independent keyboards, etc.?
+On  11 Oct, this message from Geert Uytterhoeven echoed through cyberspace:
+> On Fri, 8 Oct 1999, Michel Lanners wrote:
+>> OF itself doesn't enable any memory or IO region; it's the
+>> device-specific init code (which might be on-board for PCI cards, or in
+>> OF for motherboard devices).
+>> 
+>> There are, however, a few things OF does for _every_ PCI device, among
+>> which enabling bus mastering and assigning memory and/or IO resources.
+>                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> assigning some memory and/or IO resources? Or is this only the case in the
+> Longtrail-OF-which-is-better-than-Apple-OF-except-maybe-for-assigning-resources
+> case?
 
-Huh? What work is being done there? Kernel level or user space? 
+Hm, my 7600's OF version 1.05 assigns memory and IO regions for two
+boards that don't have any OF code: a Matrox Millenium I and a Promise
+Ultra/66 IDE controller. Never had any problem in that area..
 
-To use multiple independent keyboards at kernel level: register different 
-handler functions for each. But what would you do with multiple keyboards at
-kernel level? Attach one to each virtual console? 
-The Linux keyboard driver is currently written for one single keyboard
-(last time I checked), and it's going to be hard to change that. 
+Michel
 
-At user space level: just open the proper ADB minor device and read out the
-keycodes. I've only done it with the mouse/trackpad but keyboard should work
-the same. I'll send my patch to benh to merge with his work on the driver
-first though.
-
-	Michael
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
