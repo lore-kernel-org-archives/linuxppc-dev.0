@@ -1,40 +1,39 @@
-To: bart@ardistech.com
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ppcboot on 823e RPXlite config? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 26 Apr 2002 14:05:45 +0200."
-             <3CC94299.184463A5@ardistech.com>
-Date: Fri, 26 Apr 2002 15:56:52 +0200
-Message-Id: <20020426135657.D9111FF65@denx.denx.de>
+Message-ID: <3CC9BD30.7050002@pacbell.net>
+Date: Fri, 26 Apr 2002 13:48:48 -0700
+From: Armin <akuster@pacbell.net>
+MIME-Version: 1.0
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] IBM ocp I2C
+References: <20020423200127.G20394@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3CC94299.184463A5@ardistech.com> you wrote:
+andrew may wrote:
+> Would anyone be heartbroken if "struct i2c_algo_iic_data" went
+> away completely?
+It might with the us of ocp_driver struct.  still working on it
+
 >
-> Does anybody on the list has the configuration files for ppcboot on a
+> In this patch I dump getown and getclock because they aren't
+> used and I am sure there is a better way to do things.
 
-You would get _much_ better response  on  the  ppcboot-users  mailing
-list.
+this does not work on Walnut since "procfreq" is not part of openbios
+and the PLLMR does not exsist on the stb03 or 03  so this changes wont
+go in.
 
-> RPX lite board with an MPC823e processor? In ppcboot 1.1.5 this board
-> is set to a MPC850 cpu, but the one I have over here is a MPC823e one.
+>
+> Also calculate the I2C div value from the clock rate. I am
+> not sure if that will work on all 4xx types but it does the
+> right thing for my 405's.
+>
+> I also fixed a few C++ style comments.
+  thanks
 
-Software-wise there is little difference between a  850  and  a  823,
-except  for  the  obvious  details like the fact that there is no LCD
-controller on the 850.
 
-I don't know the RPXlite, but on TQM8xxL tha image  for  the  TQM850L
-will  also  provide  basic  functionality  on  a TQM823L (missing LCD
-output, of course).
+armin
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A list is only as strong as its weakest link.            -- Don Knuth
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
