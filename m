@@ -1,47 +1,84 @@
-Date: Wed, 7 Mar 2001 13:32:57 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: sym53c875 in 2.4.2
-In-Reply-To: <19350125130851.8098@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.05.10103071330410.773-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: pnilesh@in.ibm.com
+To: khendricks@ivey.uwo.ca
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <CA256A08.00488A4C.00@d73mta03.au.ibm.com>
+Date: Wed, 7 Mar 2001 18:10:48 +0530
+Subject: Re: strange sigaction ()
+Mime-Version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2 Mar 2001, Benjamin Herrenschmidt wrote:
-> >I just tried the current bk linuxppc_2_4 on my CHRP LongTrail with Sym53c875
-> >card. The Sym53c8xx driver fails downloading the SCSI scripts, and keeps
-> >trying
-> >ad infinitum.
-> >
-> >At first sight, the kernel seems to work when I disable the Sym53c8xx driver
-> >with `sym53c8xx=excl:0x1400'. It boots to a shell from the MESH.
-> >
-> >PCI seems to be OK. Only changes are that the sl82c105 IDE got assigned some
-> >I/O ports now.
-> >
-> >Everything worked fine in the 2.4.1 from a month ago.
+It did not work for me !!
+Is the problem with kernel or it is elsewhere ?
+Which kernel patch will fix this ?
+
+
+
+Try the following, it works for me:
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+
+static struct sigaction act;
+static void handler (int,siginfo_t *,void *);
+
+int
+main ()
+{
+  act.sa_sigaction=handler;
+  act.sa_flags=SA_SIGINFO;
+  sigaction (SIGALRM,&act,NULL);
+  alarm (1);
+  sleep (2);
+}
+
+void handler (int x, siginfo_t *s,void *v)
+{
+    printf ("si_signo   = %d, si_code  = %d, si_errno  = %d\n",s->si_signo,
+s->si_code, s->si_errno);
+}
+
+[kbhend@localhost kbhend]$ gcc -otest test.c
+[kbhend@localhost kbhend]$ ./test
+si_signo   = 14, si_code  = 0, si_errno  = 0
+[kbhend@localhost kbhend]$
+
+
+On Tuesday 06 March 2001 06:04, pnilesh@in.ibm.com wrote:
+> I am seeing a strange problem with sigaction on powerpc.
 >
-> Are there any conflicting assignements ? Could you check if the new
-> phys_to_bus() function returns proper values (finds the bus on which
-> the Sym chip resides) ?
-
-My hose resources were not set up, so phys_to_bus() returned NULL. Wouldn't it
-be better to return pa in that case, or at least print an error to the console?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+> static struct sigaction act;
+> static void handler (int,siginfo_t *,void *);
+> main ()
+> {
+> sigaction (SIGALRM,&act,NULL);
+> alarm (1);
+> sleep (2);
+> }
+>
+> void handler (int x, siginfo_t *s,void *v)
+> {
+>     printf ("si_signo   = %d, si_code  = %d, si_errno  =
+%d\n",s->si_signo,
+> s->si_code, s->si_errno);
+> }
+>
+> This program gives meaningful values on Linux Intel Redhat.
+> On Apple Dual G4 PowerPC I am getting junk values
+> si_signo = 805464356
+> si_errno = 805464640
+> si_code = 21
+>
+> I dont know what is happening.
+> Please educate me.
+>
+> Nilesh
+>
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
