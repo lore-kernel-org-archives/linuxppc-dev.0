@@ -1,9 +1,9 @@
-Reply-To: <mimir@skelmir.com>
-From: skelmir@skelmir.com (Mimir Reynisson)
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: KVM for HHL
-Date: Tue, 19 Dec 2000 14:26:34 -0500
-Message-ID: <EJEPJKCBBOBCLEMCEJDIEEFMCFAA.skelmir@skelmir.com>
+Date: Tue, 19 Dec 2000 15:24:54 -0700
+Message-ID: <FAEGKJHOHCILEABGDOJJIEPCCIAA.lonnie@timesys.com>
+From: "Lonnie L VanZandt" <lonnie@timesys.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Reply-To: <lonnie@timesys.com>
+Subject: Installing LinuxPPC 2000 on an MCP750
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,53 +11,20 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Several solutions are available:
+Ok, tired of having to reinstall Debian potato by ftp over a slow link, I
+fell for the marketing claims at Linuxppc.com about the wonderful CD that
+would boot and install on Motorola embedded PPC boards.
 
-  1) CEE-J       (http://www.skelmir.com)
-  2) Sun's KVM   (http://www.sun.com)
-  3) IBM's J9    (http://www.embedded.oti.com)
-  4) PocketLinux (http://www.pocketlinux.com)
+Unfortunately, it appears that only a Mac machine can boot the CD directly.
+(Why would anyone buy such a mass produced, ugly thing anyway when one can
+have such a big hunking industrial looking chassis? I hate these Mac-centric
+guys, they're as bad as their Wintel-loving cousins.)
 
-Here's also a more complete list of different virtual machines:
+Where do I get LinuxPPC installer images for a _real_ machine like my MCP750
+board? The "PReP" images at ftp.linuxppc.org looked promising, but the
+zImage hangs immediately after residual data loading...
 
-http://www.geocities.com/marcoschmidt.geo/java.html#skelmir
-
-P.S.: In case you didn't notice my company makes CEE-J (sorry for the
-shameless plug). CEE-J is by the far the fastest and smallest solution
-out there for the PPC. Offer both static and dynamic compilation for
-PPC and other processors as well as high speed interpreter. It also
-scales from being a J2ME solution to a full PersonalJava solution
-including a high performance graphics engine which runs directly on
-the frame buffer (end of shameless plug).
-
-Cheers,
-Mimir
-
-   --==*==--
-M i m i r  R e y n i s s o n
-SKELMIR, LLC
-617.625.1551 - > main tel
-617.776.0740 - > fax
-mimir@skelmir.com
-http://www.skelmir.com
-
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Nils
-Hagge
-Sent: Tuesday, December 19, 2000 9:40 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: KVM for HHL
-
-
-
-Hi,
-
-is there any KVM (Kilobyte Java Virtual Machine) for Hard Hat Linux
-available?
-
-Nils
+Lonnie.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
