@@ -1,23 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 06C0267A64
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id C979C67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Feb 2005 04:35:31 +1100 (EST)
-Date: Wed, 16 Feb 2005 09:35:28 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <20050216173528.GD989@gate.ebshome.net>
-References: <c3d0340b05021518037b1758cc@mail.gmail.com>
-	<20050216025921.GA25838@gate.ebshome.net>
-	<c3d0340b05021608591692a460@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3d0340b05021608591692a460@mail.gmail.com>
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: Incomplete network configuration information when booting from
-	NFS root on Ebony
+	Thu, 17 Feb 2005 07:01:19 +1100 (EST)
+To: srinivas.surabhi@wipro.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 16 Feb 2005 08:48:58 +0530."
+	<EF9B29C78F41FA488927FCBC7750AF0E011DA5D1@hyd-mdp-msg.wipro.com>
+Date: Wed, 16 Feb 2005 21:00:45 +0100
+Sender: wd@denx.de
+Message-Id: <20050216200050.23252C1430@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Mounta Vista Linux prompt on serial console 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,49 +24,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 16, 2005 at 08:59:02AM -0800, Shawn Jin wrote:
-> > > Is anybody using linux-2.6.10 from kernel.org for testing IBM Ebony board?
-> > 
-> > Yes, with stock boot loader and great success (bootp + NFS root). I
-> > just use "ip=on root=/dev/nfs" and let my bootp server tell the kernel
-> > about all other parameters.
+In message <EF9B29C78F41FA488927FCBC7750AF0E011DA5D1@hyd-mdp-msg.wipro.com> you wrote:
 > 
-> What's your boot loader? 
+> cramfs is 2.7MB where as the RAM size is 32MB. While building ofcourse
+> the RAMDISK size was told as 8MB. This I mentioned in the devrocket
 
-Default IBM one (OpenBIOS).
+What has the ramdisk to do  here?  Either  you  are  using  a  cramfs
+filesystem, or a ramdisk (probably with an ext2 filesystem in it).
 
-> 
-> > Did you try looking at net/ipv4/ipconfig.c? This is file responsible
-> > for this message.
-> 
-> Yes. I did find the comment you pointed and thought it might be a
-> problem. But another issue I don't understand is why it cannot fetch
-> MAC addresses from VPD? Without my hack the MAC addresses fetched from
-> VPD are all FF:FF:FF:FF:FF:FF. The Rom Monitor can detect the
-> addresses, which I guess are from VPD.
+Putting cramfs filesystem in a ramdisk image is a pretty bad idea.
 
-I'd suggest using standard IBM bootloader which is what Ebony comes 
-with and make it work first, and only after this you should try to put 
-non-standard one like u-boot. This is just common sense. If you need 
-help with u-boot, there is a mail list for it. Ask quiestions there.
+> Here I have one doubt while building the uBoot image using mkImage with
+> multi option where was the FileSystem image getting downloaded ? and how
 
-> 
-> > /*
-> > * If the config information is insufficient (e.g., our IP address or
-> > * IP address of the boot server is missing or we have multiple network
-> > * interfaces and no default was set), use BOOTP or RARP to get the
-> > * missing values.
-> > */
-> > 
-> > Probably your case - multiple ethernet devices (440GX has 4) and
-> > you haven't specified which device should be assigned IP.
-> 
-> Do you know how to set a default active device?
+A multi-file image in U-Boot indeed requires a  ramdisk  image.  Then
+you  should  not  use a cramfs filesystem. The method for loading tha
+ramdisk image is described in the U-Boot "README"  file;  search  for
+"positioning of initrd images".
 
-Doh, please, spend some time and read this ipconfig.c yourself. It has 
-a big comment describing format of "ip=...":
+> the downloaded location was known to the kernel Image for pointing out
+> the File System image location. The options -a and -e are applicable
+> only for first image, isn't it? First image I mean the kernel Image. I
 
-<client-ip>:<server-ip>:<gw-ip>:<netmask>:<host name>:<device>:<PROTO>
+Yes. Only the kernel is executable code and has an entry point.
 
---
-Eugene.
+> YES. You are right I am building the image on x86 (Windows platform).
+> But I checked the build log it used the -r option. The default build was
+> cpio format and after that using fstool converting to CRAMS and the
+> option -r was present .I believe that devrocket of MountaVista has
+> makefiles specific to OS i.e for Windows, because while installation it
+> asks for what type of OS do you want to have the Image Development
+> environment.
+
+Maybe you should ask MV support, then. 
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It is clear that the individual who persecutes a  man,  his  brother,
+because he is not of the same opinion, is a monster.       - Voltaire
