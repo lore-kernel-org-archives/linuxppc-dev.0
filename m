@@ -1,20 +1,36 @@
-Message-ID: <A3E34B558F5CD211B4980008C7A4A99003C5836F@GSO-SPARROW-SRV>
-From: "Williams, Kevin M." <kevin.m.williams@marconi.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: ISP1161 USB host controller
-Date: Tue, 14 Aug 2001 09:23:26 -0400
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <E1836A7F3557D311A14000805F9F36FCD4E3FE@usdfo011.usac.danfoss.net>
+From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: "Support (E-mail)" <techsupport@embeddedplanet.com>
+Subject: Async HDLC for 823e SCC
+Date: Tue, 14 Aug 2001 10:51:28 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Has anyone worked with the Philips ISP1161 USB Host controller on an
-embedded PPC?  If so, please email me.  If not, I will post my source if
-anyone is interested.  I have a modified ohci driver that is just about
-working.  Could use some help/advice with a couple areas though...
+Hello all,
 
-Kevin
+I have an Embedded Planet with a LITE_DW
+Motorola 823e PPC
+using a HIOX interface board.
+
+Is there an implementation of using the SCC in
+Asynchronous HDLC mode?
+
+I think that the commproc structures might need
+to be altered to use this mode. The UART cbd_t
+structure are similar but some flags are different.
+
+
+Regards,
+     Michael Pergola
+     Software Engineer
+     Danfoss Air-Conditioning & Refrigeration Division
+     7941 Corporate Blvd.
+     Baltimore, MD  21236     (410) 931-8250 x4259
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
