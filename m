@@ -1,30 +1,31 @@
-Date: Sun, 21 Feb 1999 10:48:54 +1100 (EST)
-From: Nathan Hurst <njh@drongo.anu.edu.au>
-To: Steven Bytnar <s-bytnar@uiuc.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC Privileged mode
-In-Reply-To: <v04103d00b2f3c9868068@[208.150.38.73]>
-Message-ID: <Pine.LNX.3.95.990221104817.7708A-100000@drongo.anu.edu.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 21 Feb 1999 21:59:25 +1100
+Message-Id: <199902211059.VAA01518@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: brad@pht.com
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <Pine.LNX.3.95.990220154008.23593A-100000@pacific.pht.com>
+	(message from Brad Midgley on Sat, 20 Feb 1999 16:16:50 -0700 (MST))
+Subject: Re: 601 vs head.S
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.3.95.990220154008.23593A-100000@pacific.pht.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 19 Feb 1999, Steven Bytnar wrote:
+Brad Midgley <brad@pht.com> wrote:
 
-> 
-> How do I exit cleanly from PPC supervisor mode to MacOS? I am trying 
-> to work with the code in BootX, but it was meant to execute the 
-> kernel and never return. My purpose is only to read and write to 
-> supervisor read/writable registers on the chip without destroying 
-> MacOS.
+> my quest is for a kernel that boots both on the 7200 and the imac. help me
 
-Can't you either just set the CPU back to user mode, or return from
-interupt? 
+Found it... had to take out the 2 nop's in hash_page this time.  Vger
+(cvs) and samba (rsync) have the fix, if you want a precompiled
+kernel, try ftp://ftp.linuxppc.org/linuxppc/kernel/powermac/test/vmlinux.
 
-njh
+> out and i'll give you a free ppc601 card :)
 
+No thanks, got one already. :)  Now if someone could send me one of
+the quantum 1280S drives that are having fits, that could be useful.
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
