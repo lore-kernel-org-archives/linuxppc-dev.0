@@ -1,20 +1,19 @@
 Return-Path: <tglx@linutronix.de>
-Received: from debian.tglx.de (unknown [213.239.205.147])
-	by ozlabs.org (Postfix) with ESMTP id 83AC62BF0D
+Received: from tglx.tec.linutronix.de (pD953A911.dip.t-dialin.net
+	[217.83.169.17])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B93E92BF13
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Dec 2004 02:18:13 +1100 (EST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <366A345A-4EAC-11D9-9441-000393DBC2E8@freescale.com>
-References: <1103122166.3406.174.camel@tglx.tec.linutronix.de>
-	<366A345A-4EAC-11D9-9441-000393DBC2E8@freescale.com>
-Content-Type: text/plain
-Date: Wed, 15 Dec 2004 16:18:10 +0100
-Message-Id: <1103123890.3406.180.camel@tglx.tec.linutronix.de>
+	Thu, 16 Dec 2004 02:23:13 +1100 (EST)
+Date: Wed, 15 Dec 2004 15:21:43 +0100
+From: tglx@linutronix.de
+Message-ID: <20041215152142.1.patchmail@tglx>
 Mime-Version: 1.0
+Content-Type: text/plain
+To: trini@kernel.crashing.org
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Compile 6xx specific code only for 6xx machines
-Reply-To: tglx@linutronix.de
+Subject: [PATCH] Compile 6xx specific code only for 6xx machines
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,15 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2004-12-15 at 09:15 -0600, Kumar Gala wrote:
-> One reason for this is that we dont have boot/common code for e500.  Up 
-> to this point we've been using uImage's which causes code in 
-> boot/common not to get built.
-> 
-> Maybe someone will be motivated to right e500/85xx boot/common code :)
-> 
-> - kumar
+The 6xx specific mmu functions in arch/boot/common/util.S break the compile for
+other platforms. Compile them for 6xx only.
 
-By adding this fix I can use the code in boot/simple. It works nice :)
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-tglx
+---
+ util.S |    2 ++
+ 1 files changed, 2 insertions(+)
+---
+Index: 2.6.10-rc3/arch/ppc/boot/common/util.S
+===================================================================
+--- 2.6.10-rc3/arch/ppc/boot/common/util.S	(revision 11)
++++ 2.6.10-rc3/arch/ppc/boot/common/util.S	(working copy)
+@@ -27,6 +27,7 @@
+ 
+ 	.text
+ 
++#ifdef CONFIG_6xx
+ 	.globl	disable_6xx_mmu
+ disable_6xx_mmu:
+ 	/* Establish default MSR value, exception prefix 0xFFF.
+@@ -94,6 +95,7 @@
+ 	sync
+ 	isync
+ 	blr
++#endif
+ 
+ 	.globl	_setup_L2CR
+ _setup_L2CR:
