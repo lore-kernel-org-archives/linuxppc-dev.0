@@ -1,18 +1,16 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3F3362BDF2
+Return-Path: <medp@primagraphics.co.uk>
+Received: from mail.primagraphics.com (unknown [81.20.3.25])
+	by ozlabs.org (Postfix) with SMTP id 179202BF12
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 20:12:41 +1100 (EST)
-Date: Thu, 13 Jan 2005 01:12:35 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
+	Thu, 13 Jan 2005 20:24:55 +1100 (EST)
+Message-ID: <41E63CD1.901@primagraphics.co.uk>
+Date: Thu, 13 Jan 2005 09:18:09 +0000
+From: Mark Powell <medp@primagraphics.co.uk>
+MIME-Version: 1.0
 To: Aubrey Lee <aubrey1127@gmail.com>
-Message-ID: <20050113091235.GA2816@gate.ebshome.net>
 References: <7f834d4e0501130050666b757a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <7f834d4e0501130050666b757a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: About Zebra Error
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -25,28 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 13, 2005 at 04:50:27PM +0800, Aubrey Lee wrote:
->  hi, In the PC(i686) system, I build and run zebra successfully. And now
-> I'm porting it to the powerpc system. Cross-compiling finished without error.
-> But when I run the zebra from my target board, it gives me  a big headache:
-> --------------------------------------------------------------------------  
-> bash-2.05b# /opt/zebra/sbin/zebra
->              sock: Address family not supported by protocol
-> ----------------------------------------------------------------------------
-> And Up to now I cann't find the message in the souce 
-> code files.  
->      The two ethx and their driver of my board is OK.
->      What shall I do?
+Aubrey Lee wrote:
 
-Most probably zebra needs some some socket family (e.g. PF_PACKET) 
-which wasn't enabled in your PPC kernel.
+> hi, In the PC(i686) system, I build and run zebra successfully. And now
+>I'm porting it to the powerpc system. Cross-compiling finished without error.
+>But when I run the zebra from my target board, it gives me  a big headache:
+>--------------------------------------------------------------------------  
+>bash-2.05b# /opt/zebra/sbin/zebra
+>             sock: Address family not supported by protocol
+>----------------------------------------------------------------------------
+>And Up to now I cann't find the message in the souce 
+>code files.  
+>     The two ethx and their driver of my board is OK.
+>     What shall I do?
+>  
+>
+I had a similar message when running udhcpd. The problem was that some 
+network drivers were built as modules. Adding the following to 
+modules.conf cured my problem:
 
-Compare .config files for x86 and PPC kernels, especially networking 
-configuration parts.
+    # PF_PACKET support needed by udhcpc
+    alias net-pf-17 af_packet
 
-The reason you cannot find "Address family not supported by protocol" 
-message in the zebra sources is because this message comes from libc, 
-e.g. by using perror(3) or sys_errlist directly.
-
---
-Eugene
+-- 
+Mark Powell, Senior Software Engineer
+Curtiss-Wright Controls Embedded Computing
+Tel: +44 (0) 1763 852222
+Email: medp@primagraphics.com
