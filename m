@@ -1,40 +1,50 @@
-Message-ID: <37B92306.A8377B94@lip6.fr>
-Date: Tue, 17 Aug 1999 10:53:26 +0200
-From: Anthony Lester <Anthony.Lester@lip6.fr>
+Date: Tue, 17 Aug 1999 13:09:17 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Mike Lambert <lambert@jeol.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PATCH: Extra brightness off with the XClaim 3D Plus
+In-Reply-To: <Pine.SGI.4.10.9908130946190.968-100000@davinci.jeol.com>
+Message-ID: <Pine.LNX.4.10.9908171308490.25292-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: gnome-ppp and the mac serial ports
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've finally got gnome-ppp working after commenting out a section of the source code which
-checks the DCD (Data Carrier Detect) line of the serial port. The kernel code
-corresponding to this check is in the file "macserial.c" and sets various bits of a status
-byte according to the value of a register in the zilog uart which handles the standard mac
-serial ports.
+On Fri, 13 Aug 1999, Mike Lambert wrote:
+> On Wed, 11 Aug 1999, Rick Meier wrote:
+> > On the XClaim 3D plus the extra brightness needs to be turned off or the
+> > card overdrives the monitor.  Here is a patch to the kernel if anyone
+> > wants to try it.
+> 
+> > --- atyfb.c     Wed Aug 11 13:49:29 1999
+> > +++ atyfb.c.orig        Wed Aug 11 13:57:49 1999
+> > @@ -3418,7 +3418,7 @@
+> >      if (Gx == GT_CHIP_ID || Gx == GU_CHIP_ID || Gx == GV_CHIP_ID ||
+> >         Gx == GW_CHIP_ID || Gx == GZ_CHIP_ID || Gx == LG_CHIP_ID ||
+> >         Gx == GB_CHIP_ID || Gx == GD_CHIP_ID || Gx == GI_CHIP_ID ||
+> > +       Gx == GP_CHIP_ID || Gx == GQ_CHIP_ID)
+> >         i |= 0x2;       /*DAC_CNTL|0x2 turns off the extra brightness
+> > for gt*/
+> >      aty_st_8(DAC_CNTL, i, info);
+> >      aty_st_8(DAC_MASK, 0xff, info);
+> 
+> Thanks Rick, this works as advertised. The XClaim 3D Plus in my B+W G3 400
+> now works properly. Well, except for the mild snow down the left side of
+> the display, but that is a different problem...
 
-However the standard RS422 mac ports only have handsake-in and handshake-out lines
-(corresponding to RTS and DTR for the RS232 I think) so there is no line corresponding to
-DCD. So how would it get DCD?
+Does the B+W G3 400 really has a RAGE LT PRO? I thought that chip was meant for
+laptops.
 
-The most surprising thing is that the kernel source contains explicit treatment for DCD,
-so unless I am very much mistaken (or I have a dodgy modem cable) there is something
-strange.
+Greetings,
 
-Any comments, what should be modified, applications, kernel, or both?
+						Geert
 
-Anthony
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
---      _            ---------------------------------------
-       (_)          |                     Anthony LESTER    |
-    _   _   ___     |    Coul. 65-55,  2e etg,  Bur. 230    |
-   | | | | |   )    |    UPMC  /  LIP6  /  ASIM  /  CNRS    |
-   | | | | | 6  )   |    4 pl Jussieu, 75252 PARIS cdx 5    |
-   | | |_| |  _)    |                                       |
-   | |___  | |      |    Tel: +33 1 4427 7124 (fax 7280)    |
-   |_____| |_|      |       http://www-asim.lip6.fr/        |
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
