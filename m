@@ -1,44 +1,55 @@
-From: flar@allandria.com
-Message-Id: <200008301607.JAA24693@marcus.allandria.com>
-Subject: Re: Btree directories (Re: Status of HFS+ support)
-To: ak@suse.de (Andi Kleen)
-Date: Wed, 30 Aug 2000 09:07:52 -0700 (PDT)
-Cc: lord@sgi.com (Steve Lord), ak@suse.de (Andi Kleen),
-        matthew@wil.cx (Matthew Wilcox), khalfmann@libra.de (Halfmann Klaus),
-        roman@augan.com (Roman Zippel), linuxppc-dev@lists.linuxppc.org,
-        linux-fsdevel@vger.kernel.org
-In-Reply-To: <20000830170726.B18398@gruyere.muc.suse.de> from "Andi Kleen" at Aug 30, 2000 05:07:26 PM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <p04330100b5d2e13f47a5@[10.0.1.12]>
+Date: Wed, 30 Aug 2000 12:21:18 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Paul Schinder <schinder@pobox.com>
+Subject: Re: pmac-time.c bug in 2.4.0-test3  (and still in -test8)
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andi Kleen wrote:
-> Only 64bit though, which may or may not be enough. If HFS indexes directly
-> with names instead of hash values it'll probably not be enough so they
-> would need to fall back to the no shrink hack.
-> Anyways, you probably cannot ignore telldir of 32bit programs.
+In
+<http://lists.linuxppc.org/listarcs/linuxppc-dev/200007/msg00157.html>,
+Martin Costabel wrote:
 
-Yes, that's the main problem with HFS/HFS+. All catalog entries are keyed
-on a combination of parent directory ID and filename, because this is the
-data MacOS asks for when a file is opened. These entries have to be sorted
-inside the tree, and the sort rules are a little messy, since the string
-compares are supposed to be case-insensitive. If you are opening a file,
-or doing a lookup() it's very convenient. If you are doing readdir() it's
-a massive headache. Basically you have to find the first entry with a
-parent ID that matches the directory being read, and then read every
-entry in order until you find one with a different parent. Because of
-the sorting issue, it's not just a problem with shrinking the directory,
-because growing the directory could cause the same problem. In fact,
-growing or shrinking ANY directory on the filesystem could theoretically
-change the entire tree by forcing the tree to add a new layer of index
-nodes and rebalancing the tree. It gets very messy. There's a reason the
-HFS filesystem code in the kernel has always had a habit of destroying
-disks any time it has to do anything too complex.
+>
+>In the bk linuxppc_2_3 tree, this showed up in 2.4.0-test3 on 27/28 June
+>(according to my logs), and it did not work correctly. In addition to
+>the wrong reading of the initial system time, I get the following
+>message every 61 (!) seconds
+>Jun 29 01:27:31 chezmoi kernel: pmac_set_rtc_time: got 3 byte reply
+>Jun 29 01:28:32 chezmoi kernel: pmac_set_rtc_time: got 3 byte reply
+>Jun 29 01:29:33 chezmoi kernel: pmac_set_rtc_time: got 3 byte reply
+>and so on.
+>
+>I tried to set CONFIG_PPC_RTC to y or n, but this didn't seem to have an
+>influence. Other ideas for debugging?
+>
+>My system is still the old Pmac 6400.
+>
+>--
+>Martin
 
-	Brad Boyer
-	flar@pants.nu
+I just tried Bitkeeper's 2.4.0-test8 rsynced yesterday morning.  X
+(still using XFree 3.3.6) locked up on me this morning so I moved
+back to a kernel built with Paul's  2.4.0-test6, but I saw this exact
+problem while I was running -test8 (and last week with -test7, which
+also locked up on me):
 
+Aug 30 09:50:01 c22234-c kernel: pmac_set_rtc_time: got 3 byte reply
+Aug 30 09:51:00 c22234-c kernel: pmac_set_rtc_time: got 3 byte reply
+
+etc., once per minute.
+
+This is on a Performa 6400/180.  I don't see it in Paul's test6.  It
+doesn't seem to be a real problem except for the excessive logging,
+since the clock seemed accurate (xntpd is running).  Does anyone know
+what's happening and how to shut it up?  CONFIG_PPC_RTC was n for all
+of these kernels.
+--
+--
+Paul Schinder
+schinder@pobox.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
