@@ -1,54 +1,53 @@
-Date: Fri, 15 Nov 2002 15:10:01 -0600
+Date: Fri, 15 Nov 2002 15:51:38 -0600
 From: "William A. Gatliff" <bgat@billgatliff.com>
-To: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
+To: Jerry Van Baren <vanbaren_gerald@si.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Fast shutdown
-Message-ID: <20021115151001.I5906@saturn.billgatliff.com>
+Subject: Re: NFS root manipulation without being superuser?
+Message-ID: <20021115155138.T5906@saturn.billgatliff.com>
 Reply-To: bgat@billgatliff.com
-References: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO>
+References: <0060C09C.C21188@nasa.gov> <5.1.0.14.2.20021115150906.0224ce08@falcon.si.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO>; from gastondoa@fagorautomation.es on Tue, Nov 12, 2002 at 04:04:39PM +0100
+In-Reply-To: <5.1.0.14.2.20021115150906.0224ce08@falcon.si.com>; from vanbaren_gerald@si.com on Fri, Nov 15, 2002 at 03:16:16PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Nov 12, 2002 at 04:04:39PM +0100, GOTZON ASTONDOA wrote:
+Jerry:
+
+On Fri, Nov 15, 2002 at 03:16:16PM -0500, Jerry Van Baren wrote:
 >
-> Hi all:
->
-> 	Our custom board has to microprocessors: 68K and PowerPC. We have
-> instaled Linux in the PowerPc side.
-> 	When the user suddenly shutdowns the board, the 68K sends an
-> interrupt to the PowerPC.We have more or less 8 mSeg to close all the Linux
-> system (it has hard disk, ethernet, ftp and our own application).
->
-> 	Can somebody tell me any idea to close the Linux system in the
-> fastest way? We are thinking in capture the interrupt signal, but, is it
-> enough fast?
+> How about this thought... on your development system, make a group "xroot"
+> (export root, or maybe name it "grub" to make a bad pun)
 
+How about "tuber"?  :^)
 
-You'll probably want to dump /sbin/init, at least.
+> and chown your NFS files currently owned by "root" to "xroot".  You
+> can add yourself into the "xroot" group and make sure all the NFS
+> exported root file system have group r/w privileges.  Now you can
+> play with the files to your heart's content because you are part of
+> the group that has write permissions.  When you are happy with your
+> NFS exported root file system, change the group ownership of "xroot"
+> back to "root".  With a little thought and a lot of care ;-), you
+> should be able to write a script that does the group change back &
+> forth.
 
-Just throwing something out for starters....
+Maybe just this:
 
-You could have an interrupt handler watching the signal from the 68k,
-and sending a message via named pipe (perhaps) to a userspace program.
-The userspace program would signal all your other programs, sync(),
-then wait for powerdown.
+# cd <nfs-root-dir> && find . -name "*" | xargs chown xroot:xroot
 
-I think you'll want all your processes doing synchronous i/o, so that
-you don't have much in the way of unwritten disk data to worry with.
-You'll probably also want a journaled filesystem, for those times when
-8ms just isn't enough...
+What about the files that the client creates or modifies,
+i.e. resolv.conf in a DHCP setting?  I think those files will still
+get created with root ownership.  It's almost as if NFS needs
+translate the UID of the files both inbound and outbound.
 
-Hope this gives you a good starting point,
+Other than that, your suggestion looks great.
 
 
 b.g.
 --
 Bill Gatliff
-Embedded systems and Free Software.  Yea, it *is* all that!
+Do you do embedded GNU?  I do!
 See http://billgatliff.com for details.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
