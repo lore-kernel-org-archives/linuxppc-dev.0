@@ -1,46 +1,46 @@
-Date: Wed, 23 Apr 2003 08:30:15 -0400
-From: Martin Hicks <mort@bork.org>
-To: Aman <aman@mistralsoftware.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3EA68E1E.7090201@mvista.com>
+Date: Wed, 23 Apr 2003 07:59:10 -0500
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: Martin Hicks <mort@bork.org>
+Cc: Aman <aman@mistralsoftware.com>,
+	linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Serial Console Login Fails
-Message-ID: <20030423123015.GI553@bork.org>
-References: <001301c3093d$ad9c69f0$370da8c0@aman>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <001301c3093d$ad9c69f0$370da8c0@aman>
+References: <001301c3093d$ad9c69f0$370da8c0@aman> <20030423123015.GI553@bork.org>
+In-Reply-To: <20030423123015.GI553@bork.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Apr 23, 2003 at 07:41:40AM +0530, Aman wrote:
+Martin Hicks wrote:
+> On Wed, Apr 23, 2003 at 07:41:40AM +0530, Aman wrote:
 >
-> Hi All
+>>"T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100"
+>>Bcos of which during the linux bootup , there wont be console message on the
+>>screen , after some time , there is a login prompt
+>><none>login:
+>>If I try login then it waits for some seconds and then display the same i.e
+>><none>login:
 >
-> I am using IBM PPC 440 processor on custom board , which has no network
-> support. I am using Monta Vista Linux with ramdisk enabled. In the ramdisk ,
-> I have very less files. Since there is no network on the board , I am trying
-> to enable the serial console login. To achieve this, I disabled serial
-> console logging by saying "console=NULL " in the cmdline and in the
-> /etc/inittab file added this line
+>
+> You don't have "ttyS0" in /etc/securetty
 
-If the kernel is compiled with CONFIG_SERIAL_CONSOLE then you can
-do  "console=ttyS0", which will give you a 9600bps 8n1 serial console to
-see the kernel boot messages.
+Actually if that was the case you'd get a login denied message of some type..
+If you don't have an /etc/securetty then it allows all logins.. (that is the
+typical setup of systems we recommend for our customers development systems..)
 
-> "T0:23:respawn:/sbin/getty -L ttyS0 9600 vt100"
-> Bcos of which during the linux bootup , there wont be console message on the
-> screen , after some time , there is a login prompt
-> <none>login:
-> If I try login then it waits for some seconds and then display the same i.e
-> <none>login:
+The problem is that they are missing either the pam libraries or they are
+missing /bin/login.  Turn on syslogd, set a console to go right to a shell and
+look at the output of /var/log/messages.  This will tell you what is missing.
+It is usually /bin/login is missing, secondary cause is PAM (or a module) is
+missing, or that your /etc/passwd and/or /etc/group files are missing or corrupt.
 
-You don't have "ttyS0" in /etc/securetty
+(I wonder if we should create a FAQ for this list and post it once a month..
+this question/answer come up at _LEAST_ once a week.. doesn't anyone read the
+list archives?)
 
-mh
+--Mark
 
---
-Martin Hicks  ||  mort@bork.org  || PGP/GnuPG: 0x4C7F2BEE
-plato up 5 days, 21:20, 12 users,  load average: 0.49, 0.50, 0.46
-Beer: So much more than just a breakfast drink.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
