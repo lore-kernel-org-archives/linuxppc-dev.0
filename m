@@ -1,36 +1,44 @@
-Message-Id: <5.1.0.14.2.20011109125808.0300b040@falcon.si.com>
-Date: Fri, 09 Nov 2001 13:08:14 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: Linuxppc and MPC8255 routing performance
-In-Reply-To: <3BEC0578.9020704@embeddededge.com>
-References: <9729.011107@vanet.com.br>
- <01110818021400.00999@scop.digitel.com.br>
- <3BEAFCEB.3090604@embeddededge.com>
- <01110912552900.03277@scop.digitel.com.br>
+Message-ID: <3BEC8FA0.5060600@embeddededge.com>
+Date: Fri, 09 Nov 2001 21:23:28 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: Ole Andreas Torvmark <ole.torvmark@radionor.no>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with DMA transfers on Sandpoint
+References: <MHEAIGEFFBAFIOMKCIGCKEJLCAAA.ole.torvmark@radionor.no>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 11:34 AM 11/9/01 -0500, Dan Malek wrote:
+Ole Andreas Torvmark wrote:
 
->Ricardo Scop wrote:
->
->
->>By "backside" memory you mean ... the internal data cache, perhaps?
->
->No, bad use of words on my part.  The 8260 has a local bus that can only
->be accessed from the CPU core and CPM (it's not on the 60x bus).  Maybe
->the 8255 doesn't have this feature, I don't remember.
->
->
->         -- Dan
 
-The 8255 uses the 8260 "local bus" connections for the PCI bus.
+> I have tried numerous different cards like sound cards,network adapters and
+> even frame grabbers and all the cards that use dma transfers dont work.
 
-gvb
+Hmmm...I haven't tried that many, but I use a variety of Ethernet cards
+and SCSI without trouble.
+
+> Since this is just one of the cards that fail in the sandpoint board i am
+> wondering if there is something that I haven't done to initialize DMA
+> transfers on the sandpoint or should they just work ?
+
+They are PCI bus masters, and "should just work."  I am having some
+challenges with the 7450 on Sandpoint, but they appears to be pipeline
+related.
+
+> Motorola SPS Sandpoint X3 with Unity X4 PPMC MPC8240 @ 266 MHz
+> IRQ and GNT/REQ mode = 1 (Sandpoint X2 Compability) (I have tested the other
+> modes too)
+
+Ummmm....I've never had much success with X2 compatibility and don't use it.
+You may want to try an X3 configuration.
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
