@@ -1,45 +1,44 @@
-Date: Wed, 27 Jun 2001 19:11:03 -0700
-From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
+Date: Thu, 28 Jun 2001 13:10:43 +1000
+From: Steven Hanley <sjh@svana.org>
 To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: addresses in xmon trace output?
-Message-ID: <20010627191103.A27680@nevyn.them.org>
-References: <20010628120346.A627@wibble.net>
+Message-ID: <20010628131043.A913@wibble.net>
+Reply-To: Steven Hanley <sjh@wibble.net>
+References: <20010628120346.A627@wibble.net> <20010627191103.A27680@nevyn.them.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010628120346.A627@wibble.net>; from sjh@svana.org on Thu, Jun 28, 2001 at 12:03:46PM +1000
+In-Reply-To: <20010627191103.A27680@nevyn.them.org>; from dmj+@andrew.cmu.edu on Wed, Jun 27, 2001 at 07:11:03PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 28, 2001 at 12:03:46PM +1000, Steven Hanley wrote:
->
-> All
->
-> what are the addresses you see in an xmon trace output? I had a crash
-> yesterday with benh 2.4.6-pre3 (rsynced two days ago) where typing x in xmon
-> didnt recover normal operation of the machine.
->
-> So the T command seemed to give some interesting numbers I assumed were
-> addresses in the system map I could look up once I rebooted.
->
-> [11:35:34] 22 shiva sjh ~>cat mon_crash
-> c67b2098 c00e1bd8 c00e1080 c011f9df c00de590 c00de7ec c003b6a4 c0003b3c
-> exception:c00 [c67a1e90] fe0f640 feeff40 feeff44 fecef4f4 fecfd4c feca62c feaaab8 10001808 fd9675c 0
-> [11:35:47] 23 shiva sjh ~>for i in c67b2098 c00e1bd8 c00e1080 c011f9df c00de590 c00de7ec c003b6a4 c0003b3c ; do grep -i $i /boot/System.map-2.4.6-pre3 ; done
-> c0003b3c T ret_from_syscall_1
-> [11:36:25] 24 shiva sjh ~>for i in fe0f640 feeff40 feeff44 fecef4f4 fecfd4c feca62c feaaab8 10001808 fd9675c ; do grep -i $i /boot/System.map-2.4.6-pre3 ; done
-> [11:37:18] 25 shiva sjh ~>grep c67a1e90 /boot/System.map-2.4.6-pre3
-> [11:37:34] 26 shiva sjh ~>
->
-> so they are not addresses in there (well except possibly for the
-> ret_from_syscall_1
+On Wed, Jun 27, 2001 at 07:11:03PM -0700, Daniel Jacobowitz wrote:
+> They're addresses all right.  System.map lists the beginning of each
+> function; those addresses will be somewhere in the middle.  It's
+> sorted; find the closest match before each.
 
-They're addresses all right.  System.map lists the beginning of each
-function; those addresses will be somewhere in the middle.  It's
-sorted; find the closest match before each.
+okay, that was easy, although the first address doesnt seem to be in the map
+anywhere, maybe I copied it down wrong I suppose.
+
+[13:04:08] 30 shiva sjh ~>./findinsmap.pl /boot/System.map-2.4.6-pre3
+c67b2098 c00e1bd8 c00e1080 c011f9df c00de590 c00de7ec c003b6a4 c0003b3c
+Addr: c00e1bd8 A: c00e1aa8 B: c00e1cb0 Function: c00e1aa8 T alloc_skb
+Addr: c00e1080 A: c00e1004 B: c00e1170 Function: c00e1004 T sock_alloc_send_skb
+Addr: c011f9df A: c011f8b4 B: c011fc74 Function: c011f8b4 t unix_stream_sendmsg
+Addr: c00de590 A: c00de4f4 B: c00de5c0 Function: c00de4f4 T sock_sendmsg
+Addr: c00de7ec A: c00de758 B: c00de7fc Function: c00de758 t sock_write
+Addr: c003b6a4 A: c003b5dc B: c003b6f0 Function: c003b5dc T sys_write
+Addr: c0003b3c A: c0003b3c B: c0003bf0 Function: c0003b3c T ret_from_syscall_1
+
+        See You
+            Steve
 
 --
-Daniel Jacobowitz                           Carnegie Mellon University
-MontaVista Software                         Debian GNU/Linux Developer
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
