@@ -1,23 +1,25 @@
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: "'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: About cache of MPC82xx
-Date: Mon, 2 Feb 2004 14:01:28 +0800
-Message-ID: <000601c3e952$0040c260$b702a8c0@newrock2>
+From: "Prabhakar Kalasani" <kalasani@sena.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PC Card not detecting
+Date: Mon, 2 Feb 2004 16:15:23 +0900
+Message-ID: <NCEHKHHDAHEBBGFMCFHCIEAOCAAA.kalasani@sena.com>
 MIME-Version: 1.0
-In-Reply-To: <8039970AF146314597457D3B51A68B382E048F@cossmgmbx02.email.corp.tld>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear All,
+Hi all,
 
-about cache of MPC82xx, which components can be cacheable? I know SDRAM
-can be used for cacheable memory. Can internal RAM of CPU be used for
-cacheable memory? do you know which document describe this feature?
+when i'm trying to connect modem pc card(3Com,3cxm 56k cellular MODEM) , I
+could able to send modem string through /dev/ttyC8 , but I'm not getting any
+response by saying "OK" from the target.But when I use some other
+manufacturers PC card (Billionton, 56 kbps FAX/MODEM), I'm getting response
+saying "OK" from the target. what could be the problem ? Thanks in advance.
 
-Thanks in advance!
-John
+Regards,
+Prabhakar Kalasani
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
