@@ -1,42 +1,64 @@
-Subject: uart.c doesn't compile
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: linuxppc list <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain
-Message-Id: <1092814249.23185.15.camel@linpc003.aimsys.nl>
-Mime-Version: 1.0
-Date: Wed, 18 Aug 2004 09:30:50 +0200
+Message-ID: <000f01c484f5$6c7298c0$30c8a8c0@zorans>
+From: "Zoran Stojsavljevic" <zoransto@dkts.co.yu>
+To: "Alex Zeffertt" <ajz@cambridgebroadband.com>,
+	<linux-atm-general@lists.sourceforge.net>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Fw: MPHY supported in mpc8260sar
+Date: Wed, 18 Aug 2004 09:31:34 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I enhanced 8260 ATM driver... now I am able to support maximum
+number of PHYs by mpc8260. With up to eight priorities per each
+PHY.
 
-I pulled the latest linuxppc-2.5 using bk and try
-to build for 8xx (FADS). It seems uart.c doesn't
-build anymore for SMCs:
+Just an additional info... :)
 
-  CC      arch/ppc/8xx_io/uart.o
-arch/ppc/8xx_io/uart.c: In function `change_speed':
-arch/ppc/8xx_io/uart.c:992: warning: implicit declaration of function
-`m8xx_cpm_setbrg'
-arch/ppc/8xx_io/uart.c: In function `rs_8xx_init':
-arch/ppc/8xx_io/uart.c:2689: error: `dp_addr' undeclared (first use in
-this function)
-arch/ppc/8xx_io/uart.c:2689: error: (Each undeclared identifier is
-reported only once
-arch/ppc/8xx_io/uart.c:2689: error: for each function it appears in.)
-make[1]: *** [arch/ppc/8xx_io/uart.o] Error 1
-make: *** [arch/ppc/8xx_io] Error 2
+Regards,
+Zoran Stojsavljevic
+DKTS Pupin Telecom
+zoransto@dkts.co.yu
 
-should dp_addr not be changed in dp_offset?
+----- Original Message -----
+From: "Zoran Stojsavljevic" <zoransto@dkts.co.yu>
+Sent: Thursday, August 05, 2004 11:09 AM
+Subject: MPHY supported in mpc8260sar
 
-Jaap-Jan
-
---
-J.G.J. Boor                       Anton Philipsweg 1
-Software Engineer                 1223 KZ Hilversum
-AimSys bv                         tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
-
+> I finally achieved multiphy mpc8260sar (with some limitations). The
+> driver is able to support 8 PHYs (one PHY per unique priority). The
+> driver is developed out of Peter's McCormick single PHY version.
+>
+> For some unknow reason I could NOT achieve MPHY support with only
+> one priority (for example highest PRIority 0). In order to make MPHY
+> to work correctly I assigned a unique priority per PHY. With 8 PHYs
+> the mapping looks like: PHY0/PRIO0, PHY1/PRIO1... PHY7/PRIO7, eg.
+> PHYx/PRIOx, where x is in range [0..7]!
+>
+> The another limitation is that I did NOT fix the VP range, eg. I am
+> using only VP0 (one VP) with different VCs, where least three (3)
+> significant bits of each VC assume the selected PHY. In other words,
+> I am using 8 nas interfaces, and VCs (decimal radix) from 40 (0x28)
+> to 47 (0x2F), where VC 40 is attached to PHY0, VC 41 to PHY1... VC47
+> to PHY7. While issuing ATM xmit command I am deriving least three
+> significant bits of currently processed VC and I'm putting them to the
+> COMM_INFO words (offset 0x86, field PHY#), described in section 30.14
+> of MPC8260 PowerQUICC II Family Reference Manual (Revision 1, date
+> 05/2003).
+>
+> If you all find this info of (some) interest, I can do the patch
+> (against latest version in CVS) so we can store this limited edition
+> of the MPHY version under the mpc8260sar driver project.
+>
+> ----- Original Message -----
+> From: "Alex Zeffertt" <ajz@cambridgebroadband.com>
+> Sent: Monday, January 26, 2004 1:41 PM
+> Subject: Announcement: MPHY now supported in mpc860sar
+>
+> > Just a quick note to say that multi-phy is now supported by the
+> > mpc860sar ATM driver, thanks to a patch by Rodolfo Giometti.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
