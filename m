@@ -1,50 +1,68 @@
-Subject: Framebuffer problems
+Message-ID: <20040522072520.67684.qmail@web15206.mail.bjs.yahoo.com>
+Date: Sat, 22 May 2004 15:25:20 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Module Compiling Problem
 To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF833FB15C.A4B24E5E-ON85256E9A.0066AC69-85256E9C.00054851@nanometrics.ca>
-From: Christopher E Cordahi <chris@nanometrics.ca>
-Date: Fri, 21 May 2004 20:57:41 -0400
+In-Reply-To: <OF833FB15C.A4B24E5E-ON85256E9A.0066AC69-85256E9C.00054851@nanometrics.ca>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+Hi,
 
-I'm having problems with a framebuffer on /dev/fb0 using the DENX 2.4.24
-kernel
+A error happened when I compiled a module.Could any
+warmhearted person figure it out for me?
 
-I have added the Linux Console Driver for the Epson S1D13806
-http://www.erd.epson.com/vdc/RelSoft/generic/s1d13xxx_linux.zip
-which prints the following to the console as it is initialized
-Console: switching to frame buffer device
-S1D13xxx: fb0: s1d13xxx frame buffer device
-S1D13xxx: Display 240 x 320 8Bpp
+[root@sam ic]# make
+ppc_8xx-gcc -D__KERNEL__ -D_REENTRANT
+-I/workspace/keep/dmt201-test/kernel/include -Wall
+-Wstrict-prototypes -Wno-trigraphs -O2
+-fomit-frame-pointer -fno-strict-aliasing -fno-common
+-g -I/workspace/keep/dmt201-test/kernel/arch/ppc
+-fsigned-char -msoft-float -pipe -ffixed-r2
+-Wno-uninitialized -mmultiple -mstring -DMODULE
+-DKBUILD_BASENAME=ic -c ic.c
+In file included from ic.c:57:
+/workspace/keep/dmt201-test/kernel/include/linux/tty_flip.h:
+In function `tty_schedule_flip':
+/workspace/keep/dmt201-test/kernel/include/linux/tty_flip.h:22:
+`tq_timer_Rfa3e9acc' undeclared (first use in this
+function)
+/workspace/keep/dmt201-test/kernel/include/linux/tty_flip.h:22:
+(Each undeclared identifier is reported only once
+/workspace/keep/dmt201-test/kernel/include/linux/tty_flip.h:22:
+for each function it appears in.)
+ic.c: In function `service_timer':
+ic.c:851: `tq_immediate_R0da0dcd1' undeclared (first
+use in this function)
+ic.c: In function `timer_do_tasklet':
+ic.c:944: warning: implicit declaration of function
+`__wake_up_Rf0f2f792'
+ic.c: In function `m8xx_timer_setup':
+ic.c:1032: `__res_Rd7dfb463' undeclared (first use in
+this function)
+ic.c: In function `initicdata':
+ic.c:1360: warning: implicit declaration of function
+`kmalloc_R93d4cfe6'
+ic.c:1360: warning: assignment makes pointer from
+integer without a cast
+ic.c:1363: warning: assignment makes pointer from
+integer without a cast
+ic.c: In function `icread':
+ic.c:1389: warning: implicit declaration of function
+`printk_Rdd132261'
+ic.c: In function `init_ic':
+ic.c:1659: warning: implicit declaration of function
+`register_chrdev_R6c9c715e'
+ic.c: In function `remove_ic':
+ic.c:1724: warning: implicit declaration of function
+`unregister_chrdev_Rc192d491'
+make: *** [ic.o] Error 1
 
-Whenever the framebuffer is accessed a call is made to the
-function PROC_CONSOLE in fbcon.c which always returns -1
-because the info->display_fg pointer is NULL
+Thanks a lot for any input!
 
-None of the functions that call PROC_CONSOLE test for this error value.
-
-Some commands seem to work because later functions test for con == -1.
-(FBIOGET_FSCREENINFO works because fbgen_get_fix tests for it)
-Ofher commands fail because later functions assume the con passed is
-correct and use it as an index into the fb_display array.
-(FBIOGETCMAP fails because fbgen_get_cmap doesn't test for it)
-I guess I'm lucky the whole O/S is not crashing.
-
-Is there a way to have PROC_CONSOLE always return a valid value?
-Or should all the functions in fbgen.c be fixed to handle con == -1?
-
-I would like to leave the serial port (/dev/ttyS0) as the console
-and I don't actually want the framebuffer as the console.
-I would prefer that only Konqueror/Embedded with Qt/Embedded
-use the framebuffer.
-
-Any assistance would be greatly appreciated.
-
-Chris
-
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
