@@ -1,47 +1,50 @@
-Subject: Re: Kernel sound problems (and misc)
-From: Bastien Nocera <hadess@hadess.net>
-To: Anton Blanchard <anton@samba.org>
-Cc: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20010513153953.A16897@va.samba.org>
-References: <kara.5052-0.989768459@kara.hadess.net>
-	<20010513153953.A16897@va.samba.org>
-Content-Type: text/plain
-Date: 13 May 2001 23:54:13 +0100
-Message-Id: <989794453.4941.3.camel@kara>
-Mime-Version: 1.0
-Message-ID: <kara.18908-0.989794453@kara.hadess.net>
+Message-ID: <3AFF16E6.C715ECAE@acm.org>
+Date: Sun, 13 May 2001 16:21:10 -0700
+From: Ira Weiny <iweiny@acm.org>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Walnut 405GP and SBLive sound card
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I am at the end of my rope...
 
-On 13 May 2001 15:39:53 -0700, Anton Blanchard wrote:
->
-> > The misc problem is, while trying to compile paulus' kernel, the vmlinux
-> > target fails to link with rwsem_down_write_failed and rwsem_wake
-> > undefined references.
->
-> Did you make oldconfig? You should this in your .config:
->
-> # CONFIG_RWSEM_GENERIC_SPINLOCK is not set
-> CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+What I know is:
+I have a Walnut 405GP rev D board and a Creative SBLive sound card.
+I have this card running on a G3 powermac. (endian fix)
+And the card does get recognized and will start/top playing a continuous
+tone at the correct times on the Walnut board.
+There is a cache conherentcy issue on the 405GP when doing DMA.
+Basically there is a hardware bug which does not flush the cache on
+writes.  (I can't find the documentation from IBM which sort of hints at
+this.)
+I am _very_ confused by the virt_to_bus, virt_to_phys, ioremap,
+memremap, and just about every other memory related functions I walk
+through.  (and I can't seem to find PPC specific explanations for these
+functions)
+The driver calls the pci_(alloc/free)_consistent functions for the DMA
+transfer buffers.
 
-Hmm,usually I just load the my old config file, run make menuconfig to
-change whatever there is to change (like adding or removing device
-drivers), and have a sane .config.
+What I think:
+I need to call dma_cache_wback_inv (with the correct address and size;
+at the correct time)
 
--(~/Cvs/pmac-devel)-> grep RWSEM .config
-# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+What I am assuming:
+The kernel I have (mvista 2001-04-12) works with a Promise IDE controler
+so the PCI bridge must be setup and working ok.
 
-seems like it could be the problem. Thanks for the tip.
-I guess I will do as Ben advised me, and stick to using his tree rather than paulus' for my pmac.
+My questions:
+1) Where can I find PPC centric information on the kernel internals.
+(Not just for this problem but as a general reference.)
+I have purchased books which focus on the intel arch and have been to
+many web sites which explain "UNIX internals" theory quite well.  But I
+know theory...
+2) Is dma_cache_wback_inv the correct way to do this?  If not, what is?
 
-Cheers
-
---
-/Bastien Nocera
-http://hadess.net
-
+Thanks in advance,
+Ira Weiny
+iweiny@acm.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
