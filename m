@@ -1,20 +1,19 @@
-Return-Path: <j.glisse@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.197])
-	by ozlabs.org (Postfix) with ESMTP id 24E2D67A6B
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Apr 2005 21:52:56 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so1104866wra
-	for <linuxppc-dev@ozlabs.org>; Mon, 04 Apr 2005 04:52:55 -0700 (PDT)
-Message-ID: <4240b91605040404527d3d2ea0@mail.gmail.com>
-Date: Mon, 4 Apr 2005 12:52:55 +0100
-From: Jerome Glisse <j.glisse@gmail.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <4240b9160504040351333e0b23@mail.gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A4C4B67A64
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Apr 2005 22:09:35 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+In-Reply-To: <1112594783.26086.22.camel@gaston>
+References: <1112594783.26086.22.camel@gaston>
+Content-Type: text/plain
+Date: Mon, 04 Apr 2005 22:06:24 +1000
+Message-Id: <1112616384.19004.60.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4240b916050404033230db0551@mail.gmail.com>
-	<4240b9160504040351333e0b23@mail.gmail.com>
-Subject: Re: linux 2.6.12-rc1-bk5 compilation error
-Reply-To: Jerome Glisse <j.glisse@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: iBook G3 owners
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,8 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-One more things i can boot with this kernel.
-I got a Invalid memory access right after
-kernel start...
 
-Jerome Glisse
+> http://gate.crahsing.org/~benh/ppc32-750-errata-fix.diff
+> http://gate.crahsing.org/~benh/ppc32-pmac-sleep-fix.diff
+> http://gate.crahsing.org/~benh/cpufreq-add-suspend.diff
+> http://gate.crahsing.org/~benh/ppc32-cpufreq-gpio-off.diff
+
+Of course, without the typo, it gives:
+
+http://gate.crashing.org/~benh/ppc32-750-errata-fix.diff
+http://gate.crashing.org/~benh/ppc32-pmac-sleep-fix.diff
+http://gate.crashing.org/~benh/cpufreq-add-suspend.diff
+http://gate.crashing.org/~benh/ppc32-cpufreq-gpio-off.diff
