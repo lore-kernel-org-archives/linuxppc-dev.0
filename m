@@ -1,34 +1,47 @@
-Date: Thu, 28 Sep 2000 21:25:51 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: R Shapiro <rshapiro@bbn.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: beige g3 rage II xf4.0.1 and miBoot
-In-Reply-To: <Pine.LNX.4.21.0009282015220.15193-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.10.10009282124500.3468-100000@cassiopeia.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Jon Erick Ween" <jween@som.llu.edu>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Jon Erick Ween <jween@som.llu.edu>
+Cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
+Date: Thu, 28 Sep 2000 12:49:22 -0700
+Message-ID: <7736FE93133A.AAA55EE@som.llu.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 28 Sep 2000, Kostas Gewrgiou wrote:
-> PS> Any ideas why writing to a disabled pci device in ppc crashes
-> the machine but not the x86 ones ? Is this something that can be fixed
-> in the kernel or an arch thing ?
+Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> wrote:
+>> I tried the changes you suggested, no difference. (I couldn't figure out
 
-Usually the behavior on non-responding addresses can be configured in the host
-bridge.
+>> what you meant by "layout at the end.", was there more to the email that
 
-Gr{oetje,eeting}s,
+>> didn't get through?)
+>
+>I meant move the first section (server layout IIRC) to the end of the
+>file. Nothing complicated.
 
-						Geert
+OK, I'll try this.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>> But, honestly, I can't see why these changes should influence whether or
+not
+>> the Xserver detects the video device. That seems to be the main problem.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+>> It's looking for a particular device at a particular memory address
+>> (presumably specified by the "ati" driver file) and is not finding it. I
+
+>
+>Neither do I, and it works perfectly for me ...
+>
+>I can send you my config if nothing else helps.
+
+Well, I recompiled the server and reinstalled. Now it doesn't exit with an
+error, it just hangs, requiring a hard reboot. Looking at the XFree86.0.log
+file it seems to be hanging on the ati probe step, suggesting that it finds
+the device finally. Previous lines inform of reassigning pci memory
+overlaps, but there are no errors. Maybe if I tried your config file and
+modified for my ati driver?
+
+Jon
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
