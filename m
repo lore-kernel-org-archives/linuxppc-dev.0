@@ -1,43 +1,36 @@
-Date: Thu, 29 Jan 2004 08:22:22 +0100
-To: Tom Vier <tmv@comcast.net>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev@lists.linuxppc.org, linux-raid@vger.kernel.org
-Subject: Re: Root Drive Mirroring and LVM.
-Message-ID: <20040129072222.GB10459@iliana>
-References: <868055F9-5045-11D8-8066-00039382032A@mindspring.com> <200401270801.i0R81HdT022197@kruuna.Helsinki.FI> <20040127093213.GA10049@iliana> <20040129010101.GA13800@zero>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20040129010101.GA13800@zero>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Date: Thu, 29 Jan 2004 09:11:04 +0100 (CET)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	Pavel Machek <pavel@ucw.cz>, Hugang <hugang@soulinfo.com>,
+	Patrick Mochel <mochel@digitalimplant.org>,
+	Nigel Cunningham <ncunningham@users.sourceforge.net>,
+	<ncunningham@clear.net.nz>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pmdisk working on ppc (WAS: Help port swsusp to ppc)
+In-Reply-To: <1075326924.5658.299.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0401290908290.16923-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 28, 2004 at 08:01:01PM -0500, Tom Vier wrote:
-> On Tue, Jan 27, 2004 at 10:32:13AM +0100, Sven Luther wrote:
-> > Seems ok for me. Also, i guess that there are other partition types,
-> > like the amiga partitition table the pegasos boxes mostly use, which has
-> > a 32bit identifier for partition types. I guess it is the task of the
-> > RAID code to have some per partition type checking for this RAID autodetect
-> > magic.
+> > OK. I put a mdelay(100) between the PMU_SYSTEM_READY request and the
+> > pmu_suspend() call in pmu_sys_resume and it seems to work so far. Side
+> > note: if you are saving a large system and have multiple swap files, play
+> > with swap priorities to make sure the pages are swapped out to the file
+> > _not_ used for suspend.
 >
-> it's done in fs/partitions/. it could be made anything, as long as it's put
-> in the raid docs so people know.
+> Ah ? What's up ? suspend trashes the swap ? That's very bad...
 
-Ok, thanks. On amiga filesystem, partitition types are in 32bit ints,
-but can also be represented as 4 chars, so maybe `RAID` would be a good
-type for that ? I will try patching the kernel, and adding support in
-libparted for recognizing such partitions, and try it out.
+Nope; freeing memory puts everything in the highest priority swap (happens
+to be the first one), and suspend doesn't find enough room in that swap
+area. The calculation of free swap done by pmdisk is bogus, it calculates
+total free swap, not free swap in the area that pmdisk is going to use for
+the snapshot.
 
-Does it make sense to do Software Raid on two partititons of the same
-disk, just for testing purpose ?
+	Michael
 
-> here's a patch of mine for alpha, to give you an idea.
-
-Ok, thanks.
-
-Friendly,
-
-Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
