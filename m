@@ -1,19 +1,35 @@
-Message-Id: <199910230755.JAA03851@denx.local.net>
-To: Grant Erickson <grant@lcse.umn.edu>
-cc: linuxppc-embedded@lists.linuxppc.org,
-        Daniel Nilsson <daniel.n.nilsson@home.se>,
-        Adrian Cox <apc@agelectronics.co.uk>,
-        Richard Bullwinkle <webmaster@tivo.com>
-Subject: Re: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 22 Oct 1999 20:32:01 CDT."
-             <Pine.SGI.4.10.9910222012050.46619-100000@brule.lcse.umn.edu>
-Date: Sat, 23 Oct 1999 09:55:33 +0200
+From: "TiVo Webmaster" <webmaster@tivo.com>
+To: <wd@denx.de>, "Grant Erickson" <grant@lcse.umn.edu>
+Cc: <linuxppc-embedded@lists.linuxppc.org>,
+        "Daniel Nilsson" <daniel.n.nilsson@home.se>,
+        "Adrian Cox" <apc@agelectronics.co.uk>,
+        "Richard Bullwinkle" <webmaster@tivo.com>
+Subject: RE: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?) 
+Date: Sat, 23 Oct 1999 09:37:03 -0700
+Message-ID: <NCBBKEJANBMELEFCJOGIGEKJDFAA.webmaster@tivo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <199910230755.JAA03851@denx.local.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+Got it done yesterday!
+
+http://www.tivo.com/linux
+
+enjoy,
+Richard Bullwinkle
+TiVo Webmaster
+
+
+-----Original Message-----
+From: wd@denx.de [mailto:wd@denx.de]
+Sent: Saturday, October 23, 1999 12:56 AM
+To: Grant Erickson
+Cc: linuxppc-embedded@lists.linuxppc.org; Daniel Nilsson; Adrian Cox; Richard Bullwinkle
+Subject: Re: TiVo Kernel for 403GCX Update (was Re: Support for IBM CPUs?) 
 
 In message <Pine.SGI.4.10.9910222012050.46619-100000@brule.lcse.umn.edu>
 Grant Erickson wrote:
@@ -44,9 +60,10 @@ but snail mail between Germany and USA takes some time :-(
 
 Wolfgang Denk
 
--- 
+--
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Don't panic.
+Don't panic. 
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
