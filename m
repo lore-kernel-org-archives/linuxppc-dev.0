@@ -1,34 +1,32 @@
-In-Reply-To: <19991025223613.011624@mailhost.mipsys.com>
-Date: Tue, 26 Oct 1999 12:03:19 +0200
-To: jmb@montana.edu, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: iBook/UMA pre3
-Message-Id: <19991026120319.024346@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 26 Oct 1999 13:38:54 +0200 (CEST)
+From: Michael Schmitz <schmitz@amber.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: chris mccraw <chrism@brahma.ticam.utexas.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: IR on lombard?
+In-Reply-To: <19991026112903.024351@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.9910261337350.27302-100000@amber.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just a little mistake in my previous patch, if you intend to test on a
-machine with a second PCI bridge (G4), in arch/ppc/kernel/pmac_pci.c, change
 
-/* This one is for type 1 config accesses */
-#define UNI_N_CFA1(bus, devfn, off)	\
-	((((unsigned long)(bus)) << 16) \
-	|(((unsigned long)(devfn)) << 8) \
-	|(((unsigned long)(off)) & 0xFCUL))
+> >this functionality seems to have been present or at least touched on for
+> >the wallstreet powerbooks judging from the code in
+> >	drivers/macintosh/macserial.c
+> >but my (weak) attempts to force the second serial port into the role of
+> >wallstreet powerbook_ir seem to have failed.
+> 
+> On my wallstreet, ttyS1 is automatically recognized as an IR port, isn't
+> this the case on your machine ? In this case, I'm interested in a dump of
+> the device tree portion that contains the escc nodes on your machine.
 
-to
+ttyS1 isn't recognized as IR port on my lombard. How do I dump the device
+tree? 
 
-/* This one is for type 1 config accesses */
-#define UNI_N_CFA1(bus, devfn, off)	\
-	((((unsigned long)(bus)) << 16) \
-	|(((unsigned long)(devfn)) << 8) \
-	|(((unsigned long)(off)) & 0xFCUL)) \
- | 1UL
-
-I won't have time to post a new version until later this week.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
