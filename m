@@ -1,55 +1,72 @@
-From: "Ron Bianco" <ronb@junction.net>
-To: <mgreer@mvista.com>,
-	"=?iso-8859-1?B?U+liYXN0aWVuIEP0dOk=?=" <scote1@matrox.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Stability of MontaVista's 2.4.0-test2-1.2.2-1
-Date: Fri, 30 Mar 2001 16:25:54 -0800
-Message-ID: <000a01c0b979$25c93aa0$4d012ac7@warp-speed>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3AC5146D.CB770D1B@mvista.com>
+	charset="Windows-1252"
+Subject: RE: What is the version RTLinux and its corresponding version of Linux can support 8260?
+Date: Sat, 31 Mar 2001 11:43:30 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E310A9129@kolkrabbi.flaga.is>
+From: =?Windows-1252?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "machael" <dony.he@huawei.com.cn>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check out:
+I do not know enough of 8260, nor RT-linux, but you seem to
+be using the kernel from kernel.org. Even though it is the
+official kernel for most people (read Intel people). There are
+some deviations from the kernel that ppc
+people use. Try to download the kernel from fsmlabs.com.
+I believe that the fsmlabs kernels stay in sync with the the
+offical kernel from kernel.org while not all changes from the
+ppc folks makes it into the official kernel.
 
-http://www.mot.com/SPS/PowerPC/teksupport/tools/DINK32/VERSION12/dinkindex.htm
+I believe that they (fsmlabs) are also the people makeing
+rt-linux so you might have much better luck there.
 
-Most of DINK source code is easily downloadable, and the full source is obtainable thru a Motorola rep.
-Not sure if that link is to the most current version.
+Hope this helps,
 
-Cheers, Ron
+K.D.
 
-> -----Original Message-----
 
-> > Anyway, I have another question.  In the header from
-> > arch/ppc/kernel/sandpoint_setup.c,I see the following comment:
-> >  * The firmware on the sandpoint is called DINK (not my acronym :).  This
-> > port
-> >  * depends on DINK to do some basic initialization (e.g., initialize the
-> > memory
-> >  * ctlr) and to ensure that the processor is using MAP B (CHRP map).
-> >
-> > Since I don't really have a Sandpoint, and I don't have the DINK which
-> > comes with it, I guess I will run into trouble.
-> > Is there a place where I could find info on what I should do I exactly as
-> > far as initialization goes?!?
->
-> No, I don't know of any place you can go that would tell you what you have to
-> init.  You could look at some of the open source firmwares that are out there
-> which should give you a good idea.  If you have a JTAG probe, you can put it
-> on a board similar to yours with known good firmware and look the host-bridge
-> regs, etc to how it sets everything up.  I dunno...
->
-> You will definitely need to have the PCI arbiter, power mgmt, memory
-> controller, and certain bits in HID0 and L2CR (if you have an L2 ctlr on your
-> processor) all set up correctly.  Maybe some board regs too.
->
-> Mark
->
->
->
+-----Original Message-----
+From:	machael
+Sent:	Fri 3/2/2001 2:22 AM
+To:	linuxppc-embedded@lists.linuxppc.org; rtl@rtlinux.org
+Cc:
+Subject:	What is the version RTLinux and its corresponding
+version of Linux can support 8260?
+
+
+Hello,
+
+     I want to use RTLinux for my 8260-based custom board and meet some
+difficulties.  I have asked  rtl@rtlinux.org , but no one seems to be
+able
+to help me. So I  put my messages here.
+I am very sorry if this may disturb you.
+    Now I can run linux-2.4.1  linux-2.4.2 and linux-2.4.3-pre4 on my
+8260-based custom board  and neither of these versions can work
+successfully
+with RTLinux-3.0(because I have tried them). Does RTLinux-3.0 support
+8260
+CPU now? If so, What is the version of RTLinux and where can I download
+it?
+And its corresponding LINUX version  and where can I download it?
+
+Someone said rtlinux3.0v2.4.2 can work with linux-2.4.2 and it supports
+8260. So I try to use rtllinux3.0v2.4.2  from
+ftp.fsmlabs.com/pub/v3/linux-v242 ,and linuxkernel2.4.2 from
+www.kernel.org,
+but when I compile rtlinux-3.0 (for ppc kernel),  it reports no "__cli"
+and
+"__cli_end"  etc...
+
+
+Anyone who has some experience can help me?
+
+Thank you very much.
+
+machael
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
