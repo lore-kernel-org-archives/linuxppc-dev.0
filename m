@@ -1,67 +1,32 @@
+Date: Thu, 7 Mar 2002 08:32:23 -0800 (PST)
+From: Adam Wozniak <awozniak@comdev.cc>
+To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problems with shared memory
+In-Reply-To: <3C8762B3.4000201@bluewin.ch>
+Message-ID: <Pine.LNX.4.33.0203070831490.16428-100000@rangers.comdev.cc>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Undefined refence error
-Date: Thu, 7 Mar 2002 10:29:16 -0500
-Message-ID: <FF6CF34C346E724596A2FB5CAAB2C497884382@voyager.ops.infiniswitch.com>
-From: "Wright, David" <dwright@infiniswitch.com>
-To: "satya kumar" <i_satya@yahoo.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Are you compiling with -O2 optimization?  If you compile without
-optimization, those missing functions won't be inlined and will
-show up as undefined references.
+On Thu, 7 Mar 2002, Wolfgang Grandegger wrote:
+> David Ashley has reported lately a bug in arch/ppc/mm/ppc_mmu.c (see
+> http://lists.linuxppc.org/linuxppc-embedded/200202/msg00307.html),
+> which seems to be present in the linuxppc_2_4 tree but not in the
+> linuxppc_2_4_devel tree.
+>
+> Hope it helps,
 
-  -- David Wright, Infiniswitch Corp.
+Thanks so much.  I think that fixed it.  10000+ iterations without problem.
 
+--Adam
+--
+Adam Wozniak (KG6GZR)   COM DEV Broadband - Digital and Software Systems
+awozniak@comdev.cc      805 Aerovista Place, San Luis Obispo, CA 93401
+                        http://www.comdev.cc
+                        Voice: (805) 544-1089       Fax: (805) 544-2055
 
-
-> -----Original Message-----
-> From: satya kumar [mailto:i_satya@yahoo.com]
-> Sent: Thursday, March 07, 2002 2:02 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Undefined refence error
->
->
->
-> Hai All,
-> My First mail to this group.Not a master , only a
-> newbie ,so please bear with me.
-> I have successfully compiled the binutils, gcc for
-> powerpc. Now I went for compiling glibc, which is
-> giving some problems, so I left it and proceeded with
-> compiling the kernel.
-> Now it is giving following error message when I do
-> make zImage
-> mm/mm.o: In function `__free_pages_ok':
-> mm/mm.o(.text+0xdee4): undefined reference to
-> `__test_and_change_bit'
-> mm/mm.o(.text+0xdee4): relocation truncated to fit:
-> R_PPC_REL24 __test_and_change_bit
-> mm/mm.o: In function `rmqueue':
-> mm/mm.o(.text+0xe0f8): undefined reference to
-> `__change_bit'
-> mm/mm.o(.text+0xe0f8): relocation truncated to fit:
-> R_PPC_REL24 __change_bit
-> mm/mm.o(.text+0xe190): undefined reference to
-> `__change_bit'
-> mm/mm.o(.text+0xe190): relocation truncated to fit:
-> R_PPC_REL24 __change_bit
-> make: *** [vmlinux] Error 1
->
->
-> Please help me out.I am stuck. I am compiling it for a
-> MPC860 board. I have selected the machine type as MBX
-> during configuring/compiling kernel( Is it right).
->
->
-> Try FREE Yahoo! Mail - the world's greatest free email!
-> http://mail.yahoo.com/
->
->
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
