@@ -1,59 +1,42 @@
-Date: Fri, 4 Aug 2000 15:20:19 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org,
-        Iain Sandoe <iain@sandoe.co.uk>
+Date: Fri, 4 Aug 2000 08:40:01 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: rtc again...
-In-Reply-To: <Pine.HPX.4.10.10008031133480.9070-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.4.10.10008041515510.879-100000@cassiopeia.home>
+In-Reply-To: <20000804125445.5797@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000804083103.650O-100000@ofey.earthlink.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 3 Aug 2000, Gabriel Paubert wrote:
-> On Thu, 3 Aug 2000, Benjamin Herrenschmidt wrote:
-> > >I am using it as module both for 2.2.17-bk and for 2.4.0-test5. They
-> > >don't give the same time, and I think it is the one in 2.4.0 that is
-> > >right. I am at GMT+2:00, and the time in 2.2.17 is 2 hours early. When I
-> > >change /etc/sysconfig/clock from "UTC=false" to "UTC=true", both times
-> > >shift by 2 hours, but the discrepancy remains.
-> > >
-> > >The following patch for bitkeeper linuxppc_2_2 fixes this problem for
-> > >me. It brings 2.2.17pre13 in line with 2.4.0-test5 (and MacOS). I cannot
-> > >test the VIAPMU part, so maybe there the offset is necessary, but for
-> > >the VIACUDA part, it seems wrong.
+On Fri, 4 Aug 2000, Benjamin Herrenschmidt wrote:
+
 > >
-> > You patch reverts a fix I made some time ago. Basially, what probably
-> > happens is that your RTC is in UTC time, not in local time. The Mac RTC
-> > is supposed to be in local time, the offset corrects the kernel time on
-> > boot to account for this. Previously, without that fix, the kernel used
-> > to boot with a bogus UTC time until userland fixes it.
+> >Oh, "nowtime" is UTC + DST fix up then???  If so, that seems to be broken
+> >to me
 >
-> Actually given the problems with RTC being UTC or local time, the offset
-> might perhaps better be setup as a kernel parameter so that th system
-> start up in a known good state. It seems that it is in RAM for Macs, but
-> what about other machines (I have no problems since all my machines are
-> UTC and I simply refuse to use an OS which requires anything else) ?
+> AFAIK, the timezone offset in nvram includes the DST fixup.
 
-Why do you want to handle the offset in the kernel???
+Yes, that's right.
 
-Any decent distro (e.g. Debian) allows to configure the time system for a
-hardware clock running in either UTC or local time, so the correction will be
-done on boot up.
+My assumption was "nowtime" given to kernel for pmac_set_rtc_time() is
+UTC.  If that's the case, the following code in pmac_set_rtc_time()
 
-Gr{oetje,eeting}s,
+     nowtime += RTC_OFFSET - sys_tz.tz_minuteswest * 60;
 
-						Geert
+is incomplete because it does not include DST fix up and the time stored
+via CUDA or PMU will be an hour off from localtime which Mac OS uses
+during DST is in effect.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Is my assumption correct?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+What I was saying is that if "nowtime" given to kernel is neither UTC or
+localtime, the interface seems to be broken (to me).
+
+
+Takashi Oe
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
