@@ -1,37 +1,38 @@
-Date: Thu, 17 Jun 2004 11:19:54 +0200
-Message-Id: <HZG4L6$A14A0723F533A1C86A3AF192DB6EF298@scarlet.be>
-Subject: Re: [PATCH] PPC601 MQ handling
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "Stef Simoens" <stef.simoens@pi.be>
-To: "benh" <benh@kernel.crashing.org>
-Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>,
-	"paulus" <paulus@samba.org>
+Date: Thu, 17 Jun 2004 12:38:22 +0100
+From: Martin Habets <errandir_news@mph.eclipse.co.uk>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] Make install target work
+Message-ID: <20040617113822.GB9175@palantir8>
+References: <20040616181652.GA7240@palantir8> <20040616190548.GD24479@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040616190548.GD24479@smtp.west.cox.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Did you check it was actually saved/restored by the signal code ?
+On Wed, Jun 16, 2004 at 12:05:48PM -0700, Tom Rini wrote:
 >
-> Ben.
+> On Wed, Jun 16, 2004 at 07:16:52PM +0100, Martin Habets wrote:
+>
+> > This patch makes the install target work. After all, it is already
+> > mentioned in the 'make help' output.
+> > The only question is, should it install zImage by default? I always
+> > install vmlinux, so I used that.
+>
+> Given the number of different ways we have to deal with (this really
+> only handles pmac) I'd much rather just have boot/install.sh run either
+> the distribution or user-provided script.
 
-I looked up when XER gets saved/restored to save/restore MQ.
+Ehh.. that's exactly what install.sh tries to do! Only if both of these
+do not exist will the bottom part of the code be executed.
+The distribution provided scripts want an image to install. I agree
+that it is impossible to supply the right image for all systems.
+But maybe it is possible to echance this patch for some systems,
+providing a different image based on config settings?
 
-I tested my patch with
-mqtest &
-(start other programs which are 'MQ-enabled')
-fg
-^Z
-...
-and mqtest gave me the correct output.
-
-I used the same principle to patch my 2.4 kernel and I'm running with the patch for over 3 months now.
-
-If this isn't the answer you wanted, could you please point out what I should be testing?
-
-Thanks
-
-Stef
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
