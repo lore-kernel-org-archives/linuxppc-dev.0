@@ -1,33 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <tom_gall@vnet.ibm.com>, <linuxppc-dev@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>
+Date: Wed, 28 Nov 2001 16:20:47 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: CONFIG_ALL_PPC
-Date: Wed, 28 Nov 2001 23:19:28 +0100
-Message-Id: <20011128221928.8366@smtp.wanadoo.fr>
-In-Reply-To: <3C0561FE.80489F5E@vnet.ibm.com>
-References: <3C0561FE.80489F5E@vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20011128162046.L23942@altus.drgw.net>
+References: <15365.24592.409195.392505@gargle.gargle.HOWL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15365.24592.409195.392505@gargle.gargle.HOWL>; from paulus@samba.org on Thu, Nov 29, 2001 at 09:07:12AM +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hmmm well not that I object because I don't... but I am working on this POP
->board here and technically speaking it's the next in the great PREP / PMAC /
->CHRP chain...
+On Thu, Nov 29, 2001 at 09:07:12AM +1100, Paul Mackerras wrote:
 >
->CONFIG_PREP_PMAC_CHRP_POP?  ICK!
+> I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
+> linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
+> use that).
 >
->I'm hopeful in the end it'll fall into the CHRP catagory but some of these
->firmware differences could be a bear to resolve. But I might be a little
->over-alarmist too...
+> Does anyone object to this?
 
-It's a difficult choice ;)
+I thought were were goign to call it 'CONFIG_WORKSTATION_PPC' or
+'CONFIG_DESKTOP'
 
-What about CONFIG_COMMON_PPC ? Still a bit misleading, but probably
-better than CONFIG_ALL_PPC...
 
-Ben.
+I'd be happy with CONFIG_DESKTOP, or CONFIG_PPC_MULTIARCH.
 
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Shulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
