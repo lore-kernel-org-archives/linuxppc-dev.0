@@ -1,12 +1,11 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id 0828E2BC0F
+Return-Path: <segher@kernel.crashing.org>
+Received: from localhost.localdomain (adsl-63-203-10-66.dsl.lsan03.pacbell.net
+	[63.203.10.66]) by ozlabs.org (Postfix) with SMTP id C5BC22BDAB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Sep 2004 17:01:37 +1000 (EST)
-Date: Tue, 28 Sep 2004 00:01:24 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Message-ID: <20040928000124.H30772@home.com>
+	Tue, 28 Sep 2004 17:11:07 +1000 (EST)
+Received: from [172.20.101.118] by localhost.localdomain for
+	<linuxppc-embedded@ozlabs.org>; Tue, 28 Sep 2004 07:08:38 -7GMT
+In-Reply-To: <20040928000124.H30772@home.com>
 References: <AE8972FB-0E3A-11D9-BC8B-000A95A4DC02@kernel.crashing.org>
 	<4158DD68.2060707@sonartech.com.au>
 	<20040927221323.A30581@home.com>
@@ -17,11 +16,13 @@ References: <AE8972FB-0E3A-11D9-BC8B-000A95A4DC02@kernel.crashing.org>
 	<F80E3944-1116-11D9-8370-000A95A4DC02@kernel.crashing.org>
 	<20040927233749.E30772@home.com>
 	<FB412DE8-1119-11D9-8370-000A95A4DC02@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <FB412DE8-1119-11D9-8370-000A95A4DC02@kernel.crashing.org>;
-	from segher@kernel.crashing.org on Tue, Sep 28, 2004 at
-	01:45:27AM -0500
+	<20040928000124.H30772@home.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6BEFEE88-111D-11D9-8370-000A95A4DC02@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Tue, 28 Sep 2004 02:10:04 -0500
+To: Matt Porter <mporter@kernel.crashing.org>
 Cc: David Gardiner <daveg@sonartech.com.au>, linuxppc-embedded@ozlabs.org
 Subject: Re: powerpc with gigabit card hanging
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -34,29 +35,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 28, 2004 at 01:45:27AM -0500, Segher Boessenkool wrote:
-> >> Sure.  But the interrupt _assignment_ should be done by firmware.
-> >
-> > I can't argue with ideaology.
-> 
-> It's not ideology; it's what the PCI spec says.
-> 
-> >> p.s.  And I know this isn't always practically possible; but why
-> >> then support a product like that at all, in the Open Source
-> >> community?
-> >
-> > By this reasoning, we should also not support the many BIOS/OF
-> > platforms that report incorrect data and have to have their
-> > reported data fixed up by the kernel. That's gross too by the
-> > same measure.
-> 
-> There is a difference between patching some errors and doing
-> all the work yourself.
+> I see your point of view and disagree.
 
-I see your point of view and disagree.
+Fine.
 
-> But hey, let not me stop you from doing this.
- 
-Don't worry, you won't. :)
+>> But hey, let not me stop you from doing this.
+>
+> Don't worry, you won't. :)
 
--Matt
+Good :-)
+
+
+Segher
