@@ -1,25 +1,15 @@
-Return-Path: <murphyf+xfree86@f-m.fm>
-Received: from out2.smtp.messagingengine.com (out2.smtp.messagingengine.com
-	[66.111.4.26]) by ozlabs.org (Postfix) with ESMTP id DF7B82BDB5
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2004 20:05:08 +1100 (EST)
-Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
-In-Reply-To: <41AC292C.70301@petig-baender.de>
-Date: Tue, 30 Nov 2004 10:05:00 +0100
-References: <200411232008.16854.murphyf+xfree86@f-m.fm>
-	<200411270948.08054.murphyf+xfree86@f-m.fm>
-	<1101607094.5176.0.camel@gaston>
-	<200411282114.48141.murphyf+xfree86@f-m.fm>
-	<1101674379.4653.9.camel@gaston>
-	<1101721355.31317.209633721@webmail.messagingengine.com>
-	<41AB5995.9080009@petig-baender.de> <41AC292C.70301@petig-baender.de>
-To: "Christof Petig" <lists@petig-baender.de>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Frank Murphy" <murphyf+xfree86@f-m.fm>
-From: "Frank Murphy" <murphyf+xfree86@f-m.fm>
-Message-Id: <1101805500.29811.209722800@webmail.messagingengine.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, debian-x@lists.debian.org
-Subject: Re: G3 iBook LCD brightness in X under kernel 2.4.25 and 2.6.8
+Return-Path: <zhonglei@RCS-9000.COM>
+Received: from RCS-9000.COM (unknown [218.94.131.104])
+	by ozlabs.org (Postfix) with ESMTP id 677E32BE83
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Nov 2004 22:57:19 +1100 (EST)
+Date: Tue, 30 Nov 2004 19:58:50 +0800
+Message-Id: <200411301958.AA18284780@RCS-9000.COM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "zhonglei" <zhonglei@RCS-9000.COM>
+To: <linuxppc-dev@ozlabs.org>
+Subject: USB driver
+Reply-To: zhonglei@RCS-9000.COM
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +19,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Tue, 30 Nov 2004 09:02:52 +0100, "Christof Petig"
-<lists@petig-baender.de> said:
-> I can confirm that everything works well with Linus' 2.6.10-rc2-bk6. So 
-> consider the problem as solved (writing from said version).
-> 
-> snooze and the brightness keys work well.
-
-Well *that's* good news. I'll retry here as well and confirm.
-
-Frank
+hi:
+My system is Lite5200 with DENX Embedded Linux running on it.I want to connect USB mass storage devices to my computer's USB port.But I found there is no driver in kernel.(when I use 'make xconfig' the USB mass storage devices driver is in grey).How can I download/install the driver and active my USB disk?
+BestRegards
+zhonglei
