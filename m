@@ -1,52 +1,36 @@
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: Stefan Nunninger <nunnodda@cs.tu-berlin.de>
-Reply-To: nunninger@web.de
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: NFS mount error
-Date: Fri, 31 Aug 2001 21:50:25 +0200
-MIME-Version: 1.0
-Message-Id: <01083121502500.01608@willy>
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Mime-Version: 1.0
+Message-Id: <p04330100b7b754433776@[66.57.12.104]>
+Date: Sat, 1 Sep 2001 23:19:36 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: dcache.h kernel bug?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Running 2.4.10pre2 on a 6500. Have been getting random crashes into
+xmon with no keyboard control so I cannot do a backtrace. The crashes
+have only occurred in X.
 
-Sorry this is slightly off topic but probably someone has seen this error
-before.
+Got one tonight, and on reboot, I could not start X as a user, only
+as root. When starting as a user, it said authentication failed, and
+perhaps I do not have control of the console?
 
-I've been using a embedded device running Linux quite some time no
-without problems. Linux mounted it's file system from a NFS server running
-on a Red Hat 6.0 machine. Recently I had to change the server. The new NFS
-server is running on a SuSE 7.2 distribution. Now my embedded device is not
-able anymore to mount it's file system. This is what I get to see:
-...
-Looking up port of RPC 100003/2 on 192.168.0.1
-Looking up port of RPC 100005/1 on 192.168.0.1
-VFS: Mounted root (NFS filesystem).
-Freeing unused kernel memory: 56k init
-unlock_kernel
-Warning: unable to open an initial console.
-RPC: sendmsg returned error 101
-nfs: server 192.168.0.1 not responding, still trying
-RPC: sendmsg returned error 101
-nfs: server 192.168.0.1 not responding, still trying
+This is all leading up to the following, dunno if any is related or not:
 
-The filesystem is stored in the directory /tftpboot on the NFS server.
-The /etc/exports file of the NFS server contains this line:
-/tftpboot *(rw,no_root_squash,no_all_squash)
+Back in the console, I was removing a file when I got:
 
-The server is running Linux 2.4.4 (original SuSE kernel) with
-userspace NFS daemon 2.2beta47.
+kernel BUG: at /usr/src/linux/include/linux/dcache.h:244!
 
-The log file of the NFS server shows no error message but this:
-mountd[734]: /tftpboot has been mounted by 192.168.0.8
+Is this something possibly related to my X crashes? Can it be fixed?
+It was a hard lockup, no 3-fingers, had to power down and reboot.
 
-I am able to mount the directory with the file system from another PC.
+Regardless, how do I launch X again as a user? I had just updated
+glib to 1.2.10-ximian, don't know if that had anything to do with
+anything.
 
-Has anybody an idea what is the reason for the error message and how it can
-be resolved? Thanks for any hint.
-	Stefan Nunninger
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+Stefan Jeglinski
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
