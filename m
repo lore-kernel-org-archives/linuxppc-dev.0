@@ -1,64 +1,53 @@
-Message-ID: <3AD7FAF8.44670189@disca.upv.es>
-Date: Sat, 14 Apr 2001 09:23:36 +0200
-From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: libc.so.6 error but not in Montavista
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 31 Aug 2001 16:29:04 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Xavier Grave <grave@ipno.in2p3.fr>
+Cc: embarque ppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: mvme5100 one more time...
+Message-ID: <20010831162904.M27811@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010830170043.A8047@ipnpcu5.in2p3.fr> <20010830091936.N18618@cpe-24-221-152-185.az.sprintbbd.net> <20010831111629.A29808@ipnpcu5.in2p3.fr> <20010831075046.E27811@cpe-24-221-152-185.az.sprintbbd.net> <20010831173634.C8764@ipnpcu5.in2p3.fr> <20010831084927.F27811@cpe-24-221-152-185.az.sprintbbd.net> <20010831180336.A13543@ipnpcu5.in2p3.fr> <20010831110938.A3472@cpe-24-221-152-185.az.sprintbbd.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010831110938.A3472@cpe-24-221-152-185.az.sprintbbd.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to build a ramdisk for a TQM823L module using the LinuxPPC
-(2.4.4) and CDK provided by DENX.
+On Fri, Aug 31, 2001 at 11:09:38AM -0700, Tom Rini wrote:
+>
+> On Fri, Aug 31, 2001 at 06:03:36PM +0200, Xavier Grave wrote:
+> >
+> > Le ven, 31 ao? 2001 17:49:27, Tom Rini a ?crit :
+> > >
+> > > Okay.  Try this.  Undo what I told you last time, and make the end of
+> > > the file look like:
+> > > #if 0
+> > >
+> > > 	.comm	.stack,4096*2,4
+> > > #endif
+> > >
+> > > This may or may not compile.  I have a feeling there'll be some egg on
+> > > my face shortly...
+> >
+> > it doesn't compile : I have the following message :
+> > head.o: In function `start_ldr':
+> > head.o(.text+0x176): undefined reference to `stack'
+> > head.o(.text+0x17a): undefined reference to `stack'
+> > make[2]: *** [zvmlinux] Erreur 1
+> >
+> > Why the eggs ? because it doesn't compile ? :-)
+>
+> Well, my guess is that .stack is being defined twice, maybe...  The reg dump
+> makes it look like it's about to goto decompress_kernel.  Can you try the
+> following patch?  And undo what Itold you to do last time..
 
-I have built the CDK withouth any problems and so the ramdisk.
-But when I try to boot the system, I obtain the following error:
-....
-EXT2-fs warning: checktime reached, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 52k init
-init: error in loading shared libraries: libc.so.6: cannot open shared
-object fi
-le: No such file or directory
-Kernel panic: Attempted to kill init!
-Rebooting in 180 seconds..
-
-I have been searching the lists for a solution but it seems that people
-with the same problem were using the Montavista version, not the DENX
-one.
-The proposed solution for Montavista is:
---------
-If your shared libraries are (as usual) in the "/lib" directory, add the
-following option to the GCC command line when linking your binary:
--Wl,-R/lib
---------
-In fact, I don't know where to add this option.
-
-The /lib/libc.so in the ramdisk shows the following code:
----------------------
-/* GNU ld script
-   Use the shared library, but some functions are only in
-   the static library, so try that secondarily.  */
-GROUP ( /LinuxPPC/CDK/lib/libc.so.6 /LinuxPPC/CDK/lib/libc_nonshared.a )
----------------------
-I think that this isn't right.
-
-Any help would be great.
+And if this fails, I just thought of one more thing (I need some hw I can
+test this on locally...).
+Look for:
+	bl	flush_instruction_cache
+And add #if 0/#endif around that and try again...
 
 --
-----------------------------------------------------------------------
-| David de Andrés Martínez   | Fault Tolerant Systems research Group |
-|                            |                                       |
-| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
-| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
-|                            | Fax: +34 96 387.75.79                 |
--------Address--------------------------------------------------------
-|                 DISCA-EUI                                          |
-|                 Universidad Politécnica de Valencia                |
-|                 Campus de Vera #14                                 |
-|                 Valencia E-46021                                   |
-|                 Spain                                              |
-----------------------------------------------------------------------
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
