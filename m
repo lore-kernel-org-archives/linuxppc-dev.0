@@ -1,41 +1,51 @@
-Date: Wed, 1 Dec 1999 18:23:22 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Grant Erickson <grant@lcse.umn.edu>
-cc: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Ethernet Drivers for LAN/Controller-on-Board Systems
-In-Reply-To: <Pine.SGI.4.10.9911301438280.118603-100000@brule.borg.umn.edu>
-Message-ID: <Pine.LNX.4.05.9912011822180.389-100000@callisto.of.borg>
+Message-ID: <XFMail.991201105013.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <m11tCut-0000WVC@tri-yann.crf.canon.fr>
+Date: Wed, 01 Dec 1999 10:50:13 -0700 (MST)
+From: Gary Thomas <gdt@linuxppc.org>
+To: VALETTE Eric <valette@crf.canon.fr>
+Subject: Re: PPC Compiler Problem?
+Cc: linuxppc-dev@lists.linuxppc.org, alois_fertl@muenchen.europe.mcd.mot.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 30 Nov 1999, Grant Erickson wrote:
-> Anyway, I'm working on a port for the IBM "Oak" 403GCX board. This board
-> has on it, a National DP83902AV Ethernet MAC. The chip is more or less
-> directly attached to the 403GCX's address/data buses and resides at the
-> base physical address 0xF4000000.
+
+On 01-Dec-99 VALETTE Eric wrote:
 > 
-> How are such Ethernet controllers accommodated by the kernel? It seems as
-> though I cannot just use 8390.o directly as it is but a library used by
-> drivers such as ne2k.o. However, I don't think I can or want to use a
-> driver such as ne2k.o as this isn't a PCI or an ISA card-type controller
-> either.
+>>>>>> "Alois" == Alois Fertl <alois_fertl@muenchen.europe.mcd.mot.com> writes:
 > 
-> Do I need to write a small upper-layer wrapper driver, such as oak_8390.c,
-> for this?
+> Alois> Given the following lines of C, I'd expect that the 4th argument
+> Alois> is placed into register 6 and 7. As the assembler listing tells,
+> Alois> register 6 is omitted and the argument goes into r7/r8.
+> 
+> I indeed checked the "PowerPC Processor ABI Supplement" dated September 95
+> (SVR4 PowerPC ABI) and on 3-18 I see :
+> 
+> For PowerPC, up to eight words are passed in general purpose registers, loaded
+> sequentially into general purpose registers r3 through r10.
+> 
+> It is clear that this breaks the SVR4 ABI... So you can probably open a bug
+> report...
+> 
 
-Yes, you have to write glue code between your hardware and 8390.o. Look at the
-other 8390 glue codes for examples.
+If you read carefully, on page 3-18 of the SYSV ABI report, for a long long
+argument being placed in register 'gr':
+  " if gr is even, set gr to gr+1.  Load the lower addressed word into gr and
+    the higher addressed word into gr+1."
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+Thus, the implementation _is_ correct.  long long arguments always occupy
+an odd/even pair of registers.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
