@@ -1,27 +1,42 @@
-Date: Tue, 17 Sep 2002 22:34:15 -0700
-From: Matt Porter <porter@cox.net>
-To: sanjay k k <fren00@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc_405-gdb + Segmentation fault (core dumped)
-Message-ID: <20020917223415.B21513@home.com>
-References: <20020918013137.15713.qmail@webmail6.rediffmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020918013137.15713.qmail@webmail6.rediffmail.com>; from fren00@rediffmail.com on Wed, Sep 18, 2002 at 01:31:37AM -0000
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <001801c25ed6$1c389e00$7301a8c0@zhongqx>
+From: "zhongqx" <zhongqx@guoguang.com.cn>
+To: "Dave Ellis" <DGE@sixnetio.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <00512BA4F9D3D311912A009027E9B8F407E489@NT>
+Subject: Re: Why FEC and SCC1 can not work at the same time?
+Date: Wed, 18 Sep 2002 13:42:00 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 18, 2002 at 01:31:37AM -0000, sanjay k k wrote:
-> When i do the 5th step , my gdb dies , it says :
-> Reading Symbols from vmlinux.... Segmentation fault (core
+Sir,
+   thank you very much,
+   what you said is very right,fix ppcboot just like you said,and the proplem disappear!
+   thank you again!
+----- Original Message -----
+From: "Dave Ellis" <DGE@sixnetio.com>
+To: "'zhongqx'" <zhongqx@guoguang.com.cn>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, September 18, 2002 4:20 AM
+Subject: RE: Why FEC and SCC1 can not work at the same time?
 
-You need to upgrade to a newer version of gdb...5.1 will work.
-
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+> On Tuesday, September 17, 2002 zhongqx wrote:
+> > Now I meet a new problem! it is very strange!
+> > I want to use FEC(100M) and SCC1(10M) interface,but they can
+> > not work together.
+> >      When I use ppcboot with CONFIG_SCC1_ENET defined , boot
+> > linux ,then SCC1 is ok,when I ping FEC (I config it ip
+> > address is 192.168.2.221) it displayed messaged "time out".
+> >      When I use ppcboot with CONFIG_FEC_ENET  defined,  boot
+> > linux ,then FEC is ok, when I
+> > ping SCC( I config it ip address is 192.168.1.198) it
+> > displayed messaged also "time out".
+>
+> For FADS PPCBoot sets up both BCSR1 and BCSR4 in cpu/mpc8xx/scc.c.
+> In Linux 2.4.18 only BCSR1 is configured in arch/ppc/8xx_io/enet.c
+> Maybe configuring BCSR4 in enet.c would help.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
