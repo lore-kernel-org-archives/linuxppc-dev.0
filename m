@@ -1,62 +1,53 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-ID: <406CA75E.2070508@246tNt.com>
-Date: Fri, 02 Apr 2004 01:35:58 +0200
+Message-ID: <406CB2AC.3020001@246tNt.com>
+Date: Fri, 02 Apr 2004 02:24:12 +0200
 From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+To: Wolfgang Denk <wd@denx.de>
 Subject: Re: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help
  text)
-References: <67423B18-83E3-11D8-B6FB-000393DBC2E8@motorola.com> <20040401150211.90D85C10A4@atlas.denx.de> <20040401161622.GA26876@smtp.west.cox.net>
-In-Reply-To: <20040401161622.GA26876@smtp.west.cox.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20040401170515.E5C8EC10A4@atlas.denx.de>
+In-Reply-To: <20040401170515.E5C8EC10A4@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi
+Wolfgang Denk wrote:
 
->For 2.6, I think one of the following options needs to be done.
->- Motorola code, cleaned up with input from the community (and the bits
->  Linux just doesn't need, left out).
->- Ignore the Motorola code, or since it's GPL (must be to be in the
->  kernel, so I'm just making the assumption here...) use it as a guide
->  for how things work to implement a clean Linux implementation of
->  the code. I know there's someone working on this (who pops up on
->  #mklinux on freenode from time to time) but I don't know how far
->  they've gotten.
+>>- Ignore the Motorola code, or since it's GPL (must be to be in the
+>>  kernel, so I'm just making the assumption here...) use it as a guide
+>>  for how things work to implement a clean Linux implementation of
+>>  the code. I know there's someone working on this (who pops up on
+>>  #mklinux on freenode from time to time) but I don't know how far
+>>  they've gotten.
+>
+>Ummm... Why is there no discussion about this on any mailing list? And
+>don't you think that that at least Motorola should be included in any
+>such attempts? [AFAICT they are not, at least not until today.] Also,
+>isn't this kind of wasted effort as the target is still moving?
 
-I think you're referring to me ;)
-What is done :
- - All the kconfig stuff to add options for MPC5xxx and the very low
-level stuff like adding in cputable and so on, just to get it recognized.
- - A serial driver that provides a working console ( It still misses
-some stuff like modem ctrl because I don't understand that one well )
- - The I2C driver is working ( I can access the on board eeprom of the
-IceCube )
- - The USB driver is started however it's not functionnal yet.
-Apparently there is a lot of endian issues. In the 2.4 core, they
-modified the generic ohci driver with #ifdef #endif to  change the
-access from little endian to big endian. But I don't like this solution
-because I personnaly have on a custom board a OHCI on PCI and the built
-in ports, so I need to find a 'clean' solution.
- - The ethernet code is in *VERY* early stages, I just have the global
-arch and some ideas in my head on how to do it.
+Well, huh, I talked about it on the embedded ml :
 
-I'm planning on just ignoring the Motorola code since there apparently
-are problem with it ( I though that the motorola update was planned for
-mid-feb but ... ) , I was just gonna implement something very simple
-that just does what it need for the linux drivers to work cleanly and
-properly.
+http://lists.linuxppc.org/linuxppc-embedded/200403/msg00082.html
 
-I've tried to write the code as cleany as possible, it uses the OCP
-stuff that was on linux-2.5-ocp and also the generic dma stuff.
+along with some 'strange stuff' in the 2.4 port memory map
 
-I can provide the patches on request, I just didn't published it because
-I don't know where to ...
+http://lists.linuxppc.org/linuxppc-embedded/200403/msg00095.html
 
-Also, for a couple of week, my work is 'paused' on this but since I
-would need stuff like ethernet and I2S working for mid-may, I'll resume
-my work on it ASAP.
+Yeah sure, having Motorola involved would certainly help, but I don't
+have any official contact with them and my Motorola semiconductor
+distributor and I are not in best terms recently so I just hoped that
+some one concerned at motorola would be reading the list ...
+
+About the bestcomm code more precisly :
+A lot of people told me that the code had some issues. So for the 2.6 I
+just though that I would rewrite a code that would only fits the linux
+needs. Of course I won't just ignore the motorola code, for me rewriting
+is looking at the current implementation is just a way to a better
+understanding on how it works. If at the end, the motorola code is
+cleaner/more generic and works better, then just use it, but as I
+understand it it's not the case right now. If I'm not right, then,
+please correct me.
 
 Sylvain Munaut
 
