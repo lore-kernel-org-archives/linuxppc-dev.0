@@ -1,44 +1,34 @@
-Date: Mon, 29 Jan 2001 16:24:25 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Brad Midgley <brad@turbolinux.com>, linuxppc-dev@lists.linuxppc.org,
-        djosg@mgu.bath.ac.uk
-Subject: Re: pmud monitoring temperature (Re: powerbook doubles)
-Message-ID: <20010129162425.A21300@altus.drgw.net>
-References: <200101290141.RAA21010@mail.turbolinux.com> <Pine.LNX.4.30.0101291534510.2636-200000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.30.0101291534510.2636-200000@opal.biophys.uni-duesseldorf.de>; from schmitz@opal.biophys.uni-duesseldorf.de on Mon, Jan 29, 2001 at 03:49:02PM +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Joseph P. Garcia" <jpgarcia@execpc.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PMU panic in 2.4bk
+Date: Mon, 29 Jan 2001 16:55:20 -0600
+MIME-Version: 1.0
+Message-Id: <01012916552001.05635@momiji>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 29, 2001 at 03:49:02PM +0100, Michael Schmitz wrote:
-> > i reworked this patch to work with the current bk tree (argh. i just complained to iain that diffs
-> > against a moving target were gross)
-> >
-> > http://redcloud.uccs.edu/~bcmidgle/linux/
-> >
-> > btw, it looks like troy wants the _{gs}et_THRM{123} macros changed to use some different macros,
-> > but i'm not familiar with that stuff so i just reenabled the old macros.
->
-> I don't think what changes you propose there but from the comment on your
-> patch page ('cpu speed not included in calculations') it seems you picked
-> up the old version of the patch. I attach the version including
-> conversion time calculation from processor speed (for 2.4.0pre). The CPU
-> speed is  preset to 500 MHz in case it can't be determined from OF, this
-> gives too long conversion times for slower processors - does this hurt?
-> What is the maximum CPU speed for machines without clock_frequency
-> present in the device tree?
+I've been recently getting a PMU panic using an unmodified 2.4 kernel from
+the bitkeeper rsync.  Looking in via-pmu.c, the issues appears to be known as
+a potential problem, and I think I have found that it is.
 
-Guys, you should *really* take a look at the CONFIG_TAU stuff in linuxppc_2_5.
-It's interrupt driven, so the delay doesn't really matter, and you can't cause
-a DOS by infinitely re-reading /proc/cpuinfo.
+Symptoms:  upon heavy access to video (fb console or ati/XF4) like scrolling
+or netscape full screen, or heavy access to the hard drive (fsck or huge
+copy), I get 'LCD fire' (melting as some call it).  On once instance, the
+system just powered off after a brief burn/melt.   I know this is what
+happens when the PMU is ignored for too long.
 
-And does anyone think this is tested enough to move to linuxppc_2_4?
+System: standard WallstreetII(PDQ) 300MHz, 384M RAM,  IBM 30G drive (4200rpm
+type)
 
---------------------------------------------------------------------------
-Troy Benjegerdes                'da hozer'                hozer@drgw.net
+Anyone know more about this or how it might be fixed?
 
+Thanks.
+
+--
+Joseph P. Garcia
+http://www.execpc.com/~jpgarcia
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
