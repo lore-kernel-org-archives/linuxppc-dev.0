@@ -1,45 +1,48 @@
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-To: Michel Lanners <mlan@cpu.lu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: keyboard under XF4?
-Date: Mon, 12 Jun 2000 13:37:06 +0200
-Content-Type: text/plain
-References: <200006121044.MAA03026@piglet.grunz.lu>
-In-Reply-To: <200006121044.MAA03026@piglet.grunz.lu>
-MIME-Version: 1.0
-Message-Id: <00061213370600.00841@enzo.bigblue.local>
+Date: Mon, 12 Jun 2000 13:42:56 +0200
+From: Olaf Hering <olh@suse.de>
+To: Michel Lanners <mlan@cpu.lu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Out of memory?
+Message-ID: <20000612134256.B12226@suse.de>
+References: <200006121039.MAA03014@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200006121039.MAA03014@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 12 Jun 2000, Michel Lanners wrote:
-> Hi list,
->
-> This might not really be a -dev issue, but I need help anyway ;-)
->
-> I've set up my swiss-french keyboard under XF4; works partly...
->
-> What doesn't work is characters I need to type with the <alt> modifier;
-> they somehow get 0x80 added to the keysym before it is delivered to an
-> app.
->
-> xev shows the correct charcter map, keysym etc. However, it's wrong once
-> it appears in eg. an xterm: hitting <alt>3 should produce '#' (keysym
-> 0x23), but in xterm the result is '£' (keysym 0xa3).
->
-> Any idea? FWIW, I'm using xmodmap to set the mapping under X. Also,
-> console is OK, so it's really an X issue...
+On Mon, Jun 12, Michel Lanners wrote:
 
-Well, I have no idea what's going on for you, but I can tell you that Ben,
-Olaf and me are working on a keyboard patch for 2.2.17 that will make us
-mostly compatible with the usual PC keymaps for X. The kludges
-(MEDIUMRAW/keymap) for PPC in XF4 will hopefully go away in 4.01, but
-definetly in 4.02 then. Keep an eye on the linux-pmac-benh tree during the
-next week.
 
-The whole thing already works fine for me with USB/ADB keyboards in "new"
-mode with a clean XF4, I'm currently working on the backwards compatibility
-stuff for xpmac.
+> Jun 12 10:53:13 piglet kernel: VM: killing process gimp
+> Jun 12 10:55:03 piglet kernel: VM: killing process X
+> Jun 12 10:59:46 piglet kernel: VM: killing process X
+> Jun 12 12:04:27 piglet kernel: VM: killing process xfs
+>
+> and so on... acording to the comment in arch/ppc/mm/fault.c, this
+> happens when for some reason the kernel cannot satisfy a paging request.
+>
+> xfs gets killed when rendering a really big font, X when sending it over
+> to gimp, and gimp when working with large images....
+>
+> What reason is there to kill a process for memory reasons? Does a single
+> process need to fit _entirely_ into RAM, or can part of a process be
+> swapped out? In all of the above cases, I've always had over 100 megs of
+> swap free. Or is there a fixed limit on how big a process can get?
 
-Franz.
+It is only self protection of the kernel to run not out of memory.
+The last process that want to allocate memory when memory is low gets
+killed. Looks like that is not smart enough when swap is still
+available.
+
+
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
