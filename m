@@ -1,37 +1,32 @@
-Date: Wed, 7 Feb 2001 19:39:23 +0100 (MET)
-From: Roman Zippel <zippel@fh-brandenburg.de>
-To: Dan Malek <dan@mvista.com>
-cc: paulus@linuxcare.com.au, Gabriel Paubert <paubert@iram.es>,
-        tom_gall@vnet.ibm.com, linuxppc-commit@hq.fsmlabs.com,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: context overflow
-In-Reply-To: <3A8189F1.8E6AA8C2@mvista.com>
-Message-ID: <Pine.GSO.4.10.10102071921140.14928-100000@zeus.fh-brandenburg.de>
+Message-ID: <00cc01c0913a$7d647480$6c125acf@mrsl.com>
+From: "Tim Moloney" <moloney@mrsl.com>
+To: <linuxppc-dev@lists.linuxppc.org>,
+        <yellowdog-devel@lists.yellowdoglinux.com>
+Subject: Accessing global symbols from shared library
+Date: Wed, 7 Feb 2001 14:16:35 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I am currently trying to port a Solaris application to Linux.  The
+Solaris application dynamically loads custom shared libraries which
+can access symbols in the main executable.  This is not a clean
+design, but it works.  From what I've seen so far, the Linux
+runtime loader does not allow a shared library to access symbols in
+the main executable.
 
-On Wed, 7 Feb 2001, Dan Malek wrote:
+If someone knows of a linker switch or something that allows shared
+libraries to access global symbols, please let me know.
 
-> > Somewhere I lost you, could you explain it a bit more (maybe with an
-> > example)? What has CONFIG_HIGHMEM to do with the pci mapping???
->
-> The only thing they have in common is the desire to consume kernel
-> virtual space.  They were just two examples of the reason I am trying
-> to find methods of increasing the kernel virtual space.
+Tim Moloney
 
-CONFIG_HIGHMEM has little to do with the kernel virtual space. The main
-purpose is to get the memory into user space, where user programs can use
-them. I really don't understand, what problem you're trying to solve. The
-kernel only wants to manage high memory and rarely access it (and uses
-kmap for this), most of the time these pages should be in the user virtual
-address space only.
-
-bye, Roman
+ManTech Real-time Systems Laboratory
+2015 Cattlemen Road
+Sarasota, FL  34232
+(941) 377-6775 x208
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
