@@ -1,18 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 8686B67A79
+Return-Path: <hxie@centecnetworks.com>
+Received: from mail.centecnetworks.com (unknown [222.92.63.19])
+	by ozlabs.org (Postfix) with ESMTP id DE0BD67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Mar 2005 12:46:37 +1100 (EST)
-In-Reply-To: <20050308012941.8430A67A67@ozlabs.org>
+	Tue,  8 Mar 2005 12:55:28 +1100 (EST)
+Received: from [10.10.25.197] ([222.92.63.20]) (authenticated)
+	by mail.centecnetworks.com (8.10.2/8.10.2) with ESMTP id j271l7411380
+	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Mar 2005 09:47:15 +0800
+Message-ID: <422D048E.6000608@centecnetworks.com>
+Date: Tue, 08 Mar 2005 09:49:02 +0800
+From: Xie Haichun <hxie@centecnetworks.com>
+MIME-Version: 1.0
+To: inuxppc-embedded <linuxppc-embedded@ozlabs.org>
 References: <20050308012941.8430A67A67@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <ea2b3a6bc9b91cf664530fa855ba0c59@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 7 Mar 2005 19:46:28 -0600
-To: "leo" <leo_guo@jisung.cn>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC82XX and SATA hardisk performance.
+In-Reply-To: <20050308012941.8430A67A67@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: find the new link of  " http://lists.linuxppc.org"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,29 +25,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Have you tried bonnie++  (http://www.coker.com.au/bonnie++/)
+Hi all:
 
-- kumar
 
-On Mar 7, 2005, at 7:22 PM, leo wrote:
+   who can tell me the new link of http://lists.linuxppc.org 
+<http://lists.linuxppc.org/listarcs/linuxppc-embedded/199912/msg00045.html>
+I can't acces the website.
 
-> Hi all,
->  =A0=A0=A0=A0=A0=A0=A0 I use the PCI bus and PCI-SATA bridge SII3112 =
-to expand two=20
-> SATA port, my MPC8250 work frequency is CORE/CPM/BUS 200/133/66M,=20
-> filesystem use ext2 under linux, i write a program to test the maxmium=20=
 
-> written speed, the result is about 60MBps/S, maybe it's too slow?=A0=20=
+   thansk very much
 
-> Anyone who has experience can give me some advice? How can I increase=20=
-
-> the written speed?
->
-> Best Regards!
->
-> Leo.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+anchor xie
+8 mar. 2005
