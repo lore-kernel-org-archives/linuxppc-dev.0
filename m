@@ -1,44 +1,48 @@
-Message-ID: <3965DC16.7CB143B3@amulet.co.jp>
-Date: Fri, 07 Jul 2000 22:33:10 +0900
-From: Hollis Blanchard <hollis@amulet.co.jp>
+Message-ID: <3965E562.2322340E@crf.canon.fr>
+Date: Fri, 07 Jul 2000 16:12:50 +0200
+From: Eric Valette <valette@crf.canon.fr>
 MIME-Version: 1.0
-To: Tom Gall <tom_gall@vnet.ibm.com>
-CC: yellowdog-devel@lists.yellowdoglinux.com, linuxppc-dev@lists.linuxppc.org
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
 Subject: Re: RFC: Changing default partition type for linux/ppc
-References: <20000707105915.30418@mailhost.mipsys.com> <3965D59C.BC1BAC93@vnet.ibm.com>
-Content-Type: text/plain; charset=iso-2022-jp
+References: <20000707105915.30418@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Gall wrote:
+Benjamin Herrenschmidt wrote:
 >
-> Benjamin Herrenschmidt wrote:
-> >
-> > So I suggest moving to Linux_ext2, Linux_swap, or maybe simply Linux and
-> > Linux_swap (since ext2 is not the only filesystem Linux may put on
-> > these). Using a different type for swap would help avoiding confusion.
+> Hi all !
 >
-> I agree. I think this is a good step. However there's the obvious interoperability
-> problems with MacOS, OS X etc... Hopefully Apple's OSes wouldn't do anything evil
-> to the partition they don't recognize.
+> Currently, the default partition type used by Linux/PPC on mac partition
+> maps is Apple_UNIX_SVR2. This is historically the type used by Apple's A/
+> UX for its own partitions. However, I don't like it since it gives no
+> indication on the type of filesystem on the partition, and I see no
+> reason to keep it.
+>
+> So I suggest moving to Linux_ext2, Linux_swap, or maybe simply Linux and
+> Linux_swap (since ext2 is not the only filesystem Linux may put on
+> these). Using a different type for swap would help avoiding confusion.
+>
+> If everyone is ok, we can then update pdisk, and on my side, I'll update
+> the kernel's root-auto-detect mecanism to take this into account. (The
+> kernel will currently find by itself a root partition if it has the above
+> type and the name "root" and no root= option was specified by the bootloader).
+>
+> Any comments ?
 
-Well, they don't at this point. For example in partitioning tool in
-LinuxPPC 2000, LinuxPPC Inc decided it would be better to use the type
-"Linux_PPC". This works (in that nothing gets overwritten, corrupted,
-etc) but has the disadvantage that no other software knows anything
-about that type.
+Do not forget Prep Machines that have already a specific type of
+partition that is already recognised by cfdisk...
 
-If you were writing software it would be pretty poor form to find data
-you didn't understand and decide to "fix" it. I know there are programs
-like that out there (if you look at
-http://www.win.tue.nl/~aeb/partitions/partition_types-1.html it seems
-there is a rich history of them), but Apple seems to be doing well in
-that regard so far...
-
-Of course, everything may change with OS X but I would hope they don't
-get malicious all of a sudden.
-
--Hollis
+--
+   __
+  /  `                   	Eric Valette - Canon CRF
+ /--   __  o _.          	Canon Development Europe Team Leader
+(___, / (_(_(__         	Rue de la touche lambert
+				35517 Cesson-Sevigne  Cedex
+				FRANCE
+Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
+E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
