@@ -1,29 +1,30 @@
-Message-Id: <200003272001.PAA28490@mal-ach.watson.ibm.com>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>,
+Date: Mon, 27 Mar 2000 22:03:01 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Michel Lanners <mlan@cpu.lu>
+cc: geert@linux-m68k.org, paubert@iram.es, bh40@calva.net,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: Some issues to resolve with XFree 4.0 yet 
-In-Reply-To: Message from Ani Joshi <ajoshi@shell.unixbox.com>
-   of "Mon, 27 Mar 2000 11:38:37 PST." <Pine.LNX.4.10.10003271136400.10993-100000@shell.unixbox.com>
-Date: Mon, 27 Mar 2000 15:01:20 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Subject: Re: LongTrail PCI resource assignment
+In-Reply-To: <200003271858.UAA01181@piglet.grunz.lu>
+Message-ID: <Pine.LNX.4.10.10003272201540.2447-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Ani Joshi writes:
+> > pci_assign_resource() is duplicated (sort of) in drivers/pci/setup-res.c
+> > where the correct PCIBIOS_MIN_* limits are applied. That function calls
+> > pcibios_update_resource() to do the actual bit twiddling. Is 2.3.48 too
+> > dated for your patch to apply?
+>
+> Yeah; you might consider moving to 2.3.99.... pci_assign_resource() is
+> gone from arch/ppc/kernel/pci.c.
 
-Ani> So does this mean all drivers (atyfb, aty128fb, xpmac to name a few) which
-Ani> use method "b" should change to "a"?
+Wasn't 2.3.99 the one with broken IDE interface as someone reported here?
+I can do without that sort of fun, thank you :-) I'll move back to 2.2.15
+now.
 
-	In general, I think that it is recommended that inline assembly
-use exact constraints and not "memory".  "memory" clobber is intended for
-inlined assembly implementing something like memcpy().  Even the GCC
-inline asm tutorial from April 1988 uses "=m" constraints which are not
-referenced in the output template.  For a more definitive statement, I
-think that you should ask on the gcc@gcc.gnu.org mailinglist.
+	Michael
 
-David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
