@@ -1,47 +1,33 @@
-Date: Fri, 14 May 2004 08:32:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Dan Malek <dan@embeddededge.com>, Wolfgang Denk <wd@denx.de>,
-	sanjeevr@myw.ltindia.com
-Subject: Re: [PATCH] Driver for FECs on motorola DUET (87x/88x)
-Message-ID: <20040514153232.GQ2196@smtp.west.cox.net>
-References: <40A4DC36.1000707@intracom.gr> <JPEALJAFNGDDLOPNDIEEOEHHCIAA.joakim.tjernlund@lumentis.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <JPEALJAFNGDDLOPNDIEEOEHHCIAA.joakim.tjernlund@lumentis.se>
+To: Marc Leeman <marc.leeman@barco.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: http sharing in linux 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 14 May 2004 09:29:49 +0200."
+             <20040514072949.GD4043@smtp.barco.com>
+Date: Fri, 14 May 2004 17:46:07 +0200
+Message-Id: <20040514154612.AABE3C108D@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 14, 2004 at 05:23:20PM +0200, Joakim Tjernlund wrote:
+In message <20040514072949.GD4043@smtp.barco.com> you wrote:
+>
+> > recommend me some opensource solutions?
+>
+> solution=(embedded)?boa:apache;
 
-> > From: Pantelis Antoniou [mailto:panto@intracom.gr]
-> >
-> > Progress report.
-> >
-> > Got it to move even further.
->
-> Great!
->
-> >
-> > No longer crashes but it seems stuck in something related
-> > to the serial console.
->
-> If you are going to mess with the 8xx_io/uart.c, you might
-> want to port this from 2.4:
-> http://ppc.bkbits.net:8080/linuxppc-2.4/diffs/arch/ppc/8xx_io/uart.c@1.14.1.9?nav=index.html|src/.|src/arch|src/arch/ppc|src/arch/pp
-> c/8xx_io|hist/arch/ppc/8xx_io/uart.c
+Ummm... depending on requirements, Mbedthis AppWeb, GoAhead,  khttpd,
+and others come to mind, too.
 
-I'd prefer asking Kumar Gala for the re-written serial driver he did for
-cpm2, and either copying that and making it work for cpm1 (8xx) or
-adding cpm1 support cleanly into it.  I can provide an older, but
-working on some variant of 2.4, serial driver vs the drivers/serial
-infrastructure as well, if needed (I didn't write it, fwiw).
+Best regards,
+
+Wolfgang Denk
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I program, therefore I am.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
