@@ -1,42 +1,35 @@
-Date: Mon, 10 Mar 2003 07:12:17 -0700
-From: Matt Porter <porter@cox.net>
-To: jeff.boyd@att.net
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 36 bit DMA address on IBM 440 PPC
-Message-ID: <20030310071217.A22215@home.com>
-References: <200303101316.HAA25661@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200303101316.HAA25661@lists.linuxppc.org>; from jeff.boyd@att.net on Mon, Mar 10, 2003 at 01:15:57PM +0000
+Message-ID: <3E6CB100.60402@embeddededge.com>
+Date: Mon, 10 Mar 2003 10:36:32 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Wojciech Kromer <krom@dgt-lab.com.pl>
+Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8250 pci
+References: <3E6C667F.4070304@dgt-lab.com.pl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Mar 10, 2003 at 01:15:57PM +0000, jeff.boyd@att.net wrote:
+Wojciech Kromer wrote:
+
+> I'm looking for 8250 pci code for 2.4.19 linux (or any other).
 >
-> I am having a problem doing PCI/memory DMA on the IBM 440 PPC because it has a
-> 36 bit DMA address to/from the PCI bus (3_8000_0000), but the resource
-> structure uses an unsigned long (which is a 32 bit quantity for gcc) to
-> store 'physical/bus/dma' address. There is a kludge to get proper page table
-> entries, which is to remap the 32 bit quatities into their 36 bit counterparts
-> and then sending them on to __ioremap which takes a (36 bit) physical address
-> input. This of course is no help to DMA, which wants not cpu (virtual) address,
-> but physical (translated) address. I have done a similar kludge, making the 32
-> to 36 bit translation into a function which a driver doing DMA can use.
-> However, it seems to me that the real answer here is to change the resource
-> definition to use a phys_addr_t rather than an unsigned long, for start/end.
-> Does anyone know if this change has been made anywhere, or if it is being
-> planned?
+> Is code for 8240 applicable ?
 
-Maybe in 2.5/2.6. I was promised that resources would become 64-bit on
-_all_ platforms in 2.5 but it hasn't happened yet.  I will have to beat
-on the people that were working on that.  Of course, that's only one
-piece required to properly handle I/O >4GB on a 32-bit platform.
+Well, er, um, it depends :-)
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+The 8250 has a custom, lightweight, PCI interface, while the 8240
+uses the standard mpc-10x controller.  The lower level initialization
+and PCI access functions won't work, but you can use the framework
+to get started.  The mpc-10x also implies the EPIC, so disregard
+all references to that.  You could also look at some of the other
+PCI interfaces, like the QSpan, for examples.
+
+Good luck.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
