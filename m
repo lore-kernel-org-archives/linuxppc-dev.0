@@ -1,49 +1,50 @@
-Date: Fri, 16 Nov 2001 04:57:38 -0700
-From: Matt Porter <mporter@mvista.com>
-To: linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Organisation of 4xx initialization code
-Message-ID: <20011116045737.A24130@cx258813-a.chnd1.az.home.com>
-References: <20011116164625.K673@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011116164625.K673@zax>; from david@gibson.dropbear.id.au on Fri, Nov 16, 2001 at 04:46:26PM +1100
+Message-ID: <6B546A602AD2D211BFF00008C7A42889041D6CBE@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: FS on flash (initrd, JFFS, ...)
+Date: Fri, 16 Nov 2001 13:29:57 +0100
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Nov 16, 2001 at 04:46:26PM +1100, David Gibson wrote:
->
-> At the moment the initialization for each of the 4xx boards goes
-> through the platform_init() in arch/ppc/kernel/ppc4xx_setup.c, which
-> in turns calls a board_init() function for the specific board.
->
-> It seems to me that it would make more sense to put platform_init() in
-> the board specific files, and these functions could then call back,
-> where appropriate, to generic 4xx setup functions.  This would mean:
-> 	- It would be easier to support wierd and wacky boards which
-> have non-standard address setups.
-> 	- Some ugly #ifdefs in ppc4xx_setup.c could be done away with.
-> 	- We should be able to remove some inconvenient header
-> dependencies - at present lots of things are recompiled when board
-> local defines are changed because walnut.h/ep405.h/etc are included
-> indirectly in serial.h and some other unexpected places.
->
-> Thoughts?
+Hi,
 
-I've been wondering why it's architected that way as well.  It
-seems you are looking for it to follow the model of the well
-abstracted 7xx/74xx ports.  Examples are the ones that rely on
-mpc10x_common and pplus_common as libraries of common initialization
-code (MEN F1, PCore, MCPN765, MVME5100, etc.).
+Could somebody give me some advise on what filesystems to use on my embedded
+Linux platform?
 
-Seems like that would be an improvement for people doing custom
-405 ports and ease maintenance of existing ports (especially
-the #ifdef creep).
+This is my current setup that I have working now: I have the compressed
+image of the kernel (+/- 0.5 MB) and a separate initrd image (+/- 1.1 MB)
+that contains all needed files to boot and work (using BusyBox and TinyLog
+in). I use PPCBoot. Then I have JFFS mounted on a MTD partition for
+state-information and small log-files. I have a different initrd-image
+because PPCBoot supports it. I need to be able to upgrade the applications
+and/or the kernel remotely.
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+After I have this working, I need to decide how to organize everything for
+the final platform. I have multiple questions:
+
+1. When applications are started from the initrd, is it executed in place or
+is it loaded again in RAM?
+
+2. Can Linux boot from a JFFS (or any other like CRAMFS) or is a Randisk the
+only option?
+
+3. JFFS blocks while performing garbage collection. I suppose it is only the
+applications/threads that are working with the files on the JFFS that are
+blocked or does this garbage collection take a lot of CPU power so that also
+other processes/threads are affected?
+
+4. Any other FS than OFFS that I need to consider for storing state-info and
+logfiles?
+
+5. JFFS is stable?
+
+6. Is JFFS2 fit for use in a product yet?
+
+  Thanks a lot!
+  Frederic
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
