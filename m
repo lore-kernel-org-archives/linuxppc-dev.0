@@ -1,46 +1,35 @@
-Date: Tue, 14 Oct 2003 17:10:43 -0500
 Subject: Re: Need a Linux PPC kernel which supports the Radeon Mobility 9600
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-Cc: linuxppcdev <linuxppc-dev@lists.linuxppc.org>
-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-From: Ken Offer <koffer@arlut.utexas.edu>
-Message-Id: <40CB1A40-FE93-11D7-AB64-000393467F1A@arlut.utexas.edu>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ken Offer <koffer@arlut.utexas.edu>
+Cc: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>,
+	linuxppcdev <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <40CB1A40-FE93-11D7-AB64-000393467F1A@arlut.utexas.edu>
+References: <40CB1A40-FE93-11D7-AB64-000393467F1A@arlut.utexas.edu>
+Content-Type: text/plain
+Message-Id: <1066205955.644.55.camel@gaston>
+Mime-Version: 1.0
+Date: Wed, 15 Oct 2003 10:19:16 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Date: 11 Oct 2003 23:44:22 +0200
-> From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-> Subject: Re: Need a Linux PPC kernel which supports the Radeon
-> Mobility 9600
+> Hi Jens,
 >
-> Hi,
+> I'm trying that myself, but I'm running into undefined symbols, plus
+> problems with compiling PCNET32 (whatever that is).
 >
-> Benjamin Herrenschmidt writes:
+> I started with the ".config" file copied from
+> "arch/ppc/configs/pmac_defconfig", but that might not be the best.  I'm
+> not sure how all the creative config names map to specific machines,
+> like the PowerBook.
 >
->> I just fixed that in my 2.6 and I'll backport to 2.4 soon
->
-> I compiled the latest version of that tree in order to get radeonfb
-> working on my 17" Powerbook.  A few questions:
+> What config file did you compile 2.5-benh with?
 
-Hi Jens,
+The pmac_defconfig should be correct. pcnet32 is known to have problems
+in current 2.6 though, just disable it. What undefined symbols do you
+have ?
 
-I'm trying that myself, but I'm running into undefined symbols, plus
-problems with compiling PCNET32 (whatever that is).
-
-I started with the ".config" file copied from
-"arch/ppc/configs/pmac_defconfig", but that might not be the best.  I'm
-not sure how all the creative config names map to specific machines,
-like the PowerBook.
-
-What config file did you compile 2.5-benh with?
-
-+--------------------------------------------------------------+
-| Ken Offer                               Office: 512-835-3859 |
-| Email: koffer@arlut.utexas.edu             Fax: 512-835-3259 |
-| Applied Research Laboratories, University of Texas at Austin |
-+--------------------------------------------------------------+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
