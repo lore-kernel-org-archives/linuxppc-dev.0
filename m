@@ -1,90 +1,69 @@
-Message-ID: <3B39E532.7040202@humboldt.co.uk>
-Date: Wed, 27 Jun 2001 14:52:50 +0100
-From: Adrian Cox <adrian@humboldt.co.uk>
-MIME-Version: 1.0
-To: paulus@samba.org
-Cc: linuxppc-commit@ppcbk.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: rearrangements in linuxppc_2_4_devel
-References: <15161.33091.788459.48900@cargo.ozlabs.ibm.com>	<3B39C8AA.5000605@humboldt.co.uk> <15161.54515.559935.629883@cargo.ozlabs.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------060600010201050303010000"
+Date: Wed, 27 Jun 2001 11:25:42 -0500
+From: Stephen R Marenka <stephen@marenka.net>
+To: Takashi Oe <toe@unlserve.unl.edu>
+Cc: Tom Rini <trini@kernel.crashing.org>, benh@kernel.crashing.org,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Crash on BenH's latest rsync (2.4.6-pre3)
+Message-ID: <20010627112542.A486@marenka.net>
+References: <20010626121003.D31231@opus.bloom.county> <20010626205147.26310@smtp.wanadoo.fr> <20010626162913.3dc483d8.toe@unlserve.unl.edu> <20010626151346.F31231@opus.bloom.county> <20010626173123.13f2b3bf.toe@unlserve.unl.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
+In-Reply-To: <20010626173123.13f2b3bf.toe@unlserve.unl.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------060600010201050303010000
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Paul Mackerras wrote:
+On Tue, Jun 26, 2001 at 05:31:23PM -0500, Takashi Oe wrote:
+>=20
+> On Tue, 26 Jun 2001 15:13:46 -0700, Tom Rini wrote:
+>=20
+> > On Tue, Jun 26, 2001 at 04:29:13PM -0500, Takashi Oe wrote:
+> >
+> > > BootX support on your rsync tree and linuxppc_2_4_devel tree is
+> > > broken.  I guess no one with BootX bothered to try
+> > > linuxppc_2_4_devel..
+> >
+> > Does this work as well?
+>=20
+> It sure does, though we might as well do:
+>=20
+> 	if (boot_infos) {
+> 		_machine =3D _MACH_Pmac;
+> 		relocate_nodes();
+> 	}
+>=20
+> or similar as calling intuit_machine_type() is silly on BootX ;)
 
-> Adrian Cox writes:
->>APUS is probably broken, because it believes that it can call
->>parse_bootinfo with a pointer to the boot records. From apus_setup.c:
-> APUS uses the m68k bootinfo format anyway, which ours is gratuitously
-> different from.  The apus booter probably does pass the address in a
-> register, which would actually be the sensible thing to do. :)
+If I understand correctly, this failed for me because this causes=20
+relocate_nodes to get called again if have_of.
 
+The following does work for me.
 
-Looking at the makefile, APUS links with setup.c. So it's going to link
-with our standard parse_bootinfo, which doesn't take any arguments. I
-suspect APUS needs a bit more work to integrate it into the 2_4_devel tree.
-
-
->>Paul: would you take patches that moved some of this stuff into header
->>files, and if so, which header file would you like all the miscellaneous
->>setup functions to move into?
-
-
-> Ummm, it would depend which functions you're talking about.  There is
-> certainly an argument for having a couple more .h files in
-> arch/ppc/kernel to declare functions that are used only in
-> arch/ppc/kernel/*.c.
-
-
-That's what I'm thinking of - I just want to cut down the number of
-extern declarations in the C files in arch/ppc/kernel.
-
-Candidate functions include things like xmon functions, and various
-platform specific functions on the platforms I'm interested in. In some
-cases we have declarations in header files, so I may remove the
-duplication. I've been doing this since I started working on machine
-check, as I found clashing uses of bad_page_fault(), fixed by the
-attached patch.
-
---
-Adrian Cox   http://www.humboldt.co.uk/
-
---------------060600010201050303010000
-Content-Type: text/plain;
- name="badpage.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="badpage.patch"
-
-===== arch/ppc/kernel/traps.c 1.14 vs edited =====
---- 1.14/arch/ppc/kernel/traps.c	Fri Jun 15 05:11:42 2001
-+++ edited/arch/ppc/kernel/traps.c	Wed Jun 27 14:46:32 2001
-@@ -40,7 +40,6 @@
- #include <asm/processor.h>
-
- extern int fix_alignment(struct pt_regs *);
--extern void bad_page_fault(struct pt_regs *, unsigned long);
-
- #ifdef CONFIG_XMON
- extern void xmon(struct pt_regs *regs);
-@@ -317,7 +316,7 @@
- 		if (user_mode(regs))
- 			force_sig(SIGSEGV, current);
- 		else
--			bad_page_fault(regs, regs->dar);
-+			bad_page_fault(regs, regs->dar, SIGSEGV);
- 		return;
+ 	if (boot_infos) {
+ 		_machine =3D _MACH_Pmac;
+                if ( !have_of )
+ 		    relocate_nodes();
  	}
- 	_exception(SIGBUS, regs);
 
---------------060600010201050303010000--
+Thanks,
 
+Stephen
+
+--=20
+Stephen R. Marenka     If life's not fun, you're not doing it right!
+<stephen@marenka.net>
+
+--mP3DRpeJDSE+ciuQ
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--mP3DRpeJDSE+ciuQ--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
