@@ -1,60 +1,54 @@
-Mime-Version: 1.0
-Message-Id: <v04220800b4db5bdc17bf@[10.0.0.42]>
-In-Reply-To: <20000224121210.030675@mailhost.mipsys.com>
-References: <20000224121210.030675@mailhost.mipsys.com>
-Date: Thu, 24 Feb 2000 14:13:41 -0800
-To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: PCI I/O address problems on B&W G3
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on ppc with r128
+Date: Thu, 24 Feb 2000 17:25:41 -0500
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <Pine.LNX.4.21.0002241917120.2343-100000@idd-01.imbc.gr>
+In-Reply-To: <Pine.LNX.4.21.0002241917120.2343-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Message-Id: <00022417315801.00485@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:12 PM +0100 2/24/00, Benjamin Herrenschmidt wrote:
+Hi,
 
->The fact that they are at fe000000 seems to indicate that the io base
->address is 0 (and so was apparently _not_ assigned at all). Could you
->break into OF, dev to those devices, and send me the output of
->.properties ? (I need the content of the "reg" and "assigned addresses"
->properties). I want to see what OF did with the cards exactly.
+I have been looking at my mouse problems in XF 3.9.18 and put some debug
+statements into Xserver/hw/xfree86/input/mouse/mouse.c to look at the raw
+characters being read from /dev/usbmouse.
 
+They seemed to pretty much be garabage and out of sync.  Sometimes the head of
+the character buffer showed mouse button events and sometimes other buffer
+positions showed the events.   Also, the mouse.c driver tries to read 4
+characters from the usb mouse while the Xpmac mouse driver I wrote only reads 3
+bytes at a time.
 
-/dev/pci/pci-bridge/ADPT,2940UW@3
+So the IMPS/2 protocol is just getting garbage to process into buttons, and dx,
+dy, dz.
 
-reg:
-00011800 00000000 00000000 00000000 00000000
-02011814 00000000 00000000 00000000 00000100
-02011830 00000000 00000000 00000000 00010000
+Is this a known problem?
 
-assigned addresses:
-82011830 00000000 80890000 00000000 00010000
-82011814 00000000 80884000 00000000 00001000
+I looked back to xf3.9.17 and it defaulted to my legacy mouse driver but xf
+3.9.18 won't seem to do that  (the mouse module is forcibly loaded by XFree86
+Xserver whether you want it to or not).
 
+Any ideas here would be greatly appreciated?
 
-/dev/pci/pci-bridge/ADPT,39160@4
+Has anyone been able to get a usb mouse working with xf 3.9.18?
 
-reg:
-00012000 00000000 00000000 00000000 00000000
-03012014 00000000 00000000 00000000 00001000
-02012030 00000000 00000000 00000000 00020000
+Thanks,
 
-assigned addresses:
-82012030 00000000 80900000 00000000 00020000
-83012014 00000000 80883000 00000000 00001000
+Kevin
 
 
-/dev/pci/pci-bridge/ADPT,39160@4,1
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
-reg:
-00012100 00000000 00000000 00000000 00000000
-03012114 00000000 00000000 00000000 00001000
-02012130 00000000 00000000 00000000 00020000
-
-assigned addresses:
-82012130 00000000 808e0000 00000000 00020000
-83012114 00000000 80882000 00000000 00001000
-
-   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
