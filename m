@@ -1,9 +1,8 @@
-Message-ID: <020b01c28ec5$560d5110$993810ac@cn.utstar.com>
-From: "qi zhaoling" <zlqi@utstar.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <200211121926.09433.lsantos@pd3.com.br> <3DD86788.9040701@gmx.de>
-Subject: ramdisk crash
-Date: Mon, 18 Nov 2002 13:42:52 +0800
+Message-ID: <6DF87017DA95D611AC6000606730DE9B1B51D5@BLREXSR>
+From: Nageswari S <nageswari@sanyo.co.in>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: USB - Interrupt problem
+Date: Mon, 18 Nov 2002 11:56:04 +0530
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,23 +10,44 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi ,
-     I use the SELF from the denx corp to bring up my embedded linux.
- the PPCBoot and Kernel bootup sucessfully , but when i used initrd
- to mount ramdisk , the system crashed . but if i use NFS to mount =
- ramdisk
- , it's fine .
-
- i am sure:
-
- 1. I build linux kernel according to SELF
- 2. I build ramdisk according to SELF=20
+Hi,
+I have a custom PowerPC board (IBM 405 Based) with USB - OHCI compliant
+controller on OPB bus. I have taken SA1111 usb driver as a refernce and
+enabled USB. The root hub got initialised and
+cat /proc/bus/usb/devices outputs
 
 
- does anybody meet this problem also ? pls give me a hand .
+" T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=
+" B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
+" D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxP
+" P:  Vendor=0000 ProdID=0000 Rev= 0.00
+" S:  Product=USB OHCI Root Hub
+" S:  SerialNumber=ef601200
+" C:* #Ifs= 1 Cfg#= 1 Atr=40 MxPwr=  0mA
+" I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00
+" E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
+
+but, there is no change in interrupts when I connect a USB device.
+cat /proc/interrupts output is
 
 
- thanks
+           CPU0
+  2:     119608  405IAP UIC Edge      NE2000
+ 11:          1  405IAP UIC Edge      usb-ohci
+ 29:        604  405IAP UIC Edge      keyboard
+BAD:          0
 
+Also, whatever device I connect, it does not get listed in
+/proc/bus/usb/devices
+Could anybody please tell me as to where the problem is regarding the
+interrupts.
+
+
+Any help or suggestion would be very helpful....
+
+Thank you for your time....
+
+regards,
+Nageswari
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
