@@ -1,91 +1,112 @@
 From: brian.auld@adic.com
-Message-ID: <995FF289C9D69747A09E42992644595405B2363F@penguin.adic.com>
+Message-ID: <995FF289C9D69747A09E42992644595405B23640@penguin.adic.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Ebony/440GP boot problems
-Date: Sat, 1 Feb 2003 09:38:38 -0800 
+Subject: RE: Ebony/440GP boot problems
+Date: Sat, 1 Feb 2003 11:10:28 -0800 
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-To recap:
+As shown below, after reset, if I enter the 'ti' command, we start single
+stepping from 0xfffff000. Each time I 'ti', the PC gets incremented by a 32
+bit word. It would then appear that code is not running and I start frozen
+at 0xfffff000. Can anyone make sense of this?
 
-I am trying to get embedded linux running on the Ebony 440GP eval board with
-u-boot as the boot loader.
-
-I believe I've successfully programmed u-boot into the upper 0.5MB of the
-32bit memory map. I don't want to print out the entire memory dump, but I'll
-attach the beginning and end of the top 0.5MB chunk of memory (i.e. u-boot).
-
-When I reset the board, the serial console is dead. I've tried every
-imaginable baud rate and the serial console is still dead. Even if I had the
-wrong baud, I'd at least expect to see jibberish on the serial console,
-which I don't.
-
-Any suggestions? The third clip below, showing the top 256 bytes of the boot
-area, has data content of 0x4bfff004. In what I have gotten so far out of
-440GP manuals, this address is the reset vector. Well, if that's the case,
-0x4bfff0004 does not sound like a good number, does it. Or, am I looking in
-the wrong place. I thought the contents of addr 0xfffffffc would point to
-the start of u-boot at addr 0xfff80000, which it doesn't appear to.
-
-========= Clip of bdi console on reset  ==========
+==========================================
 BDI>reset
 - TARGET: processing user reset request
 - TARGET: reseting target passed
 - TARGET: processing target startup ....
 - TARGET: processing target startup passed
 BDI>
-==================================================
-
-
-========= bottom 256 bytes of boot area ==========
-BDI>md 0xfff80000
-fff80000 : 27051956 552d426f 6f742030 2e322e30  '..VU-Boot 0.2.0
-fff80010 : 20284a61 6e203331 20323030 33202d20   (Jan 31 2003 -
-fff80020 : 30353a31 323a3535 29000000 00000000  05:12:55).......
-fff80030 : 00000000 00000000 00000000 00000000  ................
-fff80040 : 00000000 00000000 00000000 00000000  ................
-fff80050 : 00000000 00000000 00000000 00000000  ................
-fff80060 : 00000000 00000000 00000000 00000000  ................
-fff80070 : 00000000 00000000 00000000 00000000  ................
-fff80080 : 00000000 00000000 00000000 00000000  ................
-fff80090 : 00000000 00000000 00000000 00000000  ................
-fff800a0 : 00000000 00000000 00000000 00000000  ................
-fff800b0 : 00000000 00000000 00000000 00000000  ................
-fff800c0 : 00000000 00000000 00000000 00000000  ................
-fff800d0 : 00000000 00000000 00000000 00000000  ................
-fff800e0 : 00000000 00000000 00000000 00000000  ................
-fff800f0 : 00000000 00000000 00000000 00000000  ................
 BDI>
-====================================================
-
-
-
-============ Top 256 bytes of boot area ============
-BDI>md 0xffffff00
-ffffff00 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff10 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff20 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff30 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff40 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff50 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff60 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff70 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff80 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffff90 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffffa0 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffffb0 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffffc0 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffffd0 : ffffffff ffffffff ffffffff ffffffff  ................
-ffffffe0 : ffffffff ffffffff ffffffff ffffffff  ................
-fffffff0 : ffffffff ffffffff ffffffff 4bfff004  ............K...
 BDI>
-========= Clip of bdi console on reset  ==========
+BDI>
+BDI>
+BDI>ti
+    Target state      : debug mode
+    Debug entry cause : single step
+    Current PC        : 0xfffff000
+    Current CR        : 0xab355bb5
+    Current MSR       : 0x00000000
+    Current LR        : 0x840208d5
+BDI>ti
+    Target state      : debug mode
+    Debug entry cause : single step
+    Current PC        : 0xfffff004
+    Current CR        : 0xab355bb5
+    Current MSR       : 0x00000000
+    Current LR        : 0x840208d5
+BDI>ti
+    Target state      : debug mode
+    Debug entry cause : single step
+    Current PC        : 0xfffff008
+    Current CR        : 0xab355bb5
+    Current MSR       : 0x00000000
+    Current LR        : 0x840208d5
+BDI>ti
+    Target state      : debug mode
+    Debug entry cause : single step
+    Current PC        : 0xfffff00c
+    Current CR        : 0xab355bb5
+    Current MSR       : 0x00000000
+    Current LR        : 0x840208d5
+BDI>ti
+    Target state      : debug mode
+    Debug entry cause : single step
+    Current PC        : 0xfffff010
+    Current CR        : 0xab355bb5
+    Current MSR       : 0x00000000
+    Current LR        : 0x840208d5
+BDI>
+===========================================
 
-Any suggestions would be appreciated.
 
 -- Brian
+
+
+-----Original Message-----
+From: Chris Zimman [mailto:chris@cryptoapps.com]
+Sent: Saturday, February 01, 2003 1:37 PM
+To: brian.auld@adic.com
+Subject: Re: Ebony/440GP boot problems
+
+On Sat, Feb 01, 2003 at 09:38:38AM -0800, brian.auld@adic.com wrote:
+> To recap:
+>
+> I am trying to get embedded linux running on the Ebony 440GP eval board
+with
+> u-boot as the boot loader.
+>
+> I believe I've successfully programmed u-boot into the upper 0.5MB of the
+> 32bit memory map. I don't want to print out the entire memory dump, but
+I'll
+> attach the beginning and end of the top 0.5MB chunk of memory (i.e.
+u-boot).
+>
+> When I reset the board, the serial console is dead. I've tried every
+> imaginable baud rate and the serial console is still dead. Even if I had
+the
+> wrong baud, I'd at least expect to see jibberish on the serial console,
+> which I don't.
+>
+> Any suggestions? The third clip below, showing the top 256 bytes of the
+boot
+> area, has data content of 0x4bfff004. In what I have gotten so far out of
+> 440GP manuals, this address is the reset vector. Well, if that's the case,
+> 0x4bfff0004 does not sound like a good number, does it. Or, am I looking
+in
+> the wrong place. I thought the contents of addr 0xfffffffc would point to
+> the start of u-boot at addr 0xfff80000, which it doesn't appear to.
+
+Go into the debugger and do a "ti" immediately after reset.
+
+BDI> ti
+
+That way you'll see where the next instruction is being executed from.
+
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
