@@ -1,48 +1,91 @@
-Date: Sat, 22 May 1999 23:11:50 -0500 (CDT)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Samuel Rydh <samuel@ibrium.se>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Mac-on-Linux
-In-Reply-To: <19990522193719.15424@ibrium.se>
-Message-ID: <Pine.LNX.3.96.990522230946.28685E-100000@globegate.utm.edu>
+Date: Sun, 23 May 1999 14:59:44 -0400 (EDT)
+From: "Jason Y. Sproul" <jsproul@mail.wesleyan.edu>
+To: Tom Rini <tmrini@ntplx.net>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: FBDev XF86 crashing on 8600
+In-Reply-To: <Pine.LNX.4.05.9905222156520.650-100000@pc.wackyland.com>
+Message-ID: <Pine.GSO.4.05.9905231417180.14882-100000@mail.wesleyan.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 22 May 1999, Samuel Rydh wrote:
+On Sat, 22 May 1999, Tom Rini wrote:
 
-> The Mac-on-Linux kernel support code has in principle the following 
-> tasks:
-> 
->   - Emulate privileged instructions.
->   - Handle the MMU (maps ROM, RAM etc.)
-> 
-> The implementation is primarily based upon hooks in the
-> low-level exception handlers. Besides this, the interaction
-> with the kernel has been kept at a minimum.
-> 
-> I believe the exception hooks must be put into the
-> mach kernel - possibly it is easiest to put all code 
-> there.
+> Hmm.  I wonder if it's another 4mb control problem.  Have you tried using
+> just 2mb?
 
-There would be advantages and disadvantages.  Speed-wise, it'd be great if
-it were all in mach and if the mac-on-linux binary were mach aware,
-detecting Mach's presense, and using direct calls into Mach. 
-Simplicity-wise, we could stick an abstraction layer in there in the linux
-server so that it mostly looked the same to mac-on-linux whether it was
-running on LinuxPPC or MkLinux.  Not sure which would end up being the
-most advantageous, but it's probably a moot point until the Mach handling
-changes are made.  :-)
+Okay: (1) It's definitely the screen blanking that crashes things. By
+changing the timeout and cycle I can precisely control the time of the X
+server failure - and it's totally reproduceable. (2) Booting without the OF
+video ("No video driver" in BootX turned *off*, no special kernel args)
+makes the problem go away, but I can now only use 16-bit or lower at
+1152x870.
 
+Also, I've noticed that when I boot with OF video *on*, fbset reports very
+different information. Here's fbset -i using the pmac drivers:
 
-Later,
-David
+mode
+   geometry 1152 870 1152 910 16
+   timings 9666 132 44 39 3 128 3
+   hsync high
+   vsync high
+endmode
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+Name: control
+Address: 0xa4800028
+Size: 2097112
+Type: PACKED PIXELS
+Visual: DIRECTCOLOR
+XPanStep: 0
+YPanStep: 1
+YWrapStep: 0
+LineLength: 2304
+MMIO Address: 0xa0001000
+MMIO Size: 512
+Accelerator: No
+
+And now with OFfb:
+
+mode
+   geometry 1152 870 1152 870 32
+   timings 10000 16 16 16 16 8 8
+endmode
+
+Name: OFfb control
+Address: 0xa4800210
+Size: 4036800
+Type: PACKED PIXELS
+Visual: TRUECOLOR
+XPanStep: 0
+YPanStep: 0
+YWrapStep: 0
+LineLength: 4640
+Accelerator: No
+
+Things that worry me here are:
+
+ 1. lack of MMIO registers under OFfb (probably why the FBIOPUTCMAP ioctl
+fails?)
+ 2. Different base addresses and framebuffer layouts for the two drivers
+Virtually everything is different - timings, YPanStep, LineLengths don't
+have an integral relationship (the 16-bit pmac line length is 2304 x 2 =
+4608 bytes, while the 32-bit OFfb line length is 4640 bytes; whence the
+extra 32 bytes?). Why do the base addresses differ by 0x1e8 = 488 bytes?
+That looks suspiciously close to the missing 512 bytes of MMIO registers,
+yet the MMIO regs should be far away from the framebuffer, judging by the
+reported addresses and sizes.
+
+Anyone out there want to clue me in on how this stuff works? I'd be glad to
+help out as much as I can - I'm not afraid of low-level hackery, though my
+waking hours are already stretched rather thin...
+
+........................................................................
+Jason Y. Sproul                    http://www.con.wesleyan.edu/~jsproul/
+jsproul@wesleyan.edu            jsproul@iced.com    http://www.iced.com/
+     Eagles may soar, but weasels don't get sucked into jet engines.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
