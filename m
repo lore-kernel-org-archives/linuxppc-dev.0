@@ -1,97 +1,106 @@
-Message-Id: <199906021206.OAA14059@denx.muc.de>
+Message-ID: <3755213D.3BB3C8B6@wanadoo.fr>
+Date: Wed, 02 Jun 1999 14:19:09 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.muc.de>
-Subject: MPC8xx: wrong zimage_start
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Date: Wed, 02 Jun 1999 14:06:05 +0200
+CC: Cort Dougan <cort@ppc.kernel.org>
+Subject: Bug in vger 2.2.10 and 2.3.4 (Re: Problems with vger 2.3.3/4)
+References: <374D8E2A.48871830@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+A while ago I reported about boot problems with the vger 2.3.x kernel
+after May 22. Now I found that this same bug has crept into the "stable"
+tree, starting with 2.2.10 on May 30. After some digging, I found the
+culprit. It is the file arch/ppc/mm/init.c, patched (wrongly) as
+follows:
 
-I think I need some help... I'm trying to port Linux to a  "non-stan-
-dard"   MPC860  board.  Obviously,  it  does  not  provide  the  same
-environment as the EPPC-Bug on the MBX860 boards.
+root[17]#cvs diff -u -r1.165 -r1.166 arch/ppc/mm/init.c
+Index: arch/ppc/mm/init.c
+===================================================================
+RCS file: /cvs/linux/linux/arch/ppc/mm/init.c,v
+retrieving revision 1.165
+retrieving revision 1.166
+diff -u -r1.165 -r1.166
+--- arch/ppc/mm/init.c  1999/05/14 22:37:29     1.165
++++ arch/ppc/mm/init.c  1999/05/22 18:18:30     1.166
+@@ -1,5 +1,5 @@
+ /*
+- *  $Id: init.c,v 1.165 1999/05/14 22:37:29 cort Exp $
++ *  $Id: init.c,v 1.166 1999/05/22 18:18:30 cort Exp $
+  *
+  *  PowerPC version 
+  *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+@@ -402,7 +402,7 @@
+    for (i = 0; i < size; i += PAGE_SIZE)
+        map_page(&init_task, v+i, p+i, flags);
+ out:
+-   return (void *) (v + (p & ~PAGE_MASK));
++   return (void *) (v + (addr & ~PAGE_MASK));
+ }
+ 
+ void iounmap(void *addr)
 
-I'm running  into  problems  when  it  comes  to  decompressiong  and
-starting  the  kernel;  here is what I see on the console (I've added
-some debugging code):
+This patch had been proposed on May 21 by R. Oikawa and almost
+immediately been corrected, see
+http://lists.linuxppc.org/listarcs/linuxppc-user/199905/msg00680.html
+Unfortunately, the correction didn't make it into the vger tree. I don't
+know if the correction is good, but I never had problems with the
+version before the patch.
 
-    decompress_kernel: load_addr 00010000 num_words 0003F510 cksum 96CF6339 &residual 01FFFDD8 
-    loaded at:     00010000 0010D440
-    relocated to:  00100000 001FD440
-    board data at: 01FFFDD8 01FFFE00
-    relocated to:  00000100 00000128
-    zimage at:     00017000 0006B2F3
-    avail ram:     001FD440 00600000
+In addition to the 2 problems mentioned below, I also found that the
+2.2.10 kernel writes some vicious binary garbage into my
+/var/log/messages file which eventually completely screws up. When
+trying to read it, I get IO errors (reading beyond end of device). 
 
-    Linux/PPC load: console=tty0 console=ttyS0,115200n8
+--
+Martin
 
-    gunzip: dst 0 dstlen 0x400000 zimage_start 00017000 zimage_size 000542F3 
-
-    Uncompressing Linux... bad gzipped data
-     00017000 : 3D29C000    A3E90000    7C0006AC    48000010 
-     00017010 : A0093C82    541F043E    7C0006AC    3D20C000 
-     00017020 : A0093CAC    5400043E    7C0006AC    2C800000 
-     00017030 : 4186001C    31202010    5529043E    3D29C000 
-     00017040 : B1690000    7C0006AC    4800000C    B1693C90 
-     00017050 : 7C0006AC    3D20C000    A0093CAC    5400043E 
-     00017060 : 7C0006AC    2C800000    4186001C    31202020 
-     00017070 : 5529043E    3D29C000    B3E90000    7C0006AC 
-     00017080 : 4800000C    B3E93CA0    7C0006AC    3D20C000 
-     00017090 : A0093CAC    5400043E    7C0006AC    2C800000 
-     000170A0 : 41860020    31202004    5529043E    3D29C000 
-     000170B0 : 38000010    98090000    7C0006AC    48000010 
-     000170C0 : 38000010    98093C84    7C0006AC    3D20C000 
-     000170D0 : A0093CAC    5400043E    7C0006AC    2C800000 
-     000170E0 : 41860020    31202005    5529043E    3D29C000 
-     000170F0 : 38000010    98090000    7C0006AC    48000010 
-    Searching [0x4000 - 0x1000000]...  
-    at 004E7C00 : 1F8B0808  DC0D5337  0203766D  6C696E75 
-    ......looks good...done.
-
-I'm booting from flash memory; zImage is at 40700000, so I start with
-a `go 40710000'; I have 32 MB RAM and created a faked "bd_info"
-struct at the end of RAM. Everything seems to be fine, but the
-compressed image is not where it is expected to be: objdump says
-
-    -> objdump -h zvmlinux
-
-    zvmlinux:     file format elf32-powerpc
-
-    Sections:
-    Idx Name          Size      VMA       LMA       File off  Algn
-      0 .text         00004fa0  00100000  00100000  00010000  2**2
-		      CONTENTS, ALLOC, LOAD, READONLY, CODE
-      1 .rodata       00000618  00104fa0  00104fa0  00014fa0  2**2
-		      CONTENTS, ALLOC, LOAD, READONLY, DATA
-      2 .data         00000314  00106000  00106000  00016000  2**2
-		      CONTENTS, ALLOC, LOAD, DATA
-      3 .bss          0000bbbc  00107000  00107000  00017000  2**2
-		      ALLOC
-      4 image         0005421a  00000000  00000000  00017000  2**0
-		      CONTENTS, READONLY
-
-so the value of 00017000 for zimage_start looks good. I've added some
-code to search for the real position in memory, and found it  to  sit
-at 004E7C00 instead.
-
-Hmmm... I guess that EPPC-Bug might be doing some magic things to the
-ELF file which I am still missing.
-
-Can anybody see what I'm doing wrong, or at least give me a few hints
-where to look?
-
-Thanks in advance,
-
-Wolfgang
-
--- 
-Phone: (+49)-8142-4596-87  Fax: -88  Home: -86  Email: wd@denx.muc.de
-Any time things appear to be going better, you have overlooked  some-
-thing.
+Martin Costabel wrote:
+> 
+> On my 6400/200, the 2.3.3 (now 2.3.4) kernel from the vger tree has
+> problems that started last Sunday:
+> 
+> The sources checked out on May 21 give a kernel that runs perfectly, but
+> starting from updates on May 22 and until right now, two problems showed
+> up whose origin I could not identify, although I spent time staring at
+> source files and cvs logs and trying things:
+> 
+> The first one is related to the IDE driver. At boot time, in the
+> partition check section, it gives me
+>    kernel: Partition check:
+>    kernel:  sda: sda1 sda2 sda3 sda4 sda5 sda6 sda7 sda8 sda9 sda10
+>    kernel:  sdb: sdb1 sdb2 sdb3
+>    kernel:  hda:hda: timeout waiting for DMA
+>    kernel: hda: irq timeout: status=0x58 { DriveReady SeekComplete
+> DataRequest }
+>    kernel: hda: DMA disabled
+>    kernel: ide0: reset: success
+>    atd: atd startup succeeded
+>    kernel:  hda1 hda2 hda3 hda4 hda5 hda6 hda7 hda8 hda9 hda10 hda11
+> hda12 hda13
+>    kernel: VFS: Mounted root (ext2 filesystem) readonly.
+> With the May 21 kernel, I get only, like always before,
+>    kernel: Partition check:
+>    kernel:  sda: sda1 sda2 sda3 sda4 sda5 sda6 sda7 sda8 sda9 sda10
+>    kernel:  sdb: sdb1 sdb2 sdb3
+>    kernel:  hda: hda1 hda2 hda3 hda4 hda5 hda6 hda7 hda8 hda9 hda10
+> hda11 hda12 hda13
+>    kernel: VFS: Mounted root (ext2 filesystem) readonly.
+> The effect of this is that the HD is slower with the newer kernel: I use
+> hdparm -p /dev/hda to tune it and usually get 4.35 MB/sec instead of
+> 1.88 MB/sec. With the new kernel, it stays at 1.88 MB/sec, whatever I
+> try.
+> 
+> The second problem: I have a one-line script in /etc/rc.d that
+> initializes the printer port:
+>    stty raw 57600 crtscts -echo < /dev/ttyS1
+> With the new kernel, the boot process hangs while trying to execute this
+> script, and I have to do a hard reboot. If I comment this line out, the
+> boot process succeeds. Afterwards, I can execute the script manually
+> without problem.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
