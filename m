@@ -1,39 +1,36 @@
-Message-ID: <3CC6E3D0.60D906ED@esteem.com>
-Date: Wed, 24 Apr 2002 09:56:48 -0700
-From: Conn Clark <clark@esteem.com>
-MIME-Version: 1.0
-To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: What problems are there with floating point emulation in the kernel?
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <5.1.0.14.2.20020430145846.00b00bc8@carts.com>
+Date: Tue, 30 Apr 2002 15:04:08 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Mike Mager <mike@carts.com>
+Subject: HardHat Linux 2.1 kernel version...
+Mime-Version: 1.0
+Content-Type: multipart/mixed; x-avg-checked=avg-ok-4C312B96; boundary="=======78D0291======="
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello everyone,
+--=======78D0291=======
+Content-Type: text/plain; x-avg-checked=avg-ok-4C312B96; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 8bit
 
-	I've been told on this list that there are problems fpu emulation
-in the kernel. I was curoius as to what the errors are and the aftermath
-(pun intended) that occurs when they are encountered. ( Like are the
-values off a little bit or a lot, does it cause a kerel panic, does it
-block interupts, does it unleash a terible monster that will destroy the
-universe, etc... .)
+Hello,
 
-	I'm also very supprised that Motorola and IBM haven't dedicated
-some resources to address these problems since their fpu-less chips are
-often used in linux designs.
+Does anyone know if HardHat Linux 2.1 Professional Edition will
+be based on the 2.4.17 kernel? It appears that the Carrier Grade
+is, but there is no mention of the kernel version for Professional
+on their website or in the PDFs - it just says 2.4.
 
-thanks in advance,
+Thanks,
 
-	Conn
---
+Mike
 
-*****************************************************************
-  If you live at home long enough, your parents will move out.
-*****************************************************************
+--=======78D0291=======
+Content-Type: text/plain; charset=us-ascii; x-avg=cert; x-avg-checked=avg-ok-4C312B96
+Content-Disposition: inline
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+
+
+--=======78D0291=======--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
