@@ -1,37 +1,44 @@
-Date: Thu, 6 Jun 2002 17:52:47 +1000
+Date: Thu, 6 Jun 2002 17:57:32 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More details on the telnet with CONFIG_PIN_TLB problems
-Message-ID: <20020606075247.GX2630@zax>
-References: <20020606014206.GQ2630@zax> <20020605221542.31000@smtp.wanadoo.fr>
+To: Dan Malek <dan@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: LMbench results for large page patch
+Message-ID: <20020606075732.GY2630@zax>
+References: <20020605070832.GF2630@zax> <20020606042939.GU2630@zax> <3CFF0F88.5020600@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020605221542.31000@smtp.wanadoo.fr>
+In-Reply-To: <3CFF0F88.5020600@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jun 06, 2002 at 12:15:42AM +0200, Benjamin Herrenschmidt wrote:
+On Thu, Jun 06, 2002 at 03:30:16AM -0400, Dan Malek wrote:
 >
-> >flush_instruction_cache() is already an iccci on 4xx (iccci flushes
-> >the entire ICU).  flush_dcache_icache() should be fixed though.  We
-> >could either replace the entire icache flushing loop with a single
-> >iccci, or we could replace each icbi with two icbis, on the address
-> >and the address XORed with 0x00001000 (which is the only possible
-> >alias with 4kb pages).
+> David Gibson wrote:
 >
-> Provided that address ^ 0x1000 is mapped or we do that with
-> translation off (but then we must get to the physical address
-> of the first page).
+> > ....There are a couple of things largepte still does better
+> >on, main memory latency (expected) and exec proc (unexpected).  The
+> >difference is small though.
+>
+> The exec proc does lots of VM updates and TLB management.  The pinned
+> TLBs on the 4xx require additional management overhead to ensure they
+> aren't flushed when it is viewed as quicker to just flush the TLB.
+> The exec proc tests don't accomplish any useful work once the system
+> resources are allocated, so you are continually turning over the TLB and
+> any additional managemant will appear in this overhead.
 
-Blah.  Good point.
+Ah yes, that makes sense.  In particular _tlbia() will be much slower
+with pinned TLBs than without.
 
-> Looks simpler to do an iccci.
+> >	largepte still does as well or better than nopintlb in
+> >essentially every case.
+>
+> Which is expected....now if we could just extend this to applications, we
+> would really have something :-)
 
-Agreed.
+So are you ok with the notion of merging the large page stuff and
+abolishing CONFIG_PIN_TLB, once I've made iopa() and mapin_ram() less
+ugly than they are in that first cut?
 
 --
 David Gibson			| For every complex problem there is a
