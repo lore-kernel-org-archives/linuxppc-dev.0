@@ -1,42 +1,68 @@
-Date: Wed, 28 Nov 2001 20:19:49 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Joseph Manojlovich <manojlov@cse.psu.edu>,
-	linuxppc-dev@lists.linuxppc.org, Ethan Benson <erbenson@alaska.net>
-Subject: Re: 'make rpm' Failing due to i386 bug
-Message-ID: <20011128201949.P29541@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011127233224.C23109@cardassian.cse.psu.edu> <20011128104926.C28956@cpe-24-221-152-185.az.sprintbbd.net> <20011128160615.I10071@plato.local.lan>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011128160615.I10071@plato.local.lan>
+Message-ID: <15365.51839.327359.844495@gargle.gargle.HOWL>
+Date: Thu, 29 Nov 2001 16:41:19 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ide_init_hwif_ports
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 28, 2001 at 04:06:15PM -0900, Ethan Benson wrote:
->
-> On Wed, Nov 28, 2001 at 10:49:26AM -0700, Tom Rini wrote:
-> >
-> > On Tue, Nov 27, 2001 at 11:32:24PM -0500, Joseph Manojlovich wrote:
-> >
-> > > Hey all. I was using the latest stable branch from source.mvista.com,
-> > > and noticed that 'make rpm' wasn't working. Looking closer, I noticed
-> > > that a supporting script, scripts/mkspec, is quite 386 specific. It
-> > > makes an rpm spec file that assumes the kernel image is compressed,
-> > > which with ppc it isn't (for me at least).
-> >
-> > You could try %ifarch ppc ... %else .. %endif.  Tho we do have a
-> > 'bzImage' target, and yaboot might even do the 'zimages' on pmac as well
-> > as chrp now.  Talk to Alan Cox since this is his script anyhow.
->
-> no we have a zImage target, not bzImage which is a i386 specific hack
-> to work around that braindamaged architecture.
+I have looked at all the different ide_init_hwif_ports implementations
+in the linuxppc_2_4_devel tree.  They are all remarkably similar with
+the exception of four: 8xx, lopec, mcpn765 and sandpoint.  The 8xx one
+seems to be PCMCIA and the other three all have a PCI IDE controller
+(82c105 or 82c586).
 
-No, we as of 2.4.10ish have a 'bzImage' target which calls 'zImage'
-since most of the docs are braindead and say "Now type 'bzImage' or
-'bzdisk'".
+Now, ide_init_hwif_ports is really only used in two situations: when
+you have IDE controllers at well-known I/O port addresses, or when you
+are using the pci-ide driver.  In both cases an implementation like
+this (from the prep) is fine, on any platform:
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+static __inline__ void ide_init_hwif_ports(hw_regs_t *hw,
+					   ide_ioreg_t data_port,
+					   ide_ioreg_t ctrl_port, int *irq)
+{
+	ide_ioreg_t reg = data_port;
+	int i;
+
+	for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; i++) {
+		hw->io_ports[i] = reg;
+		reg += 1;
+	}
+	if (ctrl_port) {
+		hw->io_ports[IDE_CONTROL_OFFSET] = ctrl_port;
+	} else {
+		hw->io_ports[IDE_CONTROL_OFFSET] = hw->io_ports[IDE_DATA_OFFSET] + 0x206;
+	}
+	if (irq != NULL)
+		*irq = 0;
+	hw->io_ports[IDE_IRQ_OFFSET] = 0;
+}
+
+For platforms that have weird register layouts or whatever, we should
+have a probe routine that finds the device and sets up the ports.  See
+drivers/ide/ide-pmac.c for an example.  IOW, it would be good if
+drivers/ide/ide-m8xx.c could be converted to have an m8xx_ide_probe
+routine that would work out how many 8xx-style IDE interfaces there
+are, and for each one find a slot in ide_hwifs and initialize it like
+m8xx_ide_init_hwif_ports now does.
+
+Platforms with a PCI IDE controller should use the pci-ide driver
+instead of trying to use ide_default_io_base and ide_init_hwif_ports
+to point the IDE code at the IDE registers.  In other words, only
+those platforms with an ISA IDE controller (prep, any others?) should
+ever need to have their ide_default_io_base return anything other than
+0.
+
+So I am proposing to drop ppc_md.ide_init_hwif_ports and change the
+definition of ide_init_hwif_ports in include/asm-ppc/ide.h to the one
+above.
+
+Comments?
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
