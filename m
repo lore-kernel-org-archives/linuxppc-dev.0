@@ -1,44 +1,42 @@
-To: James Goodwin <jamesg@Filanet.com>
-Cc: linux1394-devel@lists.sourceforge.net,
-	linuxppc-dev@lists.linuxppc.org
-Subject: SBP-2 on PPC
-From: Daniel Berlin <dberlin@redhat.com>
-Date: 26 Feb 2001 23:48:03 -0500
-Message-ID: <x7k86cviik.fsf@dynamic-addr-83-177.resnet.rochester.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+Reply-To: Thomas Graichen <thomas.graichen@innominate.com>
+Subject: Re: ppc initrd problem?
+Date: 27 Feb 2001 07:16:13 GMT
+Message-ID: <news2mail-97fk7t$rb$1@mate.bln.innominate.de>
+References: <news2mail-97967l$g4g$2@mate.bln.innominate.de> <19350119182042.5890@smtp.wanadoo.fr>
+To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-More investigation shows that even thought we get a status writeback
-saying we the request went okay, and no errors at all, it never
-actually wrote the login response where we told it.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-I memset'd the login response to all ff's, rather than all 0's, and
-sure 'nuf, it was still all ff's afterwards.
+>>is there any known problem with initrd's on the ppc?
+>>
+>>i am currently trying to get a small initrd based standalone system
+>>working on the ppc like i did for the i386
+>>
+>>  http://innominate.org/~graichen/projects/miniroot/
+>>
+>>to make the playing around with the xfs filesystem a bit more
+>>comfortable but it does not really boot on the ppc (new world
+>>mac, 2.4.1 kernel, SuSE 7.0/ppc) ...
 
-Of course, then our command block orb has an address that's wrong,which  is invariably the reason the scsi commands timeout.
+> It's a 32Mb initrd ? Well, it's possible that it gets broken then. I'm
+> not sure yaboot support such a large ramdisk. I'll give it a look.
 
-At first I thought it was probably a bug in my ohci fixes, but looking
-back a few weeks, someone experienced this exact problem using the
-pcilynx driver on a PPC.
+i have uploaded my test miniroot files at
 
-So it's not likely to be my fault.
+  http://innominate.org/~graichen/projects/miniroot/ppc/
 
-I tried every combination of byte swapping I can think of, with no
-success. I tried fiddling with the flags we pass to allocate memory,
-etc. you name the stupid little variable, i tried it.
+maybe it's a good start to look from
 
-The orb offset in the status block we get when it writes back the
-status is correct for the login orb we sent.
+t
 
-Why would it be able to write *that* in our host memory, but not be
-able to write something else in our host memory?
-
-I've copied it to the PPC development list, in case somebody knows
-something I don't.
-
---Dan
+--
+thomas.graichen@innominate.com
+                                                         innominate AG
+                                                  the linux architects
+tel: +49-30-308806-13   fax: -77             http://www.innominate.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
