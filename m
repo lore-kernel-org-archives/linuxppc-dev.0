@@ -1,23 +1,22 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 70C2C2BC0F
+Return-Path: <jonmasters@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
+	by ozlabs.org (Postfix) with ESMTP id 104092BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Oct 2004 21:16:57 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id i9PBHr8d013619
+	Mon, 25 Oct 2004 23:57:35 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id 76so116999rnk
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Oct 2004 14:17:54 +0300 (EEST)
-Message-ID: <417CDF67.7010201@intracom.gr>
-Date: Mon, 25 Oct 2004 14:11:35 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-References: <20041023142750.GA11545@logos.cnet> <417C9D25.8060609@intracom.gr>
-	<Pine.LNX.4.60.0410250532300.27260@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.60.0410250532300.27260@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: m8xx_pcmcia.c for v2.6 kernels
+	Mon, 25 Oct 2004 06:57:33 -0700 (PDT)
+Message-ID: <35fb2e5904102506574d6c7470@mail.gmail.com>
+Date: Mon, 25 Oct 2004 14:57:30 +0100
+From: Jon Masters <jonmasters@gmail.com>
+To: grave <grave@ipno.in2p3.fr>
+In-Reply-To: <1098701468l.31592l.0l@ipnnarval>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+References: <1098701468l.31592l.0l@ipnnarval>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: uboot and ppc405
+Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,55 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Robert P. J. Day wrote:
+On Mon, 25 Oct 2004 10:51:08 +0000, grave <grave@ipno.in2p3.fr> wrote:
 
->On Mon, 25 Oct 2004, Pantelis Antoniou wrote:
->
->  
->
->>Marcelo Tosatti wrote:
->>
->>    
->>
->>>Hi fellows,
->>>
->>>
->>>I'm attaching a port of our internal m8xx_pcmcia.c (based on MontaVista
->>>2.1's 2.4.17 kernel with many fixes) to v2.6.
->>>      
->>>
->
->... huge SNIP here ...
->
->  
->
->>Marcelo Hi
->>
->>I'm gonna definately try this and get back to you.
->>
->>Thanks
->>
->>Regards
->>
->>Pantelis
->>    
->>
->
->was it absolutely necessary to include 46K worth of patch in your
->reply, only to add what you did at the bottom?
->
->rday
->
->
->  
->
-OK, OK
+> We re starting a disign with xilinx chip Virtex II pro and I wonder the
+> typical size of an uboot binary. This is for our electronician disigner
+> in order to dimension the prom and so on...
 
-No it was not, it was early in the morning and didn't really see the
-size of the patch. When I hit the post button it was too late.
+It might be worth asking your electronics people whether they're going
+to use the Xilinx SysACE chip in your hardware design. If this is the
+case then you can program the Virtex and load in the kernel and
+bootloader from Compact Flash. I don't know whether uboot supports
+this out of the box since I wrote my own Virtex II bootloader, but it
+should be quite doable.
 
-Apologies.
+Certainly you really want to avoid PROMs in the design if at all
+possible - with our design it's possible for us to swap out a CF and
+in one step replace all hardware and software, upgrading is a case of
+sending the customer a loopback mountable filesystem which reloads the
+CF after the customer downloads the "firmware update" via a web page.
 
-Regards
+Cheers,
 
-Pantelis
+Jon.
