@@ -1,44 +1,21 @@
-Date: 17 May 2002 15:12:12 -0000
-Message-ID: <20020517151212.7749.qmail@webmail25.rediffmail.com>
+Message-ID: <3CE57024.2040900@redswitch.com>
+Date: Fri, 17 May 2002 14:03:32 -0700
+From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
 MIME-Version: 1.0
-From: "navinb" <ppc4@rediffmail.com>
-Reply-To: "navinb" <ppc4@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: usb on mpc823 in slave mode ..?
-Content-type: text/plain;
-	format=flowed
+Subject: Reset button
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello ,
+There is a reset button on the front panel of our box. When the button
+is pushed, I want to restart the whole system. How to modify the kernel
+to response this action, in which file? Our CPU is MPC850, which has a
+reset pin. But I don't know where I should add some code in the kernel.
+Anybody has any idea or similar experience? Thanks a lot.
 
-I am putting efforts to initialise USB in slave mode on
-mpc823.
-when i connect to my pc i get messages like
-
-usb-uhci.c: interrupt, status 2, frame# 1748
-usb.c: USB device not accepting new address=19 (error=-110)
-
-this makes me to doubt usb controller's interrupt at mpc823 is not
-being requested, assuming onther intialisations are o.k.
-
-I am using CPMVEC_SCC1  for my usb interupt that has been
-defined as 0x1e..
-
-also when I try to read pending interrupts from interrupt
-controller( from usb controller routines) it always shows the 18th
-bit in sipend register as pending.
-
-i.e. o/p of
-printk("pendinginterrupts is
-0x%x\n",((immap_t*)IMAP_ADDR)->im_siu_conf.sc_sipend);
-
-is 0x20000 , which is IRQ 3 as per manual.
-
-any idea on this...
-
-Best Regards,
+- Shawn.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
