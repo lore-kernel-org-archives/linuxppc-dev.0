@@ -1,59 +1,30 @@
-Date: Wed, 18 Apr 2001 13:03:28 +0100
+Message-ID: <3ADD8505.672B7E7C@iiic.ethz.ch>
+Date: Wed, 18 Apr 2001 14:13:57 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+MIME-Version: 1.0
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Martin Costabel <costabel@wanadoo.fr>,
+	Tony Mantler <nicoya@apia.dhs.org>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Martin Costabel <costabel@wanadoo.fr>
-Cc: Tony Mantler <nicoya@apia.dhs.org>,
-	"michel   d=?ISO-8859-1?B?5A==?=nzer" <michdaen@iiic.ethz.ch>,
-	linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
-Message-Id: <20010418120326.E0D802EFB6@apollo.valhalla.net>
+References: <20010418120326.E0D802EFB6@apollo.valhalla.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Wed, Apr 18, 2001,  Martin Costabel wrote:
->> The SysRq situation is more difficult to understand - but the code is very
->> readable (nice stuff from Franz) - I just need to draw myself a picture
->> (gave up at 3am this morning).
->>
->> How about a revolution  ;-?
->>
->> Could we come to a consensus about a key to use that will work for both
->> Laptops & desktops?
->>
->> How about <Power> ?  It seems to send keycode 0x7f (or 0x7e on 3400)...
+Iain Sandoe wrote:
+
+> I guess we could use <CNTL>-power as the SysRq modifier - but it starts to
+> become a little unwieldy - because you need to hold down three keys to get
+> the SysRq action (well, you do now as it happens)...
 >
-> Very good idea. Except that it is already hijacked by xmon, IIUC. Maybe
-> one could make the use of SysRq and of xmon mutually exclusive :-)
+> so, perhaps, <CNTL>-<Power>-k etc.
 
-xmon uses <CMD aka pretzel>-power which causes an NMI - this is a hardware
-thing AFAIK and can't be altered.
+I'd like to propose something like this as well. It's also three keys on i386.
 
-What I'm suggesting is <power> as a modifier (which is basically what SysRq
-is)  so SysRq sequences would be like:
 
-<power>-k  (SAK) ;  <power>-s (emergency sync). etc. etc.
-
-<power> has the right "feel" to it (i.e. "don't touch unless you know what
-you're doing").
-
-I don't think it should interfere with the use of <CMD>-power for xmon
-interrupt - MacOS manages to use it for NMI for MacsBug and <power> for
-triggering a shutdown dialogue...
-
-Although, I suppose from a User's POV - we might want (one day) to trigger a
-shutdown dialogue as well ... ho hum... although a well-designed dialogue
-could include the SysRq actions (which are emergency stuff) as options.
-
-I guess we could use <CNTL>-power as the SysRq modifier - but it starts to
-become a little unwieldy - because you need to hold down three keys to get
-the SysRq action (well, you do now as it happens)...
-
-so, perhaps, <CNTL>-<Power>-k etc.
-
-thoughts?
-
-Iain.
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
