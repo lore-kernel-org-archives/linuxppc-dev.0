@@ -1,47 +1,46 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <000c01c2cc25$2ee65b20$5e207aa1@fish>
-From: "Jason Park" <jason@amadeus.kist.re.kr>
-To: "LINUX MAILING LIST" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Still having problems trying to get it to boot: PPCBOOT, MPC8260
-Date: Tue, 4 Feb 2003 17:12:08 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+To: "Jason Park" <jason@amadeus.kist.re.kr>
+Cc: "LINUX MAILING LIST" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Still having problems trying to get it to boot: PPCBOOT, MPC8260 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 04 Feb 2003 17:12:08 +0900."
+             <000c01c2cc25$2ee65b20$5e207aa1@fish>
+Date: Tue, 04 Feb 2003 09:29:05 +0100
+Message-Id: <20030204082910.650EFC608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Unfortunately, I'm still having some problems, and any info or light as to
-which direction to go would be helpful (bear with me, I'm still an undergrad
-student learning about all this stuff)
+In message <000c01c2cc25$2ee65b20$5e207aa1@fish> you wrote:
+>
+> 2)unpacked the source for PPCBOOT, my board is specifically the ep8260.
+> since it has a HRW set to boot from location 0xfff0000 in flash, i change
+> the appropriate starting location in the config.mk file for PPCBOOT then I
 
-so here is what I have done so far
-1)successfully installed ELDK from the DENX website on Red Hat 8.0 with
-ppc_8260-gcc cross compiler working fine.
+Please explain what you changed; the config.mk for the  ep8260  board
+reads "TEXT_BASE = 0xFFF00000" which looks OK to me.
 
-2)unpacked the source for PPCBOOT, my board is specifically the ep8260.
-since it has a HRW set to boot from location 0xfff0000 in flash, i change
-the appropriate starting location in the config.mk file for PPCBOOT then I
+> 4)at prompt, i type in "reset", then "go" and it throws me into debug mode.
+> (or "go 0xfff00000")
 
-make distclean
-make ep8260_config
-make all
+Type "reset" and "info" and check where the PC is  pointing  to.  You
+may  have  a  problem with your BDI's config file so the CPU does not
+get stopped immediately after a reset, but  only  after  some  delay.
+This  might explain that "reset" and "go" does not work. Also, please
+note that  thge  reset  entry  point  is  at  offset  0x100,  so  "go
+0xfff00000" is definitely wrong - try "go 0xfff00100" instead.
 
-i get three ppcboot files
-ppcboot (573516)
-ppcboot.bin(181136)
-ppcboot.srec(543460)
-.. put them in the /tftpboot directory.
+Another test: disconnect the BDI, and power-cycle the board.
 
-3)burn them into location 0xfff00000 with my trusty bdi.  it burns
-correctly. (i can see that it has in fact written to that location with md
-0xfff00000)
+Best regards,
 
-4)at prompt, i type in "reset", then "go" and it throws me into debug mode.
-(or "go 0xfff00000")
+Wolfgang Denk
 
-i think i have followed the README from PPCBOOT correctly, as well as other
-documentation given.  Is there a configuration or something im missing?
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Vor allem kein Gedanke! Nichts ist kompromittierender als ein  Gedan-
+ke!            - Friedrich Wilhelm Nietzsche _Der Fall Wagner_ (1888)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
