@@ -1,60 +1,33 @@
-Date: Tue, 20 May 2003 21:26:01 +0200 (CEST)
-From: Mich Lanners <mlan@cpu.lu>
-Subject: Re: Flash device identifier error in jedec_probe.c  
-To: guo_zl9@hotmail.com
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Law14-OE52mmj8UMCTh0001760a@hotmail.com>
+Message-ID: <20030520220128.39497.qmail@web13409.mail.yahoo.com>
+Date: Tue, 20 May 2003 15:01:28 -0700 (PDT)
+From: moises herrera <mfherreradi@yahoo.com>
+Subject: How to configure video parameters on Mandrake 9.1 PPC install
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E19ICkS-0000kO-00@piglet.grunz.lu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  20 May, this message from guo_zhenglin echoed through cyberspace:
-> question 2:
-> then I use:
->    cfi->mfr &=0x00FF;
->     cfi->id &=0x00FF;
-> run kernel show flash size error, messages as following:
->
-> Motorola MBX flash device: 800000 at fe000000
-> Found: AMD AM29F016
-> number of JEDEC chips: 1
-                  ^^^^^^^^
-Hm, one chip...
+Hello everybody:
 
-> Creating 4 MTD partitions on "MBX flash":
-> 0x00000000-0x00040000 : " BOOT partition(mtd/1)"
-> 0x00040000-0x00100000 : "KERNEL  partition(mtd/2)"
-> 0x00100000-0x00500000 : "ROOT  partition(mtd/3)"
-> mtd: partition "ROOT  partition(mtd/3)" extends beyond the end of
-> device "MBX f0
-> 0x00500000-0x00400000 : "APPLICATION partition(mtd/4)"
-> mtd: partition "APPLICATION partition(mtd/4)" is out of reach --
-> disabled
->
-> My flash is 8MB, is enough.
+ I´m trying to install Mandrake PPC 9.1 on my PM
+ 8500/132.
 
-Ah?
+ When I launch the installer, everything is ok but in
+ graphical mode I get a divided screen with wrong
+ colors.
 
-> 2)
->   emembedded board is MBX860 board with AM29F016 flash.
+ Somebody can explain me how to tell to kernel to
+ configure video?
 
-AFAIR, 29F016 is 16 Mbit... a single chip makes for 2 MB of flash
-memory, not 8 MB.
+ What about that Video=atyfb:vmode:15,cmode:16
+ parameters?
 
-I guess something's fishy with your flash memory detection.
 
-Cheers
+                thanks indeed.
 
-Michel
+                Moises H.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
