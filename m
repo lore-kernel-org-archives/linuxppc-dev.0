@@ -1,55 +1,88 @@
-Date: Wed, 10 Oct 2001 20:10:25 -0600 (MDT)
-From: Derrik Pates <dpates@dsdk12.net>
-To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Patch to kernel to make long names work on big-endian systems with
- VFAT
-Message-ID: <Pine.LNX.4.33.0110102007560.29867-200000@andromeda.dsdk12.net>
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: linuxppc-dev@lists.linuxppc.org,
+	Michel =?iso-8859-1?q?D=E4nzer?= <michdaen@iiic.ethz.ch>,
+	yellowdog-devel@lists.linuxppc.org
+Subject: Fwd: Re: bug in XFree86 4.1.0 with Rage 128 driver?
+Date: Wed, 10 Oct 2001 22:53:18 -0400
+Cc: Herbert Duerr <duerr@sun.com>, Olaf Hering <olh@suse.de>,
+	kevin.hendricks@sympatico.ca
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1842346852-615257861-1002766225=:29867"
+Content-Type: Multipart/Mixed;
+  boundary="------------Boundary-00=_UCT0WVO2FHDMEA7K7API"
+Message-Id: <20011011025115.HNCD13446.tomts8-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+--------------Boundary-00=_UCT0WVO2FHDMEA7K7API
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
---1842346852-615257861-1002766225=:29867
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Hi Michel (and FYI Herbert).
 
-Figured I'd send this to Ben and the LinuxPPC devel list, because I think
-everyone will want to see this. I figured out the mods to make in the vfat
-FS driver to reorder the (little-endian) wide-character data for the long
-name entries so that big-endian systems (like PowerPC) can read and write
-VFAT filesystems correctly - finally, no more filenames like
-"????????????".
+The bug was in XF 4.1.0 in Xrender.c not in OpenOffice
 
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
+The patch is attached.  They (XF4 guys) simply missed changing a variable
+name and ended up using random garbage in an "if"
 
---1842346852-615257861-1002766225=:29867
-Content-Type: TEXT/plain; name="vfat-lfn-fix.diff"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.33.0110102010250.29867@andromeda.dsdk12.net>
-Content-Description: 
-Content-Disposition: attachment; filename="vfat-lfn-fix.diff"
+Dan and Olaf, if you haven't gone to press with new releases, you probably
+should include this one in your next respin builds of XFree86 4.1.0
 
-LS0tIG9yaWdzL2xpbnV4LTIuNC1iZW5oLmRpc3QvZnMvZmF0L2Rpci5jCVdl
-ZCBPY3QgMTAgMDc6MTE6MzIgMjAwMQ0KKysrIGxpbnV4L2ZzL2ZhdC9kaXIu
-YwlXZWQgT2N0IDEwIDE5OjU5OjU3IDIwMDENCkBAIC0yNTAsNiArMjUwLDEw
-IEBADQogCQkJCWlmIChkcy0+YWxpYXNfY2hlY2tzdW0gIT0gYWxpYXNfY2hl
-Y2tzdW0pDQogCQkJCQlnb3RvIHBhcnNlX2xvbmc7DQogCQkJfQ0KKw0KKwkJ
-CWZvcihpID0gMDsgaSA8IG9mZnNldDsgaSArPSAyKQ0KKwkJCQlfX2xlMTZf
-dG9fY3B1cygod2NoYXJfdCAqKSZ1bmljb2RlW2ldKTsNCisNCiAJCQlpZiAo
-ZGUtPm5hbWVbMF0gPT0gKF9fczgpIERFTEVURURfRkxBRykNCiAJCQkJY29u
-dGludWU7DQogCQkJaWYgKGRlLT5hdHRyID09ICBBVFRSX0VYVCkNCkBAIC00
-NDgsNiArNDUyLDEwIEBADQogCQkJaWYgKGRzLT5hbGlhc19jaGVja3N1bSAh
-PSBhbGlhc19jaGVja3N1bSkNCiAJCQkJZ290byBQYXJzZUxvbmc7DQogCQl9
-DQorDQorCQlmb3IoaSA9IDA7IGkgPCBvZmZzZXQ7IGkgKz0gMikNCisJCQlf
-X2xlMTZfdG9fY3B1cygod2NoYXJfdCAqKSZ1bmljb2RlW2ldKTsNCisNCiAJ
-CWlmIChkZS0+bmFtZVswXSA9PSAoX19zOCkgREVMRVRFRF9GTEFHKQ0KIAkJ
-CWdvdG8gUmVjRW5kOw0KIAkJaWYgKGRlLT5hdHRyID09ICBBVFRSX0VYVCkN
-Cg==
---1842346852-615257861-1002766225=:29867--
+Michel will you see that this makes it into the next XF 4.X release for us.
+
+Thanks,
+
+Kevin
+
+
+
+> Will you please look at the following diff from Xrender.c in XF 4.0.2 to
+> Xrender.c in XF410.  It looks very strange.  Starting in lie 190.
+> It seems they no longer Xmalloc a value for xFormat (they now use xData)
+> but just one line later they check if xFormat is zero.
+
+> The code before that in XRenderQueryFormats() doesNOT set a value for
+> xFormat at all after its is declared and before it is tested.
+
+> I think someone just missed changing and xFormat to an xData unless I am
+> missing something here.
+
+> Kevin
+
+
+
+>@@ -190,19 +191,20 @@
+>               rep.numScreens * sizeof (xPictScreen) +
+>               rep.numDepths * sizeof (xPictDepth) +
+>               rep.numVisuals * sizeof (xPictVisual));
+>-    xFormat = (xPictFormInfo *) Xmalloc (rlength);
+>+    xData = (void *) Xmalloc (rlength);
+>
+>     if (!xri || !xFormat)
+>     {
+>        if (xri) Xfree (xri);
+>-       if (xFormat) Xfree (xFormat);
+>+       if (xData) Xfree (xData);
+>        _XEatData (dpy, rlength);
+>        UnlockDisplay (dpy);
+>        SyncHandle ();
+>        return 0;
+
+--------------Boundary-00=_UCT0WVO2FHDMEA7K7API
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="xf410_render.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="xf410_render.patch"
+
+LS0tIHhjL2xpYi9YcmVuZGVyL1hyZW5kZXIuYy5wcmV2CVdlZCBPY3QgMTAgMjI6Mzg6MjUgMjAw
+MQorKysgeGMvbGliL1hyZW5kZXIvWHJlbmRlci5jCVdlZCBPY3QgMTAgMjI6Mzk6MDkgMjAwMQpA
+QCAtMTkzLDcgKzE5Myw3IEBACiAJICAgICAgIHJlcC5udW1WaXN1YWxzICogc2l6ZW9mICh4UGlj
+dFZpc3VhbCkpOwogICAgIHhEYXRhID0gKHZvaWQgKikgWG1hbGxvYyAocmxlbmd0aCk7CiAgICAg
+Ci0gICAgaWYgKCF4cmkgfHwgIXhGb3JtYXQpCisgICAgaWYgKCF4cmkgfHwgIXhEYXRhKQogICAg
+IHsKIAlpZiAoeHJpKSBYZnJlZSAoeHJpKTsKIAlpZiAoeERhdGEpIFhmcmVlICh4RGF0YSk7Cg==
+
+--------------Boundary-00=_UCT0WVO2FHDMEA7K7API--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
