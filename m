@@ -1,33 +1,42 @@
-Date: Tue, 27 Jul 2004 12:42:17 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: [PATCH] move 8xx microcode patches into Kconfig submenu
-Message-ID: <Pine.LNX.4.60.0407271240530.6062@localhost.localdomain>
+Message-ID: <41068C9A.1000806@fh-landshut.de>
+Date: Tue, 27 Jul 2004 19:10:50 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
+Reply-To: okorpil@fh-landshut.de
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.com>
+Cc: Mark Chambers <markc@mail.com>,
+	"Wells, Charles" <Charles.Wells@NielsenMedia.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux is not reliable enough?
+References: <37D0F88E70D96C428C19EEB865701A38027D1105@buda902a.siemens.hu>
+In-Reply-To: <37D0F88E70D96C428C19EEB865701A38027D1105@buda902a.siemens.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   create a submenu for 8xx microcode patches to keep them organized in
-one place, under the assumption that there will be more to come.
+Mészáros Lajos wrote:
+>
+>Yes, 'C' is unreliable because writing beyond the "maxindex" lets
+>you overwrite other's data, other's code and DOES make backdoor for
+>viruses.
+>
+>On the other hand testing every index every time for min and max slowes
+>the executing.
 
---- linuxppc-2.5/arch/ppc/8xx_io/Kconfig 2004-07-27 12:36:24.050604776 -0400
-+++ linuxppc-2.5.new/arch/ppc/8xx_io/Kconfig 2004-07-27 12:36:56.869615528 -0400
-@@ -140,6 +140,8 @@
+QNX does not, and Linux does not, and with both C is as unreliable as ever.
 
-  	  If in doubt, say N here.
+However, a failure in a QNX in the driver level is not as potentially
+malicious as in Linux. While this does not exclude failure, and does not
+say a thing about the actual quality of QNX or Linux code, it's a nice
+_additional_ feature related towards stability.
 
-+menu "Microcode patches"
-+
-  config UCODE_PATCH
-  	bool "I2C/SPI Microcode Patch"
-  	help
-@@ -150,3 +152,5 @@
+I guess Linux lacking proper certification for some applications is a
+much bigger obstacle in the minds of managers, anyway.
 
-  endmenu
+But somehow this is getting offtopic, quickly, isn't it?
 
-+endmenu
-+
+With kind regards,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
