@@ -1,40 +1,34 @@
-Date: Fri, 4 Aug 2000 15:45:50 -0400 (EDT)
-From: Henry Worth <haworth@ncal.verio.com>
-To: Nelson Abramson <pogtal@erols.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CDDA playback on Pismo (and other newer models)
-In-Reply-To: <398AE7C3.F8936771@erols.com>
-Message-ID: <Pine.SOL.4.10.10008041523001.26828-100000@ncal.verio.com>
+Date: Fri, 4 Aug 2000 22:10:47 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
+cc: Takashi Oe <toe@unlserve.unl.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
+        Tom Gall <gall@rochcivictheatre.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Getting things in...  Was: Re: shifts on 64bit ints
+In-Reply-To: <398B10DE.FE82BA4A@ivey.uwo.ca>
+Message-ID: <Pine.LNX.4.10.10008042140370.19880-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 4 Aug 2000, Nelson Abramson wrote:
+>
+> > I'm not really against the web site idea, but it's just that there won't
+> > be too many people submitting patches in the first place to warrent the
+> > extra administrative burden on developers with write access to BK, I would
+> > think.
+>
+> I don't agree.  A separate website is important.  I don't work on the kernel
+> directly but I have submitted patches here and there and have run into problems
+> when testing/debugging the JDK that are kernel issues.
+>
+> I don't want write access to any tree, but I do need to see what patches are
+> going in, what changed, the status of my own patches, etc.
 
-> Henry Worth wrote:
->
-> > <snip>
-> > Using the ATAPI CD drivers there are underruns with significant
-> > dropouts every couple of seconds. Various hdparms and cdparanoia
-> > parms were tried with no significant change. These include various
->
-> <snip>
->
-> I had issues using the "cdparanoia 1- - | play - -t WAV" until I realized
-> that cdparanaoia was trying to do on the fly error correcting, resulting
-> in the pause every few seconds.  By using the "-Z" flag, which turned off
-> the error correcting, I got excellent playback with no skips what-so-ever
-> on my Pismo.
->
+Same for me. So far I've been sending patches to Paul or BenH but some
+list or web site as patch bucket would allow others to test that stuff.
 
-Thanks, that works great with both the atapi and ide-scsi interfaces.
-The sector rates for atapi is 3x what it was before. I still think the
-aiff format may sound a tad better, the wav format seems a little
-thin in comparison. For aiff the command would be:
-
-cdparanoia 1- -Z -f - | play - -t aiff
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
