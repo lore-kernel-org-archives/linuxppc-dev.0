@@ -1,35 +1,45 @@
-Date: Thu, 27 Nov 2003 17:07:25 +0100 (MET)
-From: Juergen Oberhofer <e9826367@student.tuwien.ac.at>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: mpc / linux kernel - user space
-Message-ID: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at>
+Message-ID: <3FC63163.8020304@kegel.com>
+Date: Thu, 27 Nov 2003 09:16:19 -0800
+From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Nathan Field <ndf@ghs.com>
+Subject: Re: Cross Compiler running under Win32
+References: <3FC4B0EC.3090107@imc-berlin.de> <3FC56D24.6030000@kegel.com> <3FC5CF65.1060109@imc-berlin.de>
+In-Reply-To: <3FC5CF65.1060109@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Steven Scholz wrote:
+> I think Cygwin is much too much overhead for just compiling a small
+> application.
+> I was told that I could take just the GCC package from Cygwin without
+> installing all of it.
+>
+> "licensing fee for cygwin" ???
+> So it's not free?
 
-I have a module and an application program in user space:
+It is free, if you obey the GPL, and distribute source code.
+Otherwise, you can get a commercial license.
 
-The Module performs the following task: at init it initializes the cpm
-timer register of the mpc823,
-such that an interrupt is generated every x microseconds. Thus, I
-installed an interrupt handling function f that handles the timer
-interrupts.
+> Could we just take the GCC package and the DLL and distribute it
+> together with our software and install it on our costumers Windows PCs?
+> We have to be able to generate and (cross-)compile code on our costumers
+> PCs that is than transfered to our devices and executed.
 
-My problem is that the module / the interrupt handling function should
-execute a procedure defined in the application program. How can I pass a
-pointer (which points to that function) from the appl.program to the
-module, such that the handler can execute this function every x
-milliseconds? I thought to create a procedure in the module that accepts
-a function pointer as argument. But how can I achieve, that this module
-procedure is visible to the application program? Does somebody have a
-suggestion or know another way to do it?
+Yes.  However, this is complicated by the fact that if the
+user already has cygwin installed, its cygwin DLL may conflict
+with yours.   It's not a trivial problem to address.
+If you're willing to keep your package up to date with
+the latest Cygwin all the time, it's probably managable;
+in case of conflict, the user can update both Cygwin
+and your tools and get things working again.
 
-Regards,
-Juergen
+We actually did some of that at Ixia, and I have the scars to prove it :-)
+- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
