@@ -1,40 +1,42 @@
-Message-ID: <3946FD0F.7545C068@embeddededge.com>
-Date: Tue, 13 Jun 2000 23:33:35 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <17B78BDF120BD411B70100500422FC63079F8D@IIS000>
+From: Patrick Lerda <Lerda@microprocess.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: MMU problems on Linux 8xx. (reliability...)
+Date: Wed, 14 Jun 2000 11:10:42 +0200
 MIME-Version: 1.0
-To: diekema_jon <diekema@bucks.si.com>
-CC: linuxppc-embedded@lists.linuxppc.org, all@cideas.com
-Subject: Re: init is running (didn't trigger the wait queue panic)
-References: <m131qWd-001SyaC@bucks>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-diekema_jon wrote:
+I've a PPC823 board working with a recent linux kernel based on monta vista.
+When I try complex operation like compiling a kernel on this board, the
+kernel
+crash after a while. An illegal instruction is generated, linux see
+an opcode: *NIP=0, the illegal instruction occur in a glibc-2.1.3 page.
+The glibc page is not see properly... This problem seems to occur
+only on complex operation, and make this system not reliable.
 
->         I tried running init again with Linux 2.4.0-test1-ac10
->         (through changeset 1.247.1.6 00/06/12 18:04:09-04:00
->         dmalek@geefour.netx4.com), and I was surprised to find that it
->         worked.  Previously, init was triggering a wait queue panic in the
->         scheduler.
+I also have a PPC750 board working with the same kernel with proper
+configuration,
+the only differences in code is the MMU part. Linux work properly and
+reliably
+on this board with the PPC860 software.
+
+if you have see a similar behaviour on you boards, or with differents
+processor.
+I know that the PPC823 is not 100% compatible with the PPC860, there is
+some differences on TLB available etc... And linux seems to be hard coded
+for 32 TLB...
+
+If you know how the MMU is handle on linux 8xx, and if you see a similar
+behavior
+let me know...
 
 
-I forget that if you are not on the BitKeeper mailing list you don't
-see the updates people make.  Wolfgang sent me a stack backtrace that
-pointed right to a problem in the uart driver with wait queues.  They
-were not initialized properly (actually, not at all :-), so you would
-get erratic behavior for any type of uart open/close.  This was fixed
-a couple of days ago.
 
-This affects both 8xx and 8260, so suck down the latest 2.4.0 sources
-and give them a test.
+Patrick LERDA
 
-Now, I will do some 8260 updates, hopefully to fix that irritating
-Ethernet bug and the timer stuff you sent me.  I'll try to be better
-about posting update message to this list (if people want that info).
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
