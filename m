@@ -1,46 +1,32 @@
-Subject: Re: 64-bit user-space on G5? Never, soonish, or unknown?
-From: Albert Cahalan <albert@users.sourceforge.net>
-To: linas@austin.ibm.com
-Cc: Albert Cahalan <albert@users.sourceforge.net>,
-	linuxppc-dev@lists.linuxppc.org, benh@kernel.crashing.org
-In-Reply-To: <20040301163844.G74832@forte.austin.ibm.com>
-References: <1078010187.2233.105.camel@cube>
-	 <20040301163844.G74832@forte.austin.ibm.com>
-Content-Type: text/plain
-Message-Id: <1078184561.2255.338.camel@cube>
-Mime-Version: 1.0
-Date: 01 Mar 2004 18:42:42 -0500
+Message-ID: <20040302211507.17642.qmail@web13006.mail.yahoo.com>
+Date: Tue, 2 Mar 2004 13:15:07 -0800 (PST)
+From: KarthiKeyan S <karthi4india@yahoo.com>
+Subject: Installing Apache Webserver on Terapin
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20040302144659.B5780@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-03-01 at 17:38, linas@austin.ibm.com wrote:
-> On Sat, Feb 28, 2004 at 06:16:28PM -0500, Albert Cahalan wrote:
+Hi all,
 
-> > You'd better have a 64-bit ncurses. If you don't,
-> > your procps will be compiled incorrectly. Data
-> > will get truncated, mangled, etc. -- assuming you
-> > can even run the tools at all.
->
-> ? My ps, top, w all work fine:
->
-> linas@panic:~> file /usr/bin/top
-> /usr/bin/top: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), dynamically linked (uses shared libs), stripped
-> linas@panic:~> file /bin/ps
-> /bin/ps: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), dynamically linked (uses shared libs), stripped
->
-> They've been running fine, with all manner of mangled and hacked
-> 2.4 and 2.6 kernels.
+Im trying to install Apache Webserver on
+Terapin,(which is a embedded linux device powered by
+Motorola PowerPC MPC823, Linux kernel version
+2.2.14),Im getting the error of *No acceptable C
+Compiler Found*.
 
-Try this:
-ps -eo drs,trs,tsiz,dsiz,start_stack,esp,eip,nwchan,wchan
+Is that I have install c compiler ? If so please
+send me the details ? Do anyone face this type of
+issues,please respond.
 
-(especially when examining a 64-bit process or when
-running on the 2.4 kernel)
+Thanks,
+Karthik
 
-By "assuming you can run the tools at all" I mean that
-you might end up with 32-bit libraries in /lib64.
-If you build on a pure 32-bit system this won't happen.
 
+Yahoo! Search - Find what you’re looking for faster
+http://search.yahoo.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
