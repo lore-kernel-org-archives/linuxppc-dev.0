@@ -1,38 +1,36 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A208E59E@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Linux on PPC (Embedded custom board)
-Date: Wed, 19 Sep 2001 09:11:59 -0700
+Message-ID: <3BA8C8B4.5E386FDF@chinook.com>
+Date: Wed, 19 Sep 2001 12:32:52 -0400
+From: Peter Desnoyers <pdesnoyers@chinook.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Pedro Parrilla <pparrilla@prodys.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with remote debugging on MBX860
+References: <3BA8C207.79FFF7CD@prodys.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I've had luck with 'target remote /dev/<xxx>' instead of
+extended-remote.  The following mod to the top-level Makefile helps,
+too:
 
-I need to bring up linux on PPC 750.
+! CFLAGS := $(CPPFLAGS) -Wall -Wstrict-prototypes -O2
+-fno-strict-aliasing
+! ifdef CONFIG_KGDB
+! CFLAGS += -g -ggdb
+! else
+! CFLAGS += -fomit-frame-pointer
+! endif
 
-I have experience with ARM linux, I am new to PPC linux. Can any one point
-me to where I can download the source patches for the latest releases, cross
-compiler from x86 to PPC target.
+In addition, whenever I enabled kgdb I was getting an oops in
+rs_8xx_interrupt sometime during boot due to info->tty being NULL - I
+added a check for that and a return, and things seem to be fine.
 
-I went through archive's and tried using bitkeeper. I got some code cloned
-on to my computer using....
-bk clone bk://ppc.bkserver.net/linuxppc_2_4 /home/siva/ppc/src
-
-One Interesting thing I found was.. all the files are in directory /SCCS and
-also has a prefix "s."  May be this is fine... but I don't understand how to
-take care of things here... How to make sure all the include files are
-available for routines when 'make' is executed, etc. Can some one shed some
-light on this to me. I would be so thankful.
-
-Further, I need a cross compiler... Is there any place where I can download
-the precompiled version and use it for x86 host and PPC target?.
-
-All your hints would be helpful for me. Thanks in advance.
-
--- Siva
+--
+.....................................................................
+ Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+ Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+ 100 Hayden Ave, Lexington MA 02421
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
