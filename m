@@ -1,24 +1,18 @@
-Return-Path: <sydneymartin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
-	by ozlabs.org (Postfix) with ESMTP id D06742BF07
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 00:42:01 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 69so177987wra
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 Jan 2005 05:41:57 -0800 (PST)
-Message-ID: <855e88d005010405417d49dcfb@mail.gmail.com>
-Date: Tue, 4 Jan 2005 08:41:56 -0500
-From: Mike Martin <sydneymartin@gmail.com>
-To: Philippe Guyot <pguyot@cvf.fr>
-In-Reply-To: <855e88d005010403234bd3eeb3@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <20050101150055.GA15400@pegasos> <200501031530.54487.pguyot@cvf.fr>
-	<855e88d0050103200337efc719@mail.gmail.com>
-	<200501041023.37580.pguyot@cvf.fr>
-	<855e88d005010403234bd3eeb3@mail.gmail.com>
-Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org
-Subject: Re: 43p-140 install issues
-Reply-To: mikemartin@linux.ca
+Return-Path: <Marc.Dietrich@ap.physik.uni-giessen.de>
+Received: from merkurneu.hrz.uni-giessen.de (merkurneu.hrz.uni-giessen.de
+	[134.176.2.3]) by ozlabs.org (Postfix) with ESMTP id 528862BDB5
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Jan 2005 01:08:08 +1100 (EST)
+From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+To: Christian <evilninja@gmx.net>
+Date: Tue, 4 Jan 2005 14:23:33 +0100
+References: <41D9FB86.1060407@gmx.net>
+In-Reply-To: <41D9FB86.1060407@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200501041423.34061.marc.dietrich@ap.physik.uni-giessen.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'll give 2.4.22 a try tonight.
-> 
-> Thanks!
-> MikeMartin
 
-I gave Leigh's 2.4.22 a try. It gave me the same result with the
-debian root disk:
+Hallo Christian,
 
-VFS: Insert root floppy and press ENTER
+thanks for your info. I was also a little confused by all these configs and 
+images ...
 
-FAT: bogus logical sector size 1981
-FAT: bogus logical sector size 1981
-read_super_block: can't find a reiserfs filesystem on (dev 02:00,
-block 64, size 1024)
-read_super_block: can't find a reiserfs filesystem on (dev 02:00,
-block 8, size 1024)
-Kernel panic: VFS: Unable to mount root fs on 02:00
+So you are using netboot and it seems that when having a root-fs via nfs _no_ 
+disk driver is initialized even if it is compiled in (acording to your 
+config). Funny, didn't know that.
 
-Tonight I'll grab a different root floppy and see what happens.
+Sebastian just send me a mail with his bootlog, and later also some zImage url 
+I hope. He is running a 2.6.8 kernel and his kernel (scsi: sym2 2.1.18j) 
+seems to detect the hard disk but fails later due to the same scsi timeouts. 
+Luckily, he managed to install 2 IDE disks...
 
-Leigh's 2.4.22 will also boot the system installed on /dev/sdb1,
-however it also stopped responding after awhile. I think it lasted
-longer than with 2.4.19.
+Greetings
 
-MikeMartin
+Marc
+
+Am Dienstag, 4. Januar 2005 03:12 schrieben Sie:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> > anymore. but i'm building PReP kernel everyday, results and a config-file
+> > is here:
+> >
+> > http://www.nerdbynature.de/bits/sheep/latest-kernel/
+>
+> sorry, it should read:
+>
+> http://www.nerdbynature.de/bits/hal/daily/
+>
+> > yes, i'll upload working zImage.prep + .config here:
+> >
+> > http://www.nerdbynature.de/bits/sheep/prep/
+>
+> and: http://www.nerdbynature.de/bits/hal/daily/results/
+>
+> >>>How does your boot.log looks like?
+>
+> will show up in http://www.nerdbynature.de/bits/hal/daily/boot/
+>
+> sorry for the confusion,
+> Christian.
+> - --
+> BOFH excuse #57:
+>
+> Groundskeepers stole the root password
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.2.5 (GNU/Linux)
+> Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+>
+> iD8DBQFB2fuGC/PVm5+NVoYRAiCxAKC8B1L+FVw/5CoG3y7IpFVxpqzrgACfVSK7
+> gXQcGiHCfHg3vEabXHtaZaU=
+> =2cwH
+> -----END PGP SIGNATURE-----
