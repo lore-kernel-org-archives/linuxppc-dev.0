@@ -1,70 +1,27 @@
-Message-ID: <XFMail.990425174112.hcaley@loomer.com>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-Date: Sun, 25 Apr 1999 17:41:12 -0700 (PDT)
-From: Batmensch <hcaley@loomer.com>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Linpack Benchmarks on PB G3 Series 300 mhz take 2
+From: Jesper Skov <jskov@cygnus.co.uk>
+Message-ID: <14116.6119.375729.207159@lassi.cygnus.co.uk>
+Date: Mon, 26 Apr 1999 08:38:15 +0100 (BST)
+To: a sun <asun@saul9.u.washington.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: apus stuff in cvs tree
+In-Reply-To: <199904252134.OAA02511@saul9.u.washington.edu>
+References: <199904252134.OAA02511@saul9.u.washington.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Might have messed up the attachment...
+>>>>> "a" == a sun <asun@saul9.u.washington.edu> writes:
 
+a> hi there. i noticed that the apus stuff in the cvs tree no longer
+a> compiles. as i'm basing my fiddling for the nubus powermacs on the
+a> apus stuff, could i get an eta on when that stuff will get fixed?
+a> i'm slowly working around various bits, but i don't currently have
+a> a lot of time to fix things up.
 
-Linux hughmac 2.2.6-6bpmac #2 Wed Apr 21 21:02:56 PDT 1999 ppc unknown
-LINPACK benchmark, Double precision.
-Machine precision:  15 digits.
-Array size 100 X 100.
-Average rolled and unrolled performance:
+I don't plan to make any patches for vger until 2.3.x development is
+started.
 
-    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS
-----------------------------------------------------
-     256   0.75  69.33%   2.67%  28.00%  83753.086
-     512   1.51  69.54%   2.65%  27.81%  82984.709
-    1024   3.02  74.83%   5.63%  19.54%  74447.188
-    2048   6.02  73.42%   5.48%  21.10%  76171.228
-    4096  12.05  73.78%   4.15%  22.07%  77063.543
-
-Enter array size (q to quit) [200]:  200
-Memory required:  315K.
-
-
-LINPACK benchmark, Double precision.
-Machine precision:  15 digits.
-Array size 200 X 200.
-Average rolled and unrolled performance:
-
-    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS
-----------------------------------------------------
-      32   0.69  81.16%   4.35%  14.49%  74485.876
-      64   1.38  84.78%   3.62%  11.59%  72043.716
-     128   2.77  84.84%   2.89%  12.27%  72340.192
-     256   5.52  85.87%   2.72%  11.41%  71896.387
-     512  11.06  84.63%   3.44%  11.93%  72191.650
-
-Enter array size (q to quit) [200]:  1000
-Memory required:  7824K.
-
-
-LINPACK benchmark, Double precision.
-Machine precision:  15 digits.
-Array size 1000 X 1000.
-Average rolled and unrolled performance:
-
-    Reps Time(s) DGEFA   DGESL  OVERHEAD    KFLOPS
-----------------------------------------------------
-       1   5.80  96.72%   0.69%   2.59%  29675.516
-       2  11.53  97.48%   0.69%   1.82%  29623.086
-
-
-----------------------------------
-E-Mail: Batmensch <hcaley@loomer.com>
-Date: 25-Apr-99
-Time: 17:39:21
-
-This message was sent by XFMail
-----------------------------------
+Jesper
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
