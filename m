@@ -1,30 +1,29 @@
 To: linuxppc-dev@lists.linuxppc.org
-Subject: MPC5200 support available in linuxppc_2_4_devel tree
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Date: Fri, 31 Oct 2003 16:57:23 +0100
-Message-Id: <20031031155728.1BE3CC59E4@atlas.denx.de>
+Subject: Sleep broken on iBook 2.2 since test7-benh
+From: Michael Shields <shields@msrl.com>
+Date: Fri, 31 Oct 2003 18:08:17 +0000
+Message-ID: <87brrxfffy.fsf@mulligatwani.msrl.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just FYI:
+Sometime between test7 and yesterday, the linuxppc-2.5-benh tree has
+stopped sleeping on my iBook 2.2.  It blanks the screen but does not
+actually suspend.  It cannot be woken up from this state; I have to
+use control-command-power.
 
-MPC5200 support has been merged into  the  linuxppc_2_4_devel  kernel
-tree on our CVS server (kernel version 2.4.23-pre5).
+The config I'm using is at:
+http://www.msrl.com/~shields/config-2.6.0-test9
 
-There is also support for RTAI 24.1.12 for the MPC5200.
-
-See the "News" item at http://www.denx.de/ for details.
-
-Best regards,
-
-Wolfgang Denk
-
+I've tried disabling CPU frequency scaling, since there were recently
+problems with that, and I've also tried backing out changeset 1.1180,
+which provides an additional delay when sleeping (there was already
+one below it, which I've left in).  I didn't immediately see anything
+else that looked like it might cause problems.
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-panic: kernel trap (ignored)
+Shields.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
