@@ -1,47 +1,50 @@
-To: Chris Clark <linuxppc-embedded@2nerds.com>
+Message-ID: <40CA2BBF.4090800@icarus.com>
+Date: Fri, 11 Jun 2004 15:01:35 -0700
+From: Stephen Williams <steve@icarus.com>
+MIME-Version: 1.0
+To: "Tom Rini trini-at-kernel.crashing.org |PPC Linux Embedded|" <xvpqhxpoxp0t@sneakemail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Relationship between bk libuxppc-2.4 and denx linuxppc_2_4_devel 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jun 2004 14:59:48 MDT."
-             <Pine.GSO.4.53.0406111437580.9184@solaris.xmission.com>
-Date: Fri, 11 Jun 2004 23:58:23 +0200
-Message-Id: <20040611215828.C8735C109F@atlas.denx.de>
+Subject: Re: Head of linuxppc-2.4 broekn by davem patch
+References: <1086934906.4820.2.camel@lucy.pep-kaufbeuren.de> <29963-82182@sneakemail.com> <20040611214054.GB925@smtp.west.cox.net>
+In-Reply-To: <20040611214054.GB925@smtp.west.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.GSO.4.53.0406111437580.9184@solaris.xmission.com> you wrote:
+Tom Rini trini-at-kernel.crashing.org |PPC Linux Embedded| wrote:
+> On Fri, Jun 11, 2004 at 09:07:13AM -0700, Stephen Williams wrote:
 >
-> Unless I made some mistake in cloning the linuxppc-2.{4,5} trees from
-> ppc.bkbits.net, (which is entirely possible as I'm a BK newbie), there
-> appears to be a fair amount of processor- and platform-specific stuff
-> in the Denx linuxppc_2_4_devel CVS tree which does not appear in the
-> ppc.bkbits.net BK trees (e.g. arch/ppc/5xxx_io/... ).
+>
+>>Stefan Nickl Stefan.Nickl-at-kontron.com |PPC Linux Embedded| wrote:
+>>
+>>>I already sent this patch to the list and to "davem" who
+>>>commited the faulty version, but nobody seems to care...
+>>
+>>Here is the exact same patch, packaged slightly differently
+>>and re-sent, just in case it got lost in someone's inbox.
+>>It is also possible that davem is thinking in terms of
+>>changing the sk_buff definition t match this file. Either
+>>way, something must be done.
+>
+>
+> I've gotten around to updating the linuxppc-2.4 repository to match the
+> current state of linux-2.4 again.  If there's still a problem, I would
+> suggest reproducing it with an i386 config (or CONFIG_ALL_PPC config)
+> and posting to lkml (linux-kernel@vger.kernel.org) and cc'ing Marcelo
+> and whomever made the broken change.
 
-Your finding is correct.
 
-> Is the Denx CVS tree "authoritative" with regard to those extras?  Is
+It appears that davem already supplied the fix in change set 1.1058.421.35.
+That was May 30 or thereabouts. Thanks.
 
-No, not at all. It's just what we're doing here at DENX.
-
-> there any expectation that those bits found only in the Denx CVS tree
-> will eventually find their way into the ppc.bkbits.net tree(s)?  (Or
-> some other, more appropriate tree(s)?  If so, which?)
-
-I gave up submitting patches - probably my communication  skills  are
-inadequate.
-
-
-Best regards,
-
-Wolfgang Denk
+Now to see what nagging can get the ibm405gpr.h header file fixed...
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Testing can show the presense of bugs, but not their absence.
-                                                   -- Edsger Dijkstra
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
