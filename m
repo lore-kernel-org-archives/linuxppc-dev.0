@@ -1,40 +1,36 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC06145@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: CROSS COMPILER BUILD: Stupid gcc libc++ question
-Date: Fri, 31 Jan 2003 15:00:11 -0500
-MIME-Version: 1.0
-Content-Type: text/plain
+To: ldu@solectek.com
+Cc: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Ramdisk with wrong magic number 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 30 Jan 2003 19:39:00 PST."
+             <DDEMKFCKCAHJDIFEOONBOEGLCAAA.ldu@solectek.com>
+Date: Fri, 31 Jan 2003 21:12:53 +0100
+Message-Id: <20030131201258.04531C608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+In message <DDEMKFCKCAHJDIFEOONBOEGLCAAA.ldu@solectek.com> you wrote:
+>
+>    I downloaded your mini ramdisk. The file name is
+> mini-2048kB-ramdisk.image.gz. If I check the image that I wrote into the
+> flash, I will get an wrong magic number error. Do you konw what's wrong with
+> this? Thanks.
 
-I finally have my compiler compiling compile with glibc ... well mostly I
-think ... compilers are put in my bin folder ... but I have library troubles
-...
+How do you "check" it? If this is by any chance  under  U-Boot,  then
+you  should  read  the docs how to convert a plain ramdisk image like
+the one you are using into a U-Boot  image  (hint:  use  the  mkimage
+tool).
 
-Now I have a problem which I can't find a nice clean reference for ...
+Best regards,
 
-When I build with --enable-languages=c,c++ ... build seems to complete but
-has problems with ...
+Wolfgang Denk
 
-make[2]: Entering directory
-`/home/jgdon/ppcgcc/gcc-glibc/powerpc-linux/libiberty'
-make[2]: *** No targets specified and no makefile found.  Stop.
-make[2]: Leaving directory
-`/home/jgdon/ppcgcc/gcc-glibc/powerpc-linux/libiberty'
-make[1]: *** [../libiberty/libiberty.a] Error 2
-make[1]: Leaving directory
-`/home/jgdon/ppcgcc/gcc-glibc/powerpc-linux/libstdc++'
-make: *** [all-target-libstdc++] Error 2
-
-Is this likely because I haven't compiled libstdc++-3.0 ? Any tips would be
-greatly appreciated ?
-
-GCC_VER=2.95.3
-gcc-core-$GCC_VER.tar.gz
-gcc-g++-$GCC_VER.tar.gz
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I paid too much for it, but its worth it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
