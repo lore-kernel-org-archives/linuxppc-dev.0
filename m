@@ -1,40 +1,54 @@
-Date: Thu, 20 Dec 2001 11:09:42 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ISA DMA
-In-Reply-To: <3C21B464.4030509@humboldt.co.uk>
-Message-ID: <Pine.GSO.4.21.0112201108400.502-100000@vervain.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Date: Thu, 20 Dec 2001 10:48:38 -0500 (EST)
+From: Jack Howarth <howarth@bromo.med.uc.edu>
+Message-Id: <200112201548.KAA78174@bromo.msbb.uc.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: keyspan vs benh kernel
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 20 Dec 2001, Adrian Cox wrote:
-> David Müller (ELSOFT AG) wrote:
-> > What south bridge do you use? Some of the newer ones offer 32bit
-> > addressing capability for DMA.
->
-> Via686a. As I understand it, 32-bit DMA uses the DMA_HI_PAGE_x registers
-> from 0x487 to 0x48a, and the Via manual doesn't claim to have any
-> registers in that range. The only 32-bit DMA southbridge I've
-> encountered is the Winbond chip on the Sandpoint, and that chip doesn't
-> have UDMA66, USB, and audio.
+Hello,
+   Is anyone else seeing the following errors when trying to use
+the Keyspan USA-28X with benh's current 2.4.17-rc1 kernel?
 
-And the Winbond South Bridge on the LongTrail (most probably the same chip).
+Dec 20 10:30:36 bogus kernel: usb.c: registered new driver serial
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial Driver core v1.4
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA18X - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19 - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19W - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28 - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28X - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X - (without firmware) converter detected
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28XA - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X - (without firmware) converter detected
+Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 1 failed
+Dec 20 10:30:36 bogus kernel: keyspan.c: ezusb_writememory failed for Keyspanfirmware (-110 0033 e2179001 3)
+Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 0 failed
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28XB - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X - (without firmware) converter detected
+Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 1 failed
+Dec 20 10:30:36 bogus kernel: keyspan.c: ezusb_writememory failed for Keyspanfirmware (-110 0033 e2179001 3)
+Dec 20 10:30:36 bogus kernel: usb.c: USB disconnect on device 5
+Dec 20 10:30:36 bogus kernel: usbserial.c: ezusb_set_reset_R9a81da3a- 0 failed
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA49W - (without firmware)
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA18X
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA19W
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28X/XB
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA28XA
+Dec 20 10:30:36 bogus kernel: usbserial.c: USB Serial support registered for Keyspan USA49W
+Dec 20 10:30:36 bogus kernel: keyspan.c: v1.1.1:Keyspan USB to Serial Converter Driver
+Dec 20 10:30:36 bogus kernel: usbdevfs: USBDEVFS_CONTROL failed dev 6 rqt 128 rq 6 len 18 ret -32
+Dec 20 10:30:36 bogus last message repeated 2 times
+Dec 20 10:30:36 bogus kernel: hub.c: USB new device connect on bus1/1/3, assigned device number 7
+Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X/XB converter detected
+Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X/XB converter now attached to ttyUSB0 (or usb/tts/0 for devfs)
+Dec 20 10:30:36 bogus kernel: usbserial.c: Keyspan USA28X/XB converter now attached to ttyUSB1 (or usb/tts/1 for devfs)
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+I find that the usb/tts/0 and usb/tts/1 devices don't appear to work
+properly and am wondering if the failures on ezusb_set_reset_R9a81da3a-
+and ezusb_writememory are to blame. Is anyone else seeing this?
+                        Jack
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
