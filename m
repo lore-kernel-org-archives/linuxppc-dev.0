@@ -1,47 +1,44 @@
-Date: Thu, 7 Jan 1999 09:00:55 -0700 (MST)
-From: Brad Midgley <brad@pht.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: system.h and "::"
-Message-ID: <Pine.LNX.3.96LJ1.1b7.990107085341.599A-100000@cricket>
+Date: Thu, 7 Jan 1999 19:00:19 +0200
+From: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+Reply-To: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: debian-powerpc@lists.debian.org, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org, Kelly Campbell <camk@telecom.ksu.edu>
+Subject: Re: MouseSystems MacoPoint Pro, 3 btn mouse
+In-Reply-To: <19990106150359.027650@mail.mipsys.com>
+Message-ID: <Pine.CVX.3.93.990107184738.21285A-100000@atlas.cc.uoa.gr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello...
 
-using the latest snapshot of r5 (and its associated libs/compiler), i have
-a problem with asm/system.h that i hope has a simple fix.
+On Wed, 6 Jan 1999, Benjamin Herrenschmidt wrote:
 
-i wrote a c++ program that includes some system header files. it chokes
-when asm/system.h gets included because "::" appears in that file. that
-has special meaning to the c++ compiler. the compile succeeds if it's
-broken up into ": :" but will that cause any problems? does that have the
-same meaning in assembly? the patch ends this message. 
+> I'm putting together some patches that include out-of-the box support for
+> most 3 btn mice, PowerBook trackball (and backlight for G3 Series) and a
+> couple of other things. It's not ready yet, but I'm also including the
+> MacX patches via a config option (disabled by default since it hacks too
+> much the normal ADB behaviour and is not currently compatible with
+> non-MacX mice).
+> 
+> However, I don't have any of those mice. If someone with a MacX mouse
+> could send it to me for a couple of days, this would allow me to make
+> sure it works 100% (I would like to test some stuffs to improve the
+> behaviour of the patch but I cannot without a mouse).
+> 
+> So anyone with a MacX compatible mouse willing to send it to Paris for
+> some days ?
 
-brad
+Actually, after I tested the MacX patch by Kelly Campbell -although I had
+to tweak it a bit, since I use 2.1.131 kernel- I found out it works
+perfectly with the Macpoint Pro mouse, so instead of sending you my mouse,
+I would suggest that this patch be inserted to the official kernel tree.
+That would be best, IMHO.
 
---- system.h.orig	Thu Jan  7 08:57:18 1999
-+++ system.h	Thu Jan  7 01:47:34 1999
-@@ -16,7 +16,7 @@
- 	asm("dcbf %0,%1\n\t"
- 	    "sync \n\t"
- 	    "isync \n\t"
--	    :: "r" (line), "r" (0));
-+	    : : "r" (line), "r" (0));
- }
- 
- extern __inline__ void dcbi(void *line)
-@@ -24,7 +24,7 @@
- 	asm("dcbi %0,%1\n\t"
- 	    "sync \n\t"
- 	    "isync \n\t"
--	    :: "r" (line), "r" (0));
-+	    : : "r" (line), "r" (0));
- }
-      
- extern __inline__ void __restore_flags(unsigned long flags)
+Konstantinos Margaritis
+kmargar@cc.uoa.gr
 
 
 
