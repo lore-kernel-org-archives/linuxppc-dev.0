@@ -1,60 +1,51 @@
-Message-ID: <3AAFC805.AE1CA2B@mvista.com>
-Date: Wed, 14 Mar 2001 11:35:33 -0800
+Message-ID: <3AAFCF65.CAC8E623@mvista.com>
+Date: Wed, 14 Mar 2001 12:07:01 -0800
 From: Frank Rowand <frank_rowand@mvista.com>
 Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: walnut 405
-References: <3AAF73C0.D0DA94A6@inn.ericsson.se>
+To: "Curry, Diane" <dcurry@infiniswitch.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IDE interface driver on the 405gp
+References: <FF6CF34C346E724596A2FB5CAAB2C49707F906@voyager.ops.infiniswitch.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kenneth Johansson wrote:
+"Curry, Diane" wrote:
 >
-> I have finally got my walnut card from IBM and compiled linux for it.
-> I used the version from Frank (mvista) on area51 dated 01_03_03 but changed
-> the configuration to remove kgdb and enable float emulation.
+> Hello -
+>   I'm running an IBM 405GP rev D walnut and Monta Vista's 2.4.2 port.  I
+> have a
+> PCI-to-PCMCIA adapter, a PCMCIA card reader/writer and an IBM
+> Microdrive.  I've
+> got a root filesystem on the Microdrive and a kernel image built with an
+> initial ram disk.
+> The kernel boots with the initrd image, my linuxrc scripts loads the
+> pcmcia modules and
+> switches roots to the microdrive.  This is all working fine, but I'm
+> questioning what I did
+> to get it working (it seemed too easy).  All of the changes, except some
+> endian issues
+> which I addressed in the pcmcia i82365.c module, were to ppc4xx_setup.c.
+> Essentially
+> all I did was initialize the ppc_ide_md structure with function names
+> and provide the
+> corresponding functions (using m8xx_setup.c as a reference).  If anyone
+> could tell me
+> whether this seems reasonable, I'd really appreciate it.  Thanks  in
+> advance.
 >
-> Things looks quite good I now have a debian potato for ppc running on the card
-> but there is a few problems.
->
-> 1. It kills the Ethernet port on a cisco catalyst 5505 switch/router.
->    This is something I never seen before but when I use a port that is 10Mb
-> linux sends out something that the switch dose not like and it simply
-> disable the port. I put a 3com 10Mb hub between but the same problem so it's
-> not electric. I was however unsuccessful in getting any useful information
-> from the network people on what rule was violated. It dose not happen on a
-> 100Mb port. I guess that it is some clock or timing that is wrong in the
-> Ethernet driver.
+> Diane Curry
+> dcurry@Infiniswitch.com
 
-Can you get a network trace to see what packets are involved?
+Sounds reasonable.
 
+Which PCI-to-PCMCIA adapter are you using?  (Can you cat /proc/pci or
+do a lspci -v?)
 
-> 2. it's not possible to run gdb
-
-Yes, ptrace is still not yet implemented for the 4xx.  This means that both gdb
-and gdbserver do not work.  I have been working on this but don't yet have a
-robust version in place.  I hope to have this available very soon.  (If anyone
-feels like debugging this, I can send them my current patch.)
-
-
-> 3. dpkg segfaults
->    It's quite easy to get into a state where dpkg segfaults. A reboot fixes
-> the problem. To get into the mess again all you have to do is start emacs.
->
-> On the bright side alot of stuff works. I did the kernel compile test and that
-> worked.
->
-> If anybody want's to run debian I could write a small howto but I'am not going
-> to do that if nobody ask's for it.
-
-Kenneth,
-
-Thanks for the feedback.
-
+I meant to include this stuff in the latest kernel, but forget to.  It
+will be in the next version.
 
 -Frank
 --
