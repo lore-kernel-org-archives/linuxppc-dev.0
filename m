@@ -1,64 +1,42 @@
-From: brian.auld@adic.com
-Message-ID: <995FF289C9D69747A09E42992644595405B23634@penguin.adic.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Trying to use ELDK to build Ebony/440GP
-Date: Thu, 30 Jan 2003 11:06:12 -0800
+Message-ID: <3E39898E.5060804@embeddededge.com>
+Date: Thu, 30 Jan 2003 15:22:38 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	laurent.pinchart@capflow.com
+Subject: Re: was: FEC on MPC860T & race condition
+References: <3E395B40.9090506@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In reference to a recently kicked off project using 440GP and embedded linux
-...
+Steven Scholz wrote:
 
-After investigations and suggestions, I've decided to move forward with ELDK
-(2.0.2). My short-term goal in life is to get embedded linux running on the
-EBONY platform to kick-start our 440GP based project.
+> You, Laurent, told us about a race condition.
+> You, Dan, first claimed, it was already fix but mentioned later that the
+> patch
+> was somehow lost.
 
-In my early investigations of tool-chains I soon found out that 440GP
-support is currently provided in linuxppc_2_4_devel and not linux_2_4, so I
-need this kernel for ebony support. Furthermore, as I've decided to use
-ELDK, I've downloaded and installed the ppc_4xx and ppc_8xx parts of the
-ELDK package. I also installed ppc_8xx since it's the version used in the
-ELDK manual and I figured it would be good to have as a cross-reference.
+IIRC, it was the usual problem of having it fixed in only one of the
+two 2.4 trees.  I ensured both trees were made up to date.
 
-I have tried the following permutations and combinations of kernel build
-efforts (using the ELDK package, of course) with the following results:
+> Now I have this problem as well and realised that in 2.4.20 the
+> "mii_link_interrupt interrupt handler is still registered before the
+> PHY chip is initialized".
 
-(cfg/kern) || e-old | e-new | 2_4   | 2_4_d |
-============================================|
- (TQM823L) ||   Y  |  Y     |   N   |   N   |
- ppc_8xx-  ||      |        |       |       |
------------||------|--------|-------|-------|
- (EBONY)   ||   N  |  N     |   N   |   N   |
- ppc_4xx-  ||      |        |       |       |
---------------------------------------------
+The link interrupt is board design and PHY dependent.  I don't think there
+is any one "right" way to initialize this interrupt handler.  If you have
+something that isn't working to your liking, we may have to extend the
+MII logic in some way to accomodate this.  Keep in mind that the existing
+driver is likely working with other boards, and you don't want to break
+those configurations.
 
-Legend:
-=======
-cfg/kern -->Rows are make xxx_config options and columns are kernels
-e-old --> linux-2.4.4-2002-03-31.tar.bz2 (as per ELDK Doc Guide)
-e-new --> linux-2.4.4-2002-10-06.tar.bz2 (latest vers @ ftp.denx.de)
-2_4   --> linuxppc_2_4 bk'ed from monte vista mirror.
-2_4_d --> linuxppc_2_4_devel bk'ed from monte vista mirror.
+Thanks.
 
 
-
-(1) Using ELDK, should a linuxppc_2_4(devel) kernel build out of the box for
-the TQM823L configuration.
-
-(2) What's the best method to successfully build a kernel for the ebony
-board using the ELDK tools:
-     - Port ebony support into e-new?
-     - Try and work out build issues with 2_4_d configured for 'ebony'.
-
-Wanted to solicit some feedback before I go into tangent land.
-
-
-Thanks
-
--- Brian
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
