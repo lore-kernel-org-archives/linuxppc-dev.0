@@ -1,57 +1,55 @@
-Message-ID: <384C2509.3CDA6500@mitre.org>
-Date: Mon, 06 Dec 1999 16:05:56 -0500
-From: Frank McPherson <frank@mitre.org>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: real-time signals, gdb
-Content-Type: text/plain; charset=us-ascii
+From: iweiny@pacbell.net
+Date: Mon, 06 Dec 1999 14:23:12 -0800 (PST)
+Subject: OHCI fix for Belkin BusPort card on PowerMac
+To: linuxppc-dev@lists.linuxppc.org (linuxdev), linux-usb@suse.com (usb)
+Message-id: <199912062223.OAA05538@batcave2.localdomain>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm running Yellowdog Champion Server 1.1 with the kernel version and
-support tools & libs versions it shipped with.  
+Hello and thanks to all who have responded to my pleas for help.
 
-I've got a simple test program which prints a message to the screen and
-then goes to sleep for a while.   When I run this under gdb and send a
-real-time signal, let's say 32, to the process, I get the message
-"Program received signal ?, Unknown signal." from gdb.  
+I thought I would thank you and at the same time bring up an interesting
+behavior I found to get my USB-DC265 Kodak camera to work.
 
-So I did a little rtfm, and tried this: 
-(gdb) handle 32 nostop pass print
-gdb helpfully responded, "Only signals 1-15 are valid as numeric signals."
-Okay, no problem:  (gdb) handle SIG32 nostop pass print
-Great, looks like we're getting somewhere:
-Signal        Stop      Print   Pass to program Description
-SIG32         No        Yes     Yes             Real-time event 32
+I am running:
+PowerMac 8500 (604 processor)
+USB BusPort from Belkin (Model: F5U005-MAC) PCI USB card
+LinuxPPC dist
+2.2.12 kernel (self compiled)
+2.3.29 USB stack from Paul Mackerras's rsync tree
+opendis-0.0.3-pre4 from http://digitalux.netpedia.net
 
-Only problem is, I get the same behavior from my program when I run it again:
-(gdb) run
-(gdb) run
-The program being debugged has been started already.
-Start it from the beginning? (y or n) y
-Starting program: /home/frank/Source/pthread-test/./foo 
-Beginning main thread main() pid = 15129.
-(kill -32 15129 in another window)
-Program received signal ?, Unknown signal.
+After many long nights of reading print statements in kernel logs.  I found
+that the OHCI driver was IN FACT TALKING to the camera!
 
-Any ideas?  I wrote my simple test program because I'm trying to debug
-some bizarre behavior in dce rpc where the function called by
-pthread_once() is getting about halfway through, then infinitely looping
-between just at the end of an exception handling macro and the end of
-the function.   When I try to run that program under gdb, I get this
-same behavior, which is why I'd like to fix it.  
+However, when requesting more data then the camera had to give the returned
+status was "9" and not "0".  The OHCI driver interpreted this as an error and
+subsequently the user level program would think no data had been returned.
 
-Any chance of a more recent gdb version helping me out?  More recent
-glibc version?  
-gdb version is gdb-4.17.0.11-6, glibc version is glibc-2.1.1-6h. 
+After verifing the data to be correct I applied a very simple correction of:
 
-thanks in advance! 
+/* Thinking this is what my controler returns when it is done? */
+#define USB_ST_EOF           9
 
--- 
-Frank H. McPherson IV
-W118 Embedded Solutions Team
-The MITRE Corporation
-703-883-5404
+and used that to signal the ohci.c and dc2xx.c drivers that the "End of File"
+had been reached.
+
+My final question is:  Could this status be the same status as
+
+#define USB_ST_DATAUNDERRUN   -9
+
+or What does "data under run" mean?
+
+It is obvious to me that my card has some unique status codes and I may run
+into this in the future.  It is for this reason I will not include patches for
+any of this unless others are like me with this type of card; trying to get 
+bulk messages to work.
+
+Once again Thank you all
+Ira Weiny
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
