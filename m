@@ -1,29 +1,18 @@
-Date: Tue, 26 Jan 1999 21:42:04 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: Ira Joseph Woodhead <ira@wrath.iatlas.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: pre-R5 deficiencies
-In-Reply-To: <199901262207.RAA06012@wrath.iatlas.com>
-Message-ID: <Pine.LNX.4.05.9901262141300.964-100000@pc.wackyland.com>
+Date: Tue, 26 Jan 1999 23:49:29 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: imac and kernel 2.2.0
+Message-ID: <Pine.LNX.3.95.990126234841.88A-100000@pacific.pht.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 26 Jan 1999, Ira Joseph Woodhead wrote:
+what combination of patches is required to get a 2.2.0 kernel to work on
+imac?
 
-> What is the reasoning behind including a findutils in pre-R5 that has no
-> updatedb binary?? It even has scripts that use updatedb (cron jobs) but
-> no updatedb binary. Furthermore, 'rpm -qlp *.rpm' reveals that it is not
-> included in any package.
-
-It's part of the slocate package.  See /etc/cron.daily/slocate.cron on how
-to update the db.
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+brad
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
