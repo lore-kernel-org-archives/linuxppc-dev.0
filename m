@@ -1,33 +1,33 @@
-Message-ID: <XFMail.010430101946.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3AC76542.A4D27697@bigwig.net>
+Date: Sun, 01 Apr 2001 17:28:34 +0000
+From: Jim Chapman <jim.chapman@bigwig.net>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.21L.0104291944440.17913-100000@unix47.andrew.cmu.edu>
-Date: Mon, 30 Apr 2001 10:19:46 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Subject: Re: 9.1 Gbyte SCSI Drive
-Cc: linuxppc-dev@lists.linuxppc.org
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MII PHY support?
+Content-Type: text/plain; charset=us-ascii
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->> version 0.7a3 (18 February 1998)
->>
->> [root@Jay linux]# /sbin/pdisk -i
->> Top level command (? for help): e /dev/sdb
->> Edit /dev/sdb -
->> Command (? for help): i
->> map already exists
->   ^^^ seems to suggest that you did not use dd to zero your partition map
-> before trying this experiment.
+Is anyone working on adding MII PHY support?
 
-Yes, I used a previously partitioned disk, but I use the same method
-with clean discs with no problems. Ok, I'll try with a dd'ed one and
-I'll make you know.
+I've implemented support for my custom 8260 board which has a quad enet
+phy. Now I'm about to add code into fcc_enet.c to handle things like
+link autonegotiation and state changes. But before I go too far, I
+thought it would be useful to find out if I am about to duplicate work.
+
+I'm not ready to publish anything yet; I already have generic MII
+support (not ppc specific) with hooks to phy device specific drivers and
+architecture dependent h/w interface (i.e. board dependent 8260 MDIO).
+Over time, new phy device drivers could be added and support for other
+boards too. I envisage new ioctls to control/view the phy, and patching
+ifconfig to use them.
+
+Please let me know if you know of similar work.
+
+Thanks
+
+Jim
 
 
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Network {AS6665} ->)|(<-
-
-
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
