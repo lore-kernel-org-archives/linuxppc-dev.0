@@ -1,19 +1,21 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 1E9F367A80
+Return-Path: <Joakim.Tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AD79167A45
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 07:47:03 +1100 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A647506@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'John W. Linville'" <linville@tuxdriver.com>
-Date: Tue, 18 Jan 2005 15:45:51 -0500
+	Wed, 19 Jan 2005 09:02:54 +1100 (EST)
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Date: Tue, 18 Jan 2005 23:02:44 +0100
+Message-ID: <BCEFJBPJCGFCNMMMIDBHOECCCKAA.Joakim.Tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
-Cc: 'Steven Blakeslee' <BlakesleeS@embeddedplanet.com>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: RE: Linux 2.6.10-rc3  8xx: debugging (over-writing)  content of b
-	d_in fo structure  in the kernel booting code
+	charset="US-ASCII"
+In-Reply-To: <20050118200944.GN28724@smtp.west.cox.net>
+Cc: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
+Subject: RE: [PATCH] Handle I-TLB Error and Miss separately on 8xx
+Reply-To: Joakim.Tjernlund@lumentis.se
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,53 +26,88 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On my board the oscillator is marked 50.000 and the 50000000 setting works
-on my board with Linux 2.4 ...
-but I meant to ask in my question: whether (may be) the current 8xx vs 2.6
-kernel memory initialization problems
-only showing themself at 50Mhz and not at 48Mhz (I am trying to find
-explanation why 2.6 works on RPX-Lite -
-per Tom and Steve).
-
------Original Message-----
-From: John W. Linville [mailto:linville@tuxdriver.com]
-Sent: Tuesday, January 18, 2005 3:29 PM
-To: Povolotsky, Alexander
-Cc: 'Mark Chambers'; 'linuxppc-embedded@ozlabs.org'; 'Tom Rini'; 'Steven
-Blakeslee'
-Subject: Re: Linux 2.6.10-rc3 8xx: debugging (over-writing) content of b
-d_in fo structure in the kernel booting code
-
-
-On Tue, Jan 18, 2005 at 02:08:19PM -0500, Povolotsky, Alexander wrote:
-> My board is using:
 > 
->         bd->bi_intfreq = 50000000;
->         bd->bi_busfreq = 50000000;
+> On Fri, Jan 14, 2005 at 08:51:44PM +0100, Joakim Tjernlund wrote:
 > 
-> While RPX-Lite is using
+> > BTW, there is a simpler fix to the TLB Miss problem.
+> > In the TLB Miss handlers, just move the 2: label a few instr. upwards to
+> > the same line as the "li	r21, 0x00f0". That way you will force a 
+> > TLB error. You can do this for both Data and Instr. Miss handlers.
+> > The code after where the 2: label used to be can be deleted. 
 > 
->         bd->bi_intfreq = 48000000;
->         bd->bi_busfreq = 48000000; 
+> Like this?  Only lightly tested on my rpxlite on 2.6:
+
+Yes, that way you will load a zero pte, except for the bits that always must be ones
+into the MMU and TLB error will follow.
+
+You can also move beq 2f instr. 2 lines down and change it to beq- 2f to let branch
+prediction do its thing.
+
+Then all that is missing is my dcbX patch and support for 16K pages :)
+
+ Jocke 
 > 
-> Is this what makes RPX-Lite work and my (MPC 880) not ?
-
-That, of course, depends on which value is correct for your
-board... :-)
-
-When I mentioned in one of our (possibly off-line) exchanges that
-_slightly_ incorrect clock speeds might explain how you get a few good
-characters from the serial port before you get all that garbage, this
-is the kind of descrepancy I was suggesting.  There may be enough
-"slop" in the timings of the relatively slow serial port to make
-48MHz and 50MHz "close enough" for a few characters.
-
-So, what is the correct number for your board?  Do you know how to
-identify an oscillator?  They have a bit of a 'tin can' look to them.
-Find the one closest to the CPU on the board, and see what number is
-on it.
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+> 
+> ---
+> 
+>  linux-2.6-current-trini/arch/ppc/kernel/head_8xx.S |   22 +--------------------
+>  1 files changed, 2 insertions(+), 20 deletions(-)
+> 
+> diff -puN arch/ppc/kernel/head_8xx.S~ppc32-mpc8xx-itlbmiss-fix arch/ppc/kernel/head_8xx.S
+> --- linux-2.6-current/arch/ppc/kernel/head_8xx.S~ppc32-mpc8xx-itlbmiss-fix	2005-01-18 11:55:34.000000000 -0700
+> +++ linux-2.6-current-trini/arch/ppc/kernel/head_8xx.S	2005-01-18 11:57:11.000000000 -0700
+> @@ -343,7 +343,7 @@ InstructionTLBMiss:
+>  	 * set.  All other Linux PTE bits control the behavior
+>  	 * of the MMU.
+>  	 */
+> -	li	r11, 0x00f0
+> +2:	li	r11, 0x00f0
+>  	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+>  	DO_8xx_CPU6(0x2d80, r3)
+>  	mtspr	MI_RPN, r10	/* Update TLB entry */
+> @@ -357,15 +357,6 @@ InstructionTLBMiss:
+>  #endif
+>  	rfi
+>  
+> -2:	mfspr	r10, M_TW	/* Restore registers */
+> -	lwz	r11, 0(r0)
+> -	mtcr	r11
+> -	lwz	r11, 4(r0)
+> -#ifdef CONFIG_8xx_CPU6
+> -	lwz	r3, 8(r0)
+> -#endif
+> -	b	InstructionAccess
+> -
+>  	. = 0x1200
+>  DataStoreTLBMiss:
+>  #ifdef CONFIG_8xx_CPU6
+> @@ -419,7 +410,7 @@ DataStoreTLBMiss:
+>  	 * set.  All other Linux PTE bits control the behavior
+>  	 * of the MMU.
+>  	 */
+> -	li	r11, 0x00f0
+> +2:	li	r11, 0x00f0
+>  	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
+>  	DO_8xx_CPU6(0x3d80, r3)
+>  	mtspr	MD_RPN, r10	/* Update TLB entry */
+> @@ -433,15 +424,6 @@ DataStoreTLBMiss:
+>  #endif
+>  	rfi
+>  
+> -2:	mfspr	r10, M_TW	/* Restore registers */
+> -	lwz	r11, 0(r0)
+> -	mtcr	r11
+> -	lwz	r11, 4(r0)
+> -#ifdef CONFIG_8xx_CPU6
+> -	lwz	r3, 8(r0)
+> -#endif
+> -	b	DataAccess
+> -
+>  /* This is an instruction TLB error on the MPC8xx.  This could be due
+>   * to many reasons, such as executing guarded memory or illegal instruction
+>   * addresses.  There is nothing to do but handle a big time error fault.
+> _
+> 
+> -- 
+> Tom Rini
+> http://gate.crashing.org/~trini/
