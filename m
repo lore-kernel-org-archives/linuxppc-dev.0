@@ -1,29 +1,41 @@
-Message-ID: <20000128225831.14202.qmail@web1006.mail.yahoo.com>
-Date: Fri, 28 Jan 2000 14:58:31 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: Making an HFS+ Filesystem
-To: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 28 Jan 2000 21:10:54 -0600 (CST)
+From: scott hutinger <srh@www.mprojects.wiu.edu>
+To: Kevin Hendricks <khendricks@ivey.uwo.ca>
+cc: linuxppc-dev@lists.linuxppc.org,
+        scott hutinger <srh@www.mprojects.wiu.edu>
+Subject: Re: Bug in glibc 2.1.3 linuxthreads in pthread_cond_timedwait_relative
+In-Reply-To: <00012814481500.18396@localhost.localdomain>
+Message-ID: <Pine.LNX.3.95.1000128210239.1756B-100000@www.mprojects>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Kevin,
 
-> What single-user-centric file system would make a good example?  I'm
-> assuming that ext2 and ext3 would make good multi-user-centric file
-> system examples.
+Yes!  I would like to keep it in the realm of what people download :-)  So
+I don't need to do a build that takes all night on a 8100.
 
-	Oh.  Have you looked at FAT, VFAT, and UMSDOS?  How about HPFS and Amiga FFS?
-These are all Linux-supported single-user-centric fs's, to varying degrees of
-modernness and completeness.
-	If I was you, I'd go look in /usr/src/linux/fs/ and
-/usr/src/linux/Documentation/filesystems.
-	Or maybe you're way beyond that and I have no clue, but I'm still giving you a
-pat on the back :)
+Thanks much, as always, you come through with a fix !!!!
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+scott
+
+On Fri, 28 Jan 2000, Kevin Hendricks wrote:
+
+> Hi,
+>
+> If you are using Franz Sirl's glibc 2.1.3 0k or 0l rpms and are seeing funny
+> hangs with linuxthreads programs, here is a small patch to fix the problem of
+> restarting pthread_cond_timedwait_relative_new with the same timeout and not
+> remaining time.
+> (see my earlier problem report).
+>
+> The patch file is attached:
+>
+> Kevin
+>
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
