@@ -1,29 +1,53 @@
-Message-ID: <386A4E90.21B2D0D7@netx4.com>
-Date: Wed, 29 Dec 1999 13:10:24 -0500
-From: Dan Malek <dan@netx4.com>
+Message-ID: <386ABF52.922267E9@ctam.com.au>
+Date: Thu, 30 Dec 1999 13:11:30 +1100
+From: Brendan J Simon <Brendan.Simon@ctam.com.au>
+Reply-To: Brendan.Simon@ctam.com.au
 MIME-Version: 1.0
-To: "Mark S. Mathews" <mark@absoval.com>
-CC: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>,
+To: dony <dony.he@huawei.com.cn>,
         linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: pcmcia-cs for 8xx
-References: <Pine.LNX.3.96.991229095842.12905A-100000@tristar.cc.absoval.com>
+Subject: Re: Please help me...
+References: <386C150F.22B1A3D0@huawei.com.cn>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark S. Mathews wrote:
-> 
-> I'm not aware of pcmcia-cs for 8xx, we just have some kernel routines that
-> we wrote to initialize the 8xx pcmcia registers.  They're not as generic
-> as I'd like yet, but you're welcome to them.
+dony wrote:
 
+> Hi,
+>       Now I am trying to embed linux onto our MPC860-based board. I have
+> some questions which may be solved by you embed-linux gurus....
+>      What I want to do  is the following:
+>     1     Initialize the MPC860 CPU , memory, serial port, enet port .
+>     2    Download  the linux powerpc kernel (which I have cross-compiled
+> on my X86 box)
+>            from the TFTP server to RAM on board.
+>     3    run the kernel.
+> Now the 1 and 2 step work well, but when I download the kernel to RAM on
+> board, It just cannot run.Do you know why? How can I programme to make
+> it run? Since the kernel is a compressed image (zvmlinux), need I make
+> some codes to decompress it and then run it? if so, how to do it?
 
-How about if I combine these with functions I have, and try
-to make something generic for low-level RPX-Lite boards?  At
-least it is a starting point and we can improve it over time.
+So I take it that you have written your own boot loader that is in
+ROM/Flash which fetches the kerenl from a TFTP server and places it in RAM
+somewhere.  Good.  How does your bootloader know where to put the code ?
+Does it look at the internals of the elf image or is it an s-record file
+you are downloading ?  The image must be placed at or above 2MB.  You will
+have problems if it is below 2MB.  I have my kernel in Flash at FFE00000 or
+FF800000.  Once the kernel is loaded, you have to jump to the start
+address.
 
+I assume you are using the mbxboot code for the kernel.  Are you ?  What
+board are you using ?
+The mbxboot code will copy the iteself to location 0x100000 (1MB) and jump
+to that address so it is running from RAM.  It then decompress the kernel
+image to location 0 and jumps to the start of the kernel.
 
-	-- Dan
+Can you send the output of "objcopy --headers zImage" to the list.  Also
+send the output of the mbxboot loader messages with the loaded and
+relocated addresses (if the code is getting that far).
+
+Brendan Simon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
