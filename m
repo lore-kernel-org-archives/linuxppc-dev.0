@@ -1,40 +1,47 @@
-Message-ID: <3D485B2F.84829A96@mvista.com>
-Date: Wed, 31 Jul 2002 17:48:31 -0400
-From: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Software Cache Coherency and the MPC745x G4 Procs
+Date: Thu, 27 Jun 2002 16:44:00 -0400
+Message-ID: <CC2BE26A9E9CF84EBEA5565C43B3FF0F8F08D5@morpheus.pirus.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Matt Porter <porter@cox.net>,
-	Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [RFC/PATCH] idle loop changes
-References: <20020731193200.GD17472@opus.bloom.county> <3D4847D5.9030404@embeddededge.com> <20020731143357.C5793@home.com> <3D48569D.30201@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+From: "Boerner, Brian" <bmb@pirus.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Hi Everyone. First Time Caller.. Short Time Listener.
 
-> Matt Porter wrote:
->
-> > So, some new machdep calls that you can populate on a per board basis?
-> > Are you just talking about them being used upon entering/exiting idle?
->
-> I was just thinking the power_save() function could be unique to a
-> board.  It has to be something combined with the power save mode
-> chosen on the chip, so machdep calls may not be appropriate.  We are
-> using names like ppc6xx_pm_idle, ppc4xx, ppc8xx, when it could be
-> my_custom_board_pm_idle......Just don't assume one type of chip will
-> use the same function on different boards.  When the idle/power save
-> function is chosen, it should probably be done during board setup,
-> not processor set up.
+I have a question about doing software cache coherency on the MPC745x G4 processors. It appears MOT in all it's infinite wisdom has removed the dcbi, or rather changed the dcbi, instruction. The old instruction simply used to invalidate the cache line. Now it appears to do the same thing as the dcbf instruction. So, rather than simply invalidating the cache, it flushes it and the reader gets the invalid cache line.
 
-Why not use keep the ppc6xx_pm_idle, etc. as fallbacks (e.g., nothing
-special about  your board so use generic 6xx one) and still use machdep
-calls so its easy to override in case there is something special you need
-to do for your board?
+I'm just getting my feet wet again in the embedded Linux space and was wondering how Linux is handling this? Looking in the source tree, I have found the following routine that appears to be used for software cache coherency:
 
-Mark
+/*
+ * Like above, but invalidate the D-cache.  This is used by the 8xx
+ * to invalidate the cache so the PPC core doesn't get stale data
+ * from the CPM (no cache snooping here :-).
+ *
+ * invalidate_dcache_range(unsigned long start, unsigned long stop)
+ */
+_GLOBAL(invalidate_dcache_range)
+        li      r5,L1_CACHE_LINE_SIZE-1
+        andc    r3,r3,r5
+        subf    r4,r3,r4
+        add     r4,r4,r5
+        srwi.   r4,r4,LG_L1_CACHE_LINE_SIZE
+        beqlr
+        mtctr   r4
+
+1:      dcbi    0,r3
+        addi    r3,r3,L1_CACHE_LINE_SIZE
+        bdnz    1b
+        sync                            /* wait for dcbi's to get to ram */
+        blr
 
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+This too is using the dcbi instruction, which simply isn't going to do what the author intended it to do. According to Motorola, there is no replacement for dcbi. Does anyone have a theory on how to do software cache coherency. I know that some of the memory controllers will maintain cache coherency through snooping, but in certain applications, I need to control it from software.
+
+Thanks.
+-Brian
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
