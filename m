@@ -1,14 +1,14 @@
 Return-Path: <mgreer@mvista.com>
 Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id B616067A6B
+	by ozlabs.org (Postfix) with ESMTP id F1FC767A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Mar 2005 03:43:52 +1100 (EST)
-Message-ID: <42307939.5060301@mvista.com>
-Date: Thu, 10 Mar 2005 09:43:37 -0700
+	Fri, 11 Mar 2005 03:45:08 +1100 (EST)
+Message-ID: <4230797D.8020108@mvista.com>
+Date: Thu, 10 Mar 2005 09:44:45 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: akpm@mvista.com
-Content-Type: multipart/mixed; boundary="------------010808010400050907080406"
+To: akpm <akpm@osdl.org>
+Content-Type: multipart/mixed; boundary="------------050109090406050508080205"
 Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
 Subject: [PATCH 2.6.12] PPC32: Add rtc hooks to katana + fw bug workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,7 +23,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 
 This is a multi-part message in MIME format.
---------------010808010400050907080406
+--------------050109090406050508080205
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -39,7 +39,7 @@ Please apply.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 
---------------010808010400050907080406
+--------------050109090406050508080205
 Content-Type: text/plain;
  name="katana_rtc.patch"
 Content-Transfer-Encoding: 7bit
@@ -697,4 +697,4 @@ diff -Nru a/arch/ppc/platforms/katana.h b/arch/ppc/platforms/katana.h
 +
 +#endif	/* __PPC_PLATFORMS_KATANA_H */
 
---------------010808010400050907080406--
+--------------050109090406050508080205--
