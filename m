@@ -1,44 +1,63 @@
-Message-ID: <398C263D.68F94160@student.ethz.ch>
-Date: Sat, 05 Aug 2000 16:35:41 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
+Date: Sat, 5 Aug 2000 09:44:50 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
 To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kind of success! (r128 on PPC (Re: LinuxPPC X Server))
-References: <398AF755.E10D0C56@student.ethz.ch> <20000804175047.21209@mailhost.mipsys.com>
-Content-Type: text/plain; charset=iso-8859-1
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: rtc again...
+In-Reply-To: <20000805112531.1840@192.168.1.10>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000805092052.649D-100000@ofey.earthlink.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Sat, 5 Aug 2000, Benjamin Herrenschmidt wrote:
 
-[about aty128fb setting the RAMDAC to 15 bit for depth 16]
-
-> > fbset -i reveals that it does.
 > >
-> > Is anyone actively maintaining aty128fb or should I try to fix that as
-> > well as the panning? Looking at the X r128 driver, it shouldn't be too
-> > hard.
+> >As Geert has pointed out, hwclock can give UTC or local time to /dev/rtc,
+> >why don't we just let userland deal with this local time issue.  What I
+> >mean is for pmac_set_rtc_time(), let's change:
 >
-> Brad Douglas, but he doesn't have a PPC machine.
+> That would give us back what we had at the beginning. This way, userland
+> is solely responsible for this setup, which means it will be wrong on 50%
+> of user machines (but that's user fault isn't it ?) and which means the
+> kernel will boot with a wrong time, at least until the userland init
+> script takes over.
 
-Okay, I'll contact him, thanks.
+Hmm, nothing has been changed with pmac_get_rtc_time().  So, if it is
+broken now, it was broken before....  Seriously, pmac_get_rtc_time() is
+the one responsible for giving you the correct time at boot time, isn't
+it?
 
-My priority is to get 16 bit working, panning isn't so important for me
-because only one mode works on the Pismo anyway.
+Does xtime need to be in UTC?  If so, is it feasible to let
+ppc_md.time_init() give an offset in seconds from UTC to the time given by
+RTC?
 
-Unfortunately, I don't have time over the weekend, but I'm cooking up a patch
-X 4.0.1 -> DRI CVS which I'm sending to the people involved.
+  void __init time_init(void)
+  {
+	unsigned long flags;
++ 	int offset = 0;
+  	if (ppc_md.time_init != NULL)
+  	{
+  		offset = ppc_md.time_init();
+  	}
+	...
+  	write_lock_irqsave(&xtime_lock, flags);
+- 	xtime.tv_sec = ppc_md.get_rtc_time();
++ 	xtime.tv_sec = ppc_md.get_rtc_time() + offset;
+  	write_unlock_irqrestore(&xtime_lock, flags);
+	...
+
+Oh, and change time_sleep_notify() in pmac_time.c accordingly.
+
+> I don't see why it's such a mess to simply read the default values from
+> xpram so we are consistent with MacOS. But everything in Linux is a mess
+> anyway...
+
+Maybe because pmac's RTC is in local time for one?
 
 
-Michel
+Takashi Oe
 
-
---
-I'm so hungry, I could almost eat health food.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
