@@ -1,28 +1,36 @@
-Message-ID: <3F74898E.7050504@mvista.com>
-Date: Fri, 26 Sep 2003 11:46:38 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: =?x-windows-949?B?vcWw5rz2?= <ksshin@essetel.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCI DMA in GT64260
-References: <009501c37dba$0f462470$c50aa8c0@ksshin> <3F723C33.9030003@mvista.com> <003b01c38321$81114d20$c50aa8c0@ksshin> <3F738F27.8000200@mvista.com> <003301c383ef$c9b17ae0$c50aa8c0@ksshin>
-In-Reply-To: <003301c383ef$c9b17ae0$c50aa8c0@ksshin>
-Content-Type: text/plain; charset=x-windows-949
+Date: Fri, 26 Sep 2003 14:24:10 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Jean-Denis Boyer <jdboyer@m5t.com>,
+	Steffen Rumler <Steffen.Rumler@siemens.com>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem of concurrency in arch/ppc/8260_io/uart.c
+Message-ID: <20030926212410.GB8927@ip68-0-152-218.tc.ph.cox.net>
+References: <IGEFJKJNHJDCBKALBJLLEEGCFPAA.joakim.tjernlund@lumentis.se> <IGEFJKJNHJDCBKALBJLLGEGDFPAA.joakim.tjernlund@lumentis.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLGEGDFPAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-½Å°æ¼ö wrote:
-
->you say that there are several working examples.
->But I can't found any examples related to PCI_DMA or
->changing the value of BAR in PCI CONFIG Space.
+On Wed, Sep 17, 2003 at 06:33:06PM +0200, Joakim Tjernlund wrote:
 >
-Working examples: cpci690, ev64260, hxeb100, ppmc260, and presumably pumaA.
+> > > Whatever the boot rom initializes.
+> >
+> > OK, then I will assume TX buffer length of 1, until serial_console_setup has run and
+> > initialize it to 4.
+> >
+> >  Jocke
+>
+> Here we go again. This patch adds the above. I am unable to break it, please try to :)
 
-You are using linuxppc_2_4_devel, right?
+KGDB still works for me.  Dan, any final thoughts / comments /
+objections?
 
-Mark
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
