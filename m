@@ -1,24 +1,30 @@
-Message-ID: <39EF7A07.5D946387@ctam.com.au>
-Date: Fri, 20 Oct 2000 09:47:35 +1100
-From: Brendan J Simon <brendan.simon@ctam.com.au>
-Reply-To: brendan.simon@ctam.com.au
+Message-ID: <39EF85BB.FA712976@tcc.com.pe>
+From: Tomas Carmen <tomas@tcc.com.pe>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: linux-embedded: smallest kernel for 2.4.0-test9
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: kernel for 823 over 16bits
 Content-Type: text/plain; charset=us-ascii
+Date: Thu, 19 Oct 2000 19:31:12 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've ported the 2.4.0-test9 kernel to our MPC8260 board.  I have a 512K
-boot flash and am trying to get the kernel to fit in it and then mount
-the root file system via NFS.  I currently have the kernel down to 520K
-but would like to get it under 448K (512K minus one 64K sector for a
-bootloader).  Is this possible ???
+Hello
+I will really appreciated if you could help me with this.
+I would like to know if the linux kernel or the bootloader developed for
+PPC (MPC8xx) can working well
+over a 16 bits environment (FLASH and RAM). I couldn't find  references
+about this.
 
-Please CC to me as well as the list,
-Thanks,
-Brendan Simon.
+Thanks in advance
+
+--
+-----------------------
+Tomas Carmen Rodriguez
+TCC S.A.
+phone : +51-1-4428842
+Lima-Peru
+-----------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
