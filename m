@@ -1,43 +1,32 @@
-In-Reply-To: <199901060601.RAA00588@tango.anu.edu.au>
-Date: Wed, 6 Jan 1999 17:02:22 +0100
-To: tas@mindspring.com, linuxppc-dev@lists.linuxppc.org,
-        Paul.Mackerras@cs.anu.edu.au
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Great IDE perf (WAS: Strange PMAC IDE performance)
-Message-Id: <19990106170222.030778@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 6 Jan 1999 17:08:03 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>,
+        Paul Mackerras <paulus@cs.anu.edu.au>
+Subject: Re: Linux vs. new PowerMacs
+In-Reply-To: <19990106154551.031473@mail.mipsys.com>
+Message-ID: <Pine.LNX.4.03.9901061707200.6178-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 6, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+On Wed, 6 Jan 1999, Benjamin Herrenschmidt wrote:
+>  - Video: The new ATI will probably not be supported "as-is" by atyfb,
+> this will probably be the "hard part". We can still use "ofonly" video in
+> the meantime.
 
->I found a register at 0xf3020200 on my powermac G3 which affects the
->speed of disk transfers.  This is at offset 0x200 from the base
->address of the IDE interface and it is a 32-bit little-endian
->register.  After booting Linux, it has 0x2f8526 in it, but under MacOS
->it has 0x211025.  Putting 0x211025 in (with xmon) increased the speed
->reported by hdparm -tT /dev/hda from 1.89MB/s to 9.7MB/s !  The disk
->is a WDC 24300ACL (as reported by hdparm -i /dev/hda).  The other
->hdparm settings were -d1 -u1 -m16.
+Even XFree86 doesn't support the RAGE 128 yet.
 
-I tried the manipulation with xmon on my wallstreet PowerBook, using
-today's vger 2.2-pre4 and hdparam test jumped from 1.88Mb/s to 6.3MB/s
-!!! (At first, I forgot to flush the caches, so I got 50Mb/s ;-)
+Greetings,
 
-Also, the register is replicated all the way from +0x200 to +0x3FF so it
-looks like it's really a single register sitting there.
+						Geert
 
-That's great !
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
