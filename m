@@ -1,18 +1,17 @@
-Date: Wed, 07 Jan 2004 13:03:16 +1300
-From: Robin Gilks <robin.gilks@tait.co.nz>
-Subject: Re: PATCH: Another mpc8xx watchdog driver !!
-In-reply-to: <20040106233539.63641C12DD@atlas.denx.de>
-To: Wolfgang Denk <wd@denx.de>,
+Message-ID: <3FFB4EA8.20809@embeddededge.com>
+Date: Tue, 06 Jan 2004 19:11:20 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+Cc: Robin Gilks <robin.gilks@tait.co.nz>,
 	linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <3FFB4CC4.5000606@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: PATCH: Another mpc8xx watchdog driver !!
 References: <20040106233539.63641C12DD@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
 > In message <3FFB450D.7060405@tait.co.nz> you wrote:
 >
 >>>Do you really mean RTC here???
@@ -20,32 +19,19 @@ Wolfgang Denk wrote:
 >>Yes - the 866 and derivatives (859 etc) do NOT have a Real Time Clock
 >>block. This means that hooking the RTC interrupt to 'kick the dog' is
 >>rather difficult :-))
->
->
-> That may be the case. But the watchdog code does not use any  RTC  at
-> all.
->
->
->>"It is based on the code of Florian Schirmer but using kernel timers (as
->>used by the DENX driver) rather than the RTC."
->
->
-> Have you ever seen a MPC8xx watchdog driver that used RTC for
-> triggering?
 
-Gosh - egg on face. Got mixed up with the PIT which usually uses a 32KHz
-crystal as does the RTC on the mpc860. Well, we don't have a crystal on
-the PIT so that (as well as the non-existant RTC) is not available!!
 
-This is what comes from trying to rely on memory alone with 1358 pages
-of mpc866 manual :-))
+Why would you want to do that?  Not a very effective watchdog
+timer.  Even in the most hopelessly crashed system the RTC or other
+timer interrupts usually continue to operate.  An effective watchdog
+needs to be managed throughout the whole boot process and handed off
+along the way to some application, such that any system error will
+cause the application to fail to kick the timer.
 
---
-Robin Gilks
-Senior Design Engineer          Phone: (+64)(3) 357 1569
-Tait Electronics                Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
+Good luck :-)
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
