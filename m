@@ -1,79 +1,62 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Paul White <pwhite@bivio.net>, linuxppc-dev@lists.linuxppc.org
+Date: Wed, 6 Mar 2002 21:59:56 -0800 (PST)
+From: Paul White <pwhite@bivio.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: MPC7455
-Date: Wed, 6 Mar 2002 17:18:59 -0500
-References: <Pine.LNX.4.21.0203052248340.25466-100000@stimpy.networkrobots.com>
-In-Reply-To: <Pine.LNX.4.21.0203052248340.25466-100000@stimpy.networkrobots.com>
+In-Reply-To: <20020306194635.11178@smtp.wanadoo.fr>
+Message-ID: <Pine.LNX.4.21.0203062152510.30207-100000@stimpy.networkrobots.com>
 MIME-Version: 1.0
-Message-Id: <20020306222402.NQN7616.tomts7-srv.bellnexxia.net@there>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, 6 Mar 2002, Benjamin Herrenschmidt wrote:
 
-> I've checked the latest base kernel from kernel.org, 2.4.18, and there
-> is no 7455 support. I've already done the code to bring Linux up on the
-> 7455, adding it to arch/ppc/kernel/cputable.c, as well as writing a new
-> setup_cpu_7455, and a new setup_7455_regs function which sets up the
-> HID0, HID1, and MSSCR0 registers. I am wondering if anyone is interested
-> in these changes.
+> Please, send them to me. I have some 7455 support in my rsync tree
+> that I am about to push to bk. However, some of the registers, like
+> HID1 or MSSCR0, I consider have to be setup by the firmware or by
+> machine specific code.
 
+Yes - It seems this is what Linux expects for the 7450 as well,
+as it requests the firmware setup the CPU.
 
-Yes, I am.
+In my 7455 setup, I setup the CPU in linux, assuming the firmware
+hasn't done anything yet.  Things such as Address Broadcast Enable
+bits are now in HID1 instead of HID0 as on other processors.  As
+for cache snooping, the 7455 defaults to a different method of
+External Data Intervention.  Maybe this is something firmware
+usually sets up?  Using the Galileo system controller, we had to
+disable this mode to make it compatable to the MPC7410.
 
-> In one of the e-mails in the archives, it was suggested to have Linux
-> configure the 7455 just the same as the 7450, however this will not
-> work properly.  HID0 has changed quite a bit, as well as HID1, thus
-> requiring a new setup routine.  It looks as though the 7451 and 7455
-> are very similar, and the same init code and restrictions apply, however
-> between the 7450 and 7451, things have changed quite a bit.
-
-
-Hmm, that's funny. My Dual 1 Gig G4 machine (7455) runs quite well (so
-far) with using the 7450 setup for the HID registers after adding the
-entries for detecting the 7455.  The bits that changed in HID0 are not
-played with in the 7450 setup so it should be okay (it seems to be
-working) shouldn't it?
-
-> If there is no support out there as of yet, I can create a patch file
-> and send it off, if anyone is interested.
-
-
-Yes I would very much like to see it.
-
-
-> One thing we ran into regarding the MPC7455, however, is that
-> it does not guarentee Stores before Loads, meaning if you have
-> code that has:
+> >Store Instruction
+> >Load Instruction
+> > - This is not guarenteed in order, even if its Guarded
 >
-> Load Instruction
-> Load Instruction
->  - This is OK, they will happen in order as long as its Guarded
->
-> Store Instruction
-> Store Instruction
->  - This is OK, they will happen in order as long as its Guarded
->
-> Load Instruction
-> Store Instruction
->  - This is OK, they will happen in order as long as its Guarded
->
-> Store Instruction
-> Load Instruction
->  - This is not guarenteed in order, even if its Guarded
->
-> We had to add an eieio to all of our drivers, such as our PCI
-> driver, which requires a write to one register before reading another.
-> The eieio must go between the store and the load.
->
-> Just a heads up, if no one has tried the 7455 yet!  Let me know
-> if anyone is interested in the 7455 changes I've done.
+> Ah ? I missed that in the doc. It's pretty bad though so far, all
+> drivers are supposed to eieio on any IO access anyway.
 
-Thanks,
+See section 3.3.3.5, page 3-29 of the 7450/7455 Users manual..  Its
+good that everything already does eieio's between IO accesses.  We
+(being our driver engineers here) are kicking ourselves for not
+adding these into our custom drivers.  We've added them now, and
+things seem to work great!
 
-Kevin
+> My current tree boots and appear to work on Apple dual G4 1Ghz which is
+> 7455 based.
+>
+> I'm still interested in your patches as I may have missed something.
+
+Great!  It sounds like the firmware is doing everyhting.  It might be
+nice to add an option to have linux configure the CPU registers or not,
+as for us embedded guys thats easier than implimenting it all in the
+firmware.  We can do it either way now that we know what the registers
+should be, though.
+
+I'll have a cleaned up patch file by tomorrow evening.  What tree
+would you prefer the patch be against?
+
+Paul W.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
