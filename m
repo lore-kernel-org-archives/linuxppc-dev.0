@@ -1,25 +1,22 @@
-Return-Path: <jalmeida@apes.fr>
-Received: from mail.apes.fr (unknown [80.125.80.241])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CCF0167A6E
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8970B67AB0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Feb 2005 19:52:00 +1100 (EST)
-Received: from [172.24.10.13] (jose.apes.fr [172.24.10.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mail.apes.fr (Postfix) with ESMTP id 91C16634397
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Feb 2005 09:51:50 +0100 (CET)
-Message-ID: <421C4426.1040609@apes.fr>
-Date: Wed, 23 Feb 2005 09:51:50 +0100
-From: Jose Almeida <jalmeida@apes.fr>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <421B0C70.1070301@apes.fr>
-In-Reply-To: <421B0C70.1070301@apes.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: FCC on 8560 ADS
+	Wed, 23 Feb 2005 20:38:52 +1100 (EST)
+Date: Wed, 23 Feb 2005 01:38:50 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Shawn Jin <shawnxjin@gmail.com>
+Message-ID: <20050223093849.GB6670@gate.ebshome.net>
+References: <c3d0340b050222190712ee7dff@mail.gmail.com>
+	<20050223042234.GA31255@gate.ebshome.net>
+	<c3d0340b050223000217714e92@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c3d0340b050223000217714e92@mail.gmail.com>
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: Ethernet doesn't work in linux for PPC440GP?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,40 +27,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-All,
+On Wed, Feb 23, 2005 at 12:02:04AM -0800, Shawn Jin wrote:
+> > > zmii0: input 0 in SMII mode
+> > > eth0: IBM emac, MAC 00:04:ac:e3:1b:bb
+> > > eth0: Found Generic MII PHY (0x08)
+> > > zmii0: input 1 in RMII mode
+> > > eth1: IBM emac, MAC FF:FF:FF:FF:FF:FF
+> > > eth1: Found Generic MII PHY (0x09)
+> > 
+> > I already told you that this is wrong, why are you asking again?
+> > Please, if you asking questions, spend some time reading answers
+> > given to you, before asking again.
+> 
+> Well, don't be mad at me first. The question may bring out another
+> round of arguments whether it's a bug related to uboot or linux EMAC
+> driver. Wolfgang makes it very clear that this is a bug in linux
+> ethernet driver. And I agree with him. This argument happened before
+> and I just forgot what specific ethernet driver was in the argument.
 
-Please cancel this request, I found the problem.
-I had a switch (SW4) with the wrong setup.
+This is really irrelevant.
 
-Thanks - Jose
+> 
+> > Ebony uses RMII, so SMII is obviously wrong. Most probably your
+> > firmware doesn't set correct mode and autodetection in the EMAC driver
+> > fails.
+> 
+> So the EMAC driver does expect a boot loader (the firmware you
+> mentioned here) to set something for it. Then I think I need to fix it
+> in this driver instead of in uboot.
 
-Jose Almeida wrote:
+Current EMAC driver uses autodetection logic if PHY mode wasn't 
+specified by the board support code. It works for Ebony + OpenBIOS. 
+You can try the following patch (untested) to set PHY mode explicitly:
 
-> All,
->
-> I'm trying to get a linux 2.6 kernel up and running on an freescale 
-> 8560 ADS board. I have every peace of this up and running apart from 
-> the FCC ethernet.
->
-> I've switched to the legacy mode, which now allow me to talk to the 
-> PHY and negocite properly @ 100BT FD.
->
-> But I don't seem to get any ethernet packet going out. The FCC 
-> controller does not seem to read the BDs, and all the packet's I'm 
-> placing in the BD just stay there for ever !
->
-> I'm wondering if you have a driver which works properlly ? I'm 
-> thinking on some wrong setup in the ioports, but is all seems to be 
-> correct !
->
-> I'm using a 2.6.9 kernel, but I also tryed other versions (2.6.11r4), 
-> with the same problems ...
->
-> Thanks
-> Jose
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
+===== arch/ppc/platforms/4xx/ebony.c 1.10 vs edited =====
+--- 1.10/arch/ppc/platforms/4xx/ebony.c	2005-02-03 06:42:41 -08:00
++++ edited/arch/ppc/platforms/4xx/ebony.c	2005-02-23 01:28:04 -08:00
+@@ -52,6 +52,13 @@
+ 
+ #include <syslib/gen550.h>
+ 
++/*
++ * This is a horrible kludge, we eventually need to abstract this
++ * generic PHY stuff, so the  standard phy mode defines can be
++ * easily used from arch code.
++ */
++#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
++
+ static struct ibm44x_clocks clocks __initdata;
+ 
+ /*
+@@ -267,9 +274,11 @@
+ 	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
+ 	emacdata = def->additions;
+ 	memcpy(emacdata->mac_addr, EBONY_NA0_ADDR(vpd_base), 6);
++	emacdata->phy_mode = PHY_MODE_RMII;
+ 	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 1);
+ 	emacdata = def->additions;
+ 	memcpy(emacdata->mac_addr, EBONY_NA1_ADDR(vpd_base), 6);
++	emacdata->phy_mode = PHY_MODE_RMII;
+ 	iounmap(vpd_base);
+ 
+ 	/*
+
+
+--
+Eugene
