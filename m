@@ -1,17 +1,24 @@
-Return-Path: <Peter.Ryser@xilinx.com>
-Date: Thu, 17 Mar 2005 10:04:30 -0800
-From: Peter Ryser <Peter.Ryser@xilinx.com>
-In-reply-to: <001501c52b0a$0ee36ca0$9c9c9182@ddns.htc.nl.philips.com>
-To: "S. van Beek" <nlv11891@natlab.research.philips.com>
-Message-id: <4239C6AE.3050803@xilinx.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <002001c52aef$d29dbb70$9c9c9182@ddns.htc.nl.philips.com>
-	<4239A41E.7040200@xilinx.com>
-	<001501c52b0a$0ee36ca0$9c9c9182@ddns.htc.nl.philips.com>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff672
-	board
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A4BEB67A67
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 18 Mar 2005 05:32:34 +1100 (EST)
+Date: Thu, 17 Mar 2005 19:32:18 +0100
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Josh Boyer <jdub@us.ibm.com>
+Message-ID: <20050317183218.GC11836@wohnheim.fh-wedel.de>
+References: <42323A97.5070105@mvista.com>
+	<20050317163526.GB10864@wohnheim.fh-wedel.de>
+	<4239C51B.70101@mvista.com>
+	<1111083871.7610.3.camel@windu.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1111083871.7610.3.camel@windu.rchland.ibm.com>
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 2.6.12] mtd: Remove MTD map file for Chestnut platform.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,96 +29,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Also try to boot the first Linux kernel (the one without the Flash 
-support) on the EDK design with Flash support. It will help narrow down 
-the problem to the HW or the SW.
+On Thu, 17 March 2005 12:24:31 -0600, Josh Boyer wrote:
+> 
+> Jörn meant that the next time the MTD BK tree is synced with Linus,
+> it'll show up.  If it's already there, then no big deal :).
 
-- Peter
+Not for me at least. ;)
 
+Bk could automatically detect if the same changeset went in through
+different trees.  From cvs, it may give dwmw2 a slight headache.
 
-S. van Beek wrote:
+Jörn
 
->>How did you add the Flash (EMC) peripheral? Did you use the Base System
->>Builder to generate your hardware?
->>    
->>
->
->Yes, we started a new project using the base system builder with the same
->options as the previous (working) project and flash, so the address range
->should be ok. I'll check tomorrow, right now its time to go home ;)
->
->Regards,
->Sander
->
->----- Original Message ----- 
->From: "Peter Ryser" <Peter.Ryser@xilinx.com>
->To: "S. van Beek" <nlv11891@prle>
->Cc: <Linuxppc-embedded@ozlabs.org>
->Sent: Thursday 17 March 2005 16:37
->Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff672
->board
->
->
->  
->
->>How did you add the Flash (EMC) peripheral? Did you use the Base System
->>Builder to generate your hardware?
->>
->>If you configure the hardware manually and use the OPB EMC make sure
->>that you add the address range to the PLB2OPB bridge.
->>
->>- Peter
->>
->>
->>S. van Beek wrote:
->>
->>    
->>
->>>Hello there,
->>>
->>>This is our first post on this list, hi all!
->>>We're two Dutch students working with a Virtex-II pro ff672 board from
->>>Memec with the Communications 2 module. We've compiled a simple kernel
->>>wich comes with MontaVista Linux 3.1 (2.4.20) with ethernet and a
->>>serial port. It mounts its root filesystem over NFS and everything
->>>seems to work nicely. The next step we wanted to make was
->>>adding support for the Flash on the com board. We added the IP to the
->>>hardware and loaded the new bitstream in the FPGA. Next thing, we
->>>enabled support for MTD devices in the kernel. After that, the kernel
->>>did not seem to boot anymore. It stopped at the message 'Now booting
->>>the kernel'. So we read some documentation about debugging. We
->>>recompiled this kernel with the -g -ggdb options and removed the -O
->>>(optimalization) flag. Then we did not even see the ppc boot loader
->>>messages anymore when trying to boot. So we tried to compile the first
->>>kernel (with only serial and ethernet support) -wich worked fine
->>>before- with debugging and it gave us the same result.. no output at
->>>      
->>>
->all.
->  
->
->>>Can anyone give us some hints on what we can try more to find out what
->>>is going wrong?
->>>
->>>Regards,
->>>Sander van Beek
->>>Daniel van Os
->>>
->>>------------------------------------------------------------------------
->>>
->>>_______________________________________________
->>>Linuxppc-embedded mailing list
->>>Linuxppc-embedded@ozlabs.org
->>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>
->>>      
->>>
->>
->>    
->>
->
->
->
->
->  
->
+-- 
+tglx1 thinks that joern should get a (TM) for "Thinking Is Hard"
+-- Thomas Gleixner
