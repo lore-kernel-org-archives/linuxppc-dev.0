@@ -1,36 +1,59 @@
-Message-ID: <20000514083948.2998.qmail@www0x.netaddress.usa.net>
-Date: 14 May 00 03:39:48 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Lombard hard freeze during long compile with mem>64
+Date: Sun, 14 May 2000 00:41:41 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Even André Fiskvik <even@lynweb.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Yaboot
+Message-ID: <20000514004141.E12729@plato.local.lan>
+References: <B5442CED.220%even@lynweb.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="6Vw0j8UKbyX0bfpA"
+In-Reply-To: <B5442CED.220%even@lynweb.net>; from even@lynweb.net on Sun, May 14, 2000 at 10:14:06AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-One of the people having the problem said they could reproduce the hardlock if
-they recompiled gnomehack several times. Here is some data I have collected.
+--6Vw0j8UKbyX0bfpA
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Using the vanilla linuxppc 2k kernel I have been doing some lengthy compiles
-(kde 1.9). One of my package builds went 2.5 hours. I have seen no problems
-and I have been running the entire time without a reboot. I have compiled all
-of kde 1.9 and I had to rebuild one of the lengthier packages 3 times.
+On Sun, May 14, 2000 at 10:14:06AM +0200, Even Andr=E9 Fiskvik wrote:
+>=20
+> Could someone please tell me how to use yaboot to boot LinuxPPC 2000
+> of my PowerBook Pismo ?
+> I can't find any documentation on the Yaboot software, and when
+> I copy the system folder on the LinuxPPC 2000 CD-ROM to my HFS Standard
+> harddisk and tries to boot from it, the only thing coming up is a penguin
+> instead of the mac os ROM face, and it just hangs there...
+>=20
+> I'm suspecting that it uses miBoot rather than the Yaboot....
+> Could someone please help me out one this one?
 
-I did try to compile gnomehack and it was fun to play afterwards although it
-segfaulted after about 15 minutes.
+see the yaboot-faq on
+http://www.alaska.net/~erbenson/doc/yaboot-faq.html=20
 
-By the way, I did all of my building with full helix gnome running, several
-rxvts open, netscape running, and while talking in #mklinux with xchat. I also
-ran gaim for a while during this period.
+also see the man pages included in the ybin (also on my page) package,
+which is a GNU/Linux based installer utility for yaboot.
 
-I am using a vanilla 2k install with a May build of Franz Sirl's gcc. My
-lombard is a 300 or 333 with 192 megs of ram.
+i recommend setting up a small 800K bootstrap partition as this makes
+using yaboot much easier. =20
 
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
-I am starting to doubt that this is a kernel level issue and I am starting to
-look at more likly culprits. Perhaps overheating or some other odd problem.
-Perhaps cheap memory modules.
+--6Vw0j8UKbyX0bfpA
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (GNU/Linux)
+Comment: For info see http://www.gnupg.org
+
+iEYEARECAAYFAjkeZsUACgkQJKx7GixEevx+UQCfU+P9r4GPZOxPFzHHvv8lDPuC
+zIYAoIwN30RUjiTluJXRbDXtXFkcKn4K
+=+S7i
+-----END PGP SIGNATURE-----
+
+--6Vw0j8UKbyX0bfpA--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
