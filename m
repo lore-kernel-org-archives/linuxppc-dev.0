@@ -1,42 +1,40 @@
-Subject: Re: Need IDE for embedded Linux project
-From: Kenneth Johansson <ken@kieraypc01.tn.sw.ericsson.se>
-To: brian.auld@adic.com
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <995FF289C9D69747A09E42992644595405B23618@penguin.adic.com>
-References: <995FF289C9D69747A09E42992644595405B23618@penguin.adic.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 24 Jan 2003 18:39:29 +0100
-Message-Id: <1043429969.4533.65.camel@spawn>
-Mime-Version: 1.0
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23621@penguin.adic.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Status of 440GP support?
+Date: Fri, 24 Jan 2003 10:13:16 -0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2003-01-21 at 21:10, brian.auld@adic.com wrote:
+Hello again,
 
-> Option 4: Linux development server <--> PC-X server software
->           (hummingbird) on windows development hosts.
+I'm trying to get an ebony board up and running using various howtos found @
+penguinppc.org and this mailing list. I saw some dialogue a while back
+regarding 440GP support, but never any real conclusion to the discussion.
 
-This is the one you want. But the windows machines would not be the
-developent host but the x server. Since all the programs and files would
-be on the one linux box that would be the development host.
+Can someone confirm the following:
 
-You can test a setup like this with
-http://www.cygwin.com/ + http://www.cygwin.com/xfree/ without spending
-any money on software.
+1) After looking at the source tree for linuxppc_2_4 and linuxppc_2_4_devel,
+it appears that 440GP support is only in linuxppc_2_4_devel. Does
+linuxppc2_4_devel mean "unstable", or is it simply the latest and greatest
+ppc kernel code for the 2.4 series that is stable.
 
-If you want to spend money I have previously used
-http://www.ncd.com/products/software/pcxware/ and at least version 4
-works quite good.
+2) I'm going through iterations of make menuconfig  (on linuxppc_2_4_devel
+tree) to try and get a kernel for the 440GP successfully built and am not
+having much success. Does anyone have a ".config" file that works that I
+could take a look at? Should it compile out of the box? I set up my
+cross-compile tools using the following:
+  -> binutils-2.12.90.0.12
+  -> gcc-3.2.1 (with gcc-3.2-crossppc.diff patch applied)
 
-Also you want to configure this with XDM (XDMCP) this way it looks just
-like everyone had their own linux computer.
+3) I plan to use 'Das U-Boot' as my boot loader. Any other snafus/gotchas
+anyone would be willing to let me in on ahead of time??
 
---
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Tellusborgsvägen  94              Fax: +46 8 404 72 72
-126 25 Stockholm                  ken@switchboard.ericsson.se
+Thanks,
 
+-- Brian
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
