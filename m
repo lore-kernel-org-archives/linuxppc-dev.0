@@ -1,109 +1,51 @@
-Date: Tue, 23 Feb 1999 15:22:13 -0800 (PST)
-From: "Robert G. Werner" <rwerner@lx1.microbsys.com>
-To: "Campbell, Marc" <CAMPBMA1@mail.northgrum.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PowerPC Beowulf Who?
-In-Reply-To: <36D3280F.6A8B241A@mail.northgrum.com>
-Message-ID: <Pine.LNX.3.96.990223143830.3620A-100000@lx1.microbsys.com>
+Message-Id: <199902240714.IAA00361@piglet.cpu.lu>
+Date: Wed, 24 Feb 1999 08:14:18 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: egcs-1.1.1-1c bug (was Re: major ksyms problem)
+To: thomassr@erols.com
+cc: nester@erols.com, Franz.Sirl@munich.netsurf.de,
+        mklinux-development-system@public.lists.apple.com,
+        linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.05.9902231559510.6465-100000@localhost.erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm pretty new to Beowulf myself but I haven't ran across any groups
-specifically oriented toward supporting PPC.  
+On  23 Feb, this message from Tom Vier echoed through cyberspace:
+[snip]
+>> >egcs-1.1.1-1c failed using -O0, -O2, and -O3 with all combinations of
+>> >-mcpu=601, -mcpu=604, and -fno-schedule-insns. -fpic did work, however
+>> >it addes an offset table symbol that makes insmod complain.
+>> >> > Feb 21 09:36:18 zero insmod: /lib/modules/2.0.37-osfmach3/net/bsd_comp.o:
+>> >> > Unhandled relocation of type 26 for .L343
+>> 
+>> Is "Unhandled relocation of type 26" the behaviour for standard compilation
+>> or for -fpic? You can't compile a kernel/modules with -fpic and expect
+>> modutils still to work, modutils only handles the minimum necessary
+>> relocation types.
 
-As in regards to the General Beowulf:
-Turnkey systems for Beowulf are still a new phenomenon.  Most of the famous
-clusters I've ever heard of were hand built.  
-I've heard of some companies (don't remember names) that will sell turnkey 
-systems but I'm assuming those are IA32 or Aplha.
-What exactly do you mean by SW revision support?
+Just to make sure we all talk about the same things, there was an issue
+with relocation of kernel modules some time ago when we moved to a
+newer version of egcs, which needed a newer version of modutils to be
+able to handle that new relocation.
 
-On the PPC:
-IIRC Firewire isn't even working under LinuxPPC as a regular interface yet.  
-Looking into using it for networking in a Beowulf cluster is a bit 
-premature IMHO.  Is there even any commercial HW for this?
-I really do have a hunch that once you can get Firewire,  say,  to work with 
-Linux on PPC,  then it will be trivial to make it work with the clustering
-libs.
+The modutils version to use is 2.1.121. If nowhere else, you can find a
+binary on my site (see below).
 
-Check out the Linux Paralale-HOWTO 
-(at http://metalab.unc.edu/mdw/HOWTO/Parallel-Processing-HOWTO-2.html) 
-for some information on who is developing the non-ethernet networking 
-technologies for clustering.  Perdue is big in this field,  IIRC.  They have 
-a nice technique using the paralale port for networking even(PAPERS).
-As far as I know,  all of these are great questions but Beowulf clustering
-technology is still experimental enough that many of your questions haven't 
-been completely answered for IA32 and Alpha let alone PPC.  
-Again,  I'm not an expert.  Just an enthusiastic beginer like yourself.
+Now, I may be completely off track, and this problem now is something
+completely different ;-)
 
-BTW,  what applications are you looking to use your cluster for?  Do you have a
-specific task in mind or are you just looking to make sure that LinuxPPC can do
-clusters too?
+Michel
 
-Robert G. Werner
-rwerner@lx1.microbsys.com
-Impeach Conggress!!
-
-"Just think, with VLSI we can have 100 ENIACS on a chip!"
--- Alan Perlis
-
-On Tue, 23 Feb 1999, Campbell, Marc wrote:
-
-> There are several issues.  Some PPC specific and some not.
-> 
-> General issues would include the ability to procure turn key system and software revision support.
-> 
-> PPC specific issues start with the assurance that the necessary  libs (e.g. MPI) have been checked out on PPC hardware clusters.
-> 
-> Another PPC issue is cluster communication.  In some cases standard ethernet is not enough cluster bandwidth.  In what case does FireWire make sense in a PPC Beowulf (Linux) cluster?  Is Myrinet (www.myri.com) a more appropriate clustering communication
- system? If Myrinet, then where are the LinuxPPC or YDL drivers?  Myrinet lists Alpha Linux and x86 Linux but NOT PPC Linux (http://www.myri.com:80/GM/).
-> 
-> Who is taking initiative in the PowerPC/AltiVec Beowulf (Linux clustering) area?
-> 
-> -- Marc
-> 
-> Marc Campbell
-> Northrop Grumman
-> Technology Development
-> High Performance Computing, Group Lead
-> Melbourne, FL
-> 
-> campbma1@mail.northgrum.com
-> 
-> "Robert G. Werner" wrote:
-> 
-> > Are the issues that different for PPC than for the other architectures that you
-> > need to special attention on this matter?  My understanding was that the
-> > clustering techniques used for Beowulf were based on standard libs (PVM,
-> > IIRC).  Thus the issues seem like they should be pretty much the same as on any
-> > other HW baring Networking HW questions.
-> > Am I way off base here?
-> >
-> > Robert G. Werner
-> > rwerner@lx1.microbsys.com
-> > Impeach Conggress!!
-> >
-> > To believe your own thought, to believe that what is true for
-> > you in your private heart is true for all men -- that is genius.
-> >                 -- Ralph Waldo Emerson
-> >
-> > On Mon, 22 Feb 1999, Campbell, Marc wrote:
-> >
-> > >
-> > > Any suggestions on who to contact for PowerPC & PowerPC/AltiVec Beowulf development, integration, sales, and/or support?
-> > >
-> > > Marc Campbell
-> > > Northrop Grumman
-> > > Technology Development
-> > > High Performance Computing, Group Lead
-> > > Melbourne, FL
-> > >
-> > > campbma1@mail.northgrum.com
-> > >
-> 
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
