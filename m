@@ -1,19 +1,15 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 8D48267A6B
+Return-Path: <greg.weeks@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id B1EEB67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 03:09:14 +1100 (EST)
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-In-Reply-To: <1110937421.28218.27.camel@jdub.homelinux.org>
-References: <1110907039.24673.12.camel@rhino.az.mvista.com>
-	<1110937421.28218.27.camel@jdub.homelinux.org>
-Content-Type: text/plain
-Message-Id: <1110989349.24673.99.camel@rhino.az.mvista.com>
-Mime-Version: 1.0
-Date: 16 Mar 2005 09:09:10 -0700
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 1/3] PPC440EP SoC and Bamboo board support
+	Thu, 17 Mar 2005 03:42:51 +1100 (EST)
+Message-ID: <42386209.2070407@timesys.com>
+Date: Wed, 16 Mar 2005 11:42:49 -0500
+From: Greg Weeks <greg.weeks@timesys.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="------------080203040009020207060406"
+Subject: [patch] fix gianfar unitilized spinlock.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +20,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-03-15 at 18:43, Josh Boyer wrote:
-> On Tue, 2005-03-15 at 10:17 -0700, Wade Farnsworth wrote:
-> > Hello all,
-> > 
-> > This adds support for the IBM/AMCC PPC440EP SoC and the Bamboo reference
-> > board.  Any comments would be appreciated.
-> 
-> Isn't the NAND chip on that board a 64MiB chip?  If so, the
-> BAMBOO_NAND_FLASH_SIZE define is wrong.  It should be 0x4000000.
-> 
-> Also, are there any plans to add MTD support for the NAND controller
-> found on those boards?
-> 
-> thx,
-> josh
+This is a multi-part message in MIME format.
+--------------080203040009020207060406
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yes, you're right.  I'll fix that.
+Fix unitilized spinlock in the gianfar tsec etherenet driver.
 
-I'm working on MTD support, including support for the NAND controller.
+Signed-off-by: Greg Weeks <greg.weeks@timesys.com>
 
-Thanks,
-Wade Farnsworth
+
+--------------080203040009020207060406
+Content-Type: text/x-patch;
+ name="gianfar.spinlock.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="gianfar.spinlock.patch"
+
+--- all/drivers/net/gianfar.c-orig
++++ all/drivers/net/gianfar.c
+
+@@ -384,6 +384,8 @@
+ 	mii_info->mdio_read = &read_phy_reg;
+ 	mii_info->mdio_write = &write_phy_reg;
+ 
++        spin_lock_init(&mii_info->mdio_lock);
++
+ 	priv->mii_info = mii_info;
+ 
+ 	/* Reset the management interface */
+
+--------------080203040009020207060406--
