@@ -1,32 +1,30 @@
-Date: Tue, 25 Mar 2003 18:37:55 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: dcbz works on 862 everywhere!
-In-reply-to: <005201c2f271$e1e199c0$020120b0@jockeXP>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>,
-	strauman@SLAC.Stanford.EDU
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLAEHCFLAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Subject: MPC107 I2C driver, interrupt driven
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: sensors@stimpy.netroedge.com
+Content-Type: text/plain
+Date: 25 Mar 2003 17:54:04 +0000
+Message-Id: <1048614855.20101.405.camel@newt>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > For a long time, we "solved" these problems on 8xx by not properly
-> > implementing copy-on-write pages and always marking pages dirty.
-> > It reduced the likelyhood of the problem, reduced the MMU overhead,
-> > but cost lots more in memory and processing time during forks.
-> > This still may not be a bad configuration option for selected
-> > applications.
->
-> Is it easy to patch/hard code? I would like to test the stability of my system.
+The second version of my driver for the I2C unit in Motorola's MPC107
+bridge chip, plus the 824x integrated processors, is now available:
 
-I am still intrested in trying copy-on-write but I can't figure out
-how. Is it a big job? Any pointers?
+http://www.humboldt.co.uk/mpc10xi2c.html
 
-  Jocke
+The changes in this release are:
+*) Now interrupt driven.
+*) Faster startup.
+*) Fixed bug in the stop condition (thanks to Timo Rossi).
+*) Uses official adapter and algorithm numbers.
+
+Once more, I welcome feedback on how it works for other people.
+
+- Adrian Cox
+http://www.humboldt.co.uk/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
