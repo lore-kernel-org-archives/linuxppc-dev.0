@@ -1,65 +1,42 @@
-From: "Michael A. Peters" <mpeters@omnilinux.com>
-Reply-To: mpeters@omnilinux.com
-To: edwintam@ieee.org, linuxppc-dev@lists.linuxppc.org
-Subject: php compilation fix
-Date: Tue, 8 Aug 2000 17:29:19 -0700
-Content-Type: text/plain
+Date: Tue, 8 Aug 2000 19:55:09 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: rtc again...
+In-Reply-To: <20000808174157.21374@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.1000808194747.24030A-100000@ofey.earthlink.net>
 MIME-Version: 1.0
-Message-Id: <00080818110803.04184@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I created a patch that makes the changes suggest to php-4.0.1pl2/main/main.c
+On Tue, 8 Aug 2000, Benjamin Herrenschmidt wrote:
 
-replace
-args = orig_args;
-by:
-memcpy(args, orig_args, sizeof(orig_args));
+>  - The second one is that ppc_md.get/set_rtc_time are passed (or return)
+> a time value independently of the timezone. That mean that they either do
+> no conversion and so it's the responsibility of the caller to "know" if
+> the RTC is in local time or UTC, or they do the conversion and so return
+> (and get passed) an UTC time. That's what I decided to do, so on
+> PowerMac, they do the adjustement from UTC to localtime and the opposite
+> inside those functions. Paul recently added code to also save the
+> timezone to the xpram. There's a small semantic problem with this code,
+> since it takes the time to set to the RTC as a parameter but uses the
+> global sys_tz. It should either use no parameter (and use only xtime/
+> sys_tz), or be passed both parameters. In this case, we can probably move
+> the init code that reads the initial time zone to the pmac_get_rtc_time() too.
 
-in lines 370 & 435
+Personally, I think UTC <-> local time conversion should be handled in
+userland.  Both hwclock and clock can handle both local time and UTC just
+fine.
 
-php-4 now builds beautifully on PowerPC, but mod_php-gd does not. Well, it
-builds- but apache won't start with gd.so selected in the php.ini file.
+Does Mac OS handle different timezone information in xpram well?  Timezone
+information is saved in xpram but it's also saved in some of config files.
+So, it appears to me that Mac OS will get confused or ignore or delete the
+timezone setting in xpram if it doesn't agree with the config file.
 
-Interestingly enough- on Red Hat 6.2 when I build php-4.0.1pl2 without the
-patch, mod_php-gd loads beautifully but with the same patch needed to even
-build php on PPC, mod_php-gd is broken.
 
-Something about the fix breaks the compilation of gd.so
-Well, it compiles, it just doesn't load.
-All other modules I currently build load after patch.
+Takashi Oe
 
-This is how I build gd.so:
-
-# Build PHP modules.
-build_ext() {
-gcc -fPIC -shared $RPM_OPT_FLAGS -DHAVE_CONFIG_H -I.\
-        -I. -I`/usr/sbin/apxs -q INCLUDEDIR` -I./Zend \
-        -I/usr/include/freetype -I/usr/include/$1 \
-        -I./ext/$1 -I./ext/$1/lib$1 -I./main\
-        -I./ext/xml/expat/xmltok -I./ext/xml/expat/xmlparse \
-        -DHAVE_CONFIG_H `grep ^CPPFLAGS Zend/Makefile | cut -f2- -d=` \
-        $4 $2 -o $1.so $3 -lc
-
-build_ext gd "ext/gd/gd.c ext/gd/gdttf.c ext/gd/gdcache.c ext/gd/gdt1.c" \
-        "-lpng -lgd -lttf -lt1 -lc" "-DHAVE_GD_PNG  -DHAVE_LIBGD \
-        -DHAVE_LIBJPEG -DHAVE_LIBPNG -DHAVE_GDIMAGECOLORRESOLVE \
-        -DHAVE_LIBT1 -DHAVE_LIBTTF -DHAVE_LIBGD13 -DCOMPILE_DL_GD"
-
-Any ideas? I'd like to include mod_php-gd if at all possible...
-
-The src rpm I use can be found at
-
-http://staging.omnilinux.com/~mpeters/php-4.0.1pl2-2.src.rpm
-
-please keep in mind that this spec file is still under major work- although
-(with the exception of mod_php-gd) everyhing that's not commented out currently
-builds spledidly and works on x86 and ppc, and mod_php-gd works on x86 w/o the
-patch.
-
---
-Michael A. Peters
-http://www.omnilinux.com/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
