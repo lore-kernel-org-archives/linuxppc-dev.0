@@ -1,16 +1,19 @@
-Return-Path: <NWilson@Airspan.com>
-Received: from mail.airspan.com (mail.airspan.com [62.189.116.4])
-	by ozlabs.org (Postfix) with ESMTP id 096AB2BDEB
+Return-Path: <felix@allot.com>
+Received: from exg.allot.com (mail.allot.com [199.203.223.202])
+	by ozlabs.org (Postfix) with ESMTP id 454F42BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Nov 2004 00:59:42 +1100 (EST)
+	Thu, 11 Nov 2004 07:24:24 +1100 (EST)
+Message-ID: <41925FDC.1060308@allot.com>
+Date: Wed, 10 Nov 2004 20:37:16 +0200
+From: Felix Radensky <felix@allot.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 10 Nov 2004 13:58:29 -0000
-Message-ID: <3506EDCDEC47904CBE6FD2E1DEEA8984020CFB71@fs5.airspan.com>
-From: "Neil Wilson" <NWilson@Airspan.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: mmap64/open64/pread etc on 440GX
+To: Matt Porter <mporter@kernel.crashing.org>
+References: <4190FDED.3080605@allot.com> <20041109111707.A14471@home.com>
+In-Reply-To: <20041109111707.A14471@home.com>
+Content-Type: multipart/alternative;
+	boundary="------------090101040903040904090800"
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 405GPr ioremap problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,77 +24,138 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a multi-part message in MIME format.
+--------------090101040903040904090800
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I am trying to write a command line utility for our dev board
-(440GX,2.6.9 kernel) in order to provide support for our hardware
-engineers.  As a test I am trying to dump the first few bytes of the
-U-boot header.
+Hi, Matt
 
-I though that this would work but using /dev/mem gives me a bad address
-error on the pread64, using /dev/kmem only reads back 0 bytes.  Is there
-something blindingly obvious that I am missing for using 36bit addresses
-? I believe the address is correct as I can see the boot code from
-within the kernel. Thanks.
+Thanks a lot for replying, your help is very much
+appreciated. I've followed your suggestion and now
+ioremap works as expected. I've removed ivocation
+of m4xx_map_io() replacing it by normal ioremaps
+for serial ports, RTC and ethernet adapter.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
+It would be great to see this stuff cleaned up in 2.6.
 
-unsigned char buf[10240];
+Felix.
 
-int main(int argc,char **argv)
-{
-	unsigned long long memAddr=3D0x00000001fff80000ULL;
-	int x;
-	int fd;
-	int readSize;
-	int pageSize;
-=09
-	pageSize=3Dsysconf(_SC_PAGESIZE);
-=09
-	fd=3Dopen64("/dev/mem", O_RDWR);
-	if(fd=3D=3D-1)
-	{
-		perror("open64");
-		return 0;
-	}
-=09
-	readSize=3Dpread64(fd,(void*)buf,pageSize,memAddr);
-=09
-	if(readSize !=3D pageSize)
-	{
-		perror("pread64 ");
-		printf("only read %d of %d requested bytes\n", readSize,
-pageSize);
-	}
-=09
-	close(fd);
-=09
-	// show some of it
-	if(readSize>0)
-	{
-		for(x=3D0;x<25;x++)
-		{
-			printf("%02x(%c)
-",buf[x],isprint(buf[x])?buf[x]:'.');
-		}
-		printf("\n");
-	}
-}
 
-Neil
+Matt Porter wrote:
 
---
-Neil Wilson
-Airspan Communications Ltd.
-Cambridge House, Oxford Road,
-Uxbridge, Middx, UB8 1UN, UK.
-Tel: +44(0)1895-467265
+>On Tue, Nov 09, 2004 at 07:27:09PM +0200, Felix Radensky wrote:
+>  
+>
+>>Hi, folks
+>>
+>>I have a 405GPr based board with 512M of RAM.
+>>My kernel is 2.4.17 from Monta Vista Linux 2.1.
+>>I'm  trying to reserve 64M on boot using mem=448M
+>>and map it later by
+>>
+>>ioremap(__pa(high_memory), 64*(1<<20));
+>>
+>>This worked fine when system had 256M of RAM,
+>>but now ioremap fails. If I understand the kernel
+>>code correctly, by adding more RAM I've reduced
+>>the vmalloc/ioremap space. I can also see that this
+>>space is reduced dramatically on boot by mappings
+>>done in arch/ppc/kernel/ppc4xx_setup.c:m4xx_map_io()
+>>
+>>Is there any way to fix problem ? Is it necessary to have
+>>a 1:1 virtual to physical mappings as its done in m4xx_map_io()
+>>or maybe higher virtual addresses can be used, thus
+>>allowing to save some precious ioremap space.
+>>    
+>>
+>
+>This is exactly why the PPC44x ports don't use io_block_map()...
+>it can interfere with dynamic mappings.  It is not necessary to
+>have 1:1 virtual to physical mappings nor is it necessary to
+>have m4xx_map_io() at all. One can use ioremap() to map any
+>space and let the kernel place things intelligently. In order
+>to use serial console you'll have to use early_serial_setup()
+>after you've ioremapped the UART...once you've removed the
+>io_block_map() call. Look at other ports to see how this is
+>done.
+>
+>Someday I might get down my list to cleaning up 40x stuff in 2.6.
+>
+>-Matt
+>
+>  
+>
 
-neilwilson@airspan.com
-www.airspan.com
+--------------090101040903040904090800
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Hi, Matt<br>
+<br>
+Thanks a lot for replying, your help is very much<br>
+appreciated. I've followed your suggestion and now<br>
+ioremap works as expected. I've removed ivocation<br>
+of m4xx_map_io() replacing it by normal ioremaps<br>
+for serial ports, RTC and ethernet adapter. <br>
+<br>
+It would be great to see this stuff cleaned up in 2.6.<br>
+<br>
+Felix.<br>
+<br>
+<br>
+Matt Porter wrote:
+<blockquote cite="mid20041109111707.A14471@home.com" type="cite">
+  <pre wrap="">On Tue, Nov 09, 2004 at 07:27:09PM +0200, Felix Radensky wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi, folks
+
+I have a 405GPr based board with 512M of RAM.
+My kernel is 2.4.17 from Monta Vista Linux 2.1.
+I'm  trying to reserve 64M on boot using mem=448M
+and map it later by
+
+ioremap(__pa(high_memory), 64*(1&lt;&lt;20));
+
+This worked fine when system had 256M of RAM,
+but now ioremap fails. If I understand the kernel
+code correctly, by adding more RAM I've reduced
+the vmalloc/ioremap space. I can also see that this
+space is reduced dramatically on boot by mappings
+done in arch/ppc/kernel/ppc4xx_setup.c:m4xx_map_io()
+
+Is there any way to fix problem ? Is it necessary to have
+a 1:1 virtual to physical mappings as its done in m4xx_map_io()
+or maybe higher virtual addresses can be used, thus
+allowing to save some precious ioremap space.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+This is exactly why the PPC44x ports don't use io_block_map()...
+it can interfere with dynamic mappings.  It is not necessary to
+have 1:1 virtual to physical mappings nor is it necessary to
+have m4xx_map_io() at all. One can use ioremap() to map any
+space and let the kernel place things intelligently. In order
+to use serial console you'll have to use early_serial_setup()
+after you've ioremapped the UART...once you've removed the
+io_block_map() call. Look at other ports to see how this is
+done.
+
+Someday I might get down my list to cleaning up 40x stuff in 2.6.
+
+-Matt
+
+  </pre>
+</blockquote>
+</body>
+</html>
+
+--------------090101040903040904090800--
