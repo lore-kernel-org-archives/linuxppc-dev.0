@@ -1,53 +1,43 @@
-Message-ID: <00a101c40291$c31a7120$0400a8c0@portatile>
-Reply-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-To: "Wolfgang Denk" <wd@denx.de>
+To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
 Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-References: <20040304110742.949A1C0655@atlas.denx.de>
 Subject: Re: "mkimage" not found 
-Date: Fri, 5 Mar 2004 10:10:53 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 05 Mar 2004 10:10:53 +0100."
+             <00a101c40291$c31a7120$0400a8c0@portatile>
+Date: Fri, 05 Mar 2004 10:19:36 +0100
+Message-Id: <20040305091941.73A3AC0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Wolfgang
+Dear Gianfranco,
 
-> Maybe your PATH ist not correct?
-
-You are perfectly right! I didn't add the line "export
-PATH=$PATH:/opt/eldk/usr/bin"  to .bashrc.
-Many thanks
-
-> > With the previous ELDK2.0 I would have generated the image with the
-"make
-> > pImage" command while now I suppose the command "make uImage" must be
-used.
-> > Is this correct?
+in message <00a101c40291$c31a7120$0400a8c0@portatile> you wrote:
 >
-> This is correct, but "make pImage" will still work, too.
+> > Maybe your PATH ist not correct?
+>
+> You are perfectly right! I didn't add the line "export
 
-unfortunately I had the following messages:
+Thanks for the confirmation.
 
-[gianfranco@home001 linux]$ make pImage
-make: *** No rule to make target `pImage'.  Stop.
-[gianfranco@home001 linux]$ grep -r pImage *
-arch/ppc/boot/Makefile:pImage: $(MKIMAGE) images/vmlinux.gz
-[gianfranco@home001 linux]$ grep -r uImage *
-arch/ppc/boot/Makefile:uImage  \
-arch/ppc/boot/Makefile: ln -sf vmlinux.UBoot images/uImage
-arch/ppc/Makefile:BOOT_TARGETS = zImage zImage.initrd znetboot
-znetboot.initrd uImage
-CHANGELOG:Add support for U-Boot boot image "uImage"
-[gianfranco@home001 linux]$
+> [gianfranco@home001 linux]$ make pImage
+> make: *** No rule to make target `pImage'.  Stop.
+...
+> Should I modify BOOT_TARGET into arch/ppc/Makefile?
 
+As you like. Maybe it's better to get used to the U-Boot image name.
 
-Should I modify BOOT_TARGET into arch/ppc/Makefile?
+Best regards,
 
-Best regards
-Gianfranco
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+There is is no reason for any individual to have a computer in  their
+home.      -- Ken Olsen (President of Digital Equipment Corporation),
+              Convention of the World Future Society, in Boston, 1977
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
