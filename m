@@ -1,33 +1,30 @@
-Mime-Version: 1.0
-Message-Id: <v04205501b39d320ee274@[206.173.236.183]>
-Date: Mon, 28 Jun 1999 07:11:08 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Randall R Schulz <rrschulz@cris.com>
-Subject: The Kernel Known as vmlinux.blueg3
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <BFC0587634C3D111AACB00805FA766FA02C1C5E3@exchny12.ny.smb.com>
+From: "Velasquez, Carlos" <carlos.velasquez@ssmb.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Date: Mon, 28 Jun 1999 11:37:34 -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hello,
 
-I have a question and an observation on the kernel "vmlinux.blueg3" 
-distributed with R5/1999:
+Finally got Linux running and after trying out some stuff I in text mode I
+am ready to move up into the world of X windows. How exactly do I get
+started?? What commands do I issue to start the X server, etc etc? Anyone
+know any good books or links where I can get documentation??
 
-Q: What sources and configuration options are necessary to build this kernel?
+Also, when booting with BootX, should I enable the "Video Drivers" option? I
+have a Umax S900 running @ 225Mhz with 162 Meg ram and an ixMicro Twin Turbo
+8 Meg graphics card. YDL is booting of my Jazz Drive (2.1gig)
 
-O: Although the GZIP'ed files vmlinux.blueg3 and vmlinux.blueg3v2 
-have different sizes on the servers that carry them, once unzipped 
-they checksum identically. Presumably the different size of the 
-GZIP'ed form reflects different compression setting. Oddly, I read 
-one report of someone who claimed one of them work better or 
-differently than the other. Presumably that was due to some other 
-issue.
+Carlos
 
-Thanks.
+______________________________________________________________________
+C.F. Velasquez
+Asst. Vice President
+Global Database and Technology Division
+Salomon Smith Barney, Inc.
 
-Randy Schulz
-Mountain View, CA
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
