@@ -1,39 +1,41 @@
-Date: Wed, 7 Aug 2002 18:02:32 +0200
-From: Gunnar Larisch <la@softing.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Oops during initializing ip-stack and receiving ethernet packets
-Message-ID: <20020807180232.A15922@w-la.dhcp.softing.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Tigon3 driver, broadcom 5307, 440GP, working?
+Date: Wed, 7 Aug 2002 11:05:12 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167D01C@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+On Wed, Jul 24, 2002 at 01:29:23PM -0500, I wrote:
+>
+> I've been playing around with the tigon3 driver and a broadcom
+> 5307 gigabit NIC in my IBM ebony... No luck so far.  The driver compiles
+> and even loads, I can run ifconfig(busybox really) to configure
+> the NIC,  and if I pull the network cable, the driver seems to
+> notice (get log messages about link is down, link is up) but so
+> far, I can't actually transmit or receive any packets.
+>
+> Anyone had any luck with this combination?
 
-on a PPC 855T with fec-ethernet and Linux 2.4.4 (version of denx) I get
-sometimes an oops message in ip_route_input() because of accessing
-rt_hash_table, when an ethernet package is received and just before
-the structure rt_hash_table in function ip_rt_init() is half initialized.
+Ok, I have determined that my problem lies in user-land, not
+the kernel.  Using the same kernel, but with a more elaborate
+start-up scripts/root filesystem (those from DENX ELDK-1.0)
+it works fine.
 
-On the console there is the following output:
+Using my minimal rootfs, with busybox, tinylogin, it doesn't
+work.  Is there anything needed to get the broadcom 5703 going
+besides ifconfig?
 
-...
-eth0: FEC ENET Version 0.2, FEC irq 3, MII irq 6, addr 00:06:71:01:02:03
-RAMDISK: Compressed image found at block 0
-eth0: Phy @ 0x1f, type AM79C874 (0x0022561b)
-...
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-Oops: kernel access of bad area, sig: 11
-...
-
-This can be reproduced easier with "arp -s .." and "ping -f".
-
-The problem is that interrupts of ethernet are enabled before IP-stack
-is initialized. What is the best way to fix this?
+Well, I now have a root filesystem that works and one that
+doesn't so I can slowly make one more like the other until
+I see which piece is the culprit/magic.
 
 Thanks,
-Gunnar
+
+-- steve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
