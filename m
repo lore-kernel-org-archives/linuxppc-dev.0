@@ -1,39 +1,46 @@
-Date: Tue, 27 Nov 2001 12:26:07 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Simon Winwood <sjw@cse.unsw.edu.au>
-Cc: Matt Porter <mporter@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More walnut boottime "fun"
-Message-ID: <20011127122607.M13091@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011127103042.A11612@cse.unsw.edu.au> <20011126221728.D13091@cpe-24-221-152-185.az.sprintbbd.net> <20011127050754.B15728@cx258813-a.chnd1.az.home.com> <20011128061857.A390@cse.unsw.edu.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011128061857.A390@cse.unsw.edu.au>
+Message-ID: <B164B53F5BD6D511888D009027732E1A02498D@ntserver.act.domain>
+From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: BDI2000 PTEs
+Date: Wed, 28 Nov 2001 14:49:32 +1100
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Nov 28, 2001 at 06:18:57AM +1100, Simon Winwood wrote:
-> On Tue, Nov 27, 2001 at 05:07:54AM -0700, Matt Porter wrote:
-> > On Mon, Nov 26, 2001 at 10:17:28PM -0700, Tom Rini wrote:
-> > >
-> >
->
-> [...]
->
-> > That said, the two stage relocator is "The Right Thing To Do(tm)".
-> > It only needs to be two stage, though when the load point > -Ttext.
->
-> 	I have fixed the relocate code so it does it in 2 stages ...
-> first it moves the relocate code, then it relocates the image, either
-> start first or end first, so it doesn't overwrite itself.
+Hi, all
 
-Yay.  I was just about to start on that now that I fixed the minor
-things upsetting my rpx.  I'll go and test this around and commit it or
-something similar today hopefully.
+I am trying to do module debugging. Module is loaded atvirtual address
+0xC500004C. At the moment I have memory translation enabled in BDI2000.
+PTBASE is set to 0xf0 and this entry is cleared. This works for kernel
+debugging, but memory translation fails when I try to do dynamically loaded
+module debugging.
+I guess I have to set PTE pointers for BDI2000.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+First I put value 0xC00000F4 into physical address 0xF0 (BDI2000 PTBASE).
+
+>From Linux Jernel Book, I understood that PTE pointer is at variable called
+"swapper_pg_dir". I tried to write its address into BDI2000 PTE kernel
+pointer (physical address 0xF4).
+
+Does not work.
+I think that PTEs have to updated dynamically, but I have no ideas where to
+get them from.
+
+Can anyone explain how to get the values for the PTE kernel and user
+pointers?
+
+I am using kernel 2.4.4. I looked at the later kernels that have BDI2000
+support. Unfortunately, support is only 8xx CPUs, not 8260. (I looked into
+files /arch/ppc/head.S. and /arch/ppc/head_8xx.S). It is difficult for me to
+update corresponding 8260 code mainly because I am not sure what this code
+does and I am not very familiar with PPC assembly.
+
+Any help is appreciated,
+Thanks.
+
+Rudolf
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
