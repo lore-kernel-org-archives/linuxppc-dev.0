@@ -1,59 +1,46 @@
-Message-ID: <39201DA7.96674A96@pop.agri.ch>
-Date: Mon, 15 May 2000 17:54:28 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
-MIME-Version: 1.0
-To: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: ppc assembler help needed
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <4.3.1.2.20000515180711.00b82540@mail.munich.netsurf.de>
+Date: Mon, 15 May 2000 18:08:57 +0200
+To: toa@pop.agri.ch
+From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
+Subject: Re: ppc assembler help needed
+Cc: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <39201DA7.96674A96@pop.agri.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+At 17:54 15.05.00, Andreas Tobler wrote:
 
-I have some problems understanding the following code snippet. It is
-from misc.S in kernel 2.3.
+>Hi,
+>
+>I have some problems understanding the following code snippet. It is
+>from misc.S in kernel 2.3.
+>
+>The function call is like this:
+>
+>void _insl_ns(volatile u32 *port, u32 *buf, int nl)
+>
+>_GLOBAL(_insl_ns)
+>         cmpw  0,r5,0
+>         mtctr   r5
+>         subi    r4,r4,4
+>         blelr-
+>00:     lwz     r5,0(r3)
+>         eieio
+>         stwu    r5,4(r4)
+>         bdnz    00b
+>         blr
+>
+>Am I right with port = r3, buf = r4, nl = r5?
+>If so, cmpw 0,r5,0 compares the content of r5, in my case nl, with zero
+>and stores the result in CR0?
 
-The function call is like this:
+No, cmpw 0,r5,0 compares r5 to r0, use cmpwi 0,r5,0 to make a signed
+compare of r5 against 0
 
-void _insl_ns(volatile u32 *port, u32 *buf, int nl)
+Franz.
 
-_GLOBAL(_insl_ns)
-        cmpw  0,r5,0
-        mtctr   r5
-        subi    r4,r4,4
-        blelr-
-00:     lwz     r5,0(r3)
-        eieio
-        stwu    r5,4(r4)
-        bdnz    00b
-        blr
-
-Am I right with port = r3, buf = r4, nl = r5?
-If so, cmpw 0,r5,0 compares the content of r5, in my case nl, with zero
-and stores the result in CR0?
-
-What does blelr- exactly do? 'branch if less than or equal' according to
-the 'Programming Environment for 32bit uPs' from Motorola.
-Commenting out the cmpw and the blelr- line as in kernel-2.2, then the
-function works. The values from nl are in the range from 10 to 20 (int).
-So the the blelr- shouldn't happen.
-
-The function in C looks a bit like: (Thanks to Paul)
-
-void _insl_ns(volatile u32 *port, u32 *buf, int nl)
-{
-        if (nl <= 0)
-                return;
-        do {
-                *buf++ = *port;
-                eieio();
-        } while (--nl != 0);
-}
-
-Thanks for any explanation
-
-Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
