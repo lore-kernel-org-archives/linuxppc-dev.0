@@ -1,45 +1,35 @@
-Message-ID: <3FC30F17.1070904@imc-berlin.de>
-Date: Tue, 25 Nov 2003 09:13:11 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <001701c3b34b$86b23190$170da8c0@ajaya>
+From: "Ajay" <ajay@mistralsoftware.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Question on PPC
+Date: Tue, 25 Nov 2003 17:29:05 +0530
 MIME-Version: 1.0
-To: Marius Groeger <mgroeger@sysgo.com>
-Cc: Jaap-Jan Boor <jjboor@aimsys.nl>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Preemptive Kernel and MPC8xx ???
-References: <3FC0A1D3.70706@imc-berlin.de> <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl> <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
-In-Reply-To: <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi All,
+I am planning to port linux-2.4.22 kernel to our custom hardware board which
+is based on PPC8250, I was searching for the ppc patch file for to apply to
+linux-2.4.22 kernel, but tough luck, Could you please point out the right
+source.
 
-> On Mon, 24 Nov 2003, Jaap-Jan Boor wrote:
->
->>Yes I do on 2.4.20 and 2.4.22 from kernel.org. So far all seems
->>to work but didn't do any measurements on it.
->>(I both use the preempt and low-latency patches)
-Have you writting your own device drivers?
-How did you make them preemptable?
+I as trying from last two days  to access www.linuxppc.org  and
+www.linux.ppc.org  but seems that server is down from long time as I can not
+access these web sites. Any comments!!
 
-Marius Groeger wrote:
-> AFAIK, you can pretty much drop the low-latency patch in favor of
-> using the lock-breaking patch. It is also available from Robert Love
-> at the cited home page.
-How about homemade device drivers when using the lock-breaking patch?
+One last question is if I am not lucky to get linux-2.4.22 patch for PPC I
+would like to try to add support for linux-2.4.22 could you please suggest
+correct point to start? I am thinking that I can start from linux-2.4.18
+kernel and listing all the files that has been patched for PPC and try to
+manually patch at first time, If lucky I could get through, is my approach
+correct.
 
-Thanks!
+Any pointers!!!
 
---
-Steven Scholz
-
-imc Measurement & Control               imc Meﬂsysteme GmbH
-Voltastr. 5                             Voltastr. 5
-13355 Berlin                            13355 Berlin
-Germany                                 Deutschland
-fon: +49 30 467090-0                    Tel: 030 / 467090-0
-fax: +49 30 4631576                     fax: 030 / 4631576
-
+Thanks and warm regards,
+Ajaya babu
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
