@@ -1,36 +1,34 @@
-Date: Sat, 24 Jul 2004 09:50:41 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: confusion regarding UART config and source files
-Message-ID: <Pine.LNX.4.60.0407240924590.12548@dell.enoriver.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Subject: Re: 2.4 versus 2.6 patches
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.60.0407231055450.5463@localhost.localdomain>
+References: <Pine.LNX.4.60.0407231055450.5463@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 24 Jul 2004 11:20:08 -0400
+Message-Id: <1090682408.4195.3.camel@localhost.localdomain>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   i know this has come up before but, if i understand correctly, given
-that UART support is moving from (at least in my case)
-arch/ppc/8xx_io/uart.c to drivers/serial/cpm_uart, is there any need
-to keep the
+On Fri, 2004-07-23 at 10:57 -0400, Robert P. J. Day wrote:
+> for most of the folks on this list, i suspect they'd be more
+> interested in patches to a 2.6-style Kconfig file, not a 2.4-style
+> config.in file, correct?
 
-   [ ] Use UART
+Yes. The 2.4 kernel is dead.
 
-entry in the MPC8xx CPM Options menu?
+There are two classes of people -- those who are shipping 2.4 already or
+at least close to doing so, and those who are bringing Linux up on a new
+board.
 
-   also, if one looks in drivers/serial/cpm_uart/Makefile, there's a
-test for the CONFIG_CPM2 variable which doesn't seem to exist anymore;
-certainly, a recursive grep doesn't show anything ever setting it,
-and grep showed a few other files that test the apparently obsolete
-CONFIG_CPM2.
+The former are hopefully already past the stage of being confused by
+such things in the config files, and the latter should most definitely
+be using 2.6.
 
-rday
+--
+dwmw2
 
-p.s.  and i assume that comment at the top of the cpm_uart/Makefile
-that reads,
-
-# Makefile for the Motorola 8xx FEC ethernet controller
-
-is just one of those ubiquitous cut and paste glitches. :-)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
