@@ -1,48 +1,62 @@
-Subject: Re: mpc8xx-2.3.10 configuration questions.
-To: dan@netx4.com (Dan Malek)
-Date: Fri, 17 Sep 1999 10:48:10 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <37E10DA8.4E819A64@netx4.com> from "Dan Malek" at Sep 16, 99 11:32:56 am
+Message-ID: <37E19581.D5837449@netx4.com>
+Date: Thu, 16 Sep 1999 21:12:33 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <19990917004810.870CB730@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: <sebastien_tadeoni@yahoo.fr>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Cross compilation for MPC860
+References: <19990917002315.B636D7B8@elph.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek writes:
-> The CLLF isn't a really a lite...it's a Classic with less stuff.
+Graham Stoney wrote:
 
-Right; I'm with you now.
+> Anyway, here's the complete list of problems I had building the 2.2.5 snapshot
+> for an 860T board.
 
-> I am currently working on this now, and if you actually have a
-> CLLF (I don't know how you would) the FEC isn't going to work
-> because of the faulty magnetics on the board (not RPCg fault, the
-> manufacturer acknowledged an error after we found it).  The new
-> CLLFs will be available within a few days.
+The only likely 860T board to build with 2.2.5 is the FADS, and
+I have not kept that up to date (which is why fec.c is out of date).
 
-No, I don't have one yet; I'm just building the kernel in eager anticipation
-for when the new CLLF with 860T hits my desk.
 
-> What is fec.c.dist?  It seems like I am always fixing this one.
+> The FEC driver fell through the cracks changing request_irq to request_8xxirq:
 
-It's just what I renamed fec.c from the snapshot to before I hacked it.
+There is more that has to change if you are  not building for
+a FADS board.  You have to assign the appropriate MII interrupts
+and write the MMI command/status for the particular PHY you are
+using.
 
-> I pretty sure I got it right in the 2.3.18 kernel.
+The RPCg Classic and CLLF are both 860T boards.  I will update all
+of the fec.c driver when I get a chance to port to those boards.
 
-I'm using the linux-2.3.18 snapshot kernel from the ftp site, which has it
-wrong I'm afraid.
 
-> The CLLF will be built from the Classic configuration, so it
-> isn't appropriate to put this here.  There is also more that needs
-> to be added for the MII interrupts through a Port C bit.
 
-I've reconfigured/recompiled my kernel for the Classic, but it sounds like it
-won't Just Work(tm). I'm happy to alpha test any mods you're working on; once
-the board & doco arrive, I can probably do some kernel hacking as well...
+> The Makefile in arch/ppc/kernel includes openpic.o, i8259.o and pmac_pic.o
+> whenever CONFIG_APUS isn't set; even though most other platforms don't want
+> them either.
+> 
+> drivers/char/Makefile includes pc_keyb.o and defkeymap.o whenever the ARCH is
+> not m68k, which means they get included in all embedded 8xx builds.
+> 
+> drivers/macintosh/Makefile includes via-cuda.o et al whenever CONFIG_MBX is
+> not defined. I changed it like this:
 
-Thanks,
-Graham
+You shouldn't have to change it for anything.  If your linker
+is working properly, it isn't going to include those objects and
+there is no harm in building them.
+  
+
+> 
+> Lots of the EXPORT_SYMBOLs in arch/ppc/kernel/ppc_ksyms.c caused me grief;
+> I had to wrap isa_io_base, isa_mem_base and pci_dram_offset in
+> #ifdef CONFIG_PCI. I #if 0'd out _prep_type and ucSystemType, and all of:
+
+Something is wrong with your tools or the configuration you have
+selected.  None of these changes are necessary.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
