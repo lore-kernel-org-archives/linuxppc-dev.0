@@ -1,73 +1,37 @@
-From: Christophe.LINDHEIMER@fr.thalesgroup.com
-Message-ID: <66CE949D18BCB249ABE8D9AF48C4F1CE77770F@helios.gnv.tcc.thomson-csf.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Question about ramdisk. 2
-Date: Mon, 29 Sep 2003 17:14:17 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Mon, 29 Sep 2003 08:33:26 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Jean-Denis Boyer <jdboyer@m5t.com>,
+	Steffen Rumler <Steffen.Rumler@siemens.com>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem of concurrency in arch/ppc/8260_io/uart.c
+Message-ID: <20030929153326.GC862@ip68-0-152-218.tc.ph.cox.net>
+References: <001701c384ce$7a5c3ae0$020120b0@jockeXP> <IGEFJKJNHJDCBKALBJLLKEJOFPAA.joakim.tjernlund@lumentis.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLKEJOFPAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi.
+On Sat, Sep 27, 2003 at 03:43:51PM +0200, Joakim Tjernlund wrote:
+> > > If that freaks out the CPM, put one
+> > > byte of zero into the buffer and give it a count of 1.  Then you just have
+> > > to hold the lock across the update of the BD ptr, just like everywhere else.
+> >
+> > That will work, but wont the zero show up on the console? hmm, since
+> > the zero count will be very unlikely case anyhow,  I can live with that.
+>
+> OK, this patch does the above. I left my test function(err_copy_from_user)
+> to simulate bad copy_from_user() copies every now and then. Just remove
+> it and change the call in rs_8xx_write when you have tested it.
+> Works great for me, not even jove(emacs like editor) will break it.
 
-I also tried this.
-under host :
-genromfs dir -o test.img ~/Test   -> build a romfs file with my application
-then
-mkcramfs ..... -> build a cramfs that contains the test.img.
-Then I flash the cramfs on my target...
+KGDB still works for me.  Dan, happy with this?
 
-On the target
-dd -if /bin/test.img -of /dev/rd/0
-mount -t romfs /dev/rd/0 /test
-
-And in /test I find my application. Exactely what I need
-
-So I would to do this but without flashing.
-So I need to replace "dd -if /bin/test.img -of /dev/rd/0" by something done
-only with the help of BDM...
-
-Any ideas ?
-
-
-Thanks.
-
-> -----Message d'origine-----
-> De : Christophe.LINDHEIMER@fr.thalesgroup.com
-> [mailto:Christophe.LINDHEIMER@fr.thalesgroup.com]
-> Envoyé : lundi 29 septembre 2003 16:08
-> À : linuxppc-embedded@lists.linuxppc.org
-> Objet : Question about ramdisk.
->
->
->
-> Hi.
->
-> I am using where linux is running in flash.
-> I would like to use a ramdisk to develop my application.
-> So I make mount -t ramdisk /dev/rd/0 /rdisk to get my ramdisk.
->
-> The application is developed on my host computer and the only
-> link between
-> the board and the host is my Bdi2000.
->
-> So I would like to copy my cross compiled application into
-> the ramdisk on my
-> target.
->
-> Is there a way to do that ?
->
-> I guess that I need to know the @ of the ramdisk ?
-> How can I get it ?
->
-> Thanks
->
-> Regards
->
-> Chris
->
->
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
