@@ -1,8 +1,9 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0A02@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Qsyang'" <yangqs@163.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Can i use BDI2000 to debug "U-Boot" in Flash memory ?
-Date: Tue, 26 Aug 2003 09:02:20 -0400
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061CAD@exchwenz01.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: "'Steven Scholz '" <steven.scholz@imc-berlin.de>,
+	"'LinuxPPC '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: PCMCIA Modem/Serial Cards and MPC8xx?
+Date: Wed, 27 Aug 2003 09:40:33 +1200
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,27 +11,76 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If you are debugging the code from FLASH make sure you use hardware break
-points, software break points will not work.
+Steve,
+
+I am not at my desk but can tell you that you will have to change the
+options for serial driver.  I have use the PCMCIA for serial ports but I
+have setup both the MPC8xx uarts and a standard 16550 uart chip to work in
+the same Linux kernel.  from the look of your kernel output you have not
+emabled any serial options so your driver is looking for a build in 16550
+and failing to find one.  there is a file in <kernel root>/include/asm
+called serial.h this fle contains the devines for the serial ports used
+butthe kernel.  There are not used by the MPC8xx uart driver. You are going
+to have to figure out what you want to definein there for your PCMCIA serial
+port.
+I hoe this helps you.
+
+Regards,
+Rod Boyce
 
 -----Original Message-----
-From: Qsyang [mailto:yangqs@163.com]
-Sent: Monday, August 25, 2003 9:21 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Can i use BDI2000 to debug "U-Boot" in Flash memory ?
+From: Steven Scholz
+To: LinuxPPC
+Sent: 8/26/2003 10:40 PM
+Subject: PCMCIA Modem/Serial Cards and MPC8xx?
 
 
+Hi there,
 
- Hi:
- i am new to this, i am porting U-Boot to my MPC852 board. First of
- all i programed the monitor code to Flash memory through BDI2000, i
- just want getting into a normal "C" debug enviroment,is that right? or
- should i place it into Sdram?(some guy told me,but it has problem,maybe
- my fault) any help would be appreciated !
+is someone using a PCMCIA Modem or Serial Port card with an MPC8xx
+system?
 
-　　　　　　　　Qsyang
-　　　　　　　　yangqs@163.com
-　　　　　　　　　　2003-08-26
+I build a kernel for a TQM860L based board enabeling CONFIG_SERIAL=y
+as the PCMCIA HowTo states. (I also have CONFIG_SERIAL_CONSOLE=y). But
+while booting (or insmod serial.o) I get :
+
+CPM UART driver version 0.04
+ttyS0 on SMC1 at 0x0280, BRG1
+ttyS1 on SMC2 at 0x0380, BRG2
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with no serial options enabled
+Oops: kernel access of bad area, sig: 11
+NIP: C009FA6C XER: 00000000 LR: C00A4174 SP: C01D7E80 REGS: c01d7dd0
+TRAP: 0300    Not tainted
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 800003F9, DSISR: 00000469
+TASK = c01d6000[1] 'swapper' Last syscall: 120
+last math 00000000 last altivec 00000000
+GPR00: 00000000 C01D7E80 C01D6000 C01D7E88 00000001 00000000 C01CC3D8
+000003F8
+GPR08: 00000000 800003F9 00000000 00000000 00000001 100B0020 C00A37C8
+C00A301C
+GPR16: C00A1B68 C00A2834 C00A3138 C009FC10 C009FB84 C00A2CAC C00A1C38
+C00A1BB0
+GPR24: C00A28BC C00A1AE8 C00A1AD0 C0151FD8 C0151FD8 C017C130 C017C1F4
+C01D7E88
+Call backtrace:
+C000FE44 C0161A00 C015B588 C015B5D0 C000227C C0004BA0
+Kernel panic: Attempted to kill init!
+
+Backtrace is:
+0xc000fe44 -- 0xc000fd78 + 0x00cc   release_console_sem
+0xc0161a00 -- 0xc0161630 + 0x03d0   rs_init
+0xc015b588 -- 0xc015b558 + 0x0030   do_initcalls
+0xc015b5d0 -- 0xc015b5a8 + 0x0028   do_basic_setup
+0xc000227c -- 0xc0002268 + 0x0014   init
+0xc0004ba0 -- 0xc0004b74 + 0x002c   kernel_thread
+
+Any ideas?
+
+Thanks a million!
+
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
