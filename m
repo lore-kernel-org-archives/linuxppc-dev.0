@@ -1,32 +1,23 @@
-Message-ID: <02bc01c3c003$406fa7c0$3cc8a8c0@ANOSP>
-From: "Colin Leroy" <colin@colino.net>
-To: "Guido Guenther" <agx@sigxcpu.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-References: <20031211162011.GD913@bogon.ms20.nix>
+Date: Thu, 11 Dec 2003 17:52:43 +0100
+From: Guido Guenther <agx@sigxcpu.org>
+To: Colin Leroy <colin@colino.net>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: fixup G4 iBook's /proc/cpuinfo
-Date: Thu, 11 Dec 2003 17:24:29 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <20031211165243.GE913@bogon.ms20.nix>
+References: <20031211162011.GD913@bogon.ms20.nix> <02bc01c3c003$406fa7c0$3cc8a8c0@ANOSP>
+Mime-Version: 1.0
+In-Reply-To: <02bc01c3c003$406fa7c0$3cc8a8c0@ANOSP>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-> + { "PowerBook6,3", "iBook G4 12\"",
-> + PMAC_TYPE_UNKNOWN_INTREPID, intrepid_features,
-> + PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-> + },
->   { "PowerMac7,2", "PowerMac G5",
->   PMAC_TYPE_POWERMAC_G5, g5_features,
->   0,
-
-
-You can remove the " 12\"" bit, as the 14" are PowerBook6,3 too :)
-
---
-Colin
-Ne disez pas disez, mais disez dites
+On Thu, Dec 11, 2003 at 05:24:29PM +0100, Colin Leroy wrote:
+> You can remove the " 12\"" bit, as the 14" are PowerBook6,3 too :)
+Thanks, updated at:
+ http://honk.physik.uni-konstanz.de/~agx/linux-ppc/kernel/g4-ibook-detect-model-2.6.diff
+ http://honk.physik.uni-konstanz.de/~agx/linux-ppc/kernel/g4-ibook-detect-model-2.4.diff
+Cheers,
+ -- Guido
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
