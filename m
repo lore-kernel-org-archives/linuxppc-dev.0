@@ -1,35 +1,34 @@
-Date: Thu, 8 Jul 2004 18:48:53 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Jean-Christophe Dubois <jdubois@mc.com>
-Cc: Bret Indrelee <Bret.Indrelee@qlogic.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: proposed patch for cross compiling from Solaris 2.8
-Message-ID: <20040709014853.GQ23135@smtp.west.cox.net>
-References: <Pine.LNX.4.44.0407060823120.2040-100000@spider.ancor.com> <1089121664.31278.264.camel@fr-jdubois1.ad.mc.com> <1089125860.18578.12.camel@fr-jdubois1.ad.mc.com> <1089279330.18578.2175.camel@fr-jdubois1.ad.mc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1089279330.18578.2175.camel@fr-jdubois1.ad.mc.com>
+In-Reply-To: <4890.69.17.104.254.1089335444.squirrel@mail.theptrgroup.com>
+References: <4890.69.17.104.254.1089335444.squirrel@mail.theptrgroup.com>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <A64364E3-D14D-11D8-B95B-003065F9B7DC@embeddededge.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: 2.6.x on MPC82xx
+Date: Thu, 8 Jul 2004 22:14:03 -0400
+To: jeff@theptrgroup.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jul 08, 2004 at 11:35:31AM +0200, Jean-Christophe Dubois wrote:
+On Jul 8, 2004, at 9:10 PM, Jeff Angielski wrote:
 
->
-> Hello,
->
-> I rewrote my patches to be a little more well behaved in regards to non
-> linux systems.
->
-> Any feedback is welcome. Once again this is just to enable Solaris 2.8
-> (and others?) to be a valid host to cross-compile the 2.6 Linux Kernel
-> (for PPC).
+> Does anybody have a 2.6.x series kernel working on their MPC82xx
+> boards?
 
-Sadly, it looks like Cygwin (the other odd host to build a linux kernel on)
-lacks <inttypes.h>.
+Ah, yep.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+> If so, did you start with the linuxppc-2.5 or another kernel tree?
+
+That's a good place to be.  linux-2.5 should work and I think the
+kernel.org kernels should work, too.
+
+Of course, there are a bunch of CPM changes going in right now,
+so it may be a little unstable until that settles down.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
