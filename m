@@ -1,50 +1,58 @@
-Date: Mon, 16 Aug 1999 09:12:54 +0200 (CEST)
+Date: Mon, 16 Aug 1999 09:32:51 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Eric Dorland <dorland@lords.com>
-cc: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with the atyfb driver on Power Mac G3
-In-Reply-To: <l03130300b3dd08561f04@[209.226.106.245]>
-Message-ID: <Pine.LNX.4.10.9908160910040.19649-100000@mercator.cs.kuleuven.ac.be>
+To: Michel Lanners <mlan@cpu.lu>
+cc: mj@ucw.cz, paulus@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Various PMac PCI patches
+In-Reply-To: <199908150940.LAA00252@piglet.cpu.lu>
+Message-ID: <Pine.LNX.4.10.9908160924290.19649-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 15 Aug 1999, Eric Dorland wrote:
-> >At 4:28 PM -0400 8/15/99, Eric Dorland wrote:
-> >>So now atyclk works, and through some experimenting, I've found that
-> >>changing the dsp_on value from 24 to 29 removes all the snow I have been
-> >>experiencing, without any noticeable slow down. Hooray! Now, the problem is
-> >>that this value does not get retained when switching virtual consoles, ie
-> >>whenever I switch virtual consoles or start X the dsp_on value gets reset
-> >>back to 24. How can I get this value to stay fixed? Should I just hardcode
-> >>it into my own kernel compile?
-> >
-> >Probably not.  Whenever you change video modes, dsp_on and dsp_off are
-> >recalculated from the new parameters; a fixed value will not be right for
-> >all situations.
+On Sun, 15 Aug 1999, Michel Lanners wrote:
+> >> - The IRQ fixup code already checks for the presence of interrupts, so
+> >> I'v changed Martin's comment. Also, I'm not sure if PMac PCI boards can
+> >> ever use more than one interrupt, as all PCI interrupt lines are OR'ed
+> >> together on the bridge....
+> > 
+> >    If they really are, just kill the whole comment, it's bogus.
 > 
-> You're right of course. I would have to modify the calculation in some way.
-> Any ideas how?
+> OK, I'll do that. Paul, any idea whether the IRQ OR'ing is done on the
+> MPC106 as well? Geert, what about your board?
 
-The first thing is to repeat the experiment with a few samples of the set of
-zillions of video modes. Then you have to try to find a relation between all
-parameters. aty_dsp_gt() in drivers/video/atyfb.c may be good start, just
-assume some of the hardcoded values there are wrong.
+On the LongTrail, interrupts are controlled by the OpenPIC in the Hydra Mac
+I/O. This OpenPic has 20 inputs, of which 6 are used by PCI (asm-ppc/hydra.h):
 
-If you find the Magic Formula, just let us know :-)
+#define HYDRA_INT_EXT1          12      /* PCI IRQW */
+#define HYDRA_INT_EXT2          13      /* PCI IRQX */
+#define HYDRA_INT_EXT3          14      /* PCI IRQY */
+#define HYDRA_INT_EXT4          15      /* PCI IRQZ */
+#define HYDRA_INT_EXT5          16      /* IDE Primay/Secondary */
+#define HYDRA_INT_EXT6          17      /* IDE Secondary */
 
-> >If you use the exact same mode (and I mean exact) on all VCs (including the
-> >one X is running on), no mode switch will be performed when you change VCs,
-> >which should preserve your custom dsp_on setting.
-> 
-> This, unfortunately, does not seem to be the case. I am using the smae mode
-> in all my VCs and X and the dsp_on setting is not preserved. I think that
-> the atyfb driver gets re-intialized each time I change VCs.
+FYI, input 0 is used for the legacy ISA cascade.
 
-Atyfb always reprograms the video mode. The optimization of not doing that
-wasn't implemented yet.
+IRQ[W-Z] are wired to INT #A-D in the 4 PCI slots using the standard interrupt
+line rotating technique. Full schematics at
+ftp://ftp.austin.ibm.com/pub/PPC_support/reference_designs/longtrail/ :-)
+
+The IDE interrupts are wired to the interrupt lines on the W83C553 PCI/ISA+IDE.
+
+> >    No driver should touch PCI_INTERRUPT_LINE at all. If it does,
+> > it's buggy and should be fixed instead of working around it in generic
+> > PCI code. The only correct way how to get the interrupt number is to
+> > look at pci_dev->irq (on some architectures, the interrupt numbers
+> > are too large to fit in the interrupt line configuration register).
+>
+> OK, then I'll only update pci_dev->irq. We'll see if any driver
+> breaks ;-)
+
+On the LongTrail (and other PPC boxes with OpenPIC), pci_dev->irq is changed by
+the PCI fixup code since interrupts 1-16 are mapped to the legacy ISA
+interrupts for compatibility reasons, while 17-36 are the 20 OpenPIC
+interrupts.
 
 Greetings,
 
