@@ -1,31 +1,34 @@
-Message-ID: <3920414A.8B3AC43B@pop.agri.ch>
-Date: Mon, 15 May 2000 20:26:26 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
-MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl@munich.netsurf.de>
-CC: Linux-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ppc assembler help needed
-References: <4.3.1.2.20000515180711.00b82540@mail.munich.netsurf.de>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200005151826.OAA26764@mal-ach.watson.ibm.com>
+To: toa@pop.agri.ch
+cc: Franz Sirl <Franz.Sirl@munich.netsurf.de>,
+        Linux-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ppc assembler help needed 
+In-Reply-To: Message from Andreas Tobler <toa@pop.agri.ch>
+   of "Mon, 15 May 2000 20:26:26 +0200." <3920414A.8B3AC43B@pop.agri.ch>
+Date: Mon, 15 May 2000 14:26:28 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hoi Franz,
+>>>>> Andreas Tobler writes:
 
-Franz Sirl wrote:
-> No, cmpw 0,r5,0 compares r5 to r0, use cmpwi 0,r5,0 to make a signed
-> compare of r5 against 0
+Andreas> Franz Sirl wrote:
+>> No, cmpw 0,r5,0 compares r5 to r0, use cmpwi 0,r5,0 to make a signed
+>> compare of r5 against 0
 
-This works, thanks. The next question is automatically in the queue:
+Andreas> This works, thanks. The next question is automatically in the queue:
 
-all functions, insX/outsX in misc.S use this cmpw 0,r5,0, shouldn't it
-be a cmpwi 0,r5,0 then?
+Andreas> all functions, insX/outsX in misc.S use this cmpw 0,r5,0, shouldn't it
+Andreas> be a cmpwi 0,r5,0 then?
 
-Thanks,
-Andreas
+	Presumably all of the assembly functions want to compare against
+an immediate value and should use cmpwi.
 
-BTW, does it mind which CPU is behind? In my case it's a 601.
+Andreas> BTW, does it mind which CPU is behind? In my case it's a 601.
+
+	cmpwi is valid for all PowerPC processors, including 601.
+
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
