@@ -1,28 +1,27 @@
-To: Henry Worth <haworth@ncal.verio.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: xine, ppc and illegal instructions
-References: <3ABC295A.DBBF800@ncal.verio.com>
-From: Stefan Berndtsson <stefan@nocrew.org>
-Date: 24 Mar 2001 11:57:35 +0100
-In-Reply-To: <3ABC295A.DBBF800@ncal.verio.com>
-Message-ID: <874rwj5t9c.fsf@hades.nocrew.org>
+Message-ID: <3ABCBFC3.14FCC0B4@denise.shiny.it>
+Date: Sat, 24 Mar 2001 16:39:47 +0100
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Sound skips
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Henry Worth <haworth@ncal.verio.com> writes:
+When I play music under high load the sound has a lot of
+short interruptions. It seems not to be related with I/O. I tried
+Alsaplayer and xmms with OSS output. Xmms with esd is better but
+not perfect. Xmms uses a buffer of 2KB but I had to patch it to
+use a 8KB large one to make it play fine on my G3, but it still
+jumps sometimes on the G4.
+This happend on my G3 and a friend's G4(2000).
+I don't remember my 7300 had this problem.
 
-> Shutdown esd (best) or use the -A esd option.
+I don't know what causes that (ints kept disabled too much time ?)
+but if someone has a patch to try I'me here.
 
-I'm afraid that doesn't help at all. It still produces the illegal instruction.
-Hmm.. running it using strace, I can sometimes make it get past the plugin-
-check and show the box. This nearly never happens with all the plugins
-available, but gets easier if I remove some of them.
+Bye.
 
-I'll wait for the new patches and see if that changes anything though.
-
-/Stefan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
