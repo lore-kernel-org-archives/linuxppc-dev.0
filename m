@@ -1,50 +1,40 @@
-Message-ID: <3FC55D8C.50200@cs.fujitsu.co.jp>
-Date: Thu, 27 Nov 2003 11:12:28 +0900
-From: Takeharu KATO <tkato@cs.fujitsu.co.jp>
+Message-ID: <3FC56D24.6030000@kegel.com>
+Date: Wed, 26 Nov 2003 19:19:00 -0800
+From: Dan Kegel <dank@kegel.com>
 MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Felix Domke <tmbinc@elitedvb.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405 Critical Interrupts
-References: <3FC4D4B5.2030901@elitedvb.net> <20031126134814.A9704@home.com>
-In-Reply-To: <20031126134814.A9704@home.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Cross Compiler running under Win32
+References: <3FC4B0EC.3090107@imc-berlin.de>
+In-Reply-To: <3FC4B0EC.3090107@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Domke :
+Steven Scholz wrote:
+> does someone know of a cross compiler (producing code for let's say MPC8xx) that
+> is running natively under win32 (Windows2000/XP) without stuff like CYGWIN?
+>
+> I'am just wondering.
+> Apparently MVISTA released their new "DevRocket" which is supposed to
+> run under
+> WindowsXP. So I assume they have cross compilers for "30 processors from 8
+> architectures" running under Windows...
 
->>Does CRIT_EXCEPTION work? Is do_IRQ reentrant? Should i use the same
->>interrupt processing as a normal hardware interrupt, with the exception
->>that only "critical"-flagged interrupts are processed?
->>
->>Any suggestions?
->>
->>
-As far as I know, critical interrupt in ppc4xx archetecture is handled
-as  a kind of unknown Interrupts. So It make system down in 2.6 series
-(this may also be true in 2.4).
+They could well be using cygwin for the compilers; they charge
+enough that the licensing fee for cygwin is peanuts, I bet.
 
-In linux kernel , the kernel stack is changed to critical interrupt
-stack instead of
-user process's kernel stack when it occuers in super visor mode.
-So do_IRQ can not be called in crittical interrupt(because it call
-preempt relevant
-functions).
+But what's wrong with using Cygwin?
 
-We have  implemeted critical interrupt handling facilites in 2.6 kernel .
-In this implementation, critical interrupt specific interrupt handling
-routines.
-If you need our patch, please contact me(cause we need some periods to
-prepare the patch).
-
-Regards,
-
---
-Takeharu KATO
-Fujitsu Limited
-Email:tkato@cs.fujitsu.co.jp (ext. 7112-4621)
+Answering my own question, it's a bit of a challenge to use
+cygwin in an installed package because there are fairly
+frequent incompatibilities introduced in the cgywin dll,
+so if the user installs a newer or older version than you
+expect, your installed package won't work.  It's rather
+maddening.  And it seems there's no way to 'embed' cygwin
+in such a way that it uses a private copy of the cygwin dll.
+- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
