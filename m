@@ -1,69 +1,58 @@
-Date: Fri, 15 Jan 1999 12:57:32 +1100
-Message-Id: <199901150157.MAA01789@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: alan@cymru.net, jskov@cygnus.co.uk, cort@persephone.cs.nmt.edu,
-        linuxppc-dev@lists.linuxppc.org, Jes.Sorensen@cern.ch,
-        linux-apus@sunsite.auc.dk
-In-reply-to: <199901142052.UAA24588@snowcrash.cymru.net> (message from Alan
-	Cox on Thu, 14 Jan 1999 20:52:51 +0000 (GMT))
-Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199901142052.UAA24588@snowcrash.cymru.net>
+Date: Thu, 14 Jan 1999 20:18:16 -0600 (CST)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Brad Midgley <brad@pht.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: floppy driver bug: write-protect
+In-Reply-To: <Pine.LNX.3.95.981115182106.10912A-100000@pacific.pht.com>
+Message-ID: <Pine.LNX.3.96.990114201533.20267D-100000@globegate.utm.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alan Cox <alan@cymru.net> wrote:
+On Sun, 15 Nov 1998, Brad Midgley wrote:
 
-> >  eieio: prevent CPU from reordering/collapsing reads/writes to memory.
-> >         (but otherwise run at full steam!)
+> is this a known bug?
 > 
-> Thats what mb() does - its a memory-barrier hence the name - it imposes
-> strong store ordering properties across it. 
+> on intel linux, if you try to mount a write-protected floppy disk
+> read-write, the mount succeeds but is demoted to read-only. 
+> 
+> the current pmac kernel will mount the disk read-write and will allow
+> "writes" to the disk. the writes even appear to succeed and the mounted
+> filesystem returns really strange results when you look at it (it's
+> caching the "writes" and everything seems normal until uncached data has
+> to be loaded from the disk!)
+> 
+> is it known how to query the drive for the write-protect status? does this
+> problem affect any other removable media?
 
-My understanding of the original mb() (and correct me if I'm wrong)
-was that it basically said "an interrupt or another processor might
-have changed memory, so don't keep values from memory cached in
-registers".  With wmb() on SMP, this seems to be extended to include
-"make sure other cpus can see the values we just wrote".  I don't know
-exactly how rmb() differs from mb().
+Wow, so you guys have that problem, too, eh?  MkLinux's floppy driver does
+the same thing.  It's given me fits trying to find something in LinuxPPC
+to demote it to read-only.  Guess that's why I didn't find anything!!!
+:-)
 
-I just read in the Programming Environments Manual (the doc that
-defines the PPC architecture) that eieio is supposed to provide
-ordering for two sets of accesses:
+If anybody figures out how to fix this (no doubt the same fix, roughly,
+for both), please let me know.  I've gotten as far as forcing the device
+read-only, but that flag is ignored by at least umsdos filesystem support,
+not sure what else....  :-(
 
-- loads and stores to cache-inhibited, guarded addresses, and stores
-  to write-through cached addresses (i.e. I/O accesses),
 
-- stores to cached, coherent addresses (i.e. addresses where the
-  corresponding PTE has WIM == 001).
+Later,
+David
 
-The two sets are ordered separately.  The eieio instruction doesn't
-wait for previous accesses to complete, it just inserts a barrier into
-the stream of memory accesses.
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
-I guess eieio probably is strong enough for wmb(), since all ordinary
-memory is marked coherent in PPC SMP.
+-----BEGIN GEEK CODE BLOCK-----
+Version 3.1
+GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
+P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
+M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
+b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
+------END GEEK CODE BLOCK------
 
-The sync instruction is stronger than eieio, it says "wait until all
-outstanding loads and stores (and instructions) have completed before
-starting any new instructions".  AFAICS, it subsumes eieio so there
-would be no point in doing an eieio immediately after a sync.
-
-I put a sync in for mb, rmb and wmb, which may be overkill.  Certainly
-I think the eieio that Cort added after the sync for these things is
-unnecessary.
-
-> x86 and most other processors dont have the notion of a store barrier and
-> an i/o barrier beign different
-
-On x86, i/o accesses are strongly ordered already.  On PPC the eieio
-instruction provides this sort of ordering (if you do it after each
-access).  So I think eieio is right for iobarrier_*.  Whether eieio
-would be sufficient for *mb(), or whether sync is needed, I'm not
-sure.  Certainly sync should be sufficient.
-
-Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
