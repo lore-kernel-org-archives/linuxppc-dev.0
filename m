@@ -1,33 +1,116 @@
-Date: Tue, 6 Nov 2001 17:56:21 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Subodh Nijsure <subodh@best.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compiling kernel with -g option.
-Message-ID: <20011106175621.A4528@cpe-24-221-152-185.az.sprintbbd.net>
-References: <200111070012.QAA23022@shell9.ba.best.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200111070012.QAA23022@shell9.ba.best.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: kingseft@samsung.co.kr
+Date: Wed, 7 Nov 2001 15:03:56 +0900
+Message-Id: <H00002af054f0701@MHS>
+Subject: Question about Interrupt on MPC8xx
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain; charset=US-ASCII
+To: @popmail.space.net (No recipients specified)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Nov 06, 2001 at 04:12:13PM -0800, Subodh Nijsure wrote:
+ Hi,
 
-> Sorry if this is "basic" question but I looked through mailing and couldn't
-> find a solution.
->
-> When I compile kernel and some of my own modules together I get tons
-> of error like --
-[snip]
-> However if I compile everything with -O2 options everything works fine,
-> any way I can fix this so I can debug things....
+ I have a question about interrupt on MPC8xx.
+ I conneted Dip switch to IRQ1 on MPC860. When I push down the button, Interrupt occurred and interrupt service routine worked.
+ But, I didn't understand that I set falling edge interrupt detection via SIEL on MPC8xx.
+ when I push up Dip switch, my interrupt routein also worked.
+ Why this happend in spite of setting falling edge??
+ Could anyone help me with this problem? Any comments will help me.
+ Thanks.
 
-Did you try to use just -g ?  (Ie not -O2 -g ...).  You _need_ at least
--O1 to compile a kernel.
+ Below is a test program that I tested.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+--------- myirq1.c -------------------------------------------------
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/sched.h>
+#include <linux/signal.h>
+#include <linux/errno.h>
+#include <linux/mm.h>
+#include <linux/poll.h>
+#include <linux/miscdevice.h>
+#include <linux/random.h>
+#include <linux/init.h>
+#include <linux/interrupt.h>
+#include <asm/uaccess.h>
+#include <asm/system.h>
+#include <asm/irq.h>
+#include <asm/mpc8xx.h>
+#include <asm/io.h>
+#include <asm/delay.h>
+#include <linux/time.h>
+#include "commproc.h"
+
+
+static unsigned int count;
+
+static void my_isr1(int irq, void * dev_id, struct pt_regs * regs)
+{
+
+	unsigned long immr; /* Internal Memory Map Register */
+
+
+       	/*
+    	* Get Pointer to Internal Memory Map
+    	* XXX - could be global symbol for all kernel files
+    	*/
+   	asm( "mfspr %0,638": "=r" (immr) : );
+   	immr &= 0xFFFF0000;
+
+	// SIPEND
+	((immap_t *)immr)->im_siu_conf.sc_sipend |= 0x20000000;
+
+	printk(".\n");
+
+}
+
+int __init myirq_init(void)
+{
+
+	unsigned long immr;		/* Internal Memory Map Register		*/
+
+       /*
+   	* Get Pointer to Internal Memory Map
+   	* XXX - could be global symbol for all kernel files
+   	*/
+  	asm( "mfspr %0,638": "=r"(immr) : );
+  	immr &= 0xFFFF0000;
+
+	/*  Make IRQ1 edge sensitive.  */
+	//  Detect IRQ1 at falling Edge.
+        ((immap_t *)immr)->im_siu_conf.sc_siel |= 0x20000000;
+
+
+	// set SIMASK for IRQ1
+	((immap_t *)immr)->im_siu_conf.sc_simask |= 0x20000000;
+
+	//  wjluv comments!
+	//  my_irq_init is excuted only once!
+	//  IRQ1 related execution flow moves to my_isr!
+
+	// SIPEND
+	((immap_t *)immr)->im_siu_conf.sc_sipend |= 0x20000000;
+
+        if(request_8xxirq(SIU_IRQ1, my_isr1,SA_INTERRUPT, "myirq1",NULL) != 0)
+                printk("Could not allocate tpanel IRQ\n");
+
+	return 0;
+}
+
+#ifdef MODULE
+int init_module(void)
+{
+	return myirq_init();
+}
+
+void cleanup_module(void)
+{
+	free_irq(SIU_IRQ1, NULL);
+
+}
+#endif
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
