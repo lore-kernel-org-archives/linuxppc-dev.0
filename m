@@ -1,22 +1,17 @@
-Return-Path: <me@twolife.org>
-Received: from smtp2.mail.be.easynet.net (smtp2.mail.be.easynet.net
-	[212.100.160.76])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3C17B67A64
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2005 03:06:49 +1000 (EST)
-Date: Tue, 29 Mar 2005 18:34:22 +0200
-From: Sebastien NOEL <me@twolife.org>
-To: debian-powerpc@lists.debian.org
-Message-Id: <20050329183422.5c0e08ef.me@twolife.org>
-In-Reply-To: <1112066934.6809.4.camel@gaston>
-References: <1112066934.6809.4.camel@gaston>
+Return-Path: <graham@mknod.org>
+Received: from mknod.org (mknod.org [66.101.58.166])
+	by ozlabs.org (Postfix) with ESMTP id F143D67A46
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Mar 2005 05:29:57 +1000 (EST)
+Date: Tue, 29 Mar 2005 13:07:03 -0600
+From: Graham Wilson <graham@mknod.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050329190703.GA15755@mknod.org>
+References: <1111964111.6099.19.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J"
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] sleep & cpufreq problems
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1111964111.6099.19.camel@gaston>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Subject: Re: [PATCH] Fix sleep/wakeup problems on iBook G3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 28, 2005 at 08:55:11AM +1000, Benjamin Herrenschmidt wrote:
+> There have been various reports lately of sleep beeing broken on iBook
+> G3. Frank (no name provided here) found a typo in my code that cleans
+> the L1 cache on these CPU models. This patch fixes it, I'd appreciate
+> some feedback about wether that fixes the problem or not.
 
-On Tue, 29 Mar 2005 13:28:54 +1000 , Benjamin Herrenschmidt wrote:
+I've been having various trouble with my iBook lately, including random
+freezes, not waking up after going to sleep sometimes, and sometimes not
+going to sleep. Since applying the patch you posted, everything seems
+fine, though I may be speaking too soon.
 
-> Hi !
->=20
-> Here are a couple of patches against current linus bk (one was already
-> posted to this list) that should fix a number issues related to sleep
-> and wakeup, especially in conjunction with cpufreq transitions.
->=20
-> Please test and let me know if it fixes a problem you had, it adds a new
-> problem, or it has no effect, stuff still doesn't work (if it used to
-> work and still work, no need to bug me).
->=20
-> Thanks !
->=20
-> Patches are at:
->=20
-> http://gate.crashing.org/~benh/ppc32-pmac-sleep-fix.diff
-> http://gate.crashing.org/~benh/ppc32-cpufreq-gpio-off.diff
->=20
-> Thanks,
-> Ben.
->=20
+My /proc/cpuinfo for reference:
+ processor	: 0
+ cpu		: 750FX
+ temperature 	: 0-3 C (uncalibrated)
+ clock		: 400MHz
+ revision	: 2.3 (pvr 7000 0203)
+ bogomips	: 793.71
+ machine		: PowerBook4,3
+ motherboard	: PowerBook4,3 MacRISC2 MacRISC Power Macintosh
+ detected as	: 257 (iBook 2 rev. 2)
+ pmac flags	: 0000001b
+ L2 cache	: 512K unified
+ memory		: 256MB
+ pmac-generation	: NewWorld
 
-Hi Ben !
+Note that the maximum CPU speed is 900 MHz.
 
-I apply your 3 patches on 2.6.12-rc1 and my ibook g4 doesn't crash anymore
-after wakeup when i change the cpu speed.
-
-My gratitude is far bigger than my english vocabulary, thank you very much!
-
-
-Sebastien
-
---Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQFCSYOWo1pObvABdcoRAtxFAKCfy69qLIQGm1cqvycFzPOSnuyB3QCfeyYG
-PlDc/kLjlqw8HZNt7qf62Cs=
-=D3we
------END PGP SIGNATURE-----
-
---Signature=_Tue__29_Mar_2005_18_34_22_+0200_BTpv3PrBYMnWGU5J--
+-- 
+gram
