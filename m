@@ -1,35 +1,32 @@
-Date: Sun, 3 Mar 2002 18:28:03 +0100 (CET)
-From: Urban Widmark <urban@teststation.com>
-To: Bastien Nocera <hadess@hadess.net>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: problems with smbfs on 2.4.18 kernel (ppc)
-In-Reply-To: <1015002703.765.74.camel@dozo>
-Message-ID: <Pine.LNX.4.33.0203031810290.2722-100000@cola.teststation.com>
+Message-ID: <3C827800.67CC4435@ne.mediaone.net>
+Date: Sun, 03 Mar 2002 14:22:41 -0500
+From: Michael Zucca <mzucca@ne.mediaone.net>
+Reply-To: mrz5149@acm.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.18 and dmasound and rebooting
+References: <3C7688D2.CD7E7565@ne.mediaone.net> <20020222183122.9042@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 1 Mar 2002, Bastien Nocera wrote:
+Ok, I tried 2.4.18 from kernel.org on my PowerCenter 132 and the DMA
+dead patch works. However, as a side note, it only seems to work if the
+sound code is compiled into the kernel. The same code in a module does
+not work and still causes the sound hang. As I recall, the way the
+emergency buffer was allocated was critical to it functioning properly.
+I usually compile in the sound driver so it's not a big deal for me but
+it might be for other folks.
 
-> Hi,
->
-> I'm having some problems with smbfs on ppc.
-> The attached file contains all the details. Am I doing something wrong ?
+On another note, I've noticed that if I reboot my machine using shutdown
+-r the machine will reboot to a gray screen and then just hang there. It
+won't boot into MacOS. I've noticed that on 68k Macs, it is important to
+map the ROMs back into memory before rebooting or the machine just hangs
+around forever. Is it possible that we're not remapping stuff back to
+its usual place before rebooting on OldWorld machines? This has been a
+persistant problem for a long time on 2.4.
 
-Has smbfs worked for you with previous versions? A patch was added late to
-2.4.18 and it has caused a lot of crashes for people. I don't think it is
-related, but since you mention 2.4.18 ...
-
-mount only prints the contents of /etc/mtab. What does /proc/mounts say?
-Do you have any kernel messages? (dmesg).
-
-The entry in mtab is written by smbmnt and one way to get this would be if
-the mount fails, but after smbmnt has written and then for some reason it
-fails to cleanup.
-
-/Urban
-
+Thanks!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
