@@ -1,36 +1,31 @@
-Date: Fri, 25 Jun 1999 14:33:23 -0400 (EDT)
-From: Colin Fredericks <fredec@rpi.edu>
+Date: Sat, 26 Jun 1999 19:33:35 +0200
 To: linuxppc-dev@lists.linuxppc.org
-Subject: iMac sound problems
-Message-ID: <Pine.A41.3.96.990625141549.25298A-100000@cortez.sss.rpi.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Is there a free impl. of Open Firmware
+Message-Id: <19990626193335.003543@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi everyone.  I currently have LinuxPPC R5 installed on my rev. A iMac
-(233 Mhz processor, 6 megs of VRAM (upgraded from 2), 96 megs of ram). 
-I've had a few problems (to be expected), but only one that I felt I
-should bring to the developer list: 
+Hi !
 
-Sound in the basic setup is bletcherous.
+Does someone knows is there is a free implementation of OF, or at least
+work on one ? if there's no, this would be an interesting project to do ;-)
 
-Something (whether it be in KDE or Enlightenment or something more basic) 
-is trying to write sound directly to my speakers. It ignores any line-out
-or headphones plugged in.  System and error sounds create the same kind of
-beautiful sound you get when trying to shift into reverse from 3nd gear
-because you overshot 4th gear. This happens about 80% of the time, with
-the system sounds continuing to play even after the "enable sound in
-Enlightenment" and "KDE sounds" are turned off.
+I was mostly thinking about putting a thin OF layer in mac-on-linux in
+order to truely support any OF-based OS and load the new MacOS ROM (so
+MacOS would work on any PPC based machines using the ROM provided by
+Apple) but I'm working on BIOSes for custom design embedded boards with
+various CPUs and in this field, it would be very useful too.
 
-Such applications as x11amp do read MP3's correctly, and play correctly.
-However, they also write directly to the speakers. :(
 
-I'm not on the list, so anyone with suggestions should e-mail me at
-fredec@rpi.edu. Thanks for everyone's work with LinuxPPC - great product.
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-		-Colin Fredericks
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
