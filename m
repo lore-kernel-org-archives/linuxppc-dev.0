@@ -1,38 +1,37 @@
-Message-ID: <20010819190624.51260.qmail@web20105.mail.yahoo.com>
-Date: Sun, 19 Aug 2001 12:06:24 -0700 (PDT)
-From: John Francis <johnfrancsis@yahoo.com>
-Subject: Using IDMA1 ( or IDMA2 ) on 860
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3B80187C.4743F780@mvista.com>
+Date: Sun, 19 Aug 2001 15:50:20 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: John Francis <johnfrancsis@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Using IDMA1 ( or IDMA2 ) on 860
+References: <20010819190624.51260.qmail@web20105.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+John Francis wrote:
 
-On my board I am using SCC1 and SCC2 for 10 Mbps
-ethernets.
 
-I am also using SMC1 and SMC2 for some 9600 baud
-serial connection.
+> ..... on hardware
+> side I do see the DREQ line going low and I have
+> verified that RCCR register for CPM is set correctly
+> to level trigger the interrupt.
+>
+> Any ideas on why IDMA1 interrupt handler is not
+> getting invoked?
 
-I am also planning on using IDMA1 for some DMA. My
-chip is a 860P are there any problems with Parameter
-ram conflict?
+The DREQ has nothing to do with generating an interrupt, it
+is a data transfer handshake signal.  The configuration of
+this pin is determined by the system design, connection to
+the peripheral for data transfer and the configuration of
+the memory controller.
 
-All SCC1, SCC2, SMC1 and SMC2 work fine. But my IDMA1
-CPM interrupt handler never gets invoked, on hardware
-side I do see the DREQ line going low and I have
-verified that RCCR register for CPM is set correctly
-to level trigger the interrupt.
+The configuration of the IDMA channel, including the buffer
+descriptors, will determine how and when the CPM interrupt
+will occur.
 
-Any ideas on why IDMA1 interrupt handler is not
-getting invoked?
-
-ANY HELP !!!!
-
-John
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
