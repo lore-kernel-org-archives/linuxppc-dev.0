@@ -1,31 +1,24 @@
-Date: Fri, 16 Apr 1999 21:08:02 -0700 (PDT)
-From: Peter Abrahamsen <peidran@valinor.lly.org>
-To: Niels Roest <N.P.Roest@ITS.TUDelft.NL>
-cc: satadru pramanik <satadru@umich.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: ggi and frame buffer
-In-Reply-To: <Pine.HPP.3.95.990413182812.17396A-100000@elektron.et.tudelft.nl>
-Message-ID: <Pine.LNX.4.10.9904162104430.5370-100000@valinor.ssd.k12.wa.us>
+Message-id: <fc.000f61e60004dff8000f61e60004dff8.4dffa@DEWEY.ESD113.WEDNET.EDU>
+Date: Sat, 17 Apr 1999 07:26:02 -0700
+Subject: Assembler Error
+To: linuxppc-dev@lists.linuxppc.org
+From: Josh_Hudson@DEWEY.ESD113.WEDNET.EDU (Josh Hudson)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Greetings,
+When I try to compile big codes with lots of lines I get this:
 
-On Tue, 13 Apr 1999, Niels Roest wrote:
-> On Mon, 12 Apr 1999, satadru pramanik wrote:
-> > Any clues to what this is?  Has anybody gotten libgii and libggi to work
-> > successfully on LinuxPPC, especially pre-rel5?
-> I didn't try it in console. so ggi on X works.
+/tmp/cca00758.s: Assembler messages:
+/tmp/cca00758.s:40303: Error: Bad expression
+/tmp/cca00758.s:40303: Error: Rest of line ignored. First ignored
+character is `M'.
+make: *** [act_comm.o] Error 1  
 
-Yes, indeed, ggi works in X. However, GGI is apparently having troubles
-with framebuffers on all platforms (not just pmac/ppc). I guess we just
-wait...
 
-Peter
---
-peter@common.cx | peter@valinor.ssd.k12.wa.us
+Can anyone help me fix this problem???
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
