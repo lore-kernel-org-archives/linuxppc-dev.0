@@ -1,36 +1,33 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3D918070.10009@thales-bm.com>
-Date: Wed, 25 Sep 2002 11:22:56 +0200
-From: Julien EYRIES <julien.eyries@thales-bm.com>
+Date: 25 Sep 2002 14:13:51 -0000
+Message-ID: <20020925141351.31835.qmail@webmail25.rediffmail.com>
 MIME-Version: 1.0
+From: "Rajendra Prasad Mishra" <r_p_m@rediffmail.com>
+Reply-To: "Rajendra Prasad Mishra" <r_p_m@rediffmail.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: search for LCD pannel (1x16 or 2x16)
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: IDE disk size
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi all !
+Hi all !
+     I am working on a board with a ibm 405GP processor and a
+winbond W83C553 ide controller. I have been able to sucessfully
+detect the disk and set irqs. The problem is that the ide driver
+is not detecting the size of the disk properly it's showing 8.4 GB
+instead of 20GB . Apart from that i am able to do all operations
+on the disk i.e create a file system / write files to it etc. but
+i am able ot use only 8.4 GB of the total disk space !
+    Does anyone has any idea about why this is happening ? do i
+have to do give some special  things if i want the ide driver to
+work on powerpc ?
 
-I'm searching for a LCD panel ( about 1x16 or 2x16 characters, black and
-white only ) that my MPC8260 could use  .
+p.s : please cc me as i am not subscribed to the list
 
-Could someone here recommend me a good one ?
-Is there some support for them in the linux kernel (I use linux 2.4.4
-from Denx) ?
-
-Greetings,
-
-Julien .
-
-
---
-Julien Eyries
-R&D engineer
-Thales Broadcast & Multimedia (ex-thomcast)
-email: julien.eyries@thales-bm.com
-fax: 33(0) 1 34 90 31 10
-tel: 33(0) 1 34 90 31 01
+regards,
+raj
+__________________________________________________________
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
