@@ -1,32 +1,34 @@
-From: vince@nos40zr.shell.com (Vince D. Duperron)
-Message-Id: <199905181530.KAA08132@nos40ap.shell.com>
-Subject: gcc newbie
-To: linuxppc-dev@lists.linuxppc.org
-Date: Tue, 18 May 1999 10:30:50 -0500 (CDT)
+Message-Id: <v03130301b367589671fa@[204.156.153.118]>
+In-Reply-To: <199905170459.XAA29807@lists.linuxppc.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 18 May 1999 10:54:27 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: Michael Blakeley <mike@blakeley.com>
+Subject: hfs plus development?
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello;
+Is anyone on the list working on HFS Plus? I've been creating data
+structures in hfs.h (based on MacOS Universal Headers, and following the
+existing structures). Now I'm starting to look at the actual fs code.
 
-One of my goals for linuxppc is learning C and C++.  I have started 
-the process by writing some elementary programs to get failure with 
-the syntax and have had success compiling them on my Sun using Sun's
-cc compiler.  I haven't been able to achieve the same results using 
-gcc under linuxppc or SunOS.  I suspect I am doing something
-gcc doesn't like or understand.  
+I gather from the fs/hfs web site that the original author isn't really
+maintaining this code, and certainly isn't working on HFS Plus. If anyone
+else has already started on HFS Plus support, drop me a line so we can pool
+our efforts. Or if anyone wants a copy of my hfs.h to start working from....
 
-The programs are short but I hesitate to just post the code.  Being new to 
-C and C++ all I have to go by for syntax is what is in my text book.  It 
-would be nice if somebody has a moment to look at the code and let me know 
-what I may be doing wrong.  Also if you have a good book to recommend that
-focuses on gcc and is written for a beginner I'd probably buy it.  
+Note - this isn't anywhere _close_ to an announcement, or a request for
+beta testers :-).
 
-thank you
 
-Vince Duperron
+
+--
+Michael Blakeley       mike@blakeley.com     <http://www.blakeley.com/>
+            Performance Analysis for Internet Technologies
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
