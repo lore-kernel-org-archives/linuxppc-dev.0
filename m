@@ -1,29 +1,40 @@
-Date: Sun, 17 Jan 1999 19:40:00 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: Adam Sherman <adams@magma.ca>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PC Card Ethernet Support in the Installer
-In-Reply-To: <v04103c00b2c7f034e339@[206.191.4.153]>
-Message-ID: <Pine.LNX.4.05.9901171939120.22595-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.03.9901142334560.17386-100000@mercator.cs.kuleuven.ac.be>
+Date: Mon, 18 Jan 1999 02:19:10 +0100
+To: linuxppc-dev@lists.linuxppc.org,
+        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: MCLK=100 breaks PowerBook
+Message-Id: <19990118021910.020182@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 17 Jan 1999, Adam Sherman wrote:
+The default mclk setting of 100MHz for the Rage LT-G breaks on my
+PowerBook G3 Series (garbage on screen, accelerated X hangs). I added
+mclk:83 to my command line and it works fine again (and, progress from
+pre-4, I have no more snow in X when moving things around).
 
-> Does the installer (pre-R5) have PC Card Ethernet support? Or do I 
-> have to do a HD install. I have a PowerBook 2400c with a Kingston 
-> (NE2000) card.
+>atyfb: 3D RAGE LT PRO [0x4c47 rev 0x80] 4M SGRAM, 230 MHz PLL, 83 Mhz MCLK
 
-That's a kernel thing.  So my question is do you know if the ne2k driver
-currently works, and if not, can you test a patch (not my, just have it
-lying around...)
+the chip ID 0x4c47 should be set to 83 MHz by default, not 100.
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+Note that I made a typo the first time I tested and I used 88Mhz. it
+works fine too.
+
+MacOS ATI driver creates a strange property in the device tree. It's name
+is "MCLK,XCLK" and the value is 00001a38 00001a38. Geert, those values
+have any meaning to you ? If you tell me how to do, I could calc the MCLK
+used by MacOS by peeking appropriate registers from MacsBug and we could
+use this value for the kernel with this chipID.
+
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
