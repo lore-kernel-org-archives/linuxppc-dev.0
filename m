@@ -1,38 +1,39 @@
-Date: Thu, 4 May 2000 10:06:25 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: john peter grimes <jpgrimes@rainbow.uchicago.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: KDE 2.0 compilation problems
-In-Reply-To: <Pine.SGI.3.96.1000503191045.17758D-100000@rainbow.uchicago.edu>
-Message-ID: <Pine.LNX.4.21.0005040912390.26262-100000@idd-01.imbc.gr>
+Message-ID: <391144BB.F583410B@mpifr-bonn.mpg.de>
+Date: Thu, 04 May 2000 11:36:59 +0200
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: FireWire chip on PISMO?
+References: <Pine.LNX.3.96.1000503235136.6574O-100000@deepspace.mklinux.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 3 May 2000, john peter grimes wrote:
+"David A. Gatwood" wrote:
+> It's a standard OHCI chip, probably repackaged in a custom ASIC, but it
+> works with the same drivers as all the other OHCI devices.  You should
+> only need to add an extra ID in your supported device lists for the linux
+> drivers to support it.  If the driver doesn't work out of the box, there's
+> a driver bug in general.  :-)
 
->
-> I was wondering if anyone had tried to compile KDE 2 lately.  I'm trying
-> with yesterdays source and I get the error below in
-> kdelibs/khtml/css
->
-> I've got an almost standard linuxppc 2000 install which uses gcc-2.95.2-1g
->
-> I can't find a report of this error on the kde web pages and looking at it
-> I'm almost curious if it could be a problem with gcc for ppc (this file
-> takes forever to compile) or some other ppc specific issue.
->
+This first "quick hack" to the ohci driver lead to a kernel panic...  Sigh!
+I'll have to try in more depth...
 
-  Its a gcc bug, remove the -O2 option and this files will build
-fine.
+Thanks anyway, Albrecht.
 
-> Is anyone else compiling kde2, this is my first attempt.
-> 					Thanks,
-> 					John
-
-   Kostas
-
+--
++-----------------------------------------------------------------------------+
+| Dr.-Ing. Albrecht Dre\ss                                     """"           |
+| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
+| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
+| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
+| D-53121 Bonn (Germany)          ------------+------+-------------------     |
+| Phone (+49) 228 525 319                     |    / |                        |
+| Fax   (+49) 228 525 411                     |  /  /                         |
+| Mail  ad@mpifr-bonn.mpg.de                  |/   /                          |
+| http://www.mpifr-bonn.mpg.de/div/iri                                        |
++-------------- electrical engineers do it with less resistance --------------+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
