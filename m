@@ -1,45 +1,28 @@
-Message-Id: <199908201710.TAA00326@piglet.cpu.lu>
-Date: Fri, 20 Aug 1999 19:10:32 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Various PMac PCI patches
-To: ran@krazynet.com
-cc: mj@ucw.cz, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19990819233530.A138@gondolin.asf>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Message-Id: <199908201841.LAA16750@soda.CSUA.Berkeley.EDU>
+To: toa@pop.agri.ch
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MO-Disk on PPC with 53C94 SCSI-chip 
+In-Reply-To: Your message of "Thu, 19 Aug 1999 20:08:50 +0200."
+             <37BC482D.7EB2A4AF@pop.agri.ch>
+Date: Fri, 20 Aug 1999 11:41:02 -0700
+From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  19 Aug, this message from Ryan Nielsen echoed through cyberspace:
-> Michel Lanners wrote:
->> > isa_io_base is set to the address of bus 0 !
->> > so inl() and friends use wrong address for cards on bus 1.
->> 
->> That's expected (and broken) behaviour right now; I know how to correct
->> the problem, but I need to do some hacking to get it coded right.
-> 
-> What are you plannering ?
-> 
-> I got tulip working by #define _IO_BASE DRIVER_IO_BASE (ifdef) in asm/io.h
-> and define DRIVER_IO_BASE to a value from pci_io_base(bus) in tulip.c
 
-Fixing IO space addresses in the kernel pci structs, so that any driver
-referencing the pci structs gets the right kernel virtual address for
-the  ports without fiddling with _IO_BASE. In fact, it means adding an
-offset to the address reported in the PCI device's config registers.
-This offset id provided by the parent bus bridge.
+Hi,
 
-Michel
+I had the exact same problem when trying to use by ORB drive with my
+7600. The error messages were almost identical. 
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+I wasn't able to get it to work with under LinuxPPC, I also had
+problems with the drive under Linux x86 when connected to a
+AHA-2906. It works fine Linux x86 when connected to a AHA-1540.
 
+I think that the problem has to do with the SCSI revision. 
+
+----ranga <ranga@soda.berkeley.edu>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
