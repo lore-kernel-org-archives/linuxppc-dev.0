@@ -1,60 +1,76 @@
-Date: Thu, 12 Oct 2000 10:11:30 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Xavier Grave <grave@ipno.in2p3.fr>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board
-Message-ID: <20001012101130.A2964@cx258813-a.chnd1.az.home.com>
-References: <Pine.LNX.4.21.0010121107090.10161-100000@ipnpcu5>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.21.0010121107090.10161-100000@ipnpcu5>; from grave@ipno.in2p3.fr on Thu, Oct 12, 2000 at 11:14:54AM +0200
+Date: Thu, 12 Oct 2000 19:22:05 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+Subject: Re: dual head r128
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber <huber@mclx.com>,
+        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Message-id: <39E5F33D.8166A4DD@student.ethz.ch>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <Pine.LNX.4.21.0010121849230.1017-100000@idd-01.imbc.gr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 12, 2000 at 11:14:54AM +0200, Xavier Grave wrote:
+Kostas Gewrgiou wrote:
 >
-> Hi all,
+> On Wed, 11 Oct 2000, Josh Huber wrote:
 >
-> I'm new to this list. I'm working on a VME Board from motorolla
-> (MVME2303) and I have a 2.2.17 kernel running without problem.
+> > On Wed, Oct 11, 2000 at 08:43:28PM +0200, Michel D?nzer wrote:
 >
-> The board have a Pci Mezzanine Card with a NCR 53c895 chip for my SCSI
-> disk. When I try to boot the latest kernel (I'm trying from 2.4.0-test6 up
-> to 2.4.0-test10) I have the following error message during boot :
+> > > Does aty128fb work on the second card? If yes, try Option "UseFBDev".
+> >
+> > The secondary card is a PC card, so it's not initialized by OF, but I
+> > think the r128 fb driver does a proper initialization of the card, so
+> > that shouldn't be the problem.
 >
-> PCI: Cannot allocate resource region 1 of device 00:11.0
-> PCI: Cannot allocate resource region 2 of device 00:11.0
-> PCI: Failed to allocate resource 2 for Symbios Logic Inc. (formerly
-> NCR) 53c895
->
-> which leads to the following :
-> sym53c895-0: Downloading SCSI SCRIPTS.
-> scsi0 : sym53c8xx - version 1.6b
-> scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0,
-> lun 0 Inquiry 00 00 00 ff 00
-> sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
-> SCSI host 0 abort (pid 0) timed out - resetting
-> SCSI bus is being reset for host 0 channel 0.
-> sym53c8xx_reset: pid=0 reset_flags=2 serial_number=1
-> serial_number_at_timeout=1
-> sym53c895-0: unable to abort current chip operation.
-> SCSI host 0 abort (pid 0) timed out - resetting
->
-> Anyone have an idea how to solve this ?
+> Kevin Hendricks patches from Ani's tree will fix the memory/clock values
+> for OF cards only, the patch breaks the calculations for the x86 cards
+> (thats the reason why its not in the xfree cvs),
 
-Try the latest linuxppc_2_5 tree.  See
-http://www.fsmlabs.com/linuxppcbk.html for instructions.
+But there is an #ifdef _powerpc_ so it can't break x86 machines?
 
-The sym53c8xx driver uses PCI mem accesses which broke on previous
-kernel on PReP memory maps since they don't map CPU<->PCI 1:1.
-ioremap now compensates for this on non 1:1 maps.
 
-Tested on MTX and legacy PReP systems (Blackhawk and Utah). YMMV.
+> On Thu, 12 Oct 2000, Hendricks, Kevin wrote:
+>
+> The new r128 code needs to read extra values from the rom for the flatpanel
+> setup as well (Michel knows more about this) which we will have to find a
+> solution too.
+
+And it will be hard. Rumour has it that the correct values are in MacOS and
+only Apple knows how to do it right, not even ATI. The default values work
+more or less on my Pismo, but there is always the danger of damaging the
+panel.
+
+Note that the FP code is only needed for stretching modes with a lower
+resolution than the panel's, just disabling it altogether works fine for the
+full resolution.
+
+
+> > Since he has a bios on a ppc card it would be interesting to see the
+> > results of some "bios present?" tests to help determine if a bios is
+> > really there or not.  The current test sometimes passes on macs without a
+> > bios (possibly OF rom?) and garbage values are returned.
+>
+> The current test only checks if a rom is present not if a bios or OF segment
+> is there, it needs to be fixed to check that its really reading from a
+> bios rom and not from something else (OF).
+
+So this code from the current X CVS:
+
+    R128ReadBIOS(0x0000, info->VBIOS, R128_VBIOS_SIZE);
+    if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
+        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+                   "Video BIOS not detected in PCI space!\n");
+
+only checks if there is a ROM, not if it's a BIOS?
+
+
+Michel
+
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
