@@ -1,35 +1,28 @@
-To: "Navin Boppuri" <navin.boppuri@newisys.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Back to the Basics with gcc 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 10 May 2001 18:39:37 CDT."
-             <2C51E4D0FC94B24DA9B1C4628956F79022AEA4@aten.ad.newisys.com>
-Date: Fri, 11 May 2001 01:50:00 +0200
-Message-Id: <20010510235006.536932814D@denx.denx.de>
+From: kingseft@samsung.co.kr
+Date: Fri, 11 May 2001 08:57:55 +0900
+Message-Id: <H00002af04d228f3@MHS>
+Subject: =?EUC-KR?Q?(=C0=E7=C0=FC=BC=DB)_Question_for_module_compile_for_p?=
+ =?EUC-KR?Q?pc?=
+MIME-Version: 1.0
+To: wd@denx.de, linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <2C51E4D0FC94B24DA9B1C4628956F79022AEA4@aten.ad.newisys.com> you wrote:
->
-> I would like to run a simple c program on my embedded board with mpc860.
-> All I would like to do is compile the code, load it into some blank ram
-> location and say "go" at that location. I have a BDI debugger running
-> and can successfully load a binary into some mem location. But how
-> should I compile this program and generate the required binary?
+ Hello Developers.
 
-See the code and Makefile in the "examples" directory of the  PPCBoot
-sources. You have PPCBoot running anyway, right?
+ I ported W. Denk's Linux Kernel 2.4.3-pre3-2001-03-11. It works fine !!
 
-Wolfgang Denk
+ I have one question about Embedded target board Web Server Programming.
+ I'd like to display target board's LED information(for examples, On/Off) to WebPage.
+ I use GoAhead WebServer and also I added all related programs to my ramdisk.
+ I'd like to know how to send target board's LED info into webpage.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-We fight only when there is no other choice. We prefer  the  ways  of
-peaceful contact.
-	-- Kirk, "Spectre of the Gun", stardate 4385.3
+ Could someone help me??
+ Any comments will help me.. thanks...
+
+ Jason Lee
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
