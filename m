@@ -1,5 +1,5 @@
-Message-ID: <3AF70DF5.7189D250@mvista.com>
-Date: Mon, 07 May 2001 17:04:53 -0400
+Message-ID: <3AF710DC.37209810@mvista.com>
+Date: Mon, 07 May 2001 17:17:16 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
 To: Eli Chen <eli@routefree.com>
@@ -11,20 +11,38 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Heh....the best free help wasn't available when I wrote that last
+message, so I guess I'll take a stab at an answer :-).
+
 Eli Chen wrote:
 
-> I have also seen the dcache BUG, as well as bugs and warnings from other
-> parts of the kernel in the MontaVista 2.4.0 kernel.
+> ..........  They all seem to be
+> related to a inconsistency with reference counters, which led me to suspect
+> a problem with atomic instructions in our kernel.
 
-Again, I don't know what a "MontaVista 2.4.0" kernel would be.
-MontaVista clearly names our software distributions and releases
-them on a CD after a QA process.  If you can duplicate this
-problem with the software that is on the CD, and then use the
-proper reference name, we could all use the same baseline.  Of
-course, it would be nicer if you would have purchased the subscription
-with the CD and called your dedicated technical representative,
-but we'll provide the best free help available now :-).
+That's an interesting piece of information......
 
+There have been problems with the directory entry counters in
+older 2.3.99/2.4 kernels.  The 4xx development has kind of been on
+a planet all by it's lonesome for a long time, and I am now trying
+to bring it back into the mainstream.  It could very well be there
+were some generic kernel bug fixes that were missed in the 4xx
+kernel.
+
+> ..... I have replaced the
+> lwarx/stcrx pairs in include/asm-ppc/atomic.h with code that just turns off
+> and on interrupts,
+
+What version of silicon do you have, and what platform are you using?
+
+> ...  This is really just a work around for us until we find out what
+> is the real problem.
+
+Is there some simple test I can use to trigger this problem?  It
+would be nice if you could try a "newer" kernel from FSM Labs.  This
+was originally in the linuxppc_2_5 tree, and we are merging/changing
+trees at the moment.  I don't remember the URL......TOM, can you
+provide some insight?
 
 
 	-- Dan
