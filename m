@@ -1,27 +1,60 @@
-Message-ID: <3CFE1E1E.5010104@mandrakesoft.com>
-Date: Wed, 05 Jun 2002 10:20:14 -0400
-From: Jeff Garzik <jgarzik@mandrakesoft.com>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Ppc Developers" <linuxppc-dev@lists.linuxppc.org>
+Subject: 8260 Network Performance update
+Date: Wed, 5 Jun 2002 22:00:27 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFOEDMDIAA.acurtis@onz.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Leigh Brown <leigh@solinno.co.uk>, Paul Mackerras <paulus@samba.org>,
-	Peter De Schrijver <p2@mind.be>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: S3 trio config
-References: <Pine.GSO.4.21.0206050948450.27487-100000@vervain.sonytel.be>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Here's some code people can play with, too:
-http://gtf.org/garzik/kernel/files/s3fb/
+1. Unidirectional TCP/IP traffic (ftp):   get 180MBfile /dev/null
+(Thanks Jean-Denis)
 
-There is a cyberfb attempt to get working on PCI (ppc, x86, ...) and
-also an attempt to get a brand new s3fb going for PCI.  Both need
-debugging :( but in theory one could replace S3triofb
+			10T Hub	|	100BT switch
+		 -------------------------------------|
+	2.4.2  |	839KBps	|	6526KBps	  |
+		 --------------------------------------
+	2.4.19 |	838KBps	|	9412KBps	  |
+		 --------------------------------------
 
-    Jeff
+These numbers look good!
+
+2. Here is a description of the original test and some new test results.
+
+		-------------	FTP Put	-------------
+		|		|---------------->|		|
+		|   Host	|	NFS save	| 8260 PPC	|
+		|		|<----------------|		|
+		-------------			-------------
+
+Given that the unidirectional transfers look good I assume that the problem
+is either resource related (running out of Ethernet buffers) or scheduling
+related. The following tests use the 2.4.19pre9 kernel but vary the number
+of RX/TX buffers. (symmetric allocation)
+
+			10T Hub	|	100BT switch
+		 -------------------------------------|
+	16 RTB |	440KBps	|	190KBps	  |
+		 --------------------------------------
+	32 RTB |	450KBps	|	230KBps	  |
+		 --------------------------------------
+	64 RTB |	450KBps	|	240KBps	  |
+		 --------------------------------------
+
+
+The above data shows that this is not a raw communication speed issue but
+rather a scheduling or resource issue where either FTP or NFS is getting
+starved. My guess is that FTP is taking all the receive buffers leaving
+nothing for NFS to work with when storing the file.
+
+Does this help to identify the problem and a possible solution? Additional
+tests recommendations?
+
+TIA!
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
