@@ -1,36 +1,34 @@
-From: ghannon@cspi.com
+Date: Wed, 20 Feb 2002 07:54:22 -0800
+From: David Ashley <dash@xdr.com>
+Message-Id: <200202201554.g1KFsM010035@xdr.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <85256B66.00516678.00@pine.cspi.com>
-Date: Wed, 20 Feb 2002 09:52:52 -0500
-Subject: SCSI error on MVME5100
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: RE: Linux 2.4.17 bug, mmap of /dev/mem
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am running an MVME5100 board using a
-2.4.11 kernel, and keep getting the following error with the
-SCSI driver.
-It will run for a while before the error occurs, but once it starts it just
-keeps posting this error.
+It appears that drivers/char/mem.c in the mmap_mem function already
+has the VM_RESERVED:
+	/* Don't try to swap out physical pages.. */
+	vma->vm_flags |= VM_RESERVED;
 
-sym53c895a-0:0: ERROR (a0:0) (0-a0-0) (0/f) @ (script a14:c0040b5d).
-sym53c895a-0: script cmd = 00000174
-sym53c895a-0: regdump: da 10 c0 0f 47 00 00 0e 72 08 80 a8 80 00 08 08 00
- e0 b7 03 0a 00 00 00.
+I tried adding the | VM_IO also there, and the behaviour changed (not in
+a good way though). I could run my script a few times and I don't get the
+kernel errors I had been getting (panic, kernel access of bad area, and
+such like). But after running it several times first the shell froze
+up, then linux itself.
 
-Has anyone seen this before?
+In this case my script launched the mt program 64 times. The mt program
+mmaps, then reads once, writes once, then exits.
 
-Also,  I tried building a 2.4.18-pre9 kernel, and I see that
-CONFIG_MVME5100
-is no longer in the source at all.  Did it get merged in at some point?
+-Dave
 
-I can post more info if this is not enough to go on.
 
-Thanks,
-Gary Hannon
-CSPI
-
+>Yes, there are a lot of differences.
+>
+>Did you try other protections flags like VM_IO (I think this is selected
+>automatically in mem.c) and VM_RESERVED?
+>
+>Fred
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
