@@ -1,39 +1,40 @@
-From: Thomas Capricelli <capricel@enst.fr>
-Reply-To: capricel@enst.fr
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel panic on 2.2.3-ac4 PPC...
-Date: Tue, 23 Mar 1999 11:35:17 +0100
-Content-Type: text/plain
-References: <006701be74f2$a3bf8d60$499672cf@sunshinecomputing.com>
-MIME-Version: 1.0
-Message-Id: <99032311373202.06215@gauss>
+In-Reply-To: <36F69C36.9D5373CE@business.wm.edu>
+Date: Tue, 23 Mar 1999 13:27:47 +0100
+To: "Kevin B. Hendricks" <kbhend@business.wm.edu>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: smbfs and smbmount and Paul's 2.2.1 kernel
+Message-Id: <19990323132747.016080@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Mon, Mar 22, 1999, Kevin B. Hendricks <kbhend@business.wm.edu> wrote:
 
-
-
->When I boot the 2.2.3-ac4 kernel I get the following message (I had to write
->it down so it isn't the whole message... let me know if there are portions
->that are more helpful).
+>To make smbfs work (I grabbed the src rpm and built it) I need to compile SMB
+>_FS into the kernel.  I grabbed Paul's latest kernel source and dot.config
+>file
+>and noticed there was no support for SMB included in his kernel by default.
 >
->Machine check in kernel mode.
->Caused by (from msr): regs c055ddc0 Machine check signal - probably due to
->mm fault with mmu off
->TASK = c055c000[1] 'swapper' mm->pgd c00dc000 Last syscall:120
+>Before I go and roll my own, has anyone played with mounting NT filesystems
+>using smbmount and smbumount commands?  Is this stable on linuxppc?  Are
+there
+>any gotchas I should look out for with this filesystem?
 
-I had got this king of message while trying to boot the 2.2.1 last week.
-Problems were happening duing "machine check in kernel mode" and were in some
-init_* function like "serial" or "rtc". The only thing i've done is removing
-them from the main kernel (module or out), and it was fine.
+I use it regulary, compiled as a module, and it seems to work (but
+displays tons of messages in the active console). I had to compile recent
+version of smbmount (from a 2.0 samba package, If I remember correctly),
+the ones bundled with R4 didn't work with the latest kernel smbfs.
 
-Thomas
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
---
 
-Thomas Capricelli	<capricel@enst.fr>
-http://www.ecoledoc.lip6.fr/~capricel/
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
