@@ -1,60 +1,40 @@
-Message-ID: <3DD254F0.3050701@uab.ericsson.se>
-Date: Wed, 13 Nov 2002 14:34:40 +0100
+Message-ID: <3DD25896.6020603@uab.ericsson.se>
+Date: Wed, 13 Nov 2002 14:50:14 +0100
 From: Hans Feldt <Hans.Feldt@uab.ericsson.se>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 8260 - Spurious interrupts again
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+Cc: linuxppc-embedded@lists.linuxppc.org, scop@digitel.com.br,
+	thomas@corelatus.com
+Subject: Re: [PATCH] arch/ppc/8xx_io/enet.c, version 2
+References: <200210241423.g9OENV4d024137@blooper.utfors.se>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am running a 750 with a 8260 as slave. Since I get heaps of spurious
-interrupts I started digging into it. The old thread "8260 - Spurious
-interrupt when calling __sti()" and the latest code didn't help but this
-does:
+On 10/24/02 04:23 PM, Joakim Tjernlund wrote:
+> Hi
+>
+> This is the second version of my patch that removes the expensive memcpy of
+> received
+> ethernet frames in interrupt context.
 
-- A sync instruction last in m8260_mask_irq and m8260_mask_and_ack in
-ppc8260_pic.c.
+Isn't it so that this patch works because you have snooping? Without
+snooping the driver would fail because of cache line replacement which
+could trash received data.
 
-I guess you need to let the write to SIMR make it before enabling
-external interrupts in the 750 (603). This is probably due to our use of
-8260 as a slave processor but I think it makes sense anyway.
+The buffer invalidate in this case is unneeded. But if you wanna
+optimise you should invalidate the whole buffer before giving it to DMA
+thus getting rid of the flush implied by memory coherence.
 
-Note that this problem is not related to the fact that I am running the
-new ATM driver, this also happens as indicated in the old mail thread
-with serial and Ethernet interrupts only.
+Tried this out in a driver for a processor without snooping, now and
+then received packets got corrupted, cache line wise...
 
-Thanks,
+Just trying to understand how things really work, please correct me if I
+am wrong.
+
+Cheers,
 Hans
-
-P.S. Tack Magnus!
-
-without sync:
-==============
-bash-2.04# cat /proc/interrupts
-            CPU0
-   4:       9777   8260 SIU   Edge      uart
-   5:          0   8260 SIU   Edge      uart
-  32: 1396813673   8260 SIU   Edge      atm
-  33:      57596   8260 SIU   Edge      fenet
-  41:          0   8260 SIU   Edge      uart
-  42:          0   8260 SIU   Edge      uart
-  60:         11   8260 SIU   Edge      ide0
-BAD: 1396813185
-
-with sync:
-===========
-bash-2.04# cat /proc/interrupts
-            CPU0
-   4:       4709   8260 SIU   Edge      uart
-   5:          0   8260 SIU   Edge      uart
-  32:     217671   8260 SIU   Edge      atm
-  33:      10395   8260 SIU   Edge      fenet
-  41:          0   8260 SIU   Edge      uart
-  42:          0   8260 SIU   Edge      uart
-  60:         11   8260 SIU   Edge      ide0
-BAD:          0
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
