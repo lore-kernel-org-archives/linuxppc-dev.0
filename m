@@ -1,35 +1,67 @@
-Message-ID: <40DD8710.8030100@pacbell.net>
-Date: Sat, 26 Jun 2004 07:24:16 -0700
-From: David Brownell <david-b@pacbell.net>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <023EF71CB65AA949A2C510353690C86B027F3C@rokonet-e.rokonet.co.il>
+From: Eli Brin <eli.brin@rokonet.co.il>
+To: "'m madhuker'" <mythri_madhuker@yahoo.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: All about  Denx
+Date: Sun, 27 Jun 2004 11:05:17 +0200
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>,
-	Bertrand Baudet <bbaudet@lacie.com>
-Cc: Greg KH <greg@kroah.com>, linux-usb-devel@lists.sourceforge.net,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [linux-usb-devel] Re: RE : MPC5200Lite PCI & IRQ
-References: <5A96167EBCEA8440A48790B5419953AE13C46A@gr-lafayette.lacie.com> <1087554029.19489.3149.camel@hades.cambridge.redhat.com> <20040619000118.GB24902@kroah.com>
-In-Reply-To: <20040619000118.GB24902@kroah.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greg KH wrote:
-> On Fri, Jun 18, 2004 at 11:20:30AM +0100, David Woodhouse wrote:
->>On Fri, 2004-06-18 at 12:06 +0200, Bertrand Baudet wrote:
+Hello Madhukar,
 
->>>There are probably other drivers that have the wrong assumption that IRQ 0
->>>is an unassigned IRQ.
+We use the ELDK for almost a year and our life is better since.  Before
+that, we used a major embedded Linux distribution and it just didn't work.
 
-Is there a designated "no IRQ assigned" code?  There should be one ...
-that's why such code gets cut/pasted.  Unless pci_enable_device() is
-(now) guaranteed to fail if the device has no IRQ assignment?
+We use the TQM modules as development boards and made our target compatible
+with the TQM Modules, so the BSP is the same.
 
-Possibly that test should vanish, it was evidently a problem for a
-while but I've not heard reports of such problems lately.  It's in
-2.6 because of cut/paste from 2.4 code.  Feel free to post a patch.
+Regarding the support:
+You get a commercial grade support for free and probably from the BEST
+people in the industry.
 
-- Dave
+OK, no commitment for time but look for your self at the reply times, and
+compare it to what you get now...  (Even on Sunday).
+
+As we where/are newbie's in Linux, using the ELDK and this list gave us a
+good starting point and helped us a lot and probably made our project
+possible.
+
+
+Best regards,
+Eli Brin
+
+
+
+
+
+
+-----Original Message-----
+From: m madhuker [mailto:mythri_madhuker@yahoo.com]
+Sent: Monday, June 21, 2004 1:00 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: All about Denx
+
+
+Hello all,
+        Iam working on MPC8245.and iam new to it.
+now iam using timesys GPL-Linux for the board.
+and for this there is no support. and timesys RTlinux
+has support but its not free..
+
+I listened that Denx is free RTOS and good...
+So i want use Denx RTOS for my board.
+
+i want suggetion from u people that how is it???
+whether it is providing BSP's and good support???
+
+So if anybody worked on Denx please give suggestion
+...
+                                         Regards
+                                         Madhukar
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
