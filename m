@@ -1,66 +1,56 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Sun, 2 Jun 2002 12:51:51 +0200 (MEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Leigh Brown <leigh@solinno.co.uk>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Peter De Schrijver <p2@mind.be>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: S3 trio config
-In-Reply-To: <1023014281.11116.14.camel@kettle.solinno.co.uk>
-Message-ID: <Pine.GSO.4.21.0206021250180.13419-100000@vervain.sonytel.be>
+Date: Sun, 2 Jun 2002 23:11:44 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Keyboard identification on TiBooks
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E17Ecdh-0000Cy-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 2 Jun 2002, Leigh Brown wrote:
-> On Sat, 2002-06-01 at 09:39, Geert Uytterhoeven wrote:
-> > On Sat, 1 Jun 2002, Paul Mackerras wrote:
-> > > I wrote:
-> > > > Does anyone know why we have this?  Is the S3 Trio display really only
-> > > > used on PReP or CHRP machines, not on any PCs?
-> > >
-> > > I should have said, not on any other PPC systems, of course, since
-> > > that code was in a CONFIG_PPC section.
-> >
-> > S3triofb relies on Open Firmware, so it can work on PowerMac/CHRP only. AFAIK
-> > it was used on CHRP only.
->
-> Well, S3triofb hasn't even compiled for ages.  I've attached a patch
-> that allows it to compile, and removes the dependency on OF.  However,
-> it still requires some sort of firmware to initialise the card.  I've
-> added a little hack so that it ignores the card if it wasn't initialised
-> by the firmware, since the driver doesn't have the code to initialise it
-> properly.
->
-> It works on the 7043-140 using a PReP kernel, and has been tested by
-> quite a few people.  Unfortunately, I no longer have an S3Trio card (and
-> to be honest, I know very little about graphics cards).
->
-> IMHO it's worth applying the patch as a working (just) driver is a
-> better starting point than a non-compiling one.
+Hi all,
 
-Yes, that's better. Thanks!
+Just to share a bit of information and (hopefully) make it appear in the
+list archives :)
 
-> If there are other PPC systems that bring up the S3Trio in 640x480x8
-> mode then I suppose the driver will be applicable to them also....
+Lately I had to pull apart my first-gen TiBook (I had dropped it, and
+the DVD drive was bnt inide).
 
-Peter: does OF initialize your board to 640x480, or is a different resolution
-possible as well?
+Anyway, I found that the PMU is in fact on a separate PCB above the DVD
+drive, together with it's backup battery, where keyboard, touchpad and
+mouse button are also attached. Why, in the presence of backup
+batteries, the clock _still_ resets to 1904 when the 'book runs out of
+power, is a mistery....
 
-OF on my LongTrail (Peter's is newer) never did anything with a Trio64.
+My 'book has a swiss-french keyboard, referred to as an 'ISO' keyboard,
+with an additional key vs. US 'ANSI' keyboards. This key is between 'y'
+and left shift, and has symbols '<' and '>' printed on it.
 
-Gr{oetje,eeting}s,
+Now, after I reassembled the 'book, my keyboard was suddenly reported as
+'ANSI' type, and not 'ISO' anymore. Therefore, the additional key was
+not swapped anymore with the one left of '1'... xmodmap fixed that
+(keycodes 49 and 94, for the curious).
 
-						Geert
+Yesterday the 'book switched itself off somehow while I wasn't looking
+(while on mains...), and now, the keyboard is back to ISO type!
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Go figure... I suspect the switchoff to be related to the PMU somehow
+getting reset, which also brought the keyboard type back, meaning that
+the PMU has some setting configuring keyboard type somewhere. But I
+don't know where....
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
