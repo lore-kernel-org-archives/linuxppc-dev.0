@@ -1,21 +1,29 @@
-Date: Sat, 29 May 1999 19:55:09 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
+From: bskrypny@MBnet.MB.CA
+Message-Id: <v01540b02b37673433b9a@[192.168.100.2]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 29 May 1999 21:53:52 -0700
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.2.9 compile problem (and 2.2.10-pre1)
-Message-ID: <Pine.LNX.4.05.9905291951430.794-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: cuda and apm?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok.  2.2.10-pre1 is out right now, and doesn't seem to have the needed fix
-for ppc.  If no one volunteers to patch this (i'll wait a few hrs <g>)
-I'll give it a shot and send to Cort/Linus.
+After looking at via-cuda.c file and some other sources I have a few questions:
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+1. Does via-cuda currently handle only adb requests or are other requests
+hidden in adb_request structure?
+2. Are there any Mac ROM routines that can be accessed to deal with cuda
+controller?
+3. What are apm plans for linuxppc.
+4. Where can I find technical description of cuda controller (I know at
+Apple, but I couldn't find anything better than a general description and a
+cursory mention in the context of PowerManager API ).
+
+I hope to do some work for apm (to get my feet wet :)
+
+Bill.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
