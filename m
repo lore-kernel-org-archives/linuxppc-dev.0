@@ -1,56 +1,22 @@
-Message-ID: <3C8FBEC2.4030206@pacbell.net>
-Date: Wed, 13 Mar 2002 21:04:02 +0000
-From: Armin <akuster@pacbell.net>
+Message-ID: <005701c1cad8$d397eb60$6649a8c0@LEIYINGDU>
+From: "Leiying Du" <ldu@solectek.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Debug kernel ELF using SDS single-step debugger
+Date: Wed, 13 Mar 2002 13:48:35 -0800
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc405_dma warnings
-References: <20020314022146.GP22020@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
-> Armin,
->
-> ppc405_dma.c has several constructs like:
-> 	p_dma_ch->polarity = polarity & GET_DMA_POLARITY(0);
-> where GET_DMA_POLARITY() is defined:
-> 	#define GET_DMA_POLARITY(chan) DMAReq##chan##_ActiveLow | \
-> 		DMAAck##chan##_ActiveLow | EOT##chan##_ActiveLow
->
-> Note the macro has no parentheses around its definition, which is
-> unusual.  IIRC C precedence will mean this code turns out as:
-> 	p_dma_ch->polarity = (polarity & DMAReq0_ActiveLow) | \
-> 		DMAAck0_ActiveLow | EOT0_ActiveLow
-> which looks wrong to me and if correct is an insane use of a macro.
-> It's also giving compiler warnings.
->
-> I'm guessing that the macro should just get parentheses, but that's a
-> semantic change so I don't want to make it without knowing for sure.
-> Could you check this?
->
-> --
-> David Gibson			| For every complex problem there is a
-> david@gibson.dropbear.id.au	| solution which is simple, neat and
-> 				| wrong.  -- H.L. Mencken
-> http://www.ozlabs.org/people/dgibson
->
->
->
->
->
+When I run the kernel ELF, I always get this error message "Couldn't find
+4096 bytes at 4096 alignment". It's printed out in  __initfunc(void *
+find_mem_piece(unsigned size, unsigned align)).   ( The kernel runs Ok from
+the flash memory.) Does anyone know the reason? Should I initialize the MMU
+with the debugger? Thanks.
 
-Thanks.. I missed the parentheses.  The macro is there to allow me to
-use the same driver for the 405gp dma and the stb0xxxx cpu since the the
-stbxxxx does not have a polarity.  I could have poluted the driver with
-#ifdefs or mask the deltas with a few macros.  I went with macros.
-
-armin
-
-PS I am insane
+Leiying
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
