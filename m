@@ -1,39 +1,67 @@
-Date: Tue, 5 Mar 2002 16:06:42 -0800
-From: David Ashley <dash@xdr.com>
-Message-Id: <200203060006.g2606g123689@xdr.com>
-To: bcrl@redhat.com
-Subject: Re: mmap wrapping around to 0 revisited
-Cc: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 5 Mar 2002 16:37:29 -0800 (PST)
+From: Adam Wozniak <awozniak@comdev.cc>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: problems with shared memory
+Message-ID: <Pine.LNX.4.33.0203051631130.24566-100000@rangers.comdev.cc>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->Wrong fix.  sys_mmap on ppc should really be using do_mmap which already
->includes the cast to unsigned long and checks for overflow.  Arguably,
->it could well check for -'ve offsets and reject them, but traditionally
->Linux has accepted up to 4GB offsets with its 32 bit APIs and changing
->this would break a few things like X.
->
->                -ben
+I've got Linux 2.4.16 running on a custom MPC8260 board.
 
+when I do the program below in a tight loop
+i.e.
 
-In older versions (like 2.4.2-hhl) the sys_mmap did go through do_mmap, but
-for some reason that was changed. The do_mmap itself is broken, the check
-for overflow is like this:
-	if ((offset + PAGE_ALIGN(len)) < offset)
-		goto out;
+while true
+do
+./foo 8675 1024
+done
 
-It should be:
-	if ((offset + PAGE_ALIGN(len)-1) < offset)
-		goto out;
+Things pop after about 20 iterations.  It'll choose a different spot
+in the kernel to pop depending on what options I've compiled into the
+kernel.  I believe I've got some memory corruption going on.  When I
+poke around with a hardware debugger I see values in kernel structures
+which clearly aren't right.
 
-So: changing sys_mmap to go through do_mmap won't fix the problem unless
-the above fix is done to do_mmap.
+Any known problems with shared memory in the 2.4.16 kernel on the MPC8260?
 
-do_mmap appears to be defunct, and the new method seems to be more standard
-across architectures. The problem was as I stated, and the fix I presented
-is the best one.
+This should be easy enough for someone to try to reproduce.
 
--Dave
+=== begin foo.c
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/shm.h>
+
+int main (int argc, char **argv)
+{
+   int j;
+   char *q;
+   int p;
+
+   p = shmget(atoi(argv[1]),  atoi(argv[2]), IPC_CREAT | 0666);
+
+   q = shmat(p, NULL, 0);
+
+   printf("at @ %p \n", q);
+
+   {
+      int i;
+      for (i = 0; i < atoi(argv[2]); i++)
+      {
+         q[i]++;
+      }
+   }
+
+   shmdt(q);
+}
+=== end foo.c
+
+--
+Adam Wozniak (KG6GZR)   COM DEV Broadband - Digital and Software Systems
+awozniak@comdev.cc      805 Aerovista Place, San Luis Obispo, CA 93401
+                        http://www.comdev.cc
+                        Voice: (805) 544-1089       Fax: (805) 544-2055
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
