@@ -1,51 +1,35 @@
-Date: Tue, 26 Oct 1999 19:03:25 -0400
-From: Bob Toxen <bob@roger.realminfo.com>
-Message-Id: <199910262303.TAA26743@roger.realminfo.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Nested stdarg broken?
+Message-ID: <3816541B.937DB911@jlc.net>
+Date: Tue, 26 Oct 1999 21:23:39 -0400
+From: Dan Malek <dmalek@jlc.net>
+MIME-Version: 1.0
+To: Neil Russell <caret@c-side.com>
+CC: Mike Panetta <mpanetta@realminfo.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problems compiling ppc kernels.
+References: <19991026134728.A25022@alice.realminfo.com> <19991026122200.D11654@lx.c-side.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-My application uses stdarg (#include <stdarg.h>, va_start, and friends)
-in a function that then calls vfprintf which also uses stdarg.
+Neil Russell wrote:
 
-The variable args get garbled by the time they get to vfprintf.  The
-fmt arg does not get garbled.
 
-Note that the documentation specifies that this should work.  My application
-works fine on Linux on Intel and other platforms.  The PowerPC is the first
-big endian platform but I am quite sure that the bug is not in my code.
+> I have a rev.D iMac, purchased about a month ago (just before the new
+> iMac came out).
 
-My code (simplified) looks like
+Me, too, and I am having the same difficulties.....
 
-#include <stdio.h>
-#include <stdarg.h>
+Unfortunately, I bought them for new employees to use and recommended
+them to new clients over the past month or so.
 
-logmsg(int out, const char *fmt, ...)
-{
-	FILE	*fp;
-	char	*p;
-	int	ret	= 0;
-	char	buf[512];
-	va_list	ap;	/* May need to be last arg. */
+Now, I get to spend time to learn about USB.......If anyone is working
+on this, please let me know, as it is now my highest priority task.
+I will post any updates or information.
 
-	va_start(ap, fmt);
-	fflush(stdout);		/* Flush "the other" output. */
-	fp = fopen(logfile, "a");
-	if (!fp || vfprintf(fp, fmt, ap) < 1)
-		ret = -1;
-	if (fp && fclose(fp) == EOF)
-		ret = -1;
-	va_end(ap);
-	return ret;
-}
+Does anyone know why the USB doesn't work?  Hints would be appreciated
+so all I have to do is patch some code and test it.......
 
-THANKS for any insight.  Presently I'm IFDEFing it to not use stdargs on
-the PowerPC platform.
 
-Bob Toxen
-bob@roger.realminfo.com
-Error #152, Windows not found: (C)heer, (P)arty, (D)ance
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
