@@ -2,9 +2,9 @@ Content-Type: text/plain; charset=iso-8859-1
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
 From: acurtis@onz.com
-Subject: platform support for a bk revision?
-Date: Fri, 09 Aug 2002 13:32:18 -0700 (PDT)
-Message-Id: <20020809133218.4935.h021.c007.wm@mail.directvinternet.com.criticalpath.net>
+Subject: platform support for a bk version?
+Date: Fri, 09 Aug 2002 14:24:02 -0700 (PDT)
+Message-Id: <20020809142402.5068.h001.c007.wm@mail.directvinternet.com.criticalpath.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
