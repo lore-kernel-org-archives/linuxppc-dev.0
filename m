@@ -1,95 +1,40 @@
-Date: Sun, 12 Sep 1999 04:32:14 +0100 (BST)
-From: Jules Bean <jmlb2@hermes.cam.ac.uk>
+Date: Sun, 12 Sep 1999 18:28:26 +0200
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Kensington 'orbit' trackball - think's it's a turbomouse 5?
-Message-ID: <Pine.SOL.4.10a.9909120418200.26060-100000@orange.csi.cam.ac.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: paulus@cs.anu.edu.au
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Possible bug in quik
+Message-Id: <19990912182826.028542@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all..
+In quik 2.0, in main.c (bottom of function main()), I found:
 
-I hope this is the right list to post to.  I *think* it's too technical
-for -user, but redirect me if not..
+    /*
+     * For the sake of the Open Firmware XCOFF loader, the entry
+     * point may actually be a procedure descriptor.
+     */
+    start = *(unsigned *)entry;
+    if (start < load_loc || start >= load_loc + len
+	|| ((unsigned *)entry)[2] != 0)
+	/* doesn't look like a procedure descriptor */
+	start += entry;
+    printf("Starting at %x\n", start);
+    (* (void (*)()) start)(params, 0, prom_entry, 0, 0);
+    prom_exit();
 
-I've just installed LinuxPPC (actually, YDL) on my Dad's G3-upgraded 7350
-here, and everything is running nicely.
-
-The machine has a trackball which calls itself a 'kensington orbit'.  I
-have browsed the mailing list archives and found a couple of threads
-talking about the badly behaved turbomouse.  Well, this trackball sounds a
-bit like that, except that it only has two buttons, not three.
-
-At boot time, the kernel says:
-
-[jules@sharpsburg jules]$ dmesg | egrep '^ADB' 
-ADB mouse at 3, handler 1 (TurboMouse 5)
-ADB mouse at 15, handler 1
-ADB mouse at 3, handler 1 (TurboMouse 5)
-ADB mouse at 15, handler 1
-ADB keyboard at 2, handler 1
-
-When I'm in X, the mouse operates fine as a two-button mouse, except that
-it is sending buttons 1 and 2, rather than the more useful 1 and 3.
-
-I can superficially fix this last using xmodmap pointer, although (AFAIK)
-there's no way of doing an 'emulate3buttons' trick at this stage.
-
-I think there's something slightly odd going on here (hence my post to
-this mailing list) because of how mousemode behaves:
-
-[root@sharpsburg jules]# /sbin/mousemode 3
-handler for addr 3 is 50
-[root@sharpsburg jules]# /sbin/mousemode 15
-handler for addr 15 is -1
-
-Then, if I try to set things to handler 4, as suggested in emails I've
-found here abouts, I get:
-
-[root@sharpsburg jules]# /sbin/mousemode 3 4
-handler for addr 3 was 50
-trying to set handler to 4...
-handler is now 50
+I was wondering why, when we don't find an XCOFF desc, do we _add_ entry to
+start. I would have replaced start completely since in this case, we may
+want to
+enter the kernel at entry directly. Did I miss something ?
 
 
-I can only make changes take effect by going 'via' handler -1.  Then, both
-buttons start being button 1!
 
-Now, what I'd like to see, is either:
-
-1) The kernel giving buttons 1 and 3 for the two buttons, and button 2 if
-they are chorded
-
-or
-
-2) The kernel giving buttons 1 and 3, and  XF86FBDev doing the chording
-(Emulate3Buttons doesn't work - maybe that's simply because the mouse
-gives buttons 1 and 2 by default).
-
-I'm C-literate, and happy hacking kernel files to test out ideas.. any
-pointers appreciated.
-
-Oh, I almost forgot.  You'll want to know this, I expect:
-
-[jules@sharpsburg jules]$ uname -a
-Linux sharpsburg.habas.net 2.2.6-16bpmac #1 Thu Jul 29 16:04:31 MDT 1999
-ppc unknown
-
-
-Yours,
-
-Jules Bean
-
-/----------------+-------------------------------+---------------------\
-|  Jelibean aka  | jules@jellybean.co.uk         |  6 Evelyn Rd	       |
-|  Jules aka     | jules@debian.org              |  Richmond, Surrey   |
-|  Julian Bean   | jmlb2@hermes.cam.ac.uk        |  TW9 2TF *UK*       |
-+----------------+-------------------------------+---------------------+
-|  War doesn't demonstrate who's right... just who's left.             |
-|  When privacy is outlawed... only the outlaws have privacy.          |
-\----------------------------------------------------------------------/
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
