@@ -1,30 +1,42 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Wolfgang Denk" <wd@denx.de>,
-	"Flavio Pereira" <fpereira@azisa.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Linux on 8260 using ELDK..Help?!? 
-Date: Wed, 4 Sep 2002 06:58:31 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFGEKFDLAA.acurtis@onz.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20020904134124.0F2AE11835@denx.denx.de>
+Date: Wed, 4 Sep 2002 07:15:11 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Allen Curtis <acurtis@onz.com>
+Cc: Brian Kuschak <bkuschak@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: bitkeeper changesets
+Message-ID: <20020904141511.GK761@opus.bloom.county>
+References: <20020903213014.5963.qmail@web40201.mail.yahoo.com> <NCBBIINEHIPFGJPLBEIFEEJODLAA.acurtis@onz.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <NCBBIINEHIPFGJPLBEIFEEJODLAA.acurtis@onz.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Did you fix the IMMR mapping in PPCBoot? The  CFG_DEFAULT_IMMR  defi-
-> nition  will  NOT  work with LInux; see the Linux memory map require-
-> ments - You _must_ map the IMMR at 0xF0000000 or above.
-
-If he got this far in the boot, the IMMR is working.
-
-> > Warning: unable to open an initial console.
+On Tue, Sep 03, 2002 at 10:05:30PM -0700, Allen Curtis wrote:
 >
-> Did you run the ELDK_MAKEDEV and ELDK_FIXPERM scripts as documented?
+> > I'm using the BK changeset versions for tracking when
+> > I export specific BK trees into my local
+> > source-control system.  The last one I imported was
+> > 2.4.19-final (changeset 1.1114 on 08-02-2002).  Today
+> > I did a 'bk pull', and noticed that that changeset
+> > revision no longer exists in BK!  And it seems the one
+> > I exported previously is now named 1.1091.1.23.
+> >
+> > Also, it seems like older versions (earlier than
+> > 29-May-2002) are no longer available in BK.
+> >
+> > Am I missing something here, or did the version
+> > numbers really change?  And why?  Should I be using a
+> > different BK server?
+>
+> I see the same thing. It looks like the tag changed to just v2.4.19. The BK
+> revisions totally changed!
 
-Looks like this is the problem....
+Revision numbers are not constant.  BK keys are.  'bk help key2rev'.
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
