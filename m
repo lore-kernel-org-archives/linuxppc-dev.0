@@ -1,41 +1,56 @@
-Message-ID: <3BB201A4.40987FC@disca.upv.es>
-Date: Wed, 26 Sep 2001 18:26:12 +0200
-From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
+Message-ID: <35C119252057D511BB9F0003476BF8A208E5C3@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: "'Tom Rini'" <trini@kernel.crashing.org>,
+	"Prasad, Siva" <Siva.Prasad@smartm.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: mtmsr...
+Date: Wed, 26 Sep 2001 09:40:31 -0700
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: CAN Linux driver for TQM823L
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+PowerPC 750 on a custom board.
+I tried both the bitkeeper source (2.4.10-pre11) and also HartHat Linux CDK
+1.2 version (kernel 2.2.14). Same problem in both the kernels.
 
-We are working with a STK823L module (board with a TQM823L with 2 CAN
-Controllers [i282527]) and I wonder if anyone knows about a CAN Linux
-for PowerPC (LinuxPPC) driver for this module.
+I really appreciate any kind of help on this as I am clueless.
 
-I have taken a look at the drivers from:
-Linux CAN-bus Driver Project (http://home.wanadoo.nl/arnaud/)
-CanFestival (http://www.esstin.uhp-nancy.fr/~tissered/CanFestival/)
-LinuxLab (ftp://ftp.llp.fu-berlin.de/LINUX-LAB/)
-but I haven't been lucky.
+Thanks in advance.
 
-Any help would be great.
+-- Siva
 
---
-----------------------------------------------------------------------
-| David de Andrés Martínez   | Fault Tolerant Systems research Group |
-|                            |                                       |
-| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
-| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
-|                            | Fax: +34 96 387.75.79                 |
--------Address--------------------------------------------------------
-|                 DISCA-EUI                                          |
-|                 Universidad Politécnica de Valencia                |
-|                 Campus de Vera #14                                 |
-|                 Valencia E-46021                                   |
-|                 Spain                                              |
-----------------------------------------------------------------------
+
+> -----Original Message-----
+> From: Tom Rini [mailto:trini@kernel.crashing.org]
+> Sent: Tuesday, September 25, 2001 7:10 PM
+> To: Prasad, Siva
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: mtmsr...
+>
+>
+> On Tue, Sep 25, 2001 at 06:53:19PM -0700, Prasad, Siva wrote:
+> >
+>
+> > My zImage hangs immediately after executing the 'mtmsr'
+> instruction in the
+> > arch/ppc/boot/head.S file.
+> >
+> > li    r3, 0
+> > mtmsr r3
+> > isync
+> >
+> > This is in the very beginning of the zImage, where it
+> uncompresses the
+> > actual image. Can some one help me out.
+>
+> What machine? What kernel?  From where?
+>
+> --
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
