@@ -1,32 +1,43 @@
-Date: Mon, 23 Aug 1999 15:21:40 -0600 (MDT)
-From: Brad Midgley <brad@pht.com>
-To: "David A. Gatwood" <dgatwood@mvista.com>
-cc: Tom Rini <trini@disparity.net>, rshaw@inficad.com,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: imac exception (Re: BootX enhancement request)
-In-Reply-To: <Pine.LNX.3.96.990823140728.23476T-100000@mvista.com>
-Message-ID: <Pine.LNX.3.95.990823151755.20705A-100000@pacific.pht.com>
+Date: Mon, 23 Aug 1999 17:23:36 -0400
+From: brad allison <jackal@aol.net>
+To: rshaw@inficad.com
+cc: Tom Rini <trini@disparity.net>, Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org, puetzk@iastate.edu
+Subject: Re: BootX enhancement request
+In-Reply-To: <37C1B1CD.B61A915C@motorola.com>
+Message-ID: <Pine.SGI.4.00.9908231717350.7470-100000@osiris.office.aol.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-it should be noted that the imac, although it has the same 15-pin video
-connector internally, doesn't follow the rules and apply the right signals
-to its sense pins. so you need a special case in your detection code for
-this beast. (the signals from the sense pins suggest the computer use a
-resolution/synch that the monitor doesn't even support)
 
-> Feel free to look at the code MkLinux hass to read the sense pins.... 
-> Granted, it's not actually being _used_ for anything, since MkLinux
-> doesn't change resolution, but it's there in the original PDM video
-> driver.  There will obviously be differences for other video hardware, but
-> it _might_ at least provide some useful inspiration or something.
+On Mon, 23 Aug 1999, Robert Shaw wrote:
 
-Brad
-brad@pht.com | http://www.pht.com/~brad/
+> > This, BETA, driver. :)
+> 
+> 
+> It may be beta, but it works just fine. I've had several users indicate it works
+> without any problems.
+> 
+
+I'm using it. 
+
+Works great.  I've got a G3 450mhz (rev2) and a SGI 21" monitor.  
+
+I tested the precompiled 2.2.6 and the 2.2.10 off Shaw's site.
+
+The 2.2.6 kernel worked without having to do anything special.  The 2.2.10
+kernel needed the kernel arguements to synch to my monitor.
+
+-b
+
+
+--
+AOL SAPI 		                        703.265.0908     AIM:jackal242
+http://jackal.fudge.org        `I was never more certain of how far away I was
+from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
