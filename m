@@ -1,26 +1,24 @@
-Message-ID: <38987A14.D5547407@dalim.de>
-Date: Wed, 02 Feb 2000 19:40:20 +0100
-From: Stephane GEORGES <sg@dalim.de>
-MIME-Version: 1.0
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: What about AltiVec and egcs ?
-References: <CB9D49DF48337FC1C1256879006153EB.00615423C1256879@kehl.dalim.de>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200002021856.NAA21742@mal-ach.watson.ibm.com>
+To: Stephane GEORGES <sg@dalim.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: What about AltiVec and egcs ?
+In-Reply-To: Message from Stephane GEORGES <sg@dalim.de>
+   of "Wed, 02 Feb 2000 19:40:20 +0100." <38987A14.D5547407@dalim.de>
+Date: Wed, 02 Feb 2000 13:56:19 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Does anybody knoes if AltiVec will be supported in gcc?
+>>>>> Stephane GEORGES writes:
 
---
+Stephane> Does anybody knoes if AltiVec will be supported in gcc?
 
-/====================================================================/|
-| Stephane GEORGES                     |                             ||
-| DALiM SOFTWARE GmbH      R&D         |    Tel: +49 7851 9196 40    ||
-| Strassburger Str.6                   |    Fax: +49 7851 7357 6     ||
-| D-77696                              |                             ||
-| Kehl-Sundheim (Germany)              |    E-mail: sg@dalim.de      ||
-|____________________________________________________________________|/
+	AltiVec is supported in GCC by some patches developed by Motorola
+and Apple.  I have no idea when those patches will be contributed to and
+integrated into the official FSF sources for GCC.
+
+David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
