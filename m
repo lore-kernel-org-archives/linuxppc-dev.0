@@ -1,24 +1,39 @@
-Message-ID: <000301bef938$78001a30$02456fa6@honey.cs.tsinghua.edu.cn>
-From: "Alan Wang" <wung_y@263.net>
-To: "linuxppc mail list" <linuxppc-dev@lists.linuxppc.org>
-Subject: about SAC register of PPC401GF
-Date: Tue, 7 Sep 1999 14:40:10 +0800
+Date: Tue, 7 Sep 1999 01:44:38 -0500 (CDT)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ioremap (still?) broken
+Message-ID: <Pine.LNX.4.04.9909070126490.14821-100000@narn.drgw.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi,
-    in PPC401GF, there is 4G addressing space. so in SAC register, each bit
-control a block of 128M. But in pratice, embedded system do not have so many
-memory. Even one bit of SAC register(128M) seems too big. does anyone know
-why IBM design it like this? under the condition of no address translation
-available, if 32-bit address pratical?
+I am attempting to make an Alteon based Gigabit Ethernet card work in a
+Yosemite G3, and it appears that either ioremap is not mapping memory
+correctly, or the implementation of 'readl,writel' on PPC is not
+consistent with the implementation on all other architectures.
 
-regards,
-Wang
+The alteon driver does an 'ioremap' on the address provided by the kernel
+PCI services, and then expects to be able to access the PCI card's memory
+via accessing the memory returned using 'readl,writel'.
+
+The first thing the driver does is check the card version by reading a
+particular register. By using appropriate printf's, I have found that the
+value returned is '0xffffffff'. (defininitely NOT the register it's
+looking for)
+
+Before I go on a wild chase again, could someone let me know whether the
+2.2.12 kernel might have a better chance with this, or will I need to go
+to the 2.3.x series? (I tried this on a 2.2.6 kernel).
+
+Thanks.
+
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
