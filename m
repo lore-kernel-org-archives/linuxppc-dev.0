@@ -1,52 +1,50 @@
-Message-ID: <000901c1d4ba$63f9b7c0$6401a8c0@attbi.com>
-Reply-To: "Greg Griffes" <ggg@ieee.org>
-From: "Greg Griffes" <ggg@ieee.org>
-To: "Matt Porter" <mporter@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <004701c1d44e$3d643700$6401a8c0@attbi.com> <20020325221409.A871@home.com>
-Subject: Re: Memory map on custom MPC7400 board
-Date: Tue, 26 Mar 2002 06:35:54 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Stephan Linke" <Stephan.Linke@epygi.de>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problems running I2C and/or SPI on 857 board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 26 Mar 2002 12:13:18 +0100."
+             <FCEAKDJJAPHPLJFINDAJIENECDAA.Stephan.Linke@epygi.de>
+Date: Tue, 26 Mar 2002 13:25:14 +0100
+Message-Id: <20020326122519.3849C109F3@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt,
+In message <FCEAKDJJAPHPLJFINDAJIENECDAA.Stephan.Linke@epygi.de> you wrote:
+> I'm using 1.1.4 at the moment. (Can't update for now.)
+> I found the problem with I2C. Looks like I don't need the microcode patch.
+> But I need to do the settings as if I would use the microcode patch. I don't
+> know why but maybe the 857/862 ERRATA ESAR6 says something like that...
+>
+> I still think that there are some buggy pathes in the code. But let me
+> see...
 
-Thanks very much for your advice.  You have saved me a big headache!
+I'll happily accept patches...
 
-> I really recommend using the linuxppc_2_4_devel tree as a starting
-> kernel source base...but it's your choice.
+> > I wonder why you use the CPM code at all.  I  always  found  it  much
+> > easier to use CONFIG_SOFT_I2C ...
+> >
+> Well, I don't know the soft I2C. I guess, when we started playing with the
+> 8260 there was no soft I2C. Is there a timing difference? Is there a soft
+> SPI too?
 
-I will try using the linuxppc_2_4_devel tree.  Unforeseen problems I don't need.
+There has always been a soft-i2c.  The  timing  is  dictated  by  the
+external  hardware  (i2c  bus),  so  no,  there  is  not  much  of  a
+difference. The main difference is where the CPU burns  it's  cycles:
+with  soft-i2c  it's  running  the delay loops, and with the CPM it's
+setting up the CPM stuff and waiting for the transfer to be done.
 
-> Do you really have to map a contiguous 384MB of physical address
-> space? If these are typical RTC and PIC parts...why?
+Not much practical difference,  if  you  ask  me.  And  the  soft-i2c
+solution is much simpler...
 
-The RTC is typical but the PIC is split between a custom ASIC and
-another device.  The RTC is at 0xE400_0000phys, one part of the PIC
-is at 0xEC00_0000phys and the other part is at 0xF700_0000phys.
-Their size is small, but they are spread out.  If I have to map them with
-BATs, I would have to map 384Mb (because the BAT base address
-must be a multiple of the mapped size.) Once the KVM is up,
-I think that I can use ioremap(), or io_block_mapping() to map in
-only what I need.  Is that right?
+Wolfgang Denk
 
-> You are misunderstanding the mapping of kernel RAM using BATs. The
-> 16MB mapping is a temporary translation used before MMU_init().
-> If you look at arch/ppc/mm/ppc_mmu.c:bat_mapin_ram() you'll see
-> that the final mapping is done using BAT2 and BAT3 (the third
-> pair of bats is only used if total_lowmem > 256MB).
-
-Does this mean that before MMU_init() I can use BATs 2&3, then in
-ppc_md.setup_io_mappings() (called after mapin_ram()) I would use
-io_block_mapping() (as is done in chrp_setup.c?)
-
-This helps a lot!  Thanks again for your advice.
-
-Greg Griffes
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Physician: One upon whom we set our hopes when ill and our dogs  when
+well.                                                - Ambrose Bierce
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
