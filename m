@@ -3,18 +3,18 @@ Received: from www.linux.org.uk (parcelfarce.linux.theplanet.co.uk
 	[195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7B77C2BDCF
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Oct 2004 03:52:55 +1000 (EST)
-Date: Fri, 15 Oct 2004 12:47:31 -0300
+	by ozlabs.org (Postfix) with ESMTP id E8EFE2BDD7
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Oct 2004 03:53:28 +1000 (EST)
+Date: Fri, 15 Oct 2004 12:49:46 -0300
 From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Pantelis Antoniou <panto@intracom.gr>
-Message-ID: <20041015154731.GA3957@logos.cnet>
-References: <20040921103503.54102.qmail@web15607.mail.cnb.yahoo.com>
-	<4150056E.9050300@intracom.gr>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20041015154946.GB3957@logos.cnet>
+References: <EA78B62757AF1E4799828249310AC4CA071D281F@stca206a.bus.sc.rolm.com>
+	<28F2CE72-0BF0-11D9-97DC-003065F9B7DC@embeddededge.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <4150056E.9050300@intracom.gr>
-Cc: linuxppc-dev@ozlabs.org, Song Sam <samlinuxppc@yahoo.com.cn>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <28F2CE72-0BF0-11D9-97DC-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-dev@ozlabs.org, 'Song Sam' <samlinuxppc@yahoo.com.cn>
 Subject: Re: Linux 2.6.x on 8xx status
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,35 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 21, 2004 at 01:41:50PM +0300, Pantelis Antoniou wrote:
-> Song Sam wrote:
->=20
-> >Pantelis Antoniou <panto@intracom.gr> wrote=A3=BA
-> >
-> >>Well it works OK until it gets to start init.
-> >>
-> >>Then it crashes the way it is supposed to :).
-> >>
-> >>Tom I think it's the problem we are talking about.
-> >>
-> >>Song please try this...
-> >>
-> >
-> >Guess what? It WORKED!!! Just one more line make it.
-> >Could you pls tell us the theory in it if not too
-> >complicated? :-)
-> >
-> >Well Done!
-> >
-> Oh man Dan will kill me :)
->=20
-> The theory is simple, TLB handling is faulty for 8xx.
->=20
-> This patch fixes it but Dan & Ben think it's just by
-> coincedence and we should fix it properly.
+On Tue, Sep 21, 2004 at 01:03:29PM -0400, Dan Malek wrote:
+> 
+> On Sep 21, 2004, at 7:59 AM, Smith, Craig wrote:
+> 
+> >Genius. That patch appears to work for me as well.
+> 
+> The fact this works indicates a subtle memory management
+> problem elsewhere.  I don't know what that is at this
+> point.  This hack is in a piece of generic code that works
+> properly on all other PowerPC cores, so it isn't going to
+> ever appear in the public sources.
+> 
+> I suggested this change to a few people hoping the information
+> would lead them to finding the real problem, not that it
+> should be perpetuated as a "fix" to make 8xx work.
+> I don't personally have time to work on this right now,
+> so anyone using 8xx should be looking for the real
+> cause and solution, not using this to create products.
 
-Hi Pantelis, others,
+Do you know the real cause Dan ?
 
-And what has to be done to be fixed properly?=20
+As I told you, we are porting our sub-sub-architecture 
+to v2.6, and need that bug fixed at some time.
 
-Ie what is the problem in detail?
+Lots of other people do.
