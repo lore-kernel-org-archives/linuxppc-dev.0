@@ -1,32 +1,37 @@
-Date: Thu, 24 Jun 2004 18:08:39 +0200
-From: Massimiliano Zilio <massimiliano.z@tiscali.it>
-Subject: ppc 405 registers init
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <40DAFC87.6030406@tiscali.it>
-MIME-version: 1.0
-Content-type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
+Subject: Re: [PATCH][RFC] Second version of MPC10x OCP
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Kumar Gala <kumar.gala@freescale.com>
+Cc: linuxppc-embedded@lists.linuxppc.org, mgreer@mvista.com
+In-Reply-To: <282B6E73-C58F-11D8-9384-000393DBC2E8@freescale.com>
+References: <1087746455.1547.23.camel@newt>
+	 <282B6E73-C58F-11D8-9384-000393DBC2E8@freescale.com>
+Content-Type: text/plain
+Message-Id: <1088078926.1372.13.camel@localhost>
+Mime-Version: 1.0
+Date: Thu, 24 Jun 2004 17:36:52 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-    I'd like to debug an application that permit me to write the
-bootloader image in flash.
-I am using PPC405 Gnu tools and Wiggler DBI.
+On Thu, 2004-06-24 at 04:32, Kumar Gala wrote:
+> I'm confused are we adding the OCP struct for every 10x device?  Did we
+> get closure on the question if 105, 106 & 8240 would also work?
 
-I know that I can set registers value with the command
-set reg $r0 0x0  (for example)
-but I don't know the relation between gdb reg names and ppc name.
-What is the ppc name of r5?  (for example)
-What is the gdb name of GPTC?  (for example)
+According to the chip manuals:
+107, 8240, and 8245 have the internal peripherals and should work.
+105 and 106 don't have internal peripherals.
 
-Where can I find these info and the init values of the register?
+mpc10x_common.c supports 106, 107, 8240, and 8245, but does not support
+105.
 
-Thank you very much.
+The code only adds the OCP devices if the device is not 106.
 
-Bye Max
+My patch is slightly broken where I edited out a local board variant by
+hand. I'll produce a cleaned up patch based on my Sandpoint tree once
+I've tested it together with the 85xx I2C driver.
+
+- Adrian Cox
+Humboldt Solutions Ltd.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
