@@ -1,38 +1,43 @@
-Message-ID: <E1836A7F3557D311A14000805F9F36FC01518848@usdfo011.usac.danfoss.net>
-From: "Pergola, Michael" <MichaelPergola@Danfoss.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: parse error before `i2c_rpx_exit'
-Date: Wed, 13 Feb 2002 17:15:56 +0100
-MIME-Version: 1.0
-Content-Type: text/plain
+From: ghannon@cspi.com
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256B5F.00553845.00@pine.cspi.com>
+Date: Wed, 13 Feb 2002 11:30:32 -0500
+Subject: MVME5100 booting from SCSI disk
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All,
+I'm trying to find documentation on getting a Motorola 5100 board to boot
+from a
+hard drive.    What I spefically am wondering is do I need a "boot loader",
+or is that
+built into the kernel?
 
-I am using HHL 1.2 Linux Kernel version 2.2.14 on an Embedded
-Planet MPC823e platform. When attempting to integrate my PPC
-kernel with I2C-2.6.2 I get the following error:
-  i2c-rpx.c:123: parse error before `i2c_rpx_exit'
-  i2c-rpx.c:124: warning: return-type defaults to `int'
-  i2c-rpx.c: In function `i2c_rpx_exit':
-  i2c-rpx.c:126: warning: control reaches end of non-void function
+I can build a kernel (2.4.11) which works and until now have been using a
+ROMFS, built into
+zImage.initrd.pplus.  I am currently able to netboot or boot from flash.
 
-The offending lines of code in i2c-rpx.c are:
-  void __exit i2c_rpx_exit(void)
-  {
-        i2c_8xx_del_bus(&rpx_ops);
-  }
+I am thinking I can rebuild this kernel root=/dev/sda7 and I should be able
+to get it
+to use the hard drive as /.  My question is can I just put that new kernel
+on a
+bootable partition on the hard drive and get PPCbug to boot from that
+partition, or do I need
+some form of a bootloader?  (yaboot, lilo, other)    I do realize I should
+be able to
+flash this kernel and then have the board boot from flash and use the drive
+as /.
+Is this the more common approach?
 
-What could be causing this error? Everything looks OK to me.
+If there is a good write up on this I would be glad to read about it, I
+just haven't found it yet.
+I do have the PPCbug manuals.
 
-Regards,
-     Michael Pergola
-     Software Engineer
-     Danfoss Air-Conditioning & Refrigeration Division
-     7941 Corporate Blvd.
-     Baltimore, MD  21236     (410) 931-6778 x4259
+Thanks,
+Gary Hannon
+CSPI
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
