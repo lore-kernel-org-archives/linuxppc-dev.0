@@ -1,61 +1,63 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: 17 May 2003 18:45:49 +0800
-Message-ID: <20030517184549.35030.qmail@eyou.com>
-From: "rick.liu" <dovi@eyou.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Reply-To: "rick.liu" <dovi@eyou.com>
-Subject: Re: kermit:How to disable the flow control signals?
-Content-Type: text/plain
+To: "rick.liu" <dovi@eyou.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kermit:How to disable the flow control signals? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "17 May 2003 18:45:49 +0800."
+             <20030517184549.35030.qmail@eyou.com>
+Date: Sat, 17 May 2003 19:07:15 +0200
+Message-Id: <20030517170720.976B3C6092@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Wolfgang,
+Dear Rick,
 
-thank you for ur reply,in your message,
-======= 2003-05-17 09:29:00 you wrote:=======
-
->> 1.why the flow control signals are still "on"?
+in message <20030517184549.35030.qmail@eyou.com> you wrote:
 >
->Because this is what you serial  driver  reports  about  the  current
->state of these pins?
+> >> 1.why the flow control signals are still "on"?
+> >
+> >Because this is what you serial  driver  reports  about  the  current
+> >state of these pins?
+>
+> i donnot think so,for example,my NO.7 pin(RTS) and NO.9 pin(RI) both connect
+> to nothing,if your conclusion is correct,RTS and RI should be the same
+> state.But we
+> saw they are not the same.
 
-i donnot think so,for example,my NO.7 pin(RTS) and NO.9 pin(RI) both connect
-to nothing,if your conclusion is correct,RTS and RI should be the same
-state.But we
-saw they are not the same.
+Do you really know for sure how thse pins are  internally  connected?
+If  there  are  any  pull-up  or -down resistors? And how your UART is
+implemented internally? And if the driver actually reads the pins?
 
->To verify, type "show comm" at the kermit prompt:
+I wrote: this is what your  serial  driver  reports.  This  does  not
+necessarily  mean  that  this is actually the state of the externally
+accessable pin on the serial connector...
 
-here is my info:
+> here is my info:
 
-kermit>show comm
+This looks ok.
 
-Communications Parameters:
- Line: /dev/ttyS0, speed: 115200, mode: local, modem: none
- Parity: none, stop-bits: (default) (8N1)
- Duplex: full, flow: none, handshake: none
- Carrier-watch: off, close-on-disconnect: off
- Lockfile: /var/lock/LCK..ttyS0
- Terminal bytesize: 8, escape character: 28 (^\)
+> Now we can still see the RTS/CTS/DSR/CD/DTR are still on,why?
 
- Carrier Detect      (CD):  On
- Dataset Ready       (DSR): On
- Clear To Send       (CTS): On
- Ring Indicator      (RI):  Off
- Data Terminal Ready (DTR): On
- Request To Send     (RTS): On
+Because this is what you serial  driver  reports  about  the  current
+state of these pins?
 
-Type SHOW DIAL to see DIAL-related items.
-Type SHOW MODEM to see modem-related items.
+> it my kermit version's problem?
 
-Now we can still see the RTS/CTS/DSR/CD/DTR are still on,why?
+No.
 
-it my kermit version's problem?
+
+Ummm... why do you bother? Is anything not working?
 
 Best regards,
 
-Rick
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A Puritan is someone who is deathly afraid that  someone,  somewhere,
+is having fun.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
