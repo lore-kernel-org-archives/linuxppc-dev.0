@@ -1,78 +1,88 @@
-Message-Id: <200302281454.AA02351@kishinami.cs.fujitsu.co.jp>
-From: KISHINAMI Masaya <kishinami@cs.fujitsu.co.jp>
-Date: Fri, 28 Feb 2003 23:54:57 +0900
-To: "Georg Klug" <gklug@giga-stream.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: AW: 405GP Networking issue
-In-Reply-To: <FFECLICFNBJAHONLGAKMAEINCIAA.gklug@giga-stream.de>
-References: <FFECLICFNBJAHONLGAKMAEINCIAA.gklug@giga-stream.de>
+Subject: Re: Possible bug in flush_dcache_all on 440GP
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFF6BB8794.C62B49D5-ON87256CDB.0052212D@us.ibm.com>
+From: Ralph Blach <rcblach@us.ibm.com>
+Date: Fri, 28 Feb 2003 10:00:54 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Georg,
+This comment is from Thomas Sartorius,
 
-Thank you for your suggestion. However, we once checked the EMAC0_MR1,
-and it was right configuration. Sorry, not to be informed to you.
-But I'll check once again. As a fact, this problem does not happen
-everywhere. We need to go another place and it's far from here. Therefore,
-next investigation will be held at the middle of next week.
-I will keep you informed as more information becomes available.
 
-Regards, Kishinami
+Eugene is correct about the "generic" way requiring that you load twice as
+many memory locations as would fit in the cache, in order to guarantee that
+any previous "dirty" contents get written to memory and removed from the
+cache.
 
---- On Fri, 28 Feb 2003 22:59:11 +0900 Georg Klug<gklug@giga-stream.de> -san wrote:
+Note that his second suggestion regarding dccci requires that the processor
+be in supervisor mode, and assumes that there is no dirty data left in the
+cache at the time of the dccci (or else one doesn't care about causing such
+dirty data to be written back to memory).
 
->> We are debugging a custom board designed based on the 405GP
->> (200MHz) and have a problem not being sent ECHO REPLY ping
->> packet from custom board to our PC via repeater hub on the
->> heavy traffic under 10Mbps and half duplex condition.
+An alternative (and likely faster) method is to use a series of dcbz
+instructions (as many as there are lines in the cache) to a series of
+"safe" addresses for which it is known that the cache does not currently
+contain dirty data, and then use dccci at the end to eliminate this dirty
+data without causing any of it to be written back to memory.  This
+technique should be much faster as it avoids having to actually read any
+memory locations into the cache.
+
+Another alternative is to use a loop that does a series of dcread/dcbf
+instructions, where the information that is read into the GPR by the dcread
+is then used by the dcbf to cause that line to be cast-out and invalidated.
+Depending on the possible state of the cache, it might be necessary to test
+the valid bit read by the dcread before trying to use the value for the
+dcbf, to avoid any MMU exceptions.
+
+One thing to note with regards to any of the techniques:  you probably need
+to guarantee that interrupts do not occur during the sequence to make sure
+that the cache is cleanly flushed when the routine is finished.
+
+One more thing to note with regards to any of the techniques:  you need to
+concern yourself with possible MMU exceptions during the sequence.
+
+One last thing to note:  if you're using any of the techniques other than
+the dcread/dcbf sequence, then you need to concern yourself with the
+"victim limit" values, and whether or not the cache has been partitioned
+into "normal". "transient", and "locked" regions.  The techniques described
+all presume that "normal" storage access operations will cause the "victim
+index" value to walk through all the values from 0 to 63, but if the cache
+has been partitioned, this will not be the case.
+
+In the end, I would suggest that the "safest", most robust technique is to
+use the dcread/dcbf sequence loop, with proper testing of the dcread result
+(e.g., for a valid bit) before executing the dcbf, and with proper MMU
+setup ahead of time to make sure you don't get MMU exceptions during the
+sequence.
+
+One last thing:  Eugene suggests that "40x" processors have 32-byte cache
+lines, but that is not the case for the 403 and 401 (they have 16-byte
+cache lines).
+
+
+Segher Boessenkool <segher@koffie.nl>@lists.linuxppc.org on 02/26/2003
+10:39:05 AM
+
+Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
+
+
+To:    Eugene Surovegin <ebs@ebshome.net>
+cc:    linuxppc-embedded@lists.linuxppc.org
+Subject:    Re: Possible bug in flush_dcache_all on 440GP
+
+
+
+
+Eugene Surovegin wrote:
+
+> I believe there is a bug in flush_dcache_all implementation for not cache
+> coherent processors.
 >
->> ...
->
->> Following are the our simplest duplication process and the
->> results.
->>
->> 1. Connect the repeater hub to backbone LAN.
->> 2. Connect custom board, test PC to ping and other PCs to the
->>    repeater hub to the full. This case, 10 or more PCs are
->>    connected to repeater hub and each PC works normally by
->>    using network.
->> 3. Increase the traffic by using ftp command. The ftp data was
->>    never addressed to the custom board.
->> 4. Ping from our PC to custom board at one time.
->> 5. The 60% pings were lost such condition.
->> 6. We investigated the ping lost case.
->>    - LAN protocol analyzer captured the ECHO REQUEST which was
->>      address to custom board. It shows ECHO REQUEST was issued
->>      from our PC to LAN cable.
->>    - Logic analyzer captured the same ping packet which was
->>      already been captured by LAN analyzer between PHY(Intel
->>      LXT971A) and EMAC. It shows ECHO REQUEST was reached just
->>      before the EMAC.
->>    - The LAN device driver's receive buffer did not receive the
->>      ECHO REQUEST by using printk command. We suspected that the
->>      ECHO REQUEST was not issued to the MAL(Memory Access Layer),
->>      therefore ECHO REQUEST was not translated to the receive
->>      buffer.
->>
->> At the same time, many 4 byte short packet(0x000000f0) which was
->> not addressed to custom board was received to the LAN device driver's
->> receive buffer with error status. According to 405GP manual, EMAC
->> discards the packet which is not of its own.
->
->to me it looks like an half duplex issue. You should check whether both:
->sender and receiver know that they are connected to a half duplex hub.
->Otherwise collisions could occur which are not detected by the receiver
->and also not by the transmitting entity. So you should make sure that
->FDE is set to 0 in the EMAC Mode register 1 (EMAC0_MR1) according to
->the Users manual)
->
+> This function uses simple algorithm to force dcache flush by reading
+> "enough" data to completely reload the cache:
 
------
-KISHINAMI Masaya
-Fujitsu Limited (Japan)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
