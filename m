@@ -1,32 +1,35 @@
-Date: Wed, 29 Mar 2000 22:12:14 -0600 (CST)
-From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
-cc: "Henry A. Worth" <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC and Pismo Powerbook
-In-Reply-To: <20000329183654.D27338@plato.localdomain.local>
-Message-ID: <Pine.GSU.4.05.10003292158150.18815-100000@oddjob.uchicago.edu>
+Date: Thu, 30 Mar 2000 10:02:51 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        Paul Mackerras <paulus@linuxcare.com>,
+        Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: adb_buttons kernel argument
+In-Reply-To: <38E27BDD.4DEDC1E4@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.10003300955350.19014-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Extracting *.tar.gz in MacOS - find
-a) macgzip
-b) suntar
-in your favourite info-mac mirror in the directory 'cmp'
-
-
-ftp://ftp.amug.org/pub/mirrors/info-mac/cmp/macgzip.hqx
-ftp://ftp.amug.org/pub/mirrors/info-mac/cmp/suntar-222.hqx
-
-
-
-
-> On Wed, Mar 29, 2000 at 11:20:17AM -0800, Henry A. Worth wrote:
+> > Well, change the documentation. I think somebody is integrating my xpmac-style
+> > adb_buttons support and so there will be a adb_buttons=2,xx,yy soon. I think
+> > the old syntax was a little bit strange anyway and probably was only a mistake
+> > and no intended behaviour.
 >
-> > or you at least had seperate docs, after downloading it I couldn't
-> > unpackage it in MacOS and with no docs decided it wasn't worth
->
+> Yes, please! I have been using the adb_buttons=2,xx,yy patch for more
+> than a year now on both 2.2.x and 2.3.x. It would be nice to have it
+> integrated in the kernel, so I don't have to patch it every time. If
+> someone wants a version for 2.3.99, I can mail it.
+
+Could you please describe what adb_buttons=2,xx,yy does different than
+adb_buttons=xx,yy (2.2 style) would do?
+Please keep in mind that the adb mouse code is shared with the m68k Mac
+port. I'm sure people there would like to get a heads-up about changes to
+the syntax too.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
