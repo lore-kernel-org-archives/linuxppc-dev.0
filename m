@@ -1,67 +1,60 @@
-Message-ID: <3AC179EB.C77A2EB5@mvista.com>
-Date: Wed, 28 Mar 2001 00:43:07 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-commit@fsmlabs.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PVR hell
-References: <3AC0EF44.E2BCE2F6@mvista.com> <20010327225138.22949@smtp.wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 28 Mar 2001 08:06:46 +0100
+Subject: Re: Sound stoppage
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Takashi Oe <toe@unlserve.unl.edu>
+Cc: "Michael R. Zucca" <mrz5149@acm.org>, phandel@cise.ufl.edu,
+	"linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010328070644.8D1F9DB9D3@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Wed, Mar 28, 2001, Takashi Oe wrote:
+> On Tue, 27 Mar 2001, Iain Sandoe wrote:
+>
+>> I wish I knew whether it would resume... it's not clear from the
+>> documentation I've got... (the IBM stuff).
+>
+> It may be implementation dependent.  MACE driver stops tx dma and resumes
+> afterwards, so tx side of dbdma on MACE must support it.
 
-> So what I propose is to have head.S parse a table, and when a matching
-> CPU is found, call it's init function (pointed to by a table entry) and
-> load the feature value from it.
+are you sure it will re-start *part way* through a dbdma command (and not
+just re-send the entire block)?   (the latter is what sound dma seems to
+do).
 
-That will work.
+It doesn't appear to make sense to resume part of a block on ethernet...
+(i.e. once you've missed the Xmit deadline the packet is trashed - so you'll
+have to re-send anyway).
 
-> The init function can then fill other ppc_md fields if needed. That can
-> be done
-> as a second step
+BTW: the same mac-io chip is responsible for both sound & ethernet dbdma -
+so it seems possibly unlikely that the behaviour would be different.
 
-I didn't necessarily mean to use ppc_md, just the idea of a one time
-initialization of function pointers early in head.S based upon the PVR.
+> I have no idea if how AWACS' tx dbdma behaves, but it may be necessary to
+> make the write to control register multi-step or something, i.e., clear
+> RUN [in order to clear DEAD bit] and wait until RUN bit is cleared by hw,
+> then set RUN|WAKE..
 
-> ......... There is
-> a quite clear distinction between embedded CPUs and "desktop" CPUs,
+OK... that is different (in detail) from what was tried before - I think
+I'll ask for a volunteer to test this...  Peter?
 
-Not among CPUs.  Less than 25% of 74xx processors are used by Apple
-in all of their systems, where do you suppose all the rest go?  The
-disctinction is based upon system configurations, that you can't
-assume 74xx processors are going to boot with OF, or even have a disk
-for that matter.  I'm just asking we don't build software with these
-assumptions, as most of the 74xx processors are going into deeply
-embedded hybrid DSP environments.
+>> If it would, then we could save all this hassle completely...
+>>
+>> BTW: I don't *think* it does because one of my testers tried a similar
+>> method to the one you proposed and said it chopped up/repeated sound.
+>
+> Hmm, I think it has to be either "chopped up" or "repeated" not both..  As
+> far as dbdma is concerned, those two are quite different effects.
 
->  ...... and
-> I see no immediate need to have a binary kernel that can run them all.
-> (I may be wrong here, please correct me if I am).
+Well, with fragments of a few tens of ms - it's all highly subjective.
 
-That isn't what I was suggesting either.  Even among processors we
-think should be similar, like the 74xx family, there are some major
-differences.  The old test and branch based upon PVR is turning into
-a twisted mess of code, that I think would be better understood,
-written,
-and more reliable if we adopted a more modular and indirect calling
-method (which I believe you are suggesting as well).
+I see it like this:
 
-> For now, my primary concern is about things that will affect the desktop
-> systems, especially the powermacs using the whole range of PPC "32 bit
-> desktop" CPUs from 601 to 7450.
+The sound is chopped up (since some form of blocking has caused the problem
+in the first place)  and then the "fix" causes part of the sound to be
+repeated - I think this is the origin of the apparently conflicting report.
 
-The only 7450 systems running Linux today are embedded PPMC with a DINK
-boot rom that boot from flash........those aren't desktops.  Someday
-Apple may have something available for you desktop guys, but the
-initial development is for Linux embedded targets :-).
-
-I think your table lookup stuff is just fine, and I'm ready to rewrite
-some of head.S to use something different.
-
-
-	-- Dan
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
