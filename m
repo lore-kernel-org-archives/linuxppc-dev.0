@@ -1,42 +1,30 @@
-Message-ID: <3CEA0F45.BDBBA25@etx.ericsson.se>
-Date: Tue, 21 May 2002 11:11:33 +0200
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+Message-ID: <3CEA25C8.3030400@fiberlogic.com>
+Date: Tue, 21 May 2002 18:47:36 +0800
+From: "Lin, Nan-Hung" <carl@fiberlogic.com>
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Armin Kuster <akuster@mvista.com>
-Subject: Re: [PATCH] ibm ocp gpio
-References: <20020520182657.B17318@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Console problem with MPC855T + Linux 2.4.3
+Content-Type: text/plain; charset=Big5
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
->
-> The most common thing I want to use the GPIO pins for is
-> simple lighting of some LED's. I decided to roll in some timers
-> into the generic GPIO driver rather than haveing each user of the
-> GPIO driver be forced to do some form of timers to get a usable
-> LED visual as well.
->
-> I think I got the timer stuff correct but I am not sure.
-> I didn't bother cleaning it up until I get some feedback on it.
->
->   -----------------------------------------------------------------------------
->                     Name: gpio.patch.gz
->    gpio.patch.gz    Type: unspecified type (application/octet-stream)
->                 Encoding: base64
+I run the linux 2.4.3 on a MPC855T-based system
+with the SMC1 as the console. The baud rate of
+the SMC1 is 38400 bps.
 
-I don't think we should add this It's not really something that needs to be
-done in the driver. Also you have not exported this functionality to
-userspace.
+The console works fine for a few days (weeks
+sometimes) from the system booting up. Then,
+the console does not accept any input. At the
+same time, the console still output (it shows
+messages correctly).
+
+What's the problem ?
+Please help.  Thanks
 
 
---
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+-----------------------------------------------
+Carl Lin                    carl@fiberlogic.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
