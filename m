@@ -1,27 +1,58 @@
-Message-ID: <41090F9A.8000901@mvista.com>
-Date: Thu, 29 Jul 2004 09:54:18 -0500
-From: Corey Minyard <cminyard@mvista.com>
+Message-ID: <2717.217.46.152.97.1091113282.squirrel@217.46.152.97>
+In-Reply-To: <20040729141631.GA20149@lst.de>
+References: <9ef20ef304071613494a0f0af9@mail.gmail.com>
+    <20040717014441.GA13447@pegasos> <20040729135130.GE19197@lst.de>
+    <9ef20ef3040729070439f6d8c1@mail.gmail.com>
+    <20040729141631.GA20149@lst.de>
+Date: Thu, 29 Jul 2004 16:01:22 +0100 (BST)
+Subject: Re: rs/6000 e30 + 240 (doral) support
+From: "Leigh Brown" <leigh@solinno.co.uk>
+To: "Christoph Hellwig" <hch@lst.de>
+Cc: "Gustavo Barbieri" <barbieri@gmail.com>,
+	"Sven Luther" <sven.luther@wanadoo.fr>,
+	debian-kernel@lists.debian.org, linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org,
-	Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: Patch for debug setcontext
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kumar Gala wrote:
+Christoph Hellwig said:
+>
+> On Thu, Jul 29, 2004 at 11:04:48AM -0300, Gustavo Barbieri wrote:
+>> > Most doesn't look too bad to me, but it's a lot of patches.  I vaguely
+>> > remember they were discussed on linuxppc-dev, so we should check the
+>> > comments over there.
+>>
+>> A lot of patches? Well, there is a lot of "code"... it's not really
+>> code, but just structure definitions... actually the patche touches
+>> the real code at few points, one it's just a null pointer checking,
+>> other are added cases to the switch statement so it can handle those
+>> boards, so I really can't a problem there.
+>>
+>> I already sent an email to linuxppc-dev in the past, but no replies:
+>>
+>> http://lists.linuxppc.org/linuxppc-dev/200407/msg00085.html
+>
+> Ah sorry, I confused it with Len's big IBM prep patchkit.  Except for a
+> tiny style issue this patch is fine with me.
+>
+> Any upstream comments as I'd hate to carry along a patch like that in
+> the Debian patchkit while we'd probably want it in Sarge.
+>
+> Gustavo, if we apply this patch you'll have to sign up for d-i testing
+> on prep, though ;-)
 
- > I'm guessing, this should really be #if defined(CONFIG_4xx) ||
- > defined(CONFIG_BOOKE)
- > There are a number of similar cases later in this code as well.
+I have a more comprehensive set of patches that remove the need for
+ugly hard-coded tables on RS/6000 PReP boxes, that I previously
+posted to linuxppc-dev.  I'll freshen them up tonight and post them
+again.  They provide generic support for the E20, E30, 140, 240, F30,
+and F40 and probably a few other ones that we don't know about, if
+we're lucky.  The F40 has problems but all the other work fine.
 
-That may be the case, but it is very confusing in entry.S.  The dbcr0
-register seems to only be defined on 4xx processor, not on book E.
-Look, for instance, at load_4xx_dbcr0:, it is only defined if 4xx is
-enabled, not if book E is enabled.
+Regards,
 
--Corey
+Leigh.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
