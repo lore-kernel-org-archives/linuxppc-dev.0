@@ -1,36 +1,34 @@
-To: <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SUNGEM config
-References: <87k7th2ujl.fsf@theorie.physik.uni-muenchen.de>
-	<20020213172847.23608@mailhost.mipsys.com>
-Reply-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-Date: 14 Feb 2002 06:06:40 +0900
-In-Reply-To: <20020213172847.23608@mailhost.mipsys.com>
-Message-ID: <87u1slf5wf.fsf@theorie.physik.uni-muenchen.de>
+Date: Wed, 13 Feb 2002 13:09:45 -0800 (PST)
+From: "David A. Gatwood" <dgatwood@gatwood.net>
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: G4 boot crash problems with 2.4 "stable"
+In-Reply-To: <20020213190744.31608@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.3.96.1020213125526.27925B-100000@gatwood.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, 13 Feb 2002 benh@kernel.crashing.org wrote:
 
-> Can you tell me more about those machine checks ?
+> >Is there a 2.4 kernel source tarball around that is known to boot on
+> >Sawtooth (using BootX)?  Is there a way to yank the OpenPIC support?
+>
+> BootX isn't supported on any newworld mac. You should boot from OF,
+> using yaboot.
 
-I can send you the usual output, it's still in my logs.
+BootX works fine for me with every 2.2 kernel I've tried.  It only fails
+for 2.4 TOT builds.  I very much doubt the boot mechanism is at fault.
 
-> I suspect they happen if you try to read the registers while the
-> interface is shutdown, in which case the GEM chip is down.
 
-Precisely.  That's what the ifd daemon does, it polls the device once
-every second via that ioctl in order to see whether it is connected or
-not.
+Later,
+David
 
-Regards, Jens.
+---------------------------------------------------------------------
+                    Check out my weekly web comic:
+                     http://www.techmagazine.org
 
---
-J'qbpbe, le m'en fquz pe j'qbpbe!
-Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
