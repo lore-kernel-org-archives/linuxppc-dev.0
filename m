@@ -1,42 +1,38 @@
-Date: Tue, 17 Apr 2001 06:19:55 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: boot params
-Message-ID: <20010417061955.C6381@plato.local.lan>
-References: <20010417093736.4BEC72F001@apollo.valhalla.net> <200104171403.QAA00755@piglet.grunz.lu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oTHb8nViIGeoXxdp"
-In-Reply-To: <200104171403.QAA00755@piglet.grunz.lu>; from mlan@cpu.lu on Tue, Apr 17, 2001 at 04:03:45PM +0200
+Message-Id: <200104171423.QAA00813@piglet.grunz.lu>
+Date: Tue, 17 Apr 2001 16:23:21 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Quad SMP on G4
+To: peter@llama.nslug.ns.ca
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20010417040346.C15047@llama.nslug.ns.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---oTHb8nViIGeoXxdp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On  17 Apr, this message from Peter Cordes echoed through cyberspace:
+>  When these came up, the keyboard was half functional.  I could switch
+> consoles, scroll back, and use the magic sysrq key.  Regular typing doesn't
+> produce any characters on screen, so of course I couldn't log in.  I could
+> ping and make TCP connections, but user space sshd doesn't answer, so the
+> connection hangs.
 
-On Tue, Apr 17, 2001 at 04:03:45PM +0200, Michel Lanners wrote:
->=20
-> You sure your backup battery is OK? It's not completely dead, I think
-> otherwise the box wouldn't boot; but you may test it anyhow.
->=20
-> Also, you could add an nvsetenv script on shutdown as a workaround.
+I've had a similar symptom (some key combos work, like console
+switching, but not typing, and no new process like a telnetd can start)
+on my TiBook, which is obviously not SMP, and doesn't run a SMP kernel.
 
-well on some machines the MacOSROM resets the nvram, so you must never
-allow it to boot.  quik is generally best for people wanting to get
-rid of the useless space wasting MacOS in these cases. =20
+Maybe the problem here si something else?
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Michel
 
---oTHb8nViIGeoXxdp
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-
---oTHb8nViIGeoXxdp--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
