@@ -1,47 +1,69 @@
-From: tom_gall@mac.com
-Date: Wed, 11 Feb 2004 09:33:51 -0600
-Subject: Re: 64-bit user-space on G5? Never, soonish, or unknown?
+Mime-Version: 1.0 (Apple Message framework v612)
+In-Reply-To: <1076361029.763.13.camel@gaston>
+References: <27203D60-5B28-11D8-A96D-000A95B30208@vrlteam.org> <1076361029.763.13.camel@gaston>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v553)
-Cc: linuxppc-dev@lists.linuxppc.org
-To: Mikael Pettersson <mikpe@user.it.uu.se>
-In-Reply-To: <16426.14204.974363.611192@alkaid.it.uu.se>
-Message-Id: <B1A74EA4-5CA7-11D8-88FE-0003939E069A@mac.com>
+Message-Id: <809C6564-5CB1-11D8-B40D-000A95B30208@vrlteam.org>
+From: Costantino Pistagna <cpistagna@vrlteam.org>
+Subject: Re: ibook G4 Status Report
+Date: Wed, 11 Feb 2004 17:44:04 +0100
+To: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wednesday, February 11, 2004, at 08:09 AM, Mikael Pettersson wrote:
+On Feb 9, 2004, at 10:10 PM, Benjamin Herrenschmidt wrote:
+
 >
-> We're considering buying a G5 for porting a compiler/runtime-system
-> project to PPC and eventually PPC64.
+>> Since my ibook is a 12" equipped, i really need to use the video
+>> output
+>> with my 17" LCD.
+>>
+>> Any clues ? and/or usefull start point ?. i've tried to look inside
+>> xfree drivers sources,
+>> but without any good results. Seems that radeon9200 does not provide,
+>> any type of
+>> multiple screen support.
+>
+> You have a VGA or DVI output ? VGA I think ? It should work with
+> Michel Danzer packages but it will be an analog output, not as good
+> as a fully digital.
 
-Sure, this is a reasonable approach.
+yep, you're right! I was unhappy in my previous message. I've an analog
+VGA
+monitor connected to my ibook. All i want to do is use my external CRT
+monitor
+with X or consoleFB. I've googled for "Michel Danzer", but without any
+success at all.
+any clues ?
 
-> The question is, will Linux ever support a 64-bit user-space on the
-> G5?
+> XFree doesn't drive properly a DVI output on a laptop yet, though
+> I got it to work with a small userland hack I use to "fix" the chip
+> after X configured it ;)
+>
 
-Yes. gentoo-ppc64 runs exactly in this mode by default. There aren't
-livecds quite yet... RSN tho.
+no matter for DVI output, yet. thanks at all.
 
-> From my reading of arch/ppc and arch/ppc64, the differences seem major
-> so I'm not holding my breath, but perhaps there is hope.
+> Note that you may also have a problem with XFree not setting the proper
+> divider for your internal panel when used without UseFBDev. Same issue,
+> I have a userland "fix" for that since fixing it in XFree itself isn't
+> quite simple at this point.
 
-Well that's just the kernel.  Remember 64 bit kernels can run both 32
-and 64 bit applications side by side at the same time.
+I've noticed this problem. the only way to get XFree working properly,
+is
+to use the UseFBDev directive into XF86Config. Unfortunately, this
+directive
+seems to get in troubles with dualhead XF86Config (i've used the one
+that i'm
+using in my desktop, equipped with a Rage128): the panels are waiting
+for
+something with a black screen. If it's usefull, i'm using an XFree
+4.3.0 binary
+merged with gentoo/ppc.
 
-> Or should we just treat the G5 as a faster 32-bitter?
+cheers,
+--
+[ Costantino Pistagna (PhD) :: unict :: dmi ]
+[ gpg key on pgp.mit.edu :: keyid  1d67b4dd ]
 
-All depends on what you want. For instance SuSE SLES8 generally runs as
-a 32 bit system but includes (some) 64 bit libraries and such so you
-could do 64 bit development.
-
-I think you'll find you have options. You just need to decide what's
-right for you.
-
-Tom Gall
-gentoo-ppc64 -- God started with stage 1, shouldn't you?
-tgall aatt uberh4x0r.org
-tom_gall aatt mac.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
