@@ -1,66 +1,77 @@
-Message-ID: <36A5F6CD.3A7EBFDA@phx.mcd.mot.com>
-Date: Wed, 20 Jan 1999 08:31:26 -0700
-From: Johnnie Peters <jpeters@phx.mcd.mot.com>
+Date: Wed, 20 Jan 1999 11:28:21 -0800 (PST)
+From: Ranjit Deshpande <ranjitd@sco.COM>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PCI-PCI bridges
+Message-ID: <Pine.SCO.3.96.990120111039.13973A-100000@mammoth.sco.com>
 MIME-Version: 1.0
-To: Gary Thomas <gdt@linuxppc.org>
-CC: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        linux-kernel@vger.rutgers.edu, linuxppc-dev@lists.linuxppc.org,
-        Dan Malek <dmalek@jlc.net>, Cort Dougan <cort@persephone.cs.nmt.edu>,
-        Michael Meissner <meissner@cygnus.com>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-References: <XFMail.990120152136.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I will pull this down today and give it a try.
+Hello all,
 
-Johnnie
+I've been trying to get my ethernet card on work on my Starmax 5500. The
+card is a Znyx 345 which has the DEC (Now Intel) 21140 chipset.
 
+After some investigation I've found that the card which is on bus #1 is
+not seen by the kernel because support of PCI-PCI bridges has been
+omitted in the 2.1.125 kernel.
 
-Gary Thomas wrote:
+Specifically the pci_*_config_* routines do not use the bus number when
+reading from config space. So I went and looked at the 2.1.24 kernel and
+changed the following in arch/ppc/kernel/pmac_pci.c in the above mentioned
+routines...
 
-> On 20-Jan-99 Johnnie Peters wrote:
-> >
-> > I will volunteer to try the patches on:
-> >
-> > Blackhawk
-> > Comet
-> > Utah
-> > Mequite
-> > MTX
-> > VME2600/2700/3600
-> >
-> > just as soon as they are available.
-> >
->
-> I have put up all my patches against 2.2.0p7 at:
->   ftp://ftp.linuxppc.org/gary/diffs-2.2.0p7-Jan20
-> These are diffs against the virgin 2.2.0-pre7.
->
-> This includes the changes to fix boot problems on my Utah box,
-> as well as the changes to get the PS/2 mouse working again.
->
-> I also did some restructuring of the PPC main configuration menu
-> so that Pmac questions are ignored if you aren't configuring for
-> a PowerMac.  I also added a configuration option to set the default
-> kernel boot line, passed to the bootstrap code.
->
-> Note: I have had persistent problems with the cache test in the
-> NCR driver.  It seems to work fine if I just ignore it, so I also
-> left it that way.  I also had to "tone down" the driver a lot,
-> the default of WIDE+20Mhz just doesn't cut it on my drives :-)
->
-> ------------------------------------------------------------------------
-> Gary Thomas                              |
-> email: gdt@linuxppc.org                  | "Fine wine is a necessity of
->    ... opinions expressed here are mine  |        life for me"
->        and no one else would claim them! |
->                                          |      Thomas Jefferson
-> ------------------------------------------------------------------------
+out_le32(bp->cfg_addr, (bus << 16) + (dev_fn << 8) + (offset & ~3) +1);
+                       ^^^^^^^^^^^
+That seemed to make the kernel see my ethernet card.
+
+Now the pcibios_fixup code was not fixing the card's interrupt so I looked
+into that as well. The problem there was that the fixup code searches
+through the device tree looking for the OF device node at only the fist
+level. So if this is the arrangement...
+
+/bandit
+	/ohare
+	/ATY,RAGEII_M
+	/pci-bridge
+		/pci1011,9 (my ethernet card)
 
 
+then the fixup code only looks at the top-level children of bandit(ohare,
+the ATI card and the pci-bridge) and misses my ethernet card. 
+
+So I changed the code to search children of nodes called "pci-bridge".
+
+That seemed to fix the interrupt correctly.
+
+Now the problem is that the tulip code cannot read the EEPROM from the
+card.  I've checked the DEC (Intel) 21140 datasheet and spec on how to
+read the EEPROM and of course Donald Becker's tulip driver is spot on. But
+somehow I'm reading a string of 0xff's from the EEPROM. 
+
+
+Now my questions are...
+
+1. Are the changes I made valid ? I don't claim to be an expert on PPC
+   hardware. And this was my first hack of the Linux kernel on any
+   architecture.
+
+2. Is there a reason for PCI-PCI bridges not being supported by the newer  
+   kernels ?
+
+3. Why is the tulip code not reading the EEROM ? I'm using the standard
+   drivers/net/tulip.c. Does it require any PMAC specific changes ?
+
+I could move the card ahead of the PCI bridge but that just wouldn't be
+any fun would it ? :-)
+
+Anyone care to answer ? Paul ? Cort ?
+
+Thanks,
+
+Ranjit
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
