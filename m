@@ -1,49 +1,21 @@
-Message-ID: <3B3B659F.ADE63ED0@mvista.com>
-Date: Thu, 28 Jun 2001 10:13:03 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <3B3B7CB9.6060104@ccc-dcs.com>
+Date: Thu, 28 Jun 2001 13:51:37 -0500
+From: Jim Duey <jduey@ccc-dcs.com>
 MIME-Version: 1.0
-To: Neil Wilson <NWILSON@Airspan.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Sandpoint 3 + MPC7450 + HHL2
-References: <E69FF45ADA3BD511A25900047623CC4F12AA76@JUPITER> <3B3B634F.E6B9FBFC@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: SMB Repost
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-BTW, what tree are you basing your code off of?
---
+This is a repost but I didn't get any response the first time and I've
+searched high and low on the web for a couple of days now.
 
-"Mark A. Greer" wrote:
+Has anyone run Samba on a 405GP Walnut board?  Particularly smbclient?
 
-> Neil Wilson wrote:
->
-> > Got it working now....
-> >
-> > Not sure if these fixes are just Sandpoint3 or MPC7450 or the combination,
-> > but...
-> >
-> > 1) The openpic_init call in sandpoint_init_IRQ needs the offset argument to
-> > get the SIO int setup.
->
-> Are you sure you want to do this???  The intsenses stuff in sandpoint_setup.c
-> is the way it is for a very good reason.  Can you send me your patch so I can
-> take a look?  Also, can you send the switch settings that you are using.
->
-> > 2) I also needed to add a enable of the TBEN in HID0 (bit 0x04000000) just
-> > to get the kernel to think about booting at all - I put this in the
-> > decompress_kernel function.
->
-> I think that your sandpoint-specific boot head.S or somewhere else like that
-> would be a much better choice than the ppc-generic decompress_kernel routine.
->
-> > Do these sort of changes need pushing into the source tree ?, and if so
-> > would anyone care to explain how a newcommer does this, thanks.
->
-> Let's hold off on this until people who have sandpoints can take a look.
->
-> Mark
->
+Thanks,
+Jim
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
