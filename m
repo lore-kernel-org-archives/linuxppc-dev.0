@@ -1,5 +1,5 @@
-Message-Id: <20010921001918.Postino-011488@smtp01.highway.ne.jp>
-Date: Fri, 21 Sep 2001 00:19:18 +0900
+Message-Id: <20010921002626.Postino-000284@smtp01.highway.ne.jp>
+Date: Fri, 21 Sep 2001 00:26:26 +0900
 To: Stefan Jeglinski <jeglin@4pi.com>
 Cc: linuxppc-dev@lists.linuxppc.org
 From: Kaoru Fukui <k_fukui@highway.ne.jp>
@@ -25,6 +25,9 @@ Date: Thu, 20 Sep 2001 10:52:13 -0400
 > >>
 > >  > linuxppc_2_4_devel/drivers/char/sysrq.c (line: 35)
 > >>  extern void wakeup_bdflush(int);
+
+change to extern void wakeup_bdflush(void);
+
 > >>
 > >>  linuxppc_2_4_devel/include/linux/fs.h (line: 1347)
 > >>  extern void wakeup_bdflush(void);
@@ -33,10 +36,10 @@ Date: Thu, 20 Sep 2001 10:52:13 -0400
 > >if it's same extern , it's no problem.
 > >Different paramenter is no good.
 >
-> Right. I should have supplied more info about what I have tried.
 
-Look at fs/buffer.c line2748 where the real function is in.
-so That is void wakeup_bdflush(void)
+> I have noted numerous instances of wakeup_bdflush() and
+
+wakeup_bdflush() is correct.
 
 Kaoru
 
