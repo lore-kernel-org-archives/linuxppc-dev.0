@@ -1,58 +1,34 @@
-Message-ID: <3C9F7270.AE56A23@lvl7.com>
-Date: Mon, 25 Mar 2002 13:54:40 -0500
-From: Neil Horman <nhorman@lvl7.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: question regarding organization of the pte hash table
-References: <3C9E2500.4477166B@lvl7.com> <3C9F6E67.2030503@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
+Subject: powerpc cross tools question
+Date: Mon, 25 Mar 2002 11:34:29 -0800
+Message-ID: <668950F487446B4FB0CEAE9760FD2D62124F02@taurus.primary.local>
+From: "Keith Outwater" <Keith_Outwater@mvis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan-
-	Thanks for your reply.   I appeciate your help!
+Greetings all -
+I built the powerpc-linux cross toolset from source using the
+cross-compiling mini-howto on www.penguinppc.org.  I am running x86
+linux (RH 7.2).
 
-> The MPC8xx family processors don't use a hash table.  We just use a two-level
-> Linux page table and fill the TLBs using the software table walk as described
-> in the manual.
+I followed the mini-howto to the letter, but I have two problems:
+1. I must manually edit /usr/local/powerpc-linux/lib/libc.so to change
+the paths from /lib/... to /usr/local/powerpc-linux/lib...
 
-	If we don't use a hash table to store pte's that don't currently exist in the
-MMU two-level page table, then do we reconstruct pte's on the fly (from the
-task's vm_area tree) for tasks which have had their pte's victimized from the
-page table by another process (I.E. identical Effective Addresses and
-conflicting ASID's)?
+2. When I compile applications, certain #defines are missing such as
+PATH_MAX.  It appears that /usr/local/powerpc-linux/include is not in
+the compilers default search path (manually adding it allows the
+application to compile successfully).
 
-Thanks again!
-Neil
+Has anyone used the mini-howto to build the cross tool chain?  Any
+pointers?
 
+Thanks!
 
+Keith Outwater
+Sr. Staff Engineer
+Microvision, Inc.
 
-Dan Malek wrote:
->
-> Neil Horman wrote:
->
-> > .... use of the PPC860 MMU (my processor in question),
->
-> The MPC8xx family processors don't use a hash table.  We just use a two-level
-> Linux page table and fill the TLBs using the software table walk as described
-> in the manual.
->
-> > .... memory context (CASID) using that same
->
-> The MPC8xx identifies 16 possible ASIDs, plus a global identifier we use
-> in the kernel.  The sixteen ASIDs are assigned to the 16 most active memory
-> contexts.  If we require the use of a memory context that does not have an
-> ASID assigned, we invalidate one of the existing ones and claim it.
->
-> To minimize source code changes, we try to utilize as much common code as
-> possible.  Sometimes, the same 'hash' functions are called on processors that
-> don't use hash tables, because there is some TLB side effect we still want to
-> cause.  Anything hash table related is skipped, but the TLB management is still
-> applied.
->
->         -- Dan
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
