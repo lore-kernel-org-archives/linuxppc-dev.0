@@ -1,19 +1,21 @@
-Return-Path: <tnt@blacksnow.net>
-Received: from misato.blacksnow.net (212.68.194.10.brutele.be [212.68.194.10])
-	by ozlabs.org (Postfix) with ESMTP id 285BD67A6E
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 74F2667A73
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Mar 2005 19:28:47 +1000 (EST)
-Message-ID: <1240.81.240.238.58.1112000312.squirrel@webmail.blacksnow.net>
-In-Reply-To: <4246B8E6.4060401@varma-el.com>
-References: <0.20050327_004704.tnt@patchsend.246tNt.com>
-	<4246B8E6.4060401@varma-el.com>
-Date: Mon, 28 Mar 2005 10:58:32 +0200 (CEST)
-From: tnt@blacksnow.net
-To: "Andrey Volkov" <avolkov@varma-el.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 0/6] Change MPC52xx to platform bus / ppc_sys model
+	Tue, 29 Mar 2005 00:17:29 +1000 (EST)
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <20050328041119.GA30818@gate.ebshome.net>
+References: <1111525951.2987.76.camel@ad.doubleclick.net>
+	<20050328041119.GA30818@gate.ebshome.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-gXAZSCSkpUNf/y043PTZ"
+Date: Mon, 28 Mar 2005 09:17:24 -0500
+Message-Id: <1112019444.7311.5.camel@ad.doubleclick.net>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Updated: CPM2 I2C (SDMA and BitBang)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +26,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Hi Sylvain, Dale
->
-> Which state of fec ocp -> fec platform conversion?
-> Without fec, IMHO, this patches less usable.
 
-Once the platform patches are in bk mainstream, I'll recreate
-a BK tree from there containing the fec and bestcomm. If you
-want fec now, just use the "old" tree, it's not that old and
-works fine. And if you want the newest tree, do the adaptation
-youself, changing a driver from ocp to platform is easy ...
+--=-gXAZSCSkpUNf/y043PTZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Sun, 2005-03-27 at 20:11 -0800, Eugene Surovegin wrote:
+> Jason, another thought. Do we really need all this mess with separate=20
+> algo and bus drivers?
+>=20
+> Could you make just a bus driver like we have for 4xx, Keywest and=20
+> 85xx/52xx/MPC107? It's much cleaner and less confusing IMHO.
 
 
-   Sylvain
+I made it separate algo/bus in case you had a PCI-card 85xx design
+where:
+
+	a) You booted the card with firmware
+	b) The firmware made the card a PCI device with the CPM exposed
+	   before you booted the kernel.
+        c) The PCI host had to program an EEPROM on the CPM I2C bus
+           for configuration to tell it where to get the kernel.
+
+Admittedly, a little far out, but then you could make a
+CPM-exposed-by-PCI I2C bus driver.
+
+--=20
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
+
+
+--=-gXAZSCSkpUNf/y043PTZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBCSBH08/0vJ5szK6kRAuhEAKDYBaTZTKNDx4KxOzOvCRF5xxs7SACgoVMt
+BAjvKGPhoLLFiDnFMlVJ3uI=
+=iSkD
+-----END PGP SIGNATURE-----
+
+--=-gXAZSCSkpUNf/y043PTZ--
