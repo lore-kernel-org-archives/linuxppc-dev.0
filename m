@@ -1,43 +1,41 @@
-Message-Id: <200006291535.RAA26178@denx.local.net>
-To: Tobias Otto-Adamczak <Tobias.Otto-Adamczak@e-technik.tu-chemnitz.de>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ISDN on MPC ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 29 Jun 2000 17:07:27 +0200."
-             <Pine.GSO.4.21.0006291656470.11412-100000@samson.hrz.tu-chemnitz.de>
-Date: Thu, 29 Jun 2000 17:35:10 +0200
+Message-ID: <395B9171.76934B4E@netx4.com>
+Date: Thu, 29 Jun 2000 14:12:01 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: LinuxPPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: FEC performance on the 855T/860T
+References: <20000629120913.8045B5060C@brixi.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.GSO.4.21.0006291656470.11412-100000@samson.hrz.tu-chemnitz.de> you wrote:
->
-> I have an MPC860 on an MBX-board running Linux 2.2.13 based on MontaVista
-> sources. I want to add ISDN functionality. Has anyone of you already done
-> work in this area ?
-
-Not completed yet, but we are working on it.
-
-The design is  based  on  the  HFC-SP  chips  by  Cologne  Chip,  see
-http://www.colognechip.com/isdn/controllers/frame-hfc-sp.htm
-
-> As far as I got it I have to write a new hardware-level driver for the
-> isdn4linux subsystem, is that right ? Is anyone aware of special problems
-> I have to focus ?
-
-Interfacing the ISDN chips with the MPC8xx  bus  might  be  an  issue
-(timing).  That's  why we selected a PCMCIA based design (although we
-won't use a PCMCIA card).
+Graham Stoney wrote:
 
 
-Wolfgang Denk
+> .....The first bottleneck to stand
+> out is that the FEC port isn't going as fast as we'd like.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Conscious is when you are aware of something, and conscience is  when
-you wish you weren't.
+
+We have discussed this before.  The FEC runs at 100 Mbits/sec,
+back to back packets.  It has to....there isn't any buffer
+space in the FEC to do otherwise.  The bottleneck is the protocol
+and application processing in the PPC core.  The performance of
+a TCP/IP connection scales nearly linearly with the processor
+speed.
+
+The 50 MHz 860P will run about 30 Mbits/sec TCP/IP, and a 100
+MHz 860P will run about 60 Mbits/sec TCP/IP.  You can write
+a program that will send back-to-back Ethernet frames at the
+maximum rate, and will read and discard Ethernet frames at the
+maximum rate.
+
+Just write a program (nttcp works) to benchmark using the local
+loopback device.  That will tell you what the processor can
+accomplish.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
