@@ -1,51 +1,29 @@
-Message-Id: <200210020156.AA00446@cj3020122-a.isd.mci.mei.co.jp>
-From: yamazaki <yama@isd.mci.mei.co.jp>
-Date: Wed, 02 Oct 2002 10:56:23 +0900
-To: Michael Habermann <mhabermann@gmx.de>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: nfsmount
-In-Reply-To: <3D9A4F24.9070005@gmx.de>
-References: <3D9A4F24.9070005@gmx.de>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: very minor 405GP and 405GPr PCI difference
+Date: Tue, 1 Oct 2002 21:26:18 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFEEMFDMAA.acurtis@onz.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20021002014219.GF1848@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank you for reply.
+> That's right.  Is there a reason for boards to have different
+> mappings?  I can well believe that there is, but the current tree
+> doesn't show it - all the boards (in the tree) that have PCI appear to
+> do the same initialisation of the windows.  It doesn't seem worthwhile
+> to create board specific PCI initialisation hooks until we have a
+> board that needs it.
 
-I start the NFS Server with /etc/init.d/nfs start on nfs server.
-And,other client can nfsmount on nfs server.
-
-I know it can nsmount without rpc.statd,but take a long long time.
-
->yamazaki wrote:
->
->> Hello,
->>
->> I have a question.
->> We made a custom board(mpc8245 used),and implemeted kernel-2.2.18.
-sorry it was wrong.kernel is 2.4.18.
->> It works very well.
->> now,I tried to implement nfsmount client in single user mode.
->> Is does not work.
->> Then I knew the reason which is for rpc.statd missing.
->> I could not found rpc.statd form the message of ps -aux.
->>
->> Please tell me if you know why it does not work.
->>
->> ----
->> yamazaki  yama@isd.mci.mei.co.jp
->>
->>
->>
->>
->
->You need to start the NFS Server with /etc/init.d/nfs start.
->
-
-----
-yamazaki  yama@isd.mci.mei.co.jp
+If all boards are suppose to have the same mapping, why doesn't someone
+document it as such? It would have saved me a lot of time. If it isn't a
+good enough rule to be documented then make the system flexible enough to
+take a different path if required. (proactive)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
