@@ -1,48 +1,36 @@
-Date: Tue, 23 Nov 1999 10:48:58 -0700
+Date: Tue, 23 Nov 1999 10:52:12 -0700
 From: Cort Dougan <cort@fsmlabs.com>
 To: Benjamin Herrenschmidt <bh40@calva.net>
 Cc: linuxppc-dev@lists.linuxppc.org, paulus@linuxcare.com
 Subject: Re: bootloader & head.S weirdness (patch)
-Message-ID: <19991123104858.E16540@hq.fsmlabs.com>
-References: <19991122144054.C12973@hq.fsmlabs.com> <19991123114001.002761@mailhost.mipsys.com>
+Message-ID: <19991123105212.F16540@hq.fsmlabs.com>
+References: <19991123133536.013861> <19991123180752.027815@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19991123114001.002761@mailhost.mipsys.com>; from Benjamin Herrenschmidt on Tue, Nov 23, 1999 at 11:40:01AM +0100
+In-Reply-To: <19991123180752.027815@mailhost.mipsys.com>; from Benjamin Herrenschmidt on Tue, Nov 23, 1999 at 06:07:52PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Check out include/asm/machdep.h for the minimal bootloader structure I have
-there.  I have some early work with quik (for the rs6000, haven't tested on
-pmac yet) to pass info via that structure.
+Have you tried the rs6000 quik on the g3's?  I've heard people have had
+success with the modifications I made but haven't been able to get ahold of
+a g3 for long-term tests.  I'd like to combine the two if we could.
 
-} I'd really like to see this happen. There is really an urgent need to
-} cleanup the mess with initrd and the way the command line is passed to
-} the kernel too and this would get rid of those.
+} Ok, I posted the very first version of this bootloader. I'd appreciate
+} any comment, suggestion, etc... It's called "yaboot" and is on my test page
 } 
-} There is one idea suggested to me by Gabriel Paubert which would be worth
-} considering:
-
-That was the plan with the bootinfo in machdep.h in 2.3  Give it a look and
-let me know how possible it would be modify bootx to use it.
-
-} Define some kind of bootx-like bootinfo structure (will all addresses
-} relative to the beginning of the structure) and move out of the kernel
-
-Some of this is substantial work that we'd have to move into the
-bootloader.  I'm not against it, but it'd be nice of all the bootloaders
-did it the same way.
-
-} _all_ those head.S hacks AND all the prom_init code (reading the OF tree,
-} initing the display, instanciating RTAS, ...).
+} <http://calvaweb.calvacom.fr/bh40/test.html>
 } 
-} All this would be done from a head-appended bootloader which would built
-} a device tree when OF is available, and then enter the kernel with a
-} unified entry point based on a structure, known mappings.
+} It's targeted for newworld machines only (machines with a working OF that
+} can load ELF binaries). It has a quik-like interface.
 
-It is 2.3, after all :)
+I think Yellowdog already has their cd bootable from macs.
 
-} I don't know if it's worth doing that _now_ (it involves almost breaking
-} everything), but I like the idea of cleaning all this up.
+} Ultimately, this will allow bootable CDs for Macs (with the help of
+} miBoot for oldworld machines), and with a bit more GUI and the help of an
+} installer, we'll be, I hope, the primary bootloader for newworld Macs. I
+} plan to slowly abandon BootX support for those machines since it involves
+} too many hacks to work around various issues related to getting rid of
+} MacOS and problems with devices MacOS put in a non-reset state).
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
