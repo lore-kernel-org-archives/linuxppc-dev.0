@@ -1,25 +1,26 @@
-Subject: Re: Communication through a FADS 823 board
-To: nboppuri@myiagent.com (Navin Boppuri)
-Date: Fri, 9 Jun 2000 11:02:22 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <NEBBLLEGJMLHPJEFEOKPMEBCCAAA.nboppuri@myiagent.com> from "Navin Boppuri" at Jun 08, 2000 12:47:25 PM
+Message-ID: <394052F7.9DCCE9D7@centurysys.co.jp>
+Date: Fri, 09 Jun 2000 11:14:15 +0900
+From: Tania Boak <tania@centurysys.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000609010222.893AA857D@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: how to get called at shutdown
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Navin Boppuri writes:
-> I am very very new to embedded system development. I have just started off
-> on a FADS 823 board. Can someone tell me how I can start communicating to
-> the board on a linux box?
+Hi all
 
-Check the "Serial Console" subsection of the HOWTO under "Debugging" at:
-    http://members.xoom.com/greyhams/linux/PowerPC-Embedded-HOWTO-18.html
+I have a function I want to have called once at shutdown.  Can anyone
+tell me a good way to do that?
 
-Regards,
-Graham
+I tried register_reboot_notifier() but for some reason I don't yet
+understand my notification handler does not get called unless I use
+shutdown with the -n (bypass init) option.  I would like something that
+works regardless of the command used to reboot or shutdown.
+
+Thanks,
+Tania
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
