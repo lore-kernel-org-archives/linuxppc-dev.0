@@ -1,35 +1,47 @@
-Message-ID: <39D42B66.56AC7D7D@mvista.com>
-Date: Fri, 29 Sep 2000 01:40:54 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: paulus@linuxcare.com.au
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-References: <19340822040932.8760@mailhost.mipsys.com>
-		<Pine.LNX.4.10.10009281150130.3468-100000@cassiopeia.home>
-		<14803.57550.118150.759977@argo.linuxcare.com.au>
-		<39D41AA2.C586D738@mvista.com> <14804.7238.688771.238444@argo.linuxcare.com.au>
-Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <v04220802b5f9f91c55cc@[10.0.0.42]>
+In-Reply-To: <14803.48934.472348.909959@esb.bbn.com>
+References: <14803.24024.683420.911271@esb.bbn.com>
+ <20000928233119.B334@olis.north.de>
+ <14803.48934.472348.909959@esb.bbn.com>
+Date: Fri, 29 Sep 2000 00:51:41 -0700
+To: rshapiro@bbn.com, cl.en@gmx.net
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: beige g3 rage II xf4.0.1 and miBoot
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+At 5:59 PM -0400 9/28/00, R Shapiro wrote:
 
-> Because we'll make it the same value for all ports.  Anybody got any
-> objections to 0xff000000?
+>  > boot-device = ata0/ata-disk@0:x (x=root in hex,)
+>
+>OF is "unable to open" any variant of this I could come up with.
+>
+>Thanks anyway, but I guess this machine is stuck with BootX.
 
-You know I will :-).  Most of the embedded processors already map
-internal resources in this space, which of course can be changed.  You
-know one of the reasons we map legacy I/O 1:1 to the processor is for
-debug and initialization.
+It's been a while, but I did have quik based booting working on a
+beige G3 at one time.  And I think several others did too.
 
-Why don't you pick an address like 0x80000000?  This will work on at
-least some existing platforms without any changes (Prep, Chrp, and
-embeddded come to mind :-).
+The issue is that there are nasty bugs in the beige G3's firmware
+which prevent it from reliably accessing hard drives, or accessing
+them at all.
 
+I don't remember the exact details, but the fix involved using the
+"System Disk" utility from MacOS X server (and/or its predecessors)
+to get OF patches installed into NVRAM.  These patches fix OF so that
+it can reliably access disks to load a first stage booter.  I think
+all I had to do was open System Disk, enter its raw OF variables
+window, configure boot-device etc. for quik, and exit System Disk.
 
-	-- Dan
+Note that the current System Disk version included with MacOS X has
+eliminated the OF settings window; it now attempts to be completely
+point&click, so it's less useful in that regard.  But you might be
+able to use it in conjunction with the old Boot Variables utility to
+get the job done.
+
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
