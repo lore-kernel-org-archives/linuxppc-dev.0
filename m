@@ -1,54 +1,35 @@
-Message-ID: <3AE5A354.9A82E5DA@raleigh.ibm.com>
-Date: Tue, 24 Apr 2001 12:01:24 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Date: Tue, 24 Apr 2001 18:19:15 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Ralph Blach <rcblach@raleigh.ibm.com>
+Cc: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: pte entries for the 440
+In-Reply-To: <3AE5A354.9A82E5DA@raleigh.ibm.com>
+Message-ID: <Pine.HPX.4.10.10104241810010.23250-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: pte entries for the 440
-Content-Type: multipart/mixed;
- boundary="------------12CCC12350BE0470C8CEF1BC"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------12CCC12350BE0470C8CEF1BC
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+On Tue, 24 Apr 2001, Ralph Blach wrote:
 
-I am starting a port of linux to the IBM440 processor.  The 440 has an
-36 bit address space.  Reading the kernel sources, I see two options for
-the page tables.
-1)One, make it a structure with the permissions being in the second
-word.
-2)Make it a long long.
+> I am starting a port of linux to the IBM440 processor.  The 440 has an
+> 36 bit address space.  Reading the kernel sources, I see two options for
+> the page tables.
+> 1)One, make it a structure with the permissions being in the second
+> word.
+> 2)Make it a long long.
 
-Does anybody have any ideas on this?
+Make it a structure, gcc is (or at least was) not very good at
+manipulating 64 bit integers on 32 bit machines. I suspect that you need
+to shift/mask the physical address to put the bits in the correct place,
+in this case gcc prefers a stucture for sure.
 
-Thanks
+It is much easier on the compiler and the register allocation routines to
+consider single register quantities.
 
-Chip
---------------12CCC12350BE0470C8CEF1BC
-Content-Type: text/x-vcard; charset=us-ascii;
- name="rcblach.vcf"
-Content-Description: Card for Ralph Blach
-Content-Disposition: attachment;
- filename="rcblach.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard
-n:Blach;Ralph
-tel;work:919-543-1207
-x-mozilla-html:TRUE
-url:www.ibm.com
-org:IBM MicroElectronics
-adr:;;3039 Cornwallis		;RTP;NC;27709;USA
-version:2.1
-email;internet:rcblach@raleigh.ibm.com
-x-mozilla-cpt:;15936
-fn:Ralph Blach
-end:vcard
-
---------------12CCC12350BE0470C8CEF1BC--
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
