@@ -1,11 +1,9 @@
-Message-Id: <200203290132.JAA19802@isdn.iscas.ac.cn>
-Date: Fri, 29 Mar 2002 9:38:19 +0800
-From: weiwu <weiwu@isdn.iscas.ac.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: UPM works for 16MB PC SDRAM but fails for 32MB memory
-Mime-Version: 1.0
-Content-Type: text/plain;
-      charset="GB2312"
+MIME-Version: 1.0
+Message-ID: <3CA3CB35.000002.20883@mta6>
+Date: Fri, 29 Mar 2002 10:02:29 +0800 (CST)
+From: "rtpkg" <rtpkg@263.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: =?gb2312?B?VVBNIHdvcmtzIGZvciAxNk1CIFBDIFNEUkFNIGJ1dCBmYWlscyBmb3IgMzJNQiBtZW1vcnk=?=
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
@@ -17,7 +15,7 @@ my bootrom fails to execute out of RAM.
 software: Now I have modifyed the AMA and MAMR registers,but it still not work!
 
 Hardware:
-My board uses two HY57V281620A SDRAMS and it's configuration is 4 Banks x 2M x 16bits, 12 rows and 9 column.
+My board uses two HY57V281620A SDRAM chips and it's configuration is 4 Banks x 2M x 16bits, 12 rows and 9 column.
 
 MPC SDRAM
 =========
