@@ -1,40 +1,29 @@
-To: Dan Malek <dan@embeddededge.com>
+Message-ID: <3C867302.7080202@embeddededge.com>
+Date: Wed, 06 Mar 2002 14:50:26 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
 Cc: laurent.pinchart@capflow.com,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linux-2.4.18 & copy-back cache mode 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 06 Mar 2002 11:28:39 EST."
-             <3C8643B7.60506@embeddededge.com>
-Date: Wed, 06 Mar 2002 18:09:41 +0100
-Message-Id: <20020306170947.078ED109EB@denx.denx.de>
+Subject: Re: linux-2.4.18 & copy-back cache mode
+References: <20020306170947.078ED109EB@denx.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C8643B7.60506@embeddededge.com> you wrote:
->
-> it was tracked down to a UPM/SDRAM timing problem.  People keep talking
-> about running > 50 MHz bus on these newer parts, is there something
-> different about the memory controller that allows this and may cause
-> compatibility problems?  I have (fortunately :-) not looked at this
-> level of detail in the newer parts.
+Wolfgang Denk wrote:
 
-There are no differences AFAIK. It's just a faster CPU that allows 66
-or even 76 MHz with 1:1 CPU/bus clock mode.
+> There are no differences AFAIK. It's just a faster CPU that allows 66
+> or even 76 MHz with 1:1 CPU/bus clock mode.
 
-We have a MPC823E system here that runs at 66 MHz, and I will have  a
-MPC855T  at 66MHz in 18 hours from now. So far I didn't encounter any
-problems - of course you have to adjust the UPM tables and what  else
-you need to initialize the memory controller.
+Interesting.  Faster than 50 MHz cores used to require the 2:1 bus
+clock division.  I don't remember timing parameters that would
+exceed 50 MHz.  Yes, the part will let you do that, but I thought that
+was outside of the part specification.  I guess I'll have to take a look.
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The Wright Bothers weren't the first to fly. They were just the first
-not to crash.
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
