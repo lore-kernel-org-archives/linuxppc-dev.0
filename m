@@ -1,70 +1,101 @@
-Message-ID: <3BB03BE9.57DBF420@imc-berlin.de>
-Date: Tue, 25 Sep 2001 10:10:17 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Content-Type: text/plain
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: BitKeeper and linuxppc_2_4
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <gF989074824291.01580@webmail5.inner-21cn.com>
+Date: Tue, 25 Sep 2001 17:57:08 +0800 (CST)
+From: "yah" <hay8888@21cn.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: 
+Subject: request_module
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hi,all.
+  I use MCP750 and linuxppc_2_4. I recompiled the kernel, use bugboot,fill it in the onboard flash(bank A), and I put root file system on ATA flash(hda1).Then I boot the system,but failed. Following is the boot info.
 
-again a "short" question about BitKeeper:
+Linux/PPC load: root=/dev/hda1 init=/bin/init
+Uncompressing Linux...done.
+Now booting the kernel
+Ramsize from residual data was 0 -- Probing for value
+Ramsize default to be 32M
+Total memory = 32MB; using 128kB for hash table (at c0160000)
+Linux version 2.4.6-pre2 (root@amy.w-ibeda.com) (gcc version 2.95.2 19991024 (r1
+PReP architecture
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/hda1 init=/bin/init
+time_init: decrementer frequency = 16.666516 MHz
+Calibrating delay loop... 732.36 BogoMIPS
+Memory: 30676k available (820k kernel code, 460k data, 92k init, 0k highmem)
+Dentry-cache hash table entries: 4096 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Fixup mem res, dev: 0.0, res_start: ffffff00->bfffff00
+PCI: device 00:06.0 has unknown header type 7f, ignoring.
+PCI: device 00:07.0 has unknown header type 7f, ignoring.
+PCI: device 00:0b.0 has unknown header type 7f, ignoring.
+Fixup mem res, dev: 0.10, res_start: ffff0000->bfff0000
+Fixup mem res, dev: 0.11, res_start: ffff0000->bfff0000
+Fixup mem res, dev: 0.12, res_start: ffff0000->bfff0000
+Fixup mem res, dev: 0.13, res_start: ffff0000->bfff0000
+Fixup mem res, dev: 0.14, res_start: ffff0000->bfff0000
+Fixup mem res, dev: 0.15, res_start: ffff0000->bfff0000
+Fixup mem res, dev: 0.16, res_start: ffff0000->bfff0000
+Setting PCI interrupts for a "Mesquite cPCI (MCP750) w/ HAC"
+Relocating PCI address cf20fffc -> 120fffc
+PCI:0:0:0: Resource 00fffffc-00ffffff (f=10f)
+PCI:0:0:0: Resource bfffff00-bfffffff (f=200)
+PCI:0:1:0: Resource 0000fffc-0000ffff (f=10f)
+PCI:0:10:0: Resource bfff0000-bfffffff (f=200)
+PCI: Cannot allocate resource region 4 of device 00:10.0
+PCI:0:11:0: Resource bfff0000-bfffffff (f=200)
+PCI: Cannot allocate resource region 4 of device 00:11.0
+PCI:0:12:0: Resource bfff0000-bfffffff (f=200)
+PCI: Cannot allocate resource region 4 of device 00:12.0
+PCI:0:13:0: Resource bfff0000-bfffffff (f=200)
+PCI: Cannot allocate resource region 4 of device 00:13.0
+PCI:0:14:0: Resource bfff0000-bfffffff (f=200)
+PCI: Cannot allocate resource region 4 of device 00:14.0
+PCI:0:15:0: Resource bfff0000-bfffffff (f=200)
+PCI: Cannot allocate resource region 4 of device 00:15.0
+PCI:0:16:0: Resource bfff0000-bfffffff (f=200)
+PCI: Cannot allocate resource region 4 of device 00:16.0
+PCI:0:3:0: Resource 0120fffc-0120ffff (f=10f)
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Starting kswapd v1.8
+Serial driver version 5.05a (2001-03-20) with MANY_PORTS SHARE_IRQ SERIAL_PCI ed
+ttyS00 at 0x03f8 (irq = 4) is a 16550A
+ttyS01 at 0x02f8 (irq = 3) is a 16550A
+block: queued sectors max/low 20304kB/6768kB, 64 slots per queue
+Uniform Multi-Platform E-IDE driver Revision: 6.31
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 2048 bind 2048)
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+request_module[block-major-3]: Root fs not mounted
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+VFS: Cannot open root device "hda1" or 03:01
+Please append a correct "root=" boot option
+Kernel panic: VFS: Unable to mount root fs on 03:01
+Rebooting in 180 seconds..
 
-What's the difference between the tree linuxppc_2_4 and
-linuxppc_2_4_devel?
+  Any ideas?
+------------------------------------------------
+想免受广告信的骚扰，请马上升级为21cn经济邮用户。
+http://member.21cn.com/economy/upgrade.php
+还有更便宜的吗？
+http://adinfo.21cn.com/price/001.html
+加入龙腾计划，与21cn齐飞。
+http://www.21cn.com/21cnhtm/qy/index.html
 
-It should be obvious, but:
-
-I thought linuxppc_2_4 just contains released kernels. So the last
-version should be 2.4.10.
-So "bk changes -t" should show only released kernels, as is 2.4.8,
-2.4.10 etc.
-And if I cloned linuxppc_2_4 yesterday a "bk pull" should only result in
-changes after a new release, i.e. after 2.4.12 is released.
-But "bk changes -t" shows me several tags and
-
-ChangeSet@1.2.2.70, 2001-09-23 14:30:18-07:00, trini@opus.bloom.county
-  bk-work-patch-2.4.10pre15-2.4.10.patch.7974.new
-  TAG: v2.4.10
-
-ChangeSet@1.2.2.69, 2001-09-23 10:11:08-07:00, trini@opus.bloom.county
-  bk-work-patch-2.4.10pre14-2.4.10pre15.patch.7207.new
-  TAG: v2.4.10-pre15
-
-ChangeSet@1.2.2.68, 2001-09-22 09:19:29-07:00,
-trini@bill-the-cat.bloom.county
-  bk-work-patch-2.4.10pre13-2.4.10pre14.patch.5558.new
-  TAG: v2.4.10-pre14
-
-...
-
-and "bk pull" result in "Receiving the following csets : 1.377 1.376
-1.375 1.372.1.1
-
-Am I missing something? Is linuxppc_2_4 just the same as
-linuxppc_2_4_devel?
-
-My main problem is that I need a released version as a starting point
-for my work, e.g 2.4.10.
-So that all my patches and tests etc. are against the known version.
-I tried a "bk -r undo -rv2.4.10". But I got
-
-BitKeeper is unable to undo the requested changeset[s]...
-
-The error caused by this undo is:
-admin: revision 1.2.2.70 not at tip of branch in SCCS/s.ChangeSet.
-SCCS/s.ChangeSet: admin:1.372 includes 1.2.2.70
-output error: Broken pipe
-
-Hmm. ???? Any ideas?
-
-TIA.
-
-Cheers,
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
