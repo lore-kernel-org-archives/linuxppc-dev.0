@@ -1,35 +1,56 @@
-To: "Jacky Lam" <jackylam@astri.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Walnut boot problem solved 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 07 Oct 2003 06:45:49 +0800."
-             <000d01c38c5b$99ebdcf0$0202a8c0@homevl9biy3v7e>
-Date: Tue, 07 Oct 2003 09:39:39 +0200
-Message-Id: <20031007073944.C961CC59E4@atlas.denx.de>
+From: Amit.Lubovsky@infineon.com
+Message-ID: <AD2F581BD7340A4C908AF1AFB066EA3B0E4856@ntah901e.savan.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: pci on MBX860 broken ?
+Date: Tue, 7 Oct 2003 10:49:28 +0200 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <000d01c38c5b$99ebdcf0$0202a8c0@homevl9biy3v7e> you wrote:
->
-> > This patch is not really useful. Instead of redefining the  structure
-> > yourself you should simply #include <asm/ppcboot.h>.
->
->     Thanks. (Will you change it in next release?)
+Hi,
+As I understand from Dan the pci code for the MBX860 is probably broken and
+not used
+so my question now is does anyone has some info that can direct me about how
+to fix this
+code ?, in general I know that there isn't any hw problem since we have it
+working for vxWorks...
+any help is appreciated.
+Amit.
 
-I am not in the position to make such a change.
+-----Original Message-----
+From: Dan Kegel [mailto:dank@kegel.com]
+Sent: Sunday, October 05, 2003 7:07 PM
+To: Lubovsky Amit (IFSV R&D)
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: pci on MBX860
 
-Best regards,
 
-Wolfgang Denk
+Amit.Lubovsky@infineon.com wrote:
+>>Does anyone have any experience with pci on the MBX860 board ?
+>>
+>>I run kernel 2.4.20 from www.denx.de but encountered compilation problems
+>>after trying to configure pci.
+>>
+>>this is the output of what I got:  ...
+>>m8xx_setup.c: In function `m8xx_show_percpuinfo':
+>>m8xx_setup.c:252: warning: int format, long int arg (arg 3)
+>>m8xx_setup.c:252: warning: int format, long int arg (arg 4)
+>>m8xx_setup.c: In function `m8xx_init_IRQ':
+>>m8xx_setup.c:281: structure has no member named `irq_offset'
+
+(caveat: I'm just a google junky, I don't know this stuff)
+
+Didn't work last time somebody tried it a year ago, either.
+See the thread from last year:
+http://www.geocrawler.com/mail/msg.php3?msg_id=8600995&list=8358
+http://www.geocrawler.com/mail/msg.php3?msg_id=8601123&list=8358
+- Dan
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Lots of people drink from the wrong bottle sometimes.
-	-- Edith Keeler, "The City on the Edge of Forever",
-	   stardate unknown
+Dan Kegel
+http://www.kegel.com
+http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
