@@ -1,22 +1,20 @@
-Return-Path: <mgroeger@sysgo.com>
-Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
-	by ozlabs.org (Postfix) with ESMTP id 980672BDC5
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2004 19:43:11 +1000 (EST)
-Date: Tue, 21 Sep 2004 11:15:20 +0200 (CEST)
-From: Marius Groeger <mgroeger@sysgo.com>
-Sender: mag@sysgo.com
-To: Matt Porter <mporter@kernel.crashing.org>
-In-Reply-To: <20040920122312.A8344@home.com>
-Message-ID: <Pine.LNX.4.61.0409211112400.2255@mag.sysgo.com>
-References: <414916BD.9080607@sonartech.com.au>
-	<20040915223624.A25752@home.com>
-	<414946A0.1020306@sonartech.com.au>
-	<20040920173241.GL27914@smtp.west.cox.net>
-	<20040920122312.A8344@home.com>
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id 539162BDC5
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Sep 2004 20:19:43 +1000 (EST)
+Date: Tue, 21 Sep 2004 06:13:14 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <B244CFE5-0B98-11D9-97DC-003065F9B7DC@embeddededge.com>
+Message-ID: <Pine.LNX.4.60.0409210605090.9033@dell.enoriver.com>
+References: <Pine.LNX.4.60.0409201531570.5653@dell.enoriver.com>
+	<E91A9C3A-0B51-11D9-9327-003065F9B7DC@embeddededge.com>
+	<Pine.LNX.4.60.0409201949550.6348@dell.enoriver.com>
+	<B244CFE5-0B98-11D9-97DC-003065F9B7DC@embeddededge.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Linux-2.6.9-rc2 kernel build for mvme5100
+Cc: Linuxppc-dev mailing list <linuxppc-dev@ozlabs.org>
+Subject: Re: thoughts and questions on 8xx patches
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,31 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 20 Sep 2004, Matt Porter wrote:
 
->> Did you disable CONFIG_VT, if it was enabled?  Otherwise you need to
->> pass console=ttyS0
->
-> and on recent kernels, you need console=ttyS0,9600 on boards like
-> this that use 9600 baud. Baud rate used to default to 9600, but
-> no longer.
+   rather than get into more detailed discussion on microcode patches, 
+here's a (partial) patch that represents what i'd really, really, 
+*really* like to see.
 
-So what IS the default then? Until today, I thought you don't necessarily
-need a console= argument at all. See Documentation/serial-console.txt:
+==========================================================================
+--- linuxppc-2.5/arch/ppc/8xx_io/Kconfig	2004-09-21 05:54:40.112334040 -0400
++++ linuxppc-2.5-new/arch/ppc/8xx_io/Kconfig	2004-09-21 06:00:56.836063328 -0400
+@@ -140,13 +140,23 @@
 
-    If no console device is specified, the first device found capable of
-    acting as a system console will be used. At this time, the system first
-    looks for a VGA card and then for a serial port. So if you don't have a
-    VGA card in your system the first serial port will automatically become
-    the console.
+  	  If in doubt, say N here.
 
-Are you saying that you should always pass console=...?
+-config UCODE_PATCH
+-	bool "I2C/SPI Microcode Patch"
+-	help
+-	  Motorola releases microcode updates for their 8xx CPM modules.  The
+-	  microcode update file has updates for IIC, SMC and USB.  Currently only
+-	  the USB update is available by default, if the MPC8xx USB option is
+-	  enabled.  If in doubt, say 'N' here.
++choice
++	prompt "Microcode patch selection"
++	default NO_UCODE_PATCH
++
++config NO_UCODE_PATCH
++	bool "None"
++
++config USB_SOF_PATCH
++	bool "USB SOF patch"
++
++config I2C_SPI_PATCH
++	bool "I2C/SPI relocation patch"
++
++config I2C_SPI_SMC1_PATCH
++	bool "I2C/SPI/SMC1 relocation patch"
++
++endchoice
 
-Regards,
-Marius
+  endmenu
+==========================================================================
 
--- 
-Marius Groeger <mgroeger@sysgo.com>
-SYSGO AG                      Embedded and Real-Time Software
-Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
-www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
+   it adds a simple choice entry to the MPC8xx menu, from which you can 
+select the appropriate patch -- it's as easy as that.
+
+   note that that's not the entire list of possible patches -- i have 
+the list from wolfgang's tree that distinguishes between 850 and 8xx 
+(non-850) patches in some cases so the list is actually longer than 
+this one.  but, really, selecting a patch should be this easy -- pick 
+one and check the box.  and this makes it trivial to add or delete 
+patches appropriately as time goes by.
+
+   obviously, this menu requires changes in the underlying micropatch.c 
+file (which aren't shown here), but i'm curious about whether this 
+approach would overly offend anyone.
+
+   i'm willing to create the overall patch to support this, but not if 
+it's just going to be tossed because of philosophical positions.
+
+
+rday
