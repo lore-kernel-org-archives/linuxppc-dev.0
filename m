@@ -1,41 +1,37 @@
-Message-Id: <AF223B12F1FDD2119253006097C4FCEC05B138@cats.pdri.xerox.com>
-From: "Packer, Dave" <dPacker@uppercase.xerox.com>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Umax S900 CD Rom problems...
-Date: Fri, 21 May 1999 11:02:32 -0700
+Message-ID: <19990521203719.44590@ibrium.se>
+Date: Fri, 21 May 1999 20:37:19 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Re: Mac-on-Linux
+References: <19990519235050.60265@ibrium.se> <Pine.LNX.3.96.990519210752.5706A-100000@EdMcMan.Dyn.Ez-Ip.Net> <19990520192459.17170@ibrium.se> <19990520171823.A409@jasons.dyn.kpn.cx> <87zp2ysaku.fsf@hades.nocrew.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87zp2ysaku.fsf@hades.nocrew.net>; from Stefan Berndtsson on Fri, May 21, 1999 at 05:32:01PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Thanks for the testing! My directions were bad though.
+I missed the fact that the kernel source uses #ifdef 
+and not #if, so the line
 
-Carlos - 
+#define NO_RELOAD_HTAB 1
 
-I have a UMAX S900/200 with the Matsashita drive.  I've been able to install
-without any problems.  What
-OS are you running? I'm running 8.5.1.  I've installed 4.1 and now am
-running Pre-R5, except for some very small FBDev problems I'm perfectly
-satisfied with what I have.  Are you installing with BootX? make sure you
-de-select no-video-driver and you can pass the arg of video='tt128fb' to the
-kernel.  
+should be commented out in 'arch/ppc/kernel/head.S' and
+'arch/ppc/mm/init.c'.
 
-Other Notes:
+I've looked through the Mac-on-Linux kernel source, and I 
+think this should be sufficient to add support for the 603.
+(There is a 603 incompatible function used by the debugger, 
+but I don't think it is used normally.)
 
-Don't run the installer from a HFS+ partition
-I've had the best success by dragging the RedHat onto an non-HFS+ partition
-and installing from there
-
-If you are shooting for Pre-R5: I know that about a week ago I thought I
-might try re-installing and had some problems with the recent
-redhat.ramdisk.gz where it couldn't recognize any of my drives.  That might
-be where your problem is.  Can't help you there though probably have to wait
-until R5 comes out sometime in the next week or so.
-
-Dave-
+/Samuel
 
 
+----------------------------------------------------------
+ E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
+  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470   
+----------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
