@@ -1,75 +1,36 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: linuxppc_2_4_mpc5200 / 5200lite zImage now working
-Date: Thu, 6 Nov 2003 08:48:39 +0100
-Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED447034@ratatosk.combitechsystems.com>
-From: "Tord Andersson" <Tord.Andersson@combitechsystems.com>
-To: "Kate Alhola" <kate@iti.fi>, "Wolfgang Denk" <wd@denx.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+To: Shamile Khan <shamile@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: RAMDISK image in flash not getting mounted - Memec Powerpc405 board 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 05 Nov 2003 17:06:08 PST."
+             <20031106010608.27803.qmail@web11602.mail.yahoo.com>
+Date: Thu, 06 Nov 2003 09:31:24 +0100
+Message-Id: <20031106083129.32359C5F59@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kate,
-
-Thanks for sharing your experiences with the MPC5200Lite card.
-Would it be possible for you to explain the steps you took to replace
-dbug with u-boot. Did you use dbug or a bdm?
-I am about to do the same thing, and fear that I might end up with a
-"dead" card if
-things go wrong : )
-
-Kind regards,
-
-Tord Andersson
-
------Original Message-----
-From: Kate Alhola [mailto:kate@iti.fi]
-Sent: den 2 november 2003 20:13
-To: Wolfgang Denk
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_mpc5200 / 5200lite zImage now working
-
-
-
-Thank you about usefull help, it looks a like doing things in newer way
-may be faster than do older way ;)
-
-Wolfgang Denk wrote:
-
->No. It's much more likely that you missed to pass  someother  of  the
->required  information.  You  have  several options: manually set up a
->bd_info structure with _all_ of the required  information;  modifying
->U-Boot  so  that  you  can load and start U-Boot from RAM; installing
->U-Boot into flash.
+In message <20031106010608.27803.qmail@web11602.mail.yahoo.com> you wrote:
 >
->
-This worked with u-boot, setting CFG_RAMBOOT made it bootting from RAM
-and allowed also programming u-boot to same flash as dbug so now i can
-start uboot from dbug and then boot linux up
+> I am trying to get Linux to boot with U-boot using a flash
+> based initrd image. I am using a Memec Virtex II Pro board
+> which has a Powerpc 405 processor embedded in an FPGA. I
+> have u-boot running. My flash is 8 Megs and is organized as
+> follows:
 
->You can always get a tested and working configuration  by  performing
->the standard kernel build procedure:
->
->	bash$ make mrproper
->	bash$ make icecube_5200_config
->	bash$ make oldconfig
->	bash$ make dep
->	bash$ make uImage
->
->
-Tanks, that was also usefull
+Please do not post the same message to several mailing lists.
 
-Kate
 
+Answered in u-boot-users.
+
+
+Wolfgang Denk
 
 --
-+==================================================================+
-! Kate Marika Alhola  Internet Technologies International Oy       !
-! kate@iti.fi         Phone +358 400 740701 Fax   +358 9 8138715   !
-! kate@iki.fi	      http://www.iti.fi    http://www.iki.fi/kate  !
-+==================================================================+
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Disc space - the final frontier!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
