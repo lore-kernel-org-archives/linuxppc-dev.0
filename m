@@ -1,19 +1,16 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id CCE892BEA0
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53506.mail.yahoo.com (web53506.mail.yahoo.com
+	[206.190.37.67]) by ozlabs.org (Postfix) with SMTP id 2CE912BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Nov 2004 00:46:25 +1100 (EST)
-Message-ID: <1101736699.41ab2afb48566@webmail.televes.com:443>
-Date: Mon, 29 Nov 2004 14:58:19 +0100
-From: alebas@televes.com
-To: linuxppc-embedded@ozlabs.org
-References: <1101236780.41a38a2c7f44f@webmail.televes.com:443><2515D492-3D8C-11D9-B8D4-003065F9B7DC@embeddededge.com>
-	<1101732712.41ab1b682760f@webmail.televes.com:443>
-	<001d01c4d617$0f72f340$0301a8c0@chuck2>
-In-Reply-To: <001d01c4d617$0f72f340$0301a8c0@chuck2>
+	Tue, 30 Nov 2004 04:48:43 +1100 (EST)
+Message-ID: <20041129174842.14784.qmail@web53506.mail.yahoo.com>
+Date: Mon, 29 Nov 2004 09:48:42 -0800 (PST)
+From: roger blofeld <blofeldus@yahoo.com>
+To: tnt@246tNt.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: Kernel 2.6.10-rc1 yet not running on ads8272
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: MPC5200 Cache coherency with BestComm issue
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,35 +21,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mark,
-
-I have tried this before and this doesn't work.
-Execution flow never arrives to "2:".
-
-All the other values are extra info I have collected.
-But problem was isolated using breakpoints to avoid
-stepping influence.
-
-Best regards,
-
-Alex
-
-Citando Mark Chambers <markc@mail.com>:
-
-
-> RFI = Return From Interrupt.  In normal usage the current
-> address is copied into SRR0 when an exception occurs so
-> the processor will return to that point with an RFI.  So this
-> code is 'faking out' the RFI instruction to return to 2:
+>Hi Roger
 >
-> Are you maybe trying to trace through this code?  If so,
-> and depending on your debugger, you may not be able to.
-> If your debugger uses trace or some other exception to do
-> single step, once you get past mtspr SRR0,r4 the single
-> step exception will overwrite the correct SRR0.  You
-> can see if this is the case by only tracing to mtspr SRR0,r4
-> and then putting a breakpoint at 2:
+>> By experimenting I have found that the BestComm and FEC work without
+>>the cache flush provided CPU_FTR_MAYBE_CAN_NAP is removed from the
+>>cputable (nap disables snooping) and that CPU_FTR_NEED_COHERENT is
+>>added to the cputable (turns on "M" bit in BAT/PTE so that the XLB
+has
+>>a chance of seeing a global transaction).
+>>  
+>>
+>Thanks for the info.
 >
-> Good luck,
-> Mark Chambers
+>The nap thing was indeed obvious ... The proper way to deactivate it 
+>would be in lite5200.c
+>I added the powersave_nap = 1; as an example on how to allow it to
+nap. 
+>I'll probably comment it out by default with a note.
 >
+>For the CPU_FTR_NEED_COHERENT, are you sure it's required ?
+ >From my understanding of the G2Core manual, the M bit must be set if 
+>you want the G2Core
+>to assert the global signal when it access memory. Here, we don't care
+
+>since only the G2Core is snooping on the bus. So that should not be
+required ...
+>
+>
+>    Sylvain
+
+Sylvain,
+ You are correct. The CPU_FTR_NEED_COHERENT is not required. Perhaps
+the solution is to only turn on powersave_nap if CONFIG_PPC_BESTCOMM is
+not selected.
+-rb
+
+
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Meet the all-new My Yahoo! - Try it today! 
+http://my.yahoo.com 
+ 
