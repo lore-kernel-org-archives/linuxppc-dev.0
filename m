@@ -1,87 +1,96 @@
-Date: Fri, 19 Oct 2001 10:24:14 -0700
-From: Till Straumann <Till.Straumann@TU-Berlin.de>
-Subject: Re: IRDA/IRCOMM on a TiBook patch (UPDATED)
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-Cc: linuxppc-dev@lists.linuxppc.org, linux-irda@pasta.cs.uit.no
-Message-id: <3BD061BE.680BEF25@TU-Berlin.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <3BCC104D.B5770ADE@TU-Berlin.de> <1003453347.24371.912.camel@pismo>
- <3BCFCA2C.CACD571B@TU-Berlin.de> <1003500642.4732.451.camel@pismo>
+Message-ID: <3BD06614.800C99E8@raleigh.ibm.com>
+Date: Fri, 19 Oct 2001 13:42:44 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
+MIME-Version: 1.0
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: arch/ppc/kernel clutter
+References: <15312.6740.808012.183783@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer wrote:
->
-> On Fri, 2001-10-19 at 08:37, Till Straumann wrote:
-> >
-> > Michel Dänzer wrote:
-> > >
-> > > On Tue, 2001-10-16 at 12:47, Till Straumann wrote:
-> > >
-> > > > I (and I believe other people as well) had problems
-> > > > setting up IRDA/IRCOMM on a TiBook / 2.4.12-benh and
-> > > > older 2.4 series kernels [on powerpc].
-> > > >
-> > > > As far as I could find out there are several problems:
-> > > >
-> > > > 1) There seems to be a timing problem when opening
-> > > >    the irda port which prevents it from being properly
-> > > >    initialized.
-> > > >
-> > > >    When I run "irattach /dev/ttyS1 -s 1", my Nokia 8890
-> > > >    is never discovered. However, when I issue a 'cat /dev/ttyS1',
-> > > >    prior to starting irattach (i.e. by opening the device
-> > > >    [and holding it open until irattach starts]),
-> > > >    things are properly initialized
-> > > >    and discovery works. Putting 'mdelay(100);' somewhere
-> > > >    in macserial.c:rs_open() does the job. However, I have
-> > > >    not yet figured out what exactly causes the problem.
-> > > >    A user space work-around involves patching irattach.c
-> > > >
-> > > > 2) There is an endianness bug. A possible solution is attached.
-> > >
-> > > Your patch seems to be missing a bit (in qos.c IIRC) though.
-> >
-> > What is it missing? Please, be a little bit more verbose :-)
->
-> The same thing you're doing for the other files, i.e. replace param->pv.b
-> by param->pv.b.ll and param->pv.s by param->pv.s.l . The build fails for
-> that file otherwise.
->
+Paul,
 
-Oops - thanks for pointing this out. I had fixed it but forgotten to
-keep
-the original version and therefore, the patch generator  missed that
-one...
+I don't feel the PPC tree, or most of the developers, realize what's
+happening in the Power PC hardware Arena.
+The powerpc hardware is becoming increasingly diverse because  of the
+IBM core connect technology.
+CoreConnect allows hardware designers to easily reusable hardware cores
+much like a programmer uses a subroutine.
+(See www.chips.ibm.com).  (I am not sure what Mot has)
 
-> I'm talking about net/irda/qos.c BTW.
+This allows IBM to quickly integrate different sets of peripherals to a
+processor core.
+One only has to look to the 405 to see the effects of this.  Announced
+for the 405 are the
+405CR, 405GP, NPE405H, NPE405L, the Ranier network processor, the 405LP
+and the stb04xxx. There are also many CSSPs which
+have 405 processor cores that have been designed or are in process.
+These CSSP's  have peripherals that are not in any of the
+of the released chips but are in IBM core library.  Many of these
+CSSP's  have customer designed peripherals.
+(This is NOT a sales pitch.  This is just to let everybody know that way
+IBM (and probably Mot ) stitches processors
+and peripherals together has changed. IE, It a LOT easier now to stich
+together Processor cores and components
+to make a CSSP. )
+
+All of these chips have a different mix of on chip peripherals.  Given
+the ease that the hardware designers
+now have in creating chips, we need a PPC linux structure that
+recognizes this.
+
+The linux kernel ppc tree is going to have to become much more flexible
+to recognize the incredible flexibility that
+IBM and Motorola are  designing into the PPC hardware.
+
+Chip
+
+Paul Mackerras wrote:
 >
-> > > > 3) When applying 1) and 2), IRCOMM works provided that
-> > > >    /proc/sys/net/irda/max_baud_rate is clamped to 57600.
-> > > >    Apparently, there is another problem in 'macserial.c' where speeds
-> > > >    higher than 57600 are treated especially.
-> > >
-> > > Have you managed to do anything 'real' yet? I tried your patch, and it
-> > > does seem to improve things, irdadump seems to show data from my Palm,
-> > > but I haven't succeeded to synchronize yet.
-> > >
-> >
-> > Sure - I can open a modem connection to my cellphone and issue any AT
-> > command I want. However, I have to take care of all of the three issues
-> > mentioned. (I.e. use patched irattach, use patched kernel and
-> > echo 57600 > /proc/sys/net/irda/max_baud_rate).
+> I feel that arch/ppc/kernel in the linuxppc_2_4_devel tree is getting
+> more than a bit cluttered.  I propose that we make a new
+> arch/ppc/platforms directory and move the platform-specific files into
+> there - i.e. all of *_setup.c, *_pic.c, *_pci.c, and maybe some
+> others.  What would be left in arch/ppc/kernel is the more generic
+> stuff, i.e. things relating to the different base processors, the
+> different types of interrupt controllers or PCI host bridges, the
+> generic stuff that interfaces to the rest of the kernel (e.g. setup.c)
+> and so on.
 >
-> I have done the latter two and used cat to work around the first. I see
-> something with irdadump but none of the pilot sync tools work. I'm
-> afraid they're broken on PPC yet. :(
-
-Hmm - I still have one of the old PalmPilot devices without irda. What
-exactly
-do you see with irdadump? (Forgive me the stupid question: you have set
-PILOT_PORT to /dev/ircomm0, right?)
-
---Till
+> My idea is that adding support for a new board would not normally
+> require changes in arch/ppc/kernel unless the new board has a new type
+> of interrupt controller, PCI host bridge, etc.
+>
+> Thoughts?  Objections?
+>
+> Another thing I would like to do is to generalize the drivers for the
+> various on-chip peripherals a bit more.  The platform code would then
+> specify in some way "this platform has an XYZZY on-chip ethernet
+> controller with registers at 0xabcdef00, using interrupt 123, with
+> quirks A, D and F".  (This sort of thing is what the OF device tree
+> was designed for and does very well, BTW.)
+>
+> The configuration scripts could force CONFIG_XYZZY on when this
+> platform is selected and that would compile in the xyzzy driver.
+> The xyzzy driver initialization would get called during boot and would
+> look up whether the platform has any XYZZY's, and if so, what
+> addresses and interrupts to use.  So the XYZZY code doesn't need to
+> know anything about which platforms have an XYZZY at all.
+>
+> This would be a bit of work in the short term to implement but would
+> mean that we could potentially reuse code more easily for new
+> platforms.  The idea is that if a new platform has an XYZZY, the
+> platform setup code just has to create a device tree (or whatever)
+> node for it, make sure the XYZZY driver is configured in, and it
+> should (hopefully :) Just Work.
+>
+> This could extend to things like interrupt controllers and PCI host
+> bridges as well as regular I/O devices, too.
+>
+> Paul.
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
