@@ -1,39 +1,24 @@
-Message-Id: <v04003a01b4b27272e182@[216.81.20.207]>
-In-Reply-To: <200001241852.KAA04045@sade.ddi.com>
+In-Reply-To: <Pine.LNX.3.96L.1000124150354.1087A-100000@unix48.andrew.cmu.edu>
+Date: Mon, 24 Jan 2000 23:07:39 +0100
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Rev 14 feedback
+Message-Id: <20000124230739.020704@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 24 Jan 2000 15:32:45 -0600
-To: Jim Terman <terman@ddi.com>, linuxppc-dev@lists.linuxppc.org
-From: Tony Mantler <eek@escape.ca>
-Subject: Re: altivec instructions
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:52 PM -0600 1/24/00, Jim Terman wrote:
->We are trying to run a program that contains altivec instructions on a G4,
->but the process keeps crashing (gdb will actually cause a kernal panic).
->It looks like a bit in the MSR needs to be set.  What would be the best
->way to modify the kernel to let this happen?
+On Mon, Jan 24, 2000, Hollis R Blanchard <hollis+@andrew.cmu.edu> wrote:
 
-Before you enable the MSR bit, you'll have to write altivec register saving
-code for your kernel, the strategies for which were discussed a while back
-on this mailing list, and should be available for your reading convinience
-on the mailing list archive.
+>I would imagine Ben's patches are going into Paul's tree. Has Ben said
+>anything about writing the ethernet driver?
 
-Following that, you'll have to check to be sure your code properly uses the
-VRSAVE register, to avoid forward compatibility problems.
-
-
-Once that's all done, your code should run just fine.
-
-
-Cheers - Tony :)
-
-
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
+The ethernet driver is in my current rev.14 kernel. It was actually
+written by Paul (we both did the work, but Paul's driver was better, so I
+just put back a few things from mine and included it).
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
