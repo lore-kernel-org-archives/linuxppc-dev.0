@@ -1,97 +1,35 @@
-Message-ID: <5D2136DF3DD5D311AE89009027C67FB003138BA8@fmsmsx96.fm.intel.com>
-From: "Zheng, Haifei" <haifei.zheng@intel.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Cc: "'greyham@research.canon.com.au'" <greyham@research.canon.com.au>
-Subject: initrd problems on CLLF860T, please help.
-Date: Wed, 14 Feb 2001 11:00:57 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 14 Feb 2001 14:28:40 -0500
+From: =?ISO-8859-1?Q?S=E9bastien_C=F4t=E9?= <scote1@matrox.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Page table -> SDR1
+Message-ID: <20010214142840.A19657@dyn-52-73.matrox.com>
+References: <5D2136DF3DD5D311AE89009027C67FB003138BA8@fmsmsx96.fm.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <5D2136DF3DD5D311AE89009027C67FB003138BA8@fmsmsx96.fm.intel.com>; from haifei.zheng@intel.com on Wed, Feb 14, 2001 at 14:00:57 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hello again,
 
-We are trying to boot our CLLF860T board with an initrd. We are using Monta
-Vista Hard Hat (kernel 2.2.14) and we built out own ramdisk image. ( I know
-there is an example ramdisk.image.gz from Hard Hat but haven't found it) and
-we are getting the following boot messages:
+Can someone explain me how the base address for the page table is set ?
+Looking at hashtable.S, it should be set to 0x180000 and be 256 kB long.
+However, when SDR1 is set in turn_on_mmu (head.S), they use _SDR1 to set
+the value but I couldn't find anywhere where _SDR1 is set!
 
-Load menu: press 123456789T key : <?> : T
- target IP address : 0A14140A
- target file name  : current-initrd
- address bias      : 0
-Starting tftp download:
-inetARP(): OK
-.1.2.4.8.16.32.64.128.256.512.1024.2048.4096.8192.16384
-load_tftp(): OK
-1359955 data bytes, 17216 S-records, 2657 tftp blocks, 0 repeated blocks
-start address = 00200000
-load_tftp_toMem(): OK
-Transferring control to downloaded program
-loaded at:     00200000 0020C580
-relocated to:  00180000 0018C580
-board data at: 001801C8 001801E4
-relocated to:  00200100 0020011C
-zimage at:     00207000 0026CB2E
-initrd at:     0026CB2E 00285258
-avail ram:     00286000 01000000
+Also, when I check the value in the register SRD1, the HTABORG part (bits
+0-15) show 0xE so this isn't 0x180000.  Finally, the value of HTABMASK
+(bits 23-31) doesn't correcpond to what is recommended in the PowerPC book
+from Motorola for 32 MB of RAM and a 256 kB page table.
 
-Linux/PPC load: root=/dev/ram
-misc.c
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.2.14 (root@shark) (gcc version 2.95.2 19991030 (2.95.3
-prereleas
-e/franzo)) #541 Wed Feb 14 09:57:22 PST 2001
-m8xx_setup.c:92: Boot arguments: root=/dev/ram
-initrd memory block starts: c026cb2e ends c0285258
-time_init: decrementer frequency = 180000000/60
-Calibrating delay loop... 47.82 BogoMIPS
-Memory: 15028k available (748k kernel code, 464k data, 40k init)
-[c0000000,c1000
-000]
-Dentry hash table entries: 2048 (order 2, 16k)
-Buffer cache hash table entries: 16384 (order 4, 64k)
-Page cache hash table entries: 4096 (order 2, 16k)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.2
-Based upon Swansea University Computer Society NET3.039
-NET4: Unix domain sockets 1.0 for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-TCP: Hash tables configured (ehash 16384 bhash 16384)
-Initializing RT netlink socket
-Starting kswapd v 1.5
-CPM UART driver version 0.03
-ttyS00 at 0x0280 is a SMC
-ttyS01 at 0x0380 is a SMC
-ttyS02 at 0x0100 is a SCC
-ttyS03 at 0x0200 is a SCC
-pty: 256 Unix98 ptys configured
-RAM disk driver initialized:  16 RAM disks of 4096K size
-loop: registered device at major 7
-eth0: CPM ENET Version 0.2, 00:10:ec:00:1a:0f
-CONFIG_RPXCLASSIC
-The FEC Ethernet specific entries in the device structure...
-eth1: FEC ENET Version 0.2, 00:10:ec:80:1a:0f
-fec: Phy @ 0x0, type LXT971 (0x001378e2)
-fec: link up, 100 Mbps, full-duplex, auto complete
-PPP: version 2.3.7 (demand dialling)
-TCP compression code copyright 1989 Regents of the University of California
-PPP line discipline registered.
-Sending BOOTP requests.... OK
-IP-Config: Got BOOTP answer from 10.20.20.10, my address is 10.20.20.11
-RAMDISK: Compressed image found at block 0
-VFS: Mounted root (romfs filesystem).
-Freeing unused kernel memory: 40k int
-Kernel panic: No init found.  Try passing init= option to kernel.
-Rebooting in 180 seconds..
+To me, it seems like the page table isn't set up correctly but since I
+don't really understand how it is done, maybe I'm wrong.  I would also be
+very surprised to get that far (jumping to the first instruction of init)
+without page table.  A little help about this would be very appreciated.
 
-Any help will be high appreciated.
 
-Haifei
+Sébastien Côté
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
