@@ -1,65 +1,41 @@
-Date: Thu, 6 Jul 2000 21:41:45 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Matt Brubeck <mbrubeck@hmc.edu>
-Cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Multi-boot advice.
-Message-ID: <20000706214145.R7162@plato.local.lan>
-References: <200007052323.AAA07099@hyperion.valhalla.net> <Pine.GSO.4.21.0007060751390.17224-100000@turing.cs.hmc.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="iUdyFHenu1vPh/Ml"
-In-Reply-To: <Pine.GSO.4.21.0007060751390.17224-100000@turing.cs.hmc.edu>; from mbrubeck@hmc.edu on Thu, Jul 06, 2000 at 07:57:13AM -0700
+Message-Id: <200007070607.IAA00742@piglet.grunz.lu>
+Date: Fri, 7 Jul 2000 08:07:27 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: X still locks up
+To: b.judd@xtra.co.nz
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000707142631.B804@thislove.dyndns.org>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---iUdyFHenu1vPh/Ml
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+Hi all,
 
-On Thu, Jul 06, 2000 at 07:57:13AM -0700, Matt Brubeck wrote:
->=20
-> On Thu, 6 Jul 2000, Iain Sandoe wrote:
->=20
-> > I think I read that I must put the Linux boot partition before the
-> > MacOS - X one?
->=20
-> If you are using yaboot with an OF-bootable partition (e.g. you are using
-> ybin to set up a bootstrap partition), then placing that partition before
-> MacOS will allow you to boot Linux by default without changing any open
-> firmware settings.
+On   7 Jul, this message from Gwyn Judd echoed through cyberspace:
+> 3) When I rebooted there was no kernel panic in the logs. This has me
+> puzzled. I suppose it could have crashed and not had it written out to
+> disk in time. On the otherhand this has happened before and each time
+> there is no panic.
 
-if you use a multiboot script and you place the Apple_Bootstrap
-partition first you will always get the boot choice without altering
-OF settings.
+If you want to be sure you get all panic logs, the only way is to get a
+serial console. The console is the only device that is guaranteed to get
+a panic log, if one is produced. You'd also see it on a (screen) console
+if you weren't running X...
 
-> Other than that, partition order shouldn't matter.
->=20
-> Speaking of yaboot, I have a question. Can yaboot boot MacOS, or can I
-> make it exit back to OF without rebooting?
+There's a doc explaining serial console under the linux/Documentation
+directory.
 
-well strictly speaking, no.  yaboot cannot boot anything else, and
-once its loaded OpenFirmware is pretty much destroyed.  you can
-however use a magicboot script to give you the choice to boot linux or
-macos, this scriptloads before yaboot and thus can boot macos. =20
+Michel
 
-> I'd like to just have my machine always load yaboot, and then use the
-> yaboot prompt to choose my OS. But once I'm in yaboot, Linux seems to be
-> my only option. Is this true? If so, can it be changed?
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-yes use a magicboot script.  see the ybin docs.
-
->=20
->=20
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---iUdyFHenu1vPh/Ml
-Content-Type: application/pgp-signature
-
-
---iUdyFHenu1vPh/Ml--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
