@@ -1,45 +1,100 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "Khai Trinh" <kqtrinh@yahoo.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: CPCI405 
-Date: Wed, 22 May 2002 09:29:09 +0200
-Message-ID: <EFEAIMDCOOOHIEPHDNFJCEMCDPAA.stefan.roese@esd-electronics.com>
+Message-ID: <3CEB62F0.2080302@thales-bm.com>
+Date: Wed, 22 May 2002 11:20:48 +0200
+From: Julien Eyries <julien.eyries@thales-bm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20020521235431.26AA11196D@denx.denx.de>
+To: Dean McBride <dmcbride@sgss.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Un-killable process???
+References: <5.1.0.14.0.20020521144711.0312fc28@sgss.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > I am looking for the CPCI405 port software to use as
-> > baseline for our PCI board design. Can anybody here
-> > point me to the right location where it can be
-> > downloaded?
+I have had the same problem when writing a driver for my custom hardware
+; It's a well known problem, I found it explained in "Linux Device
+Drivers" by Rubini & Corbet. (i have the french version , it's in chapter 5)
+your driver should use the function "interruptible_sleep_on()" instead
+of "sleep_on()" to block the process .
+if you use "sleep_on()", your process will not receive any signal while
+blocked and then could become "un-killable" .
+
+bye.
+
+
+Julien
+
+
+Dean McBride wrote:
+
 >
-> If you mean the cPCI405 board by esd (electronic system design), then
-> the normal linuxppc_2_4_devel tree is what you're  looking  for;  for
-> the  firmware,  the  board  has  regular  and  maintained  support in
-> PPCBoot, too.
+> Hello,
+>
+> I have a process I can't kill (kill -9) without rebooting the system.  I've
+> attempted
+> attaching strace, gdb, etc. to the process, but each of those task just
+> hang.  I
+> can however kill those task (strace, gdb).  I've looked through the
+> /proc/<pid>
+> area, but don't really know what I'm looking for or at!  The task seems
+> to be
+> somehow stuck on some resource, but I don't know which one or how to find
+> out.  I'm running with Linux 2.4.10-pre10 on a 4 processor Power PC with
+> 512Mbytes of memory.  The process is reading data from a PMC card.
+>
+> Any ideas or suggestions?  I've include some more information below!
+>
+> Thanks
+> Dean
+>
+> Here's the output from the ps command:
+>    74 root     root     R /opt/ds/src/lm1/bin/lm1_read -s 4 -m 255 -f 4000
+> -a -r -u 2 -g 1
+>
+>
+> Heres the /proc/74/status file
+>
+> sh-2.03# more /proc/74/status
+> Name:   lm1_read
+> State:  R (running)
+> Pid:    74
+> PPid:   62
+> TracerPid:      0
+> Uid:    0       0       0       0
+> Gid:    0       0       0       0
+> FDSize: 256
+> Groups: 0
+> VmSize:     2580 kB
+> VmLck:      2580 kB
+> VmRSS:      2580 kB
+> VmData:     1128 kB
+> VmStk:        16 kB
+> VmExe:        20 kB
+> VmLib:      1188 kB
+> SigPnd: 0000000000044102
+> SigBlk: 0000000000000000
+> SigIgn: 8000000000000000
+> SigCgt: 0000000000004002
+> CapInh: 0000000000000000
+> CapPrm: 00000000fffffeff
+> CapEff: 00000000fffffeff
+>
+> /proc/74/statm file
+>
+> sh-2.03# more /proc/74/statm
+> 645 645 317 17 0 628 328
+>
+>
+>
 
-Right (thanks Wolfgang).
 
-What exactly do you mean with "port software"?
-
-Are you designing a 405gp or a 440gp pci board?
-
-Best regards,
-Stefan Roese
-
-*******************************************
-esd gmbh
-Vahrenwalder Str. 207
-D-30165 Hannover
-Phone: +49-511-37298-0
-Fax:   +49-511-37298-68
-email: stefan.roese@esd-electronics.com
-www:   http://www.esd-electronics.de
-*******************************************
+--
+Julien Eyries
+R&D engineer
+Thales Broadcast & Multimedia (ex-thomcast)
+email: julien.eyries@thales-bm.com
+fax: 33(0) 1 34 90 31 10
+tel: 33(0) 1 34 90 31 01
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
