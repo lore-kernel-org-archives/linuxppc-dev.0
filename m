@@ -1,36 +1,29 @@
-Date: Tue, 27 Aug 2002 17:36:12 -0700
+Date: Tue, 27 Aug 2002 17:37:28 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: acurtis@onz.com
-Cc: dan@embeddededge.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260/8xx Embedded Boot patch
-Message-ID: <20020828003612.GD22875@opus.bloom.county>
-References: <20020828002353.GB22875@opus.bloom.county> <20020827172829.3580.h002.c007.wm@mail.directvinternet.com.criticalpath.net>
+Cc: dan@embeddededge.com, linuxppc-embedded@lists.linuxppc.org,
+	paulus@samba.org
+Subject: Re: 8260/8xx IRQ patch
+Message-ID: <20020828003728.GE22875@opus.bloom.county>
+References: <20020827173128.20304.h022.c007.wm@mail.directvinternet.com.criticalpath.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020827172829.3580.h002.c007.wm@mail.directvinternet.com.criticalpath.net>
+In-Reply-To: <20020827173128.20304.h022.c007.wm@mail.directvinternet.com.criticalpath.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Aug 27, 2002 at 05:28:29PM -0700, acurtis@onz.com wrote:
+On Tue, Aug 27, 2002 at 05:31:28PM -0700, acurtis@onz.com wrote:
+> > Definatly not for 2.4, for 8xx.  And did you test this on an 8xx board?
 >
-> > The first thing I saw was the define_bool CONFIG_ALL_PPC n.
-> > If this was actually needed someplace, there's a bug there that needs to
-> > be fixed.
+> I do not have an 8xx board but I have tested it on the 8260. On the 8260 if you
+> loaded a module that wanted to call request_irq() you crashed in a stub function.
+> No mapping to request_8xxirq() from request_irq().
 >
-> This is not required. All of the xxxx8260_defconfig files define this so you do
-> not get all of the generic Mac stuff like IDE and video. If it is not appropriate
-> take it out. It just serves to weed out a lot of options you are just going to
-> turn-off anyway.
+> I could make this 8260 specific if you want.
 
-They shouldn't show up on 8260, since they don't show up on other,
-non-CONFIG_ALL_PPC platforms.  Again, if they show up it's a bug.  The
-bug is doing:
-dep_{tristate,bool} 'Some pmac-specific driver' CONFIG_PMACSPEC $CONFIG_ALL_PPC
-It should be:
-if [ "$CONFIG_ALL_PPC" = "y" ]; then
-   {bool,tristate} 'Some pmac-specific driver' CONFIG_PMACSPEC
-fi
+Look at the -embedded or -dev archives for a simlar patch that I
+submitted a few months ago.
 
 --
 Tom Rini (TR1265)
