@@ -1,50 +1,51 @@
-Date: Tue, 15 Jul 2003 08:04:09 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips
-Message-ID: <20030715150409.GP1211@ip68-0-152-218.tc.ph.cox.net>
-References: <20030714143110.GA1211@ip68-0-152-218.tc.ph.cox.net> <20030714192618.BF277C6D82@atlas.denx.de>
-Mime-Version: 1.0
+From: Jeff Kowing <jeffrey.d.kowing@nasa.gov>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030714192618.BF277C6D82@atlas.denx.de>
+Message-ID: <16148.6373.869623.908659@igor.jsc.nasa.gov>
+Date: Tue, 15 Jul 2003 10:08:21 -0500
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: DENX ELDK Kernel
+In-Reply-To: <3F140928.60403@imc-berlin.de>
+References: <20030715135119.5782CC6D82@atlas.denx.de>
+	<3F140928.60403@imc-berlin.de>
+Reply-To: jeffrey.d.kowing@nasa.gov
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jul 14, 2003 at 09:26:13PM +0200, Wolfgang Denk wrote:
-> Dear Tom,
->
-> in message <20030714143110.GA1211@ip68-0-152-218.tc.ph.cox.net> you wrote:
-> >
-> > > I was referring to a much older implementation  of  this  feature.  I
-> > > sent it to Tom nearly two years ago:
-> ...
-> > I really wish I had looked into making mutt keep a copy of sent mail a
-> > lot sooner.  I don't suppose you have a copy of my reply to that as
-> > well?  I suspect it was either "Can you break the uart stuff out from
-> > the dpfree stuff" and you didn't, or "This is large and intrusive and
-> > I'd feel better if I could make Dan Malek look at it".
->
-> I found two related replies in my archive:
->
-> 28 Aug 2001:
-> ...
-> PATCH-006 - Looks good.  I'll play w/ it a bit more tomorrow and let you
->   know.
-> ...
->
-> 15 Oct 2001:
-> ...
-> PATCH-006 Paul Mundt has been a bit busy of late (and had his disks die
-> a week or so ago), but he should have something soon I hope.  Sorry.
-> ...
+> 10 of 10 points :-)
 
-I found that one (I do keep replies) and that was for an rpxfb patch.
+I'm on a role, so I'll try again against my better judgement.
+
+Steven Scholz writes:
+ > If I'd built the ELDK from scratch and used Linux-2.4.20 include files
+ > to build "glibc (and all the rest of the target ELDK apps)" I should
+ > build my "applications against the newer Linux kernel"! Shouldn't I?
+
+Yes, you are correct.  The rule is to always build user space
+applications against the same Linux include files that were used to
+build glibc.
+
+If, on the other hand, you are compiling a kernel module, then you
+need to build it against the actual Linux kernel version you are
+running.
+
+ >
+ > And in general: shouldn't I used a glibc that "matches" the kernel
+ > version?
+
+I think that is the "safest" way of doing things, but apparently not
+usually necessary.  People upgrade their kernels all the time on their
+native platforms without rebuilding their glibc. I believe some effort
+is made to maintain binary compatiblity between glibc and the kernel -
+but I'm sure it is not guaranteed.
+
+Regards,
+Jeff
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Jeff Kowing <jeffrey.d.kowing@nasa.gov>
+All opinions expressed are my own and not of my employer.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
