@@ -1,46 +1,41 @@
-Message-ID: <B164B53F5BD6D511888D009027732E1A02498D@ntserver.act.domain>
-From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: BDI2000 PTEs
-Date: Wed, 28 Nov 2001 14:49:32 +1100
+Message-ID: <3C046800.5030309@embeddededge.com>
+Date: Tue, 27 Nov 2001 23:28:48 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: BDI2000 PTEs
+References: <B164B53F5BD6D511888D009027732E1A02498D@ntserver.act.domain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all
+Rudolf Ladyzhenskii wrote:
 
-I am trying to do module debugging. Module is loaded atvirtual address
-0xC500004C. At the moment I have memory translation enabled in BDI2000.
-PTBASE is set to 0xf0 and this entry is cleared. This works for kernel
-debugging, but memory translation fails when I try to do dynamically loaded
-module debugging.
-I guess I have to set PTE pointers for BDI2000.
+> ..... At the moment I have memory translation enabled in BDI2000.
+> PTBASE is set to 0xf0 and this entry is cleared.
 
-First I put value 0xC00000F4 into physical address 0xF0 (BDI2000 PTBASE).
+That's not correct.
 
->From Linux Jernel Book, I understood that PTE pointer is at variable called
-"swapper_pg_dir". I tried to write its address into BDI2000 PTE kernel
-pointer (physical address 0xF4).
+> .... This works for kernel
+> debugging, but memory translation fails when I try to do dynamically loaded
+> module debugging.
 
-Does not work.
-I think that PTEs have to updated dynamically, but I have no ideas where to
-get them from.
+That's because without a page table the BDI2000 defaults to 1:1 translation.
+By clearing the location above you told the BDI2000 that no page tables
+are available.
 
-Can anyone explain how to get the values for the PTE kernel and user
-pointers?
+> I guess I have to set PTE pointers for BDI2000.
 
-I am using kernel 2.4.4. I looked at the later kernels that have BDI2000
-support. Unfortunately, support is only 8xx CPUs, not 8260. (I looked into
-files /arch/ppc/head.S. and /arch/ppc/head_8xx.S). It is difficult for me to
-update corresponding 8260 code mainly because I am not sure what this code
-does and I am not very familiar with PPC assembly.
+No, you don't.  Just use a newer kernel that has this feature available for
+all processors.  You could also copy the couple of lines of code from a
+newer kernel into your 2.4.4 if you insist.
 
-Any help is appreciated,
 Thanks.
 
-Rudolf
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
