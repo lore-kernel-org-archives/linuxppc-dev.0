@@ -1,29 +1,27 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: David Jander <david.jander@protonic.nl>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: BDI2000 Jtag interface questions...
-Date: Tue, 14 Oct 2003 10:57:00 +0200
+From: Ole.Reinartz@nokia.com
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200310141057.00186.david.jander@protonic.nl>
+	charset="iso-8859-1"
+Subject: Changing SCC ethernet mac address does not reach HW
+Date: Tue, 14 Oct 2003 11:17:21 +0200
+Message-ID: <E7A9221A65D8464FA21B763E6D36436E01DC9B20@duebe001.europe.nokia.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I have heared that the BDI2000 is a must-have debugger for Embedded-PPC
-development (we are developing a MPC852T based board).
-Questions:
-What can you do with the BDI2000 as a Jtag interface for the MPC852T?
-Is it possible (i.e. is there software) to use the BDI2000 as a Jtag interface
-for that processor to also do hardware testing?
+I'm developing on a custom board with an MPC860 having both SCC1 and
+SCC2 used as ethernet interfaces. Currently I'm using ELDK 2.1 (kernel
+version 2.4.4). Its running fine now (had to change some things in
+enet.c to get both interfaces configured). One thing that appeared to me
+is that though its possible to change the MAC address only the kernel
+internal structure gets changed. The change is not written to the SCC
+dpram. Is that a feature? If not is that already fixed somewhere? If
+not I propose that scc_enet_open() should read the mac address from the
+kernel structure and always write that to the SCC's dpram.
 
-Thanks,
-
---
-David Jander
-
+Ole
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
