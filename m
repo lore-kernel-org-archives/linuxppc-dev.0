@@ -1,38 +1,39 @@
-Message-Id: <200206110426.g5B4QVf26412@mailout5.nyroc.rr.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Patrick Berge <pberge@stny.rr.com>
-Reply-To: pberge@stny.rr.com
-To: David Edelsohn <dje@watson.ibm.com>
-Subject: Re: docs for ppc gnu gcc inline asm?
-Date: Tue, 11 Jun 2002 00:26:23 -0400
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <200206100348.XAA28254@makai.watson.ibm.com>
-In-Reply-To: <200206100348.XAA28254@makai.watson.ibm.com>
-MIME-Version: 1.0
+Date: Tue, 11 Jun 2002 00:02:38 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Why I can't bind the 1023 port?
+Message-ID: <20020611000238.E9152@plato.local.lan>
+References: <200206111046140.SM00168@------> <1023738158.3382.17.camel@whitefusion.lan>
+Mime-Version: 1.0
+In-Reply-To: <1023738158.3382.17.camel@whitefusion.lan>; from owen@penguinppc.org on Mon, Jun 10, 2002 at 07:42:37PM +0000
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sunday 09 June 2002 23:48, David Edelsohn wrote:
-> 	GNU as supports all of the PowerPC mnemonics.  The GCC Further
-> Readings link on the main page has a list of links for various
-> architectures, including the PowerPC Assembler manuals for AIX.  Both IBM,
-> Motorola, and Apple all have documentation about the instruction set
-> available through their websites.
+On Mon, Jun 10, 2002 at 07:42:37PM +0000, Owen Stampflee wrote:
+>
+> On Tue, 2002-06-11 at 02:18, Daniel Lao wrote:
+> > The running result was that I could not bind these ports: 1023, 1022, ...
+> > but it was success in bind 1024 port.
+> > And while I su to as the super-user, I could bind all these ports!
+> > I am wondering if the ports were really protected, and how can I use the ports?
+>
+> Yes, ports < 1024 are reserved ports for "public" applications and only
+> the superuser can bind them. To use them, you need to be a superuser. I
+> am not familar with rcp (I would use scp even for local transfers) but
+> it should be able to run on another port.
 
-Thanks the response David , but I was looking for a more inclusive list.  For
-example some assembler I have written for the IBM PPC 405 has icbst, mtdcr
-and quite a few other 4xx only operations.  Obviously the as has this
-information when passed 'mcpu=405'.  I was just hoping I could find a single
-source of documentation containing the superset of all IBM
-(POWER(2),4xx,6xx,7xx(x), PPC64) and Motorola (8xx(x), 7xx, G3/G4).  Also
-book E based processors are in development which will soon only complicate
-this matter more for anyone who is not  a PPC assembler expert.
+no it can't, thats why rcp must always be suid root, the entire
+no-security model behind rcp/rlogin etc is `if its connecting *from* a
+privileged port it can't lie to us about the user its trying to
+connect as so we allow the connection'
 
-Would be nice if http://www.gnu.org/manual/gas/html_mono/as.html was updated
-to include a PPC section.  It currently is dated Jan '94.
+obviously this is completly flawed model and why you should use ssh/scp
+and not rcp/rlogin.
 
-Pat
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
