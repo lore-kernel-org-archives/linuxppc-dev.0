@@ -1,26 +1,25 @@
-Subject: Start address for ICE Planet, EP405PC
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <OF144E4778.A573A251-ON87256D13.0077F88E-86256D13.0078E44B@us.ibm.com>
-From: Andrew H Pham <apham@us.ibm.com>
-Date: Fri, 25 Apr 2003 17:01:22 -0500
+Content-Type: text/plain;
+  charset="iso-8859-15"
+From: Rakesh Jagota <j.rakesh@gdatech.co.in>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: How to select the flash
+Date: Sat, 26 Apr 2003 10:05:12 +0530
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Message-ID: <ioq2oi3s2bd3hbh.260420030955@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
+I am working on custom design board based on IBM PPC405 processor. I am
+looking for flash, which flash should I use. I have to load bootloader, jffs2
+file system, Linux os image and some applications. I have gone thr' some of
+the doc like uniform flash, boot block flash, etc. Can anyone suggest me
+which should we use and whats the exact criteria.
 
-I am trying to tftp load a kernel image into memory and boot it; however, I
-don't know what address to set the Start variable to.
-Start is the address where the boot loader goes to and executes when you
-issues the "go" command using the boot loader v1.03
-In another the word, does anyone know what is the offset is for the ppc
-kernel?  Let say the image is stored starting at address 200000,
-what address should i jump to so execution can begin (200???)?
+Thanks in advance,
 
-Thanks in advance for any help,
-Andy
+Rakes
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
