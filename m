@@ -1,31 +1,49 @@
-Message-ID: <3A68CE7A.F11219A7@inn.ericsson.se>
-Date: Sat, 20 Jan 2001 00:32:10 +0100
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-CC: iweiny@pacbell.net, linuxdev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Linux/PPC BitKeeper tree announcements
-References: <20010109161126.P18696@hq.fsmlabs.com> <5.0.2.1.2.20010119123352.03511010@mail.munich.netsurf.de>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14952.53532.864761.156822@chiark.greenend.org.uk>
+Date: Fri, 19 Jan 2001 23:43:24 +0000 (GMT)
+From: Chris Emerson <cemerson@chiark.greenend.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
+In-Reply-To: <19341214163142.29221@mailhost.mipsys.com>
+References: <14952.48929.34769.196323@chiark.greenend.org.uk>
+	<19341214163142.29221@mailhost.mipsys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
->
-> At 02:50 2001-01-19, iweiny@pacbell.net wrote:
->
-> >At the risk of sounding stupid I guess I need a newer compiler than egcs for
-> >the new kernel trees?
-> >
-> >fork.c:353: fixed or forbidden register 68 (0) was spilled for class CR0_REGS.
-> >This may be due to a compiler bug or to impossible asm
-> >statements or clauses.
->
-> You shouldn't be using _anything_ older than gcc-2.95.2 on PPC anymore. In
-> the meantime the release of gcc-2.95.3 is pending and I would _strongly_
-> recommend you to use it.
+On Friday, 19 Jan 2001, Benjamin Herrenschmidt wrote:
 
-Why do you so strongly recommend using it?
+> >Does that mean the mode/depth set by OF, or the one set by the
+> >vmode kernel cmdline option?
+>
+> The one set by OF. If the video driver supports it (that should be
+> the case of most drivers used on ppc with 2.4), any video mode set
+> either via cmdline, fbset, etc... or X if X is using fbdev's.
+
+Ok, I think I meet the criteria then.  I'll do some experimentation.
+
+> With a cable from the G4's modem to another modem, and some hackery
+> (already present in arch/ppc/xmon/start.c, I suggest you look at that
+> file), it's possible but tricky.
+
+Ok.  Is there a fundamental reason which prevents it being possible to
+use the USB keyboard, or just hard work?
+
+> >I'm currently running 2.4.1pre7 rsynced from the bk tree.
+>
+> pre8 is already there ;)
+
+Well, unless there are any vital fixes, I'll hold off for a few days.
+:-)
+
+Cheers,
+
+Chris
+--
+Chris Emerson, obsessed Cambridge juggler
+E-mail: cemerson@chiark.greenend.org.uk
+Web page: http://www.chiark.greenend.org.uk/~cemerson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
