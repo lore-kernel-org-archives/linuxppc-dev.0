@@ -1,58 +1,28 @@
-Message-Id: <200011161356.HAA11163@lists.linuxppc.org>
-Date: Thu, 16 Nov 2000 14:56:18 +0100
-Reply-To: Jacques.Menu@epfl.ch
-Content-Type: text/plain;
-	charset=iso-8859-1
-From: Jacques MENU <Jacques.Menu@epfl.ch>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-Version: 1.0 (Apple Message framework v337)
-Subject: Linux/PPC assembly language documentation ?
+Date: Thu, 16 Nov 2000 15:10:19 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Leonhard Jaschke <jaschke@inf.ethz.ch>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: G4 internal modem
+In-Reply-To: <3A13B00C.988212F9@inf.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10011161509320.28935-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi folks,
+> >
+> > When I send something to ttyS0 I see from /proc/interrupts
+> > that interrupt counters for SCC change. Perhaps the serial
+> > interface works, but the modem is a winmodem... :(
+>
+> I have a problem with the internal modem on the dual G4 450. When I try
+> to use minicom on /dev/ttyS0 it tells me that it can't find that device.
 
-I'm doing work on GNU Prolog that features a ppc_linux.c file, generating code the way shown below.
+Get a more recent minicom build. The device open timeout in minicom was
+shorter than the modem powerup delay.
 
-I'd like to find a description of ''@ha' and '@l' used in instructions like  :
-	addis	9,0,.Lcont001@ha
-and
-	addi		9,9,.Lcont003@l
+	Michael
 
-Please answer by email too since I'm not yet a member of this list. Thanks a lot !
-
-Regards,
-
-____________________
-
-void
-Pl_Call(char *label)
-{
-#ifndef MAP_REG_CP
-  Inst_Printf("addis", "9,0,.Lcont%d@ha", w_label);
-  Inst_Printf("addi", "9,9,.Lcont%d@l", w_label);
-  Inst_Printf("stw", "9,%s", asm_reg_cp);
-#else
-  Inst_Printf("addis", "%s,0,.Lcont%d@ha", asm_reg_cp, w_label);
-  Inst_Printf("addi", "%s,%s,.Lcont%d@l", asm_reg_cp, asm_reg_cp, w_label);
-#endif
-
-  Pl_Jump(label);
-  Label_Printf(".Lcont%d:", w_label++);
-
-#ifndef MAP_REG_E
-  if (use_envir)
-    Inst_Printf("lwz", "%s,%d(%s)", asm_reg_e, MAP_OFFSET_E, asm_reg_bank);
-#endif
-}
-
---
-Dr Jacques MENU
-CUI - Université de Genève
-
-Tel:	++ 41 21 693 45 87
-mailto:Jacques.Menu@cui.unige.ch
-http://cui.unige.ch/~menu/1804
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
