@@ -1,55 +1,94 @@
-Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Kumar Gala <kumar.gala@freescale.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <FF1E1EF0-BE0A-11D8-91C4-000393DBC2E8@freescale.com>
-References: <1087207803.7360.83.camel@newt>
-	 <FF1E1EF0-BE0A-11D8-91C4-000393DBC2E8@freescale.com>
-Content-Type: text/plain
-Message-Id: <1087224423.7360.323.camel@newt>
-Mime-Version: 1.0
-Date: Mon, 14 Jun 2004 15:47:04 +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Graham Williams" <gwilliams@sbir.com>
+To: "'saurosalomoni'" <saurosalomoni@bol.com.br>,
+	"'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Lite5200 from RS232 to RS485
+Date: Mon, 14 Jun 2004 07:47:33 -0700
+Message-ID: <005801c4521e$86e0ea40$26c8a8c0@GMAN>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <HZARQ0$414F5DFF6D6EB41029999D0D02A42EB5@bol.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2004-06-14 at 14:59, Kumar Gala wrote:
-> Is there a reason why we dont support the 106 as well for OCP?  Do you
-> know if this will match for the 8241 and/or 824x?
+I used tcgetattr and tcsetattr to set the termios settting like baud.  I
+also had to recompile the kernel using make menuconfig and in MPC8xx CPM
+Options-> I selected Use SCCx UART then Use SSC1 UART then selected PC15 for
+RTS on SCC1 UART.  Make sure the second UART device (ttyS1) is in the /dev
+directory and this should enable the RTS to work.  You can only use RTS with
+the SCCs and NOT the SMCs.  Maybe the console ttyS0 is an SMC not an SCC at
+least that is the way my eval board was setup. I hope this helps.
 
-According to my 106 user manual it's a pure northbridge, without I2C
-unit, DMA, or interrupt controller. The code should work for the 824x
-family, but I don't have any of them.
+-----Original Message-----
+From: saurosalomoni [mailto:saurosalomoni@bol.com.br]
+Sent: Monday, June 14, 2004 4:54 AM
+To: linuxppc-embedded
+Cc: gwilliams
+Subject: RE: Lite5200 from RS232 to RS485
 
-> > -	if (host_bridge != MPC10X_BRIDGE_106) {
-> > +	if (host_bridge == MPC10X_BRIDGE_106) {
-> > +		/* On-chip peripherals were introduced with the MPC107/MPC8240 */
-> > +		core_ocp[0].vendor = OCP_VENDOR_INVALID;
-> > +	} else {
-> >  		early_read_config_byte(hose,
-> >  				       0,
-> >  				       PCI_DEVFN(0,0),
+
+
+> I did the same thing with an 860T.  All we needed was
+the RTS pin
+
+> (inverted).  We used the standard driver and
+everything worked fine.  I did
+> do a little ioctl stuff but no driver changes.
+
+
+The point is that the driver I'm using does not support
+ioctl. What I would like to know is how to set RTS
+without using ioctl.
+I know there is a way, but I couldn't find it yet...
+
+
+>Here is the hello file I
+> started with.   Good luck
 >
-> My only other comments relate to consistency with how we are doing
-> things for 85xx with regards to OCP.  For example, how the config
-> options are handled (added a FSL_OCP) and how we update the paddr field
-> based on eumbar.  Also, I believe we have an ocp interface to delete an
-> OCP entry [which may or may not apply].
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org] On
+Behalf Of
+> saurosalomoni
+> Sent: Friday, June 11, 2004 6:35 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Cc: iida@ztec.com.br
 
-I've just done a bk pull which has fetched your 85xx ocp code. I can
-copy your config approach and make MPC10X_BRIDGE set FSL_OCP.
+> Subject: Lite5200 from RS232 to RS485
+>
+>
+> Hello.
+>
+> I need to switch between RS232 and RS485 in my Lite5200,
+>  but I realized it's a little bit more dificult than I
+> thought at first...
+> Well,  as far as I'm concerned, I can do that just by
+> controling the RTS pin of my ttyS0 device to activate
+> the 485 module (is it 100% right?).
+>
+> I began trying to control it with TIOCMGET/TIOCMSET
+> ioctl(),  but the driver does not support hardware
+> handshake.. (tahnx,  Denk)
+> So now I think I'll have to write a small driver that
+> uses GPIO to handle the proper PSC register.
+>
+> MPC5200 Users Manual states that you can set/clear the
+> RTS pin with bit 7 of the OutputPort 0 (op0, offset 0x3C).
 
-As for the updates based on EUMBAR, we do them at the same time. I've
-done them in syslib code rather than platform code, because I'm trying
-to minimise the board specific code. My goal is for the platform
-directory to contain the minimum amount of code necessary to describe
-how the board vendor connected the chip. I have the added complication
-that the board vendor may not have wired the MPC107 OpenPIC to the IRQ
-line of the PowerPC. With the 824x and 85xx they don't have the ability
-to make that mistake.
+>
+> My questions:
+> - Is this information I gathered correct?..
+> - Which PSC register I need to use to control ttyS0?
+> - If it's easyer to do it by extending an existing
+> driver, wich file should I look for?
 
-- Adrian Cox
-Humboldt Solutions Ltd
+> - Is there any other way to accomplish that?
+>
+> Thanks in advance.
+
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
