@@ -1,23 +1,47 @@
-Date: Tue, 14 Mar 2000 15:47:32 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: dony <dony.he@huawei.com.cn>, eric_mariacher@fr.ibm.com,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RTlinux patches for mpc8xx-2.2.13 ...
-Message-ID: <20000314154732.O1363@medea.fsmlabs.com>
-References: <20000313201813.D1280@medea.fsmlabs.com> <Pine.HPX.4.10.10003141033130.14941-100000@gra-ux1.iram.es>
-Mime-Version: 1.0
+Message-ID: <38CEEF3B.2665CD22@m2tech.co.nz>
+Date: Wed, 15 Mar 2000 15:02:35 +1300
+From: ben bodley <benb@m2tech.co.nz>
+MIME-Version: 1.0
+To: embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: compiling glibc for 4xx core powerpc
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPX.4.10.10003141033130.14941-100000@gra-ux1.iram.es>; from Gabriel Paubert on Tue, Mar 14, 2000 at 10:34:49AM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It should work.  I did the original work on an openpic system and it's been
-tested on quite a few openpic systems (chrp, G4, vss4...).
+hello all..
 
-} Do you think it would work on MVME boards ? (OpenPIC interrupt
-} controller). I might give it a try now that I've got VME working again on
-} 2.3.50 and 2.4 is in sight.
+i am attempting to compile glibc for my platform (4xx core powerpc) and
+as this core doesnt have an fpu, am compiling with -msoft-float.. but it
+dont work.. during compile i receive this error:
+
+../sysdeps/powerpc/s_isnan.c:27: Invalid `asm' statement:
+../sysdeps/powerpc/s_isnan.c:27: fixed or forbidden register 32 (0) was
+spilled for class FLOAT_REGS.
+
+(this occurs on an attempted assemble of a fpu instruction)
+
+my system specs are:
+ - compiling with gcc 2.95.2 native on powermac g4
+ - glibc 2.1.3
+ - kernel(powermac)=2.2.15pre14
+ - kernel(4xx)=2.3.42 + patches
+ - glibc configure options: configure --target=powerpc-linux
+--host=powerpc-linux
+     --enable-add-ons=crypt, linuxthreads --prefix=/usr/local/ppc403
+--without-fp
+ - CFLAGS extras: -msoft-float -DNDEBUG=1 -O2
+
+does anyone have a clue as to what is going on?? will i have to add some
+sort of software emulated floating point support in the kernel (use 8xx
+emu)?? or am i just missing a compiler option??
+
+is it worth using this late revision of glibc, or am i better off to use
+an earlier/simpler revision??
+
+cheers for any insights!
+
+ben
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
