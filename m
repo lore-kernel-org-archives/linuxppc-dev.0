@@ -1,108 +1,40 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0B2D@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Jeff Mintz'" <jmintz@ghs.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Network problem when using jtag debugger on EP8260
-Date: Fri, 21 Nov 2003 08:34:35 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <1069424021.1623087809@as03.coolgoose.com>
+From: "Nikhil Bhargava" <nikhilbhargav_nsit@coolgoose.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: nikhil@cdotp.ernet.in
+Subject: Need PCI device driver help for mpc 8266 
+Date: Fri, 21 Nov 2003 06:13:41 -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've used an Abatron on the EP8260 and I never saw any network problems.
+Hello!,
 
------Original Message-----
-From: Jeff Mintz [mailto:jmintz@ghs.com]
-Sent: Thursday, November 20, 2003 8:17 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Network problem when using jtag debugger on EP8260
+I am looking for some documents and help in writing a device driver for
+pci bus in motorola's ADs 8266 board. My purpose is to use the local
+bus in mpc 8266 as pci bus and then acheive multiple processing by
+connecting it to another processor. My target os is linux based.
 
+Has anyone written the device driver for pci bus. Any document or web
+link on the subject will be highly appreciated.
 
+Thanks for your time and concern.
 
-I am attempting to debug the Linux Kernel on an Embedded Planet 8260
-board,
-using a COP JTAG debugger.  I am encountering a behavior where when I
-halt
-the kernel, and resume, the kernel's ability to access the network seems
-to
-be disturbed.  I am wondering if anyone has seen something like this
-before.
+nikhil bhargava
+Cheers,
 
-Let me clarify the problem:
+Nikhil Bhargava,
+Research Engg.,
+IMT-2000,
+Center of Development of Telematics, CDOT,
+India.
 
-[Case 1]
-- I boot the Linux kernel (version 2.4.22, obtained from Embedded
-Planet)
-- When I get to the prompt, I halt the target using the debugger.  The
-target always seems to halt at address 0x904.
-- I resume the target.  A network access (such as "ls") takes about 7
-seconds, instead of being instantaneous.  (I'm not using a ramdisk, so
-ls
-uses NFS).
-- If I halt and resume again, network access is slowed down even
-further, certainly to the point of being unusable.
-
-[Case 2]
-- When I get to the prompt, I issue the command "while(true); do true;
-done" which sets the kernel off and running infinitely (until I stop it
-with Ctrl-C).
-- Using the debugger, I halt the target.  I am not at 0x904, but
-somewhere else, either in the kernel code, or in what seems to be a user
-
-application page.
-- I can stop, singlestep, resume, set and hit breakpoints using the
-debugger.  When I finally stop the while loop, the network is fine.  All
-
-of my debugging activity did nothing to disturb network access.
-
-[Case 3]
-- Same as Case 2.  This time, after halting the target, I set a
-breakpoint on the first line in the function fcc_enet_rx.  I resume the
-target.  This breakpoint is hit about 15 times, and then it is not hit
-anymore.  When I attempt to stop the while loop, the network access has
-been disturbed.
-
-[Case 4]
-- Same as Case 1.  This time, before I halt the target using the
-debugger,
-I unplug the ethernet cable.  Then I halt the target, and it is again
-at 0x904.
-- Now I resume the target using the debugger.
-- Now I plug in the ethernet cable to the target again.
-- Network accesses (i.e. ls) works fine.
-
-
-My primary goal is to fix Case 1.  I do not want to lose network access
-when I halt the kernel when it is idle.  Case 2 gives me hope that this
-is possible, because this is a case where I can halt the Linux kernel
-without disturbing the network access.
-
-The JTAG debugger I am using is a Green Hills Probe.  I have also tried
-with
-an Agilent E5900B Emulation Probe and seen similar behavior.
-
-Some questions:
-- Has anyone seen this before?  If so, is there a known remedy or
-workaround?  (For example, is there a kernel patch?  Is there a way to
-recover from this slowed network state?)  If not, does anyone have
-a theory to explain why I am seeing this behavior?
-- Does this occur on the BDI2000 debugger?  I don't have access to one
-of
-those, but I hear that is the best JTAG debugger for Linux.  If anyone
-can
-easily try some of these test cases on other debuggers and let me know
-the
-results, that would be helpful.
-- Is there any reason to think that the scenario I described in Case 1,
-halting the target while at the shell prompt, is something that users
-typically don't do (and hence, I shouldn't worry about it)?
-
-
-Thanks in advance,
-Jeff Mintz
-Green Hills Software
-
+##########
+##########  39, Main Pusa Road,
+###    ###  New Delhi 110005
+###    ###  India
+###
+###    ###  Phone: Office-01125753350-58
+##########
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
