@@ -1,32 +1,32 @@
-Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C664@usdfo011.usac.danfoss.net>
-From: Hihn Jason <JasonHihn@DANFOSS.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Cc: Christensen Henrik USAC <HenrikChristensen@DANFOSS.com>
-Subject: Position available for 8xx series programmer
-Date: Thu, 2 May 2002 16:56:09 +0200 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <D769D33A5A2FBD4381E1F6030D28DBFA01029C92@hq-ex-6>
+From: Brian Kuschak <bkuschak@brocade.com>
+To: "'Brad Parker'" <brad@parker.boston.ma.us>,
+	Brian Kuschak <bkuschak@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: initrd in 2.4.19
+Date: Thu, 2 May 2002 10:13:30 -0700 
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+> I want to use pivot_root, so I don't use the special /linuxrc running
+> code.  Instead I use "init=/linuxrc" as part of the command line.  If
+> you do this your first script should work fine (pivot follwed by
+> chroot).  But to be honest, I don't chroot.  I don't think it's
+> necessary.
 
-Danfoss Inc (www.danfoss.com) a world leader in industrial automation, has a
-position available for an Embedded PPC software engineer in Baltimore, MD.
-This position requires low-level experience with the 8xx series processors.
-Embedded Linux in particular, but any Linux experience is desired, but not
-required.
+Using init=/linuxrc allows my first script to work.
 
-Anyone interested is encouraged to contact my boss, Henrik Christensen at:
-HenrikChristensen@Danfoss.com or (410)931-6778 x4254
+However, it's a bit restrictive:  if I want to override the usual boot
+sequence and get the kernel to mount the real root and drop into a shell I
+can't use this method.  With the 'old-style' script, I can set
+"init=/bin/bash".  These get applied AFTER /linuxrc terminates.  If I use
+your method, I can't do that.
 
-I look forward to working with you in the future.
+I realized yesterday that my second script works if I unmount /dev/hda2
+before exiting /linuxrc.
 
-Sincerely,
-Jason Hihn
-Danfoss R&D
-
+Thanks,
+Brian
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
