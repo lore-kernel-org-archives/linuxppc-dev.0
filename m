@@ -1,33 +1,58 @@
-Message-ID: <36A6F4B2.D950794C@wanadoo.fr>
-Date: Thu, 21 Jan 1999 10:34:42 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-CC: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: pre8(vger) kills button 3 on 1-button mouse
-References: <19990120232032.031426@smtp.calvacom.fr>
+From: fritzwe.linux@tamedia.ch
+Message-ID: <XFMail.990121110545.fritzwe.linux@tamedia.ch>
 Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <19990120232032.031426@smtp.calvacom.fr>
+Date: Thu, 21 Jan 1999 11:05:45 +0100 (MET)
+Reply-To: fritzwe.linux@tamedia.ch
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: 3-button mouse
+Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        sales@mousesystems.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The latest changes for 2-to-4-button mice on vger in
-drivers/macintosh/mac_keyb.c (rev 1.24) break the emulation of button 3
-on my 1-button Apple adb mouse.
+I'm using a A/3 optical mouse from Mouse Systems 
+http://www.mousesystems.com/dld.htm
+Unfortunatly they discontinue the optical mouse but they have a 3-button ball
+mouse called MacPoint Pro which should be MacX compatible.
+I'm not sure but as far as I know they use the MouseSystems-protocoll.
+ 
+On 20-Jan-99 Benjamin Herrenschmidt wrote:
+> 
+> On Tue, Jan 19, 1999, Brent H Mundy <bmundy@indiana.edu> wrote:
+> 
+>>I have looked on the F-o-M for a supplier of 3-button mice.  All I could
+>>find were entries for installing/trouble shooting.  Can anyone suggest a
+>>3-button mouse (ADB).  I am looking to spend ~$30.  All I can find is
+>>either 2-button mice, expensive 3-button mice, or 3-button USB mice.
+>>Suggestions?  
+> 
+> Let's be off-topic too ;-)
+> 
+> I'm looking for a place where I could order one or two 3 button mice. My
+> problem is that I want mice that currently cause trouble with Linux (in
+> order to fix them of course ;-). I'm looking for a MacX compatible one,
+> and eventually one of those that needs mousehack to work but I don't know
+> where to find them since those people don't usually put the kind of
+> protocol used by their mice on the web page...
+> 
+> So if someone could give me a set (model,place_to_buy,protocol_used) I
+> would be grateful !
+> 
 
-This happens both in Xpmac, where option_right+click is hard-coded to
-button 3, and in XF68_FBDev, where I use a patch by Franz Sirl for the
-adb_buttons kernel command to get the same effect.
+Fritz
+----------------------------------
+Date: 21-Jan-99
+Time: 10:57:59
 
-The reason seems to be that in rev 1.24 option_right gets mapped to
-option_left even in raw mode (same for ctrl, BTW). I don't understand
-this from the code, which is too complicated for me, anyway, but from
-looking at the effect, as witnessed by xev in Xpmac, for example.
+TA-Media AG                             Phone +41 1 248 4732
+Telematik                                 Fax +41 1 248 5152
+Fritz Wettstein                                     
 
-For the moment, I went back to rev 1.23 which doesn't have this problem.
-
---
-Martin
+This message was sent by XFMail
+----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
