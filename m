@@ -1,32 +1,36 @@
-Date: Fri, 12 Oct 2001 05:20:11 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Sarnath Kannan <sparc64@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to download zImage into sandpoint RAM
-Message-ID: <20011012052011.B15738@cx258813-a.chnd1.az.home.com>
-References: <20011012063303.8041.qmail@mailFA8.rediffmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011012063303.8041.qmail@mailFA8.rediffmail.com>; from sparc64@rediffmail.com on Fri, Oct 12, 2001 at 06:33:03AM -0000
+Message-Id: <200110121441.JAA12950@lists.linuxppc.org>
+From: "Boerner, Brian" <bmb@pirus.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Using BK under Cygwin
+Date: Fri, 12 Oct 2001 10:45:25 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Oct 12, 2001 at 06:33:03AM -0000, Sarnath  Kannan wrote:
->
-> Hi all,
->  Gotta lot of qns..:(
->
-> I managed to download HHL-journeyman mvista,
+Has anyone been able to get bk to download the kernel sources under cygwin.
+I get the following error, which makes sense:
 
-So you spent the time to download Journeyman but you won't read
-the included documentation?
+==========================================================================
+Sfio has detected a name conflict between
+"include/linux/netfilter_ipv4/SCCS/s.i
+pt_mark.h" and "include/linux/netfilter_ipv4/SCCS/s.ipt_MARK.h";
+This usually happen when you transfer file from a case-sensitive file
+system (e.g. Unix) to a case insensitive file system (e.g FAT, NTFS)
+Please rename one of the file and retry (see also "bk helptool mv")
+==========================================================================
+write on fd gzip_in gunzip2fd: Broken pipe
+socket2pipe: reader error 2
 
-RTFM.
+I tried running the mv command, but when I start the clone again I get the
+same error. I'm pretty new to bk so I'm assuming there is a way around this.
+We've been stuck on 2.4.1-pre10 for awhile now and I want to investigate
+moving forward.
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Thanks.
+
+-bmb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
