@@ -1,62 +1,84 @@
-From: Markus Froeschle <mfro@ibm.net>
-Reply-To: mfro@ibm.net
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Powerbook G3 Problems
-Date: Sun, 13 Feb 2000 13:17:30 +0100
-Content-Type: text/plain
+Message-ID: <38A6C19F.92468821@wanadoo.fr>
+Date: Sun, 13 Feb 2000 15:37:19 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Message-Id: <00021313182503.02707@patsch.potzblitz.de>
+To: linuxppc-dev@lists.linuxppc.org
+CC: Paul Mackerras <paulus@linuxcare.com>
+Subject: Re: 2.3.43 failed
+References: <00021211003504.00821@linux.eric.fr> <00021318311301.12422@argo.linuxcare.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Paul Mackerras wrote:
 
-I have a (brand new) Powerbook G3 (bronze keyboard) with LinuxPPC 1999 installed
-(pretty much following the instructions found at www.linuxppc.com: BootX 1.2b3
-and the 'USB Lombard 2.2.12' kernel).
+> I just updated linuxcare.com.au::linux-pmac-devel to 2.3.44 final.  I
+> fixed a couple of problems where it would hang during boot if you booted
+> from OF (or with quik or yaboot) and it couldn't find the screen.  Try it
+> now.  If it doesn't work, let me know (and tell me how you are booting it).
 
-While everything works as desired, I have one annoying problem that I'm unable
-to solve although I'm quite familiar with PPC Linux (I have a 9500 running for
-years now):
+On my 6400, it compiles and boots OK, but there are some little itches:
 
-Every now and then (not exactly reproducable) after a clean shutdown, the system
-refuses to boot. On power up, I then just get the flashing question mark icon
-indicating no boot device was found. Indeed, the disk obviously does not spin
-up (silence...) and OF reports the disk as unavailable when I try to enforce
-startup by "boot hd:". Resetting the PRAM does not change anything.
+- rsync complains about "send_files failed to open
+Documentation/kernel-docs.txt: Permission denied"
 
-The first time this happened, I took the Powerbook back to the store in the
-clear assumption that the disk was defect. The technican checked the system,
-confirmed a broken disk and sent the system to warrenty repair.
-When I received it a few days later, I was just stunned that my Linux
-installation was still there and booting (obviously, they did not change the
-disk).
+- rsync copies a spurious file drivers/net/.#ppp_generic.c which is a
+dead symlink
 
-Since then, I repeatedly see the same symptoms now and then. I have found (I
-think) one way to reanimate the system: when I change the boot device in OF to
-something impossible, restart once and set boot device back to hd:,\\:tbxi
-(the default setting) the disk spins up eventually and the system boots
-(sometimes I have to repeat this sequence several times until it works).
+- during booting, there is a message
+"/proc/sys/net/ipv4/ip_always_defrag is missing - Cannot control IP
+fragmentation"
 
-The problem only happens when I do a clean shutdown from Linux (and not every
-time). Shutting down from MacOS (which I rarely use) did not lead to those
-problems yet. I'm pretty sure its not a hardware defect.
+- while using my ethernet card with the de4x5 driver, I get hundreds of
+"kernel: Warning: kfree_skb on hard IRQ c010ded8". Seeing that this
+address is inside the de4x5 driver, I tried to compile it as a module,
+so that I could also compare it to the tulip driver. Didn't work at
+first:
 
-The only reason for the problem which I can think of is that Linux changes some
-hardware settings (possibly some power saving settings ?) when running which
-prevent the disk from spinning up.
+- the tulip module loads without problem, but doesn't seem to like my
+ethernet card (DEC 21041 chip). It gives me hundreds of "kernel: eth0:
+21041 transmit timed out, status fc6800". With 2.2.14 kernels, the tulip
+module works OK.
 
-Has anybody seen this behaviour ?
-Could somebody imagine what the Apple repair folks have done when I had the
-computer "repaired" ?
+- the de4x5 module complains about missing symbols; and this is in fact
+a bug I had mentioned already some days ago. I repeat the patch below.
+It seems to be necessary, and it cures the problem. I am now on the net
+with de4x5 as a module, but I still get the warnings, now with an
+address in the module:
+Feb 13 15:06:14 rennes-231 kernel: Warning: kfree_skb on hard IRQ
+c7159770
+Feb 13 15:07:24 rennes-231 last message repeated 421 times
+Feb 13 15:12:01 rennes-231 last message repeated 97 times
+and so on.
 
-Thanks for any ideas,
-Markus
+How can I get rid of the warnings (short of disabling the line that
+produces it in net/core/skbuff.c)?
+
+Here is the patch needed by pci driver modules:
+
+--- arch/ppc/kernel/ppc_ksyms.c.ori     Fri Feb  4 10:18:20 2000
++++ arch/ppc/kernel/ppc_ksyms.c Fri Feb  4 10:28:10 2000
+@@ -11,6 +11,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/console.h>
+ #include <linux/irq.h>
++#include <linux/pci.h>
+
+ #include <asm/page.h>
+ #include <asm/semaphore.h>
+@@ -137,6 +138,9 @@
+ EXPORT_SYMBOL(__clear_user);
+ EXPORT_SYMBOL(__strncpy_from_user);
+ EXPORT_SYMBOL(__strnlen_user);
++
++EXPORT_SYMBOL(pci_alloc_consistent);
++EXPORT_SYMBOL(pci_free_consistent);
+
+ /*
+ EXPORT_SYMBOL(inb);
+
 --
-
-**********************************
-* Markus Froeschle (mfro@ibm.net *
-**********************************
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
