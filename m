@@ -1,51 +1,32 @@
-Date: Mon, 8 Feb 1999 21:01:27 -0600 (CST)
-From: Takashi Oe <toe@unlinfo.unl.edu>
-To: Beecher Greenman <rbg6038@ritvax.isc.rit.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: A different Window Maker problem
-In-Reply-To: <01J7H7PIJZ9EA3CISC@ritvax.isc.rit.edu>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.990208203524.5997A-100000@selq119.unl.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a00b2e5b9267ae5@[204.22.210.180]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 9 Feb 1999 10:22:55 +0000
+To: linuxppc-dev@lists.linuxppc.org
+From: "sean o'malley" <somalley@ed.mde.state.mi.us>
+Subject: multi networks
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I have a powerbook, and i use it on three distinctly different networks.
 
-On Sun, 7 Feb 1999, Beecher Greenman wrote:
+Is there something in the kernel that loads sort of a network lilo or like
+the location manager that will let you have multiple sets of network
+settings?
 
-> 
-> Recently I tried to install XFree86 on my R4 system. I downloaded the 
-> 3.3.3.1 binaries from ftp.xfree86.org, and everything installed fine. 
-> However, now Window Maker refuses to start. WHen it tries, it complains 
-> about an error in the shared libs...
-> 
-> wmaker:error in loading share libraries
-> : undefined symbol _Xsetlocale
+My thinking on this is that it would just pop up a short menu before
+loading the network settings. than it would just copy or link the files
+from a master set, like location1.hosts (converesly hosts.location1) and
+than it could load the correct network setting. for the network your on.
+or maybe even change them on the fly after boot. this would also have to
+include swtiching from DHCP, modem and different static ip's.
 
-This is because X libs from ftp.xfree86.org are compiled without
--DX_LOCALE.
+or is there already soemthing like this?
 
-> 
-> No indication of what library to use or anything. A recompile did not 
-> appear to solve the problem. Other windowmanagers compile and run fine. I 
-
-You might have a mixture of things in your system.  All of your X apps 
-which use X's locale will refuse to run since the locale support is not
-compiled in.  If you want to continue using the binaries from the xfree86
-site, make sure there is no -DX_LOCALE or something similar when you
-compile Window Maker or any other X apps that may need X's locale.
-
-It would be nice if glibc-1.99 based X libs available at ftp.xfree86.org
-are compiled with -DX_LOCALE for compatibility since most glibc-1.99 based
-X apps available for ppc platform are compiled with -DX_LOCALE.
-
-For glibc-2.1 based libs or X apps, however, -DX_LOCALE is no more.  We
-have got the semi-working locale support from glibc now.
+Sean
 
 
-Takashi Oe
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
