@@ -1,114 +1,121 @@
-In-Reply-To: <Pine.LNX.4.44.0312311512580.23214-100000@opal.biophys.uni-duesseldorf.de>
-References: <Pine.LNX.4.44.0312311512580.23214-100000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0 (Apple Message framework v609)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <397B64FE-3BA7-11D8-969D-0003938E434C@sympatico.ca>
-Cc: debian-powerpc@lists.debian.org,
-	<linuxppc-dev@lists.linuxppc.org>, Andreas Schwab <schwab@suse.de>
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-Subject: Re: 2.6.0-ben3: Badness in redraw_screen
-Date: Wed, 31 Dec 2003 10:37:21 -0500
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+From: praveen.nale@wipro.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: pci mbx860
+Date: Mon, 1 Dec 2003 13:47:01 +0530
+Message-ID: <19DC990402F5E9438197A8DFAEE8131F72F4D3@blr-ec-msg01.wipro.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
+I could get PCI working on MBX860 with few changes to
+qspan_pci.c file (see the patch below) on linux-2.4.21. Do
+note that there are many copies of this file in different
+directories (arch/ppc/kernel, arch/ppc/syslib,
+arch/ppc/boot/simple). The one in boot/simple seems to be the
+older one (qspan_init not required as PPC-BUG bootloader
+initializes QSPAN correctly). I had patched the file in
+ppc/kernel for linux-2.4.2x. Seems it is now moved to
+ppc/syslib in linux-2.5/6 versions.
 
-In the first hunk of your patch you can possibly grab the semaphore and
-then do a return 1 with the semaphore held.
+Another tip if you are working on MBX860 board. Both of my
+boards had -12V on PC104-Plus bus missing! Do check pin A30 on
+PC104+ for -12V. I had to provide an external -12V supply for
+the PCI cards to make them work!
 
-If you really need to hold the semaphore to do a vc_allocate then you
-should remember to release that semaphore before doing the return 1
+HTH...
 
-So something along the lines of ...
+Regards,
+Praveen.
 
-acquire_console_sem();
-if (vc_allocate(SUSPEND_CONSOLE)) {
-    release_console_sme();
-    return 1;
-}
+------% start of qspan.c patch %-------
+--- qspan_pci-orig.c	2003-11-18 17:04:45.000000000 +0530
++++ qspan_pci.c	2003-11-24 09:21:58.000000000 +0530
+@@ -83,7 +83,7 @@
+ 		"	.align 2\n"                   \
+ 		"	.long 1b,3b\n"                \
+ 		".text"                             \
+-		: "=r"(x) : "r"(addr) : " %0")
++                : "=r"(x) : "r"(addr) : "%0")
 
-would be better I think if you really do need to hold the console_sem()
-before calling vc_allocate.
+ #define QS_CONFIG_ADDR	((volatile uint *)(PCI_CSR_ADDR + 0x500))
+ #define QS_CONFIG_DATA	((volatile uint *)(PCI_CSR_ADDR + 0x504))
+@@ -363,17 +363,53 @@
+     return PCIBIOS_DEVICE_NOT_FOUND;
+ }
 
-Kevin
++#define pcibios_access(host,rw,size,type)                         \
++int host##_pci_bios_##rw##_config_##size (struct pci_dev *dev,    \
++		int pos, type value)                                   \
++{                                                                 \
++	return host##_pcibios_##rw##_config_##size (dev->bus->number,\
++			dev->devfn, pos, value);
+\
++}
++
++pcibios_access(qspan, read, byte, u8 *)
++pcibios_access(qspan, read, word, u16 *)
++pcibios_access(qspan, read, dword, u32 *)
++pcibios_access(qspan, write, byte, u8)
++pcibios_access(qspan, write, word, u16)
++pcibios_access(qspan, write, dword, u32)
++
++#define set_config_access_method(host)   \
++static struct pci_ops pci_root_ops = {   \
++	host##_pci_bios_read_config_byte,   \
++	host##_pci_bios_read_config_word,   \
++	host##_pci_bios_read_config_dword,  \
++	host##_pci_bios_write_config_byte,  \
++	host##_pci_bios_write_config_word,  \
++	host##_pci_bios_write_config_dword  \
++}
++
++set_config_access_method(qspan);
++
+ void __init
+-m8xx_pcibios_fixup(void))
++m8xx_pcibios_fixup(void)
+ {
+-   /* Lots to do here, all board and configuration specific. */
+ }
 
+ void __init
+-m8xx_setup_pci_ptrs(void))
++m8xx_setup_pci_ptrs(void)
+ {
+-	set_config_access_method(qspan);
++	struct pci_controller *hose = NULL;
 
+-	ppc_md.pcibios_fixup = m8xx_pcibios_fixup;
+-}
++/*        ppc_md.pcibios_fixup = m8xx_pcibios_fixup;*/
++
++	hose = pcibios_alloc_controller ();
++	if (!hose)
++	{
++		printk(KERN_ERR "PCI:Unable to allocate hose\n");
++		return;
++	}
++	hose->ops = &pci_root_ops;
 
-On Dec 31, 2003, at 9:15 AM, Michael Schmitz wrote:
++	hose->first_busno = 0;
++	hose->last_busno = 0xff;
++}
 
-> [CC to debian-powerpc as this was reported there as well ...]
->
->>> I'm getting this badness in redraw_screen when my iBook wakes up with
->>> 2.6.0-ben3:
->>>
->>> Badness in redraw_screen at drivers/char/vt.c:596
->>> Call trace:
->>>  [c000bd50] dump_stack+0x18/0x28
->>>  [c0008c44] check_bug_trap+0x84/0xac
->>>  [c0008d34] ProgramCheckException+0xc8/0x180
->>>  [c00082cc] ret_from_except_full+0x0/0x4c
->>>  [c015a94c] redraw_screen+0x2c/0x1e0
->>>  [c00376b4] pm_restore_console+0x38/0x48
->>>  [c039ef14] 0xc039ef14
->>>  [c039f468] 0xc039f468
->>>  [c039fdc8] 0xc039fdc8
->>>  [c00701d0] sys_ioctl+0x278/0x2f4
->>>  [c0007d0c] ret_from_syscall+0x0/0x4c
->>>
->>
->> Similar badness can be had in set_origin (vt.c:568) and set_palette
->> (vt.c:2851), on my Lombard. That's called from pm_prepare_console,
->> for a
->> change.
->>
->>> (The three unnamed frames are inside pmac_wakeup_devices,
->>> powerbook_sleep_Core99 and pmu_ioctl).  Does pm_restore_console need
->>> to acquire the console lock, or is that the duty of the callers?
->>
->> None of the other callers does this so I'd guess it needs to be done
->> in
->> pm_restore_console (and pm_prepare_console).
->
-> The following patch works for me... should we submit that to lkml?
->
-> 	Michael
->
-> --- kernel/power/console.c.org	2003-12-31 14:08:04.000000000 +0100
-> +++ kernel/power/console.c	2003-12-31 14:09:26.000000000 +0100
-> @@ -20,12 +20,12 @@
->  #ifdef SUSPEND_CONSOLE
->  	orig_fgconsole = fg_console;
->
-> +	acquire_console_sem();
->  	if (vc_allocate(SUSPEND_CONSOLE))
->  	  /* we can't have a free VC for now. Too bad,
->  	   * we don't want to mess the screen for now. */
->  		return 1;
->
-> -	acquire_console_sem();
->  	set_console(SUSPEND_CONSOLE);
->  	release_console_sem();
->  	if (vt_waitactive(SUSPEND_CONSOLE)) {
-> @@ -42,12 +42,14 @@
->  {
->  	console_loglevel = orig_loglevel;
->  #ifdef SUSPEND_CONSOLE
-> +	acquire_console_sem();
->  	set_console(orig_fgconsole);
->
->  	/* FIXME:
->  	 * This following part is left over from swsusp. Is it really needed?
->  	 */
->  	update_screen(fg_console);
-> +	release_console_sem();
->  #endif
->  	return;
->  }
->
->
->
+------% End of qspan.c patch %-------
 
+ -----Original Message-----
 
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+ Subject: pci mbx860
+ From: Amit.Lubovsky@infineon.com
+ Date: Wed, 5 Nov 2003 09:07:38 +0100
+
+ I have to implement pci on MBX860 since the current code is
+ broken (I use 2.4.20 kernel from denx), Could anybody point me
+ to a sample implementation of pci as a starting and reference
+ point ?
+
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
