@@ -1,31 +1,45 @@
+Message-Id: <026501bed2d7$042f4180$232cd8c2@scigen.co.uk>
+From: "Neil Piercy" <npp1@scigen.co.uk>
+To: "Tom Rini" <trini@disparity.net>,
+        "Johnnie Peters" <jpeters@phx.mcd.mot.com>
+Cc: "Matt Porter" <mmporter@home.com>, "VALETTE Eric" <valette@crf.canon.fr>,
+        <linuxppc-dev@lists.linuxppc.org>
+References: <Pine.BSF.3.96.990719184634.50420O-100000@silver.teardrop.net>
+Subject: Re: Is the vger 2.2 kernel branch dead
+Date: Tue, 20 Jul 1999 18:40:53 +0100
 Mime-Version: 1.0
-Message-Id: <v04210100b3ba5a637b89@[128.32.182.85]>
-In-Reply-To: <199907200502.AAA26510@lists.linuxppc.org>
-References: <199907200502.AAA26510@lists.linuxppc.org>
-Date: Tue, 20 Jul 1999 10:08:06 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Brian C Burke <bcburke@socrates.berkeley.edu>
-Subject: Re: SANE
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
->Brad Midgley <brad@pht.com> wrote
-> >> concluded that the problem was either with the scsi generic driver (sg),
-> >> or with the scsi driver (53C94).
->
-> >i remember paul saying something about no reconnect support back when we
-> >were trying to get cdrecord to work.
->
-> >could someone with an adaptec scsi card try sane?
->
->For what its worth, I have SANE 1.0.1 working without problems with 
->R5 and kernel 2.2.10 which I compiled with the sg drivers. The 
->machine is a rev1 G3 233 with a UMAX 610s on the internal scsi bus.
+----- Original Message -----
+From: Tom Rini <trini@disparity.net>
+To: Johnnie Peters <jpeters@phx.mcd.mot.com>
+Cc: Matt Porter <mmporter@home.com>; VALETTE Eric <valette@crf.canon.fr>;
+<linuxppc-dev@lists.linuxppc.org>
+Sent: 19 July 1999 23:47
+Subject: Re: Is the vger 2.2 kernel branch dead
 
-  Brian
+
+> On Mon, 19 Jul 1999, Johnnie Peters wrote:
+>
+> Try putting 'em vs 2.3.x.  I think right now the push is to fix all the
+> little annoyances/problems that we're stuck w/ in 2.2.x and move forward
+> in 2.3.x.  Then backport things later on.
+
+I thought 2.2.x was meant to be the stable branch and 2.3.x the dev ?  It
+seems strange to back-port fixes to known bugs in the stable branch from a
+dev branch which is frequently broken - or do I misunderstand ? Stable
+doesnt equal frozen in my book.
+
+Neil
+> ---
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
