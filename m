@@ -1,48 +1,33 @@
-To: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: vmlinx and ppcboot 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 13 Jan 2003 10:09:29 PST."
-             <3E2300D9.70307@redswitch.com>
-Date: Mon, 13 Jan 2003 19:44:54 +0100
-Message-Id: <20030113184459.55ED3C608E@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Mark Chambers <markc@mail.com>
+Reply-To: markc@mail.com
+Subject: Control-C in bash ???
+Date: Mon, 13 Jan 2003 14:09:00 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Message-Id: <200301131409.00113.markc@mail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3E2300D9.70307@redswitch.com> you wrote:
->
-> After 'make zImage', here comes the error message.
+On a PC, I can, for instance, enter "ping 192.168.1.4", then hit Control-C
+and stop the ping.  For the life of me, I can't figure out how to do the
+same on my MPC860 system!!!
 
-zImage is not the correct build target if you intend to use U-Boot  /
-PPCBoot. Try "make pImage" instead.
+I have an MPC860 running 2.4.19, with a mostly unmodified eldk distribution
+from Wolfgang Denx.  I did modify the init script to use /dev/console instead
+of /ttyx (standard driver using SMC1).  I'd not only like a solution, I want
+to undertand how cancelling a shell command is supposed to work  - I've poked
+around and I can't figure out what's supposed to happen - Does the shell
+generate a SIGINT, or the uart driver, or what?  Any enlightenment will be
+greatly appreciated...
 
-> misc-embedded.o: In function `decompress_kernel':
-> misc-embedded.o(.text+0x28): undefined reference to `embed_config'
-> make[2]: *** [zvmlinux] Error 1
+Mark Chambers
+markc@mail.com
 
-This is not appropriate for use with U-Boot / PPCBoot.
+-------------------------------------------------------
 
-> The comments on embed_config.c say that functions in that file are for
-> those embedded 8xx boards that do not have boot monitor support for
-
-Right.
-
-> Since I already have ppcboot running, I think I don't need any
-> embed_config stuff, or even boot stuff. Right?
-
-Right.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The human mind treats a new idea the way the body  treats  a  strange
-protein - it rejects it.                                 - P. Medawar
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
