@@ -1,24 +1,24 @@
-Return-Path: <sheutlin@gmx.de>
-Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id B68102BF0E
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 08:33:38 +1100 (EST)
-From: Sebastian Heutling <sheutlin@gmx.de>
+Return-Path: <sydneymartin@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
+	by ozlabs.org (Postfix) with ESMTP id 418202BF07
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 15:15:39 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 70so74598wra
+	for <linuxppc-dev@ozlabs.org>; Sun, 02 Jan 2005 20:15:35 -0800 (PST)
+Message-ID: <855e88d0050102201540148511@mail.gmail.com>
+Date: Sun, 2 Jan 2005 23:15:35 -0500
+From: Mike Martin <sydneymartin@gmail.com>
 To: Sven Luther <sven.luther@wanadoo.fr>
-In-Reply-To: <20050102093908.GA25739@pegasos>
-References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
-	<41CF77A9.9040405@gmx.net> <20041231095557.GA16480@pegasos>
-	<1104505249.6794.5.camel@weizen.left.earth>
-	<20041231222808.GB8078@pegasos>
-	<1104623790.10369.14.camel@weizen.left.earth>
-	<20050102093908.GA25739@pegasos>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Sun, 02 Jan 2005 22:33:37 +0100
-Message-Id: <1104701617.7898.12.camel@weizen.left.earth>
+In-Reply-To: <855e88d00501011715633922b2@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org,
-	Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
-Reply-To: sheutlin@gmx.de
+Content-Type: text/plain; charset=US-ASCII
+References: <20050101150055.GA15400@pegasos>
+	<200501011630.j01GUP1R007603@arbas.nms.ulrich-teichert.org>
+	<20050101165758.GA18559@pegasos>
+	<855e88d00501011715633922b2@mail.gmail.com>
+Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org
+Subject: Re: 43p-140 install issues
+Reply-To: mikemartin@linux.ca
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,88 +28,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-01-02 at 10:39 +0100, Sven Luther wrote:
-> On Sun, Jan 02, 2005 at 12:56:29AM +0100, Sebastian Heutling wrote:
-> > On Fri, 2004-12-31 at 23:28 +0100, Sven Luther wrote:
-> > > On Fri, Dec 31, 2004 at 04:00:49PM +0100, Sebastian Heutling wrote:
-> > > > On Fri, 2004-12-31 at 10:55 +0100, Sven Luther wrote:
-> > > > > On Mon, Dec 27, 2004 at 03:47:05AM +0100, Christian wrote:
-> > > > > > Marc Dietrich schrieb:
-> > > > > > >Hi all,
-> > > > > > >
-> > > > > > >I read this thread about booting a PowerStack with newer kernels. 
-> > > > > > >Motivated by this, I tried to compile a 2.6.10 kernel on my machine (with 
-> > > > > > >sym53c825a onboard). Sadly, the scsi controller always timeouts during 
-> > > > > > >initialisation. I 
-> > > > > 
-> > > > > I also have some strange issues with network support using the standard debian
-> > > > > 2.6.8 kernel. ifconfig upping the decchip ethernet on the powerstack freezes
-> > > > > the kernel, and i hear reports of problems on IBM PReP hardware too with not
-> > > > > working ethernet, altough there is no freeze.
-> > > > > 
-> > > > > Any idea on this ? 
-> > > > 
-> > > > Does it contain the IRQ patch? Where does it boot from SCSI or net? What
-> > > > PCI-Devices are installed?
-> > > 
-> > > Probably not, just the standard debian kernel, i donÃ't remember any irq
-> > > patches, but there where a bunch of patches from leighbb. it is done
-> > 
-> > The patch is the one that is included in 2.6.10 which is mentioned above
-> > and this thread already has somewhere in the beginning. I attached it
-> > below.
-> > I haven't had the time yet to test the 2.6.10 kernel. Maybe there is
-> > another problem now ...
+Now I'm very confused .... on my next reboot ... the network wouldn't
+work. After much trial and error, I got the current unstable d-i image
+to work. It did it all right up to the reboot (where is warns you that
+it doesn't have a boot loader installed).
+
+Now what!
+
+I have an installed system, but I can't figure out how to boot it! I
+have /boot/vmlinux on /dev/sdb1 and a root on /dev/sdb1. How do I
+write a boot sector or tell OpenFirmware to boot from this file? I
+tried to netboot and set root=/dev/sdb1 - but without the scsi modules
+loaded it fails to read the drives and panics.
+
+I think I neet to create a type 41 PReP boot partition and get the
+kernel onto it. I've found this thread:
+http://lists.gnu.org/archive/html/bug-parted/2002-09/msg00016.html
+
+and this:
+http://www.yellowdoglinux.com/support/solutions/champion_server/rs6k.shtml
+
+I tried booting up with the installer, going to a shell after the scsi
+was active and the installed system was mounted. I used sfdisk from
+/target/sbin to create a 10 Meg type 41 partition on the first HD
+(/dev/sdb0 eventually). I used dd to copy /target/boot/vmlinux to this
+partition. But it still won't boot.
+
+I'm very close. If I can get the system to boot (really it needs to
+boot itself - not netboot) I'd call this a success.
+
+Thanks!
+MikeM
+
+
+
+
+On Sat, 1 Jan 2005 20:15:13 -0500, Mike Martin <sydneymartin@gmail.com> wrote:
+> I can boot with this image:
+> http://debian.yorku.ca/debian/dists/testing/main/installer-powerpc/current/images/powerpc/netboot/vmlinuz-prep.initrd
 > 
-> The one with three lines of modified irq lines from tom rini ? I found it in
-> google, but i also saw another bunch of prep changes which got in 2.6.9 i
-
-Hmmm ... I didn't realise any other prep changes in 2.6.9
-
-
-> think. Since debian is still using 2.6.8 and a bunch of backports, these may
-> be relevant, i think.
-
-You mean debian/testing?
-
-
+> And things seems to go very well. Network configures, hard drives
+> partition, it dies at "Install the base system"  with "The debootstrap
+> program exited with an error (return value 255)." It instructs me to
+> check /var/log/messages which now contains: "execv: No such file or
+> directory"
 > 
-> Also, i think for some reason i was unsubscribed while the list moved to
-> ozlab, and lost maybe the start of the thread, thanks for the attachement.
-
-That explains a lot ;-)
-
-
+> The previous step, partitioning, added:
+>   "No matching physical volumes found
+>   No volume groups found
+>   Reading all physical volumes.  This may take a while..."
 > 
-> > > netbooting, and the only pci device installed is the cirruss logic graphic
-> > > card.
-> > 
-> > If you use the standard debian kernel - ok, it doesn't work because of
-> > wrong IRQs on the PowerstackII (Utah).
+> Anyone?
 > 
-> Which i will now fix now that i am aware of the problem. There seem to be also
-> a problem on IBM prep hardware, may it be related ?
-
-Looking at the IRQ tables in prep_pci.c it very possible. There are a
-lot structures which have a lot of low numbered slots initialised to 0.
-Might be that its the same problem: PCI slotnumbering has changed
-resulting in wrong used entries in this tables. People should look at
-this particular place if they have problems like lost interrupts, kernel
-output saying that a device got IRQ 0, timeouts or something like that.
-
+> MikeMartin
 > 
-> > BTW: The onboard Winbond IDE chip works as well although no connector is
-> > provided. You only need a little bit of soldering and adjusting the IRQ
-> > of Slot 1 from 0 to 4. :-)
-> 
-> Ah, wondered about that, and saw the slots are not soldered. I wonder why go
-> to all the trouble including a IDE chip, but not solder the connectors. Seems
-> to me like peanut savings or something.
-
-I am not sure but I think there are two versions of this machine: One
-with only IDE connectors and one with only SCSI connector.
-But to be honest: I don't know as well why they didn't solder all
-connectors.
-
-
-Sebastian Heutling
+> On Sat, 1 Jan 2005 17:57:58 +0100, Sven Luther <sven.luther@wanadoo.fr> wrote:
+> > On Sat, Jan 01, 2005 at 05:30:25PM +0100, Ulrich Teichert wrote:
+> > > Hi,
+> > >
+> > > [del]
+> > > >I would prefer that we fix the debian kernels for them to work correctly
+> > > >though. More on this on monday.
+> > >
+> > > I failed to configure a stock 2.4.28 kernel to detect the SCSI controler.
+> > > I think some of Leigh patches for this must be applied, but I haven't
+> > > gone any further.
+> >
+> > I had some report on a power3 box, that only the SMP sym53c8xx driver worked.
+> > When configuring in UP mode,
+> >
+> > > [del]
+> > > >Do the debian 2.4.27 kernel work on it ? I was unable to boot the 2.4.27 d-i
+> > > >kernel on my powerstack, but this is a different machine, so the issues may be
+> > > >a bit different.
+> > >
+> > > I've only tried the Woody PREP kernel, which failed in a way which I can't
+> > > remember, but I'll give it a try.
+> >
+> > Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel too.
+> > Let' try to get this fixed before the sarge release, which is not so far off
+> > now.
+> >
+> > Friendly,
+> >
+> > Sven Luther
+> >
+> >
+>
