@@ -1,34 +1,43 @@
-Date: Mon, 10 Apr 2000 22:01:13 +1000 (EST)
-From: Alan Modra <alan@linuxcare.com.au>
-To: Graham Stoney <greyham@research.canon.com.au>
-cc: linuxppc-dev@lists.linuxppc.org, linux-kernel@vger.rutgers.edu
-Subject: Re: PATCH: requesting feedback on dead function optimisation
-In-Reply-To: <20000410110011.A273F3C960@elph.research.canon.com.au>
-Message-ID: <Pine.LNX.4.21.0004102155180.4828-100000@front.linuxcare.com.au>
+Message-ID: <38F2771D.11CE9CE@denise.shiny.it>
+Date: Mon, 10 Apr 2000 20:51:41 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: DeRobertis <derobert@erols.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: External clocking a serial port?
+References: <l03130303b51671946984@[216.164.128.178]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 10 Apr 2000, Graham Stoney wrote:
-
-> Alan Modra writes:
-> > Graham, I suspect that if you create a custom linker script that tells ld
-> > where to put your .init.* sections, then you won't need the patch.
+DeRobertis wrote:
 >
-> I'm not sure how that would help. The problem is that the order of the
-> individual .text.__FUNCTION__ sections is different to the order of the
-> combined entries in the __ex_table section. The .init.* stuff is something
-> else entirely.
+> To run a Mac serial port at 1.8Mbps like the Epson Stylus Color 740's
+> docs say it can, you need external clocking.
+>
+> I'm guessing the Stylus Color 740 is sending out the proper clock to do
+> so -- and no doubt that would take out Linux using the crtscts option !
 
-Sorry, I was forgetting which sections were getting reversed.  Create a
-linker script with an entry like
-  *(.text.*)
-in section .text then.
+Hmm, It's possible...
 
---
-Linuxcare.  Support for the Revolution.
+> The clock input and remote side ready just happen to occupy the same
+> pin. That would explain it flapping the ready so many times per second.
+>
+> How do I turn on external clocking under linux?
+
+You have to hack the driver:
+
+[macserial.h]
+
+#define EXTSYNC         0x30    /* External Sync Mode */
+
+and
+
+/* Write Register 11 (Clock Mode control) */
+
+
+Bye.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
