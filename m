@@ -1,49 +1,32 @@
-Date: Thu, 14 Nov 2002 11:06:09 +0500 (GMT+0500)
-From: Atm account <linux2@cdotd.ernet.in>
+Message-ID: <6DF87017DA95D611AC6000606730DE9B0EC0CC@BLREXSR>
+From: Nageswari S <nageswari@sanyo.co.in>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problem in booting PPC with kernel 2.5.44 
-Message-ID: <Pine.OSF.4.10.10211141105320.4936-100000@moon.cdotd.ernet.in>
+Subject: USB Host Controller Problem
+Date: Thu, 14 Nov 2002 12:52:56 +0530
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All,
-  We are porting Linux 2.5.44 for our custom board which has
- 603e processor..
-    We are using the arch/ppc/boot/simple bootloader with minor
-modifications. At the end of boot-code relocation to 8 Mb, the code jumps
-to the relocated code and thereafter
-does the decompression (decompress_kernel)of the vmlinux image to physical
-address 0 and jumps to the 0th location (3 nops followed by code). It is
-from here that early_init is called.
-    Now the problem is ... the kernel has been linked at 3GB and a call in
-kernel/head.S which says ---
-       bl early_init
-translates to sth like =>    bl 0Xc000xxxx
-   I dont have the MMU on at this point nor any dual mapping being done
-thru the BATs. So how is the above code supposed to execute ?????
-Our board precisely hangs after this jump.
+Hi,
 
-Also, later in the same file (kernel/head.S) i have a piece of code which
-goes like ...
+I have a custom PowerPC baord based on IBM 405 core with "No PCI".
 
-        bl      mmu_off
-__after_mmu_off:
-        bl      clear_bats
-        bl      flush_tlbs
+I have my USB Host controller (OHCI) based with HC registers from
+0xef601200.
 
-        bl      initial_bats
+When I access these address locations, I am getting kernel panic with
+machine check interuupt.
 
-after doing a mmu_off (disabling translations) we again do branches which
-actually translate to the 3Gb addresses. How r they supposed to execute ?
+Is there any special setting to enable IO address range.
 
-  Can somebody pls explain ..
+Any help or suggestion will be very helpful...
 
-thanx in advance :)
-
-Nishant
+Thank you,
+Regards,
+Nageswari
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
