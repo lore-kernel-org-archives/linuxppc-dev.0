@@ -1,38 +1,41 @@
-Message-ID: <3AF748FF.E308BF0C@mvista.com>
-Date: Mon, 07 May 2001 21:16:47 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Michael Habermann <MHabermann@gmx.de>
-Cc: machael thailer <dony.he@huawei.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Message-ID: <000f01c0d75f$5ae07ba0$8021690a@huawei.com>
+From: "machael thailer" <dony.he@huawei.com>
+To: "Dan Malek" <dan@mvista.com>
+Cc: "Wolfgang Denk" <wd@denx.de>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <001d01c0d5c8$27ae8c60$8021690a@huawei.com> <3AF6F323.7944F695@mvista.com>
 Subject: Re: Uncompress Ok, but cannot run linux kernel...
-References: <5.0.2.1.0.20010508085652.00a4aec0@pop.gmx.de>
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 8 May 2001 09:36:50 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Michael Habermann wrote:
+>
+> machael thailer wrote:
+> > ..... But I met
+> > some urgent problems ...
+> >     I modified the bootloader codes according to arch/ppc/mbxboot/head.S
+>
+> For starters, you shouldn't be using this "boot loader" for a 750.....
+> How did you configure a kernel to get there in the first place?
+> A 750 should be a CHRP (or PReP, if you have to.....), which will
+> direct you to a working "chrpboot" boot loader.
 
-> I have the same problem on an FADS board.
+Yes, I choose "6xx/7xx/74xx/8260" and "/PowerMac/PRep/MTX/CHRP" when
+configuring the kernel.
+Now I find that something is wrong with my serial output codes. When I fix
+it , I can trace into arch/ppc/kernel/head.S now.
+But it hangs after running "turn_on_mmu". That is to say, it should be able
+to run "start_here" (but it cannot .)
+By the way , I find that "initial_bats" do 2 different branches according to
+whether PVR is 601 or 604. I don't know which branch will 750 do?
 
-What "same" problem?  How are you loading and tracing the kernel?
+Thank you very much.
 
-> ......... So it maybe works if the image
-> is used without bootloader or by changing head.S.
+machael
 
-The image certainly won't work without any bootloader, whether it
-is PPCBoot or the code found in arch/ppc/mbx (or arch/ppc/boot/mbx
-depending on your source base).  The kernel requires a bunch of
-registers and information set up before it is called, and one of
-those two methods must be used to ensure this happens.
-
-I believe there is a working FADS port in the FSM Labs BitKeeper
-sources.  If not, you can download the older 2.4.0-test2 LSP from
-MontaVista and use it as a guide for updating a later kernel.  The
-changes are very minor.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
