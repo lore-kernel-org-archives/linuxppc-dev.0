@@ -1,24 +1,27 @@
-Date: Wed, 10 May 2000 21:18:33 +0200 (CEST)
+Date: Wed, 10 May 2000 21:21:10 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Bernhard Reiter <bernhard@intevation.de>
-cc: linuxppc-dev@lists.linuxppc.org
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+cc: Bernhard Reiter <bernhard@intevation.de>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Lombard hard freeze (update: mem>64MB)
-In-Reply-To: <20000510192813.B2162@cheops.usf.Uni-Osnabrueck.DE>
-Message-ID: <Pine.LNX.4.10.10005102116390.2625-100000@opal.biophys.uni-duesseldorf.de>
+In-Reply-To: <Pine.LNX.3.96.1000510104735.21621B-100000@deepspace.mklinux.org>
+Message-ID: <Pine.LNX.4.10.10005102120070.2625-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> It would so nice to have a person who can debug it.
+> > As about the power consumption and the heat: It is my understanding that
+> > the fan should start up when there is too much heat controlled by
+> > hardware. But the fan does not start. And freezes also occur when the
+> > machine itself it cold. I also do not quite understand how the power
+> > consumption could be a problem here.
+>
+> Me either.  I think the fan is started automagically in hardware anyway.
+> At least I'm pretty sure it was on the wallstreet....
 
-Send me a memory module :-)
-
-Does this mean I was lucky to get only 64 MB, or to get a working 64MB
-module?
-
-How much RAM does Paul have in his Lombard?
+It's supposed to start automagically. I've never noticed that happen
+though. Maybe this summer :-)
 
 	Michael
 
