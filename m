@@ -1,29 +1,28 @@
-Message-ID: <3C4C9375.8F09A6E3@labs.mot.com>
-Date: Mon, 21 Jan 2002 16:17:25 -0600
-From: Steve Rossi <srossi@labs.mot.com>
+Message-ID: <35C119252057D511BB9F0003476BF8A298BDB7@freexc01.smartm.com>
+From: "Prasad, Siva" <Siva.Prasad@smartm.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: NFS root using GT 64260 Ethernet...
+Date: Mon, 21 Jan 2002 15:13:03 -0800
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: HardHat Journeyman 2.0 & RH7.2
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Has anyone gotten HHL Journeyman 2.0 running under RedHat7.2? I can
-install it by hacking the installation script (same as I did to install
-in on RH 7.1) but kernels that I compile on RH7.2 don't match the same
-kernel compiled under RH7.1, nor does it boot.
-Any suggestions?
+Hi,
 
-Steve
+I am able to get Linux with ramdisk working on our custom board based on PPC
+750 and GT64260 controller. I am able to ping outside network with Ethernet
+1 of GT64260.
 
---
--------------------------------------------------------
-Steven K. Rossi                     srossi@labs.mot.com
-Staff Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
+Now, I enabled NFS root file system. But it complains "No NFS server found"
+etc. But I don't see any BOOTP requests going out of the GT 64260 Ethernet.
+I am sure that the Ethernet driver is initialized before even NFS related
+messages comes up.
 
+Can some one help me out with this.
+
+--Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
