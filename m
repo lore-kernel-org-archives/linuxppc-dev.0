@@ -1,33 +1,31 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <903E17B6FF22A24C96B4E28C2C0214D7012BB489@sr-bng-exc01.int.tsbu.net>
-From: "Karoliya, Abhishek" <Abhishek.Karoliya@fci.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: printk logbuf relocation 
-Date: Sat, 14 Feb 2004 17:45:16 +0530
+Message-ID: <402E2841.9020700@jonmasters.org>
+Date: Sat, 14 Feb 2004 13:53:05 +0000
+From: Jon Masters <jonathan@jonmasters.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Peter Ryser <Peter.Ryser@xilinx.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ml300 boot loader question
+References: <20040211214947.87373.qmail@web21110.mail.yahoo.com> <402CEC30.9060503@xilinx.com>
+In-Reply-To: <402CEC30.9060503@xilinx.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Wolfgang,
 
-    Thanks for the pointers
+Peter Ryser wrote:
 
+| downloads the Linux kernel into main memory, and boots Linux.
 
->>See  the  CONFIG_LOGBUFFER  option  in  the
->>linux-2.4 kernel tree on our CVS server.
-   I did a cvs co for linuxppc_2_4_devel from your server. But greping for
-CONFIG_LOGBUFFER produced no results . Is this feature in some other tree or
-under some other CONFIG_*.
-Please help with in locating it.
-However I ran through the section of the code in UBOOT{u-boot-1.0.2} which
-provides for such support.
->>If running U-Boot on your board is not an option
-Love to have u-boot on our board and pushing for it...
+Has anyone here had problems with designs that work fine when built with
+EDK 3.2 subsequently falling over completely with EDK 6.1?
 
-Best regards,
-Abhishek
+At the moment I am debugging a possible issue with memory controller
+logic and would love to hear these are known issues with fixes.
+
+Cheers,
+
+Jon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
