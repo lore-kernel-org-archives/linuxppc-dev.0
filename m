@@ -1,35 +1,40 @@
-Message-Id: <200008081431.PAA08490@hyperion.valhalla.net>
-Date: Tue, 08 Aug 2000 15:31:29 +0100
-Subject: Re: rtc again...
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Gabriel Paubert <paubert@iram.es>, benjamin herrenschmidt <bh40@calva.net>,
-        martin costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <39902BE4.44DE97C1@ivey.uwo.ca>
+Date: Tue, 08 Aug 2000 11:48:52 -0400
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: How to get up-to-speed on the 3D / DRI in Rage 128
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Tue, Aug 8, 2000,  Geert Uytterhoeven wrote:
-> On Tue, 8 Aug 2000, Iain Sandoe wrote:
->> I seems to me (in summary) [since I started this thread :-) ]:
->>
->> we can:
->>
->> (a) Fix up time in the kernel to emulate UTC
->> (b) Fix up time in the kernel to emulates Local Time
->
-> Please also think about people who really run their RTC in UTC, who don't run
-> MacOS anymore, or who simply don't have a PowerMac.
+Hi,
 
-It was never my intention to suggest otherwise - as (I'm sure) I'm on record
-as saying - I've used all of 'em and have no particular favourites or axe to
-grind :-)
+I am about to start the Java 3D port to ppc and wanted to get some accelerated
+3D capabilities for rage 128 going first.
 
-I *would* like a working solution for those of us whose machines include
-pmac and still need MacOS for some jobs.
+I have noticed a few patches fly by recently on exactly this issue (also fixes
+to panning, etc).
 
-Iain.
+What is the best way to get up to speed quickly here?
+
+I have the xf 401 src tar archives and I can get a hold of ani's cvs of the
+xfree86 tree.
+
+What other patches/fixes do I need to get going?
+
+- aty128fb.c patches for panning?
+- DRI patches?
+- etc
+
+Any quick pointers would be greatly appreciated.
+
+BTW: We really do need a developers searchable patch archive for major systems
+like XFree 4.0, the kernel, drivers, gcc, binutils, glibc, etc
+
+Thanks
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
