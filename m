@@ -1,25 +1,27 @@
-Date: Mon, 6 Mar 2000 13:28:59 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: David Monro <davidm@amberdata.demon.co.uk>
-cc: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: bootloader ideas
-In-Reply-To: <38C355B5.951735EB@amberdata.demon.co.uk>
-Message-ID: <Pine.HPX.4.10.10003060942140.2213-100000@gra-ux1.iram.es>
+Message-Id: <200003061229.VAA01945@mail.cc.tohoku.ac.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 06 Mar 2000 21:29:16 +0900
+From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-workstation@lists.linuxppc.org
+In-Reply-To: Your message of "Mon, 06 Mar 2000 06:52:37 +0000"
+ 	<38C355B5.951735EB@amberdata.demon.co.uk>
+References: <38C355B5.951735EB@amberdata.demon.co.uk>
+Subject: Re: bootloader ideas
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
 
+Return for :
+From: David Monro <davidm@amberdata.demon.co.uk>
+on " bootloader ideas "
+date: Mon, 06 Mar 2000 06:52:37 +0000 >>>
 
-On Mon, 6 Mar 2000, David Monro wrote:
-
+> Hi,
+>
 > I've been thinking about bootloaders. Particularly with respect to PReP
 > machines.
-
-Me too...
-
 >
 > The current method of making the kernel a binary loaded by the firmware
 > is a bit of a kluge. It means we have to jump through hoops to change
@@ -30,9 +32,6 @@ Me too...
 > image? I'm guessing that it isn't a lot, just the residual data to tell
 > us what hardware we have. I could be wrong here though - can anybody
 > tell me where to find softcopy PReP documentation?
-
-It's somewhere on IBM sites if it's still there...
-
 >
 > 2) What does the ARC bootloader goop for NT provide in the way of
 > services? I'm guessing rather more. In particular I suspect we have a
@@ -45,7 +44,21 @@ It's somewhere on IBM sites if it's still there...
 > Do all the PReP machines have ARC available for them? I would guess most
 > do, but I could be wrong.
 
-No, I've never seen a single machine with ARC myself...
+I think so, too.
+Some of PRePs cannot install because of ARC firmware.
+They cannot rewrite itself from ARC to PRePspec firmware.
+And, FireWorks PReP machines maybe needs such loader.
+
+If there are some bootloader like MILO, copy a loader kernel
+on DOS based partition, it is very useful for all PRePs.
+
+MILO is ported on MIPS and Alpha based machines, they have some
+relationship with ARC.  Maybe they have a same root, and compiled
+for each machines.  (Is it true? Please correct me.)
+
+But I am afraid it need to make with original compiler.
+(I suppose this needs some cross compile method for ARC-PPC. )
+
 
 > IMHO milo itself is overkill; it actually contains an awful lot of the
 > kernel code (basically the SCSI drivers etc) so that once loaded it can
@@ -58,46 +71,24 @@ No, I've never seen a single machine with ARC myself...
 > be able to load a kernel image from a device ARC could read, using ARC
 > services. Anybody got any documentation?
 
-The problem is that ARC has some services, PPCBUG used on Motorola boards
-has very likely different ones...
+Linux/MIPS FAQ have some information for ARC, but they say ARC is
+not a right firmware, only it boots up NT.
+Maybe ARC have no work for device detection.
 
-> Oh, we could also have the bootloader do a lot of fixing up of things
-> like the PCI spaces and interrupts - I note that NT and Linux on the
-> IBM 850 have different ideas of where things are and what interrupts
-> they use. Seems to work though.
+> Ideally we would get to the point where all the platform-specific fixup
+> code etc was moved into the bootloaders, and then do away with the
+> CHRP/PReP/whatever compile option.
 
-For starting point see my prepboot bootloader which you can find at
-ftp://vlab1.iram.es/linux-2.[23]
-
-it is included in the mvme patches.
-
-Basically:
-- for now it adds a new directory (for now), arch/ppc/preepboot and a
-CONFIG option to enable it.
-
-- it reorganizes PCI I/O and memory space, actually for my machines based
-on Raven/Falcon or Hawk Motorola chipsets, it remaps them completely
-to something closer to CHRP
-
-- it initializes video boards with an x86 ROM BIOS emulator if neceessary
-
-- it still needs some work to handle the NVRAM, I want too to get rid of
-most kludges in the early part of the kernel
-
-- I have code which correctly gets the interrupt routing from residual
-data
-
-- it includes its own virtual memory management system, simple, primitive
-and not resistant at all to fragmentation, but anyway it's thrown away
-almost immediately,
-
-- it is completely relocatable so that it can run whatever the memory
-map of the system is ((except for interrupt vectors which are fixed by
-HW). Actually it moves itself high so that it can decompress the kernel
-in low memory.
+How cool it is!
 
 
-	Gabriel.
-
+Best regards.
+----------------------
+Kaz Aoshima = Editor of the PReP station
+Material deveropment, Faculty of engineering,
+Tohoku University, Japan
+E-mail:aoshimak@mail.cc.tohoku.ac.jp
+#I would appreciate if you could give me suggestions
+ for my impolite English expressions.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
