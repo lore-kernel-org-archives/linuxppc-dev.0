@@ -1,65 +1,96 @@
-Message-ID: <40C6B0EE.1000506@fh-landshut.de>
-Date: Wed, 09 Jun 2004 08:40:46 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-Reply-To: okorpil@fh-landshut.de
 MIME-Version: 1.0
-To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: VME driver patch for PowerPC
-References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DE0@FTWMLVEM02.e2k.ad.ge.com>
-In-Reply-To: <DB1DE297F535B340AEAE1E51B221C3D0016B3DE0@FTWMLVEM02.e2k.ad.ge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: kernel 2.6.6 on ppc405 ?
+Date: Wed, 9 Jun 2004 08:42:48 +0200
+Message-ID: <80908CC5B2C9DB47AAF8C77892FCB44315F7B0@lion.vector.com.pl>
+From: "Andriy Korud" <a.korud@vector.com.pl>
+To: "Christos Pasalidis" <cpas@intracom.gr>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Heater, Daniel (GE Infrastructure) wrote:
+Hi, I'm running Mvista's 2.5 tree (actually 2.6.5) on 405EP (PPchameleon). The only problem was to fix early platform setup code in /arch/ppc/platforms/4xx/
 
->>Could you check, whether the patch to your driver (version
->>7433-3.2 of your
->>Linux support) still compiles on an Intel platform, and works
->>as intended?
->>
->>
->
->Yep. I only did a quick test, but it appears to work fine on x86.
->I've merged your patch up with the code base for the next release.
->
->
->
-Great!
+regards,
 
-I don't know about x86 bus organization, but maybe it limits the address
-range for available addresses too strongly (on a single bus, where the
-Universe is on). Comparing how much window space you can map with the
-old version and the new one on x86 could prove useful.
+Andriy Korud
 
->I think I have an idea for the read/write question, but I need to
->look at it a little closer. I'll get back to you in a bit.
->
->
-With a little bit of "luck" maybe there's a way around it, and I'm
-currently looking into it:
 
-readb(), readw() and readl() work fine (and their writeb/w/l
-counterparts do as well), but pointer derefencing does not. Every
-pointer dereference does trigger an 8 long word read from the bus first.
-I asked what could trigger a long read from a single dereference of
-memory? Cache. Not surprisingly cache line length of my current
-development board (MVME2100) is 8 long words for Cache Burst
-Transactions. So I have the wanted single-beat transactions when using
-readx()/writex(), as documented when using cache-inhibited, guarded or
-write-through memory or if the cache is disabled, but am getting cache
-bursts on pointers.
+-----Original Message-----
+From:	owner-linuxppc-embedded@lists.linuxppc.org on behalf of Christos Pasalidis
+Sent:	Tue 08.06.2004 15:32
+To:	linuxppc-embedded@lists.linuxppc.org
+Cc:
+Subject:	kernel 2.6.6 on ppc405 ?
 
-I will take a closer look at the properties of the pages I'm using in
-kernel space and in user space, and the page tables, and maybe that
-fixes it.
 
-BTW, everywhere where you use pci_alloc_consistent (dma, slaves), it
-ports perfectly fine.
+Hi
 
-With kind regards,
-Oliver Korpilla
+Has anyone managed to run the v2.6.6_linuxppc kernel on a ppc405 based
+system ? (e.g Dreambox ) My attempt does not work when it tries to mount
+/proc. Then mount receives SIGSEGV.
+
+If you have any idea, about what could be wrong, i 'd love to look at it...
+
+Thanks in advance,
+Christos
+
+cnp: trying to strace mount proc
+execve("/bin/mount", ["mount", "-t", "proc", "proc", "/proc"], [/* 10 vars
+*/])0
+brk(0)                                  = 0x10023000
+open("/etc/ld.so.preload", O_RDONLY)    = -1 ENOENT (No such file or
+directory)
+open("/etc/ld.so.cache", O_RDONLY)      = 3
+fstat64(3, {st_mode=S_IFREG|0644, st_size=4614, ...}) = 0
+mmap(NULL, 4614, PROT_READ, MAP_PRIVATE, 3, 0) = 0x30017000
+close(3)                                = 0
+open("/lib/libc.so.6", O_RDONLY)        = 3
+read(3, "\177ELF\1\2\1\0\0\0\0\0\0\0\0\0\0\3\0\24\0\0\0\1\0\1\310"..., 1024)
+= 4
+fstat64(3, {st_mode=S_IFREG|0755, st_size=11432222, ...}) = 0
+mmap(0xfea5000, 1353160, PROT_READ|PROT_EXEC, MAP_PRIVATE, 3, 0) = 0xfea5000
+mprotect(0xffd6000, 103880, PROT_NONE)  = 0
+mmap(0xffe5000, 24576, PROT_READ|PROT_WRITE|PROT_EXEC,
+MAP_PRIVATE|MAP_FIXED, 30
+mmap(0xffeb000, 17864, PROT_READ|PROT_WRITE|PROT_EXEC,
+MAP_PRIVATE|MAP_FIXED|MA0
+close(3)                                = 0
+mprotect(0xfea5000, 1249280, PROT_READ|PROT_WRITE) = 0
+mprotect(0xfea5000, 1249280, PROT_READ|PROT_EXEC) = 0
+munmap(0x30017000, 4614)                = 0
+brk(0)                                  = 0x10023000
+brk(0x10024000)                         = 0x10024000
+umask(033)                              = 022
+open("/dev/null", O_RDWR|O_LARGEFILE)   = 3
+close(3)                                = 0
+getuid()                                = 0
+geteuid()                               = 0
+lstat64("/etc/mtab", {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+stat64("/sbin/mount.proc", 0x7ffffbc8)  = -1 ENOENT (No such file or
+directory)
+--- SIGSEGV (Segmentation fault) @ 0 (0) ---
++++ killed by SIGSEGV +++
+
+
+-----------------------------------------------
+ Christos Pasalidis, MSc
+ Software Engineer
+
+ INTRACOM S.A.
+ Hellenic Telecommunications & Electronics Industry
+ New Technologies Dept.
+ Embedded Systems Group
+ P.O. Box 68, 19.5 km Markopoulo Ave.
+ 190 02 Peania, Athens, GREECE
+ Tel.: (+30 1) 667 4711, 667 9000
+ Fax.:(+30 1) 667 7101
+ email: cpas@intracom.gr
+ URL: www.intracom.gr
+
+My opinions are mine
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
