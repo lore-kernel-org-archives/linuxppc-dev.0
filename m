@@ -1,73 +1,106 @@
-Date: Wed, 7 Jun 2000 23:15:03 -0700
-From: Matt Porter <mmporter@home.com>
-To: Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: QUERY: Embedded PowerPC Linux?
-Message-ID: <20000607231503.B11485@cx258813-a.chnd1.az.home.com>
-References: <39243D0C.68406C9D@lucent.com> <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com> <39289187.3AEDEE47@chicago.avenew.com> <slrn8ik4mu.349.mmporter@liberty.chnd1.az.home.com> <392C0B5D.A87105C@embeddededge.com>
+To: Matt Porter <mmporter@home.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: QUERY: Embedded PowerPC Linux? 
+In-Reply-To: Message from Matt Porter <mmporter@home.com>
+   of "Wed, 07 Jun 2000 22:56:17 MST." <20000607225617.A11485@cx258813-a.chnd1.az.home.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <392C0B5D.A87105C@embeddededge.com>; from dan@netx4.com on Wed, May 24, 2000 at 01:03:25PM -0400
+Content-Type: text/plain
+Date: Thu, 08 Jun 2000 16:18:02 +1000
+Message-ID: <25991.960445082@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 24, 2000 at 01:03:25PM -0400, Dan Malek wrote:
-> I will continue to point out that the Linux kernel is not a boot rom.
-> You first argue that head.S is too complicated, and then want to make
-> it initialize your processor???  I don't get it.  This is not the place
-> for processor initialization beyond what is necessary for Linux to
-> operate.  There is software in arch/ppc/mbxboot that does a little
-> more processor initialization for embedded systems, but that still isn't
-> a boot rom.
-
-I think you got the attributions confused...Tom was trying use kernel/head.S
-to init the processor.
-
-> Further, writing processor initilization functions is very tedious. I
-> certainly don't want to be downloading a half megabyte or more of kernel
-> just to test a few processor initialization instructions.  When the
-> kernel doesn't boot, where do you start?
-
-I think it's even more difficult for 7xx than on 8xx/82xx stuff since
-varying bridges and potentially an ISA bridge (shudder) make it a completely
-different game on every system.
-
-> For example, if you write some minimal boot rom to initialize an 8xx
-> or 82xx processor, verify that you can read/write memory, you can boot
-> a Linux kernel very quickly.  If you have a boot rom, I can have a Linux
-> kernel running in a day or two by changing a couple of lines of code
-> in arch/ppc/mbxboot/embed_config.c.  Set up an environment for Linux
-> to run, and it does so very easily.
-
-No argument.  Obviously, having bootrom/monitor/firmware takes a _vast_
-amount of the difficult work out of a port.
-
-> > >I think we need to separate the CPU from the machine....
-> >
-> > It's being worked on as far as making a framework for non-chrp/pmac/prep
-> > 6xx/7xx/74xx ports.  There just hasn't been a real pressing need until
-> > lately.
+On Wed, 7 Jun 2000 22:56:17 -0700, Matt Porter <mmporter@home.com> writes:
+>I'm basically looking at reorganizing directories plus the necessary
+>Makefile changes to reduce the klutter in arch/ppc/kernel/
 >
-> The CPU and system/board are separate.  Some boards imply a particular
-> CPU, or vice versa.  You have to specify both for the configuration,
-> and depending upon which you ask first, you can reduce the selection
-> set for the latter.  Updating the configuration choices is just part
-> of adding a new board or processor.
+>It would now have something like:
+>
+>arch/ppc/kernel/
+>		chrp
+>		gemini
+>		pmac
+>		prep
+>		<port a>
+>		<port b>
+>
+>The generic stuff would either stay in kernel/ or move to kernel/common/
 
-So it seems on the surface, but I was referring to shortcuts made where
-ifndef 8XX conditionals are used to conditionally build things like
-the drivers/macintosh/ archive when that is not processor specific action.
-Similar things happen in the Makefiles to achieve a slimmer kernel.
+How about this:
 
-The point being that the approach taken by the gemini architecture boards
-is not a great one since it simply tacks it's objects onto the bloated
-chrp/pmac/prep kernel image.  Not pretty and not a suitable approach
-when many 6xx/7xx boards need to boot directly from a 512KB flash.
+	arch/ppc/
+		boot/
+		io/
+		kernel/
+		mm/
 
+		4xx/
+			boot/
+			io/
+			kernel/
+			mm/
+		8xx/
+			boot/
+			io/
+			kernel/
+			mm/
+		8260/
+			boot/
+			io/
+			kernel/
+			mm/
+		chrp/
+			boot/
+			io/
+			kernel/
+			mm/
+		gemini/
+			boot/
+			io/
+			kernel/
+			mm/
+		pmac/
+			boot/
+			io/
+			kernel/
+			mm/
+		prep/
+			boot/
+			io/
+			kernel/
+			mm/
+
+Not all the directories would exist in all the platform directories, of
+course. Some platforms might use another's directory - or bits therein
+(e.g. if I had a cogent directory, I'd have a boot/ and io/ directory,
+but no kernel/ or mm/ directory - for these I'd use 8xx/kernel/ and 8xx/mm/
+with a few #ifdefs in there (if I had the 8xx cpu module, if I had the
+cogent CMA282 8260 cpu module, I would use 8260/kernel/ and 8260/mm/). The
+cogent/boot/ directory would only have a tty.c driver, the rest would come
+from 8xx/boot/ - and the tty driver might not be used if you were to use the
+devices on the cpu module, not on the motherboard. I might use both 8xx/io/
+and cogent/io/ directories for generic 8xx commproc devices, and cogent
+motherboard devices. For cpu module specific cogent devices - i.e. devices
+on the cpu module, not the motherboard, I might have cogent/io/8xx/ and
+cogent/io/8260/ etc.).
+
+Each <port>/kernel/ directory might have some or all of: head.S, nvram.c,
+pci.c, pic.c, prom.c, setup.c, time.c. The <port>/mm directory might have
+fault.c, init.c, tlb.c (actually, there might not be any <port>/mm/
+directories, there doesn't appear to be enough differences to warrant it -
+but the option is there).
+
+I'm not sure I like this - just throwing it into the air. Others that have
+been hacking this stuff longer might have a better feel for how difficult
+such a structure would be to maintain, and whether the advantages (if any)
+are worth it. Cheers!
+								Murray...
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
