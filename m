@@ -1,53 +1,43 @@
-Date: Wed, 02 Apr 2003 15:39:21 +1200
-From: Dmytro Bablinyuk <dmytro.bablinyuk@tait.co.nz>
-Subject: Re: Linux support for MPC859T processor
-To: Mark Hatle <fray@mvista.com>
+Date: Tue, 1 Apr 2003 22:30:10 -0700
+From: Matt Porter <porter@cox.net>
+To: kas turi <inox_kas@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <3E8A5B69.1030601@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii; format=flowed
-References: <3E8A4B70.7090607@tait.co.nz> <3E8A4EE1.8090205@mvista.com>
- <3E8A536A.8070506@tait.co.nz> <3E8A554A.2040700@mvista.com>
+Subject: Re: Disabling data cache
+Message-ID: <20030401223010.A30745@home.com>
+References: <20030402013434.7201.qmail@web21010.mail.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030402013434.7201.qmail@web21010.mail.yahoo.com>; from inox_kas@yahoo.com on Tue, Apr 01, 2003 at 05:34:34PM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes, we are ready to have a big pain with porting, and we know that
-there is a risk which we are trying to reduce.
-Would the MontaVista give some hands on, for example, how to an internal
-RTC function on '860 represent in the kernel ('859 doesn't have RTC
-func) and how it's affect the kernel and how it could be "removed" etc?
-So, we at least would know what shall we look for.
-Also could you please tell me how assembler on '860 different from '859?
-Would this affect booting?
-
-> Honestly, I don't know my guess is close to non to a small handful...
-> But I am truely a novice when it comes to CPU/board bringup.. (I've
-> assisted in it, but my expertise and history is in userspace
-> development.)  The things that can take massive amounts of time on
-> these new processors/boards are hardware bugs (cpu and board) as well
-> as device drivers for new on chip devices.  I have seen more then one
-> engineer going bald due to hardware bugs, especially a board that the
-> customer said "But it runs VxWorks, why doesn't it run Linux?"...
+On Tue, Apr 01, 2003 at 05:34:34PM -0800, kas turi wrote:
 >
->> Not a lot of our people experienced in PPC assembler (including myself).
->> Actually not a lot experienced with PPC at all.
->> Roughly, from your point of you, how major changes in the kernel
->> could be? Just your subjective opinion.
->>
->>> On userspace basis.. the 860 and the 859 are fully compatable.. The
->>> need for
->>> 859T changes may be in the kernel.  So anyone who sells/supports an
->>> 860 based
->>> system can support your needs for application level.  (That includes
->>> MontaVista.)
->>>
->>> The linux kernel of course is a different level of complexity.
->>>
->>>> We are trying to find a linux supplier who supports Motorola MPC859T
->>>> processor (actually it will be processor from Motorola but our custom
->>>> board).
->>>
+> Hi
+>   We have a custom made board and we are running 8250
+> processor. We are using DMA to transmit and receive
+> data between peripheral and memory. The data is
+> getting corrupted while transmitting and receiving. We
+> are suspecting it might be due to data cache being
+> enabled. So I disabled data cache in the routine
+> enable_cache in the file arch/ppc/kernel/head.S. I
+> rebuilt the kernel and when I run on my board it hangs
+> after printing "Now booting the kernel". I would like
+> to know why the kernel is not booting up. I have
+> enclosed the console output:
 
+Sure, you are hitting a number of places in early init
+where the kernel uses dcbz.  You need to "fix" those areas
+and hack the BAT setting to cache inhibit the DBATs that
+map lowmem.  If you search the list archives, I recall an
+old email describing what somebody did in detail to run
+with dcache disabled on a classic PPC core.
+
+Regards,
+--
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
