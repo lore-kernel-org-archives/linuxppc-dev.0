@@ -1,45 +1,44 @@
-Message-ID: <38188496.DF592083@snom.de>
-Date: Thu, 28 Oct 1999 19:15:02 +0200
-From: Nicolas Pohland <pohland@snom.de>
+Date: Thu, 28 Oct 1999 12:31:02 -0500
+From: Grant Erickson <grant@lcse.umn.edu>
+To: linuxppc-embedded@lists.linuxppc.org
+cc: Daniel Nilsson <daniel.n.nilsson@home.se>,
+        Adrian Cox <apc@agelectronics.co.uk>, Wolfgang Denk <wd@denx.de>
+Subject: Bug Discovered in Binutils/GCC for PPC403
+In-Reply-To: <Pine.SGI.4.10.9910281200550.695157-100000@sapphire.lcse.umn.edu>
+Message-ID: <Pine.SGI.4.10.9910281224020.695157-100000@sapphire.lcse.umn.edu>
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC8BUG crashes on Windows 95/98/NT
-References: <381706D7.FF1D8477@snom.de> <38171E45.DC552AAF@netx4.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+For those of you working with the TiVo Linux sources, I discovered bug in
+binutils-2.9.1.0.25 and binutils-2.9.5.0.14 that results in the following
+sorts of error:
 
-> 
-> Go into the e-mail archives and read my past messages.  It has
-> helped some people.....and pissed off others.....
+foobar.c: Assembler messages:
+foobar.c:7868: Error: junk at end of line: `28'
 
-Essentially the email lists imply to chuck the FADS. Is this a correct
-summary ?
+It appears that the assembler has the incorrect definition for the
+'dcread' instruction:
 
-I downloaded mpc8bug version 1.5 from
-http://www.motorola.com/SPS/ADC/pps/subpgs/etoolbox/8XX/MPC8bug.html 
-after getting tipped off and this worked under NT 4.0 SP 5 when merging
-this with the 1.6 configuration files of mpc8bug.
+In the file binutils-2.9.5.0.14/opcodes/ppc-opc.c, the definition is as
+follows:
 
-HINTS
------
+{ "dcread",  X(31,486), XRT_MASK,       PPC403,         { RA, RB } },
 
-ELF files sre supported by LOADF but only after specifying -Ttext to
-0x2800000.
+However, according to the IBM PowerPC 403GCX manual the definition is:
 
-The first parameter for mpc8bug is not the base address of the ADI board
-divided by 0x100. Instead it is the index into the
-device list (normally 0).
+	dcread RT,RA,RB
 
+The patch to fix this is:
 
-I will now continue to debug the image unless a tarball with a FADS 860T
-floats along :-). I will be happy to provide one
-once I am finished.
+{ "dcread",  X(31,486), X_MASK, 	PPC403,         { RT, RA, RB } },
 
-Nicolas
+Patch the ppc-opc.c file and rebuild binutils and you're back on your way.
+Otherwise, just comment out the offending line of code, such as:
+
+	asm("dcread %0,0,%1" : "=r" (tag) : "r" (p));
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
