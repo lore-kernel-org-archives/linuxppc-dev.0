@@ -1,29 +1,34 @@
-From: iweiny@pacbell.net
-Date: Wed, 18 Apr 2001 16:15:39 -0700 (PDT)
-Subject: Re: Walnut IDE support
-In-reply-to: <20010418152914.E13403@opus.bloom.county>
-To: linuxppc-embedded@lists.linuxppc.org (linuxemb)
-Message-id: <200104182315.QAA02641@batcave2.batcave>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Message-ID: <3ADE42E8.6552066B@mutoh.co.jp>
+Date: Thu, 19 Apr 2001 10:44:08 +0900
+From: Hideo Noda <Hideo_Noda@mutoh.co.jp>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PPC405GPWalnutPciBusMaster
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---- To quote Tom Rini: ---
->
-> First, you did enable CONFIG_BLK_DEV_PDC202XX right?  It's quite possible
-> that the driver cannot initalize the card w/o the BIOS (on the card) having
-> done something.
->
+Hi,
 
-Yea, did that...  I don't know but I heard that Monta Vista had a hard drive
-running on a Walnut and I did not think this would be a big deal.  But I have
-spent most of the day playing with different configurations and this is the
-farthest I have gotten...
+I am trying to install Intel eepro100 onto WalnutPPC405GP.
+Basic PCI settings seem good but no frame is transmitted.
+The environment is WalnutPPC305GP with HardHatLinux 2.4.2 from
+MonraVista.
 
-Anyway thanks for the reply,
-Ira
+I can read or write eepro configuration registers and other control
+registers via PCI memory space.
+But Bus Master operations do not seem functional. I am confirmed that
+MASTER operation bit in eepro100 is enabled.
+I think some more settings are needed for PPC405GP built-in PCI control
+registers and/or Walnut board jumpers/dipswitches.
+
+Has anyone tried PCI cards with BUS MASTER operations for Walnut
+PPC405GP?
+
+Thanks in advance,
+
+Hideo
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
