@@ -1,18 +1,17 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp4.wanadoo.fr (smtp4.wanadoo.fr [193.252.22.27])
-	by ozlabs.org (Postfix) with ESMTP id 909402BF13
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 01:53:28 +1100 (EST)
-Date: Sat, 1 Jan 2005 16:00:56 +0100
-To: Ulrich Teichert <krypton@ulrich-teichert.org>
-Message-ID: <20050101150055.GA15400@pegasos>
-References: <855e88d004123116541edc4d61@mail.gmail.com>
-	<200501011315.j01DFXg3030373@arbas.nms.ulrich-teichert.org>
-Mime-Version: 1.0
+Return-Path: <krypton@ulrich-teichert.org>
+Received: from arbas.nms.ulrich-teichert.org (i3ED6339E.versanet.de
+	[62.214.51.158]) by ozlabs.org (Postfix) with ESMTP id 4BEB72BF13
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 03:33:28 +1100 (EST)
+Message-Id: <200501011630.j01GUP1R007603@arbas.nms.ulrich-teichert.org>
+To: sven.luther@wanadoo.fr (Sven Luther)
+Date: Sat, 1 Jan 2005 17:30:25 +0100 (MET)
+In-Reply-To: <20050101150055.GA15400@pegasos> from "Sven Luther" at Jan 01,
+	2005 04:00:56 PM
+From: Ulrich Teichert <krypton@ulrich-teichert.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200501011315.j01DFXg3030373@arbas.nms.ulrich-teichert.org>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org, mikemartin@linux.ca,
-	debian-powerpc@lists.debian.org
+Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
+	mikemartin@linux.ca, debian-powerpc@lists.debian.org
 Subject: Re: 43p-140 install issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,35 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 01, 2005 at 02:15:33PM +0100, Ulrich Teichert wrote:
-> Hi,
-> 
-> >Would there be any image I can use to install this machine currently?
-> 
-> Sure, check http://www.solinno.co.uk/7043-140/, that's Leigh Browns site.
-> There's a detailed step-by-step guide which will take you through the whole
-> process. You can even choose what distro you want to install, but you may
-> have to update your firmware first (I had to do it as well, but it was
-> OK). BTW: great job Leigh!
+Hi,
 
-I would prefer that we fix the debian kernels for them to work correctly
-though. More on this on monday.
+[del]
+>I would prefer that we fix the debian kernels for them to work correctly
+>though. More on this on monday.
 
-> >Here's my situation, If I can get the machine to boot and install by
-> >next week (back to work) my boss will let me keep working on it -
-> >otherwise he'll declare it useless and it'll go back in the closet. If
-> >I can get anything on it I'm ok - It doesn't need to be 2.6.
-> [del]
-> 
-> There are 2.4.x kernels on that site which are working very well, I
-> installed Debian Woody on top of it ;-)
+I failed to configure a stock 2.4.28 kernel to detect the SCSI controler.
+I think some of Leigh patches for this must be applied, but I haven't
+gone any further.
 
-Yeah, well.
+[del]
+>Do the debian 2.4.27 kernel work on it ? I was unable to boot the 2.4.27 d-i
+>kernel on my powerstack, but this is a different machine, so the issues may be
+>a bit different. 
 
-Do the debian 2.4.27 kernel work on it ? I was unable to boot the 2.4.27 d-i
-kernel on my powerstack, but this is a different machine, so the issues may be
-a bit different. 
+I've only tried the Woody PREP kernel, which failed in a way which I can't
+remember, but I'll give it a try.
 
-Friendly,
-
-Sven Luther
+HTH,
+Uli
+-- 
+Dipl. Inf. Ulrich Teichert|e-mail: Ulrich.Teichert@gmx.de
+Stormweg 24               |listening to: Suicide Drive (The Deep Eynde)
+24539 Neumuenster, Germany|Public Pervert (Interpol) Clé De Contact (Metal Urbain)
