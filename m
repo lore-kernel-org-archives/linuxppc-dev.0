@@ -1,54 +1,51 @@
-Message-ID: <E8F83D6D2A6AD3118E0300902786A20502371482@NTEX>
-From: "David Marqvar (DAM)" <DAM@tt.dk>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Cc: "Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
-Subject: Memory-usage
-Date: Thu, 2 May 2002 21:29:43 +0200 
+Message-ID: <3CD199C0.6070700@pacbell.net>
+Date: Thu, 02 May 2002 12:55:44 -0700
+From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] Several patches against linuxppc_devel-2.4.19-pre7
+References: <3CD1382D.8060109@elsoft.ch>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello world!
+David Müller (ELSOFT AG) wrote:
+> Hello
+>
+> The attached patch fixes the following issues:
+>
+>    - arch/ppc/kernel/ocp_uart.c
+>       fixes problem with "ghost" uart device
+>
+>       I'm not sure if this is the correct fix or if
+>       the semantic of ocp_register() should be changed?
+>
+>    - drivers/char/ibm_ocp_gpio.c
+>       fixes typo ([pv]start instead of [pv]addr)
+>
+>    - arch/ppc/platforms/Makefile
+>       include ibm405gp.o into export-objs list
+>
+>    - arch/ppc/platforms/ibm405gp.c
+>       export base address symbols for use with modularized
+>       OCP device drivers
+>
+>       Shouldn't IIC_ADDR also be "const struct"?
+>
+>    - include/asm-ppc/floppy.h
+>       fixes swapped arguments of {fd_}outb
+>
+>
+> Dave
+>
 
-How do I check the memory-usade on the embedded system?
+Dave
 
-I have been using "free" and "cat /proc/meminfo"
+Thanks
 
-Is there another way to get more precise information on the memory-usage?
-It says: MemTotal: 3056 kB --- can you confirm that this means that the
-kernel is using 4096 - 3056 = 1040 kB (There is 4 MB total ram on the
-system).
+armin
 
-Regards,
-David Marqvar
-
-
-# cat /proc/meminfo
-        total:    used:    free:  shared: buffers:  cached:
-Mem:   3129344  2621440   507904   663552   729088   688128
-Swap:        0        0        0
-MemTotal:         3056 kB
-MemFree:           496 kB
-MemShared:         648 kB
-Buffers:           712 kB
-Cached:            672 kB
-Active:            704 kB
-Inact_dirty:       680 kB
-Inact_clean:         0 kB
-Inact_target:        4 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:         3056 kB
-LowFree:           496 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
-# free
-              total         used         free       shared      buffers
-  Mem:         3056         2540          516          628          712
- Swap:            0            0            0
-Total:         3056         2540          516
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
