@@ -1,49 +1,41 @@
-From: tom_gall@vnet.ibm.com
-Message-ID: <396E13E2.F49A37D1@vnet.ibm.com>
-Date: Thu, 13 Jul 2000 19:09:22 +0000
-Reply-To: tom_gall@vnet.ibm.com
-MIME-Version: 1.0
+Date: Thu, 13 Jul 2000 17:34:19 -0400 (EDT)
+From: Donald Cowart <dcowart@acld.lib.fl.us>
 To: Josh Huber <huber@mclinux.com>
-CC: Olaf Hering <olh@suse.de>,
+cc: Olaf Hering <olh@suse.de>,
         Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: > 512 MB of ram on G4?
-References: <20000713142202.A1289@mclx.com> <20000713203507.A8255@suse.de> <20000713144024.A1379@mclx.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000713150406.B1379@mclx.com>
+Message-ID: <Pine.LNX.4.20.0007131729350.29175-100000@bookworm.acld.lib.fl.us>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Josh Huber wrote:
+Actually MacOS limits the amount availible to running apps as 999M.  I was
+purchasing a G4 and read that on Apple's Website.  It was a while ago
+and I don't remember if it was for OS9 or 8.X, though.
+
+Donald Cowart  (dcowart@acld.lib.fl.us)
+Network Manager
+Alachua County Library District
+Gainesville, FL
+
+On Thu, 13 Jul 2000, Josh Huber wrote:
+
+> > No, 768MB is the maximum on chrp (B50), the newer PowerMacs can handle
+> > only that 703M. I have no reports about oldworlds.
 >
-> On Thu, Jul 13, 2000 at 08:35:07PM +0200, Olaf Hering wrote:
-> > On Thu, Jul 13, Josh Huber wrote:
-> >
-> > > Hey, I'm trying to put 1GB of ram in an Apple G4 box here, but I'm having
-> > > trouble.  Anything higher (well, in increments of 256M) is dumping me into
-> > > xmon early on boot (before the fbcons is initialized).
-> > >
-> > > Any thoughts?  I'm unable to use xmon because of the USB
-> > > keyboard...unfortunately.  Too bad Apple didn't put a real serial port on
-> > > these machines :(
-> >
-> > use mem= as argument, the highest mem I got was mem=703M.
+> one would think that this is a linux limitation then?  Apple's store sells
+> G4s with 1.5G, so one would hope that at least macos could handle it.  For
+> some reason I doubt it can, but why would they sell machines with that much
+> memory?
 >
-> So is it not (at this time) possible to use 1GB of memory on ppc?
+> --
+> Josh
+> 6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
+> 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 >
-> hmm.
 
-Not yet ... 768 Meg is in theory the maximum. Hopefully in about 2 weeks this is
-going to get fixed.
-
-Regards,
-
-Tom
-
-Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
-Linux Technology Center           supposed to be an earth
-(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
-(w) 507-253-4558                 -- Marvin Martian
-(h) tgall@uswest.net
-http://oss.software.ibm.com/developerworks/opensource/linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
