@@ -1,46 +1,48 @@
-Date: Thu, 02 Oct 2003 09:18:20 +0200
-From: ARIBAUD Albert <a.aribaud@giat-industries.fr>
-Subject: RE: Where to Put Ethernet MAC Addresses?
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <F886A68DA978614991E47D82EA26B54210E956@csy-exchange1.giat.intra>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <012801c388c5$f4378540$2803050a@JackyLam>
+From: "Jacky Lam" <jackylam@astri.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Queston about Walnut
+Date: Thu, 2 Oct 2003 17:17:00 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Message d'origine-----
-> De : owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]De la part
-> de Howard,
-> Marc
-> Envoyé : mercredi 1 octobre 2003 22:44
-> À : 'Dan Malek'; Kent Borg
-> Cc : linuxppc-embedded@lists.linuxppc.org
-> Objet : RE: Where to Put Ethernet MAC Addresses?
->
->
->
-> I personally favor the "roll your own MAC address from the
-> serial number" approach but it does have the drawback that
-> you must have unique serial #'s on the boards.  If the serial
-> numbers are entered (or not entered) by lazy humans you could
-> potentially have two devices with the same MAC address on a
-> network.  I also select as the first 3 bytes of the MAC
-> address the address assigned to a defunct company and the lower
-> 3 bytes derived from the serial number.
+Dear all,
 
-There is a range of MAC adresses for local use (inside an appliance
-or even inside a vehicle would be the case). That's what I use for
-in-lab development on custom MPC855T boards.
+    I get a IBM 405 GP evaluation board recently. After I compile the
+toolchain and kernel 2.4.22 using the crosstools. I try to boot the kernel
+on the board by u-boot. I follow the instruction of uboot to create a uImage
+as follows:
 
-See for instance <http://www.centsoft.com/mac.htm>.
+    powerpc-405-linux-gnu-objcopy -O binary -R .note -R .comment -S vmlinux
+linux.bin
+    gzip -9  linux.bin
+    ./mkimage -A ppc -O linux -T kernel -C gzip -a 0x00400000 -e
+0x00400000 -n "test" -d linux.bin.gz uImage
 
-If you don't mass-produce, using the current time for a seed might
-work. :)
+    and load the image by tftpboot. But after I type bootm, only the
+following is displayed and the whole system hangs:
 
-HTH
---
-Albert.
+    ## Booting image at 00400000 ...
+   Image Name:   test
+   Created:      2003-10-02   8:51:50 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    612743 Bytes = 598.4 kB
+   Load Address: 00400000
+   Entry Point:  00400000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+   <Hangs afterwards...>
+
+    I haven't modified any source yet. I don't know even it is needed.
+    Could anyone kindly tell me what's wrong about my steps? Thanks so much.
+
+Regards,
+Jacky
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
