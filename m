@@ -1,27 +1,13 @@
-Message-ID: <C08678384BE7D311B4D70004ACA371050B763354@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Jeff Studer'" <jstuder@aquilagroup.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: eth0 : time out ....error
-Date: Fri, 22 Mar 2002 13:16:12 -0700
+Message-ID: <3C9B99DC.7C9C769F@aquilagroup.com>
+Date: Fri, 22 Mar 2002 13:53:48 -0700
+From: Jeff Studer <jstuder@aquilagroup.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
-
-
-This has been fixed; you need a newer fec.c.  (I would tell you
-the version numbers but I don't know them; my copies of fec.c
-(without & without the fix) are lacking version numbers. )
-
-
------Original Message-----
-From: Jeff Studer [mailto:jstuder@aquilagroup.com]
-Sent: Friday, March 22, 2002 1:54 PM
 To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: eth0 : time out ....error
-
+References: <001601c1bff5$4c5b0210$17f2fea9@genetelhychon>
+Content-Type: text/plain; charset=iso-8859-1
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Is this with the FEC driver? I have the same problem with the FEC driver in
