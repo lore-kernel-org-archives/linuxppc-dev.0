@@ -1,41 +1,34 @@
-To: Björn Lundberg <bjorn.lundberg@inu.se>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Performance 2.2.13 and USB work
-References: <20000229054521.6C2385064E@brixi.research.canon.com.au> <38BCE4EF.85135592@inu.se>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 06 Mar 2000 16:11:25 +0100
-In-Reply-To: Björn Lundberg's message of "Wed, 01 Mar 2000 10:37:51 +0100"
-Message-ID: <kfyput8rv4y.fsf@kieraypc07.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <200003061622.LAA34076@p2.parker.boston.ma.us>
+To: Brad Hards <bradh@dynamite.com.au>
+cc: Björn Lundberg <bjorn.lundberg@inu.se>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: commproc.c
+In-reply-to: Your message of "Sun, 05 Mar 2000 15:58:44 GMT."
+             <38C28434.E79774E6@dynamite.com.au>
+Date: Mon, 06 Mar 2000 11:22:41 -0500
+From: Brad Parker <brad@parker.boston.ma.us>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Björn Lundberg <bjorn.lundberg@inu.se> writes:
 
-> We've been using 2.2.5 and wanted to move up to 2.2.13
+Brad Hards wrote:
+...
+>The 850 Users Manual contains info (including how to program) on the USB
+>host as part of CPM doco - it is chapter 32, and has been recently
+>updated:
+>http://www.mot.com/SPS/RISC/netcomm/aesop/mpc8XX/850/32_USB.pdf
 >
-> So, we made a diff on all changes we've done on Malek's 2.2.5 and
-> applied that to 2.2.13.
-> We then ran a test on it and found 2.2.13 was 3 times slower than 2.2.5!
->
-> We haven't analyzed what made the difference (or in fact what changes
-> we've introduced to 2.2.13 with the patch, other than the reported
-> conflicts).
->
-> Is there anyone that experienced the same fenomena?
-> What might be the reason for this?
+>The whole users manual is linked off:
+>http://www.mot.com/SPS/RISC/netcomm/docs/pubs/850UM.html
 
-The fact that Dan's 2.2.13 uses write through cache is one thing that
-will affect performance. Grep for DC_SFWT in kernel/head.S and change
-the #if 0 to #if 1.
+I beg to differ - the docs don't really cover host mode at all and
+don't explain a number of things you might need to know to make it
+work.  I've sent feedback to MOT about this already.  The docs are
+really minimal and not very helpful for host mode.  They are just
+barely enough for function mode.
 
-I don't know if that's the only reason, but we don't get any
-performance degradation here with 2.2.13.
+-brad
 
-//Marcus
---
-Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
