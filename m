@@ -1,33 +1,37 @@
-To: "Rune Torgersen" <runet@innovsys.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Boot failure 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 30 Mar 2004 14:50:06 MDT."
-             <DCEAAC0833DD314AB0B58112AD99B93B06DAA7@ismail.innsys.innovsys.com>
-Date: Tue, 30 Mar 2004 23:43:41 +0200
-Message-Id: <20040330214346.53E33C10A0@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Boot failure
+Date: Tue, 30 Mar 2004 15:56:55 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DAA8@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <DCEAAC0833DD314AB0B58112AD99B93B06DAA7@ismail.innsys.innovsys.com> you wrote:
+Found my own error...
+Had compiled in support for Virtual Teminals...
+
+> EXT3 FS on hda3, internal journal
+> EXT3-fs: mounted filesystem with ordered data mode.
+> VFS: Mounted root (ext3 filesystem).
+> Freeing unused kernel memory: 252k init
+> Oops: kernel access of bad area, sig: 11 [#1]
+> NIP: C00DDBA0 LR: C00DDCEC SP: C04B7DC0 REGS: c04b7d10 TRAP:
+> 0301    Not
+> tainted
 >
-> Can any body gove me some insight inot the following error?
+> MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> DAR: 00000004, DSISR: 20000000
+> TASK = cffeb9c0[1] 'init' Last syscall: 5
+> GPR00: 00000000 C04B7DC0 CFFEB9C0 CFD63400 00000001 00000000 CFD63558
+> CFFFD370
+> GPR08: 00000008 00000000 00000000 CFD63400 48000842
+> Call trace: [c00ddcec]  [c00e1b08]  [c00cfee4]  [c0052040]  [c00477d4]
+> [c0047668]  [c0047b2c]  [c000779c]
+> Kernel panic: Attempted to kill init!
+>  <0>Rebooting in 180 seconds..
 >
-> When I try to boot a kernel based on 2.6.3, it crashes when starting
-
-Try using a 2.4.x (= working) kernel.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-To the systems programmer,  users  and  applications  serve  only  to
-provide a test load.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
