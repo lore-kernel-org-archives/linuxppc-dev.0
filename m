@@ -1,50 +1,33 @@
-Message-ID: <3C99801A.8070002@embeddededge.com>
-Date: Thu, 21 Mar 2002 01:39:22 -0500
+Message-ID: <3C9982AD.5030502@embeddededge.com>
+Date: Thu, 21 Mar 2002 01:50:21 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs
-References: <0203210213.AA15856@ivan.Harhan.ORG>
+References: <22654.1016673065@msa.cmst.csiro.au>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov wrote:
+Murray Jensen wrote:
 
+> I like this idea (a lot), but I'm not sure you were serious.
 
-> ......pass this magic info via
-> bi_recs (now it's done either with a board #ifdef maze or .config options). I
-> don't think there should be .config options for things that are fixed hard in
-> PCB traces or in silicon, and board #ifdefs are ugly. bi_recs are the answer.
+I'm always serious :-).
 
-I don't agree.  I believe if you can't configure the software in the usual
-way with configuration options, you can't do it cleanly with bi_recs, either.
-There are pin multiplex configurations on 8xx that you just can't (or shouldn't
-due to lots of complexity) define in a dynamic manner.  The purpose of the
-current Linux configuration is to create a binary that fits a particular board
-and architecture.  Not so long ago, we had great discussions over creating kernels
-with lots of dynamic configuration that would boot on multiple boards and how
-this wasn't suitable for embedded processors due to limited resources.  We
-painstakingly made changes to #defines and rewrote software so the compiler
-would apply optimizations to create binaries as small as possible.  I guess no
-one remembers that anymore :-).  The config options are exactly for things that
-are fixed by board and processor design.  The bi_recs are for only those things
-that aren't fixed by board or processor design, like memory size, cpu speed,
-MAC address.  I almost have to give into Wolfgang's request for flash details,
-but I would still rather have mtd configurations for that :-).
+> .... The problem with
+> this method starts when you have a lot of information to pass
 
-Just take a look at and understand how some of this software has evolved, and
-the 8xx is a great example.  Lots of boards use the same processor (and built in
-peripherals) and are wired slightly different, but there is still a separate
-configuration for all of them and it would be overly complex to not do this.
-Yes, you _could_, but I don't see any value in doing so other than proving you
-can do it.  It creates code that just consumes more resources.  Once you have
-a configuration for the board, the variations are the things I keep mentioning..
-...memory size, cpu speed, MAC address, console port baud rate.  It's been working
-nicely for years, and it is conceptually consistent with other types of Linux
-configuration on other platforms.
+I'm going to (constantly :-) argue that if you are passing lots of information
+then something isn't designed correctly.  It's one thing to be passing a few
+hardware hints or small configuration values, but I think it's quite wrong
+to design a bunch of dynamic software that requires a small data base to be
+passed into to the kernel.  Please don't be confused by this comment and start
+aruging OF device trees on Macs.  The OF tree is really just a bunch of small
+configuration items that allows lots of generic software to run on a variety of
+Mac platforms.
 
 
 	-- Dan
