@@ -1,73 +1,80 @@
-Message-Id: <200001240802.JAA26827@denx.local.net>
+From: Jesper Skov <jskov@cygnus.co.uk>
+Message-ID: <14476.2913.868456.408641@thinktwice.zoftcorp.dk>
+Date: Mon, 24 Jan 2000 09:20:49 +0100 (CET)
 To: dony <dony.he@huawei.com.cn>
-cc: Wolfgang Denk <wd@denx.de>, Brendan.Simon@ctam.com.au,
-        Grant Carter <gcarter@eng.uct.ac.za>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cross-compile dynamic apps for mpc860 on ix86
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 24 Jan 2000 14:16:03 +0800."
-             <388BEE23.A42DFCB5@huawei.com.cn>
-Date: Mon, 24 Jan 2000 09:02:13 +0100
+Cc: Jesper Skov <jskov@cygnus.co.uk>,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: gdbserver
+In-Reply-To: <388BB007.D0BF32C4@huawei.com.cn>
+References: <3889220B.2BD1CB63@huawei.com.cn>
+	<otu2k6tn9h.fsf@thinktwice.zoftcorp.dk>
+	<388BB007.D0BF32C4@huawei.com.cn>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dony,
+>>>>> "dony" == dony  <dony.he@huawei.com.cn> writes:
 
-you did not get my point:
+dony> Jesper Skov wrote:
 
-In message <388BEE23.A42DFCB5@huawei.com.cn> you write:
->
-> > > Yes.  I have successfully built glibc-2.1.1 and glibc-2.1.2 with egcs-1.1.2 and binutils-2.9.1.0.19a.
-> > > I have copied all the shared libraries to my nfs root filesystem under /lib.  I still get segmentation faults when I try to
-> > > run the dynamic application.  Arghh !!!  This is so annoying.
-> >
-> > Make sure you use ONLY files compiled in your  new  environment,  not
-> > ANY files that might exist from older versions in your NFS tree.
-> >
-> > Make sure the shell you are running is statically linked!
->
-> Not needed. Both my shell (sash) and my test app can run dynamically.
+>> >>>>> "dony" == dony <dony.he@huawei.com.cn> writes:
+>>
+dony> Hello,
+>>
+dony> Now I want to use gdbserver to debug my test app.  Running
+dony> "gdbserver :6666 ./mytest" on the target (Powerpc 860) show a
+dony> message: Process ./mytest created :pid=8 But I don't know how to
+dony> run gdb on the host (X86). The README doesn't seem to explain
+dony> clearly . It says first running "gdb mytest" on the host and
+dony> then "target remote mytarget:6666".  But I don't understand
+dony> something about "gdb mytest" . At this time should I run a x86
+dony> "gdb" or something like "powerpc-linux-gdb"? And the "mytest"?
+>>  mytest is the same executable you run on the target. gdb you run
+>> on the host would be powerpc-linux-gdb (i.e., cross-debugger),
+>> thus:
+>>
+>> target:> gdbserver :6666 ./mytest
+>>
+>> host:> powerpc-linux-gdb mytest [...]  (gdb) target remote
+>> mytarget:6666
+>>
+dony> Is it compiled with x86 gcc or cross-compiled with
+dony> "powerpc-linux-gcc"? Really I am very confused at this point:-((
+>>  mytest is compiled with powerpc-linux-gcc.
 
-Then what do you complain  about  segmentation  faults  when  running
-dynamically linked applications???
+dony> "powerpc-linux-gdb" is compiled with gcc or powerpc-linux-gcc?
 
-> > The easiest way to test this is to copy all relevant files to  a  new
-> > place (say, /test/bin and /test/lib) and then test with "chroot /test".
->
-> In a cross-compile environment, It is impossible to do so.  i.e., You can not run any apps for Powerpc on X86 box.
-
-I did not say you should try. Sorry, I thought at  least  *this*  was
-obvious.
+gcc. You should look at one of the FAQ/HOWTO/READMEs/Home pages on the
+sucject of embedded development. I think there was posted a small
+howto on compiling the components a few days back. Check the archive.
 
 
-Ok, once more in detail:
+One question: you are using an x86 host, right? If you use a PPC host,
+you can just use the preinstalled GDB/GCC when building/debugging the
+target binary.
 
-1. Get your PPC target running with the root filesystem mounted  over
-   NFS with a known set of working tools (shell, libraries, ...). For
-   instance, you can start with the files from the `mbxroot.full.tgz'
-   tarball.
 
-2. Put all your new binaries and libraries in  a  separate  directory
-   tree.
+dony>How do you build you powerpc-linux-gdb?
+dony>I copy a gdb-4.17.tar.gz from LinuxPPC R4 CD.
+dony>When I untar and decompress it, I type the following  under gdb-4.17/gdb
+dony>directory:
+dony>
+dony>	./configure --target=powerpc-linux
+dony>	make
+dony>
+dony>	It fails to compile and say:
+dony> make:*** No rule to make target `../bfd/bfd.h`, needed by `blockframe.o`.Stop.
+dony>
+dony>Yes, there is not bfd.h under gdb-4.17/bfd directory.
+dony>Do you know why?
+dony>Thank you very much.
 
-3. Run a statically linked shell on your PPC  target.  You  may  also
-   want to have some more statically linked tools available.
 
-4. Do a "chroot" to your separate directory tree  with  the  binaries
-   and  libraries  you  want to test. Try to execute some dynamically
-   linked binaries.
+I don't know why. It's an old debugger. I think we keep a more recent
+version / CVS tree on sourceware.cygnus.com. It may work better. The
+howto I mentioned before included links to the archives used, as far
+as I remember.
 
-5. Fix the problems.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I have the simplest tastes.  I am always satisfied with the best.
-                                                       -- Oscar Wilde
+Jesper
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
