@@ -1,45 +1,41 @@
-From: markwiz@us.ibm.com
+Message-Id: <200006240632.IAA00722@piglet.grunz.lu>
+Date: Sat, 24 Jun 2000 08:32:04 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Accessing IO space via resources
 To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <85256907.006BC49E.00@d54mta03.raleigh.ibm.com>
-Date: Fri, 23 Jun 2000 15:37:05 -0400
-Subject: Re: ASM-PPC Include File Rework Proposal: Processor / Board
-	 Header Files
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+cc: mj@suse.cz
+In-Reply-To: <200006231224.OAA00765@piglet.grunz.lu>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I agree in part with both Dan and Grant.  May I suggest the processor.h
-file be organized as follows:
+Hi all,
 
-Section 1: SPR Definitions
-     1.A : Common SPR defines
-     1:B: 6xx Specific defines
-     1:C: 8xx Specific defines
-     1.D: 403 Specific defines
-     1.E: 405 Specific defines
-             :
-             :
-Section 2: SPR Bit definitions
-     2.A: Common Bit defines
-     2.B: 6xx Specific Bit defines
-     2.C: 8xx Specific Bit defines
-     2.D 403 Specific Bit defines
-     2.E: 405 Specific Bit defines
-          :
-          :
-With this format multiple files are not needed and it should be easier to
-read because it would eliminate many of the #ifdefs. It also would allow
-new processor definitions to be added in the future.
+On  23 Jun, this message from To: linuxppc-dev@lists.linuxppc.org echoed through cyberspace:
+> Now, in the latest 2.4.0-ac kernels, ioremap() returns different
+> addresses, not 1:1 the original address anymore. And of course this
+> breaks the above scheme. (I've not looked into why this is so... I
+> suppose it's not a bug?)
 
-Mark K. Wisner
-Staff Software Engineer
-IBM Microelectronics
-3039 Cornwallis Rd
-RTP, NC 27709
-Tel. 919-254-7191
-Fax 919-543-7575
+After investigating this, it turns out that early in the boot process,
+before the mm system is up, ioremap returns virt == phys for
+addresses >= ioremap_base. ioremap_base got changed from 0xf8000000 to
+0xf0000000 in recent kernels. Anybody kow why this got changed?
+
+Obviously, the PCI IO space was above ioremap_base before, but is below
+now...
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
