@@ -1,51 +1,38 @@
-Message-Id: <v04003a00b3b7de41a7b6@[10.0.0.2]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sun, 18 Jul 1999 15:51:53 -0400
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user-digest@lists.linuxppc.org
-From: Paul Barrette <barretp@mcmail.cis.mcmaster.ca>
-Subject: some progress: opening display /platinum@F8000000... failed
+Date: Sun, 18 Jul 1999 16:23:47 -0600 (MDT)
+From: Dan Burcaw <dburcaw@terraplex.com>
+To: Tom Rini <trini@disparity.net>
+cc: Paul.Mackerras@cs.anu.edu.au, stp9@cornell.edu,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: USB on "Bronze" PowerBook?
+In-Reply-To: <Pine.BSF.3.96.990718225201.50420H-100000@silver.teardrop.net>
+Message-ID: <Pine.LNX.3.96.990718162333.8407B-100000@newhope.terraplex.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok, I compiled my old kernel src, 2.2.2 and loaded it in the approp. place.
-I used my old OF settings that booted fine with kernel 2.2.2  on R4.   I
-compiled with the same .config file (after a make mrproper).
+> 
+> The new PBs have a different OHCI chip (not an OPTi, name escapes me right
+> now). which neither inkays or the current stack seem to have much/any luck
+> with.
 
-NB it gave me the same problem! opening display /platinum@F8000000... failed
-However, at least the kernel boots with a nasty screen, and boots fine
-screen and all from bootx.  So this suggests that 2.2.6-15 has some boot
-issues concerning the 7200.
+IIRC, it's a Lucent chip.
 
-here is the quik.conf:
-root = /dev/sda5
-timeout = 300
+> 
+> ---
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
+> 
 
-#kernel 2.2.2 (ipmasq,3com eth cards,autofs) with fixed vram, no bootx
-settings!
-image = /boot/vmlinux-1
-        label = linux
-        alias = 1
-        append="/boot/vmlinux-1  root=/dev/sda5
-video=platinumfb:vmode:12,cmode:8"
-<<
-I tried boot-file empty and with the append line above, same result.  I
-think there is some kind of boot enabler or something in R5 that is
-different from R4.
+> 
 
-ARe there any new OF issues for R5?
 
---
-Paul Barrette
-Ph.D. candidate, dept. of Classics
-System Administrator
-McMaster University
+Dan
 
-umbra loco deerat; qua postquam parte resedit
-Dis genitus vates et fila sonantia movit,
-umbra loco venit.                  (Ov. Met. 10. 88 ff.)
-http://www.humanities.mcmaster.ca/~barrette/
+Terra Soft Solutions, Inc.
+ email: dburcaw@yellowdoglinux.com
+ website: http://www.yellowdoglinux.com/
 
 
 
