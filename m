@@ -1,56 +1,44 @@
-Message-ID: <37AFCBA3.FBA0CC9D@stny.rr.com>
-Date: Tue, 10 Aug 1999 02:50:11 -0400
-From: Patrick Berge <pberge@stny.rr.com>
-MIME-Version: 1.0
 To: Paul.Mackerras@cs.anu.edu.au
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: mace:transmit timeout - resetting
-References: <37AFA3A3.370B25CB@stny.rr.com> <199908100606.QAA23344@tango.anu.edu.au>
-Content-Type: text/plain; charset=us-ascii
+Cc: Geert.Uytterhoeven@cs.kuleuven.ac.be, linuxppc-dev@lists.linuxppc.org,
+        linux-fbdev@vuser.vu.union.edu
+Subject: Re: [linux-fbdev] Re: readl() and friends and eieio on PPC
+References: <Pine.LNX.4.10.9908091008460.25523-100000@mercator.cs.kuleuven.ac.be> <199908100100.LAA28784@tango.anu.edu.au>
+From: Jes Sorensen <Jes.Sorensen@cern.ch>
+Date: 10 Aug 1999 09:18:21 +0200
+In-Reply-To: Paul Mackerras's message of "Tue, 10 Aug 1999 11:00:29 +1000"
+Message-ID: <d34si8xfwi.fsf@lxp03.cern.ch>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+>>>>> "Paul" == Paul Mackerras <paulus@cs.anu.edu.au> writes:
 
->
-> The reason for the message is that there are some bugs in the mace
-> chip which cause it to lock up very occasionally.  When the driver
-> detects this condition, it prints this message and tries to reset the
-> chip.  If your network keeps working, then it means that the driver
-> successfully got the mace chip going again.
->
-> > Any ideas about my problem and/or the meaning of the HZ would be
-> > helpful.
->
-> HZ is the number of timer interrupts per second.
->
-> Paul.
+Paul> If you take out the eieios, you will break other drivers,
+Paul> starting with the OHCI USB host driver.  Can we think of another
+Paul> way around the problem?  You could use le32_to_cpup for loading
+Paul> from the frame buffer, but there isn't currently an equivalent
+Paul> for stores, unfortunately (one could be invented, though).
 
-Oh No... yea it still works but is very very slow so bad I can not even use
-VNC !   Well this is miserable!  Thank you very much for the quick
-response.  Looks like I will be buying a PCI ethernet card for my PowerMac
-7200.  I just got it donated to me so guess I can't complain too much.
-Does Apple know about the problem since mace is used with the built-in
-ethernet?  I am sure this is asking too much but I will try ...will Apple
-replace it?
+This is quite easily solved by putting in mb()'s in the right
+places. This is how it is done for other drivers that are supposed to
+work on the Alpha.
 
-I would still like to get a software fix for my problem? If possible?  Will
-increasing the timeout value improve the problem?  It would if the software
-detection of the timeout is bogus sometimes.  If the software detection of
-this problem is always detecting the hardware hang then increasing the
-timeout will just make it slower.  Any ideas ?
+Paul> I thought the point of the aty_ld/st* routines was to avoid one
+Paul> add instruction each time by using the PPC indexed addressing
+Paul> mode.  Anyway, IMO the aty_ld/st* routines *should* include the
+Paul> eieio.  That would mean you wouldn't need the explicit eieio()
+Paul> calls scattered through the rest of the driver.  I guess it's
+Paul> just luck that it works where you do a sequence of aty_st_le32's
+Paul> to set up some drawing command and then call wait_for_fifo (or
+Paul> wait_for_idle) which does an aty_ld_le32.  Or doesn't it matter
+Paul> if the load gets done before all of the stores have completed?
 
-Also what company made the mace chip ... I am hardware designer myself and
-I am very frustrated to see companies ship buggy hardware!  I work on
-hardware for UNIX machines that must be 24x7 and  blazingly fast.  It is a
-shame PC customers put up with buggy hardware/software!  (That is why
-Windows/MacOS are still around.)  I guess rebooting your machine because of
-lock ups or the blue screen death is acceptable... yea but the UNIX
-customers do pay lots of bucks.  Sorry I had to vent my frustrations.
+Having mb()'s explicitly put into the driver in the right places also
+makes sure that a driver will work on other architectures. Right now a
+driver that is written for the PPC is likely not to work on the Alpha
+if the author expects readl/writel to guarantee write ordering.
 
-Patrick Berge
-
+Jes
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
