@@ -1,33 +1,56 @@
-Message-ID: <391B76B9.AD622925@mvista.com>
-Date: Thu, 11 May 2000 20:12:57 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: progress on IBM 405GP port (it boots)
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200005120507.HAA02656@denx.local.net>
+To: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+cc: "Lucinda Schafer" <lucsch@adaptivemicro.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Help about the libc-2.1.1 segmentation fault 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 12 May 2000 09:05:32 +0800."
+             <001e01bfbbae$2d0e03a0$69f001dc@sjzhu.sps.mot.com>
+Date: Fri, 12 May 2000 07:07:52 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Its been a while since I've provided an update on our efforts to boot Linux on the
-IBM 405GP based Walnut reference / evaluation system.
+In message <001e01bfbbae$2d0e03a0$69f001dc@sjzhu.sps.mot.com> you wrote:
+>
+> Firstly, thank you for your kind help.
+> In fact, my root file system is libc-1.99.so.  It assures me to begin to
+> work.
+> I build another file system to test the libc-2.1.1.so. It likes
+>            ----  lib/libc-2.1.1.so
+>           |
+> /mnt ----------  bin -------- hello.dynamic, which built with libc-2.1.1.so
+> library
+>           |              |--- hello.static, which built with static library
+>           |
+>           ------ sbin/
 
-The system now boots to multi-user mode.  The root file system is NFS mounted via
-a PCI ethernet card.  Real world applications such as the Apache web server run
-quite nicely.  I've been told that Doom and Tetris also run very well (sorry, I
-didn't build & run these, so I can't provide any details on building them).
+Combining libc5 (1.99) and libc6 (2.1.x) withing one  system  is  not
+easily done.
 
-Some more information, the kernel source, and the tool chain to build the kernel
-are available at:
+The only way I got  this  working  is  _strict_  separation  of  both
+environments; separate directories is not enough.
 
-   http://www.mvista.com/products/405gp_status/main
+Try the following: install a STATICALLY linked shell  (for  instance,
+sash)  as  /mnt/bin/sh;  then  run "chroot /mnt /bin/sh", so that you
+have a staicallly linked shell  running  in  a  chrooted  environment
+where   ONLY  libc-2.1.x  files  (binaries,  libraries,  loader)  are
+visible.
 
-Enjoy!
+This way I've been testing my 2.1.x (x=1, 2 and 3) libs and  binaries
+for a while.
 
--Frank
+Works fine for me, hope it helps.
+
+Wolfgang Denk
+
 --
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+C++ was an interesting and valuable experiment, but we've learned its
+lessons and it's time to move on.
+                            - Peter Curran in <DCqM4z.BxB@isgtec.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
