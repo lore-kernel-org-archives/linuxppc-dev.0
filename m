@@ -1,37 +1,29 @@
-Date: Wed, 5 Mar 2003 10:10:20 -0700
+Date: Wed, 5 Mar 2003 10:12:34 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Dale Farnsworth <dale@farnsworth.org>,
-	linuxppc-dev@lists.linuxppc.org, Troy Benjegerdes <hozer@hozed.org>
-Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
-Message-ID: <20030305171020.GB19303@ip68-0-152-218.tc.ph.cox.net>
-References: <15973.18737.651334.824024@argo.ozlabs.ibm.com> <20030305010318.6A4D3C6E0C@atlas.denx.de> <15973.24544.124365.553602@argo.ozlabs.ibm.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Daniel Jacobowitz <drow@false.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
+Message-ID: <20030305171234.GC19303@ip68-0-152-218.tc.ph.cox.net>
+References: <3E64DB91.4050508@embeddededge.com> <IGEFJKJNHJDCBKALBJLLEEMPFKAA.joakim.tjernlund@lumentis.se> <20030304233558.GA17093@ip68-0-152-218.tc.ph.cox.net> <008201c2e2a8$1afc4a40$020120b0@jockeXP> <20030305000542.GC17093@ip68-0-152-218.tc.ph.cox.net> <009001c2e2ac$d44c55e0$020120b0@jockeXP>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15973.24544.124365.553602@argo.ozlabs.ibm.com>
+In-Reply-To: <009001c2e2ac$d44c55e0$020120b0@jockeXP>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Mar 05, 2003 at 01:24:32PM +1100, Paul Mackerras wrote:
-> Wolfgang Denk writes:
+On Wed, Mar 05, 2003 at 01:19:04AM +0100, Joakim Tjernlund wrote:
+> > > from http://lists.linuxppc.org/linuxppc-dev/200303/msg00022.html
+> >
+> > Well, the whole change is at:
+> > http://ppc.bkbits.net:8080/linuxppc_2_4_devel/cset@1.118.1.428?nav=index.html|ChangeSet@-1d
+> >
+> > So, that should give it more context and make it clearer, I hope..
 >
-> > BTW: _all_ this writing to kernel text is a Bad  Thing  (TM),  as  it
-> > makes XIP (for example running from ROM) really difficult.
->
-> Well, there is no reason why the secondary hold code shouldn't just
-> reference an ordinary variable in the kernel data section.  It would
-> take a couple more instructions, but that shouldn't be a problem.  The
-> starting address for the secondary hold code needs to be well-known
-> (at least to the prep boot wrapper) but the variable that it spins on
-> doesn't.
+> Yes, but how did you come up with the fix in the first place? Trial end error or did Motorla help you?
 
-Keep in mind that this issue has come up because there will be more
-non-CONFIG_ALL_PPC SMP systems being supported.
-
-Dale, how hard would it be to change the code you have (and the PReP
-code as well which maybe we can get Troy to test :)) to do what Paul
-suggested above and use an ordinary variable in the kernel data section?
+It wasn't me personally, but it was trial and error I believe.
 
 --
 Tom Rini
