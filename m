@@ -1,23 +1,38 @@
-From: nailz@room101.innerparty.org
-Date: Thu, 25 May 2000 18:52:40 -0400 (EDT)
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Powerbook hard freeze summary (sort of)
-Message-ID: <Pine.LNX.4.21.0005251849590.12186-100000@room101.innerparty.org>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: Michel Dänzer <daenzerm@student.ethz.ch>,
+        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org,
+        debian-powerpc@lists.debian.org
+Subject: Re: Debian pmud package available
+References: <Pine.LNX.4.10.10005252218170.21530-100000@opal.biophys.uni-duesseldorf.de>
+From: Francois Felix Ingrand <felix@ingrand.net>
+Date: 26 May 2000 09:58:39 +0200
+In-Reply-To: Michael Schmitz's message of "Thu, 25 May 2000 22:25:36 +0200 (CEST)"
+Message-ID: <x8qln0xhhe8.fsf@alf.laas.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just thought I'd throw my experiences in the pot.  I have a 500Mhz pismo,
-that came with 64 megs.  I slapped in a 128meg SO-DIMM bringing it up to
-192.  Linuxppc would crash very reliably (it was rock solid with
-64).  Macos would also crash, although not nearly as much.  I assumed it
-was a bad DIMM (and it may very well have been) and sent it back.  But now
-I'm kind of cagey about buying another DIMM for it.
+Sorry to step in this thread, but I am interested in having those
+power management capabilities on my Pismo too. I use LinuxPPC 2000
+(2.2.15pre19)
+
+Where can I get the RPMS or tar files.
+
+Thanks in advance,
+
+> > > is the Pismo media bay or iBook CDROM at hdc?
+> >
+> > The DVD-ROM in my Pismo is hde.
+
+So is mine.
+
 
 --
-Nolan
-
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+"Tant que les plages ne sont pas propres... boycottons Elf-Total!"
+Professional: http://www.laas.fr/~felix               mailto:felix@laas.fr
+Personal: http://www.ingrand.net/felix         mailto:felix@ingrand.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
