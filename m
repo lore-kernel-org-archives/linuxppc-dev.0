@@ -1,52 +1,50 @@
-Message-Id: <200003230219.CAA29901@hyperion.valhalla.net>
-Date: Thu, 23 Mar 2000 02:20:00 +0000
-Subject: Re: State of sound support in 2.3.x
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: jingai@floatingpenguins.com
-CC: "PPC-DEV" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Subject: Some issues to resolve with XFree 4.0 yet
+Date: Wed, 22 Mar 2000 23:46:34 -0500
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <Pine.LNX.4.21.0003151544550.3091-100000@idd-01.imbc.gr>
+In-Reply-To: <Pine.LNX.4.21.0003151544550.3091-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Message-Id: <00032223534800.00840@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I have the 2.3.52 kernel from Paul's tree, with PowerMac DMA
-> sound support compiled in.  I guess my question is:  what is the current
-> state of sound support in Paul's 2.3.52 kernel?
+Hi Kostas,
 
-My primary distribution source is also LimuxPPC.
+I have set up my XF86Config file to allow mode switching (with valid mode info)
+by hitting the Cntl-Alt-KeyPad- and Cntl-Alt-KeyPad+ keys.  Unfortunately,
+although the mode seems to switch the screen is very messed up.  Luckily, if I
+keep hitting the key combo I get back to a good resolution.  I tracked this
+back to fbdevxxxSwitchMode which uses a framebuffer ioctl (FBIOPUT_VSCREENINFO)
+which in turn is handled in linux/drivers/video/fbmem.c and eventually calls
+aty128fb.c set_var routine.
 
-Geert Uytterhoeven posted a patch to split the DMA sound support between
-Pmac, Atari etc. a while ago (look for dmasound split).
+Something here is broken but I can't put my finger on what yet.  Does using the
+key combo to switch modes on the fly under R128 work for you on your x86
+machine?
 
-If you can't find it, I have a copy of the URLs to fetch it, somewhere.
+Also, I tried to test this under the XFree86 running fbdev as its driver.  Each
+time I tried this I ended up with a complete hard lockup (kernel went boom).  I
+tried connecting from other machines on my home network but I got no response
+at all.
 
-It works against 2.3.52 [Paul's tree] (with a small additional mod to
-drivers/char/mem.c)
+This used to work fine under xf 3.9.17.   Have you tried this recently?
 
-With the patch, 44.1k wav files >/dev/dsp work on G3(beige Minitower) & G3
-Lombard + possibly some others...
+Thanks,
 
-I am still trying to get to the bottom of why it doesn't on a 9600 [>50%
-chance that it's an unrelated problem] and checking out other formats.
+Kevin
 
-I haven't tried very hard to do anything without the patch.
 
-Theme Sound under KDE (1.1.1) seems to be broken with or without the patch
-(apart from Beep) - but that's probably a 2.3.xx issue.
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
-As for other issues e.g. whether OSS stuff works - well I never got the
-sequencer to work yet [under 2.2.6-apmac15, 2.2.14p9 or 2.3.xx] (but I
-didn't try very hard yet ;-)
-
-Once I understand the issues better I am going to try an ALSA driver for the
-pmac built-in sound (it might help you because ALSA has support for the
-'legacy' sound methods - which might bring more of the x86 stuff into view).
-
-P.S. I'm pretty new to this particular kernel... so there's probably loads
-more to add.
-
-ciao,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
