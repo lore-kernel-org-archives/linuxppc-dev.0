@@ -1,45 +1,40 @@
-Subject: Re: parallel I/O ports & opend darin pins on MPC8xx
+Subject: Re: how to mount CF device in linux
 From: Craig Hollabaugh <craig@hollabaugh.com>
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <FCEAKDJJAPHPLJFINDAJOEFEDEAA.Stephan.Linke@epygi.de>
-References: <FCEAKDJJAPHPLJFINDAJOEFEDEAA.Stephan.Linke@epygi.de>
-Content-Type: text/plain
-Date: 08 Jul 2003 09:49:37 -0600
-Message-Id: <1057679377.870.18.camel@gibson>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <001901c34557$315aee60$4a44900a@hydingnb>
+References: <001901c34557$315aee60$4a44900a@hydingnb>
+Content-Type: text/plain; charset=UTF-8
+Date: 08 Jul 2003 09:53:30 -0600
+Message-Id: <1057679611.870.22.camel@gibson>
 Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2003-07-08 at 09:31, Stephan Linke wrote:
-> on one of our boards we are using one of the I/O pins in open drain mode. This leads to some problems in combination with other
-> drivers that write to the ports data register. Since they can not detect the current output value of the open drain pin. They only
-> see the status of the I/O pin no matter who forces the value the CPM or another device connected to the open drain pin. After
-> writing back the value read from the I/O data register this value is forced by CPM which is normaly wrong.
-
-Stephan,
-
-What you are explaining, I beleive, is the reason why developers use
-open drain in the first place. Multiple devices connected to control a
-single signal giving bidirectional data flow.
-
+On Tue, 2003-07-08 at 07:45, 丁厚永 wrote:
 >
-> Did anyone run into that problem in the past? What was your solution? Any thing else but NOT using open drain pins?
+>     I have a IBM Microdrive CF device which is 1GB.
+>     I have joined it with a PC Card Adapter provided by IBM and pluged
+> it into a PCMCIA slot in my notebook. Under WIN XP, i can explorer
+> the device. How can i find this device under linux(redhat7.3) and
+> fdisk,format and create fs with it?
 
-Have you grepped the kernel source to find the other drivers affecting
-that specific port control register? What did you look for and what did
-you find?
+Did the kernel find the device during bootup, use dmesg to look at the
+boot messages?
+
+As root, use mount, like
+
+mount -t msdos /dev/xxx /mnt
+
+where xxx is the device the kernel found. msdos might not be correct,
+replace msdos with the filesystem type you installed on the card.
 
 Craig
 
-
-
->
 --
 ------------------------------------------------------------
 Dr. Craig Hollabaugh, craig@hollabaugh.com
 Author of Embedded Linux: Hardware, Software and Interfacing
 www.embeddedlinuxinterfacing.com
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
