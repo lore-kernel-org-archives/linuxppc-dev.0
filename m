@@ -1,77 +1,51 @@
-Date: Wed, 15 Sep 1999 10:22:22 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Ethan Benson <erbenson@alaska.net>
-cc: "Timothy A. Seufert" <tas@mindspring.com>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: New booter
-In-Reply-To: <v04210105b404ed46f043@[192.168.0.1]>
-Message-ID: <Pine.LNX.3.96.990915100107.32318D-100000@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <v04210100b40584bafd82@[206.173.234.246]>
+In-Reply-To: <37DDC204.22888BE8@chpc.utah.edu>
+References: <37DDC204.22888BE8@chpc.utah.edu>
+Date: Wed, 15 Sep 1999 10:27:15 -0700
+To: Lou Langholtz <ldl@chpc.utah.edu>, linuxppc-dev@lists.linuxppc.org
+From: Randall R Schulz <rrschulz@cris.com>
+Subject: Re: stty < /dev/modem blocks???
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 14 Sep 1999, Ethan Benson wrote:
+Lou,
 
-> On 14/9/99 Timothy A. Seufert wrote:
-> 
-> >In fact, I think that's just what OS X does on New World machines.  I
-> >recall that it creates a small partition named "Rhapsody Booter" or some
-> >such thing.
-> 
-> yes it does this on all machines, and frankly I think its a 
-> disgusting kludge, that would be OK as a absolute LAST RESORT *after* 
-> all attempts to get a proper booter working have failed.
+As you know, the less-than (<) operator in all Unix shells opens the 
+file name given as an argument before it executes the command. In 
+order for an open() call on a TTY device to complete, the RS232 
+hardware signals that indicate the presence of an active device 
+connected to the port. In practice, this means that the DTR (data 
+terminal ready) signal must be asserted before the open call will 
+return. Because the TTY drivers are "slow" devices, the kernel wait 
+call that synchronizes the application program's open() call with the 
+serial hardware state is interruptable. That is why you can get out 
+of the "hang" with a SIGINT (control-C).
 
-That _is_ a proper booter.  I assume you mean that having a booter should
-be a last resort after you can't get direct OF loading to work....
+The reason you're able to make the analogous thing work with 
+/dev/pts/0 is that in place of waiting for a hardware signal, the PTY 
+driver slave side (/dev/pts/nn) waits for an open on the 
+corresponding controlling side (/dev/ptc/nn). If you're running X and 
+you have a terminal window open, then there's a terminal emulator 
+with the controlling side of /dev/pts/0 open and that allows your 
+"stty </dev/pts/0" command to complete.
 
-
-> linux in my view is about doing things better, and doing them *right* 
-> Linus himself is fairly picky about doing things right instead of 
-> doing a kludge that `works'
-> 
-> Apple's attitude seems to be `why do it right when a kludge will do?' 
-> I do not want to see linux choose the same philosophy.
-
-I am, frankly, offended by that statement.  You're talking about what you
-see now and using the words "MacOS X".  What you see now doesn't even
-remotely resemble MacOS X code-wise.  It's MacOS X Server, not MacOS X. 
-Different kernel, totally different source base, probably a different boot
-mechanism.
-
-The fact that the current "temporary" code uses what you describe as a
-kludge does _not_ in any way mean that Apple's attitude is to use a kludge
-instead of doing things right.  MacOS X Server was never intended to be
-anything more than a series of hacks to get people by until the real code
-comes out.  Period.
+Randy Schulz
+Mountain View, CA USA
 
 
-> sorry to be blunt but just because apple has chosen to kludge their 
-> bootloader does NOT mean that is what we should do.
-
-Doing it "right" means ripping Apple's BrokenFirmware (tm) off the boards
-and rewriting it so that everything works.  Short of that, all boot
-methods are kludges.  The choice here is whether you want to have to boot
-half-way into MacOS (BootX) or have a way that doesn't require any
-licensing to distribute in a bootable form (this new thing).
-
-Also, to say that Linux does things "right" is ridiculous.  Linux x86 has
-loadlin, which loads from DOS (kinda like BootX app), and syslinux, which
-seems similar to what this new booter is doing.  Booting by OF is kind of
-like booting with x86's lilo, which isn't always possible on all drives
-in all configurations.  That's why they have other things like syslinux
-and loadlin.  That's why LinuxPPC has BootX and now... well, whatever this
-thing is called... BootY?
-
-In conclusion, Linux has, and always will have kludges as alternative boot
-mechanisms for machines that can't boot in the traditional way.  There's
-simply no way around it if you want to support a wide range of machines.
-
-
-David
+At 21:33 -0600 9/13/99, Lou Langholtz wrote:
+>On my 2.2.12 kernel with some hacks I've added I can't use stty to get
+>the configuration info for /dev/ttyS0. stty < /dev/ttyS0 (aka
+>/dev/modem) just hangs. strace stty < /dev/ttyS0 does the same thing.
+>strace doesn't even show me any output. Ctrl-C kills the stty or strace
+>but shouldn't stty work on the modem serial device to get the config
+>info? Is it just the hacks I've added in my kernel perhaps? stty
+>< /dev/pts/0 works just fine. Ideas?
+>
+>Thanks!!
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
