@@ -1,32 +1,29 @@
-Message-Id: <v04003a00b627c64303c3@[24.70.162.12]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 2 Nov 2000 20:16:20 -0600
-To: Linux/PPC Dev <linuxppc-dev@lists.linuxppc.org>
-From: Tony Mantler <nicoya@apia.dhs.org>
-Subject: Promise ATA{66,100} PCI cards work
+Date: Thu, 2 Nov 2000 21:56:32 -0500 (EST)
+From: mukesh agrawal <quichem@eecs.umich.edu>
+To: Tony Mantler <nicoya@apia.dhs.org>
+cc: Linux/PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Promise ATA{66,100} PCI cards work
+In-Reply-To: <v04003a00b627c64303c3@[24.70.162.12]>
+Message-ID: <Pine.GSO.4.21.0011022148370.27430-100000@dogbert.eecs.umich.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just as a note for anyone interested, with 2.2.17 + pci patches + ide
-patches, both my 9600/200mp and my friend's 7600/120 can talk to the
-Promise ATA66 and ATA100 boards.
+> Just as a note for anyone interested, with 2.2.17 + pci patches + ide
+> patches, both my 9600/200mp and my friend's 7600/120 can talk to the
+> Promise ATA66 and ATA100 boards.
 
-Bad things happen if I try to do things like 'hdparm -Xnn /dev/hde' or 'cat
-/proc/ide/pdc202xx' but I don't tend to do that very often so it doesn't
-bother me. Everything else seems to work peachy-keen.
+FWIW, I tried 2.2.16 + ide patches (no pci patches -- where can they be
+found?), and that didn't work on my 7200/75.
 
-Of course, IDE still sucks, but if you can't get enough of those cheap
-drives... ;)
+I switched to 2.4 (from bitkeeper), and that didn't work initially. I
+commented out the part of the driver that checks for the controller having
+been disabled by the bios, and it's worked since then.
 
-
-Cheers - Tony 'Nicoya' Mantler :)
-
-
---
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+BTW, anyone have MOL working on 2.4? After it switches to its own virtual
+console, it seems to just die.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
