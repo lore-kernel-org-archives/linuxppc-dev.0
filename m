@@ -1,84 +1,53 @@
-From: DavidHo@nanometrics.ca
-Subject: Fw: EXT_DIRECT IDE Mode
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFDCE1745F.75320B54-ON85256E37.00772EA4-85256E37.0077879C@nanometrics.ca>
-Date: Wed, 11 Feb 2004 16:45:34 -0500
+Message-ID: <20040211214947.87373.qmail@web21110.mail.yahoo.com>
+Date: Wed, 11 Feb 2004 13:49:47 -0800 (PST)
+From: Lou Rickard <lou_rickard@yahoo.com>
+Subject: ml300 boot loader question
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve,
+I'm having a hard time figuring out how to boot our
+kernel/filesystem on the ml300.  I suspect it's a
+problem with the bootloader, but not 100% sure.
 
-Who calls ide_init_hwif_ports (function in asm-ppc/ide.h) if
-CONFIG_BLK_DEV_IDEPCI is not configured and ide_default_io_base always
-returns 0?
+We're able to generate a file to program the FPGA with
+that will allow us to use the BDI2000 to boot the
+system.  From trial and error, I've gotten the
+impression that the FPGA file includes a bootloader of
+some kind: when we didn't include some of the binary
+firmware with the FPGA file we couldn't even get the
+BDI2000 to boot the system.  When we started including
+the binary firmware stuff (which I don't quite
+understand yet), the system came up to a state where
+we could boot with the BDI2000.
 
-That's what's puzzling me.
+So, based on that, I'm guessing that the systemace
+chip fills the bram with some sort of bootloader
+sometime around when it programs the FPGA.
 
-David
+However, I haven't been able to build a FPGA file that
+would actually boot to a linux filesystem on the flash
+card.  The FPGA programs, but then nothing happens
+(this is with the BDI2000 unplugged, I don't think any
+software can be run with the BDI2000 plugged in unless
+it's downloaded via the BDI2000, but I could very well
+be incorrect).
 
------ Forwarded by David Ho/NMX/CA on 02/11/2004 04:42 PM -----
+I've looked at the Monta Vista partitions that came
+with the kit.  I don't see any kind of stand alone
+boot loader, so I'm guessing that they have included
+their bootloader with the FPGA file.  I don't know if
+this is a modification of the bootloading binaries
+that come with the Xilinx development kit.
 
-                      DavidHo@nanometrics.ca
-                      Sent by:                                To:      Steven Scholz
-                      owner-linuxppc-embedded@lists.l         <steven.scholz@imc-berlin.de>
-                      inuxppc.org                             cc:      linuxppc-embedded@lists.linuxppc.org
-                                                              Subject: Re: EXT_DIRECT IDE Mode
+Could anyone clue me in?
 
-                      02/11/2004 01:54 PM
+Thanks,
 
-
-
-
-
-Steve,
-
-I'm using a variant of the 2.4.18 kernel from timesys.
-
-The kernel is compiled with those settings.  (in your email)
-
-I had to add a call to m8xx_ide_init in m8xx-setup.c at the end of
-platform_init.
-
-I can only find these defines in ide-m8xx.c.  I am thinking there must be
-more to it than the one file.
-
-Thanks for your help,
-David
-
-
-
-
-DavidHo@nanometrics.ca wrote:
-
-> My application needs a compactflash and a 1.8" disk drive connected to
-the
-> MPC852T.  Since the compact flash has already taken up the only PCMCIA
-> slot, the disk drive is directly attached to the PPC bus so I need to
-> enable EXT_DIRECT for the disk drive.
-Ok.
-
-> I haven't been able to make linux call the ide_init_hwif function.  I
-> looked at how ide.c works and it looks like it enables IDE interfaces on
-> the PCI first (ide_default_io_base returns non-zero).  I haven't yet been
-> able to find out where it call my function.
->
-> Would you be able to tell me how you got this mode working.
-
-I do if you tell me which kernel version you tried.
-I guess you have
-
-CONFIG_BLK_DEV_MPC8xx_IDE=y
-# CONFIG_IDE_8xx_PCCARD is not set
-# CONFIG_IDE_8xx_DIRECT is not set
-CONFIG_IDE_EXT_DIRECT=y
-
-in your .config file?
-
-Steven
+~lr
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
