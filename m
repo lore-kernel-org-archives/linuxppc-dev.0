@@ -1,79 +1,31 @@
-Date: Sun, 6 Dec 1998 19:18:18 -0600 (CST)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Elgin Lee <ehl@funghi.com>
-cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF68_FBDev under MkLinux? 
-In-Reply-To: <199812060154.RAA01357@porcini.funghi.com>
-Message-ID: <Pine.LNX.3.96.981206190751.2542E-100000@globegate.utm.edu>
+Date: Sun, 6 Dec 1998 23:07:46 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: linuxppc-user@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: pre-R5 and XFree86-3.3.3
+Message-ID: <Pine.LNX.4.05.9812062303340.1031-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 5 Dec 1998, Elgin Lee wrote:
+Ok.  Assuming everything is setup like it should be, sometime between now
+and two days from now, two sets of XFree86-3.3.3 rpms should show up on
+dev.linuxppc.org for pre-R5 (ie glibc 2.0.10x).  XFree86-3.3.3-*-10a is
+3.3.3 with the patches for the non-accel Xpmac and FBDev.  -10b (building
+now) has Xpmac_mga from 981122 and Geerts accel patch from 981204-2.   I'm
+not sure how but I believe there's an option to turn off accel in Xpmac if
+needed, and adding option noaccel (Geert?) to your XF86Config will turn
+off accel in the FBDev server.  The reason of course for the delay is
+mirroring it all over. :)
 
-> Recent (non-official) MkLinux kernels support /dev/adbmouse (busmouse
+Of course if I'm wrong about the setup then it may take a bit longers for
+'em to show up.
 
-I wouldn't call them non-official... they're just non-Apple.  They're at
-least somewhat sanctioned.  :-)
-
-
-<snip>
-
-> >   1. Add frame buffer devices to MkLinux. This requires many kernel
-> >      changes to MkLinux and forces people to upgrade their kernel.
-
-This would be a better long-term solution, though I would find it more
-palatable to add an FB-style interface to the existing drivers, adding
-whatever additional functionality is necessary rather than dumping the
-existing drivers (since switching to the LinuxPPC drivers would probably
-mean dropping x100 support, or else rewriting those drivers from scratch). 
-Note that this is a couple of notches down in priority for me (as far as
-my time goes), but anyone else interested in working on it can feel free.
-
-
-> >   2. Adopt XF68_FBdev so it can use the MkLinux video mode ioctl stuff.
-
-vmode ioctl stuff?  Since when does MkLinux support detecting or changing
-video modes?  This is where we're going to run into trouble either way.
-This particular support code needs to be written.  In the process, it
-would be logical to make it support both a framebuffer interface and the
-traditional interface for compatibility with older vmlinux servers.
-
-> >      This requires no kernel changes. In XF68_FBDev, the video ioctl
-> >      and mmap stuff has to be changed slightly.
-
-And the mach kernel has to have a small amount of code added to map that
-physical space into the vmlinux server's address space, I believe, or
-probably more like additional code in the vmlinux server to request it....
-I'm not sure where the line is drawn... I'm still learning the
-Mach/vmlinux io mapping stuff, the hard way... by coding something and
-then poking around to see why it doesn't work.  :-)
-
-Personally, I don't have any problem with requiring people to upgrade
-their kernel for enhanced performance, though adding traditional ioctl
-support for people who don't want to upgrade would be a nice touch.  With
-the amount of kernel development happening right now, and the number of
-bugs being fixed, people would be well advised to try to stay current if
-they're using MkLinux anyway.  ;-)
-
-
-Later,
-David
-
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
-
------BEGIN GEEK CODE BLOCK-----
-Version 3.1
-GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
-P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
-M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
-b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
-------END GEEK CODE BLOCK------
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
