@@ -1,83 +1,77 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <01139FC052A0D411900B00508B9535FC046CE1DA@ZCH07EXM04.corp.mot.com>
-From: Liu HongXun-a16975 <a16975@motorola.com>
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: problems about the FEC on my cutomized mpc860 board
-Date: Mon, 24 Dec 2001 12:08:41 +0800
+Message-ID: <3C292ED3.38B6A810@india.infogain.com>
+Date: Wed, 26 Dec 2001 07:28:43 +0530
+From: ashish anand <ashisha@india.infogain.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+To: David Ashley <dash@xdr.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 + cache/dma issues
+References: <200112260427.fBQ4Rvi00224@dave.home>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all,
-I used the FEC driver from Wolf's ppc linux as a start point.
-The board is a mpc 860 based board. And the PHY on the board doesn't support MDIO.
-So I undefined the macro 'CONFIG_USE_MDIO'.
-Also there is no link interrupt for the board. So I undefined the 'mii_queue_*' series.
-That means the PHY on my board is just a 'transceiver',
-But the resulted driver didn't work. When I look thrugh the /proc/interrupts,
-the interrupt for FEC ( IRQ 3) is there. I wonder what is the problem?
-Below is the output of the start-up information:
+though i haven't dealt with 8260 specific cache consistency protocol  and all , but feel using
+pci_alloc_consistent may be cause.
+also snooping should be clearly understood whether it is presenting a consistent view
+between cpu and devices or diffeent cpu in a smp setup.
 
-Linux/PPC load:
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.4.2 (rolf@icebox) (gcc version 2.95.2 19991030 (2.95.3 prerelease/franzo)) #162 Mon Dec 24 11:34:03 EST 2001
-Boot arguments: root=/dev/ram
-On node 0 totalpages: 8192
-zone(0): 8192 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/ram
-time_init: decrementer frequency = 187500000/60
-Warning: real time clock seems stuck!
-Calibrating delay loop... 49.76 BogoMIPS
-Memory: 29640k available (904k kernel code, 348k data, 40k init, 0k highmem)
-Dentry-cache hash table entries: 4096 (order: 3, 32768 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 2048 (order: 2, 16384 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Starting kswapd v1.8
-CPM UART driver version 0.03
-ttyS00 at 0x0280 is a SMC
-block: queued sectors max/low 19597kB/6532kB, 64 slots per queue
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-eth0: FEC ENET Version 0.2, FEC irq 3, addr 00:10:ec:00:1d:0b
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 1237k freed
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 2048 bind 2048)
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-devfs: v0.102 (20000622) Richard Gooch (rgooch@atnf.csiro.au)
-devfs: boot_options: 0x2
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 40k init
+David Ashley wrote:
+>
+> I'm running into repeated problems related to cache problems on
+> ppc 8260 based hardware. The kernel is based on Montevista's 2.4.2.
+> The same problem keeps coming up again and again. Here it is:
+>
+> If some external device, such as the pci usb device, writes into system
+> ram, the 8260 doesn't get the changes--instead when the 8260 reads the
+> ram it uses the data in the cache, defeating the whole purpose. We're
+> using the usb-ohci.c driver. In order to get it to work I've had to hack
+> the driver to instead of using pci_alloc_consistent, allocate memory
+> out of a section of local bus ram, which is non-cacheable. The burden
+> of doing this for every driver is just too great.
+>
+> The original driver itself assumes that the dma works properly, meaning it
+> does nothing to invalidate the cache or cause a refresh/flush/update or
+> whatever. The driver initiates a transfer, the usb writes into ram, an
+> interrupt occurs, the driver examines the buffer--and crashes and generally
+> doesn't work because the data it sees isn't in ram, it is what was in the
+> cache.
+>
 
-INIT: version 2.74 booting
-We will not activate swap partitions
-hostname: Linux823MTP.mcel.mot.com
-Remounting root filesystem in read-write mode.
-Mounting local filesystems.
-Initializing random number generator...
-
-INIT: Entering runlevel: 3
-SIOCSIFADDR: No such device
-fec: unknown interface: No such device
-SIOCSIFNETMASK: No such device
-SIOCSIFBRDADDR: No such device
-fec: unknown interface: No such device
-SIOCADDRT: No such device
-Mounting remote filesystems.
-
-Thanks for your suggestions
-Rolf Liu
-
+> My belief is there is something misconfigured on the hardware level. Meaning
+> the cache should work properly. In studying the 8260 docs I read hints at
+> snooping, but no details. My understanding is that snooping is when the
+> 8260 watches the bus to see what activity there is, and if there is a write
+> to something the 8260 holds in a cache, the cache is updated accordingly.
+> Perhaps this snooping is turned off?
+>
+> Also there is talk of C + R bits in the page tables (C = changed, R =
+> referenced). Possibly is the external dma mechanism supposed to update the
+> C + R bits in the page tables itself, causing the 8260 to realize something
+> has been done to the page and so it needs to be updated?
+>
+> The driver doesn't ask for any special non-cacheable memory, just dma
+> capable. Following this through in the code that means in the case of
+> the ppc, all of dram because there is no limit on the dma range. On the
+> i386 tree dma appears limited to the first 16 megabytes. But nothing appears
+> to be demanding non-cacheable memory.
+>
+> I guess I have several questions:
+> 1) How is the system supposed to work so that the cpu and other pci devices
+>    have the same concept of the contents of memory?
+> 2) What is missing in our system that is causing this not to work?
+> 3) What is snooping, and can it be turned on or off by the 8260, or is it
+>    fixed in the hardware?
+> 4) Am I misunderstanding how the linux drivers where, such that when they
+>    allocate memory for dma transfers, it is automatically marked as
+>    non-cacheable?
+> 5) While I'm at it, I'm getting lock ups related to the external pci device
+>    writing into dram. I've heard mention of cache deadlocks, but I don't know
+>    details. Any pointers to documentation will be helpful.
+>
+> Thanks very much for any ideas/advice.
+>
+> -Dave
+> dash@xdr.com
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
