@@ -1,29 +1,29 @@
-Message-ID: <006001be2326$840c7190$61246ccf@timnt.desm.uswest.net>
-Reply-To: "Tim Perdue, The Des Moines City.net" <tim@dmcity.net>
-From: "Tim Perdue, The Des Moines City.net" <tim@dmcity.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: What happened to Adduser?
-Date: Tue, 8 Dec 1998 21:46:33 -0600
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Time on the MVME2700
+Reply-To: minyard@acm.org
+From: Corey Minyard <minyard@acm.org>
+Date: 08 Dec 1998 21:50:44 -0600
+Message-ID: <m267bmc6sr.fsf@wf-rch.cirr.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I must be a total retard or something, but I can't find "adduser" since I
-blew out my valentine's release and put in R4.
+I have Linux 2.1.127 running on a Motorola MVME2700 (750 processor).
+It's working fine except for timekeeping.  It gains about 1.5 seconds
+every 30 minutes, making time synchronization rather difficult.  It is
+calculating the decrementer frequency value as around 998,736,000 (I
+removed the hard coding of 998,700,000 that was in there to see what
+happened.  The difference between the two is not significant).
+However, by my calculations the frequency should be about
+1,000,000,000.  This is all in arch/ppc/kernel/time.c.
 
-Also, "locate" says it can't find the locatedb. Any suggestions on
-rebuilding that db?
+I'm going to hard-code it to that value to see what happens, but has
+anyone else seen this?  Unfortunately, I don't remember the processor
+frequency offhand and I'm at home now.
 
-There is a dearth of documentation of linux ppc. But R4 is really pretty
-kewl.
-
-Now if I can get this damn MySQL and PHP to work right.
-
-TIm
-
+-- 
+Corey Minyard               Internet:  minyard@acm.org
+  Work: minyard@nortel.ca       UUCP:  minyard@wf-rch.cirr.com
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
