@@ -1,38 +1,58 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14669.33990.581970.248299@argo.linuxcare.com.au>
-Date: Mon, 19 Jun 2000 12:26:14 +1000 (EST)
-To: tom_gall@vnet.ibm.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.0-test1 linux/sched.h
-In-Reply-To: <39478BE8.3B6E6157@vnet.ibm.com>
-References: <39478BE8.3B6E6157@vnet.ibm.com>
-Reply-To: paulus@linuxcare.com.au
+Mime-Version: 1.0
+Message-Id: <p04320401b5733a720acd@[10.0.1.5]>
+In-Reply-To: <200006182257.AAA00912@piglet.grunz.lu>
+References: <200006182257.AAA00912@piglet.grunz.lu>
+Date: Sun, 18 Jun 2000 22:55:35 -0400
+To: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
+From: Paul Schinder <schinder@pobox.com>
+Subject: Re: Problems handling large files??
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-tom_gall@vnet.ibm.com writes:
-
-> Anyone notice that on
+At 12:57 AM +0200 6/19/00, Michel Lanners wrote:
+>}
 >
-> 2.4.0-test1-ac18 that sched.h was changed to remove
+>So the 'Cannot allocate memory' comes from the system (libc? system
+>call?).
 >
-> #define PF_PTRACED 0x00000010
-> #define PF_TRACESYS 0x00000020
+>Anybody know what's going on? Can you verify this on a 2.4.0-test
+>kernel? FWIW, bonnie _was_ working OK on 2.2.13 (later unverified) and
+>2.3.48 (latest benchamrk I have).
 
-Yes, this was part of a fix for a race condition in accessing the
-tsk->flags field.  Initially only ix86 was updated with the necessary
-changes but I have since sent in a patch to Alan and it should be
-fixed in the latest -ac version.
 
-Paul.
+All I can tell you is my own experience with 2.3.99 (pre 9, I think,
+but it's long gone) and 2.4.0-test1-ac18.  With 2.3.99, I tried doing
+a backup with cddump (a perl script that runs mkisofs and cdrecord
+for backup up onto CD's), and it failed with both read and write
+errors ("fwrite: cannot write" and "cannot open", as I recall).  This
+morning, under 2.4.0-test1-ac18, I made a 400+ Mb cd image and burned
+it with no trouble.  So if I were you, I'd rsync from Paul's tree
+(ac18 as of Saturday morning EDT) and try a 2.4.0.
+
+Of course, the fact that the clock drifted everywhere (xntpd kept on
+making ~ 10 s corrections) and that I couldn't get my new UMAX Astra
+2200 scanner working under 2.4.0 motivated me to switch to 2.2.16.
+(The scanner still won't work, but the clock doesn't drift.)
+
+>
+>Clues?
+>
+>Thanks
+>		Michel
+>
+>-------------------------------------------------------------------------
+>Michel Lanners                 |  " Read Philosophy.  Study Art.
+>23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+>L-1710 Luxembourg              |
+>email   mlan@cpu.lu            |
+>http://www.cpu.lu/~mlan        |                     Learn Always. "
+>
 
 --
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+--
+Paul Schinder
+schinder@pobox.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
