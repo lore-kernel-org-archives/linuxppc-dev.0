@@ -1,44 +1,42 @@
-To: bart@ardistech.com
-Cc: govindan@india.tejasnetworks.com, svacca@valcom.com,
-	"LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>,
-	govindan@tejasnetworks.com
-Subject: Re: Execute Reset via CheckStop approach 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 23 Aug 2002 15:23:40 +0200."
-             <3D66375C.2046CFA9@ardistech.com>
-Date: Fri, 23 Aug 2002 15:36:48 +0200
-Message-Id: <20020823133653.7604B11822@denx.denx.de>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Dejan Jovanovic" <dejanj@jaspur.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Booting Linux Kernel on a EST8260
+Date: Fri, 23 Aug 2002 06:55:48 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEBMDLAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <014101c24a16$e8f6cea0$db00000a@dejanj>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+> "Warning: real time clock seems stuck!"
+> mean?
 
-in message <3D66375C.2046CFA9@ardistech.com> you wrote:
->
-> I cleared CFG_DER in ppcboot to clear the CHSTP bit. After that I needed to
-> map in the br0 range and to make the asm's volatile and set the input/output
+It means that the RTC is not connected to anything. Look in m8260_setup.c if
+you want to use the 8260 counter timer.
 
-Why do you think you have to do this? This is _NOT_ necessary.
+> 2) I was hoping that I have configured the bootargs corectly. But
+> it seems that
+> something is wrong because of the messages
+> "
+> Looking up port of RPC 100003/2 on 10.0.0.245
+> portmap: server 10.0.0.245 not responding, timed out
+> Root-NFS: Unable to get nfsd port number from server, using default
+> Looking up port of RPC 100005/2 on 10.0.0.245
+> portmap: server 10.0.0.245 not responding, timed out
+> Root-NFS: Unable to get mountd port number from server, using default
+> mount: server 10.0.0.245 not responding, timed out
 
-> parameters of the asm to get the HRESET_N pulse. So this is the version
-> which works (on a MPC823e) in the context of the Linux kernel:
->
->         /* Get base address mapped by BR0/OR0 and map it in */
->         val = ((immap_t *)IMAP_ADDR)->im_memctl.memc_br0 & 0xFFFF8000;
-> 	val = (int) ioremap( retval, 0x4000 );
+One of two things:
+1. You do not have your Ethernet clocks etc setup exactly like the driver
+wants. Look at 8260_io/fcc_enet.c (assuming that you are using the FCC's)
 
-This code is wrong. You clobber the value of "val" here.
+2. Run tcpdump or some other sniffer and make sure your NFS/Bootp server is
+setup correctly.
 
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Defaults are wonderful, just like fire.
-                  - Larry Wall in <1996Mar6.004121.27890@netlabs.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
