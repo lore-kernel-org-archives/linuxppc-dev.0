@@ -1,44 +1,45 @@
-Message-ID: <3E4361C2.8010007@imc-berlin.de>
-Date: Fri, 07 Feb 2003 08:35:30 +0100
+Message-ID: <3E436221.8040903@imc-berlin.de>
+Date: Fri, 07 Feb 2003 08:37:05 +0100
 From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: was: FEC on MPC860T & race condition
-References: <3E395B40.9090506@imc-berlin.de> <3E39898E.5060804@embeddededge.com> <3E3A3EE9.7000608@imc-berlin.de> <20030203210959.GA7857@ip68-0-152-218.tc.ph.cox.net> <3E3F7C29.8030807@imc-berlin.de> <20030204160401.GA30936@ip68-0-152-218.tc.ph.cox.net> <3E3FE6D0.1010600@imc-berlin.de> <20030204193224.GB3522@ip68-0-152-218.tc.ph.cox.net> <3E401AC9.9090703@embeddededge.com>
+References: <3E395B40.9090506@imc-berlin.de> <3E39898E.5060804@embeddededge.com> <3E3A3EE9.7000608@imc-berlin.de> <20030203210959.GA7857@ip68-0-152-218.tc.ph.cox.net> <3E3F7C29.8030807@imc-berlin.de> <20030204160401.GA30936@ip68-0-152-218.tc.ph.cox.net> <3E3FE6D0.1010600@imc-berlin.de> <20030204193224.GB3522@ip68-0-152-218.tc.ph.cox.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek schrieb:
-> Tom Rini wrote:
+Tom Rini wrote:
+>...
+> Okay.  Moving along the process, I have a comment:
 >
->> I believe this is wrong, in that trying to udelay() here is a bad idea.
+>
+>>@@ -2285,6 +2278,39 @@
+>> 	fep->old_status = 0;
+>> #endif	/* CONFIG_USE_MDIO */
+>>
+>>+#ifdef CONFIG_USE_MDIO
+>>+# ifndef PHY_INTERRUPT
+>>+#  error Want to use MII, but PHY_INTERRUPT not defined!
+>>+# endif
+>>+	/* before requesting the irq, we should wait until PHY is discovered
+>>+	 * to avoid race conditions
+>>+	 */
+>>+	while (!fep->phy_id_done) {
+>>+		udelay(5);
+>>+	}
 >
 >
-> I agree.  All of the MII communcation is interrupt driven.  This is easy
-> and the way everything should work on the 8xx.  The link interrupt is
-> more challenging because the interrupt from that depends upon the phy
-> type and the board design.  The link interrupts are either real interrupts
-> or managed with a timed thread.
+> I believe this is wrong, in that trying to udelay() here is a bad idea.
+> I don't have the time right now, but I suspect google, or #kernelnewbies
+> might be able to suggest a more appropriate way of waiting here.
 >
-> If you need to wait before installing the link interrupt (which I still
-> don't understand why), this should be done as part of the phy discovery
-> interrupt.  For example, add an indirect function pointer and if it isn't
-> NULL, call it at that time to do anything that must wait until the phy
-> is discovered and initialized.
+> Or perhaps classes have fried my mind, and this is correct.
+No. I bet you're right.
+But can you make any suggestion on how to wait for some I/O to become ready?
 
-I understand what you mean. And certanly you're right.
-I moved the request_irq into 3 but my board still hanges from time to time. At a
-different place in a different way though.
-
-I have to admit that I don't understand this mii_queue stuff.
-Please, Dan, would you please give me a small hint!
-I assume by "add an indirect function pointer" you mean "add something to
-mii_queue"... Is that right?
-
-Thanks!
 
 Steven
 
