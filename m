@@ -1,39 +1,58 @@
-To: Peter Barada <pbarada@mail.wm.sps.mot.com>
-Cc: Peter.Barada@motorola.com, kentborg@borg.org,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: gdbserver, find_extend_vma(), and VM_GROWSDOWN 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 07 Jul 2003 13:05:22 EDT."
-             <200307071705.h67H5MD01399@hyper.wm.sps.mot.com>
-Date: Mon, 07 Jul 2003 19:20:18 +0200
-Message-Id: <20030707172023.DB957C6D82@atlas.denx.de>
+Message-ID: <20030708000947.48998.qmail@web10010.mail.yahoo.com>
+Date: Mon, 7 Jul 2003 17:09:47 -0700 (PDT)
+From: john duc <jjtduc@yahoo.com>
+Subject: Problem installing Denx Eldk on Mandrake 9.1
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200307071705.h67H5MD01399@hyper.wm.sps.mot.com> you wrote:
->
-> >Did you try GDB/gdbserver from the ELDK?
->
-> No.
+I have tried to install ELDK 2.0.2 and 2.1.0 on
+Mandrake 9.1, the install program doesn't seem to
+install all what needed. Here's what I do:
+ 
+In eldk-ppc-linux-x86 directory:
+./install -d /opt/eldk ppc_82xx
+ 
+All I got after the installation are (under /opt/eldk
+directory):
+bin/  usr/  var/
+ 
+./bin:
+ppc-rpm   rpm
+ 
+./usr:
+lib/
+ 
+./usr/lib:
+rpm/
+ 
+./usr/lib/rpm:
+macros  rpmd  rpmopt-4.0.3  rpmrc
+ 
+./var:
+/lib  /tmp
+ 
+./var/lib:
+rpm/
+ 
+./var/lib/rpm:
+Basenames  __db.001  __db.002  Name  Packages
+ 
+./var/tmp:
+ 
+ 
+Could someone please tell me why all the install
+program only setup rpm tools, not cross-compiler tools
+for ppc_82xx?
+ 
+Is it because of Mandrake 9.1?
+ 
+Thanks in advance,
+ 
+john
 
-Try it, then.
-
-> Where did the gdbserver in ELDK come from and how is it different from
-> gdbserver from gdb-5.3?
-
-It's based on GDB-5.1, and we fixed a couple of problems.
-
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"In matters of principle, stand like a rock;  in  matters  of  taste,
-swim with the current."                            - Thomas Jefferson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
