@@ -1,23 +1,28 @@
-Date: Thu, 13 May 1999 12:40:12 +0200
+Date: Thu, 13 May 1999 12:53:28 +0200
 From: "Jens Ch. Restemeier" <jenschrr@uni-bielefeld.de>
-Subject: Re: compile troubles in 2.2.8
-To: Oliver Neukum <neukum@fachschaft.cup.uni-muenchen.de>
-Cc: linuxppc-dev@lists.linuxppc.org
+Subject: New nintendo console with embedded PPC cpu
+To: linuxppc-dev@lists.linuxppc.org
 Reply-to: jenschrr@uni-bielefeld.de
-Message-id: <373AAC08.4E3E@post.uni-bielefeld.de>
+Message-id: <373AAF24.1BE1@post.uni-bielefeld.de>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
-References: 
- <Pine.LNX.4.04.9905131041210.12269-100000@fachschaft.cup.uni-muenchen.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi !
 
-> PS: Is there really a PPC-machine with an isa-bus?
+Maybe you already heard, that the new nintendo console is based on an
+embedded PPC processor
 
-Isn't this a requiremet for PREP or CHRP ? 
+http://www.next-generation.com/jsmid/news/6615.html
+
+I think this is very interesting, because it may open the way for
+videogame development on MacOS and Linux/PPC. I remeber how excited
+everybody was that Sony based the PSX2 (MIPS based) development tools on
+Linux/i386.
+
+Now let's see how fast we can port Linux/PPC to this system :-)
 
 Jens
 
