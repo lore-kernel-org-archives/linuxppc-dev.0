@@ -1,36 +1,39 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: Dan Malek <dan@embeddededge.com>
-Subject: Re: Linuxppc and MPC8255 routing performance
-Date: Thu, 8 Nov 2001 18:02:14 +0300
-References: <9729.011107@vanet.com.br> <3BEADFEF.4000307@embeddededge.com>
-In-Reply-To: <3BEADFEF.4000307@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3BEAA8D3.51ADDCC8@mvista.com>
+Date: Thu, 08 Nov 2001 09:46:27 -0600
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-Message-Id: <01110818021400.00999@scop.digitel.com.br>
+To: Mark Pilon <mpilon@midrivers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405 -- a little console help, part 2
+References: <3BEA8A5D.50A75CE7@midrivers.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thursday 08 November 2001 22:41, Dan Malek wrote:
+Mark Pilon wrote:
+>
+> I've got a little more info -- /bin/sash doesn't produce any
+> output and just sits there, echoing charachters typed.  I'll try poking
+> around w/ gdb/abatron but am not sure how to find the exec'd shell.
+>
+> if I spawn ash w/ init=/bin/ash:
+> ...
+> --  but at least I get a prompt and it seems to work.
 
-> No, not even close.  Something must be wrong with your memory
-> interface or system.
+That is very odd, I don't know why ash would work and sash does not.
+Very strange indeed.
 
-OK, I'll check it out,. thanks.
+> I'm not sure what the message "can't access tty; job control turned off"
+> means -- I'll have to get the source for ash and debug it.
 
->  The data cache enabled should be significantly
-> faster, and on an 8260 you can run all three fast ethernets at full
-> speed.
+This sounds like you do not have proper /dev/* populated..  i.e.
+/dev/console, /dev/tty, /dev/pts, etc.  For initial system bringup you
+can ignore that warning.  (However, keep in mind that ctrl-C, ctrl-Z,
+etc job control will not work..)  This might also partially be a symptom
+of ash starting as process 1, process 1 contains special rules in the
+kernel as it is the init process.
 
-Even without secondary (L2) cache?
-
->  Using FTP as a benchmark isn't usually the best choice.  You
-> should be running carefully controlled network benchmark applications.
-
-Err.. any suggestions, on those?
-
-Thank you, so far!
+--Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
