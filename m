@@ -1,11 +1,13 @@
-Return-Path: <evilninja@gmx.net>
-Message-ID: <41CAC150.5040903@gmx.net>
-Date: Thu, 23 Dec 2004 14:00:00 +0100
-From: Christian <evilninja@gmx.net>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Subject: 2.6-BK compile errors 
+Return-Path: <domen@coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id 9ABC32BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Dec 2004 04:53:20 +1100 (EST)
+To: paulus@samba.org
+From: domen@coderock.org
+Date: Sat, 25 Dec 2004 18:46:52 +0100
+Message-Id: <20041225174642.720981F123@trashy.coderock.org>
+Cc: linuxppc-dev@ozlabs.org, domen@coderock.org
+Subject: [patch 2/3] delete unused file
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,28 +17,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-hi,
 
-compiling latest 2.6-BK kernel every day with a crosscompile toolchain, 
-there are errors for the ppc32 (PReP) here since yesterday.
-details here:
+Remove nowhere referenced file. (egrep "filename\." didn't find anything)
 
-http://nerdbynature.de/bits/sheep/latest-kernel/errors-2.6-ppc-BK.log
-http://nerdbynature.de/bits/sheep/latest-kernel/warnings-2.6-ppc-BK.log
-http://nerdbynature.de/bits/sheep/latest-kernel/make-2.6-ppc-BK.log
-http://nerdbynature.de/bits/sheep/latest-kernel/config-ppc-2.6.10-rc3
+Signed-off-by: Domen Puncer <domen@coderock.org>
+---
 
-this was made with:
 
-powerpc-604-linux-gnu-gcc 3.4.2
+ kj/arch/ppc/syslib/ppc4xx_pm.c |   47 -----------------------------------------
+ 1 files changed, 47 deletions(-)
 
-GNU ld version 2.15
-   Supported emulations:
-    elf32ppclinux
-    elf32ppc
-    elf32ppcsim
-
-tell me, if more details are needed.
-
-thanks,
-Christian.
+diff -L arch/ppc/syslib/ppc4xx_pm.c -puN arch/ppc/syslib/ppc4xx_pm.c~remove_file-arch_ppc_syslib_ppc4xx_pm.c /dev/null
+--- kj/arch/ppc/syslib/ppc4xx_pm.c
++++ /dev/null	2004-12-24 01:21:08.000000000 +0100
+@@ -1,47 +0,0 @@
+-/*
+- * Author: Armin Kuster <akuster@mvista.com>
+- *
+- * 2002 (c) MontaVista, Software, Inc.  This file is licensed under
+- * the terms of the GNU General Public License version 2.  This program
+- * is licensed "as is" without any warranty of any kind, whether express
+- * or implied.
+- *
+- * This an attempt to get Power Management going for the IBM 4xx processor.
+- * This was derived from the ppc4xx._setup.c file
+- */
+-
+-#include <linux/config.h>
+-#include <linux/init.h>
+-
+-#include <asm/ibm4xx.h>
+-
+-void __init
+-ppc4xx_pm_init(void)
+-{
+-
+-	unsigned int value = 0;
+-
+-	/* turn off unused hardware to save power */
+-#ifdef CONFIG_405GP
+-	value |= CPM_DCP;	/* CodePack */
+-#endif
+-
+-#if !defined(CONFIG_IBM_OCP_GPIO)
+-	value |= CPM_GPIO0;
+-#endif
+-
+-#if !defined(CONFIG_PPC405_I2C_ADAP)
+-	value |= CPM_IIC0;
+-#ifdef CONFIG_STB03xxx
+-	value |= CPM_IIC1;
+-#endif
+-#endif
+-
+-
+-#if !defined(CONFIG_405_DMA)
+-	value |= CPM_DMA;
+-#endif
+-
+-	mtdcr(DCRN_CPMFR, value);
+-
+-}
+_
