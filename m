@@ -1,120 +1,143 @@
-Message-ID: <3E944244.14ABBBCB@tataelxsi.co.in>
-Date: Wed, 09 Apr 2003 21:24:44 +0530
-From: "Kamalesh B" <kamal@tataelxsi.co.in>
-Reply-To: shivam@tataelxsi.co.in
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: regarding Linux booting
-References: <rt-580-2903.14.1928584236485@lineo.com> <3E769F7F.4188C8CC@tataelxsi.co.in> <3E911AEB.917583CD@tataelxsi.co.in> <3E92058F.1000805@metrowerks.com>
-Content-Type: multipart/mixed;
- boundary="------------C47E13E749261E978FD01D37"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Linux kernel panics and core dumps.
+Date: Wed, 9 Apr 2003 12:19:35 -0400
+Message-ID: <3D296C067098F149B11A8F4FC37C054685D89F@EXVS1.ops.infiniswitch.com>
+From: "Wright, David" <dwright@infiniswitch.com>
+To: "Arun Dharankar" <ADharankar@attbi.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------C47E13E749261E978FD01D37
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Boy, it took me a while to dig this out of my notes.
 
-Hello,
+> David, thanks for your inputs!
+>
+> The working Linux kernel version for me is 2.4.20. After applying
+> the patch and following the steps you outlined, the kernel boots
+> ok. However,  just as the user processes startup, there are kernel
+> exceptions for all the processes, and the system eventually panics.
+>
+> The nearest patch for Linux kernel I could get from MCLX site is
+> for 2.4.17. Even so, the patch failed only for init/main.c and
+> kernel/panic.c. Manually making the changes did not seem to
+> need anything significant.
+>
+> I have not gone through the patch completely and have only some
+> understanding of it. So didn't understand what you meant by "The
+> code in do_init_bootmem() is trying to work in bytes, not in frames.".
+> Could you elaborate, please? May be this is where I have done
+> the changes correctly.
 
-This question is about linux booting
-why is my board hangs after printing the message
-"Freeing unused kernel memory: 48k init"
-i have attached complete log in this mail.
+This is the proper way to do the call to crash_init:
 
-I also checked the function init() (linux/init/main.c) it's hanging
-in execve("/sbin/init",argv_init,envp_init).
+#if defined(CONFIG_MCL_COREDUMP)
+	crash_init((u_long)phys_to_virt(start),
+		   (u_long)phys_to_virt(start + (33 * PAGE_SIZE)),
+		   (u_long)phys_to_virt(start + (33 + crash_pages)*PAGE_SIZE));
+#endif
 
-But the strange thing is if i debug through
-execve() -> sys_execve() ->do_execve the control comes out of
-do_execve() and sys_execve(). but it hangs after that don't know why ?
+Well, OK, those "33" literals in the code aren't so great, but
+there are limits to how much cleanup I was able to do.
 
-any hint ?
-where is execve() function in LINUX code for PPC based board.
+Also, in panic.c, these lines:
 
-NOTE:
-We are booting LINUX on custom board having MPC8260 processor.
+#ifdef CONFIG_MCL_COREDUMP
+	smp_call_function((void*)smp_crash_funnel_cpu,0,0,0);
+	crash_save_current_state(current);
+#endif
 
-regards
-shiva
---------------C47E13E749261E978FD01D37
-Content-Type: text/plain; charset=us-ascii;
- name="Our_Board.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="Our_Board.txt"
+should come after the invocation of "notifier_call_chain", if
+you have any sort of watchdog timer on your system.  We did, and
+the watchdog would expire while the crash was being generated,
+since it was the call chain that shut down the watchdog.
+
+  -- David Wright, InfiniSwitch Corp.
 
 
-## Booting image at 00100000 ...
-   Image Name:   Embedix for MPC8260ADS
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    517000 Bytes = 504.9 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-r4: 00000000
-Total memory = 64MB; using 256kB for hash table (at c0180000)
-Linux version 2.4.1 (root@shiva) (gcc version 2.95.3 20010315 (release)) #22 Mon
- Apr 7 05:50:39 UTC 2003
-On node 0 totalpages: 16384
-zone(0): 16384 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/nfs nfsaddrs=10.1.20.250:10.1.40.175
-Warning: real time clock seems stuck!
-Calibrating delay loop... 87.85 BogoMIPS
-Memory: 62636k available (944k kernel code, 476k data, 48k init, 0k highmem)
-Dentry-cache hash table entries: 8192 (order: 4, 65536 bytes)
-Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Inode-cache hash table entries: 4096 (order: 3, 32768 bytes)
-POSIX conformance testing by UNIFIX
-1
-2
-3
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-MPC8260ADS rev. 0x8
-MPC8260ADS sw opt: 0 1 0
-old sypcr ffffffc3
-new sypcr ffffffc3
-hid0 = 0x0000c088
-Starting kswapd v1.8
-CPM UART driver version 0.01
-ttyS00 at 0x8000 is a scc1
-ttyS01 at 0x8100 is a scc2
-block: queued sectors max/low 41546kB/13848kB, 128 slots per queue
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-fec: Phy @ 0x0, type 0x001a2205
-fec: Phy @ 0x1b, type 0x001a2205
-setting half duplex
-eth0: FCC ENET Version 0.2, 62:69:74:e5:6d:66 (10 Mbit, Half Duplex)
-SLIP: version 0.8.4-NET3.019-NEWTTY (dynamic channels, max=256).
-CSLIP: code copyright 1989 Regents of the University of California.
-JFFS version 1.0, (C) 1999, 2000  Axis Communications AB
-physmap flash device: 800000 at ff800000
-cfi_probe()
-Physically mapped flash: Found a CFI device at 0x0 in 16 bit mode
-Invalid CFI ident structure.
-
-cfi.chipsize is zero. This is bad. cfi.cfiq.DevSize is 0
-Doesn't look like sharp flash, 0xffff0808 0xffffffff
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 4096 bind 4096)
-IP-Config: Guessing netmask 255.0.0.0
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Looking up port of RPC 100003/2 on 10.1.40.175
-Looking up port of RPC 100005/2 on 10.1.40.175
-VFS: Mounted root (nfs filesystem) readonly.
-Freeing unused kernel memory: 48k init
-
---------------C47E13E749261E978FD01D37--
+>
+> Best regards,
+> -Arun.
+>
+> On Tuesday 08 April 2003 12:20 pm, Wright, David wrote:
+> > I looked at the SGI project, but it wasn't suitable for our
+> > platform, as we didn't have the right sort of disk setup.
+> >
+> > I ported the MCLX code to a 405-based platform.  The code as
+> > originally distributed had a few bugs in it, but I don't think
+> > they ever fixed the bugs -- I fed changes back to them, and those
+> > changes may have made it to IBM.  Or at least they told me IBM
+> > was interested in the project.
+> >
+> > If you do use their code, ignore the program that uncompresses
+> > the crash dumps -- as implemented, it's incredibly slow, and
+> > although that can be fixed, it's pointless, since crash can read
+> > the compressed dumps just fine (and can't read the uncompressed
+> > ones, just as a final irony).
+> >
+> > I don't have a complete list of the changes I needed to make, but
+> > here are a few:
+> >
+> > Makefile didn't specify compiling crash.c
+> > crash.c (machine-specific) specified "regs" instead of "gprs"; also
+> >   specified tss.ksp instead of thread.ksp; also must #define
+> >   PFN_PHYS() itself.
+> > The code in do_init_bootmem() is trying to work in bytes, not in
+> >   frames.
+> >
+> > Anyway, once I got these various problems ironed out, plus a few
+> > in crash(1), the facility worked fine.  The main problem you're
+> > apt to run into is having enough physical memory to run your
+> > system, hold the dump, and copy the dump from RAM into some file.
+> > NFS can be very useful here.
+> >
+> > The dump facility did prove to be quite useful and we did use it
+> > on live systems to track down problems.  One thing to watch out
+> > for is diags that scrub memory, since they'll scrub out your dump,
+> > too.
+> >
+> > > -----Original Message-----
+> > > From: Arun Dharankar [mailto:ADharankar@attbi.com]
+> > > Sent: Tuesday, April 08, 2003 11:58 AM
+> > > To: linuxppc-embedded@lists.linuxppc.org
+> > > Subject: Linux kernel panics and core dumps.
+> > >
+> > > On x86 architectures there seem to be at least two ways of
+> > > producing  Linux kernel panic dumps. These projects are
+> > > hosted at
+> > >
+> > >     "http://lkcd.sourceforge.net/" (originated in SGI), and
+> > >
+> > >     "http://oss.missioncriticallinux.com/projects/mcore/"
+> > >         (originated in MCLX).
+> > >
+> > > Of the two, the second one seems to work quite well on x86
+> > > PCs. I dont know how much of it is actively supported on
+> > > PowerPCs. So, the first question is:
+> > >
+> > >     Has anyone tried this on PowerPC, specifically Linux
+> > >     kernel versions 2.4.x? The code for PowerPC seems to
+> > >     be there, but the Makefiles dont seem to be up-to-date,
+> > >     and could be broken.
+> > >
+> > > Further more, this same project has some documentation
+> > > which has a good discussion on different approaches to Linux
+> > > kernel memory dumps. One item in this discussion is about
+> > > the BIOS/bootloader support.
+> > >
+> > > Essentially, if PPCBoot/U-Boot was to recognize the Linux
+> > > kernel memory layout, a much more reliable scheme could
+> > > be implemented. For example, under all panic or hang
+> > > conditions (watchdog), the system could just be rebooted.
+> > > During the startup, PPCBoot/U-Boot along with Linux, could
+> > > save the Linux kernel dump reliably. MCLX scheme seems
+> > > to follow this approach, but does not rely on the bootloader.
+> > >
+> > >   Has anyone investigated this? Or anything already done,
+> > >   and cares to share it? Any thoughts on this?
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
