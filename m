@@ -1,35 +1,32 @@
-From: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
-Message-Id: <199909102353.QAA15499@falcon.csc.calpoly.edu>
-Subject: PowerMac pci kernel 2.3.16
-To: linuxppc-dev@lists.linuxppc.org (linuxdev)
-Date: Fri, 10 Sep 1999 16:53:00 -0700 (PDT)
+Date: Fri, 10 Sep 1999 19:55:15 -0400 (EDT)
+From: "Joshua M. Thompson" <funaho@jurai.org>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.18 and CONFIG_ADB_MOUSE
+In-Reply-To: <37D98144.97257D77@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.9909101954130.10100-100000@ifurita.jurai.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just out of curiousity I downloaded the 2.3.16 kernel from ftp.us.kernel.org
-and tried to compile it.  I have a Kingston PCI/Ethernet card and a USB PCI
-card and I found that the tulip driver for the former would not compile due to
-a change in the pci_dev structure.
+On Sat, 11 Sep 1999, Martin Costabel wrote:
 
-I then dug a little deaper to find that the pmac_pci.c file does not seem to
-use this new structure when the chrp and prep pci files do.
+> And in arch/ppc/config.in, the line
+> 
+>    bool 'Support for PowerMac ADB mouse' CONFIG_ADBMOUSE
+> 
+> got trashed, probably by mistake.
 
-Specifically the old structure has a "base_address" and states "use
-pcibios_fixup to alter these address for platform specific issues" or something
-like that.  pmac_pci.c has this pcibios_fixup where chrp and prep do not?
+Nope, it's superceded by CONFIG_ADB_MOUSE. The ADB mouse driver is
+cross-platform now.
 
-Is there development for the PowerMac pci bus for the 2.3 kernel?  Am I missing
-something from my casual perusing of the code?
-
-I got my 2.2.12 kernel up and running with the help of the "Various PCI
-patches" thread (USB and Ethernet cards were somehow mapped wrong) and I would
-hope that development does not get lost.
-
-Thanks
-Ira Weiny
+-- 
+funaho@jurai.org             | Voodoo is a very interesting religion for the
+http://www.jurai.org/~funaho | whole family, even those members of it who are
+                             | dead.
+                             |  -- (Terry Pratchett & Neil Gaiman, Good Omens)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
