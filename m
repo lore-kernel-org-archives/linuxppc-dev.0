@@ -1,5 +1,5 @@
-Message-Id: <200110111256.f9BCuuf07110@ashley.ivey.uwo.ca>
-Date: Thu, 11 Oct 2001 08:53:25 -0400
+Message-Id: <200110111308.f9BD80f08581@ashley.ivey.uwo.ca>
+Date: Thu, 11 Oct 2001 09:04:29 -0400
 From: Kevin Hendricks <khendricks@ivey.uwo.ca>
 Content-Type: text/plain;
 	format=flowed;
@@ -14,33 +14,19 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi All.
+Hi,
 
->> I don't feel qualified to do that. Xpert@XFree86.Org is a mailing list
->> which
->> the author of this code and other very competent XFree86 hackers read,
->> or if
->> you're absolutely sure the fix is correct, please submit it to
->> fixes@XFree86.Org .
+>> Why does it work with the fbdev driver then?
 
-Michel:
+Just a guess.
 
-I just don't see how using an uninitialized variable in an "if"
-statement can be anything else but a bug.  You could have at least
-looked at the code in question before replying.  You are a member of
-XFree representing ppc linux aren't you?  I assumed with your signature
-and your earlier responses, you were the right person to contact.  If
-not, I apologize for bothering you.
+Since we are using an uninitialized variable whatever was in memory
+previously determined the value of xFormat.  So the result was random
+behavior when checking for formats.
 
-> keithp already put something in the CVS. It did not work with "ati", but
-> with fbdev (clgen).
-> The patch fixed it for me on the Pismo.
-
-Thanks Olaf,
-
-Glad to see it helped and is in CVS.
+So anything that changed the stack usage or memory layout would / should
+have an impact.
 
 Kevin
-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
