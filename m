@@ -1,36 +1,31 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vincent Katz <vincent.katz@laposte.net>
-Cc: <jhartmann@precisioninsight.com>, <paulus@samba.org>,
-	<linuxppc-dev@lists.linuxppc.org>
+To: =?ISO-8859-1?Q?J=F6rn=20Nettingsmeier?= <nettings@folkwang-hochschule.de>
+Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: AGP : ATI128,powerpc
-Date: Wed, 14 Nov 2001 22:26:29 +0100
-Message-Id: <20011114212629.29843@smtp.wanadoo.fr>
-In-Reply-To: <1005771164.6732.19.camel@avalon>
-References: <1005771164.6732.19.camel@avalon>
+Date: Wed, 14 Nov 2001 22:38:15 +0100
+Message-Id: <20011114213815.8222@smtp.wanadoo.fr>
+In-Reply-To: <3BF2E0E9.920DBE17@folkwang-hochschule.de>
+References: <3BF2E0E9.920DBE17@folkwang-hochschule.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Linux version : 2.4.14
->File with a supposed probleme : linux/drivers/char/agp/agpgart_be.c
+>i've been using ben's tree for a powerbook for quite some time, and
+>i used to see the same error, so i disabled agp and dri.
 >
->I have a powerpc with an ati128 AGP.
+>has this been fixed lately ?
+
+Yes.
+
+>i'm desperate for faster video. 2d performance under x is pathetic,
+>and scrolling is a major pita.
 >
->When i compile the kernel i have this error : error "Please define
->flush_cache."
->
->this error come from the function flush_cache in agpgart_be.c where
->definition for powerpc are not setting . Why ?
+>does anyone know how to speed up a pismo powerbook x server ?
 
-What PPC machine is this ? I added support for Apple's UniNorth
-chipset in my kernel (patch submited to dri-devel a few days ago)
-along with the necessary r128 DRM changes to work around HW bugs.
-
-(My rsync tree is at rsync.penguinppc.org::linux-2.4-benh).
-
-If you are using a different chipset, then my code may not help
+XFree 4.1 should work fine. AGP won't help 2D accel, make sure
+you use the "ati" driver and not "fbdev".
 
 Ben.
 
