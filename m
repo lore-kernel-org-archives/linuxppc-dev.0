@@ -1,60 +1,49 @@
-Message-ID: <3906FA44.2EBD53FA@relog.ch>
-Date: Wed, 26 Apr 2000 16:16:36 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Message-ID: <3906FF25.4E9E6AEA@aminocom.com>
+Date: Wed, 26 Apr 2000 14:37:25 +0000
+From: Elizabeth Clarke <eclarke@aminocom.com>
 MIME-Version: 1.0
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree 4.0 dual monitor on AGP G4
-References: <Pine.LNX.4.21.0004261635150.27506-100000@idd-01.imbc.gr>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: glibc-2.1.2 cross-compile problem
+References: <20000426002414.912D83C989@elph.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kostas Gewrgiou wrote:
+Graham Stoney wrote:
+>
+> Elizabeth Clarke writes:
+> > I'm having a problem compiling glibc-2.1.2 using the xppc
+> > cross-compilation toolset. I (believe I) have followed the instructions
+> > for patching glibc and all seemed fine, but I get the following, any help
+> > much appriciated!:
+>
+> Are you running gcc-2.95.2?
 
-> the second r128 will never be able to pick the right device
-> (/dev/fb1 here) the BusID line is more or less ignored in the fbdev
-> case so the second driver will open /dev/fb0 which will result
-> in a kernel crash.
+I wasn't, but I grabbed it yesterday afternoon and been trying to
+compile it as per the instructions at
+http://members.home.net/mmporter/linux/cross/ which I found in your FAQ.
+I grabbed and compiled the latest binutils okay. But.... can't get gcc
+to compile. It took a little pursuading before it would use the
+new binutils, and now complains about stdio.h being missing:
 
-Doesn't r128 support the "fbdev" option to specify the framebuffer device?
-
-Here's the important code from the glint driver:
-
-
-	for (i = 0; i < numDevSections; i++) {
- 	    dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
- 	    if (devSections[i]->busID) {
- 		xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
- 		if (!xf86CheckPciSlot(bus,device,func))
- 		    continue;
- 	    }
- 	    if (fbdevHWProbe(NULL,dev,&name)) {
- 		ScrnInfoPtr pScrn;
-
-  				/* Check for pm2fb */
- 		if (strcmp(name,"Permedia2")) continue;
- 		foundScreen = TRUE;
- 		pScrn = NULL;
-
- 		if (devSections[i]->busID) {
- 		    /* XXX what about when there's no busID set? */
- 		    int entity;
- 		    entity = xf86ClaimPciSlot(bus,device,func,drv,
- 					      0,devSections[i],
- 					      TRUE);
- 		    pScrn = xf86ConfigPciEntity(pScrn,0,entity,
- 						      NULL,RES_SHARED_VGA,
- 						      NULL,NULL,NULL,NULL);
- 		    if (pScrn)
-  			xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-  				   "claimed PCI slot %d:%d:%d\n",bus,device,func);
- 		} else {
+/usr/local/src/gcc-2.95.2/gcc/xgcc -B/usr/local/src/gcc-2.95.2/gcc/
+-B/usr/local/powerpc-linux/bin/ -c -DHAVE_CONFIG_H -g -O2 -I.
+-I./../../include  choose-temp.c
+choose-temp.c:29: stdio.h: No such file or directory
+choose-temp.c:30: sys/types.h: No such file or directory
+choose-temp.c:32: unistd.h: No such file or directory
+choose-temp.c:35: stdlib.h: No such file or directory
+choose-temp.c:38: sys/file.h: No such file or directory
+make[2]: *** [choose-temp.o] Error 1
+make[2]: Leaving directory
+`/usr/local/src/gcc-2.95.2/powerpc-linux/libiberty'
+make[1]: *** [all-target-libiberty] Error 2
+make[1]: Leaving directory `/usr/local/src/gcc-2.95.2'
 
 
-
-Michel
+Aaaaaarrrrggggghhhhhhhhhhh!
+Beth
+ feeling a little frustrated
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
