@@ -1,54 +1,44 @@
-Message-ID: <3D13AA39.5884FBD4@esteem.com>
-Date: Fri, 21 Jun 2002 15:35:37 -0700
-From: Conn Clark <clark@esteem.com>
-MIME-Version: 1.0
-To: "Cameron, Steve" <Steve.Cameron@hp.com>,
-	May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20020622030607.432.qmail@web21108.mail.yahoo.com>
+Date: Fri, 21 Jun 2002 20:06:07 -0700 (PDT)
+From: Tim Lai <laitingwai@yahoo.com>
 Subject: Re: Can I run linux without a file system?
-References: <45B36A38D959B44CB032DA427A6E10640167CFE3@cceexc18.americas.cpqcorp.net>
+To: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3.0.3.32.20020621145425.006d0618@hollabaugh.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Cameron, Steve" wrote:
->
-> Dr. Craig Hollabaugh wrote:
 > >
-> > I can say that a minimum RedHat install uses 29,296 files -
-> > 382.020MB, debian 10,734 files - 67.428MB, my minimal root
-> > filesystem 82 files and 4.8MB.
-> >
+> >Do I need to install all these files in the file
+> >system? Can I have "/", with no file in it?
 >
-> Hmm, my minimal rootfs is (so far) 7 Mb, (as reported by du -s).
-> Or, is this 4Mb you cite compressed?  I wonder because my
-> libc.so is over 5 Mb. (which I got from DENX eldk-1.0)
+>
+> What do you want to do? Do you want a shell, run a
+> program, load a device driver? What is it exactly?
 >
 
-Did you use ppc-8xx-strip on it? It gets rid of all that nasty
-debugging bloat. Our libc is 1275512 bytes after stripping. Our
-uncompressed ramdisk is 4879K. If you are realy hurting try rebuilding
-everything using the "-Os -mstring -mmultiple" optimizations.
+I 'll run my application which is build in the kernel.
 
+No shell in the beginning. But I will need the shell
+later when more NVRAM is available. With the hardware
+that I have in the future, I can build my application
+seperately and store it in the file system. The
+application do some network processing, I'll not
+have any display other then the console and maybe
+telnet session.
 
-As for the original question "Can I run linux without a file system?",
-If you don't need a file system, mabey the question should be do you
-realy need linux. It may just be easier to make an executable to sit
-on something like PPCBoot. (just a thought)
+Where or how do I get these lib for ppc?
+         ./lib/ld.so.1
+	./lib/libc-1.99.so
+	./lib/libc.so.6
+	./lib/libtermcap.so.2.0.8
+	./lib/libtermcap.so.2
 
-good luck.
-
-	Conn
---
-
-*****************************************************************
-  If you live at home long enough, your parents will move out.
- (Warning they may try to sell their house out from under you.)
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+BTW, I just ordered the Dr.Hollabaugh's book.
+Thanks for the advice.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
