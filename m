@@ -1,56 +1,60 @@
-Date: Thu, 20 Sep 2001 08:46:07 -0700
+Date: Thu, 20 Sep 2001 08:51:09 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Dan Malek <dan@mvista.com>
-Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
 	Linuxppc-Commit <linuxppc-commit@source.mvista.com>
 Subject: Re: CPCI-405 port (PPC405GP)
-Message-ID: <20010920084607.D13721@cpe-24-221-152-185.az.sprintbbd.net>
-References: <EFEAIMDCOOOHIEPHDNFJEEMCDCAA.stefan.roese@esd-electronics.com> <3BAA093A.10E96272@mvista.com>
+Message-ID: <20010920085109.E13721@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010918115722.A5967@cpe-24-221-152-185.az.sprintbbd.net> <EFEAIMDCOOOHIEPHDNFJCEKKDCAA.stefan.roese@esd-electronics.com> <20010919071751.B8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA8DF9E.FD235CF6@mvista.com> <20010919155742.D8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA9241B.4322817A@mvista.com> <20010919163101.E8132@cpe-24-221-152-185.az.sprintbbd.net> <3BA96CA2.20EC30C8@mvista.com> <20010920075537.A13721@cpe-24-221-152-185.az.sprintbbd.net> <3BAA0C91.42E0910D@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BAA093A.10E96272@mvista.com>
+In-Reply-To: <3BAA0C91.42E0910D@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 20, 2001 at 11:20:26AM -0400, Dan Malek wrote:
+On Thu, Sep 20, 2001 at 11:34:41AM -0400, Dan Malek wrote:
 >
-> Stefan Roese wrote:
+> Tom Rini wrote:
 >
-> > #ifndef __CPCI405_H
-> > #define __CPCI405_H
-> >
-> > #include <linux/config.h>
-> >
-> > #include <asm/ppcboot.h>
-> >
-> > #endif  /* __CPCI405_H */
+> > Well, because it keeps us from duplicating 4 lines in the makefile.
 >
-> This is fine, Tom said it was an empty file.........
+> OK.
+>
+> > .....  CONFIG_TREEBOOT could probably die, unless
+> > someone revives Oak or TiVo uses it.
+>
+> Walnut and Spruce use it.  Get it?  TREEboot?
 
-Well, that's empty to me. :)  ppcboot.h should include linux/config.h and
-that's all it does...
+heh.  You're assuming that I get to see docs on these boards.  I forgot
+spruce uses it.  oak.h's board_info is the same as walnut, minus the PCI
+line.  And I dunno what TiVo uses...
 
-> > Dan, you are right that we (PPCBoot) people will have some homework to do,
-> > but right now our only way to Linux is via the bd_info struct!
+> > Not in 2.4 we aren't.  We aren't forcing bi_recs upon everyone just
+> > yet.
 >
-> No, the way to Linux is to _always_ use a zImage with an attached bootloader.
-> PPCboot can continue to pass whatever it wants, or the bootloader can find
-> the information in other ways as it does today with many boards.  Booting
-> a vmlinux image and trying to keep track of that private interface between
-> the bootloader and the kernel is difficult.  We already have more changes
-> planned in addition to the bi_recs interface.  Much of the code found today
-> in the head.S files is going to migrate to the bootloaders.
+> We should.  The purpose of consolidating bootloaders was to utilize
+> a bunch of generic code on both sides (bootloader and Linux).  It
+> isn't a major change on either side, since we already have bootloaders
+> that do it.
 
-In the x86 world it's always true that we have a bit of a loader tacked
-on someplace.  In some parts of the PPC world, we can't/don't for various
-reasons (technical and/or ingrained).  For example, I don't see a problem
-with something which takes a vmlinux.gz and boots it.  As long as we get the
-information we need, we shouldn't care.  The in-kernel loaders are the easiest
-to get changed.  But we should define what we're going to do before we do
-it so that yaboot/ppcboot and apus can figure out how much re-working
-they'll need and whatnot..
+Right.  But it's still possible to break bi_recs in some cases (tho it's
+more theoretical).  Anyhow tho, changing requirements of bootloaders (even
+in the case of just !ALL_PPC) in the middle of a 'stable' baseline doesn't
+sound good.
+
+> > ....  Hell, even in 2.5 as long
+> > as we get the bi_recs, we shouldn't care what the bootloader does..
+>
+> The bootloader is a critical part to initializing the environment for
+> the kernel.  With all of the MMU futzing around we do trying to get
+> Linux running, Ben and I have discussed yet another better bootloader
+> method to move some of this around between the bootloader and the
+> kernel start up.  There are also initrd and command line things done
+> by the bootloader (among other board specific initialization).  It's
+> more than whether or not we all use bi_recs.
+
+Okay.  Now, do you want to get this done in 2.4 first or 2.5 first? :)
 
 --
 Tom Rini (TR1265)
