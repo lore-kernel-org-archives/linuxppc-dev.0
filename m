@@ -1,13 +1,25 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: "Ashwin Bihari" <raz0redge@hotmail.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux boot args with PReP image
-Date: Fri, 31 Oct 2003 13:28:49 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Message-ID: <BAY9-F64QUsi6dnG8Cq0008719d@hotmail.com>
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F10E4F316@amer25.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Ashwin Bihari'" <raz0redge@hotmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Linux boot args with PReP image
+Date: Fri, 31 Oct 2003 14:05:15 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+The old mbxboot boot wrapper had such a prompt for command line.
+You could dig it out of source control.
+
+-----Original Message-----
+From: Ashwin Bihari [mailto:raz0redge@hotmail.com]
+Sent: Friday, October 31, 2003 11:29 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux boot args with PReP image
+
 
 
 Greetings,
@@ -30,11 +42,6 @@ Has anyone done anything similar or have any tips for me?
 Regards,
 
 ~Ashwin Bihari
-
-_________________________________________________________________
-Fretting that your Hotmail account may expire because you forgot to sign in
-enough? Get Hotmail Extra Storage today!
-http://join.msn.com/?PAGE=features/es
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
