@@ -1,28 +1,54 @@
-Date: Sat, 15 May 1999 10:09:09 +0200
-To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: OF booting news
-Message-Id: <19990515100909.001740@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 15 May 1999 04:34:04 -0400
+Subject: Re: maccoach and linux ppc
+From: "Justin McKillican" <linuxppc@home.com>
+To: blokos <blokos@worldnet.fr>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <19990515083259.IXAC1295.mail.rdc1.on.home.com@[24.112.218.109]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-For those who haven't seen it yet, with Darwin 0.2, Apple release new
-pieces of source code, including the secondary loader, with sources, a
-working of control video driver, and more... That's interesting because
-we should now be able to make a great secondary booter with OS choosing
-capabilities. I don't have time to look into this now, but this could be
-a good replacement for BootX in the future.
+heh.. why would linux crash? :)
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+justin
 
 
 
+----------
+>From: blokos <blokos@worldnet.fr>
+>To: linuxppc-dev@lists.linuxppc.org
+>Subject: maccoach and linux ppc
+>Date: Fri, May 14, 1999, 9:52 PM
+>
+
+>
+> Support wrote:
+>
+>> Maccoach is a great product that permit your server to reboot
+>> automatically when it crashes... but it works only with Mac os. So i
+>> ve sent an email to Maccoach support and that is the answer
+>
+>> >hello,
+>
+>> >our server is a Power mac with linux PPC,
+>> >is your product could work with this system ??
+>> >
+>> >it will be very great !!
+>>
+>> We don't have a linux PPC version available.
+>>
+>> However we'll be happy to supply all technical information needed to
+>> anyone willing make a linux PPC driver.
+>>
+>> Regards,
+>>
+>> Henk Kampman
+>> Neuron Data Systems
+>> http://www.neuronsys.com/
+>
+>  If some developer would work on it, it will be very cool !!!
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
