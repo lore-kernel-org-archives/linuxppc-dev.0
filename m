@@ -1,17 +1,20 @@
-Return-Path: <richard_williams@stratexnet.com>
-Received: from ExchWENZ02.wenz.global.vpn (unknown [202.27.34.1])
-	by ozlabs.org (Postfix) with ESMTP id 5D9002BC0F
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 15:18:47 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 21 Oct 2004 18:06:50 +1300
-Message-ID: <A3240F62EF3C2749B1A25D3BC9548F4148BCF1@ExchWENZ02.wenz.global.vpn>
-From: "Richard Williams" <richard_williams@stratexnet.com>
-To: "Jeff Angielski" <jangiels@speakeasy.net>,
-	"linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Cc: 
-Subject: RE: SCC UART stalling/hanging - progress
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 27B7A2BC0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Oct 2004 20:49:47 +1000 (EST)
+Date: Thu, 21 Oct 2004 20:49:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Message-Id: <20041021204935.056b96eb.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.61.0410192052080.14485@anakin>
+References: <20041020040231.6eb65b38.sfr@canb.auug.org.au>
+	<Pine.LNX.4.61.0410192052080.14485@anakin>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="pgp-sha1";
+	boundary="Signature=_Thu__21_Oct_2004_20_49_35_+1000_yzXlhd0zuFaM51S4"
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: old mailing list archives
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,73 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I think you might have the same problem that I came across some time =
-ago. I posted this but got no reply and never had time to fully =
-investigate and test my solution since the problem (noise on receive) =
-was fixed in hardware.
+--Signature=_Thu__21_Oct_2004_20_49_35_+1000_yzXlhd0zuFaM51S4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-http://article.gmane.org/gmane.linux.ports.ppc.embedded/3884/match=3D8xx+=
-uart+driver+problems
+Hi Geert,
 
-I think there is a bug in the driver where the interrupt is being =
-cleared in the wrong place. My final solution was to move the clearing =
-of events to be before receive_chars().=20
+On Tue, 19 Oct 2004 20:55:23 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+> Below is the list of all archives. Right now they're in pure mailbox
+> format and may contain some mails not sent to the mailing lists, but I
+> can filter them up and export them (pine export) to files per month,
+> without unneeded headers.
 
-		events =3D sccp->scc_scce;
-		sccp->scc_scce =3D events;   // <- Clear events here
-		if (events & (SCCM_RX | SCCM_BSY)) //Process rx when busy
-occurs
-			receive_chars(info);
-		if (events & SCCM_TX)
-			transmit_chars(info);
-		// sccp->scc_scce =3D events;     <- Old clear events position
+That would be great.
 
-This way any new rx interrupts that occur while transmit_chars() is =
-executing will not get lost.
+> Stephen, if you want (some of these) to be archived at ozlabs, let me
+> know which ones, and I'll spend some time on it...
 
-Regards,
-Richard
+The following would be useful.
 
+> 1997/linuxppc-dev.199711.bz2
+> 1997/linuxppc-dev.199712.bz2
+> 1998/linuxppc-dev.199801.bz2
+> 1998/linuxppc-dev.199802.bz2
+> 1998/linuxppc-dev.199803.bz2
+> 1998/linuxppc-dev.199804.bz2
+> 1998/linuxppc-dev.199805.bz2
+> 1998/linuxppc-dev.199811.bz2
+> 1998/linuxppc-dev.199812.bz2
 
------Original Message-----
-From: linuxppc-dev-bounces@ozlabs.org
-[mailto:linuxppc-dev-bounces@ozlabs.org]On Behalf Of Jeff Angielski
-Sent: Thursday, October 21, 2004 4:51 PM
-To: linuxppc-dev
-Subject: SCC UART stalling/hanging - progress
+I think we have the rest pretty well covered.
 
+Thanks again
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__21_Oct_2004_20_49_35_+1000_yzXlhd0zuFaM51S4
+Content-Type: application/pgp-signature
 
-It appears that the SCC UART is stalling when I perform loopback testing
-at 230kbps because the bottom half is sometimes not being executed when
-the transmit interrupt is received by the ISR.  Because of this, no more
-data is being put into the TX buffers and the SCC is sitting there dumb
-and happy with nothing to do. =20
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
 
-Using the BDI2000 I have been able to confirm that at the point when the
-SCC stalls, the SCC registers, parameter ram, BDs, and buffers all look
-good.  There are no pending events, the flags in the BDs are consistent
-with an idle condition, and the tx buffers match the rx buffers which
-match the data received by the user space application.
+iD8DBQFBd5RG4CJfqux9a+8RAtl4AJ0S212VXjywyuEkbRYTk/Crbyum9QCgj66q
+YsTiDxvjcBD4/arYLZY9yGA=
+=CNYt
+-----END PGP SIGNATURE-----
 
-Specifically, problem that I see is that when transmit_chars() is called
-from rs_8xx_interrupt(), the TX_WAKEUP flag is not set.  This means that
-rs_sched_event() is never called and everything stalls.  The bad thing
-is that the TX_WAKEUP is only modified in a handful of places and it is
-not obvious as to how a race condition could occur.
-
-Does anybody have any ideas or suggestions on what to look at next?
-
-TIA,
-Jeff Angielski
-
-
-
-
-
-
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--Signature=_Thu__21_Oct_2004_20_49_35_+1000_yzXlhd0zuFaM51S4--
