@@ -1,17 +1,18 @@
-Date: Sat, 19 Aug 2000 14:12:51 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Lanners <mlan@cpu.lu>
-cc: dmj+@andrew.cmu.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Control fb problem on 8500
-In-Reply-To: <200008190718.JAA00823@piglet.grunz.lu>
-Message-ID: <Pine.LNX.4.10.10008191410200.525-100000@cassiopeia.home>
+Message-ID: <399E898A.1564594C@student.ethz.ch>
+Date: Sat, 19 Aug 2000 15:20:10 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mlan@cpu.lu
+CC: dmj+@andrew.cmu.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Control fb problem on 8500
+References: <200008190718.JAA00823@piglet.grunz.lu>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 19 Aug 2000, Michel Lanners wrote:
+Michel Lanners wrote:
+
 > On  18 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
 > >> In fact, before, the line length was exactly hpixels * bytes/pixel,
 > >> whereas now there's an additional 0x20 bytes in each line. I have not
@@ -35,24 +36,23 @@ On Sat, 19 Aug 2000, Michel Lanners wrote:
 > read that somewhere in some mailing list or X doc... Can any of the
 > XFree specialists confirm?
 
-I can speak for XFree86 3.x only, not for 4.x.
+It does support that, if not directly then certainly via shadowfb. Maybe the
+shadowfb RefreshArea function would have to be modified to take account of
+this.
 
-The only way to work with this is to make xres_virtual = xres+0x20. But then
-XFree86 will draw into the cursor region, too.
 
-Alternatively you can modify the XFree86 cfb code to remove the assumption
-that the line_length is based on the virtual horizontal resolution.
+> My XFree 4.0 goes into an infinite loop eating CPU time when I boot a
+> 2.4.0 kernel.
 
-Gr{oetje,eeting}s,
+Works fine here. I don't use the RPM stuff, stock 4.0.1/DRI .
 
-				    Geert (also underactive and out of touch)
+
+The other Michel,
+who once thought he was the glint maintainer
+
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
