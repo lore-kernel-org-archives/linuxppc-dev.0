@@ -1,22 +1,26 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
-	by ozlabs.org (Postfix) with ESMTP id A6EBC67A6F
+Return-Path: <niklaus.giger@member.fsf.org>
+Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9A51967A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Feb 2005 11:30:20 +1100 (EST)
-Date: Fri, 25 Feb 2005 17:29:41 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Ralph Siemsen <rsiemsen@rossvideo.com>
-Message-ID: <20050225172941.A30499@cox.net>
-References: <1628E43D99629C46988BE46087A3FBB91C4AA7@ep-01.EmbeddedPlanet.local>
-	<421F89A0.8070502@sandburst.com> <20050225133055.A28918@cox.net>
-	<421F966D.4060206@rossvideo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <421F966D.4060206@rossvideo.com>;
-	from rsiemsen@rossvideo.com on Fri, Feb 25, 2005 at 04:19:41PM
-	-0500
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: 2.6 4xx GPIO OCP driver?
+	Sun, 27 Feb 2005 09:28:38 +1100 (EST)
+Received: from ng (80-218-254-31.dclient.hispeed.ch [80.218.254.31])
+	(authenticated bits=0)
+	by smtp.hispeed.ch (8.12.6/8.12.6/tornado-1.0) with ESMTP id
+	j1QMSXdX016268
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Sat, 26 Feb 2005 23:28:34 +0100
+From: Niklaus Giger <niklaus.giger@member.fsf.org>
+To: linuxppc-embedded@ozlabs.org
+Date: Sat, 26 Feb 2005 23:28:23 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200502262328.24165.niklaus.giger@member.fsf.org>
+Subject: Problems porting to a custom PPC405GPr board using a vanilla 2.6.10
+	kernel
+Reply-To: niklaus.giger@member.fsf.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +31,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 25, 2005 at 04:19:41PM -0500, Ralph Siemsen wrote:
-> Matt Porter wrote:
-> 
-> > I didn't bother merging it upstream at one time. It wasn't clear
-> > if the driver had any value over just mmaping /dev/mem to bang
-> > on the couple gpio registers directly. [...]
-> 
-> Will that work on the 440 where the devices sit above 4GB mark?  Or must 
-> one rely on there being an existing TLB mapping to bring them into 
-> 32-bit space?
+Hi
 
-Ack...that's the one thing we are missing. :-/ I had forgotten
-that driver/char/mem.c  calls remap_pfn_range() directly rather
-than io_remap_page_range(). Had it called the latter, we'd be OK
-since the "bigphys" fixup could take place.  We can fix /dev/mem to
-call io_remap_page_range() when on ppc32 && 36-bit phys...other arches
-do similar tricks in that driver.
+I would like to port Linux to a custom PPC405GPr board. Its hardware runs=20
+vxWorks fine for more than a year.=20
 
-If everybody is happy with mmaping /dev/mem then we can go try that
-route.
+Within a few days I had a working U-boot image, which allows me to download=
+=20
+via TFTP Linux-kernels.
 
--Matt
+I started with a vanilla 2.6.10 kernel, added the entries in the=20
+arch/ppc/platforms/4xx/Makefile and Kconfig, two file hcu3.c and hcu3.h whi=
+ch=20
+are very minimal. The board has no PCI and I do not want to add support for=
+=20
+the CFI-Flashs or the onboard CAN-Chips.=20
+Enabling the SERIAL_TEXT_DEBUG I got the following output
+## Transferring control to Linux (at address 00000000) ...
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+hcu3_map_io
+MMU:exit
+setup_arch: enter ngng
+setup_arch: bootmem
+ocp: exit
+arch: exit
+If I attach a BDI, I get a lot of "- TARGET: target has entered debug mode"=
+=20
+lines and then
+DI>i
+    Target state      : debug mode
+    Debug entry cause : unconditional debug event
+    Current PC        : 0xfffffffc
+    Current CR        : 0x00000000
+    Current MSR       : 0x00000000
+    Current LR        : 0xc019a15c
+BDI>               =20
+The corresponding line from my System.map are
+c0199e20 t free_bootmem_core
+c0199ecc t __alloc_bootmem_core
+c019a278 t free_all_bootmem_core
+c019a4c8 T init_bootmem_node
+
+My board has no RTC. Is this a problem?=20
+
+Should I start with another kernel? Can anybody point me to a known good=20
+kernel version for a specific PPC405 board?
+
+Any hint would be greatly appreciated.
+
+Best regards
+
+=2D-=20
+Niklaus Giger
+Wieshoschet 6
+CH-8753 Mollis
+Tel. ++41 55 612 20 54 (privat)
+Tel. ++41 55 618 64 68 (Gesch=E4ft)
