@@ -1,66 +1,111 @@
-Message-ID: <20040826101003.70248.qmail@web15605.mail.cnb.yahoo.com>
-Date: Thu, 26 Aug 2004 18:10:03 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: Does ext2 based on MTD acceptable for Embedded Development?
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040816162120.6403FC109F@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: m8xx hang in reboot (fwd)
+Date: Thu, 26 Aug 2004 05:51:22 -0600
+Message-ID: <065ACD8E84315E4394C835E398C8D5EB5DAF80@cossmgmbx02.email.corp.tld>
+From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+OK, I'll add my guess :-).  Do you have the address IMAP_ADDR cached (which would be a Very Bad Thing!)?  If so, you sometimes would read the cached value (no machine check) rather than the physical value (machine check -> reset).
 
-Although I made ext2 on RPXlite DW board and worked,I
-still want to consult with you such a question.Dose
-ext2 filesystem besed on MTD a acceptable option?
-Compared with JFFS2 and Cramfs,it's really hard to
-create on FLASH.I mean the case of 30MB filesystem.I
-just did succeed once but the performance was
-unacceptable at all.Boot time could last
-3'39"00,longer than 2-3 times than other
-filesystem.Where did I go wrong,in method itself or
-some detailes?
+gvb
 
-[Target]
-root@172.16.115.12:/# eraseall /dev/mtd3
-root@172.16.115.12:/# mkfs.ext2 /dev/mtdblock3
-root@172.16.115.12:/# ls test/tmp/
-bin  dev  etc  home  lib  lost+found  mnt  opt  proc
-root  sbin  tmp  usr  var
 
-root@172.16.115.12:/# (cd /test/tmp; tar cf - .) | (cd
-/mnt; tar xf -)
-tar: ./usr/local/lib/minigui/res/bmp/title.gif: time
-stamp 2005-06-25 15:48:36 is 26989356 s in the future
-tar: ./home/622/mginit/res/hotkey/help.gif: time stamp
-2005-06-24 14:20:34 is 26897657 s in the future
-tar: ./home/622/mginit/res/hotkey/advert.gif: time
-stamp 2005-06-24 14:19:12 is 26897575 s in the future
-tar: ./home/622/mginit/res/hotkey/city.gif: time stamp
-2005-06-24 14:16:02 is 26897385 s in the future
-tar: ./home/622/mginit/res/hotkey/email.gif: time
-stamp 2005-06-24 14:15:38 is 26897361 s in the future
-tar: ./home/622/mginit/res/hotkey/phone.gif: time
-stamp 2005-06-24 14:14:20 is 26897283 s in the future
-tar: ./home/622/mginit/res/hotkey/surf.gif: time stamp
-2005-06-24 14:15:12 is 26897335 s in the future
-tar: ./home/622/mginit/res/hotkey/ch-en.gif: time
-stamp 2005-06-24 14:20:06 is 26897629 s in the future
-tar: ./home/622/mginit/res/hotkey/accept.gif: time
-stamp 2005-07-15 14:50:24 is 28713847 s in the future
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf
+> Of Mark S.
+> Mathews
+> Sent: Wednesday, August 25, 2004 5:26 PM
+> To: linuxppc-embedded
+> Subject: Re: m8xx hang in reboot (fwd)
+>
+>
+>
+> The saga continues...  ;-)
+>
+> I added code to explicitly clear the CHSTPE bit in the DER register.
+> Didn't make any difference.
+>
+> I'm stumped.
+>
+> -M
+>
+> On Wed, 25 Aug 2004, Mark S. Mathews wrote:
+>
+> >
+> > A little more info.  The hang occurs on this line:
+> >
+> > 	dummy = ((immap_t *)IMAP_ADDR)->im_clkrst.res[0];
+> >
+> > Which is _supposed_ to generate a machine check I believe.
+> >
+> > So I guess my next step is to see if somehow the DER got
+> set and we're
+> > popping into debug mode instead of resetting...
+> >
+> > -M
+> >
+> > --
+> >
+> > Mark S. Mathews
+> >
+> > AbsoluteValue Systems      Web:    http://www.linux-wlan.com
+> > 721-D North Drive          e-mail: mark@linux-wlan.com
+> > Melbourne, FL 32934        Phone:  321.259.0737
+> > USA                        Fax:    321.259.0286
+> >
+> > ---------- Forwarded message ----------
+> > Date: Wed, 25 Aug 2004 16:22:00 -0400 (EDT)
+> > From: Mark S. Mathews <mark@linux-wlan.com>
+> > To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+> > Subject: m8xx hang in reboot
+> >
+> > Hey Folks,
+> >
+> > I've got an mpc850 based setup running 2.4.27 that, under certain
+> > circumstances, hangs in the the m8xx_restart() function (instead of
+> > rebooting)
+> > when I issue the usermode reboot cmd.
+> >
+> > I've traced all through the path and confirmed that yes, it
+> is hanging in
+> > this
+> > function.  ;-)
+> >
+> > I'm still looking over the databook and what this code
+> does.  Just figured
+> > I'd
+> > ask around and see if anyone else has seen this behavior.
+> >
+> > Thanks,
+> > -Mark
+> >
+> > --
+> >
+> > Mark S. Mathews
+> >
+> > AbsoluteValue Systems      Web:    http://www.linux-wlan.com
+> > 721-D North Drive          e-mail: mark@linux-wlan.com
+> > Melbourne, FL 32934        Phone:  321.259.0737
+> > USA                        Fax:    321.259.0286
+> >
+> >
+> >
+>
+> --
+>
+> Mark S. Mathews
+>
+> AbsoluteValue Systems      Web:    http://www.linux-wlan.com
+> 721-D North Drive          e-mail: mark@linux-wlan.com
+> Melbourne, FL 32934        Phone:  321.259.0737
+> USA                        Fax:    321.259.0286
+>
 
-or
-
-root@172.16.115.12:/# cp -a /test/tmp /mnt
-
-Often after that system would hang when using
-'reboot'.A hard reset could see kernel crashed by 'no
-init' message.
-
-Thanks in advance!
-
-Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
