@@ -1,22 +1,22 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: xiaogeng_jin@agilent.com
-Message-ID: <9153F74610B7D311B83900902771C871124D94BC@axcs07.cos.agilent.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC8245 supported in Linux kernel (devel tree from DENX)?
-Date: Tue, 9 Sep 2003 19:04:17 -0600 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
+	charset="us-ascii"
+Subject: CY7C9536 POSIC2GVC driverporting for ppc_8xx
+Date: Wed, 10 Sep 2003 10:39:36 +0530
+Message-ID: <76F337DF6B67214FA4E5903E2F232EA3076856@webmail.wipro.com>
+From: "Vinay Patel" <vinay.patel@wipro.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
+I have a driver for the Cypress CY79536 POSIC2GVC chip that works with
+the monitor program (No RTOS). I need to port this driver to work with
+MontaVista Embedded Linux for ppc_8xx. I am new to driver porting. Has
+anyone done anything similar? Will appreciate any help in this regard.
 
-Is MPC8245 supported in the linux kernel downloaded from the devel tree of DENX? I only found six types of processors supported by default, which are 6xx/7xx/74xx/8260, 40x, 440, POWER3, 8xx, and iSeries. If yes, which type shall I select? If not, is there anybody going to support this? U-Boot seems to support this by 824x.
-
-Thanks.
-
--Shawn.
+Thanks,
+Vinay
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
