@@ -1,39 +1,47 @@
-From: "gguevel" <gguevel@interfaceconcept.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: How to use 802.2/LLC on MPC860 board ?
-Date: Fri, 22 Jun 2001 18:57:04 +0200
-Message-ID: <000001c0fb3c$5dd19640$3101a8c0@DOMAIN>
+Message-ID: <20010622172247.98937.qmail@web12003.mail.yahoo.com>
+Date: Fri, 22 Jun 2001 10:22:47 -0700 (PDT)
+From: Dinesh Dharmaraju <ddharmaraju@yahoo.com>
+Subject: DSP card and linux
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: ddharmaraju@yahoo.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi,
+ We have a TMS320C6201 EVM (Evaluation module) board,
+which sits on the PCI interface of a host PC. We are
+planning to use that as a network interface card
+(NIC)on a linux system. So, we'll have to write a
+network device driver for that. To develop code for
+the TI DSP, we are using code composer, which is a
+windows based software.
+ We are planning to have a machine set up in dual boot
+in windows and linux. The code development for the DSP
+would be done on windows. The code would be downloaded
+onto the DSP and then, we would boot the host PC in
+Linux. The DSP EVM card would then act as a NIC.
 
-I work on a MPC860 board with a FEC device. I use Montavista Linux 2.2.14
-kernel on this board.
+ The host PC CPU is intel x386. Though the mail may be
+out of place here, I am hoping to get some insights.
 
-I want to use simultaneously IP and LLC layers on the same FEC device.
+ The code composer tool writes into the RAM of the
+DSP. So, when the rebooting of the PC happens, the
+code gets removed. Are there any loaders available,
+that would reload the code into the DSP, once the PC
+is rebooted in Linux.
 
-For LLC, I just have to send some unumbered frames and answer to TEST and
-XID requests.
+ Firstly, is anyone aware of any  Linux based software
+for code development on TI DSPs ?
 
-I looked at the code in net/802 directory and I found what I wanted.
+If not, is the method I am using, the best thing to do
+? Please cc the reply to my email address too, 'cos I
+am not a member of this group.
 
-But I don't known how a user application can talk to this LLC layer.
-
-Do I use a socket ? What family, address and so on must I specify ?
-Do I use send , sento, recv or recvfrom functions ?
-
-
-Some help or any example will be welcome.
-
-Thank you
-Best regards
-
-Gérard Guevel
+Thanks in advance,
+Dinesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
