@@ -1,65 +1,36 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A02044642@SERVER1>
-From: Brian Kuschak <brian.kuschak@skystream.com>
-To: "'Eli Chen'" <eli@routefree.com>, Dan Malek <dan@mvista.com>
-Cc: Gabriel Paubert <paubert@iram.es>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: dcache BUG()
-Date: Mon, 7 May 2001 17:40:48 -0700 
+Message-ID: <3AF740C0.F65FBCB8@mvista.com>
+Date: Mon, 07 May 2001 20:41:36 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Eli Chen <eli@routefree.com>
+Cc: Gabriel Paubert <paubert@iram.es>, brian.kuschak@skystream.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
+References: <Pine.HPX.4.10.10105072359470.22253-100000@gra-ux1.iram.es> <3AF72CA8.52163E55@mvista.com> <03a001c0d74e$60022c70$4b00000a@foolio1> <3AF73161.26986237@mvista.com> <040a01c0d754$1bf6d5c0$4b00000a@foolio1>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The PPC 405GP manual (Aug 2000) from IBM's website states this in Table A1 -
-Instruction Syntax Summary:
+Eli Chen wrote:
 
-stwcx.	RS, RA, RB
-Store word (RS) in memory at EA=(RA|0) + (RB) only if reservation bit is
-set.
-if RESERVE = 1 then
-	MS(EA,4) <- (RS)
-	RESERVE <- 0
-	(CR[CR0]) <- 0 || 1 || XERso
-else
-	(CR[CR0]) <- 0 || 1 || XERso
+> The book is titled "PowerPC Microprocessor Family:....
 
-Looks like the reservation address is not used for the 405.
--Brian
+I left that one at home today.
 
+> I searched through the 405GP user manual, and it makes no mention of if it
+> checks the reservation address or not, just like you said.
 
------Original Message-----
-From: Eli Chen [mailto:eli@routefree.com]
-Sent: Monday, May 07, 2001 5:16 PM
-To: Dan Malek
-Cc: Gabriel Paubert; Brian Kuschak; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
+I grabbed my stack of Motorola manuals.  All of the 6xx/7xx/8xx manuals
+have a UISA section that describes the behavior of all implementation
+dependent instructions.  The lwarx/stwcx behavior is clearly defined,
+along with either 16 or 32 word granularity.......I have Gabriel's
+patch floating around on a couple of systems for testing.  If you
+try it, let me know the results please.
+
+Thanks.
 
 
-> F**K...that's what I was looking for.  What manual is that in?
-> Everything I have handy (older UISA books), state the granularity
-> is implementation dependent.  I couldn't find any 4xx manual that
-> stated the granularity of the reservation.  I thought 6xx/7xx at
-> least checked cache line granularity in addition to a single
-> reservation bit.
-
-The book is titled "PowerPC Microprocessor Family: The Programming
-Environments".  It's greenish-blue, dated 3/21/2000.  The quote is from the
-stwcx. instruction description.  In section 5-4 however, it has this note:
-
-"When a reservation is made to a word in memory by the lwarx instruction, an
-address is saved and a reservation is set.  Both of these are necessary for
-the memory coherence mechanism, however, some processors do not implement
-the address compare for the stwcx. instruction.  Only the reservation need
-be established in order of the stwcx. to be successful.  This requires that
-exception handlers clear reservations if control is passed to another
-program.  Programmers should read the specifications for each individual
-processor."
-
-I searched through the 405GP user manual, and it makes no mention of if it
-checks the reservation address or not, just like you said.
-
-Eli
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
