@@ -1,57 +1,33 @@
-To: Robert Schwebel <robert@schwebel.de>
+Date: Tue, 10 Jun 2003 10:02:09 -0500
+Subject: Re: init does not run on 405GP system
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: init does not run on 405GP system 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 10 Jun 2003 16:10:47 +0200."
-             <20030610141047.GU9379@pengutronix.de>
-Date: Tue, 10 Jun 2003 16:39:06 +0200
-Message-Id: <20030610143911.C3835C5FD7@atlas.denx.de>
+To: Robert Schwebel <robert@schwebel.de>
+From: Hollis Blanchard <hollisb@us.ibm.com>
+In-Reply-To: <20030610141047.GU9379@pengutronix.de>
+Message-Id: <8263E99D-9B54-11D7-8E3D-000A95A0560C@us.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20030610141047.GU9379@pengutronix.de> you wrote:
+On Tuesday, Jun 10, 2003, at 09:10 US/Central, Robert Schwebel wrote:
 >
 > I'm currently porting u-boot and Linux to an IBM 405GP based board. The
 > problem is now that init seems not to be running and does not give any
 > output. Up to that point where init should make some noise the kernel
-...
-> Nevertheless, the kernel runs smoothly. I can ping the machine, I can
-> even floodping it with 0% packet loss. Only that there is no userspace
-> running.
+> boots smoothly (serial console), I see all output and NFS-Root is
+> mounted via an Intel 82559 network chip. The kernel threads are also
+> running, I see kupdated & friends being put into the run queue from
+> time
+> to time.
 
-Do user space program like init really don;t run,  or  is  there  any
-chance that you just might see no output?
-
-You can do a couple of things:
-
-* Check your adaptions of the kernel source and your kernel  configu-
-  ration is you really have a working serial console port.
-
-* If booting over NFS realy works, you can try to start a (statically
-  linked small test program) that does something else but a printf to
-  the console. For example, open  a  file  in  /tmp  for  output  and
-  frpintf to that file.
-
-* Or  start  your  test  program  with  a  known  system  call  (like
-  gettimeofday() or maybe even getuid() etc.) and set a breakpoint at
-  the system call handler code inthe kernel.
-
-
-You wrote "opening the console works" - set a breakpoint, and  verify
-that your console driver is really initialized and used.
-
-
-Best regards,
-
-Wolfgang Denk
+That's where I've seen output stop when I've forgotten to put a getty
+on /dev/ttyS0 in /etc/inittab...
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-In general, if you think something isn't in Perl, try it out, because
-it usually is :-) - Larry Wall in <1991Jul31.174523.9447@netlabs.com>
+Hollis Blanchard
+IBM Linux Technology Center
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
