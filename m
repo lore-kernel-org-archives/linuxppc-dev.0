@@ -1,77 +1,49 @@
-Date: Fri, 14 May 1999 14:32:56 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC-DR-1.0: Some questions
-In-Reply-To: <373C716A.555B5C52@wanadoo.fr>
-Message-ID: <Pine.LNX.3.96.990514142814.16697C-100000@newhope.terraplex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Porter <mmporter@home.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.8/2.3.0 SCSI problems?
+References: <Pine.LNX.3.96.990513082543.20083B-100000@liberty.chnd1.az.home.com>
+Reply-To: minyard@acm.org
+From: Corey Minyard <minyard@acm.org>
+Date: 14 May 1999 23:10:43 +0200
+In-Reply-To: Matt Porter's message of "Thu, 13 May 1999 08:33:26 -0700 (MST)"
+Message-ID: <m2lnerwe5o.fsf@wf-rch.cirr.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > 
-> > On Fri, 14 May 1999, Martin Costabel wrote:
-> > >
-> > > Now that DR-1.0 is officially released (great work, thank you!), I have
-> > > some questions concerning its list of rpms:
-> > 
-> > Um, so what is this DR-1.0? Almost R5? There's no announcement about it
-> > anywhere...
+Matt Porter <mmporter@home.com> writes:
 
-There isn't an announcement on linuxppc.com if that's what you're looking
-for. The Reference Release is not a product by LinuxPPC, Inc. Like the
-press release says (www.crashing.org), the reference release was developed
-by people around the world and is intended to be used as a basis for the
-various PPC Linux distributions. This ensures compatibility across the
-board... which is a Good Thing (tm).
-
+> I was running vger 2.2.5 with patches for Motorola support on a variety
+> of systems here successfully.
 > 
-> Read http://www.crashing.org/pressrel.txt, and since this thing comes
-> with surprisingly much documentation, also
-> ftp://silver.teardrop.org/pub/linux/README.orig (well, I wanted to give
-> you the ftp.linuxppc.org file name, it's something like
-> pub/linuxppc/linuxppc-dev-rel/README, but I can't get on this server
-> right now; the other linuxppc.org mirrors are probably filling their
-> linuxppc-dev-rel trees.) 
+> These patches made it into 2.3.0 so I'm testing it and finding that SCSI
+> support is broken.  On an MTX with a 53c875 chipset, the 2.3.0 kernel
+> hangs scanning the SCSI bus.  The ncr8xx driver has been updated since
+> 2.2.5, but I get the same results if I patch the driver from 2.2.5 into
+> 2.3.0.
 > 
-> As far as I can tell, this is the basis for LinuxPPC R5 (no netscape
-> yet) and probably for yellowdog champion-server 1.1 and other
-> distributions. Its rpms are based on RedHat 6.0 and basically the same
-> that you find in the rawhide directories at mirror.linuxppc.org and
-> linuxppc.slackers.cx, and also in the pre-R5 directories.
-> 
-> It comes with plenty of installer stuff for different machines, mklinux
-> and linuxppc, scripts for generating 2 CDs, the RedHat handbooks for
-> installing and getting started, plus a ppc addendum for these handbooks
-> (all handbooks in html format and also as rpms). This addendum is in
-> some parts not quite finished. It is online on
-> ftp://silver.teardrop.org/pub/linux/doc/ppc/booklet/index.htm.
-> 
-> I also thought that there was a linuxppc-announce list for such things
-
-I think a lot of people would have taken that for "R5" perhaps...
-This release is intended for developers. It's a straight port of RH 6
-that's been in the works for quite some time now...
-
-
-> :-)
+> Seems like it's either a generic scsi support issue or something PPC
+> specific.  It is reporting that PCI interrupts are set properly and all
+> the driver resources are allocated the same as in my 2.2.5 kernel so I'm
+> at a loss for answers. :-/
 > 
 > --
-> Martin
-> 
-> 
+> Matt Porter
+> mmporter@home.com
 
+I'm having the same problem with my MVME2700 with an ncr53c8xx chip.
+I did a little debugging and checking.  In my previous kernel version
+that I had running (2.2p4), it chose to use interrupt 14 for the chip.
+In 2.2.9, it chose to use interrupt 19.  But that is the only thing I
+can find.
 
-Dan
+If anyone has a solution I'd like to know.
 
-Terra Soft Solutions, Inc.
- email: dburcaw@yellowdoglinux.com
- website: http://www.yellowdoglinux.com/
+Thanks,
 
-
+-- 
+Corey Minyard                   Internet:  minyard@acm.org
+  Work: minyard@nortelnetworks.com  UUCP:  minyard@wf-rch.cirr.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
