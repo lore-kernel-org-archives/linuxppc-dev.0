@@ -1,44 +1,43 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3FE6DCB3.109@catapult.com>
-Date: Mon, 22 Dec 2003 06:59:47 -0500
-From: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Boot Loader
-References: <OJEPIMKHOKJAJIDJLJBNAEKLCAAA.jbates@paradise.co.uk>
-In-Reply-To: <OJEPIMKHOKJAJIDJLJBNAEKLCAAA.jbates@paradise.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Boot Loader 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 22 Dec 2003 06:59:47 EST."
+             <3FE6DCB3.109@catapult.com>
+Date: Mon, 22 Dec 2003 14:08:53 +0100
+Message-Id: <20031222130859.09C20C5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Dear Kevin,
 
-For my end target I have to boot across a shared memory
-interface by placing the executable into RAM.  This is
-part of a multi processor system where the Linux board
-is a cPCI slave.  The Linux board will not have a flash
-or a network connection.  I is held in reset by the master
-until the s/w is loaded and then released.  This is an 8275
-target.  The "Master" is a Solaris Workstation or a PC
-style Linux box or card.
+in message <3FE6DCB3.109@catapult.com> you wrote:
+>
+> For my end target I have to boot across a shared memory
+> interface by placing the executable into RAM.  This is
+> part of a multi processor system where the Linux board
+> is a cPCI slave.  The Linux board will not have a flash
+> or a network connection.  I is held in reset by the master
+> until the s/w is loaded and then released.  This is an 8275
 
-Any suggestions on how to do this ?
-Have to fill in my own board info in a bd_t struct,
-pass it in R3, if I use and initrd it's start and end ptrs
-go into R4, R5 and the cmd line params will
-be hard coded and inserted into R6,R7...
-I will be using a RAM disk for the root file system.
+This has been done before. See for example the  "PN62"  configuration
+in U-Boot.
 
-Instead of compressing and creating uImage for das u-boot,
-I create a binary(?) image and just shove it into RAM at
-0?  Ensure the Reset vec is set to my initialization code
-that will be part of the download...
+> Any suggestions on how to do this ?
 
-Any ideas would be appreciated.
+Use U-Boot...
 
-Thank you
-Kevin
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It all seemed, he thought, to be rather a lot of  trouble  to  go  to
+just sharpen a razor blade.  - Terry Pratchett, _The Light Fantastic_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
