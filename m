@@ -1,38 +1,29 @@
-Subject: Re: PREEMPT on PPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-In-Reply-To: <Pine.LNX.4.44.0403291329300.4088-100000@opal.biophys.uni-duesseldorf.de>
-References: 
-	 <Pine.LNX.4.44.0403291329300.4088-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain
-Message-Id: <1080561670.1210.23.camel@gaston>
-Mime-Version: 1.0
-Date: Mon, 29 Mar 2004 22:01:11 +1000
+From: "challaharikumar" <challaharikumar@tataelxsi.co.in>
+To: <linuxppc-dev@lists.linuxppc.org>
+Cc: "'Dan Malek'" <dan@embeddededge.com>
+Subject: Changes in fcc_enet.c  for MPC8272  ??
+Date: Tue, 30 Mar 2004 10:03:23 +0530
+Message-ID: <000001c41610$470f7660$3401080a@telxsi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2004-03-29 at 21:29, Michael Schmitz wrote:
-> > > What else are you using ? I suspect something like MOL may have troubles
-> > > with preempt for example...
-> >
-> > Not using that regularly. Not sure what's special about my setup, XFS
-> > maybe?
-> >
-> > What about this:
-> >
-> > -CONFIG_TASK_SIZE=0xc0000000
-> > +CONFIG_TASK_SIZE=0x80000000
->
-> Nope, that's what my kernel is built with as well.
+Hi!
+all
 
-BTW. I pushed more preempt fixes upsteam (see lkml if not in
-mainstream yet).
+I want to know is there any changes for fcc_enet.c from MPC8260 to MPC8272.
+I want to know about the FCC pin configurations
+for MPC8272, since MPC8260 has 3FCC's and where as MPC8272 has 2FCC's. How
+to configure these Parallel I/O ports to FCC pins?? Any help will be great..
+Is there any links to latest fcc_enet.c for MPC8272??
 
-Ben.
+Thanks in advance..
+
+regards
+hari
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
