@@ -1,63 +1,60 @@
-Date: Tue, 20 May 2003 12:07:10 -0700
-Subject: Re: e1000 patch for linuxppc_2_4_devel
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v552)
-From: Mark Rakes <mrakes@mac.com>
-To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3048EFC8-87FB-11D7-B0B0-000393DB7C12@vivato.net>
-Message-Id: <41CF51CA-8AF6-11D7-B2B9-000393DB7C12@mac.com>
+Date: Tue, 20 May 2003 21:26:01 +0200 (CEST)
+From: Mich Lanners <mlan@cpu.lu>
+Subject: Re: Flash device identifier error in jedec_probe.c  
+To: guo_zl9@hotmail.com
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Law14-OE52mmj8UMCTh0001760a@hotmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E19ICkS-0000kO-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-OK.  final version of the patch. this one even works for large tag
-values.
-
-Sorry for all the confusion.
--mark
-
-diff -Nru a/drivers/net/e1000/e1000_main.c
-b/drivers/net/e1000/e1000_main.c
---- a/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
-+++ b/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
-@@ -2062,7 +2062,8 @@
-  		skb->protocol = eth_type_trans(skb, netdev);
-  		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
-  			vlan_hwaccel_rx(skb, adapter->vlgrp,
--				le16_to_cpu(rx_desc->special & E1000_RXD_SPC_VLAN_MASK));
-+				(le16_to_cpu(rx_desc->special) &
-+					    E1000_RXD_SPC_VLAN_MASK));
-  		} else {
-  			netif_rx(skb);
-  		}
-
-
-
-On Friday, May 16, 2003, at 05:04  PM, Mark Rakes wrote:
-
-> this patch fixes e1000 vlan hardware acceleration on ppc.
+On  20 May, this message from guo_zhenglin echoed through cyberspace:
+> question 2:
+> then I use:
+>    cfi->mfr &=0x00FF;
+>     cfi->id &=0x00FF;
+> run kernel show flash size error, messages as following:
 >
-> vlan tags weren't swapped.
->
-> thanks!
-> -Mark Rakes
->
->
-> diff -Nru a/drivers/net/e1000/e1000_main.c
-> b/drivers/net/e1000/e1000_main.c
-> --- a/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
-> +++ b/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
-> @@ -2062,7 +2062,8 @@
->  		skb->protocol = eth_type_trans(skb, netdev);
->  		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
->  			vlan_hwaccel_rx(skb, adapter->vlgrp,
-> -				le16_to_cpu(rx_desc->special & E1000_RXD_SPC_VLAN_MASK));
-> +				le16_to_cpu(rx_desc->special &
-> +					    E1000_RXD_SPC_VLAN_MASK));
->  		} else {
->  			netif_rx(skb);
->  		}
->
+> Motorola MBX flash device: 800000 at fe000000
+> Found: AMD AM29F016
+> number of JEDEC chips: 1
+                  ^^^^^^^^
+Hm, one chip...
 
+> Creating 4 MTD partitions on "MBX flash":
+> 0x00000000-0x00040000 : " BOOT partition(mtd/1)"
+> 0x00040000-0x00100000 : "KERNEL  partition(mtd/2)"
+> 0x00100000-0x00500000 : "ROOT  partition(mtd/3)"
+> mtd: partition "ROOT  partition(mtd/3)" extends beyond the end of
+> device "MBX f0
+> 0x00500000-0x00400000 : "APPLICATION partition(mtd/4)"
+> mtd: partition "APPLICATION partition(mtd/4)" is out of reach --
+> disabled
+>
+> My flash is 8MB, is enough.
+
+Ah?
+
+> 2)
+>   emembedded board is MBX860 board with AM29F016 flash.
+
+AFAIR, 29F016 is 16 Mbit... a single chip makes for 2 MB of flash
+memory, not 8 MB.
+
+I guess something's fishy with your flash memory detection.
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
