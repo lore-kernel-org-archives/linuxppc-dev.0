@@ -1,46 +1,44 @@
-To: "sunrays" <lm_mailbox@sohu.com>
-Cc: "Flavio Pereira" <Flavio.Pereira@za.flextronics.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Need help booting linux on my 8265 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 19 Apr 2004 17:12:34 +0800."
-             <001401c425ee$796087b0$061410ac@liu>
-Date: Mon, 19 Apr 2004 12:21:53 +0200
-Message-Id: <20040419102158.CA512C109F@atlas.denx.de>
+Subject: Re: MPC85xx support
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: Jason McMullan <jason.mcmullan@timesys.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1082049680.4404.1.camel@veena.timesys>
+References: <407E5F36.80003@denayer.wenk.be>
+	 <1082036134.20892.8.camel@baz.sps.mot.com>
+	 <407EA4CA.4080208@embeddededge.com>
+	 <49705.193.77.24.1.1082042532.squirrel@www.arhitektova-delavnica.com>
+	 <7E4506ED-8EF2-11D8-8550-000393DBC2E8@motorola.com>
+	 <1082049680.4404.1.camel@veena.timesys>
+Content-Type: text/plain
+Message-Id: <1082373794.4790.3.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Date: Mon, 19 Apr 2004 13:23:14 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <001401c425ee$796087b0$061410ac@liu> you wrote:
+On Thu, 2004-04-15 at 19:21, Jason McMullan wrote:
+> On Thu, 2004-04-15 at 11:35, Kumar Gala wrote:
+> > We have been keeping the linuxppc-2.4 bitkeeper in sync with our work
+> > for 85xx.  See http://penguinppc.org/dev/kernel.shtml on how to get
+> > access.
 >
-> Need help booting linux on my 8265 boardHello,Mr Pereira
+> I have a raft of MPC85xx (specifically, MPC8560ADS support) for 2.6.4
+> if anyone wants them.
 
-Can you please  STOP  posting  nearly  the  same  quesrtions  to  the
-linuxppc-embedded  and  u-boot-users mailing lists? Please decide for
-one list, or, if you really, really feel the message must go to  both
-lists,  then  send  it  as  Cc:,  but never two separate and slightly
-different messages.
+While my interest is mostly academic for now,
+I would be happy to take a look.
 
->    I'm sure  IMMR base is the same for both U-boot and Linux. Uboot mapped at 0xfff00000, but I want to know why linux mapped at 0xC0000000 , the uboot say   "## Transferring control to Linux (at address 00000000) ...", so KERNELLOAD should be 0xc000000
-> 0 or 0x00000000?
-
-Welcome to the world of virtual addresses. See
-http://www.denx.de/twiki/bin/view/PPCEmbedded/Kernel#Section_10.2.
-
->     and if I use linux kernel 2.4.20,  CONFIG_CLOCKS_IN_MHZ should be 0 or 1?
-
-It should be not defined at all.
-
-Best regards,
-
-Wolfgang Denk
+How are chances this becomes the mainstream port?
+Isn't Motorola/Metroworks working on this also?
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There are two ways to write error-free programs. Only the  third  one
-works.
+Stefan Nickl
+Project Engineering
+Kontron Modular Computers
+Sudetenstr. 7
+D-87600 Kaufbeuren
+Phone ++49/8341/803-294
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
