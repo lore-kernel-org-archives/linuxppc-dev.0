@@ -1,45 +1,68 @@
-Date: Mon, 7 Dec 1998 11:54:07 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: "Timothy A. Seufert" <tas@mindspring.com>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        paulus@cs.anu.edu.au, daveray@WellsFargo.COM
-Subject: Re: Partial fix for 2400 16-bit video problem
-In-Reply-To: <v04011702b2914dc3594d@[209.86.156.28]>
-Message-ID: <Pine.LNX.4.03.9812071153160.31794-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 7 Dec 1998 10:57:38 GMT
+From: costabel@lie.univ-rennes1.fr (Martin Costabel)
+Message-Id: <199812071057.KAA07174@lie.univ-rennes1.fr.maths>
+To: tmrini@ntplx.net
+Subject: Re: pre-R5&miscs
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 7 Dec 1998, Timothy A. Seufert wrote:
-> Here is the diff relative to the version of chipsfb.c in the latest vger
-> kernel that I synced with:
-> 
-> ----------cut here-----------
-> 360a361
-> > 			write_xr(0x82, 0x00);		// disable palettes
-> 381a383
-> > 			write_xr(0x82, 0x08);		// Graphics gamma
-> >enable
-> ----------cut here-----------
-> 
-> If your chipsfb.c is different from mine, here is the context:  The first
-> line should be inserted after the line containing "write_xr(0x81, 0x14)"
-> and the second line should be inserted after the line containing
-> "write_xr(0x81, 0x12)".
+Tom Rini <tmrini@ntplx.net> wrote on Sun, 6 Dec 1998:
 
-Please use `diff -u' next time, so you don't have to tell us about the context
-yourself.
+> On Sun, 6 Dec 1998, Martin Costabel wrote:
 
-Greetings,
+>> If I use XPmac, then it works in principle, but the colors are all
+>> messed up, most of the time nothing is readable. I say 'most of the
+>> time', because the weird colors are not always the same, they depend on
+>> the number of the console from which X is started. Also, if you touch
+>> the title bar of a window, the X server dies. This has been mentioned
+>> here, and it seems that someone already has a fix.
+>
+> I believe this is similar to the problem of using Xpmac compat mode
+> normally, isn't it?
 
-						Geert
+If by 'normally', you mean linuxppc R4, then no, this is not similar. For me,
+Xpmac on R4 works perfectly (I helped writing the valkyriefb driver, after all,
+to make sure that this is so). On pre-R5 *with the same kernel* and the same
+boot procedure, the colors are crazy. 
+And they depend not only on the number of the console from which X
+is started, but also on the time of the day or whatever. Almost every time I
+startx, I get different colors. The windows that should be black on pale yellow
+in my config, for example, are sometimes yellow on green, sometimes dark blue onvery dark blue, sometimes green on black and so on. You get the picture.
+
+I tried to run the Xpmac from R4, fixed by fix961212, but it dies saying it 
+cannot define the default font path and doesn't find the font 'fixed'. But
+this is exactly the same font path that Xpmac from pre-R5 finds without
+problems. Weird. 
+
+>> If I use XF68_FBDev, then the colors are OK, but the keyboard and the
+>> mouse do not work correctly: The option (alt) keys do not work, and
+>> there is no simulation for mouse buttons 2 and 3.
+>> This is a problem that has been mentioned to the author (Geert U.)
+>> already some time ago, but since he doesn't have ADB devices any more,
+>> it is not clear whether this will be fixed soon.
+>>
+>> So for people with standard Apple keyboards and mice, there remains a
+>> serious problem.
+>
+> Hmm.  Haven't used the XF68_FBDev's that i've built for a while, but they
+> did work fine here.  Right now I'm using Geert's server from 10something
+> run throught fix961212.  Make sure you have Xkb stuff turned off in the
+> XF86Config file.
+ 
+The 2 servers from Geert's that I tried didn't want to run on pre-R5. I don't 
+quite know why, because they dump 2 pages of messages on the screen, only the
+second of which is visible. This is a help file. I guess the real errors are
+mentioned on the first, invisible, page. Not very helpful.
+
+This problem with the non-functioning option keys seems to be the same in
+R4 and pre-R5. And I am pretty sure that the problem is relatively recent.
+I think it was not there at a time when kernel versions were around 
+2.1.115-121 or so. I don't know how to test this.
 
 --
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Martin
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
