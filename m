@@ -1,43 +1,29 @@
-Message-Id: <199902131443.JAA07700@linuxmaster.corel.eng>
-From: "Gavriel State" <u497w7n9@umail.furryterror.org>
-Subject: Patch for Megahertz PCMCIA Ethernet support
-Date: Sat, 13 Feb 1999 09:45:10 -0500
-To: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 13 Feb 1999 11:19:36 -0500
+From: Michael Meissner <meissner@cygnus.com>
+To: Gavriel State <u497w7n9@umail.furryterror.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Why is -msoft-float used in Kernel compilation?
+Message-ID: <19990213111936.A1449@wogglebug.cygnus.com>
+References: <199902131436.JAA07672@linuxmaster.corel.eng>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199902131436.JAA07672@linuxmaster.corel.eng>; from Gavriel State on Sat, Feb 13, 1999 at 09:37:46AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've had much more success with the latest (3.08) PCMCIA code
-and my Megahertz card.  Here's a patch that solves the remaining
-problems with the Megahertz card (the last two bytes were being
-swapped by the output code).
+On Sat, Feb 13, 1999 at 09:37:46AM -0500, Gavriel State wrote:
+> 
+> I can understand using -msoft-float if CONFIG__8xx is on,
+> but why use it when compiling for 60x or 7x0 CPUs?
 
-Is there anyone I should be sending this to in particular, or is
-the list the best place?
+I would imagine to prevent the compiler from using the FPU to move 64-bit
+aligned items via fp registers.
 
---- smc91c92_cs.c Mon Feb  8 14:08:02 1999
-+++ smc91c92_cs.c.orig Mon Jan 18 08:22:11 1999
-@@ -1200,8 +1200,8 @@
- #ifdef USE_32_BIT
-  outl((length+6) << 16, ioaddr + DATA_1);
-  if (length & 0x2) {
--     outsl_ns(ioaddr + DATA_1, buf,  length >> 2 );
--     outw_ns( *((uint16 *)(buf + (length & 0xFFFFFFFC))),ioaddr +DATA_1);
-+     outsl(ioaddr + DATA_1, buf,  length >> 2 );
-+     outw( *((uint16 *)(buf + (length & 0xFFFFFFFC))),ioaddr +DATA_1);
-  } else
-      outsl_ns(ioaddr + DATA_1, buf,  length >> 2 );
- #else
-
--Gav
-
---
-Gavriel State
-Engineering Project Leader - Linux Apps
-Corel Corp
-gavriels@corel.com
-
-
+-- 
+Michael Meissner, Cygnus Solutions (Massachusetts office)
+4th floor, 955 Massachusetts Avenue, Cambridge, MA 02139, USA
+meissner@cygnus.com,	617-354-5416 (office),	617-354-7161 (fax)
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
