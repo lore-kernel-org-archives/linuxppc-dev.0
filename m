@@ -1,91 +1,97 @@
-Message-ID: <006c01c0650f$73b65d60$1e894b82@pc30>
-From: "Nils Hagge" <Nils.Hagge@stud.uni-hannover.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Kernel panic: No init found.  
-Date: Wed, 13 Dec 2000 15:17:40 +0100
+Message-ID: <3A37867B.2070606@galileo.co.il>
+Date: Wed, 13 Dec 2000 16:23:55 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Reply-To: rabeeh@galileo.co.il
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: problems with powerpc-linux-gcc
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi All,
 
-I try to run Hard Hat Linux from Montavista as described in the CDK 1.2
-manual on an RPX lite board.
-Unfortunately, the installation procedure is only for hosts with Red Hat
-Linux, I hoped this would work for SuSE, too.
+I'm having trouble with compiling some code that I will use for our
+embedded system when booting the system.
 
-The problem has to do with the NFS filesystem. I can successfully download a
-precompiled
-Hard Hat Linux boot-image via TFTP and monitor this with the serial port.
+The function that I'm having trouble with is the printf function. I used
+this function in i386 and mips environement (cross compiling) and it
+worked fine, the argumenents are forwarded to the function are put in
+the stack and the printf fetches them and then displays the formatted
+output.
 
-The following is the output over the serial port...
+In the powerpc environemnt (using GNU powerpc-linux-gcc cross compiler),
+the compiler puts the arguments in registers instead of the stack ; due
+to that the printf can only print the constant characters but the %d %x
+etc can not print them right.
 
- target IP address : 824B8932
- target file name  : rpxlite.srec
- address bias      : 0
-Starting tftp download:
-inetARP(): OK
-.1.2.4.8.16.32.64.128.256.512.1024.2048.4096.8192
-load_tftp(): OK
-1087283 data bytes, 13764 S-records, 2124 tftp blocks, 0 repeated blocks
-start address = 00200000
-load_tftp_toMem(): OK
-Transferring control to downloaded program
-loaded at:     00200000 0020B1FC
-relocated to:  00180000 0018B1FC
-board data at: 001801C8 001801E4
-relocated to:  00200100 0020011C
-zimage at:     00206000 0026A4C4
-avail ram:     0026B000 01000000
+here is the code :
 
-Linux/PPC load: root=/dev/nfs rw nfsroot=/opt/hardhat/devkit/ppc/8xx/target
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.2.14 (root@rodan.mvista.com) (gcc version 2.95.2 19991030
-(2.95.
-3 prerelease/franzo)) #1 Tue Aug 8 02:01:27 PDT 2000
-Boot arguments: root=/dev/nfs rw nfsroot=/opt/hardhat/devkit/ppc/8xx/target
-time_init: decrementer frequency = 240000000/60
-Calibrating delay loop... 63.69 BogoMIPS
-Memory: 15152k available (740k kernel code, 456k data, 36k init)
-[c0000000,c1000
-IP Protocols: ICMP, UDP, TCP
-TCP: Hash tables configured (ehash 16384 bhash 16384)
-Initializing RT netlink socket
-Starting kswapd v 1.5
-CPM UART driver version 0.03
-ttyS00 at 0x0280 is a SMC
-ttyS01 at 0x0380 is a SMC
-pty: 256 Unix98 ptys configured
-RAM disk driver initialized:  16 RAM disks of 4096K size
-loop: registered device at major 7
-eth0: CPM ENET Version 0.2, 00:10:ec:00:1b:fb
-PPP: version 2.3.7 (demand dialling)
-TCP compression code copyright 1989 Regents of the University of California
-PPP line discipline registered.
-Sending BOOTP requests.... OK
-IP-Config: Got BOOTP answer from 130.75.137.50, my address is 130.75.137.59
-Looking up port of RPC 100003/2 on 130.75.137.50
-Looking up port of RPC 100005/1 on 130.75.137.50
-VFS: Mounted root (NFS filesystem).
-Freeing unused kernel memory: 36k init
-Kernel panic: No init found.  Try passing init= option to kernel.
-Rebooting in 180 seconds..
 
-----snip----
+static char *do_printf(char *buf, const char *fmt, const int *dp)
+{
+   register char *p;
+   char tmp[16];
+...
+...
+...
+}
 
-The filesystem seems to be mounted, but it does not find any files in there
-although the full "linux tree" is available. I also tried adding
-  init=/bin/init   init=bin/init    init=/opt/.../target/bin/init
-to the boot arguments, but nothing helped.
 
-Do you know that problem or have an idea? Any help is welcome. Thank in
-advance.
+void printf(const char *fmt, ...)
+{
+   char buf[256],*p;
+   p = buf;
+   do_printf(buf, fmt, ((const int *)&fmt)+1);
+   while (*p) putchar(*p++);
+}
 
-Nils Hagge
+
+The calling function -
+for (temp = 0 ; temp < 15 ; temp ++) {
+   printf ("???? %d\n",temp);
+}
+
+and the output is -
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+???? 565184
+
+and the disassembly of the calling function is -
+
+  400000:       94 21 ff f0     stwu    r1,-16(r1)
+  400004:       7c 08 02 a6     mflr    r0
+  400008:       bf c1 00 08     stmw    r30,8(r1)
+  40000c:       90 01 00 14     stw     r0,20(r1)
+  400010:       3b e0 00 00     li      r31,0
+  400014:       3f c0 00 41     lis     r30,65
+  400018:       7f e4 fb 78     mr      r4,r31
+  40001c:       38 7e fa 80     addi    r3,r30,-1408
+  400020:       48 00 66 e5     bl      406704 <printf>
+  400024:       3b ff 00 01     addi    r31,r31,1
+  400028:       28 1f 00 0e     cmplwi  r31,14
+  40002c:       40 81 ff ec     ble     400018 <boot_entry+0x18>
+
+
+
+
+
+
+Thank you a milion -
+Rabeeh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
