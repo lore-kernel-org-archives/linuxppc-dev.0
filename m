@@ -1,73 +1,48 @@
-Date: Sun, 4 Feb 2001 22:37:28 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Paul Mackerras <paulus@linuxcare.com.au>
-cc: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>,
-        LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R in
- dao mode
-In-Reply-To: <14971.34502.222006.311092@diego.linuxcare.com.au>
-Message-ID: <Pine.LNX.4.30.0102042212020.7438-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3A7DE15B.8D033AA8@chello.nl>
+Date: Mon, 05 Feb 2001 00:10:19 +0100
+From: "b.stolk" <b.stolk@chello.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org, erbenson@alaska.net
+Subject: Re: incomplete asm-ppc/errno.h in 2.4.1 kernel. 
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> As I said, it's been a while, and what I don't remember is whether the
-> mesh gives you a phase mismatch interrupt if you tell it to receive
-> data (do an IN operation) when the target also expects to receive data
-> (i.e. do an OUT operation).  I have a vague idea that it might do so
-> in PIO mode but not in DMA mode or something.  It's quite believable
-> that the whole thing would lock up in this situation.
+Hi,
 
-You probably check for this explicitly in PIO mode. Phase mismatch usually
-happens if the target goes from data to message phase due to errors (I
-haven't seen the MESH specs so I'm speculating here).
-
-> The 53c94 is another story; I never found any decent documentation for
-> it, I just had to work from the open firmware methods for it plus some
-> other drivers which seemed to be for similar chips.  I got the
-> mac53c94 driver to the stage where it seemed to work mostly but I
-> never had the time and the motivation to stress-test it and to
-> implement things like disconnect/reconnect.
-
-Disconnect and reselect are implemented in the ESP driver which was used
-as template for the 68k Mac 53C9x driver at one time. Maybe take a
-page or two from these drivers to implement disconnect. That driver uses a
-trick that might help avoiding the data direction lockup with MESH as
-well: the chip is programmed for the whole arbitration/selection/command
-phases but will interrupt right before data phase, at which point you
-could check the data direction before setting up the DMA (assuming the
-target asserts the data direction after seeing the command byte). One
-additional interrupt taken. No additional overhead if you skip this step
-for some well known commands like WRITE_* and READ_* :-)
-
-> > 3)	It continues to be worrisome that the mesh driver doesn't handle
-> > aborts right or retry lost arbitration (nor does mac53c94.)  Is there
-> > anywhere that the way to do these things is documented?  I'm willing to
-> > try my hand at fixing them.
+Ethan Benson wrote:
+>On Sun, Feb 04, 2001 at 04:13:32PM +0100, b.stolk wrote:
+>>
+>> Hi there,
+>>
+>>
+>> I'm trying to build 2.4.1 with reiserfs on my Motorola PowerStack II.
 >
-> I was never sure exactly how the higher levels of the scsi code
-> expected the host adaptor drivers (like mesh.c) to do aborts.  At the
+>don't bother, reiserfs does not work on either 64 bit or big endian
+>archechures.  (basically anything but x86)
 
-The main pitfall used to be that active and disonnected commands needed
-to be removed  from the host adapter queue on a bus or host reset, and
-their completion routine had to be called to terminate the command with
-error (thereby stopping the midlevel timeout).
-Plain command aborts are tricky because you need to act differently for
-commands that are in the process of being sent to the device,
-disconnected, or actively transfering data (removing commands from the
-host queue that haven't been issued yet is rather trivial). The easiest
-course of action (read: cop-out) for a command that's being issued or
-transfering data is to reset the bus.
+>From the FAQ at namesys I understand that ReiserFS works on alpha.
+Alpha is as 64bit as it gets....
+Not only has is sizeof(void *)==8, but even sizeof(bool) is 8 :-)
+(imagine that: using 64 bits to store a single one!)
 
-The new SCSI error handling code was/is supposed to simplify all of this,
-I just never got around to figuring out how it works. If someone could
-point me to a SCSI errorhandling HOWTO that'd be much appreciated.
+>> But: EHASHCOLLISION seems to be missing from include/asm-ppc/errno.h
+>> It's present in asm-alpha and asm-i386
+>>
+>> Anyone working on reiserfs support for ppc at the moment?
+>>
+>
+>jeffm of suse is working on it, he has it to where any attempt to
+>write to a reiserfs causes an immediate kernel panic.
+>
+>see http://penguinppc.org/~jeffm/  for status updates on this.
 
-	Michael
+Thanks for the info,
 
-P.S:: Daniel, I can send a copy of the SCSI-2 spec if you need it.
+So far, I got 2.4.1 to build, but the init of my ncr scsi controller
+no longer works, so for the time being, I'm bound to a 2.2 kernel.
 
+   Bram Stolk
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
