@@ -1,31 +1,54 @@
-Date: Sat, 9 Feb 2002 10:10:29 -0700
+Date: Sat, 9 Feb 2002 13:47:16 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Val Henson <val@nmt.edu>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] Make Gemini boot
-Message-ID: <20020209171029.GL20094@opus.bloom.county>
-References: <20020208185019.G28166@boardwalk>
+Subject: Re: [PATCH] adjust BAT mapping according to max_low_mem
+Message-ID: <20020209204716.GA872@opus.bloom.county>
+References: <20020208133604.H25005@boardwalk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020208185019.G28166@boardwalk>
+In-Reply-To: <20020208133604.H25005@boardwalk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Feb 08, 2002 at 06:50:19PM -0700, Val Henson wrote:
+On Fri, Feb 08, 2002 at 01:36:04PM -0700, Val Henson wrote:
 
-> This patch consists of all the bits that didn't really impact
-> non-Gemini machines.  If you apply all of it, Gemini will boot in the
-> linuxppc_2_4_devel tree.
+> I'm testing highmem by setting max_low_mem to 64MB and using 256MB RAM
+> total (this does not trigger my SCSI bug).  I had to change a few
+> things in adjust_total_lowmem to force it to _not_ BAT map of all the
+> RAM.  I think the printout of residual is wrong but I'm not sure.
 
-Erm, can you fix the current code to work on all of the various gemini
-boards?  I really don't want to bring back the piggyback bits (which are
-only slightly better than the size/offset hacks).  There's nothing wrong
-w/ adding #ifdef CONFIG_GEMINI in a place or two.  In fact, the
-'setup_legacy()' call in misc-simple.c is for exactly the same problem
-the gemini_console_baud_fixup(port) call is for (and since the others
-are in asm, just change the prototype to take an arg, which they will
-ignore).
+If I'm reading all of the code right, residual at this point should be
+(total_lowmem (initial value) - ram mapped in BATs), so I think this:
+
+> +	/* adjust BAT block size to max_low_mem */
+> +	if (max_low_mem < bat_max)
+> +		bat_max = max_low_mem;
+> +
+> +	/* adjust lowmem size to max_low_mem */
+> +	if (max_low_mem < total_lowmem)
+> +		total_lowmem = max_low_mem;
+> +
+> +	ram = total_lowmem;
+
+Should be:
+	/* adjust BAT block size to max_low_mem */
+	if (max_low_mem < bat_max)
+		bat_max = max_low_mem;
+
+	/* adjust lowmem size to max_low_mem */
+	if (max_low_mem < total_lowmem)
+		ram = max_low_mem;
+	else
+		ram = total_lowmem;
+	...
+
+	printk(KERN_INFO "Memory BAT mapping: BAT2=%ldMb, BAT3=%ldMb, "
+		"residual: %ldMb\n", __bat2 >> 20, __bat3 >> 20,
+		(total_lowmem - ram) >> 20);
+
+Does this sound right?
 
 --
 Tom Rini (TR1265)
