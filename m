@@ -1,40 +1,39 @@
-Message-Id: <200102191915.OAA29416@world.std.com>
-To: linuxppc-embedded@lists.linuxppc.org
-From: mod+linuxppc-embedded@world-f.std.com
+Message-ID: <3A9179AB.17D56F36@mvista.com>
+Date: Mon, 19 Feb 2001 14:53:15 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: mod+linuxppc-embedded@world-f.std.com
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: How does one get physical address for iorempped window?
-Date: Mon, 19 Feb 2001 14:15:35 -0500
+References: <200102191915.OAA29416@world.std.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->virt_to_*/*_to_virt functions _should_ have become
->something more generic, but they are just yet another macro
->name for doing the same thing.  Now, we have gone of and
->created some pci_* mapping functions, which are not at all
->useful for highly integrated processors because their
->integrated features are not PCI devices.  Yet another set
->of functions for integrated processors?  I don't think so.
->
->I think that requiring knowledge of the object attributes
->for a VM or physical space so you can call the proper
->mapping or other management functions is just a poor
->design.  If you know this information and wish to take
->performance enhancement shortcuts, that's fine, but it
->shouldn't be required.
+mod+linuxppc-embedded@world-f.std.com wrote:
+
+> .....  Being able to refer to something like, say,
+> the appropriate pci_bus* when invoking virt_to_bus()
+
+Right, you have to provide enough information to get the
+job done correctly, but this could be more generic.  Adding
+pci_bus* to virt_to_bus is the right concept, but the wrong
+implementation as I certainly want to use virt_to_bus() (or
+whatever) for devices that are not on a PCI bus.
+
+> ...  I'm certainly not a fan of pointlessly
+> complex code, but the one-size-fits-all implementation
+> of virt_to_bus()....
+
+That's not a one-size-fits-all implementation :-).  It (and
+virt_to_phys()) worked differently on at least three different
+PowerPC implementations.  Mainly to eliminate a bunch of nested
+#ifdefs and duplicated code, I now use the same implementation
+on all PowerPCs, but it is just the first small step to doing
+something better.
 
 
-What if you're working on a system with multiple PCI
-busses (or even multiple disparate bus types) and it's
-not possible to map Host memory at the same address on
-all busses?  Being able to refer to something like, say,
-the appropriate pci_bus* when invoking virt_to_bus()
-could make it possible to accomodate those different
-mappings.  I'm certainly not a fan of pointlessly
-complex code, but the one-size-fits-all implementation
-of virt_to_bus() seen in my 25Jan-vintage kernel sources
-(it just lops off the KERNEL_OFFSET bits and adds
-pci_dram_offset) won't work in situations such as those
-I just described.
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
