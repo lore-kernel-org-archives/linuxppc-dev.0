@@ -1,38 +1,35 @@
-Message-Id: <v04003a00b44e9b2bc5bc@[216.81.27.60]>
-In-Reply-To: <0a2233037030ab9MAIL01@toast.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 9 Nov 1999 21:57:55 -0600
-To: atma@toast.net, linuxppc-dev@lists.linuxppc.org
-From: Tony Mantler <eek@escape.ca>
+Date: Tue, 9 Nov 1999 20:14:36 -0800 (PST)
+From: "David A. Gatwood" <dgatwood@mvista.com>
+To: Doomsday Machine <pogtal@erols.com>
+cc: atma@toast.net, linuxppc-dev@lists.linuxppc.org
 Subject: Re: OffTopic: Is the PowerBook 145d anygood?
+In-Reply-To: <3828EC42.5434033D@erols.com>
+Message-ID: <Pine.LNX.3.96.991109201239.13037K-100000@mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 9:42 PM -0600 11/9/99, Adrianne Diane Rutledge wrote:
->I don't know much 'bout earlier powerbooks, but I have a friend who's
->looking at
->one, the only one he found on eBay in his price range was the 145d, it
->seems to
->be an early one, from the specs... anyway, anyone here have experience with
->what models are good?
+On Tue, 9 Nov 1999, Doomsday Machine wrote:
 
-The PB145 contains a 68k proscessor, and thus can't run any form of PPC
-Linux. However, it should do just fine with Linux/Mac68k, with the
-exception of the keyboard and mouse, which are as of yet unsupported. More
-information can be found at <http://www.mac.linux-m68k.org/>.
+> Well, besides it being completely off topic, the 145b is seriously
+> outdated.  It's fine for wordprocessing (I guess) but not much else.  I
+> guess if you really wanted to, you could probably load mklinux on it,
 
-As for other 68k powerbooks, currently the 190, 520 and 540 are the best
-supported models, but that's rather relative. From the sound of your
-message, a PPC powerbook would probably be out of your price range.
-
-Cheers - Tony :)
+Umm... MkLinux only works on PPC machines.  That's a 68k.  Can run NetBSD,
+though.
 
 
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
+> but that would be some work, cause it doesn't have a cdrom, and I don't
+> know if it can get ethernet hookups.
+
+Not unless you happen to find one of the old Cabletron Ethernet to SCSI
+adapters.  Asante's aren't supported under *BSD for usual corporate
+reasons.
+
+
+David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
