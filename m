@@ -1,27 +1,33 @@
-Date: Mon, 2 Aug 1999 09:51:59 +0200 (CEST)
+Date: Mon, 2 Aug 1999 10:16:50 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Ethan Benson <erbenson@alaska.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Open Firmware booting on a Blue G3
-In-Reply-To: <v04210100b3c932b2cad2@[192.168.0.1]>
-Message-ID: <Pine.LNX.4.10.9908020951340.7348-100000@mercator.cs.kuleuven.ac.be>
+To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: C&T acceleration support, needs testers.
+In-Reply-To: <19990801234848Q.roikawa@rr.iij4u.or.jp>
+Message-ID: <Pine.LNX.4.10.9908021015200.7348-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 31 Jul 1999, Ethan Benson wrote:
-> >The question arise whether even the latest Apple implementations of OF are
-> >decent. Do they have a decent `see' implementation these days?
-> >I could completely reverse engineer my OF by using `see', if I'd want to...
+On Sun, 1 Aug 1999, Ryuichi Oikawa wrote:
+> From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+> Subject: C&T acceleration support, needs testers.
+> > I'm trying to implement C&T 6555x HW acceleration to the X servers.
+> > I put a Xpmac binary:
+> >  ftp://ppc.linux.or.jp/pub/users/oikawa/Xserver/hw/powermac/Xpmac-19990731-glibc2.1.gz
+> > XF68_FBDev version hasn't been compiled, yet.
+>  It's just been compiled:
+> ftp://ppc.linux.or.jp/pub/users/oikawa/Xserver/hw/xfree68/XF68_FBDev-19990801-glibc2.1.gz
 > 
-> the Blue G3 OF is considered decent (other then the Apple TMed no 
-> security) by at least I few I have talked to, I am not sure what you 
-> mean by "decent `see' implementation, I have found see seems to work 
-> fine, maybe you could be more specific about what was broken in see?
+>  Because FB_ACCEL code isn't defined for C&T 65550 and it requires to accesss
+> both MMIO and IO space, it scans PCI configuration space through /proc/bus/pci.
+> I'm not quite sure if it can detect C&T 6555x properly (just write and compile,
+> not checked, yet). I hope Geert or someone accept the patch...
 
-Does see work for everything? F-Code and asm?
+The Right Way(TM) to make XF68_FBDev detect a C&T 65550 is to request one or
+more FB_ACCEL_* IDs from me.
 
 Greetings,
 
