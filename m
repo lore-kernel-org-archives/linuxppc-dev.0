@@ -1,68 +1,55 @@
-Message-Id: <200009031315.PAA00925@piglet.grunz.lu>
-Date: Sun, 3 Sep 2000 15:15:45 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: PATCH: final version of l2cr cmd line
-To: paulus@linuxcare.com.au
-cc: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <mlan@cpu.lu>
+Cc: <paulus@linuxcare.com.au>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PATCH: improved processor config for G3s
+Date: Sun, 3 Sep 2000 15:43:03 +0200
+Message-Id: <20000903134303.2744@192.168.1.10>
+In-Reply-To: <200009031303.PAA00901@piglet.grunz.lu>
+References: <200009031303.PAA00901@piglet.grunz.lu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1681692777-967986952=:867"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134458388-1681692777-967986952=:867
-Content-Type: TEXT/plain; charset=us-ascii
+>
+> * Branch History Table (BHTE), Branch Target ICache (BTIC), Dynamic
+>   Power Management (DPM) and Store Gathering (SGE) all on,
+> * Instruction Cache Throttling Control (ICTC) off.
+>
+>These were not touched before, but might be worth a discussion:
+>
+> * Speculative Cache Access Disable (SPD) cleared, Address Brodcast
+>   (ABE) enabled
+>
+>Clearing SPD makes sense since some processor upgrade cards come with an
+>OF patch that sets this bit (due to ROM problems... we don't care once
+>Linux is up).
 
-Hi Paul,
+There's a bit of history about ABE:
 
-Since BenH fixed the _set_L2CR() function, I have been able to shorten
-the l2cr command line code. Attached is the patch vs. your current 2.4
-rsync tree. I've not been able for a long time to boot a 2.4 kernel, but
-it never crashed in this part ;-)
+Originally, it was not set. At that time, I tried to turn ON the "Store
+Gathering" option of the MPC 106 (grackle) host brigde. I left it a few
+weeks in my kernel and began getting reports of problems, mostly with
+Adaptec cards.
 
-Anyway, all the patch does is to actually enable the processing of l2cr=
-command lines.
+At that time, some apple person told me enabling Store Gathering on the
+bridge was wrong, they had problems with it (various compatibility
+issues), probably due to grackle bugs, but without telling me exactly
+what was going on.
 
-Thanks for including this if you have no objection.
+Later on, a Moto person told me there was no known grackle bug about
+store gathering, but that the CPU ABE was needed for proper operations. I
+also suspect that store gathering increase the effect of PCI write
+posting, and older versions of the Adaptec drivers were not correctly
+taking this into account on sime timing critical accesses.
 
-Cheers
+I finally ended up setting ABE in head.S (along with a few others), but
+never uncommented the call to grackle_set_stg() in pmac_pci.c. If someone
+want to test if it behaves properly now (the problems reported at that
+time were mostly with Adaptec cards in B&W G3s not initializing
+properly), I don't have a Grackle-based machine here any more.
 
-Michel
-
-PS Patch also posted to sourceforge.
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
---134458388-1681692777-967986952=:867
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Disposition: attachment; filename="l2cr.diff"
-
-diff -uNr linux-2.4.paul/arch/ppc/kernel/setup.c linux/arch/ppc/kernel/setup.c
---- linux-2.4.paul/arch/ppc/kernel/setup.c	Tue Aug  8 07:46:33 2000
-+++ linux/arch/ppc/kernel/setup.c	Sat Sep  2 11:26:13 2000
-@@ -661,11 +661,13 @@
- 	{
- 		unsigned long val = simple_strtoul(str, NULL, 0);
- 		printk(KERN_INFO "l2cr set to %lx\n", val);
--		_set_L2CR(0);
--		_set_L2CR(val);
-+		_set_L2CR(0); 		/* force invalidate by disable cache */
-+		_set_L2CR(val);		/* and enable it */
- 	}
- }
-
-+__setup("l2cr=", ppc_setup_l2cr);
-+
- void __init ppc_init(void)
- {
- 	/* clear the progress line */
-
---134458388-1681692777-967986952=:867--
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
