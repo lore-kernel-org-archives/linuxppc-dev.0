@@ -1,37 +1,41 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C06CF@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Donald MacArthur'" <dmacarth@ufl.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: SCC3 UART for MPC850
-Date: Mon, 3 Mar 2003 09:16:44 -0500 
+Date: Mon, 3 Mar 2003 08:46:22 -0600 (CST)
+From: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: "printk" does not print 
+In-Reply-To: <001101c2e18f$4791b6e0$0700a8c0@pc005>
+Message-ID: <Pine.LNX.4.33.0303030845140.27359-100000@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Are you sure that particular variant of the 850 processor has an SCC3?
+On Mon, 3 Mar 2003, Ing.Gianfranco Morandi wrote:
+> Hi to all,
+>
+> I'm trying to trace the execution path of a custom ISDN driver, and I have
+> used some printk() instructions to give some messages out.
+>
+> Now, everything is going well, but when I try to open the ttyI0 device (or
+> ttyIx it is the same) the printk() that I have placed into the file
+> isdn_tty.c does not print any messages. I am sure that such procedure has
+> been executed because I have placed a breakpoint on the "isdn_tty_open()"
+> and the program stopped.
+>
+> Anybody has an idea what happens?
 
------Original Message-----
-From: Donald MacArthur [mailto:dmacarth@ufl.edu]
-Sent: Monday, March 03, 2003 8:53 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SCC3 UART for MPC850
+You probably neglected to set a KERN_ level.
 
+See if they are in your dmesg or messages file, you might be sending them
+to syslog but not the screen.
 
+-Bret
 
-I am currently working with an embedded planet LICCE MPC850 Credit card
-board with the associated MPC860 Timesys Linux Kernel.  I would like to use
-as many SCC and SMC channels for UARTs as possible.  I have successfully
-enabled SMC1, SMC2, and SCC2 for UART but SCC3 does not work.  Normally for
-the UART channels the TX lines go high when the kernel boots but the SCC3 Tx
-channel does not.  Does anyone know of modifications required for the kernel
-to get SCC3 to work as a UART or were possible conflicts might arise?
-
-Thank You
-Don MacArthur
-dmacarth@ufl.edu
+--
+Bret Indrelee                 QLogic Corporation
+Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
