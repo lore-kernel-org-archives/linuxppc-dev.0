@@ -1,18 +1,21 @@
-Return-Path: <arrigo@vision.caltech.edu>
-Received: from kla-tencor.com (smtp.kla-tencor.com [192.146.1.134])
-	by ozlabs.org (Postfix) with ESMTP id 7B7C82BDEB
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Oct 2004 03:32:19 +1000 (EST)
-Message-ID: <41827E99.1090206@vision.caltech.edu>
-Date: Fri, 29 Oct 2004 10:32:09 -0700
-From: Arrigo Benedetti <arrigo@vision.caltech.edu>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <41816863.9020000@vision.caltech.edu>	<1099006771.29690.83.camel@gaston>
-	<4181878C.20605@vision.caltech.edu>
-	<1099011090.29689.96.camel@gaston>
-In-Reply-To: <1099011090.29689.96.camel@gaston>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 04EF52BF0A
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Oct 2004 09:05:35 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gabriel Paubert <paubert@iram.es>
+In-Reply-To: <20041029101017.GA28149@iram.es>
+References: <41816863.9020000@vision.caltech.edu>
+	<1099006771.29690.83.camel@gaston> <4181878C.20605@vision.caltech.edu>
+	<1099011090.29689.96.camel@gaston>  <20041029101017.GA28149@iram.es>
+Content-Type: text/plain
+Date: Sat, 30 Oct 2004 09:00:06 +1000
+Message-Id: <1099090806.29689.140.camel@gaston>
+Mime-Version: 1.0
+Cc: Arrigo Benedetti <arrigo@bologna.vision.caltech.edu>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: Disabling interrupts on a SMP system
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,37 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
 
->On Thu, 2004-10-28 at 16:58 -0700, Arrigo Benedetti wrote:
+> I alway wondered why the decrementer interrupts are not listed, 
+> actually. Perhaps even with a count of the decrementer interrupts
+> which result in multiple updates of jiffies, because they indicate
+> that something has avery high latency.
+> 
+> BTW, on my Pismo, the number of bad interrupts is amazing:
 >
->  
+> .../...
 >
->>To achieve real-time performance in a very critical section of code. 
->>Even after moving all the
->>interrupts to CPU0, there are still two interrupts running on CPU1 that 
->>are disturbing the
->>execution of the time-critical code:
->>    
->>
->
->  
->
->>118:         15      21134   OpenPIC   Level     IPI0 (call function)
->>119:        888        904   OpenPIC   Level     IPI1 (reschedule)
->>    
->>
->
->Those are normal, they are cross-CPU interrupts used internally by the
->kernel. There are also non-visible in that list the timer interrupts on
->both CPUs. You just can't do anything against these.
->
->  
->
+> BAD:   21458276
+> 
+> in about one week uptime, but over half the time sleeping.
+> 
+> I have a fix for that, but it's not yet ready for submission. 
+> I might find time over the week-end.
 
-Have these interrupts anything to do with the load balancer? I have 
-disabled the load balancer code
-in linux/sched.c (just commented out all the code in load_balance()).
-Maybe the only solution is to write a kernel module?
+Ah ok, what is it ? Those seem to be "short" interrupts, they don't
+happen on my tipb but they do happen on paul's older one (same mobo as
+Pismo).
 
--Arrigo
+Looks like between clearing the irq source and exiting the handler, the
+IRQ line stays asserted a bit longer or so ...
+
+BTW, We should remove the cruft of early/late eoi too while we are at
+it. A single "late" EOI is all we need. The MPIC will latch an edge irq
+coming in between the ACK and the EOI and we don't want the CPU priority
+to drop too early.
+
+Ben.
+ 
