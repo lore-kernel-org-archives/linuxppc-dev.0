@@ -1,25 +1,72 @@
-Message-ID: <01C06555.A2E02D00@NB2>
-From: torsten.rissel@t-online.de (Torsten Rissel)
-To: "Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MVME 5100
-Date: Wed, 13 Dec 2000 22:39:59 +0100
+From: naushit@softhome.net
+Message-ID: <20001213220702.8846.qmail@softhome.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Off topic ...about writing module
+Date: Wed, 13 Dec 2000 22:07:02 GMT
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Everybody !
+Hi
 
-I am trying to run Linux on an MVME5100 board. I am using PReP-style booting and
-got the boot process and some of the kernel initialization running. But I am missing any
-knowledge of other PowerPC boards or machines, so that it is relativly hard to find out
-what exactly to change. So I have a question: The MVME5100 is missing all ISA stuff.
-Is the IRQ mapping (first 16 for the 8259 and the other 16 for the MPIC) still valid ?
+I apologize in advance for writing off topic mail.
 
-Also I run in a problem: the indirect mechanism for generating PCI config cycles is set
-up correctly, but the board seems to hang when reading from the CONFIG_DATA address !!!???
+I am trying to write some module on my pc. but I dont get output at all.
+Here is the sample code that I am trying out
 
-I would more then appreciate any hints.
 
-Torsten
+hello.c
+-------------------------------------------------
+#define MODULE
+#define __KERNEL__
+#define LINUX
+
+#if CONFIG_VERSIONS==1
+#define MOD_VERSIONS
+#include <linux/modversions.h>
+#endif
+
+#include <linux/module.h>
+
+int init_module(void)
+{
+	printk("<1> Hello world\n";
+	return 0
+}
+
+void cleanup_module(void)
+{
+	printk("<1> bye bye world \n");
+}
+-----------------------------------------
+
+while I compile , I get following warnings... I dont understand those
+warning and I dong know how to get rid of it...any suggestions?
+---------------------------------------------
+gcc -c hello.c
+/tmp/ccMwbBAv.s:Assembler messges:
+/tmp/ccMwbBAv.s:8:Warning:Ignoring changed section attributes for .modinfo.
+
+---------------------------------------
+now when I load module
+
+#insmod hello.o
+#
+#lsmod hello
+Module		Size 	Usedby
+hello		336	o(unused)
+
+Why dont I see hello world on my screen.??? I tried to see console which I
+started with xterm -C also.
+
+Please...........Please reply if you know my problem....
+
+Thanking you very much for your time
+
+Regards,
+Naushit
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
