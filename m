@@ -1,31 +1,28 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC05F4A@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Question: mvista kernel ... how do i enable SCC1 for enet
-Date: Tue, 17 Dec 2002 18:00:18 -0500
-MIME-Version: 1.0
+Subject: Re: 405LP compile fix
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: embedded list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1040154588.1100.171.camel@granite.austin.ibm.com>
+References: <1040154588.1100.171.camel@granite.austin.ibm.com>
+Date: 17 Dec 2002 17:31:55 -0600
+Message-Id: <1040167916.1100.174.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Tue, 2002-12-17 at 13:49, Hollis Blanchard wrote:
+>
+> This patch fixes the Beech build, which is calling the now-nonexistant
+> function beech_time_init. In actuality beech_time_init was never called
+> anyways... :)
 
-I have my kernel running with SMC1 UART support and would now like to add
-SCC1 support.
+Oops, I meant to say "beech_calibrate_decr was never called anyways",
+but you knew what I meant...
 
-FYI: My platform is based on a FADS board ... but some of my SCC pins have
-moved.
-
-1.) What kernel modules do I need to enable to get ENET on SCC1? I have
-added basic network support ... but see no SCC1 under CPM settings ... is it
-there by default ...
-
-2.) Do I have to change anything in the kernel to accommodate my new SCC
-pins?
-
-As always thanks for the assistance!
-
-Jim
+-Hollis
+--
+PowerPC Linux
+IBM Linux Technology Center
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
