@@ -1,48 +1,34 @@
-Message-ID: <3EC49CB0.7050202@elsoft.ch>
-Date: Fri, 16 May 2003 10:09:20 +0200
-From: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
+Message-ID: <159C486347C8D3119B1D005004A4694002069176@olive.raritan.com>
+From: Steven Rothweiler <Stevenr@raritan.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Best Linux/PPC compiler ?
+Date: Fri, 16 May 2003 11:09:24 -0400
 MIME-Version: 1.0
-To: Linux PPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
-Cc: Tom Rini <trini@kernel.crashing.org>
-Subject: [PATCH] floppy.h
-Content-Type: multipart/mixed;
- boundary="------------030808030303050700030607"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------030808030303050700030607
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Hello
+What is the best Linux/PPC compiler?
 
-The attached patch fixes the following issues:
+Specifically, we're using MPC8270.  We are coming from Linux/x86
+platform, where Intel has a nice compiler that blows the doors
+off of gcc, performance-wise.  I'm wondering if anyone knows if
+there have been any studies comparing various Linux/PPC compilers.
 
- - cosmetic changes for fb_outb macro (paramters are in the wrong order)
- - define fd_cacheflush macro if CONFIG_NOT_COHERENT_CACHE is set
+We're switching to Linux/PPC for product-cost reasons, not
+development-cost reasons, so we have money to spend on the
+compiler.  We must make the code run as fast as possible, since
+the speed of 450MHz MPC8270 is nothing compared to a GHz Pentium.
 
-Dave
+FYI, our application is an embedded (lossless) video compression
+app, that quickly consumes CPU cycles, unless we're very careful.
 
---------------030808030303050700030607
-Content-Type: application/octet-stream;
- name="floppy.h.patch.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="floppy.h.patch.bz2"
-
-QlpoOTFBWSZTWZ/BhXoAAJdfgGZwWH/8km/n/iS/7/+0QAH6rrsBDJGoKbEg2hMTTPSJhGCM
-TQ2ImQBGqMoZhMpoAAAAAA0AAA00ojQAAZDQNAAANAAaAJJAmp5U8TU9INTJhAGj0AAm0j1N
-D0kJpxSoRQhEhSHwqZww87tYDRO5l5kOF0yipaRJwCAlWkdKkDdfFQPdVxan44evs9N2fUri
-knOZpIWWZ9uGXZbEUoJ6qCnDyCSIFT22GKUBJKzSMj6sBV1s40DwWarVcQiMHjsfi+3aUSSM
-KHxXiRIhzLhaN1eg8T3YYC4eM6R0HC4t2ndMgcOHwfMiTUsZj2jGDcwrMPqAwMFk655+LAlt
-IKGGfXAlOBcBfQw0NjpoaBDHwUl6kMal076YoynnFAQLhfQBAcCEHSoOGNF+YkkciQZ50DKZ
-MxqWDUZasL4T6/iMMfMPsOXJ6QgyaB0ph+hLw/oww3Kpca7Q61hknUZjXeB2rdTginGiszSk
-SWlfwFOfozWDg3GNpZp2AmPVMQWsDToxKEQUC2v+ZneRZQtNZRIvBfnOnvMNKsPaqfLC7Lyb
-BsboLGIFgqqvCBJF71nB5FSSiGyhmQqYg43Eb4s1QtMoygt7fGXkvVFYo9gri9ZOC8UJilxw
-DLhOo64zKhslEzNc4eYkwqSt27VnYNRAKPHEUdZSyY1rQSwr+LuSKcKEhP4MK9A=
---------------030808030303050700030607--
-
+Thanks.
+--
+STeve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
