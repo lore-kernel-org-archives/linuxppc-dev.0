@@ -1,19 +1,19 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
-	by ozlabs.org (Postfix) with ESMTP id 9932567A6D
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 26B0967A8E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 26 Mar 2005 01:32:53 +1100 (EST)
-Message-ID: <42442110.9020506@varma-el.com>
-Date: Fri, 25 Mar 2005 17:32:48 +0300
-From: Andrey Volkov <avolkov@varma-el.com>
-MIME-Version: 1.0
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-References: <1111705036.15834.29.camel@excalibur.timesys.com>
-	<42441B13.7080703@ru.mvista.com>
-In-Reply-To: <42441B13.7080703@ru.mvista.com>
+	Sat, 26 Mar 2005 02:16:23 +1100 (EST)
+In-Reply-To: <4.20050322_000905.tnt@patchsend.246tNt.com>
+References: <4.20050322_000905.tnt@patchsend.246tNt.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PCI support under 2.6.11.4 on MPC8272ADS ???
+Message-Id: <c89dafb7866b71817e467fe9b42bc4f4@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 25 Mar 2005 09:15:35 -0600
+To: "Sylvain Munaut" <tnt@246tNt.com>
+Cc: ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 4/6] ppc32: Add platform bus / ppc_sys model to
+	Freescale MPC52xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,115 +24,564 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly
+One question, do you really need #defines for the device offsets in=20
+mpc52xx_devices.c ?  Are these used anywhere else?
 
-Same bug, as I describe early ( for MPC5200 )
+- kumar
 
-+        /* Enable PCI  */
-+	immap->im_pci.pci_gcr = cpu_to_le32(PCIGCR_PCI_BUS_EN);
-+	{
-+	    /* give it some time */
-+	    int i;
-+	    for(i=0;i<100;i++)
-+		udelay(100);
-+	}	
+On Mar 21, 2005, at 5:08 PM, Sylvain Munaut wrote:
 
-Delay must be up to 1 sec (if you follow PCI standart :), not 10 msec.
+> ppc32: Add platform bus / ppc_sys model to Freescale MPC52xx
+>
+> This patch makes all platform based around the Freescale MPC52xx use
+>  the platform bus and more precisly the ppc_sys model put in
+>  place by Kumar Gala.
+>
+>
+>
+> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 
--- 
-Regards
-Andrey Volkov
+[ snip ]
 
-Vitaly Bordug wrote:
-> Hi Walt,
-> 
-> Well, the incorrect VendorID almost clearly points to the incompatible 
-> PCI bus frequency - try to set it to 33Mhz.
-> AFAIR, I saw my network card as video adapter in the lspci output.
-> 
-> The 2.4 stuff was tested rather thoroughly. The current 2.6.11 support 
-> is examined with HPT370 and PDC20268 PCI IDE.
-> 
-> You may also try my latest patch to the stock linux 2.5.
-> 
-> Wimer, Walt wrote:
-> 
->>Using Vitaly's 2.4-based patch below as a starting point, I've been
->>adding PCI support to 2.6.11.4 for the MPC8272ADS board.
->>
->>The good news is that I think I have PCI interrupts pretty well sorted
->>out, and I see *something* half-way reasonable from "lspci".
->>
->>The bad news is that neither of the ethernet cards that I'm trying will
->>actually work, and I see some very weird behavior with PCI configuration
->>space:
->>
->>  Card 1:  Some Realtek RTL8139D-based card
->>  Card 2:  NETGEAR FA311 (National Semi DP83815 chip)
->>
->>With either card installed alone, both U-Boot and my kernel identify the
->>cards correctly in PCI configuration space.
->>
->>With *both* cards installed, both U-Boot and my kernel see the Realtek-
->>based card correctly, but the NETGEAR card has a corrupted Vendor ID
->>(e.g. 0x1000 or 0x1003 instead of the correct 0x100b).  This happens
->>regardless of which PCI slots I use for the cards (I've tried virtually
->>every combination).  This smells of a power problem or something to me.
->>
->>And again, even with either card alone, the drivers have serious
->>problems talking to the cards.  I get various error messages from
->>the drivers and I see badly mangled packets on the wire.  It's also
->>not uncommon for the whole system to freeze...
->>
->>Has anyone else seen similar behavior?
->>
->>Has anyone had success with PCI on this board (under any kernel
->>version)?
->>
->>
->>Any ideas / data points are appreciated.
->>
->>
->>Thanks!!!
->>
->>Walt Wimer
->>
->>
->>
->>  
->>
->>>This patch adds PCI bridge support for MPC8272 and PQ2FADS to the
->>>current linuxppc-2.4 tree. Actually it has been tested with 8272, but
->>>PQ2 _should_ also work, though it will complain that host bridge ID is
->>>unrecognized.
->>>
->>>Signed-off-by: Vitaly Bordug <vbordug at ru.mvista.com>
->>>
->>>--
->>>Sincerely, Vitaly
->>>
->>>-------------- next part --------------
->>>A non-text attachment was scrubbed...
->>>Name: pq2-pci.patch
->>>Type: text/x-patch
->>>Size: 20111 bytes
->>>Desc: not available
->>>Url : http://ozlabs.org/pipermail/linuxppc-embedded/attachments/20050218/12060ce8/pq2-pci.bin
->>>    
->>>
->>
->>
->>  
->>
-> 
-> -- 
-> Sincerely, 
-> Vitaly
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> diff -Nru a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
+> --- a/arch/ppc/syslib/Makefile=A0 2005-03-21 20:10:34 +01:00
+>  +++ b/arch/ppc/syslib/Makefile=A0 2005-03-21 20:10:34 +01:00
+>  @@ -106,7 +106,8 @@
+>  =A0obj-$(CONFIG_PCI)=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 +=3D =
+indirect_pci.o pci_auto.o
+>  =A0endif
+>  =A0obj-$(CONFIG_MPC8555_CDS)=A0=A0=A0=A0=A0 +=3D todc_time.o
+> -obj-$(CONFIG_PPC_MPC52xx)=A0=A0=A0=A0=A0 +=3D mpc52xx_setup.o =
+mpc52xx_pic.o
+> +obj-$(CONFIG_PPC_MPC52xx)=A0=A0=A0=A0=A0 +=3D mpc52xx_setup.o =
+mpc52xx_pic.o \
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 mpc52xx_sys.o=20
+> mpc52xx_devices.o ppc_sys.o
+>  =A0ifeq ($(CONFIG_PPC_MPC52xx),y)
+> =A0obj-$(CONFIG_PCI)=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 +=3D =
+mpc52xx_pci.o
+> =A0endif
+>  diff -Nru a/arch/ppc/syslib/mpc52xx_devices.c=20
+> b/arch/ppc/syslib/mpc52xx_devices.c
+> --- /dev/null=A0=A0 Wed Dec 31 16:00:00 196900
+>  +++ b/arch/ppc/syslib/mpc52xx_devices.c 2005-03-21 20:10:34 +01:00
+>  @@ -0,0 +1,333 @@
+>  +/*
+>  + * arch/ppc/syslib/mpc52xx_devices.c
+> + *
+>  + * Freescale MPC52xx device descriptions
+>  + *
+>  + *
+>  + * Maintainer : Sylvain Munaut <tnt@246tNt.com>
+> + *
+>  + * Copyright (C) 2005 Sylvain Munaut <tnt@246tNt.com>
+> + *
+>  + * This file is licensed under the terms of the GNU General Public=20=
+
+> License
+>  + * version 2. This program is licensed "as is" without any warranty=20=
+
+> of any
+>  + * kind, whether express or implied.
+>  + */
+>  +
+>  +#include <linux/fsl_devices.h>
+> +#include <linux/resource.h>
+> +#include <asm/mpc52xx.h>
+> +#include <asm/ppc_sys.h>
+> +
+>  +
+>  +static u64 mpc52xx_dma_mask =3D 0xffffffffULL;
+>  +
+>  +static struct fsl_i2c_platform_data mpc52xx_fsl_i2c_pdata =3D {
+>  +=A0=A0=A0=A0=A0=A0 .device_flags =3D FSL_I2C_DEV_CLOCK_5200,
+> +};
+>  +
+>  +
+>  +/* We use relative offsets for IORESOURCE_MEM to be independent from=20=
+
+> the
+>  + * MBAR location at compile time
+>  + */
+>  +
+>  +/* TODO Add the BestComm initiator channel to the device =
+definitions,
+>  +=A0=A0 possibly using IORESOURCE_DMA. But that's when BestComm is =
+ready=20
+> ... */
+>  +
+>  +struct platform_device ppc_sys_platform_devices[] =3D {
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_MSCAN1] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-mscan",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 0,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource =3D (struct =
+resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_MSCAN1_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_MSCAN1_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_MSCAN_SIZE -=20
+> 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_MSCAN1_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_MSCAN1_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_MSCAN2] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-mscan",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 1,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource =3D (struct =
+resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_MSCAN2_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_MSCAN2_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_MSCAN_SIZE -=20
+> 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_MSCAN2_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_MSCAN2_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_SPI] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-spi",
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D -1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 3,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_SPI_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_SPI_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_SPI_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =3D "modf",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_SPI_MODF_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_SPI_MODF_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =3D "spif",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_SPI_SPIF_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_SPI_SPIF_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_USB] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "ppc-soc-ohci",
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D -1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .dev.dma_mask=A0=A0 =3D =
+&mpc52xx_dma_mask,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .dev.coherent_dma_mask =3D =
+0xffffffffULL,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_USB_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_USB_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_USB_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_USB_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_USB_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_BDLC] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-bdlc",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D -1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_BDLC_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_BDLC_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_BDLC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_BDLC_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_BDLC_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_PSC1] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-psc",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 0,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC1_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC1_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_PSC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC1_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC1_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_PSC2] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-psc",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 1,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC2_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC2_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_PSC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC2_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC2_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_PSC3] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-psc",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 2,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC3_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC3_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_PSC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC3_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC3_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_PSC4] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-psc",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 3,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC4_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC4_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_PSC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC4_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC4_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_PSC5] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-psc",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 4,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC5_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC5_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_PSC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC5_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC5_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_PSC6] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-psc",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 5,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC6_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC6_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_PSC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_PSC6_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_PSC6_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_FEC] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-fec",
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D -1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_FEC_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_FEC_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_FEC_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_FEC_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_FEC_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_ATA] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "mpc52xx-ata",
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D -1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_ATA_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_ATA_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_ATA_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_ATA_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_ATA_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_I2C1] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "fsl-i2c",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 0,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .dev.platform_data =3D =
+&mpc52xx_fsl_i2c_pdata,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_I2C1_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_I2C1_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_I2C_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_I2C1_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_I2C1_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 [MPC52xx_I2C2] =3D {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=
+=A0 =3D "fsl-i2c",
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .id=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
+=A0=A0 =3D 1,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .dev.platform_data =3D =
+&mpc52xx_fsl_i2c_pdata,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .num_resources=A0 =3D 2,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 .resource=A0=A0=A0=A0=A0=A0 =
+=3D (struct resource[]) {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_I2C2_OFFSET,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_I2C2_OFFSET +
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+MPC52xx_I2C_SIZE - 1,
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_MEM,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 {
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .start=A0 =3D MPC52xx_I2C2_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .end=A0=A0=A0 =3D MPC52xx_I2C2_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =
+=A0=A0=A0=A0=A0=A0=A0 .flags=A0 =3D IORESOURCE_IRQ,
+> +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 },
+>  +=A0=A0=A0=A0=A0=A0 },
+>  +};
+>  +
+>  +
+>  +static int __init mach_mpc52xx_fixup(struct platform_device *pdev)
+>  +{
+>  +=A0=A0=A0=A0=A0=A0 ppc_sys_fixup_mem_resource(pdev, MPC52xx_MBAR);
+> +=A0=A0=A0=A0=A0=A0 return 0;
+>  +}
+>  +
+>  +static int __init mach_mpc52xx_init(void)
+> +{
+>  +=A0=A0=A0=A0=A0=A0 ppc_sys_device_fixup =3D mach_mpc52xx_fixup;
+> +=A0=A0=A0=A0=A0=A0 return 0;
+>  +}
+>  +
+>  +postcore_initcall(mach_mpc52xx_init);
