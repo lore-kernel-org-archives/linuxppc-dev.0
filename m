@@ -1,38 +1,37 @@
-Date: Fri, 11 Jun 2004 14:40:54 -0700
+Date: Fri, 11 Jun 2004 14:44:17 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Stephen Williams <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Head of linuxppc-2.4 broekn by davem patch
-Message-ID: <20040611214054.GB925@smtp.west.cox.net>
-References: <1086934906.4820.2.camel@lucy.pep-kaufbeuren.de> <29963-82182@sneakemail.com>
+To: Chris Clark <linuxppc-embedded@2nerds.com>
+Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Relationship between bk libuxppc-2.4 and denx linuxppc_2_4_devel
+Message-ID: <20040611214417.GC925@smtp.west.cox.net>
+References: <20040611073059.D13E8C109F@atlas.denx.de> <Pine.GSO.4.53.0406111437580.9184@solaris.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <29963-82182@sneakemail.com>
+In-Reply-To: <Pine.GSO.4.53.0406111437580.9184@solaris.xmission.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jun 11, 2004 at 09:07:13AM -0700, Stephen Williams wrote:
+On Fri, Jun 11, 2004 at 02:59:48PM -0600, Chris Clark wrote:
 
-> Stefan Nickl Stefan.Nickl-at-kontron.com |PPC Linux Embedded| wrote:
-> >I already sent this patch to the list and to "davem" who
-> >commited the faulty version, but nobody seems to care...
 >
-> Here is the exact same patch, packaged slightly differently
-> and re-sent, just in case it got lost in someone's inbox.
-> It is also possible that davem is thinking in terms of
-> changing the sk_buff definition t match this file. Either
-> way, something must be done.
+> On Fri, 11 Jun 2004, Wolfgang Denk wrote:
+> > You should work with  the  official  trees,  i.  e.  linuxppc-2.4  or
+> > linuxppc-2.5.
+>
+> Unless I made some mistake in cloning the linuxppc-2.{4,5} trees from
+> ppc.bkbits.net, (which is entirely possible as I'm a BK newbie), there
+> appears to be a fair amount of processor- and platform-specific stuff
+> in the Denx linuxppc_2_4_devel CVS tree which does not appear in the
+> ppc.bkbits.net BK trees (e.g. arch/ppc/5xxx_io/... ).
+>
+> Is the Denx CVS tree "authoritative" with regard to those extras?  Is
+> there any expectation that those bits found only in the Denx CVS tree
+> will eventually find their way into the ppc.bkbits.net tree(s)?  (Or
+> some other, more appropriate tree(s)?  If so, which?)
 
-I've gotten around to updating the linuxppc-2.4 repository to match the
-current state of linux-2.4 again.  If there's still a problem, I would
-suggest reproducing it with an i386 config (or CONFIG_ALL_PPC config)
-and posting to lkml (linux-kernel@vger.kernel.org) and cc'ing Marcelo
-and whomever made the broken change.  The problem in question didn't
-come from us PPC folks, so fixing it in our tree is, IMHO, pointless
-(the fix will either become obsolete and introduce minor pain when a fix
-comes in upstream or the change will be reverted, again probably causing
-us pain merging this in).
+For 2.4?  Denx will probably be the "authoritative" tree.  For 2.6 I am
+hopeful that something can be worked out.
 
 --
 Tom Rini
