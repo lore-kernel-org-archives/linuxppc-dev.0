@@ -1,22 +1,23 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
-	by ozlabs.org (Postfix) with ESMTP id 104092BDA0
+Return-Path: <rpjday@mindspring.com>
+Received: from aftermath.mail.pas.earthlink.net
+	(aftermath.mail.pas.earthlink.net [207.217.120.69])
+	by ozlabs.org (Postfix) with ESMTP id 588552BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Oct 2004 23:57:35 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id 76so116999rnk
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Oct 2004 06:57:33 -0700 (PDT)
-Message-ID: <35fb2e5904102506574d6c7470@mail.gmail.com>
-Date: Mon, 25 Oct 2004 14:57:30 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: grave <grave@ipno.in2p3.fr>
-In-Reply-To: <1098701468l.31592l.0l@ipnnarval>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <1098701468l.31592l.0l@ipnnarval>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: uboot and ppc405
-Reply-To: jonathan@jonmasters.org
+	Tue, 26 Oct 2004 02:04:39 +1000 (EST)
+Received: from pop-a065c10.pas.sa.earthlink.net ([207.217.121.184])
+	by aftermath.mail.pas.earthlink.net with esmtp (Exim 3.36 #1)
+	id 1CM1MW-0007Xz-00
+	for linuxppc-embedded@ozlabs.org; Mon, 25 Oct 2004 02:42:00 -0700
+Date: Mon, 25 Oct 2004 05:34:31 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Pantelis Antoniou <panto@intracom.gr>
+In-Reply-To: <417C9D25.8060609@intracom.gr>
+Message-ID: <Pine.LNX.4.60.0410250532300.27260@localhost.localdomain>
+References: <20041023142750.GA11545@logos.cnet> <417C9D25.8060609@intracom.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: m8xx_pcmcia.c for v2.6 kernels
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 25 Oct 2004 10:51:08 +0000, grave <grave@ipno.in2p3.fr> wrote:
+On Mon, 25 Oct 2004, Pantelis Antoniou wrote:
 
-> We re starting a disign with xilinx chip Virtex II pro and I wonder the
-> typical size of an uboot binary. This is for our electronician disigner
-> in order to dimension the prom and so on...
+> Marcelo Tosatti wrote:
+>
+> > Hi fellows,
+> >
+> >
+> > I'm attaching a port of our internal m8xx_pcmcia.c (based on MontaVista
+> > 2.1's 2.4.17 kernel with many fixes) to v2.6.
 
-It might be worth asking your electronics people whether they're going
-to use the Xilinx SysACE chip in your hardware design. If this is the
-case then you can program the Virtex and load in the kernel and
-bootloader from Compact Flash. I don't know whether uboot supports
-this out of the box since I wrote my own Virtex II bootloader, but it
-should be quite doable.
+... huge SNIP here ...
 
-Certainly you really want to avoid PROMs in the design if at all
-possible - with our design it's possible for us to swap out a CF and
-in one step replace all hardware and software, upgrading is a case of
-sending the customer a loopback mountable filesystem which reloads the
-CF after the customer downloads the "firmware update" via a web page.
+> >
+> Marcelo Hi
+>
+> I'm gonna definately try this and get back to you.
+>
+> Thanks
+>
+> Regards
+>
+> Pantelis
 
-Cheers,
+was it absolutely necessary to include 46K worth of patch in your
+reply, only to add what you did at the bottom?
 
-Jon.
+rday
