@@ -1,33 +1,38 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: Mark Hatle <fray@mvista.com>,
-	Srini Amble <samble@xopnetworks.com>
-Subject: Re: thttpd and CGI on MPC 850
-Date: Wed, 2 Apr 2003 23:17:33 -0300
+To: "Xiaolong Li" <lxl@softhome.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-References: <200304021423.33094.samble@xopnetworks.com> <3E8B63DF.5010706@mvista.com>
-In-Reply-To: <3E8B63DF.5010706@mvista.com>
-MIME-Version: 1.0
-Message-Id: <200304022317.33294.scop@digitel.com.br>
+Subject: Re: ppc linux kernel 2.4.4 for ppc440/EBony using ELDK 2.0.2? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 02 Apr 2003 17:24:59 -0800."
+             <009801c2f97f$d8917790$1464a8c0@sjeng3>
+Date: Thu, 03 Apr 2003 09:27:21 +0200
+Message-Id: <20030403072726.78B9EC587C@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wednesday 02 April 2003 19:27, Mark Hatle wrote:
-> Srini Amble wrote:
-> > Pardon me for posting this message to this mailing list ( it does not
-> > quite belong here)
-> >
-> > I have "thttpd" (version 2.23beta1) running on my MPC850 board. When I
-> > submit a "FORM" which in turn invokes a CGI program (written in C) the
-> > console output freezes and I get the error "An error occurred while
-> > loading http://192.168.0.128/cgi-bin/example.cgi" on the browser window.
+In message <009801c2f97f$d8917790$1464a8c0@sjeng3> you wrote:
+>
+> I am currently working on IBM's 440GP Ebony evaluation board,
+> trying to run Linux on it. I installed ELDK 2.0.2 on RedHat 7.1,
+> and sucessfully compiled ppcboot, which runs smoothly on 440GP.
+>
+> Now I am trying to build a Linux kernel 2.4.4 (which is included in
+> ELDK 2.0.2), but I see some errors regarding to mfdcr/DCRN_EXISR.
 
-Just a wilg guess: did you check file permissions?
+The 2.4.4 LInux kernel as included in this version of the ELDK is not
+suitable for 4xx systems. Please use  the  linuxppc_2_4_devel  kernel
+tree instead; see http://penguinppc.org/dev/kernel.shtml
 
-HTH,
 
--Scop.
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Randal said it would be tough to do in sed. He didn't say  he  didn't
+understand  sed.  Randal  understands sed quite well. Which is why he
+uses Perl. :-)         - Larry Wall in <7874@jpl-devvax.JPL.NASA.GOV>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
