@@ -1,43 +1,52 @@
-Message-ID: <0d4f01c10079$12cb22f0$3877b5d3@dolbae>
-From: "SangTae Ha" <stha@postech.edu>
-To: "Dan Malek" <dan@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <000701c1001f$7d475ea0$9696143e@jocke> <3B3C3E29.F3092A80@mvista.com>
-Subject: Re: mpc860 with dual ethernets
-Date: Fri, 29 Jun 2001 17:54:14 +0900
+Date: Fri, 29 Jun 2001 05:16:16 -0400 (EDT)
+From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
+To: Paul White <pwhite@networkrobots.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: (allocating non-cachable memory) (or More on the i82596)
+In-Reply-To: <200106290009.f5T09C823337@stimpy.networkrobots.com>
+Message-ID: <Pine.LNX.3.95.1010629042746.5292E-100000@november.bhjjh.erols.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You support SCC1 and SCC2 only inside the enet.c file? . I had made a file like enet2.c enet3.c something like that. I thought that a SCCx could be one ethernet or other device as well. Could you let me know if you have any comments about it?
-
-Regards,
-
-SangTae Ha
-
------ Original Message -----
-From: "Dan Malek" <dan@mvista.com>
-To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, June 29, 2001 5:36 PM
-Subject: Re: mpc860 with dual ethernets
-
+On Thu, 28 Jun 2001, Paul White wrote:
 
 >
-> Joakim Tjernlund wrote:
+> Justin,
 >
-> > ... Is there a version of enet.c that can support both
-> > SCC1 and SCC2 simultaneously?
+> I was able to get Data cache disabled today, after playing around with it
+> for a while.
 >
-> Yes, I have the patches.  I'm travelling and will post them in
-> a day or so.
+> There were several things I had to do.  Now, I don't recall what CPU you
+> are using, so I'll just tell you what I found with mine.
 >
->
-> -- Dan
->
->
+> First off, I'm using the 7410, which has 32 byte cache lines.  Note that the
+> 8xx and such have 16 byte cache lines.  In my manual, under "Enabling
+> and Disabling Data Cache", it states that the dcbz instruction will cause an
+> alignment exception, and that all others are nop'd.  So the first thing I did,
+> was search for dcbz throughout my code, and I found two files that had
+> several matches:
+
+I went through and made the same set of changes that you did- I am on a
+603e, so I would expect the L1 cache behaviour to be about the same.
+Indeed, the kernel does boot properly, up until id decompresses the
+ramdisk. I am getting a crc error decompressing the ramdisk, however-
+presumably because of a problem with the caches. I'd like to set the MMU
+to caching inhibited to tighten up the processor's load and store
+ordering. I think that I only need to set this in the pte entries- the
+errors are only occuring after the MMU has been brought up. Irony of
+ironies, I know how to do this with the BATs, but not in the PTEs. It
+looks like there is a field in the PTE struct (in asm/mmu.h), but I can't
+find where that structure is initialised. It looks like, from my
+meandering through the kernel's memory management code that this might wee
+be a good step towards allowing chunks of non cachable memory to be
+allocated.
+
+Thoughts?
+
+--Gus
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
