@@ -1,31 +1,26 @@
-Message-ID: <20010117133223.25513.qmail@web3001.mail.yahoo.com>
-Date: Wed, 17 Jan 2001 05:32:23 -0800 (PST)
-From: Rajesh S <srj102@yahoo.com>
-Subject: Linux Kernel restart
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: srj102@yahoo.com
+Message-ID: <01C0807B.1BFF1AD0.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: TCP Server stops accepting after 10mins - SOLVED
+Date: Wed, 17 Jan 2001 11:46:17 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I finally got this one resolved.  Thanks a zillion to Bill Gatliff
+for inspiration and his time.
 
-1)  Is there a way how we can launch the linux kernel
- alone(from linux) without having to go to the
- System Reset Vector etc .. I want to avoid
- all processor initializations
+The problem turned out to be that the embedded MBX860 unit
+was assigned the same IP addr as one of the switches on our LAN.
+So the switch must have been executing some security measure
+that caused connects to be refused after a period of time.
 
-2) How does the shutdown command ultimately achieve
-   the reboot... Where can I fnd the code ?
-   I have the sysvinit source code distributoin
-   from hard-hat and I can see that init_reboot()
-   maps to reboot(magic) .. Then I lose track..
+Once I changed the MBX860's IP addr, the problem evaporated.
 
-
-Thanks in advance,
-Rajesh
-
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
