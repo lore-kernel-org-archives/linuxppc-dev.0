@@ -1,46 +1,48 @@
-Date: Wed, 17 Sep 2003 08:08:45 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problems w/  CONFIG_BLK_DEV_MPC8xx_IDE
-Message-ID: <20030917150845.GB14509@ip68-0-152-218.tc.ph.cox.net>
-References: <3F656CFC.1050706@imc-berlin.de> <3F65A2FD.3010904@imc-berlin.de> <1063627208.14615.21.camel@trantor.staff.proxad.net> <3F65B091.1020802@imc-berlin.de> <20030915151648.GD29517@ip68-0-152-218.tc.ph.cox.net> <3F66CCFD.3040301@imc-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3F66CCFD.3040301@imc-berlin.de>
+Date: Wed, 17 Sep 2003 17:22:32 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
+In-reply-to: <3F68769C.1010000@embeddededge.com>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
+	Steffen Rumler <Steffen.Rumler@siemens.com>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLEEGCFPAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Sep 16, 2003 at 10:42:37AM +0200, Steven Scholz wrote:
-> Tom,
+> Joakim Tjernlund wrote:
 >
-> >>I just noticed that I might have used the wrong source tree.
-> >>
-> >>So which is the BK tree to use:
-> >>
-> >>linuxppc_2_4_devel or linuxppc-2.4 ???
-> >
-> >
-> >It depends on where what you want to use exists.  If something is in
-> >_devel and not in linuxppc-2.4, patches to move features over one at a
-> >time would be happily reviewed.
+> > I am taking a stab at my_console_write() as well. I have something that works well
+> > for me, but i am unsure if I have broken KGDB/XMON support.
 >
-> ???
-> So which is the most recent?
+> You better check it.  The reason for all of the complexity in there is to
+> support that.  Lots of time was spent making kgdb/xmon work correctly, and
+> to break it or toss it away would kinda piss me off.
 
-Aside from possible changes to match upstream subsystem rewrites (such
-as IDE) there hasn't been any changes in linuxppc-2.4 specific to 8xx
-that didn't happen in 2_4_devel.
+Yes, so much I already figured :). I am trying to get it right. Care to test KGDB/XMON
+when i am done?
+>
+> > ....In my new my_console_write()
+> > I must know the length of the TX buffer in the TXBD.
+>
+> Why?
 
-> http://www.penguinppc.org/dev/kernel.shtml calls linuxppc_2_4_devel the
-> "old PPC development tree" !?
+I don't want to disable interrupts for every char transmitted. I therefore fill
+the TX BD as much as possible and that is why I need to know the length of the TX buffer.
 
-That's correct.  It's becoming more of a pain to maintain or own set of
-trees to track 2.4 when Marcelo uses BK as well.
+>
+> > ...But what is the TX buffer length before serial_console_setup has run(that's
+> > when KGB/XMON is active)?
+>
+> Whatever the boot rom initializes.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+OK, then I will assume TX buffer length of 1, until serial_console_setup has run and
+initialize it to 4.
+
+ Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
