@@ -1,36 +1,43 @@
-Message-ID: <3ACC3424.609A880F@mvista.com>
-Date: Thu, 05 Apr 2001 02:00:20 -0700
-From: Matthew Locke <mlocke@mvista.com>
-MIME-Version: 1.0
-To: "Grover, Andrew" <andrew.grover@intel.com>
-Cc: "'Santiago Garcia Mantinan'" <manty@udc.es>,
-	acpi@phobos.fachschaften.tu-muenchen.de,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Acpi] acpi=no-idle should be automatic
-References: <4148FEAAD879D311AC5700A0C969E8905DE7E2@orsmsx35.jf.intel.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 05 Apr 2001 10:05:19 +0100
+Subject: Re: Old (1.0.5) OF parsing broken in 2.4.3?
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Cc: benh@kernel.crashing.org
+Mime-version: 1.0
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010405090510.5334DDB9C8@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Grover, Andrew" wrote:
-> Device power management specifically does not require ACPI. That's why I
-> requested that a second listserv (linux-power) be set up for non-ACPI PM
-> discussions. I'm hoping that PM development will be accelerating, and will
-> use that list, just to keep the distinction clear.
+I wrote:
+> my 9600/233 has (OF 1.0.5) :
+>
+> /bandit/gc/davbus
+> with: "AAPL,address" and "AAPL,interrupts" properties.
+>
+> this shows up in my new sound driver as:
+> (node->n_addrs = 0, node->nr_ints = 3)
+>
+> /bandit/gc/davbus/sound
+> with: "reg" property.
+>
+> this shows up as:
+> (node->n_addrs = 0, node->nr_ints = 0)
+>
+> so neither OF node works to launch dmasound :-((
+>
+> Have I made a mistake in the new version - or has the OF parsing changed?
+> (my code works fine on g3/beige & lombard)...
 
-What about creating a project on sourceforge.net for power management?
-It might help to have a site dedicated to power management in general.
-That way we have a central resource for all info, code, etc across
-architectures.  I know the ppc guys have done a lot of work already with
-power management.
+I should add it also has an "/bandit/gc/awacs" node which (I used to use)
+and has:
 
-We could call it
-linux-pm, it helps you get your zzzzZZZZZs:)
+"AAPL,address", "AAPL,interrupts" & "reg" propeties (and *does* work).
 
+So perhaps I've got the wrong idea?
+It would be much tidier to use the davbus node...
 
-Matthew Locke
-Montavista Software, Inc
-http://www.mvista.com
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
