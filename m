@@ -1,32 +1,38 @@
-Date: Wed, 27 Sep 2000 21:13:35 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Jon Erick Ween <jween@som.llu.edu>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-In-Reply-To: <B5F794D8.631%jween@som.llu.edu>
-Message-ID: <Pine.LNX.4.10.10009272111230.10115-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14802.18291.902553.42491@esb.bbn.com>
+Date: Wed, 27 Sep 2000 15:16:03 -0400
+From: R Shapiro <rshapiro@bbn.com>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        daenzerm@student.ethz.ch, linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
+In-Reply-To: <Pine.LNX.4.10.10009272059060.9291-100000@zirkon.biophys.uni-duesseldorf.de>
+References: <14802.16462.166588.375647@esb.bbn.com>
+	<Pine.LNX.4.10.10009272059060.9291-100000@zirkon.biophys.uni-duesseldorf.de>
+Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Since using yaboot, my console cursor has disappeared. Is this an OF or a
-> yaboot problem? It's very hard to navigate in vi to edit anything (.config
-> files for one thing) without a cursor!
+Michael Schmitz writes:
+ > S**t. I overlooked that. Ok, I officially declare the ati driver unable to
+ > cope.
 
-Happens to me occasionally, but it also happened during console switching
-or some other console operation (rarely). Don't thing it's yaboot related.
+Just to mention: the ati driver *does* work on my other G3, a
+single-monitor rev. b Rage Pro running the same XFree 4.0.1 (different
+kernel though).  Is it useful to see the log for that one?  I notice
+that it's throwing away the mode I got from fbset -x and using one of
+the built-in modes instead.  It also gets a silly value back from the
+vram probe:
 
-> Also, I can't figure out how to uninstall BootX. Throwing it away under
-> MacOS doesn't seem to help.
+(--) ATI(0): VideoRam: 3 kByte (EDO)
 
-Throw away the extension not only the control panel app.
 
-The config was attached as audio - trying hard to listen ...
+But it runs ok, at least so far.
 
-	Michael
+--
+rshapiro@bbn.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
