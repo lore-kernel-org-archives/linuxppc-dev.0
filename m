@@ -1,27 +1,24 @@
-Message-ID: <3A143806.F992D7D@wvi.com>
-Date: Thu, 16 Nov 2000 11:39:50 -0800
-From: Jim Potter <jrp@wvi.com>
+Message-ID: <3A146835.DBE53660@mvista.com>
+Date: Thu, 16 Nov 2000 15:05:25 -0800
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: usb mouse error on startx
-References: <773747F2145F.AAA27FE@som.llu.edu>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Subject: header file location
+References: <Pine.LNX.4.10.10010271921050.390-100000@cassiopeia.home>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've just rsync'ed the latest kernel from
-ppc.linuxcare.com::linux-pmac-stable, and when compiled and run on a new MP G4
-machine, startx fails with a "Cannot open mouse" error.  The machine has this
-summer's optical usb mouse & keyboards, and usb support apears to be config'ed
-in.  What am I doing wrong?
+Is there any documentation of how to decide where to put header files.  I especially
+am trying to understand the distinction between include/asm-ppc/ and arch/ppc/kernel/
 
+Thanks,
+
+-Frank
 --
-Sincerely,
-
-Jim Potter
-45th Parallel Processing
-jrp@wvi.com
-
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
