@@ -1,25 +1,29 @@
 From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Michel Ddnzer <daenzerm@student.ethz.ch>,
+To: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>,
         <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: asm statement in include/asm not ansi conform
-Date: Fri, 1 Sep 2000 17:24:28 +0200
-Message-Id: <20000901152428.28366@mailhost.mipsys.com>
-In-Reply-To: <39AFC193.D492A0B@student.ethz.ch>
-References: <39AFC193.D492A0B@student.ethz.ch>
+Date: Fri, 1 Sep 2000 17:25:36 +0200
+Message-Id: <20000901152536.2290@mailhost.mipsys.com>
+In-Reply-To: <v03110701b5d574d6d0ea@[129.100.29.243]>
+References: <v03110701b5d574d6d0ea@[129.100.29.243]>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Not maybe ;)
+>I submitted that patch to Brad and Anthony so that it would make it into
+>the official kernel trees and made and posted an XF86 4 patch to the
+>mailing lists awhile back but but it does not seem to have made it into all
+>XF86 trees.
 >
->(When) Will that code be submitted to XFree86 BTW?
+>I can probably dig up that patch on my home machine and send it to the
+>mailing list again if anyone wants it.
 
-When someone finally decide to implement code that checks if we have or
-not a PC BIOS from which we can read the values. It's on my (long)
-todolist, I was more or less hoping that Kostas would do it before me,
-especially since I don't have an x86 card to test with.
+The patch have long been in the PPC RPMs produced by Howarth and Franz.
+It was not merged in the main tree since we wanted to actually check if
+there's an x86 card there with a valid BIOS ROM image, and no-one found
+the time to do it.
 
 Ben.
 
