@@ -1,32 +1,28 @@
-Message-ID: <20001029225338.17005.qmail@kunk.jriver.com>
-Subject: Flash for PPC
-To: linuxppcdev@lists.linuxppc.org
-Date: Sun, 29 Oct 2000 16:51:23 -0600 (CST)
-From: Robert E Brose II <bob@kunk.jriver.com>
+Date: Sun, 29 Oct 2000 19:46:25 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Robert E Brose II <bob@kunk.jriver.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Flash for PPC
+In-Reply-To: <20001029225338.17005.qmail@kunk.jriver.com>
+Message-ID: <Pine.SOL.3.96L.1001029194415.28066B-100000@unix15.andrew.cmu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Is anyone working on a MacroMedia Flash player for PPC linux?
+On Sun, 29 Oct 2000, Robert E Brose II wrote:
+>
+> Yes I've heard  plugins don't work in PPC linux however if the flash code
+> was ported perhaps that would be an incentive?
 
-IMO it would be really useful (tm) to have. The source is available
-from http://www.macromedia.com/software/flash/open/licensing/
+I thought RealPlayer would have been an incentive...
 
-If no one is working on it I will take a hack at it.
+I think the fate of Netscape plugins rests in Daniel Puertas's hands. In
+the meantime, I've heard that Konqueror supports Netscape plugins - anyone
+care to confirm?
 
-Yes I've heard  plugins don't work in PPC linux however if the flash code
-was ported perhaps that would be an incentive?
-
-Please excuse my ignorance if the any of the above situations have
-progressed beyond my knowledge.
-
-Bob
---
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+-Hollis
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
