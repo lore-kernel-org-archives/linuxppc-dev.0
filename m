@@ -1,42 +1,38 @@
-Mime-Version: 1.0
-Message-Id: <p04330100b6402f5ab1e6@[192.168.0.1]>
-In-Reply-To: 
- <Pine.LNX.4.10.10011211049130.22058-100000@opal.biophys.uni-duesseldorf.de
- >
-References: 
- <Pine.LNX.4.10.10011211049130.22058-100000@opal.biophys.uni-duesseldorf.de
- >
-Date: Tue, 21 Nov 2000 09:03:48 -0500
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: Re: whacked out 2.2.18preX - last gasp
+Date: Tue, 21 Nov 2000 15:20:56 +0100
+From: Andi Kleen <ak@suse.de>
+To: Todd Inglett <tinglett@vnet.ibm.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Subject: Re: bitops porting question
+Message-ID: <20001121152056.A21375@gruyere.muc.suse.de>
+References: <3A1A6E42.43E8663D@vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A1A6E42.43E8663D@vnet.ibm.com>; from tinglett@vnet.ibm.com on Tue, Nov 21, 2000 at 06:44:50AM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  > I want 2.2.18 because it appears to have the full USB backport
->>  (according to linux-usb.org). Also AFAICT, the "backports" on
+On Tue, Nov 21, 2000 at 06:44:50AM -0600, Todd Inglett wrote:
+> So set_bit(2, &b_state) will set a bit in the 4th byte of the virtual
+> doubleword.  Not good.  A simple fix seems to be to change the
+> set_bit(), etc, functions to 64 bit.  In general I think this is the
+> best approach, but consider what will happen with the following:
 >
->The PPC source trees always had the 'full USB backport' (nothing else
->would work on PPC) for all I know.
+>     int flags;		/* 32 bits */
+>
+>     set_bit(2, &flags);  /* bad memory ref! */
+>
+> On a little endian machine this won't happen since the low order bytes
+> come first.
+
+iirc David Miller did a big sweep of such things in the generic source
+when doing the sparc64 port which has exactly the same problem.
+To make sure you should probably define the macro so that you get
+a warning for &flags being anything that unsigned long, e.g. using
+a inline with a prototype and do a regular grep of the tree if anything
+shows these warnings.
 
 
-Hmm, I've tried compiling in the USB stuff that's in 2.2.17. I have
-to turn a lot more off than in 2.2.18 to get it to compile. I've also
-been unsuccessful at getting my Logitech USB mouse + Orangelink USB
-board to work under 2.2.17, but I can't tell if it's because I had to
-turn certain things off. That's why I want 2.2.18 so bad, from what
-I've read I'm lead to believe there's a good chance to get it
-working. I know it's not a good measure, but the USB config in 2.2.18
-seems much more complete (and has filled-in help text!) compared to
-2.2.17.
-
-I'll continue my daily compiles. Hopefully it will magically
-disappear the same way it appeared.
-
-
-Stefan Jeglinski
+-Andi
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
