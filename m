@@ -1,30 +1,31 @@
-Message-ID: <19991021160759.E23036@maxime.u-strasbg.fr>
-Date: Thu, 21 Oct 1999 16:07:59 +0200
-From: Sven LUTHER <luther@maxime.u-strasbg.fr>
+Message-Id: <199910211928.VAA20201@denx.local.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: new imac and compiling kernels, ...
-Reply-To: luther@dpt-info.u-strasbg.fr
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Wolfgang Denk <wd@denx.de>
+Subject: Probing for (non-existing) memory?
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Thu, 21 Oct 1999 21:28:01 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello, ...
+Hi,
 
-my current ppc machine just died this weekend, and i am considering buying one
-of the new imacs to replace it. I know they are not yet supported. There is no
-problem for me in working some to make it work more, but it will be my only
-computer.
+please excuse the silly question: is there a standard way to probe an
+address if it is readable/writable memory? Ideally something that  is
+portable across all architectures?
 
-So my question is, is there any posibility to compile a working kernel under
-macos ? is gcc ported to macos ? if yes i could build a cross compiler like i
-did when my only machine was a 68040 equiped amiga. If not, does anyone have an
-idea if darwin or mklinux will boot on this machine ? Are there other
-possibilities ? 
+[For those familiar with LynxOS: what I'm looking  for  is  something
+like recoset() / noreco().]
 
-Friendly,
+Thanks in advance,
 
-Sven LUTHER
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Never give in.  Never give in.  Never. Never. Never."
+- Winston Churchill
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
