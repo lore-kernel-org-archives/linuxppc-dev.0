@@ -1,46 +1,35 @@
-Message-Id: <6.0.1.1.2.20031202171803.02dcd420@mail.lauterbach.com>
-Date: Tue, 02 Dec 2003 17:21:41 +0100
-To: Harald Welte <laforge@gnumonks.org>
-From: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
-Subject: Re: insmod ipv6 freezes current linuxppc-2.5 and 2.5-benh
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20031130155530.GK26749@obroa-skai.de.gnumonks.org>
-References: <20031120201249.GB29432@sunbeam.de.gnumonks.org>
- <1069386878.876.49.camel@gaston>
- <20031121153314.GC23224@sunbeam.de.gnumonks.org>
- <20031130155530.GK26749@obroa-skai.de.gnumonks.org>
+Date: Tue, 2 Dec 2003 20:54:27 +0100
+From: Peter Vandenabeele <peter.vandenabeele@mind.be>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [CFP] 2nd EMBEDDED SYSTEMS and OPERATING SYSTEMS track at FOSDEM 2004
+Message-ID: <20031202205427.T8703@mind.be>
+Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
+References: <Pine.GSO.4.21.0312021326050.25508-100000@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.GSO.4.21.0312021326050.25508-100000@waterleaf.sonytel.be>; from Geert.Uytterhoeven@sonycom.com on Tue, Dec 02, 2003 at 01:26:57PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 16:55 30.11.2003, Harald Welte wrote:
-
->On Fri, Nov 21, 2003 at 04:32:52PM +0100, Harald Welte wrote:
-> >
-> > On Fri, Nov 21, 2003 at 02:54:38PM +1100, Benjamin Herrenschmidt wrote:
-> >
-> > > Interesting. Same machine here and I use 2.6 everyday :)
-> >
-> > The problem seems to be gcc-related. Debian testing seems to have
-> > installed gcc-3.3.2 (yes, maybe not the best compiler for a kernel
-> > anyway) per default.
-> >
-> > compiling the same kernel with gcc-2.95 results in a working ipv6
-> > module.
+On Tue, Dec 02, 2003 at 01:26:57PM +0100, Geert Uytterhoeven wrote:
 >
->I did some more testing:
+> Please find below the Call For Papers for the
 >
->Compiles with gcc-3.3.2 and gcc-3.2.3 result in a broken kernel,
->gcc-3.0.4 and gcc-2.95.4 work fine.
+>   2nd Embedded Systems and Operating Systems track at FOSDEM
+>
+> 21-22 February 2004, Brussels.
 
-Works fine for me with bk linuxppc-2.5 (test9/10/11), gcc-3.3.2 and
-binutils-2.14.90.0.6. gcc is built from the gcc-3_3-rhl-branch, binutils as
-in fedora development.
+Sorry, we made a mistake in the CFP. The deadline was incorrectly
+set as 18 December 2004. It should be 18 December 2003.
 
-Franz.
+Peter
 
+[...]
+> Authors are requested to submit their abstracts online to
+> embedded@fosdem.org before 18/12/2004. Notification of receipt
+                             ^^^^^^^^^^
+			     18/12/2003
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
