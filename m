@@ -1,35 +1,36 @@
-Message-ID: <4033B7DB.8050905@embeddededge.com>
-Date: Wed, 18 Feb 2004 14:07:07 -0500
-From: Dan Malek <dan@embeddededge.com>
+Subject: RE: 2.6 kernel ppc tree
 MIME-Version: 1.0
-To: Marcus Overhagen <marcus.overhagen@ims.fhg.de>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.6 kernel ppc tree
-References: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn> <20040217221957.GH16881@smtp.west.cox.net> <007b01c3f648$14ce2bc0$4a34a8c0@av34>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 19 Feb 2004 08:08:42 +1300
+Message-ID: <A3240F62EF3C2749B1A25D3BC9548F41030A03@ExchWENZ02.wenz.global.vpn>
+From: "Rod Boyce" <rod_boyce@stratexnet.com>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marcus Overhagen wrote:
+Tom,
 
-> I tried compiling 2.6.3 for a MPC850 based board today,
+You are correct I'm sure I have no time on this and I'm trying to get a image to build so I can see what is missing and then start debugging the image.  I have to start somewhere and this is where I started.  I also see there is a newer version so I will make another attempt in the next few day with that.
 
-OK, everyone, just wait a day or so.......
+Rod Boyce
 
-The 8xx stuff hasn't worked at all for a long time......if ever.
-Tom fixed up the drivers for me, I'm working on the VM updates.
-
-Stop trying to compile it and complaining about it because it
-is known to not work properly :-)
-
-I'll post a message when I get this stuff done.
-
-Thanks.
+-----Original Message-----
+From: Tom Rini [mailto:trini@kernel.crashing.org]
+Sent: Thursday, February 19, 2004 8:03 AM
+To: Rod Boyce
+Cc: Lokesh Kumar; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.6 kernel ppc tree
 
 
-	-- Dan
+That issue in particular has been fixed in later versions.  But
+commenting out the ret_from_interrupt lines isn't quite enough to get
+the platform booting :)
 
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
