@@ -1,50 +1,62 @@
-To: Liu HongXun-a16975 <a16975@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: how to disable the swap on embedded system? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 26 Sep 2001 15:48:12 +0800."
-             <01139FC052A0D411900B00508B9535FC0334D03D@ZCH07EXM04.corp.mot.com>
-Date: Mon, 01 Oct 2001 09:00:30 +0200
-Message-Id: <20011001070036.09A0A100A2@denx.denx.de>
+Message-ID: <023401c14a68$96467a60$7e7e7e7e@server>
+From: "RSR - Piero Dominioni" <pdominioni@rsr.it>
+To: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <F1BED55F35F4D3118C0F00E0295CFF4D414C19@mail.mediatrix.com>
+Subject: R: NFS mount for TQM823L
+Date: Mon, 1 Oct 2001 13:02:24 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Rolf,
+I need your help anymore:
 
-in message <01139FC052A0D411900B00508B9535FC0334D03D@ZCH07EXM04.corp.mot.com> you wrote:
->
-> Because there is no disk support, I wonder if there is also the need
-> to use the swap function which load needed page from disk to memory?
-> If that swap function is not needed, how I can disable such function for
-> linuxppc?
+< You need the portmapper (portmap), NFS daemon (rpc.nfsd), NFS mount daemon
+< (rpc.mountd).
+< All this comes from the standard NFS control script.
+< Refers to the nfs-utils package (http://sourceforge.net/projects/nfs/)
+< in the script file 'etc/nodist/nfs-server'.
 
-Just do not enable it. As long as you don't announce a swap device to
-the kernel (using the "swapon" command) the kernel will  not  attempt
-to do any swapping.
+I downloaded the nfs-utils-0.3.3.tar.gz, compiled for pc and used the
+portmap daemon obtained this way on my Slackware 7.2 Linux box
+(The executable file is quite double in dimensions respect the one
+installed and temporarily substituted on my Linux box).
+Everything works fine.
 
-> The current version linuxppc on my FADS823 always gives some problems.
-> When there is a page fault, the system will halt and oops
+Then I cross-compiled it and, since I didn't well understand what to do
+with the nfs-server script, I used nfsd and mountd found under
+nfs-utils-0.3.3/utils/nfsd/  (.../utils/mountd/).
+I transferred these three files on my target (TQM823L) via ftp, then:
+# chmod 755 portmap     // the same for nfsd and mountd
+# ./portmap
+# ps aux
+I can see that portmap is suspended: I guess it is correctly waiting for
+RPC calls and for other daemons (such as mountd and nfsd) to register.
 
-This has nothing to do with swapping.
+But if I try to run mountd or nfsd (# ./mountd,  for example) I get the same
+errors as portmap wouldn't be running at all.
+Why? What should I do anymore?
 
-I see two likely causes for this problem:
+< I'm not sure, but you may also need the remote quota server (rpc.rquotad).
+< Of course, you should have a valid /etc/exports file.
 
-(1) You are running  with  a  BDM  debugger  attached,  and  did  not
-    configure  the  DER register correctly, so that you trap into BDM
-    mode  on  each  page  fault.  Make  sure  to  initialize  DER  as
-    0x2002000F or similar (i. e. don't trap on page faults).
+I didn't try quotad: if mountd and nfsd don't run maybe it wouldn't too...
 
-(2) You have real problems, most probably with your hardware. I  have
-    seen a couple of FADS boards that were just broken.
+< You can even use it directly to start the NFS server.
 
-Wolfgang Denk
+Can you explain me how?
+Should I cross-compile it for my PowerPC platform, load it on the targe
+and then run it?
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I haven't lost my mind -- it's backed up on tape somewhere.
+Thank you very much for your patience.
+
+Best regards
+
+Piero Dominioni
+R.S.R. srl
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
