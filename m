@@ -1,34 +1,49 @@
-To: jtm@smoothsmoothie.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260 console problems 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 22 Feb 2001 08:34:27 CST."
-             <20010222083427.A21811@shamus.smoothsmoothie.com>
-Date: Thu, 22 Feb 2001 16:02:16 +0100
-Message-Id: <20010222150221.92B50281D9@denx.denx.de>
+Date: Thu, 22 Feb 2001 08:30:31 -0700
+From: Matt Porter <mporter@mvista.com>
+To: "tsombakos, mark" <tsombakos_mark@emc.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Booting Sandpoint 8240??
+Message-ID: <20010222083031.A21599@cx258813-a.chnd1.az.home.com>
+References: <276737EB1EC5D311AB950090273BEFDD01F4DB3F@elway.lss.emc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <276737EB1EC5D311AB950090273BEFDD01F4DB3F@elway.lss.emc.com>; from tsombakos_mark@emc.com on Thu, Feb 22, 2001 at 01:26:06PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010222083427.A21811@shamus.smoothsmoothie.com> you wrote:
+On Thu, Feb 22, 2001 at 01:26:06PM -0500, tsombakos, mark wrote:
 >
-> > It  seems  you  forgot  to  modify   the   "bd_info"   structure   in
-> > "include/asm-ppc/est8260.h""  to  match  the  definition as passed by
-> > PPCBoot.
+>   Well, I got the thing to boot, though now I don't quite understand it.
+>   I ended up changing the address used in zsrec and the "go" address
+>   to "0x90000" instead of "0x900000".  I saw the memory map in the
+>   DINK32 manual that the "Start of user memory" is at 0x90000.  I figured
+>   it was a typo in the HHL CDK manual. So, life was good.  Until
+>   I realized the bootloader relocates to 0x80000. Now I'm confused again.
+
+DINK32 loads the linear array of bits that comprise the zImage at 0x90000
+(576KB).  The standard bootloader always relocates to 0x800000 (8MB) and
+continues running.  The bootloader then uncompresses the included
+vmlinux.gz and places it at the start of RAM (0MB).
+
+> DINK32_MAX >>go 90000
+> loaded at:     00090000 000A4E20
+> relocated to:  00800000 00814E20
+> zimage at:     0009B000 0011B486
+> relocated to:  00815000 00895486
 >
-> You were right. I went back and checked, and I missed a line when
-> I copied from ppcboot.h to est8260.h.
+> avail ram:     00400000 00800000
+>
+>
+> Since "avail ram" is 400000-800000, should I run srec -s (something <
+> 800000)?
+> I know I read that it should be higher than the relocated image ...
 
-So now it's working for you? Congrats!
-
-Wolfgang Denk
+You don't need to do a thing, all is well. :)
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-In theory, there is no difference between  theory  and  practice.  In
-practice, however, there is.
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
