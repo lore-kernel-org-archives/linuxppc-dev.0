@@ -1,34 +1,38 @@
-Message-Id: <200008100555.HAA00996@piglet.grunz.lu>
-Date: Thu, 10 Aug 2000 07:55:48 +0200 (CEST)
+Message-Id: <200008100610.IAA01208@piglet.grunz.lu>
+Date: Thu, 10 Aug 2000 08:10:39 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: Compile error with Paul's pmac-devel rsync tree
-To: costabel@wanadoo.fr
+Subject: Hidden file in linux-pmac-devel @ linuxcare.com.au
+To: Paul Mackerras <paulus@linuxcare.com>
 cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3991C809.C240929D@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Hi Paul,
 
-On   9 Aug, this message from Martin Costabel echoed through cyberspace:
-[errors snip'ed]
-> I think this has been corrected already earlier today. Just rsync again.
-> It's funny to look at this in bitkeeper: it has been changed back and
-> forth several times.
->
->> - The same goes for mark_buffer_dirty_inode() in fs/ext2/truncate.c,
->>   which seems to come out of the same patch...
->
-> Also fixed as of 8:30 GMT today.
+There's a hidden link somewhere in your devel tree pointing to something
+not existing within that tree:
 
-Hmm... I had rsync'ed just minutes before sending my mail, so I guess it
-has been changing back and forth in Paul's rsync tree as well ;-)
+...
+diff: linux/arch/i386/kernel/.#pci-pc.c: No such file or directory
+...
+
+[mlan@piglet /mnt/r4/usr/src]$ ll linux/arch/i386/kernel/.#pci-pc.c
+lrwxrwxrwx   1 mlan     users          44 Aug  9 19:39 linux/arch/i386/kernel/.#pci-pc.c -> paulus@argo.linuxcare.com.au.28496:961157532
+
+If it doesn't serve some specific purpose, you may want to remove it...
+
+Thanks
+
 
 Michel
+
+PS The problems I reported earlier in fs/ext2 are in fact fixed in rsync
+right now, however although I had the non-fixed versions locally, they
+were not sync'ed to the fixed ones... timestamp problem??
 
 -------------------------------------------------------------------------
 Michel Lanners                 |  " Read Philosophy.  Study Art.
