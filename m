@@ -1,28 +1,54 @@
-Message-ID: <3984378C.E10CE694@denise.shiny.it>
-Date: Sun, 30 Jul 2000 10:11:24 -0400
-From: Giuliano Pochini <pochini@denise.shiny.it>
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: Takashi Oe <toe@unlserve.unl.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 30 Jul 2000 15:40:29 +0100
+Message-ID: <yam8246.1469.146560040@mail.lf-online.de>
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000730062620.1508D-100000@ofey.inetnebr.com>
+Subject: Re: LinuxPPC X Server
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Stealth port problems
-References: <39811B2C.4D34DDD@denise.shiny.it> <20000728083426.19235@mailhost.mipsys.com> <398426BC.67FCDC6E@denise.shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Giuliano Pochini wrote:
->
-> > >Hi!  I have troubles with my stealth port on a G3-blue. When it runs at
-> > 115200
-> > >ifconfig
-> > >shows a lot of overruns. At 57600 it works fine, but it's slow :-((
+Am 30-Jul-00 schrieb Takashi Oe:
 
-The problem is definitely X.  I made a lot of tests: with dma and non-dma
-serial driver, X accelerated, non accelerated, X bare.bone (started with
-xinit). The problem is X. When X is running the serial ports looses packets
-:-((
-Am I the only one who is having this problem ???  Why does X cause overruns ??
+>On Sun, 30 Jul 2000, Steffen Haeuser wrote:
 
-Bye.
+Hi!
+
+>As I said, it works on matrox and control, your problem is specific to ati
+
+Well, ATI is the hardware you get when you buy a Mac today. So it is the
+most important thing.
+
+>support on XF4 (I presume).  Use XF68_FBDev or go bug Ani Joshi or have a
+>look at the source yourself.  You may be busy at doing your stuff, but
+
+I was told it is a known problem. (No, I do not have the time to look at it
+myselves).
+
+>someone with the hardware and interest like you needs to look at this kind
+>of things.  I hardly think this is a major bug which should hold up a
+>release of an user app.
+
+Well, if it is not fixed it most likely WILL hold up...
+
+>Ok, you should say so (3D support for older video cards like ATI Rage) in
+
+I meant ATI Rage 128 of course :) It is just my interest about 3D support for
+the Boards you will get if you buy a G3 or G4 Mac today (which will be
+ATI Rage 128 or ATI Rage Pro, depending on system).
+
+>your previous message then.  As you may know, DRI drivers already exist
+>for mga, r128, tdfx, i810 in source form.
+
+Hmmm... I was told that no DRI Drivers would exist even for r128 ... can you
+point me to a place where I can get this ? And if they exist in Source form,
+someone has them already in Binary form maybe ?
+
+Steffen
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
