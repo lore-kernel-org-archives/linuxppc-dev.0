@@ -1,37 +1,30 @@
-Message-ID: <39DA9BB7.61BD963E@mvista.com>
-Date: Tue, 03 Oct 2000 22:53:43 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <39DABA39.37B03026@mvista.com>
+Date: Wed, 04 Oct 2000 05:03:53 +0000
+From: Scott Anderson <sanders@mvista.com>
 MIME-Version: 1.0
-To: SangTae Ha <stha@netstech.com>
+To: jari.nguyen@smartstors.com
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC850 and ATA/IDE
-References: <085701c02daa$2d8a9140$2a6cabd3@dolbae>
+Subject: Re: mount RAMDISK directly on rom
+References: <39D485A1.2785C0E4@serialsystem.com.sg>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-SangTae Ha wrote:
->
-> Hi,
-> I am looking for the solution that I can use ATA/IDE general hard disk
+Jari wrote:
+> Is there anyone know how to let the uncompressed ramdisk image in the
+> rom,
+> and mount root system directly from it (read only)?
 
-There are at least three easy and inexpensive ways people add ATA/IDE
-to the 8xx processors for embedded systems:
+In general, I would add a driver that exposed your rom as a device and
+then just tell your kernel that root is on your device.  I have
+successfully used the MTD drivers to do exactly this in the past.  I'd
+suggest poking around:
+  http://www.linux-mtd.infradead.org/
 
-	Connect to PCMCIA interface
-	Use a simple CPLD between the processor bus and disk
-	Program one of the UPMs to generate timing and then
-		externally buffer the signals
-
->  MPC860 or MPC821 CPU is used and Wind bond 83C553
-
-It is a more difficult solution on the 850 because of the PCI bridge
-(fewer
-physical address lines).  It is also the most expensive in money, board
-space and software.
-
-
-	-- Dan
+    Scott Anderson
+    scott_anderson@mvista.com	MontaVista Software Inc.
+    (408)328-9214		490 Potrero Ave.
+    http://www.mvista.com	Sunnyvale, CA  94086
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
