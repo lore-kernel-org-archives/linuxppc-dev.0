@@ -1,20 +1,32 @@
-Return-Path: <pevnev@juno.com>
-Received: from outbound-mail.lax.untd.com (outbound-mail.lax.untd.com
-	[64.136.28.164]) by ozlabs.org (Postfix) with SMTP id D52C167A30
+Return-Path: <markc@mail.com>
+Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
+	[66.133.131.37]) by ozlabs.org (Postfix) with ESMTP id 45B1B67A30
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Feb 2005 23:50:44 +1100 (EST)
-Received: from outbound29-sr.lax.untd.com (webmail17.lax.untd.com
-	[10.131.27.157])
-	by smtpout03.lax.untd.com with SMTP id AABBABUX7AUVL2A2
-	for <linuxppc-embedded@ozlabs.org> (sender <pevnev@juno.com>);
-	Wed,  2 Feb 2005 04:42:37 -0800 (PST)
-Mime-Version: 1.0
-From: "Alex" <pevnev@juno.com>
-Date: Wed, 2 Feb 2005 12:42:05 GMT
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Message-Id: <20050202.044222.25841.77117@webmail17.lax.untd.com>
-Subject: 2.6.10-rc3 8xx (MPC 880) i2c driver - "about to sleep" 
+	Thu,  3 Feb 2005 00:11:30 +1100 (EST)
+Received: from filter02.roc.ny.frontiernet.net
+	(filter02.roc.ny.frontiernet.net [66.133.131.177])
+	by relay04.roc.ny.frontiernet.net (Postfix) with ESMTP id D213910685
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  2 Feb 2005 13:11:25 +0000 (UTC)
+Received: from relay04.roc.ny.frontiernet.net ([66.133.131.37])
+	by filter02.roc.ny.frontiernet.net (filter02.roc.ny.frontiernet.net
+	[66.133.131.177]) (amavisd-new, port 10024)
+	with LMTP id 16961-60-97 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 2 Feb 2005 13:11:25 +0000 (UTC)
+Received: from chuck2 (70-97-124-104.br1.rmn.wv.frontiernet.net
+	[70.97.124.104])
+	by relay04.roc.ny.frontiernet.net (Postfix) with ESMTP id 8FA8F1066E
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  2 Feb 2005 13:11:22 +0000 (UTC)
+Message-ID: <002b01c50929$3bd6f720$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B60@TQ-MAILSRV-1>
+Date: Wed, 2 Feb 2005 08:15:11 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: The RS485 driver problem...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,50 +38,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi,
+linuxppc-embedded-bounces@ozlabs.org wrote on :
+> If you want to connect a RS485 transceiver to a normal UART, you
+> always have the problem of dealing with enabling/disabling
+> transmitter and recveiver. I have seen hardware that misuses RS-232
+> hardware handshaking lines (RTS/CTS) for this purpose. What I have
+> not been able to find is a linux driver or software solution to this
+> problem. 
+> 
+> Has anybody used the CPM uarts (or even a standard 16C550 uart) for
+> this purpose? How?
 
-Sorry for bothering you  again - I will appreciate your opinion/advise/guidance !
+I took a look at some old non-linux code for the MPC860, and it appears
+that the RTSM bit in GSMR_H provides switched-RTS in UART mode.
+It will negate RTS after the last character in a BD.  (SCCs only, not SMC)
 
-What is your interpretation of entries I found in the log buf with regards to I2C driver ? 
-.....
-<6>i2c /dev entries driver.
-<7>device class 'i2c-dev': registering.
-<7>bus i2c:add driver dev_driver.
-<7>i2c-core: driver dev_driver registered
-<6>i2c-rpx: i2c MPC8xx driver.
-<7>DEV: registering device: ID ='i2c-0'.
-<7>CLASS: registering class device: ID= 'i2c-0'.
-<7>i2c_adapter i2c-0:Registered as minor 0.
-<7>CLASS:registering class device: ID = 'i2c-0'
-<7>i2c_adapter i2c-0: registered as adapter #0.
-<4>cpm_iic_init() - iip=fa203c80.
-<4>cpm_iic_init[132] Install ISR for IRQ 16.
-<6>CPM interrupt c0105d90 replacing c01f7a8c.
-<3>request_irq() returned -22  for CPM vector 32.
-<6> i2c-algo-8xx.o: scanning bus m8xx........
-<4>cpm_iic_tryaddress(cpm=c019b9f8,addr=0).
-<4>iip fa203c80, dp_addr 0x800.
-<4>iic_tbase 2048, r_tbase 2048
-<4>about to sleep
-........
-BOOTING HANGS FROM HERE !!!!
+Another trick you can use, depending on your hardware config, is to loop
+your transmit data back to receive.  When you receive the last character
+you sent you know it's safe to turn off RTS, and since you're getting an
+interrupt it's deterministic.
 
-The board is equipped with M24Cxx-x Serial I2C bus EEPROM 
-- does above means that the EEPROM device was not detected on the I2C bus ?
-Do I need to supply in the code the addresses to be scanned ?
-
-Thanks,
-Alex
-
-
-___________________________________________________________________
-Speed up your surfing with Juno SpeedBand.
-Now includes pop-up blocker!
-Only $14.95/month -visit http://www.juno.com/surf to sign up today!
-
-
-
-___________________________________________________________________
-Speed up your surfing with Juno SpeedBand.
-Now includes pop-up blocker!
-Only $14.95/month -visit http://www.juno.com/surf to sign up today!
+Mark Chambers
