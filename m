@@ -1,44 +1,56 @@
-Message-ID: <40E3F73A.60607@iti.fi>
-Date: Thu, 01 Jul 2004 14:36:26 +0300
-From: Kate Alhola <kate@iti.fi>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Stefan Nickl <Stefan.Nickl@kontron.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Lite5200 PCI not working
-References: <20040701091858.A3564C109F@atlas.denx.de>
-In-Reply-To: <20040701091858.A3564C109F@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alireza Sadri <arsadri@yahoo.ca>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: UPM driver of MPC8260 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Jul 2004 04:12:30 PDT."
+             <20040701111230.27014.qmail@web12825.mail.yahoo.com>
+Date: Thu, 01 Jul 2004 14:18:00 +0200
+Message-Id: <20040701121805.E8164C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->I've updated the table to include  the  settings  for  the  Rev.  4.0
->board, too, and to list ALL jumpers on the board.
+In message <20040701111230.27014.qmail@web12825.mail.yahoo.com> you wrote:
 >
->
->
->>OK. Please see http://www.denx.de/twiki/bin/view/DULG/CoralPInstallation
->>
->>
->
->Hope this helps.
->
->
+> i am going to make my custom SBC8260 standalone , so i
+> need to replace the ppcboot of the board with a
+> bootable linux image. I want this linux to mount the
 
-I have Rev 3.0 board with analog switch type EL4331. To get it working
-even in bypassed mode
-it needs PD ( Power down ) input in pin 14 to grounded ( connect example
-to pin 10 ).
+No, this makes no sense. leave the PPCBoot as is, and use it to  boot
+Linux.
 
-With this modification my board works.  I am running Embedded QT but it
-looks a like that
-#define QT_QWS_REVERSE_BYTE_ENDIANNESS in
-qt-embedded-free-3.3.2/src/kernel/qgfxraster_qws.cpp was not enough to get
-colours right. Needs just more hacking code for fixing endianes problem.
+> flash, and then i put my own final program on the
+> flash , and as a service, linux will run the program
+> on any reset.(now,it would be standalone)
 
+Yes, booted by PPCBoot from flash.
 
+> so i cannot hold the ppcboot (u-boot) on the flash, i
+> need the changes in my linux image , or using a linux
+> driver.
 
-Kate
+You will always need a boot loader to initialize the  hardware.  This
+is what PPCBoot is doing for you. Only then you can start Linux.
+
+> (I know board needs bootloader anyway , but i don't
+> know what it is. is it ppcboot? or ELDK makes a
+> bootable linux?)
+
+Yes, PPCBoot is the boot loader. Do NOT replace it, just use it.
+
+> Any other point of view is really wellcome.
+
+Did you read the DULG? See http://www.denx.de/twiki/bin/view/DULG/Manual
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Lack of skill dictates economy of style.                - Joey Ramone
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
