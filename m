@@ -1,75 +1,44 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-From: Amit.Lubovsky@infineon.com
-Message-ID: <AD2F581BD7340A4C908AF1AFB066EA3B0E4977@ntah901e.savan.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MBX860 loading denx kernel image with EPPC-Bug
-Date: Wed, 24 Dec 2003 11:36:54 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
+Date: Wed, 24 Dec 2003 21:49:09 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: Mark Powell <medp@primagraphics.co.uk>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Davey <daveywu@transengines.com>, stefan.roese@esd-electronics.com
+Subject: Re: patch for ibm 405ep emac driver in linux-2.4.22 and 2.4.23
+Message-ID: <20031225054909.GA24915@gate.ebshome.net>
+References: <C7FFFEA58B43D311920D0004ACE5333F10E4F46C@amer25.avnet.com> <29449.216.110.51.8.1071877375.squirrel@www.orkun.us> <1072105831.4163.15.camel@localhost.localdomain> <001d01c3c923$db2ca3c0$5100a8c0@davey> <3FE814FF.7020503@primagraphics.co.uk> <20031223101022.A23655@home.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20031223101022.A23655@home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Tue, Dec 23, 2003 at 10:10:22AM -0700, Matt Porter wrote:
+>
+> On Tue, Dec 23, 2003 at 10:12:15AM +0000, Mark Powell wrote:
+> >
+> > Davey wrote:
+> >
+> > >Some time ago Stefan and I had reported that both ethernet interfaces
+> > >cannot work well together. Sorry I have lost all old mails when I
+> > >reinstall my computer. We have find that this problem is caused by
+> > >that the base address of eht1 is wrong set. Follow by my patch for
+> > >linux-2.4.22 and linux-2.4.23. I have test the patch and it work well.
+> >
+> > shouldn't that just be:
+>
+> This is the right way to do it, we can't put that other hack in the
+> kernel.  If somebody verifies this patch hen we can get it in.
+>
 
-I try to load linux kernel 2.4.20 from denx (vmlinux) to MBX860 board
-with the on board boot loader (EPPC-Bug) without success and get
-the following:
+Matt, I checked old-OCP version of ibm405ep.c and indeed it had
+EMAC1_BASE there. Obviously this is a typo introduced during
+conversion to new OCP.
 
-EPPC-BUG output
----------------
-Controller LUN =00? 20
-Device LUN =00?
-Node Control Memory Address =00FC8000?
-Client IP Address =192.168.5.34?
-Server IP Address =192.168.5.1?
-Subnet IP Address Mask =255.255.255.0?
-Broadcast IP Address =255.255.255.255?
-Gateway IP Address =192.168.5.1?
-Boot File Name ("NULL" for None) =vmlinux?
-Argument File Name ("NULL" for None) =?
-Boot File Length =00000000?
-Boot File Byte Offset =00000000?
-BOOTP/RARP Request Retry =02?
-TFTP/ARP Request Retry =02?
-Trace Character Buffer Address =00000000?
-BOOTP/RARP Request Control: Always/When-Needed (A/W)=W?
-BOOTP/RARP Reply Update Control: Yes/No (Y/N) =Y?
+I checked these definitions when Stefan first reported the problem
+but failed to notice this :-(.
 
-Update Non-Volatile Memory (Y/N)? y
-
-EPPC-Bug>PL 20 00
-Network Booting from: MPC860, Controller 20, Device 0
-Loading: vmlinux
-
-Client IP Address = 192.168.5.34
-Server IP Address = 192.168.5.1
-Gateway IP Address = 192.168.5.1
-Subnet IP Address Mask = 255.255.255.0
-Boot File Name = vmlinux
-Argument File Name =
-
-Bytes Received =&1338333, Bytes Loaded =&1338333
-Bytes/Second =&446111, Elapsed Time =3 Second(s)
-
-Exception: Implementation Dependent Software Emulation
-SRR0 =C0000000 SRR1 =00001002 Vector-Offset =01000
-IP =C0000000 MSR =00001002 CR =00000000
-R0 =00000000 R1 =00FB4000 R2 =00000000 R3 =00FF4570
-R4 =00000000 R5 =00000000 R6 =00000000 R7 =00000000
-R8 =00000000 R9 =00000000 R10 =00000000 R11 =00000000
-R12 =00000000 R13 =00000000 R14 =00000000 R15 =00000000
-R16 =00000000 R17 =00000000 R18 =00000000 R19 =00000000
-R20 =00000000 R21 =00000000 R22 =00000000 R23 =00000000
-R24 =00000000 R25 =00000000 R26 =00000000 R27 =00000000
-R28 =00000000 R29 =00000000 R30 =00000000 R31 =00000000
-SPR1 =00000000 SPR8 =00000000 SPR9 =00000000
-C0000000 0A0A0A0A TDI $10,R10,$A0A
-EPPC-Bug>
-Any idea what am I doing wrong?
-Thanks,
-Amit.
-
+Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
