@@ -1,31 +1,33 @@
-Message-ID: <3E6632D4.2080702@embeddededge.com>
-Date: Wed, 05 Mar 2003 12:24:36 -0500
-From: Dan Malek <dan@embeddededge.com>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: "Dan Malek" <dan@embeddededge.com>,
+	"Daniel Jacobowitz" <drow@false.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: RE: Improved copy_page() function, about 30% speed up for mpc860!
+Date: Wed, 5 Mar 2003 18:50:16 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLCENKFKAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Dale Farnsworth <dale@farnsworth.org>,
-	Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
-References: <20030305010318.6A4D3C6E0C@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-reply-to: <20030305171234.GC19303@ip68-0-152-218.tc.ph.cox.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+> On Wed, Mar 05, 2003 at 01:19:04AM +0100, Joakim Tjernlund wrote:
+> > > > from http://lists.linuxppc.org/linuxppc-dev/200303/msg00022.html
+> > >
+> > > Well, the whole change is at:
+> > > http://ppc.bkbits.net:8080/linuxppc_2_4_devel/cset@1.118.1.428?nav=index.html|ChangeSet@-1d
+> > >
+> > > So, that should give it more context and make it clearer, I hope..
 
-> BTW: _all_ this writing to kernel text is a Bad  Thing  (TM),  as  it
-> makes XIP (for example running from ROM) really difficult.
+FYI, I undid the above patch and then dcbz failed horribly. Linux
+just locks up. Using my BDI2000 I tried to single step over the offending dcbz
+and it never got past it.
 
-Well, technically you aren't writing to kernel text space, you are
-writing to low real memory locations. :-)  I've done several PowerPC XIP
-from rom systems without any trouble, so I kind of fail to understand
-why this would cause trouble.  I don't know what we gain from XIP,
-except a little available ram space, but it people want it.....
-
-
-	-- Dan
+ Jocke
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
