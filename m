@@ -1,34 +1,27 @@
-Message-ID: <393D59E8.9656E51E@relog.ch>
-Date: Tue, 06 Jun 2000 22:07:04 +0200
+Message-ID: <393D5A8C.AF5F1D1D@relog.ch>
+Date: Tue, 06 Jun 2000 22:09:48 +0200
 From: Michel Dänzer <daenzer@relog.ch>
 Reply-To: daenzerm@student.ethz.ch
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: Sinan Gürkan <sgurkan@superonline.com>,
-        linux-apus-user@lists.sourceforge.net, debian-powerpc@lists.debian.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: New experimental X 4.0 not working
-References: <Pine.LNX.4.10.10006062156360.1984-100000@opal.biophys.uni-duesseldorf.de>
+To: Joseph Garcia <jpgarcia@execpc.com>
+CC: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        Francois Felix Ingrand <felix@ingrand.net>,
+        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Debian pmud package available
+References: <Pine.LNX.4.10.10006062043470.29453-100000@zirkon.biophys.uni-duesseldorf.de>
+	 <393D4D15.7CF12E4E@execpc.com> <393D5429.32BEFB20@relog.ch>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
->
-> > > I installed XFree4.0b...but it doesn`t work...
-> > > after startx command it loads a bit and it freezes the whole system.
-> > > You have to reboot and filesystem is corrupted..(I ran fsck 3 times :) )
-> >
-> > Do you use update/bdflush/whatever? I get lotsa lockups when hacking
-> > kernels and X servers, but I've never had to run fsck more than twice
-> > (once automatically and once manually).
->
-> I had a case where such a freeze hosed various things on my root and usr
-> partitions. That was during the XFree 4.0 PCI resources trouble hacking.
-> Is the machine in question one with Mach64 graphics?
+Michel Dänzer wrote:
 
-No, it's an Amiga with Permedia2 and he used the wrong binary.
+> The gkrellm plugin (v0.9) always shows an empty battery and 0:00 rest time.
+
+Just realized there are later versions (things advance quickly there :). v0.12
+works perfectly with gkrellm 0.9.10, only thing is it reports my Pismo as an
+iBook...
 
 
 Michel
