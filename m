@@ -1,40 +1,54 @@
-Date: Mon, 15 Nov 1999 16:03:32 +0100
-To: linuxppc-dev@lists.linuxppc.org
-CC: yellowdog-devel@lists.yellowdoglinux.com
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Updated iBook patches
-Message-Id: <19991115160332.023854@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <19991116013252.15191.rocketmail@web1003.mail.yahoo.com>
+Date: Mon, 15 Nov 1999 17:32:52 -0800 (PST)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: XiG video driver support
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've uploaded new iBook patches based on Paul's latest rsync tree
-(linuxcare.com.au). I've added parsing of the OF interrupt tree, setup
-code for IDE (both MDMA and UDMA, MDMA should work with older machines,
-we cannot rely on MacOS setting the disk features for us), code cleanup
-and support for iMac DV (adb-less).
 
-There are still some issues with the iMacDV, I had only occasional access
-to the machine. There is an issue with IDE timings (didn't find time to
-look if the disk itself is setup incorrectly or the controller's timing
-register) and the ethernet mii PHY is not recognized by the de4x5.c
-driver (I didn't test tulip).
+	Hi.  If you believe that it would be good for XiG to
+release their commercial X servers for LinuxPPC, write
+to them or visit http://www.xig.com.  The benefits
+would include possibly fuller use of your hardware
+(dynamic resolution switching, acceleration, etc) and
+maybe even open sourcing.  I don't know if they have
+done any open sourcing.
+	Hopefully it would give a better frame of reference
+for those doing totally free drivers, to increase the
+strength of their work.
 
-Note that BootX doesn't work on iMacDV (and probably Sawtooth), but the
-poof bootloader works fine now that OF booting is supported. iBook
-requires BootX 1.2b2 which will be posted real soon now.
+===
+
+Dear Dan,
+
+Thank you for your interest in AcceleratedX! We would
+very much like
+to work on PowerPC machines, but we currently have no
+plans to develop
+a commercial server for this architecture.  If we find
+the time to add
+PowerPC to the support list, then we may contact you
+to be a
+beta-tester. If you know of any others who have an
+interest in a
+PowerPC AcceleratedX have them contact us, so we may
+drum up some
+support to provide a product.
+
+Sincerely,
+
+-- 
+Mike Ginis
+mginis@xig.com
+http://www.xig.com
 
 
-Note about early boot text:
-
-The arch/ppc/kernel/prom.c patch contains the changes to make prom_print
-to work on the OF display after OF is terminated. You'll have to make
-sure the map_bootx_text function is called after MMU initialisation. This
-is usually done by xmon, but you might have to hack xmon a bit since it
-does this only when there's a PMU.
-Once this is done, xmon_printf should work too.
-
+=====
+"Don't expect your own messiah; this neverworld which you desire is
+only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
