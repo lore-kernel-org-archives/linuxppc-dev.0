@@ -1,40 +1,48 @@
-Message-ID: <39267CA5.37A22953@student.ethz.ch>
-Date: Sat, 20 May 2000 13:53:09 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Message-ID: <3926A313.3AB13BBA@wibble.net>
+Date: Sun, 21 May 2000 00:37:07 +1000
+From: Steven Hanley <sjh@wibble.net>
 MIME-Version: 1.0
-To: Sergio Brandano <sb@dcs.qmw.ac.uk>
-CC: Worth <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org,
-        debian-powerpc@lists.debian.org
-Subject: Re: Pismo status
-References: <Pine.SOL.4.10.10005191236120.4329-100000@ncal.verio.com> <200005200850.JAA28869@copper.dcs.qmw.ac.uk>
-Content-Type: text/plain; charset=iso-8859-1
+To: Ethan Benson <erbenson@alaska.net>,
+        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Paul's 2.2.15 does not boot a 7200
+References: <20000520002947.A6452@plato.local.lan>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sergio Brandano wrote:
+Ethan
 
-I'm not going to comment on your flamebait other than if you think Intel is
-better than PowerPC, sell your Powerbook and stop complaining.
+I think it may actually be booting, if it is hooked up to a netwrok try
+pinging it or sshing into it, I also had this problem with the 2.2.14
+pre series from linuxcare on my 7200/200 with a normal atyfb, the
+problem was the thing's video was blank after the bootx sequence
+finished loding it and the kernal ran. 2.2.10 was fine so I wanted to
+know what the problem with the graphics was/is, it seems some change in
+2.2.* recently made it detect the graphics capabilities incorectly and
+not use the right mode.
 
+so the fix is to put something like video=atyfb:vmode:5 on the kernel
+command line and it will boot with text displauyed, I still am somewhat
+annmoyed as 2.2.10 the thing auto detected and displayed 100x40 or osme
+similarly sized mode, and now it only does 80x50, which I find way too
+large (even on the 14" monitor I have with this machine (heck I happily
+run 160x60 console on 15" monitors on my x86 boxen)
 
-> I also experienced that GNOME's screen saver pumps up the CPU to 100% when
-> it is active. If the PowerBook is cool before triggering the screen saver,
-> it gets boiling hot (with fan spinning) after 30mins. Why is that? I would
-> expect it to shut the display off and similar things, rather than
-> deliberately trying to fry my baby.
+Anyway try forcing a specific video mode ont he kernel command line and
+you may get a display. I was able to work with the machine with no
+display quite happily using only ssh and such and was thus able to try
+different kernels.
 
-Just turn off the screensaver in the GNOME control center and it will behave
-exactly like you expect it to.
-
-
-Michel
-
+	See You
+	    Steve
 
 --
-                        Press every key to continue.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
