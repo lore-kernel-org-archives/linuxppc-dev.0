@@ -1,18 +1,12 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id D4C5867A45
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Feb 2005 09:58:34 +1100 (EST)
-Received: from mvista.com (av [127.0.0.1])
-	by av.mvista.com (8.9.3/8.9.3) with ESMTP id OAA23918
-	for <linuxppc-embedded@ozlabs.org>; Thu, 3 Feb 2005 14:58:32 -0800
-Message-ID: <4202AC98.70308@mvista.com>
-Date: Thu, 03 Feb 2005 15:58:32 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: linuxppc_2_4_galileo removal
+Return-Path: <shawnxjin@gmail.com>
+Message-ID: <c3d0340b05020315567d2ce3e4@mail.gmail.com>
+Date: Thu, 3 Feb 2005 15:56:51 -0800
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: PPC440GP and Ebony board, ask for documents
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,7 +17,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This tree is so dead it smells.  Does anyone still care about it?  If I 
-no one responds, I'll kill it on Monday.
+Hi,
 
-Mark
+I have an IBM eBony board without any documents. Since IBM pulled off
+all the documents related ppc440 after they sold the business to AMCC,
+googling cannot find any documents about eBony schematics, board's
+user manual and evaluation board kit user's manual.
+
+If there are some people happen to have these documents, would you
+like to share them with me?
+
+I want to wipe off the Rom monitor and program u-boot to it. But
+before doing that I have to assure that I can recover the board with
+Rom Monitor. Unfortunately I don't the binary code either. Would you
+like to send me a copy if you have it?
+
+Thanks a lot.
+-Shawn.
