@@ -1,49 +1,30 @@
-Message-ID: <38F76238.499D12F9@colorkinetics.com>
-Date: Fri, 14 Apr 2000 14:23:52 -0400
-From: Ihor Lys <ihor@colorkinetics.com>
+Message-ID: <38F76951.CF7141E8@embeddededge.com>
+Date: Fri, 14 Apr 2000 14:54:09 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Need suggestions......
+To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: No bash prompt
+References: <819E3E914E0AD11194DE00805F0D100B0138B833@fbi.infocom.dk> <kfyem88rat5.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Everybody.....
+Marcus Sundberg wrote:
 
-I am currently in the process of figuring out what the minimum external
-hardware requirements would be for a new project we are working on.
+> Seems this problem is way too common...
+> How about adding a ppc_md.init function which checks that the internal
+> registers are mapped in a sane place, and panics with an informative
+> message otherwise?
 
-We currently use a motorola FADS board with an 850SAR for some other
-non-linux development, has anyone booted linux on this configuration?
-
-For various reasons we would like to run linux on either a MPC850SR or
-or MPC860SR or MPC860T.
-The final design of our system will be custom, but as usual, its
-probably beasier to start with something semi-standard.
-We don't need most of the goofy desktop stuff, (video, HDD, FDD, swap,
-etc), but we do need ethernet, serial, and other I/O
-
-Further: Can anyone tell me:
-Which SIMPLE SBC boards work with a minimum of fuss.
-What kind of driver support is there for perhipherals based on USB
-How much ram is really needed for the kernel image itself
-What minimum external perhipherals other than I/O are needed/supported?
-(RTC? NVRAM?)
-Is there any reference as to what external perhipherals might be
-supported? Like external UARTs, Net adapters, PCMCIA cards, etc?
-
-Thanks
-Ihor
+My plan is just to force all 8xx ports to use the same IMMR address.
+This is part of the 8M page mapping of the kernel for performance
+enhancements.  I am going to collect as much I/O and IMMR into an
+8M space as possible.  Someplace around 0xff000000 is going to be the
+"Linux" IMMR setting.
 
 
-
---
-------------------------------------------------------
-Ihor Lys                             TEL: 617-423-9999
-Color Kinetics Inc.                  FAX: 617-423-9998
-50 Milk St. 17th Floor               CEL: 617-899-4320
-Boston, MA 02109                 www.colorkinetics.com
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
