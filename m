@@ -1,71 +1,50 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04011706b356b4a1e327@[192.168.1.2]>
-Date: Wed, 5 May 1999 22:55:07 -0400
-To: linuxppc-dev@lists.linuxppc.org
-From: "sean o'malley" <somalley@ed.mde.state.mi.us>
-Subject: Firewire drivers..
+From: Brad Boyer <flar@cegt201.bradley.edu>
+Message-Id: <199905060329.WAA28970@cegt201.bradley.edu>
+Subject: Re: USB under LinuxPPC
+To: ranga@CSUA.Berkeley.EDU (Sriranga Veeraraghavan)
+Date: Wed, 5 May 1999 22:29:23 -0500 (CDT)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199905060132.SAA26948@soda.CSUA.Berkeley.EDU> from "Sriranga Veeraraghavan" at May 5, 99 06:32:09 pm
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Im looking more for a little bit of input, ideas, and constructive
-criticism than anything (if I am WAY off base psuh me in a better direction
-=) ). Im not much of a programmer but I thought I would try to put together
-device driver design for Firewire and hopefully by the time I am done I
-will have progressed enough in my programming so I can hack this together
-(or have it be organized enough that I can get help hacking it together).
+> In order to get my SMP card (nPower 400) to work under MacOS I had had
+> to swap out the ROM simm (not sure what its real name is, but its
+> extra large sized simm) that was in my 7600 with one from an 8500.
 
-What happens if you make the Firewire driver a general device driver and
-add loadable module support for it? sort of a kernel inside the kernel.
+If it was the one in the middle of the RAM slots, that's the L2 cache,
+and I assume it is, since the one in my 7600 didn't cooperate with the
+my nPower400 card either.  I didn't have anything to replace it with,
+so I just took it out.  I really should get a better one for
+performance reasons, but I just haven't done it yet.
 
-basically.. it boils down to you need a driver to support your Firewire
-card's(') chipset(s) and a driver(s) to run the device(s) it found.
+> A side effect of this is that I can only use boot-x with the "no video
+> driver" option unchecked for booting into linux. This is not really a
+> problem for me, since I never boot MacOS on my 7600.
 
-The General Firewire driver would be the medium that communicates (compiled
-into) with the kernel and directs the Firewire traffic between devices and
-the system. It would be essentially the gatekeeper of the Bus. Polling it
-for additional devices and loading the proper drivers. Assigning the device
-ID's, current, types of transfer,etc.
+Do you always use BootX?  I've never even tried it...
 
-The Device Driver would be file describing your particular chipset/card.
+> As for SMP kernels, I have only been able to get 2.2.0pre6 with the
+> file vmscan.c backward patched to 2.2.0pre4 to boot into SMP mode
+> correctly. The 2.2.1 to 2.2.4 kernels don't boot at all in SMP mode,
+> they crash in kswapd.  I haven't tried 2.2.5 yet, but from the traffic
+> on this list I will probably hold off for a little while.
 
-The Firewire Driver would be a file describing that particular Firewire
-device and its functions. (voltage, device type, whatever)
+Well, that's definitely a different place than it crashed for me in
+2.2.2 and 2.2.5, and I never tried more than a little at any of the
+2.2.0pre kernels.  Maybe I'll take a look and see what changed...
 
-Ideally(do we live in an ideal world?), both the Device Driver and the
-Firewire Driver would not have to be compiled into the kernel and depending
-they might not have to be compiled at all which would lead to easier
-x-platform deployment/implementation.
+> I will put a gzip'ed kernel image on my web page later today and send
+> you the URL. 
 
-The General Firewire Driver should load the Firewire drivers on the
-fly(like the kernel modules load automatically in the kernel), this is
-because the of the hotpluggable nature of Firewire.
+Thanks.  If you have any modules, could you include them too?  I'd
+appreciate it.
 
-You could also add another section of extendable modules to the General
-Firewire Driver for easily adding additional support like a general sound
-module or a  scanner module, networking(?), etc. This might actually be
-loaded with actual device file or possbly as another loadable kernel
-module.
-
-The Kernel would use the General Firewire driver as its only pseudo-device
-and the General Firewire driver would assign each device /dev/firewire a
-specific name. (I'm really kind of boggled how you would assign devices
-since there isnt any particular order they would load. I suppose for drives
-you could put a file containing some sort of identifying number in the root
-directory of the drive that matches a specific device so firewire_drive_1
-with /home would always be /home and Firewire_drive_2 with /root would
-always load as root..)
-
------
-or alternatively..
-
-the other way to do this is to make the General Firewire Driver hand over
-responsibility to the loaded Firewire Driver so the General Firewire Driver
-would just be a skeleton of code to load the proper Firewire Driver which
-would than load the proper Firewire Device Driver. I guess this doesnt make
-much sense to me in the case of multiple identical cards...
-
+		Brad Boyer
+		flar@cegt201.bradley.edu
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
