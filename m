@@ -1,36 +1,29 @@
-Message-Id: <36EF6F70.61C452E0@schweiz.ch>
-Date: Wed, 17 Mar 1999 10:01:36 +0100
-From: Andreas Tobler <a.tobler@schweiz.ch>
-Mime-Version: 1.0
-To: linux ppc <linuxppc-user@lists.linuxppc.org>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: egcs-1.1.2-RPM
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Rugen <jrugen@primenet.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Linux Framebuffer List <linux-fbdev@vuser.vu.union.edu>
+Subject: Re: [linux-fbdev] Xbh X server/adding acceleration to XF68_FBDev
+References: <Pine.BSI.3.96.990316204520.10665A-100000@usr01.primenet.com>
+From: Jes Sorensen <Jes.Sorensen@cern.ch>
+Date: 17 Mar 1999 10:43:59 +0100
+In-Reply-To: Jeff Rugen's message of "Tue, 16 Mar 1999 20:52:44 -0700 (MST)"
+Message-ID: <d3oglscuxs.fsf@valhall.cern.ch>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>>>>> "Jeff" == Jeff Rugen <jrugen@primenet.com> writes:
 
-maybe a dump question, is anybody working on a RPM for
-egcs-1.1.2-glibc1.99? And or egcs-1.1.2-glibc-2.1.
-If not can I try it by adapting a RPM from a earlier release? I never
-made a RPM from scratch, I only modified them.
+Jeff> Now, the reason I included the Framebuffer list is I was
+Jeff> interested in adding acceleration for the clgen framebuffer in
+Jeff> the XF68_FBDev server.  What source should I use as a starting
+Jeff> point?  (I have the 3.3.3 server-only source right now).  I'll
+Jeff> also use that as an excuse to verify that 32-bit modes really
+Jeff> work with clgenfb.  Thanks.
 
-Yesterday, I built egcs-1.1.2 under R4.1. It worked out of the box?! Now
-I have to compare the test results. I can't believe it, before I had so
-many troubles building an egcs directly from egcs.cygnus.com.
+Use the Cirrus Logic accel code from the SVGA server, basically the
+long term goal is to merge the FBDev and SVGA servers.
 
-A last question, what are the minimal requirements to build egcs under
-pre-R5. Means glibc etc.
-
-Thanks
-Andreas
--- 
-| Andreas Tobler				
-| CH-8004 Zuerich 							
-| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
------------------------------------------------------------
+Jes
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
