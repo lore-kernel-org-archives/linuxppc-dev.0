@@ -1,48 +1,53 @@
-Date: Tue, 16 Apr 2002 07:59:09 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: 9600 maturity?
-To: benh@kernel.crashing.org
-Cc: dan_bethe@yahoo.com, nicoya@apia.dhs.org,
+Date: Tue, 16 Apr 2002 10:01:52 +0200
+From: Olaf Hering <olh@suse.de>
+To: Ani Joshi <ajoshi@shell.unixbox.com>
+Cc: Stefan Jeglinski <jeglin@4pi.com>,
 	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20020415091958.19056@smtp.wanadoo.fr>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E16xLzp-00008q-00@piglet.grunz.lu>
+Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
+Message-ID: <20020416100152.A4692@suse.de>
+References: <p05100303b8e0cf886762@[63.220.231.138]> <Pine.BSF.4.44.0204151224090.39853-100000@shell.unixbox.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.BSF.4.44.0204151224090.39853-100000@shell.unixbox.com>; from ajoshi@shell.unixbox.com on Mon, Apr 15, 2002 at 12:27:00PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-'Morning,
+On Mon, Apr 15, Ani Joshi wrote:
 
-On  15 Apr, this message from Benjamin Herrenschmidt echoed through cyberspace:
->>No, 2.4 kernels should have solid PCI even in the presence of multiple
->>host bridges (which was the problem on the dual-bandit 9x00). The only
->>potentially remaining problem could be access to IO space on the second
->>bus. Ben, can you comment?
 >
-> I can't. I would love having someone try this in details and tell me ;)
+> On Mon, 15 Apr 2002, Stefan Jeglinski wrote:
 >
-> I suspect the second bandit can only produce "high" IO addresses (thus
-> precenting use of legacy stuff).
+> > http://www.ati.com/shopati/promotions/maccombo/index.html
+> >
+> > Seems like the 7000 would be a nice addition to spruce up my old
+> > 9500/G3 workhorse. It would free up 2 slots as I now have a Twin
+> > Turbo, an ixTV, and an old Matrox card in there now.
+> >
+> > 1. Is the Radeon 7000 supported in XFree86? Rather, the real question
+> > is, does anyone know of any gotchas trying to run it in accelerated
+> > mode?
+>
+> ATI tends to make new cards which are really just newer revisions of older
+> ASICs.  For example, the Radeon 7200 is realy just a regular radeon with
+> 64meg DDR (and perhaps higher clocks).  So its highly possible that the
+> 7000 is a radeon VE (considering its dualhead).  If so, then it is
+> supported.  Even if it isn't, adding support should be very trivial as it
+> contains the same 1st generation Radeon ASIC.
 
-But is there something in place now in the PCI code to handle the IO
-space of multiple host bridges now? When I was working on the chaos PCI
-code, you had plans to implement that part...
+It is a VE, but I have one report where it fails on a 9600, after
+loading vgahw.a or something like that. Maybe it must go into another
+slot or the guy has to boot without video=ofonly.
+More details later..
 
-IIRC, you wanted to move both IO spaces into a continous segment and
-provide some way to find the ber-bus base of IO space...
 
-Cheers
 
-Michel
+Gruss Olaf
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--
+ $ man clone
 
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
