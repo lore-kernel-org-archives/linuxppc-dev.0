@@ -1,40 +1,41 @@
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B0D@mail1.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Pavel Bartusek'" <pba@sysgo.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: MDIO clock speed computation
-Date: Mon, 22 Jul 2002 14:19:41 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: RE: CPU performance measurement 
+Date: Mon, 22 Jul 2002 15:30:34 -0300
+Message-ID: <B7AC573479F05C438F232539B961A168095005@CUR1006V.br002.siemens.net.br>
+From: "OTAVIO ISAMU SUGENO" <otavio.sugeno@siemens.com.br>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pavel,
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: segunda-feira, 22 de julho de 2002 14:27
+To: OTAVIO ISAMU SUGENO
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CPU performance measurement
 
-You have found a interesting problem in the calculation of the MII_SPEED.
-And it seems to be there since a long time!
+In message
+<B7AC573479F05C438F232539B961A1686C4CF0@CUR1006V.br002.siemens.net.br>
+you wrote:
+>
+> I would like to measure the cpu performance in my custom board.
+> Basically to know how many of cpu performance each process or driver
+is
+> spending, something like TOP command in PCs.
+>
+> Anyone has already this experience or can give me suggestion?
 
-However, your fix seems incomplete.
-If I have a frequency of 82,5MHz, for example,
-it yields exactly to the same result before and after your patch,
-that is an MDIO clock of 2.58MHz.
+>>Why don't you simply run "top" on your board, then?
+I tried to run "top" on my custom board, but no success. No message
+appears on console. Do I need to do anything special, any configuration?
 
-Since the divisor is 2 * MDCLOCK,
-I would suggest something like:
+>>Or read /proc/stat?
+I will try this. What kind of information can get from /proc/stat? Is it
+any kind of statistics?
 
-  (((bd->bi_intfreq + (2 * 2500000 - 1 )) / 2500000 / 2) & 0x3F) << 1;
-
-Regards,
-
---------------------------------------------
- Jean-Denis Boyer, B.Eng., System Architect
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+Thanks
+Otavio Sugeno
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
