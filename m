@@ -1,10 +1,10 @@
 From: Klemen Porenta <klemen.porenta@siol.net>
 To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: FCC transmit underrun 8265
-Date: Fri, 2 Jul 2004 11:54:29 +0200
+Date: Fri, 2 Jul 2004 11:55:15 +0200
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-2
-Message-Id: <20040702095429.YGXQ1092.pegasus@[10.10.10.22]>
+Message-Id: <20040702095515.YHDV1092.pegasus@[10.10.10.22]>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
