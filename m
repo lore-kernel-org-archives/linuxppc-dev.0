@@ -1,50 +1,31 @@
-Message-Id: <200106240954.LAA00837@piglet.grunz.lu>
-Date: Sun, 24 Jun 2001 11:54:29 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
+Date: Sun, 24 Jun 2001 06:39:06 -0500
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: mlan@cpu.lu
+Cc: guillaume.laures@noos.fr, linuxppc-dev@lists.linuxppc.org
 Subject: Re: getting the 8600 to boot 2.4.5
-To: guillaume.laures@noos.fr
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3B337C7B.1040309@noos.fr>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=iso-8859-1
+Message-Id: <20010624063906.594aea88.toe@unlserve.unl.edu>
+In-Reply-To: <200106240954.LAA00837@piglet.grunz.lu>
+References: <3B337C7B.1040309@noos.fr>
+	<200106240954.LAA00837@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  22 Jun, this message from Guillaume Laurès echoed through cyberspace:
-> The trick is that in 2.4 kernel, linux tries to open the first frame
-> buffer, and on machines of the 8x00 class this mean opening the sixty
-> convoluer, a frame buffer that allows the use of the video output (Y/C
-> and composite).
+On Sun, 24 Jun 2001 11:54:29 +0200 (CEST), Michel Lanners wrote:
 
-Ah, there it is! I've long wondered how Sixty6 would appear in the
-device tree ;-)
+> Yeah; Takashi Oe fixed the VRAM detection for good, but it seems his
+> patches have not made into any released tree yet.
 
-> Unfortunately, linux has not a driver for it
+Well, there is a problem with the detection code I wrote.
+Occasionally, a machine hangs when vram mapping is changed.  It
+seems it has to be done at a right time, but I don't know when
+the right time is and how to detect it yet  :(
 
-Would be a fun project to write one ;-)
+Any ideas or suggestions are welcome..
 
-[snip]
-> controlfb: Memory bank 1 present, bank 2 absent, total VRAM 2MB
->
-> On a side note, this is wrong, I have the 2 banks filled, but I'll check
-> this later
 
-Yeah; Takashi Oe fixed the VRAM detection for good, but it seems his
-patches have not made into any released tree yet. Maybe it's in BenH's
-tree; but I didn't check recently.
-
-If you're desperate, I can try to dig it out.
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Takashi Oe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
