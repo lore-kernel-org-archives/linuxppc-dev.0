@@ -1,23 +1,35 @@
-Message-ID: <39861753.8DB68BB6@denise.shiny.it>
-Date: Mon, 31 Jul 2000 20:18:27 -0400
+Message-ID: <39861816.1FC66DEF@denise.shiny.it>
+Date: Mon, 31 Jul 2000 20:21:42 -0400
 From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
+To: Michel Ddnzer <daenzerm@student.ethz.ch>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: progress on l2cr
-References: <3978FB1C.388059D1@denise.shiny.it> <20000722201320.21455@192.168.1.10>
+Subject: Re: XF4, speed and keyboard problems
+References: <39835F2B.36C12CC9@denise.shiny.it> <3984265B.631EB6C4@student.ethz.ch>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >Is there any reason to keep the L2 cache data-only ?
+> Giuliano Pochini wrote:
+> >
+> > Hi! I finally installed XF4. It seems faster for most of operations (windows
+> > movement is smothes, xscreensever runs fater, etc), but all visualization
+> > plugins for Alsaplayer and xmms are 30% slower according to CPU usage
+> > (print_a_bitmap_on_the_screen() is slower ??).
 >
-> There are some rare cases where it can be useful, yes. Like when flushing
-> it, to avoid the flush code to pollute it.
+> CPU usage of the plugins or the server?
 
-A few bytes inside a 1MB cache are't a problem IMHO. Anyway I enabled it and
-performance compiling programs is 15% lower.
+Overall performance.
+
+> You have to sum up both to get the
+> actual CPU usage with both versions of X.
+>
+> Can you please provide numbers ?
+
+I have to reinstall the old version. I have no time now, sorry. Perhaps next
+week end...
+
 
 Bye.
 
