@@ -1,32 +1,56 @@
-Date: Fri, 28 Jan 2000 15:06:45 -0500 (EST)
-From: Pavel Roskin <pavel_roskin@geocities.com>
+Message-Id: <3.0.6.32.20000128150944.00969100@falcon.si.com>
+Date: Fri, 28 Jan 2000 15:09:44 -0500
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Best compiler/flags combination
-Message-ID: <Pine.LNX.4.21.0001281444060.32290-100000@sunapee.transcept.com>
+From: Jerry Van Baren <vanbaren_gerald@si.com>
+Subject: Bootstrapping a PPC8260 board
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+I need to create a bootstrap program for a PPC8260-based board and am
+looking for code (always most helpful :-), ideas, and critiques.  The
+idea is to have a minimal bootstrap loader built into flash such that
+it is sufficient to load a "real" program into RAM and start to run
+that program.  The "real" program could be just a more elaborate
+bootstrap program that is capable of loading via ethernet and knows how
+to write to flash, or it could be a fully functional system.
 
-I'm compiling stuff for RPX/Lite on a PowerMac running LinuxPPC. It turns
-out that programs compiled with -O2 work correctly on PowerMac but not on
-RPX. For example, libcrypt.a compiled with -O2 and linked with tinylogin
-crashes when it's run on RPX.
+The desire is to have a bare minimum program for the following reasons:
+* Faster to implement
+* Small and thus faster to load via a slow JTAG loader
+* Lower risk of bugs
+* Easier to port to different hardware
+* It seems silly to have a full linux kernel just to be able to load a
+    linux kernel
 
-However, if I use -Os, all programs work correctly. The only exception was
-ld.so that I had to recompile without optimization.
+I'm proposing S-records in a pseudo file loaded via ethernet/IP/UDP/TFTP
+* Host end is all standard protocols and readily available programs
+* IP/UDP is reasonably simple to implement as a polled mode driver
+* TFTP is simple to implement
 
-I'm using egcs-1.1.2 and glibc-2.1.1 with patches from LinuxPPC (i.e. I
-use their source RPM's).
+My current plan is:
+* Initialize the processor and the RAM interface.
+  * No cache (the QUICC does all the high speed stuff)
+  * No MMU
+  * No interrupts
+  * Blinky light (for debug use: blink every 'n' S-records seen)
+* Set up an FCC to run ethernet
+* The protocol stack will be simple polled mode ethernet/IP/UDP/TFTP
+  * The MAC and IP addresses will be burned into flash
+* Writing to the file "MEM" (or any file?) causes the TFTP code to
+    look for S-records, convert them to bytes and write them to
+    memory.  If there is a start address S-record, jump to that address.
+* Enhancement: a read from the file "MEM<addr>-<length>" will return
+    S-records representing that section of memory (<addr> and <length>
+    are both eight ASCII-hex digits).
+* Enhancement: be able to write to flash memory.
+* Enhancement: use BootP to get the IP address, file to load, etc.
+    This would change the loader from a "push" type system to a
+    "pull" type system.
 
-The question is, what compiler is known to produce good code for embedded
-PPC boards and what flags should be used? It is desireable that the
-binaries still run on PowerPC.
-
-Pavel Roskin
+gvb
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
