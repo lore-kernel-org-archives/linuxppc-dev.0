@@ -1,60 +1,53 @@
-Message-ID: <38BC513A.9893292D@pop.agri.ch>
-Date: Wed, 01 Mar 2000 00:07:39 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <38BC8042.49743B1C@erols.com>
+Date: Tue, 29 Feb 2000 21:28:18 -0500
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, paulus@linuxcare.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC should not use -fno-builtin (was Re: 2.3.47 imac build?)
-References: <Pine.LNX.4.10.10002292018001.5514-100000@opal.biophys.uni-duesseldorf.de>
+To: beethoven@socal.rr.com
+CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Where's the best installation tree?
+References: <38BC1E00.5533BAFE@socal.rr.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Richard Young wrote:
 
+> Where can I find the best (most up to date and working)
+> RedHat (or Yellowdog) installation tree on the internet
+> to support the sawtooth G4. One that has up to date gcc,
+> debugger, utilities, whatever....
 
-Michael Schmitz wrote:
->
-> > >The way it fails booting is a bit entertaining: using BootX 1.1.3, it will
-> > >show a little more than half a page of messages (arch_exit or similar in
-> > >the last), then starts drawing funny color fringes on the screen until I
-> > >reset. Using BootX 1.2b3, it locks up after the first six or so lines of
-> > >text (before getting to the early console output). 2.3.29 worked fine. Any
-> > >ideas?
-> >
-> > I think I know what's going on:
-> >
-> >  - make sure setting the display BAT in arch/ppc/mm/init.c (MMU_Init) is
-> > commented out, this is a hack and need some alignement tricks to work in
-> > all cases. It should already be in #if 0/#endif
->
-> Check.
->
-> >  - in arch/ppc/kernel/pmac_setup.c, comment out the content of the
-> > function pmac_progress. (Or change pmac_init() so that it sets
-> > ppc_md.progress to NULL, and set it to pmac_progress only pmac_setup_arch()).
->
-> Tried both. I get the arch: exit if I set ppc_md.progress in pmac_setup
-> arch. Shortly after this output, the color fringe fun starts again.
->
-> I'll strip my .config to the bare minimum to narrow this down. Thanks for
-> getting me this far :-)
-Well, I wanted to reply earlier, but unfortunately my telco dropped my
-line for two hours and I was thinking about having destroied my modems
-until I had a look to my /var/log/messages arghhhh.
+Well, linuxPPC supports the g4, I am on one as we speak.  If you purchase
+(or burn) a linuxPPC 2000 cd, the X installer supports the sawtooths, or
+you can use the redhat installer on linuxPPC 1999...
 
-What I did: I have both trees living around on my PB. I did a diff
-against the linux-pmac-devel/arch/ppc and patched the missing things. I
-know a bit dangerous, but it did the trick. It's not only the things Ben
-mentioned, also the drawx vs. prom_drawx are necessary I think. So it
-boots on an Wallstreet I, AND on an ancient pm7200!!
+> So rather than using one of the old official releases
+> does anybody have a FTP site I could get the tree from?
+> Is there an equivalent tree for installation RPMS as there
+> is for the kernel?
 
-I may post a patch, but I'm not quite satiesfied with since I don't know
-at all what's really necessary. Sorry, but I think it's better not to
-distribute a wrong patch.
+There are all of the ftp mirrors and the main sites, and you can get
+software from the developers...if you don't want to wait till someone
+builds an rpm.  Every software has it's own developement cycles, some are
+open and publicly invovled (like gnome for instance), others are more one
+man shows....
 
-Andreas
+> It would be nice to have a newer kernel also that runs
+> properly on the sawtooth. I was previously using Ben's
+> vmlinux.benh.15 kernel but there has been lots of talk
+> about changes that have been made so I should
+> probably use a newer kernel also.
+
+Well......BenH's kernels are nice because they work for a wide range of
+machines.  Get linux installed, and then compile your own kernel...
+
+HTH
+--Nelson Abramson
+
+--
+Shouldn't people be arrested and persecuted for engaging in their
+constitutional rights?  http://www.opendvd.org
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
