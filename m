@@ -1,67 +1,85 @@
-Message-ID: <C08678384BE7D311B4D70004ACA3710511194623@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Marius Groeger'" <mag@sysgo.de>,
-	"'cecilia.muaddi@alloptic.com'" <cecilia.muaddi@alloptic.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: BDI-2000
-Date: Wed, 8 Jan 2003 10:44:05 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: 405LP - Beech with SSX firmware
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: embedded list <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1040427361.1096.27.camel@granite.austin.ibm.com>
+References: <1040427361.1096.27.camel@granite.austin.ibm.com>
+Content-Type: multipart/mixed; boundary="=-i4fALXwkPMEULhSErx2c"
+Date: 08 Jan 2003 13:23:56 -0600
+Message-Id: <1042053852.1207.176.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I think Marius' problem and mine were generalizations
-of the same issue -- there can't be *any* mappings in
-the kernel with virtual address below 0xc0000000.
-(This includes regions mapped 1-1 as a special case.)
-I couldn't put the IMMR at 0x38000000; I moved it to
-0xf0000000.  Marius found that on-chip RAM was mapped
-at 0x70000000; that was bad too.  Also the CPLD on
-my board which does LED control is mapped in at
-0xf8000000 -- also above the 0xc0000000.  So I am
-skeptical when Cecilia says she has "some other IO
-mapped to miscellaneous addresses".  What are those
-miscellaneous virtual addresses?
+--=-i4fALXwkPMEULhSErx2c
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-The difference, though, is that Marius & I both had
-problems entering user mode.  Cecilia's is just a few
-lines from the top of head_8xx.S, without yet having
-made any subroutine calls to anything more complicated.
-There's not much room for anything to have gone wrong
-yet, in the Linux kernel code.  So I agree that getting
-the vxWorks boot ROM out of the picture (e.g. using
-PPCBoot instead) would be an interesting test.
+On Fri, 2002-12-20 at 17:36, Hollis Blanchard wrote:
+> Hi, this patch (copied from Arctic) allows Beech to boot with SSX
+> firmware. If there's a way to detect OpenBIOS vs PIBS (I've asked for
+> confirmation) then I think the Beech and Arctic ifdefs could be combined
+> in the file. There may not be though, and in the meantime this works.
 
+There is currently no way to detect PIBS, though I think I talked the
+developer into including "PIBS" string in the future.
 
------Original Message-----
-From: Marius Groeger [mailto:mag@sysgo.de]
-Sent: Wednesday, January 08, 2003 10:21 AM
-To: Wells, Charles
-Cc: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Re: BDI-2000
+-Hollis
+--
+PowerPC Linux
+IBM Linux Technology Center
 
-On Wed, 8 Jan 2003, Wells, Charles wrote:
+--=-i4fALXwkPMEULhSErx2c
+Content-Disposition: attachment; filename=405LP-beech-ssx.diff
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; name=405LP-beech-ssx.diff; charset=ISO-8859-1
 
-> When I read Cecilia's post, I assumed what the statement "proven hardware
-> platform" meant was that the vxworks O/S and user tasks exercised all the
-> peripheral hardware; i.e., the SDRAM works, the ROM works, the FLASH
-works,
-> the console works, etc.  So, that statement made sense to me.  While Linux
+=3D=3D=3D=3D=3D arch/ppc/boot/simple/embed_config.c 1.20 vs edited =3D=3D=
+=3D=3D=3D
+--- 1.20/arch/ppc/boot/simple/embed_config.c	Sun Dec 15 20:02:08 2002
++++ edited/arch/ppc/boot/simple/embed_config.c	Wed Dec 18 15:53:18 2002
+@@ -868,12 +868,33 @@
+ #endif
+=20
+ #ifdef CONFIG_BEECH
+-static void
+-get_board_info(bd_t **bdp)
++/* Several bootloaders have been used on Beech. We assume either
++ * SSX or OpenBIOS */
++
++#define SSX_BIOS_ADDR 		0xFFFF0000
++#define SSX_BIOS_GET_BOARD_INFO 0
++
++struct ssx_bios_id {
++	unsigned int boot_branch;	/* Branch to bootcode */
++	char ssx_bios[8];		/* "SSX BIOS" (no \0) */
++	void (*bios_entry_point)(unsigned int, bd_t *); /* Call bios_entry_point(=
+cmd, &data) */
++};
++
++extern int memcmp(const void *s1, const void *s2, size_t n);
++
++static void get_board_info(bd_t **bdp)
+ {
+-	typedef void (*PFV)(bd_t *bd);
+-	((PFV)(*(unsigned long *)BOARD_INFO_VECTOR))(*bdp);
+-	return;
++	struct ssx_bios_id *ssx =3D (struct ssx_bios_id *)SSX_BIOS_ADDR;
++
++	/* Check for SSX signature */
++
++	if (memcmp(&ssx->ssx_bios, "SSX BIOS", 8) =3D=3D 0) {
++		ssx->bios_entry_point(SSX_BIOS_GET_BOARD_INFO, *bdp);
++	} else {
++		/* It's not SSX, so assume OpenBIOS */
++		typedef void (*PFV)(bd_t *bd);
++		((PFV)(*(unsigned long *)BOARD_INFO_VECTOR))(*bdp);
++	}
+ }
+=20
+ void
 
-vxWorks doesn't use the MMU as much as Linux does. On Linux, the kernel and
-all processes run in their own address space. The memory accesses involved
-for cache or tlb refills are quite different to what's happening in a
-vxWorks setup. Again, I'm probably overly pessimistic here, but we _have_
-seen HW problems that just didn't show up when running vxWorks (AFAIR it was
-a burst access on some early G4 based system.)
+--=-i4fALXwkPMEULhSErx2c--
 
-On a related matter, the following might also be interesting, especially
-regarding the question of what firmware to use. The vxWorks boot-loader
-tends to initialise _a lot_ of things you don't necessarily need. For
-instance, on IBM405 based systems it sets up the on-chip RAM at address
-0x70000000. Not a good idea when switching to user-mode the first time. Took
-me quite some time to find this one... ;-)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
