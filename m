@@ -1,5 +1,5 @@
-Date: 4 Jul 2002 17:07:53 -0000
-Message-ID: <20020704170753.14420.qmail@webmail14.rediffmail.com>
+Date: 4 Jul 2002 17:08:33 -0000
+Message-ID: <20020704170833.14825.qmail@webmail14.rediffmail.com>
 MIME-Version: 1.0
 From: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
 Reply-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
@@ -12,8 +12,6 @@ Content-type: text/plain;
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
-
-hi Denk,
 
          My  kernel serial driver for 8260 is able to give bash
 prompt but its not able to read anything from serial console,bash
@@ -32,6 +30,7 @@ is this the problem i am confused ,
 let me know whre i am wrong
 thanks in advance
 somshekar
+
 
 _________________________________________________________
 There is always a better job for you at Monsterindia.com.
