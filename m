@@ -1,43 +1,66 @@
-Date: Wed, 28 Jul 1999 13:05:39 -0700 (MST)
-From: Matt Porter <mporter@phx.mcd.mot.com>
-To: Wolfgang Denk <wd@denx.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Motorola Web Site 
-In-Reply-To: <199907281336.PAA20067@denx.muc.de>
-Message-ID: <Pine.LNX.4.10.9907281254550.30083-100000@fwrsl-11.phx.mcd.mot.com>
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14239.28171.5732.716574@gargle.gargle.HOWL>
+Date: Wed, 28 Jul 1999 16:54:35 -0400 (EDT)
+To: Alain Birtz <abz@videotron.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Realloc() problem with Efence
+In-Reply-To: <379F7AB9.E8D230CE@videotron.ca>
+References: <379F7AB9.E8D230CE@videotron.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Jul 1999, Wolfgang Denk wrote:
-> In message <m119OXL-0000WZC@tri-yann.crf.canon.fr> you write:
 
-<snip things that jpeters can respond to>
+Alain Birtz <abz@videotron.ca> writes:
+Alain> What is wrong with this code ?
+Alain> Code is executed correctly without Electric Fence
+Alain> But linked with Efence library, dbg complaint:
+Alain> 
+Alain> 	  Electric Fence 2.0.5 Copyright (C) 1987-1998 Bruce Perens.
+Alain> 	  ...
+Alain> 	  ...
+Alain> 	  Program received signal SIGSEGV, Segmentation fault.
+Alain> 
+Alain> when trying to write the first B, just after the first memory allocation
+Alain> buffer
+Alain> (at the instruction (*c_ptr++ = 'B'))
+Alain> 
+Alain> 
+Alain> void tst ()
+Alain> {
+Alain> 	int i;
+Alain> 	char *c_buf, *c_ptr, *temp_c_buf;
+Alain> 
+Alain> 	c_buf = (char *)malloc(5000);
+Alain> 	if (c_buf != NULL)
+Alain> 	 {
+Alain> 	 c_ptr = c_buf;
+Alain> 	 for (i = 0; i < 5000; i++)
+Alain> 	  *c_ptr++ = 'A';
+Alain> 	 temp_c_buf = c_buf;
+Alain> 	 realloc(temp_c_buf, 5000 + 5000);
+Alain> 	 if (temp_c_buf != NULL)
+Alain> 	  {
+Alain> 	  for (i = 0; i < 5000; i++)
+Alain> 	   *c_ptr++ = 'B';
+Alain> 	  }
+Alain> 	 }
+Alain> }
+Alain> 
 
-> 3) Is Motorola going to extend it's Linux support to the embedded controllers
->    (MPC8xx, MPX82xx) ?
+realloc can (and did) move the block.  Therefore, when you start writing 'B's, 
+they are going into invalid memory.  The fact that it works without Electric
+Fence is luck.
 
-I'm not speaking for Motorola Computer Group, but the idea is to support
-all current systems under Linux.  For MPC8xx and  MPC82xx processors,
-this means the MBX (8xx) and the announced MVME2100 (82xx).
+To do this, you need to set the pointer to the whole block to the output of
+realloc and then you can start writing B's at the new location + 5000.
 
-Keep in mind that the various evaluation boards for 8xx and 82xx are
-produced by Motorola Semiconductor Processor Sector and any support for
-those products would have to come from them.  I can tell you I have zero
-contact with them and don't even know if they can pronounce Linux. :)
-
-> 4) Running a diff against the original 2.2.10 distribution results in
->    *all* files  being  different;  why  were  all  the  $Id$  strings
->    changed?
-
-The patch creator forgot the -kk option in cvs to ignore tag changes.  I
-passed this on...
-
---
-Matt Porter                                       Motorola Computer Group
-matt_porter@mcg.mot.com                           CIBU Linux Support
+-- 
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
