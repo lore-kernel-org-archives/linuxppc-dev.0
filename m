@@ -1,37 +1,27 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	<linuxppc-dev@lists.linuxppc.org>, <debian-powerpc@lists.debian.org>
-Subject: Re: Success! (was Re: External Monitor under Pismo)
-Date: Sat, 5 May 2001 03:03:18 +0200
-Message-Id: <20010505010318.5183@mailhost.mipsys.com>
-In-Reply-To: 
- <Pine.LNX.4.30.0105042247590.3732-100000@opal.biophys.uni-duesseldorf.de>
-References: 
- <Pine.LNX.4.30.0105042247590.3732-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3AF3551D.3627FFBC@acm.org>
+Date: Fri, 04 May 2001 18:19:25 -0700
+From: Ira Weiny <iweiny@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: ieee1394 status
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Yep. The same is true for atyfb (yes, I should add mirrorring/dualhead
->support
->> for the Mobility in my Vaio :-).
->
->Please do - I tried Ben's mirror utility on the Lombard but no success.
->And I still have no aty docs to look up the details in.
+Has anything more been done on the ieee1394 since March?  Back then
+there was a big discussion about some patches and fixes for endianess.
+Did these make it into Ben's rsynced tree?
 
-Well, if you do that, it may be interesting to impement the same
-ioctls I have in my aty128fb version (I'll send it to you later
-if you don't want to rsync down my entire tree).
+I am trying to do some work with 1394 on my Titanium and it seems to
+self id correctly but there are problems when trying to read from the
+bus.  I am assuming a problem in the OHCI driver since my G3 did not
+have these problems last night with the pcilynx driver.  (And I can't
+verify that until next week when I get back to it.  Sorry)
 
-I beleive you can do something very similar by just toggling the
-CRT & LCD enable bits on the first CRT. No need for CRTC 2 for
-simple mirroring. "Smart" mirroring (with higher refresh rate) would
-require use of CRTC2 however.
-
-Ben.
+Should I dig into this further?  Is there a tree with newer 1394 code in
+it?
+Ira
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
