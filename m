@@ -1,51 +1,44 @@
-Message-ID: <01C06932.30CD0E00@NB1>
-From: torsten.rissel@t-online.de (Torsten Rissel)
-To: "'Gabriel Paubert'" <paubert@iram.es>,
-        Torsten Rissel
-	 <torsten.rissel@t-online.de>
-Cc: Matt Porter <mporter@mvista.com>,
-        "Linuxppc-Embedded (E-Mail)"
+Message-ID: <F7B644B6C3C7D41191F700B0D06888190AAAE8@optic3.ipoptical.com>
+From: Huy Vu <huy.vu@ipoptical.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
 	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: AW: AW: MVME 5100
-Date: Mon, 18 Dec 2000 20:36:23 +0100
+Subject: EST8260 Boot Problem
+Date: Mon, 18 Dec 2000 17:55:09 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yeah,
+This is what I am using
 
-that's exactly what I am working on in the moment.
+vmlinuz-sbc8260-2.4.0-test2-1.2.2-3 from the HHL web site
+I ran the kernel through the "vxhack" with the mod for LE
 
-Thanks,
-Torsten
+Then from the "BKM>" prompt I tried to load the kernel (after a successful
+TFTP load) to the Vx's Files system. I know this works because I have loaded
+VxWorks shell and run using it
 
------Ursprungliche Nachricht-----
-Von:	Gabriel Paubert [SMTP:paubert@iram.es]
-Gesendet am:	Montag, 18. Dezember 2000 20:08
-An:	Torsten Rissel
-Cc:	Matt Porter; Linuxppc-Embedded (E-Mail)
-Betreff:	Re: AW: MVME 5100
+When I load the Linux image I get the following error
+-------
+>BKM>
+>BKM>osboot vmlinuz-sbc8260
 
+Loading file vmlinuz-sbc8260...Done
+>BKM>go
+>RUN>
+!HALT! - [msg90007]* Exception taken; PC = 0x00900000  Software Emulation
+>BKM>
 
+--------
+Can someone tell me what is going on?
 
-On Mon, 18 Dec 2000, Torsten Rissel wrote:
+Thanks in advance..
+Huy
 
-> ???
->
-> So would it be better to use the CHRP settings to build a kernel for the MVME5100 ?
-
-Not necessarily. What I did on my machines was to put them in CHRP mode by
-reprogramming the Raven or the Hawk, but I essentially used a common
-kernel (just adding a powerplus boolean in some cases, this is however not
-the right solution). Try the CHRP version but you might still run into
-problems. I don't trust residual data, the problem you have is most likely
-the missing interrupt routing information thing.
-
-Try to find what the network interrupts are on the MVME5100 and add the
-data in the tables in prep_pci.c, since Motorola does not provideeeee
-this vital information.
-
-	Regards,
-	Gabriel.
+P.S. What's HHL talking about when they say "estflash" or "estsimm" and
+"rmon" is included in the CDK.. I installed all packages and I have yet to
+find it...
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
