@@ -1,68 +1,69 @@
-Date: Fri, 17 Sep 1999 15:14:05 -0500
-From: Shaw Terwilliger <sterwill@io.nu>
-To: "David A. Gatwood" <dgatwood@mvista.com>
-Cc: Josh Huber <huberj@wpi.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard shuts itself off
-Message-ID: <19990917151405.A13268@io.nu>
-References: <19990917103225.A12534@io.nu> <Pine.LNX.3.96.990917102529.5903D-100000@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.96.990917102529.5903D-100000@mvista.com>
+From: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
+Message-Id: <199909180118.SAA04037@falcon.csc.calpoly.edu>
+Subject: unresolved symbol errors from insmod?
+To: linuxppc-dev@lists.linuxppc.org (linuxdev)
+Date: Fri, 17 Sep 1999 18:18:48 -0700 (PDT)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David A. Gatwood wrote:
-> On Fri, 17 Sep 1999, Shaw Terwilliger wrote:
-> > Yes, it's just like like the battery got yanked out (which I've done
-> > once; just once!  The Lombards have that bay release lever in the
-> > ultimate "shirt-catching" position).  I know both times the machine
->   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> Same thing on the WallStreet.  And I thought I was the only one who found
-> that obnoxious.  :-)
+OK  I am still trying to get USB/PCI card on my PowerMac to work.  I have a
+lot of problems but this one seems totaly wrong to me.
 
-I'm now very careful how I move it around in my lap.  I
-subconsciously move it in planes parallel to the lie of
-the lever in the rest position, picking it up to move it
-perpendicular as necessary.  :)
+[root@batcave2 USB-2.2]# insmod usb-ohci.o 
+usb-ohci.o: unresolved symbol schedule_timeout
+usb-ohci.o: unresolved symbol __sti
+usb-ohci.o: unresolved symbol misc_deregister
+usb-ohci.o: unresolved symbol __wake_up
+usb-ohci.o: unresolved symbol pci_dram_offset
+usb-ohci.o: unresolved symbol atomic_dec
+usb-ohci.o: unresolved symbol exit_fs
+usb-ohci.o: unresolved symbol do_lost_interrupts
+usb-ohci.o: unresolved symbol kmalloc
+usb-ohci.o: unresolved symbol pci_find_class
+usb-ohci.o: unresolved symbol __get_free_pages
+usb-ohci.o: unresolved symbol ioremap
+usb-ohci.o: unresolved symbol free_irq
+usb-ohci.o: unresolved symbol ppc_n_lost_interrupts
+usb-ohci.o: unresolved symbol kill_proc
+usb-ohci.o: unresolved symbol iounmap
+usb-ohci.o: unresolved symbol exit_mm
+usb-ohci.o: unresolved symbol free_pages
+usb-ohci.o: unresolved symbol del_timer
+usb-ohci.o: unresolved symbol mod_timer
+usb-ohci.o: unresolved symbol interruptible_sleep_on
+usb-ohci.o: unresolved symbol __pollwait
+usb-ohci.o: unresolved symbol kfree
+usb-ohci.o: unresolved symbol dequeue_signal
+usb-ohci.o: unresolved symbol misc_register
+usb-ohci.o: unresolved symbol request_irq
+usb-ohci.o: unresolved symbol kill_fasync
+usb-ohci.o: unresolved symbol show_ohci_status
+usb-ohci.o: unresolved symbol exit_files
+usb-ohci.o: unresolved symbol loops_per_sec
+usb-ohci.o: unresolved symbol fasync_helper
+usb-ohci.o: unresolved symbol atomic_inc
+usb-ohci.o: unresolved symbol add_mouse_randomness
+usb-ohci.o: unresolved symbol jiffies
+usb-ohci.o: unresolved symbol usb_show_device
+usb-ohci.o: unresolved symbol set_bit
+usb-ohci.o: unresolved symbol clear_bit
+usb-ohci.o: unresolved symbol printk
+usb-ohci.o: unresolved symbol kernel_thread
+usb-ohci.o: unresolved symbol __cli
+[root@batcave2 USB-2.2]# 
 
-> Did you remove the cord from the back or just the wall?
+Now why can't insmod find these symbols?  I just previously I loaded the tulip
+module which has many of the same symbols printk, pci_find_class etc. but with
+this driver I get this...
 
-I'm always removing the cord from the back of the machine,
-never from the wall.
+I have checked my System.map file and all these symbols are there.
 
-> Assuming it's like the wallstreet in this regard, the lights stay on while
-> the battery is charging to indicate the charge status.  As soon as it
-> finishes charging, they go off.
+What is going on?
 
-That's what I was guessing it was doing, but it doesn't always
-stick to this plan, so I was confused.
+Ira Weiny
 
-> Again, based on the wallstreet's behaviour, sometimes the battery gets
-> confused. Eject the battery and reinsert it (leave the power cord plugged
-> in so your machine doesn't die) and it should probably figure out what's
-> going on.
-
-Yeah... I had a wacky idea today:  Maybe when I unplugged the
-machine from its wall supply, the battery had worked its way
-either (1) away from the contacts inside the bay or (2) into a
-state of denial, where it was fully in the bay but the machine
-didn't know it.  In this case, perhaps the PowerBook can handle
-five minutes on a small internal battery before dying.  I figure
-if I was the one implementing this feature I'd throw a message
-to the operating system that you had a short period of time to
-get power back (like putting in a new battery)... being that Linux
-isn't getting any support or attention from the PMU people maybe
-it's doing this.  This would be a great feature for someone
-swapping batteries while keeping the machine on (and while away
-from an outlet, like on a plane) but would add lots to the
-weight and cost, I'd think.
-
-This is just a wild guess on my part, and Ben or Paul probably know
-much more about this than I do, but it's almost consistent with
-the situation, given that this magical internal battery exists.  :)
-
--- 
-Shaw Terwilliger (sterwill@io.nu)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
