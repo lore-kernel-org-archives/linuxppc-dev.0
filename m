@@ -1,75 +1,42 @@
-Message-ID: <40771841.8040001@g-house.de>
-Date: Fri, 09 Apr 2004 23:40:17 +0200
-From: Christian Kujau <evil@g-house.de>
-MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: still unable to compile with kgdb enabled
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Fri, 9 Apr 2004 15:06:46 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Christian Kujau <evil@g-house.de>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: still unable to compile with kgdb enabled
+Message-ID: <20040409220646.GB1787@smtp.west.cox.net>
+References: <40771841.8040001@g-house.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <40771841.8040001@g-house.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, Apr 09, 2004 at 11:40:17PM +0200, Christian Kujau wrote:
 
-hi,
+> hi,
+>
+> happily compiling kernels from 2.5 to 2.6 i finally wanted to give KGDB
+> a try as suggested often enough. but i fail to do this.
+[snip]
+> i was looking for a kgdb patch on kgdb.sourceforge.net, but the latest
+> version there is KGDB 2.0.1-2.0.5, which is for linux-2.6.1 only. on
+> http://spop.free.fr/kgdb/ i found a kgdb-1.9-for-2.4.25.patch.bz2,
+> applying cleanly, but still gives me errors and does not compile:
 
-happily compiling kernels from 2.5 to 2.6 i finally wanted to give KGDB
-a try as suggested often enough. but i fail to do this.
+The CVS version of the patch is against 2.6.5, and if you only pass in
+'kgdbwait', it should work w/o mods (otherwise it breaks in very early,
+and requires some additional work).  I've tested this out on a few
+machines locally, but not PPC_MULTIARCH, so there might be a few
+incidental things required to be fixed.  I've been using the KGDB_8250,
+and not PPC_SIMPLE_SERIAL, but I plan on testing that sometime in the
+future.
 
-i tried different kernels:
+FWIW, I'm about to go off for 2 weeks vacation, so I probably won't be
+able to help you, if it doesn't work right away.
 
-vanilla 2.4.25, results are here:
-
-http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25.txt
-
-i was looking for a kgdb patch on kgdb.sourceforge.net, but the latest
-version there is KGDB 2.0.1-2.0.5, which is for linux-2.6.1 only. on
-http://spop.free.fr/kgdb/ i found a kgdb-1.9-for-2.4.25.patch.bz2,
-applying cleanly, but still gives me errors and does not compile:
-
-http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25+kgdb-1.9.txt
-
-2.4.25-ben1 (updated daily via rsync), results are here:
-http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25-ben1.txt
-
-again, i patched with kgdb-1.9-for-2.4.25.patch.bz2, giving me one
-reject in kernel/Makefile.rej:
-
-
-~  obj-$(CONFIG_PM) += pm.o
-+ obj-$(CONFIG_KGDB) += kgdbstub.o
-
-
-
-results are here:
-http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25-ben1+kgdb-1.9.txt
-
-2.6.5-rc3-ben0 (updated daily via rsync), results are here:
-http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.6.5-rc3-ben0.txt
-
-i was not able to apply the patches from KGDB 2.0.1-2.0.5 nor the
-patches from http://www.codemonkey.org.uk/projects/bitkeeper/kgdb/
-(lots of rejects...details needed?)
-
-so i my kernels still lack proper kgdb support :-(
-any hints?
-
-powerpc-linux-ld -V
-GNU ld version 2.14 20030612
-~  Supported emulations:
-~   elf32ppclinux
-~   elf32ppc
-~   elf32ppcsim
-
-powerpc-linux-gcc --version
-powerpc-linux-gcc (GCC) 3.3.2
-
-(crosscompile toolchain under x86, running debian/unstable)
-
-Thank you,
-Christian.
-- --
-BOFH excuse #258:
-
-That's easy to fix, but I can't be bothered.
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
