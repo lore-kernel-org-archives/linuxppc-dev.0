@@ -1,46 +1,50 @@
-Message-ID: <00a101c0c2a9$264c2580$6c125acf@mrsl.com>
-From: "Tim Moloney" <moloney@mrsl.com>
-To: <linuxppc-dev@lists.linuxppc.org>,
-	<yellowdog-devel@lists.yellowdoglinux.com>
-Subject: Interrupt handling via OpenPIC
-Date: Wed, 11 Apr 2001 13:00:55 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Date: Wed, 11 Apr 2001 21:00:21 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] gettimeofday stability
+Message-ID: <20010411210021.A4894@ibrium.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am writing a device driver for a custom PMC card, and I'm having
-trouble with the interrupt service routine.
+I'd like to suggest the following modification of do_gettimeofday():
 
-Although the PCI configuration block says that the board's interrupt
-is 9, I am receiving interrupt 3.  I know that the OpenPIC is supposed
-to remap the interrupts but I don't quite understand the process.
-I've looked at the board's users manual and skimmed the Linux kernel
-but I can't find a good example of what to do.
 
-Can anyone provide pointers to documentation, example code, etc. that
-shows how I can reconcile what the kernel thinks the interrupt is with
-what in actually being generated?
+===== time.c 1.8 vs edited =====
+--- 1.8/arch/ppc/kernel/time.c  Mon Apr  2 03:36:42 2001
++++ edited/time.c       Wed Apr 11 20:38:42 2001
+@@ -212,6 +212,10 @@
+        sec = xtime.tv_sec;
+        usec = xtime.tv_usec;
+        delta = tb_ticks_since(tb_last_stamp);
++
++       if( (int)delta < 0 )
++               delta = 0;
++
+ #ifdef CONFIG_SMP
+        /* As long as timebases are not in sync, gettimeofday can only
+         * have jiffy resolution on SMP.
 
-Additional info:
-I am developing on a Synergy Microsystems VSS4 board.  This is a
-quad-G4 VME board that has the following:
-  IBM MPIC-2 interrupt controller
-  Motorola MPC106 Grackle PCI bridge/memory controller
-  Symbios 53c885 Ethernet/SCSI controller
-  Tundra Universe II PCI-VME64 bridge
-  DEC/Intel 21554 PCI-PCI bridge
 
-Thanks for any help.
+Normally, delta should be strictly positive. However, if
+coherency between DEC and TB is lost, then delta might turn
+out to be (slightly) negative, which results in a
+bogus time stamp.
 
-Tim Moloney
+The main reason why I want this modification is that MOL
+touches both DEC and TB. I've not managed to maintain
+exact coherency (appears to be more or less impossible).
+The fix above would guard against an occasional drift.
 
-ManTech Real-time Systems Laboratory
-2015 Cattlemen Road
-Sarasota, FL  34232
-(941) 377-6775 x208
+/Samuel
 
+
+----------------------------------------------------------
+ E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
+  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470
+----------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
