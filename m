@@ -1,43 +1,35 @@
-Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158DA2@norcom2.norcom.net>
-From: Lokesh Kumar <kumar.lokesh@wrx-us.com>
-To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>,
-	Lokesh Kumar <kumar.lokesh@wrx-us.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: mpc8xx memory mapped 16550A uart garbage
-Date: Thu, 16 Oct 2003 16:14:51 -0400
+Message-ID: <001801c3946b$48d84390$6401a8c0@sazabimobile>
+From: "Shih-Ying Chou" <sschou@mtu.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem with EP405's PCI 
+Date: Fri, 17 Oct 2003 00:58:19 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="big5"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks Steven,
-The problem turned out to be my hardware fixture for testing 16550A. So, I
-traced it and fixed and it works now.
+Hi All,
+    Have anyone successfully made the EP405's PCI (through PC/104 plus)
+work?  If anyone does, please help me, I have struggle with it for over a
+month now.
+    Right now I am using the linuxppc_2_4_devel kernel, and I can get the
+EP405 to boot successfully.  But I can get the PCI interface to work right.
+When booting up, the kernel can recognize the card weither USB or Sound
+card, but it can seem to assign the right irq to the card.  Because USB card
+always complain about no IRQ assign and ask to check BIOS.
+    I have look at the ep405.c and ppc405_pci.c and ppc4xx_pic.c files, but
+I cannot find out what is wrong.  I know that I need to modify the
+ppc405_devtable [] in the ep405.c file. I also check the registers such as
+DCRN_UIC_PR, DCRN_UIC_TR, and DCRN_UIC_SR and all the value seems to be
+correct, except DCRN_UIC_PR.  In the ep405.c DCRN_UIC_PR is set to be
+0xffffff80 which makes the PCI interrupt to be high, so as the User manual
+stated.  But isn't PCI's interrupt should be active low?
 
-Lokesh
+Any pointer will be helpful, thank you in advance!
 
------Original Message-----
-From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
-Sent: Thursday, October 16, 2003 3:08 AM
-To: Lokesh Kumar
-Cc: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Re: mpc8xx memory mapped 16550A uart garbage
+Shih-Ying Chou
 
-
-Lokesh,
-
-> I did measure the bit width and that is around 104us, which is correct.
-> Anything else?
-
-Hmm. I suppose you tried sending only character again and again and verified
-
-that your board is indeed sending this character over the lines by looking
-at
-the scope...
-
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
