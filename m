@@ -1,58 +1,47 @@
-Message-ID: <398540D2.78A1388E@relog.ch>
-Date: Mon, 31 Jul 2000 11:03:14 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-To: SteffenH@hyperion-software.de
-CC: Iain Sandoe <iain@sandoe.co.uk>, takashi oe <toe@unlserve.unl.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC X Server
-References: <yam8247.1300.146578880@mail.lf-online.de>
-Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <200007310911.KAA04511@hyperion.valhalla.net>
+Date: Mon, 31 Jul 2000 10:11:51 +0100
+Subject: Re: Stealth port problems
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Giuliano Pochini <pochini@shiny.it>
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Steffen Haeuser wrote:
-
-> >agpgart was required _for r128 DRI_ until some time ago. It's possible that
-> >it's still needed by the driver in X 4.0.1 but definitely not in the latest
-> >DRI CVS.
+On  Mon, Jul 31, 2000,  Giuliano Pochini wrote:
+>>> The problem is definitely X.  I made a lot of tests: with dma and non-dma
+>>> serial driver, X accelerated, non accelerated, X bare.bone (started with
+>>> xinit). The problem is X. When X is running the serial ports looses packets
+>>> :-((
+>>> Am I the only one who is having this problem ???  Why does X cause overruns
+>>> ??
 >
-> That is really good news :) If anyone had the chance to try it out, please
-> tell so...
+>> If you can try 2.2.17pre10ben2 or pre13ben2 (linuxcare linux-pmac-benh) then
+>> you can apply the IRQ latency test and see if it is that which is blocking
+>> you.  Scan the dev list for "[ANN} IRQ".
+>
+> I'll try a soon I have a bit of free time...
 
-Hold on, I will :)
+There's a pre-built kernel, modules & system.map (with IRQ latency &
+dmasound stuff already applied ) linked to:
 
+http://www.drfruitcake.com/linux/linuxppc.html
 
-> if this works, we might even take some of you guys into the Sin Beta Tester
-> programs, if I remember right, we still need a handful of testers (but I
-> have to check with the guy doing the Betatester issues in our company...).
+The IRQh app - which you need to start the profiling is linked to :
 
-I for one wouldn't say no...
+http://www.drfruitcake.com/linux/irq_blk.html
 
+>> The RX buffer in an 85230 (which is actually the chip - IIRC - an enhanced
+>> 8530) is 8 characters deep - so any more that about 700 us IRQ block will
+>> cause a drop out at 115200 continuous...
+>
+> On the Amiga I used to rtx stuff at 230K with no problems. It has 1 byte
+> buffer...
 
-> Driver Coding normally has not that much to do with the OS... :)
-> The main work is to find out how this Chip works, and then duplicate the
-> functionality of an API by using the Chip Registers (and some of those
-> sometimes do things in a *really cruel way*... some years ago I had to do
-> some stuff on the old Virge chip...
-> this was nasty...) The difficult is usually the register setup... not the
-> interface to the OS...
+BTW st SCC-XXdma stuff *is* enabled on my G3 by default.
 
-AFAIK the specs for Rage128 aren't publicly available, but there's working
-code in DRI - I'm convinced it will be far more easier to get it working than
-write something new from scratch.
-
-
-Michel
-
-
---
-UNIX is like Sex:
-If you don't know it, you don't miss it. But if you know it, you'll need it.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
