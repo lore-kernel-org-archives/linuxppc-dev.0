@@ -1,53 +1,68 @@
-Message-Id: <v04003a03b508bf7a8682@[24.66.67.189]>
-In-Reply-To: 
- <Pine.LNX.4.10.10003300955350.19014-100000@opal.biophys.uni-duesseldorf.de
- >
-References: <38E27BDD.4DEDC1E4@wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 30 Mar 2000 02:32:59 -0600
-To: Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
-From: Tony Mantler <eek@escape.ca>
-Subject: Re: adb_buttons kernel argument
+Date: Thu, 30 Mar 2000 14:49:57 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Michel Dänzer <michdaen@iiic.ethz.ch>
+cc: "William H. Schultz" <whschult@uncc.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Xinerama Support?
+In-Reply-To: <38E326E2.49A7AD62@iiic.ethz.ch>
+Message-ID: <Pine.LNX.4.21.0003301409540.19872-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 2:02 AM -0600 3/30/2000, Michael Schmitz wrote:
->> > Well, change the documentation. I think somebody is integrating my
->>xpmac-style
->> > adb_buttons support and so there will be a adb_buttons=2,xx,yy soon. I
->>think
->> > the old syntax was a little bit strange anyway and probably was only a
->>mistake
->> > and no intended behaviour.
->>
->> Yes, please! I have been using the adb_buttons=2,xx,yy patch for more
->> than a year now on both 2.2.x and 2.3.x. It would be nice to have it
->> integrated in the kernel, so I don't have to patch it every time. If
->> someone wants a version for 2.3.99, I can mail it.
+On Thu, 30 Mar 2000, Michel Dänzer wrote:
+
 >
->Could you please describe what adb_buttons=2,xx,yy does different than
->adb_buttons=xx,yy (2.2 style) would do?
->Please keep in mind that the adb mouse code is shared with the m68k Mac
->port. I'm sure people there would like to get a heads-up about changes to
->the syntax too.
+> > I haven't swapped over from sawmill, but the significant difference in speed
+> > between the two is pretty important to me (since I'm not running a new
+> > machine with accelerated X support--just an old 8500 with a Voodoo3).
+>
+> I also like Sawmill very much, but the tdfx driver for Voodoo3 should be very
+> well accelerated - have you tried Kostas' patches to make it work?
+>
 
-Providing we m68k Mac folk can actually keep our 2.3/4 tree up to date and
-bootable. *sigh*
+  The tdfx driver won't work without PIO support for now, for my machine
+i mmap the right iobase but obviously this isn't going to work in other
+machines so its not on much of use for other people.
 
-Speaking of which, if any of you folk have some old 68k Mac hardware laying
-around and need a break from PPC hacking, feel free to contribute! The info
-and stuff is at <http://www.mac.linux-m68k.org/>, or drop by #Linux-Mac68k
-on the openprojects irc network.
+I am working in fbdev support in the tdfx driver but its not ready yet
+and fbdev doesn't make this easy at all, for example if tdfxfb uses
+a hw cursor the fb memory you mmap starts at an offset and you have no
+way to know what this offset is, the xdriver *has* to know this to
+program the command fifo :(
 
 
-Cheers - Tony :)
+> > I set up two different monitors, two different "device" sections, and two
+> > different "screen" sections.
+>
+> Sounds good to me, but then I haven't tried Xinerama yet.
+>
+
+You also need to tell the xserver which screens to use, here is what i use
+
+Section "ServerLayout"
+  Identifier "Main Layout"
+  Screen "myScreen1"
+  Screen "myScreen2" RightOf "myScreen1"
+
+  InputDevice "Mouse1" "CorePointer"
+  InputDevice "Keyboard1" "CoreKeyboard"
+EndSection
+
+>
+> > However, I read on here that fbdev has to have a bus ID to work, and there
+> > is none (that I'm aware of) on my internal video.
+>
+> Nothing about a video adapter in /proc/pci (or the output of lspci)?
+>
+
+  If the internal video doesn't isn't in /proc/pci then you have no
+problem, the xserver won't detect the card so you can go away without the
+BusID line.
 
 
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
+  Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
