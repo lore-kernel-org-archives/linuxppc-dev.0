@@ -1,9 +1,9 @@
-Message-ID: <39107960.9A033139@adtran.com>
-Date: Wed, 03 May 2000 14:09:20 -0500
-From: Ron Flory <ron.flory@adtran.com>
+Message-ID: <39107AB8.75A94A6E@embeddededge.com>
+Date: Wed, 03 May 2000 15:15:04 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
 To: diekema_jon <diekema@bucks.si.com>
-CC: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
+CC: linuxppc-embedded@lists.linuxppc.org, beatson_mark@bucks.si.com
 Subject: Re: Need CPM clock >= 100 Mhz for fast ethernet operation
 References: <m12n2oz-001SyZC@bucks>
 Content-Type: text/plain; charset=us-ascii
@@ -12,33 +12,25 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 diekema_jon wrote:
->
-> > From: Dan Malek <dan@netx4.com>
-> > Organization: Embedded Edge, LLC
->
-> > diekema_jon wrote:
-> >
-> > >         - What clock multiplier are you using for the CPM?
->
-> > I don't remember.  I think it was clock mode 0010_011, which would
-> > be 133 MHz CPM and 166 MHz core.  This is all pretty simple.  Just
-> > pick your own clock speed and set the board descriptor in embed_config.c
-> > to match it.
->
-> In order for fast Ethernet to work reliably, the CPM clock needs to be
-> >= 100 Mhz.
->
-> If the CPM clock is 66 Mhz, then about 1 of 5-20 Tx packets will get
-> dropped.  It also appears that Rx has precedence over Tx.  We are
-> guessing that the CPM runs out of cycles at 66 Mhz while trying to
-> support fast ethernet.
 
- ???
+> diff -u -r1.1 arch/ppc/mbxboot/embed_config.c
 
- I didn't think the SCC could support fast ethernet at any clock speed,
-thats why moto put the FEC (Fast Ethernet Controller) in the FEC, which
-supports fast ethernet at rates > 25Mhz (full duplex @ 40Mhz).
+>          * here for those people that may load the kernel with
+>          * a JTAG/COP tool and not the rom monitor.
+>          */
 
-ron
+Yeah, well, like the comment says, these are here for you to use
+when you don't initialize them in any other way.  I'm not going to
+update the kernel sources because they will be different for everyone.
+I just stuffed some numbers for testing, change them to suit your
+needs.
+
+You should have a boot rom, some NVRAM or I guess we could derive
+these numbers from the configuration registers when we know the
+external clock speed.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
