@@ -1,40 +1,33 @@
-To: Jeff Stevens <jsteve17@yahoo.com>
+Message-ID: <37D0F88E70D96C428C19EEB865701A3801E0D2C8@buda902a.siemens.hu>
+From: =?iso-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.com>
+To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC855T SMC1 2.4.22 Kernel Patch 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 17 Nov 2003 12:40:51 PST."
-             <20031117204051.9515.qmail@web41407.mail.yahoo.com>
-Date: Mon, 17 Nov 2003 21:57:31 +0100
-Message-Id: <20031117205736.A35A6C5F59@atlas.denx.de>
+Subject: RE: MPC855T SMC1 2.4.22 Kernel Patch 
+Date: Tue, 18 Nov 2003 07:20:27 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20031117204051.9515.qmail@web41407.mail.yahoo.com> you wrote:
->
->    I am currently running ELDK 2.1.0 with the 2.4.4
-> kernel, and am in the process of upgrading to the
-> 2.4.22 kernel.  I have the new kernel compiled but
-> after it uncompresses the kernel, nothing else is
-> printed to the screen.  I read on the board that there
-> is a kernel patch to enable the console on SMC1.  Does
+Wolfgang Denk wrote:
 
-Console on SMC1 is standard. About 99% of all boards use it. No patch needed.
+> Console on SMC1 is standard. About 99% of all boards use it.
 
-Did you change your boot loader to pass the clock frequencies in Hz?
-See http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
+It is not standard.
+It is
+  a matter of habit | customary | practice | convention | usual.
+  (Take Your pick; my native language is not english ... )
 
-Best regards,
+But, more importantly, shouldn'be standard. The processor has
+2 SMCs and 4 SCCs for UART. The channel used (or usable)
+depends on the existence of other communication channels.
+For example, our (SIEMENS) last factory card uses SCC4 as
+console and SMC2 as secondary UART. The ATM on FCC1-2
+eats up all port pins dedicated to other UARTS.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"The question of whether a computer can think is no more  interesting
-than the question of whether a submarine can swim"
-                                                - Edsgar W.  Dijkstra
+Best Regards
+    Ludwig
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
