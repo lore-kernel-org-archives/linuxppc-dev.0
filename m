@@ -1,30 +1,38 @@
-Subject: Need clarity on compiler & emulator usage
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Cc: uclinux-dev@uclinux.org
-Message-ID: <OFE01E481D.BE779471-ON65256E4A.0022D7D1@lntinfotech.com>
-From: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
-Date: Mon, 1 Mar 2004 12:03:29 +0530
+Subject: Re: MPC5200Lite and PCI issues...
+Date: Mon, 1 Mar 2004 09:20:12 +0100
+References: <20040227085659.B2B2CC0655@atlas.denx.de>
+In-Reply-To: <20040227085659.B2B2CC0655@atlas.denx.de>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200403010920.12424.g.jaeger@sysgo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi all,
+On Friday 27 February 2004 09:56, Wolfgang Denk wrote:
+> In message <200402270935.06816.g.jaeger@sysgo.com> you wrote:
+> > while playing around with a Lite5200 eval-board, I noticed that
+> > there seems to be some problems with the PCI bus. Some cards
+> > are detected without any problems and also can be accessed
+> > some cards not. Apart for the 5V/3.3V issues, I think there are
+> > some problems with this board.
+> > Are there any experiences? Explanations? Solutions, or workarounds?
+>
+> Remember that there is just one PCI interrupt on the LITE5200;  cards
+> that require another one will not work.
 
-I have a real strange question
-Let us take it specific on ppc architecture if needed
-what is the advantage of using GNU compiler as such?
-why not other compilers like Diab C compiler can be used?
-can we use vision ice emulators to download the image if not why?
-what is the advantage of using BDI2000?
-what are the constraints that prevent the usage of the above compiler and
-emulator?
+Ah I see, thanks for this hint. My major problem seems, that some PCI
+cards esp. grafic adapter simply did not appear in the PCI list of i.e.
+u-boot. The cards work fine in a EBONY EVA board.
+Are there any known problems with PCI timings or is the power supply
+the problem?
 
-Thanks in before for all your inputs
-
-with regards
-Thamarai Selvan.G
+Regards,
+  Gerhard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
