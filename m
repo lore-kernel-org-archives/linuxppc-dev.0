@@ -1,43 +1,34 @@
-Message-ID: <3FD69C13.5090107@vinesystech.com>
-Date: Tue, 09 Dec 2003 20:07:47 -0800
-From: Xiaoshan Zuo <xzuo@vinesystech.com>
-MIME-Version: 1.0
-To: Dan Kegel <dank@kegel.com>
-Cc: zjzhou@newrocktech.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Which program can re-launch my application when this application
- exit for exception?
-References: <000801c3bd55$5a1dd440$b702a8c0@newrock2> <3FD41F48.3030000@kegel.com>
-In-Reply-To: <3FD41F48.3030000@kegel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Wed, 10 Dec 2003 09:30:52 +0100
+From: ARIBAUD Albert <a.aribaud@giat-industries.fr>
+Subject: RE: RAMDISK: incomplete write (ramdisk too small?)
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <158EF4B20EA8C84D9DC71A55216D2E1C066C54@csy-exchange1.giat.intra>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-daemontool is one (http://cr.yp.to/djb.html), but it doesn't start
-application in order.
+> -----Message d'origine-----
+> De : owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]De la part
+> de hyding
+> Envoyé : mercredi 10 décembre 2003 02:51
+> À : linuxppc-embed
+> Objet : RAMDISK: incomplete write (ramdisk too small?)
+>
+>
+>
+> hi,all
+>     I made an initrd but failed to boot.The process about making the
+> initrd is as follows:
+>     dd if=/dev/zero of=/tmp/ramdisk.image bs=1k count=8192
 
-Xiaoshan
+Looks like you're building a ramdisk bigger than 4megs.
+The kernel need a RAMDISK_SIZE=8192k command line argument for your
+8meg ramdisk to work, I think.
 
-Dan Kegel wrote:
-
->
-> John Zhou wrote:
->
->> Which program can re-launch my application when this application exit
->> for exception or error?
->
->
-> Your own.  It's pretty easy to write a shell script to do this.
-> Or you can use initd to do the same thing; see 'man inittab'.
->
-> Your questions seem to be fairly generic, not related to
-> the ppc; you might want to try asking
-> this kind of question on, say,
-> http://groups.google.com/groups?group=comp.os.linux.embedded
-> or http://www.embeddedtux.org/pipermail/etux/
-> - Dan
->
->
+Albert.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
