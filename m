@@ -1,19 +1,23 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id D265767A89
+Return-Path: <tnt@246tNt.com>
+Received: from outmx017.isp.belgacom.be (outmx017.isp.belgacom.be
+	[195.238.2.116]) by ozlabs.org (Postfix) with ESMTP id 101DF67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Mar 2005 03:34:31 +1000 (EST)
-Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
-	1.3.167) for linuxppc-embedded@ozlabs.org; 26 Mar 2005 12:34:29 -0500
-Date: Sat, 26 Mar 2005 12:32:54 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <Pine.LNX.4.61.0503260953100.12378@localhost.localdomain>
-Message-ID: <Pine.LNX.4.61.0503261231370.29477@localhost.localdomain>
-References: <Pine.LNX.4.61.0503260953100.12378@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: Re: 2.6.11-5 kernel on 8xx -- perhaps i messed up the console port?
+	Sun, 27 Mar 2005 09:47:12 +1000 (EST)
+Received: from outmx017.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx017.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j2QNl2MK022819
+	for <linuxppc-embedded@ozlabs.org>; Sun, 27 Mar 2005 00:47:03 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <0.20050327_004704.tnt@patchsend.246tNt.com>
+From: Sylvain Munaut <tnt@246tNt.com>
+To: Andrew Morton <akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Date: Sun, 27 Mar 2005 00:44:43 +0100 (CET)
+Cc: Sylvain Munaut <tnt@246tNt.com>,
+	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH 0/6] Change MPC52xx to platform bus / ppc_sys model
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,18 +28,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Andrew,
 
-Solved.
+This series of patch changes all the MPC52xx related code
+to use platform bus and ppc_sys instead of OCP. It's
+divided in several patches that represents "steps" in
+the conversion. However the intermediate states might
+not be functionnal.
 
-On Sat, 26 Mar 2005, Robert P. J. Day wrote:
+Theses are against a bk clone of this morning since they
+depend on some patches that are on bk but not yet in
+2.6.12-rc1. I just tested and they also apply/run fine
+with -mm3.
 
-... snip ...
 
->   has anything changed in the last little while in terms of the
-> console port?  i tried to reproduce faithfully my earlier config
-> options for console port support, but no luck.
+Regards,
 
-rather than "console=ttyS0" as i used to use, it's now
-"console=ttyCPM0".  and we're off ...
-
-rday
+	Sylvain
