@@ -1,45 +1,43 @@
-Subject: RE: Problems bring up NFS mount on MPC8270 board
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: Jean-Denis Boyer <jdboyer@m5t.com>
-Cc: Joe Birch <jbirch@mangrovesystems.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <AB5AF73EAF23304EA1B932174137CED70E6F16@m5tmail.m5t.com>
-References: <AB5AF73EAF23304EA1B932174137CED70E6F16@m5tmail.m5t.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <1067354748.1032.7.camel@jarjar.hsv.redhat.com>
-Mime-Version: 1.0
-Date: 28 Oct 2003 09:25:48 -0600
+Message-ID: <20031028163832.17883.qmail@web11603.mail.yahoo.com>
+Date: Tue, 28 Oct 2003 08:38:32 -0800 (PST)
+From: Shamile Khan <shamile@yahoo.com>
+Subject: tlbia instruction crashes for 405
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I haven't looked at the others, but I think the 8280 (G2_LE core, pvr
-version 0x8082) should have CAN_NAP and HAS_HIGH_BATS, also.
-This is what I'm using on my board.
+Hi,
 
---Guy
+I am trying to get Linux to run on a Memec Virtex II Pro
+board which has a Powerpc 405 core. I have 32 megs of
+SDRAM. I get till the point below
 
-On Tue, 2003-10-28 at 07:49, Jean-Denis Boyer wrote:
-> The 8270 has a new core revision (Hip7) which have a new PVR:
->
->   Hip3: 0x0081xxxx
->   Hip4: 0x8081xxxx
->   Hip7: 0x8082xxxx
->
-> It is probably not recognized has a 603e core, but a generic PPC (which will not work).
->
-> May I suggest the patch in attachement (for 'arch/ppc/kernel/cputable.c'). It will correctly recognize the three cpu revisions, and report the chosen one in '/proc/cpuinfo'.
->
-> Regards,
->
-> --------------------------------------------
->  Jean-Denis Boyer, Eng.
->  M5T Centre d'Excellence en Télécom Inc.
->  4283 Garlock Street
->  Sherbrooke (Québec)
->  J1L 2C8  CANADA
->  (819)829-3972 x241
-> --------------------------------------------
+loaded at:     00400000 004931D0
+board data at: 00490128 00490140
+relocated to:  00406618 00406630
+zimage at:     00406C40 0048F6E4
+avail ram:     00494000 02000000
 
+Linux/PPC load: console=ttyS0,9600 mem=32M
+Uncompressing Linux...done.
+Now booting the kernel
+
+After this the system hangs. Upon single stepping using an
+abatron, I found the tlbia instruction to be the culprit.
+This is the first instruction in initial_mmu in
+arch/ppc/kernel/head_4xx.S. Its supposed to invalidate all
+TLB enties. Any pointers as to why this instruction might
+be crashing??
+
+Thanks,
+Shamile
+
+
+
+Exclusive Video Premiere - Britney Spears
+http://launch.yahoo.com/promos/britneyspears/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
