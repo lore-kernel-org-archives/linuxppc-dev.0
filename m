@@ -1,62 +1,48 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Sat, 24 Aug 2002 08:07:28 +0800
-From: leeyang <leeyang@ycig.com>
-Subject: Re: linux booting
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <002301c24b03$038024f0$fc4bb73d@leeyang>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-References: <20020823142319.BFD6111822@denx.denx.de>
+Message-ID: <3D66CF18.5040801@embeddededge.com>
+Date: Fri, 23 Aug 2002 20:11:04 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+Cc: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
+	Marius Groeger <mag@sysgo.de>, John Fisher <John.Fisher@nec.com.au>,
+	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: cygwin and embedded linux
+References: <000501c24979$6348a190$37d34c93@neca.nec.com.au>	<3.0.3.32.20020822173918.006dbb00@hollabaugh.com> 	<3D65C5A8.5010408@embeddededge.com> <1030095276.2481.230.camel@spawn>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > When I "bootm 0x10000"in ppcboot,it runs to
-> > "Transferring control to linux kernel",then hangs
-> > there,and I see nothing in the console.:(
->
-> This will never work. I bet it  didn't  work  with  your  old  kernel
-> either.  0x10000  is  just  64  kB  -  this  is _never_ enough for an
-> uncompressed Linux kernel.  You  will  overwrite  your  kernel  while
-> uncompressing it, which crashes the system. Use a higher load address,
-somthing like 0x200000.
+Kenneth Johansson wrote:
 
-Sorry! I lost a zero here,I mean 0x100000,so old kernel can boot there.
->
-> > In the PPCBoot guide(FAQ section),it mentioned
-> > 2 possible causes,wrong bdinfo and clocks_in_mhz
-> > I do check it and feel nothing wrong,however
-> > nothing yet.
->
-> You have to _unset_ clocks_in_mhz for a 2.4.20-pre2 kernel.
->
-> > I have a BDI2000,but I think I should debug the bootm
-> > part of ppcboot,however someone says it is quite
-> > difficult to do so( at least for me).
->
-> Well, it's not _that_ difficult. Try it out, so you get used to is ;-)
+> And I remember what you thought about people like me that tried to make
+> the cross compile environment going.
 
-I wish it is not that hard,however I can not debug the kernel or
-ppcboot according the  brief introduction in BDI manual.:(
+The only opinion I have changed is that people that can actually make
+this work well (and I know of only a couple) have a special talent
+and I really like them to hang around :-)
 
-I want to watch r3,r4,r5,r6,r7 register when ppcboot transferring
-to kernel.Could you tell me how to get that? thanks a lot!
->
-> > so I am seeking errors in blind.
->
-> Just open your eyes, and thou shalt see :-)
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> Always leave room to add an explanation if it doesn't work out.
->
->
->
->
+I guess when you work for a large company that will pay your salary regardless
+of missing schedules and can only provide half-assed tools you have to
+cobble together to make things work, you are both lucky and have my sympathy.
+I don't have the patience or development time to create or debug my
+development tools, they just have to work.  I'm not using anything that
+anyone else can't go out and purchase or download, and it continues to
+baffle me why people won't take the easy route to developing software.
+
+
+> But it finally did work out OK and nowadays all you really need to now
+> is what parameters to give the configure script.
+
+There is LOTS more to creating an easy to use and properly created set
+of development tools than knowing some parameters to configure scripts.
+Only a couple of people I know understand the magic, and it isn't documented.
+I'm just going to rely on them to make my job easier :-)
+
+Have fun!
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
