@@ -1,16 +1,44 @@
-Message-Id: <5.1.0.14.2.20020103174803.020d01d8@falcon.si.com>
-Date: Thu, 03 Jan 2002 17:55:55 -0500
-To: <linuxppc-embedded@lists.linuxppc.org>
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: Corrupted ramdisk image
-In-Reply-To: <B25E2E5A003CD311B61E00902778AF2A02BBDAA6@SERVER1>
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A02BBDAA7@SERVER1>
+From: Brian Kuschak <brian.kuschak@skystream.com>
+To: "'Jerry Van Baren'" <vanbaren_gerald@si.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Corrupted ramdisk image
+Date: Thu, 3 Jan 2002 15:21:18 -0800 
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Since nobody with real knowledge of the problem has responded, I'll take a WAG.
+Thanks for the reply, Jerry.   The decompression phase was ok, the kernel
+was decompressed to 0x0 (up to about 0x100000), and the ramdisk image
+remained at 0x4b2000.
+
+I just found the problem.  In fact the corruption was happening even earlier
+- in the bootrom.  The bootrom replaces the pointer to the bootrom_cmdline.
+If the image isn't loaded at its link address, there are problems.  The
+image is not yet relocated to its link address, so the bootrom tweaks memory
+in the wrong place.  Sure enough I found four bytes in my ramdisk that were
+always corrupted in the same location...
+
+Changing the mktree.c file to put the entry point at 0x400000 instead of
+0x500000 fixes the problem for me.
+
+Regards,
+Brian
+
+
+-----Original Message-----
+From: Jerry Van Baren [mailto:vanbaren_gerald@si.com]
+Sent: Thursday, January 03, 2002 2:56 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Corrupted ramdisk image
+
+
+
+Since nobody with real knowledge of the problem has responded, I'll take a
+WAG.
 
 This looks like a variation on a PPCBoot FAQ...
 
@@ -30,7 +58,8 @@ gvb
 At 12:28 PM 1/3/2002 -0800, Brian Kuschak wrote:
 
 >I'm upgrading from 2.4.3 to 2.4.17 (rsync from mvista) on a Walnut-variant
->board.  The initrd seems to be getting corrupted.  The kernel crashes during
+>board.  The initrd seems to be getting corrupted.  The kernel crashes
+during
 >the decompress or prints "crc error" or "invalid compressed format"
 >messages.  I have allocated enough space by using the 'ramdisk=32000'
 >command line option.  The same ramdisk works fine on a 2.4.3 kernel.
