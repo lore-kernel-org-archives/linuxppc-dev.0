@@ -1,46 +1,37 @@
-Message-ID: <XFMail.991209110250.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199912091815.TAA00291@piglet.grunz.lu>
+Date: Thu, 9 Dec 1999 19:15:18 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: NE2000 problem
+To: costabel@wanadoo.fr
+cc: nenolina@pit.ktu.lt, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <384F5653.C986FCC6@wanadoo.fr>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.10.9912090723100.23296-100000@shell.unixbox.com>
-Date: Thu, 09 Dec 1999 11:02:50 -0700 (MST)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-Subject: RE: Mozilla preM12 ppc rpms...
-Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On   9 Dec, this message from Martin Costabel echoed through cyberspace:
+>> My ifconfig is from the 'net-tools-1.32.alpha-2B' RPM (don't remember
+>> where I got that).
+> 
+> Wow. If this is your new net-tools RPM, then the previous one must have
+> been really old :-) The version you mention dates from June 1997 and was
+> contained in LinuxPPC Feb98 (aka Valentine's Day edition or R3).
+> Nowadays, net-tools version numbers are 1.52 or higher.
 
-On 09-Dec-99 Ani Joshi wrote:
-> 
-> 
-> I have placed a preM12 snapshot at
-> 
-> ftp://devel.linuxppc.org/users/ajoshi/{RPMS,SRPMS}
-> 
-> This build includes Franz Sirl's XPTCall port.  
-> Please let me know how it well it fares for everyone as we have not 
-> tested it much.
-> 
+In fact, I have version 1.50 installed, but self-compiled from source.
+That's what happens when you don't stay with RPMs....
 
-Where can I find all of the required pieces?
+Michel
 
-[root@icarus gary]# rpm -ivUh /tmp/mozilla-5.0-M11.ppc.rpm 
-error: failed dependencies:
-        glibc >= 2.1.3-0h is needed by mozilla-5.0-M11
-        libIDL-0.6.so.0 is needed by mozilla-5.0-M11
-        libgtkmozilla.so.0 is needed by mozilla-5.0-M11
-        libstdc++-libc6.1-2.so.3 is needed by mozilla-5.0-M11
-        libc.so.6(GLIBC_2.1.3) is needed by mozilla-5.0-M11
-
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
