@@ -1,52 +1,57 @@
-Date: Fri, 27 Aug 1999 13:22:48 -0500 (CDT)
-From: Nicholas Coult <coult@ima.umn.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86 support for Voodoo 3 acceleration
-Message-ID: <Pine.LNX.4.10.9908271322190.14342-100000@lilac.ima.umn.edu>
+Message-Id: <199908271827.UAA00377@piglet.cpu.lu>
+Date: Fri, 27 Aug 1999 20:27:25 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: IBM 850 LinuxPPC installation?
+To: hollis+@andrew.cmu.edu
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.3.96L.990824214016.3087N-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-As far as I can tell the full source for the 2-d driver is available as
-part of the source for XFree-86 3.3.4.
-In particular, the directory 
+On  24 Aug, this message from Hollis R Blanchard echoed through cyberspace:
+> I've gotten a kernel compiled (and it boots!) with ethernet ("Lance") support.
+> It also has IDE disk and cdrom support (which makes installing to a hard disk
+> much easier). Unfortunately, I've run into a problem - the kernel hangs on
+> Partition check:
+>   hda:
 
-xc/programs/Xserver/hw/xfree86/vga256/drivers/tdfx
+I have this exact same problem with _some_ disks on my Promise PCI
+adapter. My Maxtor drive works, a 32x CDRom worked as well, but a
+Seagate and a Quantum both hung the box. I haven't found the problem;
+but it might be related to timings on the interface, so that some disks
+might work, and others not.
 
-contains the source for the drivers.  
+> Here's the IDE info I get before it hangs:
+> hda: DPEA-31080, ATA DISK drive
+> hda: IRQ probe failed (0)
+> hdb: DSAA-3720, ATA DISK drive
+> hdb: IRQ probe failed (0)
+> hdc: IRQ probe failed (0)
+> hdc: IRQ probe failed (0)
+> hdc: no response (status = 0xd1), resetting drive
+> hdc: no response (status =0x80)
 
-The Glide library is only for the 3-d stuff, which is another story entirely.
-It is most definitely _not_ available as source code.
+This means the driver is not able to acces the controller for ide1.
+That might be a problem with the IO-port addresses.
 
-> 
-> Is the full source code to the driver available?  Or is it written using
-> the Glide libraries?  If it is written using Glide, than it will be
-> necessary to contact 3dfx and get Glide ported to PPC Linux before it can
-> be ported.  Otherwise, it's entirely possible.  :)
-> 
-> Stephen
-> 
-> 
-> >Hi,
-> >
-> >After looking at www.xfree86.org and the source for Xfree-3.3.4,
-> >it seems that support for the Voodoo 3 card's 2-d acceleration
-> >is already in Xfree86!  But, (and I'm just guessing here, I do a lot
-> >of programming but none of it is system or GUI programming)
-> >this support appears to run only on x86 systems currently.  There doesn't
-> >appear to be any asm code or anything, though, so shouldn't it be
-> >possible to port this to the linuxppc side of things?
-> 
-> Terra Soft Solutions, Inc.
-> http://www.yellowdoglinux.com
-> 
+Also, you might want to try patching your kernel with Andre Hedrick's
+multi-platform uniform IDE driver (look at
+ftp://ftp.kernel.org/pub/linux/kernel/people/hedrick/). You _might_
+need additional patches to get it to boot; if so, get back to me, and
+I'll produce a diff against my working kernel.
 
-Dr. Nicholas Coult, Research Associate
-Institute for Mathematics and Its Applications, University of Minnesota
-Home Page: www.ima.umn.edu/~coult              Office: 555 Vincent Hall
-Email: coult@ima.umn.edu      Phone: (612) 624-2527 Fax: (612) 624-4163
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
