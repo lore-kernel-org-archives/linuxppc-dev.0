@@ -1,41 +1,48 @@
-Date: Tue, 13 Nov 2001 15:10:24 -0800 (PST)
-From: James Simmons <jsimmons@transvirtual.com>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: 2.5.X work
-Message-ID: <Pine.LNX.4.10.10111131509560.19489-100000@transvirtual.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 13 Nov 2001 15:59:56 -0800
+From: Steven Mueller <diffusor@ugcs.caltech.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ppc 405 floating point math emulation
+Message-ID: <20011113155956.B7553@spew.ugcs.caltech.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+Hello,
 
-   As some of you know I have been working on a new console system for
-2.5.X. Now that 2.5.X is very very close I really like to work together
-with various people from various trees to pull this together. The two
-biggest changes I have done is:
+I'm interested in building a kernel with math emulation enabled for an
+embedded IBM ppc 405.  (It'd be nice to allow customers to run ppc
+apps on our cards without having to recompile them with soft float
+support.)  When I try this with an old Monta Vista kernel from April
+12th (used in an a HardHat pre-release, but no longer available), the
+compile eventually fails while linking and mentions some 8xx specific
+symbols.  I assume this is leftovers from 2 years ago when there
+appear to have been efforts to add math emulation support for the 8xx
+chips?  Anyway, make says the following and stops:
 
-1) A new fbdev api with is much simpler and allows fbdev devices to exist
-   without a console system. Nice for embedded devices.
+make[2]: Leaving directory `/home/dank/ixia/Software/kernel-ppc/arch/ppc/math-emu'
+make[1]: Leaving directory `/home/dank/ixia/Software/kernel-ppc/arch/ppc/math-emu'
+/usr/local/ppc-old/bin/powerpc-linux-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic arch/ppc/kernel/head_4xx.o init/main.o init/version.o \
+        --start-group \
+        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o arch/ppc/math-emu/math-emu.o \
+        drivers/block/block.o drivers/char/char.o drivers/misc/misc.o drivers/net/net.o drivers/media/media.o  \
+        net/network.o \
+        /home/dank/ixia/Software/kernel-ppc/lib/lib.a \
+        --end-group \
+        -o vmlinux
+arch/ppc/kernel/kernel.o: In function `Soft_emulate_8xx':
+/home/dank/ixia/Software/kernel-ppc/arch/ppc/kernel/softemu8xx.c:129: undefined reference to `print_8xx_pte'
+/home/dank/ixia/Software/kernel-ppc/arch/ppc/kernel/softemu8xx.c:129: relocation truncated to fit: R_PPC_REL24 print_8xx_pte
+/home/dank/ixia/Software/kernel-ppc/arch/ppc/kernel/softemu8xx.c:130: undefined reference to `get_8xx_pte'
 
-2) We also will be moving the various input devices including keyboards
-   over to the input api.
+If anyone has already developed a solution for this, would you please
+consider posting the patch?  Thank you!
 
-3) Also I plan to work on a new serial api based on Russell King's work to
-   work nicely with the input layer. The serial layer will be more like
-   the parallel port layer.
+Steve
 
-So what I need is the latest drivers from people so they can be ported
-over. I also want to know what people needed for the fbdev layer as well
-as the input layer. I see some email about DDC support for example. Please
-let me know what you need. Thank you.
-
-
-
-_______________________________________________
-http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-Please visit the above address for information on this list.
-
+--
+Steven Mueller
+diffusor@ugcs.caltech.edu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
