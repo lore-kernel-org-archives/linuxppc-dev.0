@@ -1,64 +1,29 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15302.40082.869098.88039@cargo.ozlabs.ibm.com>
-Date: Fri, 12 Oct 2001 17:32:34 +1000 (EST)
 To: linuxppc-dev@lists.linuxppc.org
-Subject: boot methods
-Reply-To: paulus@samba.org
+Cc: guile@mac.com
+Subject: Re: VGA out on ibook2
+From: paulotex@yahoo.com (Paulo Abreu)
+Date: Fri, 12 Oct 2001 08:36:02 +0100
+In-Reply-To: <200110120459.XAA10187@lists.linuxppc.org>
+References: <200110120459.XAA10187@lists.linuxppc.org>
+Message-ID: <20011012083602.385%96000@smtp.netc.pt>
+Content-Type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I would like to make a complete list of the methods people use to boot
-the PPC/Linux kernel on different platforms.  As a start, here is what
-I can think of off the top of my head:
+Linux PPC Developer Digest wrote:
+>Hi
+>	I'm trying to use the external VGA connector on an ibook2 (the white
+>one) with the benh utility m3mirror and, after turning crt on, the
+>screen on the monitor looks "wavy" and unusable.
+>	Anybody could guide me to solve this problem?
 
-Powermac:
-	vmlinux loaded with BootX
-	vmlinux loaded with quik
-	vmlinux loaded with yaboot
-	vmlinux.coff loaded via OF netboot
-	vmlinux.elf-pmac loaded via OF (disk or net boot)
+Same problem here. If I include the crt:1 option in the kernel booting
+options, the waves dissapear and the console looks good, but the X
+colors are all wrong. Looks like the crt is in 8bpp while X and the lcd
+are in 16bpp. Tried this with 2.4.10-ben0.
 
-RS/6000 CHRP:
-	vmlinux loaded with yaboot
-	zImage.chrp-rs6k loaded via OF netboot
+Paulo
 
-RS/6000 43p-140:
-	zImage.prep loaded via OF (floppy or hard disk)
-
-Can others contribute entries to this list please?
-
-I am particularly interested in the cases where the kernel vmlinux
-binary is loaded directly from some external software, because those
-are the cases that constrain our freedom to choose how information
-gets passed in to the kernel.  From a long-term maintainability
-viewpoint, it would be better if we could say that we always have a
-zImage-style wrapper, because then we could change the interface
-between the wrapper and the kernel at will without breaking anything.
-It would then be up to the wrapper to do any translation needed
-between what the external software passed in to it and what the kernel
-is expecting.
-
-Along those lines, I have been thinking that it would be good if the
-wrapper built a data structure describing the hardware in the system,
-particularly things like:
-
-- the amount of RAM and any holes
-- type and register addresses for PCI host bus adaptors
-- ditto for interrupt controllers
-- interrupt mapping
-
-The open firmware device tree does a good job of describing things
-like this, so I would suggest it as the structure.  Whatever structure
-we use needs to be flexible and open-ended rather than only describing
-a fixed set of things, as well as being easy to traverse and
-interpret (so I don't think prep-style residual data is an option).
-
-Thoughts?
-
-Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
