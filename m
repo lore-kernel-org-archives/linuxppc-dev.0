@@ -1,41 +1,66 @@
-Message-Id: <v03110700b4eed612282b@[129.100.29.243]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 10 Mar 2000 11:45:17 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: aty128fb does not work in newer sawtooth machines
+Date: Fri, 10 Mar 2000 19:25:23 +0200 (EET)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+cc: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
+        Michel Dänzer <michdaen@iiic.ethz.ch>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
+   cwithr128
+In-Reply-To: <v03110700b4eec4979817@[129.100.29.243]>
+Message-ID: <Pine.LNX.4.21.0003101831430.19076-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Fri, 10 Mar 2000, Kevin B. Hendricks wrote:
 
-I just received last week a new G4 at 450Mhz.  I have been trying various
-things to get the video working properly to no avail.
+> Hi,
+>
+> So Xfree 4.0 final is out but without the very last minute cache flushing
+> changes Kostas made.
+>
+> So we should probably get some official patch out there that includes a few
+> elements:
+>
 
-If you use yaboot and boot with the following arguments:
-video=aty128fb:vmode:17
+  What do you mean by official ? The next xfree86 update will have
+this fix what more official do you suggest ?
 
-then you get a working 1024x768 video at 8bpp
+> 1. Either:
+>        - user defined cache line size during compile
+>    or:
+>        - flush a cache range in address increments of 8
+>
+> to handle the variable line cache size
+>
 
-If you however try anything else at higher depths you end up with a screen
-that is split into 3 vertical panes that make it impossible to use.
+  Glibc assumes a line size of 16 so that will be ok, in any
+case the cache flush will be used only in the startup of the
+xserver not need to worry about a few extra instructions there
+so we can live even with 4byte increments, definitely better than
+a compile time option.
 
-For example:
+> 2. And something to figure out if we are on a 601 machine in the
+> NuBus X100 machines to properly do a "sync or eieio" so that XFree86 4.0
+> cache flushing and synchronization for io has some chance of working under
+> MkLinux R1.
+>
+> David can you tell me how the 601 problems with sync and eieio are
+> detected and handled in user space apps under MkLinux?
+>
+   Hmm i don't think that xfree86 4.0 will work under mklinux, there
+aren't any drivers that will work under mk anymore (xpmac is gone and
+the vgahw/fbdev based ones won't work).
 
-video=aty128fb:vmode18,cmode:32
+> Thanks,
+>
+> Kevin
+>
 
-which works fine on my B+W G3 immediately gives the three panes in console
-mode.
-
-The same problems exist in both Xpmac and XFree86 3.9.18.
-
-Solutions anyone?
-
-Thanks,
-
-Kevin
+  Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
