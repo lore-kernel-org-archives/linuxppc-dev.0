@@ -1,34 +1,29 @@
-Message-Id: <200102082114.QAA25048@mal-ach.watson.ibm.com>
-To: Roman Zippel <zippel@fh-brandenburg.de>
+Date: Thu, 8 Feb 2001 14:28:55 -0700
+From: Cort Dougan <cort@fsmlabs.com>
+To: David Edelsohn <dje@watson.ibm.com>
 Cc: paulus@linuxcare.com.au, Dan Malek <dan@mvista.com>,
 	Gabriel Paubert <paubert@iram.es>, tom_gall@vnet.ibm.com,
 	linuxppc-commit@hq.fsmlabs.com,
 	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: context overflow 
-In-Reply-To: Message from Roman Zippel <zippel@fh-brandenburg.de>
-   of "Thu, 08 Feb 2001 21:53:13 +0100." <Pine.GSO.4.10.10102082150290.21215-100000@zeus.fh-brandenburg.de>
-Date: Thu, 08 Feb 2001 16:14:28 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Subject: Re: context overflow
+Message-ID: <20010208142855.J24312@hq.fsmlabs.com>
+References: <paulus@linuxcare.com.au> <200102081900.OAA25574@mal-ach.watson.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200102081900.OAA25574@mal-ach.watson.ibm.com>; from David Edelsohn on Thu, Feb 08, 2001 at 02:00:07PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Roman Zippel writes:
+} that the port is not using the PowerPC architecture as intended.  By not
+} utilizing the hardware assists, the port is not performing at its optimal
+} level.
 
-> On Thu, 8 Feb 2001, David Edelsohn wrote:
-
->> We really need to get more IBM PowerPC and kernel VMM experts
->> involved to explore the best design given the Linux kernel's abstractions
->> and limitations in the VMM space.
-
-Roman> There is certainly room for improvement, but slowly I'd really like to
-Roman> know why the Linux vmm should be/is the limiting part?
-
-	I did not say that Linux VMM is the limiting part, I said that the
-design needs to work within the Linux VMM limitations.  The Linux VMM
-still uses the x86 page table design as a basis for its abstraction
-layer.  Not all processors match that configuration.
-
-David
+I have data, and have written a paper with Victor and Paul, showing that we
+get performance _increases_ by not using the PowerPC MMU architecture as
+intended.  I think the PPC architecture intentions for the hash table and
+TLB and very very poor and restrictive.  The 603 was a good step forward
+but the 750, 7400 and follow-ons have been steps backwards from this good
+start.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
