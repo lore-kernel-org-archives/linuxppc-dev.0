@@ -1,25 +1,37 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Derrik Pates <dpates@dsdk12.net>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Does RivaFB (in current BenH) work on PPC?
-Date: Thu, 25 Oct 2001 09:55:49 +0200
-Message-Id: <20011025075549.22936@smtp.wanadoo.fr>
-In-Reply-To: <Pine.LNX.4.33.0110242125500.22695-100000@andromeda.dsdk12.net>
-References: <Pine.LNX.4.33.0110242125500.22695-100000@andromeda.dsdk12.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 25 Oct 2001 05:29:57 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Debian PowerPC <debian-powerpc@lists.debian.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: [ANN] yaboot-1.3.5pre2 Please test
+Message-ID: <20011025052957.A18788@plato.local.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->One of my professors wants to run Linux on his (very new) G4 tower system,
->which I believe to have a GeForce card in it. Does the current rivafb
->driver in BenH's tree work on PPC systems with a GeForce board? And does
->it work with the 'nv' driver in XFree 4.1?
+The message= configuration option makes yaboot read the specified
+filename and print its contents to the screen after init-message and
+before the boot: prompt.  This could be quite useful for distros
+making bootable CDs so they may include some brief instructions for
+users.
 
-It will once I have merged Ani Joshi changes.
+Please test and report any problems to me, I plan to release 1.3.5
+this weekend most likely.  ext2/ext3 testing is most needed.
 
-Ben.
+http://master.penguinppc.org/projects/yaboot/1.3.5pre/
 
+pre2:
+	- Implement the message= configuration option (see yaboot.conf man page).
+
+pre1:
+	- XFS fixes for large partitions (Brendan O'Dea)
+	- Upgrade libext2fs to 1.25, this adds full ext3 support to yaboot.
+	- Reiserfs fixes (Jeff Mahoney)
+
+
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
