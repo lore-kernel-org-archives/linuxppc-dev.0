@@ -1,52 +1,28 @@
-Date: Fri, 13 Oct 2000 17:42:05 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
-        Samuel Rydh <samuel@ibrium.se>
-Subject: Re: [linux-fbdev] Re: Video driver bug
-In-Reply-To: <19340907141507.13024@192.168.1.10>
-Message-ID: <Pine.A41.3.96LJ1.1b7.1001013173038.60708A-100000@unlserve.unl.edu>
+Message-ID: <39E7C1A4.BBA004ED@denise.shiny.it>
+Date: Fri, 13 Oct 2000 22:15:00 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: can't boot 2.4.0-t9
+References: <39E0C4B7.612575E@denise.shiny.it>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 13 Oct 2000, Benjamin Herrenschmidt wrote:
-
-> >That's for 2.5.0. I think the first thing we need to do in 2.5.0 is to remove
-> >all `mess with non-visible VCs' support, so /dev/fb* works on the _current_
-> >video mode.
+Giuliano Pochini wrote:
 >
->
-> Well, my understanding is that MOL needs to be able to "probe" for all
-> supported mode. Doing so on a visible console would definitely be hell.
-> It does that in order to setup the MacOS-side driver mode list.
+> I can't boot kernel 2.4.0-test9 because it fails configuration
+> of my scsi cards (resource collisions). The hack of removing the
+> "return -EINVAL" I used in test7 doesn't work anymore.  Anyway,
+> I'm just curious to know why there are not such problems in 2.2.
+> How can I dump what it writes during boot ?  It's too fast, I
+> haven't the time to copy it by hand...
 
-According to Samuel's last post, MOL needs both var and fix for probing.
-If there is something like:
+Ok, I've just hacked pci.c from test7 to compile in test9. It still
+doesn't work.
 
-struct fb_probe_info {
-	struct fb_var_screeninfo var;
-	struct fb_fix_screeninfo fix;
-};
+Bye.
 
-int fb_probe_mode (struct fb_probe_info *pi) {
-	int err;
-
-	pi->var.activate = FB_ACTIVATE_TEST;
-	if ((err = set_var(&pi->var))<0)
-		return err;
-	var_to_fix(&pi->var, &pi->fix);
-
-	return 0;
-}
-
-MOL would be happy?
-
-
-Takashi Oe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
