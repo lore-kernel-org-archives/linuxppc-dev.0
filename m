@@ -1,37 +1,47 @@
-Date: Tue, 2 Feb 1999 15:51:44 -0100
-From: Owen Waller <O.Waller@ee.qub.ac.uk>
-To: RTHEANDE <rtheande@dscc.dk>
-Cc: linuxppc-dev@lists.linuxppc.org, O.Waller@ee.qub.ac.uk
-Subject: Re: 2.2.1 & serial ports 
-In-Reply-To: <9902029179.AA917970759@smtplink.dscc.dk>
-Message-Id: <Pine.SGI.4.02A.9902021550020.13845-100000@myst.ee.qub.ac.uk>
-Mime-Version: 1.0
+Date: Tue, 2 Feb 1999 21:03:31 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Owen Waller <O.Waller@ee.qub.ac.uk>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: matroxfb, anybody? (More details...)
+In-Reply-To: <Pine.SGI.4.02A.9902021408200.13845-100000@myst.ee.qub.ac.uk>
+Message-ID: <Pine.LNX.4.03.9902022103010.31289-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2 Feb 1999, RTHEANDE wrote:
-> I've compiled a stock v2.2.1 kernel _without_ UNIX98 support so I don't 
-> have a /proc/tty filesystem but I can't seem to access the serial ports 
-> since the upgrade. In particular ppp won't dial out - it pickes up and 
-> senses the carrier but thats it. It's almost as if the modem doesn't have 
-> a dial tone (although it certainly does). Also minicom takes an age to 
-> initialise and then pretty much refuses to talk to the modem.
->      Are you running ppp as a module? If so, did you install the new 
->      modutils-2.1.121? I had same problem with ppp before installing the 
->      new modutils. 
+On Tue, 2 Feb 1999, Owen Waller wrote:
+> On Mon, 1 Feb 1999, Geert Uytterhoeven wrote:
+> > On Mon, 1 Feb 1999, Benjamin Herrenschmidt wrote:
+> > > On Mon, Feb 1, 1999, Geert Uytterhoeven
+> > > <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+> > > >Since BootX creates a fake OF device tree, I suspect it to appear in the
+> > > tree.
+> > > >Can you use your Mystique under MacOS? This is of course a prerequisite for
+> > > >BootX seeing your board.
+> > > OF in the machine's ROM (not the card's ROM) should make _any_ PCI board
+> > > visible provided that it contains correct config-space registers with a
+> > > vendorID and a deviceID, which is required for all PCI cards anyway. The
+> > I'd expect that, too. But my DawiControl DC-2976UW Sym875 SCSI board doesn't
+> > show up in /pci, while my S3 Vision968 is visible as /pci/display. Both boards
+> > don't have OF ROMs.
+> 
+> Geert, do either of these cards show up under your OF tree? I wouldn't
+> expect so as theyt don't have an OF rom (like my mystique) but I am
+> curious.
 
-no I compiled PPP into the kernel - the only thing that is a module is the
-ppp-deflate. Still I haven't upgraded my mod-utils yet so this might be
-it. I'll try upgrading my modutils and see if that gets me any further.
+The SCSI board doesn't show up, the S3 bideo board is /pci/display. My DEC21041
+Ethernet board is /pci/ethernet.
 
--------------------------------------------------------------------------
-Owen Waller                     |   "...sometimes I think I'm a little
-PhD. Student in Control Eng.    |    more English than I am French..."
-Queens University               |              - Alain Prost 
-Belfast                         |
-Tele: +44 (0)1232 274085        |    Fax: +44 (0)1232 667023
+Greetings,
+
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
