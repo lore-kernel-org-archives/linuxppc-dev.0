@@ -1,46 +1,30 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A4288905843FE0@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "'David Ashley '" <dash@xdr.com>,
-	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Linux 2.4.17 bug, mmap of /dev/mem
-Date: Thu, 14 Feb 2002 10:22:22 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: Raven Cop 8260 Utility
+From: Bruno Coudoin <bcoudoin@anfora.fr>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain
+Date: 14 Feb 2002 11:13:27 +0100
+Message-Id: <1013681637.30550.21.camel@bruno>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi David,
+Did somebody has successfully been able to use the free Special OCD
+Commander for MPC8260 eval board from Macgraigor for their Raven COP
+cable.
 
-I tested your application on my board (Embedded Planet CLLF (mpc860), Linux
-2.4.2) and made a script that executes it as fast as possible.
-I let it run for 10 minutes on several telnet sessions simultaneously but I
-do not see anything strange... The memory I write to is NVRAM.
+In our case with an MPC8260ADS boards, we have the OCD Commander works
+fine but the Special MPC8260 version tells it can't connect to the Raven
+Cop.
 
-Frederic
+Thanks in advance,
+Bruno.
 
------Original Message-----
-From: David Ashley
-To: linuxppc-embedded@lists.linuxppc.org
-Sent: 2/12/02 1:36 AM
-Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
-
-
-I found out more about the problem. If I mmap 2 regions that are
-distinct,
-even though they map to the same physical address in non-cacheable
-memory,
-if I only use one for reading and the other for writing, there is no
-corruption of linux and the system works. The problem happens when I
-both
-read and write to the same mmap'd area.
-
-Easy enough workaround. Now maybe some kernel expert can figure it
-out???????
-
-Later--
-Dave
+--
+Bruno Coudoin
+ANFORA - http://www.anfora.fr
+Tel: (33)5 61 00 34 67
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
