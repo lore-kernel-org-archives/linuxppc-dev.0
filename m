@@ -1,51 +1,52 @@
-In-Reply-To: <Pine.HPX.4.10.10002111949390.1866-100000@gra-ux1.iram.es>
-Date: Sat, 12 Feb 2000 15:15:31 +0100
-To: Gabriel Paubert <paubert@iram.es>, linuxppc-dev@lists.linuxppc.org
-From: BenH <bh40@calva.net>
-Subject: Re: Latest OpenPic changes
-Message-Id: <20000212151531.019320@192.168.1.10>
+Message-Id: <l03130300b4cb698e36a7@[24.218.140.90]>
+In-Reply-To: <38A5934B.9E259106@schweiz.org>
+References: <Pine.LNX.4.10.10002112021310.4195-100000@xpol.uchicago.edu>
+ <00021218294101.09715@argo.linuxcare.com.au>
+ <00021211003504.00821@linux.eric.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 12 Feb 2000 14:53:22 -0500
+To: a.tobler@schweiz.org
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: 2.3.43 failed
+Cc: Eric Benard <ebenard@ifrance.com>, Paul Mackerras <paulus@linuxcare.com>,
+        ramp@oddjob.uchicago.edu, linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Feb 11, 2000, Gabriel Paubert <paubert@iram.es> wrote:
+At 12:07 PM -0500 2/12/00, Catherine & Andreas wrote:
 
->There is some confusion right now in the openpic code, the places where
->we use vectors and the places where we use interrupt source numbers should
->be clarified, although we could also say that vector is always source+16
->to leave room for a cascaded 8259 pair just in case. Adding a global
->variable for this as it is right now seems overkill, not to say bloat.
+>> > My rsync tree at linuxcare.com.au::linux-pmac-devel is at 2.3.44-pre8, it
+>> > should compile and run just fine on an iMac.
+>>
+>> it compiles fine on a B&W G3 but doesn't run : it stops after the
+>>"Booting..."
+>> message.
 
-The problem is that PowerMacs with openpic have vectors starting at 0. So
-changing that would require fixup of both the PCI interrupts and OF
-device tree.
+This is the same problem I had with 2.2.14 on my PowerCenter 132. I just
+compiled a recent rsync of the linux-pmac-devel tree and had the same hang.
 
->It should but you should wait for the read to finish when you mask the
->irq source, which is not obvious with longer pipelines and memory queues
->like the 7400. eieio does not guarantee this, isync neither, but I think
->that you can force isync to actually wait for the read by inserting some
->instruction which uses the read value.
+I think it has something to do with the boot environment. When I boot under
+MacOS 9 with the BootX application, the boot will only get as far as
+"Booting..." and then some registers (i.e. never get to Tux and the linux
+boot info). However, if I boot using the BootX extension instead, the
+kernel will get to boot and run the kernel but then it crashes with a
+machine check. I think the crash is happening in the serial driver, or the
+sound driver. I can't tell which for sure yet. I'd like to try booting
+right out of OF to see if that changes anything.
 
-But is it really necessary ? We do use the returned value of the read
-since we loop. So we are safe. The only thing that could bite us is
-eventual speculative accesses done just after the read, but since we have
-eieio, we should be protected. isync would be necessary only if the code
-itself is changed (or the MMU context), which is not the case.
+Did we change something about the way we setup memory early in the boot
+process after 2.2.12 because the 2.2.12 kernel that came with my Yellowdog
+distribution works just great out of BootX.
 
->That's the point: actually a read followed by an isync is insufficient
->since it does not guarantee that the access is performed on the bus (and
->could still cause a machine check for example): the only thing it
->guarantees is that the translation is valid (context synchronization just
->in case you change a mapping or the MSR DR bit just after).
+Thanks!
 
-But since we _use_ the result from the read for the loop in my code, we
-know that the read was actually done and the result fetched. We don't
-care about cache since we are on non-cachable & guarded space. I think my
-code without the mb() should be enough. I see no cases were we would use
-disable_irq or enable_irq and change MSR_DR/IR just after, and the places
-were we change them are usually protected with sync/isync already.
+____________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+____________________________________________________________________
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
