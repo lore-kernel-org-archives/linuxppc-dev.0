@@ -1,32 +1,49 @@
-Message-ID: <20021103050239.5614.qmail@kunk.jriver.com>
-Subject: 601 and benh kernels??
-To: linuxxppc-dev@lists.linuxppc.org
-Date: Sat, 2 Nov 2002 23:01:09 -0600 (CST)
-From: Robert E Brose II <bob@kunk.jriver.com>
+To: David Edelsohn <dje@watson.ibm.com>
+Cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
+	linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.terrasoftsolutions.com
+Subject: Re: Status of 2.5.X kernels on PPC Linux, anyone working with NPTL?
+References: <khendricks@ivey.uwo.ca>
+	<200210091634.MAA28260@makai.watson.ibm.com>
+From: Aldy Hernandez <aldyh@redhat.com>
+Date: 03 Nov 2002 10:28:22 -0800
+In-Reply-To: <200210091634.MAA28260@makai.watson.ibm.com>
+Message-ID: <m3r8e2ld89.fsf@frogsleap.quesejoda.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I was having a load of trouble on a 7200 (w/601) running as an AMPR
-internet gateway on debian woody and finally discovered that if I
-used Bens 2.4.20-pre1 kernel as opposed to the debian 2.4.18 kernel
-the trouble went away.  (It's using adaptec 2940 and fireport 40
-(symbios) scsi controllers as well as a tulip card, I was geting
-random resets/timeouts on the fireport 40).
+>>>>> "David" == David Edelsohn <dje@watson.ibm.com> writes:
 
-What I'm wondering is: what is the state of the mysterious 601 fixes?
-They have at times been a choosable option in the config but
-the option was gone in the 2.4.20-pre1 kernel config. Are these
-fixes in some kernels and not others?
+>>>>> Kevin Hendricks writes:
 
-Thanks,
-Bob
---
-/~\ The ASCII       | Robert E. Brose II    N0QBJ
-\ / Ribbon Campaign | http://www.qbjnet.com/
- X  Help cure       | mailto:bob@qbjnet.com
-/ \ HTML Email      | public key at http://www.qbjnet.com/key.html
+ Kevin> Also, is anyone here actively working on Ulrich Drepper's New Posix
+ Kevin> Thread Library (NPTL) to add in support for ppc Linux?  Has anyone
+ Kevin> decided on what register will be used for Thread Local Storage on PPC
+ Kevin> (32bit)?  (Is this r13 on ppc64?).  Have the necessary modifications to
+ Kevin> the ABI/compiler been made to support a dedicated thread local storage
+ Kevin> register?
+
+ > 	There still is a question of what the final version of thread
+ > support will look like in Glibc.  TLS support has not been added to
+ > PowerPC GCC yet.  GPR 13 is reserved for the thread ID.  I do not know
+ > whether that also can be used as the TLS base pointer.
+
+Funny I was just talking to Richard Henderson on the plane about this
+last week.
+
+David, I was thinking on working on TLS for PPC (gcc side of things),
+but Kevin is right, we need to get a register and change the ABI, else
+things can get really spooky.  I was thinking we could use r13 (?)
+like PPC64 does.
+
+I also vaguely recall that Geoff has a list of ABI changes pending.
+Perhaps we should do all these at the same time.
+
+Anywhoooo, we should probably discuss this on the gcc lis instead.
+
+Aldy
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
