@@ -1,38 +1,37 @@
-Subject: Re: PREEMPT on PPC
+Subject: Re: [PATCH] ppc32: arch code preempt fixes
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Colin Leroy <colin@colino.net>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-In-Reply-To: <13b501c41283$7e2ab3c0$3cc8a8c0@epro.dom>
-References: <1080197240.1210.2.camel@gaston>
-	 <1080201697.1217.3.camel@gaston>  <13b501c41283$7e2ab3c0$3cc8a8c0@epro.dom>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <Pine.LNX.4.58.0403252207320.8124@ppc970.osdl.org>
+References: <1080271455.1196.13.camel@gaston>
+	 <Pine.LNX.4.58.0403252207320.8124@ppc970.osdl.org>
 Content-Type: text/plain
-Message-Id: <1080254519.1217.42.camel@gaston>
+Message-Id: <1080284133.1333.7.camel@gaston>
 Mime-Version: 1.0
-Date: Fri, 26 Mar 2004 09:42:00 +1100
+Date: Fri, 26 Mar 2004 17:55:33 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2004-03-26 at 03:09, Colin Leroy wrote:
-> Hi Ben!
+On Fri, 2004-03-26 at 17:12, Linus Torvalds wrote:
 >
-> > + *
-> > + * 24/03/2004 - BenH: Bump that limitation to 512k and remove the
-> > + *                    filter for the MacOS drivers as we may now run
-> > + *                    those in a shell
-> >   */
-> > -#define MAX_PROPERTY_LENGTH 4096
-> > +#define MAX_PROPERTY_LENGTH (512 * 1024)
+> On Fri, 26 Mar 2004, Benjamin Herrenschmidt wrote:
+> >
+> > I figured the best way to stop beeing bothered by users trying to run
+> > preempt was to fix it ;)
+> >
+> > Here's a first batch that close some races we had when testing regs->msr
+> > for altivec or FPU enable, then doing the giveup_* function.  A preempt
+> > in between those would have caused us to save a stale altivec or FPU
+> > context.
 >
-> It doesn't look like related to preempt, but it actually interests me :)
-> Is it a work in progress ? And most importantly ;), does it enable us to
-> reboot a radeon 9200 after sleep ?
+> Ok, this clashed with Paul work on threaded core-dumps.
+>
+> I fixed up the clashes by hand, but you should really check the end result
+> for sanity. Ben, Paul?
 
-It's a work in progress, and it will not work for nVidia's unless you
-can find the "old" PEF driver for them somewhere. For ATIs the "PEF"
-driver has to be extracted from MacOS X. It's not complete yet, I'll
-post some announce when that's done.
+Will do, thanks. Sorry for the clash, I should have pulled this morning..
 
 Ben.
 
