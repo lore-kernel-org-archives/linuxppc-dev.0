@@ -1,33 +1,41 @@
-Date: Tue, 2 Feb 1999 16:09:42 +1100
-Message-Id: <199902020509.QAA03152@tango.anu.edu.au>
+Date: Tue, 2 Feb 1999 16:29:14 +1100
+Message-Id: <199902020529.QAA03214@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: kraxel@goldbach.in-berlin.de
+To: frank@mitre.org
 CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: 
-	<Pine.LNX.4.05.9901301512490.313-100000@macintoy.masq.in-berlin.de>
-	(message from Gerd Knorr on Sat, 30 Jan 1999 15:24:20 +0100 (CET))
-Subject: Re: iMac: sound?
+In-reply-to: <36ACDDB2.6DA8ACA7@mitre.org> (message from Frank McPherson on
+	Mon, 25 Jan 1999 16:10:12 -0500)
+Subject: Re: xmon, BAT structure, etc.
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.05.9901301512490.313-100000@macintoy.masq.in-berlin.de>
+References: <36ACDDB2.6DA8ACA7@mitre.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gerd Knorr <kraxel@goldbach.in-berlin.de> wrote:
+Frank McPherson <frank@mitre.org> wrote:
 
-> Is the existing Amiga/PowerMac DMAsound driver supported to work on the
-> iMac too?  Simply insmoding it seems not to work, I get these messages in
-> the syslog:
-> 
-> 	AWACS: error, status = 4f00d0
-> 	DMA sound driver: Interrupt initialization failed
+> xmon doesn't seem to exist in the linuxppc sources any more and I'm
+> having trouble getting the one from the linuxppc.org 2.1.24 sources to
+> compile with 2.2.0-pre5, which is the latest version I was able to pull
+> from vger's anonymous cvs before it started always refusing connections.
+>   Where can I get it, or something equivalent?  What's the best way to
 
-That's a symptom of macos having shut down the awacs chip.  I haven't
-found any way short of a hard reset to start it up again.
+I suggest you get a copy of my tree by anonymous rsync from
+samba.anu.edu.au::linux-pmac-devel.  Look at http://rsync.samba.org/
+if you need more information about rsync.
 
-The dmasound.c in my anon rsync tree (samba.anu.edu.au::linux-pmac-devel)
-has very minimal burgundy support already.  I (and Peter Barker here)
-are working on it now.
+> I'm working on getting linux up and running on a non-prep, non-pci VME
+> board with a 603e and having some trouble with it.  I've got the kernel
+> uncompressing down to where it should be, but it traps when it gets a
+> bit of the way in to init/main.c.  When I write the contents of the BAT
+> structure to dual port RAM on the VME bus, I get all zeros, leading me
+> to believe I'm not setting thins up correctly down in the
+> platform-specific sections.  
+
+It could be just that the RAM is set for write-back caching and the
+values are still in the cache.  (Write-back caching is the default
+when the data MMU is disabled.)  You can use the dcbst instruction to
+make sure the stuff you write gets flushed to memory.
 
 Paul.
 
