@@ -1,27 +1,32 @@
-From: benh@kernel.crashing.org
-To: <msokolov@ivan.Harhan.ORG>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: EV-64260-BP & GT64260 bi_recs
-Date: Wed, 27 Mar 2002 18:48:51 +0100
-Message-Id: <20020327174851.14516@mailhost.mipsys.com>
-In-Reply-To: <0203271732.AA04381@ivan.Harhan.ORG>
-References: <0203271732.AA04381@ivan.Harhan.ORG>
+Message-ID: <3CA2091C.96665221@mvista.com>
+Date: Wed, 27 Mar 2002 13:02:04 -0500
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: benh@kernel.crashing.org
+Cc: Michael Sokolov <msokolov@ivan.Harhan.ORG>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+References: <3CA1F048.6E1CD277@mvista.com> <20020327184011.1527@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->But why is the MAC address in ASCII? Why not simply put the 6 bytes in there?
->Why the extra burden of parsing the ASCII?
+benh@kernel.crashing.org wrote:
 
-Well, I would put the 6 bytes, I beleive he wrote it to make it
-readable for us ;)
+> Any reason why BI_LAST has those 4 bytes of data set to 0, why not
+> just BI_LAST size=0 and no data ?
 
-The point of bi_recs is indeed to avoid ascii (to avoid wasting too
-much space). Or else we would just use a device_tree or an xml
-tree :)
+Only reason is that it is how its implemented now so to keep backward
+compatibility...
 
-Ben.
+E.g., _2_4_devel, arch/ppc/boot/common/misc-simple.c:decompress_kernel()
+
+        rec->tag = BI_LAST;
+        rec->size = sizeof(struct bi_record);
+        rec = (struct bi_record *)((unsigned long)rec + rec->size);
+
+Mark
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
