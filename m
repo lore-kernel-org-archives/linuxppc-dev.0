@@ -1,36 +1,57 @@
-Message-ID: <757A9CB222EBD5118D2300D0B7828DE10BE1D641@az33exm32.corp.mot.com>
-From: Swarthout Ed-RA8734 <Ed.Swarthout@freescale.com>
-To: "'DeLaGarza, Robert'" <robdlg@att.net>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: MPC8245 Error No. 26
-Date: Tue, 27 Jul 2004 11:54:10 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: BAT mapping exported to user-space
+References: <10A74DE9-DFF7-11D8-96F8-003065F9B7DC@embeddededge.com>
+From: "Linh Dang" <linh@linhdang.home>
+Date: Tue, 27 Jul 2004 15:32:47 -0400
+In-Reply-To: <10A74DE9-DFF7-11D8-96F8-003065F9B7DC@embeddededge.com> (Dan
+ Malek's message of "Tue, 27 Jul 2004 14:02:03 -0400")
+Message-ID: <wn58yd5p7og.fsf@linhd-2.ca.nortel.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Concurrent Write should never be set.  There was a problem with the autoconfig detection in serial.c which left this bit set in uart0 when detecting uart1.
+Dan Malek <dan@embeddededge.com> wrote:
 
-See:
-http://linux.bkbits.net:8080/linux-2.4/cset@3f95b003q4gnNPHPXqRMbNkI64jdaA?nav=index.html|src/|src/drivers|src/drivers/char|related/drivers/char/serial.c
+>
+> On Jul 27, 2004, at 1:34 PM, Dang, Linh [CAR:2X23:EXCH] wrote:
+>
+>>> cat /proc/ppc_htab
+>> PTE Hash Table Information
+>
+> You misunderstand.  This is the PPC Hash table, not Linux PTEs.
+> There are lots and lots and lots of Linux PTEs are are eventually
+> loaded into the PPC hash table for the processor to fetch.
 
-I've verified this fix with the MPC8540 DUART.
+Thanx for pointing that out. I have to dig further. I guess it would
+come down to how much pressure using pages for mapping our asics
+(instead of BATs) would have on the TLBs.
 
-Ed.Swarthout at Freescale dot com
+Just to clarify things, I'm trying to sell Linux to management (we're
+a VxWorks shop) and trying to tell them that Linux's
+RT-performance/efficiency is adequate and Linux would bring in a lot
+more robustness/stability.
 
------Original Message-----
-From: DeLaGarza, Robert
 
-With regard to "Error No. 26" (quoted below), has any work been done in
-the kernel or serial drivers to compensate for this error?
+> What processor are you using?
 
-I've observed problems only when both UARTs were enabled, so I suppose
-one solution is to enable only one UART.
+7447 at 1 GHz (the bottle of the system is the I/O to the
+memory-mapped ASICs)
 
-...
+>
+>> I though the kernel (2.6) only use pages for vmalloc.
+>
+> There is lots of kernel space allocated through vmalloc(), plus
+> other specialized spaces depending upon the processor core
+> that are allocated through page tables.
 
-http://www.freescale.com/files/32bit/doc/errata/MPC8245CE.pdf
+Hmm, i though most of kernel's objects (socket's buffer included) are
+allocated thru the slab-allocator. slab, AFAIK, doesn't use neither
+vmalloc nor pages.
 
+
+--
+Linh Dang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
