@@ -1,38 +1,44 @@
-Date: Wed, 19 Sep 2001 03:38:24 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: linuxppc-embedded@lists.linuxppc.org, trini@mvista.com
-Subject: Re: BitKeeper and linuxppc_2_4_devel
-Message-ID: <20010919033824.B5042@cx258813-a.chnd1.az.home.com>
-References: <3BA86732.363312A4@imc-berlin.de>
-Mime-Version: 1.0
+Message-ID: <3BA8772C.CDF5D0AB@raleigh.ibm.com>
+Date: Wed, 19 Sep 2001 06:45:00 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
+MIME-Version: 1.0
+To: Mark Hatle <fray@mvista.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Errata 67/77 / walnut bugs (was: Re: Erratum 51 bugfix?)
+References: <20010917152316.O3851@zax> <3BA62583.55E48A97@mvista.com> <20010918102901.A1183@zax> <3BA7980B.EEBF1F5D@mvista.com> <20010919121954.D13693@zax> <3BA801A9.B6311C93@mvista.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BA86732.363312A4@imc-berlin.de>; from steven.scholz@imc-berlin.de on Wed, Sep 19, 2001 at 11:36:50AM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Sep 19, 2001 at 11:36:50AM +0200, Steven Scholz wrote:
-> But "bk clone http://source.mvista.com/linuxppc_2_4_devel linux/"
+The fix must be used for each stwcx.
+
+Chip
+IBM Microelectronics.
+
+Mark Hatle wrote:
 >
-> results today (!?) in
+> David Gibson wrote:
+> >
+> > Ah, yes, I discovered ATOMIC_SYNC_FIX after I sent that, and have now
+> > turned it on.  That should certainly fix the atomic ops, however there
+> > are quite a number of other places where the kernel uses stwcx., which
+> > ATOMIX_SYNC_FIX doesn't fix - notably arch/ppc/kernel/bitops.c and
+> > include/asm-ppc/bitops.h.  As well as activating ATOMIX_SYNC_FIX I
+> > tried inserting a sync before every other stwcx. that I could find,
+> > and I haven't managed to get a process to lock up yet.
 >
-> drainErrorMsg: Unexpected response:
-> <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+> Just as an FYI, we also do this in glibc to be safe.  We have never been
+> able to pin down a problem in userspace due to this bug, but we thought
+> it would be better safe then sorry until we can get definative proof
+> that the bug will not happen in userspace.
 >
-> Has anyone else the same problem?
-
-Yes.  Just noticed it yesterday...somebody will get it fixed.
-
-> BTW which one has the most recent source: ppc.bkserver.net oder
-> source.mvista.com???
-
-source.mvista.com is a mirror of ppc.bkserver.net.  I'm using
-ppc.bkserver.net for now.
-
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+> The following two files in glibc should be patched:
+> linuxthreads/sysdeps/powerpc/pt-machine.h
+> sysdeps/powerpc/atomicity.h
+>
+> --Mark
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
