@@ -1,66 +1,71 @@
-Date: Tue, 5 Mar 2002 23:02:55 -0800 (PST)
-From: Paul White <pwhite@bivio.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: MPC7455
-Message-ID: <Pine.LNX.4.21.0203052248340.25466-100000@stimpy.networkrobots.com>
+Date: Wed, 6 Mar 2002 08:53:08 -0800 (PST)
+From: Adam Wozniak <awozniak@comdev.cc>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: problems with shared memory
+In-Reply-To: <Pine.LNX.4.33.0203051631130.24566-100000@rangers.comdev.cc>
+Message-ID: <Pine.LNX.4.33.0203060852090.25863-100000@rangers.comdev.cc>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello!
+I've got Linux 2.4.16 running on a custom MPC8260 board.
 
-I've read through the archives of the linuxppc-dev and linuxppc-embedded
-mailing lists, and didn't see very much information regarding Linux on
-the Motorolai MPC 7455.
+when I do the program below in a tight loop
+i.e.
 
-I've checked the latest base kernel from kernel.org, 2.4.18, and there
-is no 7455 support. I've already done the code to bring Linux up on the
-7455, adding it to arch/ppc/kernel/cputable.c, as well as writing a new
-setup_cpu_7455, and a new setup_7455_regs function which sets up the
-HID0, HID1, and MSSCR0 registers. I am wondering if anyone is interested
-in these changes.
+while true
+do
+./foo 8675 1024
+done
 
-In one of the e-mails in the archives, it was suggested to have Linux
-configure the 7455 just the same as the 7450, however this will not
-work properly.  HID0 has changed quite a bit, as well as HID1, thus
-requiring a new setup routine.  It looks as though the 7451 and 7455
-are very similar, and the same init code and restrictions apply, however
-between the 7450 and 7451, things have changed quite a bit.
+Things pop after about 20 iterations.  It'll choose a different spot
+in the kernel to pop depending on what options I've compiled into the
+kernel.  I believe I've got some memory corruption going on.  When I
+poke around with a hardware debugger I see values in kernel structures
+which clearly aren't right.
 
-If there is no support out there as of yet, I can create a patch file
-and send it off, if anyone is interested.
+Any known problems with shared memory in the 2.4.16 kernel on the MPC8260?
 
-One thing we ran into regarding the MPC7455, however, is that
-it does not guarentee Stores before Loads, meaning if you have
-code that has:
+This should be easy enough for someone to try to reproduce.
 
-Load Instruction
-Load Instruction
- - This is OK, they will happen in order as long as its Guarded
+=== begin foo.c
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/shm.h>
 
-Store Instruction
-Store Instruction
- - This is OK, they will happen in order as long as its Guarded
+int main (int argc, char **argv)
+{
+   int j;
+   char *q;
+   int p;
 
-Load Instruction
-Store Instruction
- - This is OK, they will happen in order as long as its Guarded
+   p = shmget(atoi(argv[1]),  atoi(argv[2]), IPC_CREAT | 0666);
 
-Store Instruction
-Load Instruction
- - This is not guarenteed in order, even if its Guarded
+   q = shmat(p, NULL, 0);
 
-We had to add an eieio to all of our drivers, such as our PCI
-driver, which requires a write to one register before reading another.
-The eieio must go between the store and the load.
+   printf("at @ %p \n", q);
 
-Just a heads up, if no one has tried the 7455 yet!  Let me know
-if anyone is interested in the 7455 changes I've done.
+   {
+      int i;
+      for (i = 0; i < atoi(argv[2]); i++)
+      {
+         q[i]++;
+      }
+   }
 
-Paul White
-Senior Engineer, Software
-Bivio Networks, Inc.
+   shmdt(q);
+}
+=== end foo.c
+
+
+
+--
+Adam Wozniak (KG6GZR)   COM DEV Broadband - Digital and Software Systems
+awozniak@comdev.cc      805 Aerovista Place, San Luis Obispo, CA 93401
+                        http://www.comdev.cc
+                        Voice: (805) 544-1089       Fax: (805) 544-2055
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
