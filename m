@@ -1,46 +1,37 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16567.54462.281664.81717@cargo.ozlabs.ibm.com>
-Date: Sat, 29 May 2004 10:09:34 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Tom Rini <trini@kernel.crashing.org>,
-	Pantelis Antoniou <panto@intracom.gr>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Kumar Gala <kumar.gala@motorola.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH #4/9] 8xx-2.6 | MM tweaks
-In-Reply-To: <20040527165316.GF6763@smtp.west.cox.net>
-References: <40B48819.9000904@intracom.gr>
-	<20040527165316.GF6763@smtp.west.cox.net>
+Subject: Linux 2.6 and MVME5100
+From: Jean-Christophe Dubois <jcd@tribudubois.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1085837483.3434.31.camel@lancelot.dubois.etowns.net>
+Mime-Version: 1.0
+Date: Sat, 29 May 2004 15:31:23 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini writes:
+Hi,
 
-> Which you exactly reverted.  Were the changes from Paul incorrect here?
-> Or is perhaps there something more needed on the 8xx side of things?
+I recently downloaded Linux 2.6.6 from kernel.org and found that the
+support for the MVME5100 was added to the 2.6 kernel.
 
-The problem with the old code (which Pantelis put back) is that PTEs
-no longer necessarily have fixed, unique virtual addresses in the
-kernel.  Now that we can have PTE pages in highmem, it is necessary to
-use pte_offset_map to get the address of a PTE (which does a kmap if
-you have HIGHMEM enabled) and pte_unmap when you are finished with
-it.  The address you get back from pte_offset_map is only valid until
-you do pte_unmap, and you can't sleep between pte_offset_map and
-pte_unmap (it uses an atomic kmap).
+Unfortunately it seems that the mvme5100 related files are out of sync
+with the 2.6 tree (the compilation fails with prototype errors, unknown
+header files ...). Actually it seems that no or little porting has been
+done since Monta-Vista contributed them from their Linux 2.4 kernel.
 
-However, PTE pages for kernel mappings are allocated in lowmem, and
-you can get a persistent kernel virtual address for them.
+I am in the process of fixing things so that I can compile 2.6 for the
+VME board but before going too far, I'd like to know if this is a known
+problem, if others already compiled 2.6 successfully for the MVME5100
+(If so please a brief explanation would be appreciated) and if there is
+a person responsible for consolidating all changes related to the
+MVME5100.
 
-Those changes were in va_to_pte, and the only user of that (that I can
-find) is va_to_phys, which isn't called at all AFAICS (and shouldn't
-be needed).  Probably the best thing is just to remove them.  In
-addition, get_8xx_pte and print_8xx_pte appear to be used only in some
-debugging code in softemu8xx.c, and could probably be dispensed with
-(another #ifdef gone, yay :).  Certainly users of get_8xx_pte could
-use get_pteptr instead.
+Thanks for your time
 
-Paul.
+JC
+
+--
+Jean-Christophe Dubois <jcd@tribudubois.net>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
