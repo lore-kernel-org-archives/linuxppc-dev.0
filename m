@@ -1,54 +1,84 @@
-Date: Sat, 11 Mar 2000 15:50:16 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Michel Dänzer <michdaen@iiic.ethz.ch>
-cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on
- ppcwithr128
-In-Reply-To: <38C98B3D.AB06EE7E@iiic.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10003111521590.14494-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130300b4ee7a26b302@[192.168.1.2]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 11 Mar 2000 16:16:29 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: Christian Jaeger <christian.jaeger@rektorat.ethz.ch>
+Subject: TCP/PPP stall problem; kernel2.3.48 on BWG3
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > One would sure hope so. The 4.0 X server dies horribly during device
-> > configuration on my Lombard. After feeding it a hand-crafted XF86Config,
-> > it just hangs the machine.
->
-> Which driver?
->
-> With the fbdev driver, you have to specify the bus ID of the graphics chip,
-> e.g.
->
->     BusID	"0:1:0"
+Some weeks ago I started suffering from the TCP over PPP stall/machine
+lockup, which several people have reported since october. It's strange that
+I've never had this problem before, but now it seems getting worse and
+worse (perhaps I should contact the internet provider?). Sometimes there's
+no problem at all (several MB transfer with 0 errors), but more often than
+not only some packets are received correctly, then there's this loop of
+receiving a packet with increasing delays between (the delay is doubled
+after each received packet) and (almost?) all received packets increase the
+'errors' and 'overruns' counts in ifconfig. Since logging in to the
+provider again (and also rebooting linux) then doesn't help, it's probably
+tied to the machine(s) at the other end.
 
-I'll try that. But the results I get with X -probeonly are more than
-confusing. After I tosses out most of the driver modules, the probe runs
-once or twice, and gets sporadic SIGILL the rest of the time. To the
-extent of not succeeding at all for the rest of the day. Or succeeding
-only from the console but not from a slogin session (signal 4 in the
-slogin session consistently). The signal happens apparently at different
-times during X startup - while loading the dbe module, after loading the
-fbdevhw module.
+I'm using 2.2.15pre11 now. At Jan31 I compiled 2.2.15pre4 from linuxcare
+with IPmasquerading and at the same time updated pppd, some days ago I
+upgraded to the 2.2.15pre11 I'm using now. Before Jan31 I used 2.2.14pre9
+from RShaw.
 
-The chip was detected on the PCI bus - what's the BusID supposed to do in
-this situation? Keep X from probing the other PCI devices?
+Switching off VJ compression (novj in ~/.ppprc) has not helped against the
+stall. My machine has not _crashed_ the last few tries, but that might be
+coincidence.
 
-OK, tried to feed it the BusID (0:17:0 as reported by the probe). Results:
-a beep, and the warnings 'invalid mem allocation' and 'invalid IO
-allocation'. The IO range smells like a port address range, is that
-remapped by the PCI bridge? lspci reports the IO range as disabled. I'll
-look into Geerts description of the Mach64 memory layout to figure out
-what aperture X tries to use here.
+I have a Blue G3 (rev.2).
 
-Trying a 'startx' with this config leaves me with the bell on and the
-machine hung.
+What is the best solution for this so far? I've read that the 2.3.x kernel
+doesn't have this problem. Is this really true? Is using 2.3.x a good idea?
 
-I haven't patched or configured anything in the X source.
+I have rsynced 2.3.48 from PaulM's tree, and have compiled it seven times
+now without any luck getting it booted. The first 6 tries were with
+BOOTX_TEXT (early boot) enabled. (I use BootX.) The first 3 tries hanged
+just after the "booting..." line, the next 3 tries printed some further
+lines and then hanged too.
+(In detail:
+...
+ booting...
+ pmac_init(): exit
+ id mach(): done
+ MMU: enter
+ MMU: hash_init
+ hash: enter
+ hash: find_piece
+ hash: patch
+ hash: done
+ MMU: mapin
+ MMU: setbat
+ MMU: exit
+ setup_arch: enter
+ setup_arch: bootmem
+ arch: exit
+)
 
-	Michael
+I've read the tips on the list from yesterday about 'early booting text'
+and have now tried once more with a fresh source tree (still 2.3.48) with
+.config from linuxcare and 3 changes: DEVFS_FS off, BOOTX_TEXT off, Altivec
+off. Switching the Bootx stuff off has only changed that the MacOS screen
+doesn't disappear. Would this be all right? Should I still try yaboot?
+
+
+BTW: if you switch off General/Powerbook Power Management, the kernel will
+not get linked:
+
+drivers/block/block.a(ide-pmac.o): In function `pmac_ide_init_hwif_ports':
+ide-pmac.o(.text+0xfc): undefined reference to `check_media_bay_by_base'
+
+...which is defined in ./include/asm/mediabay.h,
+./include/asm-ppc/mediabay.h and ./drivers/macintosh/mediabay.c
+
+
+Christian.
+
+(PS. I only receive the digest form of the list)
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
