@@ -1,31 +1,47 @@
-Message-ID: <4102D82B.8010804@246tNt.com>
-Date: Sat, 24 Jul 2004 23:44:11 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+Message-ID: <4102DF54.9060007@att.net>
+Date: Sat, 24 Jul 2004 15:14:44 -0700
+From: "DeLaGarza, Robert" <robdlg@att.net>
 MIME-Version: 1.0
-To: "Kevin P. Dankwardt" <k@kcomputing.com>,
-	Linux/PPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Linux is not reliable enough?
-References: <KCEOLLHGFJIAFNAMGACHMEMODPAA.k@kcomputing.com>
-In-Reply-To: <KCEOLLHGFJIAFNAMGACHMEMODPAA.k@kcomputing.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8245 Error No. 26
+References: <KCEOLLHGFJIAFNAMGACHMEMODPAA.k@kcomputing.com> <000f01c47172$591008d0$0301a8c0@chuck2>
+In-Reply-To: <000f01c47172$591008d0$0301a8c0@chuck2>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kevin P. Dankwardt wrote:
+With regard to "Error No. 26" (quoted below), has any work been done in
+the kernel or serial drivers to compensate for this error?
 
- >
- > What the team was hoping to use is a MPC5200 based system and the
- > ELDK.
- >
- >
- > Does anyone know of any embedded Linux projects where human lives
- > really do depend upon Linux to be robust and reliable?
+I've observed problems only when both UARTs were enabled, so I suppose
+one solution is to enable only one UART.
 
-AFAIK, the MPC5200 is not to be used in life-critical systems ...
-That's what the datahseet say anyway.
 
-Sylvain
+
+Error No. 26: Concurrent writes occur to the UART registers when
+UAFR[0] is set
+
+Detailed Description:
+The UART Alternate Function Register (UAFR) enables software to write
+concurrently to both UART1 and UART2 registers with the same write
+operation. However, this action occurs when the UARTs are individually
+written to, but in addition, concurrent writes to the UART registers
+occur as a result of writing to other EUMBAR registers, including the
+error injection registers, when UAFR[0] is set.
+
+Projected Impact:
+Concurrent writes occur to the UART registers when UAFR(0) is set and
+EUMBAR registers are written to.
+
+Work Arounds:
+Set UAFR(0) only for concurrent writes to UART registers. Clear this bit
+immediately afterwards.
+
+Projected Solution:
+No plans to fix.
+
+http://www.freescale.com/files/32bit/doc/errata/MPC8245CE.pdf
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
