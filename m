@@ -1,16 +1,64 @@
-Message-ID: <DF2142DFD5ECD311BA1900104B943A97B88CDD@roche-exg1.rochester.adaptivebroadband.com>
-From: "Ruhland, Paul" <pruhland@microwavedata.com>
-To: svacca@valcom.com,
-        "LinuxEmbeddedMailList (E-mail)"
-	 <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <01C07729.CF3B0510.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "'Ruhland, Paul'" <pruhland@microwavedata.com>,
+        "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: How to disable Denial-of-Service safeguard in Linux Kernel?
-Date: Fri, 5 Jan 2001 14:47:16 -0500 
+Date: Fri, 5 Jan 2001 15:11:41 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+Thanks Paul,
+
+I have run this test previously making sure that the Client always called close()
+1st.  If I understand correctly, the 1st to close() is the only one to go into TIME-WAIT.
+But, I also set TCP_TIMEWAIT_LEN = 0.
+
+But, anyway, regarding the test where the Client connected 29,500 times with no problem
+until exactly 10 min expired would seem to discount any resource problem, wouldn't it? :-)
+It doesn't seem to matter if the freq. of connects is 50/s (29,500 in 10min) or 1/30s (20 in 10min).
+How could it work so well almost 30,000 times, and then die like that?
+
+Connecting at a freq, of 1/52 secs works, but 1/48secs doesn't.  So, I wonder if 50 secs is
+another key number.
+
+I've tried playing with the func in net/core/utils.c called net_ratelimit() which seems to be
+some kind of safeguard against DoS, but it doesn't appear to help.
+
+For test purposes, this is a very simple, barebones, generic Client/Server setup.
+
+Client:   while (1)
+                {
+               socket()
+               connect()
+               close()
+               5 sec delay (or could be 30 sec, or could be 50 per sec)
+               }
+
+Server:   socket()
+             bind()
+             listen()
+
+             while (1)
+                {
+               accept()
+               close()
+               }
+
+
+Puzzled,
+
+ShutEye Thinkin
+
+
+-----Original Message-----
+From:	Ruhland, Paul [SMTP:pruhland@microwavedata.com]
+Sent:	Friday, January 05, 2001 2:47 PM
+To:	svacca@valcom.com; LinuxEmbeddedMailList (E-mail)
+Subject:	RE: How to disable Denial-of-Service safeguard in Linux Kernel?
 
 Without knowing anything about your linux tcp server I will take a guess at
 what is happening.
