@@ -1,51 +1,31 @@
-Message-ID: <001901bfe7f9$148fbae0$0400a8c0@PeterTympanick>
-From: "Peter Tympanick" <ptymps@ultsol.com>
-To: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <20000707014336.1293.qmail@web2106.mail.yahoo.com> <396575E6.7E38558C@brainlink.com>
-Subject: Re: Graphics interface for embedded linux
-Date: Fri, 7 Jul 2000 02:52:36 -0700
+To: "Gong Zhuo" <gongzhuo@163.net>
+Cc: "Linux PPC Mailing List" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to debug the linux kernel? 
+In-reply-to: Your message of "Fri, 07 Jul 2000 17:01:46 +0800"
+             <000901bfe7f2$25d23be0$4607a8c0@LocalHost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 07 Jul 2000 20:37:46 +1000
+Message-ID: <15326.962966266@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You know, Just becuse you have discovered free software, don't think that
-all the answers are posteed here.   Look out side GNU/GDB.  You'll be amazed
-what you uncover.
-
-Go Linux!
-
-
------ Original Message -----
-From: Ormund Williams <ormundw@brainlink.com>
-To: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, July 06, 2000 11:17 PM
-Subject: Re: Graphics interface for embedded linux
-
-
+On Fri, 7 Jul 2000 17:01:46 +0800, "Gong Zhuo" <gongzhuo@163.net> writes:
 >
-> Wentao Xu wrote:
-> >
-> > Hi, every one,
-> >
-> > I want a graphics interface for my box which has a
-> > embedded linux, but dont know how to make it. Is there
-> > any project to give a windows like interface to
-> > embedded linux? Thanks,
-> >
-> > Wentao
-> >
+>Hi:
+>  If I want to change the kernel of linux , how can I debug the kernel ? Any
+>kind of tools can I use? Any URL I can read?
 >
-> Hi Wentao
->
-> Have you looked at Nano-X: http://microwindows.censoft.com/
->
-> __
-> Ormund
->
->
+>Gong Zhuo
 
+The best way is to use kgdb. Hunt around on the archives for this list, or
+look at the HOWTOs, for pointers on how to do this. Cheers!
+								Murray...
+--
+Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
