@@ -1,78 +1,49 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Oops: kernel access of bad area, sig: 11
-Date: Fri, 16 Nov 2001 13:41:54 +0200
-MIME-Version: 1.0
-Message-Id: <0111161241540C.28381@jocke.lumentis.se>
+Date: Fri, 16 Nov 2001 04:57:38 -0700
+From: Matt Porter <mporter@mvista.com>
+To: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Organisation of 4xx initialization code
+Message-ID: <20011116045737.A24130@cx258813-a.chnd1.az.home.com>
+References: <20011116164625.K673@zax>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011116164625.K673@zax>; from david@gibson.dropbear.id.au on Fri, Nov 16, 2001 at 04:46:26PM +1100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all
+On Fri, Nov 16, 2001 at 04:46:26PM +1100, David Gibson wrote:
+>
+> At the moment the initialization for each of the 4xx boards goes
+> through the platform_init() in arch/ppc/kernel/ppc4xx_setup.c, which
+> in turns calls a board_init() function for the specific board.
+>
+> It seems to me that it would make more sense to put platform_init() in
+> the board specific files, and these functions could then call back,
+> where appropriate, to generic 4xx setup functions.  This would mean:
+> 	- It would be easier to support wierd and wacky boards which
+> have non-standard address setups.
+> 	- Some ugly #ifdefs in ppc4xx_setup.c could be done away with.
+> 	- We should be able to remove some inconvenient header
+> dependencies - at present lots of things are recompiled when board
+> local defines are changed because walnut.h/ep405.h/etc are included
+> indirectly in serial.h and some other unexpected places.
+>
+> Thoughts?
 
-Just pulled bk:linux_ppc_2_4  and ported it our  custom MPC860 board with
-128MB RAM. Booted the new kernel and did a compile to test the kernel and
-ggc got signal 11 and an Oops( see below).
-The same "port" works for Monta Vistas kernel hhl 2.0(based on 2.4.2)
+I've been wondering why it's architected that way as well.  It
+seems you are looking for it to follow the model of the well
+abstracted 7xx/74xx ports.  Examples are the ones that rely on
+mpc10x_common and pplus_common as libraries of common initialization
+code (MEN F1, PCore, MCPN765, MVME5100, etc.).
 
-Any ideas what migth be wrong?
+Seems like that would be an improvement for people doing custom
+405 ports and ease maintenance of existing ports (especially
+the #ifdef creep).
 
-         Jocke
-
-[root@jocke 2.4.15-pre4]# ppc_8xx-ksymoops -v vmlinux -a ppc oops1
-ksymoops 2.4.1 on i686 2.4.3-12.  Options used
-     -v vmlinux (specified)
-     -K (default)
-     -L (default)
-     -O (default)
-     -m /opt/hardhat/devkit/ppc/8xx/target/boot/System.map (default)
-     -a ppc
-
-Error (regular_file): read_system_map stat
-/opt/hardhat/devkit/ppc/8xx/target/boot/System.map failed
-ppc_8xx-ksymoops: No such file or directory
-Oops: kernel access of bad area, sig: 11
-NIP: C0004AFC XER: 00000000 LR: C001D6EC SP: C7259DF0 REGS: c7259d40 TRAP:
-0300dUsing defaults from ksymoops -t elf32-little
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c7258000[228] 'cpp0' Last syscall: 108
-last math 00000000 last altivec 00000000
-GPR00: 00000100 C7259DF0 C7258000 C6FA3000 00000000 C011840C 02000000 1004D57C
-GPR08: C0373040 00000000 000006F8 00000000 24022080 100327D0 10030000 00000000
-GPR16: 1002FEC0 00000001 00000000 00000004 00009032 07259F40 00000000 C0002988
-GPR24: 02000000 C0126AB0 00030002 C725C134 C74E3690 C0126AB0 00112889 C03318C0
-Call backtrace:
-C001D6DC C001D7CC C001D940 C000986C C0002988 00000023 0FF3249C
-10011FC0 100081B4 10007684 100064F4 100041E0 10008320 10007684
-100064F4 100041E0 10008320 10007684 100064F4 100041E0 10003464
-0FED9DBC 00000000
-Warning (Oops_read): Code line not seen, dumping what data is available
-
->>???; c0004afc <clear_page+c/28>   <=====
-Trace; c001d6dc <do_anonymous_page+50/e4>
-Trace; c001d7cc <do_no_page+5c/160>
-Trace; c001d940 <handle_mm_fault+70/104>
-Trace; c000986c <do_page_fault+194/3d0>
-Trace; c0002988 <ret_from_except+0/34>
-Trace; 00000023 Before first symbol
-Trace; 0ff3249c Before first symbol
-Trace; 10011fc0 Before first symbol
-Trace; 100081b4 Before first symbol
-Trace; 10007684 Before first symbol
-Trace; 100064f4 Before first symbol
-Trace; 100041e0 Before first symbol
-Trace; 10008320 Before first symbol
-Trace; 10007684 Before first symbol
-Trace; 100064f4 Before first symbol
-Trace; 100041e0 Before first symbol
-Trace; 10008320 Before first symbol
-Trace; 10007684 Before first symbol
-Trace; 100064f4 Before first symbol
-Trace; 100041e0 Before first symbol
-Trace; 10003464 Before first symbol
-Trace; 0fed9dbc Before first symbol
-Trace; 00000000 Before first symbol
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
