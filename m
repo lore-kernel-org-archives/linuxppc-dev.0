@@ -1,32 +1,26 @@
-Date: Mon, 8 Jan 2001 14:22:37 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: frowand@mvista.com
-Cc: Wolfgang Denk <wd@denx.de>, Tom Rini <trini@kernel.crashing.org>,
-        diekema_jon <diekema@bucks.si.com>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Root keys on bk://bitkeeper.fsmlabs.com:5000 have changed
-Message-ID: <20010108142237.A8686@hq.fsmlabs.com>
-References: <20010106104711.D1400@opus.bloom.county> <200101061940.f06Jdx904796@denx.local.net> <20010107031448.H13210@hq.fsmlabs.com> <3A58CCC6.75B79975@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A58CCC6.75B79975@mvista.com>; from Frank Rowand on Sun, Jan 07, 2001 at 12:08:38PM -0800
+Message-ID: <5D2136DF3DD5D311AE89009027C67FB001D8F265@fmsmsx96.fm.intel.com>
+From: "Zheng, Haifei" <haifei.zheng@intel.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: menuconfig for PPC860T
+Date: Mon, 8 Jan 2001 16:21:27 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-} Cort Dougan wrote:
-} >
-} > } Is there some place where such decisions are discussed  or  at  least
-} > } announced?
-} >
-} > The closed list for read/write access people to those trees.  I can setup a
-} > mailing list, or send the emails to this (or another) mailing list if
-} > people are actually interested.
-}
-} Yes please, somewhere.  People are interested....
+Hello,
 
-I'll have something setup in a few days for people to subscribe to, then.
-I'll send more info to this list when I have it setup.
+We downloaded kernel version 2.4.0 from kernel.org. Our target is RPX-CLLF
+(860T) from Embedded Planet. We did "make menuconfig", but we could not find
+PPC options at all under the Processor type and features (all we have is
+Pentium). Did someone have the same problem before? How to go about it?
+
+Thanks a lot.
+
+Haifei
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
