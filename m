@@ -1,38 +1,30 @@
-Date: Fri, 12 Mar 1999 16:53:14 -0500 (EST)
-From: Tom Rini <tmrini@ntplx.net>
-To: linuxppc-dev@lists.linuxppc.org
-cc: linuxppc-user@lists.linuxppc.org
-Subject: Re: ok, vger anoncvs is back, README (fwd)
-In-Reply-To: <Pine.LNX.3.96.990311181502.7624A-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.LNX.4.05.9903121644510.2229-100000@pc.wackyland.com>
+Message-ID: <36E9925E.2629E4EC@brightstareng.com>
+Date: Fri, 12 Mar 1999 17:17:02 -0500
+From: Stuart Adams <sja@brightstareng.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Video driver for MPC82X LCD Controller ??
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 11 Mar 1999, Cort Dougan wrote:
+Has anyone done any work on a video driver for the
+Motorola MPC821 or MPC823 on-chip LCD controller ???
 
-> An anoncvs mirror of the vger repositories is available now from
-> there.  Sorry for taking so long.  The modules available which people
-> should be interested in are 'linux' and 'modutils'.
+Thanks,
+  Stuart
 
-And for those of you that kept an old vger repository around and don't
-mind some ugly for lines:
+-- 
 
-for i in `find . -name Root`;do echo 
-:pserver:anonymous@cvs.on.openprojects.net:/cvs/linux' > $i;done
-
-for i in `find . -name Repository`;do mv $i $i.orig;done
-for i in `find . -name Repository.orig`;do echo /cvs/linux/`echo $i | sed
--e 's/\.\///g' -e 's/\/CVS\/Repository.orig//g'` > $i;done
-
-Still have to fix the CVS/Repository at the base of your tree.
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+Stuart Adams
+Bright Star Engineering Inc.
+19 Enfield Drive
+Andover MA 01810 USA
+Tel: +1-978-470-8738
+Fax: +1-978-470-8878
+Email: sja@brightstareng.com
+Web: http://www.brightstareng.com/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
