@@ -1,31 +1,38 @@
-Date: Mon, 27 May 2002 09:14:49 -0700
+Date: Mon, 27 May 2002 09:23:23 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Dross Zhou <zjuzhou@yahoo.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: About 2.4.19 kernel(ppckernel.org)boot panic?
-Message-ID: <20020527161449.GA32718@opus.bloom.county>
-References: <20020527092321.38165.qmail@web15001.mail.bjs.yahoo.com>
+To: Armin Kuster <akuster@mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org,
+	David Gibson <david@gibson.dropbear.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Subject: Re: Another OCP enet patch
+Message-ID: <20020527162323.GB32718@opus.bloom.county>
+References: <20020527040330.GH16537@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020527092321.38165.qmail@web15001.mail.bjs.yahoo.com>
+In-Reply-To: <20020527040330.GH16537@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, May 27, 2002 at 05:23:21PM +0800, Dross Zhou wrote:
+On Mon, May 27, 2002 at 02:03:30PM +1000, David Gibson wrote:
 
-> 	I try to port linuxppc2.4.19-pre8(from
-> www.ppckernel.org) to our borad from Rpxlite_config.
-> But it panic after dump some information.
-> Before porting 2.4.19 , I have porting 2.4.4(from
-> denx.de) to my borad and it works well, I have done
-> same work as what i have done with 2.4.4.
-> What problem,it says 'kernel access of bad area, sig:
-> 11 '
+> I realise that logically the OCP enet driver, and the
+> consistent_sync() has nothing to do with PCI.  However using the pci.h
+> constants seems a better approach than defining new constants with the
+> same values, when the switch in consistent_sync() explicitly checks
+> against the PCI constants.
+>
+> In the longer term consistent_sync() itself should be changed not to
+> reference the PCI constants - in fact the PCI constants should
+> probably be moved and renamed since they have no inherent connection
+> with PCI at all.
 
-Just wondering, is your CPU old enough (and an MPC860) to need the CPU6
-errata work-arounds?  That oops almost looks like the ones that are seen
-when you need the CPU6 errata enabled but don't.
+At this point I think I should give my 2 cents, so...
+
+I think we should keep ocp-dma.h around for now (2.4.x timeframe) and
+change consistent_sync() to not check for the PCI versions (which I
+believe happened just because it's a cut&paste&fix of the ARM code) and
+for 2.5 hope that a more general fix comes out..
 
 --
 Tom Rini (TR1265)
