@@ -1,26 +1,31 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Is there a specific Alan Cox series 2.4.X I should grab for ppc linux?
-Date: Mon, 8 Oct 2001 09:59:58 -0400
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: overnight 2.4.11 seems to have used up all memory, slow as a dog
+Date: Mon, 8 Oct 2001 16:07:21 +0200
+Message-Id: <20011008140721.19291@smtp.adsl.oleane.com>
+In-Reply-To: <20011008112806.PUYY27768.tomts5-srv.bellnexxia.net@there>
+References: <20011008112806.PUYY27768.tomts5-srv.bellnexxia.net@there>
 MIME-Version: 1.0
-Message-Id: <20011008135743.ZSR8090.tomts16-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>
+>Is this a symptom of the "VM" troubles that have kept me away from the
+>2.4.X series?
+>
+>How can I track this one down?
+>
+>FWIW, this never happens with 2.2.19 at all (I can do long overnight
+>builds with no trouble with no slowdowns.
 
-I really need to get 2.4.X stable on my machine.  Dan recommends the Alan
-Cox series of 2.4.X if I am having VM trouble.
+There was at least one VM bug fixed between pre4 and pre5, you
+can rsync again (or pull from bk if you are using bk _devel)
+to check if it's better.
 
-Is there a specific ppc linux tree I should grab to get Alan's latest with
-ppc specific added or should I just go grab his latest direct from his
-site?
+Ben.
 
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
