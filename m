@@ -1,11 +1,8 @@
-Message-ID: <000e01c333e0$d7049b00$0700a8c0@eurostudio.local>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: <deepesh@india.tejasnetworks.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <Pine.LNX.4.21.0306151002370.11726-100000@deepesh.india.tejasnetworks.com>
-Subject: Re: EP8260. EST8260, SBC8260
-Date: Mon, 16 Jun 2003 09:54:38 +0200
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: debugging using BDI2000 on MPC860
+Date: Mon, 16 Jun 2003 12:56:23 +0200
+Message-ID: <FCEAKDJJAPHPLJFINDAJAEKBDCAA.Stephan.Linke@epygi.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -13,33 +10,15 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-For what is my knowledge,
-EST8260 and SBC8260 refer to the same board made from EsT (now Wind River).
-I have never used EP8260.
+Hi,
 
-I hope this help
+I want to use our BDI2000 to debug my MPC860 board. Unfortunately it always stops with a machine check interrupt at 0x00000100.
+Flashing works fine.
+Our flash is at 0xff000000, IMMR at f0000000...
 
-Gianfranco
+Any ideas? How do I define the boot address in MPC860 config files.
 
------ Original Message -----
-From: <deepesh@india.tejasnetworks.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Sunday, June 15, 2003 6:34 AM
-Subject: EP8260. EST8260, SBC8260
-
-
->
-> Please let me know the basic differences in the three boards:
->
-> 1) EP8260
-> 2) EST8260
-> 3) SBC8260
->
-> --
->
-> D.Deepesh
->
->
+Thanks, Stephan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
