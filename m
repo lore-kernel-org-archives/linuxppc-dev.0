@@ -1,85 +1,66 @@
-Message-ID: <20011117133818.52830.qmail@web15003.mail.bjs.yahoo.com>
-Date: Sat, 17 Nov 2001 21:38:18 +0800 (CST)
-From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
-Subject: Why this driver alway panic?
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3BF67854.C4D8EA7D@midrivers.com>
+Date: Sat, 17 Nov 2001 07:46:44 -0700
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Organisation of 4xx initialization code
+References: <20011116164625.K673@zax>
+			<20011116045737.A24130@cx258813-a.chnd1.az.home.com>
+			<20011116085121.D5410@cpe-24-221-152-185.az.sprintbbd.net>
+			<20011116094210.B3473@beef.az.mvista.com>
+			<20011116101323.B9242@cpe-24-221-152-185.az.sprintbbd.net>
+			<3BF5A01D.4040502@embeddededge.com>
+			<20011117114330.G12763@zax>
+			<20011116191832.D9923@cpe-24-221-152-185.az.sprintbbd.net> <15350.18199.593968.834376@cargo.ozlabs.ibm.com> <3BF65B8B.EB015B30@intrex.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am writing a video capture driver.But after this
-driver has worked for a  period(10-50 min),system
-alway panics.
-My server programe just get data form device then send
-them to network using TCP connection.
-Here is output message after panic:
----
-Oops: Kernel Mode Software FPU Emulation, sig: 8
-NIP: 00001FFC XER: 00000000 LR: 00000590 SP: C0199E30
-REGS: c0199d80 TRAP: 1000
-MSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-TASK = c0198000[5] 'bdflush' Last syscall: -1
-last math 00000000 last altivec 00000000
-GPR00: 00000004 C0199E30 C0198000 C0199E40 00000000
-C0124CB8 C0602240 0000001B
-GPR08: C0124CB8 C05B9000 C019C000 C014AB90 44000025
-10018DAC 00000000 00000000
-GPR16: 00000000 00000000 00000000 00000000 00001032
-00199E30 C000C80C 00009032
-GPR24: 00000000 00000200 C053A000 C0602240 00000000
-C0602240 C0127AB0 C0199EF0
-Call backtrace:
-C0002810 001801C0 C00385A0 C0004E80
-Oops: kernel access of bad area, sig: 11
-NIP: C000C63C XER: 20000000 LR: C000C5D0 SP: C0199CF0
-REGS: c0199c40 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000004, DSISR: 00000928
-TASK = c0198000[5] 'bdflush' Last syscall: -1
-last math 00000000 last altivec 00000000
-GPR00: 000E9715 C0199CF0 C0198000 00000000 00000000
-C0130000 C0198000 C0130000
-GPR08: 00000000 C0124CB8 C0198000 00000001 84000028
-10018DAC 00000000 00000000
-GPR16: 00000000 00000000 00000000 00000000 00001032
-00199D70 00000000 C0002818
-GPR24: C0002EDC 00000200 C053A000 C0602240 C0199D80
-00000008 C0127AB0 C0199CF0
-Call backtraC000C948 C00134CC C0002A2C C0002F10
-C0002818 C0002810 001801C0
-C00385A0 C0004E80
-Oops: kernel access of bad area, sig: 11
-NIP: C000C63C XER: 00000000 LR: C000C5D0 SP: C0199B00
-REGS: c0199a50 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000004, DSISR: 00000928
-TASK = c0198000[5] 'bdflush' Last syscall: -1
-last math 00000000 last altivec 00000000
-GPR00: 000E9761 C0199B00 C0198000 00000001 00000000
-00000001 C0198000 C0130000
-GPR08: 00000000 C0124CB8 C0198000 00000000 84000028
-10018DAC 00000000 00000000
-GPR16: 00000000 00000000 00000000 00000000 00001032
-00199C30 00000000 C0002818
-GPR24: C000A238 00000000 00030001 C0199C40 C0199C40
-0000000B C0127AB0 C0199B00
-Call backtrace:
-C00130C8 C00134CC C0002A2C C000A5EC C000A4C8 C0002818
-C000C948
-C00134CC C0002A2C C0002F10 C0002818 C0002810 001801C0
-C00385A0
-C0004E80
-Oops: kernel access of bad area, sig: 11
-NIP: C000C63C XER: 00000000 LR: C000C5D0 SP: C0199910
-REGS: c0199860 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000004, DSISR: 00000928
-TASK = c0198000[5] 'bdflush' Last syscall: -1
-last math 00000000 last altivec 00000000
+Ralph Blach wrote:
+>
+> Just a note that might influence you.  The sprs of each 405 will be the same,
+> but there is NO gurantee that the DCR, any of them look anything like any
+> other DCR in any other DCR.
+>
+> I suggest core, chip, and then platform specfic.
+>
+> Chip
+>
 
-...	...
+some differences between 405gp and 405pm:
+- DCRs and memory mapped peripherals have moved, (m4xx_map_io(): makes
+  more sense to map small blocks for each peripheral than one large
+  map for 0x80000000 on up),
 
+- the -PM supports floating point (yet more ifdefs for head_4xx.S)
+- the ethernet MAL interrupts have been mux'd from 5 to 1 in the UIC
+  (and moved too in the UIC -- more ifdefs for drivers/net/ppc4xx_enet.c)
+
+IBM appears to create their processors by combining asic cores, i.e.
+one core for the basic 405, one for ethernet, FPU, ... in doing so
+they can move things around.  depending upon how many 4xx processors
+they create, that's going to make for a lot of ifdefs if we stick to
+one set of files.
+
+is there a 'ppc-generic' set of interfaces that all code must conform
+to in the kernel? too many layers?
+
+an alternative might be (e.g.) all the ppc4xx ethernet stuff in
+one file, but ifdef'd in (large separate) sections w/ common code
+calling that which is processor specific.  (as opposed to ifdeffing
+each individual func for each case.)
+
+yow.
+
+Mark
+--
+Mark Pilon
+
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
+
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
