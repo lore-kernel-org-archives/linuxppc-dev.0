@@ -1,69 +1,46 @@
-Message-Id: <199907281336.PAA20067@denx.muc.de>
-To: linuxppc-dev@lists.linuxppc.org
-cc: jpeters@phx.mcd.mot.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Motorola Web Site 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 28 Jul 1999 09:54:03 +0200."
-             <m119OXL-0000WZC@tri-yann.crf.canon.fr>
-Date: Wed, 28 Jul 1999 15:36:13 +0200
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=unknown
+Message-ID: <14239.5584.749636.587908@gargle.gargle.HOWL>
+Date: Wed, 28 Jul 1999 10:38:08 -0400 (EDT)
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Audio file open problem on LINUXPPC 1999 solution
+In-Reply-To: <379EF84B.8E9B69D4@zg.tel.hr>
+References: <379EF84B.8E9B69D4@zg.tel.hr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <m119OXL-0000WZC@tri-yann.crf.canon.fr> you write:
-> 
-> While it is nce to have motorola *effectively* supporting linux
+>> "Stanko" == Stanko Juzbasic <stanko.juzbasic@zg.tel.hr> writes:
 
-Yes - thanks, Motorola!
+ Stanko> To whoever it may concern
 
-> may I make the follwoing comments :
-> 
->     1) The form you need to fill to access patches is quite
->     painfull and if the purpose is only to notify users of
->     patch changes, then email would be sufficient...
+ Stanko> It seems I found the cause and solution to the LINUXPPC 1999 audio
+ Stanko> file open problem I wrote about two days ago:
 
-Agreed. I do not like at all being forced to supply such  information
-if I want or not. Please remove this!
+ Stanko> The problem occurs only if one installs the new LINUXPPC 1999
+ Stanko> filesystem from scratch using the release CD-ROM installer. It has
+ Stanko> several bugs, among which this one:
 
-You may add a link where anybody who *wants* notifications of changed
-*may* register, but please do not try to force us!
+ Stanko> - it fails to create /dev/dsp (eventhough it creates /dev/dsp1...),
+ Stanko> without giving a notice - default system sound apps have an
+ Stanko> endianness problem, so they don’t give a proper error message.
 
-An additional disadvantage  of  the  current  interface  is  that  it
-disallows for automatic downloads using wget or similar tools.
+This was a problem I ran into as well.  As an additional note, IIRC doing
+something to /dev/sequencer caused /dev/dsp to disappear.  I'm not exactly
+sure about the circumstances.  I have to go back and recreate the problem.
+But there is definitely something like this going on on my machine.
 
->     2) The patch for 2.2.10 is 1.5 MB. It could have been 
->     compressed!!!
+ Stanko> The solution is to [MAKEDEV audio] manually and rebuild CCRMA sndlib,
+ Stanko> and sound will work perfectly.
 
-;-)
-
-3) Is Motorola going to extend it's Linux support to the embedded controllers
-   (MPC8xx, MPX82xx) ?
-
-4) Running a diff against the original 2.2.10 distribution results in
-   *all* files  being  different;  why  were  all  the  $Id$  strings
-   changed?
-
-   For instance - I guess there were not  so  many  changes  for  the
-   Alpha prom code:
-
-   -> diff linux-2.2.10/arch/mips/sgi/prom/misc.c linux_mot/arch/mips/sgi/prom/misc.c
-   1c1
-   < /* $Id: misc.c,v 1.6 1998/07/08 15:59:13 ralf Exp $
-   ---
-   > /* $Id: misc.c,v 1.3 1998/11/10 02:14:56 jpeters Exp $
-
-   This makes it basicly impossible to find  out  what  *really*  was
-   changed.
-
-Wolfgang
+Can you comment on rebuilding sndlib?  What does that affect?
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: -88  Home: -86  Email: wd@denx.muc.de
-"Summit meetings tend to be like panda matings. The expectations  are
-always high, and the results usually disappointing."   - Robert Orben
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
