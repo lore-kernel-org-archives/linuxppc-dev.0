@@ -1,109 +1,84 @@
-From: "T Michael Turney" <tmike@recipes4linux.com>
-To: =?utf-8?Q?Garcia_J=C3=A9r=C3=A9mie?= <GARCIAJ@3il.fr>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Compiling assembler file with ppc_405-gcc
-Date: Sat, 12 Jun 2004 16:19:00 -0700
-Message-ID: <GEEKLLHMFHLAJOBEEELHGEOOCJAA.tmike@recipes4linux.com>
+Message-ID: <008901c451b5$0aa87880$5200a8c0@transengfb16d1>
+From: "LarrZheng" <larryzheng@transengines.com>
+To: "Matt Porter" <mporter@kernel.crashing.org>,
+	"Travis Sawyer" <tsawyer+linuxppc@sandburst.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <1086979205.29360.5.camel@pavement.sandburst.com> <20040611142437.A1795@home.com>
+Subject: Re: 440GX tlb problem?
+Date: Mon, 14 Jun 2004 10:12:27 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="utf-8"
-In-Reply-To: <85E6ED5B5EC32F439702305CC417E12D9E2A78@email.3il.fr>
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-When I'm having trouble with assembly language code
-I like to let the C compiler show me syntax-clean
-assembly code.
+Hi Matt
+    I think TLB entry has something wrong between linuxppc-2.5-ocp and
+linuxppc-2.4 kerenl,  in 2.4 all works right. but in 2.5-cop tlb entry 63
+will not work right on our 440gx board, so i change tlb entry to 62(as same
+as linuxppc-2.4/head_44x.s),  then the board can be boot normally, would you
+check it?
 
-Write the function in C and see what the generated
-code looks like.
-Cheers,
-T.mike
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Garcia
-Jérémie
-Sent: Friday, June 11, 2004 9:28 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Compiling assembler file with ppc_405-gcc
+Larry
 
 
 
-Hi everybody,
-although I'm a newbie in Linux developement and even more in LinuxPPC development, I have to work on a Linux PPC assembler based application.
-In order to achieve this, I need to compile an assembler file (ppcsiafn.s) which now gives nightmares ...
-Below this line you can dicover this file:
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-/*DESCRIPTION
-This module contains chip-dependent routines written in assembly language.
-*/
 
-#include <linux/config.h>
-#include <asm/processor.h>
-#include <asm/cache.h>
-#include <asm-ppc/ppc_asm.h>
+----- Original Message -----
+From: "Matt Porter" <mporter@kernel.crashing.org>
+To: "Travis Sawyer" <tsawyer+linuxppc@sandburst.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Saturday, June 12, 2004 5:24 AM
+Subject: Re: 440GX tlb problem?
 
-#define _ASMLANGUAGE
 
-.globl sidma_AsDmaRegSet_F
-.globl sidma_AsDmaRegGet_F
-.globl AsfnDmapolGet
-[etc...  ]
-
-.text
-
-/*******************************************************************************
-* sidmai_AsDmaRegSet_F(reg, val) --> Set specified "reg" with value "val"
-*
-* Return : N/A
-*
-* void sidma_AsDmaRegSet_F(uLong reg, uLong val)
-*/
-sidma_AsDmaRegSet_F:
-       mflr r5
-       bl next_inst
-       next_inst:
-       mflr r6
-      add r6,r6,r3
-      addi r6,r6,20
-
-[etc...  ]
-
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-To compile this, I use the following lines in a makefile:
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-AS = ppc_405-gcc
-CFLAGS_AS = -gdwarf -mcpu=405 -mstrict-align -nostdinc -fvolatile -fno-builtin -fno-for-scope -P -x assembler - D__KERNEL__ -DCPU=PPC405 -DPRJ_BUILD $(ALLINCLUDE) -I$(SRC_PATH)/basic/services/include -I$(SRC_PATH)/basic/ascii/include -I$(SRC_PATH)/basic/hdwctl/include -I$(SRC_PATH)/basic/core/include -I$(SRC_PATH)/basic/hscx/include -I$(SRC_PATH)/basic/enet/include -I$(SRC_PATH)/eq/include -I$(SRC_PATH)/pzm/include -I$(SRC_PATH)/startup/init -I$(SRC_PATH)/startup/maint -O0 -DEQ_CODE
-ppcsiafn.o:
-      $(AS) $(CFLAGS_AS) -c $(SRC_PATH)/startup/init/ppcsiafn.s -o ppcsiafn.o
- <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-nb: don't worry the CFLAGS_AS is on a single line in my makefile
-
-All that things to get the following compilation result:
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-$> make all
-/home/jgarcia/Desktop/kernel/ssc/startup/init/ppcsiafn.s: Assembler messages:
-/home/jgarcia/Desktop/kernel/ssc/startup/init/ppcsiafn.s:83: Error: unsupported relocation against r5
-/home/jgarcia/Desktop/kernel/ssc/startup/init/ppcsiafn.s:86: Error: unsupported relocation against r6
-/home/jgarcia/Desktop/kernel/ssc/startup/init/ppcsiafn.s:87: Error: unsupported relocation against r6
-/home/jgarcia/Desktop/kernel/ssc/startup/init/ppcsiafn.s:87: Error: unsupported relocation against r6
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-After a lot of tests, here are my conclusions: the different "#include" are not considered by the compiler. Indeed, I tried to introduce compilation errors in the different ".h" files --> no difference in the result
-If I suppress the # in the #include --> the compiler tells me that is not a valid op code
-So I guess that but I don't know why : the character "#" is understood as a comment (equivalent to /* ...*/).
-
-To conclude : is there a specific compil option to give to gcc for it to understand the #include command?
-I checked the different linux assembler file and the #include is used. So why am I not able to use it?
-
-Thanks for your help !
-
-                                                                Jr mie
+>
+> On Fri, Jun 11, 2004 at 02:40:05PM -0400, Travis Sawyer wrote:
+> >
+> > Greetings:
+> >
+> > I'm attempting to bring up a new board (our custom hw) and am blowing an
+> > Instruction TLB error in head_440.S where the original TLB for SDRAM
+>
+> head_440.S indicates you are using a really old kernel.
+>
+> > (u-boot and initial kernel space) is invalidated after we've switched to
+> > 0xc000_0000.
+>
+> What do you mean?  Your u-boot port has invalidated caches? are you
+> running out of 0xc0000000 before you get here?  Which TLB entry are
+> you executing from?
+>
+> > the instructions:
+> > 3:/* iccci   r0,r0    rcblach 12/19/02 clear all caches again on 1/17/03
+> > I took out these changes
+> > dccci   r0,r0    again clear all caches */
+> > cmpwi r23,62
+> > beq 4f
+> > li r6,0
+> > tlbwe   r6,r23,PPC440_TLB_PAGEID
+> > sync
+>
+> By the comments, it's an IBM supplied kernel.  This isn't anything
+> in the kernel.org or linuxppc kernel trees.
+>
+> > The exception hits when the sync is executed.
+>
+> Maybe you are executing from TLB entry 62, that's one of the
+> undocumented limitations...you can entry head_44x.S running in
+> entry 62.
+>
+> > Any ideas?
+>
+> Can you try a current kernel tree? kernel.org 2.4 or 2.6.  The IBM
+> kernel trees are old and buggy (_buggier_).
+>
+> -Matt
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
