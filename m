@@ -1,82 +1,65 @@
-Message-Id: <4.3.2.20001106073311.00b8b8c0@falcon.si.com>
-Date: Mon, 06 Nov 2000 08:06:17 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
-Subject: Re: Debugger Problems
-In-Reply-To: <3A069BD6.9F63FF6C@dspace.de>
-References: <200011060939.eA69dBS30762@denx.local.net>
+Message-ID: <3A072049.C2096C5C@mvista.com>
+Date: Mon, 06 Nov 2000 13:19:06 -0800
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+To: John Jones <john@iigi.net>
+CC: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How do I get the c++ compiler
+References: <3A02ECF3.1E072842@iigi.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 12:53 PM 11/6/00 +0100, Andreas Schreckenberg wrote:
+John,
+The .ppc.rpm packages are built to run on a Yellow Dog host.
+MontaVista has not made the compilers/assembler/linker
+available to run on the target hardware. The reason for this
+is the requirement for temporary files and space considerations.
 
->Wolfgang Denk wrote:
-> >
-> > In message <3A06703F.6D5DBB23@dspace.de> you wrote:
-> > Which firmware are you running on your board? Do you know  about  the
-> > PPCBoot project (http://ppcboot.sourceforge.net)?
->
->Our board contains a MPC750-466 MHz CPU, it's no embedded system in the
->normal way. There's no way to boot via nfs. (no ethernet availible)
->There is no firmware. The board has flash memory and jumps directly to
->ram after reset.
->Can I use ppcboot for my board ?
->I thought it's only for special TQM8xx boards.
->Perhaps I have read not enough about ppcboot... :-)
->I want to build a kernel and boot via ramdisk support, the board
->communicates
->with a serial port.
->
-> > Did you check the Embedded PowerPC HOWTO at
-> > http://members.nbci.com/greyhams/linux/PowerPC-Embedded-HOWTO.html ?
->
->Yes, there are some people who evaluate the EST debugger.
->I want to download my code via JTAG/BDM as a raw binary or elf file in
->the ram memory.
->(there are problems with elf and EST, because the EST debugger handles
->the kernel and ramdisk sections not correct, bin2bin which I found in
->the mailinglist seems to fix this for .bin files.)
->Finally all the stuff should be burned into flash.
->
-> > Can you explain what "some problems" means?
->
->My startupcode first turnoff the cpu and initializes the bat registers.
->I turn on the MMU and jump via an rfi instruction.
->(first init the srr0/srr1 registers) then the debugger confuses this
->situation
->and shows wrong code in the disassemby window.
->
->Is there any workaround availible ?
->Or is there no chance to use the EST Debugger with virtual memory ?
->Are there any linux-ppc projects with EST experience ?
+Cal
 
-The EST debugger doesn't understand virtual memory and that is very
-problematic.
+John Jones wrote:
 
-We are prototyping on the EST SBC8260 board.  This board has RAM on
-both the 60x bus and the local bus (point being, there are two banks of
-RAM).  We had success stepping through the initial linux boot process
-(after switching to virtual memory) by remapping the local bus RAM to
-location 0xC0000000 and copying the "real" memory (0x00000000) to the
-0xC0000000 space.  The EST debugger looks at the PC (in 0xC land) and
-fetches that memory for its disassembly.  Using this trick, we were
-able to single-step through virtual memory.  Note that breakpoints
-don't work since they will be set in 0xC land, not 0x0 land.  This is
-_really_ crude but allowed us to find enough of our screwups to get
-linux running.
+> How do I get the c++ compiler on the nfs drive?  I have an Embedded
+> Planet clcc.
+>
+> I try to install the: hhl-ppc_8xx-c++-2.95.2-13.ppc.rpm by running the
+> command
+>
+> rpm -ihv hhl-ppc_8xx-c++-2.95.2-13.ppc.rpm (from my i386 host machine)
+> and Iget the error: package hhl-ppc_8xx-c++-2.95.2-13 is for a different
+> architecture.
+>
+> I have already installed the i386 version, but I think that is just for
+> my i386 host, right?
+>
+> Am I supposed to install the ppc.rpm FROM the target machine?  It does
+> not seem to
+> have the rpm program to do so.
+>
+> HELP.
+>
+> Thanks.
+>
+> -John
+>
+> --
+> <Help further Linux by signing the Linux Driver Petition:
+> http://www.libranet.com/petition.html>
+>
 
-If you only have one bank of memory, this technique won't work.  Your
-best bet in that case is to adjust your MMU initialization code to
-remap your physical memory so that virtual==physical (i.e. remap
-physical to 0xC0000000) and you will be able to step (and set
-breakpoints) through more code.  Of course, this will only work for a
-while and then linux will start trying to make userland tasks in 0x0
-land and break horribly.
-
-gvb
+--
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Customer Support Engineer    490 Potrero Avenue
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
+Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
+web http://www.mvista.com    support e-mail: support@mvista.com
+eCode: http://cal@work.com.ecode.com
+===========================================================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
