@@ -1,42 +1,55 @@
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Tue, 21 Aug 2001 03:49:54 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Dag Nygren <dag@newtech.fi>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: init process does nothing after being execve'd 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 21 Aug 2001 09:55:28 BST."
-             <200108210855.JAA00958@lougher.demon.co.uk>
-Date: Tue, 21 Aug 2001 12:18:01 +0200
-Message-Id: <20010821101806.91D7F1125E@denx.denx.de>
+Subject: Re: PPC embedded plans ?
+Message-ID: <20010821034954.A27297@cx258813-a.chnd1.az.home.com>
+References: <20010821065240.1853.qmail@dag.newtech.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010821065240.1853.qmail@dag.newtech.fi>; from dag@newtech.fi on Tue, Aug 21, 2001 at 09:52:40AM +0300
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200108210855.JAA00958@lougher.demon.co.uk> you wrote:
+On Tue, Aug 21, 2001 at 09:52:40AM +0300, Dag Nygren wrote:
 >
-> Regarding PPCBoot, I assumed (perhaps incorrectly) that it would
-> not run on the Vesta (Redwood) boards without modification.  In any
+> Hi,
+>
+> I have a working 2.4.2 port for a board for SBS-or (VG4) here
+> and wanted to migrate this port to 2.4.9.
+>
+> Checking out the sources I think I  can notice that there is a strong
+> push towards some kind of "one file" machine definition.
+>
+> Is this right ?
 
-This is correct. You will probably need some modifications to get  it
-running there.
+More or less. Improving the abstraction layer is a continued focus
+of development efforts.
 
-> case, I would have had to modify the Linux bootloader to use this
+> And what would be the best 2.4.9 to start out with ?
 
-No. The whole  "Linux  bootloader"  is  obsolete  when  booting  from
-PPCBoot. We don't use it at all.
+linuxppc_2_4_devel is the only sane place to develop new board ports.
+See the thread, "PPC bk repos reorg" in the linuxppc-commit archives
+for information on getting a copy of the tree.  Go to bitkeeper.com
+to get a copy of BK for your system.
 
-> Agreed.  However, I'm not exactly sure if or how reliably the ethernet
-> drivers in the kernel work on the Redwood.  With an initrd image,
-> I can be sure the data is there, and is uncorrupted...
+> Any written policy on the setup of the machine dependant stuff ?
 
-But you cannot easily debug it, which is much worse. Well,  you  can:
-attach your BDI2000 and fire up GDB :-)
+No. Subscribe to the linuxppc-commit list and read the back archives
+to see discussion of how we do things.
+http://source.mvista.com/cgi-bin/mailman/listinfo/linuxppc-commit
 
-Wolfgang Denk
+Read the source and follow one of the many examples (K2, Spruce, etc.)
+
+> Any way of getting my board defs into the official (?) PPC source tree ?
+
+When you have _clean_ patches versus linuxppc_2_4_devel, post them
+publicly.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Always leave room to add an explanation if it doesn't work out.
+Matt Porter
+MontaVista Software, Inc.
+mporter@home.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
