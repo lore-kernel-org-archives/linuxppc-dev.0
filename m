@@ -1,61 +1,50 @@
-Date: Tue, 9 Jan 2001 23:28:33 +0100 (MET)
+Date: Tue, 9 Jan 2001 23:39:18 +0100 (MET)
 From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: Andreas Tobler <toa@pop.agri.ch>
+To: Iain Sandoe <iain@sandoe.co.uk>
 cc: Linux PPC Developer Mailing List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
-In-Reply-To: <3A59C65F.D92C79E8@pop.agri.ch>
-Message-ID: <Pine.SOL.3.95.1010109231443.18965B-100000@juliet>
+In-Reply-To: <20010108154728.27D541BFDC@atlas.valhalla.net>
+Message-ID: <Pine.SOL.3.95.1010109232901.18965C-100000@juliet>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 8 Jan 2001, Andreas Tobler wrote:
+On Mon, 8 Jan 2001, Iain Sandoe wrote:
 
-> Hallo Derek,
+> Hi Derek,
 >
-> ich bin gerade in der Hetz, schau mal unter lists.linuxppc.org dev
-> Stichwort ppp.
+> Mon, Jan 8, 2001, Derek Homeier wrote:
 >
-> Soweit ich mich erinnere brauchst Du das ppp-2.4.0 packet.
-> ftp.linuxcare.com.au/pub/ppp
+> [...] re 2.4.0 tree at ppc.samba,org (I think ;-).
 >
-> > [...]
-> > Jan  7 22:27:11 miranda chat[836]: CONNECT
-> > Jan  7 22:27:11 miranda chat[836]:  -- got it
-> > Jan  7 22:27:11 miranda chat[836]: send (^M)
-> > Jan  7 22:27:11 miranda pppd[834]: Serial connection established.
-> > Jan  7 22:27:11 miranda pppd[834]: Using interface ppp0
-> > Jan  7 22:27:11 miranda pppd[834]: Connect: ppp0 <--> /dev/ttyS0
-> > Jan  7 22:27:34 miranda pppd[834]: Hangup (SIGHUP)
-> > Jan  7 22:27:40 miranda pppd[834]: Connection terminated.
-> > Jan  7 22:27:40 miranda pppd[834]: tcflush failed: Eingabe-/Ausgabefehler
-> > Jan  7 22:27:40 miranda chat[840]: Can't get terminal parameters: Eingabe-/Ausgabefehler
-> > Jan  7 22:27:40 miranda pppd[834]: disconnect script failed
-> > Jan  7 22:27:41 miranda pppd[834]: Exit.
-> >
-> > That last error means "I/O-error".
-> > With 2.2 kernels, at this point the compression modules would be loaded:
-> >
-> > Jan  8 11:11:15 miranda pppd[694]: Connect: ppp0 <--> /dev/ttyS0
-> > Jan  8 11:11:16 miranda kernel: PPP BSD Compression module registered
-> > Jan  8 11:11:16 miranda kernel: PPP Deflate Compression module registered
-> >
-> > but under 2.4 they aren't loaded and neither do they seem to be missed:
-> >
-Jan  7 22:27:40 miranda pppd[834]: tcflush failed: Eingabe-/Ausgabefehler
-Jan  7 22:27:40 miranda chat[840]: Can't get terminal parameters:
-Eingabe-/Ausgabefehler
-Jan  7 22:27:40 miranda pppd[834]: disconnect script failed
+> > I have some problems with dmasound and ppp modules, though. After some
+> > fiddling with modules.conf I was able to get the mixer (from gkrellm)
+> > to work and sound from internal and external speakers by aliasing
+> > char-major-13 to dmasound_awacs, but there are occasional messages about
+> > several sound-slot-[01] and sound-services-[01]-[013](?) modules
+> > missing. The mixer tends to hang and has to be killed then. While
+> > mpg123 did work, xmms always crashes with a Bus error on startup.
+>
+> Hmm.  I built ppc.samba.org::linux-pmac-devel the other day (in response to
+> another query) and the dmasound module appeared to be fine.
+>
+> Those messages relate to OSS (or even ALSA support, don't know without
+> checking) - and don't originate from the dmasound code.  Possibly there are
+> still facilities (like the DSP_GETCAPS type) that are not completely
+> implemented (or still not implemented at all).  I'll look when I get back to
+> it - or someone else can ;-).
+>
+> For now, I suggest that (unless you desperately need it), - you disable the
+> OSS stuff in your .config.
+>
 
-Thanks for the link, Andreas, but upgrading to ppp-2.4.0 did not solve
-the whole  problem. Instead of the tcflush problem it terminates now
-immediately (1-2 secs) after "Connect: ppp0 <--> /dev/ttyS0" with
-"Hangup (SIGHUP)" and "Modem hangup".
-The comression modules still aren't loaded.
+O.K., did that (I did not have ALSA enabled in the first place), and didn't
+see the errors again. Nonetheless, xmms is still erring on the Bus
+(i.e. crashes as soon it is started).
 
-Thanks,
+Cheers,
 							Derek
 
 
