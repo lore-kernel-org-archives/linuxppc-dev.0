@@ -1,70 +1,41 @@
-Date: Mon, 1 Mar 1999 20:08:39 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Keith Clayton <kclayton@jps.net>
-cc: /* Vinai */ <vroopcha@post.its.mcw.edu>, linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: fixes in glibc ??
-In-Reply-To: <Pine.LNX.3.96.990227133305.936A-100000@localhost>
-Message-ID: <Pine.LNX.4.04.9903012001370.753-100000@narn.local.drgw.net>
+Message-ID: <XFMail.990301222929.hcaley@loomer.com>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 01 Mar 1999 22:29:29 -0500 (EST)
+From: Batmensch <hcaley@loomer.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: strdup and pre-R5
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If one reads the entire liscence on the code with a 'bsd' liscence, there
-is a special exception for glibc, allowing it to be covered by the GPL.
+I'm having a problem building OpenLdap 1.2 on a pre-R5 installation; the error
+seems to be with strdup(); the make complains :
 
-Glibc-2.1 has been released, and by the GPL conditions, anyone who
-downloaded a copy is free to re-release it. One can get a copy from 
+"In file included from args.c:22:
+../../include/ac/string.h:49 macro `strdup' using without args"
 
-ftp://glibc.cygnus.com/pub/glibc/
+I've been able to build it without error on both LinuxPPC 4 and Linux X86. 
+Also the build of 1.0.2 that is included with the R5 distribution seems to work
+properly.
 
-Rumor has it the *real* reason it was pulled was that glibc will only
-compile with egcs, and was pulled because of lack of support for the 'GNU
-C compiler'. This really makes no difference on the PPC, since is no
-recent GCC with decent PowerPC support.
+Anything i can do about this?
 
-> I can't comment on what the current state of glibc 2.0.xxx is but we
-> should clarify something for the sake of the Linux/PPC people (Jason, et
-> all).  glibc2.1 is not being pulled from r5 alone.  glibc2.1 was
-> completely pulled from distrubtion on ANY platform by gnu due to licensing
-> problems with one section of code written by people outside gnu.  They
-> put a license restriction on their section of code that was a bsd style
-> license, which conflicts with the GPL.  As a result GNU pulled glibc2.1
-> from their site.  The ability or inability to include glibc2.1 in r5 is
-> not a linuxppc.com decision at this point in time.  From posts I've read
-> it seems that many have misinterpreted Jason's post to mean that
-> linuxppc.com chose not to include glibc2.1.  I'm not privy to their
-> decision making process but in this case, glibc2.1 is being pulled by a
-> "higher power"  Please no flames as to the assention of RMS to higher
-> power status (smile)
-> 
-> Keith Clayton
-> kclayton@jps.net
-> 
-> 
-> On Sat, 27 Feb 1999, /* Vinai */ wrote:
-> 
-> > 
-> > Folks,
-> > 
-> > I remember a few days ago, there was talk about the latest version of
-> > glibc being pulled from R5.  We use an in-house software package that
-> > has a plug-in architecture. With the bug in "dlopen", the plug-ins are
-> > not accessible ...
-> > 
-> > Can anyone say whether the R5 version of glibc will have this fix ??
-> > 
-> > thanx
-> > 
-> > vinai
+BTW, I'm using the late February build of R5, and a 2.2.2 kernel I built from
+CVS at Samba.
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+Hugh
+
+
+
+
+----------------------------------
+E-Mail: Batmensch <hcaley@loomer.com>
+Date: 01-Mar-99
+Time: 22:19:28
+
+This message was sent by XFMail
+----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
