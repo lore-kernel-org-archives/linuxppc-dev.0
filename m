@@ -1,54 +1,47 @@
-Date: Fri, 5 Oct 2001 11:11:45 -0400
-From: Kent Borg <kentborg@borg.org>
+Message-ID: <3BBDD42E.489D8EC7@staubli.com>
+Date: Fri, 05 Oct 2001 17:39:26 +0200
+From: Pierre AUBERT <p.aubert@staubli.com>
+MIME-Version: 1.0
 To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: BK to CVS?
-Message-ID: <20011005111145.C8157@borg.org>
-References: <20011003130559.F31866@borg.org> <20011003113245.B18196@cpe-24-221-152-185.az.sprintbbd.net> <20011004092511.A3914@borg.org> <20011004132953.B32269@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011004132953.B32269@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Thu, Oct 04, 2001 at 01:29:53PM -0700
+Cc: Mailing list Embedded linux on PowerPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: xconfig
+References: <3BBD9FC3.3F742EF6@staubli.com> <20011005080512.C4379@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Progress.  I am telling cvs a "-ko" to keep keyword expansions as they
-come in.
+Tom Rini wrote:
 
-But I am still tripping over something that I either don't understand
-in Bitkeeper, or Bitkeeper is misbehaving.  The following doesn't do
-what I expect.
+> On Fri, Oct 05, 2001 at 01:55:48PM +0200, Pierre AUBERT wrote:
+>
+> > I have a problem with the 'make xconfig'. I try to use it on a 2.4.10
+> > kernel for power PC, I have the following
+> > error messages when I save the config file :
+> > ERROR - Attempting to write value for unconfigured variable
+> > (CONFIG_SCC_ENET).
+> > ERROR - Attempting to write value for unconfigured variable
+> > (CONFIG_FEC_ENET).
+>
+> Yeap.  Try the following patch.  It is old, I just looked and it won't
+> apply cleanly, but it should give you an idea how the right fix should
+> look.  If you can make this patch apply to the current tree and send it
+> back to me I'd appreciate it.
+> still.
 
+Your patch solves my problem (even if some line numbers are false, it works
+except for arch/ppc/8xx_io/Config.in but I don't understand why it fails).
+Thank you very much. I think it would be included in a future release ...
+Regards
 
-I started things up by doing:
-- "bk clone", then
-- "bk changes" to see what the most recent revision is, then
-- a complete export of that rev, and put that in cvs as my starting
-  point.
+--
+------------------------------------------------------------------------------
+Pierre Aubert                   |   Phone:  +33 4 50 65 62 88
+                                |   Fax:    +33 4 50 65 62 08
+STÄUBLI Faverges                |
+Place Robert STÄUBLI            |   Mailto:p.aubert@staubli.com
+74210 Faverges FRANCE           |   http://www.staubli.com
+------------------------------------------------------------------------------
 
-Then each day I have a script that does:
-- "bk changes" to see the "before" rev,
-- "bk pull" to get up to date,
-- "bk changes" to see "after" rev,
-- export of a patch between those two revs, apply that to my cvs.
-
-The problem is that some of the patches fail because the cvs file
-isn't in the state the patch expects.  Because I am still getting the
-bugs out, we aren't doing any work in the cvs tree, only bk stuff is
-going in there.
-
-I did a new export from bk as of the latest "bk changes" rev and
-compared that with an export from cvs.  (The idea being that beginning
-dump + delta + delta + delta should equal ending dump.)  Yes, I get
-some BK Id collisions that don't bother my daily patches, but I also
-get a couple more files with substantial differences.  Is there
-something wrong with my method?  Is there a likely problem with my
-implementation?  Is Bitkeeper being buggy?
-
-
-Thanks,
-
--kb, the Kent who is convinced he is getting close and so should soon
-quit asking these annoying questions.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
