@@ -1,38 +1,53 @@
-Date: Tue, 11 Jun 2002 19:40:44 -0700
+Date: Tue, 11 Jun 2002 19:47:09 -0700
 From: Matt Porter <porter@cox.net>
-To: Shie Erlich <shie_e@elbit.co.il>
+To: Tim Lai <laitingwai@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: no virtual terminals problem
-Message-ID: <20020611194044.A28767@home.com>
-References: <200206111735.21959.shie_e@elbit.co.il>
+Subject: Re: BAT setting after bootrom? and where to load elf image?
+Message-ID: <20020611194709.B28767@home.com>
+References: <20020611192119.48805.qmail@web21104.mail.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200206111735.21959.shie_e@elbit.co.il>; from shie_e@elbit.co.il on Tue, Jun 11, 2002 at 05:35:21PM +0000
+In-Reply-To: <20020611192119.48805.qmail@web21104.mail.yahoo.com>; from laitingwai@yahoo.com on Tue, Jun 11, 2002 at 12:21:19PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jun 11, 2002 at 05:35:21PM +0000, Shie Erlich wrote:
+On Tue, Jun 11, 2002 at 12:21:19PM -0700, Tim Lai wrote:
 >
-> hi people,
-> we're using hardhat with kernel 2.4.2. our system has a serial
-> port, through which we're using the serial console.
-> also, we have a PMC adapter on board, and we're trying to
-> use it with a VGA card. we took a PCI VGA card (ATI RAGEpro),
-> and attached it to the board, through a PCI2PMC adapter.
-> /proc/pci identifies the card, and also the framebuffer device
-> seems to recognize it, but all we get on screen is some green trash.
+> Hi, I am new to linux and trying to get some help from
+> some linux experts out here. I've been reading and
+> searching the mail list archive for the past few
+> weeks.
+> Here is what I have so far:
+>
+> I have a ppc750 broad with vxWorks bootrom. I do not
+> have any device to reflash the broad. I read one of
+> the mail archive that someone write a program to
+> work with vxWorks bootrom. And this is what I want
+> to do. I plan to convert the vmlinux image to asm and
+> put it in the .text section of another elf file.
+> Load this elf file and relocate the vmlinux image to
+> 0xC000000. Is this a feasible approach?
+>
+> After the vxWorks bootrom come up, the BAT setting is
+> phy = virt. The board has 8Meg of RAM. Knowing the
+> linux kernel need to be at 0xC000000, should I change
+> the BAT setting to map 7-8M to 0xC0000000, then
+> copy the image to 0xC0000000?
+>
+> I am a little confuse about the MMU in linux. Here is
+> what I understand:
+> after the bootrom, the CPU MMU should be phy = virt
+> after linux booted, linux MMU takes over, and kernel
+> space is 0xc0000000, and user space is 0x0 to
+> 0xc0000000. What happened in between? Who is
+> responible for doing the mapping?
 
-Let's step back and recognize who writes most of the commodity
-VGA card FB drivers in the kernel.  x86 developers.  That means
-that most of these drivers are incomplete for platforms that
-don't have an x86 BIOS to perform the chipset's core initialization.
+However you want to do it, get the vmlinux located
+at physical 0 and set r3-r7 as documented in head.S
 
-99% of time this is due to having a driver that doesn't fully
-initialize the chipset.
-
-FWIW, a full xpert98 driver was submitted to the fb team but seems
-to have disappeared in all my searches.
+Read head.S and you will see that it takes care of
+(with some outside calls) all core MMU init for Linux.
 
 Regards,
 --
