@@ -1,14 +1,25 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: Cramfs root file system
-Date: Thu, 21 Nov 2002 13:09:35 +0200
-Message-ID: <7899847F7C05BE43A0687AD18D97DA2207F285@srv_mail.azisa.co.za>
-From: "Flavio Pereira" <flavio.pereira@za.flextronics.com>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <sddccfb6.046@mail.frequentis.com>
+Date: Thu, 21 Nov 2002 12:20:51 +0100
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>,
+	<flavio.pereira@za.flextronics.com>
+Subject: Re: Cramfs root file system
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+Hi!
+
+First try root=/dev/mtdblock3 rw.
+
+I try a long time ago this with my 'flashdisk' I copied at runtime all needed files, and reload the kernel (I use the comandline as fixcoded string..) and it works. Important is, that the kernel supports your filesystem at boottime! I think it isn't a good idea to use it as module!
+
+Have fun
+Gerhard
+
+>>> "Flavio Pereira" <flavio.pereira@za.flextronics.com> 11/21/02 12:09pm >>>
 
 Hi All
 
@@ -34,5 +45,6 @@ suggestions as to what I'm doing wrong?
 
 Thanks
 Flavio Pereira
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
