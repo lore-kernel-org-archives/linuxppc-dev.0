@@ -1,24 +1,39 @@
-Message-Id: <200008020205.WAA29684@mal-ach.watson.ibm.com>
-To: Donald Cowart <dcowart@acld.lib.fl.us>
-cc: tom_gall@vnet.ibm.com, bob@kunk.jriver.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS/6000 Model 170 Boots Linux 
-In-Reply-To: Message from Donald Cowart <dcowart@acld.lib.fl.us>
-   of "Mon, 31 Jul 2000 12:47:32 EDT." <Pine.LNX.4.20.0007311238420.16971-100000@bookworm.acld.lib.fl.us>
-Date: Tue, 01 Aug 2000 22:05:33 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Message-ID: <019001bffc2b$9300a6f0$bf0102c8@sc.mcel.mot.com>
+From: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
+To: "Rolf Liu" <rolfl@sc.mcel.mot.com>, <linuxppc-dev@lists.linuxppc.org>
+References: <015401bffbae$1aa27940$bf0102c8@sc.mcel.mot.com>
+Subject: Re: question of 'SIZEOF_HEADERS' !!!!!!!!!!!!!!!
+Date: Wed, 2 Aug 2000 10:44:26 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Donald Cowart writes:
+Is this 'SIZEOF_HEADERS' just the size of the ELF header , which is 304 byte
+long ?
 
-Donald> What are the 604e PowerPC chips, 32bit or 64bit?
 
-	The 604e (and all 60x chips) are 32 bits.  Please look at any of
-the PowerPC references around the web (including IBM and Motorola) for
-more details about the various PowerPC architecture implementations.
 
-David
+>
+> Hi, all
+> I am linking the linux ppc kernel .
+> I found a symblo named 'SIZEOF_HEADERS' in the link script file
+> 'vmlinux.lds'.
+> I wonder where the symbol come from.
+> I have searched throuth the source tree, but I can't find the definition
+of
+> it.
+> Who can tell me some info about it ? at least the value of it ?
+> thanks a lot .
+>
+> BRs
+> Rolf Liu
+>
+>
+>
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
