@@ -1,45 +1,58 @@
-Message-ID: <17B78BDF120BD411B70100500422FC63079F60@IIS000>
-From: Patrick Lerda <Lerda@microprocess.com>
-To: "'Rolf Liu'" <rolfl@sc.mcel.mot.com>, linuxppc-dev@lists.linuxppc.org
-Subject: RE: problems with compiling glibc
-Date: Wed, 26 Apr 2000 09:40:09 +0200
+Message-ID: <39069D63.D3D5E404@rd.francetelecom.fr>
+Date: Wed, 26 Apr 2000 09:40:19 +0200
+From: FASSINO Jean-Philippe <jeanphilippe.fassino@rd.francetelecom.fr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
+CC: LinuxPPC <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Dual head on a Powerbook
+References: <3906199F.1D7F995@dana.ucc.nau.edu>
+	 <390690B1.1194EC88@rd.francetelecom.fr> <39069B12.52B2B005@dana.ucc.nau.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Your binutils version is probably too old, check FAQ with glibc, and
-gcc-2.95.2,
-they give some minimum requirements.
+Tim Wojtulewicz wrote:
 
-Patrick LERDA
+> FASSINO Jean-Philippe wrote:
+>
+> > Tim Wojtulewicz wrote:
+> >
+> > > I'm trying to connect a projector to the monitor port on the back of my
+> > > powerbook, so I can do a presentation with it.  Anyone have any
+> > > information on dual headed support on powerbooks?  Pismo, LinuxPPC2000,
+> > > 2.2.15pre19
+> >
+> > I'm doing this using Xpmac and booting with BootX.
+> > First configure external display to be primary in MacOS (be
+> > careful with depth color !).
+> > Next, start Linux which display on external monitor.
+> > This method work only with Xpmac and not with FBDev (3.3.x).
+>
+> I tried this just now and it didn't work.  In MacOS, I have the monitor set
+> to 1024x768 at thousands of colors.  Both monitors display the same image.
+> When I boot back to Linux, something flashes on the external monitor.  It
+> says something about OF, but it disappears to fast for me to read it fully.
+> Then the image disappears, and nothing else appears on the external monitor.
+> I am using the latest (rev 9) Xpmac.
 
-> -----Message d'origine-----
-> De:	Rolf Liu [SMTP:rolfl@sc.mcel.mot.com]
-> Date:	samedi 29 avril 2000 10:21
-> À:	linuxppc-dev@lists.linuxppc.org
-> Objet:	problems with compiling glibc
->
->
-> Hi,all,
-> I have a problem with  compiling the glibc-2.1.3 with gcc(my own
-> cross-compiler for
-> power pc).the status is :
->
-> powerpc-linux-gcc -nostdlib -nostartfiles -r -o crt1.o start.o abi-note.o
-> init.o
-> /home/lhx/powerpc-linux/bin/ld: unrecognised emulation mode: elf32ppclinux
-> Supported emulations: elf32ppc
-> collect2: ld returned 1 exit status
-> make[1]: *** [crt1.o] Error 1
->
->
-> I wonder if elf32ppclinux is  different from elf32ppc ?
-> why I got such an error message ?
-> thanks a lot .
->
->
+Do not use same display on external and internal monitor. And set external to
+primary.
+Start Xpmac with option "-depth 32" or "-depth 16".
+I think you need Xpmac rev10 at :
+
+http://khendricks.ivey.uwo.ca/Xpmac/
+
+And it must work !
+
+JP
+
+--
+--------------------------------------------------------------------------
+ Jean-Philippe FASSINO              France Telecom R&D : DTL/ASR
+ Tel : 04 76 76 45 52
+ mailto:jeanphilippe.fassino@francetelecom.fr
+--------------------------------------------------------------------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
