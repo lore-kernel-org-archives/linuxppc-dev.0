@@ -1,20 +1,20 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.xs4all.nl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 635132BDB5
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 232D92BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Dec 2004 23:11:04 +1100 (EST)
-Received: from linux.local (linux.local [192.168.1.97])
-	by protonic.xs4all.nl (Postfix on SuSE Linux 7.2 (i386)) with ESMTP id
-	D1E3BD405A for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Dec 2004 12:36:16 +0100 (CET)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Date: Thu, 30 Dec 2004 12:46:48 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200412301246.48870.david.jander@protonic.nl>
-Subject: SMC/SCC uart problem with MPC852T
+	Fri, 31 Dec 2004 02:31:01 +1100 (EST)
+In-Reply-To: <200412301246.48870.david.jander@protonic.nl>
+References: <200412301246.48870.david.jander@protonic.nl>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <C6D7331E-5A77-11D9-AECD-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 30 Dec 2004 10:30:46 -0500
+To: David Jander <david.jander@protonic.nl>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: SMC/SCC uart problem with MPC852T
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,43 +26,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi,
+On Dec 30, 2004, at 6:46 AM, David Jander wrote:
 
-I have been searching for a way to do the BRG routing to SCC3 and SCC4 on the 
-MPC852T, so that BGR3 is routed to SCC3 and SMC1 and BRG4 to SCC4. I could 
-not find anything in the kernel (CVS linux_2_4_devel from DENX) to do this.
-I think I also need a special ucode-patch, but I don't know where to look for 
-it either.
-Right now SMC1 works as serial console (115200 baud).
-The kernel says this:
-...
-CPM UART driver version 0.04
-ttyS0 at 0x0280 is on SMC1 using BRG1
-ttyS1 at 0x0200 is on SCC3 using BRG2
-ttyS2 at 0x0300 is on SCC4 using BRG3
-...
-IMHO this can't be right. At least not for the MPC852T.
-If I connect a device to ttyS1 or ttyS2, it seems to work OK though, but if I 
-connect the respective RX pin directly to the corresponding TX pin, strange 
-things begin to happen. /proc/interrupt counts skyrocket, and I get a lot of 
-repeated data back from the serial port. It looks like as if CPM buffers 
-overlap or something like that.
+> I have been searching for a way to do the BRG routing to SCC3 and SCC4 
+> on the
+> MPC852T, so that BGR3 is routed to SCC3 and SMC1 and BRG4 to SCC4. I 
+> could
+> not find anything in the kernel (CVS linux_2_4_devel from DENX) to do 
+> this.
 
-Searching on Google I was able to find these boot-messages from someone using 
-an MPC852T:
+There isn't anything exactly to do this.  If you get the linuxppc-2.4 
+from BK,
+there is an updated uart.c driver that will help with this.  All of the 
+BRG
+management is handled by a single function, and you can modify this
+accordingly to meet your requirements.
 
-....
-CPM UART driver version 0.03
-ttyS0 at 0x0280 is on SMC1 using BRG3 - SMC1/SCC3/I2C/SPI Patch enabled
-ttyS1 at 0x0200 is on SCC3 using BRG3
-ttyS2 at 0x0300 is on SCC4 using BRG4
-....
 
-That looks a lot better, but I wonder how he accomplished this? What's that 
-"SMC1/SCC3/I2C/SPI Patch" ? Where do I get it from?
+> Searching on Google I was able to find these boot-messages from 
+> someone using
+> an MPC852T:
 
-Greetings,
+Must have been a locally customized driver.
 
--- 
-David Jander
-Protonic Holland.
+
+	-- Dan
