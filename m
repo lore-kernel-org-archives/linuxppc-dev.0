@@ -1,31 +1,37 @@
-Date: Sat, 15 Apr 2000 00:47:12 +0200
-From: claus <enneper@olis.north.de>
+Date: Fri, 14 Apr 2000 19:13:05 -0400 (EDT)
+From: Scott Knight <scott@re-104-1.read.indiana.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Cc: mol-general <mol-general@lists.maconlinux.org>
-Subject: pcmcia - 2.5"ide 
-Message-ID: <20000415004712.L603@hotmail.com>
-Reply-To: cl.en@gmx.net
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: kernel 2.3 make error
+Message-ID: <Pine.LNX.4.10.10004141910200.6328-100000@fletch.read.indiana.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi.
-some playing in /etc/pcmcia/config.opts :
-include memory 0x90000000-0x90ffffff
-include port 0x1000-0x10ff
-(THX to A.Tobler)
+	Ive tried over the past three days grabbing the latest kernel from
+pauls tree. And everytime i get the same error near the end. I think it
+has to do with the controlfb.c file or something having to do that I need
+the control frame buffer, if anyone knows why I ight be getting this error
+thatd be great. Below is the error.
 
-was giving me access to my PCMCIA_2.5"_IDE_HD_enclosure :)
-adding the hde partitions to molrc results in success.
-now its possible for me to move any 'hfs' to the external HD;
+	Scott
 
-Could those of you using a PB check this setting with your PCMCIA-Cards for any incompatibilities?
-I mean, I really spend some time with this problem and I don't think it was necessary, because some of you did know that probably.
-Adding those hints to 'config.opts' in the next release of a PPC distribution would be quite nice.
+ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic arch/ppc/kernel/head.o init/main.o init/version.o \
+        --start-group \
+        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o \
+        drivers/block/block.a drivers/char/char.o drivers/misc/misc.o drivers/net/net.o drivers/parport/parport.a  drivers/ide/ide.a
+drivers/scsi/scsi.a drivers/cdrom/cdrom.a drivers/sound/sounddrivers.o drivers/pci/pci.a drivers/macintosh/macintosh.a
+drivers/video/video.o \
+        net/network.a \
+        /usr/src/linux/lib/lib.a \
+        --end-group \
+        -o vmlinux
+drivers/video/video.o: In function `init_control':
+drivers/video/video.o(.text.init+0x1354): undefined reference to `mac_map_monitor_sense'
+drivers/video/video.o(.text.init+0x1354): relocation truncated to fit:
+R_PPC_REL24 mac_map_monitor_sense
+make: *** [vmlinux] Error 1
 
-Greetings
-Claus
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
