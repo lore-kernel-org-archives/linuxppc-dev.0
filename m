@@ -1,30 +1,40 @@
-Date: Sat, 15 May 1999 17:14:44 -0600
-From: Cort Dougan <cort@ppc.kernel.org>
-To: Tom Rini <tmrini@ntplx.net>
-Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Re: VGER kernels
-Message-ID: <19990515171444.A7870@attis.cs.nmt.edu>
-References: <Pine.LNX.4.05.9905151011150.651-100000@pc.wackyland.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.9905151011150.651-100000@pc.wackyland.com>; from Tom Rini on Sat, May 15, 1999 at 10:13:34AM -0400
+Date: Sat, 15 May 1999 17:04:35 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Corey Minyard <minyard@acm.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.8/2.3.0 SCSI problems?
+In-Reply-To: <m2lnerwe5o.fsf@wf-rch.cirr.com>
+Message-ID: <Pine.LNX.3.96.990515165822.25301C-100000@liberty.chnd1.az.home.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'd very much recommend no-one uses 2.3.x for a while.  It's likely unstable
-and definitely unable to compile in most configurations for PowerPC.
+On 14 May 1999, Corey Minyard wrote:
 
-I'll try to backport the important stuff to 2.2.x but that's a lot of work
-and I don't know how well I'll be able to keep up with it.
+> I'm having the same problem with my MVME2700 with an ncr53c8xx chip.
+> I did a little debugging and checking.  In my previous kernel version
+> that I had running (2.2p4), it chose to use interrupt 14 for the chip.
+> In 2.2.9, it chose to use interrupt 19.  But that is the only thing I
+> can find.
+> 
+> If anyone has a solution I'd like to know.
 
-} I've noticed a few mails recently about problems compiling 2.3.x from
-} vger.  I think it should be pointed out that you most likely (Unless Cort
-} or Paul wishes to contradict me) don't want to be running 2.3.x on your
-} machine for day to day use.  It's the devel branch, and it subject to
-} crashing and other problems.  You will most likekly want (and I hope Cort
-} and/or Paul will keep up w/ the 2.2.x branch as well..) to run your cvs
-} updates as:
+The change in interrupts is due to it now using the MPIC for PCI
+interrupts instead of the legacy PIC support in with the MPIC
+in the default passthrough mode. Raven/Hawk boards got support starting at
+2.2.8 but a couple lines of code got dropped somewhere.  My patch I posted
+yesterday solves this problem...it wasn't setting the interrupt handler to
+the openpic code as it should.  Thus, the first PCI device that tried to
+init during boot hangs the system (SCSI).  I've tested this patch on MTX,
+MVME2300SC, 2400. and 2700.
+
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
