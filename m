@@ -1,21 +1,30 @@
-Message-Id: <20001014124250.Postino-000615@smtp01.highway.ne.jp>
-Date: Sat, 14 Oct 2000 12:42:50 +0900
-To: <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: What happen bk linux_2_5
+Date: Fri, 13 Oct 2000 23:36:47 -0700 (PDT)
+From: James Simmons <jsimmons@suse.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Samuel Rydh <samuel@ibrium.se>
+Subject: Re: [linux-fbdev] Re: Video driver bug
+In-Reply-To: <19340907141507.13024@192.168.1.10>
+Message-ID: <Pine.LNX.4.21.0010132334380.1195-100000@euclid.oak.suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi
-I could not access bk tree linuxppc_2_5. since yesterday.
-But the other tree is OK.
+> >That's for 2.5.0. I think the first thing we need to do in 2.5.0 is to remove
+> >all `mess with non-visible VCs' support, so /dev/fb* works on the _current_
+> >video mode.
+>
+>
+> Well, my understanding is that MOL needs to be able to "probe" for all
+> supported mode. Doing so on a visible console would definitely be hell.
+> It does that in order to setup the MacOS-side driver mode list.
 
-pull: connect/access to bk://bitkeeper.fsmlabs.com:5005 failed.
-
-Kaoru
-
+Call ioctl FBIOPUT_VSCREENINFO with fb_var_screeninfo.activate with
+FB_ACTIVATE_TEST set. This will test the mode without actually setting the
+hardware.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
