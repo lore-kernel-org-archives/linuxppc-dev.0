@@ -1,68 +1,68 @@
-Date: Fri, 04 May 2001 23:50:41 -0400
-Subject: raw keyboard input
-From: David Landrith <dave@landrith.com>
-To: Linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B718F0D1.5CF%dave@landrith.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Sat, 5 May 2001 00:03:05 -0400 (EDT)
+From: Daniel Berlin <dan@www.cgsoftware.com>
+To: Ira Weiny <iweiny@acm.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ieee1394 status
+In-Reply-To: <3AF3551D.3627FFBC@acm.org>
+Message-ID: <Pine.LNX.4.33.0105042358480.6265-100000@www.cgsoftware.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am working on writing a console text editor in C++ using the ncurses
-library, and I am now at the following impasse:
+On Fri, 4 May 2001, Ira Weiny wrote:
 
-One of my goals in making another console text editor is to make one that is
-as easy to use as bbedit or nedit.  This includes, for example, shift-arrow
-keys for selecting text; ctrl-left for word left, ctrl-right for word right,
-etc.  (I believe that in principle there is no reason why a console text
-editor can't be every bit as functional and as easy as a really slick gui
-text editor like bbedit or nedit--hey, it's all monospaced text anyway,
-right?).
+>
+> Has anything more been done on the ieee1394 since March?
 
-So I've gotten to a point in my program where I need to discriminate between
-a control character and a shift control character.  Of course, ncurses does
-not do this (it does not even distinguish between KEY_LEFT and KEY_SLEFT on
-my computer).  It seems to me that I have the following options to choose
-from:
+I'm about to submit a general endinaess patch tot he ieee1394 guys.
 
-1.  Use code like that in showkey, where I completely take over the keyboard
-and console and write my own input handler.  This poses too many problems to
-list here.
+The problem is that you need different combinations of swapping for
+different OHCI implementations, because the standard didn't specify a few
+things it should have.
 
-2.  Rewrite lib_getch in ncurses.  This is more feasible than #1, but it
-still seems to be major overkill, since I will then have to incorporate a
-great many of the ncurses files into my program (wouldn't it be nice if you
-can simply include ncurses.priv.h and fifo_defs.h)
+ I've been using 2 45 gig firewire drives using LVM
+and XFS for months now.
 
-3. Find some way to allow me to simply call kgetch or the fifo functions in
-lib_getch directly (this appears to me to be the functions I need to use to
-grab the raw key inputs).  This would be a major hack job.
+I've been using a cd-rw firewire drive for about 3 days now, too.
+>Back  then
+> there was a big discussion about some patches and fixes for endianess.
+> Did these make it into Ben's rsynced tree?
+>
+> I am trying to do some work with 1394 on my Titanium and it seems to
+> self id correctly but there are problems when trying to read from the
+> bus.  I am assuming a problem in the OHCI driver since my G3 did not
+> have these problems last night with the pcilynx driver.  (And I can't
+> verify that until next week when I get back to it.  Sorry)
 
-4. Somehow modify the kmap file so that it reflects different values for
-control character and shift control characters.  (I do not even know where
-to begin with this one.)
+Errr, this is pretty easy to fix.
 
-5. Somehow modify the terminfo database so that it reflects different values
-for control character and shift control characters.  (I do not even know
-where to begin with this one.)
+In fact, it's what my patch fixes.
 
-Numbers 4 and 5 seem to me to be the cleanest way to go about this.  Of
-course, there may be some way to accomplish this that I do not even conceive
-of yet.
+You can say whether you want the following swapped  or not (in any
+combination, they are just flags)
 
-I'd appreciate any help you all can give me.
+1. selfid handling
+2. reading
+3. writing
 
-Best,
 
-Dave
+Pismo needs 2 and 3 to work right.
+Other OHCI on PPC (TI) need 1, 2, and 3.
+Your titanium probably needs 2 and 3, since i believe it's based on the
+uninorth, just a newer revision, right?
 
--------------------------------------------------------------
-  David King Landrith                      (v) 617-359-6206
+>
+> Should I dig into this further?  Is there a tree with newer 1394 code in
+> it?
 
-  One useless man is a disgrace, two are called a law firm,
-  and three or more become a congress -- John Adams
--------------------------------------------------------------
+It'll be on the 1394 list in about 10 minutes.
+
+> Ira
+>
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
