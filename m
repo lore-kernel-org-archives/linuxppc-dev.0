@@ -1,38 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bill Fink <billfink@mindspring.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	<yellowdog-general@lists.terrasoftsolutions.com>
-Subject: Re: dmasound audio patch
-Date: Mon, 8 Apr 2002 19:45:24 +0100
-Message-Id: <20020408184524.14156@smtp.wanadoo.fr>
-In-Reply-To: <20020408152350.5fe654da.billfink@mindspring.com>
-References: <20020408152350.5fe654da.billfink@mindspring.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 8 Apr 2002 11:53:14 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_GENERIC_PPC32
+Message-ID: <20020408115314.B1048@home.com>
+References: <0204081818.AA21305@ivan.Harhan.ORG>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0204081818.AA21305@ivan.Harhan.ORG>; from msokolov@ivan.Harhan.ORG on Mon, Apr 08, 2002 at 11:18:43AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I halfway understand the reasoning but I don't really agree with it.
->I don't see any significant problem with doing the byte swapping in
->the kernel.  From an engineering standpoint, it seems to make more
->sense to me to do this common function once in the kernel driver rather
->than redoing it over and over in every audio app, and keep getting bit
->by the same endianness problem over and over again.  Linus and the PC
->world don't have to worry about it, but us PPC types keep getting a
->delay in usable audio apps as a result.
->
->Oh well, I know I'm tilting at windmills here.  :-)
+On Mon, Apr 08, 2002 at 11:18:43AM -0700, Michael Sokolov wrote:
+> Of course that fucker, then software eng. manager, now director of engineering
+> Art Webb, wanted PeeMON on it no matter how stupid. I obstructed them as much
+> as I could by not making a zImage for the Adirondack and telling them that it
+> couldn't be done and that one had to boot vmlinux directly on Adirondack. But
+> the fuckers did manage to put their PeeMON on Adirondack, of course stealing
+> all the very complex board init code from StarMON. They actually made it load
+> the vmlinux ELF image and pass it a bi_recs list. But the only info they put in
+> there was the memory size. No way to set the command line, select the root
+> device, or boot with an initrd. So it's basically unusable. But the fuckers
+> didn't care if they make a usable system or not, all they cared was that it
+> says "PMON" on it, whether it works or not. No wonder they've recently had two
+> big customer projects canceled from what I've heard, with that attitude.
 
-No, here you are hitting the lack of proper audio architecture
-in linux ;)
+Michael, don't hold back.  Tell us how you really feel.
 
-It's not the kernel work, definitely, to do any munging on samples
-even if it is as simple as byteswap. It's the role of a userland
-based process to do mixing & format conversion. I hope alsa will
-finally provide something around those lines.
-
-Ben.
-
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
