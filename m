@@ -1,47 +1,46 @@
-Date: Tue, 2 Feb 1999 21:03:31 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Owen Waller <O.Waller@ee.qub.ac.uk>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: matroxfb, anybody? (More details...)
-In-Reply-To: <Pine.SGI.4.02A.9902021408200.13845-100000@myst.ee.qub.ac.uk>
-Message-ID: <Pine.LNX.4.03.9902022103010.31289-100000@mercator.cs.kuleuven.ac.be>
+Date: Tue, 2 Feb 1999 18:23:10 -0800
+From: Sean Harding <sharding@gutenberg.uoregon.edu>
+Reply-To: Sean Harding <sharding@oregon.uoregon.edu>
+To: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-user@lists.linuxppc.org
+Subject: CDROM driver bug?
+Message-ID: <Pine.SGI.4.02.9902021819270.27517-100000@gutenberg.uoregon.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2 Feb 1999, Owen Waller wrote:
-> On Mon, 1 Feb 1999, Geert Uytterhoeven wrote:
-> > On Mon, 1 Feb 1999, Benjamin Herrenschmidt wrote:
-> > > On Mon, Feb 1, 1999, Geert Uytterhoeven
-> > > <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
-> > > >Since BootX creates a fake OF device tree, I suspect it to appear in the
-> > > tree.
-> > > >Can you use your Mystique under MacOS? This is of course a prerequisite for
-> > > >BootX seeing your board.
-> > > OF in the machine's ROM (not the card's ROM) should make _any_ PCI board
-> > > visible provided that it contains correct config-space registers with a
-> > > vendorID and a deviceID, which is required for all PCI cards anyway. The
-> > I'd expect that, too. But my DawiControl DC-2976UW Sym875 SCSI board doesn't
-> > show up in /pci, while my S3 Vision968 is visible as /pci/display. Both boards
-> > don't have OF ROMs.
-> 
-> Geert, do either of these cards show up under your OF tree? I wouldn't
-> expect so as theyt don't have an OF rom (like my mystique) but I am
-> curious.
+I'm having some trouble with the CD driver in the current (2.2.1) kernel.
+I have an "enhanced CD" which it won't play as an audio CD. xmcd can
+access it enough to identify it with CDDB, but clicking 'play' produces
+this message in the log:
 
-The SCSI board doesn't show up, the S3 bideo board is /pci/display. My DEC21041
-Ethernet board is /pci/ethernet.
+Feb  2 18:15:29 juliet kernel: sr0: CDROM (ioctl) error, command:
+UNKNOWN(0x47) 00 00 00 02 00 45 1d 08 00 
+Feb  2 18:15:29 juliet kernel: extra data not valid Current error sr00:00:
+sense key Blank Check
+Feb  2 18:15:29 juliet kernel: Additional sense indicates Illegal mode for
+this track
 
-Greetings,
+cdp says:
 
-						Geert
+play(150,312674)
+                msf = 0:2:0 69:28:74
+                                    CDROMPLAYMSF: I/O error
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Since this disc works properly in every other player and OS I've tried, my
+best guess is that it is a bug in the CD driver code. I have an Apple 8x
+CDROM drive (the 1200i, I believe).
+
+Any ideas on how to fix this?
+
+sean
+
+-- 
+Sean Harding sharding@oregon.uoregon.edu|"art may imitate life
+http://gladstone.uoregon.edu/~sharding/ | but life imitates t.v."
+Consulting: http://www.efn.org/~seanh/  | --ani difranco
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
