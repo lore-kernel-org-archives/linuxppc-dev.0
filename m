@@ -1,42 +1,42 @@
-Message-ID: <38601997.231F1F6A@ctam.com.au>
-Date: Wed, 22 Dec 1999 11:21:44 +1100
-From: Brendan Simon <bsimon@ctam.com.au>
-Reply-To: bsimon@ctam.com.au
+Message-Id: <199912222159.PAA09984@dd254.comm.mot.com>
+Date: Wed, 22 Dec 1999 15:59:19 -0600 (CST)
+From: "Ravi Madhav K. Adatrao" <ravia@dd203.comm.mot.com>
+Reply-To: "Ravi Madhav K. Adatrao" <ravia@dd203.comm.mot.com>
+Subject: LinuxPPC information.
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: ravia@dd203.comm.mot.com
 MIME-Version: 1.0
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: linux-embedded: which shell, termcap or ncurses ?
-References: <385EE46B.1D97C2D2@ctam.com.au> <385FBC9B.E80D568@netx4.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Hi -
 
-> Brendan Simon wrote:
->
-> > ... I now need to get a shell running so I can call shell scripts to
-> > setup the IP addresses etc via ifconfig (is there any other way ?).
->
-> Why don't you just use the binaries from a standard distribution?
-> I try to use as much of this as I can, and it seems to make the
-> job easier for me.
+I am interested to finding out if LinuxPPC is being used to develop time 
+critical applications. I believe that the Linux kernel is same for all the 
+ports. This leaves me to figure out how well Linux kernel plays with powerPC
+(Motorola). I have heard that the compiler is crapy on PPC which has caused
+some performance problems in the past. Is this true?
+Is Linux on PPC industrial (hardness of the OS) enough to develop applications 
+which will be extremely time critical in nature? for example emergency services 
+in hospitals or 911 service etc.
+Any information on these lines is highly appreciated.
 
-I want to use Linux in a commercial product.  It's  a security product
-and some of our clients require that the source code be available and
-that all code can be maintained using a source configuration mangement
-system.  All files must be compilable from the SCM using set procedures.
-These requirements are part of an evaluation specification that we must
-conform to.
+Regards,
+- Ravi.
 
-I guess one could argue that the procedures would be to compile on a
-powerpc machine and transfer the binaries.  At this stage it is not an
-option but I will be getting a G4 server in January so life might be
-easier.
-
-I'd still prefer to be able to compile all the source for our product.
-
-Brendan Simon.
+---------------------------------------------------
+Ravi Adatrao
+Software Engineer
+Wireless Data Solutions Engineering
+CGISS, Motorola
+1301 East Algonquin Rd.
+Room 1055A
+Schaumburg, IL 60196
+ph: (847)576-8550
+fax:(847)576-7737
+---------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
