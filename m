@@ -1,27 +1,33 @@
-From: "Silmaril Mail" <gav@silmaril.co.uk>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Where Do I start ?
-Date: Mon, 10 Jan 2000 21:10:57 -0000
-Message-ID: <NDBBKDPJALKKBFDBGHDCCEACCAAA.gav@silmaril.co.uk>
+Message-ID: <387A5FD5.33A21291@netx4.com>
+Date: Mon, 10 Jan 2000 17:40:21 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <387A3569.35EDDB2E@netx4.com>
+To: "Robin O'Leary" <robin@equiinet.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linux-2.3.37 / 2.3.18 / 2.2.13
+References: <20000107213528.A29581@mail.ro.nu> <387A38DB.8C51AB1D@netx4.com> <20000110211045.F8416@mail.ro.nu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All , Like the subject says where to I start ?
+Robin O'Leary wrote:
 
-	I would like a ppc board - as cheap as pos. with ethernet and hdd support ?
-any ideas
-	Is there a faq ? is so where ?
-	How to I set a a xcompiler ?
-	What is the best host hardware to use ?
 
-Thanks in advance
+> ....  Although I have now
+> coaxed 2.3.18 as far as trying to load the initrd, it has been an uphill
+> struggle all the way and I still haven't got the compressed bootloader
+> going properly.  Could it be that my problems stem from using 2.3.18?
 
-Gav
 
+As I recall, the ram disk didn't work in 2.3.18.  There are some
+general things that don't work in 2.3.18, so I bailed out and
+updated 2.2.xx to get something stable.  Since 2.3.xx is now
+in it's mid-30's (still younger than I :-), perhaps it is mature
+enough that I should visit again and make sure the 8xx configuration
+continues to work.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
