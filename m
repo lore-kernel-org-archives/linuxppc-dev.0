@@ -1,13 +1,25 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC05F11@SNCMAIL>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC05F12@SNCMAIL>
 From: James Don <JDon@spacebridge.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: kernel 2.4 smc1 problems ... advice please ...
-Date: Sat, 14 Dec 2002 14:37:06 -0500
+To: James Don <JDon@spacebridge.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: kernel 2.4 smc1 problems ... advice please ...
+Date: Sat, 14 Dec 2002 16:08:14 -0500
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Fixed ... after I changed the immr to 0xff000000 from 0x02200000 I left a
+for(;;); in start_kernel ... sorry for the uneccessary post ...
+
+Jim
+
+-----Original Message-----
+From: James Don [mailto:JDon@spacebridge.com]
+Sent: Saturday, December 14, 2002 2:37 PM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: kernel 2.4 smc1 problems ... advice please ...
 
 
 Hello,
@@ -46,5 +58,6 @@ tanked ...
 
 Regards,
 Jim
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
