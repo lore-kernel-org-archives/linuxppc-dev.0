@@ -1,33 +1,32 @@
-Message-ID: <398895AC.C6576613@execpc.com>
-Date: Wed, 02 Aug 2000 16:42:04 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+Date: Thu, 3 Aug 2000 00:02:27 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Dan Malek <dan@netx4.com>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
         linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: future of drivers/macintosh (was Re: CONFIG_PPC != Mac)
-References: <Pine.LNX.4.10.10008021351010.427-100000@cassiopeia.home> <20000802211535.26758@mailhost.mipsys.com>
-Content-Type: text/plain; charset=iso-2022-jp
+Subject: Re: CONFIG_PPC != Mac
+In-Reply-To: <39860A50.E423F099@embeddededge.com>
+Message-ID: <Pine.LNX.4.10.10008021759180.14639-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-> I don't think there's real need anymore for an adb directory. The only
-> file in it would be adb.c. The mouse and kbd drivers are moving to input,
-> the controller drivers (Cuda,PMU) do not only ADB but all sort of other
-> machine admin tasks (like power control, I2C, ...) and so are needed even
-> whithout ADB support as part of "PowerMac" support. Cuda can be shared
-> with m68k, maybe PMU too, so drivers/macintosh is not a so bad place for it.
+> > Given the flexibility I was used to on m68k[*], I find this a pity as well...
+>
+> Well, it looks like I opened up a big can of worms...........
+>
+> I guess this is something that will get discussed as part of
+> "restructuring" the PowerPC source tree when we jump into 2.5.xx.
 
-would it be a prudent move to relocate most of drivers/macintosh to
-drivers/char, with the exception of mediabay.c to drivers/block/mac-mediabay.c?
+While I also enjoyed the flexibility on m68k, some of it was paid for in
+terms of increased complexity in head.S and entry.S (and especially head.S
+wasn't a bit pretty). I'm not sure how your trouble with the embedded
+systems can be solved, we kept separate head.S versions for Macs and other
+machines for a while as well because things just got too confusing. Maybe
+we need to keep separate versions for embedded and other systems here?
 
-Something that fits the current layout scheme in a bi-partisan way.
+	Michael
 
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
