@@ -1,78 +1,64 @@
-Message-Id: <5.1.0.14.2.20030723141505.03528ef8@falcon.si.com>
-Date: Wed, 23 Jul 2003 14:21:05 -0400
+Date: Wed, 23 Jul 2003 21:53:28 +0000
+From: Giuliano Pochini <pochini@shiny.it>
 To: linuxppc-dev@lists.linuxppc.org
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: EP8260 
-In-Reply-To: <1058882554.3f1d43faafee2@pop-mail.india.tejasnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"; format=flowed
+Subject: L1 Data Cache error
+Message-Id: <20030723215328.13f99f79.pochini@shiny.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-a) What Wolfgang said :-).
-
-b) What does your EP8260 config file have in it for CONFIG_BAUDRATE?  Did
-you override it in the environmental variables and inadvertently switch to
-a different baud rate?  Did you try different baud rates with minicom to
-see if you could find the one the EP8260 is using?
-
-ANSI vs. VT100 isn't going to do much for you (that is escape
-sequences).  It looks like a baud rate mismatch.  It might be 7 bit vs. 8
-bit or parity, but not likely.
+What's this ?  L1 Data Cache error ?!?
 
 
-gvb
+Machine check in kernel mode.
+Caused by (from SRR1=20009030): L1 Data Cache error
+Oops: machine check, sig: 7
+NIP: C01495DC XER: 20000000 LR: C014ACF8 SP: DA773E00 REGS: da773d50 TRAP: 0200    Not tainted
+MSR: 20009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = da772000[1263] 'opera' Last syscall: 3
+last math 00000000 last altivec 00000000 CPU: 0
+GPR00: D9D06624 DA773E00 DA772000 DAF888C0 DD06101C 00000008 7FFFEA24 DA773EA8
+GPR08: 00000000 C01495B8 FFFFEF40 000010C0 20000088 10625A60 FFFFFFA1 00000000
+GPR16: DA773E38 00000040 DA773EE8 00000020 D9D07580 00000000 DA773EA8 00000001
+GPR24: 00000000 00000000 D9D07314 D9D07320 D9D072C0 DAF888C0 D9D07314 D9D065C0
+Call backtrace:
+00000001 C014ACF8 C01A3274 C0146AFC C0146C20 C0047324 C000607C
+0FFD6598 0FF0B0B0 0FF0BD3C 0FEEB97C 0FEEB2D8 0FEDC2CC 0F8EE0EC
+0F953658 0F8F6EA8 10021208 1001CF3C 1001B550 0F505F70 00000000
+Warning (Oops_read): Code line not seen, dumping what data is available
+
+>>NIP; c01495dc <sock_wfree+24/84>   <=====
+Trace; 00000001 Before first symbol
+Trace; c014acf8 <__kfree_skb+c0/170>
+Trace; c01a3274 <ip_rt_ioctl+8000/b7b8>
+Trace; c0146afc <sock_recvmsg+58/a14>
+Trace; c0146c20 <sock_recvmsg+17c/a14>
+Trace; c0047324 <default_llseek+43c/11d4>
+Trace; c000607c <set_context+270c/293c>
+Trace; 0ffd6598 Before first symbol
+Trace; 0ff0b0b0 Before first symbol
+Trace; 0ff0bd3c Before first symbol
+Trace; 0feeb97c Before first symbol
+Trace; 0feeb2d8 Before first symbol
+Trace; 0fedc2cc Before first symbol
+Trace; 0f8ee0ec Before first symbol
+Trace; 0f953658 Before first symbol
+Trace; 0f8f6ea8 Before first symbol
+Trace; 10021208 Before first symbol
+Trace; 1001cf3c Before first symbol
+Trace; 1001b550 Before first symbol
+Trace; 0f505f70 Before first symbol
+Trace; 00000000 Before first symbol
 
 
-At 07:32 AM 7/22/2003 +0530, deepesh@india.tejasnetworks.com wrote:
+[Linux Jay 2.4.22-pre6 #4 SMP sab lug 19 08:29:11 UTC 2003 ppc unknown]
 
->Hi,
->
->   I loaded my EP8260 board with UBOOT. This was working fine. Then I loaded a
->binary into RAM using tftp. Then tried copying the stuff to flash. When I
->could
->not copy things into flash directly, I erased a few sectors randomly and then
->copied the binary to flash. Then when I reset the board, it did not come up.
->
->I put back the u-boot into the flash using BDI2000. But now I am getting weird
->characters on the screen. I have looked at the minicom settings-- It is 115200
->and 8N1. These were the settings with which I was working before also.
->What I am
->not able to understand is the reason for the weird characters.
->
->I am attaching the weird character file. The last line seems to be the U-BOOT
->prompt. I tried changing the TERMINAL SETTINGS to ANSI from VT100, but it did
->not help.
->------------------------------------------------------------------------
->?åêáó`*m,ïïô`0nsnp`hSõì rr`r0ps`m@qrzs2zrvi
->
->??fxrv0`?åóåô`?ôáôõóz@?øôåòîáì`?ïæôl ?øôåòîáì`Èáòä
->
->??fxrvp fìïãë`fïîæéçõòáôéïî
->`m`,õómôïmfïòå`?õìô`snuøl`-f?`?éö rl`v0ø`,õó`?òåñ``sp-xu`l fïòå ?òåñ qppm3pp
->`m`äæâòç`q,`ãïòåãîæ`0øqål`âõóäæ`rl`ãðíäæ`ql`ðììäæ`ql`ðììíæ`r
->`m`öãïYïõô``qyxppp0ppl`óããYãìë```tyupppppl`âòçYãìë```1rswup0p
->`m`ãðõYãìë` rsqpppppp,`ãðíYãìë`@`yyp0ppppL`âõóYãìë```vvp0pppp
->
->f?*z`` ??fxrvp`h?åö`q4l`?áóë`?n0h?i`r<ru?)`áô`2sq`?Èú
->,ïáòäz ?íâåääåä`?ìáîåô`??x2vpl`?åöéóéïî`p.p
->?2fz`` òåáäù
->????z `vt`?,
->????^:`qv ?,
->jjj`-áòîéîç`m`âáä`f?fl`õóéîç`äåæáõìô`åîöéòïîíåîô
->
->?îz` ``óåòéáì
->?õôz ``óåòéáì
->?òòz ``óåòéáì
->?Åôz```?ffs`??^?????
->,??,*?zòåÁäù
->}~`
->--------------------------------------------------------------------------
->
->Thank you,
->Deepesh
->
+
+--
+Bye.
+   Giuliano.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
