@@ -1,46 +1,33 @@
-Message-ID: <406D92CF.8040302@gcctech.com>
-Date: Fri, 02 Apr 2004 11:20:31 -0500
-From: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Reply-To: cjohnson@gcctech.com
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: General question about caching
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: PREEMPT problems
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Colin LEROY <colin@colino.net>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <1080921611.11826.13.camel@thor.asgaard.local>
+References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
+	 <1080867387.1203.19.camel@gaston>
+	 <1080921611.11826.13.camel@thor.asgaard.local>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1080924194.11826.27.camel@thor.asgaard.local>
+Mime-Version: 1.0
+Date: Fri, 02 Apr 2004 18:43:14 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a tight footprint, and no swapping (in fact no disks).  I notice
-that /proc/meminfo reports:
+On Fri, 2004-04-02 at 18:00, Michel Dänzer wrote:
+>
+> Note that the stuck processes only started with 2.6.5-rc3-ben0 here; the
+> last iteration of 2.6.5-rc2-ben0 is actually quite usable, albeit not
+> perfect either.
 
-        total:    used:    free:  shared: buffers:  cached:
-Mem:  31686656 30740480   946176        0  4591616 12210176
-Swap:        0        0        0
-MemTotal:        30944 kB
-MemFree:           924 kB
-MemShared:           0 kB
-Buffers:          4484 kB
-Cached:          11924 kB
-SwapCached:          0 kB
-Active:          22196 kB
-Inactive:         5416 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:        30944 kB
-LowFree:           924 kB
-SwapTotal:           0 kB
-SwapFree:            0 kB
+I forgot to mention that the spurious segfaults also seemed much rarer
+with 2.6.5-rc2-ben0.
 
-I only have rom and ram-based file systems, so I believe that disk
-caching could and maybe should be reduced to use less space.  Can I
-control this?  How?  I notice that most of the cache_init routines
-running in init/main.c use mempages as the arg.  What would be the
-ramifications of simply reporting less memory to those functions?
- Downside?  Danger?
 
-Your input is appreciated!
-
-cj
+--
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
