@@ -1,47 +1,58 @@
+Subject: Re: glibc 2.2.2  error
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
 To: rekha gvv <rekhagvvc@yahoo.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linker error 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 18 Nov 2002 04:38:19 PST."
-             <20021118123819.75480.qmail@web8001.mail.in.yahoo.com>
-Date: Mon, 18 Nov 2002 13:48:41 +0100
-Message-Id: <20021118124846.26A5511767@denx.denx.de>
+Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20021118122042.74002.qmail@web8001.mail.in.yahoo.com>
+References: <20021118122042.74002.qmail@web8001.mail.in.yahoo.com>
+Content-Type: text/plain
+Date: 18 Nov 2002 14:21:51 +0100
+Message-Id: <1037625711.27283.22.camel@spawn>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20021118123819.75480.qmail@web8001.mail.in.yahoo.com> you wrote:
+If you read the INSTALL file you would know that --with-headers should
+point to the linux kernel headers. I guess the path could be right but
+most probably not.
+
+
+On Mon, 2002-11-18 at 13:20, rekha gvv wrote:
 >
-> I am trying to compile the utilities from the SELF
-> but it gives the error
-> ----------------------------------------------------
-> powerpc-linux-gcc -Wall -Os -fomit-frame-pointer
-> -fno-builtin -o depmod depmod.o ../util/libutil.a
-> ../obj/libobj.a -s
-> /usr/local/powerpc-linux/bin/ld: cannot open crt1.o:
-> No such file or directory
-> collect2: ld returned 1 exit status
-> make[1]: *** [depmod] Error 1
-> -----------------------------------------------------
-> can u please tell me how to get the crt1.o and also
-> the ldscript files present in
-> /usr/local/powerpc-linux/ldscripts.
-
-I don't know where you got your tools from, but  obviously  they  are
-broken.  You  can  download ready-to-use working tools for free - see
-http://www.denx.de/re/ELDK.html
-
-
-Best regards,
-
-Wolfgang Denk
-
+> Hello,
+> I am setting up glibc for powerpc target but It gives
+> me errors ..
+> I have set the options
+> CC=powerpc-linux-gcc
+> ./configure --build=powerpc-linux \
+> > --enable-add-ons=linuxthreads \
+> > --with-headers=/usr/local/powerpc-linux/include
+>
+> But when u compile  it is not able to find the headers
+> there ...
+> it gives these errors ...
+> so can anyone specify the right options to configure
+> glibc.
+>
+>
+> In file included from ../posix/bits/posix1_lim.h:126,
+>                  from :1:
+> ../linuxthreads/sysdeps/unix/sysv/linux/bits/local_lim.h:36:26:
+> linux/limits.h: No such file or directory
+> make[1]: *** [../bits/stdio_lim.st] Error 1
+> make[1]: Leaving directory `/usr/src/glibc-2.2.2/csu'
+> make: *** [csu/subdir_lib] Error 2
+>
+>
+> thankyou!
+>
+>
+>
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"A great many people think they are thinking when they are merely re-
-arranging their prejudices."                          - William James
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
