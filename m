@@ -1,63 +1,101 @@
-Message-ID: <386C6C0D.4AE93108@huawei.com.cn>
-Date: Fri, 31 Dec 1999 16:40:45 +0800
-From: dony <dony.he@huawei.com.cn>
+Message-ID: <386CD4AD.A0311DD9@mvista.com>
+Date: Fri, 31 Dec 1999 10:07:09 -0600
+From: Jim Lewis <jlewis@mvista.com>
 MIME-Version: 1.0
-To: Jeff Millar <jeff@wa1hco.mv.com>,
-        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Please help me...
-References: <386C150F.22B1A3D0@huawei.com.cn> <000401bf5016$4757c420$0201a8c0@home>
+To: Alan Mimms <alanm@unforgettable.com>
+CC: Brendan.Simon@ctam.com.au, linux-embedded <linux-embedded@waste.org>,
+        Cross-GCC <crossgcc@sourceware.cygnus.com>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: cross-compiling & debugging embedded-linux apps
+References: <386C3615.E14AE6DD@ctam.com.au> <19991231.6583200@alanm.penguinpowered.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jeff Millar wrote:
+Alan Mimms wrote:
 
-> The zImage contains an uncompress program at the start.  This program then
-> copies and uncompresses the kernel to another location in ram.  If your
-> using the kernel from Dan at
+> You know about the ldd command?  Do 'ldd bjs1-shared' to see what
+> libraries you need for your shared executable and make sure they're
+> there and built with no floating point.  When you compile and link,
+> you're using '-mcpu=860' or '-msoft-float', right?  That also could be
+> a problem for you.
 >
->     ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
->
-> Then use the debugger to start it at 0x00200000.  Refer to the code in
-> arch/ppc/mbxboot/misc.c
+> I think the seg fault is what Dan's kernel maps the floating point
+> handler's exception to - it's really a floating point exception.
 
-By the way, what role does the "struct bd_t" play in the function
-"decompress_kernel"?
-Is it contain the private data for various board? Must I need it?
+On the MPC8xx, the only vector invoked for Floating Point is the Software
+Emulation Interrupt, vector 0x1000. SIGSEGV is issued as a result of Machine
+Check exception, vector 0x200.
 
+> I COULD be wrong about this.  It's one fo the things I have been meaning
+> to look into but haven't yet had the chance.
 >
+> (Caveat emptor on the above - I'm just a beginner myself.)
 >
-> I'm not the expert, Dan is, but he's been teaching me.
+> a
 >
-> jeff
-> ----- Original Message -----
-> From: "dony" <dony.he@huawei.com.cn>
-> To: "Raphael Bossek" <raphael.bossek@solutions4linux.de>; "Brendan Simon"
-> <bsimon@ctam.com.au>; "Dan Malek" <dan@netx4.com>; "linuxppc-embed"
-> <linuxppc-embedded@lists.linuxppc.org>
-> Sent: Thursday, December 30, 1999 9:29 PM
-> Subject: Please help me...
+> >>>>>>>>>>>>>>>>>> Original Message <<<<<<<<<<<<<<<<<<
 >
-> >
-> > Hi,
-> >       Now I am trying to embed linux onto our MPC860-based board. I have
-> > some questions which may be solved by you embed-linux gurus....
-> >      What I want to do  is the following:
-> >     1     Initialize the MPC860 CPU , memory, serial port, enet port .
-> >     2    Download  the linux powerpc kernel (which I have cross-compiled
-> > on my X86 box)
-> >            from the TFTP server to RAM on board.
-> >     3    run the kernel.
-> > Now the 1 and 2 step work well, but when I download the kernel to RAM on
-> > board, It just cannot run.Do you know why? How can I programme to make
-> > it run? Since the kernel is a compressed image (zvmlinux), need I make
-> > some codes to decompress it and then run it? if so, how to do it?
-> >  Thank you very much :-))
-> >  Merry christmas & happy year.
-> >
-> > dony
-> >
-> >
+> On 12/30/99, 8:50:29 PM, Brendan J Simon <Brendan.Simon@ctam.com.au>
+> wrote regarding cross-compiling & debugging embedded-linux apps:
+>
+> > I have a powerpc embedded system (MPC860, 4MB Flash, 16MB RAM,
+> ethernet,
+> > rs232).  I have compiled the kernel and can boot it using a root
+> > filesystem via initrd or nfs.  The root filesystem is a minimal one
+> that
+> > was on the linuxppc-embedded ftp site.  It basically has /bin/sh,
+> > /bin/ls and a few libraries in /lib.
+>
+> > I NEED to be able to compile apps from the sources.  I have managed to
+> > cross-compile ncurses and bash.  I can't get bash to run at all (even
+> a
+> > statically compiled version).  I get segmentaion faults.  I'm
+> currently
+> > using SASH which I have cross-compiled as a static binary.  I compiled
+> a
+> > test app (bjs1.c) which outputs a string every second.  It is compiled
+> > as a static binary (bjs1-static) and a shared binary (bjs1-shared).
+> The
+> > static binary works but the shared one does not.  I assume it is some
+> > library problem but I can't figure out what.  The output of the sash
+> > session is below.
+>
+> > Stand-alone shell (version 1.0)
+> > > ./bjs1-static
+> > BJS1: Brendan was here
+> > BJS1: Brendan was here
+> > BJS1: Brendan was here
+> > pid 7: killed (signal 2)
+> > >
+> > > ./bjs1-shared
+> > pid 8: killed (signal 11)
+> > >
+>
+> > I have all the libraries on the root filesystem.  The rpc.nfsd daemon
+> > seems to read the entire file but sash says the process is killed with
+> > signal 11 (segmentation fault).  I have no idea how to debug this.  I
+> > don't think there is a simulator for the mpc860 as part of gdb.  Is
+> > there a way of debugging this on the target with powerpc-gdb and an
+> > ethernet or serial connection ?
+>
+> > How does the kernel know where to look for libraries ?  I assume there
+> > are some default locations like /lib.  I haven't got an ld.so.conf
+> setup
+> > nor do I have ldconfig.
+>
+> > It can't be that hard to get a simple 10 line program to execute as a
+> > shared binary.  It must be something really simple that I am missing.
+>
+> > Thanks for any help,
+> > Brendan Simon.
+
+--
+Jim Lewis
+Sr. Field Applications Engineer
+MontaVista Software, Inc.
+(817)261-9088 http://www.mvista.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
