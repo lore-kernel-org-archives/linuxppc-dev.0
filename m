@@ -1,50 +1,36 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A02637AB3@SERVER1>
-From: Subodh Nijsure <SNijsure@SkyStream.com>
-To: "'Matthias Fuchs'" <matthias.fuchs@esd-electronics.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: simple access to mem mapped peripheral
-Date: Tue, 2 Oct 2001 07:53:52 -0700 
+Message-ID: <3BB9ED05.D354AF5B@midrivers.com>
+Date: Tue, 02 Oct 2001 10:36:21 -0600
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: building tools from montavista SRPMs
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+I'm sure this has been covered somewhere, but I've yet to find it
+this morning ... all constructive replies appreciated.
 
-May be try this?
+I'm working from mvista professional v.2.0 and want to build some
+of the tools from scratch -- specifically for a ppc405.
 
-	chip_registerbase = (unsigned
-long)ioremap_nocache(CHIP_PHYSICAL_ADDRESS,
-    			CHIP_MEM_SIZE);
-	printk("Linux kernel Memory mapped base register %lX \n",
-chip_registerbase);
+I've seen references to 'rpmconfig' but don't know just what to
+feed rpm / rpmconfig in order to build per the SRPM spec files.
 
-Then you can read and write to your chip via *chip_registerbase
+can someone point me to the details of how to do this ... ?
 
-/Subodh
+many thanks,
 
------Original Message-----
-From: Matthias Fuchs [mailto:matthias.fuchs@esd-electronics.com]
-Sent: Tuesday, October 02, 2001 10:02 AM
-To: linuxppc-embedded
-Subject: simple access to mem mapped peripheral
+Mark
 
+--
+Mark Pilon
 
+Minolta-QMS
+P.O. Box 37
+Fallon, MT.  59326-0037
 
-Hi,
-
-I need a "very simple" way to access a mem mapped peripheral. The device
-is mem mapped at 0xf0200000.
-I was trying /dev/mem but this dev only accesses my physical memory
-chips.
-
-My target is a ppc405gp running recent kernel 2.4.10.
-
-Any idea ?
-
-Matthias
-
+1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
