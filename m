@@ -1,40 +1,30 @@
-From: "Steve Boorman" <steveb@baydel.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Mon, 14 Jul 2003 17:31:44 +0100
-MIME-Version: 1.0
-Subject: Hangup booting Linux on PPC440GP 
-Reply-To: Steve Boorman <steveb@baydel.com>
-Message-ID: <3F12E900.23193.19E927F@localhost>
-Content-type: text/plain; charset=US-ASCII
+Date: Mon, 14 Jul 2003 12:38:38 -0500
+From: Chris Zimman <chris@cryptoapps.com>
+To: Steve Boorman <steveb@baydel.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Hangup booting Linux on PPC440GP
+Message-ID: <20030714173838.GA23068@dingdong.cryptoapps.com>
+Reply-To: Chris Zimman <chris@cryptoapps.com>
+References: <3F12E900.23193.19E927F@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3F12E900.23193.19E927F@localhost>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Mon, Jul 14, 2003 at 05:31:44PM +0100, Steve Boorman wrote:
+> machine hangs up, no panic or anything else displayed on the console. If I
+> remove /sbin/init then I do get the obvious panic, "No init found.  Try
+> passing init= option to kernel."
+>
+> I tried replacing /sbin/init with a static linked program which just does a
+> printf of "hello world", this hangs in the same way with no message. This
+> prog was compiled using the Starmax running Yellow Dog V3, kernel
+> 2.4.20-8D / gcc 3.2.2.
 
-I have an IBM PPC440GP evaluation board (Ebony) which I am
-trying to get Linux up and running on.
+Do you have math emulation compiled into the kernel?
 
-I read the Cross development mini-howto and downloaded the relevant
-files to an X86 based machine, these were binutils-2.14.90.0.4.1,
-gcc-core-3.3 and linux-bk-2.4-devel-2.4.21-pre4. Following the mini-howto
-I successfully built the kernel. This kernel is loaded using the IBM
-Openbios over the ethernet from a Motorola Starmax (603e based I think)
-and mounts the root filesystem over nfs which resides on the Starmax.
-Everything looks good until Linux attempts to run /sbin/init, then the
-machine hangs up, no panic or anything else displayed on the console. If I
-remove /sbin/init then I do get the obvious panic, "No init found.  Try
-passing init= option to kernel."
-
-I tried replacing /sbin/init with a static linked program which just does a
-printf of "hello world", this hangs in the same way with no message. This
-prog was compiled using the Starmax running Yellow Dog V3, kernel
-2.4.20-8D / gcc 3.2.2.
-
-Any ideas as to what is wrong would be most appreciated.
-
-Regards,
-Steve Boorman
-
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
