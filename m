@@ -1,38 +1,16 @@
-Message-ID: <XFMail.990425173806.hcaley@loomer.com>
+Message-ID: <XFMail.990425174112.hcaley@loomer.com>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="_=XFMail.1.3.p0.Linux:990425173806:426=_"
-Date: Sun, 25 Apr 1999 17:38:06 -0700 (PDT)
+Date: Sun, 25 Apr 1999 17:41:12 -0700 (PDT)
 From: Batmensch <hcaley@loomer.com>
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Linpack Benchmarks on PB G3 Series 300mhz
-Cc: hcaley@loomer.com
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Linpack Benchmarks on PB G3 Series 300 mhz take 2
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This message is in MIME format
---_=XFMail.1.3.p0.Linux:990425173806:426=_
-Content-Type: text/plain; charset=us-ascii
+Might have messed up the attachment...
 
-Here are my linpack benchmarks on my PB G3 Series 300 mhz.
-
-Hugh
-
-
-----------------------------------
-E-Mail: Batmensch <hcaley@loomer.com>
-Date: 25-Apr-99
-Time: 17:34:41
-
-This message was sent by XFMail
-----------------------------------
-
---_=XFMail.1.3.p0.Linux:990425173806:426=_
-Content-Disposition: attachment; filename="info"
-Content-Description: info
-Content-Type: text/plain; charset=us-ascii; name=info; SizeOnDisk=1532
-Content-Transfer-Encoding: 7bit
 
 Linux hughmac 2.2.6-6bpmac #2 Wed Apr 21 21:02:56 PDT 1999 ppc unknown
 LINPACK benchmark, Double precision.
@@ -80,8 +58,13 @@ Average rolled and unrolled performance:
        2  11.53  97.48%   0.69%   1.82%  29623.086
 
 
---_=XFMail.1.3.p0.Linux:990425173806:426=_--
-End of MIME message
+----------------------------------
+E-Mail: Batmensch <hcaley@loomer.com>
+Date: 25-Apr-99
+Time: 17:39:21
+
+This message was sent by XFMail
+----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
