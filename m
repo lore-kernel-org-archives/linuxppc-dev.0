@@ -1,58 +1,48 @@
-Date: Mon, 16 Apr 2001 13:56:29 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Karim Yaghmour <karym@opersys.com>
-Cc: Samuel Rydh <samuel@ibrium.se>, linuxppc-dev@lists.linuxppc.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] gettimeofday stability
-In-Reply-To: <3AD7F303.FAD9EA51@opersys.com>
-Message-ID: <Pine.HPX.4.10.10104161339130.1891-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 16 Apr 2001 12:59:03 +0100
+Subject: Re: boot params
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Ethan Benson <erbenson@alaska.net>,
+	linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010416115854.9A1722F09A@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 14 Apr 2001, Karim Yaghmour wrote:
-
+On Mon, Apr 16, 2001, Ethan Benson wrote:
+> On Mon, Apr 16, 2001 at 12:38:17PM +0100, Iain Sandoe wrote:
+>> > Ethan Benson wrote:
+>> >> the kernel HFS driver is unreliable.
+>>
+>> Hmmm.  What do you mean?  I use it a lot (without problems AFAICT) - is
+>> there something I should know?
 >
-> Gabriel Paubert wrote:
-> >
-> > Given that time handling is completely different in 2.2 and 2.4, it is
-> > surprising. This would indicate that a decrementer interrupt has happened
-> > too early.
-> >
-> > How often does it happen ? Does it still happen with recent kernels ?
-> > Were you running something that touches the decrementer (MOL, RTLINUX) ?
-> >
->
-> I can't tell you if the interrupt is happening too early or not,
-> although code could be added to check this.
+> apparently people get occasional filesystem corruption when copying
+> larger files around.  its always been rather shady since nobody really
+> gives a damn about it.
 
-Yes, currently the decrementer interrupt assumes that it is the only user.
-This is quite simple however, use a while() {} instead of a do {}
-while() in the loop that catches up on pending decrementer interrupts.
+Those of us with OW machines - booting with BootX (and a vestigial need to
+use MacOS for 'rent-paying-work' ;-) _do_ give a damn.  I'd be interested if
+someone could point at a reliable way to replicate a fault.
 
+> which is why something as important as the
+> kernels should not live on HFS.
 
-> I can tell you that this has been noticed by more than one person.
-> I noticed this and so did the person at MontaVista that contributed
-> the cross-platform reading code (to enable traces to be read accross
-> different endian machines).
->
-> If you really want to see what I mean I could forward you a textual
-> trace sample to proove my point.
+OW machines don't have the choice.
 
-This could be very helpful (but from a recent kernel, please).
+>  and bootloaders should live on a
+> never mounted tiny HFS partition managed by hfsutils or preferably
+> ybin.
 
->
-> The latest kernel I've tested this on is 2.4.0-test10.
+...
 
-Ok, the new code was introduced with test9. I'm very surprised since I've
-heavily tested it (time stamping lots of interrupts+NTP), but I'm going to
-add more thorough checks to see if I can catch some problem. I'll come
-back after a few billion do_gettimeofday() calls.
+> it comes up on irc here and there.
 
-	Regards,
-	Gabriel.
+Yes, but I've not seen a report for months - the last IIRC were for 2.3.xx
+kernels ...
 
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
