@@ -1,99 +1,43 @@
-Message-ID: <36b714c8040803045623220af2@mail.gmail.com>
-Date: Tue, 3 Aug 2004 07:56:46 -0400
+Message-ID: <36b714c804080306175c5dc3f6@mail.gmail.com>
+Date: Tue, 3 Aug 2004 09:17:49 -0400
 From: Brian Waite <linwoes@gmail.com>
-To: "Steven J. Hill" <sjhill@realitydiluted.com>
-Subject: Re: 750 and Discovery II coherency with PCI....
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <410F05EC.1040405@realitydiluted.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH] Workaround for 745x data corruption bug
+Cc: Adrian Cox <adrian@humboldt.co.uk>,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <410E85EE.8050707@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-References: <410F05EC.1040405@realitydiluted.com>
+References: <1091291276.987.57.camel@localhost> <410E85EE.8050707@mvista.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Steve,
-I have been using the disco II now for quite a while I have been able
-to make 4 different PCI cards work without many problems. Can you look
-at your memory windows and make sure the mappings are set up
-correctly? Is this a single or a dual processor? I would start by
-decoding the PCI memory windows that sounds like where you might be
-getting into trouble. Do you have a PCI bus analyzer handy to make
-sure you are putting the right addresses on the bus?
+> Well that sucks (the bug, not the patch :).  Many people like to turn
+> off coherency when using Marvell host bridges b/c they struggle
+> performance-wise with coherency on (at least on some versions).
+>
+> One change to the patch, though.  According to the 7447/7457 errata doc,
+> rev 1.2 doesn't have the bug.  The attached patch accounts for that.
+>
+> Mark
+> --
+
+Mark,
+
+Looking at this errata, I don't think poeple using Marvell chips will
+be affected by this errata.
+I don't see this as impacting the IO subsystem only the internal MPX system. IE
+using a 2 74xx system and not using the M bit. This race can also
+occur on a single processor system with the M disabled, as it is in
+Linux, but it has nothing to do with the memory controller mapping its
+PCI<->mem windows as non cacheable. You should be able to boost the IO
+throughput using non coherency without this errata impacting you any
+more than it already is.
+
+Anyone please correct me if I am wrong because I need to know.
+
 Thanks
 Brian
-
-
-On Mon, 02 Aug 2004 22:26:36 -0500, Steven J. Hill
-<sjhill@realitydiluted.com> wrote:
->
-> Greetings.
->
-> I am writing a device driver for a PMC card that is nothing
-> fancy. It is not a PCI-X card though. My Linux driver properly
-> detects the device, 'ioremaps' the PCI IO and MEM regions then
-> attempts to start writing the devices registers for setup
-> and configuration. I am not getting valid reads and there
-> appears to be some coherency issues. I have verified that no
-> other drivers or resources in the system are utilizing the
-> addresses that are returned to me from 'ioremap'. I have the
-> following code snippet:
->
-> #define shunt_read_8(offset)            \
->         *((volatile u8 *) (shunt_dev->ctrl_base + offset))
-> [SNIP]
->                 svalue[0] = shunt_read_8(SHUNT_ADDRESS + 0x220);
->                 svalue[1] = shunt_read_8(SHUNT_ADDRESS + 0x221);
->                 svalue[2] = shunt_read_8(SHUNT_ADDRESS + 0x222);
->                 svalue[3] = shunt_read_8(SHUNT_ADDRESS + 0x223);
->
->                 printk("0x%02x\n", svalue[0]);
->                 printk("0x%02x\n", svalue[1]);
->                 printk("0x%02x\n", svalue[2]);
->                 printk("0x%02x\n", svalue[3]);
->
-> If I read the byte addresses above, which are in the remapped PCI I/O address
-> space and I get the following output:
->
-> 0x00
-> 0x00
-> 0x00
-> 0x00
->
-> which is of course, incorrect. I even tried using the 'in_8' macro functions
-> in 'asm-ppc/io.h'. I get the same results. Now, if I instead do the following
-> code snippet:
->
->                 printk("0x%02x\n", shunt_read_8(SHUNT_ADDRESS + 0x220));
->                 printk("0x%02x\n", shunt_read_8(SHUNT_ADDRESS + 0x220));
->                 printk("0x%02x\n", shunt_read_8(SHUNT_ADDRESS + 0x220));
->                 printk("0x%02x\n", shunt_read_8(SHUNT_ADDRESS + 0x221));
->                 printk("0x%02x\n", shunt_read_8(SHUNT_ADDRESS + 0x222));
->                 printk("0x%02x\n", shunt_read_8(SHUNT_ADDRESS + 0x223));
->
-> I now get the output of:
->
-> 0x00
-> 0x81
-> 0x81
-> 0x02
-> 0x0e
-> 0x0e
->
-> The first time I read 0x220, it is incorrect, but the following two times and
-> the other remaining values are now correct. Unfortunately, this device is the
-> only PMC device that I have to test. I do not have any other PMC cards. This
-> behavior exists in both the 2.4 kernel and in my 2.6 kernel. The virtual
-> addresses received from the 'ioremap' call are identical on both 2.4 and 2.6,
-> just for reference. I tried adding in memory barriers and 'eieio' calls, but
-> I did not expect those to make a difference...and it did not. Has anyone ever
-> seen similar behavior? Preferably I would like to hear from people working
-> with Discovery II parts. I have documentation under NDA, but I am still working
-> my way through it. Thanks in advance.
->
-> -Steve
->
->
->
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
