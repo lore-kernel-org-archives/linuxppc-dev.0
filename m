@@ -1,20 +1,27 @@
-Message-Id: <200209270447.g8R4lEO01101@attbi.com>
-From: Michael Thompson <mickey@berkeley.innomedia.com>
+Message-ID: <3D940B2C.3060105@motorola.com>
+Date: Fri, 27 Sep 2002 08:39:24 +0100
+From: John Traill <john.traill@motorola.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Are 8260 and 8250 CPM interface compatible?
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 26 Sep 2002 21:47:12 -0700
+Subject: bi_record location Error ?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-How much of each of the drivers in arch/ppc/8260_io/ can be reused
-for the 8250?  Is the 8250 CPM interface backward compatible
-with the 8260 CPM interface? Or will everything have to be written
-from the ground up?
+The _ALIGN macro is defined as follows :-
 
+#define _ALIGN(addr,size)        (((addr)+size-1)&(~(size-1)))
 
-Michael Thompson
-mickey@berkeley.innomedia.com
+However all uses of the ALIGN macro for bi_record location already add the size eg.
+
+rec = (struct bi_record *)_ALIGN((ulong)__bss_start+(1<<20)-1,(1<<20));
+
+The use of _ALIGN for the bi_records is consistent but is there a reason for the double size offset or is it a simple typo ?
+
+--
+
+Regards, John
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
