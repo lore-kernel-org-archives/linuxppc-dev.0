@@ -1,17 +1,19 @@
-Return-Path: <awilliam@nortelnetworks.com>
-Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
-	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id A66AE2BF09
+Return-Path: <wd@denx.de>
+Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
+	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id 99A662BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Nov 2004 01:34:05 +1100 (EST)
-Message-ID: <713043CE8B8E1348AF3C546DBE02C1B401C11C22@zcarhxm2.corp.nortel.com>
-From: "Andrew Williams" <awilliam@nortelnetworks.com>
-To: Peter Asemann <peter.asemann@web.de>,
-	linuxppc-embedded@ozlabs.org
-Date: Thu, 4 Nov 2004 09:16:49 -0500 
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C4C278.ECBDF834"
-Subject: RE: Am I on the right list here?
+	Fri,  5 Nov 2004 03:23:37 +1100 (EST)
+To: "=?iso-8859-1?Q?J=F3n_Benediktsson?=" <jonb@marel.is>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 04 Nov 2004 12:32:40 GMT."
+	<OF368071C2.FBC6B7BC-ON00256F42.003F3DF3-00256F42.0044E8BB@marel.is>
+Date: Thu, 04 Nov 2004 17:22:57 +0100
+Sender: wd@denx.de
+Message-Id: <20041104162302.2B49DC1430@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Handling power failure - MPC5200 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,59 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+In message <OF368071C2.FBC6B7BC-ON00256F42.003F3DF3-00256F42.0044E8BB@marel.is> you wrote:
+> 
+> Capacitors on the supply provide me with some milliseconds to repond to 
+> power failure, which I would
+> like to use to do as much cleanup as possible before power is totally 
+> gone.  In particular, I am concerned
 
-------_=_NextPart_001_01C4C278.ECBDF834
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+How many is "some"? If it's not >100 or so it is probably  not  worht
+the effort...
 
+> with trying to prevent damage to filesystems.  The board has Compact Flash
+> and onboard flash which
+> are used as filesystems.  The board will be used as an industrial 
+> controller.
+> 
+> Can anyone point me to examples of how this can be handled ?
 
-Peter, here's an article that I found to be a great 
-"starting point". With regards to your boot loader,
-look to U-boot (u-boot.sourceforge.net), and read
-the (length) README document.
+Use the standard methods: use the CF card read-only  (many  CF  cards
+can  be  damaged  [beyond  repair]  when  you power off while a write
+operation is in progress). Use a filesystem  on  the  ob-board  flash
+which knows how to handle a loss of power (i. e., use JFFS2).
 
-http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf
+> Can anyone share experience of a similar setup, which filesystems to 
+> select etc ?
 
-Best of luck
+We usually use ext2 read-only on the CF, JFFS2 for the writable parts
+on the on-board flash, cramfs for all  parts  that  need  not  to  be
+written  on  a  regular  base (most of your root filesystem including
+application  code,  libraries  etc.),  and  a  FiST   based   overlay
+filesystem in case of software patches need to be added.
 
+Best regards,
 
-------_=_NextPart_001_01C4C278.ECBDF834
-Content-Type: text/html;
-	charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Wolfgang Denk
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3DISO-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-5.5.2658.2">
-<TITLE>RE: Am I on the right list here?</TITLE>
-</HEAD>
-<BODY>
-<BR>
-
-<P><FONT SIZE=3D2>Peter, here's an article that I found to be a great =
-</FONT>
-<BR><FONT SIZE=3D2>&quot;starting point&quot;. With regards to your =
-boot loader,</FONT>
-<BR><FONT SIZE=3D2>look to U-boot (u-boot.sourceforge.net), and =
-read</FONT>
-<BR><FONT SIZE=3D2>the (length) README document.</FONT>
-</P>
-
-<P><FONT SIZE=3D2><A =
-HREF=3D"http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf" =
-TARGET=3D"_blank">http://www.tldp.org/LDP/cpg/Custom-Porting-Guide.pdf</=
-A></FONT>
-</P>
-
-<P><FONT SIZE=3D2>Best of luck</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C4C278.ECBDF834--
+-- 
+See us @ Embedded/Electronica Munich, Nov 09 - 12, Hall A.6 Booth 513
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+You don't have to stay up nights to succeed; you have to  stay  awake
+days.
