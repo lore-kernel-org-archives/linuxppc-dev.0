@@ -1,49 +1,44 @@
-Message-Id: <199908310616.IAA00299@piglet.cpu.lu>
-Date: Tue, 31 Aug 1999 08:16:35 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
+Date: Tue, 31 Aug 1999 17:21:31 +1000
+Message-Id: <199908310721.RAA17352@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
 To: ddkilzer@computer.org
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <v03130301b3f116a864e2@[192.168.1.1]>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+CC: Jes.Sorensen@cern.ch, schmitz@opal.biophys.uni-duesseldorf.de,
+        linux-mac68k@mac.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
+In-reply-to: <v03130302b3f1013159dd@[192.168.1.1]> (ddkilzer@computer.org)
+Subject: Re: mac-2.3.14.diff: adb
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <199908301552.RAA23128@lxp03.cern.ch> (message from Jes
+ Sorensen	on Mon, 30 Aug 1999 17:52:45 +0200)
+ <v03130327b3ebecbebbd3@[192.168.1.1]>
+ <199908270917.LAA04250@lxp03.cern.ch>
+ <v03130308b3ec440550d3@[192.168.1.1]>
+ <199908271414.QAA24261@lxp03.cern.ch>
+ <37CAA6F5.D93A168B@biophys.uni-duesseldorf.de>
+ <199908301552.RAA23128@lxp03.cern.ch> <v03130302b3f1013159dd@[192.168.1.1]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+David D. Kilzer <ddkilzer@computer.org> wrote:
 
-On  31 Aug, this message from David D. Kilzer echoed through cyberspace:
-> Here's what's left of the boot messages on the screen in 2.2.12 from 
-> CVS that I compiled on Aug 29, 1999:
-> 
-[snip]
-> Console: switching to colour frame buffer device 104x39
-> fb0: control display adapter
-> ADB keyboard at 2, handler set to 3
-> ADB mouse at 3, handler set to 2
-> Serial driver version 4.27 with no serial options enabled
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> The issue at hand is that Jes believes drivers/macintosh should not exist
 
-> Machine check in kernel mode.
+I still haven't heard why.  I personally would like something more
+compelling than "Jes doesn't like it" before changing an arrangement
+that is working just fine AFAICS.
 
-This might be a shot in the dark, but I never heard of anyone
-successfully compiling in standard serial support on the PowerMacs. I
-tried it myself; I would get a panic upon initializing the serial
-driver (exactly like above..).
+> I would appreciate it if Jes and Paul would come to an agreement on where
+> the code belongs so we can get on with the ADB merger.  :^)
 
-So you might want to disable standard serial suport, and recompile...
+Jes is more of a "theoretician" than I am, I tend to be more
+pragmatic, so this could be a problem. :-)  I will accept patches for
+drivers/macintosh from the m68k mac folks.  I have some reservations
+about the current adb merge patches, though, which I'll mention once
+I've had a closer look at the patches.  In general I'm happy with a
+drivers/adb directory but I don't think drivers/macintosh should go
+away.
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
