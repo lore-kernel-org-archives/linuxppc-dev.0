@@ -1,40 +1,28 @@
-Date: Fri, 2 Feb 2001 17:27:43 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Steven Hanley <sjh@wibble.net>,
-        Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: agpgart? or how to use dri?
-In-Reply-To: <19341227173347.15692@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.30.0102021705270.25118-100000@idd-01.imbc.gr>
+Message-ID: <3A7AD949.6548B3F1@mvista.com>
+Date: Fri, 02 Feb 2001 10:59:05 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rolf Liu <rolfl@sc.mcel.mot.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: power management on linux ppc
+References: <031901c08b3a$40a3bb10$bf0102c8@sc.mcel.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2 Feb 2001, Benjamin Herrenschmidt wrote:
+Rolf Liu wrote:
 
->
-> >
-> >> I slightly hacked my own
-> >> to build since I lack the glide libs necessary for the 3dfx stuff to
-> >compile.
-> >
-> >what does glide have to do with this? isnt that only used with tdfx?
->
-> Yes, but the Makefile of the kernel DRM modules will build all modules
-> (3dfc, ati, ...) and so would fail when the glide headers are not there.
-.....
-> Well, what I did was to:
->
->  - Get Gareth CVS branch
->  - Make World
->  - remove tdfx in the drivers Makefile and the DRM kernel makefile
+> does linux-ppc support power management to reduce the power consumption ?
+> Does there exist such driver for mpc8xx ?
 
-Until now the default for ppc was #define HasGlide3 NO if this has been
-changed to YES, then disabling it in you hosts.cf should work.
+The MPC8xx processors have dynamic power management built into the
+silicon.  If devices are idle or not enabled, they draw minimal or
+no power.  The sleep/nap/doze power functions could be enabled to
+slow the processor core, and external clocks driving memory or
+other devices, but this would be custom to the external devices
+in a system.
 
- Kostas
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
