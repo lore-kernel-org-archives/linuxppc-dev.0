@@ -1,59 +1,53 @@
-Message-ID: <E1836A7F3557D311A14000805F9F36FC01733756@usdfo011.usac.danfoss.net>
-From: Christensen Henrik USAC <HenrikChristensen@Danfoss.com>
-To: "'Ricardo Scop '" <scop@digitel.com.br>,
-	Hihn Jason <JasonHihn@Danfoss.com>,
-	"''linuxppc-embedded@lists.linuxppc.org' '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Position available for 8xx series programmer
-Date: Fri, 3 May 2002 12:53:48 +0200 
+From: Steve.Ferri@radisys.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Unhandled interrupt 0, disabled
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <OF372ADE2C.72EE3078-ON85256BAE.0047B532@radisys.com>
+Date: Fri, 3 May 2002 09:03:59 -0400
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes, but they must be Green Card holders or other proof of being approved to
-work legally in the US.
+All:
+
+I have run different kernel versions (2.4.7 to 2.4.15) on an the 8260
+based card we are using.  After the
+kernel has been loaded, I always seem to see the message "Unhandled
+interrupt 0, disabled".
+It doesn't always occur at the same time.  I've seen the message right
+after the kernel has finished
+booting, after i started my application, or initialized some drivers.  It
+occurs only once.
+
+Looking at the 8260 manual IRQ 0 is described as "Error (No Interrupt)".
+Looking at the code in irq.c
+this event doesn't hurt anything, and most likely can be ignored.  I just
+want to understand
+how this interrupt vector is getting to the irq_distacher.  Also, should I
+be concerned about this
+or should I just continue to ignore the event ?
+
+Also this is marked in the /proc/interrupts  file under the BAD: entry
+(counted as a spurious interrupt)
+
+              CPU0
+ 13:       8629            8260 SIU   Edge      timer_irq
+ 19:          0                8260 SIU   Edge      qfalc_irq
+ 21:          1                8260 SIU   Edge      pci_irq
+ 33:       25438          8260 SIU   Edge      fenet
+ 36:       29585934   8260 SIU   Edge      mcc1_irq
+BAD:          1
+
+Perhaps this just always occurs in 8260's after boot ?
 
 Regards,
+Steve
 
-Henrik Christensen
-
------Original Message-----
-From: Ricardo Scop
-To: Hihn Jason; 'linuxppc-embedded@lists.linuxppc.org'
-Cc: Christensen Henrik USAC
-Sent: 5/3/02 1:03 AM
-Subject: Re: Position available for 8xx series programmer
-
-Hi,
-
-Do you accept foreigners too ;-) ???
-
--Scop.
-Brazil
-
-On Thursday 02 May 2002 11:56, Hihn Jason wrote:
-> Hello all,
->
-> Danfoss Inc (www.danfoss.com) a world leader in industrial automation,
-has
-> a position available for an Embedded PPC software engineer in
-Baltimore,
-> MD. This position requires low-level experience with the 8xx series
-> processors. Embedded Linux in particular, but any Linux experience is
-> desired, but not required.
->
-> Anyone interested is encouraged to contact my boss, Henrik Christensen
-at:
-> HenrikChristensen@Danfoss.com or (410)931-6778 x4254
->
-> I look forward to working with you in the future.
->
-> Sincerely,
-> Jason Hihn
-> Danfoss R&D
->
->
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Steve Ferri                         Radisys Corporation
+                                               520 Fellowship Rd.
+                                               Suite C-304
+www.radisys.com             Mt. Laurel, NJ 08054
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
