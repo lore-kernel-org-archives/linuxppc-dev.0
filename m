@@ -1,35 +1,47 @@
-Message-ID: <3A9C4179.1AAB9DB4@mvista.com>
-Date: Tue, 27 Feb 2001 16:08:25 -0800
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: Christian Schroeder <christian.schroeder@imms.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: gdbserver for mpc8xx targets
-References: <983264512.3a9b6d0098303@imp.imms.de>
+Date: Wed, 28 Feb 2001 17:12:03 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Stefano Coluccini <s.coluccini@caen.it>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Bogus interrupt
+Message-ID: <20010228171203.A29030@beef.az.mvista.com>
+References: <20010227051445.A32137@cx258813-a.chnd1.az.home.com> <NDBBIFIMCKPOADMAJOKMGEIFCPAA.s.coluccini@caen.it>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <NDBBIFIMCKPOADMAJOKMGEIFCPAA.s.coluccini@caen.it>; from s.coluccini@caen.it on Wed, Feb 28, 2001 at 09:29:18AM +0100
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Christian Schroeder wrote:
->
-> Hi all,
->
-> did anybody successfully cross compile gdbserver for powerpc targets.
-> I tried the sources for gdb-4.18 and gdb-5.0 but gdbserver didn't compile.
->
-> Is there a special version of gdbserver for ppc targets or do I have to
-> apply patches ?
->
+On Wed, Feb 28, 2001 at 09:29:18AM +0100, Stefano Coluccini wrote:
+> > > Hi everyone,
+> > >   I'm trying to run kernel 2.5 on Motorola MVME5100 and, after the sti
+> > > istruction in start_kernel, the kernel hangs due to a spurious
+> > interrupt.
+> > > (Bogus interrupt -1)
+> > > Is this a well-known problem also in other ports ? or have
+> > anyone of you a
+> > > suggestion to solve this ?
+> >
+> > If you are using the default openpic initsenses in prep_pci.c then you
+> > might see this problem since MPIC input 1 now has the 550 UART.  You'll
+> > need to change the initsenses since the edge triggered ECC interrupt
+> > used to be on input 1 on the older boards.
+> >
+> I've started working on MCPN765 port, since I think MVME5100 is an MCPN765
+> with a VME Bridge and without an ISA bridge, so I think the senses of
+> interrupt are correct because the 5100 and the 765 manual page related to
+> the interrupt senses is exactly the same (or it is a cut&paste error ??? :))
+> However this problem, like many other I've encountered, are all due to a bad
+> cross-compiler :(. I start working today with a good environment after a
+> month of nightmares !
 
-There are indeed patches.  The best place I can point you at is the
-MontaVista ftp site.  ftp.mvista.com.  Grab the source package for gdb,
-the patches should be in there and their should be a starting point for
-you to play with.
+Ok, I finally got time today to powerup the 5100 that's been laying
+around here.  I just pushed the port to the linuxppc_2_5 tree.
+Hopefully this saves some effort for others.
 
-(the FTP site also has precompiled stuff, but unless you are using our
-tools, it's better for you to recompile.)
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
---Mark
-
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
