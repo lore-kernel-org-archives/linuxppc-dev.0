@@ -1,61 +1,39 @@
-To: Soumya Desai <soumya@tejasnetworks.com>
-Cc: gopi@tejasnetworks.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Accessing file from drivers (fwd) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 16 Mar 2001 11:02:46 +0530."
-             <3AB1A57E.669B3166@tejasnetworks.com>
-Date: Fri, 16 Mar 2001 16:06:12 +0100
-Message-Id: <20010316150617.953CB281DB@denx.denx.de>
+From: bob@kunk.jriver.com
+Message-ID: <20010316173403.8304.qmail@kunk.jriver.com>
+Subject: Re: Multiple PCI buses in 2.4?
+To: mlan@cpu.lu
+Date: Fri, 16 Mar 2001 11:34:03 -0600 (CST)
+Cc: bob@kunk.jriver.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <200103152158.WAA00851@piglet.grunz.lu> from "Michel Lanners" at Mar 15, 2001 10:58:05 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Soumya,
+User Michel Lanners says:
 
-in message <3AB1A57E.669B3166@tejasnetworks.com> you wrote:
+> Multiple PCI busses should work just fine, with one exception: the
+> chaos-based second bus in the 7x00/8x00 machines.
+
+Ahh ok I get it now.
+
+> Now this is my fault, so to speak ;-) I've modified planb to use the PCI
+> device structure, but since that isn't available in the current 2.4
+> kernels, you're out of luck.
 >
->      The exact problem that we're trying to solve, is to program an FPGA with a hex file
-> which is in our file system.  But the problem is general is to have a way to write  a
+> However, I'm working right now on patches tha fix the detection of the
+> chaos bus and its devices; so that this problem should be solved soon.
 
-I thought it was something like that. The conventional way  to  solve
-this  is  implementing  an  ioctl() call for this function, and use a
-user-space program to select the file and feed it into the driver.
+The patches work great so far! I haven't had a chance to try the video
+input with a real signal yet, I lent out my camera, but it puts out
+nice black screen with xawtv and the dmesgs are all reassuring.
 
-> system  call  say 'sys_copy'  which will copy one file to another.  An user-mode
-> application would read from one file and write back to another, which would result in
-> copying  the data from the file driver ( kernel space ) to the user-space,  and again
-> back to the kernel space.  We were curious as to whether a way existed by which we can
-> do the read and write, sitting in the kernel space itself.  Of course adding our own
-
-Why do you want to do that? Is this such atime-critical operation? Of
-course it's possible to implement such a function, but I'm  not  sure
-if it really makes sense.
-
-> ioctl to the drivers will serve the purpose,  but we were looking for some way in which
-> we would NOT need to modify the existing file system drivers.  I was wondering if it
-
-Ummm... I don't understand this sentence. Adding an ioctl() for  YOUR
-OWN  driver  to  accept  a  buffer with FPGA image date and load that
-image into the FLGA does not mean you have to modify  anything  else.
-You just have to write a small user application which opens the file,
-reads or mmap()s it, and calls that ioctl().
-
-> would be possible to bypass the read/write call themselves, but hack our way into the
-> buffer caches of block drivers, to do this ?   Anyone tried something similar ?
-
-Possible? Sure it's possible. But there is some effort involved,  and
-your  resulting  solution  is  probably very restricted to a specific
-setup. What do you want to save that you are willing to  pay  such  a
-price for?
-
-Wolfgang Denk
-
+Thanks,
+Bob
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I have the simplest tastes.  I am always satisfied with the best.
-                                                       -- Oscar Wilde
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
