@@ -1,33 +1,26 @@
-From: phandel@cise.ufl.edu
-Date: Wed, 18 Aug 1999 11:48:12 -0500 (CDT)
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: asun@saul2.u.washington.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Is someone working on HFS+ support ?
-In-Reply-To: <19990818163323.014094@mail.mipsys.com>
-Message-ID: <Pine.LNX.4.10.9908181144260.3273-100000@max1-93.im-stlouis.corecomm.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Brad Boyer <flar@marcus.pants.nu>
+Message-Id: <199908181746.KAA03079@marcus.pants.nu>
+Subject: Re: [Fwd: Latest version of CPU emulator] (fwd)
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be (Geert Uytterhoeven)
+Date: Wed, 18 Aug 1999 10:46:06 -0700 (PDT)
+Cc: linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9908181108400.985-100000@mercator.cs.kuleuven.ac.be> from "Geert Uytterhoeven" at Aug 18, 99 11:09:19 am
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 18 Aug 1999, Benjamin Herrenschmidt wrote:
+Geert Uytterhoeven wrote:
+> Perhaps Gabriel's 486SX emulator can be included as an optimization?
 
-> The question is in the title... 
+I doubt it, from what I know of both emulators.  The one that was submitted
+for Wine is protected mode only, and Gabriel's is real mode only.  I
+imagine the ideas and some of the code from Gabriel's emulator could
+be adapted to this use, but it definitely couldn't be used without
+some major changes.  It might be a good place to start, tho.
 
-I sent a note to asun@u.washington.edu, who said he was going to clean up
-what he had before he would release his work so far.  Last I heard, he was
-in the thick of work, but was planning on releasing something soon.
-
-
-Thanks,
-Pete
-
--- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+		Brad Boyer
+		flar@pants.nu
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
