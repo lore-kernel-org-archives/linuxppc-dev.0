@@ -1,87 +1,70 @@
-To: m.arturo@libero.it
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Timidity
-References: <3A9CFE58.DDF8B47D@libero.it> <m3bsrga1td.fsf@appel.lilypond.org>
-From: Jan Nieuwenhuizen <janneke@gnu.org>
-Date: 23 Mar 2001 09:47:37 +0100
-In-Reply-To: Jan Nieuwenhuizen's message of "05 Mar 2001 12:32:30 +0100"
-Message-ID: <m3snk4x45y.fsf@appel.lilypond.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v04003a1bb6e0fcadea71@[24.70.162.12]>
+In-Reply-To: <Pine.LNX.4.05.10103230815010.930-100000@callisto.of.borg>
+References: <v04003a18b6e035380f3f@[24.70.162.12]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 23 Mar 2001 07:22:56 -0600
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: st corruption
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jan Nieuwenhuizen <janneke@gnu.org> writes:
-
-> X-Artu <m.arturo@libero.it> writes:
+At 1:20 AM -0600 3/23/2001, Geert Uytterhoeven wrote:
+>On Thu, 22 Mar 2001, Tony Mantler wrote:
+>> At 1:41 PM -0600 3/22/2001, Geert Uytterhoeven wrote:
+>> [...]
+>> >Just create some large files, make md5sums, tar them to tape,
+>> >untar them from tape, and verify the md5sums. I see approx. 7 blocks of
+>> >corrupted data for 256 MB of data.
+>>
+>> merida:/home/nicoya# modprobe mesh
+>> merida:/home/nicoya# cat /proc/scsi/scsi
+>> Attached devices:
+>> Host: scsi0 Channel: 00 Id: 00 Lun: 00
+>>   Vendor: QUANTUM  Model: FIREBALL ST4300S Rev: 0F0D
+>>   Type:   Direct-Access                    ANSI SCSI revision: 02
+>> Host: scsi0 Channel: 00 Id: 03 Lun: 00
+>>   Vendor: MATSHITA Model: CD-ROM CR-8012   Rev: 1.0f
+>>   Type:   CD-ROM                           ANSI SCSI revision: 02
+>> Host: scsi0 Channel: 00 Id: 06 Lun: 00
+>>   Vendor: ARCHIVE  Model: Python 25501-XXX Rev: 2.96
+>>   Type:   Sequential-Access                ANSI SCSI revision: 02
 >
-> > Why Timidity lost notes on my G4/400....help me pls.
+>Ugh... I don't dare to connect my DDS to the MESH. Before I had the '875,
+>I did
+>it, but from time to time I got lost arbitrations corrupting data.
+
+Well, the tape drive itself is actually the assembled parts of 2 broken
+tape drives, so I wouldn't exactly trust it with my life anyways. ;)
+
+It's really just sitting in my 9600 because I didn't have anywhere else
+interesting to stick it.
+
+
+>> 118c94df7aae2df0fb26dce3b13312f9  testfile
+>> merida:/home/nicoya# uname -a
+>> Linux merida 2.4.1 #1 SMP Mon Feb 5 17:32:52 CST 2001 ppc unknown
 >
-> I'd like to know too, but I've got no idea how to debug this.
-> Generating audio in batch may work, though, try:
->
->   timidity -Ou foo.midi
->   cat foo.au >/dev/audio
+>Hmmm... Perhaps I should retry on the MESH, just to see whether it's a MESH or
+>Sym53c875 problem.
 
-> > Playing time: ~81 seconds
-> > Notes cut: 444
-> > Notes lost totally: 1312
+Finding someone with Sym53c875 SCSI in a non-pmac non-x86 might help too.
 
-
-Masanao Izumo sent me a reply (see below), it works for me:
-
-08:54:35 appel ~/usr/src/lilypond-1.3.140/mutopia/Coriolan/out$ timidity -id -k0 bassi-part.midi
-Playing bassi-part.midi
-MIDI file: bassi-part.midi
-Format: 1  Tracks: 3  Divisions: 384
-Text: Creator: GNU LilyPond 1.3.140.jcn1               .
-...
-Playing time: ~505 seconds
-Notes cut: 0
-Notes lost totally: 0
+It could also be that my SMP machine has a different cache flushing
+profile, since both tar and the st driver would've likely been bouncing
+from CPU to CPU a bit. (Am I the only one who would like to see stronger
+CPU binding in SMP linux? Especially on platforms with larger caches)
 
 
-From: iz@zetabits.com
-Subject: Re: playback bug in timidity-2.10.2
-To: janneke@gnu.org
-Date: Fri, 23 Mar 2001 11:49:35 +0900
-
-Hi,
-
-> Timidity 2.10.2 drops notes (in the end there is only silence) when
-> using direct playback: -ig or -id.
-
-Please try to use -k0 option:
-
-% timidity -k0 filename.mid
-
-It is possible that this is sound synchronization probrem.
-TiMidity++ checks audio buffer size.  If the current of audio buffer data has
-no enough data, (this case usually occur when high CPU load avarage)
-TiMidity++ automatically cut the some notes.
--k0 option disables this feature.
-
-Some sound drivers (such as OSS from old linux packages), could
-not get the current of audio data size, correctly.
-Some sound cards use individual clock, not CPU clock.  This type of
-sound card, audio sampling time is different from CPU time.  Then, the
-audio sychronization is fail.  To get the current of the audio data
-size, it is need to use the specific audio driver interface.  But old
-of the OSS (or some version of OSS), there is no such interface!  Too
-cheap for multimedia!
-
-If you have this type of sound card/driver,  please try -k0 option.
-
---
-Masanao Izumo <iz@zetabits.com>
-ZetaBITS, Inc.
-
+Cheers - Tony 'Nicoya' Mantler :)
 
 
 --
-Jan Nieuwenhuizen <janneke@gnu.org> | GNU LilyPond - The music typesetter
-http://www.xs4all.nl/~jantien       | http://www.lilypond.org
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
