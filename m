@@ -1,67 +1,44 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <023EF71CB65AA949A2C510353690C86B027F3C@rokonet-e.rokonet.co.il>
-From: Eli Brin <eli.brin@rokonet.co.il>
-To: "'m madhuker'" <mythri_madhuker@yahoo.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: All about  Denx
-Date: Sun, 27 Jun 2004 11:05:17 +0200
-MIME-Version: 1.0
+Subject: Re: [linux-usb-devel] Re: RE : MPC5200Lite PCI & IRQ
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Brownell <david-b@pacbell.net>,
+	Bertrand Baudet <bbaudet@lacie.com>, Greg KH <greg@kroah.com>,
+	linux-usb-devel@lists.sourceforge.net,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <1088258564.3007.8.camel@localhost.localdomain>
+References: <5A96167EBCEA8440A48790B5419953AE13C46A@gr-lafayette.lacie.com>
+	 <1087554029.19489.3149.camel@hades.cambridge.redhat.com>
+	 <20040619000118.GB24902@kroah.com>  <40DD8710.8030100@pacbell.net>
+	 <1088258564.3007.8.camel@localhost.localdomain>
 Content-Type: text/plain
+Date: Sun, 27 Jun 2004 11:09:07 +0100
+Message-Id: <1088330947.4268.8.camel@localhost.localdomain>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Madhukar,
+On Sat, 2004-06-26 at 15:02 +0100, Alan Cox wrote:
+> There are a lot of drivers that assume 0 means no IRQ, including some
+> big x86 non-PC systems. Remember however that dev->irq is an OS private
+> cookie. In the x86 case for example we add 16 to APIC directed
+> interrupts both to split IRQs out and to avoid this problem.
 
-We use the ELDK for almost a year and our life is better since.  Before
-that, we used a major embedded Linux distribution and it just didn't work.
+There aren't _that_ many drivers which have this bug; certainly not
+non-ISA drivers. Even when you consider irq_t to be an OS-private
+cookie, that doesn't excuse this brokenness on the part of drivers --
+they need fixing.
 
-We use the TQM modules as development boards and made our target compatible
-with the TQM Modules, so the BSP is the same.
+> So if your board has an IRQ 0 and it is a problem - just change your
+> numbering scheme.
 
-Regarding the support:
-You get a commercial grade support for free and probably from the BEST
-people in the industry.
+That's a workaround, not a fix. Not really Linux style.
 
-OK, no commitment for time but look for your self at the reply times, and
-compare it to what you get now...  (Even on Sunday).
+Personally, I think we want to stop even thinking of it as a numbering
+scheme. IRQs are a tree, not a flat array.
 
-As we where/are newbie's in Linux, using the ELDK and this list gave us a
-good starting point and helped us a lot and probably made our project
-possible.
-
-
-Best regards,
-Eli Brin
-
-
-
-
-
-
------Original Message-----
-From: m madhuker [mailto:mythri_madhuker@yahoo.com]
-Sent: Monday, June 21, 2004 1:00 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: All about Denx
-
-
-Hello all,
-        Iam working on MPC8245.and iam new to it.
-now iam using timesys GPL-Linux for the board.
-and for this there is no support. and timesys RTlinux
-has support but its not free..
-
-I listened that Denx is free RTOS and good...
-So i want use Denx RTOS for my board.
-
-i want suggetion from u people that how is it???
-whether it is providing BSP's and good support???
-
-So if anybody worked on Denx please give suggestion
-...
-                                         Regards
-                                         Madhukar
+--
+dwmw2
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
