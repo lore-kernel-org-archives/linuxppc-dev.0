@@ -1,22 +1,28 @@
-Return-Path: <joakim.tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA2812BDA2
+Return-Path: <jdl@freescale.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 6F5752BDA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Oct 2004 01:17:52 +1000 (EST)
-Received: from jockewin (fw [172.31.1.1]) (authenticated bits=0)
-	by dmz.lumentis.net (8.12.8/8.12.8) with ESMTP id i9EEru7H030304
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Thu, 14 Oct 2004 16:53:56 +0200
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 14 Oct 2004 16:53:49 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEIEEPCNAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Merge 8xx to Linus tree?
+	Fri, 15 Oct 2004 01:28:47 +1000 (EST)
+Received: from il06exr06.mot.com (il06exr06.mot.com [129.188.137.136])
+	by motgate8.mot.com (Motorola/Motgate8) with ESMTP id i9EFU0G2021295
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Oct 2004 08:30:00 -0700 (MST)
+Received: from postal.somerset.sps.mot.com (postal.somerset.sps.mot.com
+	[163.12.132.5])
+	by il06exr06.mot.com (Motorola/il06exr06) with ESMTP id i9EFSdXQ015424
+	for <linuxppc-embedded@ozlabs.org>; Thu, 14 Oct 2004 10:28:40 -0500
+From: Jon Loeliger <jdl@freescale.com>
+To: Laurent Lagrange <lagrange@fr.oleane.com>,
+	linuxppc-embedded@ozlabs.org
+In-Reply-To: <010190ED-1D8F-11D9-92E7-000393DBC2E8@freescale.com>
+References: <13F5C6B8-1D5B-11D9-88FA-003065F9B7DC@embeddededge.com>
+	<010190ED-1D8F-11D9-92E7-000393DBC2E8@freescale.com>
+Content-Type: text/plain
+Message-Id: <1097767717.14656.7.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Thu, 14 Oct 2004 10:28:38 -0500
+Cc: 
+Subject: Re: MPC8560 problem to launch user application like /sbin/init
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,11 +33,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Is it not time to merge 8xx from linuxppc-2.5 into Linus tree?
+On Wed, 2004-10-13 at 22:13, Kumar Gala wrote:
+> Have you turned on emulation of FP in the kernel?
+> 
+> - kumar
+> 
+> On Oct 13, 2004, at 4:01 PM, Dan Malek wrote:
+> 
+> >
+> >
+> > On Oct 13, 2004, at 1:07 PM, Laurent Lagrange wrote:
+> >
+> > > The console is mapped on SCC1 port.
+> >  > CCSRBAR is mapped at 0xF8000000 and immr at 0xF8080000.
+> >
+> > I would suggest using the standard memory map the rest of
+> >  us use for 8560.  It makes the porting lots easier.
 
-I know the 8xx is not fully functional yet but this isn't done
-soon I think it won't happen at all. The 8xx arch can be made to 
-depend on BROKEN in Linus tree to make it clear that it isn't
-working properly yet.
+Yeah, sticking with the standard memory map will likely help.
 
-  Jocke
+Are you using U-Boot to front this booting operation, or
+just directly coding your own setup?
+
+
+> > > All things run fine until I launch the /sbin/init file from a nfs
+> > > networK.
+
+Another popular failure mode of this step is the lack of
+some library, file or permisssions on a file necessary to
+run the init code.  A workaround is to statically link the
+init code and see if that works too.
+
+HTH,
+jdl
