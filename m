@@ -1,38 +1,36 @@
-Message-ID: <XFMail.990330125817.hughc@babcockbrown.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 30 Mar 1999 17:16:50 -0500 (EST)
+From: John Buswell <johnb@one.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.2.5 on an iMac
+Message-ID: <Pine.LNX.3.96.990330171259.15352z-100000@shell>
 MIME-Version: 1.0
-Date: Tue, 30 Mar 1999 12:58:17 -0800 (PST)
-From: Batmensch <hughc@babcockbrown.com>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: How to Install Pre-R5 on a PB G3
-Cc: hcaley@loomer.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Subject: How to Install Pre-R5 on a PB G3 Series
+hi.
 
-I have added this information to the Faq-O-Matic
+i'm trying to compile a 2.2.5 kernel for my iMac running LinuxPPC pre-R5.
+I did the following :
 
-http://cobweb.dartmouth.edu/cgi-bin/cgiwrap/johnh/faqomatic/faq.pl
+applied kbd-final-2.2.0 and uusbd-199901xxxx to linux-2.2.0
+then patched up to 2.2.5 and eventually make vmlinux
 
-I had been pretty frustrated with this; it worked in December, it didn't work
-in January, it worked in February, it didn't work in March, argh.  I wanted to
-get the steps down in case I need to do it again.
+Everything compiled fine but when I try to boot it (by putting vmlinux in
+the same directory as bootx) it sits there at after it detects the ide
+devices.
 
-I hope this helps others who are having problems with it, and take some heat
-off the developers.
+I guess I'm missing a patch or two :) can anyone help me out?
 
-Hugh
+thanks
 
 
-----------------------------------
-E-Mail: Batmensch <hughc@babcockbrown.com>
-Date: 30-Mar-99
-Time: 12:45:08
+John Buswell
+Systems Administrator
+OneNet Communications, Inc.
+(513) 618-1000 - johnb@one.net
 
-This message was sent by XFMail
-----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
