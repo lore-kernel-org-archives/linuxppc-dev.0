@@ -1,15 +1,21 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 006FD67A2F
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9E26567A72
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Feb 2005 10:29:42 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C51548.8C0DDD08"
-Date: Thu, 17 Feb 2005 17:29:38 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592BD@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] Fix compilerwarnings when using PCI9 workaround
+	Fri, 18 Feb 2005 10:36:07 +1100 (EST)
+Date: Thu, 17 Feb 2005 15:36:05 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
+Message-ID: <20050217233605.GA10915@gate.ebshome.net>
+References: <45ABD2373C33C4459D42B40EC4F346F205E1A4F0@FTWMLVEM03.e2k.ad.ge.com>
+	<20050217225414.GA32623@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050217225414.GA32623@gate.ebshome.net>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 440GX interrupt
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,66 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Thu, Feb 17, 2005 at 02:54:14PM -0800, Eugene Surovegin wrote:
+> Probably it's a race which cannot be avoided anyway because external 
+> IRQs are completely async, and your version of ppc4xx_pic.c just has a 
+> bug. I'll think about it a little more.
 
-------_=_NextPart_001_01C51548.8C0DDD08
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Uhh, yes, I think it's a bug in 4xx version of disable_irq.
 
-This patch fixes compilerwarnings generated when using MPC826x PCI9
-workaround.
-Warnings caused by an old definition of memcpy_fromio
+We have to ACK parent UIC after disabling IRQ to prevent false 
+triggering in case this IRQ was already pending during disable_irq 
+call.
 
-Signed-off-by: Rune Torgersen <runet@innovsys.com>
+Here is a patch against current 2.6, so you can get an idea what I'm 
+talking about :):
 
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
+===== arch/ppc/syslib/ppc4xx_pic.c 1.13 vs edited =====
+--- 1.13/arch/ppc/syslib/ppc4xx_pic.c	2005-01-03 15:49:19 -08:00
++++ edited/arch/ppc/syslib/ppc4xx_pic.c	2005-02-17 15:31:07 -08:00
+@@ -48,6 +48,7 @@
+ {									\
+ 	ppc_cached_irq_mask[n] &= ~IRQ_MASK_UIC##n(irq);		\
+ 	mtdcr(DCRN_UIC_ER(UIC##n), ppc_cached_irq_mask[n]);		\
++	ACK_UIC##n##_PARENT						\
+ }									\
+ 									\
+ static void ppc4xx_uic##n##_ack(unsigned int irq)			\
 
-------_=_NextPart_001_01C51548.8C0DDD08
-Content-Type: application/octet-stream;
-	name="patch_PCI9_compiler_warnings"
-Content-Transfer-Encoding: base64
-Content-Description: patch_PCI9_compiler_warnings
-Content-Disposition: attachment;
-	filename="patch_PCI9_compiler_warnings"
 
-IyBUaGlzIGlzIGEgQml0S2VlcGVyIGdlbmVyYXRlZCBkaWZmIC1OcnUgc3R5bGUgcGF0Y2guCiMK
-IyBDaGFuZ2VTZXQKIyAgIDIwMDUvMDIvMTcgMTc6MTQ6MzYtMDY6MDAgcnVuZXRAcGliLmlubnN5
-cy5pbm5vdnN5cy5jb20gCiMgICBGaXggY29tcGlsZXIgd2FybmluZ3MgZ2VuZXJhdGVkIHdoZW4g
-dXNpbmcgUENJOSB3b3JrYXJvdW5kCiMgCiMgaW5jbHVkZS9hc20tcHBjL21wYzgyNjBfcGNpOS5o
-CiMgICAyMDA1LzAyLzE3IDE3OjE0OjI3LTA2OjAwIHJ1bmV0QHBpYi5pbm5zeXMuaW5ub3ZzeXMu
-Y29tICsxIC0xCiMgICBVcGRhdGVkIGRlY2xhcmF0aW9uIG9mIG1lbWNweV9mcm9taW8gdG8gbWF0
-Y2ggbm9ybWFsIGNhc2UKIyAKIyBhcmNoL3BwYy9zeXNsaWIvbTgyNjBfcGNpX2VycmF0dW05LmMK
-IyAgIDIwMDUvMDIvMTcgMTc6MTQ6MjctMDY6MDAgcnVuZXRAcGliLmlubnN5cy5pbm5vdnN5cy5j
-b20gKzEgLTIKIyAgIFVwZGF0ZWQgZGVjbGFyYXRpb24gb2YgbWVtY3B5X2Zyb21pbyB0byBtYXRj
-aCBub3JtYWwgY2FzZQojIApkaWZmIC1OcnUgYS9hcmNoL3BwYy9zeXNsaWIvbTgyNjBfcGNpX2Vy
-cmF0dW05LmMgYi9hcmNoL3BwYy9zeXNsaWIvbTgyNjBfcGNpX2VycmF0dW05LmMKLS0tIGEvYXJj
-aC9wcGMvc3lzbGliL204MjYwX3BjaV9lcnJhdHVtOS5jCTIwMDUtMDItMTcgMTc6MjU6NTUgLTA2
-OjAwCisrKyBiL2FyY2gvcHBjL3N5c2xpYi9tODI2MF9wY2lfZXJyYXR1bTkuYwkyMDA1LTAyLTE3
-IDE3OjI1OjU1IC0wNjowMApAQCAtMzc0LDcgKzM3NCw3IEBACiAJaWRtYV9wY2k5X3JlYWQoKHU4
-ICopYnVmLCAodTggKilhZGRyLCBubCpzaXplb2YodTMyKSwgc2l6ZW9mKHUzMiksIDApOwogfQog
-Ci12b2lkICptZW1jcHlfZnJvbWlvKHZvaWQgKmRlc3QsIHVuc2lnbmVkIGxvbmcgc3JjLCBzaXpl
-X3QgY291bnQpCit2b2lkIG1lbWNweV9mcm9taW8odm9pZCAqZGVzdCxjb25zdCB2b2xhdGlsZSB2
-b2lkIF9faW9tZW0gKnNyYywgaW50IGNvdW50KQogewogCXVuc2lnbmVkIGxvbmcgcGEgPSBpb3Bh
-KCh1bnNpZ25lZCBsb25nKSBzcmMpOwogCkBAIC0zODIsNyArMzgyLDYgQEAKIAkJaWRtYV9wY2k5
-X3JlYWQoKHU4ICopZGVzdCwgKHU4ICopcGEsIGNvdW50LCAzMiwgMSk7CiAJZWxzZQogCQltZW1j
-cHkoZGVzdCwgKHZvaWQgKilzcmMsIGNvdW50KTsKLQlyZXR1cm4gZGVzdDsKIH0KIAogRVhQT1JU
-X1NZTUJPTChyZWFkYik7CmRpZmYgLU5ydSBhL2luY2x1ZGUvYXNtLXBwYy9tcGM4MjYwX3BjaTku
-aCBiL2luY2x1ZGUvYXNtLXBwYy9tcGM4MjYwX3BjaTkuaAotLS0gYS9pbmNsdWRlL2FzbS1wcGMv
-bXBjODI2MF9wY2k5LmgJMjAwNS0wMi0xNyAxNzoyNTo1NSAtMDY6MDAKKysrIGIvaW5jbHVkZS9h
-c20tcHBjL21wYzgyNjBfcGNpOS5oCTIwMDUtMDItMTcgMTc6MjU6NTUgLTA2OjAwCkBAIC00NSw3
-ICs0NSw3IEBACiBleHRlcm4gdW5zaWduZWQgaW5sKHVuc2lnbmVkIHBvcnQpOwogZXh0ZXJuIHZv
-aWQgaW5zd19ucyh1bnNpZ25lZCBwb3J0LCB2b2lkICpidWYsIGludCBucyk7CiBleHRlcm4gdm9p
-ZCBpbnNsX25zKHVuc2lnbmVkIHBvcnQsIHZvaWQgKmJ1ZiwgaW50IG5sKTsKLWV4dGVybiB2b2lk
-ICptZW1jcHlfZnJvbWlvKHZvaWQgKmRlc3QsIHVuc2lnbmVkIGxvbmcgc3JjLCBzaXplX3QgY291
-bnQpOworZXh0ZXJuIHZvaWQgbWVtY3B5X2Zyb21pbyh2b2lkICpkc3QsY29uc3Qgdm9sYXRpbGUg
-dm9pZCBfX2lvbWVtICpzcmMsIGludCBjb3VudCk7CiAKICNlbmRpZiAvKiAhX19DT05GSUdfODI2
-MF9QQ0k5X0RFRlMgKi8KICNlbmRpZiAvKiBfX0tFUk5FTF9fICovCg==
+You can send me your version of ppc4xx_pic.c or put it somewhere on 
+www and I'll make a patch for it.
 
-------_=_NextPart_001_01C51548.8C0DDD08--
+--
+Eugene
