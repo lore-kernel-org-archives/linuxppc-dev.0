@@ -1,39 +1,50 @@
-Date: Thu, 18 Sep 2003 11:05:08 -0700
+Date: Thu, 18 Sep 2003 11:08:34 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problems w/  CONFIG_BLK_DEV_MPC8xx_IDE
-Message-ID: <20030918180508.GB6692@ip68-0-152-218.tc.ph.cox.net>
-References: <3F656CFC.1050706@imc-berlin.de> <3F65A2FD.3010904@imc-berlin.de> <1063627208.14615.21.camel@trantor.staff.proxad.net> <3F65B091.1020802@imc-berlin.de> <20030915151648.GD29517@ip68-0-152-218.tc.ph.cox.net> <3F66CCFD.3040301@imc-berlin.de> <20030917150845.GB14509@ip68-0-152-218.tc.ph.cox.net> <3F697A17.3090909@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: BOOT_TARGET pImage & uImage ???
+Message-ID: <20030918180834.GC6692@ip68-0-152-218.tc.ph.cox.net>
+References: <3F65917D.1020502@imc-berlin.de> <20030915150935.GB29517@ip68-0-152-218.tc.ph.cox.net> <3F699255.4050000@imc-berlin.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3F697A17.3090909@imc-berlin.de>
+In-Reply-To: <3F699255.4050000@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 18, 2003 at 11:25:43AM +0200, Steven Scholz wrote:
-> Tom,
+On Thu, Sep 18, 2003 at 01:09:09PM +0200, Steven Scholz wrote:
+> Tom Rini wrote:
 >
-> >>>>So which is the BK tree to use:
-> >>>>linuxppc_2_4_devel or linuxppc-2.4 ???
+> >On Mon, Sep 15, 2003 at 12:16:29PM +0200, Steven Scholz wrote:
 > >
-> >Aside from possible changes to match upstream subsystem rewrites (such
-> >as IDE) there hasn't been any changes in linuxppc-2.4 specific to 8xx
-> >that didn't happen in 2_4_devel.
 > >
-> >>http://www.penguinppc.org/dev/kernel.shtml calls linuxppc_2_4_devel the
-> >>"old PPC development tree" !?
+> >>is the there any particular reason why the BOOT_TARGETS "pImage" and
+> >>"uImage" for
+> >>the famous boot loader PPCBoot and its successor U-Boot are still not
+> >>supported.
+> >>Neither by linux_2_4_devel. Nor by the vanilla.
 > >
-> >That's correct.  It's becoming more of a pain to maintain or own set of
-> >trees to track 2.4 when Marcelo uses BK as well.
+> >
+> >For a third time:
+> >http://www.geocrawler.com/archives/3/8358/2002/11/0/10241415/
 >
-> I suppose we need both trees. Otherwise you would have got rid of one.
-> Right? :o)
+> I have to admit that I don't understand what you're describing there. I am
+> afraid nobody else did. Otherwise someone would realized it by now...
 
-With an infinite amount of time, there would be only one tree.  Patches
-to move things, one at a time, in logical chunks, to linux-2.4 happily
-reviewed.
+If I'm making requests and rambling at the same time, can people please
+speek up sooner?  I won't mind, really.
+
+What I want is three things:
+1) The 'mkimage' target must be done in such a fashion that it will
+never run into a 'cannot execute' problem.  My suggestion is to have the
+Makefile do a:
+@chmod +x mkimage.sh
+Or so.  In 2.5/2.6, the build system will handle this for you,
+automagically, on .sh files I believe.  For 2.4, you must handle this
+explicitly.
+2) Do we really need 'pImage' and 'uImage' or can we just have 'uImage'
+?
+3) I really (really!) want a patch for 2.4 and 2.5/2.6 at the same time.
 
 --
 Tom Rini
