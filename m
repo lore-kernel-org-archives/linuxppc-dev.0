@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 438022BDA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Oct 2004 16:45:53 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Colin Leroy <colin@colino.net>
-In-Reply-To: <20041019083432.01b947d3@pirandello>
-References: <20041018232004.0a9e0d5e@jack.colino.net>
-	<1098143379.18687.44.camel@gaston> <20041019083432.01b947d3@pirandello>
-Content-Type: text/plain
-Message-Id: <1098168058.15029.45.camel@gaston>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 38F7F2BC0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2004 04:10:11 +1000 (EST)
+Received: from oak (ta-1-1.tip.net.au [203.11.71.1])
+	by smtps.tip.net.au (Postfix) with ESMTP id 658CA368014
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Oct 2004 04:02:32 +1000 (EST)
+Date: Wed, 20 Oct 2004 04:02:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linuxppc-dev@ozlabs.org
+Message-Id: <20041020040231.6eb65b38.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Date: Tue, 19 Oct 2004 16:40:58 +1000
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: PMU questions
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="pgp-sha1";
+	boundary="Signature=_Wed__20_Oct_2004_04_02_31_+1000_d7l2lC9/cso5kmmL"
+Subject: old mailing list archives
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2004-10-19 at 16:34, Colin Leroy wrote:
+--Signature=_Wed__20_Oct_2004_04_02_31_+1000_d7l2lC9/cso5kmmL
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-> You mean until the laptop shuts down by itself ?
+Hi all,
 
-Yes
+Thanks to Wolfgang Denk I have recovered (some of) the old list archives.
+Please see http://ozlabs.org/pipermail/linuxppc-dev/
 
-> > Then, do a full charge, and drain it again completely. 
-> > Do that a few times. 
-> 
-> Without resetting the PMU ?
+I don't know how complete the archive is ...
 
-Yes
-
-> > If that doesn't help, then I'm afraid you have to
-> > ask apple for a replacement battery.
-> 
-> Yes, I think I'll do this. For the record, I found compatible batteries
-> a little less pricey than Apple's ones here:
-> http://store.craytonelectronics.com/apibba2.html  
 -- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+
+
+--Signature=_Wed__20_Oct_2004_04_02_31_+1000_d7l2lC9/cso5kmmL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFBdVa34CJfqux9a+8RAiLiAJsExl+I97Yb+vI4Tdkg5kl9V+PkLgCeJ3Nh
+UuLpAL2HoUB52uWaoPvvEwQ=
+=u2pM
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__20_Oct_2004_04_02_31_+1000_d7l2lC9/cso5kmmL--
