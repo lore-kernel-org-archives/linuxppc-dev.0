@@ -1,48 +1,35 @@
-Message-ID: <387A38DB.8C51AB1D@netx4.com>
-Date: Mon, 10 Jan 2000 14:54:03 -0500
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: "Robin O'Leary" <robin@equiinet.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linux-2.3.37
-References: <20000107213528.A29581@mail.ro.nu>
+Date: Mon, 10 Jan 2000 21:10:47 +0000
+From: "Robin O'Leary" <robin@equiinet.com>
+To: Dan Malek <dan@netx4.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linux-2.3.37 / 2.3.18 / 2.2.13
+Message-ID: <20000110211045.F8416@mail.ro.nu>
+References: <20000107213528.A29581@mail.ro.nu> <387A38DB.8C51AB1D@netx4.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <387A38DB.8C51AB1D@netx4.com>; from dan@netx4.com on Mon, Jan 10, 2000 at 02:54:03PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Robin O'Leary wrote:
+On Mon, Jan 10, 2000 at 02:54:03PM -0500, Dan Malek wrote:
+> The 2.2.xx kernels are certainly the most stable and recommended
+> if you are building products.  There is a 2.2.13 tar image on
+> ppc.kernel.org/embedded for 8xx processors.  I don't know when
+> some of the recent changes happened, but the generic 2.3.18
+> kernel has all of the 8xx changes.
 
-> 
-> I just tried building the latest 2.3.37 from ftp.kernel.org for the 8xx.
+Most recently (apart from trying the doomed 2.3.37) I have been using
+2.3.18 (from ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded) on
+custom 860T hardware.  As you may have gathered from my earlier post
+on 1999-11-29, all has not been going smoothly.  Although I have now
+coaxed 2.3.18 as far as trying to load the initrd, it has been an uphill
+struggle all the way and I still haven't got the compressed bootloader
+going properly.  Could it be that my problems stem from using 2.3.18?
 
-
-
-Not a good idea.  There have been many changes lately that I
-haven't yet updated in the 8xx tree.  I am also learning to
-use the new bitkeeper tools, so I am a little cautious about
-checking in changes at the moment.
-
-
-
-> There is no inline find_pte() in include/asm-ppc/pgtable.h as there was
-> before, yet arch/ppc/8xx_io/commproc.c (and enet.c and fec.c) still try
-> to use this function.  Where has it gone?
-
-Probably moved to something new and better :-).  It looks like
-we need to go back to va_to_pte() like was done in the 2.2.xx kernels.
-
-
-> What is the currently recommended kernel for 860-based development and
-> where can I get it?
-
-The 2.2.xx kernels are certainly the most stable and recommended
-if you are building products.  There is a 2.2.13 tar image on
-ppc.kernel.org/embedded for 8xx processors.  I don't know when
-some of the recent changes happened, but the generic 2.3.18
-kernel has all of the 8xx changes.
-
-
-	-- Dan
+Robin O'Leary.
+-- 
+email: robin@equiinet.com  Equiinet Ltd., Innovation Centre, Singleton Park,
+Tel.:  +44 1792 540008     Swansea  SA2 8PP, Wales, U.K.  51.6101N 3.9831W
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
