@@ -1,50 +1,40 @@
-Message-ID: <40CA2BBF.4090800@icarus.com>
-Date: Fri, 11 Jun 2004 15:01:35 -0700
-From: Stephen Williams <steve@icarus.com>
-MIME-Version: 1.0
-To: "Tom Rini trini-at-kernel.crashing.org |PPC Linux Embedded|" <xvpqhxpoxp0t@sneakemail.com>
+Date: Fri, 11 Jun 2004 16:16:38 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Stephen Williams <612dlag102@sneakemail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Head of linuxppc-2.4 broekn by davem patch
-References: <1086934906.4820.2.camel@lucy.pep-kaufbeuren.de> <29963-82182@sneakemail.com> <20040611214054.GB925@smtp.west.cox.net>
-In-Reply-To: <20040611214054.GB925@smtp.west.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Another problem with pk pull of linuxppc-2.4
+Message-ID: <20040611161638.A2772@home.com>
+References: <29365-19760@sneakemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <29365-19760@sneakemail.com>; from 612dlag102@sneakemail.com on Fri, Jun 11, 2004 at 08:52:44AM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini trini-at-kernel.crashing.org |PPC Linux Embedded| wrote:
-> On Fri, Jun 11, 2004 at 09:07:13AM -0700, Stephen Williams wrote:
+On Fri, Jun 11, 2004 at 08:52:44AM -0700, Stephen Williams wrote:
 >
->
->>Stefan Nickl Stefan.Nickl-at-kontron.com |PPC Linux Embedded| wrote:
->>
->>>I already sent this patch to the list and to "davem" who
->>>commited the faulty version, but nobody seems to care...
->>
->>Here is the exact same patch, packaged slightly differently
->>and re-sent, just in case it got lost in someone's inbox.
->>It is also possible that davem is thinking in terms of
->>changing the sk_buff definition t match this file. Either
->>way, something must be done.
->
->
-> I've gotten around to updating the linuxppc-2.4 repository to match the
-> current state of linux-2.4 again.  If there's still a problem, I would
-> suggest reproducing it with an i386 config (or CONFIG_ALL_PPC config)
-> and posting to lkml (linux-kernel@vger.kernel.org) and cc'ing Marcelo
-> and whomever made the broken change.
+> The ibm405gpr.h header file is missing the definition of OPB_BASE_START.
+> I copied the definitions from the linuxppc_2_4_devel tree and it worked
+> just fine, so I believe this is a correct patch.
 
+Yep.
 
-It appears that davem already supplied the fix in change set 1.1058.421.35.
-That was May 30 or thereabouts. Thanks.
+> According to bk, this file hasn't been changed in linuxppc-2.4 in over
+> a year (2003-03-12) so *how* pray tell have people been compiling this
+> thing for PPC405GPr? Who's the right party for getting this patch
+> installed?
 
-Now to see what nagging can get the ibm405gpr.h header file fixed...
+Applied. I'm the right person for 4xx things. Paul posted the various
+people that handle patches recently on two occasions.
 
---
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+FWIW, this means that (1) nobody has tried compiling linuxppc-2.4 for
+405gpr in a long time (2) it probably broke during the 2.4 OCP rewrite
+but its not any developer's primary devel platform (3) Everybody is
+concentrating on 2.6...I know that it works fine there. :)
 
+Thanks for the patch.
+
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
