@@ -1,35 +1,86 @@
-Message-Id: <200006091900.VAA21213@denx.local.net>
-To: Kirk Haderlie <khaderlie@vividimage.com>
-cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
-        "Frank Fadich (E-mail)" <ffadich@wyle.com>
-Subject: Re: Running the 823 FADS board @ 72 MHZ 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 09 Jun 2000 09:42:15 PDT."
-             <319E391E2049D311843500609457383D07FC48@exchange.vividimage.com>
-Date: Fri, 09 Jun 2000 21:00:33 +0200
+Message-ID: <394140BA.F2D0FD3B@ccrl.mot.com>
+Date: Fri, 09 Jun 2000 14:08:42 -0500
+From: Steve Rossi <srossi@ccrl.mot.com>
+MIME-Version: 1.0
+To: Richard Hendricks <richard.hendricks@motorola.com>
+CC: "'linuxppc-embedded@lists.linuxppc.org'"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Running the 823 FADS board @ 72 MHZ
+References: <319E391E2049D311843500609457383D07FC48@exchange.vividimage.com> <39413DC8.C2BE7490@motorola.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <319E391E2049D311843500609457383D07FC48@exchange.vividimage.com> you wrote:
+I've got a custom 823 board running on the bench at 80MHz 1:1 with PC100 SDRAM
+with no problems but I had to re-program the UPM to do it. 50MHz is a sweet spot
+(at least with my memories), but above 50MHz without re-programming the UPM
+you're probably violating SDRAM timing somewhere.
+
+Steve
+
+
+Richard Hendricks wrote:
+
+> I do not know of any *development* board that is running the faster
+> speed CPU's in 1:1 mode.  I *do* know several customers are running
+> their designs at 66 MHz 1:1.  There is also at least 1 customer I
+> know of running 75 Mhz 1:1 without problems.  I wrote an application
+> note describing how to do a high-speed SDRAM interface to the MPC823.
+> Hint: PC66 will NOT work at 66 MHz.  PC100 in most cases won't even
+> work at 75 MHz.  If you are interested in the app note, I recently
+> published it on comp.sys.powerpc.tech
 >
-> Are you aware of a development board that is running the faster speed CPU's?
-> We need the faster speed for our application.
-
-The TQM8xxL mini-modules are available with up to 80MHz CPU's.
-Contact me if you need a quote.
-
-Be warned: I haven't tried them extensively so far, nor have I seen a
-problem where the higher  CPU-speed  overcompensated  the  impact  of
-having just half the bus speed.
-
-Wolfgang Denk
+> Kirk Haderlie wrote:
+> >
+> > Are you aware of a development board that is running the faster speed CPU's?
+> > We need the faster speed for our application.
+> >
+> > -----Original Message-----
+> > From: Richard Hendricks [mailto:richard.hendricks@motorola.com]
+> > Sent: Friday, June 09, 2000 9:44 AM
+> > To: 'linuxppc-embedded@lists.linuxppc.org'
+> > Subject: Re: Running the 823 FADS board @ 72 MHZ
+> >
+> > The FADS board are not designed to run at that speed.  Just for kicks,
+> > I've tried seeing how fast I can go without problems.  At about 60 MHz
+> > the SDRAM no longer works, and 68 MHz the DRAM starts not working.  This
+> > is with the default 50 MHz tables.  With better tuning, it may be
+> > possible
+> > to go higher, but I doubt you could reach 72 MHz with the FADS.
+> >
+> > Kirk Haderlie wrote:
+> > >
+> > > We are trying to run the FADS board @ 72MHz and enjoying the infamous UPM
+> > > tables.  Has anyone successfully run the FADS board at this speed and if
+> > so
+> > > would you be willing to share your UPM tables.  We  are trying to set them
+> > > up for the SDRAM and 60-ns EDO DRAM.
+> > >
+> > > Kirk Haderlie
+> > > kirk@vividimage.com
+> > > Vivid Image Engineering
+> > >
+> >
+> > --
+> > MPC823 Applications Engineering Development
+> > Get help from other MPC823 customers on the
+> > comp.sys.powerpc.tech newsgroup!
+> >
+>
+> --
+> MPC823 Applications Engineering Development
+> Get help from other MPC823 customers on the
+> comp.sys.powerpc.tech newsgroup!
+>
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Wish not to seem, but to be, the best."                  - Aeschylus
+-------------------------------------------------------
+Steven K. Rossi                     srossi@ccrl.mot.com
+Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
