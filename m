@@ -1,42 +1,50 @@
-Date: Thu, 9 Jan 2003 00:30:21 -0800
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Boris Bezlaj <boris@bandit.kista.gajba.net>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Status of linuxppc_2.5
-Message-ID: <20030109083021.GA16190@pants.nu>
-References: <3E1BECD2.9060909@intracom.gr> <20030108173215.GA1002@bandit.kista.gajba.net> <1042049915.787.9.camel@zion.wanadoo.fr> <3E1D2F34.20908@intracom.gr>
+Subject: Re: get_pteptr prototype
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: paulus@samba.org, devel list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20030109023300.GC6569@zax.zax>
+References: <1041893967.1207.42.camel@granite.austin.ibm.com>
+	<20030107005751.GP22215@zax.zax>
+	<1042040929.1021.80.camel@granite.austin.ibm.com>
+	<20030108234908.GA1088@zax.zax>
+	<1042071086.1207.206.camel@granite.austin.ibm.com>
+	<20030109023300.GC6569@zax.zax>
+Content-Type: text/plain
+Date: 09 Jan 2003 09:55:40 -0600
+Message-Id: <1042127751.1021.221.camel@granite.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E1D2F34.20908@intracom.gr>
-From: flar@pants.nu (Brad Boyer)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 09, 2003 at 10:13:40AM +0200, Pantelis Antoniou wrote:
-> I'm sorry, the patch is just trivial stuff needed
-> to get it to compile. I don't even have hardware
-> that applies to swim3 driver. I just added the
-> include for the header and modified the call
-> to ide_unregister to use the new calling convention.
+On Wed, 2003-01-08 at 20:33, David Gibson wrote:
 >
-> BTW ide_unregister was not exported in linux/ide.h
-> and so I added the prototype there. Maybe someone
-> should notify the maintainer of the IDE layer that
-> since this function is needed by the swim3 driver
-> it should be visible in the header?
-> Or we should use a new infrastructure?
+> Hmm... what's the reason that wakeup_info needs to be reserved in
+> head_4xx.S, rather than just being a normal variable in the data area
+> (which should be writable anyway)?  Its not obvious to me from the
+> patch.
 
-Is there a reason that the swim3 driver needs something
-from the IDE layer? I haven't tried 2.5 on my 7600 yet,
-but when I'm compiling a kernel for it, I never include
-IDE, since the motherboard doesn't have IDE hardware.
-Any machine old enough to use the swim3 driver is slow
-enough without any help...
+Sorry, I was hoping the Documentation file explained it well enough. On
+wake the firmware needs to transfer control back to Linux, so the
+firmware needs to know where to jump to. The only way I could think of
+communicating that information was with a fixed memory location known to
+both the firmware and to Linux. In future processors there will be a
+scratch register (whose contents are saved during sleep) to solve this
+problem.
 
-	Brad Boyer
-	flar@allandria.com
+> Actually, skimming through the patch I noticed a minor nit: you only
+> have one .long in head_4xx.S reserving space for the wakeup_info
+> struct which is 3 words long.  In practice the . = in the exception
+> handlers will give you plenty of space, but I think it would be good
+> form to explicitly reserve the right amount of space.
+
+It's just a (physical) pointer to the structure which is elsewhere in
+memory (actually on the stack).
+
+-Hollis
+--
+PowerPC Linux
+IBM Linux Technology Center
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
