@@ -1,45 +1,43 @@
-Date: Thu, 4 Feb 1999 22:33:12 -0700 (MST)
-From: Brad Midgley <brad@pht.com>
-Reply-To: Brad Midgley <brad@pht.com>
-To: linuxppc-dev@lists.linuxppc.org
-cc: Geert.Uytterhoeven@cs.kuleuven.ac.be
-Subject: modes "default" unfit for general use?
-In-Reply-To: <199902042359.KAA10627@tango.anu.edu.au>
-Message-ID: <Pine.LNX.3.95.990204221925.4095A-100000@pacific.pht.com>
+Date: Fri, 5 Feb 1999 09:49:08 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: I/O port access ???
+In-Reply-To: <Pine.LNX.4.05.9902042243220.1124-100000@macintoy.masq.in-berlin.de>
+Message-ID: <Pine.LNX.4.03.9902050948300.23025-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi...
+On Thu, 4 Feb 1999, Gerd Knorr wrote:
+> On Thu, 4 Feb 1999, Geert Uytterhoeven wrote:
+> > On Thu, 4 Feb 1999, Gerd Knorr wrote:
+> > > Is there some way to access the I/O ports, for example the VGA registers
+> > > of some graphics board (assuming the I/O ports are enabled in the PCI
+> > > config space) on ppc boxes?  How can I do that with Linux?  From kernel
+> > > space?  From user space?
+> > 
+> > You have to mmap() /dev/mem. Which address depends on the type of PPC box.
+> > You can find the correct addres in <asm/io.h> (*_ISA_IO_BASE).
+> 
+> Can I easily figure out the machine type (at runtime) somehow?  Parse 
+> /proc/cpuinfo?
 
-Is it a mistake to have a distribution ship with modes "default" in the
-default x windows configuration? 
+Currently that's the only solution.
 
-> These days I use video=atyfb:vmode:17 and the XF86Config below
+Maybe you remember I talked about /proc/bus/isa on linux-kernel some time
+ago? Now you know why...
 
-I was trying to use modes "default" on this iMac. Paul was using concrete
-graphics modes. That made all the difference in getting a usable screen. 
-This brings to light a general problem: is modes "default" being supported
-by any developers? 
+Greetings,
 
- 1- It doesn't work with virtual screen sizes (modes "default" on imac
-results in a 1024x6128--yes, six thousand--virtual screen size and the x
-server ignores attempts to set the virtual screen size in XF86Config) 
+						Geert
 
- 2- It appears that some video drivers just don't support modes "default"
-eg iMac. The result on this machine is a white screen flecked with
-artifacts and a mouse that appears and disappears, leaving a trail behind
-it.
-
-so... if we abandon modes default, what modeline generators are out there
-that take the output of `fbset -x` and output a complete XF86Config? is
-there a safe way to cycle through all the supported vmodes automatically
-and capture these settings for several resolutions? 
-
-brad
-
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
