@@ -1,57 +1,41 @@
-Message-ID: <38E9D766.28A0BD27@ascom.ch>
-Date: Tue, 04 Apr 2000 13:52:06 +0200
-From: Ruedi Hofer <ruedi.hofer@ascom.ch>
+To: Ruedi Hofer <ruedi.hofer@ascom.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA support for 860
+References: <38E9BA8F.913681C7@ascom.ch>
+From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Date: 04 Apr 2000 13:54:47 +0200
+In-Reply-To: Ruedi Hofer's message of "Tue, 04 Apr 2000 11:49:03 +0200"
+Message-ID: <kfyhfdiw06w.fsf@kieraypc01.p.y.ki.era.ericsson.se>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-CC: erammsu@kieraypc01.p.y.ki.era.ericsson.se, kernel@linux01.hasler.ascom.ch
-Subject: Re: Re: PCMCIA support for 860
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Ruedi Hofer <ruedi.hofer@ascom.ch> writes:
 
-Well, I found out that I have to add in kernel/ksyms.c the line
-EXPORT_SYMBOL(request_irq);
+Hi,
 
-Now I'm able to load the different kernel modules, but
+> I patched the files mpc8xx.h and init.c as you wrote. Then I recompiled the
+> kernel (2.2.13, including fpu, damm, bossek patches) and restarted it.
+> Then I used the rc.pcmcia to set the modules up. It fails because of...
+>
+> sh-2.03# ./rc.pcmcia start
+> Starting PCMCIA services: modules/lib/modules/2.2.13/pcmcia/pcmcia_core.o:
+> unresolved symbol request_8xxirq
 
-sh-2.03#
-sh-2.03# insmod pcmcia_core
-Linux PCMCIA Card Services 3.1.10
-  kernel build: 2.2.13 #85 Tue Apr 4 10:26:49 CEST 2000
-  options:  none
-sh-2.03# insmod m8xx_pcmcia
-m8xx_pcmcia: Version 0.03, 14-Feb-2000, Magnus Damm
-m8xx_pcmcia: ADS using SLOT_A with IRQ 13.
-sh-2.03# insmod ds
-sh-2.03# insmod ide_cs
-/lib/modules/2.2.13/pcmcia/ide_cs.o: unresolved symbol ide_unregister
-/lib/modules/2.2.13/pcmcia/ide_cs.o: unresolved symbol ide_register
-sh-2.03#
+[snip]
 
-... I can't add the module ide_cs. For that reason, do I have to
-enable 'Enhanced IDE support' in the kernel options??
+> Does someone have a clue on that? Is request_irq and request_8xxirq related??
 
-If I do so, I get the following compile errors:
+Just stuff an:
 
-m8xx_setup.c: In function `m8xx_init_IRQ':
-m8xx_setup.c:286: warning: implicit declaration of function `cpm_interrupt_init'
-m8xx_setup.c: In function `m8xx_ide_init_hwif_ports':
-m8xx_setup.c:390: warning: unused variable `port'
-m8xx_setup.c: In function `m8xx_init':
-m8xx_setup.c:522: structure has no member named `ide_request_irq'
-make[1]: *** [m8xx_setup.o] Error 1
-make[1]: Leaving directory
-`/usr/src/linux-mpc8xx-2.2.13-damm-bossek-fpu-pcmcia/arch/ppc/kernel'
-make: *** [_dir_arch/ppc/kernel] Error 2
+EXPORT_SYMBOL(request_8xxirq);
 
-Why that?
+into arch/ppc/kernel/ppc_ksyms.c and it should work.
 
+//Marcus
 --
-Best regards
-
-Ruedi Hofer
+Signature under construction, please come back later.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
