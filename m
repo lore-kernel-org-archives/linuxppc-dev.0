@@ -1,40 +1,45 @@
-Message-ID: <37387B1D.544ABDE9@d.umn.edu>
-Date: Tue, 11 May 1999 13:47:26 -0500
-From: Nathan Ingersoll <ningerso@d.umn.edu>
+Date: Tue, 11 May 1999 16:21:35 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: michael cardenas <michael_cardenas@deneba.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: USB Development
+In-Reply-To: <3738793B.416467E2@deneba.com>
+Message-ID: <Pine.LNX.4.05.9905111618250.654-100000@pc.wackyland.com>
 MIME-Version: 1.0
-To: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Anyone playing with Darwin 0.2 binary yet?
-References: Message from Joel Klecker <jk@espy.org>    of "Tue, 11 May
-	 1999 01:36:38 PDT." <v04204e08b35d9989574a@[206.163.71.146]> <v03010d00b35e1bc270f4@[209.96.179.8]>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I think that it only works with G3 or newer machines.
+On Tue, 11 May 1999, michael cardenas wrote:
 
-"Kevin B. Hendricks" wrote:
+> But, I am a programmer, and I'm very interested in helping develop
+> linux.
 
-> Hi,
->
-> I was interested in playing around with Darwin (Apple's open BSD Unix
-> variant) and noticed the new binary available from
-> http://www.publicsource.apple.com
->
-> It says it will boot on most machines that MacOS server will.  And it now
-> includes EGCS as its compiler.
->
-> I have a PowerTower 604e system 200Mhz, PCI, 64 meg ram, etc.  It looks
-> like a suped up 7200 if I remember correctly.  The machine ID is 108.
->
-> Is anyone out in Linux PPC land also playing with Darwin?  Will the new
-> binary boot on my machine?  Are there any tricks I need to use to get it to
-> boot?
->
-> Thanks for any help.
->
-> Kevin
+yay. :)
+
+> My question is, where can I get the kernel source to get started and
+> what compiler do I use? Is there a kernel build faq? I recently
+> purchased the 4.1 cd, but I already had 4.1 installed.
+
+Well.  4.1 ships w/ BootX (and a recent kernel then, yes? 2.1.125?).  Goto
+http://cvs.on.openprojects.net (I think that's it) and see howto checkout
+the kernel source there.  It's the most current for ppc.
+
+> I'd be willing to install pre r5 if I need to to work on the usb source.
+
+Not needed..  R5 is nice tho <g>.
+
+There are a few "problem" right now.  The current USB dev is being done on
+Linus' USB stack.  OHCI (what's in most non-intel chipset based computers)
+doesn't work.  OHCI is the main controller.  There is some hope tho.
+linux-usb@suse.com is the current list.
+http://soap.suitenine.com/usb/ has the current USB-ohci work and links to
+the other OHCI driver for Linus' stack (merging soon).
+
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
