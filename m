@@ -1,35 +1,33 @@
-Message-ID: <67505026E29DD311A9AA00508B7315F350A558@EXCHANGE>
-From: Julia Elbert <jelbert@enerdyne.com>
-To: "'Dan Malek'" <dan@mvista.com>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: CPM ENET: BSY can't happen.
-Date: Wed, 18 Oct 2000 10:13:17 -0700
+Message-ID: <39EDE34C.92EF5699@blastoff.com>
+Date: Wed, 18 Oct 2000 10:52:12 -0700
+From: "Tod E. Kurt" <tod@blastoff.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Zhaobin Zhu <zzhu@emc.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: LIST_HEAD
+References: <Pine.LNX.4.21.0010171929100.19158-100000@gemini.home.net> <39EDD92F.BEC83BEB@emc.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I applied Jon's fix to commproc.c, but I am still getting kernel panic with
-a
+Try this:
 
-Scheduling in interrupt
-page fault in interrupt handler, addr=0
-NIP: C00157C0 XER: C000EA3C LR: C00157C0 REGS: c0db3bb0 TRAP: 0300
-CPM ENET: BSY can't happen.
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0db2000[19] 'dec' mm->pgd c0f81000 Last syscall: 102
-last math 00000000
+   demo% grep -C LIST_HEAD /usr/src/linux/*.h
 
-Any ideas?
-The CPM ENET: BSY msg I can ignore, but I can't help wondering if it is
-another clue.
-
-Thank you for all your knowledge.
---Julia
-
+Zhaobin Zhu wrote:
+>
+> Hi,
+>
+> What does LIST_HEAD do in drivers/pci/pci.c ?
+>
+>      LIST_HEAD(pci_root_buses);
+>      LIST_HEAD(pci_devices);
+>
+> Thanks,
+>
+> --
+>  Zhaobin Zhu
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
