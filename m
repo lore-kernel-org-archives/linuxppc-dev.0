@@ -1,84 +1,37 @@
-Message-ID: <3CB368FB.1010905@brocade.com>
-Date: Tue, 09 Apr 2002 15:19:39 -0700
-From: "Amit D. Chaudhary" <amitc@brocade.com>
+Message-ID: <001701c1e017$e74f7b60$6401a8c0@attbi.com>
+Reply-To: "Greg Griffes" <ggg@ieee.org>
+From: "Greg Griffes" <ggg@ieee.org>
+To: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <D73A25AA6E54D511AD74009027B1110F0F3151@ORION>
+Subject: Re: question concerning ram filestructure
+Date: Tue, 9 Apr 2002 18:43:00 -0400
 MIME-Version: 1.0
-To: steve.cameron@compaq.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IBM walnut, gcc, NIC and recent kernel?
-References: <20020409153916.A5306@zuul.cca.cpqcorp.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+>
+> RAMDISK: Compressed image found at block 0
+> crc errorFreeing initrd memory: 2201k freed
+> Kernel panic: VFS: Unable to mount root fs on 01:00
+> <0>Rebooting in 180 seconds..
+>
+> I've seen this before on different ports of linux but I have not been able
+> to figure it out.  Does anyone have suggestions?
+> Steven Blakeslee
+>
 
-Jim Duey sent a HOWTO to the list in Jan 2002 titled "Walnut(405GP)
-Kernel Compiling HowTo". you might want to search the mailing list archives.
-http://lists.linuxppc.org/index.html#search
+I just had the same symptom in my port this morning.  In my case, the
+kernel was not picking up the initrd_start or initrd_size from the boot
+loader.  It was a bug in my *_setup.c file.  I tossed out the use of r4 and r5
+and switched to using parse_bootinfo in platform_init().  That fixed it.
 
-Actually even I would be interested in knowing if you could get the
-walnut board working with the kernel from ppc.bkserver.net.
+It could also be a problem in the boot loader.
 
-It does help to have the latest kernel as it is easy to get support from
-fellow developers, tends to be more tested and integration with other
-software components is possible.
-
-Regards
-Amit
-
-
-
-Stephen Cameron wrote:
-> Hi,
->
-> Lately I find myself playing around with this IBM walnut
-> board and hardhat linux 1.2 with a 2.4.0 based kernel,
-> cross compiling with Montavista's gcc on an intel box.
->
-> I'd like to use a more recent kernel, but I have
-> some questions.
->
-> I downloaded 2.4.18 along with the powerpc patch from
-> kernel.org.
->
-> Then, changed the Makefile to set CROSS_COMPILE = to
-> montavista's compiler, and ARCH = ppc.
->
-> Then it seems the walnut's network driver turns up missing,
-> so I tried copying over the *405*.[ch] files from the drivers/net
-> directory of the 2.4.0 montavista kernel. (realizing that's
-> probably not going to work straightaway) and hacked the
-> Config.in to try to make it attempt a compile.
->
-> Well, the assembler complained about some "unsupported
-> relocation type" in ppc4xx_pic.o, so I suspect I need a
-> newer gcc, assembler, etc. (had nothing to do with network
-> driver, I think)
->
-> So, it occurs to me that other folks must be using this walnut,
-> and perhaps solved these problems already.
->
-> So if someone has recommendations about a specific recent kernel
-> that works well with the walnut, and has network support for it,
-> that'd be nice.
->
-> Also any hints on getting gcc & friends to work for intel->ppc
-> cross compiler with a recent kernel would be appreciated.
->
-> Also, if I'd be better off sticking with hardhat linux (or
-> something else) for an embedded application than trying to
-> use the kernel.org kernels for some reasons, please feel
-> free to educate me about that.
->
-> Thanks,
->
-> -- steve
->
->
->
->
->
+Greg Griffes
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
