@@ -1,56 +1,93 @@
-Date: Wed, 26 Apr 2000 01:12:23 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: quik fail on RS/6000 B50
-Message-ID: <20000426011223.A21204@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 25 Apr 2000 16:13:44 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Martin Costabel <costabel@wanadoo.fr>
+Cc: Ethan Benson <erbenson@alaska.net>,
+        Daniel Gonzalez <daniel.gonzalez@pandora.be>,
+        LinuxPPC Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Bye HFS partition?
+Message-ID: <20000425161344.B2163@plato.localdomain.local>
+References: <390516C2.1DD0D2D@pandora.be> <20000425010826.T7022@plato.localdomain.local> <3905CD51.90ED385B@wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="NMuMz9nt05w80d4+"
+In-Reply-To: <3905CD51.90ED385B@wanadoo.fr>; from costabel@wanadoo.fr on Tue, Apr 25, 2000 at 06:52:33PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+--NMuMz9nt05w80d4+
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-we have a strange problem with quik. It fails to open the file system
-after a cold start or a reboot in Linux. A warm reboot with "reset-all"
-at the OF prompt after typing "halt" works always.
+On Tue, Apr 25, 2000 at 06:52:33PM +0200, Martin Costabel wrote:
 
-I included a lot of debug messages and it seems to fail in
-./e2fsprogs-1.18/lib/ext2fs/openfs.c:55:
-EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
+>=20
+> I don't think that HFS support is *generally* unreliable. It works well
+> with 2.2.x kernels and is broken on recent 2.3.x kernels. From his
+> earlier posts I recall that Daniel is using a 2.3.99 kernel.=20
 
-The return value of ext2fs_open is always 2133571335 for all the 3 partitions.
-linux_io_manager isn't zero, it is always 3F9E44.
+I have heard that it does not cause kernel oopes or panics on 2.2 but
+that it still has general flakyness, such as having the entire
+contents of the filesystem vanish, though usually the corruption is
+not permanent, occasionaly it seems to be.  but your right that its
+broken on 2.3 its been that way for a long time presumably because of
+the  VFS changes or whatever it was that broke all the filesystems,
+HFS the way i understand it has just been patched enough to compile
+but not beyond that, from your comments below it seems obvious that
+much more work is needed. =20
 
-After the warm reboot the return value of the first partition
-(41 PReP Boot) is 2133571347 aka EXT2_ET_BAD_MAGIC.
+> For me, mounting an HFS partition under a 2.3.99 kernel and doing more
+> than just a file listing leads to almost instant system freeze and
+> sometimes destruction of the HFS partition (I am trying this only on a
+> ZIP, so I can easily reformat). The oops I get comes, in general, from
+> the hfs_bnode_relse function in fs/hfs/bnode.c, where a waitqueue bug is
+> detected.
 
-The fdisk -l output looks like this:
+that must be what Alan Cox means by `HFS is broken' in the 2.4 tasklist...
 
-Disk /dev/sda: 64 heads, 32 sectors, 8678 cylinders
-Units = cylinders of 2048 * 512 bytes
+> It would be nice (and rather vital for the survival of LinuxPPC under
+> the imminent (?) 2.4 kernel) if some LinuxPPC developers woke up to this
+> situation. (Seems to be above my capacities, sorry). The official
+> maintainer of the HFS code doesn't do much, and some developers (I
+> remember A Joshi and Tom Rini) gave the impression that they have a
+> working HFS filesystem under 2.3.x. In the todo list for kernel 2.4,
+> however, HFS is marked as broken (but no showstopper for the i386 crowd,
+> of course).
 
-   Device Boot    Start       End    Blocks   Id  System
-/dev/sda1   *         1         5      5104   41  PPC PReP Boot
-/dev/sda2             6       133    131072   83  Linux
-/dev/sda3           134      8678   8750080   83  Linux
+well lets face it nobody except PowerMac users care about HFS, the
+only OS that uses it only runs on Apple hardware.  there are just many
+more interesting things that are more important to most (read teh i386
+folks) people then a filesystem most people dont use (meaning most
+people don't use Apple hardware) and its been mentioned before that
+filesystems are not much fun to work on. =20
 
-It doesnt help if I reduce the first partition to 1 cylinder.
+its too bad there is no way to have DOS filesystems on apple
+partitioned disks (well there is but Macos will refuse to mount it) oh
+well there is always hfsutils which seems to work ok.
+
+however, i see HFS+ support as being a worse problem then HFS,
+OSX is unlikely to support plain HFS (for any of its main partitions),
+does anyone know if one can use UFS/ffs instead of HFS+ on OSX?
+read-only UFS support is fine on linux and write support is i think
+probably much farther along then HFS+ anything is..
 
 
-The machine is a RS6k model B50 with 1GB ram.
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
-Any suggestion how to solve that?
+--NMuMz9nt05w80d4+
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (GNU/Linux)
+Comment: For info see http://www.gnupg.org
 
+iEYEARECAAYFAjkGNLgACgkQJKx7GixEevzdjACfd9qdCF7ronbVgdTdLGdsrKMW
+aQ0An38UwJ5jwmH5H/Z5vaPi9lG9X1l1
+=YkI+
+-----END PGP SIGNATURE-----
 
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+--NMuMz9nt05w80d4+--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
