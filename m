@@ -1,38 +1,40 @@
-Subject: Re: aic7xxx panics (long)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ethan Weinstein <e-d0uble@stinkfoot.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3F02537C.1090801@stinkfoot.org>
-References: <3EFFD86B.7060007@stinkfoot.org>
-	 <1056957083.32576.112.camel@gaston>  <3F00E86B.1000309@stinkfoot.org>
-	 <1057053589.32576.310.camel@gaston>  <3F02537C.1090801@stinkfoot.org>
-Content-Type: text/plain
-Message-Id: <1057148769.32104.422.camel@gaston>
-Mime-Version: 1.0
-Date: 02 Jul 2003 14:26:10 +0200
+From: "Chuck Meade" <chuckmeade@mindspring.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: official patches ceasing at 2.4.18 on kernel.org?
+Date: Wed, 2 Jul 2003 22:26:45 -0400
+Message-ID: <IIEEICKJLNEPBBDJICNGAEBGDIAA.chuckmeade@mindspring.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2003-07-02 at 05:37, Ethan Weinstein wrote:
-> Ben,
->
-> Even with your suggestions, I was unable to get xmon to output
-> correctly, the framebuffer became too corrupted to get anything useful,
->   and the sysmap option couldn't have worked if we couldn't mount
-> anything anyway, no?
->
-> However, I was able to capture the oops, albeit in an interesting way.
+Is there a reason that the ppc patches directory under the
+kernel.org ports area has not been updated with patches since
+2.4.18?
 
-Ok, it's real strange now. It seems you get that machine check on
-the first access to the second controller while the first works fine,
-though both appear to be configured properly on the PCI bus. It
-looks like the second controller isn't responding on the MMIO
-addresses... Can you try my devel tree with the updated driver ?
-(just in case it changes anything....) I see no reason for this
-problem right now though...
+I saw that Geert was offering to create one for 2.4.21, and that
+would be great -- just wondering why placing patches out there
+on kernel.org has ceased.
 
-Ben.
+I am creating a local ppc 2.4.21 tree.  I see the following are
+the most recent 2.4.21 tags on the BK server:
+
+  v2.4.21_linuxppc_2_4_devel
+  v2.4.21_linuxppc
+  v2.4.21
+
+What is the significance of these three different tags?
+What does each represent?
+
+What would be great is for the patches under ports on kernel.org
+to be carried forward/kept up to date.  If that is not going to
+be continued, then what is the best way to create the same thing,
+i.e. a solid 2.4.21 ppc tree, using what is available via BK?
+
+Thanks,
+Chuck
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
