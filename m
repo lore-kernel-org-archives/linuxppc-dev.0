@@ -1,71 +1,87 @@
-Message-ID: <412B0020.70805@246tNt.com>
-Date: Tue, 24 Aug 2004 10:45:20 +0200
-From: Sylvain Munaut <tnt@246tnt.com>
-MIME-Version: 1.0
-To: Andrey Volkov <avolkov@varma-el.com>
-Cc: Gabor Janak <g.janak@unicontrol.de>,
-	linuxppc-embedded@lists.linuxppc.org, Wolfgang Denk <wd@denx.de>
-Subject: Re: [RFC] Re: BestComm and fec
-References: <412A4B69.7000305@246tNt.com> <149461203.20040824120707@varma-el.com>
-In-Reply-To: <149461203.20040824120707@varma-el.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Tue, 24 Aug 2004 10:51:18 +0200
+To: Patrick Huesmann <tricknology@gmx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to port ppc-linux to new custom boards? (virtexII)
+Message-ID: <20040824085118.GO2698@mind.be>
+References: <23479.1093274235@www38.gmx.net>
+Mime-Version: 1.0
+In-Reply-To: <23479.1093274235@www38.gmx.net>
+From: "Peter 'p2' De Schrijver" <p2@mind.be>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-
->>Apparently, you've both worked out a version of bestcomm for 2.6. But
->>you both based it on old code. (even non GPL).
->>
->>
+On Mon, Aug 23, 2004 at 05:17:15PM +0200, Patrick Huesmann wrote:
 >
->Terrible, may be its time to create special project for MPC5200 (if it
->doesn't exist in somewhere in I-net)? First intention - sourceforge.
->Comments/suggestions?
+> I'm trying to port Linux to a custom board built around a
+> virtexII-fpga which features a PPC-405 cpu.
 >
->Sylvain, Wolfgang I know you already have projects. But in case of
->Sylvain, as I understand, his project on his homepage.
->In case of Wolfgang, I'm not sure that DENX will happy to share their
->internal CVS with all I-net for write access. Am I right?
+> I've downloaded the Montavista 2_4_devel tree, which already has some
+> platform and driver support for the ml300 eval board, and made a
+> few changes to the xilinx specific header files to reflect our FPGA
+> design. Then I changed the tophys macro in include/asm/ppc_asm.h
+> to have a sensible initial mmu. #define MY_PHYS_RAM 0x90000000
+> #define tophys(rd,rs) addis rd,rs,(MY_PHYS_RAM-KERNELBASE)@h; #define
+> tovirt(rd,rs) addis rd,rs,(KERNELBASE-MY_PHYS_RAM)@h;
 >
->
-I personnaly use BitKeeper to maintain my trees. I can't provide write
-access to them because I don't administrate the server they are on,
-To write, you would need a ssh account and I juste have one for me and
-can't create others.
+> My kernel gets past the initial mmu setup, enters the C code and
+> freezes in the middle of early_init in arch/ppc/kernel/setup.c when
+> (after?) memset_io is called to zero the BSS region.
 
-I try to publish what I'm doing in www.246tNt.com/mpc52xx/state.txt
+That's a problem. A lot of the 405 specific kernel code relies on the
+fact that main memory is mapped at address 0. It would require quite
+some work to make it work on other addresses too.
 
->>I've just tried just taking the newer one and stick it in 2.6 with the
->>fec Gabor sent, but it just crashes so it need more work ;) Dale
->>Farnsworth just said it'll look into it and porting new bestcomm as well.
->>
->>
->
->My fec port work ok.
->
->
-Based on old bestcomm or new ?
+> I've some experience with porting ARM-Linux but, unfortunately, the
+> PPC port seems to be significantly different (there are no mach-types
+> and ATAG lists, for example).
 
->And CAN, RTC, and possible CRC32/16 (if it will fast enough) :).
->
->
-CAN is not on my personnal project list since I have nothing that uses
-so I couldn't test it anyway.
+Indeed. Although this is supposed to change some day...
 
-RTC ? The MPC5200 can't save time AFAIK. And Linux should already
-'count' time correctly I think.
+> 1) Is there any comprehensive documentation / tutorial on how to port
+> the ppc-linux to new machines? Where does my board specific fixup
+> stuff go (for example, memory and IRQ declarations and such).
 
-By CRC32/16 I guess you mean to use the BestComm DMA engine to implement
-the kernel CRC Library ? I'm not sure
+I haven't seen one. Most of the board specific fixup stuff resides in
+platforms/boardname.[ch]. Look at arch/ppc/platforms/insightv2pro.[ch]
+for an example how we did this for the insight V2Pro board.
 
+> 2) What requirements and responsibilities are imposed on the
+> bootloader? I suspect that I can't use u-boot or something like that,
+> because we have our own "company-specific" bootloader so that all our
+> products use the same protocol for firmware updates.
 
-I've pushed PCI on my tree ( bk://bkbits.246tNt.com/linux-2.5-mpc52xx )
-yesterday night. So if you're in position to test it please report ;)
+The bootloader should load the kernel at address 0 and initialize the
+registers as follows :
 
+r3 - Board info structure pointer (DRAM, frequency, MAC address, etc.)
+r4 - Starting address of the init RAM disk
+r5 - Ending address of the init RAM disk
+r6 - Start of kernel command line string (e.g. "mem=96m")
+r7 - End of kernel command line string
 
+(See also arch/ppc/kernel/head_4xx.S). The board info structure is
+defined in asm-ppc/ppcboot.h (struct bd_info).
 
-Sylvain
+> 3) Is there a way to get a self-decompressing kernel image? ARM
+> linux provides a zImage which the cpu just has to jump into (with
+> some registers initialized) and then decompresses vmlinux by itself.
+> Now I have to use a vmlinux file and write it to flash directly,
+> because zImage on powerpc lacks decompressor code (at least with my
+> configuration). But the 1.3meg vmlinux file makes for pretty long
+> turnaround times (I can only upload at 115k at the moment).
+
+Yes. look at arc/ppc/boot/simple for some targets which have a
+self-decompressing kernel. (Amongst which is our port to the Insight
+V2PRO board).
+
+> Any help is greatly appreciated ;)
+
+You're welcome.
+
+Cheers,
+
+Peter (p2).
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
