@@ -1,31 +1,49 @@
-Message-Id: <199904291006.KAA28609@go.hannover.sgh-net.de>
-Subject: Kernel argument to change keyboard?
-Date: Thu, 29 Apr 99 12:06:08 +0200
-From: John L Grantham <jgrantha@hannover.sgh-net.de>
-To: <linuxppc-dev@lists.linuxppc.org>, <linuxppc-user@lists.linuxppc.org>
+In-Reply-To: <199904281818.UAA01127@student.physik.uni-mainz.de>
+Date: Thu, 29 Apr 1999 12:41:56 +0200
+To: Christian.Bauer@uni-mainz.de
+CC: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Endianess problems in linuxppc kernel
+Message-Id: <19990429124156.011678@mail.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Wed, Apr 28, 1999, Christian Bauer <Christian.Bauer@uni-mainz.de> wrote:
 
-A colleague of mine recently tried to change his keyboard layout to get a 
-Swiss German layout for his PowerBook using Xmodmap and messed up his 
-layout badly enough that he can't log in anymore. Is there any way to get 
-around this, like by passing a kernel argument to force using another 
-layout (like the US one)? Or is there some other way to get out of this?
+>CC: linuxppc-dev@lists.linuxppc.org
+>----------
+>
+>>Do you know which Apple chip is this, so it can be added to the pciutils
+>>database?
+>
+>The device tree has this to say:
+>
+>Devices:device-tree:bandit:ohare
 
-TIA,
+This is Ohare, one of the evolutions of Apple's Grand Central. 
 
-John
+Some Device IDs I know are:
+
+0x0002 for Grand Central
+0x0007 for Ohare
+0x0010 for Heathrow mac-io (PowerBook G3 Series, PowerMac G3s).
+0x0017 for Paddington mac-io (iMac, PowerMac G3s).
+
+>Maybe the host bridge also does byte swapping on the frame buffer??
+
+Hum, the bridge is a bandit, I don't think bandit can swap anything. But
+you may be using the wrong frame buffer apperture.
 
 
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@misys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-John Grantham | Dipl.-Designer (FH)
-              | MacLinux: http://linux.macnews.de/
-              | Homepage: http://surf.to/multimedia
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
