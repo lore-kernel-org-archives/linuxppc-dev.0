@@ -1,27 +1,24 @@
-Message-Id: <200101181805.MAA88737@ns5.arlut.utexas.edu>
-Date: Thu, 18 Jan 2001 12:05:14 -0600
+From: "Tom Shaver" <tom_shaver@psilongbeach.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Booting MCP750 stand alone
+Date: Thu, 18 Jan 2001 13:35:20 -0600
+Message-ID: <NCBBJBFMKKFOJFGDOKNBMEDLEJAA.tom_shaver@psilongbeach.com>
+MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=us-ascii
-From: Gregory Allen <gallen@arlut.utexas.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Mime-Version: 1.0 (Apple Message framework v337)
-Subject: Ethernet controller
+	charset="iso-8859-1"
+In-Reply-To: <3A5DF3CB.BDDCB756@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am designing an embedded PPC8240 board with an ethernet interface. I am down to 2 choices: i82559 and RTL8139
-
-I prefer to avoid the BGA package of the i82559, but the RTL8139 driver support is listed as having "limited PowerPC testing". I am also curious about their relative performance.
-
-Can anyone speak to this?
+Is it possible to boot MVista Linux on a Motorola MCP750 without a
+bootp/tftp server? ie, off of the on board flash, or possibly a compact
+flash card?
 
 Thanks,
--Greg
+Tom Shaver
+Electrical Engineer
+Planning Systems Inc.
 
-------
- Gregory E. Allen, MSEE Research Engineer
- Applied Research Laboratories:
- The University of Texas at Austin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
