@@ -1,61 +1,64 @@
-Date: Fri, 10 Nov 2000 09:29:46 -0600 (CST)
-From: Don Holmgren <djholm@fnal.gov>
-Reply-To: Don Holmgren <djholm@fnal.gov>
-To: fraher <fraher@pweh.com>
-cc: linuxppc-embedded@lists.linuxppc.org, Gabriel Paubert <paubert@iram.es>
-Subject: Re: MVME2604 Problems with MMU
-In-Reply-To: <Pine.HPX.4.10.10011100955260.19910-100000@gra-ux1.iram.es>
-Message-ID: <Pine.SGI.3.95.1001110092723.15810A-100000@hppc.fnal.gov>
+Message-ID: <3A0C23CA.13ADFE8A@mvista.com>
+Date: Fri, 10 Nov 2000 08:35:22 -0800
+From: Cal Erickson <cal_erickson@mvista.com>
+Reply-To: cal_erickson@mvista.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: john zhan <johnzhan@btamail.net.cn>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: GDB for host development platform
+References: <006001bf448c$4aee3aa0$57c809c0@fel>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 10 Nov 2000, Gabriel Paubert wrote:
+John,
+Why not take a look at the Cross Development Kit from
+MontaVista Software? If you go to their web site you
+can download it for free. It comes with GDB and
+GDB server which uses the ethernet to debug.
 
+Cal Erickson
+
+john zhan wrote:
+
+> I have now successfully build GDB-4.18 for linux/ppc.
+> Both target and host are powerpc-linux.
+> When I was trying to run a executable in my target
+> hardware(8xx) with gdb(target for exec),
+>  e.g. hello,
+> GDB said
+> "
+> Starting program: ./hello
+> Don't know how to run.  Try "help target".
+> "
+> Questions:
+>     1. what's going on it?
+>     2. Does(Did) anyone do the same thing?
+>     3.The cross-debugger + target gdb server with a serial connection
+>          is the unique choices?
+>     4. I wonder which is the best way to debug a linux/ppc application
+>         on the embedded platform.
+>     5. What do you think a full host development environment
+>         (including native comilper,debugger etc) in the embedded
+>         system.
 >
-> On Thu, 9 Nov 2000, fraher wrote:
+> thank for any response.
 >
-> >
-> >    I've got a 2.2.12 kernel with Gabriel's patches (NFS mounted root),
-> > and it works beautifully on a MVME2603 board (many thanks, Gabriel).
-> > However, when I swap out the MVME2603 with a MVME2604, and cause some
-> > SCSI disk activity, the system crashes with
-> >
-> >         end_scsi_request: buffer-list destroyed
-> >         page fault in interrupt handler, addr=8000000
-> >         NIP: 08000000 XER: 20000000 LR: C00C67BC REGS: c00ffc48 TRAP: 0400
-> >         MSR: 40001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> >         TASK = c00fdfe8[0] 'swapper' mm->pgd c00fc000 Last syscall: 112
-> >                 ...
-> >         kernel panic: kernel access of bad area pc 8000000 lr c00c67bc address 8000000 tsk swapper/0
-> >
-> > The 'page fault' makes me wonder if the 604's TLB miss response differs
-> > sufficiently to cause the kernel panic.
-> > Has anyone else seen problems running on 2.2.12 with an MVME2604?
-> > Are there other patches needed to compensate for the MMU differences
-> > with the 604e?
->
-> I don't have any MVME2604, but I have several MVME2400 with uptimes in
-> the months range. MVME2400 don't have SCSI, but a 750 has processor with
-> an MMU very similar to the 604e. Could it be a subtle SCSI/timing problem ?
->
-> OTOH, I have reports of working 2604, but I don't remember if it's with
-> root on NFS or using SCSI.
->
-> 	Gabriel.
->
+> regards.
+> john zhan.
 >
 
-I've been running 2.2.9 successfully on a '2604 with no problems.  Did
-specific scsi activities cause the crash, or any just activity at all?
-
-When I get a chance I'll give 2.2.12 a try.
-
-Don Holmgren
-Fermilab
-djholm@fnal.gov
+--
+===========================================================================
+Cal Erickson                 MontaVista Software Inc.
+Customer Support Engineer    490 Potrero Avenue
+Phone (408) 328-0304         Sunnyvale CA 94085
+Fax   (408) 328-9204         e-mail cal_erickson@mvista.com
+Pager 877-566-2012           support 1-800-759-8888 pin 202-7489
+web http://www.mvista.com    support e-mail: support@mvista.com
+eCode: http://cal@work.com.ecode.com
+===========================================================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
