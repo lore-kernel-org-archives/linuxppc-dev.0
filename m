@@ -1,37 +1,36 @@
-To: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Linux-galileo] Re: EV-64260-BP & GT64260 bi_recs 
-In-Reply-To: Message from msokolov@ivan.Harhan.ORG (Michael Sokolov)
-   of "Sun, 24 Mar 2002 20:31:55 PST." <0203250431.AA26633@ivan.Harhan.ORG>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 25 Mar 2002 17:30:51 +1100
-Message-ID: <17181.1017037851@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Date: Sun, 24 Mar 02 22:47:19 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0203250647.AA26997@ivan.Harhan.ORG>
+To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Linux-galileo] Re: EV-64260-BP & GT64260 bi_recs
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 24 Mar 02 20:31:55 PST, msokolov@ivan.Harhan.ORG (Michael Sokolov) writes:
->I'm very very glad that 2_4_devel doesn't use the bd_info crap and uses bi_recs
->instead. If PPCBoot can't handle that, it's PPCBoot's problem. There is more to
->the world than PPCBoot. StarMON rules!
+Murray Jensen <Murray.Jensen@cmst.csiro.au> wrote:
 
-2_4_devel does "use the bd_info crap". It is my impression that bi_recs support
-in 2_4_devel is very limited and only used by certain platforms, so you could
-safely say that it doesn't use bi_recs (correct me if this is wrong - I don't
-know all the other platforms intimately). The whole huge discussion on this very
-list recently (with exactly this same subject line) has been to determine how
-best to get rid of "the bd_info crap" and only use bi_recs. I'm sure as soon as
-this is ironed out, ppcboot will easily support bi_recs (there you go Wolfgang -
-I saved you having to respond to this :-). Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@csiro.au
+> 2_4_devel does "use the bd_info crap".
 
-Hymod project: http://www.msa.cmst.csiro.au/projects/Hymod/
+Thankfully not for EV-64260 or any other almost-non-embedded 6xx/7xx/74xx
+systems, only for 4xx/8xx/82xx stuff that's completely off my radar screen for
+now and probably for the foreseeable future.
 
+> It is my impression that bi_recs support
+> in 2_4_devel is very limited and only used by certain platforms, so you could
+> safely say that it doesn't use bi_recs (correct me if this is wrong - I don't
+> know all the other platforms intimately).
+
+It is wrong. Every platform in 2_4_devel my hacky hands have touched uses
+bi_recs exclusively. bi_recs work very well for me as they are right now.
+
+> The whole huge discussion on this very
+> list recently (with exactly this same subject line) has been to determine how
+> best to get rid of "the bd_info crap" and only use bi_recs. I'm sure as soon as
+> this is ironed out, [...]
+
+For me it has been ironed out perfectly a long time ago, which is why I haven't
+participated much in that "discussion".
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
