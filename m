@@ -1,61 +1,41 @@
-Date: Mon, 25 Sep 2000 14:42:49 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: R Shapiro <rshapiro@bbn.com>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
-In-Reply-To: <14799.14699.552209.136967@esb.bbn.com>
-Message-ID: <Pine.LNX.4.10.10009251439380.31592-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <14799.19089.742041.388095@esb.bbn.com>
+Date: Mon, 25 Sep 2000 08:52:33 -0400
+From: R Shapiro <rshapiro@bbn.com>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display, xinerama
+In-Reply-To: <39CE8B90.1B318DD2@student.ethz.ch>
+References: <Pine.LNX.4.10.10009231028030.26749-100000@apollo.kulian.net>
+	<14798.23332.833379.615321@esb.bbn.com>
+	<39CE8B90.1B318DD2@student.ethz.ch>
+Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  > Anything about PCI problems in the server log?
->
-> The only server log I have right now is for the X I left running
-> yesterday with the fbdev driver.  There are a couple of PCI warnings
-> in this one but no errors (no surprise, since everything is working
-> well with fbdev):
->
-> (**) (null)(2): claimed PCI slot 0:15:0
-> (II) FBDev(2): using /dev/fb2
-> (WW) ****INVALID IO ALLOCATION**** b: 0x400 e: 0x4ff correcting
-> (II) window:
->         [0] -1  0x00000000 - 0x0000ffff (0x10000) IXB
-> (II) resSize:
-> (II) window fixed:
->         [0] -1  0x00000000 - 0x0000ffff (0x10000) IXB
-> (WW) ****INVALID IO ALLOCATION**** b: 0x400 e: 0x4ff correcting
->
+Michel Dänzer writes:
+ > > I can't test xinerama on this platform because the three screen don't
+ > > all run at same depth (two use depth 15/16, one uses depth 8).
+ >
+ > What about just testing it with the two heads who run at 16 bpp, or run all
+ > heads in depth 8?
 
-These shouldn't be critical (but they shouldn't happen, either).
 
->  > BTW: Can you use yaboot for booting?
->
-> I don't know, can I use yaboot on a rev. a beige G3?  I think the
+I just did it tried running +xinerama with all three monitors at 8pp.
+It works!  Blackbox is happy to move windows across screens, or even
+leave a window half on one and half on another.  Basically just like
+the multiple monitor support that MacOS has always had.
 
-Probably not - it could work with the b&w one, that's why I asked.
+Very nice :)
 
-> Are there known X-related problems using BootX?
+Btw for those who might want to try this, +xinerama is a server arg so
+the command is  'startx -- +xinerama'.
 
-You were looking at it, from what I guess. Apple's drivers set up
-overlapping areas for MMIO and VRAM, and X fixes this by disabling one of
-these. Unfortunatly, the kernel doesn't notice.
 
->  > > 4. On the rev. b beige G3 w/Mach64 Rage Pro, the ati driver seems to
->  > > be working.  The XF probe still gets the wrong amount of vram, and it
->  > > still throws away the mode I constructed via fbset -x.  But it finds
->  >
->  > Perhaps the video RAM detection typo which should be gone now ...
->
-> Fwiw I'm using the ati driver I built from sources rsync'd on
-> Saturday.
-
-That should have the stupid typo removed ...
-
-	Michael
+--
+rshapiro@bbn.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
