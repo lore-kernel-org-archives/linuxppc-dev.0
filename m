@@ -1,42 +1,51 @@
-Message-ID: <XFMail.990114104343.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <369D7A76.1FF003@cs.adelaide.edu.au>
-Date: Thu, 14 Jan 1999 10:43:43 -0000 (GMT)
-From: Gary Thomas <gdt@linuxppc.org>
-To: Duncan Grove <duncan@cs.adelaide.edu.au>
-Subject: RE: modify /usr/include/signum.h
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <369DCAA7.E3EE9749@schweiz.ch>
+Date: Thu, 14 Jan 1999 11:44:55 +0100
+From: Andreas Tobler <a.tobler@schweiz.ch>
+Mime-Version: 1.0
+To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: sources of libstdc++
+Content-Type: multipart/mixed;
+ boundary="------------34AE3866FA026A022FEBC01B"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+This is a multi-part message in MIME format.
+--------------34AE3866FA026A022FEBC01B
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-On 14-Jan-99 Duncan Grove wrote:
-> 
-> someone needs to add #define SIGCLD    SIGCHLD to /usr/include/signum.h
-> 
-> btw, why are so many of the /include/*.h files (esp. tcp code) so
-> screwed? -- Why/how were they messed up for the PPC release from the
-> original Redhat 5.2 distribution?
-> 
+Hello,
+where can I find the sources of libstdc++2.9.0-1c?
+I didn't find them on biggi.linuxppc.org. I have to rebuild them with a
+special option.
 
-Mostly because they didn't come from the RedHat 5.2 distribution!
-The majority of the ".h" files are part of the GLIBC package which
-is now more than two years old.
+Thanks,
+Andreas
+-- 
+| Andreas Tobler				
+| CH-8004 Zuerich 							
+| E-Mail: andreas.tobler@alcatel.ch	| a.tobler@schweiz.ch
+-----------------------------------------------------------
+--------------34AE3866FA026A022FEBC01B
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="a.tobler.vcf"
+Content-Description: Card for Andreas Tobler
+Content-Disposition: attachment;
+ filename="a.tobler.vcf"
+Content-Transfer-Encoding: 7bit
 
-This will be cleaned up, once the new GLIBC-2.1.xx packages are ready.
+begin:vcard 
+n:;Andreas Tobler
+x-mozilla-html:FALSE
+version:2.1
+email;internet:a.tobler@schweiz.ch
+x-mozilla-cpt:;0
+fn:Andreas Tobler
+end:vcard
 
-BTW - What do you mean "screwed" except for the plethora of warnings?
-
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
-
+--------------34AE3866FA026A022FEBC01B--
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
