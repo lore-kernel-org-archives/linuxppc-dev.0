@@ -1,43 +1,25 @@
-Message-ID: <2F67A63DFFB1D31185D90090278CBB2D01679D7D@apmail6.chn.agilent.com>
-From: "ZHANG,HAI-TAO (Non-A-China,ex1)" <hai-tao_zhang@non.agilent.com>
-To: Zhaobin Zhu <zzhu@emc.com>
+Subject: Re: getting at bootp IP address
+To: bsapp@lanl.gov
+Date: Mon, 25 Sep 2000 16:40:51 +1100 (EST)
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Sandpoint/PPMC750 MPPMC7400
-Date: Mon, 25 Sep 2000 10:14:36 +0800
+In-Reply-To: <39CA8E56.31BB8000@lanl.gov> from "Ben Sapp" at Sep 21, 2000 04:40:22 PM
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000925054051.D1A36218@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Ben Sapp writes:
+> I would like the program that is started in place of init in the ram disk
+> to set up the network based upon the IP address that was obtained from
+> bootp.
 
-> -----Original Message-----
-> From: Zhaobin Zhu [mailto:zzhu@emc.com]
-> Sent: Friday, September 22, 2000 11:47 PM
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Sandpoint/PPMC750 MPPMC7400
-> Hi,
->
-> I has been trying to boot Hardhat (CDK1.2)linux kernel on
-> Sandpoint/PPMC750. Everytime the boot gets stuck at
-> .......
-> >Uncompressing Linux...done.
-> >Now booting the kernel
-Do you use 2.3.16 kernel ? The kernel stops here may be caused by MMU_init,
-please check the arch/ppc/kernel/head.S and arch/ppc/mm/init.c. (you can use
-ppc_md.progress for printing messages)
+You should be able to get the ethernet interface's IP address using the
+SIOCSIFADDR ioctl (and friends) on ifr_name "eth0".
 
->
-> Also what COP-based debug tools are available for
-> PPMC750/7400 on sandpoint.
-> Somebody mentioned Arbitron and EST.
-> Did anybody have experience with them and what you recommend ?
-Here we have Arbitiron BDI2000, it is a little bit helpful but I think that
-reading the kernel source is the most useful way, or you can try xmon.
-
-Thanks,
-Haitao Zhang
+Regards,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
