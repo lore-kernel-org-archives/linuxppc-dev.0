@@ -1,30 +1,40 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bastien Nocera <hadess@hadess.net>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ibook overclocking ?
-Date: Fri, 5 Jul 2002 18:38:15 +0200
-Message-Id: <20020705163815.25879@192.168.4.1>
-In-Reply-To: <1025831983.31879.88.camel@dozo>
-References: <1025831983.31879.88.camel@dozo>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15655.39445.566490.16876@argo.ozlabs.ibm.com>
+Date: Sun, 7 Jul 2002 11:32:05 +1000 (EST)
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH/RFC] Change how we pick which _kd_mksound to use.
+In-Reply-To: <20020701152727.GC20920@opus.bloom.county>
+References: <20020701152727.GC20920@opus.bloom.county>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Tom Rini writes:
+
+> The following changes how we pick a _kd_mksound.  The problem is that on
+> some machines, such as IBM405, the default _kd_mksound breaks horribly
+> due to the inb/outb's attempting to fiddle with timers which don't
+> exist.  This changes the test which selects either an empty _kd_mksound
+> or the one in question from __powerpc__ to CONFIG_PPC64 (since from what I
+> understand, __powerpc__ is defined on ppc64) || (CONFIG_PPC32 &&
+> CONFIG_6xx).  The CONFIG_6xx test is because these boards are the ones
+> which tend to have a SuperIO chip, or something else with the timers at
+> 0x61, 0xB6, etc.
 >
->I wanted some comments about this article:
->http://xlr8yourmac.com/systems/ibook_2002_overclocking.html
->
->Is this something that it would be possible to reproduce under Linux?
->I'm interested in both the overclocking (if that can help me play DVDs
->under Linux without skipping...) and the underclocking which would help
->battery life.
+> The other option would be to define an empty no_kd_mksound or so on
+> 4xx/8xx and then conditionally set kd_mksound to that, but I would
+> prefer this since we're already doing some preprocessor checks anyhow.
 
-If your CPU is a 750FX, then yes, it's probably possible to write a kernel
-hack to do the same ;)
+This is one of those "there's got to be a better way" places.  The
+CONFIG_PPC32 && CONFIG_6xx test doesn't really capture what we want
+much better than the existing __powerpc__ test does.  Testing
+CONFIG_PPC32 && CONFIG_ISA might go closer.  I would really rather
+that _kd_mksound was provided in the platform-specific files on those
+platforms where it applies, though.
 
-ben.
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
