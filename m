@@ -1,39 +1,72 @@
-Message-Id: <199812131040.LAA03780@piglet.cpu.lu>
-Date: Sun, 13 Dec 1998 11:40:28 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: matroxfb, anybody?
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <3673C7D1.D0934DC7@mail.esiea.fr>
+Date: Sun, 13 Dec 1998 14:57:38 +0100
+From: "G. =?iso-8859-1?Q?Laur=E8s?=" <laures@hp1.esiea.fr>
+Reply-To: laures@hp1.esiea.fr
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: Liste LinuXppc/dev <linuxppc-dev@lists.linuxppc.org>
+Subject: pre-R5 installation
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+Hi everybody, I mail you all cause I have probs about a pre R5 installation...
 
-Anybody successfull in running matroxfb with recent vger kernels?
+The following assumes that I've managed to boot properly the installer,
+including second-stage with the 2nd floppy, and t I tried all of this
+with 2.1.125 from R4 installation @ dev.linuxppc.org and last 2.1.130
+from BenH.
 
-I've tried using it alongside controlfb as a second framebuffer, but it
-doesn't initialize. Compiled-in, it only goes through the very first
-debugging message, and then nothing more;  while as a module insmod
-aborts (slightly older matroxfb.c (1.6c)) or hangs the system (most
-recent matroxfb.c (1.8)).
+ First I noticed that DHCP configuration for ftp install doesn't work
+(it's over a motorola cybersurf cable modem), I got a "SIGCAUGHT" or
+whatever when choosing this option, I don't exactly remember.
 
-I've also tried to compile-in matroxfb without controlfb, but that
-failed because offb.c wasn't in (undefined ref to console_getmode et
-al.). I'm right now trying a recompile with OF support compiled in, but
-no framebuffer driver. Let's see....
+ Second, ftp installation doesn't work with fixed IP information either
+: it doesn't get ns information, or can't log into server with the
+correct IP address, it seems that no packets can get out of it. Ping on
+it from another machine (my PBG3 with masquerading software) do work
+though (???????).
 
-Michel
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-9, Montee St. Crepin           |    Ask Questions.  Make Mistakes.
-L-1365 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+ So I tried an HD install... as said Martin Costabel, I had to put all
+the files on an ext2 partition (fine, I had a 2GB hd lying with R4 on it).
 
+ Third, server nor workstation types of install work, they get you into
+a loop with SCSI adapters and Macintosh-like partitionned hd stuff and
+then on server/workstation/custom rpm choices.
+
+
+ But here begin strong problems : it complains about around 35 rpm
+missing (I guess they are not ready yet, I don't care for now, I would
+add some if only I could compile them...), then installs rpms (I choosed
+very basic install, keeping all default but PPP-dialup), and then I got
+a lot of warning like "execution of XXX script failed". Well, it fails
+for initscripts, egcs, binutils, make, egcs, timeconfig, pam/pamconfig :
+all that type of non-useful things if you see what I mean...
+
+  Then I got panics during time configuration, just after network conf,
+and I have to make a hard reset here.
+
+   Of course it doesn't boot, warning for being unable to open an
+initial console and to find init stuff -> kernel panic, you have 180
+seconds to type what's on screen...
+
+
+ Of course I redownloaded twice of all these critical rpms, I got the
+same warnings. I'll try a third time tommorrow just to be sure...
+
+
+
+
+  I hope you'll see in there some obvious mistake I'm to tired to see by
+myself... Thanks to anybody who could help, I'm really stuck here.
+
+
+
+
+
+
+ Gom
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
