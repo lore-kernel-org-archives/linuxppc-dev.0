@@ -1,21 +1,12 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.196])
-	by ozlabs.org (Postfix) with ESMTP id B93D02BC0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Sep 2004 00:11:51 +1000 (EST)
-Received: by mproxy.gmail.com with SMTP id 76so4232771rnk
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Sep 2004 07:11:49 -0700 (PDT)
-Message-ID: <35fb2e5904092707106d056d46@mail.gmail.com>
-Date: Mon, 27 Sep 2004 15:10:47 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: Matt Porter <mporter@kernel.crashing.org>
-In-Reply-To: <20040927065758.B25288@home.com>
+Return-Path: <mmporter@cox.net>
+Date: Mon, 27 Sep 2004 08:27:59 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Message-ID: <20040927082759.E25675@home.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <Pine.LNX.4.21.0409271244030.8658-100000@aqua.aspd.pwr.wroc.pl>
-	<20040927065758.B25288@home.com>
-Cc: linuxppc-dev@ozlabs.org, Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>
-Subject: Re: 2.6.x on 405CR
-Reply-To: jonathan@jonmasters.org
+Content-Type: text/plain; charset=us-ascii
+Cc: 
+Subject: [NOTICE] List description/usage changes
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +16,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 27 Sep 2004 06:57:58 -0700, Matt Porter
-<mporter@kernel.crashing.org> wrote:
-> On Mon, Sep 27, 2004 at 12:46:07PM +0200, Piotr Perak wrote:
-> > Hi.
-> >
-> > Anyone seen 2.6.x kernel working on 405CR?
-> > I can't make it boot.
+For everybody already on the lists that aren't going to see the
+changes on the mailman subscription pages...this is for you.
+Summary: ppc32 embedded discussion belong on -embedded. Everything
+else ppc32 on -dev.
 
-> I can't recall anybody around here having a 405CR.  That's probably
-> why you didn't get a reponse the first time you posted this.
+See the following text that sfr adopted to clarify list usage:
 
-I might get access to one at some point - I'll be getting my Virtex II
-tree up and running on 2.6 (PowerPC 405D) sometime soon hopefully too.
+------------
+linuxppc-dev
+------------
+This is the Linux on PowerPC developers' mailing list. It is
+free and open to all those interested in development of Linux
+on PowerPC hardware, but discussions/patches should pertain to
+software development for the kernel core ppc32 support and
+CHRP/Pmac/PReP platforms.   Any discussions/patches regarding
+embedded procesoors/platforms should be directed to the
+linuxppc-embedded list.
 
-> I wish I could rent you my BDI2000 to speed up your debugging,
-> but we're too far away from each other. :)
+Patches are welcomed, but please refrain from posting excessively
+large ones (40K is currently the limit for the entire message).
+Large patches should be made available at an accessible FTP or
+web site and the URL posted to this list. The list owner reserves
+the right to implement filtering of list messages, unsubscribe
+offenders, and/or otherwise prevent posting of messages to enforce
+the list charter.
 
-I hate you guys. I'm using insight on an XP box with that horrid
-Xilinx xygwin - it's not aware of any virtual memory and I have no
-symbols nicely available so it's all done by hand.
+-----------------
+linuxppc-embedded
+-----------------
+This is the Linux on PowerPC embedded developers' mailing list.
+It is free and open to all those interested in development
+of Linux on embedded PowerPC hardware, but discussions/patches
+should pertain to software development for the kernel core ppc32
+embedded processor support and any driver/chip/board support for
+ppc32 based embedded systems. Any discussions/patches regarding
+generic core ppc32 support should be directed to the linuxppc-dev
+list.
 
-Jon.
+Patches are welcomed, but please refrain from posting excessively
+large ones (40K is currently the limit for the entire message).
+Large patches should be made available at an accessible FTP or
+web site and the URL posted to this list. The list owner reserves
+the right to implement filtering of list messages, unsubscribe
+offenders, and/or otherwise prevent posting of messages to enforce
+the list charter.
