@@ -1,37 +1,73 @@
-From: "barry.fisher" <barry.fisher@seranoa.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: kgdb support for 8260
-Date: Wed, 3 Apr 2002 10:39:01 -0500
-Message-ID: <000a01c1db25$add3db20$7d0110ac@Seranoa.com>
+Message-ID: <3CAB3E58.723625D9@mvista.com>
+Date: Wed, 03 Apr 2002 09:39:36 -0800
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Armin <akuster@pacbell.net>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Workaround for USB DMA bugs
+References: <20020403024321.GN1026@zax> <3CAABAB0.5030000@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All:
-Thanks to everyone so far for their help in answering my questions with
-regards to my questions regarding kgdb support for the 8260.
+Armin wrote:
+>
+> David Gibson wrote:
+> > Well, I'm not sure I'd want to pollute the tree with this sort of
+> > hack, but on the other hand it makes things work that wouldn't
+> > otherwise.
+> >
+> > Does anyone think it's a good idea to commit the following patch:
+> >
+> > diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/mm/cachemap.c linux-grinch/arch/ppc/mm/cachemap.c
+> > --- /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/mm/cachemap.c    Thu Mar 14 13:49:01 2002
+> > +++ linux-grinch/arch/ppc/mm/cachemap.c       Wed Apr  3 11:51:30 2002
+> > @@ -137,7 +137,18 @@
+> >       case PCI_DMA_NONE:
+> >               BUG();
+> >       case PCI_DMA_FROMDEVICE:        /* invalidate only */
+> > +#ifdef CONFIG_USB
+> > +             /* The USB stack is broken in that it uses DMA buffers
+> > +                   on the stack which are on the stack and not
+> > +                   cacheline aligned.  That means cache invalidates
+> > +                   before DMA transfers corrupt the stack on machines
+> > +                   without DMA-consistent cache.  This is a nasty
+> > +                   workaround until the USB layer is fixed (apparently
+> > +                   done in 2.5). */
+> > +             flush_dcache_range(start, end);
+> > +#else
+> >               invalidate_dcache_range(start, end);
+> > +#endif
+> >               break;
+> >       case PCI_DMA_TODEVICE:          /* writeback only */
+> >               clean_dcache_range(start, end);
+> >
+> >
+> > --
+> > David Gibson                  | For every complex problem there is a
+> > david@gibson.dropbear.id.au   | solution which is simple, neat and
+> >                               | wrong.  -- H.L. Mencken
+> > http://www.ozlabs.org/people/dgibson
+> >
+> >
+> >
+> >
+> >
+>
+> Ah yes,  We have done something simular (internally) and had the same
+> reservations. This will help me with the ocp usb drivers i am working
+> on.   I would like to see some way of reminding us that this was done.
+> let say a config option for 4xx_usb_dma_workarround.
 
-We tried to build kgdb into the kernel and got some undefined symbols
-like kgdb_interruptible, putDebugChar, getDebugChar, set_scc_map to name
-a few. We would like to debug remotely via a network connection. Any
-thoughts why we are getting these undefines. We looked in the uart.c(as
-was suggested) file and our version of asm-ppc/8260_io/uart.c does not
-have these functions. Is there something special that needs to be done
-in the kernel build? Or do we need to apply a patch to the kernel?
+Not just 4xx processors - this applies to all processors that require
+CONFIG_NOT_COHERENT_CACHE.
 
-More importantly, does anyone know if remote kdgb debugging on the 8260
-is supported.
-
-Again I am a bit new at this and your patience and help is greatly
-appreciated. Thanks again!
-
-Barry O. Fisher
-Seranoa Networks
-barry.fisher@seranoa.com
-978-897-3434 x272
-
+-Frank
+--
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
