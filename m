@@ -1,12 +1,24 @@
-Message-Id: <5.1.1.6.0.20031022172634.01b17da0@dns.struinfo.it>
-Date: Wed, 22 Oct 2003 17:34:03 +0200
-To: linuxppc-embedded@lists.linuxppc.org
-From: llandre <r&d@wawnet.biz>
-Subject: PCI graphics cards for 405-based system
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0AC0@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'llandre'" <r&d@wawnet.biz>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: PCI graphics cards for 405-based system
+Date: Wed, 22 Oct 2003 11:44:04 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+sensoray make a nice one.
+
+-----Original Message-----
+From: llandre [mailto:r&d@wawnet.biz]
+Sent: Wednesday, October 22, 2003 11:34 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PCI graphics cards for 405-based system
+
 
 
 Hi all,
