@@ -1,25 +1,22 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp3.wanadoo.fr (smtp3.wanadoo.fr [193.252.22.28])
-	by ozlabs.org (Postfix) with ESMTP id 05EA467A8E
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Jan 2005 22:18:37 +1100 (EST)
-Date: Sun, 23 Jan 2005 12:17:33 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050123111733.GB31635@pegasos>
-References: <200501082324.j08NOIva030415@hera.kernel.org>
-	<20050109151353.GA9508@suse.de>
-	<1105956993.26551.327.camel@hades.cambridge.redhat.com>
-	<1106107876.4534.163.camel@gaston>
-	<1106120622.10851.42.camel@baythorne.infradead.org>
-	<1106176939.5294.39.camel@gaston>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0343167A78
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Jan 2005 12:27:41 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mikael Pettersson <mikpe@csd.uu.se>
+In-Reply-To: <1106441036.5387.41.camel@gaston>
+References: <200501221723.j0MHN6eD000684@harpo.it.uu.se>
+	<1106441036.5387.41.camel@gaston>
+Content-Type: text/plain
+Date: Mon, 24 Jan 2005 12:25:35 +1100
+Message-Id: <1106529935.5587.9.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1106176939.5294.39.camel@gaston>
-From: Sven Luther <sven.luther@wanadoo.fr>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>, David Woodhouse <dwmw2@infradead.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	"H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] raid6: altivec support
+	Paul Mackerras <paulus@samba.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: 2.6.11-rc2 and -rc1 hang during boot on PowerMacs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,34 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 20, 2005 at 10:22:18AM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2005-01-19 at 07:43 +0000, David Woodhouse wrote:
-> > On Wed, 2005-01-19 at 15:11 +1100, Benjamin Herrenschmidt wrote:
-> > > We should probably "backport" that simplification to ppc32...
-> > 
-> > Yeah.... I'm increasingly tempted to merge ppc32/ppc64 into one arch
-> > like mips/parisc/s390. Or would that get vetoed on the basis that we
-> > don't have all that horrid non-OF platform support in ppc64 yet, and
-> > we're still kidding ourselves that all those embedded vendors will
-> > either not notice ppc64 or will use OF?
-> 
-> Oh well... i've though about it too, and decided that I was not ready to
-> try it. For one, the problem you mention, with the pile of embedded
-> junk. I made the design decision to define an OF client interface as the
-> standard & mandatory entry mecanism to the ppc64 kernel (except legacy
-> iSeries of course, but I don't want that to multiply). That or the
-> kexec-like entrypoint passing a flattened device-tree in.
-> 
-> Also, there are other significant differences in other areas. At this
-> point, I think the differences are  bigger than the common code.
-> 
-> What would be interesting would be to proceed incrementally, having a
-> directory somewhere to put the "common" ppc/ppc64 code, and slowly
-> moving things there.
+On Sun, 2005-01-23 at 11:43 +1100, Benjamin Herrenschmidt wrote:
 
-It may be too complicated, but what about letting the commong code in ppc, and
-moving the ppc32 code into ppc32 ? 
+> I know about this problem, I'm working on a proper fix. Thanks for your
+> report.
 
-Friendly,
+Can you send me the PVR value for both of these CPUs
+(cat /proc/cpuinfo) ? I can't find right now why they would lock up
+unless the default idle loop is _not_ run properly, that is for some
+reason, NAP or DOZE mode end up not beeing enabled. Can you send me
+your .config as well ?
 
-Sven Luther
+Finally, try that patch and tell me if it makes a difference. It makes
+sure we re-enable interrupts in cpu_idle, and thus should only be a
+workaround. I found _one_ actual code path where we fail to re-enable
+them, and this is when neither DOZE nor NAP mode is enabled, which
+should not happen on any G3 (they should all support DOZE mode), and
+might happe non some G4s if the chipset doesn't support NAP or
+powersave_nap is set to 0 in proc, but that shouldn't be the case of an
+eMac neither...
+
+--- linux-work.orig/arch/ppc/kernel/idle.c	2005-01-24 11:42:35.000000000 +1100
++++ linux-work/arch/ppc/kernel/idle.c	2005-01-24 12:19:41.114353760 +1100
+@@ -39,17 +39,15 @@
+ 	powersave = ppc_md.power_save;
+ 
+ 	if (!need_resched()) {
++		local_irq_enable();
+ 		if (powersave != NULL)
+ 			powersave();
+ 		else {
+ #ifdef CONFIG_SMP
+ 			set_thread_flag(TIF_POLLING_NRFLAG);
+-			local_irq_enable();
+ 			while (!need_resched())
+ 				barrier();
+ 			clear_thread_flag(TIF_POLLING_NRFLAG);
+-#else
+-			local_irq_enable();
+ #endif
+ 		}
+ 	}
+ 
+Ben.
