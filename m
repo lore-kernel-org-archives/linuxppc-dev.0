@@ -1,21 +1,30 @@
-Message-ID: <366AD42E.C03C7D64@gladstone.uoregon.edu>
-Date: Sun, 06 Dec 1998 10:59:59 -0800
-From: Louis Kowolowski <lkowolow@gladstone.uoregon.edu>
+Date: Sun, 6 Dec 1998 20:01:43 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+cc: VALETTE Eric <valette@crf.canon.fr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Why only relocating the first three PCI base address???
+In-Reply-To: <Pine.LNX.3.96.981204092651.5415A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.HPP.3.96.981206200056.17076P-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: mousemode
-References: <Pine.LNX.4.05.9812051953170.954-100000@pc.wackyland.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-how do you change/force mousemode to a different setting?
-i've attempted to use mousemode 15 4 but it tells me that the current setting
-is 1, attempts to change it to 4, and leaves it at 1...  any ideas?
-thanks
 
-L
+
+On Fri, 4 Dec 1998, Cort Dougan wrote:
+
+> 
+> I only do the first 3 since that's all that was necessary in the ncr
+> scsi controller on some boards.  I haven't run across anything else that
+> needed relocating.  Do you know of anything that does?  It might be better
+> to move all 6 but unless there was a reason to I wasn't going to bother.
+
+No but the code  is very dangerous since you might create address
+conflicts quite easily.
+
+	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
