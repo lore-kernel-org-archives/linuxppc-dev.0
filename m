@@ -1,26 +1,30 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A298BD5B@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: GT64260 serial driver...
-Date: Tue, 8 Jan 2002 12:30:05 -0800 
+Subject: rsync access of kernel sources
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+Date: Wed, 9 Jan 2002 10:56:53 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E3145941C@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
 
-I am looking for a regular serial driver for use as console that can work
-with GT-64260 chipset from Galileo (Marvell).
+Sometimes when I have rsynced with the mvista mirror of the kernel
+sources the
+source tree is in a inconsistent state, i.e. some files are missing.
 
-We have to use the internal UART (MPSC) for serial communication on our
-custom board.
+I suspect this is because I rsynced at the same time as the mirror is
+beeing updated.
 
-Can some one shed some light on this and give me pointers on where to start.
+I imagine this is done automatically at predefined times.
+
+At what times should I avoid rsyncing with the mvista mirrors?
 
 Thanks,
--- Siva
+
+K.D.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
