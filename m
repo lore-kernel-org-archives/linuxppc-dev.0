@@ -1,58 +1,73 @@
-Message-ID: <36D8D8E1.2C645B8D@hyperconnect.com>
-Date: Sun, 28 Feb 1999 00:49:21 -0500
-From: Adam Sherman <adam@hyperconnect.com>
+Message-ID: <19990224124506.12141.rocketmail@send205.yahoomail.com>
+Date: Wed, 24 Feb 1999 04:45:06 -0800 (PST)
+From: "D.J. Barrow" <barrow_dj@yahoo.com>
+Subject: Re: I believe I found a bug in /arch/ppc/kernel/signal.c
+To: Lauro Whately <whately@cos.ufrj.br>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Have Blue G3, Will test!
-Content-Type: multipart/mixed;
- boundary="------------FA297462992CF6F062649732"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------FA297462992CF6F062649732
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Thanks Lauro,
 
-Is anybody working on getting the Blue G3s to boot? I have one and am
-willing to test kernels/ramdisks. I do have a fair bit of programming
-experience, but not very low level.
+setjmp in glibc2 compiles to sigsetjmp(env,0) i.e. it doesn't save the
+environment.
 
-Send me mail if anyone is interested!
+The sigsetjmp gets rid of the signal being blocked issue ( the main
+symptom ), there still can be outstanding signals on the user stack
+being trashed though.
 
-A.
 
---
-Adam Sherman
-System Administrator
-Hyperconnect Interactive Media
-http://www.hyperconnect.com
---------------FA297462992CF6F062649732
-Content-Type: text/x-vcard; charset=us-ascii;
- name="adam.vcf"
-Content-Description: Card for Adam Sherman
-Content-Disposition: attachment;
- filename="adam.vcf"
-Content-Transfer-Encoding: 7bit
 
-begin:vcard 
-n:Sherman;Adam
-tel;cell:(613) 276-3882
-tel;fax:(613) 562-8371
-tel;work:(613) 562-1091
-x-mozilla-html:TRUE
-url:http://www.hyperconnect.com
-org:Hyperconnect Interactive Media
-version:2.1
-email;internet:adam@hyperconnect.com
-title:System Administrator
-adr;quoted-printable:;;404 Daly=0D=0ASuite 3;Ottawa;Ontario;K1N 1K9;Canada
-x-mozilla-cpt:;1
-fn:Adam Sherman
-end:vcard
 
---------------FA297462992CF6F062649732--
+---Lauro Whately <whately@cos.ufrj.br> wrote:
+>
+> > On Mon, Feb 22, 1999, D.J. Barrow <barrow_dj@yahoo.com> wrote:
+> 
+> > The bug manifested itself in tftp, when longjmp'ing out
+> > of the signal handler on timeouts.
+> >
+> > Resulting in....
+> > a )sys_sigreturn not get called
+> > b) signals queued & trampoline stuff on the user stack being
+trashed.
+> > c) SIGALRM being blocked forever.
+> 
+> Have you tried the sigsetjmp/siglongjmp ?
+> I've met a similar problem a month ago and found that POSIX.1 does not
+> specify the effect of setjmp and longjmp on signal masks (SVR4 does
+not save
+> and restore the signal mask under  setjmp/longjmp, however 4.3 BSD
+save and
+> restore the signal mask) Instead, two new functions sigsetjmp and
+siglongjmp
+> are defined by POSIX.1
+> Those new ones are working ok with linux 2.1.x releases (I've been
+using them
+> with linuxppc 2.1.112)
+> It seems that the behavior of sigsetjmp/siglongjmp was changed to
+the POSIX.1
+> specification around the release 2.1.112.
+> 
+> --
+>  Lauro Whately
+>  Parallel Computing Lab. / COPPE
+>  Federal University of Rio de Janeiro
+>  Brazil
+>  =====================================
+>  "A distributed system is one on which I cannot get any work done,
+because a
+>  machine I have never heard of has crashed." -- Leslie Lamport
+> 
+> 
+> 
+> 
+
+_________________________________________________________
+DO YOU YAHOO!?
+Get your free @yahoo.com address at http://mail.yahoo.com
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
