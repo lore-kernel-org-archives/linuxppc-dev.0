@@ -1,85 +1,42 @@
-Date: Wed, 13 Jan 1999 12:55:27 -0600 (CST)
+Date: Wed, 13 Jan 1999 13:21:19 -0600 (CST)
 From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Hubert Figuiere <Hubert.Figuiere@solsoft.fr>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+To: a sun <asun@saul9.u.washington.edu>
+cc: linuxppc-dev@lists.linuxppc.org, bh40@calva.net
 Subject: Re: Porting to NuBus PowerMacs
-In-Reply-To: <19990113104026.C1056@dirkpitt.solsoft.fr>
-Message-ID: <Pine.LNX.3.96.990113124607.9183B-100000@globegate.utm.edu>
+In-Reply-To: <199901131910.LAA28570@saul9.u.washington.edu>
+Message-ID: <Pine.LNX.3.96.990113131521.9183I-100000@globegate.utm.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 13 Jan 1999, Hubert Figuiere wrote:
+On Tue, 12 Jan 1999, a sun wrote:
 
-> I'm investigating the possibilities to support 5200/6200 (and its
-> little brother 5300/6300) just because this machine is:
+>     Oh, and the i/o base address is different, which may or may not be
+>     a problem, and supporting certain pieces of hardware (which will
+>     remain nameless) will also require speed penalties (this is the
+>     other reason MkLinux is slower than LinuxPPC...).
 > 
-> a) not supported by either MkLinux or LinuxPPC
-> b) I have one (in fact my fiancee has it).
-> 
-> There are several custom chips inside (like on any other Mac).
-> First the big problem is that 6200 is a PowerPC inside a 68040
-> machine. It uses a "CAPELLA" custom chip as a bus translation
-> unit. This may be a problem since I don't think it is used in any
-> supported PowerMac.
+> heh. am i correct in assuming then that just using memory barriers
+> just won't cut it for a certain device that seems to have a bunch of
+> delay()'s sprinkled throughout it? strangely, this same piece of
+> hardware seems to be necessary to get the newer tech g3 extension and
+> the mklinux booter happy... any insights there?
 
-I don't think the Capella support will be too big a hassle, as I'm under
-the impression that such hardware should be mostly software-transparent.
-I could be completely wrong, though, as it might need some configuration
-with regards to the memory management code or something.  Hopefully not.
-
-
-> Video: It is a "Valkyrie" Chip using a DRAM frame buffer. If I
-> remember, Valkyrie is available in several PowerMacs and is
-> already supported.
-
-Yes, and I added some code to at least get closer to suppporting the
-Valkyrie on x200/x300 machines already.  That shouldn't be a problem, I
-don't think.
+Oh, so you heard about that one, eh?  :-)  I got the impression from
+sources that will remain nameless that if a certain register is set to
+certain values, that certain piece of hardware will either write data to
+or read data from the address stored in the register (details are fuzzy,
+sorry), and that the issue is forcing the instructions to execute in the
+correct order, thus putting a safe value into the register before the sync
+instruction (I think) gets called, by means of delays, carefully crafted
+branch instructions and other stuff to keep from having to do anything
+nasty like a pipeline flush (i.e. even worse delay).  I think I remember
+hearing that it only caused problems if the motherboard 601 was running
+the machine (i.e. not an upgrade card), but I could be remembering wrong.
 
 
-> Memory Controller: it is a "F108" as in the LC 630 (ses Linux 68k
-> port) that also handles IDE, SCSI and SCC serial ports. SCSI in
-> this chip is a NCR 53C96. SCC is like the 8530 SCC (that we find
-> in several Macs too).
-
-The memory controller _may_ require some tweaks, but I doubt it, since
-booting the machine gets a lot farther than I'd expect if the memory
-mapping stuff didn't work.  :-)
-
-
-> ADB: "CUDA" chip similar to several 68k Mac. Accessed thru the
-> "PrimeTime II". It is the 68HC05 and also handles PRAM, RTC,
-> power supply control.
-
-As long as we can get the base of the cuda portion of the chip, that's
-easy enough.
-
-
-> Sound: a "DFAC II" chip.
-
-There probably wouldn't be sound support initially, but that's not exactly
-a super-high priority compared to booting.  ;-)
-
-
-> Other: "PRIMETIME II" chip manages SWIM II, VIA1, VIA2, sound
-
-Are you sure it's not a SWIM III?  Because if it's a II, we may have to
-add some stuff to the floppy support eventually.  We can probably swipe
-code from NetBSD-mac68k, though.  It'll be a pain in the rear, but
-workable.  Just a few swimii_blah functions or whatever....
-
-Right now, the big problem is the interrupt controller.  The moment we
-enable it, the monitor shuts off (according to several reports).  That's
-on the 5x00's, of course, since I don't suppose you can turn off the
-monitor in software on the 6x00's.  :-)  Anyway, there are some critical
-addresses missing.  If I don't hear any details, I'll try to hack some in
-MacsBug....
-
-
-Later,
 David
 
 David A. Gatwood                         Visit globegate's internet
@@ -92,6 +49,7 @@ GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
 P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
 M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
 b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
+
 ------END GEEK CODE BLOCK------
 
 
