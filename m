@@ -1,40 +1,46 @@
-Message-ID: <3AD9B0B2.D73C8AEF@erols.com>
-Date: Sun, 15 Apr 2001 10:31:14 -0400
-From: Nelson Abramson <pogtal@erols.com>
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@mandrakesoft.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RTL8139 PPC testing?
-References: <3AD8F1A3.8B3A82E7@mandrakesoft.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Sun, 15 Apr 2001 21:06:11 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: boot params
+Message-ID: <20010415210611.H2127@plato.local.lan>
+References: <20010412162639.K2127@plato.local.lan> <XFMail.010413103837.pochini@shiny.it> <20010413012419.R2127@plato.local.lan> <3ADA7DD1.CF75ED02@opersys.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UH+blv0jeghwtTzK"
+In-Reply-To: <3ADA7DD1.CF75ED02@opersys.com>; from karym@opersys.com on Mon, Apr 16, 2001 at 01:06:25AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jeff Garzik wrote:
+--UH+blv0jeghwtTzK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Is anybody here with a PPC and an 8139 card, and willing to test?
->
-> If so, can you try 8139too version, 0.9.16?  Just posted at
-> http://sourceforge.net/projects/gkernel/   It requires 2.4.3 kernel.
+On Mon, Apr 16, 2001 at 01:06:25AM -0400, Karim Yaghmour wrote:
+> Ethan Benson wrote:
+> >=20
+> > i do not screw with the bootstrap partition directly. its too much
+> > trouble and will just get corrupted.  i edit /etc/yaboot.conf and run
+> > ybin.
+>=20
+> How does it get "corrupted"? I've been using hcopy to move things
+> around and haven't had any problems. Are you suggesting that problems
+> may arise from this type of manipulation?
 
-Just for the record, I'm running a 450MHz Sawtooth:
+the kernel HFS driver is unreliable.  hfsutils is fine, and thats what
+ybin uses.  ybin is just far more convenient then doing everything
+manually. =20
 
-Linux dp2 2.4.3-pre4 #8 Wed Mar 14 22:54:45 EST 2001 ppc unknown
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
-02:04.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139
-(rev 10)
+--UH+blv0jeghwtTzK
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-8139too Fast Ethernet driver 0.9.15 loaded
-eth1: RealTek RTL8139 Fast Ethernet at 0xd2017000, 00:a0:4b:03:28:92, IRQ
-54
-eth1:  Identified 8139 chip type 'RTL-8139A'
-eth1: Setting 100mbps full-duplex based on auto-negotiated partner
-ability 41e1.
 
-I have this running my internal network and I haven't had any problems
-with it at all.
-
---Nelson Abramson
+--UH+blv0jeghwtTzK--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
