@@ -1,45 +1,34 @@
-Message-ID: <3F0DC18F.10106@earthlink.net>
-Date: Thu, 10 Jul 2003 12:42:07 -0700
-From: Dean Matsen <deanmatsen@earthlink.net>
+Date: Fri, 11 Jul 2003 01:35:30 -0500 (CDT)
+Message-Id: <200307110635.h6B6ZUWs095337@sullivan.realtime.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Err in config script in 2.4.22-pre4 re: LXT970 and LXT971 chips
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format="flowed"
+From: Milton Miller <miltonm@bga.com>
+Subject: [PATCH] include for CONFIG_SWAP=n
+Cc: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I originally posted this on ppclinux-embedded, but webmaster as
-MontaVista suggested
-I post it here instead:
+With CONFIG_SWAP=n, I get
 
-I noticed that in the file arch/ppc/8xx_io/Config.in in
-the 2.4.22-pre4 (devel) kernel
+In file included from include/asm/tlb.h:28,
+                 from arch/ppc/mm/tlb.c:32:
+include/asm-generic/tlb.h: In function `tlb_flush_mmu':
+include/asm-generic/tlb.h:76: warning: implicit declaration of function `release_pages'
+include/asm-generic/tlb.h: In function `tlb_remove_page':
+include/asm-generic/tlb.h:111: warning: implicit declaration of function `page_cache_release'
 
-CONFIG_FEC_LXT970 is listed twice, whereas I think
-the second instance should be for the 971/972.
+One can argue for putting this somewhere generic, but I took the easy approach.
 
-Originally was:
-
-bool 'Support AMD79C874 PHY' CONFIG_FEC_AM79C874
-bool 'Support LXT970 PHY' CONFIG_FEC_LXT970
-bool 'Support QS6612 PHY' CONFIG_FEC_QS6612
-bool 'Support LXT970 PHY' CONFIG_FEC_LXT970
-bool 'Support DP83843 PHY' CONFIG_FEC_DP83843
-
-I changed my version to say:
-
-bool 'Support AMD79C874 PHY' CONFIG_FEC_AM79C874
-bool 'Support LXT970 PHY' CONFIG_FEC_LXT970
-bool 'Support QS6612 PHY' CONFIG_FEC_QS6612
-bool 'Support LXT971/972 PHY' CONFIG_FEC_LXT971
-bool 'Support DP83843 PHY' CONFIG_FEC_DP83843
-
-Otherwise, you can't use a 971/972 chip.  This is obviously
-just a cut-and-paste error.
-
-Thanks
-Dean
+===== arch/ppc/mm/tlb.c 1.8 vs edited =====
+--- 1.8/arch/ppc/mm/tlb.c	Wed Jan  8 14:37:27 2003
++++ edited/arch/ppc/mm/tlb.c	Fri Jul 11 01:16:55 2003
+@@ -28,6 +28,7 @@
+ #include <linux/mm.h>
+ #include <linux/init.h>
+ #include <linux/highmem.h>
++#include <linux/pagemap.h>
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
