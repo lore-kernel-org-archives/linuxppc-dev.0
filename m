@@ -1,89 +1,53 @@
-Date: Tue, 23 May 2000 23:01:28 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Eric Peden <ericpeden@homemail.com>
-Cc: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: partition size funkiness
-Message-ID: <20000523230128.F7243@plato.local.lan>
-References: <B550A5BA.464A%ericpeden@homemail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="K5rlT6r/WqkiQKGB"
-In-Reply-To: <B550A5BA.464A%ericpeden@homemail.com>; from ericpeden@homemail.com on Tue, May 23, 2000 at 09:16:42PM -0500
+Date: Wed, 24 May 2000 09:11:27 +0200
+Subject: Re: Debian pmud package available 
+From: Stephan Leemburg <stephan@jvc.nl>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        Sergio Brandano <sb@dcs.qmw.ac.uk>
+CC: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        <linuxppc-dev@lists.linuxppc.org>, <debian-powerpc@lists.debian.org>
+Message-ID: <B5514D3F.E6B3%stephan@jvc.nl>
+In-Reply-To: <Pine.LNX.4.10.10005232000150.28612-100000@zirkon.biophys.uni-duesseldorf.de>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---K5rlT6r/WqkiQKGB
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+on 23-05-2000 20:09, Michael Schmitz at
+schmitz@zirkon.biophys.uni-duesseldorf.de wrote:
 
-On Tue, May 23, 2000 at 09:16:42PM -0500, Eric Peden wrote:
+>> Thank's a lot for making this package. Did you manage to contact
+>> Stephan? What about the apmd patch?
 
-[deletia]
->=20
-> I've begun to suspect that my problems are due to the method I used to
-> "re-partition" the drive; I simply used pdisk to re-arrange the partition
-> map, thus doing a non-destructive repartitioning. I've only managed to fi=
-nd
-> one mention of a problem similar to mine at:
+Yes, thanks! If you wish I can pull it to my source-tree and also distribute
+the debian package on every release...
 
-how exactly did you backup/restore the data?  you cannot just change
-the partition tables without doing something to the filesystems too,
-you can use ext2resize, or tar up the data and mke2fs the partition,
-and untar everything back.  but if you just changed the partition
-table and did nothing to the filesystems you are looking at filesystem
-corruption and massive data loss to occur very soon.  this is because
-the filesystem has its own idea about the size of the partition. =20
+>
+> Just what I needed to get half way up to speed with Debian packaging again
+> :-)
+>
+> I've not had an answer from Stephan but I didn't give him any heads-up
+> either. The apmd patch seems to be included, it's enabled by the -a option
+> to pmud as far as I could see. The fifo (/etc/power/apm) is created
+> during installation, so all it should take is adding the -a to the
+> PMUD_FLAGS definition in /etc/default/power. I need to document this :-)
 
-> http://slashdot.org/askslashdot/99/08/09/0315246.shtml
->=20
-> The cause is different, and of course no solution is offered, but the
-> symptoms are the same. Is partition information stored somewhere other th=
-an
-> the partition map? Is df just reading this information incorrectly, or is
-> the extra space on /dev/sda7 truly unusable? Is there some low-level
-> information I could modify to properly reflect the size of root?
+Yes, it's activated with the -a flag (see pmud --help for details). I need
+to modify the manuals and /etc/power/apm. You must have a modified apm
+program to use it however, as the 'standard' apm programs all read from
+/proc/apm and this path is usually compile time determined...
 
-partition sizes just define to the kernel how much space it should
-allocate to a given device node eg /dev/hda2.  the filesystem when
-mounted has its own definition of its size, and this has nothing to do
-with the partition size.  if they do not match though you can end up
-in trouble, either the partition is larger then the filesystem and you
-have hidden wasted space or you have the filesystem too large and you
-end up writing data off the end of the device (which the kernel won't
-permit i don't think) either way its a bad thing. =20
+--
+Stephan
 
-this is why i am not a big fan of screwing with partitions in
-non-destructive ways, it just is more trouble then it is worth and
-usually does not work that well.
+>
+>> On testing, I'm out of business for a while, as the baby is being
+>> visited by the doctor (faulty display).
+>
+> Speedy recovery for the baby ...
+>
+> Michael
+>
 
-> Again, help is appreciated...
-
-wipe your partition table entirely, partition everything properly and
-install debian while your at it ;-)
-
-i know its harsh advice but really i think your just going to waste
-alot of time and trouble messing around trying to get this fixed with
-a high liklyhood of destroying the filesystems anyway, why bother with
-the headache you will be happier in the long run with a properly
-partitioned, cleaned up system.=20
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---K5rlT6r/WqkiQKGB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.1 (GNU/Linux)
-Comment: For info see http://www.gnupg.org
-
-iEYEARECAAYFAjkrfkgACgkQJKx7GixEevyy9QCcC4Wy3+Rn6U8R7J6PNJ/EQlcU
-eRoAn2gNy726vmRw5kMSgNZdK+E1SM5D
-=RTZz
------END PGP SIGNATURE-----
-
---K5rlT6r/WqkiQKGB--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
