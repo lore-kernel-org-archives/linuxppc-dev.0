@@ -1,46 +1,38 @@
-Message-ID: <3874E9A9.48716917@pop.agri.ch>
-Date: Thu, 06 Jan 2000 20:14:59 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Date: Thu, 6 Jan 2000 21:17:25 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: jlquinn@us.ibm.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Building 2.3.35?
+In-Reply-To: <20000106171919.015242@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.05.10001062117021.11905-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: Charles Lepple <clepple@mitre.org>
-CC: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: remote debugging?
-References: <3874C8D8.835DBC64@pop.agri.ch> <3874E237.57063BBE@mitre.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-
-Charles Lepple wrote:
+On Thu, 6 Jan 2000, Benjamin Herrenschmidt wrote:
+> On Thu, Jan 6, 2000,  <jlquinn@us.ibm.com> wrote:
+> >2.3.35 is the first unstable kernel that I've put some effort in getting to
+> >build.  I only get to play with stuff for 2-3 hours a week, so it's hard to
+> >really do debugging at the rate of kernel development :-)
+> >
+> >How does merging of the vger tree into Linus' development kernel work right
+> >now?
 > 
-> Andreas Tobler wrote:
-> [...]
-[...] 
-> Paul Mackerras wrote some documentation for xmon that you may want to
-> check out. It doesn't seem to be in Documentation/ but it's probably at
-> linuxppc.cs.nmt.edu or something (search the mail archives -- it has
-> been discussed before).
+> The main ppc tree, for now, is not vger but Cort's bitkeeper. (I don't
+> know if Cort keeps vger updated).
 
-This docu I have.
-Thanks for the answer. But my problem is much earlier I think.
+Vger is no longer kept up-to-date, except through Linus (which isn't up-to-date
+neither :-(
 
-I'd like to redirect the console output from the boot of my pm7200 to
-the serial port. This is what doesn't work.
-Neither the printer nor the modem port. 
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-When the system is up, I can check the physical connection which works.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-Isn't it possible to get the boot output to the serial port written?
-
-Andreas
- 
--- 
-| Andreas Tobler				
-| CH-8004 Zuerich 							
-| E-Mail:   a.tobler@schweiz.ch
------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
