@@ -1,31 +1,42 @@
-Date: Tue, 16 Nov 1999 18:41:38 +0100 (CET)
+Date: Tue, 16 Nov 1999 18:45:27 +0100 (CET)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Dan Bethe <dan_bethe@yahoo.com>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Re: XiG video driver support
-In-Reply-To: <19991116013252.15191.rocketmail@web1003.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.05.9911161840230.25661-100000@callisto.of.borg>
+To: toa@pop.agri.ch
+cc: Ani Joshi <ajoshi@shell.unixbox.com>,
+        Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel debugging??
+In-Reply-To: <38318048.B414DC12@schweiz.ch>
+Message-ID: <Pine.LNX.4.05.9911161844270.25661-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 15 Nov 1999, Dan Bethe wrote:
-> 	Hi.  If you believe that it would be good for XiG to
-> release their commercial X servers for LinuxPPC, write
-> to them or visit http://www.xig.com.  The benefits
-> would include possibly fuller use of your hardware
-> (dynamic resolution switching, acceleration, etc) and
-   [1]^^^^^^^^^^^^^^^^^^^^^^^^^  [2]^^^^^^^^^
+On Tue, 16 Nov 1999, Andreas Tobler wrote:
+> Ani Joshi wrote:
+> >         since you're on a powermac and using BootX, you can use
+> > prom_print() to print debuging info before start_kernel, there after you
+> 
+> This what I'm doing now.
+> But I feel a bit lost when it goes into asm.
+> 
+> > can just use printk().  instead of putting a million prints all over the
+> > place, you should look at the patches between 2.3.25-2.3.28 and see what
+> > was changed in ppc/kernel or ppc/mm ,
 
-[1] Doesn't that work already? It does for me.
-[2] Work In Progress
+2.3.28 gets sufficiently far to get output on the serial console
+(console=ttyS0).
 
-> maybe even open sourcing.  I don't know if they have
-> done any open sourcing.
+> This I also did, on the mm side do I have to include both mm and
+> arch/ppc/mm?
+> Here many changes happened.
+> 
+> > i've booted 2.3.25 on my 7200 
+> And I could boot a stock 2.3.26 with changes in asm-ppc/fcntl.h
+> (O_LARGEFILE ....)
 
-XiG doesn't do OSS. Well, Thomas Roell did before he started X Inside :-)
+That's very interesting to know! It means we just have to analyse the 2.3.27
+and 2.3.28 patches to find out what went wrong.
 
 Gr{oetje,eeting}s,
 --
