@@ -1,25 +1,24 @@
-Message-ID: <3794F709.201E751@gladstone.uoregon.edu>
-Date: Tue, 20 Jul 1999 15:24:09 -0700
-From: Louis Kowolowski <lkowolow@gladstone.uoregon.edu>
-MIME-Version: 1.0
+Message-ID: <B0010933882@mail.olg.com>
+Date: Tue, 20 Jul 1999 22:25:48 -0400
+Subject: Linuxconf
+From: "charlie buckheit" <buckheit@olg.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: quik`
-References: <199907201701.KAA22734@meer.meer.net>
-Content-Type: text/plain; charset=us-ascii
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-when I try to boot through open firmware on my 8600 (worked fine in
-r4.x) i get an error that it can't find a kernel, even though i've
-deleted the symbolic link in the /boot and renamed the kernel to
-vmlinux...
-is quik not functioning in this release or is it something else?
-thanks
+Hi,
 
-L
--- 
-the linuX-files -- The Source is out there
+I've got a linuxconf question. Upon bootup, linuxconf "hangs" for about ten
+seconds or so before giving me the login prompt (machine set to boot to init
+3). I've examined the log files to find that linuxconf is writing what looks
+to be garbage to the log. Everything appears to work ok...I'm just wondering
+what I'm in for when it doesn't and I can't explain it... Can someone point
+me in a direction to start looking for the problem? Thanks.
+
+VR, Charlie
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
