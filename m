@@ -1,34 +1,43 @@
-Message-ID: <3CAA0F4D.26C3A8BC@nortelnetworks.com>
-Date: Tue, 02 Apr 2002 15:06:37 -0500
-From: Chris Friesen <cfriesen@nortelnetworks.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: any problems with gcc 3.0/3.1 and compiling 2.4.18 on ppc?
+Date: Tue, 2 Apr 2002 13:12:35 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: paulus@samba.org, linux-galileo@source.mvista.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+Message-ID: <20020402201235.GA28287@opus.bloom.county>
+References: <0203210213.AA15856@ivan.Harhan.ORG> <3C99801A.8070002@embeddededge.com> <15526.51621.991410.781713@argo.ozlabs.ibm.com> <3CA8A96D.9040309@embeddededge.com> <15529.17031.622986.926261@argo.ozlabs.ibm.com> <3CA9EA93.5000404@embeddededge.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3CA9EA93.5000404@embeddededge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We're looking at moving to gcc 3.x for 2.4.18, and are trying to decide what
-version to use.  It appears that there were some ppc-specific fixes that went in
-to 3.1, and I'm not sure if they were ported back to 3.0.
+On Tue, Apr 02, 2002 at 12:29:55PM -0500, Dan Malek wrote:
+>
+> I'm glad you found _some_ of the humor in it :-)
+>
+> Paul Mackerras wrote:
+>
+>
+> >Two reasons: (a) it seems to be that (for example) most of the if
+> >statements in arch/ppc/config.in are concerned with embedded boards,
+>
+> Well, yes, and at one point I tried to create config.in files that were
+> unique to the boards/peripherals that were just callouts from config.in.
+> That didn't last long because all of these were incorporated (not by me :-)
+> into config.in and other places.  I thought having these board specific
+> configuration files was kind of nice, kept arch/ppc/config.in cleaner,
+> kept the interdependencies localized to a sensible place, but I guess
+> someone thought different when it got merged from the development tree.
 
-Has anyone had any successes or failures using either of these versions on
-2.4.18 on ppc?
-Any gotchas?
-
-Thanks,
-
-Chris
-
-
-PS. Please cc me on replies, as I'm not subscribed to the list at the moment.
-
+It was probably me.  One thing I want to do in the 2.5 tree is make
+arch/ppc/platforms/{8xx,4xx}.in and source those from
+arch/ppc/config.in, as well as move network things to network Config
+files, and so on.
 
 --
-Chris Friesen                    | MailStop: 043/33/F10
-Nortel Networks                  | work: (613) 765-0557
-3500 Carling Avenue              | fax:  (613) 765-2986
-Nepean, ON K2H 8E9 Canada        | email: cfriesen@nortelnetworks.com
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
