@@ -1,20 +1,20 @@
-Return-Path: <baakre@mac.com>
-Received: from mxsf06.cluster1.charter.net (mxsf06.cluster1.charter.net
-	[209.225.28.206]) by ozlabs.org (Postfix) with ESMTP id 8253D2BF0E
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9D86B2BF10
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jan 2005 14:08:19 +1100 (EST)
-Received: from mxip16.cluster1.charter.net (mxip16a.cluster1.charter.net
-	[209.225.28.146])
-	by mxsf06.cluster1.charter.net (8.12.11/8.12.11) with ESMTP id
-	j051tWuM029771
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Jan 2005 20:55:32 -0500
-Mime-Version: 1.0 (Apple Message framework v619)
-Message-Id: <DFD6FD98-5EBC-11D9-889D-0030657E48E8@mac.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: linuxppc-embedded@ozlabs.org
-From: Blair Aakre <baakre@mac.com>
-Date: Tue, 4 Jan 2005 19:55:28 -0600
-Subject: 440GP (Ebony) Eval Board documentation needed
+	Wed,  5 Jan 2005 15:49:16 +1100 (EST)
+Date: Tue, 4 Jan 2005 20:49:09 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Blair Aakre <baakre@mac.com>
+Message-ID: <20050105044909.GA6109@gate.ebshome.net>
+References: <DFD6FD98-5EBC-11D9-889D-0030657E48E8@mac.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DFD6FD98-5EBC-11D9-889D-0030657E48E8@mac.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 440GP (Ebony) Eval Board documentation needed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,11 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Help! I have a 440GP eval board without any kind of documentation. Does 
-anyone out there have some basic, getting-started information for this 
-board? A hardware reference manual would be ideal, as this thing has 
-lots of jumpers, debug connectors, etc.
+On Tue, Jan 04, 2005 at 07:55:28PM -0600, Blair Aakre wrote:
+> Help! I have a 440GP eval board without any kind of documentation. Does 
+> anyone out there have some basic, getting-started information for this 
+> board? A hardware reference manual would be ideal, as this thing has 
+> lots of jumpers, debug connectors, etc.
+> 
 
-Can anyone help me out?
+Last time I checked AMCC web site had eval board docs.
 
--Blair
+--
+Eugene
