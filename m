@@ -1,18 +1,17 @@
-Date: Mon, 12 Aug 2002 14:18:37 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Khai Trinh <kqtrinh@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linuxppc_2_4_dev tree
-Message-ID: <20020812211837.GA20176@opus.bloom.county>
-References: <20020812205133.41469.qmail@web11501.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020812205133.41469.qmail@web11501.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: linuxppc_2_4_dev tree
+Date: Mon, 12 Aug 2002 16:33:42 -0500
+Message-ID: <45B36A38D959B44CB032DA427A6E10640167D022@cceexc18.americas.cpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: "Khai Trinh" <kqtrinh@yahoo.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Aug 12, 2002 at 01:51:33PM -0700, Khai Trinh wrote:
+Khai Trinh wrote:
 
 > How can I build a kernel image with target filesystem
 > mounted via NFS fro mthe dev tree? The dev tree
@@ -20,20 +19,36 @@ On Mon, Aug 12, 2002 at 01:51:33PM -0700, Khai Trinh wrote:
 > structure like the ones distributed by MVista for NFS
 > mount.
 >
-Er, I don't quite follow you.  If you want to build a kernel from the
-_devel tree which mounts it's filesystem over NFS, you need to start
-with the config file from the MVL kernel, and then turn on
-CONFIG_CMDLINE_BOOL, and have a command line of 'ip=on'.
 
-> If it's not nfs mountable, can I create a ramdisk
-> filesystem together with the kernel image?
+The bitkeeper tree is the kernel only.  A root filesystem
+you have to make or get elsewhere.
 
-Yes.  Make the filesystem image, gzip it, and place it was
-'arch/ppc/boot/images/ramdisk.image.gz', and then do 'make
-zImage.initrd'
+I've had good luck with the DENX Embedded Linux Development Kit.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Here:  http://www.denx.de/ELDK/
+It has a working rootfs that can be mounted via NFS.  You
+can then pare that down to make it smaller if you need to.
+
+Busybox and Tinylogin are also useful for creating user-land
+to go with your kernel.
+
+http://www.busybox.net/
+http://tinylogin.busybox.net/
+
+Busybox can act as init, though the inittab needs to
+be a bit different than a regular inittab, if I remember
+right.
+
+I found getting a satisfactory rootfs
+was not exactly easy.  Not too hard, but a lot of details to
+get just right, especially if you need to make it small.  You'll
+want to make a script to create your root fs, which you can then use
+from a kernel which mounts it by NFS (useful for debugging
+applications) or by cramfs/initrd setup where the whole image,
+kernel and rootfs, is loaded into RAM.
+
+Hope that helps some.
+
+-- steve
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
