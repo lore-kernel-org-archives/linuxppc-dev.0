@@ -1,29 +1,24 @@
-Date: Tue, 18 Apr 2000 21:16:33 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: "Francis G. McCabe" <fgm@fla.fujitsu.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Putting linuxPPC on my new pismo
-In-Reply-To: <38FD00AA.6C423CB@fla.fujitsu.com>
-Message-ID: <Pine.LNX.3.96L.1000418211600.12914A-100000@unix48.andrew.cmu.edu>
+Message-ID: <38FD4160.9A761C36@worldnet.att.net>
+Date: Tue, 18 Apr 2000 22:17:20 -0700
+From: Logan Hall <warrior514@worldnet.att.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: usb in 2.3.99-pre5
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 18 Apr 2000, Francis G. McCabe wrote:
+hi-
+I just got 2.3.99-pre5 to build thanks to geert, but my usb is all
+messed up.  I have a biege g3 with a usb pci card and a usb kensington
+turboball.  The trackball works with 2.3.99-pre3 and in pre5 is
+recognized but it doesn't get hooked up to /dev/usbmouse.  Is there any
+way i can get it connected to the /dev/ entry? or has the /dev entry
+changed?  Thanks for any ideas.
+--
 
-> I realize that there has been a lot of discussion about this. However, I
-> havent seen my problem mentioned.
->
-> When I try to install linuxPPC 2000 on my brand new PB2000, I get the
-> error:
->
-> hda: lost interrupt
-
-Don't use BootX; you have to use yaboot.
-
--Hollis
-
+----
+Logan Hall
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
