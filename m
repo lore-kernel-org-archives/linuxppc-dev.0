@@ -1,30 +1,45 @@
-Date: Mon, 11 Dec 2000 09:09:07 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: "Peter R. Wood" <pwood@gordon.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CUDA related crash in 2.4 ?
-In-Reply-To: <Pine.LNX.4.30.0012110150010.745-100000@dyn-134-168.gordon.edu>
-Message-ID: <Pine.LNX.4.10.10012110905090.23745-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3A3490B9.ECA71E0D@wtal.de>
+Date: Mon, 11 Dec 2000 09:30:49 +0100
+From: Christof Petig <christof.petig@wtal.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Sound on an iBook?
+References: <3A30F7C7.9650BDAD@wtal.de> <19341102094519.16548@192.168.1.2>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> After it prints out the error message, it repeats the last character that
-> I typed about 30 or 40 times, and then the hard freeze occurs.  I don't
-> know if this is the same thing that happened the other three or four
-> times, but I suspect it may be related.
+Benjamin Herrenschmidt wrote:
+
+> >The link is dead, but
+> >http://www.micronas.com/products/documentation/consumer/dac3550a/index.php
+> >works for me well.
+> >
+> >Thank you very much for this information!
 >
-> Any ideas as to why this might be causing my system to hang?
+> Enclosed is Darwin's source for the audio and the I2C controller.
+>
+> You'll notice that they have 2 copies of the I2C code (one in the
+> audio driver itself and one separate). A quick look shows they are
+> identical (or very similar), but you should diff them to be sure.
+>
+> Ben.
+>
+>   ------------------------------------------------------------------------
+>                   Name: Archive.sit
+>    Archive.sit    Type: Macintosh StuffIt Archive (application/x-stuffit)
+>               Encoding: base64
 
-Perhaps because the CUDA interrupt handler keeps storing the same
-character in the ADB reply buffer, without bounds checking? At least at
-some time in the distant past, the CUDA code I used in writing the MacII
-ADB driver suffered from such a problem. Look at the interrupt handler in
-via-cuda.c to see whether it still allows overrunning the reply buffer.
+Thank you very much!
 
-	Michael
+Darwin is GPL, isn't it? So I can copy and modify the code for linux-kernel?
+
+Christof
+
+PS: I cc'd linuxppc to tell the public that I started hacking on it (in
+whatever free time is left to me).
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
