@@ -1,22 +1,36 @@
-Message-Id: <200103300529.AAA24230@makai.watson.ibm.com>
-To: Henry Worth <haworth@ncal.verio.com>
-Cc: Franz.Sirl-kernel@lauterbach.com,
-	linuxppc-dev@lists.linuxppc.org, billfink@capu.net
-Subject: Re: xine, ppc and illegal instructions 
-In-Reply-To: Message from Henry Worth <haworth@ncal.verio.com>
-   of "Thu, 29 Mar 2001 21:20:52 PST." <3AC417B4.5F73589@ncal.verio.com>
-Date: Fri, 30 Mar 2001 00:29:12 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Fri, 30 Mar 2001 11:16:41 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kaoru Fukui <k_fukui@highway.ne.jp>
+Cc: Tom Gall <gall@rochcivictheatre.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Success kernel-243pre8-SMP(patch)(Re: spin_lock problem in recent
+ k ernel
+In-Reply-To: <20010330062000.Postino-000633@smtp01.highway.ne.jp>
+Message-ID: <Pine.LNX.4.05.10103301046350.2139-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	The configuration target is powerpc-*-linux, not ppc-*-linux.
-At best ppc-* could be converted to powerpc-*.  It's too bad that people
-made the wrong assumption about the configuration name, but there is not
-reason to encourage that.
+On Fri, 30 Mar 2001, Kaoru Fukui wrote:
+> +#ifndef CONFIG_SMP
+>  	spin_lock(&init_mm.page_table_lock);
+> +#endif
 
-David
+AFAIK spin_lock() is void when not compiling for SMP, so this is equal to just
+removing the call.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
