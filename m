@@ -1,39 +1,83 @@
-Date: Sat, 15 May 1999 17:04:35 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Corey Minyard <minyard@acm.org>
+Date: Sat, 15 May 1999 20:24:06 -0600 (MDT)
+From: Dan Burcaw <dburcaw@terraplex.com>
+To: Beecher Greenman <rbg6038@ritvax.isc.rit.edu>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.8/2.3.0 SCSI problems?
-In-Reply-To: <m2lnerwe5o.fsf@wf-rch.cirr.com>
-Message-ID: <Pine.LNX.3.96.990515165822.25301C-100000@liberty.chnd1.az.home.com>
+Subject: Re: DR Install Question
+In-Reply-To: <01JB8P880QNEE96CRP@ritvax.isc.rit.edu>
+Message-ID: <Pine.LNX.3.96.990515202319.25854A-100000@newhope.terraplex.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 14 May 1999, Corey Minyard wrote:
+On Sat, 15 May 1999, Beecher Greenman wrote:
 
-> I'm having the same problem with my MVME2700 with an ncr53c8xx chip.
-> I did a little debugging and checking.  In my previous kernel version
-> that I had running (2.2p4), it chose to use interrupt 14 for the chip.
-> In 2.2.9, it chose to use interrupt 19.  But that is the only thing I
-> can find.
+> >Try just assigning one swap partition while in the installer. Once you
+> >have linux up and running you can manually setup the other swap partitions
+> >for use. Make sure the one swap partition is named 'swap'.
 > 
-> If anyone has a solution I'd like to know.
+> The problem is that I can't assign any swap partitions at all. In 
+> previous installers there was a dialog which listed all of the partitions 
+> which could be used for swap, and you could use checkboxes to determine 
+> which comes up. In the DR installer, this dialog never appears.
 
-The change in interrupts is due to it now using the MPIC for PCI
-interrupts instead of the legacy PIC support in with the MPIC
-in the default passthrough mode. Raven/Hawk boards got support starting at
-2.2.8 but a couple lines of code got dropped somewhere.  My patch I posted
-yesterday solves this problem...it wasn't setting the interrupt handler to
-the openpic code as it should.  Thus, the first PCI device that tried to
-init during boot hangs the system (SCSI).  I've tested this patch on MTX,
-MVME2300SC, 2400. and 2700.
+Then this is a feature that Red hat has removed. Probably to make the
+installer more of a "wizard" and detect your swap partition for you.
 
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+> 
+> >> Didn't seem to work, plus I have three partitions that I want to use for 
+> >> swap. Perhaps I should try putting them on a different drive; the drive I 
+> >> currently have them on also contains Darwin (which works fine on a PTPro, 
+> >> by the way), and Darwin creates a whole slew of partitions.
+> >
+> >Try just assigning one swap partition while in the installer. Once you
+> >have linux up and running you can manually setup the other swap partitions
+> >for use. Make sure the one swap partition is named 'swap'.
+> >> -Beecher Greenman
+> >> >
+> >> >Naming the partition swap worked for me, though it's not a pretty 
+> >> >solution...
+> >> >
+> >> >Could some one fix this? or at least document it?
+> >> >
+> >> >--
+> >> >>From: Beecher Greenman <rbg6038@ritvax.isc.rit.EDU>
+> >> >>To: linuxppc-user@lists.linuxppc.ORG
+> >> >>Subject: DR Install Question
+> >> >>Date: Sat, May 15, 1999, 1:37 PM
+> >> >>
+> >> >
+> >> >>
+> >> >> This is a dumb question, probably, but I can't figure it out.
+> >> >>
+> >> >> I'm trying to install the devloper release. I've had previous experience
+> >> >> installing February, R4, pre-R5, and Yellow Dog Champion 1.0. But for the
+> >> >> life of me, I can't figure out how on Earth to assign swap partitions in
+> >> >> the developer release's installer. This is rather annoying, because it
+> >> >> says I need to assign them before I can continue past the screen where
+> >> >> the mount points are assigned. The nice dialog that asks which partitions
+> >> >> you want to use for swap seem to be gone; there's only the window for
+> >> >> assigning mount points, and I can't figure out how you tell it to assign
+> >> >> a swap partition.
+> >> >>
+> >> >> The machine's a PTPro 200, 48 megs RAM. Trying to install with a 1.9gig
+> >> >> /, a 1.9gig /usr/local, and three 89-meg swap partitions. This doesn't
+> >> >> seem to be out of the realm of what the installer should be able to do;
+> >> >> I've done far more unusual installs before. Anyone have any ideas? Have I
+> >> >> overlooked something, perhaps? Thanks!
+> >> >>
+> >> >> -Beecher Greenman
+> >> >> 
+> 
+
+
+Dan
+
+Terra Soft Solutions, Inc.
+ email: dburcaw@yellowdoglinux.com
+ website: http://www.yellowdoglinux.com/
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
