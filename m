@@ -1,20 +1,36 @@
-Message-ID: <E380A44D523BD5118EAE0002A52CE5C40B8E02E5@zcard0k8.ca.nortel.com>
-From: "Andrew Williams" <awilliam@nortelnetworks.com>
-To: Brian Hawley <bhawley@luminex.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Ebony PPC440GP & linux 2.6.3
-Date: Wed, 28 Apr 2004 16:17:36 -0400
+Date: Wed, 28 Apr 2004 15:18:10 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Brian Hawley <bhawley@luminex.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ebony PPC440GP & linux 2.6.3
+Message-ID: <20040428221810.GA18371@gate.ebshome.net>
+References: <5.0.2.1.2.20040428124651.035cbd98@bhawley.mailhost.luminex.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5.0.2.1.2.20040428124651.035cbd98@bhawley.mailhost.luminex.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Are you sure it has stopped?
-This may sound too simplistic, but make sure
-it's not just 2 different Baud rates between
-U-boot and the linux kernel. (once bitten...)
-
-Andrew
-
+On Wed, Apr 28, 2004 at 12:48:21PM -0700, Brian Hawley wrote:
+> It is clear from the archives that people have gotten the Ebony 440GP
+> working with linux.
 >
+> We are using the linux 2.6.3 kernel, and have had little luck getting it
+> booted up.
+>
+> We are using u-boot as the boot loader to load the zImage.
+>
+> It decompresses the kernel, and says it transfers control, but then just
+> stops.
+>
+> Any suggestions or directions would be most helpful and appreciated.
+>
+
+Try newer kernel, e.g. 2.6.5, there were some bugs in previous versions.
+
+Also, does it boot with standard IBM boot loader?
+
+Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
