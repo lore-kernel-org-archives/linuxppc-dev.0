@@ -1,44 +1,26 @@
-Date: Fri, 12 Mar 1999 22:53:09 -0800
-From: Sean Harding <sharding@gutenberg.uoregon.edu>
-Reply-To: Sean Harding <sharding@oregon.uoregon.edu>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: XF68 problem
-In-Reply-To: <Pine.LNX.3.95q.980411200636.617B-100000@cassiopeia.home>
-Message-ID: <Pine.SGI.4.10.9903122248320.19776-100000@gutenberg.uoregon.edu>
+Date: Sun, 14 Mar 1999 01:39:19 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: KGDB support for PReP
+Message-ID: <Pine.LNX.4.04.9903140135550.18016-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This evening I decided to take the plunge and try XF68-fbdev on my
-machine. I have a PowerCenter 150 (Platinum video) running a mish-mosh of
-LinuxPPC which no longer can really be associated with a complete release.
-The kernel is 2.1.130 at the moment. 
+I just finished hacking (hacking is definitely the word) some patches to
+support KGDB on PReP.
 
-I'm getting a seg fault when I try to run the X server. Here's what strace
-has to say about it:
+I would appreciate it if someone could look the code over and verify that
+this actually works, and suggest improvements. Let me know if you're
+interested, by the time I get the message I might have made a patch.
 
-execve("/usr/X11/bin/XF68", ["/usr/X11/bin/XF68"], [/* 33 vars */]) = 0
-brk(0)                                  = 0x1aa02cc
-open("/etc/ld.so.preload", O_RDONLY)    = -1 ENOENT (No such file or directory)
---- SIGSEGV (Segmentation fault) ---
-+++ killed by SIGSEGV +++
-
-I indeed don't have an /etc/ld.so.preload, and I'm not entireley sure what
-that file should contain. I'm also not clear on why the absence of that
-file is causing the X server to seg fault....
-
-Any ideas?
-
-sean
-
--- 
-Sean Harding sharding@oregon.uoregon.edu|"art may imitate life
-http://gladstone.uoregon.edu/~sharding/ | but life imitates t.v."
-Consulting: http://www.efn.org/~seanh/  | --ani difranco
-
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
