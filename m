@@ -1,54 +1,34 @@
-Message-ID: <19991130234159.8771.qmail@web1004.mail.yahoo.com>
-Date: Tue, 30 Nov 1999 15:41:59 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: Re: 2.3.29 - Wallstreet MediaBays
+Date: Tue, 30 Nov 1999 20:15:28 -0500 (EST)
+From: Jon Howell <jonh@cs.dartmouth.edu>
 To: linuxppc-dev@lists.linuxppc.org
+Subject: installer default inode count
+Message-ID: <Pine.GSO.3.96.991130201013.24058E-100000@sitka.cs.dartmouth.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	I have the same symptom with my Wallstreet 233 MHz
-and a pre-built 2.2.10 kernel.  I don't remember where
-the kernel came from but it might have been from BenH.
-	I seem to remember hot-swapping working just
-perfectly fine at some point in the past.  Before this
-kernel, I used the "very stable powerbook" kernel
-distributed with R5.
-	Here are the conditions:
+I recently installed LinuxPPC 1999 Q3, and today I ran out of inodes.
+My 3G disk is only 67% full. It turns out my inode ratio is about
+one inode per 32KB. The default for mk2efs is 4KB (-i 4096).
+32KB seems extreme. Indeed, I see from the mailing list archive
+that someone else ran into the same problem in September
+(http://lists.linuxppc.org/listarcs/linuxppc-dev/199911/msg00047.html).
 
-* cdrom works indefinately, even if I pull it out and
-reinsert it
-* I can remove my cdrom, and insert a floppy drive.
-* Once I hot-swap in the floppy drive, the floppy only
-works for one operation.  After that, it says
-"/dev/fd0: no such device".  I can mount once, or I
-can use 'mtools' once.  Then the floppy drive
-disappears from sight.
-* floppy would have only worked once even when I just
-cold booted with it in.
-* The instant I remove the floppy drive, the whole
-machine instantly powers off.
+Hollis' reply hints that the installer does this on purpose, but
+I couldn't tell for sure. Could whoever maintains the installer look
+into changing the inode ratio to something lower, or is the 32KB ratio
+intentional (but unfortunate)?
 
-	I'll be upgrading my kernel with BenH's 2.2.13pb
-kernel RSN(tm)!  I know my kernel is old.  I just
-thought I'd contribute some keystrokes to the
-discussion.
+Now to find a big disk to back up to...
 
---- Joseph Garcia <jpgarcia@execpc.com> wrote:
-> 
-> Is anyone else having problems with hot-swapping
-> media bays using 2.3.29?  Im
-> using Paul's Linuxcare rsync from a few days ago.
-> 
-> Symptom: kernel panic upon hot swapping cdrom drive
-> into media bay.
-> (wallstreet2-300MHz)
+Thanks,
 
+	--Jon
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
+ Jon Howell  jonh@cs.dartmouth.edu     finger jonh@cs.dartmouth.edu | pgp -kaf
+ http://www.cs.dartmouth.edu/~jonh     170AE827  ADAB6559  9C2E3DB3  37BD72EC
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
