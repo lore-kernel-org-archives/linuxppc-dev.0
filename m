@@ -1,52 +1,47 @@
-To: "Boerner, Brian" <bmb@pirus.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: breakpointing with bdi2000 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 23 Aug 2001 17:24:37 EDT."
-             <200108232122.QAA24130@lists.linuxppc.org>
-Date: Fri, 24 Aug 2001 00:41:45 +0200
-Message-Id: <20010823224150.6FCA211265@denx.denx.de>
+Date: Fri, 24 Aug 2001 11:41:54 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Dan Malek <dan@mvista.com>
+Subject: Re: status of linuxppc_2_4_devel for ppc405gp
+Message-ID: <20010824114153.A790@zax>
+References: <20010823074100.31846@smtp.wanadoo.fr> <20010823110818.2847@smtp.adsl.oleane.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010823110818.2847@smtp.adsl.oleane.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <200108232122.QAA24130@lists.linuxppc.org> you wrote:
+On Thu, Aug 23, 2001 at 01:08:18PM +0200, Benjamin Herrenschmidt wrote:
 >
-> 1. Power on the box and let ppcboot load my vmlinux file via tftp
-
-You missed Step 0: RTFM.
-
-> 2. start up gdb and do the following:
-
-> (gdb) target remote bdi:2001
-> Remote debugging using bdi:2001
-> 0x1fd3540 in ?? ()
-> (gdb) add-sym vmlinux 0xc0000000
-> add symbol table from file "vmlinux" at
-> 	.text_addr = 0xc0000000
-> Reading symbols from vmlinux...done.
-> (gdb) break mem_init
-> Breakpoint 1 at 0xc014c424: file init.c, line 861.
-> (gdb) c
-> Continuing.
+> >>I'm now able to run a very simple binary as init - basically "Hello,
+> >>world!" implemented with one write() syscall, and none of the libc
+> >>initialisation junk present.  A one write hello world with the normal
+> >>crt0 (statically linked) fails.
+> >
+> >Ok. So this would mean the problem is with the libc junk ? Hrm.
+> >I didn't trace that far yet, but I suspect the libc I've been
+> >using (the "normal" 6xx one) lacks some cache stuffs. I'm
+> >pretty convinced that we must inval the entire instructions cache
+> >each time we used to do icbi's (either that or handle the cache
+> >aliasing issues specific to the 405GP weird icache design).
+> >
+> >I'll do more experiments later today.
 >
-> 3. Pop back over to ppcboot and then type:
-> bootm 00100000
->
-> The kernel starts but never stops at mem_init. If I pop over to the telnet
-> window for the bdi and manually stop the box I can step, but it won't break.
+> I found at least one other problem: The kernel is happily doing
+> tlbie's on the 405 (which doesn't support them). Among other places,
+> calls to flush_HPTE are turned into _tlbie which is not redefined
+> to do a tlbia, causing at least ioremap to break.
 
-See the BDI2000 manual, especially section 3.3.4 Embedded  Linux  MMU
-Support.
-
-Wolfgang Denk
+Ah yes, I ran into that one when I started converting the ppc405_enet
+driver to use ioremap() and in_beXX() instead of the godawful mess of
+direct access and explicit eieio()s it uses now.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I have made mistakes, but have never made the mistake of  claiming  I
-never made one.                                     - James G. Bennet
+David Gibson			| Microsoft: Making the easy things hard
+david@gibson.dropbear.id.au	| and the hard things buggy
+http://www.ozlabs.org/people/dgibson
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
