@@ -1,52 +1,69 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A208E5C4@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: "'Tom Rini'" <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: mtmsr...
-Date: Wed, 26 Sep 2001 15:46:55 -0700
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BB25C4D.7708F14C@opensource.se>
+Date: Thu, 27 Sep 2001 00:53:01 +0200
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Josh Huber <huber@alum.wpi.edu>
+Cc: Grant Erickson <erick205@umn.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Solutions for Fast Software Upgrade in Linux/PPC
+References: <Pine.SOL.4.20.0109251001370.4999-100000@garnet.tc.umn.edu> <87n13idk7e.fsf@mclinux.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-'PowerBoot' is the firmware I am using.
+I recommend a combination of a simple bootloader and
+a reboot-linux-in-linux piece of software.
 
-I preferred to use 2.2.14 because, it has PowerCore option, where I can use
-750  with minimal changes.
+You can find miniboot - a safe and simple bootloader
+at http://opensource.se/projects/
+With a clever-designed upgrade application it's possible
+to update the flash in a fail-safe way.
 
-I am not making any calls to firmware after that. This 'mtmsr' instruction
-is third instruction and it hangs with out finishing. What might be the
-problem that I have to fix to get this working.
+One neat feature is that miniboot runs without any external RAM,
+which makes it possible to keep the RAM-code in a upgradeable
+image.
 
--- Siva
+I also have a driver, relf, (Reboot ELF) that makes it
+possible to reboot an ELF directly from Linux.
+It has booted Linux, vxWorks and pSOS. mpc8xx only.
+If you're intrested - give me a mail and I will send it to you.
 
+Good luck /
 
-> -----Original Message-----
-> From: Tom Rini [mailto:trini@kernel.crashing.org]
-> Sent: Wednesday, September 26, 2001 3:43 PM
-> To: Prasad, Siva
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: mtmsr...
+Magnus
+
+Josh Huber wrote:
 >
+> Grant Erickson <erick205@umn.edu> writes:
 >
-> On Wed, Sep 26, 2001 at 09:40:31AM -0700, Prasad, Siva wrote:
+> [snip]
 >
-> > PowerPC 750 on a custom board.
-> > I tried both the bitkeeper source (2.4.10-pre11) and also
-> HartHat Linux CDK
-> > 1.2 version (kernel 2.2.14). Same problem in both the kernels.
+> I'd also recommend the fast-reboot option, but since no one mentioned
+> yet I'll suggest Werner Almsberger's bootimg utility.
 >
-> Well, both of those sources are very different.  Are you running this
-> board in 'PReP' mode?  Your own firmware or what?  Anyhow, if
-> you're making
-> any calls back to the firmware later on, you must not mess w/
-> the MSR value.
+> Take a look at:
+> <URL:ftp://icaftp.epfl.ch/pub/people/almesber/misc/>
 >
+> specifically, bootimg-current.tar.gz
+>
+> Also, in ../booting/ there is a paper describing the
+> method. (bootinglinux-current.ps.gz)
+>
+> I've tested this many times (we use it at Mission Critical for our
+> kernel crash dump system), and if you're looking for fast reboots this
+> is the way to go.
+>
+> Unfortunately, it doesn't solve the upgrading of the ROM issue.
+>
+> For the lazy who don't want to look at the references, what this
+> allows you to do is boot a linux kernel, using an already loaded Linux
+> kernel.
+>
+> ttyl,
 > --
-> Tom Rini (TR1265)
-> http://gate.crashing.org/~trini/
+> Josh Huber
 >
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
