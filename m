@@ -1,21 +1,21 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E4CE367A7F
+Return-Path: <srinivas.surabhi@wipro.com>
+Received: from wip-ectls-mx3.wipro.com (wip-ectls-mx3.wipro.com
+	[203.101.113.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wip-ectls-mx3.wipro.com",
+	Issuer "certserv.wipro.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D271467A7C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 13:59:25 +1100 (EST)
-Date: Tue, 15 Feb 2005 18:59:21 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <20050216025921.GA25838@gate.ebshome.net>
-References: <c3d0340b05021518037b1758cc@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3d0340b05021518037b1758cc@mail.gmail.com>
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: Incomplete network configuration information when booting from
-	NFS root on Ebony
+	Wed, 16 Feb 2005 14:19:04 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Wed, 16 Feb 2005 08:48:58 +0530
+Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E011DA5D1@hyd-mdp-msg.wipro.com>
+From: <srinivas.surabhi@wipro.com>
+To: <wd@denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Mounta Vista Linux prompt on serial console 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,44 +26,122 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 15, 2005 at 06:03:12PM -0800, Shawn Jin wrote:
-> Is anybody using linux-2.6.10 from kernel.org for testing IBM Ebony board?
 
-Yes, with stock boot loader and great success (bootp + NFS root). I 
-just use "ip=on root=/dev/nfs" and let my bootp server tell the kernel 
-about all other parameters.
+>> Do not ignore this error. How big is your cramfs image? How  much
+RAM
+>> do you have?
 
-[snip]
+cramfs is 2.7MB where as the RAM size is 32MB. While building ofcourse
+the RAMDISK size was told as 8MB. This I mentioned in the devrocket
+kernel configuration.
 
-> However a new problem
-> occurs. When the kernel tries to mount a NFS root filesystem, it
-> complains incomplete network configuration information. See the
-> following message dump. Any hints to solve the problem? Thanks a lot.
+Just FYI. Kernel Image was 640KB.
 
-[snip]
+Here I have one doubt while building the uBoot image using mkImage with
+multi option where was the FileSystem image getting downloaded ? and how
+the downloaded location was known to the kernel Image for pointing out
+the File System image location. The options -a and -e are applicable
+only for first image, isn't it? First image I mean the kernel Image. I
+was giving -a 0x0 and -e 0x0 since while building the kernel the kernel
+base address was mentioned 0.
 
-> Kernel command line: root=/dev/nfs rw
-> nfsroot=192.68.0.47:/opt/eldk3.1/ppc_4xx
-> ip=192.168.0.245:192.168.0.47:::::off
+...
+>> Is there any chance that you built your cramfs image on a x08 (or any
+>> other little-endian) system and forgot  to  give  the  "-r"  (reverse
+>> endian-ness of filesystem) option to mkcramfs??
 
-[snip]
+YES. You are right I am building the image on x86 (Windows platform).
+But I checked the build log it used the -r option. The default build was
+cpio format and after that using fstool converting to CRAMS and the
+option -r was present .I believe that devrocket of MountaVista has
+makefiles specific to OS i.e for Windows, because while installation it
+asks for what type of OS do you want to have the Image Development
+environment.
 
-> IP-Config: Incomplete network configuration information.
+Thanks & Regards
+Surabhi Srinivas
 
-Did you try looking at net/ipv4/ipconfig.c? This is file responsible 
-for this message.
 
-I think there is relevant comment in ip_auto_config() function:
+-----Original Message-----
+From: wd@denx.de [mailto:wd@denx.de]=0D
+Sent: Wednesday, February 16, 2005 1:30 AM
+To: Srinivas Surabhi (WT01 - EMBEDDED & PRODUCT ENGINEERING SOLUTIONS)
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Mounta Vista Linux prompt on serial console=0D
 
-/*
- * If the config information is insufficient (e.g., our IP address or
- * IP address of the boot server is missing or we have multiple network
- * interfaces and no default was set), use BOOTP or RARP to get the
- * missing values.
- */
+In message
+<EF9B29C78F41FA488927FCBC7750AF0E011DA5CB@hyd-mdp-msg.wipro.com> you
+wrote:
+>=0D
+> My replies in blue tagged with surabhi
 
-Probably your case - multiple ethernet devices (440GX has 4) and 
-you haven't specified which device should be assigned IP.
+Don't do this. Email is a plain text medium only.
 
---
-Eugene
+Read the netiquette, and quote properly.
+
+> [surabhi --- start] could you please guide me how to provide a working
+> file system on SDRAM before decompressing the Linux Image on SDRAM. Is
+> it really related to init process failed.
+
+It is obviously related -there was a clear  error  message  that  the
+uncompressing of the cramfs filesystem failed.
+
+> Is the below doesn't mean that the mounted one is working one ?
+> "VFS: Mounted root (cramfs filesystem) readonly.
+>  Mounted devfs on /dev "
+
+No, not at all. You can for example mount an empty  filesystem  -  it
+will mount perfectly fine, but it still doesn't work.
+
+
+You should also read my message until the end; I asked:
+
+
+>> Do not ignore this error. How big is your cramfs iage? How  much  RAM
+>> do you have?
+
+cramfs is 2.7MB where as the RAM size is 32MB. While building ofcourse
+the RAMDISK size was told as 8MB. This I mentioned in the devrocket
+kernel configuration.
+
+...
+>> Is there any chance that you built your cramfs image on a x08 (or any
+>> other little-endian) system and forgot  to  give  the  "-r"  (reverse
+>> endian-ness of filesystem) option to mkcramfs??
+
+YES. You are right I am building the image on x86 (Windows platform).
+But I checked the build log it used the -r option. The default build was
+cpio format and after that using fstool converting to CRAMS and the
+option -r was present .I believe that devrocket of MountaVista has
+makefiles specific to OS i.e for Windows, because while installation it
+asks for what type of OS do you want to have the Image Development
+environment.
+
+Thanks & Regards
+Surabhi Srinivas
+
+
+=0D
+
+Best regards,
+
+Wolfgang Denk
+
+--=0D
+See us @ Embedded World, Nuremberg, Feb 22 - 24,  Hall 10.0 Booth 310
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Looks clean and obviously correct to me, but then _everything_ I
+write always looks obviously correct to me.  - Linus Torvalds in
+<Pine.LNX.4.10.10012090054360.791-100000@penguin.transmeta.com>
+
+
+
+Confidentiality Notice=0D
+
+The information contained in this electronic message and any attachments to=
+ this message are intended
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately
+and destroy all copies of this message and any attachments.
