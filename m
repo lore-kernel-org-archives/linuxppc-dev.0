@@ -1,27 +1,45 @@
-Date: Mon, 23 Apr 2001 18:15:50 -0600
-From: Cort Dougan <cort@fsmlabs.com>
-To: Alexandre.Nikolaev@matrox.com
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3AE4E93E.AC7C788C@mvista.com>
+Date: Mon, 23 Apr 2001 22:47:26 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Cort Dougan <cort@fsmlabs.com>
+Cc: Alexandre.Nikolaev@matrox.com,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: ppc little-endian port
-Message-ID: <20010423181550.F13368@ftsoj.fsmlabs.com>
-References: <3AE47B3C.8DF8F330@matrox.com>
-Mime-Version: 1.0
+References: <3AE47B3C.8DF8F330@matrox.com> <20010423181550.F13368@ftsoj.fsmlabs.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3AE47B3C.8DF8F330@matrox.com>; from anikolae@matrox.com on Mon, Apr 23, 2001 at 02:58:04PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Why?
+Cort Dougan wrote:
+>
+> Why?
 
-} This is a port of Montavista's 2.4.0-test2 kernel to ppc running in
-} Little-Endian.
-} As a base, we used Sandpoint configuration, but disabled some irrelevant
-} code for our board (these changes are not in the patch).
-} We made it just for a board with CPU and RAM only, so if you want to use
-} anything extra (drives, PCI, etc.)
-} you have to look at the corresponding code and make changes accordingly
-} (if needed). Additionally, if you use different configuration scheme
-} (not sandpoint), you might have to do some other changes.
+Yeah, we really don't care about little-endian.  Like I always
+say, getting a kernel built and booted is the easy part.  The
+entire world runs big endian tools, libraries and applications.
+Making all of that work is a task no one is going to tackle.
+
+While refreshing my PowerPC history the other day, I found a UISA
+book from 1991.....The Little-Endian Byte Ordering chapter introduction
+has this to say:
+
+	It is computed that eleven Thousand Persons have, at several
+	Times, suffered Death, rather than submit to break their
+	Eggs at the smaller End.  Many hundred large Volumes have been
+	published upon this Controversy...
+
+			Jonathan Swift, "Gulliver's Travels"
+
+Later in the text it states "There are 24 ways to specify the
+ordering of four bytes withing a word, but only two of these
+orderings are sensible."
+
+I contend there is only one sensible ordering, and we are already
+using it.........
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
