@@ -1,51 +1,50 @@
-From: Brian Waite <waite@skycomputers.com>
-To: linuxppc-embedded@lists.linuxppc.org,
-	linux-galileo@source.mvista.com
-Subject: Pci issues
-Date: Thu, 17 Jul 2003 09:34:33 -0400
+Message-ID: <75DF04AC5ED4D511A9810090273CB4163F5DE8@rokonet-e.rokonet.co.il>
+From: Eli Brin <elib@rokonet.co.il>
+To: "'Steven Scholz'" <steven.scholz@imc-berlin.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: 8xx SCC's as uart
+Date: Thu, 17 Jul 2003 16:01:27 +0200
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <200307170934.34084.waite@skycomputers.com>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+No, it depends on mgetty.
 
-Hi all,
-I am using a DB64360 with a single 7455 processor and  I am having a problem
-that is driving me nuts. I have a PCI card that contains a P2P bridge and an
-serial bus controller behind it. I am trying to use it under Linux and I
-can't seem to get the required resources. I have this card working under an
-ev64260 though. The serial bus controller requires 3 regions:
-BAR 0: 1 MB non-prefetchable
-BAR 2: 2 MB non-prefetchable
-BAR 4: 64 MB prefetchable.
+I think that mgetty need hw flow control (RTS/CTS) to monitor the DCD line.
 
-I use u-boot as my bootloader (although Dink 32 gives me the same problems
-under Linux) because I am a bit more familiar with the code. I get error
-message when the kernel scans the bus saying:
+I can rewire (short) the RTS/CTS on each side (modem and 8xx), and connect
+only DCD.
 
-PCI: Cannot allocate resource region 1 of PCI bridge 2
-PCI: Cannot allocate resource region 2 of PCI bridge 2
-PCI: bridge 2 resource 2 moved to 9ff00000..9fffffff
-PCI: Cannot allocate resource region 0 of device 02:00.0
-PCI: Cannot allocate resource region 2 of device 02:00.0
-PCI: Cannot allocate resource region 4 of device 02:00.0
-PCI: Failed to allocate resource 0(0-fffff) for 02:00.0
-PCI: Failed to allocate resource 2(a0000000-9fffffff) for 02:00.0
-PCI: Failed to allocate resource 4(a0000000-9fffffff) for 02:00.0
+Eli
 
-Any ideas why this may be? I am really at a loss and I was hoping for a bit of
-insight. I am attaching the complete log from u-boot to Linux including an
-lspci ouput at the end. As for hardware, I am using a DB64360 with 7455 at
-931 Mhz. The Discovery II part is a rev A2. The kernel is
-2.4.21-pre7 from the _devel tree, along with your most recent work from the
-_galileo tree. Everything else is working well but this card is giving me
-huge troubles. Any help would be greatly appreciated!
 
-Thank You
-Brian Waite
+-----Original Message-----
+From: Steven Scholz [mailto:steven.scholz@imc-berlin.de]
+Sent: Thursday, July 17, 2003 2:51 PM
+To: Eli Brin
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8xx SCC's as uart
 
+
+Eli Brin wrote:
+
+> Dear Steven,
+>
+> I tested linuxppc_2_4_devel-2.4.20-2002_12_04.tar.bz2 snapshot from
+> Denx ftp. I will get the version you referred me to.
+>
+> Regarding the hardware handshake, we will connect an SCC to a modem
+> chip, and my tests show I need the DCD line from the modem so that
+> mgetty (in autoppp mode) will detect disconnections.  It didn't detect
+> disconnections without the modem handshake (DCD drop).
+>
+> We will try to get it working Tx.Rx only.
+>
+
+So you want to use the modem without hw flow control (RTS/CTS) ?
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
