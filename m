@@ -1,53 +1,64 @@
-Message-ID: <02ab01c406c7$0813a420$3000a8c0@foundation>
-From: "Stuart Yoder" <stuart.yoder@conformative.com>
-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-Cc: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-References: <010201c40692$51da2820$0400a8c0@portatile>
-Subject: Re: Marvell DB64360
-Date: Wed, 10 Mar 2004 11:42:17 -0600
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Etienne van der Linde" <evdl@ananzi.co.za>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel oops, sig: 7 at last init / modules 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 10 Mar 2004 19:33:44 +0200."
+             <web-18194238@mail01.ananzi.co.za>
+Date: Wed, 10 Mar 2004 18:55:04 +0100
+Message-Id: <20040310175509.77D5FC0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-IBM has a 750FX eval board with the Marvel 64360 on it.
+Dear Etienne,
 
-http://www-306.ibm.com/chips/techlib/techlib.nsf/products/PowerPC_750FX_Evaluation_Kit
+in message <web-18194238@mail01.ananzi.co.za> you wrote:
+>
+> We are using an MPC8260 on a custom board with 16MB RAM,
+> 16MB FLASH, DS1558W RTC, LAN83C183 PHY etc. I use Denx's
+> U-Boot 0.4.0 for the boot loader, and then their PPC82xx
+> embedded linux from their ELDK.
 
-Stuart
+You should use a more recent version of both the U-Boot  sources  and
+especially the Linux kernel.
 
------ Original Message -----
-From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, March 10, 2004 5:24 AM
-Subject: Marvell DB64360
+> For me it seems that the problem comes from executing a
+> module on the file system (either on NFS or Ramdisk).
+
+Normally no modules are used at all.
+
+> Caused by (from SRR1=49030): Transfer error ack signal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Check this!
+
+> Call backtrace:
+> C00401C8 C0033434 C0003B7C 00000000 0FF1A05C 0FF4FBF8
+> 0FF4EA04
+> 0FF4F858 0FF4C4C8 0FF85B60 0FF85998 10015108 0FEE67B8
+> 0FECFF74
+
+Decode the backtrace (see ftp://ftp.denx.de/pub/tools/backtrace)
+
+> Furthermore, if I cross-compile my own simple program (that
+> opens devices etc) I am able to run it flawlessly for a
+> long time by passing an init=/tmp/myprogram argument to the
+> kernel - no oops generated there...?
+
+To me it seems that you should check your memory  map.  For  example,
+where  is  the  IMMR  mapped? Did you make sure to put it at a "high"
+address?
 
 
->
-> Hi to All,
->
-> I'm evaluating a new development based on PPC750FX and I would like to
-check
-> if there is some porting on the ELDK 3.0 package.
-> I have also verified what development board could be the best candidate to
-> be used as starting point and It seems to be the Marvell DB64360.
->
-> Did anybody work on such board?
->
-> and
->
-> Could anybody suggest me if there is some better reference point?
->
-> Many thanks in advance.
->
-> Gianfranco
->
->
->
->
->
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Time is a drug. Too much of it kills you.
+                                      - Terry Pratchett, _Small Gods_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
