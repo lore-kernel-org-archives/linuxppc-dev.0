@@ -1,35 +1,43 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15430.9343.253673.511765@argo.ozlabs.ibm.com>
-Date: Thu, 17 Jan 2002 12:10:23 +1100 (EST)
-To: Larry McVoy <lm@bitmover.com>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problems with linuxppc_2_4_devel
-In-Reply-To: <20020115130203.K15959@work.bitmover.com>
-References: <20020115162546.GB764@cpe-24-221-152-185.az.sprintbbd.net>
-	<Pine.LNX.4.33.0201151756200.11139-100000@gra-lx1.iram.es>
-	<20020115112233.E15959@work.bitmover.com>
-	<20020115205755.GF764@cpe-24-221-152-185.az.sprintbbd.net>
-	<20020115130203.K15959@work.bitmover.com>
-Reply-To: paulus@samba.org
+Subject: Re: ibook2 first rev modem
+From: =?ISO-8859-1?Q?F=E9lix?= Ortega <guile@mac.com>
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Cc: Bastien Nocera <hadess@hadess.net>
+In-Reply-To: <1011200645.6549.23.camel@dozo>
+References: <1011200645.6549.23.camel@dozo>
+Message-Id: <1011233996.23635.42.camel@milleniumfalcon>
+Mime-Version: 1.0
+Date: 17 Jan 2002 03:25:04 +0100
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Larry McVoy writes:
-
-> What I was thinking was one of two approaches:
+On Wed, 2002-01-16 at 18:04, Bastien Nocera wrote:
 >
-> a) try and connect to a well known time server and see if the time is too
->    far off at commit time.  May or may not work.
+> I've finally been able to get the iBook dual-USB's i2c modem to work and
+> dialup to my ISP.
 
-Are you talking about doing this just on ppc.bkbits.net or on
-everybody's repository clone as well?  I think it would be an
-excellent idea for ppc.bkbits.net to reject changesets whose time is
-after the current time.  I don't think we want to make everybody's
-clones do that though.
+What was the problem? I'm using my ibook's modem since september without
+any issue....
 
-Paul.
+> The problem lies in the modem's firmware. If you haven't updated the
+> modem firmware, the modem won't be able to connect at v.90 for some
+> ISPs. (I verified by dialling up from MacOS X, it didn't work for v90,
+> but did for v34).
+
+I have not updated my ibook's modem firmware and connect almost always
+at v90 with three distinct ISP's.
+
+> PS: Here is the modem init line I use:
+> \d\d\d\d\d\d\dAT&FE0W1Q0V1X4&C1&K3S95=1&D3S7=75S0=0+MS=11,1,300,33600
+> I tried adding an M0 somewhere, but couldn't get the modem to shut up.
+> Any ideas ?
+
+Why you use such a string? I'm using ATM0 and everything works...
+What was wrong whith your modem?
+
+--
+Félix Ortega Hortiguela	<guile@mac.com>
+Avoid the gates of hell  --  Use Linux!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
