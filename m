@@ -1,17 +1,17 @@
-Message-ID: <396DCBCB.A4A574C8@erols.com>
-Date: Thu, 13 Jul 2000 10:01:47 -0400
-From: Nelson Abramson <pogtal@erols.com>
-MIME-Version: 1.0
+Date: Thu, 13 Jul 2000 17:03:15 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
 To: Taylor Holliday <wtholliday@ucdavis.edu>
-CC: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
+cc: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Xfree 4.0.1 dual head attempt
-References: <396D1C7B.AA6864F5@ucdavis.edu>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <396D1C7B.AA6864F5@ucdavis.edu>
+Message-ID: <Pine.LNX.4.21.0007131654530.2728-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Taylor Holliday wrote:
+On Wed, 12 Jul 2000, Taylor Holliday wrote:
 
 > Hi all
 >
@@ -20,31 +20,13 @@ Taylor Holliday wrote:
 > penguinppc.org. Hey, at least it doesn't crash the machine (AGP G4, 2
 > r128) :-). Any suggestions on what to do or where to start debugging?
 >
-> <snip>
-> (==) Implicit Core Pointer: Buttons: 3
-> (II) Keyboard "Implicit Core Keyboard" handled by legacy driver
-> (II) XINPUT: Adding extended input device "Implicit Core Pointer" (type: MOUSE)
-> Couldn't load XKB keymap, falling back to pre-XKB keymap
+> - Taylor
 >
-> Fatal server error:
-> Caught signal 11.  Server aborting
->
-> <snip>
->
->   ------------------------------------------------------------------------
-> Section "ServerLayout"
->         Identifier     "DualHead"
->         Screen         "Screen0"
->         Screen         "Screen1" RightOf "Screen0"
-> #       InputDevice    "Mouse0" "CorePointer"
-> #       InputDevice    "Keyboard0" "CoreKeyboard"
-> EndSection
 
-<snip>
+  Comment out the vgaHWSave/vgaHWRestore calls in r128_driver.c and
+try again (defining R128_DEBUG in r128.h will be a good idea also)
 
-This may be a stupid question, but why have you commented out your input devices?
-
---Nelson Abramson
+  Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
