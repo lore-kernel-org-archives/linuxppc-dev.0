@@ -1,39 +1,33 @@
-Message-ID: <8D4C69676E66D511A1CB00508BBBB1921BCE90@ranmx1.ran.harris.com>
-From: "Walser, Martin" <mwalser@harris.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Disk On Chip: Can't build ntfl_format
-Date: Mon, 30 Jul 2001 04:27:55 -0400
-MIME-Version: 1.0
 Content-Type: text/plain
+MIME-Version: 1.0
+Message-ID: <7T989269826170.02006@webmail4.inner-21cn.com>
+Date: Mon, 30 Jul 2001 17:38:29 +0800 (CST)
+From: "yah" <hay8888@21cn.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: 
+Subject: rebuild kernel
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've tried to build ntfl_format for my PPC860 needed to 'un-hose' the MTD Disk
-On Chip.
-But it fails.
+Hi,
+I use powerpc-linux-gcc to rebuild my kernel--linux-2.4.6.tar.gz. When I 'make
+zImage', it has following error:
 
-bash# gcc nftl_format.c
-/tmp/cca000931.o: In function `check_block':
-/tmp/cca000931.o(.text+0xd4): undefined reference to `pread'
-/tmp/cca000931.o(.text+0x140): undefined reference to `pwrite'
-/tmp/cca000931.o(.text+0x170): undefined reference to `pread'
-/tmp/cca000931.o(.text+0x24c): undefined reference to `pwrite'
-/tmp/cca000931.o(.text+0x27c): undefined reference to `pread'
-/tmp/cca000931.o(.text+0x358): undefined reference to `pwrite'
-/tmp/cca000931.o(.text+0x388): undefined reference to `pread'
-/tmp/cca000931.o: In function `main':
-/tmp/cca000931.o(.text+0xa58): undefined reference to `pwrite'
-/tmp/cca000931.o(.text+0xae8): undefined reference to `pwrite'
-/tmp/cca000931.o(.text+0xb40): undefined reference to `pwrite'
-/tmp/cca000931.o(.text+0xbd0): undefined reference to `pwrite'
-collect2: ld returned 1 exit status
+pmac_pci.c:In function 'init_bandit':
+pmac_pci.c:252: 'PCI_VENDOR_ID_APPLE_BANDIT' undeclared (firest use in this function)
+pmac_pci.c:252:(Each undeclared identifier is reported only once
+pmac_pci.c:252:for each function it appears in.)
+make[1]:***[pmac_pci.o] Error1
+make[1]:Leaving directory '/usr/local/linux/arch/ppc/kernel'
+make: ***[_dir_arch/ppc/kernel] Error 2
 
-
-Has anyone an idea?
-
-best regards
-Martin
+I use CDK1.2 made in mvista,and rebuild kernel for MCP750 board. Please give me some advices.Thanks.
+-------------------------------
+抢注商务邮，手机到我手
+http://enterprise.21cn.com/game/
+华中科技大学项目管理研究生课程班（广州）招生，29日截止！
+http://learning.21cn.com:8080/peixun/detail_course.php?id=5502
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
