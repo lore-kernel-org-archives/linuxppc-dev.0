@@ -1,43 +1,26 @@
-Date: Fri, 13 Aug 1999 10:28:42 -0400
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-From: "Justin McKillican" <linuxppc@home.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        Michel Lanners <mlan@cpu.lu>
-CC: drow@false.org, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <19990813142716.EDPH12218.mail.rdc2.on.home.com@[24.112.218.109]>
+Message-Id: <9908131500.AA35672@marc.watson.ibm.com>
+To: "Christopher A. Shepherd" <cshepher@hardrock.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: OF netbooting 
+In-Reply-To: Message from "Christopher A. Shepherd" <cshepher@hardrock.com>
+   of "Fri, 13 Aug 1999 09:56:56 EDT." <199908131356.JAA08439@ns.hardrock.com>
+Date: Fri, 13 Aug 1999 11:00:03 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> On   8 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
->> > On Sun, Aug 08, 1999 at 09:54:12PM +0200, Michel Lanners wrote:
->> >> >> > /dev/hdc:
->> >> >> >   Timing buffered disk reads:  32 MB in  5.83 seconds = 5.49 MB/sec
->> >> ;-)) How about this:
->> >>
->> >> /dev/hde:
->> >>  Timing buffered disk reads:  64 MB in  6.60 seconds = 9.70 MB/sec
->> >> Maxtor 91024D4; 10G 7200 RPM, UDMA-2 ie 33 MB/s.
->> >
->> > Eek.  I want that :)
->>
->> No, you'd rather want _this_:
->>
->> /dev/hda:
->>  Timing buffered disk reads:  64 MB in  4.67 seconds =13.70 MB/sec
->
-> Stop whining and buy an UW-SCSI disk :-) My Viking II flies at 17 MB/s.
->
-> Greetings,
->
->       Geert
+>>>>> "Christopher A Shepherd" writes:
 
-Hehehe..   about $1200 USD for a 50gig Seagate baracuda (ultra2 scsi)
+Christopher> I built a special kernel by just assembling this and linking it into
+Christopher> the kernel. Won't be able to test it until I get back home though. Could it
+Christopher> really be this simple?
 
+	Mostly.  See my earlier notes giving the full details about
+exactly what OF expects.  The .note section needs to be referenced by a
+PT_NOTE in the program header pointing to the note segment.
 
-justin
+David
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
