@@ -1,46 +1,47 @@
-Date: Fri, 15 Nov 2002 16:24:36 +0500 (GMT+0500)
-From: Atm account <linux2@cdotd.ernet.in>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem in booting PPC with kernel 2.5.44
-In-Reply-To: <20021114151136.GB14431@opus.bloom.county>
-Message-ID: <Pine.OSF.4.10.10211151612210.11070-100000@moon.cdotd.ernet.in>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: Florian Schirmer <jolt@tuxbox.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Kernel 2.5.x on mpc8xx
+Date: Fri, 15 Nov 2002 15:57:25 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200211151557.25779.jolt@tuxbox.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 14 Nov 2002, Tom Rini wrote:
-> > address 0 and jumps to the 0th location (3 nops followed by code). It is
-> > from here that early_init is called.
-> Just wondering, what modifications did you have to make to
-> arch/ppc/boot/simple?
-    well that change was the addition of a routine to initialize the on
-board IBM 82660 bridge, and the S5933 PCI controller.
+Hi,
 
-> >     Now the problem is ... the kernel has been linked at 3GB and a call in
-> > kernel/head.S which says ---
-> How did you change things to have it link at 3GB?
-	What else is it linked at?? Is it not what KERNELBASE is assigned
-to?? AFAIK kernel links at 0xc0000000 and the bootloader at
-8Mb (PPC based boards).
-   Btw the problem turned out to be a _printk_ which was causing
-an MCP to occur...we use a serial device for printing
+here is a forwarded mail from a conversation between Tom Rini and myself. Hope
+somebody can help me and any other 8xx users out there.
 
-thanx a lot
+----------  Forwarded Message  ----------
 
-nishant
+Subject: Re: Kernel 2.5.x on MPC8XX
+Date: Tue, 29 Oct 2002 11:44:11 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Florian Schirmer <jolt@tuxbox.org>
 
-
+On Tue, Oct 29, 2002 at 08:38:07AM +0100, Florian Schirmer wrote:
+> current 2.5.x version do not compile on 8XX boards, due to the changes in
+> task_queues and (at least i think) the preempt changes. There might be a
+> serial change problem also, but this is unconfirmed.
 >
-> --
-> Tom Rini (TR1265)
-> http://gate.crashing.org/~trini/
->
->
->
->
+> head8xx.s has some strange unresolved symbols problems due to the removal
+> of ret_from_interfecpt from entry.s.
 
+head_8xx.S also needs some updating for MM changes.
+
+> Sadly i was unable to fix them myself. I would like to ask you to give me
+>  some assistance. It would be very very helpfull if you could fix the
+>  problems in entry.s/head8xx.s.
+
+Please bring this up on the linuxppc-embedded and linuxppc-dev lists,
+thanks.
+
+----------  Forwarded Message  end ----------
+
+Regards,
+    Florian
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
