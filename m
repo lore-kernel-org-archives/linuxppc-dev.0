@@ -1,33 +1,44 @@
-Date: Tue, 4 Sep 2001 19:39:22 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: andrew may <acmay@acmay.homeip.net>
-Cc: Dan Malek <dan@mvista.com>, John Tyner <jtyner@cs.ucr.edu>,
-	linuxppc-commit@source.mvista.com,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc405 enet changes (fwd)
-Message-ID: <20010904193922.O11530@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.LNX.4.30.0109031513110.21186-200000@hill.cs.ucr.edu> <3B9557CA.D76C70E2@mvista.com> <20010904152608.B14548@ecam.san.rr.com> <3B956C82.D2D7E9C6@mvista.com> <20010904180915.E14548@ecam.san.rr.com>
-Mime-Version: 1.0
+Message-ID: <3B95A796.248A0E99@mvista.com>
+Date: Wed, 05 Sep 2001 00:18:30 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx - a question and a patch
+References: <20010830175217.H858@zax> <3B95307D.1BE64A98@mvista.com> <20010905110451.A599@zax>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010904180915.E14548@ecam.san.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Sep 04, 2001 at 06:09:15PM -0700, andrew may wrote:
-> > Yeah, all of the linux version stuff.  It is nice to get patches against
-> > the current 2_4 or 2_4_devel that are known to be tested and working.
->
-> Well the linux version stuff was our compromise for not being able to test
-> with the new 2_4_devel kernel since we can't build it. I will be happy to
-> see the ifdef's go away. I have to deal with them my other kenerl modules.
+David Gibson wrote:
 
-Well, I've heard rumors about it booting, and even to some degree working,
-depending on HW.  When'd did you last try? :)  Do you get to the
-Linux/PPC load: prompt still?
+> The 405gp manual implies that an mtspr to the PIT writes both the
+> decrementing value and the reload register.  Is this a hardware /
+> documentation bug?
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Well, the point is that it writes the reload register.  When it
+gets to zero, it reloads with this register, which is wrong.
+
+> .....  Could the PIT be used this way if auto-reload was
+> disabled?
+
+No, because the PIT doesn't count down past zero.  If they would
+have allowed this, we could have disabled the auto-reload and
+treated it just like the decrementer.
+
+The best I could come up with is just allow the PIT run with a
+proper and fixed reload value.  It isn't a decrementer and we
+can't treat it like one.
+
+
+> Sure, but it's still useful to be able to run binaries copied from
+> "normal" PPC machines.
+
+Just remember that you can't be mixing float emulation and in-line
+floating point software.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
