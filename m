@@ -1,30 +1,47 @@
-Date: Sun, 26 Dec 1999 21:04:12 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: DB_THREAD support in Berkeley DB/glibc
-Message-ID: <Pine.LNX.4.10.9912262058050.21529-100000@altus.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        "Jens Ch. Restemeier" <jrestemeier@currantbun.com>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Update - Re: Open Sourced Glide on Linux PPC
+References: <Pine.LNX.4.05.9912222035500.574-100000@callisto.of.borg>
+Reply-To: weasel@cs.stanford.edu
+From: Peter Chang <Peter.Chang@irisa.fr>
+Date: 27 Dec 1999 17:50:13 +0100
+In-Reply-To: Geert Uytterhoeven's message of "Wed, 22 Dec 1999 20:37:25 +0100 (CET)"
+Message-ID: <w9kr9g8mipm.fsf@euclide.irisa.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've just figured out that the reason openldap doesn't work is that it
-assumes all platforms support the DB_THREAD argument for db_appinit.
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-After looking at the glibc/Berkeley DB source, it turns out that all it
-needs is 10 or so lines of ASM for spinlocks.
+> On Sat, 18 Dec 1999, Kostas Gewrgiou wrote:
+> > On Fri, 17 Dec 1999, Jens Ch. Restemeier wrote:
+> > > - Glide compiles, after disabling the assembler triangle setup code.
+> > > >From the documentation I think that P6FENCE should avoid instruction
+> > > reordering between I/O accesses. From the information here I think
+> > > eieio (sp?) it the PPC instruction to use.
+> >
+> >   Yes if you look at the macos defines you see that they use eieio there
+> > they seem to do lots of read/writes without ever doing an eieio but since
+> > it is working in macos i am not too worried.
 
-Could someone working on glibc developement add the required ASM and get
-this into the mainline distribution? Thanks.
+This sort of depends on teh hw that you're talking to on the other
+side. If it is v2 or better then it will take care of doing 'hole
+counting' for you so that you don't need explicit fences to make the
+hw happy. If you're doing this for sst1 or sst96 then you will need to
+do fences so taht the command register on gets written after all of
+the command data has been settled.
 
-(look in glibc/db2/mutex, I believe )
+> If you use the *mb() macros instead of eieio(), you don't have to use #ifdefs
+> and it'll work automagically on e.g. Alpha as well.
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+This I know less about, but these might fence more often than strictly necessary?
 
+\p
+---
+The most vulnerable and yet most unconquerable of things is human
+vanity; nay, through being wounded its strength increases and can grow
+to giant proportions. --- Friedrich Nietzsche
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
