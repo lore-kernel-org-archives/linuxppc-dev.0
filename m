@@ -1,29 +1,35 @@
-Message-ID: <20000216000232.7989.qmail@web1205.mail.yahoo.com>
-Date: Tue, 15 Feb 2000 16:02:32 -0800 (PST)
-From: Jeremy Knope <swttiggr2@yahoo.com>
-Subject: Re: 2.3.43 failed
-To: Eric Benard <ebenard@ifrance.com>, Paul Mackerras <paulus@linuxcare.com>
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <38AA2785.DC12EA82@execpc.com>
+Date: Tue, 15 Feb 2000 22:28:53 -0600
+From: Joseph Garcia <jpgarcia@execpc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: LinuxPPC, g++ problem with throw/catch (fwd)
+References: <Pine.LNX.3.96L.1000215114646.6511B-100000@nitfol.weh.andrew.cmu.edu>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-ditto... any 2.3.x kernel i've tried... 42,44,45 hault
-at Booting... message on my BlueG3 400 DVD (rev2)
- any clue anybody out there? this being the
-linuxcare.com.au kernel i've tried. i would like to
-find a 2.3.x kernel for BlueG3.
-  -jeremy
+Hollis R Blanchard wrote:
+>
+> ---------- Forwarded message ----------
+> Date: Tue, 15 Feb 2000 09:58:52 -0500
+> From: Pierre Sarrazin <sarrazip@machinasapiens.com>
+> To: linuxppc-user@lists.linuxppc.org
+> Subject: LinuxPPC, g++ problem with throw/catch
+>
+> I am having a strange problem with LinuxPPC and g++ and I would like
+> to have a confirmation that it is not specific to my machine. A C++
+> exception is thrown and should be caught but is not.
 
+using gcc version 2.95.1 19990809 (prerelease), i got the same results.  Once i
+turned on optimization, it worked correctly.  I tried -O0 (same bad results),
+but -O1 and -O6 work fine.
 
-
-=====
-/---------------------------------\
-|        Jeremy T. Knope          |
-|      swttiggr2@yahoo.com        |
-|---------------------------------|
-| jerome@knopej1.umeres.maine.edu |
+--
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
