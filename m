@@ -1,62 +1,69 @@
-Message-ID: <40C58DF1.6030809@fh-landshut.de>
-Date: Tue, 08 Jun 2004 11:59:13 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Reply-To: <tschaefer@giga-stream.de>
+From: =?iso-8859-1?Q?Thomas_Sch=E4fer?= <tschaefer@giga-stream.de>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: fw_setenv problem when calling from expect script
+Date: Tue, 8 Jun 2004 14:20:27 +0200
+Message-ID: <FIEJJAKAABLMHFKFECNJCEHIHBAA.tschaefer@giga-stream.de>
 MIME-Version: 1.0
-To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: VME driver change suggestion
-References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com> <40C48A1C.30602@fh-landshut.de>
-In-Reply-To: <40C48A1C.30602@fh-landshut.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hi,
 
-To make the driver truly portable, it could be changed as follows:
+I'm using MVL 3.0 (kernel 2.4.18) on a PPC 405GPr custom board. Flash memory
+on the board is located in 2 AMD641DH flash chips, which are concatenated on
+the mtd layer to one large flash memory area. The flash is divided into 5
+partitions (bootloader u-boot, 2 bootloader environment partitions, kernel,
+rootfs).
 
-1.) Add devices for the windows, similarly to the VMELinux.org driver:
-Master windows:
-     * /dev/m0  c 221 0
-     * /dev/m1  c 221 1
-     * /dev/m2  c 221 2
-     * /dev/m3  c 221 3
-     * /dev/m4  c 221 4
-     * /dev/m5  c 221 5
-     * /dev/m6  c 221 6
-     * /dev/m7  c 221 7
-Control window:
-     * /dev/ctl c 221 8
-Slave window:
-     * /dev/s0  c 221 9
-     * /dev/s1  c 221 10
-     * /dev/s2  c 221 11
-     * /dev/s3  c 221 12
-     * /dev/s4  c 221 13
-     * /dev/s5  c 221 14
-     * /dev/s6  c 221 15
-     * /dev/s7  c 221 16
+When using the fw_setenv tool that comes with u-boot on the linux console, I
+can write the bootloader environment sectors without problems. When calling
+fw_setenv from an expect script, which also does some write accesses on the
+rootfs partition, I get the following error message when trying to write the
+bootloader environmen afterwards:
 
-(You've already partially matched that scheme with your ctl device)
+[root@SERVICE update]# Set the bootloader to flash mode ...
+/mnt/install/fw_setenv  "rootfs flash" "kernel flash"
+"serverip 192.10.11.95" "ipaddr 10.0.3.14"  "netmask 255.255.255.0"
+"gatewayip 10.0.3.25"
+Unlocking flash ... Done
+Erasing old environment ... Done
+CRC write error on /dev/mtd1: Input/output error
+Error: can't write fw_env to flash
+Writing environment to /dev/mtd1 ... [root@SERVICE update]# ... Timeout.
+(child process exited abnormally)
 
-2.) Implement read(), write() and llseek() for master and slave windows to
-read/write values from/to the VME bus. Each would determine the master/slave
-window read/written by determining the minor device number.
+The respective environment sector has been erased, but writing the new
+environment didn't work.
 
-3.) Add ability to request specific windows back into ioctl, so mapping could be
-associated with the proper devices.
+If I insert a 'sync' command between writing on the rootfs partition and the
+fw_setenv call, writing of the environment sector works, but this is not
+really a solution???
 
-4.) Include boundary checking in the read/write/llseek implementations
-corresponding to their window values to avoid bad accesses "out of window".
+When trying the same procedure on another custom board with PPC405GP but
+only one flash device and same partition scheme (no concatenation
+necessary), everything works without a problem.
 
+Any ideas, comments?
 
-read() and write () would use the vmemcpy() function I introduced earlier when
-doing accesses to master windows.
+Best regards,
 
-Any ideas and suggestions towards this?
+Thomas Schäfer
 
-With kind regards,
-Oliver Korpilla
+____________________________________
+
+GIGA STREAM GmbH
+
+Konrad-Zuse-Str. 7
+66115 Saarbrücken
+
+Tel.: + 49 (0)681 / 95916 - 203
+Fax:  + 49 (0)681 / 95916 - 100
+E-mail: tschaefer@giga-stream.de
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
