@@ -1,34 +1,32 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Mark Wisner" <markwiz@us.ibm.com>
+From: "Michael Fischer" <fischi@epygi.de>
+To: <acurtis@onz.com>
 Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: RE: Debugging Network Performance
-Date: Tue, 4 Jun 2002 07:46:39 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFOEBLDIAA.acurtis@onz.com>
+Date: Tue, 4 Jun 2002 17:05:41 +0200
+Message-ID: <OEEHJMIIDJHHMFGGDNGDEEEOCOAA.fischi@epygi.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <OF93B8F461.B08FA3A3-ON85256BCE.004FA168@raleigh.ibm.com>
+In-Reply-To: <NCBBIINEHIPFGJPLBEIFOEBLDIAA.acurtis@onz.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> KGDB may be a good start. netif_rx() is where the packet gets
-> passed to the
-> stack. It basically throws the packet on a linklist for ip_rcv() in
-> ip_input.c to pick up and start processing it through the stack until it
-> passes the results to the application. This is tough stuff. Let
-> me know how
-> you make out.
+Hello,
+> Any idea who the network stack maintainer is? Perhaps they have something
+> that timestamps a packets progress through the pipeline.
 
-Any idea who the network stack maintainer is? Perhaps they have something
-that timestamps a packets progress through the pipeline.
+i dont know about what/if they are using but when i had to do something
+similar i patched my kernlel with the LTT package
+(http://www.opersys.com/LTT/). They have some built in tracepoints which are
+usefull + added some user defined trace events at different points within
+the driver and the stack. With a sequence number in the package which is
+copied to the trace you can pretty much follow and timestamp the way of the
+packet through the system.
+Of cause this is affecting the performance a bit but it may give you some
+idea where the packet spents most of the time.
 
-> I would guess the IP stack has not changed much between kernels.
-> I would be
-> more concerned about how the scheduler is working and other kernel tasks.
-
-The system is basically idle except for the NFS/FTP traffic.
+Best regards, Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
