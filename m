@@ -1,17 +1,13 @@
-Return-Path: <glenn@aoi-industries.com>
-Received: from aoi-industries.com (mail.aoi-industries.com [216.204.214.42])
-	by ozlabs.org (Postfix) with ESMTP id 8531A2BC0F
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Oct 2004 07:44:04 +1000 (EST)
-From: Glenn Burkhardt <glenn@aoi-industries.com>
-To: medp@primagraphics.com
-Date: Fri, 22 Oct 2004 17:20:25 -0400
+Return-Path: <runet@innovsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200410221720.25053.glenn@aoi-industries.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: gdb on a 440GP ELDK
+	charset="US-ASCII"
+Date: Fri, 22 Oct 2004 17:01:54 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB95@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <Linuxppc-embedded@ozlabs.org>
+Cc: 
+Subject: RE: CPM2 uart early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,29 +18,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> I can't seem to use breakpoints in gdb (application debugging in 
-> userland not kernel debugging).
+> From: Tom Rini [mailto:trini@kernel.crashing.org]=20
+> On Thu, Oct 21, 2004 at 04:57:56PM -0500, Rune Torgersen wrote:
+> > BTW..
+> > What are the device node numbers for ttyCPM[0..5] ?
+>=20
+> 204 42...45 (devices.txt in linuxppc-2.5, Pantelis ever=20
+> figure out what to do about the device # conflict with the=20
+> i.MX driver so we can push that small bit upstream ?)
 
-This won't be any consolation, but it works for me with my hardware and 
-configuration.  I'm using ELDK 3, with NFS root, on a P501 board from General 
-Micro.  My software revs are:
+Aparently not that simple.... I looked in the source, and it depends if=20
+an 8250 stype serial port is defined or not...
 
-[root@tweety root]# cat /proc/version
-Linux version 2.4.23-pre9 (root@tweety) (gcc version 3.2.2 20030217 (Yellow 
-Dog Linux 3.0 3.2.2-2a_2)) #79 Mon Oct 18 14:32:24 EDT 2004
+#ifndef CONFIG_SERIAL_8250
+#define SERIAL_CPM_MAJOR	TTY_MAJOR
+#define SERIAL_CPM_MINOR	64
+#else
+#define SERIAL_CPM_MAJOR	204
+#define SERIAL_CPM_MINOR	42
+#endif
 
-gcc version 3.2.2 20030217 (Yellow Dog Linux 3.0 3.2.2-2a_2)
-GNU gdb Yellow Dog Linux (5.2.1-4b_3)
-
-root@tweety root]# cat /proc/cpuinfo
-processor       : 0
-cpu             : 440GP Rev. C
-revision        : 4.129 (pvr 4012 0481)
-bogomips        : 599.65
-vendor          : GMS
-machine         : P501
-
-The software, except for the kernel I'm running, came off the iso image 
-available on the Denx site.
-
-Good luck!
+Urgh...
