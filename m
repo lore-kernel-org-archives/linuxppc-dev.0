@@ -1,60 +1,43 @@
-Message-Id: <5.1.0.14.2.20030617001918.02f0df58@mail.ebshome.net>
-Date: Tue, 17 Jun 2003 00:25:17 -0700
-To: Marius Groeger <mag@sysgo.de>
-From: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: lowlat & preeempt
-Cc: Robin Gilks <robin.gilks@tait.co.nz>,
-	linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.56.0306170908310.18398@mag.devdep.sysgo.de>
-References: <5.1.0.14.2.20030616234808.02ddad50@mail.ebshome.net>
- <3EEE93C5.4090302@tait.co.nz>
- <3EEE93C5.4090302@tait.co.nz>
- <5.1.0.14.2.20030616234808.02ddad50@mail.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Support for MPC852T, any experience ?
+Date: Tue, 17 Jun 2003 13:14:50 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200306171314.50574.david.jander@protonic.nl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 12:15 AM 6/17/2003, Marius Groeger wrote:
->On Mon, 16 Jun 2003, Eugene Surovegin wrote:
->
-> > >The low latency patch is now part of the kpreempt patch. A kpreempt
-> > >patch for 2.4.21-pre1 can be found here:
-> > >
-> > >http://www.kernel.org/pub/linux/kernel/people/rml/preempt-kernel/v2.4/
-> >
-> > Are you sure?
-> >
-> > preempt-kernel-rml-2.4.21-pre1-1.patch doesn't have
-> >   - low latency stuff (http://www.zip.com.au/~akpm/linux/schedlat.html)
-> > or
-> >   - lock-breaking stuff
-> > (http://www.kernel.org/pub/linux/kernel/people/rml/lock-break/)
->
->Yes, of course, lock breaking is also needed. I always use both
->kpreempt and lock-break. Wrong assumption on my part.
+Hi there,
 
-OK :)
+We are developing a board based on the MPC852T (fairly new model,
+stripped-down MPC866).
+Is there anybody who has sucessfully run linux-ppc on this processor yet (or
+it's more advanced MPC866 cousin) ?
+Any experience ?
+I am specifically interested in using the SPI mode for SCC3 or 4, plus FEC
+with an LXT971A phy.
+I am new to this mailing list, but I have searched through its archive and
+came up with a (simple ?) SPI driver from Navin Bopurri.
+Also on the DENX website I found their drivers for 8xx in the 2.4.4 kernel
+sources. Has anybody ported those drivers to a more recent version ?
+I have now managed to set up a cross-development system comiling the latest
+binutils, gcc-3.2.3 (--with-newlib) and the latest linuxppc_2_4_devel kernel
+from montavista. I have not been able to find an up to date guide for setting
+up such a system (I had to sweat my own way through it). If there is such a
+guide (the Howto's I could find seem hopelessly outdated), could someone
+please provide a pointer ? Otherwise, I would be glad to offer my experience
+from this point on for a FAQ or (somwhat more up-to-date) mini-howto. Any
+ideas ?
 
-I also use preempt + lock-break.
-Preempt patch alone is not good enough for our applications.
+Greetings,
 
->Anyway, with this combination you don't need the low-latency patches
->anymore (according to www.tech9.net/rml/linux):
-
-<snip>
-
-He is probably right.
-
-Although lock-break patch wasn't updated for some time.
-Andrew Morton's low latency patch seems to be more up to date ...
-
-I'm thinking about trying it instead of lock-break or maybe just full patch
-set from (http://members.optusnet.com.au/ckolivas/kernel/). It probably
-will require some PPC mods though...
-
-Eugene.
+--
+David Jander
+Protonic Holland.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
