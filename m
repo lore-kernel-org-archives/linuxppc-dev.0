@@ -1,29 +1,36 @@
-Date: Wed, 10 May 2000 21:21:10 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-cc: Bernhard Reiter <bernhard@intevation.de>, linuxppc-dev@lists.linuxppc.org
+Message-ID: <20000510212449.13837.qmail@www0r.netaddress.usa.net>
+Date: 10 May 00 16:24:49 CDT
+From: jeramy b smith <ultrapenguin@netscape.net>
+To: Bernhard Reiter <bernhard@intevation.de>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Lombard hard freeze (update: mem>64MB)
-In-Reply-To: <Pine.LNX.3.96.1000510104735.21621B-100000@deepspace.mklinux.org>
-Message-ID: <Pine.LNX.4.10.10005102120070.2625-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > As about the power consumption and the heat: It is my understanding that
-> > the fan should start up when there is too much heat controlled by
-> > hardware. But the fan does not start. And freezes also occur when the
-> > machine itself it cold. I also do not quite understand how the power
-> > consumption could be a problem here.
+Bernhard Reiter <bernhard@intevation.de> wrote:
+> When I had only 64MB the system was stable!
+> I managed to compile GRASS (which is among the biggest free software
+> projects) and other things.
 >
-> Me either.  I think the fan is started automagically in hardware anyway.
-> At least I'm pretty sure it was on the wallstreet....
+> Plugging in a different 128MB and a different 64MB, both in the first
+> slot, made the system unstable each time.
+>
+> This explains why Micheal has a stable system.
+> Sadly it is still a big problem.
+>
 
-It's supposed to start automagically. I've never noticed that happen
-though. Maybe this summer :-)
+I guess I am just lucky then. I went to a Fry's Electronics while I was in the
+valley area. Not only was I lucky enough to get the right module for my
+lombard but I was also lucky enough to have it give me no problems in linux or
+macos. Running silky smooth here at 192MB and I am already considering maxing
+it out just for bragging rights.
 
-	Michael
+-Jeramy
+
+PS: If you have never heard of the infamous "Fry's", just ask anyone who lives
+in the valley. I'm sure they'll have at least one horror story.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
