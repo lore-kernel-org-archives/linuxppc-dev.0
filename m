@@ -1,14 +1,25 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <1079.206.104.177.96.1018904994.squirrel@nevil.org>
-Date: Mon, 15 Apr 2002 16:09:54 -0500 (CDT)
-Subject: SMC Console not responding
-From: "Daris A Nevil" <dnevil@snmc.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: dnevil@snmc.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: SMC Console not responding
+Date: Mon, 15 Apr 2002 17:16:19 -0500
+Message-ID: <D3A72C5007329A4F991C0DD87202259F096B05@sekhmet.ad.newisys.com>
+From: "Navin Boppuri" <navin.boppuri@newisys.com>
+To: <dnevil@snmc.com>, <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Check and see if you've disabled the flow control in your terminal program. I've noticed this happen if you have the flow control enabled.
+
+Navin.
+
+-----Original Message-----
+From: Daris A Nevil [mailto:dnevil@snmc.com]
+Sent: Monday, April 15, 2002 4:10 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SMC Console not responding
+
 
 
 Hello All,
