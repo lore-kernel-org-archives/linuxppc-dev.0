@@ -1,144 +1,99 @@
-Message-ID: <38F3C699.6AC9C668@zeta.org.au>
-Date: Wed, 12 Apr 2000 10:43:05 +1000
-From: Peter Allworth <linsol@zeta.org.au>
-MIME-Version: 1.0
-To: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
-CC: "'Marcus Sundberg'" <erammsu@kieraypc01.p.y.ki.era.ericsson.se>,
-        "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>,
-        "Royal, Bill" <bill_royal@gilbarco.com>,
-        "Banks, Kelly" <kelly_banks@gilbarco.com>
-Subject: Re: Low Memory / Software Emulation Exception / Performance
-References: <200004111843.OAA19252@hoover.gilbarco.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200004121138.HAA05150@hoover.gilbarco.com>
+From: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
+To: "'Peter Allworth'" <linsol@zeta.org.au>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Low Memory / Software Emulation Exception / Performance
+Date: Wed, 12 Apr 2000 07:38:29 -0400
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_000_01BFA473.9FF19B0E"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the update, Jason, Marcus et al.
-With your permission, I'll add it to http://www.zeta.org.au/~linsol
-along with a warning about the existing head.S-non-cllf.
-One day I hope to tidy up that directory but, for now, putting everyone's
-changes in one place is better than nothing.
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-Regards,
-PeterA.
+------_=_NextPart_000_01BFA473.9FF19B0E
+Content-Type: text/plain;
+	charset="iso-8859-1"
+
+Peter,
+
+Attached is the patch file you requested, this should bring the head.S
+distributed in mpc8xx-2.2.13 up-to-date with the dirty page fix.
+
+Thanks,
+Jason
 
 
-"Wohlgemuth, Jason" wrote:
->
-> Marcus,
->
-> Okay... The performance issue has been resolved... I had to patch the head.S
-> in several places.  I should have looked into this before mailing the list.
->
-> head.S-non-cllf didn't contain all of the patch, and head.S-patch didn't
-> work.  With a combination of the two, the issue has been resolved.  Here is
-> a diff from the normal head.S distributed from mpc8xx-2.2.13
->
-> 4c4
-> <  *  $Id: head.S,v 1.1.1.1 2000/01/03 15:56:48 jason Exp $
-> ---
-> >  *  $Id: head.S,v 1.3 2000/04/10 14:52:26 jason Exp $
-> 904,905c904,913
-> <       mfspr   r21, MD_TWC     /* ....and get the pte address */
-> <       lwz     r21, 0(r21)     /* Get the pte */
-> ---
-> >       /* mfspr        r21, MD_TWC     */ /* ....and get the pte address */
-> >       /* lwz  r21, 0(r21)     */ /* Get the pte */
-> >       mfspr   r20, MD_TWC             /* ....and get the pte address */
-> >       lwz     r21, 0(r20)                     /* Get the pte */
-> >       andi.   r21, r21, _PAGE_PRESENT         /* Set cr0 if it's invalid
-> */
-> >       lwz     r21, 0(r20)                     /* Get the pte again */
-> >       beq     3f                              /* Skip update if invalid */
-> >       ori     r21, r21, _PAGE_ACCESSED        /* Set the accessed flag */
-> >       stw     r21, 0(r20)                     /* Update the pte */
-> > 3:
-> 1026a1035,1046
-> >       lwz     r20, 0(r21)                     /* Get the pte */
-> >       andi.   r20, r20, _PAGE_PRESENT         /* Set cr0 if it's invalid
-> */
-> >       beq     4f                              /* Skip update if invalid */
-> >       mfspr   r20, DSISR                      /* Check for store op */
-> >       andis.  r20, r20, 0x0200                /* If set, indicates store
-> */
-> >       lwz     r20, 0(r21)                     /* Get the pte again */
-> >       beq     3f
-> >       ori     r20, r20, _PAGE_DIRTY|_PAGE_HWWRITE /* Set the dirty flags
-> */
-> > 3:
-> >       ori     r20, r20, _PAGE_ACCESSED        /* Set the accessed flag */
-> >       stw     r20, 0(r21)                     /* Update the pte */
-> > 4:
-> 1116c1136,1137
-> <       ori     r21, r21, _PAGE_DIRTY   /* Update changed bit */
-> ---
-> >       /* ori  r21, r21, _PAGE_DIRTY */        /* Update changed bit */
-> >       ori     r21, r21, _PAGE_DIRTY|_PAGE_HWWRITE|_PAGE_ACCESSED
->
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-> Wohlgemuth, Jason
-> Sent: Tuesday, April 11, 2000 1:21 PM
-> To: 'Marcus Sundberg'
-> Cc: 'linuxppc-embedded@lists.linuxppc.org'; Royal, Bill; Banks, Kelly
-> Subject: RE: Low Memory / Software Emulation Exception / Performance
->
-> Marcus,
->
-> We are mapping memory that is above RAM, it has worked without any problems
-> until I applied the dirty page fix.  After that doing a memset on 96k of
-> /dev/mem mapped memory takes several minutes.  I will do some more
-> experiments and get back to you.
->
-> Jason
->
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Marcus
-> Sundberg
-> Sent: Tuesday, April 11, 2000 12:41 PM
-> To: Wohlgemuth, Jason
-> Cc: 'linuxppc-embedded@lists.linuxppc.org'; Royal, Bill
-> Subject: Re: Low Memory / Software Emulation Exception / Performance
->
-> "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com> writes:
->
-> > Just a few more questions.  After applying the head.S patch our software
-> > emulation exceptions have gone away, although, I intend to go back and
-> trip
-> > the exception with a logic analyzer attached to verify everything with our
-> > hardware engineer.  However, this patch seems to induce ultra-slow
-> > performance in areas where we map physical memory down to the user-level
-> > with /dev/mem, my guess is that it has something to do with this:
->
-> Tring to map in RAM via /dev/mem is equivalent to mapping /dev/zero -
-> you'll get anonymous private pages (which are cached). Don't ask me
-> why it is done like that... Trying to map in memory above RAM via
-> /dev/mem will work as intended, and will always give you caching
-> inhibited pages.
->
-> The dirty page fix should not alter this behaviour afaikt.
->
-> Which is it that you are doing?
->
-> > Specifically, the part regarding _PAGE_WRITETHRU being redefined to
-> > _PAGE_NO_CACHE, is this a correct assumption?
->
-> Yes, but _PAGE_WRITETHRU is not used by anything in the standard
-> kernel so it shouldn't make any difference.
->
-> >  Is anyone else running into performance related issues with this
-> > patch applied?
->
-> I haven't noted anything like that, but on the other hand we have
-> no apps mapping /dev/mem.
->
-> //Marcus
-> --
-> Signature under construction, please come back later.
->
+------_=_NextPart_000_01BFA473.9FF19B0E
+Content-Type: application/octet-stream;
+	name="mpc8xx-2.2.13-page-patch"
+Content-Disposition: attachment;
+	filename="mpc8xx-2.2.13-page-patch"
+
+--- head.S.orig	Mon Apr 10 10:33:28 2000
++++ head.S	Tue Apr 11 14:59:54 2000
+@@ -1,7 +1,7 @@
+ /*
+  *  arch/ppc/kernel/head.S
+  *
+- *  $Id: head.S,v 1.1.1.1 2000/01/03 15:56:48 jason Exp $
++ *  $Id: head.S,v 1.4 2000/04/11 18:59:54 jason Exp $
+  *
+  *  PowerPC version
+  *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+@@ -901,8 +901,16 @@
+ 	ori	r21,r21,1		/* Set valid bit */
+ 	mtspr	MI_TWC, r21	/* Set page attributes */
+ 	mtspr	MD_TWC, r21	/* Load pte table base address */
+-	mfspr	r21, MD_TWC	/* ....and get the pte address */
+-	lwz	r21, 0(r21)	/* Get the pte */
++	/* mfspr	r21, MD_TWC	*/ /* ....and get the pte address */
++	/* lwz	r21, 0(r21)	*/ /* Get the pte */
++	mfspr	r20, MD_TWC		/* ....and get the pte address */
++	lwz	r21, 0(r20)			/* Get the pte */
++	andi.	r21, r21, _PAGE_PRESENT		/* Set cr0 if it's invalid */
++	lwz	r21, 0(r20)			/* Get the pte again */
++	beq	3f				/* Skip update if invalid */
++	ori	r21, r21, _PAGE_ACCESSED	/* Set the accessed flag */
++	stw	r21, 0(r20)			/* Update the pte */
++3:
+
+ 	/* Set four subpage valid bits (24, 25, 26, and 27).
+ 	 * Since we currently run MI_CTR.PPCS = 0, the manual says,
+@@ -1024,6 +1032,18 @@
+ 	ori	r21, r21, 1	/* Set valid bit in physical L2 page */
+ 	mtspr	MD_TWC, r21	/* Load pte table base address */
+ 	mfspr	r21, MD_TWC	/* ....and get the pte address */
++	lwz	r20, 0(r21)			/* Get the pte */
++	andi.	r20, r20, _PAGE_PRESENT		/* Set cr0 if it's invalid */
++	beq	4f				/* Skip update if invalid */
++	mfspr	r20, DSISR			/* Check for store op */
++	andis.	r20, r20, 0x0200		/* If set, indicates store */
++	lwz	r20, 0(r21)			/* Get the pte again */
++	beq	3f
++	ori	r20, r20, _PAGE_DIRTY|_PAGE_HWWRITE /* Set the dirty flags */
++3:
++	ori	r20, r20, _PAGE_ACCESSED	/* Set the accessed flag */
++	stw	r20, 0(r21)			/* Update the pte */
++4:
+ 	lwz	r21, 0(r21)	/* Get the pte */
+
+ 	/* Set four subpage valid bits (24, 25, 26, and 27).
+@@ -1113,7 +1133,8 @@
+ 	andi.	r20, r21, _PAGE_RW	/* Is it writeable? */
+ 	beq	2f			/* Bail out if not */
+
+-	ori	r21, r21, _PAGE_DIRTY	/* Update changed bit */
++	/* ori	r21, r21, _PAGE_DIRTY */	/* Update changed bit */
++	ori	r21, r21, _PAGE_DIRTY|_PAGE_HWWRITE|_PAGE_ACCESSED
+ 	mfspr	r20, MD_TWC		/* Get pte address again */
+ 	stw	r21, 0(r20)		/* and update pte in table */
+
+
+------_=_NextPart_000_01BFA473.9FF19B0E--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
