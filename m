@@ -1,69 +1,62 @@
-Message-ID: <3945518F.B3185904@noos.fr>
-Date: Mon, 12 Jun 2000 23:09:35 +0200
-From: Guillaume Laurhs <guillaume.laures@noos.fr>
-Reply-To: guillaume.laures@noos.fr
+Date: Tue, 13 Jun 2000 00:07:43 +0200 (MET DST)
+From: Karl-Heinz Krempels <charlie@pool.informatik.rwth-aachen.de>
+To: Andrew Weiss <Andrew.Weiss@boxx.net>
+cc: guillaume.laures@noos.fr, Charles E Leiserson Jr <locutus@MIT.EDU>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: SMP 
+In-Reply-To: <002701bfd4a2$bcee0850$4401a8c0@boxx.net>
+Message-ID: <Pine.SOL.4.10.10006130007060.22196-100000@remington.informatik.rwth-aachen.de>
 MIME-Version: 1.0
-To: Charles E Leiserson Jr <locutus@MIT.EDU>
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SMP
-References: <200006121812.OAA19506@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Charles E Leiserson Jr a *crit :
+Hi *,
 
-> You can get a working SMP kernel at ftp://borg.mit.edu/pub/linux/linuxppc/kerne
-> ls/multiprocessor/ with all of its support files.  It's a bit old (2.2.12),
-> but it works.
+yeah it works on a UMAX S900, but without USB.
 
-Unfortunately, it doesn't work. BootX 1.2.2 shows up only one penguin, and I get
-the same /proc/cpuinfo.
-I realized that I have this oddity in dmesg :
+Charlie.
 
-Entering SMP Mode...
-Processor 1 is stuck.
+Karl-Heinz Krempels, Vereinsstrasse 13-15, 52062 Aachen, +49-241-4093691
+Aachen University of Technology , charlie@pool.informatik.rwth-aachen.de
+- In a world without walls and fences,
+  what should we do with windows and gates?
 
-On 2.2.16 it's the same (dmesg from the begining) :
+On Mon, 12 Jun 2000, Andrew Weiss wrote:
 
-device tree used 31392 bytes
-Total memory = 64MB; using 256kB for hash table (at c0240000)
-Linux version 2.2.16 (root@pm9500) (gcc version 2.95.2 20000313 (Debian
-GNU/Linux)) #2 SMP Mon Jun 12 16:59:05 CEST 2000
-PCI bus 0 controlled by bandit at f2000000
-Cache coherency enabled for bandit/PSX at f2000000
-PCI bus 1 controlled by bandit at f4000000
-Cache coherency enabled for bandit/PSX at f4000000
-System has 32 possible interrupts
-via_calibrate_decr: decrementer_count = 112500 (675003 ticks)
-Console: colour dummy device 80x25
-Calibrating delay loop... 358.81 BogoMIPS
-Memory: 62364k available (1228k kernel code, 1848k data, 96k init) [c0000000,c40
-00000]
-Dentry hash table entries: 8192 (order 4, 64k)
-Buffer cache hash table entries: 65536 (order 6, 256k)
-Page cache hash table entries: 16384 (order 4, 64k)
-POSIX conformance testing by UNIFIX
-Entering SMP Mode...
-Processor 1 is stuck.            <--------------------
-PCI: Probing PCI hardware...
-
-It sounds like the second processor cannot be correctly started...
-
-I tried with an older bootX (1.1.3) it's the same. For now, I can't quik, I think
-Darwin messes up quik (it's installed on a partition before linux).
-
-The cards work well under MacOS, distributed.net client makes a full use of both
-processors (which brings the 9500 a bit higher than a G3@333, but still 3,5 times
-lower than a G4@450..., always accordingto dnet's client)
-
-
-Any though about this ? Any way to debug ??
-
-Thanks,
-
-GoM
+>
+> Weren't those cards the only working example of assymetric
+> multi-processing?.  Would an SMP kernel actually drive them properly?
+>
+> Andrew
+> ----------------------------------------------------------------------------
+> --
+> Big Endian Girls make the RISCen world go round
+> ----- Original Message -----
+> From: "Charles E Leiserson Jr" <locutus@MIT.EDU>
+> To: <guillaume.laures@noos.fr>
+> Cc: <linuxppc-dev@lists.linuxppc.org>; <locutus@MIT.EDU>
+> Sent: Monday, June 12, 2000 2:12 PM
+> Subject: Re: SMP
+>
+>
+> >
+> > You can get a working SMP kernel at
+> ftp://borg.mit.edu/pub/linux/linuxppc/kerne
+> > ls/multiprocessor/ with all of its support files.  It's a bit old
+> (2.2.12),
+> > but it works.
+> >
+> >
+> > - Ricky
+> >
+> >
+> >
+>
+>
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
