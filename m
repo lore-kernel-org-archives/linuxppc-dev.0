@@ -1,20 +1,21 @@
-Return-Path: <kato.takeharu@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by ozlabs.org (Postfix) with ESMTP id 6220467A71
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id E046067A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Mar 2005 18:32:19 +1100 (EST)
-Message-ID: <4226BD66.2050003@jp.fujitsu.com>
-Date: Thu, 03 Mar 2005 16:31:50 +0900
-From: Takeharu KATO <kato.takeharu@jp.fujitsu.com>
+	Thu,  3 Mar 2005 19:23:31 +1100 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: =?iso-8859-1?q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
+Date: Thu, 3 Mar 2005 09:23:22 +0100
+References: <46110262C7A0BF418DE9C9A5BD73F92807F2F94C@cceexc23.americas.cpqcorp.net>
+	<200503011737.22205.g.jaeger@sysgo.com>
+	<20050302215308.GA6511@wohnheim.fh-wedel.de>
+In-Reply-To: <20050302215308.GA6511@wohnheim.fh-wedel.de>
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <42231C26.7020508@jp.fujitsu.com>
-	<fb51aa4f2ef8274e05a26ed098918ffc@freescale.com>
-In-Reply-To: <fb51aa4f2ef8274e05a26ed098918ffc@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 3/3] PowerPC4xx/E500 WatchDogTimerDriver(exception
- handler part)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200503030923.22677.g.jaeger@sysgo.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Building a Kernel for the AMCC PPC440EP Bamboo Board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,19 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+On Wednesday 02 March 2005 22:53, J=F6rn Engel wrote:
+> On Tue, 1 March 2005 17:37:22 +0100, Gerhard Jaeger wrote:
+> > On Tuesday 01 March 2005 17:14, Zeighami, Roy wrote:
+> > >=20
+> > > When I select 44x as the CPU type, I don't see "Bamboo" under machine
+> > > type. =20
+> >=20
+> > This won't work, as Bamboo BSP stuff is currently not added.
+>=20
+> Correct.
+>=20
+> > > Any suggestions?
+> >=20
+> > try to use ebony_defconfig
+>=20
+> Doesn't work, neither does ocotea.  Both are able to display "TUX!" on
+> the dot-matrix display, but panic before writing any serial output.
+>=20
+> /me has one of these beauties as well and will try to hack up support
+> for it.  If anyone has patches or suggestions, help is always
+> appreciated.
+>=20
+Could not confirm that so far! Ebony and Ocotea are working out of the
+box, using these defconfig files! (pristine kernel 2.6.11)
 
-Kumar Gala wrote:
+Gerhard
 
-> I've sent the part of this that was a bug fix to head_booke.h up stream 
-> to andrew.
-> 
-> - kumar
-> 
-Thank you, I confirmed your mail to akpm.
-
-
--- 
-Takeharu KATO
-Fujitsu Limited
-Email:kato.takeharu at jp.fujitsu.com
+=2D-=20
+Gerhard Jaeger <gjaeger@sysgo.com>           =20
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de=20
