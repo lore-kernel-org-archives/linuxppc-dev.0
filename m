@@ -1,39 +1,45 @@
-Message-ID: <3A242BE5.C34D48FC@mvista.com>
-Date: Tue, 28 Nov 2000 17:04:21 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Brian Ford <ford@vss.fsi.com>
-CC: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 28 Nov 2000 16:33:46 -0600 (CST)
+From: Brian Ford <ford@vss.fsi.com>
+To: Dan Malek <dan@mvista.com>
+cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: EST SBC8260 and Canary CTX-1170
-References: <Pine.GSO.4.21.0011281308070.493-100000@eos>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3A242BE5.C34D48FC@mvista.com>
+Message-ID: <Pine.GSO.4.21.0011281625590.493-100000@eos>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Ford wrote:
+On Tue, 28 Nov 2000, Dan Malek wrote:
 
-> So does this mean that a "complete" implementation would have a
-> "command/status MII interface" or that a "complete" implementation does
-> not need one?
+> I just checked in the newer driver that will properly do this on
+> the EST board with the National PHY in the CTX-1170 gizmo.  If for
+> some reason this doesn't work, just modify mii_discover_phy_poll() to
+> set 'phy_duplex' to '1'.
+>
+Thank you very much.
 
-The complete implementation should have a real command/status MII
-interface.
+> I checked this into linuxppc_2_5 BitKeeper on FSM Labs.  My 2.3/2.4
+> kernel is broken and I need to clone a new tree before I can make
+> changes.  That will take a little while......
+>
 
+Ok.  Do you know if there is anonymous bk access to the linuxppc_2_5
+tree?  If so, on what port?  http://www.fsmlabs.com/linuxppcbk.html
+doesn't mention it and I would like to play with it if possible.
 
-> Can you help point me to where I need to write code that would initialize
-> the FCC to do full duplex,
+As an off topic side note, wouldn't it make sense for there to be a common
+MII library for all linux network drivers to share?  Is this not possible,
+or has no one volunteered yet?
 
-I just checked in the newer driver that will properly do this on
-the EST board with the National PHY in the CTX-1170 gizmo.  If for
-some reason this doesn't work, just modify mii_discover_phy_poll() to
-set 'phy_duplex' to '1'.
+--
+Brian Ford
+Software Engineer
+Vital Visual Simulation Systems
+FlightSafety International
+Phone: 314-551-8460
+Fax:   314-551-8444
 
-I checked this into linuxppc_2_5 BitKeeper on FSM Labs.  My 2.3/2.4
-kernel is broken and I need to clone a new tree before I can make
-changes.  That will take a little while......
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
