@@ -1,20 +1,18 @@
 Return-Path: <g.jaeger@sysgo.com>
 Received: from mailgate.sysgo.de (ns.sysgo.de [213.68.67.98])
-	by ozlabs.org (Postfix) with ESMTP id 0C3DF2BC0F
+	by ozlabs.org (Postfix) with ESMTP id E7D4B2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Oct 2004 16:26:56 +1000 (EST)
+	Fri, 22 Oct 2004 16:30:36 +1000 (EST)
 From: Gerhard Jaeger <g.jaeger@sysgo.com>
 To: linuxppc-embedded@ozlabs.org
-Date: Fri, 22 Oct 2004 08:26:40 +0200
-References: <20041022085733.0c5289c8.Hiroshi_DOYU@montavista.co.jp>
-	<20041022103859.50e2b2f6.Hiroshi_DOYU@montavista.co.jp>
-	<20041022020226.GC22069@gate.ebshome.net>
-In-Reply-To: <20041022020226.GC22069@gate.ebshome.net>
+Date: Fri, 22 Oct 2004 08:30:31 +0200
+References: <C18BA5DDB58DD511BD0700C0DF0DD4502941EC@NTSERVER4>
+In-Reply-To: <C18BA5DDB58DD511BD0700C0DF0DD4502941EC@NTSERVER4>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200410220826.40794.g.jaeger@sysgo.com>
-Cc: 
+  charset="iso-8859-15"
+Message-Id: <200410220830.31518.g.jaeger@sysgo.com>
+Cc: Daren Hayward <darenh@4bridgeworks.com>
 Subject: Re: [BUG] IBM440GX works too slow under nfsroot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,7 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 22 October 2004 04:02, Eugene Surovegin wrote:
+On Friday 22 October 2004 07:57, Daren Hayward wrote:
+> What revision of the CPU do you have?? I know that upto rev C half duplex
+> has a problem with the cpu and only REV C silicon works if I am not
+> mistaken, there is an errata on IBM's website about this
+>
+> Daren
+>
+> -----Original Message-----
+> From: Eugene Surovegin [mailto:ebs@ebshome.net]
+> Sent: 22 October 2004 03:02
+> To: Hiroshi DOYU
+> Cc: Linux PPC Embedded
+> Subject: Re: [BUG] IBM440GX works too slow under nfsroot
+>
 > On Fri, Oct 22, 2004 at 10:38:59AM +0900, Hiroshi DOYU wrote:
 > > On Thu, 21 Oct 2004 18:33:20 -0700
 > >
@@ -49,19 +60,12 @@ On Friday 22 October 2004 04:02, Eugene Surovegin wrote:
 >
 > You can also bug Matt Porter, maybe he'll help you sooner :).
 
-Hi Eugene,
+Daren,
+ 
+you are right about that, but this seems to be not true, even the latest REV C
+seems to have problems - that's what we can observe here :(
 
-this problem has been discussed a while ago between my co-worker and
-Matt-Porter - first on the list and later on in private. We also have this
-problem on a custom board using the 440GX. It can be also seen on a Ebony
-(440GP) as well and on our rather old Ocotea. Our kernel originally is based
-on 2.4.26, but the EMAC driver has been backported from 2.6.9.
-Fiddling around with some settings seems to help a bit, but in the end we see
-excessive collisions. The reason is not clear yet. 
-Matt could not confirm this behaviour 'til now.
-
-Ciao,
-  Gerhard
+Gerhard
 
 -- 
 Gerhard Jaeger <gjaeger@sysgo.com>            
