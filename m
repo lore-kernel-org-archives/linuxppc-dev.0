@@ -1,40 +1,36 @@
-Message-ID: <20010501161200.93146.qmail@web9901.mail.yahoo.com>
-Date: Tue, 1 May 2001 09:12:00 -0700 (PDT)
-From: Freddy Lugo <wilflugo@yahoo.com>
-Subject: Re: Image download problem with gdb and DBI 
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20010430214627.AF7E02814D@denx.denx.de>
+Message-ID: <3AEEF8BC.FE7CFAC@mvista.com>
+Date: Tue, 01 May 2001 10:56:12 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
+To: ashish anand <ashisha@india.infogain.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: sandpoint spurious interrupt problem.
+References: <12D7808A.BAC6DDED@india.infogain.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> At least it's part of the problem. Another problem
-> might  be  missing
-> hardware  initialization  and  parameter  passing.
-> Usually I let the
-> firmware initialize the box and load the linux
-> kernel...
+Did you start with the sandpoint port that is a part of linuxppc_2_5?  If not,
+you should.
+If so, double-check your switch settings.
 
-The FORMAT was already set to IMAGE on the bdi2000.
-Also I tried to make an autoload (LOAD AUTO) from the
-BDI and still the image is not downloaded or could not
-be found.  On the gdb, the load doesn't download the
-image.
+Mark
+--
 
-I let the MPC750 used the standard initialization
-provided on boot/head.S.
+ashish anand wrote:
 
-Since the kernel image is not found yet, the MMU is
-not set (AFAIK), what other initialization could be
-needed in order to permit the image download?
-
-Sorry for all the bothering.  I checked the list but I
-didn't find information on the issue.
-
-Thanks,
-Freddy Lugo
+> I am working towards porting linux on sandpoint with mpc750
+> I face the problem of continious spurious interrupts on booting
+> as per the base code SIOint is cascaded to EPIC in level triggered
+> mode , problem vanishes when i change it to edge triggered mode
+> also recall written in some intel document that external interrupts from
+> 8259 or equivalent pic's should be cascaded to APIC in edge triggered
+> mode only
+> why this requirement for cascading the interrupts from 8259 or other pic's
+> to APIC/EPIC
+> any comment on this will help me much
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
