@@ -1,39 +1,49 @@
-MIME-Version: 1.0
+Date: Sun, 5 Aug 2001 23:49:45 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Modules and CONFIG_ALTIVEC
+Message-ID: <20010805234945.A837@ibrium.se>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15213.42280.789880.989118@mediaone.net>
-Date: Sun, 5 Aug 2001 15:57:28 -0400
-From: R Shapiro <reshapiro@mediaone.net>
-To: Olaf Hering <olh@suse.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: lcd17 kernel patches?
-In-Reply-To: <20010805200639.A14938@suse.de>
-References: <15213.15313.170106.433877@mediaone.net>
-	<20010805200639.A14938@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Olaf Hering writes:
- > Try this one in the meantime:
+On ppc, the size of thread_struct depends on the CONFIG_ALTIVEC setting.
+Thus, the offset of various task_struct fields are dependent upon this
+config option.
 
-OK, this mostly works with the 2.4.7 kernel sources, but there's one
-important difference between the building a kernel this way and
-running that prebuilt 2.4.2.  The prebuilt kernel has working video
-immediately on booting.  The kernel I built with your patch has no
-video at all until I run 'fbset 1280x1024-60'.  Clearly there's more
-to that prebuilt 2.4.2 than just an additional mode definition.
+This makes it difficult to distribute precompiled module binaries
+(in a safe manner). It really shouldn't be necessary to bundle:
 
-But this will do for now - thanks for the patch.  I created an init.d
-entry which runs the fbset command and I set it to run very early
-(00).  So at least I can see some of the boot messages as they go by.
-Maybe I could put it in inittab or rc.sysinit to get it even earlier.
-But I might rather wait for a real patch.
+	module-2.4.X
+	module-2.4.X-smp
+	module-2.4.X-altivec
+	module-2.4.X-altivec-smp
+
+To avoid this problem, one could do something like:
+
+        unsigned long   fpscr;          /* Floating point status */
+-#ifdef CONFIG_ALTIVEC
+-       vector128       vr[32];         /* Complete AltiVec set */
+-       vector128       vscr;           /* AltiVec status */
+-       unsigned long   vrsave;
+-#endif /* CONFIG_ALTIVEC */
++	altivec_t	*vregs;
+
+I'm not sure the affected task_struct fields are
+ever referenced by a typical kernel module. But this is
+difficult to check and besides, new fields might be added
+to the end of the struct.
+
+Thoughts?
+
+/Samuel
 
 
-
-
---
-reshapiro@mediaone.net
-
+----------------------------------------------------------
+ E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
+  Phone/fax: (home) +46 8 4418431, (work) +46 8 790nnnn
+----------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
