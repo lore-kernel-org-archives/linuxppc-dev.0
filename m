@@ -1,26 +1,25 @@
-Date: Wed, 9 Jul 2003 14:36:00 +0200
-From: torben@kernel.dk
+Content-Type: text/plain;
+  charset="iso-8859-15"
+From: Rakesh jagota <j.rakesh@gdatech.co.in>
+Reply-To: j.rakesh@gdatech.co.in
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Using current dev kernel with Npe405L,
-Message-ID: <20030709123600.GA4255@tmathiasen>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Query about Opera browswer with IBM405ppc
+Date: Wed, 9 Jul 2003 18:53:59 +0530
+MIME-Version: 1.0
+Message-ID: <genctcypwns8w3h.090720031844@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi all,
+We are working on custom design board based on IBM405 powerPC.
+We want to include the opera browser on IBM405 based board. We are not able
+to compile the the code properly. Its asking for some qt libraries. Did
+anyone try this?
 
-I was wondering what the status of Npe405L support is in the current
-linux-2.4ppc-devel kernel? I see some 405L specific code in the tree but it
-looks to only be the initial support.
+Thanks & Regards,
 
-Also, how compatible are the the 405L to the 405GP? Is it possible to boot a
-kernel compiled for the 405GP (walnut platform) on the 405L (ceder) ? I realize
-some changes to the 405GP network drivers is needed for the 405L, but does the
-basic kernel boot?
+Rakesh
 
-Thanks in advance,
-Torben
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
