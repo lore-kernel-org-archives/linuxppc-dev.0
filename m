@@ -1,23 +1,39 @@
-Date: Thu, 6 Jun 2002 10:51:46 -0500
-From: Stephen Cameron <steve.cameron@hp.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: scsi_to_pci_dma_dir(), <linux/pci.h>
-Message-ID: <20020606105146.A23275@zuul.cca.cpqcorp.net>
-Reply-To: steve.cameron@hp.com
-Mime-Version: 1.0
+Message-ID: <3CFF865B.4C4F8DDA@mvista.com>
+Date: Thu, 06 Jun 2002 10:57:15 -0500
+From: Mark Hatle <fray@mvista.com>
+MIME-Version: 1.0
+To: Rick Hunnicutt <rhunnicu@getntds.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: GDB/GDBSERVER and remote Thread Debugging
+References: <000a01c20d70$e66e9420$cdf859c7@get.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I noticed that scsi_to_pci_dma_dir() appears to only get
-defined in include/linux/pci.h if CONFIG_PCI is _not_ set.
+Probably not the answer you want, but MontaVista's GDB 5.2 version allows remote
+thread debugging.  (We are in the process of releasing GDB 5.2 as an update
+right now.  I don't know for sure when it will be released.)  I don't know if
+the upstream (GNU version) supports that for PPC or not.  I know it does not for
+SH, MIPS, and ARM.
 
-That doesn't seem right.
+--Mark
 
-(my linuxppc_2_4_devel tree is maybe 2 weeks old)
-
--- steve
-
+Rick Hunnicutt wrote:
+>
+> Will this give thread debugging with GDBSERVER as well or does it still have
+> to be native GDB?
+> >
+> > You will need to be working with GDB version 5.2 or newer to do thread
+> > debugging.
+> >
+> > --Mark
+> >
+> > > I'm looking for a stable GDB/GDBSERVER extension
+> > > suitable for (remote) Debugging multiple threads.
+> > >
+> > > It should also possible to attach already running
+> > > threads.
+> > >
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
