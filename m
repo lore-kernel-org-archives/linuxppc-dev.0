@@ -1,22 +1,40 @@
-Message-ID: <3B4B8B30.B6E4C9C5@comdev.cc>
-Date: Tue, 10 Jul 2001 16:09:36 -0700
-From: Adam Wozniak <adam.wozniak@comdev.cc>
-MIME-Version: 1.0
-To: dmalek@mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: fcc_enet
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 11 Jul 2001 00:34:02 -0700
+From: Ira Weiny <iweiny@acm.org>
+Subject: Re: IBM Microdrive PCCard on TiBook (ide-cs module)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>, blythe@routefree.com
+Message-id: <3B4C016A.CA1BEFB0@acm.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <3B460601.6A3AA7D9@acm.org> <20010707103519.972@smtp.wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Where can I find the most recent 8260_io/fcc_enet.c ?
-Are these in bitkeeper?  What server do I use?  The fsmlabs server seems
-to be down.
+Benjamin Herrenschmidt wrote:
+>
+> I think the problem has more to do with disabling the interrupt at
+> the proper place in the IDE layer, I can try to find that discussion
+> on linux-kernel to see if they came up with a solution, the problem
+> seem to happen on x86 as well.
+>
 
---
-Adam Wozniak (KG6GZR)   COM DEV Wireless - Digital and Software Systems
-awozniak@comdev.cc      3450 Broad St. 107, San Luis Obispo, CA 93401
-                        http://www.comdev.cc
-                        Voice: (805) 544-1089       Fax: (805) 544-2055
+Thanks to Ben and David Blythe for your responses.  Indeed I think you
+are correct.  Unfortunatly I found a patch posted by Gunther Mayer on
+the Linux-kernel mailing list which does not seem to fix things either.
+His patch looks like it does what David described; disabling interrupts
+and then reenabling them in init_irq...  But it does not work...  ;-(
+
+At this point the only thing I can think of is that the device is not
+responding to the interrupt disable?  Or I have missed something with
+the patch.  David, you would not happen to be able to send me a patch or
+your entire ide tree?
+
+Oh well I just thought I would thank you guys for leading me the correct
+way.
+
+Thanks again,
+Ira Weiny
+iweiny@acm.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
