@@ -1,17 +1,19 @@
-Return-Path: <evilninja@gmx.net>
-Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 33F7C67A6B
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 03:34:16 +1100 (EST)
-Message-ID: <423319FF.8090906@gmx.net>
-Date: Sat, 12 Mar 2005 17:34:07 +0100
-From: Christian <evilninja@gmx.net>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-References: <A79EE6739F2C7348A857541FB5CD92D6011566F6@asimail1.rb.uav.com>
-In-Reply-To: <A79EE6739F2C7348A857541FB5CD92D6011566F6@asimail1.rb.uav.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "Brian V. Madzarevic" <Brian.Madzarevic@uav.com>
-Subject: Re: 2.6.11 prep image on radstone ppc4a not booting
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4A71167A64
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 17:47:52 +1100 (EST)
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j2D6jcgJ032621
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Mar 2005 00:45:39 -0600
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Sun, 13 Mar 2005 17:47:09 +1100
+Message-Id: <1110696430.19810.105.camel@gaston>
+Mime-Version: 1.0
+Subject: [Fwd: Re: hda: lost interrupt starting with 2.6.8]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,45 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+-------- Forwarded Message --------
+From: Vince Weaver <vince@deater.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: debian-powerpc@lists.debian.org <debian-powerpc@lists.debian.org>
+Subject: Re: hda: lost interrupt starting with 2.6.8
+Date: Sun, 13 Mar 2005 00:18:38 -0500 (EST)
+OK, I've spent most of the day making my poor iBook compile kernels and 
+I've tracked down the error.  I can't seem to figure out why it would 
+happen on my machine and no one elses, at least unless it's a compiler 
+issue (I am using gcc 3.2.2).
 
-Brian V. Madzarevic wrote:
-> Setting PCI interrupts for a "Blackhawk (Powerstack)"
-> PCI: Cannot allocate resource region 0 of device 0000:00:0b.1
-[...]
+Somewhere between 2.6.8-rc1 and 2.6.8-rc2 interrupts just stop getting 
+delivered.
 
-i don't know about these, hopefully the ppc gurus could explain these
-messages.
+I tracked it down to this patch to linux/arch/ppc/syslib/open_pic.c :
 
-> Linux Tulip driver version 1.1.13 (May 11, 2002)
-> tulip0:  EEPROM default media type Autosense.
-- --^
+  /*
+   *  Map an interrupt source to one or more CPUs
+   */
+-static void openpic_mapirq(u_int irq, u_int physmask, u_int keepmask)
++static void openpic_mapirq(u_int irq, cpumask_t physmask, cpumask_t keepmask)
+  {
+         if (ISR[irq] == 0)
+                 return;
+-       if (keepmask != 0)
+-               physmask |= openpic_read(&ISR[irq]->Destination) & 
+keepmask;
+-       openpic_write(&ISR[irq]->Destination, physmask);
++       if (!cpus_empty(keepmask)) {
++               cpumask_t irqdest = { .bits[0] = 
+openpic_read(&ISR[irq]->Destination) };
++               cpus_and(irqdest, irqdest, keepmask);
++               cpus_or(physmask, physmask, irqdest);
++       }
++       openpic_write(&ISR[irq]->Destination, cpus_addr(physmask)[0]);
+  }
 
-did you try the de4x5 driver instead of the tulip one? if not...
+And this one:
+-               openpic_mapirq(i, 1<<0, 0);
++               openpic_mapirq(i, CPU_MASK_CPU0, CPU_MASK_NONE);
 
-> CONFIG_NET_TULIP=y
-> # CONFIG_DE2104X is not set
-> CONFIG_TULIP=y
-> # CONFIG_TULIP_MWI is not set
-> # CONFIG_TULIP_MMIO is not set
-> # CONFIG_TULIP_NAPI is not set
-> # CONFIG_DE4X5 is not set
-- ----^
-here it is ;)
-could be worth a try.
 
-Christian.
-- --
-BOFH excuse #80:
+Using printk's, I can see before the change I properly was writing "1" as 
+the second argument to openpic_write, but afterwards it was 0.
 
-That's a great computer you have there; have you considered how it would
-work as a BSD machine?
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+It seems as though for some reason CPU_MASK_CPU0 is 0 on my kernel, rather 
+than just a 1.
 
-iD8DBQFCMxn/C/PVm5+NVoYRAk1mAKCKCWXxlrHg031uktVx4BxtEMwePACg4hDq
-muiR9Exk06I4vS0Xb4L4S3w=
-=dqrh
------END PGP SIGNATURE-----
+By patching the kernel to force it to write a 1 in openpic_write the 
+kernel runs fine...
+
+So, any ideas?  I'll be glad to try out anything else if you'd like me to.
+
+Vince
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
