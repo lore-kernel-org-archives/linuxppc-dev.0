@@ -1,40 +1,32 @@
-Date: Tue, 4 May 1999 23:18:19 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pre-patch-2.2.8-series candidate, TESTERS NEEDED... (fwd)
-Message-ID: <Pine.LNX.4.10.9905042316270.18705-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199905042220.PAA17423@soda.CSUA.Berkeley.EDU>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: USB under LinuxPPC
+Date: Tue, 04 May 1999 15:20:37 -0700
+From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-Can someone please write Documentation/Configure.help entries for
+Hi,
 
-> Support for PowerMac IDE devices (must also enable IDE)
-> CONFIG_BLK_DEV_IDE_PMAC
->   No help for CONFIG_BLK_DEV_IDE_PMAC
-> 
-> PowerMac IDE DMA support
-> CONFIG_BLK_DEV_IDEDMA_PMAC
->   No help for CONFIG_BLK_DEV_IDEDMA_PMAC
-> 
-> Use DMA by default
-> CONFIG_PMAC_IDEDMA_AUTO
->   No help for CONFIG_PMAC_IDEDMA_AUTO
+I have been trying to compile USB support into the 2.2.5 kernel on
+LinuxPPC using the uusb driver.
 
-and send them to Meelis Roos <mroos@tartu.cyber.ee>? Thx!
+On my LinuxPPC machine I keep getting errors that the struct s_snode
+has no element named lock. I checked in usb-slist.h and this struct's
+definition does not have an element named lock, nevertheless it is
+referenced throughout the usb driver code. 
 
-Greetings,
+If anyone has been able to comple the uusb driver on LinuxPPC, I would
+appreciate some pointers.  Also if there is a version of the usb
+drivers that compiles with kernel 2.2.0pre6, I would like to use it,
+since the SMP support on 2.2.1+ has been quite buggy for me.
 
-						Geert
+Thanks,
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
+----ranga <ranga@soda.berkeley.edu>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
