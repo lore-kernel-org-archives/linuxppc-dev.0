@@ -1,66 +1,33 @@
-Message-ID: <37DC7E94.946FBA49@jlc.net>
-Date: Mon, 13 Sep 1999 00:33:24 -0400
-From: Dan Malek <dmalek@jlc.net>
+Date: Mon, 13 Sep 1999 01:43:04 -0400 (EDT)
+From: "Joshua M. Thompson" <funaho@jurai.org>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.18 and CONFIG_ADB_MOUSE
+In-Reply-To: <37DA0CF4.74840414@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.9909130140010.29981-100000@ifurita.jurai.org>
 MIME-Version: 1.0
-To: bsimon@ctam.com.au
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: LinuxPPC: porting to new platforms
-References: <37DC6656.2A40D04D@ctam.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brendan Simon wrote:
-> 
-> I've been trying to get linuxppc running on a Motorola ADS board for
-> some time now.  It seems that the ADS/FADS boards are quite horrible
-> from the mail I've read on this list.  I have now decided to take the
-> plunge and port it to a custom MPC860 board.
+On Sat, 11 Sep 1999, Martin Costabel wrote:
 
-So, why don't you just consider the rest of the message I wrote
-and buy a board with Linux/PPC already running?
+> I had seen the typo in drivers/char/Config.in, but forgot to correct it.
+> And then it seemed more logical to have the selection of ADB_MOUSE next
+> to ADB_KEYBOARD, but maybe it isn't. 
 
-> .... I am playing around with the 2.2.11 kernel sources which
-> I got from a kernel mirror.  I notice that the support for BSE and RPX
-> boards is not in this source.  Are there some PPC specific kernel
-> archives I should be getting instead ?
+It is more logical, and that's the way I have it listed on the 68K Mac
+port. What I believe should happen is that the ADB keyboard driver should
+be put in drivers/char where the mouse driver already resides. Then they
+can both be listed next to each other in the drivers/char/config.in file,
+bracked by a nice clean 'if [ "$CONFIG_ADB" = 'y' ];'
 
-Since I have had so much trouble just keeping up with the CVS
-changes, I am way behind with updates.  Before I start updates,
-I always put a tar image of the source tree on the linuxppc.cs.nmt.edu
-server embedded directory.  You will find both 2.2.5 and 2.3.10
-there right now, with the support for BSE and RPX boards.
+-- 
+funaho@jurai.org             | Voodoo is a very interesting religion for the
+http://www.jurai.org/~funaho | whole family, even those members of it who are
+                             | dead.
+                             |  -- (Terry Pratchett & Neil Gaiman, Good Omens)
 
-> .......  What is the
-> best way to go about this ?
-
-
-Send them to me and I will merge them with the many other I get.
-When it all fits together I'll check it into CVS.
-
-
->  ....Is it recommended to use the latest
-> experimental kernels (2.3.x) or the latest 2.2 kerenl ?
-
-
-I tend to work in the experimental kernels.  Everyone I work with
-or talk to wants the features (and bug fixes) found in the latest
-kernels.
-
-I am nearly ready to post the first 8240 and 8260 changes.  The
-8260 is an extension of the 8xx stuff today.  The 8xx is somewhat
-changed to accomodate this, and will be in the 2.3.x kernels.
-
-
-> ..  Is 2.2.11 ok to
-> develop with or should I get the latest 2.2 kernel ?
-
-Use the 2.3.10 tar image from the server.
-
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
