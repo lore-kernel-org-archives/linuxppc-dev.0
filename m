@@ -1,49 +1,44 @@
-Message-ID: <3A721E68.6E85EB0E@iiic.ethz.ch>
-Date: Sat, 27 Jan 2001 02:03:36 +0100
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: Josh Huber <huber@alum.wpi.edu>
-CC: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Graphics corruption with XF
-References: <20010126133941.A7973@missioncriticallinux.com>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Sat, 27 Jan 2001 02:23:46 +0000
+Subject: Re: mesh SCSI bus locks hard on 7500 when burning a CD-R in dao
+	 mode
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        Daniel Eisenbud <eisenbud@cs.swarthmore.edu>
+Cc: Amit Chaudhary <amitc@brocade.com>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010127022341.24831DBA47@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Josh Huber wrote:
+> You might be able to use xmon as well - I've never tried hard enough to
+> understand xmon.
 
-> X reports that it could only find 1 MB of video memory, when I'm
-> pretty sure it's got 4 MB.  This of course severly limits my
-> depth/resolution, and when paired with the rage 128 I'm currently
-> using it's a little lacking.. :)
+under 2.4.x xmon isn't too difficult - it's saved my bacon a few times.
 
-man XF86Config, look for VideoRam.
+under 2.2.x it depends on what adb hardware you have (via-cuda didn't work -
+but I hacked 2.2.17 to get it going - don't suppose it would be too
+difficult to move that hack to 2.2.18).  I posted a patch for via-cuda &
+xmon sometime last year (can drag 'em out if you like).
 
+----
+basic instructions:
 
-> The real problem is that there seem to be some issues with the ati
-> driver with respect to this card.  The problem definately seem to be
-> endian related and affect both graphics and text.
->
-> Text is corrupted such that the characters are a mirror image of each
-> other (swapped on the y-axis).  Graphics are fuzzy, and the cursor is
-> definately corrupted.
->
-> Has anyone had any luck with a combination like this?
+go to arch/ppc/xmon and edit start.c to enable output to both bootx screen &
+the console (and a serial port as well if you like).  It's kinda grape-shot
+- but if there's any form of oops you will probably see it this way.
 
-Anyone who has must have fixed the ati driver ;)
+You have to do a little hack to get output on bootx screen & console
+simultaneously.  I can post a patch if it's tricky.
 
-I suppose it shouldn't be too hard to fix looking at the r128 or glint
-drivers.
+----
 
-Oh, BTW - have you tried Ani's rsync tree?
+I keep wondering if it's worth asking Paulus to consider making the
+different xmon output options CONFIG_XXXX instead of a file edit.  It gets
+tedious if you pull every other day.
 
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+hth,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
