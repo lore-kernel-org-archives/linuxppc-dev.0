@@ -1,57 +1,31 @@
-Date: Thu, 4 Jan 2001 12:51:22 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Iain Sandoe <iain@sandoe.co.uk>
-cc: Michel Dänzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: problems when recompiling dmasound modules
-In-Reply-To: <200101040956.JAA16492@hyperion.valhalla.net>
-Message-ID: <Pine.LNX.4.05.10101041250340.665-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 4 Jan 2001 13:31:37 +0100
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: network driver order changes in 2.4
+Message-ID: <20010104133135.A22381@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 4 Jan 2001, Iain Sandoe wrote:
-> > Whenever I rebuild my linux-pmac-devel tree when the kernel version changed I
-> > get bitten by this:
-> > The sound modules don't get rebuilt so their version doesn't match the kernel
-> > version and they can't be insmoded.
-> > I can investigate to find a solution myself but I figured it should be easier
-> > for Geert or one of the other dmasound hackers to fix it.
->
-> I just did (after an absence of nearly six months ;-) :
->
-> rsync ppc.samba.og::linux-pmac-devel - which picked up 2.4.0-t13-p3
-> make mrproper
-> make menuconfig (selected, amongst other things, sound card support built
-> in, pmac sound as module)
-> make dep vmlinux modules modules_install
->   - I saw it compile the damsound_core, dmasound_awacs
-> copied the kernel to my MacOS partition...
-> rebooted
-> modprobe dmasound_awacs
->
-> and viola!
-> it seemed to work as before...
->
-> (so maybe that wasn't what you were saying at all ;-)
+Hi,
 
-Real men don't have the time to do `make mrproper' and `make menuconfig' every
-time the kernel changed, so they rely on `make oldconfig' and `make dep'
-instead...
+I have a second network card in my beige G3 which needs the dc4x5.o
+driver. In 2.2 the internal card is eth0 and the second card is eth1.
+In test13-ac4 it is reversed. One solution is to have all drivers as
+modules, but ...
 
-Sorry Michel, no clue...
+Is there a way to change the driver init order?
 
-Gr{oetje,eeting}s,
 
-						Geert
+
+Gruss Olaf
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ $ man clone
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
