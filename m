@@ -1,48 +1,60 @@
-Message-ID: <374326A8.E8521A86@wanadoo.fr>
-Date: Wed, 19 May 1999 23:01:28 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-Reply-To: costabel@wanadoo.fr
-MIME-Version: 1.0
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-CC: Mark Lin <mlin@MPI-Softtech.Com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.3 compile error on ppc
-References: <Pine.LNX.3.96L.990519131538.1355C-100000@unix47.andrew.cmu.edu>
+Date: Wed, 19 May 1999 23:04:58 +0200
+To: "Thomas C. Allison" <allison@dirac.nist.gov>
+Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: possible egcs c compiler bug
+Message-ID: <19990519230458.C29936@isis.isis.de>
+References: <199905192019.QAA00884@dirac.nist.gov>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199905192019.QAA00884@dirac.nist.gov>; from Thomas C. Allison on Wed, May 19, 1999 at 04:19:17PM -0400
+From: Hartmut.Koptein@t-online.de (Hartmut Koptein)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hollis R Blanchard wrote:
+> I have found what *appears* to be a bug in the C compiler.  I have experienced
+> this bug in R4 (regardless of the compiler/library installed) as well as in
+> the latest (i.e. all the latest packages through 5/15/1999) pre-R5
+> installation.  I include a short program below which illustrates the problem
+> I am having.  The code compiles without error on my i386 machine
+> running RHL 5.2.  The version of EGCS on the PC is 1.0.3 versus 1.1.2 on my
+> PowerMac, so I don't know if this is a PPC problem or an EGCS problem.
+> Any input is greatly appreciated.
 > 
-> On Wed, 19 May 1999, Mark Lin wrote:
-> >
-> > gcc -D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -c -o fork.o fork.c
-> > fork.c: In function `mm_alloc':
-> > fork.c:306: warning: implicit declaration of function `init_MUTEX_LOCKED'
-> > fork.c: In function `do_fork':
-> > fork.c:539: warning: implicit declaration of function `DECLARE_MUTEX_LOCKED'
-> > fork.c:539: `sem' undeclared (first use in this function)
-> > fork.c:539: (Each undeclared identifier is reported only once
-> > fork.c:539: for each function it appears in.)
-> > make[2]: *** [fork.o] Error 1
-> > make[2]: Leaving directory `/usr/src/linux/kernel'
-> > make[1]: *** [first_rule] Error 2
-> > make[1]: Leaving directory `/usr/src/linux/kernel'
-> > make: *** [_dir_kernel] Error 2
-> >
-> > Where's the site for the ppc patched kernels?
-
-See http://cvs.on.openprojects.net/
-
+> The code is as follows:
 > 
-> I think it was Cort who said to stay away from 2.3.x for now, because it will
-> be broken for us for a little. Were you having problems with 2.2.x?
+> test.c:
+> 
+>      #include <stdio.h>
+>      #include <stdarg.h>
+> 
+>      static int myFunction(va_list inList)
+>      {
+>         va_list newList;
+>         newList = inList;
+>      }
 
-Pretty hard to keep the fingers out of the pot :-)
 
---
-Martin
-(running 2.3.3)
+Try this:
+
+      #include <stdio.h>
+      #include <stdarg.h>
+
+      static int myFunction(va_list inList)
+      {
+         va_list newList;
+         
+	 __va_copy(newList, inList);
+      }
+
+
+
+
+-- 
+ Dipl.-Ing. (FH) Hartmut Koptein                       EMail:
+ Friedrich-van-Senden-Str. 7                           
+ 26603 Aurich   
+ Tel.: +49-4941-10390                                  koptein@debian.org
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
