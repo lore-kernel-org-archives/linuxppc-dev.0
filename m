@@ -1,68 +1,43 @@
-Message-Id: <6.0.0.22.0.20031211104617.01e7ae80@dns.struinfo.it>
-Date: Thu, 11 Dec 2003 11:03:48 +0100
-To: linuxppc-embedded@lists.linuxppc.org
-From: llandre <r&d@wawnet.biz>
-Subject: UCD-SNMP 4.2.1 and SNMP v3
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3FD84905.5090802@bluewin.ch>
+Date: Thu, 11 Dec 2003 11:37:57 +0100
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405 TLB miss reduction
+References: <3FBD5348000912F8@mssbzhh-int.msg.bluewin.ch> <3FD75312.7070701@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+On 12/10/2003 06:08 PM Dan Malek wrote:
+> Wolfgang Grandegger wrote:
+>
+>> ....We
+>> can regain a few percent by using the kernel option CONFIG_PIN_TLB
+>> but we are thinking about further kernel modifications to reduce
+>> TLB misses. What comes into my mind is:
+>
+> If you have a large application I doubt any kernel modification
+> will gain much.  It's the application causing the huge amounts
+> of tlb misses, you probably need to evaluate changes that will
+> reduce that.
+>
+> It's always easy to pick on the kernel and make some changes
+> becaue it is a very static and well behaved application.  It
+> seems your biggest performance increase would come from the
+> analysis of the application and some redesign to improve its
+> use of system resources.
 
-I tried to run the snmpd daemon of UCD-SNMP 4.2.1 on a PPC405EP-based
-system equipped with Linux 2.4.20. I built the package directly on the
-target (no cross compilation) with the ELDK 2.0.2. The version of the
-openssl libraries is 0.9.6b-8. Everything works fine with v1 and v2
-operations but I have authentication problems with the v3 operations. The
-same daemon, with the same configuration files, works fine on a PC (Red Hat
-7.2).
+We have been surprised, that CONFIG_PIN_TLB was able to reduce the page
+miss rate already by approx. 40%. We are also working on the
+optimization/tuning of our application and likely there we can gain more
+than by further squeezing the TBL management of the Linux kernel, I agree.
 
-Here is the snippet of the dump:
+Thanks.
 
-dumpv_recv:            String:
-trace: sc_hash(): scapi.c, 328
-trace: sc_get_properlength(): scapi.c, 81
-trace: get_enginetime(): lcd_time.c, 152
-lcd_get_enginetime: engineID 80 00 07 E5 80 11 65 9F 88 00 00 0F 37 :
-boots=15, time=10
-trace: usm_get_user(): snmpusm.c, 2553
-usm: getting user mtek
-trace: sc_check_keyed_hash(): scapi.c, 408
-sc_check_keyed_hash():    key=0x73b5f6979b89bf1ef0ebec2cf7e9a80e (16)
-trace: sc_generate_keyed_hash(): scapi.c, 218
-trace: sc_get_properlength(): scapi.c, 81
-trace: usm_process_in_msg(): snmpusm.c, 2244
-usm: Verification failed.
-trace: snmpv3_parse(): snmp_api.c, 2953
-dumph_recv:       ScopedPDU
-trace: snmpv3_scopedPDU_parse(): snmp_api.c, 3577
-dumph_recv:         contextEngineID
-dumpx_recv:          04 0D 80 00 07 E5 80 11 65 9F 88 00 00 0F 37
-dumpv_recv:            String:  ......e.....7
-trace: snmpv3_scopedPDU_parse(): snmp_api.c, 3599
-dumph_recv:         contextName
-dumpx_recv:          04 00
-dumpv_recv:            String:
-trace: snmpv3_parse(): snmp_api.c, 2958
-dumph_recv:         PDU-GET
-trace: snmp_pdu_parse(): snmp_api.c, 3385
-dumph_recv:           request_id
-dumpx_recv:            02 04 41 4C 9C F6
-
-
-The key calculated by the sc_check_keyed_hash function is to the one I read
-in the /var/ucd-snmp/snmpd.conf.
-I suspect the problem is referred to either the PPC architecture (missing a
-compiler flag?) or the openssl libraries.
-
-Anybody can help me?
-
-
-Thanx in advance,
-
-llandre
+Wolfgang.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
