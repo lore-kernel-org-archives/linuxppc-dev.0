@@ -1,39 +1,67 @@
-Date: Thu, 3 Jun 1999 15:58:31 +1000
-Message-Id: <199906030558.PAA00552@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: brad@turbolinux.com
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.LNX.3.95.990602005536.28345A-100000@pacific.pht.com>
-	(message from Brad Midgley on Wed, 2 Jun 1999 01:07:06 -0600 (MDT))
-Subject: Re: rsync kernel compile fails
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.3.95.990602005536.28345A-100000@pacific.pht.com>
+Message-ID: <37562033.2355E4DA@wanadoo.fr>
+Date: Thu, 03 Jun 1999 08:26:59 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: Paul.Mackerras@cs.anu.edu.au
+CC: linuxppc-dev@lists.linuxppc.org, cort@ppc.kernel.org
+Subject: Re: Bug in vger 2.2.10 and 2.3.4 (Re: Problems with vger 2.3.3/4)
+References: <374D8E2A.48871830@wanadoo.fr> <3755213D.3BB3C8B6@wanadoo.fr> <199906030250.MAA04127@tango.anu.edu.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Midgley <brad@turbolinux.com> wrote:
+Paul Mackerras wrote:
+> 
+> Martin Costabel <costabel@wanadoo.fr> wrote:
+> 
+> > A while ago I reported about boot problems with the vger 2.3.x kernel
+> > after May 22. Now I found that this same bug has crept into the "stable"
+> > tree, starting with 2.2.10 on May 30. After some digging, I found the
+> > culprit. It is the file arch/ppc/mm/init.c, patched (wrongly) as
+> > follows:
+> [snip]
+> > -   return (void *) (v + (p & ~PAGE_MASK));
+> > +   return (void *) (v + (addr & ~PAGE_MASK));
+> 
+> In fact that patch is correct but you also need this patch (which I'm
+> about to check into vger):
+> 
+> --- linux/arch/ppc/mm/init.c    Sat May 29 20:24:09 1999
+> +++ pmac/arch/ppc/mm/init.c     Thu Jun  3 10:13:00 1999
+> @@ -371,7 +371,7 @@
+>          * same virt address (and this is contiguous).
+>          *  -- Cort
+>          */
+> -       if ( (v = p_mapped_by_bats(addr)) /*&& p_mapped_by_bats(addr+(size-1))*/ )
+> +       if ( (v = p_mapped_by_bats(p)) /*&& p_mapped_by_bats(p+size-1)*/ )
+>                 goto out;
+>  #endif /* CONFIG_8xx */
 
-> is the rsync kernel supposed to be working? i haven't changed my config
-> but it fails to compile:
+In the meantime I applied the second patch proposed by Ryuichi Oikawa, and it 
+works for me. I am writing this running under 2.3.4. This patch is  
 
-Well, the first problem is that drivers/Makefile goes into the usb
-subdirectory for CONFIG_USB rather than the uusbd subdirectory.  Also
-that tree doesn't have the multi-keyboard patch (and it won't apply
-easily).
+ diff -u -r1.166 init.c
+--- arch/ppc/mm/init.c  1999/05/22 18:18:30     1.166
++++ arch/ppc/mm/init.c  1999/06/02 22:51:47
+@@ -371,8 +371,10 @@
+         * same virt address (and this is contiguous).
+         *  -- Cort
+         */
+-       if ( (v = p_mapped_by_bats(addr)) /*&& p_mapped_by_bats(addr+(size-1))*/ )
++       if ( (v = p_mapped_by_bats(addr)) /*&& p_mapped_by_bats(addr+(size-1))*/ ){
++               addr = 0; /* v already contains page offset */
+                goto out;
++       }
+ #endif /* CONFIG_8xx */
 
-I have a 2.3.4 kernel working but without USB.  I plan to work on
-getting the new USB stuff working on the iMac soon.  But in the
-meantime maybe I need to get a recent 2.2.x kernel working with the
-old UUSBD stack.  What I might do actually is kludge the USB keyboard
-driver to convert all the keycodes to ADB keycodes, instead of
-continuing with the multi-keyboard patch.
+        if (mem_init_done) {
 
-I have updated the rsync repository so that the linux-pmac-stable
-module has the 2.2.7 tree that used to be in the linux-pmac-devel
-module, and the linux-pmac-devel module now has a 2.3.4 tree.
+Note that I don't understand what is going on here. I am just your 
+typical dumb user :-)
 
-Paul.
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
