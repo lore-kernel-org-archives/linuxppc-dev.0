@@ -1,32 +1,42 @@
-Message-Id: <200102082317.SAA27866@mal-ach.watson.ibm.com>
-To: Cort Dougan <cort@fsmlabs.com>
+Date: Fri, 9 Feb 2001 00:23:48 +0100 (MET)
+From: Roman Zippel <zippel@fh-brandenburg.de>
+To: David Edelsohn <dje@watson.ibm.com>
 Cc: paulus@linuxcare.com.au, Dan Malek <dan@mvista.com>,
 	Gabriel Paubert <paubert@iram.es>, tom_gall@vnet.ibm.com,
 	linuxppc-commit@hq.fsmlabs.com,
 	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: context overflow 
-In-Reply-To: Message from Cort Dougan <cort@fsmlabs.com>
-   of "Thu, 08 Feb 2001 15:26:42 MST." <20010208152641.P24312@hq.fsmlabs.com>
-Date: Thu, 08 Feb 2001 18:17:31 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+In-Reply-To: <200102082114.QAA25048@mal-ach.watson.ibm.com>
+Message-ID: <Pine.GSO.4.10.10102082250080.24436-100000@zeus.fh-brandenburg.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	I do not know which version of AIX you were testing and exactly
-how your benchmarks were stressing the system.  AIX continually is
-improving, just as is the Linux kernel.  As I said, the your design was
-very good for the particular class of PowerPC implementation that you were
-targetting.  AIX normally is tuned for a different class of processors and
-system configurations than Linux has targeted, so I would not expect them
-to have the same sweet spot when running benchmarks.
+Hi,
 
-	We currently are in the process of writing some papers about the
-system which should explain some of the design decisions.  We very much
-want to help improve the PowerPC Linux kernel VMM design and interact with
-you and other developers.  After the current papers are done, we will have
-more time to engage in discussions about this.
+On Thu, 8 Feb 2001, David Edelsohn wrote:
 
-David
+> 	I did not say that Linux VMM is the limiting part, I said that the
+> design needs to work within the Linux VMM limitations.  The Linux VMM
+> still uses the x86 page table design as a basis for its abstraction
+> layer.  Not all processors match that configuration.
+
+The page table abstraction is only used for user space vm management. The
+important point is: it's only an abstraction as far as it concerns the
+general vm code. What happens underneath is a complete different story and
+the general code should provide enough hooks to allow the implementation
+to do whatever it wishes. If something is missing it can certainly be
+added, but always remember not to mix abstraction with implementation.
+
+Anyway, an idea to improve current context handling: define another bit
+_PAGE_HASHED for the pte. If it's set, it points to the hash table entry,
+otherwise it's a normal linux pte entry. That makes pte handling a bit
+more complicated, but if we can dump the current tlb/context handling, it
+should be really worth it.
+
+bye, Roman
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
