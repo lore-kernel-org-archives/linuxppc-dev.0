@@ -1,47 +1,35 @@
-Message-ID: <3D7FEEC3.A268130C@redswitch.com>
-Date: Wed, 11 Sep 2002 18:32:51 -0700
-From: Jin Cheng <jcheng@redswitch.com>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Delay on starting init
-References: <20020911175118.04A9E38E9D@server.weathercom.com> <20020912012457.GX13670@zax>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <15743.64401.154459.318050@argo.ozlabs.ibm.com>
+Date: Thu, 12 Sep 2002 12:27:29 +1000 (EST)
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: trini@kernel.crashing.org
+Subject: state of 4xx code in 2.5.x
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have seen this also for a NFS root. But when I move the root file
-systems into a local SCSI disk, it seems the delay is almost gone.
+I am becoming increasingly concerned about the quality, or lack of it,
+of the 4xx code generally.  I think we need someone who has a good
+amount of experience in Linux kernel coding to go through all the 4xx
+code and clean it up and simplify it where possible.  I know that the
+4xx family have quirks (e.g. DCRs) which make it difficult in places
+to do things simply, but with a bit of creativity we can make the code
+clearer and simpler than it is at the moment.
 
-I am using the kernel 2.4.20.
+I should note that I mostly care about cleaning up the 4xx support in
+2.5.x.  I don't want to make any major changes in linuxppc_2_4_devel
+at this stage.
 
-Jin
+At the moment it seems that Tom Rini is the maintainer and Armin
+Kuster and David Gibson are both working in the area, particularly on
+the OCP support.  It seems though that Tom's life is very busy at the
+moment with various things.  So I am proposing that I will take over
+the 4xx maintainership for 2.5.x, at least for now, unless someone
+else with a reasonable amount of kernel hacking cred steps forward and
+volunteers to do it instead.
 
-David Gibson wrote:
-
-> On Wed, Sep 11, 2002 at 12:34:54PM +0000, jim wrote:
-> >
-> > I pulled the lastest 2.4 devel tree from Monte Vista's mirror a couple of
-> > days ago and the behaviour of the boot process changed.  Now, the process
-> > pauses for a long time after the message; "Freeing unused kernel memory".  To
-> > make sure this was a kernel issue, I reverted to the previous kernel and it
-> > booted with no delay.  Also, the delay is apparent on both Hard Hat Linux 2.0
-> > and ELDK from Denx.
-> >
-> > Is anyone aware of what changed?
->
-> I've observed this as well, but I haven't tracked it down much.  When
-> I looked into it the delay seemed to be due to NFS delays and timeouts
-> (I'm using an NFS root), but that doesn't explain why it is so much
-> worse in recent 2.4 and (especially) 2.5.
->
-> --
-> David Gibson                    | For every complex problem there is a
-> david@gibson.dropbear.id.au     | solution which is simple, neat and
->                                 | wrong.
-> http://www.ozlabs.org/people/dgibson
->
-
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
