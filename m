@@ -1,8 +1,8 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A02637AD2@SERVER1>
-From: Subodh Nijsure <SNijsure@SkyStream.com>
-To: "'linuxppc-embedded '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Improving ramdisk uncompression time...
-Date: Thu, 4 Oct 2001 01:54:43 -0700 
+From: g.ramakrishna@exgate.tek.com
+Message-ID: <301A812E6528D511A8F70008C71E578616C955@AP-BANG-M02>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: stuck up at initialising the host bridge controller 
+Date: Thu, 4 Oct 2001 02:28:06 -0700 
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,16 +10,18 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hello all,
 
-My setup has rather large ramdisk 5MB as the ramdisk contains
-firmware for other boards in the system. In total boot time of
-about 60 seconds, close to 50% is spent in uncompressing the ramdisk.
+I am writing PLX PCI 9054 bridge driver.  I am stuck up at initialising the
+host bridge controller (struct pci_controller) structure as I am unable to
+understand the purpose of each member of the structure and how to
+initialise.   I could not find any documentation explaining pci_controller
+structure.  Can anyone please help me in this regard.
 
-Has anybody tried building ramdisk with bizp2, what other ideas
-one might consider to "speed up" the boot time particularly uncompressing
-the ramdisk...
+Thanking you in advance
 
-/Subodh Nijsure
+Regards,
+Ramakrishna, G
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
