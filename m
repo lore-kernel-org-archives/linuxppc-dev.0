@@ -1,54 +1,41 @@
-Message-ID: <3C63091A.4D9EA2D8@mvista.com>
-Date: Thu, 07 Feb 2002 16:09:14 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Val Henson <val@nmt.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Highmem on PPC?
-References: <20020205115618.D6834@boardwalk> <20020205193316.19866@smtp.wanadoo.fr> <20020207144308.C19569@boardwalk> <3C62F74F.DE090C2C@mvista.com> <20020207145844.F19569@boardwalk>
+Date: Thu, 7 Feb 2002 17:15:50 -0800
+From: Jeffery von Ronne <jronne@ics.uci.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: two aty128 frame buffers?
+Message-ID: <20020207171550.L3189@reepicheep.ics.uci.edu>
+References: <20020204154626.C28199@reepicheep.ics.uci.edu> <20020207115559.G3189@reepicheep.ics.uci.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020207115559.G3189@reepicheep.ics.uci.edu>; from jronne@ics.uci.edu on Thu, Feb 07, 2002 at 11:55:59AM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Val Henson wrote:
+On Thu, Feb 07, 2002 at 11:55:59AM -0800, Jeffery von Ronne wrote:
+> FYI, hacking the kernel's aty128fb driver---by removing the return 0;
+> in aty128fb_init's PCI probe loop---I can get an aty128fb for both cards.
+> So far, I've only gotten X's fbdev driver to work with it.  I looks closer
+> into why r128/UseFB isn't working some other time.
 
-> On Thu, Feb 07, 2002 at 02:53:19PM -0700, Mark A. Greer wrote:
-> >
-> > Val Henson wrote:
-> >
-> > > Also, I don't think this was a particularly good test of highmem since
-> > > I don't think many bounce buffers were used, or that the kernel had
-> > > much reason to map/unmap many highmem pages.  Unfortunately, my SCSI
-> > > controller isn't working quite right and I can't test with a hard disk
-> > > as a result.  Any ideas for stressing the system harder?
-> >
-> > You could try lowering max_low_mem.  You can do this by setting "Code
-> > maturity level option"/"Prompt for advanced kernel configuration options"
-> > and then going under where you selected HIGH_MEM and setting max_low_mem
-> > size to something small.
-> >
-> > It will likely take some trial and error to get it stressed enough.
-> > You'll have to start a bunch or processes and look at where they're
-> > getting their memory
->
-> See, I don't think that user processes using highmem pages is testing
-> highmem much.  So we have user pages mapped by PTE's - what's changed?
-> Not a whole lot.  It's when we use bounce buffers in the kernel or ask
-> the kernel to map user pages or otherwise trigger the kmap/kunmap code
-> that I'm interested in.
+I can get X's r128_drv/UseFB driver to work with /dev/fb0, but attempting
+to use anything other than X's fbdev with /dev/fb1 sig-11's (it seems to
+be the same no matter what driver /dev/fb0 is using).
 
-I agree.  What I had in mind was causing the kernel to kmap pages for some
-reason like to copy user data into the buffer cache of a block device (see
-generic_file_write).  I would make a pgm to allocate some mem (like the size
-of your lowmem), mlock it down, then fork some processes that do short writes
-to a block device or something like that.  I think that would do it.
+> Second, it seems to have trouble erasing things (e.g. instead of putting
+> up the X background grid when I move a window or even initially.)
 
-Did you mentioned that your scsi ctlr or drive was bad?  If so, you'll have to
-find some other block device, /dev/ram? maybe??
+This actually happens on both /dev/fb0 and /dev/fb1 when X's fbdev driver
+is used.  It seems that it often just forgets to copy its shadow framebuffer
+to the real framebuffer.  Setting ShadowFB to false, seemed to fix that.
 
-Mark
+PS An XF86Config-4 and XFree86.0.log from when I tried to use fbdev on /dev/fb0
+   and r128 on /dev/fb1 is at http://www.ics.uci.edu/~jronne/tmp
+
+--
+Jeffery von Ronne <jronne@ics.uci.edu>
+Graduate Student
+Information and Computer Science
+University of California, Irvine
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
