@@ -1,44 +1,32 @@
-Date: Thu, 28 Nov 2002 20:01:35 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Date: Thu, 28 Nov 2002 20:31:13 -0900
+From: Ethan Benson <erbenson@alaska.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Incoming to hostme.bitkeeper.com:/ua/repos/p/ppc/linuxppc_2_4
-Message-ID: <20021129030135.GD25660@opus.bloom.county>
-References: <200211290248.SAA27913@hostme.bitkeeper.com>
+Subject: Re: [patch] ignore trackpad/mouse while typing
+Message-ID: <20021129053113.GB6329@plato.local.lan>
+References: <3DE6C428.5000403@TU-Berlin.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200211290248.SAA27913@hostme.bitkeeper.com>
+In-Reply-To: <3DE6C428.5000403@TU-Berlin.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 28, 2002 at 06:48:10PM -0800, ppc@bkbits.net wrote:
-
-> ChangeSet@1.722, 2002-11-28 19:44:54-07:00, trini@kernel.crashing.org
->   Merge kernel.crashing.org:/home/trini/work/kernel/pristine/linux_2_4
->   into kernel.crashing.org:/home/trini/work/kernel/pristine/linuxppc_2_4
->   TAG: v2.4.20_linuxppc_2_4
+On Thu, Nov 28, 2002 at 05:34:32PM -0800, Till Straumann wrote:
 >
->   Makefile@1.178, 02-11-28 19:44:13-07:00, trini@kernel.crashing.org
->     Auto merged
+>     /proc/sys/dev/input/mouse_holdoff_ms
 >
-> ChangeSet@1.2.2.167, 2002-11-28 19:43:57-07:00, trini@kernel.crashing.org
->   patch-2.4.20-rc4-final
->   TAG: v2.4.20
+> for tuning the time period during which the mouse is to
+> be ignored after a keystroke (valid range from
+> 0 [disabled]  ... 3000 ).
 >
->   Makefile@1.19.1.157, 02-11-28 08:55:34-07:00, trini@kernel.crashing.org
->     Import patch patch-2.4.20-rc4-final
+> NOTE: Official 'SYSCTL' numbers should be assigned
+>       for the 'input' and 'input/mouse_holdoff_ms' nodes.
 
-And with the start of this, all final releases in the linuxppc_2_4 and
-linuxppc_2_4_devel trees will have a tag for the merge of that release
-into that tree.  Which means that in a linuxppc_2_4_devel tree, bk
-export -tplain -rv2.4.20_linuxppc_2_4_devel will get the
-linuxppc_2_4_devel tree, as of 2.4.20.
-
-Tags might be added to previous revisions if time permits, or someone
-produces a nifty script to find out what revisions corrispond to what :)
+why didn't you just use the mac_hid/ node to hold your
+mouse_holdoff_ms node?
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
