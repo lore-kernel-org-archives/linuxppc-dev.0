@@ -1,31 +1,43 @@
-Date: Fri, 8 Feb 2002 18:46:10 -0700
+Date: Fri, 8 Feb 2002 18:47:43 -0700
 From: Val Henson <val@nmt.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] fix heartbeat
-Message-ID: <20020208184610.E28166@boardwalk>
+Subject: [PATCH] Allow sysmap to be used on non CONFIG_ALL_PPC
+Message-ID: <20020208184743.F28166@boardwalk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The heartbeat function will not execute properly on Gemini without
-this patch. (Check for cpu 0 removed from gemini_heartbeat.)
+This patch allows the System.map to be stored in RAM on non
+CONFIG_ALL_PPC architectures.
+
+(Note: Gemini is still an easy candidate for CONFIG_ALL_PPC.)
 
 -VAL
 
-diff -Nru a/arch/ppc/kernel/time.c b/arch/ppc/kernel/time.c
---- a/arch/ppc/kernel/time.c	Fri Feb  8 15:12:57 2002
-+++ b/arch/ppc/kernel/time.c	Fri Feb  8 15:12:57 2002
-@@ -208,7 +208,8 @@
- 	smp_local_timer_interrupt(regs);
- #endif /* CONFIG_SMP */
+diff -Nru a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
+--- a/arch/ppc/mm/init.c	Fri Feb  8 15:12:57 2002
++++ b/arch/ppc/mm/init.c	Fri Feb  8 15:12:57 2002
+@@ -581,9 +581,6 @@
+ 	/* remove the RTAS pages from the available memory */
+ 	if (rtas_data)
+ 		mem_pieces_remove(&phys_avail, rtas_data, rtas_size, 1);
+-	/* remove the sysmap pages from the available memory */
+-	if (sysmap)
+-		mem_pieces_remove(&phys_avail, __pa(sysmap), sysmap_size, 1);
+ 	/* Because of some uninorth weirdness, we need a page of
+ 	 * memory as high as possible (it must be outside of the
+ 	 * bus address seen as the AGP aperture). It will be used
+@@ -599,6 +596,9 @@
+ 		agp_special_page = (unsigned long)__va(agp_special_page);
+ 	}
+ #endif /* CONFIG_ALL_PPC */
++	/* remove the sysmap pages from the available memory */
++	if (sysmap)
++		mem_pieces_remove(&phys_avail, __pa(sysmap), sysmap_size, 1);
+ }
 
--	if (ppc_md.heartbeat && !ppc_md.heartbeat_count--)
-+	if (ppc_md.heartbeat && !smp_processor_id() &&
-+	    !ppc_md.heartbeat_count--)
- 		ppc_md.heartbeat();
-
- 	hardirq_exit(cpu);
+ /* Mark some memory as reserved by removing it from phys_avail. */
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
