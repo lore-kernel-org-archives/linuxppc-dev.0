@@ -1,46 +1,36 @@
-Date: Wed, 15 Dec 1999 17:54:09 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux Page Table vs. uP TLB and I/O
-Message-ID: <Pine.SGI.4.10.9912151744470.56730-100000@brule.borg.umn.edu>
+Message-ID: <38583159.AF0E44C9@ctam.com.au>
+Date: Thu, 16 Dec 1999 11:24:58 +1100
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: linuxppc-embedded: /bin/sh wont run from nfsroot.
+References: <19991215055541.23843.qmail@web301.mail.yahoo.com> <385725A3.A1C110DF@ctam.com.au> <385774B8.3405494B@iname.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At present, I'm working on adding in Ethernet support (chips sits at
-0xF4000000) and serial console (chips sitting at 0x40000000 and
-0x7E000000) support to the 4xx-family port and I've come up with a few
-questions:
+Jim Chapman wrote:
 
-  1. A page fault is going to occur at some point in time. An entry needs
-     to be made in both the Linux page table and in the hardware page
-     table.
+> Also, try running your NFS server in the foreground in a debug mode if
+> it isn't being used by other hosts. This will display exactly what files
+> are being accessed. You should see lots of directories, shared libraries
+> etc being read. I use
+>
+> # rpc.nfsd -F -d call
 
-     What is the interface for translating between a Linux-style PTE and a
-     6xx-TLB entry or a 8xx-TLB entry? Or, is this somewhat ad hoc at
-     present?
+I did this.  It seems that /bin/sh is found and that the file /lib/ld.so.1 is
+being read, but it just stops.  I don't know if the 860 has crashed or what ?  I
+will try running a program via an nfs mount from another linux box and see what
+the nfsd debug output should look like.  Other than that I'm lost.  Any ideas
+how I can test the reliability of the ethernet driver on the 860 system ?
 
-  2. Is there a standard interface for "mapping in" an IO address before
-     probing it, such as in the Ethernet driver above. In the TiVo port,
-     they hardwire a TLB entry for this in init_MMU, but this seems like a
-     bit of a hack.
-
-     Is the right thing to do just let the page fault happen and then
-     handle it there for the first access?
-
-  3. How about the mapping that covers the kernel? For performance
-     reasons, I can see whay I always want that entry in the TLB; however,
-     were it to be flushed, it seems like it should be
-     backed by the Linux-style page table. When does the kernel make such
-     an entry in the Linux-style table?
-
-Any insight would be much appreciated.
+Is it possible to use kgdb in anyway.  I have never used kgdb before so I'm not
+sure what it can do for me.
 
 Thanks,
-
-Grant
+Brendan Simon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
