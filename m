@@ -1,12 +1,13 @@
-Return-Path: <trini@kernel.crashing.org>
-Date: Mon, 28 Mar 2005 09:56:11 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050328165610.GG25923@smtp.west.cox.net>
+Return-Path: <dan@embeddededge.com>
+In-Reply-To: <20050328165610.GG25923@smtp.west.cox.net>
 References: <ffec644f8c4f3bc32922882631c0da3e@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ffec644f8c4f3bc32922882631c0da3e@freescale.com>
+	<20050328165610.GG25923@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9dd0a97bbc20297a5b529bfb6062de59@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 28 Mar 2005 12:11:07 -0500
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
 	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
@@ -20,23 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 28, 2005 at 10:44:17AM -0600, Kumar Gala wrote:
-> Guys,
-> 
-> While this is not overly important to me, I was wondering if we had any 
-> rules related to formatting of assembly files.  We seem to have code 
-> formatted with and without spaces in the args.
-> 
-> I'm assuming something like this (w/o spaces):
-> 
-> <TAB>insn<TAB>argD,arg1,arg2
-> 
-> is what we want?  Just trying to get a rule documented going forward.
 
-My preference is for spaces after each , just because it makes it
-visually clearer (and I don't always have instant mental insn->#args
-mental mapping :)).
+On Mar 28, 2005, at 11:56 AM, Tom Rini wrote:
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+> My preference is for spaces after each , just because it makes it
+
+Me, too.
+
+Thanks.
+
+	-- Dan
