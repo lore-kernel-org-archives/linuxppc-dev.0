@@ -1,17 +1,16 @@
-Return-Path: <Atit_Shah@satyam.com>
-Received: from njpmail.satyam.com (njpmail.satyam.com [204.179.188.132])
-	by ozlabs.org (Postfix) with ESMTP id 8419D67A6B
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 29C8D67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Apr 2005 23:48:32 +1000 (EST)
-Message-ID: <A44765C986F8D411995B00B0D0795F4B3A828132@hhtnt002>
-From: Atit_Shah <Atit_Shah@satyam.com>
-To: Eugene Surovegin <ebs@ebshome.net>
-Date: Tue, 5 Apr 2005 19:18:05 +0530 
+	Wed,  6 Apr 2005 01:37:54 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C539E6.174CA54C"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Problem with linux porting
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 5 Apr 2005 10:37:52 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859335@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: FCC Ethernet startup crash
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,142 +21,99 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+I've been running into the old problem of the kernel ip stack crasheing
+the kernel, because of early packets again.
 
-------_=_NextPart_001_01C539E6.174CA54C
-Content-Type: text/plain
+This has been mentioned on this list several times before, but the
+worarounds that used to work doesn't seem to work anymore.
+(like changing the order of things in ip_init())
 
-sorry the bus and input frequenies are same and its 100MHz. 
+As far as I can tell, it is because the FCC enet drivers starts to
+receive packets way before the ip stack is initialized.
 
-yes it is the clkin freq
+Does anybody have any good ideas on how to fix this?
 
------Original Message-----
-From: Eugene Surovegin [mailto:ebs@ebshome.net] 
-Sent: Tuesday, April 05, 2005 3:31 PM
-To: Atit_Shah
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Problem with linux porting
+Kernel: 2.6.12-rc2 on a MPC8265
+I can almost reliably recreate this by flood-pinging the board while the
+kernel is booting.
 
-On Tue, Apr 05, 2005 at 02:24:01PM +0530, Atit_Shah wrote:
-> We are having a problem with porting of Linux.
 
-[snip]
+The crach is as follows:
+eth0: FCC ENET Version 0.3, 00:30:d7:00:01:08
+eth1: FCC ENET Version 0.3, 00:30:d7:00:01:09
+NET: Registered protocol family 2
+IP: routing cache hash table of 4096 buckets, 32Kbytes
+Oops: kernel access of bad area, sig: 11 [#1]
+PREEMPT
+NIP: A0141440 LR: A012ACA0 SP: AFFB1D80 REGS: affb1cd0 TRAP: 0300    Not
+tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000004, DSISR: 20000000
+TASK =3D afde5ae0[1] 'swapper' THREAD: affb0000
+Last syscall: 120
+GPR00: 00000000 AFFB1D80 AFDE5AE0 A07069E0 AFF44000 A01E2C04 00001032
+00000002
+GPR08: A01E2C04 A0200000 AFFB0000 00000000 8010C082 000000B1 10000000
+007FFF1E
+GPR16: 00000000 00000001 007FFF00 0FFFA6F0 00000000 FFFFFFFF 00000003
+0FFA0BD0
+GPR24: 00000000 FFFB72C3 A01E1324 00000040 AFFB1DF8 A07069E0 A07069E0
+A07069E0
+Call trace: [a012aca0]  [a012ae58]  [a012afd8]  [a001b30c]  [a001b374]
+[a001b464]  [a0005a60]  [a000480c]  [a01fcfcc]  [a01fd2bc]
+[a01fddd0]  [a01ec718]  [a01ec7d8]  [a0003a20]  [a0006b44]
+Kernel panic - not syncing: Aiee, killing interrupt handler!
+ <0>Rebooting in 180 seconds..
 
-> 4. Frequency
-> 
->             Core:  346MHz
-> 
->             CPM:   198MHz
-> 
->             BUS:   99MHz
-> 
->             Input: 66MHz
+Call trace:
+$ call2sym
+Ready for call trace list.  <ctrl-d> on a blank line when done.
 
-What does "Input" clock mean?
+[A0141440] [a012aca0]  [a012ae58]  [a012afd8]  [a001b30c]  [a001b374]
+[a001b464]  [a0005a60]  [a000480c]  [a01fcfcc]  [a01fd2bc]
+[a01fddd0]  [a01ec718]  [a01ec7d8]  [a0003a20]  [a0006b44]
 
-If it's a CLKIN, why is Bus clock not equal to it?
+Processing...
 
---
-Eugene
+Address         Function
 
-************************************************************************** 
-This email (including any attachments) is intended for the sole use of the
-intended recipient/s and may contain material that is CONFIDENTIAL AND
-PRIVATE COMPANY INFORMATION. Any review or reliance by others or copying or
-distribution or forwarding of any or all of the contents in this message is
-STRICTLY PROHIBITED. If you are not the intended recipient, please contact
-the sender by email and delete all copies; your cooperation in this regard
-is appreciated.
-**************************************************************************
+A0141440        ip_rcv
+a012aca0        netif_receive_skb
+a012ae58        process_backlog
+a012afd8        net_rx_action
+a001b30c        __do_softirq
+a001b374        do_softirq
+a001b464        irq_exit
+a0005a60        do_IRQ
+a000480c        ret_from_except
+a01fcfcc        ip_rt_init
+a01fd2bc        ip_init
+a01ec718        do_initcalls
+a01ec7d8        do_basic_setup
+a0003a20        init
+a0006b44        kernel_thread
+[runet@pib linux-innsys]$
 
-------_=_NextPart_001_01C539E6.174CA54C
-Content-Type: text/html
-Content-Transfer-Encoding: quoted-printable
+Gdb list of excact line=20
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3DUS-ASCII">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-5.5.2658.2">
-<TITLE>RE: Problem with linux porting</TITLE>
-</HEAD>
-<BODY>
+(gdb) list *0xA0141440
+0xa0141440 is in ip_rcv (net/ipv4/ip_input.c:370).
+365              * that it receives, do not try to analyse it.
+366              */
+367             if (skb->pkt_type =3D=3D PACKET_OTHERHOST)
+368                     goto drop;
+369
+370             IP_INC_STATS_BH(IPSTATS_MIB_INRECEIVES);
+371
+372             if ((skb =3D skb_share_check(skb, GFP_ATOMIC)) =3D=3D =
+NULL) {
+373                     IP_INC_STATS_BH(IPSTATS_MIB_INDISCARDS);
+374                     goto out;
 
-<P><FONT SIZE=3D2>sorry the bus and input frequenies are same and its =
-100MHz. </FONT>
-</P>
-
-<P><FONT SIZE=3D2>yes it is the clkin freq</FONT>
-</P>
-
-<P><FONT SIZE=3D2>-----Original Message-----</FONT>
-<BR><FONT SIZE=3D2>From: Eugene Surovegin [<A =
-HREF=3D"mailto:ebs@ebshome.net">mailto:ebs@ebshome.net</A>] </FONT>
-<BR><FONT SIZE=3D2>Sent: Tuesday, April 05, 2005 3:31 PM</FONT>
-<BR><FONT SIZE=3D2>To: Atit_Shah</FONT>
-<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
-<BR><FONT SIZE=3D2>Subject: Re: Problem with linux porting</FONT>
-</P>
-
-<P><FONT SIZE=3D2>On Tue, Apr 05, 2005 at 02:24:01PM +0530, Atit_Shah =
-wrote:</FONT>
-<BR><FONT SIZE=3D2>&gt; We are having a problem with porting of =
-Linux.</FONT>
-</P>
-
-<P><FONT SIZE=3D2>[snip]</FONT>
-</P>
-
-<P><FONT SIZE=3D2>&gt; 4. Frequency</FONT>
-<BR><FONT SIZE=3D2>&gt; </FONT>
-<BR><FONT =
-SIZE=3D2>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp; Core:&nbsp; 346MHz</FONT>
-<BR><FONT SIZE=3D2>&gt; </FONT>
-<BR><FONT =
-SIZE=3D2>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp; CPM:&nbsp;&nbsp; 198MHz</FONT>
-<BR><FONT SIZE=3D2>&gt; </FONT>
-<BR><FONT =
-SIZE=3D2>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp; BUS:&nbsp;&nbsp; 99MHz</FONT>
-<BR><FONT SIZE=3D2>&gt; </FONT>
-<BR><FONT =
-SIZE=3D2>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp; Input: 66MHz</FONT>
-</P>
-
-<P><FONT SIZE=3D2>What does &quot;Input&quot; clock mean?</FONT>
-</P>
-
-<P><FONT SIZE=3D2>If it's a CLKIN, why is Bus clock not equal to =
-it?</FONT>
-</P>
-
-<P><FONT SIZE=3D2>--</FONT>
-<BR><FONT SIZE=3D2>Eugene</FONT>
-</P>
-
-<P><FONT =
-SIZE=3D2>***************************************************************=
-*********** </FONT>
-<BR><FONT SIZE=3D2>This email (including any attachments) is intended =
-for the sole use of the intended recipient/s and may contain material =
-that is CONFIDENTIAL AND PRIVATE COMPANY INFORMATION. Any review or =
-reliance by others or copying or distribution or forwarding of any or =
-all of the contents in this message is STRICTLY PROHIBITED. If you are =
-not the intended recipient, please contact the sender by email and =
-delete all copies; your cooperation in this regard is =
-appreciated.</FONT></P>
-
-<P><FONT =
-SIZE=3D2>***************************************************************=
-***********</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C539E6.174CA54C--
+Rune Torgersen
+System Developer
+Innovative Systems LLC
+1000 Innovative Drive
+Mitchell, SD 57301
+Ph: 605-995-6120
+www.innovsys.com
