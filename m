@@ -1,51 +1,40 @@
-Message-ID: <3CC42CB6.20007@allot.com>
-Date: Mon, 22 Apr 2002 18:31:02 +0300
-From: Felix Radensky <felix@allot.com>
-MIME-Version: 1.0
-To: Felix Radensky <felix@allot.com>
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9FB3@mail.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'Jim Thompson'" <jim@musenki.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compiling gdb-5.1.1 for ppc405
-References: <3CC40B91.90601@allot.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: RE: Bogomips and loops_per_jiffy
+Date: Mon, 22 Apr 2002 11:57:58 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Jim
 
-I've found the problem: I was running configure like this:
-   configure --prefix=/usr --host=i386-unknown-linux
---target=powerpc-unknown-linux
+> I've noticed that about half the time, the kernels I build take what I
+> think is a long time (> 20 seconds) in calibrate_delay().
 
-It should really be:
-   configure --prefix=/usr powerpc-unknown-linux
+I have exactly the same problem with my custom board using an 8260.
+At every 5-10 times I start the kernel, it hangs on
+'Calibrating delay loop...' for about 1 minute, and then yields
+the same result (130.66 BogoMips).
 
-Felix.
+I begun to try to debug that problem, but without any success yet. :-(
+I've searched through the mailing lists, but did not find anything of
+interest.
 
-Felix Radensky wrote:
+This problem is very annoying and I really want to fix it!
 
->
-> Hi,
->
-> I've managed to cross-compile gdb-5.1.1 for 405GP using
-> Monta Vista HHL 2.0 toolchain.  Gdb runs, I can load the executable
-> and set breakpoints. However, when i try to run the  program from gdb,
-> I get the following message:
->
-> Starting program: /tmp/hello
-> Don't know how to run.  Try "help target".
->
-> The same program runs fine  in gdb-5.0 from Monta Vista
-> HHL 2.0.
->
-> Any ideas ?
->
-> Thanks a lot.
->
-> Felix.
->
->
->
 
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., System Architect
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
