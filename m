@@ -1,26 +1,36 @@
-Date: Tue, 22 Jun 2004 13:50:19 +0200
-From: Marc Leeman <marc.leeman@barco.com>
-To: bharat <bharat@coraltele.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: shared libraries
-Message-ID: <20040622115019.GK10248@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
-References: <1087563278.19489.3156.camel@hades.cambridge.redhat.com> <205EB944-C12D-11D8-ACD7-000393DBC2E8@freescale.com> <1087827285.18627.66.camel@hades.cambridge.redhat.com> <20040621232921.GD8561@smtp.west.cox.net> <18376179.1087898789671.JavaMail.administrator@RnDserver> <8563787.1087903962281.JavaMail.administrator@RnDserver>
-Mime-Version: 1.0
-In-Reply-To: <8563787.1087903962281.JavaMail.administrator@RnDserver>
-Content-Type: text/plain; charset=iso-8859-15
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <36127.200.163.11.85.1087915987.squirrel@popmail3.pop.com.br>
+In-Reply-To: <20040614153728.13AD1C13D3@atlas.denx.de>
+References: Your message of "Mon, 14 Jun 2004 07:47:33 PDT."           
+    <005801c4521e$86e0ea40$26c8a8c0@GMAN>
+    <20040614153728.13AD1C13D3@atlas.denx.de>
+Date: Tue, 22 Jun 2004 11:53:07 -0300 (BRT)
+Subject: Re: Lite5200 from RS232 to RS485
+From: "Sauro Salomoni" <saurosalomoni@pop.com.br>
+To: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> in hardhat linux i am not getting hoe can i make shared libraries make
-> available as i am nfs mounting /target folder and shared libraries are
-> in /powerpc-hardhat-linux folder .
+Hi.
 
-Just like any other GNU/Linux system: compile them for the correct
-architecture and install them relative to /root/dir/target
+I'm having quite a problem getting into the serial...
 
-I would think that /root/dir/target contains all the vendor supplied
-libraries.
+Searching through local files, I could see that, although using 2 or 3 chained
+functions to get/set the serial status, it is (in fact) done with a readb/writeb
+statement (or inb/outb). Is that correct?
+
+So, in order to make a very small driver, that just access the serial port and
+doesn't use other features (we need a very "clean" one here..), wich headers should
+I include? Is <asm/io.h> just enough?
+I tried to use as few headers as possible, but then I get the problem that the
+readb/writeb functions are not defined...
+Could anyone give me a helping hand?
+
+Thanks.
+
+Sauro Salomoni
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
