@@ -1,19 +1,17 @@
-Return-Path: <vijesh.vh@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.201])
-	by ozlabs.org (Postfix) with ESMTP id 4A8BC67A67
+Return-Path: <emrekara2002@yahoo.co.uk>
+Received: from web25708.mail.ukl.yahoo.com (web25708.mail.ukl.yahoo.com
+	[217.12.10.180]) by ozlabs.org (Postfix) with SMTP id 9267767A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Mar 2005 19:32:17 +1100 (EST)
-Received: by rproxy.gmail.com with SMTP id a36so75738rnf
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Mar 2005 00:32:16 -0800 (PST)
-Message-ID: <8e78982e0503180032ddc425e@mail.gmail.com>
-Date: Fri, 18 Mar 2005 14:02:16 +0530
-From: Vijesh VH <vijesh.vh@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: SMC91111 Delay Problem
-Reply-To: Vijesh VH <vijesh.vh@gmail.com>
+	Fri, 18 Mar 2005 20:41:46 +1100 (EST)
+Message-ID: <20050318094143.34185.qmail@web25708.mail.ukl.yahoo.com>
+Date: Fri, 18 Mar 2005 09:41:43 +0000 (GMT)
+From: emre kara <emrekara2002@yahoo.co.uk>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: 6667
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: PPC 440GX kernel 2.6 NAPI driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,12 +22,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, 
-I Compiled the SMC91111.c Driver in 2.4.29 Kernel and Booted the
-system. I faced a difficulty in delay i.e TX and RX is not properly
-working. Any Packet transfer from Chip is not reaching the PHY. But
-receives a TX Empty interrupt. Can any one help me.........
+Dear Eugene;
+I have downloaded diff file for both kernel 2.6 and
+2.4 on http://kernel.ebshome.net, I can succesfully
+patch diff file for 2.4(emac_3-2.4-8.diff) and it's
+working (very) good but I can't patch the file for
+kernel 2.6.11 (emac_3-2.6-9.diff)(on kernel.org).
+Some .rej files created by patch.(ie mii.rej). Which
+kernel source must I use as base?
+Thanks alot
+Emre
 
--- 
-Thanks and Regards,
-Vijesh V H
+Send instant messages to your online friends http://uk.messenger.yahoo.com 
