@@ -1,37 +1,56 @@
-Message-ID: <007b01c07b69$aa98ff70$0664a8c0@centurysys.co.jp>
-From: "Glenn Toshi Martin" <glenn@centurysys.co.jp>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <3A5C823A.6353DCE2@home.se>
-Subject: 405GP f_dentry panics
-Date: Thu, 11 Jan 2001 09:58:52 +0900
+From: Leonardo M Teixeira <leonardo@lst.cpdtt.cefetpr.br>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: LINUX on FADS860
+Date: Thu, 11 Jan 2001 11:03:12 -0200
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <01011111050500.00597@proteus>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Helo,
 
-We have a custom 405GP board and the "Walnut" board. We are using the
-2.4-test2 (Version released Nov 26 2000) kernel supplied via the Montavista
-web site. Our custom board has an IDE harddisk while the Walnut board uses
-NFS. We are experiencing f_dentry = 0 problems when untarring a 750 MB file
-(This seems to lead to memory corruption and hence kernel panics). The
-problem is more pronounced when using the IDE but nevertheless occurs when
-using the Walnut board over NFS. This appears to be a known problem, but
-would like to know whether the problem can be fixed, and if so what is
-required to fix it? Or is there a better workaround to the ones currently
-available?
-We have another problem that may relate to the above. During the untar
-process of large files including the one mentioned above, we get a file
-system error "Could not write to file: bad file descriptor" every now and
-then (both NFS and IDE, more frequently on the IDE). Could anyone shed light
-on this problem?
+I am new on embedded world, and I am trying to run
+LINUX on my FADS860 board, only for a small presentation.
 
-Thanks
+I have the CDK1.2, from MVista, installed and working, and ppcboot-0.7.1
+(with "FADS860T_config") running on my fads860.
 
-Glenn
+I download a pakage (kernel) from MontaVista ftp site, a Linux Support Package (LSP)
+(hhl-ppc_8xx-fads860-lsp-2.4.0-test2-1.2.0-1-0.0.1-3.noarch.rpm), whos (??) give
+support to FADS860. Compille it with MV tools (using "make menuconfig".. make zImage...).
 
+But the kernel crash all the time...
+
+Can I get some help from this list?
+Any help is welcome.
+
+Thank in advance.
+
+Leonardo
+
+---------( some outputs from the board )-----------------------
+
+=>imi 2880000
+
+## Checking Image at 02880000 ...
+   Image Name:   2.4.0 for initrd on FADS860
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    471204 Bytes = 460 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+=>bootm 2880000
+## Booting Linux kernel at 02880000 ...
+   Image Name:   2.4.0 for initrd on FADS860
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    471204 Bytes = 460 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+
+----------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
