@@ -1,69 +1,83 @@
-Date: Fri, 28 Sep 2001 20:53:30 +0200
-From: Olaf Hering <olh@suse.de>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: "David A. Gatwood" <dgatwood@apple.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem serial.c on module
-Message-ID: <20010928205330.A28288@suse.de>
-References: <20010928110558.A30416@cpe-24-221-152-185.az.sprintbbd.net> <507762B4-B43E-11D5-9A74-003065B90BBC@apple.com> <20010928113414.C30416@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010928113414.C30416@cpe-24-221-152-185.az.sprintbbd.net>
+Date: Fri, 28 Sep 2001 21:23:57 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Vinod Kurup <vkurup@massmed.org>
+Cc: <debian-powerpc@lists.debian.org>, <benh@kernel.crashing.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: 2.4.10 Lombard IDE fix (was: Re: ide disk no longer found (rsync-benh))
+In-Reply-To: <Pine.LNX.4.33.0109281954320.10557-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.33.0109282108570.13578-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Sep 28, Tom Rini wrote:
+On Fri, 28 Sep 2001, Michael Schmitz wrote:
 
-> On Fri, Sep 28, 2001 at 11:26:20AM -0700, David A. Gatwood wrote:
-> > On Friday, September 28, 2001, at 11:05 AM, Tom Rini wrote:
-> >
-> > >On Fri, Sep 28, 2001 at 10:41:23AM -0700, David A. Gatwood wrote:
-> > >>On Friday, September 28, 2001, at 08:15 AM, Tom Rini wrote:
-> > >>
-> > >>>On Fri, Sep 28, 2001 at 02:33:01PM +0900, KOBAYASHI R. Taizo wrote:
-> > >>>
-> > >>>>I examined this problem and had a question.
-> > >>>>Dose it need following branch?
-> > >>>>================L5375==
-> > >>>>#ifdef CONFIG_ALL_PPC
-> > >>>>       /* early PowerMacs would machine check */
-> > >>>>       if (_machine == _MACH_Pmac) {
-> > >>>>               printk(KERN_INFO "serial.c: nothing to do on
-> > >>>>PowerMacs.\n");
-> > >>>>               return 0;
-> > >>>>       }
-> > >>>>#endif
-> > >>>>=======================
-> > >>>
-> > >>>Some older machines apparently do.  The current 'workaround' in 2_4 is
-> > >>>#if defined(CONFIG_ALL_PPC) && !defined(MODULE).
-> > >>
-> > >>That's disgusting.  This should be doing the Linux equivalent of setjmp
-> > >>and trapping the machine check and returning 0.  Hardware probes
-> > >>shouldn't need hacks like this.  Just my $0.02.
-> > >
-> > >Thats what should be happening.  But apparently it still doesn't on a
-> > >few
-> > >older machines.   Or it didn't the last time I got an answer out of
-> > >Olaf@SuSE.
-> >
-> > Sounds like a lowmem_vectors problem or similar.  What machine and
-> > processor?
+> > I'd place my bet on some voodoo in the generic IDE mess that changed.
 >
-> I think it was a 7x00 with a 601.  But I'm not sure.  Olaf?  Is this a problem
-> still even?
+> Actually I take that back. hda and hdb are probed but found not present.
+> Seems ide0 doesn't get enabled properly ...
 
-I will try it again, later.
-That hunk wasnt supposed to go into Bens tree.
+Patch to apply a quick fix for this, use at your own risk etc., don't
+yell at me if it doesn't work:
 
+--- arch/ppc/kernel/pmac_feature.c.org	Fri Sep 28 23:02:14 2001
++++ arch/ppc/kernel/pmac_feature.c	Fri Sep 28 23:01:42 2001
+@@ -179,9 +179,10 @@
+ 	struct macio_chip*	macio;
+ 	unsigned long		flags;
 
-Gruss Olaf
+-	macio = macio_find(node, macio_ohare);
++	macio = macio_find(node, type);
+ 	if (!macio)
+ 		return -ENODEV;
++
+ 	LOCK(flags);
+ 	if (value)
+ 		MACIO_BIS(reg, mask);
+@@ -423,10 +424,10 @@
+ {
+ 	switch(param) {
+ 	    case 0:
+-		return simple_feature_tweak(node, macio_ohare,
++		return simple_feature_tweak(node, macio_unknown,
+ 			HEATHROW_FCR, HRW_IDE0_ENABLE, value);
+ 	    case 1:
+-		return simple_feature_tweak(node, macio_ohare,
++		return simple_feature_tweak(node, macio_unknown,
+ 			HEATHROW_FCR, HRW_BAY_IDE_ENABLE, value);
+ 	    default:
+ 	    	return -ENODEV;
+@@ -438,10 +439,10 @@
+ {
+ 	switch(param) {
+ 	    case 0:
+-		return simple_feature_tweak(node, macio_ohare,
++		return simple_feature_tweak(node, macio_unknown,
+ 			HEATHROW_FCR, HRW_IDE0_RESET_N, !value);
+ 	    case 1:
+-		return simple_feature_tweak(node, macio_ohare,
++		return simple_feature_tweak(node, macio_unknown,
+ 			HEATHROW_FCR, HRW_IDE1_RESET_N, !value);
+ 	    default:
+ 	    	return -ENODEV;
 
---
- $ man clone
+Comments: simple_feature_tweak shouldn't ignore the type argument it got
+passed. And requesting macio_unknown in the heathrow IDE functions is just
+a hack really, to make macio_find not care about the particular chip
+type. The Lombard would need macio_paddington, true heathrow based
+machines will need macio_heathrow here.
 
-BUGS
-       Main feature not yet implemented...
+macio_find either needs to check for compatible types, or we need to add
+another set of paddington specific functions that use macio_paddington
+instead of macio_ohare above (though I guess macio_ohare won't work on
+heathrow either?). Kind of defeats the whole abstraction purpose.
+
+Leave it to BenH or Paulus to find a proper fix for this. I could test
+this on Lombard only, no idea what macio type the Wallstreet uses.
+
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
