@@ -1,70 +1,54 @@
 To: Jeremy Bowen <Jeremy.Bowen@opennw.com>
-Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>,
+	support@abatron.ch
 Subject: Re: Problems with MMU: address translation for 0xXXXXXXXX failed 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 15 May 2003 11:33:31 +1200."
-             <DEA23DB61B62D4118B5900508B323B84012CC7D6@OPENMAIL>
-Date: Thu, 15 May 2003 01:52:09 +0200
-Message-Id: <20030514235214.D6C12C6092@atlas.denx.de>
+In-reply-to: Your message of "Thu, 15 May 2003 11:56:32 +1200."
+             <DEA23DB61B62D4118B5900508B323B84012CC7D7@OPENMAIL>
+Date: Thu, 15 May 2003 02:19:06 +0200
+Message-Id: <20030515001911.88A7AC6092@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jeremy,
-
-in message <DEA23DB61B62D4118B5900508B323B84012CC7D6@OPENMAIL> you wrote:
+In message <DEA23DB61B62D4118B5900508B323B84012CC7D7@OPENMAIL> you wrote:
+> > I don't accuse, I just tell you.
 >
-> > The Abatron firmware is available only if you pay  for  the  license,
-> > then  you  will get one your of updates. After that, you can purchase
-> > an extension for the next year for 15% or the original price for  the
-> > license.
+> You can tell me I'm a purple elephant but that doesn't make it true :-)
+
+I just tell you a fact: The BDI2000 firmware is  a  software  product
+for which you have to pay a license fee. The license explicitely says
+that this license cannot be transferred.
+
+> > To get access to the firmware which comes on a floppy disk  you  have
+> > to open the plastic bag thereby destroying a sticker that reads:
 >
-> Is this like MicroSoft Licensing V6 ?? "You've bought the product but now
-> you have to keep paying us so you can use it!!"
-
-You can use it as long as you want. But Once the first year after the
-purchase is over, you will not receive any new updates for  free  any
-more.
-
-If you need newer versions of the firmware you have to pay a  license
-fee.
-
-> This is a piece of hardware that I've bought and paid for. I cannot operate
-> the hardware that I own, without the firmware so the firmware is integral to
-> the device. If the firmware has bugs in it, should I have to pay for
-> bug-fixes ?
-
-If you didn't find the bugs during the first year of usage, then yes,
-you have to pay for support & updates.
-
-
-
-> If that is, in fact, Abatron's business model then I think it sucks.
-
-Try to find _any_ tool provider that has better support!
-
-
-> As it turns out, my company does recieve updates from Abatron which I simply
-> hadn't applied, but again there is nothing in either the zip file or the
-> email that indicates anything about any restrictions on the use of the
-> firmware.
-
-You receive the email only as long as you are entitled for it - i. e.
-after installing the initial version from the floppy, which  contains
-the  License Agreement. And the email updates will stop once one year
-is over and you don't purchase an extension.
-
-> I don't believe I've done anything wrong and I would do the same thing next
-> time.
+> To access the new firmware, I unzip the zip file.
+> There is no text to read. There is no license agreement.
 >
-> If you have any evidence to the contrary, please provide it before spreading
-> accusations.
+> > I am not a lawyer, but this is pretty clear text, isn't it?
+>
+> There was *no* text accompanying the zipfile.
 
-You stated that you received the software "from a  friend".  This  is
-not  exactly  the  same  as  receiving  an  official update from your
-distributor.
+I want to call your attention to the fact that if  you  received  the
+zip  file  from  anyboy else but Abatron support or from one of their
+official distributors you might have been given an  illegal  copy  of
+the software.
+
+In the previous message you claimed that you were using version  1.09
+before, i. e. you must have purchased your BDI2000 before the release
+of  1.10 which was in November 2001. So your one year warranty period
+must have ended in November 2002 (or earlier). 1.12 was  released  in
+anuary  2003  -  if  you  did not pay for an extension of the support
+(which you obviously did not, as you did  not  even  know  that  this
+option exists) you probably have no legal right to use version 1.12.
+
+
+I agree that it is unfortunate that Abatron did not include any  EULA
+or  other  legal  stuff in their zip files. I have put Abatron on the
+Cc: list, maybe they will change this now.
 
 
 Wolfgang Denk
@@ -72,7 +56,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It is the quality rather than the quantity that matters.
-- Lucius Annaeus Seneca (4 B.C. - A.D. 65)
+A fanatic is a person who can't change his mind and won't change  the
+subject.                                          - Winston Churchill
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
