@@ -1,34 +1,26 @@
-Date: Mon, 26 Mar 2001 18:23:26 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: Giuliano Pochini <pochini@shiny.it>,
-	linuxppc-dev@lists.linuxppc.org, cort@fsmlabs.com
-Subject: Re: Sound skips
-In-Reply-To: <20010326115110.7587C2EFE4@apollo.valhalla.net>
-Message-ID: <Pine.LNX.4.05.10103261822510.3893-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 26 Mar 2001 14:32:45 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-commit@fsmlabs.com, linuxppc-dev@lists.linuxppc.org
+Subject: Anon BK mirror
+Message-ID: <20010326143245.Q16672@opus.bloom.county>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 26 Mar 2001, Iain Sandoe wrote:
-> [Geert, Cort - the question for you guys is "has the Console IRQ block been
-> solved?" - I was under the impression it had from some traffic on
-> Linux-audio-dev]
+Hey all!  All of the BK trees are currently being mirrored on source.mvista.com
 
-According to Andrew Morton it is. That's all I can say :-)
+So, if y'all wanna save some bandwidth for the writing people <g> you can do:
+$ bk parent bk://source.mvista.com/XXXX
 
-Gr{oetje,eeting}s,
-
-						Geert
+Where XXXX is either linux_2_4, linux_2_2, linuxppc_2_2, linuxppc_2_4 or
+linuxppc_2_5.  These mirrors should get updated automagically shortly after the
+commit message hits linuxppc-commit.  If any problem show up, please shoot me
+an email privately and I'll see what I can do.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
