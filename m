@@ -1,33 +1,28 @@
-Subject: Re: cleanup of linux-2.5/drivers/block/swim3.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jasper Spaans <jasper@vs19.net>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20030704104616.GA29229@spaans.vs19.net>
-References: <20030704104616.GA29229@spaans.vs19.net>
-Content-Type: text/plain
-Message-Id: <1057518289.516.53.camel@gaston>
-Mime-Version: 1.0
-Date: 06 Jul 2003 21:04:49 +0200
+Message-ID: <003301c34473$0f88d7a0$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "J?rn Engel" <joern@wohnheim.fh-wedel.de>,
+	"Paul Mackerras" <paulus@samba.org>
+Cc: "Linuxppc-Dev@Lists. Linuxppc. Org" <linuxppc-dev@lists.linuxppc.org>
+References: <16133.19178.764449.966821@cargo.ozlabs.ibm.com> <IGEFJKJNHJDCBKALBJLLOEPGFNAA.joakim.tjernlund@lumentis.se> <16134.4102.899233.25492@cargo.ozlabs.ibm.com> <20030705072119.GA32363@wohnheim.fh-wedel.de> <16134.52251.943207.814024@cargo.ozlabs.ibm.com> <20030705170145.GA29928@wohnheim.fh-wedel.de>
+Subject: Re: memmove broken
+Date: Mon, 7 Jul 2003 12:32:21 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-07-04 at 12:46, Jasper Spaans wrote:
-> Hello,
+> > You are proposing to replace simple, working code with considerably
+> > more complex code.  You need to be able to point to a specific real
+> > situation where your change makes a significant difference if you want
+> > to get it accepted.
 >
-> Attached is a patch which should solve compilation issues related to the new
-> irqhandler interface, and the deprecation of cli()/sti() for the
-> swim3-driver.
->
-> Can you take a look, and possibly, apply this? (I don't have any hardware to
-> test this on, however it compiles)
+> Agreed.  And even then, I don't want to submit it before 2.7.
 
-I'll take a look, but swim3 need more drastic updates for the new
-BIO stuff, the new macio device interface, etc... It's on my list
-once I'm done with a few other things.
+Why? Just look at 2.4 and you will find much boulder stuff going
+in there than this.
 
-Ben.
-
+  Jocke
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
