@@ -1,36 +1,31 @@
-Message-Id: <200007201345.OAA29151@hyperion.valhalla.net>
-Date: Thu, 20 Jul 2000 14:45:56 +0100
-Subject: Re: problems about __cli()
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Josh Huber <huber@mclx.com>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Thu, 20 Jul 2000 06:56:22 -0700 (PDT)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Sacha Varma <sacha@ssl.co.uk>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI compatibility
+In-Reply-To: <3975C772.871AA333@ssl.co.uk>
+Message-ID: <Pine.LNX.4.10.10007200653360.21977-100000@shell.unixbox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thu, Jul 20, 2000,  Josh Huber wrote:
-> On Thu, Jul 20, 2000 at 10:19:54AM +0100, Iain Sandoe wrote:
->>
-> [snip]
->>
->> It is *vital* to make sure that there is a symlink named 'linux' in /usr/src
->> that points to your /usr/src/your-kernel-foo-bar/ because there are symlinks
->> in /usr/include that expect to use this to find the build-specific headers.
->
-> A couple notes:
->
-> You don't have to put your kernel in /usr/src, and you DON'T have to
-> symlink /usr/src/linux to it before you build.  The symlinks (on
-> broken RedHat derivatives) in /usr/include should point to the kernel
-> headers that your libc was built againt, otherwise you risk breaking
-> binary compatibility.
+On Wed, 19 Jul 2000, Sacha Varma wrote:
 
-I guess I *must* have one of those broken derivatives... and it doesn't work
-for me without that step...  Admittedly, this is mostly an issue between
-2.2.xx and 2.4.0 - but I do have to remember to change it back between
-whiles... a better way would be ?
+> It's quite terse but states that PCI cards that need to be active on boot (video cards) will generally not work, and cards that don't generally will.
+>
+> I'm just curious (I was wondering why there was no support for various nifty non-AGP PC graphics cards, and also why the PC USB card I installed yesterday works fine under MacOS) but
 
-Iain.
+
+Video cards do not need to be active 'on boot' (if you mean upon powerup)
+to work in linux.  If there is no OF rom you will ofcourse not see any
+display until Linux initializes the display.  If you have problems with
+devices not 'talking' then try enabling IO and MEM access, as they were
+probably not turned on.
+
+
+ani
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
