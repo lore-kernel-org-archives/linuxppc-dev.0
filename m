@@ -1,30 +1,47 @@
-Message-Id: <m0znhJZ-0000WVC@tri-yann.crf.canon.fr>
-Date: Wed, 9 Dec 1998 11:57:53 +0100 (CET)
-From: "VALETTE Eric" <valette@crf.canon.fr>
-To: cort@persephone.cs.nmt.edu
-CC: mmporter@home.com, alois_fertl@muenchen.europe.mcd.mot.com,
-        linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.LNX.3.96.981209020440.14818A-100000@persephone.cs.nmt.edu>
-	(message from Cort Dougan on Wed, 9 Dec 1998 02:05:52 -0700 (MST))
-Subject: Re: Linux-2.1.129 boot on MCP750
-References: <Pine.LNX.3.96.981209020440.14818A-100000@persephone.cs.nmt.edu>
+Message-ID: <366E598E.CCF78F93@zg.tel.hr>
+Date: Wed, 09 Dec 1998 12:05:53 +0100
+From: Stanko Juzbasic <stanko.juzbasic@zg.tel.hr>
+Reply-To: stanko.juzbasic@zg.tel.hr
+MIME-Version: 1.0
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        linuxppc-user@lists.linuxppc.org
+Subject: AUDIO ON LINUX_PPC
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Cort" == Cort Dougan <cort@persephone.cs.nmt.edu> writes:
+Is there anybody who encounterde the following problem?
+I'm  constantly running into something that seems like a problem with
+sound:
+1. SOX plays .wav, .au .snd & .aiff files with gaps, whoch looks to me
+ like a disagreement on timing issues between the kernel buffer
+ &application buffer. (I've recompiled the kernel a few times).
 
-Cort> You can change the address that ppcbug loads the image to.  I pointed mine
-Cort> at the end of memory to keep it out of the way.  The boot code for prep is
-Cort> very delicate right now due to the many many addresses that boards load
-Cort> the image at so anything that can make it easier (such as moving the
-Cort> address the kernel is loaded at) I want to take advantage of.
+2. CDs from the internal scd drive play flawlessly.
 
-I would like to have the instruction to make that.
+3. Other utilities (such as Wavplay, rawplay) either don't execute, or
+don't
+ compile, or don't install or refuse to run without Motif (lesstif)
+shared
+ libraries such as libXm.so.1 etc, which in turn configure but don't
+make,
+ and give thousands of warnings, hanging in infinite loops...
 
-Have a nice day,
+My platform:  PCI-PowerMac 7200, PowerPC 601 processor.
+System:   LINUX_PPC R4, kernel 2.1.24 (configured as standalone
+   workstation)
+All drives: SCSI
 
--- eric
+I'd like to know if this is a known problem and if so, is there any hope
+
+this would be resolved for the next release. I'm not concernerd with
+8 kHz - 8 bit - 150:1 compressed system beeps. All I care for is playing
+
+plain 16 bit integer linear format files.
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
