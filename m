@@ -1,31 +1,30 @@
-Date: Tue, 13 Nov 2001 16:32:42 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Richard Zidlicky <rz@linux-m68k.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>, Jun Sun <jsun@mvista.com>,
-	"Maciej W. Rozycki" <macro@ds2.pg.gda.pl>,
-	Linux/MIPS Development <linux-mips@oss.sgi.com>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [RFC] generic MIPS RTC driver
-In-Reply-To: <20011113144240.B669@linux-m68k.org>
-Message-ID: <Pine.LNX.4.33.0111131630310.3818-100000@serv>
+Message-ID: <20011113155734.28247.qmail@kunk.jriver.com>
+Subject: E15 Carolina Frame Buffer Driver for 2.4
+To: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 13 Nov 2001 09:57:34 -0600 (CST)
+From: Robert E Brose II <bob@kunk.jriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I have gotten the 2.2 framebuffer driver for the E15 (internal)
+display adapter in the IBM 7248-133 43p (carolina Prep MB) to
+work (on my machine anyway) in 2.4. This provides a way to
+run X with the 2.4 kernels on this hardware.
 
-On Tue, 13 Nov 2001, Richard Zidlicky wrote:
+Here is a patch against the benh rsync tree from last night...
 
-> hwclock and a bunch of less known porgrams like chrony.
+http://www.qbjnet.com/~bob/e15fb-2.4.15-pre3-benh-patch
 
-I was playing with chrony, but it was unable to adjust the time, last
-weekend I switched back to ntp and that works better.
+It would be interesting to hear if it works on other variations
+of the 7248.
 
-bye, Roman
-
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
