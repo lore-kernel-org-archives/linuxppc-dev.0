@@ -1,90 +1,264 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: atm8260-1.0.1 
-Date: Tue, 16 Sep 2003 14:04:56 +0200
-Message-ID: <742AC4678EF8464697DDDFE3B40F6ECD37DA5E@srv-mailrnd.azisa.co.za>
-From: "Nishen Brijraj" <Nishen.Brijraj@za.flextronics.com>
-To: "w.n. jacobs" <willy.jacobs@nl.thalesgroup.com>,
-	<shagitgy@techst02.technion.ac.il>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 16 Sep 2003 14:25:48 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: Problem of concurrency in arch/ppc/8260_io/uart.c
+In-reply-to: <000f01c37bc4$56829230$020120b0@jockeXP>
+To: Dan Malek <dan@embeddededge.com>,
+	Jean-Denis Boyer <jdboyer@m5t.com>
+Cc: Steffen Rumler <Steffen.Rumler@siemens.com>,
+	linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLEEFHFPAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all.
+> > Jean-Denis Boyer wrote:
+> >
+> > > I have just tested your patch on 8260 and it fixes the problem when printk is called ...
+> >
+> > The use of printk is strictly a debug function.  If it is necessary to see
+> > it print out pretty, then use a different I/O path for the application or
+> > dump out the log buffer separately.  Serial ports don't guarantee any
+> > transactional operation with multiple users, printk isn't any different
+> > although it does the bad thing of blocking interrupts while it processes
+> > the message.
+> hmm, it does not block interrupts as is, does it? Only if you apply the patch?
+>
+> >
+> > Adding this patch adds lots of interrupt latency and I would recommend
+> > against it.  It appears there is a bug that should be fixed to ensure
+> > the proper synchronization of the BDs, but not with such large scale
+> > blocking of interrupts.
+> Agreed, but is there another mechanism but to disable interrupts? I can't think of any.
+> It is possible to shrink the window with interrupts off dramatically.
+>
+>    Jocke
+> >
+> > Thanks.
+> >
+> >
+> > -- Dan
 
-I am using the mpc8260ads board running the 2.4.4 kernel and the phy is
-also the pm5350.
+OK, here is my attempt to fix the 8xx uart driver. With this
+patch I can no longer break the console from user space. Against fairly recent
+linuxppc_devel snapshot. Please comment/apply.
 
-In reference to the message below, why can't you use the code as a
-loadable module?  I have tried it this way, and it does eventually
-compile and insert, although it doesn't do much else at the moment.
+Summary:
 
-I have also tried to compile the code into the kernel, but that is
-proving to be more difficult than just doing what you stated below.
-There are a whole lot of undefined reference errors.
+ - uses local_irq_save()/local_irq_restore() around tx_cur accesses.
+   I haved tried to minimize the time between local_irq_save() and local_irq_restore()
 
-By the way, the module_init() is in the file mpc8260sar_detect.c.
+ - Fixed a bug around copy_from_user() in rs_8xx_write().
 
-Please let me know why you say that it must be compiled into kernel, and
-also any other steps or defines that I may need.
+ - my_console_write() is still buggy. It takes a little more effort to fix
+   this function. It should be fixed since a spurious printk can screw/lock your console.
 
-You also don't make any mention of the suni/phy code below. How should
-that be compiled in or included?
+ - fixed 4 trivial warnings as well.
 
-Thank you.
+  Jocke
+Index: arch/ppc/8xx_io/uart.c
+===================================================================
+RCS file: /home/cvsadmin/cvsroot/kernel/linuxppc/arch/ppc/8xx_io/uart.c,v
+retrieving revision 1.7
+diff -u -r1.7 uart.c
+--- arch/ppc/8xx_io/uart.c	13 Jun 2003 09:04:43 -0000	1.7
++++ arch/ppc/8xx_io/uart.c	16 Sep 2003 12:17:01 -0000
+@@ -1068,6 +1068,7 @@
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+ 	volatile cbd_t	*bdp;
+ 	unsigned char *cp;
++	unsigned long flags;
 
+ 	if (serial_paranoia_check(info, tty->device, "rs_put_char"))
+ 		return;
+@@ -1075,7 +1076,16 @@
+ 	if (!tty)
+ 		return;
 
------Original Message-----
-From: w.n. jacobs [mailto:willy.jacobs@nl.thalesgroup.com]
-Sent: 16 September 2003 08:23 AM
-To: shagitgy@techst02.technion.ac.il
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: atm8260-1.0.1
++	local_irq_save(flags);
+ 	bdp = info->tx_cur;
++	/* Get next BD.
++	*/
++	if (bdp->cbd_sc & BD_SC_WRAP)
++		info->tx_cur = info->tx_bd_base;
++	else
++		info->tx_cur = (cbd_t *)bdp + 1;
++	local_irq_restore(flags);
++
+ 	while (bdp->cbd_sc & BD_SC_READY);
 
+ 	cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+@@ -1083,14 +1093,6 @@
+ 	bdp->cbd_datlen = 1;
+ 	bdp->cbd_sc |= BD_SC_READY;
 
-shagitgy@techst02.technion.ac.il writes:
- >
- > Hi
- > I have an mpc8260 board and Linux running on it (I uses Lineo's BSP
-with kernel
- > 2.4.1). I want to run the atm8260-1.0.1 on my board. My phy is s/uni
-pm 5350-
- > rc.
- > My question is:
- > Can I use the package from:
-https://sourceforge.net/projects/atm8260/ as is?
+-	/* Get next BD.
+-	*/
+-	if (bdp->cbd_sc & BD_SC_WRAP)
+-		bdp = info->tx_bd_base;
+-	else
+-		bdp++;
+-
+-	info->tx_cur = (cbd_t *)bdp;
+ }
 
-You can use it. Just unpack the files in arch/ppc/ppc/8260_io.
+ static int rs_8xx_write(struct tty_struct * tty, int from_user,
+@@ -1100,6 +1102,7 @@
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+ 	volatile cbd_t *bdp;
+ 	unsigned char	*cp;
++	unsigned long flags;
 
-Add this line to the Makefile in that directory:
+ #ifdef CONFIG_KGDB_CONSOLE
+         /* Try to let stub handle output. Returns true if it did. */
+@@ -1113,44 +1116,46 @@
+ 	if (!tty)
+ 		return 0;
 
-obj-$(CONFIG_UTOPIA)	+= mpc8260sar.o mpc8260sar_detect.o intpool.o
-mpool.o \
-			   risctimer.o mm.o cpmtimer.o utopia.o debug.o
-mpc8260iop.o
+-	bdp = info->tx_cur;
+-
+ 	while (1) {
+ 		c = MIN(count, TX_BUF_SIZE);
 
-and this line to Config.in (same directory):
+ 		if (c <= 0)
+ 			break;
 
-bool 'CPM FCC ATM/UTOPIA' CONFIG_UTOPIA
++		local_irq_save(flags);
++		bdp = info->tx_cur;
+ 		if (bdp->cbd_sc & BD_SC_READY) {
+ 			info->flags |= TX_WAKEUP;
++			local_irq_restore(flags);
+ 			break;
+ 		}
 
-For the kernel config file you need to enable at least these options:
-CONFIG_ATM=y
-CONFIG_UTOPIA=y
+ 		cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+ 		if (from_user) {
+-			if (copy_from_user((void *)cp, buf, c)) {
++			c -= copy_from_user((void *)cp, buf, c);
++			if (!c) {
+ 				if (!ret)
+ 					ret = -EFAULT;
++				local_irq_restore(flags);
+ 				break;
+ 			}
+ 		} else {
+ 			memcpy((void *)cp, buf, c);
+ 		}
+-
++		/* Get next BD.
++		 */
++		if (bdp->cbd_sc & BD_SC_WRAP)
++			info->tx_cur = info->tx_bd_base;
++		else
++			info->tx_cur = (cbd_t *)bdp + 1;
++		local_irq_restore(flags);
++
+ 		bdp->cbd_datlen = c;
+ 		bdp->cbd_sc |= BD_SC_READY;
 
-PS. Check the #defines in the unpacked files if they are correct for
-your
-situation.
+ 		buf += c;
+ 		count -= c;
+ 		ret += c;
+-
+-		/* Get next BD.
+-		*/
+-		if (bdp->cbd_sc & BD_SC_WRAP)
+-			bdp = info->tx_bd_base;
+-		else
+-			bdp++;
+-		info->tx_cur = (cbd_t *)bdp;
+ 	}
+ 	return ret;
+ }
+@@ -1210,28 +1215,28 @@
+ {
+ 	volatile cbd_t	*bdp;
+ 	unsigned char	*cp;
++	unsigned long flags;
 
- > How can I use it? should I compile it with the kernel, or can I
-insert it as a
- > loadable module (I didnt find the module_init() call).
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
 
-You can't use it as a loadable module, just compile it directly in the
-kernel.
---
-willy
+ 	if (serial_paranoia_check(info, tty->device, "rs_send_char"))
+ 		return;
+
++	local_irq_save(flags);
+ 	bdp = info->tx_cur;
++	/* Get next BD.
++	*/
++	if (bdp->cbd_sc & BD_SC_WRAP)
++		info->tx_cur = info->tx_bd_base;
++	else
++		info->tx_cur = (cbd_t *)bdp + 1;
++	local_irq_restore(flags);
+ 	while (bdp->cbd_sc & BD_SC_READY);
+
+ 	cp = info->tx_va_base + ((bdp - info->tx_bd_base) * TX_BUF_SIZE);
+ 	*cp = ch;
+ 	bdp->cbd_datlen = 1;
+ 	bdp->cbd_sc |= BD_SC_READY;
+-
+-	/* Get next BD.
+-	*/
+-	if (bdp->cbd_sc & BD_SC_WRAP)
+-		bdp = info->tx_bd_base;
+-	else
+-		bdp++;
+-
+-	info->tx_cur = (cbd_t *)bdp;
+ }
+
+ /*
+@@ -1802,7 +1807,7 @@
+ static void rs_8xx_wait_until_sent(struct tty_struct *tty, int timeout)
+ {
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+-	unsigned long orig_jiffies, char_time;
++	unsigned long orig_jiffies, char_time, tst_res;
+ 	/*int lsr;*/
+ 	volatile cbd_t *bdp;
+
+@@ -1837,6 +1842,7 @@
+ 	 * are empty.
+ 	 */
+ 	do {
++		unsigned long flags;
+ #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
+ 		printk("lsr = %d (jiff=%lu)...", lsr, jiffies);
+ #endif
+@@ -1854,12 +1860,15 @@
+ 		 * is the buffer is available.  There are still characters
+ 		 * in the CPM FIFO.
+ 		 */
++		local_irq_save(flags);
+ 		bdp = info->tx_cur;
+ 		if (bdp == info->tx_bd_base)
+ 			bdp += (TX_NUM_FIFO-1);
+ 		else
+ 			bdp--;
+-	} while (bdp->cbd_sc & BD_SC_READY);
++		tst_res = !!(bdp->cbd_sc & BD_SC_READY);
++		local_irq_restore(flags);
++	} while (tst_res);
+ 	current->state = TASK_RUNNING;
+ #ifdef SERIAL_DEBUG_RS_WAIT_UNTIL_SENT
+ 	printk("lsr = %d (jiff=%lu)...done\n", lsr, jiffies);
+@@ -3073,10 +3082,10 @@
+ 	bdp->cbd_bufaddr = iopa(mem_addr);
+ 	(bdp+1)->cbd_bufaddr = iopa(mem_addr+4);
+
+-	consinfo.rx_va_base = mem_addr;
+-	consinfo.rx_bd_base = bdp;
+-	consinfo.tx_va_base = mem_addr + 4;
+-	consinfo.tx_bd_base = bdp+1;
++	consinfo.rx_va_base = (unsigned char *) mem_addr;
++	consinfo.rx_bd_base = (cbd_t *) bdp;
++	consinfo.tx_va_base = (unsigned char *) (mem_addr + 4);
++	consinfo.tx_bd_base = (cbd_t *) (bdp+1);
+
+ 	/* For the receive, set empty and wrap.
+ 	 * For transmit, set wrap.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
