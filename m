@@ -1,60 +1,55 @@
-Message-ID: <386B5437.86F7449B@switchboard.ericsson.se>
-Date: Thu, 30 Dec 1999 13:46:47 +0100
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <386B5D49.DF7A9095@mitre.org>
+Date: Thu, 30 Dec 1999 08:25:29 -0500
+From: Charles Lepple <clepple@mitre.org>
 MIME-Version: 1.0
-To: dhinds@sourceforge.org
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-        phr-pcmcia@nightsong.com, nknack@vikingcomponents.com
-Subject: CompactFlash Viking problem
+To: dony <dony.he@huawei.com.cn>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Please help me...
+References: <386C150F.22B1A3D0@huawei.com.cn> <386ABF52.922267E9@ctam.com.au> <38701F3A.FAD6263E@huawei.com.cn> <386ADE53.D3411F6A@ctam.com.au> <38704D0B.94438516@huawei.com.cn> <386AFFC5.E0134DB8@ctam.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Brendan J Simon wrote:
+> >  Sections:
+> > Idx Name          Size      VMA       LMA       File off  Algn
+> > 0 .text         00004870  ff801000  ff801000  00001000  2**2
+> >                    CONTENTS, ALLOC, LOAD, READONLY, CODE
+> >    1 .rodata       00000470  ff805870  ff805870  00005870  2**4
+> >                    CONTENTS, ALLOC, LOAD, READONLY, DATA
+> >    2 .data         00000300  ff806000  ff806000  00006000  2**2
+> >                    CONTENTS, ALLOC, LOAD, DATA
+> >    3 .bss          0000bbac  ff807000  ff807000  00007000  2**2
+> >                    ALLOC
+> >    4 image         00061104  ff807000  ff807000  00007000  2**0
+> >                    CONTENTS, ALLOC, LOAD, DATA
 
-I've been playing around with the 8xxrom pcmcia code and
-done some simple CIS parsing code.
+       ^^^^^^^ This section (image) could be your problem if you use a
+vxWorks bootloader.
 
-I am using a ADS860 Rev B board.
-The MMU is off, the code is running from flash.
-I've done a workaround for the bugs in the MACH-circuits.
+Although the vxWorks loader is written with ELF images in mind,
+experience (with a DY4 SVME-177 board) tells me that it ignores ELF
+sections that would not be present in a vxWorks executable. I did not
+have time to investigate this completely, but the indication that tipped
+me off was that the sizes of the sections added up to be much larger
+than the sum of the numbers that the boot loader reports. All other test
+programs (those without added sections) were loaded correctly.
 
-The code works fine with:
+If the sum of the numbers printed on the screen is significantly less
+than the size of the file, then you can assume that anything you need to
+load should be in either '.text' or '.data'. If you have the whole
+vxWorks toolchain, you can try to find out what other section names are
+used in executables loaded by the bootloader (maybe a debugging
+section?), or you can work on building a special zImage file.
 
-SanDisk CompactFlash
-Mitsubishi CompactFlash
-Ericsson Pcmcia V34 Modem
+You can get around this limitation by having the zipped kernel image
+inserted directly into the data segment of a wrapper program (see
+arch/ppc/chrpboot/, especially piggyback.c).
 
-The following card does not work:
+-- 
+Charles Lepple
+clepple@mitre.org
 
-Viking components CompactFlash.
-
-My code reads the attribute space on each card
-and parses the tuples. The problem is that the
-Viking card gives me correct CIS sometimes,
-but mostly crap (I guess some kind of test-pattern).
-This leads to no end-of-cis marker, which is bad.
-
-I browsed the net and found that Paul Rubin have had a problem
-that seems related:
-
-http://hyper.stanford.edu/HyperNews/get/pcmcia/ataide/39.html
-
-People has experienced problem with Viking components before:
-
-http://www.goof.com/~mmead/dc120/mail-archive/9806/msg00026.html
-
-I've contacted Viking support but they told me that they didn't
-do that kind of tech-support.
-
-Another thing is that if I stick to access the ATA registers
-all CompactFlash cards (even the Viking) work.
-
-Any ideas, workarounds, similar problems?
-
-TIA /
-
-Magnus Damm
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
