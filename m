@@ -1,45 +1,29 @@
-Message-ID: <3C164C50.C20778D6@mvista.com>
-Date: Tue, 11 Dec 2001 10:11:28 -0800
-From: Armin Kuster <Darth_vapor@mvista.com>
+Message-ID: <3C164F4B.E9A4FCA2@seranoa.com>
+Date: Tue, 11 Dec 2001 13:24:11 -0500
+From: Andrew Dixon <andrew.dixon@seranoa.com>
 MIME-Version: 1.0
-To: Felix Radensky <felix@allot.com>
-Cc: David =?iso-8859-1?Q?M=FCller?= (ELSOFT AG) <d.mueller@elsoft.ch>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc405_enet problems
-References: <3C14B86D.726DBDE6@allot.com> <3C15BB05.7070702@elsoft.ch> <3C160B04.93085D47@allot.com>
+To: ppclist <linuxppc-embedded@lists.linuxppc.org>
+Subject: r3 and bd_t
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Felix Radensky wrote:
->
-> Hi,
->
-> Thanks, David and Armin for your help. I've tried the methods you suggested
-> but none of them worked. The real problem in my case was the MAX_NUM_PHYS
-> constant. I've noticed that after the first for loop in find_phy routine, the
-> value of
-> i is MAX_NUM_PHYS. So I've tried to increase the value of this constant, and
-> my
-> phy was (almost) discovered properly after the 5th iteration. I say almost,
-> because
-> I also had to change the value of phy id from 0x20005c23 to 0x20005c20 (the
-> value
-> reported by find_phy. Armin, can you please explain how this number was
-> determined.
+Hi All -
 
-Felix,
+I'm trying to boot linux on an sbc8260 using PPCBoot.  (Linux 2.4.16 and
+PPCBoot 1.1.2)  PPCBoot passes a data structure (bd_t) with a lot of
+board information in it.  The way that this is supposed to work (I
+think, please correct me if I'm wrong) is that PPCBoot leaves the
+address of the data structure in r3 and one of the first things that
+linux should do is to copy or obtain this information somehow.  So, my
+question is this: does anyone know where this happens in the code?  I've
+been looking in arch/ppc/kernel/setup.c and this looks like where it
+should happen but I don't see it.
 
-I took the easy route, its just phyid1 & phyid2.  The "A" version was
-submitted by some one else and it might be possible to combine them into
-one DP83843 stuct by using a shift factor of 8 ( 2nd eliment in the
-phy_info struct" the diff between 0x20005c23 &  0x20005c20 is the model
-revision number.
+Any help would be greatly appreciated.
 
-Maybe MAX_NUM_PHYS needs to be renamed to MAX_PHY_ADDR to be more clear.
-
-
--- armin
+Thanks,
+Andy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
