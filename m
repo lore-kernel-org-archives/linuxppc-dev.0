@@ -1,54 +1,69 @@
-Date: Thu, 14 Jan 1999 19:48:13 -0600 (CST)
-From: nathan ingersoll <ningerso@d.umn.edu>
-To: Tom Rini <tmrini@ntplx.net>
-cc: Renaud Dreyer <rdreyer@math.berkeley.edu>,
-        satadru pramanik <satadru@umich.edu>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Accelerated XF68 on PowerMac 7300? 
-In-Reply-To: <Pine.LNX.4.05.9901141546030.15415-100000@pc.wackyland.com>
-Message-ID: <Pine.SO4.4.02.9901141942490.29040-100000@ub.d.umn.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 15 Jan 1999 12:57:32 +1100
+Message-Id: <199901150157.MAA01789@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: alan@cymru.net, jskov@cygnus.co.uk, cort@persephone.cs.nmt.edu,
+        linuxppc-dev@lists.linuxppc.org, Jes.Sorensen@cern.ch,
+        linux-apus@sunsite.auc.dk
+In-reply-to: <199901142052.UAA24588@snowcrash.cymru.net> (message from Alan
+	Cox on Thu, 14 Jan 1999 20:52:51 +0000 (GMT))
+Subject: Re: Synchronization [was Re: The Magic Show: kernel_map() disappearing]
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <199901142052.UAA24588@snowcrash.cymru.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've had quite a bit of problems with acceleration with my ATI Rage II.
-When color is set for 8 bpp the screen is all white with a cursor, 16 bpp
-seems to work, but there are window remnants left behind when dragging or
-from menus. I only have 2 MB of SGRAM so I haven't tried higher
-resolutions, if it would help fix the problem, I could experiment a bit
-more. Non-accelerated, the X server works great. So I've pretty much
-settled on what I have.
+Alan Cox <alan@cymru.net> wrote:
 
-On Thu, 14 Jan 1999, Tom Rini wrote:
+> >  eieio: prevent CPU from reordering/collapsing reads/writes to memory.
+> >         (but otherwise run at full steam!)
+> 
+> Thats what mb() does - its a memory-barrier hence the name - it imposes
+> strong store ordering properties across it. 
 
-> 
-> On Thu, 14 Jan 1999, Renaud Dreyer wrote:
-> 
-> > > On Thu, 14 Jan 1999, satadru pramanik wrote:
-> > > 
-> > > > Ditto for a 7600/132!
-> > > 
-> > > The main problem with accel'ed X for any of the internal videos is docs on
-> > > howto accel it... :)
-> > 
-> > So then can I assume that the acceleration will not work on my 7300, no matter
-> > what?
-> 
-> The internal video won't be.
-> 
-> > I was thinking of eventually a graphic card for my 7300, with some kind
-> > of 3D support. Which one would support acceleration? Thanks,
-> 
-> Right now there's an accel'ed X for ati cards and IMS cards.  Drop one of
-> those in, run X on that and it'll be acclerated.
-> 
-> ---
-> Tom Rini (TR1265)
-> http://dobbstown.yeti.edu/
-> 
-> 
+My understanding of the original mb() (and correct me if I'm wrong)
+was that it basically said "an interrupt or another processor might
+have changed memory, so don't keep values from memory cached in
+registers".  With wmb() on SMP, this seems to be extended to include
+"make sure other cpus can see the values we just wrote".  I don't know
+exactly how rmb() differs from mb().
 
+I just read in the Programming Environments Manual (the doc that
+defines the PPC architecture) that eieio is supposed to provide
+ordering for two sets of accesses:
+
+- loads and stores to cache-inhibited, guarded addresses, and stores
+  to write-through cached addresses (i.e. I/O accesses),
+
+- stores to cached, coherent addresses (i.e. addresses where the
+  corresponding PTE has WIM == 001).
+
+The two sets are ordered separately.  The eieio instruction doesn't
+wait for previous accesses to complete, it just inserts a barrier into
+the stream of memory accesses.
+
+I guess eieio probably is strong enough for wmb(), since all ordinary
+memory is marked coherent in PPC SMP.
+
+The sync instruction is stronger than eieio, it says "wait until all
+outstanding loads and stores (and instructions) have completed before
+starting any new instructions".  AFAICS, it subsumes eieio so there
+would be no point in doing an eieio immediately after a sync.
+
+I put a sync in for mb, rmb and wmb, which may be overkill.  Certainly
+I think the eieio that Cort added after the sync for these things is
+unnecessary.
+
+> x86 and most other processors dont have the notion of a store barrier and
+> an i/o barrier beign different
+
+On x86, i/o accesses are strongly ordered already.  On PPC the eieio
+instruction provides this sort of ordering (if you do it after each
+access).  So I think eieio is right for iobarrier_*.  Whether eieio
+would be sufficient for *mb(), or whether sync is needed, I'm not
+sure.  Certainly sync should be sufficient.
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
