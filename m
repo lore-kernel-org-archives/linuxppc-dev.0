@@ -1,43 +1,49 @@
-Date: Thu, 1 Mar 2001 14:33:36 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Matt Porter <mporter@mvista.com>
-Cc: xav <grave@ipno.in2p3.fr>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problem requesting IRQ with 2.4.2 kernel
-In-Reply-To: <20010227081059.B32137@cx258813-a.chnd1.az.home.com>
-Message-ID: <Pine.HPX.4.10.10103011430150.1860-100000@gra-ux1.iram.es>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Berlin <dberlin@redhat.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: u64 fun and PCI DMA not working for things behind bridges?
+Date: Thu, 1 Mar 2001 15:02:42 +0100
+Message-Id: <19350124073426.30284@mailhost.mipsys.com>
+In-Reply-To: <m2k86a2gw5.fsf@dynamic-addr-83-177.resnet.rochester.edu>
+References: <m2k86a2gw5.fsf@dynamic-addr-83-177.resnet.rochester.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 27 Feb 2001, Matt Porter wrote:
-
-> >   Bus  0, device  13, function  0:
-> >     Bridge: Tundra Semiconductor Corp. CA91C042 [Universe]
-> > (rev1).
-> >       IRQ 16.
-> >       Master Capable.  No bursts.  Min Gnt=3.
-> >       Non-prefetchable 32 bit memory at 0xeffef000 [0xeffeffff].
-> >       I/O at 0xfffe000 [0xfffefff].
-> >
-> >
-> > How can avoid all this pci board to have the same IRQ ?
-> > Is this an openPic related problem ?
 >
-> Interrupt routing problem.  IIRC, put a 5 for the interrupt line in
-> the entry for Slot 13, Universe II LINT#0.  That should get you
-> going.  Check the 2300 programmer's reference if that interrupt
->  doesn't work for you.  If the driver is using more LINT inputs than
-> that then you'll have to fix the routing as appropriate.  It can all
-> be rerouted via the Universe II but that's another game.
+>The firewire device is behind the same bridge the GMAC is behind. Is
+>there something special I need to do to make physical dma work all the
+>time when the device you are dma'ing to/from is behind a bridge?
+>
+>It could be a hardware implementation problem in the uni-north FW, of
+>course. I'm just trying to see if anyone has ever noticed anything.
+>
+>
+>Right now i have to resort to having the SBP-2 driver emulate physical
+>dma reads/writes by telling the firewire subsystem driver to redirect
+>all reads/writes into host memory through a routine that simply does
+>memcpys.
+>I also tell the controller it's not allowed to allow physical dma
+>accesses to be performed (there are filter registers that let you
+>specify what addresses you'll allow physical dma access to, and what
+>you want to go through the normal block read/write/quadlet read/write
+>process) , and that the other side must do it through normal block
+>reads/write packets.
+>
+>This works, but it's a little slow, of course.
 
-No problem with this. I decided to use only one interrupt line in the
-Universe driver. Everything is routed to LINT#0 (DMA and VIRQ#1 to VIRQ#7
-are the only ones used right now, but I route the others to LINT#0 too).
+It might be possible that we have an apple bug here... Could you try
+doing as if the device was not cache coherent ?
 
-	Gabriel.
+Basically, invalidate the cache for a data block that will be filled by
+the device, and flush the cache for a data block that will be read by the
+device. You can do the first one with dcbi, the second with dcbf, both
+loops followed by a "sync" instruction to make sure the ache operations
+are completed.
+
+Ben
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
