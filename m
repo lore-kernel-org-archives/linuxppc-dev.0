@@ -1,10 +1,10 @@
-Date: Tue, 20 Apr 1999 15:43:52 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: David De Ridder <david.de.ridder@bitsmart.com>
-cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mvme kernel patches [LONG]
-In-Reply-To: <Pine.SO4.4.05.9904201448280.3400-100000@hsins.uia.ac.be>
-Message-ID: <Pine.HPP.3.96.990420152154.20020F-100000@gra-ux1.iram.es>
+Date: Tue, 20 Apr 1999 07:46:26 -0600 (MDT)
+From: Dan Burcaw <dburcaw@terraplex.com>
+To: Grant Bayley <gbayley@ausmac.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Apple's "Darwin Streaming Server"
+In-Reply-To: <Pine.LNX.4.04.9904201701350.6655-100000@ausmac.net>
+Message-ID: <Pine.LNX.3.96.990420074520.8298A-100000@newhope.terraplex.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -12,85 +12,50 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
+I've looked at the code. There's a lot of NeXT and MacOSX specific code
+but it should be realitivly simple to port. 
 
-On Tue, 20 Apr 1999, David De Ridder wrote:
+Dan
 
->  We'll see what the result is with a 2.2.4 kernel.
->  BTW, the old patches gave a problem with ppc_defconfig or smth like that.
->  (I can't recall the exact problem, and I don't fancy unpatching the whole
->   source tree to a not-working variant).
+On Tue, 20 Apr 1999, Grant Bayley wrote:
 
-Well, I never do a make mrproper, but occasionally a make distclean
-(because it also removes the *~ files). But just after I always copy one
-of the mvme2600.config to .config and type make oldconfig. Updating from
-the default configs is too error prone...
-
-> > > * The new precompiled nfsroot-2.2.4 kernel works great (as did the
-> > >   2.2.1). Even better : it does not give the ``openpic.c'' error anymore.
-> > 
-> > I'm up to 2.2.6, it will appear soon on the server. Lots of VME tests this
-> > week.
 > 
->  Cool.
+> Hi folks,
 > 
-> > > I still have some questions :
-> > > 
-> > > * Why is the Generic DECchip driver used instead of the DEC2x41x driver ?
-> > >   Is this because of the problems with the DEC21143 ?
-> > 
-> > Arenn't you confused ? I think they are the sme driver under evolving
-> > names. The source file is de4x5.c, tulip.c has never worked properly on
+> Having played around with Quicktime 4 this morning and watched the BBC etc
+> across the Internet, I was delighted to see that Apple have opensourced
+> and released the source code for the streaming server itself.
 > 
->  I was unaware of that. I was under the impression that there was a
->  stable dedicated DEC Tulip driver (that I expected to work with the
->  board). I'm probably completely wrong ;-)
-
-Anyway you won't have problems on the 2600 since it is a 21140. Only the
-boards with 21143 chips have invalid SROMs. The de4x5 driver works
-(CONFIG_DE4X5) and the Tulip (CONFIG_DEC_ELCP) does not. Even Dave Miller
-said once that he had given up on trying to get the Tulip driver running
-on a big-endian machine.
-
->  So, there's no use in trying to use the 21x4x driver ?
-
-No. 
-
-> > > * (Gabriel) Is it possible to post the .config that resulted in the
-> > >   current zImage-nfsroot-2.2.4 on your FTP site ? Or by mail to this
-> > >   list ?
-> > 
-> > Yes, I thought they were uptodate, so I must have screwed up something.
+> I downloaded it and read the FAQ - only problem is they use the funky
+> NeXTStep-ish Makefile to build the thing and requires "modification of a
+> handful of source files" to compile and run on "platforms other than Mac
+> OS X Server".
 > 
->  It seems to me that you only updated mvme2600.config. Neither .initrd
->  nor .nfsroot are updated.
-
-Ok, I've put the last ones (for 2.2.6). 
-
-> > > I'm currently trying to compile my own 2.2.4 with the latest patches.
-> > > I'll keep everyone posted.
+> I realise this is off topic, but it would be an interesting addition to
+> Linux (and LinuxPPC in particular) to have this available in an
+> easy-to-compile (./configure, anyone  :-) package..
 > 
->  Well, the kernel compilation *failed*. It got stuck in ``universe.c'',
->  because it doesn't know several UNIVERSE_- constants (e.g.
->  UNIVERSE_MAJOR). Sounds like an include file is missing or not patched.
->  I did a find+grep on the patched source tree and the only header or .c
->  file with these constants seems universe.c.
+> Has anyone started work on porting this?
+> 
+> Grant
+> 
+> ___________________________________________________
+> Grant Bayley
+> - Network Administrator, Batey Kazoo Communications
+> - Administrator, The AusMac Archive
+> http://www.ausmac.net/    gbayley@ausmac.net
+> __________________________________________________
+> 
+> 
+> 
 
-grep UNIVERSE_MAJOR drivers/vme/*.[ch]
-drivers/vme/universe.h:#define UNIVERSE_MAJOR 60 /* Experimental major number */
 
-Ok, now I see. I wanted to exclude modversions.h and version.h from the
-patch file and I use a *vers*.h wildcard which also removes universe.h
-from the patch. Corrected now, but the patches are against 2.2.6.
+Dan
 
->  To make sure, I've rerun ``make oldconfig'' and have compiled again
->  (NFS is slooowwwww). I notice universe.c gives several errors on
->  almost *EACH* line it contains. Weird. It also appears that there are
->  some type definitions missing.
+Terra Soft Solutions, Inc.
+ email: dburcaw@yellowdoglinux.com
+ website: http://www.yellowdoglinux.com/
 
-This certainly explains lots of compile errors.
-
-	Regards,
-	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
