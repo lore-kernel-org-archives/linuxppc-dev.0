@@ -1,45 +1,23 @@
-Mime-Version: 1.0
-Message-Id: <a06002006bcd0edcb285c@[130.161.115.44]>
-In-Reply-To: <200405181550.AYL88709@sentry.ucr.edu>
-References: <200405181550.AYL88709@sentry.ucr.edu>
-Date: Wed, 19 May 2004 12:59:55 +0200
-To: "Steve Kaiser" <steven.kaiser@ucr.edu>
-From: "J.D. Bakker" <bakker@thorgal.et.tudelft.nl>
-Subject: Re: MPC5200 LEDs
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <20040519132402.78625.qmail@web15204.mail.bjs.yahoo.com>
+Date: Wed, 19 May 2004 21:24:02 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: RE: RPX-CLLF porting
+To: Prabhakar Kalasani <kalasani@sena.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <ACEDKFIMODAHBNCONGOHGEPPCDAA.kalasani@sena.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 8:50 -0700 18-05-2004, Steve Kaiser wrote:
->Before I plow into it, I ask for your advice.  What is the best way to turn
->on/off the status LEDs on the Motorola Lite5200 ("IceCube") board?
->
->Although experienced with embedded micros & DSPs in general, I am a newbie to
->Linux and the MPC5200.
->Thanks to Wolfgang for the most excellent U-Boot and ELDK.  With these tools,
->I have compiled a 2.4.25 kernel and have it running from either RAM or Flash
->in my 5200 IceCube.  I can insmod a simple "hello world" module on my target.
->That's where I'm at.  I figure the next exciting step is to turn LEDs on &
->off.  Right?  What's the best/correct way in the Linux tradition?  Any tips
->are welcome.
+Prabhakar Kalasani <kalasani@sena.com> wrote:
 
-Do you have working userspace (ie, do you have a ramdisk or the like
-loaded, and do you get a prompt where you can execute commands) ? If
-so, you can set and read memory locations using a cross-compiled
-version of devmem2:
+> Thank you  sam
+> I made Binary Image and I could boot my target.
 
-http://www.lart.tudelft.nl/lartware/port/devmem2.c
+You are welcome!So glad to help you out.:-)
 
-Just find out the (physical) address of the latch driving the LEDs,
-and you can toggle them from the command line.
-
-Regards,
-
-JDB.
---
-LART. 250 MIPS under one Watt. Free hardware design files.
-http://www.lart.tudelft.nl/
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
