@@ -1,30 +1,46 @@
-Date: Wed, 19 Jul 2000 16:03:31 -0700 (PDT)
+Date: Wed, 19 Jul 2000 16:06:40 -0700 (PDT)
 From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: William Blew <wblew@home.com>
-cc: Nathan Ingersoll <ningerso@d.umn.edu>, linuxppc-dev@lists.linuxppc.org
+To: Paul Schinder <schinder@pobox.com>
+cc: William Blew <wblew@home.com>, Nathan Ingersoll <ningerso@d.umn.edu>,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: Malloc bug?
-In-Reply-To: <Pine.LNX.4.10.10007190929270.762-100000@apollo.kulian.net>
-Message-ID: <Pine.LNX.3.96.1000719160107.2600D-100000@deepspace.mklinux.org>
+In-Reply-To: <p04320404b59b92f1b003@[10.0.1.46]>
+Message-ID: <Pine.LNX.3.96.1000719160412.2600E-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 19 Jul 2000, William Blew wrote:
+On Wed, 19 Jul 2000, Paul Schinder wrote:
 
-> On Tue, 18 Jul 2000, David A. Gatwood wrote:
 >
-> Anybody know here man page patches are submitted? After all, if the
-> man page is incorrect, an easy fix is to update it :).
+> At 9:30 AM -0700 7/19/00, William Blew wrote:
+> >
+> >Anybody know here man page patches are submitted? After all, if the
+> >man page is incorrect, an easy fix is to update it :).
+> >
 >
-> BTW: David, thanks for the info.
+> The man page isn't incorrect, at least not the one I have (YDL CS 1.2):
 
-No prob.  And Hollis made another good point about running past the bounds
-of a memory region.  Same applies for any data structure (arrays, etc.).
-Another common problem is to compile against a set of headers for a
-library where the library itself doesn't match.  This can cause the size
-of objects to change, and you run over the bounds without even knowing it.
+I recall reading something about malloc never failing in some malloc man
+page, but I don't recall which OS, which version, etc.
+
+I note in the MkLinux man page, which is probably straight from RedHat:
+
+       free()  frees  the  memory  space pointed to by ptr, which
+       must have been returned by a previous  call  to  malloc(),
+       calloc()  or  realloc().   Otherwise,  or if free(ptr) has
+       already been called before,  undefined  behaviour  occurs.
+       If ptr is NULL, no operation is performed.
+
+and
+
+       Crashes in malloc(), free() or realloc() are almost always
+       related to heap corruption, such as overflowing  an  allo-
+       cated chunk or freeing the same pointer twice.
+
+:-)
 
 
 David
