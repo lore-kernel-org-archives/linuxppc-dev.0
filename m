@@ -1,38 +1,33 @@
-Date: Sun, 25 Feb 2001 23:52:35 -0600 (CST)
-From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: XFree86 4.0.xx + Display corruption + ati + mach64  
-Message-ID: <Pine.GSO.4.10.10102252338330.13356-100000@oddjob.uchicago.edu>
+Subject: Got Pismo firewire working
+From: Daniel Berlin <dberlin@redhat.com>
+Date: 26 Feb 2001 01:31:31 -0500
+Message-ID: <x7u25igdks.fsf@dynamic-addr-83-177.resnet.rochester.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I finally got around to making firewire work on the Powerbook
+Pismo.I posted patches to linux1394-devel@lists.sourceforge.net (look
+at the  sourceforge mailing list archives).  SBP-2 (what is used for hard
+drives/cd-rw's/scanners/etc) doesn't quite work yet. It
+detects my 2 firewire hard drives, gets all the info about them right,
+and logs into them successfully (it's an sbp-2 thing, for our purposes
+it means it's talking to them right, and they are talking back right),
+but when it tries to send the scsi commands to read/write, it just times out.
+Probably a small endianess issue somewhere.
 
-I'm using the XF4.0.99 rpms and get a very strange problem on my
-display. There are small underscore characters that scroll across my
-display from top to bottom approximately 1/2 inch from the left edge of
-screen. This corruption mainly occurs at color depths of 15/16 and above
-and for resolutions of 1280x1024. No problems at 1024x768 or below.
-I get the same corruptions even with XFree86-3.3.6-20.
+However, gscanbus and other tools happily show the bus topology
+correctly, read/write blocks/quads from the nodes, etc.
 
-Kernel: 2.4.0-test11
-Video (from dmesg):
-atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 6M SGRAM, 14.31818 MHz XTAL, 23
-0 MHz PLL, 100 Mhz MCLK
-Console: switching to colour frame buffer device 128x48
-fb0: ATY Mach64 frame buffer device on PCI
-MacOS display is /pci/ATY,RagePro_C
+If someone has a digital camera or something that doesn't need SBP-2,
+it'll probably work.
 
-The monitor is a 19" Viewsonic PF 790.
+digital video probably will work too.
 
-It is quite possible that this is not a PPC specific problem but I was
-wondering if anyone on this list has had this problem.
 
-Thanks in advance for your help,
-Ram
-
+--Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
