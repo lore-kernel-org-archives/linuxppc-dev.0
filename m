@@ -1,58 +1,42 @@
-Message-ID: <19990525024524.D26885@radicalmedia.com>
-Date: Tue, 25 May 1999 02:45:24 -0400
-From: Mark Abene <phiber@radicalmedia.com>
-To: bh40@calva.net
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: turbo mouse driver fix...
-Mime-Version: 1.0
+Message-ID: <374A680D.8B051E6E@dgs.monash.edu.au>
+Date: Tue, 25 May 1999 09:06:21 +0000
+From: Brendan Simon <brendan@dgs.monash.edu.au>
+Reply-To: brendan@dgs.monash.edu.au
+MIME-Version: 1.0
+To: egcs mailing list <egcs@egcs.cygnus.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Cross-GCC <crossgcc@cygnus.com>
+Subject: can't find crt1.o.  egcs powerpc-linux cross-compile problem.
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey!  Please test the following patch to mac_keyb.c which fixes the TurboMouse
-support you added based on my "mousehack" program.  I tested my changes on a
-2.2.7 kernel.  The problem is that once you determine we are working with a
-TurboMouse 5 (thanks for adding the reg 1 ID detection, btw!), we need to write
-to id 3, which is how you control the TurboMouse 5's modes, not to id 15.
-Observe:
 
---- mac_keyb.c.orig     Tue May 25 02:07:29 1999
-+++ mac_keyb.c  Tue May 25 02:25:36 1999
-@@ -908,13 +908,10 @@
- 
-        adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
- 
--       adb_request(&req, NULL, ADBREQ_SYNC, 3,
--               ADB_WRITEREG(id,3), 0x20 | id, 4);
--
--       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
-+       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(3));
- 
-        adb_request(&req, NULL, ADBREQ_SYNC, 9,
--       ADB_WRITEREG(id,2),
-+       ADB_WRITEREG(3,2),
-            0xe7,
-            0x8c,
-            0,
-@@ -924,10 +921,10 @@
-            0xff,
-            0x94);
- 
--       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(id));
-+       adb_request(&req, NULL, ADBREQ_SYNC, 1, ADB_FLUSH(3));
- 
-        adb_request(&req, NULL, ADBREQ_SYNC, 9,
--       ADB_WRITEREG(id,2),
-+       ADB_WRITEREG(3,2),
-            0xa5,
-            0x14,
-            0,
+I am trying to compile egcs-1.1.2 as a cross-compiler (linux to
+powerpc).  I am building on a redhat-5.2 system and have successfully
+compiled and installed a native egcs-1.12.  I am using this compiler for
+the cross-compile build and have used the following configure options.
+    --target=powerpc-linux
+    --program-prefix=powerpc-linux-
+    --with-headers=/usr/include
 
+The compilation of xgcc completes.  At some later stage, configure tries
+to test the newly built xgcc to see if it can build executables, but it
+fails.  When I run the command manually, the error message says that
+"ld" can not find crt1.o.  Where is the source for crt1 (egcs or
+glibc) ?  I can see crt1 files in the newlib tree so my first assumption
+is that it must be in the glibc tree for linux targets.
 
-That should work fine.  If it does for everyone else, it should be committed!
+Any suggestions to get past my crt1 linking problems.
 
--Mark
+Thanks,
+Brendan Simon.
+
+PS. With regard to the --with-headers option, should I unpack the glibc
+sources and point --with-headers to the unpacked include directory,
+instead of the original redhat-5.2 ?
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
