@@ -1,45 +1,33 @@
-Message-ID: <3827AC9F.5F4BFE01@jlc.net>
-Date: Tue, 09 Nov 1999 00:09:51 -0500
+Message-ID: <3827E054.90CFFA7B@jlc.net>
+Date: Tue, 09 Nov 1999 03:50:28 -0500
 From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: Peter Brown <pfb@syseng.anu.edu.au>
-CC: linuxppc-embedded@lists.linuxppc.org
+To: Peter Brown <pfb@syseng.anu.edu.au>, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: MBX860 mbxroot.min problem.
-References: <38266602.C333E608@syseng.anu.edu.au>
+References: <38266602.C333E608@syseng.anu.edu.au> <3827AC9F.5F4BFE01@jlc.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Peter Brown wrote:
+Dan Malek wrote:
 > 
-> I'm attempting to boot an MBX860 card using the mbxroot.min.tgz filesystem.
-
-Other than this is all pretty old, it looks like it should boot fine.
-
-> .....  When the NFS mount is attempted, the IP address of the NFS server
-> appears to be corrupted from what was used before.
-
-
-I don't understand what you mean by "corrupted".  The kernel used
-the board configuration exactly.  Unless you manually enter a different
-boot configuration line, the Linux/PPC boot assumes you are using the
-same server the provided the kernel.
-
-> ....  I've successfully executed
-> the NFS mount on another network using the server address 192.168.1.1 and MBX
-> address 192.168.1.4.
+> Peter Brown wrote:
+> >
+> > I'm attempting to boot an MBX860 card using the mbxroot.min.tgz filesystem.
+> 
+> Other than this is all pretty old, it looks like it should boot fine.
 
 
-So, you have proven this works when the server is configured properly......
+OK EVERYONE, you can stop sending individual messages to me.  My
+eyes aren't working right at this hour of the morning for me....I see
+it now.
 
-> ....  What would cause the boot arguments to be changed from
-> the Program Load settings?
+I guess something is broken there, however that code has long been
+deleted.  All 8xx kernels now boot using BOOTP to discover all of
+this information.  The only solution is to use a newer kernel.
 
-
-I don't understand what you mean.  Everything looks fine.
-
-
+My apologies.....
 
 	-- Dan
 
