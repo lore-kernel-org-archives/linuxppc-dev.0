@@ -1,41 +1,57 @@
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: "'Embedded Linux PPC List'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 823 Video Controller Driver - where ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 19 Dec 2002 10:32:35 EST."
-             <D73A25AA6E54D511AD74009027B1110F3C0500@ORION>
-Date: Thu, 19 Dec 2002 16:44:04 +0100
-Message-Id: <20021219154409.3D609C6289@atlas.denx.de>
+Date: Thu, 19 Dec 2002 08:46:44 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Prakash kanthi <pkanthi@yahoo.com>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: After Uncompresseing Linux..., what's next
+Message-ID: <20021219154644.GA852@opus.bloom.county>
+References: <20021219001423.47019.qmail@web41207.mail.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20021219001423.47019.qmail@web41207.mail.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <D73A25AA6E54D511AD74009027B1110F3C0500@ORION> you wrote:
-> I appologize, you are correct.  I sometimes think of LCD and video as the
-> same because I worked with a Lynx chip that allows both LCD and Video out
-> from the same buffer.  Is it possible to use the 8xx LCD driver to drive the
-> video out?  I believe the only section that needs to be changed is the
-> function that initializes the LCD registers, I may be off though.
+On Wed, Dec 18, 2002 at 04:14:23PM -0800, Prakash kanthi wrote:
 
-It's more complicated, since the video controller will not support  a
-plain framebuffer, but only YUYV video mode.
+> I was trying to load linuxppc_2_4_devel onto my board.
+> It goes through the board info read, UART init and
+> Uncompressing the linux kernel. But after that, i do
+> not see any messages and board hangs.
+>
+> Here is the UART output:
+> ------------------------------------
+> OS Booting...
+>
+> loaded at:     00400000 0060D1CC
+> board data at: 00000030 00000044
+> relocated to:  00405C24 00405C38
+> zimage at:     00406290 004A08FF
+> initrd at:     004A1000 006097CA
+> avail ram:     0060E000 007F8000
+>
+> Linux/PPC load: console=ttyS0,9600 console=tty1 ip=on
+> root=/dev/xsysace/disc0/pa
+> rt3 rw
+> Uncompressing Linux...done.
+> Now booting the kernel
+[snip]
+> 2. How big a space this uncompressing process needs?
+> And also how much overall memory is required for
+> running linux. I just have 8MB SDRAM.
 
-What happened to the video driver for the EP boards? It was available
-once on MV's FTP server - does not even EP has a copy any more?
+"Not too much".  And the zlib uncompress code will error out if there
+are any problems (corruption, lack of memory, etc).  So if you got that
+far, uncompression worked.
 
-[Asking just out of curiousity, as we've  already  reimplemented  all
-the stuff we needed - no NTSC support yet, though].
+> 3. What is the next step in the booting process? Which
+> Device (eth, pci, ide, ???) Initialization?
 
-Best regards,
-
-Wolfgang Denk
+'???'.  Try enabling CONFIG_SERIAL_TEXT_DEBUG, as that will print out
+some information prior to printk being usable.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-As far as we know, our computer has never had an undetected error.
-		                                           -- Weisert
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
