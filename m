@@ -1,31 +1,35 @@
-Date: Fri, 1 Jan 1999 16:47:19 -0800 (PST)
-From: "Ian K. Erickson" <ian@ns0.ipeg.com>
-To: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BUG: 2.2.0-pre2 on 5500 (and maybe 6500)
-In-Reply-To: <368CDBC4.366C@post.uni-bielefeld.de>
-Message-ID: <Pine.LNX.3.96.990101164529.9762C-100000@ns0.ipeg.com>
+Message-ID: <368DE772.3E75@post.uni-bielefeld.de>
+Date: Sat, 02 Jan 1999 10:31:30 +0100
+From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
+Reply-To: jenschrr@post.uni-bielefeld.de
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tom Rini <tmrini@ntplx.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: BUG: 2.2.0-pre2 on 5500 (and maybe 6500)
+References: <Pine.LNX.4.05.9901011444130.974-100000@pc.wackyland.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 1 Jan 1999, Jens Ch. Restemeier wrote:
-> P.S.: Patch ? I'd like to, but I have not much information about the
-> hardware. What about starting a project to document all devices in a Mac
+Tom Rini wrote:
+> 
+> On Fri, 1 Jan 1999, Jens Ch. Restemeier wrote:
+> 
+> > This bugreport applies to a PMac 5500/225, and maybe a 6500, because
+> > they share a common motherboard.
+> > I'm booting 2.2.0-pre2 kernel with BootX.
+> 
+> Well, the all-important question is does this show up with a vger kernel?
+> (2.1.130)
 
-I'll second that. There may be legal issue (NDAs?) involved in having
-linuxppc share some hardware info, but I hope I am wrong.
+I built my 2.1.127 kernel with the sources from either ftp.linuxppc.org
+or samba (can't remeber). I'd try with vger, but I can't do CVS from my
+Mac. The latest snapshot of vger I've seen around was AGES old. 
 
-Ian K. Erickson                 iPEG, the Internet Productivity Group
-Systems Administator            W 422 Riverside, Suite 628
-ian@ipeg.com                    Spokane, WA 99204
-http://www.ipeg.com             (509)462-iPEG
+The 2.2.0 kernel was downloaded as a binary.
 
-4F6E65204F5320746F2072756C65207468656D20616C6C2C204F6E65204F5320746
-F2066696E64207468656D2CDA4F6E65204F5320746F206272696E67207468656D20
-616C6C20616E6420696E20746865206461726B6E6573732062696E64207468656D 
+Jens
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
