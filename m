@@ -1,54 +1,23 @@
-Message-ID: <38C3564E.4A46F577@amberdata.demon.co.uk>
-Date: Mon, 06 Mar 2000 06:55:10 +0000
+Message-ID: <38C35732.404A6B22@amberdata.demon.co.uk>
+Date: Mon, 06 Mar 2000 06:58:58 +0000
 From: David Monro <davidm@amberdata.demon.co.uk>
 MIME-Version: 1.0
-To: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: userland port io - how do we do it on PReP?
+To: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>, paulus@linuxcare.com
+Subject: insw/outsw in ide.h
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+> Is there any PPC platform that needs to use a byte-swapping insw/outsw in
+> the IDE driver?  (I can't see why any platform would, but you never
+> know...)
 
-Hope this isn't an FAQ.
-
-I've struck a problem in the X server world - I can't seem to get port
-IO (ie inb()) to work.
-
-There are two problems - one is that there doesn't seem to be an
-equivalent to ioperm() or iopl() to enable access to the IO ports.
-Second is that for MBX and APUS machines the offset to the io port space
-appear to be constants, but for other systems we seem to have an
-external variables isa_io_base, isa_mem_base and pci_dram_offset. Does
-that really mean that programs which do port IO on these systems must
-declare and initialize these varibles before doing port IO? And that
-MBX, APUS and other systems need different binaries as a result? And
-that if /usr/include/linux/autoconfig.h doesn't match the target system
-bad things will happen?
-
-The following program doesn't work on my IBM 850:
-
-#include <stdio.h>
-#include <asm/io.h>
-
-unsigned long isa_io_base = PREP_ISA_IO_BASE;
-
-main()
-{
-        int x;
-
-        x = inb(0x3CC);
-
-        printf("x = 0x%02x\n");
-}
-
-It just dumps core.
-
-Help?
+Yes - the IBM 850 does. Otherwise the firmware doesn't understand the
+partition table and the CD drive doesn't work.
 
 Cheers,
 
-        David
+	David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
