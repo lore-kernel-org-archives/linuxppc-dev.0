@@ -1,36 +1,50 @@
-Message-ID: <38C77216.411270A2@agelectronics.co.uk>
-Date: Thu, 09 Mar 2000 09:42:46 +0000
-From: Adrian Cox <apc@agelectronics.co.uk>
+Date: Thu, 9 Mar 2000 10:45:21 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michel Lanners <mlan@cpu.lu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.48 hang on starting init?
+In-Reply-To: <200003090638.HAA00445@piglet.grunz.lu>
+Message-ID: <Pine.HPX.4.10.10003091039110.22162-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: Greg Allen <gallen@arlut.utexas.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: AltiVec on Linux
-References: <v04011708b4ec4b0ae554@[129.116.196.236]>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Greg Allen wrote:
+	Hi,
 
-> It's not a "Linux" compiler -- it's strictly a cross-compiler. It creates
-> the toolset "powerpc-eabisim-*". The binaries that it generates do not run
-> on Linux.
+> Yet another quirk I've found with 2.3:
+>
+> Sometimes, when booting, the kernel would hang just after freeing init
+> kernel memory, before starting init.
+>
+> I've booted 4-5 times now without a problem, but it seems to happen
+> every time when the root partition is not marked as clean (i.e. after a
+> crash).
 
-Take the compiler patches, apply to the compiler source for LinuxPPC,
-configure, make. This should work, though I've only done it on Debian.
+I saw something similar with 2.3.4x up to 2.3.45, then I could not test
+later versions because they would not boot with root on NFS. The pattern
+was that a shutdown -r would always hang but it would work if power was
+cycled for some mysterious reason. This was solved this by clearing all
+free memory in my bootloader (on MVME2400/MVME2600 boards).
 
-> Unfortunately, powerpc-eabisim-g++ doesn't recognize "vector" at all.
-> That's right, boys and girls, NO C++ SUPPORT WITH ALTIVEC!
+Now I'm happily running 2.3.50 (Linus'tree with some patches available on
+my ftp server) without any problems, but I did not try to remove my hack.
 
-For C++ use the keyword __vector.
+> It seems to be related either to init not starting, or to the kernel
+> not being able to deal with the non-clean root partition. The problem
+> appears way before fsck gets a chance at the partition.
 
-This is documented in the Altivec Programming Interface Manual, which
-can be found at:
-http://www.altivec.org/tech_specifications/altivec_pim.pdf
+Since I was exclusively testing wit hroot on nfs, non clean rooot
+partition is not an option ;-)
 
-It's not pretty, but it is in the manual.
+> Anybody seen something similar? Any idea what I should look at?
+>
+> Hmmm, my init is 2.74 from my old R4 install; maybe I should give R5 or
+> 2000 a try?
 
-- Adrian Cox, AG Electronics
+I'm using init from R5.
+
+	Gabriel.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
