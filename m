@@ -1,25 +1,25 @@
-Message-ID: <XFMail.000817130350.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+From: "Vladimir Simonov" <sv@asplinux.ru>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Can't find nvtool? RE: setpramboot problems
+Date: Thu, 17 Aug 2000 15:11:07 +0400
+Message-ID: <NEBBKFDEKEFCPABJIFOMIEDLDEAA.sv@sw.mipt.ru>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.10.10008171147270.8338-100000@opal.biophys.uni-duesseldorf.de>
-Date: Thu, 17 Aug 2000 13:03:50 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Subject: Re: keyboard
-Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20000418092948.17203@mailhost.mipsys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Or perhaps I'll fix it by allowing int16_t keycodes just like on peecees.
->
-> The latter, if at all possible (because that allows for using the console
-> keymap tools again if I'm not mistaken).
+Benjamin Herrenschmidt wrote:
+>nvsetenv needs to be fixed too (by either using the same algorithm, or by
+>using the not-yet-added iotcls). Currently, nvsetenv works on oldworld,
+>and Marcus Volmer "nvtool" works on newworld for manipulating OF
+>environement variables.
 
-?  I don't know anything about that. Please tell me more.
-
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
+I can't find nvtool. Please, help.
+Thanks in advance
+Vladimir Simonov
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
