@@ -1,34 +1,41 @@
-Date: Tue, 6 Feb 2001 22:01:55 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Daniel Eisenbud <eisenbud@cs.swarthmore.edu>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Iain Sandoe <iain@sandoe.co.uk>, Takashi Oe <toe@unlserve.unl.edu>,
-        bob@kunk.jriver.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R in
-In-Reply-To: <20010206132735.A4698@allspice.cs.swarthmore.edu>
-Message-ID: <Pine.LNX.4.10.10102061940080.21813-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <3A806897.9D2D480E@mvista.com>
+Date: Tue, 06 Feb 2001 16:11:51 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulus@linuxcare.com.au
+CC: Gabriel Paubert <paubert@iram.es>, tom_gall@vnet.ibm.com,
+        Tom Gall <tgall@rochcivictheatre.org>,
+        Troy Benjegerdes <hozer@drgw.net>, linuxppc-commit@hq.fsmlabs.com,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: context overflow
+References: <Pine.HPX.4.10.10101231050450.3872-100000@gra-ux1.iram.es>
+		<3A6DCBBE.60AB54CE@mvista.com> <14975.55329.292764.981333@tango.linuxcare.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >
-> > I'll try to cook up someting reasonably safe...
->
-> The patch I sent should fix the immediate problem with burning CD's in
-> disk-at-once mode.  It works for me.  But clearly there's room for SCSI
+Paul Mackerras wrote:
 
-I understood that :-)
+> The way we do things on 6xx/7xx, .....
 
-> improvements so that this doesn't happen again with other new commands.
+That's the way all PowerPCs currently do it.
 
-It's more about adding disconnect support to the 53C94 PPC driver at the
-moment. I'm not touching MESH 'cause I've got no experience with that
-code, and no specs. I'm a bit familiar with the 53C9x series chips in the
-old Macs.
+> ....  We can effectively choose a different context for
+> each 256MB segment of the address space, and we always choose context
+> 0 for segments 0xc to 0xf.
 
-	Michael
+That's not what MMU context means, well at least the way I have
+learned to use it in the past.  An MMU context is supposed to represent
+the virtual mapping of memory objects.  Linux has memory objects
+and the ability to map these through VM areas, which is interesting
+considering (IMHO) the TLB management and the terms (like context)
+banted about are such a big hack.  Normally, it is the other way around.
+You have some legacy hunk of code designed around arcane two level
+page tables that tries to represent VM areas and memory objects
+with TLB management doing its best to implement real MMU context.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
