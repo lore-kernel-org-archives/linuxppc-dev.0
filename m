@@ -1,47 +1,42 @@
-Message-ID: <20020621193517.35031.qmail@web21110.mail.yahoo.com>
-Date: Fri, 21 Jun 2002 12:35:17 -0700 (PDT)
+Message-ID: <20020621194234.37274.qmail@web21103.mail.yahoo.com>
+Date: Fri, 21 Jun 2002 12:42:34 -0700 (PDT)
 From: Tim Lai <laitingwai@yahoo.com>
-Subject: RE: Can I run Linux without a file system?
+Subject: Re: Can I run linux without a file system?
 To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <E1836A7F3557D311A14000805F9F36FC0141C740@usdfo011.usac.danfoss.net>
+In-Reply-To: <200206211835.g5LIZDL01282@hofr.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks, Jason.
-I am new to linux kernel. I'll have the main
-application run from init(), so I wasn't planning
-to have a file system.
+I am interested in both input/output operation
+on the console. If I just set CONFIG_SERIAL_CONSOLE,
+will I be able read input from the console?
+The main application will be started from init(),
+and the application will need to read and write
+to the console. Are there are method to communicate
+to the serial port other than open("/dev/ttyS0")?
 
-> Yes. You will always have SOME kind of filesystem.
-> But this begs another
-> question. How much do you know about Linux, and what
-> are you really asking?
-
-If /proc and /dev is not really on any disk, what do
-I have to do to init or create /dev? Do I need ramdisk
-as a minumum requirement for linux?
-My main goal right now is to get the serial port
-to work, so I can do some debugging with the dumb
-terminal. After I do tty_register() in the serial
-driver, does linux assign /dev/ttyS to this device?
-
-> The /proc filesystem is not really on any disk, just
-> like /dev (I think)
-> isn't on any disk, though they look like to us users
-> that they are
-> filesystems.
->
-
-Can you give me pointers on which file to read?
 
 >
-> Does this help?
+> You don't need a filesystem to get output on the
+> serial console
+> you just need to enable the console with
+> CONFIG_SERIAL_CONSOLE=y
+> in your kernel configuration (atleast for mpc860
+> that all)
+> but you will have a hard time producing much more
+> than a blinking
+> cursor if you boot a Linux kernel and have no
+> application that
+> it then can run on the root-filesystem - what would
+> be the point
+> of such a setup - 1MB kernel code for a blinking
+> cursor on a
+> serial port seems expensive.
 >
-
-Yes. Thank you very much. :)
+> hofrat
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
