@@ -1,38 +1,39 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <yellowdog-devel@lists.yellowdoglinux.com>,
-	"Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: SMP kernel configuration question?
-Date: Sat, 16 Feb 2002 20:26:10 +0100
-Message-Id: <20020216192611.18399@smtp.wanadoo.fr>
-In-Reply-To: <20020216144452.TKAF7187.tomts21-srv.bellnexxia.net@there>
-References: <20020216144452.TKAF7187.tomts21-srv.bellnexxia.net@there>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 16 Feb 2002 18:59:53 -0500
+Subject: question on best way to install other ide drives?
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v480)
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.yellowdoglinux.com
+In-Reply-To: <40041092-2284-11D6-9EE3-0003938E434C@ivey.uwo.ca>
+Message-Id: <453D45A8-2339-11D6-B84B-0003938E434C@ivey.uwo.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Hi,
->
->I have never configured a kernel for SMP before.
->
->I turned on the obvious CONFIG_SMP=y in the .config but was prompted if I
->would like to distribute interrupts (IRQs) across all CPUs.
->
->What is the recommended setting for:
->
->CONFIG_IRQ_ALL_CPUS
->
->Any guidance here would be greatly appreciated.
+Hi,
 
-Leave it to N. ideally, you should enable it, but I have experienced
-lockups when this feature is enabled, I haven't yet figured out what's
-going on (could be related to the lockup some users are experiencing
-with SMP + HIGHMEM on some dual 800, let me know if you see the same).
+My dual 1 Gig machine has room to easily mount a second (slave) ide
+drive.  I also have an Sonnet ATA-100 pci card and another IDE drive.
 
-Ben.
+I would like to add both.  The Sonnet card can support up to 4 IDE
+drives.
+
+Would it be better (performancewize) to:
+
+A.  Hook both drives up the the ATA-100 pci card using two ribbon cables
+with both being masters?
+
+B.  Hook only 1 to the ATA-100 (a master) and use the second as slave
+off the the included IDE card?
+
+C. Hook both to one ATA-100 card using one as master and one as slave.
+
+Any guidance here would be greatly appreciated.
+
+Thanks,
+
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
