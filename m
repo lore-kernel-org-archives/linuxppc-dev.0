@@ -1,34 +1,39 @@
-Date: Mon, 4 Feb 2002 14:25:03 -0600
-From: Dave Wolfe <dwolfe@lists.linuxppc.org>
+Date: Mon, 4 Feb 2002 15:46:26 -0800
+From: Jeffery von Ronne <jronne@ics.uci.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Correct way to submit a patch?
-Message-ID: <20020204142503.A20449@lists.linuxppc.org>
-References: <3C5E3B8F.5060105@elsoft.ch> <20020204004850.24542@mailhost.mipsys.com>
+Subject: two aty128 frame buffers?
+Message-ID: <20020204154626.C28199@reepicheep.ics.uci.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020204004850.24542@mailhost.mipsys.com>; from benh@kernel.crashing.org on Mon, Feb 04, 2002 at 01:48:49AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[ benh@kernel.crashing.org writes: ]
->
-> The proper way is to send it to this list, eventually CC'ed to one
-> of the people in the MAINTAINERS file depending which type of machine
-> is affected by it.
+Does anyone know how hard it would be to hack aty128fb to support a
+second Rage 128?  Or am I better off trying to get the X server to talk
+directly to the second card?
 
-I would suggest that patches be attached to the email. Attachments
-can be easily saved off as files, whereas inlined patches must be
-extracted from the rest of the message and often get mangled by MUAs.
-This is particularly true when trying to retrieve patches from the HTML
-archives. Ideally such attachments would also be encoded or use some
-other means to prevent them from being mangled during mail transport.
+I have two PCI Rage 128's in my G4, which I'd like to use in a
+dual-headed Xinerama set up.
 
-Also note that once you hit 20 or 30 Kb, it's not a patch, so please
-don't try to send it to the list. Put it on an FTP or web server and
-mail the URL to the list, or mail it privately to the maintainers.
+So far I've only been able to get the X server (4.1.0 and 4.2.0) to
+work through framebuffer driven cards (X's ati/r128 drivers with aty128fb
+and X's fbdev with offb).
 
+When I've tried to tell X to talk directly to the unmanaged video card it
+complains about some unresolved drm symbols (they're different for 4.1
+and 4.2, for 4.1 its:  "Symbol drmScatterGAtherAlooc from module
+/usr/X11R6/lib/modules/drivers/r128_drv.o").  I've tried with and without
+drm supporting kernels.
+
+Does anyone have any suggestions?
+
+Thanks,
 --
- Dave Wolfe
+Jeffery von Ronne <jronne@ics.uci.edu>
+Graduate Student
+Information and Computer Science
+University of California, Irvine
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
