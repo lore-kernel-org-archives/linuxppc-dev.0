@@ -1,43 +1,44 @@
-To: "somshekar chandrashekar kadam" <ppclinux@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ramdisk image start not initialisied 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "12 Jun 2002 10:00:16 -0000."
-             <20020612100016.15037.qmail@webmail25.rediffmail.com>
-Date: Wed, 12 Jun 2002 12:29:14 +0200
-Message-Id: <20020612102919.DE382102F8@denx.denx.de>
+Date: Wed, 12 Jun 2002 03:51:10 -0700
+From: Matt Porter <porter@cox.net>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Matt Porter <porter@cox.net>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ebony bootloader
+Message-ID: <20020612035110.A29183@home.com>
+References: <20020611234337.46834.qmail@web11503.mail.yahoo.com> <20020611195130.C28767@home.com> <15622.55222.41836.183547@argo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15622.55222.41836.183547@argo.ozlabs.ibm.com>; from paulus@samba.org on Wed, Jun 12, 2002 at 03:10:14PM +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Somshekar,
-
-in message <20020612100016.15037.qmail@webmail25.rediffmail.com> you wrote:
+On Wed, Jun 12, 2002 at 03:10:14PM +1000, Paul Mackerras wrote:
+> Matt Porter writes:
 >
-> i think i am not attaching proper ramdisk image
-> any idea where can i get ramdisk image for 8260 or
-> what should i do
+> > Read Understanding Linux, Linux Device Drivers, and the
+> > documentation in Documentation/ directory.  ioremap64()
+> > is a version of ioremap() for >32-bit physical address
+> > systems (440, 745x).
+>
+> Incidentally, I don't think we should have ioremap64 or
+> ioremap_native, instead ioremap should just take a phys_addr_t.  It
+> will have to do some handling of truncated addresses from pci drivers
 
-I've put a PPCBoot ramdisk image for MPC8260  systems  for  our  SELF
-configuration  (see  ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/) on
-our FTP server, see
-ftp://ftp.denx.de/pub/LinuxPPC/usr/src/pRamdisk.8260
+It already does that work.
 
-To strip the PPCBoot header for a raw compressed  ramdisk  image  use
-something like this:
+> but that should be manageable and the interface will be much more
+> uniform if we use ioremap everywhere instead of using ioremap,
+> ioremap64 and ioremap_native in different places.
 
-	dd if=pRamdisk.8260 of=initrd.gz bs=64 skip=1
+Yes, I agree.  At the beginning of this, I was thinking that a
+different ioremap prototype was going to get us into to compiler
+trouble.
 
-Hope this helps,
-
-Wolfgang Denk
-
+Regards,
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The IQ of the group is the lowest IQ of a member of the group divided
-by the number of people in the group.
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
