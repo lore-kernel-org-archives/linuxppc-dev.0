@@ -1,27 +1,36 @@
-Message-Id: <200101252239.RAA04412@mal-ach.watson.ibm.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Dan Malek <dan@mvista.com>, Roman Zippel <zippel@fh-brandenburg.de>,
-        mgreer@mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: CONFIG_HIGHMEM on PPC 
-In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
-   of "Thu, 25 Jan 2001 22:51:16 +0100." <Pine.HPX.4.10.10101252142420.22074-100000@gra-ux1.iram.es>
-Date: Thu, 25 Jan 2001 17:39:45 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Fri, 26 Jan 2001 00:04:29 +0100 (MET)
+From: Roman Zippel <zippel@fh-brandenburg.de>
+To: jekacur@ca.ibm.com
+cc: khendricks@ivey.uwo.ca, linuxppc-dev@lists.linuxppc.org
+Subject: Re:sigcontext on Linux-ppc in user space, another hack.
+In-Reply-To: <OF3C25E159.46E6987C-ON852569DF.00700BFE@LocalDomain>
+Message-ID: <Pine.GSO.4.10.10101252352100.1508-100000@zeus.fh-brandenburg.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Gabriel Paubert writes:
+Hi,
 
-Gabriel> BATS are a good idea, but variable page size are another, superior IMHO,
-Gabriel> possibility. It seems to be what Power4 has from what David said a few
-Gabriel> days ago. I don't know how they mix variable page size with hash tables
-Gabriel> and failed to find any detailed documentation...
+On Thu, 25 Jan 2001 jekacur@ca.ibm.com wrote:
 
-	The variable page sizes are determined on a segment by segment
-basis.  The segment type determines how to interpret the page table --
-whether it maps 4KB or 16MB.
+>
+> It appears you can just use the siginfo_t * as the struct sigcontext *
+> !!!!!!
+> ie
+> void *signal_handler(int signo, siginfo_t *siginfoptr, struct sigcontext
+> *scp)
+> {
+>      scp = (struct sigcontext_struct *)siginfoptr;
+>      /* the rest of your code, here */
+> }
 
-David
+Please ignore the last patch!
+Anyway, in the code example the last argument is not a sigcontext
+structure but an ucontext_t structure, which is defined in <ucontext.h>.
+
+bye, Roman
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
