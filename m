@@ -1,143 +1,124 @@
-Message-ID: <20021115044425.798.qmail@web8007.mail.in.yahoo.com>
-Date: Thu, 14 Nov 2002 20:44:25 -0800 (PST)
-From: rekha gvv <rekhagvvc@yahoo.co.in>
-Subject: Floating point exception
-To: zhongqx <zhongqx@guoguang.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <000601c28c56$4b9d20a0$7301a8c0@zhongqx>
+Message-ID: <01a901c28c85$22aa99a0$e600a8c0@udtech.net>
+From: "Shen Rong" <rshen@udtech.com.cn>
+To: "Hans Feldt" <Hans.Feldt@uab.ericsson.se>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <3DD254F0.3050701@uab.ericsson.se>
+Subject: Re: 8260 - Spurious interrupts again
+Date: Fri, 15 Nov 2002 16:58:13 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-HI,
-even i use the same busy box only.
-but canu just tell the steps how u created the file
-system ....I had built some of the utilities like busy
-box.and theni added them in the simple ramdisk image
-and also if i try to execute the executable i get the
-error after the kernel boots up..:(
-*************************************************
-ttyS0 on SMC1 at 0x0280, BRG1
-block: queued sectors max/low 3912kB/1304kB, 64 slots
-per queue
-RAMDISK driver initialized: 16 RAM disks of 4096K size
-1024 blocksize
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 717k freed
-devfs: v0.102 (20000622) Richard Gooch
-(rgooch@atnf.csiro.au)
-devfs: devfs_debug: 0x0
-devfs: boot_options: 0x0
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 512 bind 512)
-IP-Config: No network devices available.
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-VFS: Mounted root (ext2 filesystem).
-Mounted devfs on /dev
-Freeing unused kernel memory: 48k inÿ
-bash# cd bin
-bash# ls
-depmod  ls      sh
-bash# depmod
-Bad emulation depmod/8
-NIP: 3004f000 instruction: 7f454c46 opcode: 1f A: 5 B:
-9 C: 11 code: 223 rc: 0
-pte @ 0x3004f000:
-(0xc02cd300)->(0xc02c013c)-0x002c2881
-RPN: 002c2 PP: 2 SPS: 0 SH: 0 CI: 0 v: 1
-Kernel VA for NIP c02c2000  pte @ 0xc02c2000: no pmd
-Floating point exception
-bash#
-bash#
-*******************************************************
-why do i get this floating point exception error ?
-is the problem in the compilation or problem in kernel
-..
+Hi Hans,
+    Existing to see you r using the similar solution as mine: 755 with 8250 as slave.
+I am not lonely:)
 
-thanks ..bye
+    I have the same problem like you, and I added a "sync" at the last line in
+m8260_mask_and_ack like you, and it solves the ploblem. But it is interesting
+that if I add a "sync" above the last line, it's also ok, that's
+
+ simr[word] = ppc_cached_irq_mask[word];
+__asm__ volatile("sync");
+ sipnr[word] = 1 << (31 - bit);
+
+The more, if I add an loop which does only "i++" like that:
+simr[word] = ppc_cached_irq_mask[word];
+{
+        int i,j=0;
+        for(i=0;i<150;i++)j++;
+        i=j;
+/*__asm__ volatile("sync");*/
+}
+sipnr[word] = 1 << (31 - bit);
+
+it will also solve the problem. If I decrease the loop count, say to
+100, the spurious interrupt will be much less than without the for loop,
+the less the loop count, the more the spurious interrupts(my 755 is 400Mhz
+and with L2 Cache enabled both for data and instruction). That's to
+say it's a time problem not a sync problem. I mean the "mask" operation
+need time to function properly. Note the following Motorola FAQ:
+
+"Problem:
+ For the system which consists of an external processor such as mpc750 and
+PQ2 with 603e core disabled, what is the delay from the time the PQ2 interrupt
+mask register is written and the time the /INT is negated?
+Solution:
+ It is four cycles from /TA sampled low to /INT sampled low.
+Interrupt service routine should take account of this delay. "
+
+I think it also means it needs time between the set-register operation to the IRQ
+controller see it finally, right? Also note the following comments in MPC8260UM:
+
+"If an SIMR bit is masked at the same time that the corresponding SIPNR bit causes
+an interrupt request to the core, the error vector is issued (if no other interrupts
+pending). Thus, the user should always include an error vector routine, even if it
+contains only an rT instruction. The error vector cannot be masked."
+
+So I think there should be a time delay when we do mask&ack(&following operation maybe).
+But I don't know which solution will be the least performance degrading one.
+I am still searching.
+
+Shenrong
+
+----- Original Message -----
+From: "Hans Feldt" <Hans.Feldt@uab.ericsson.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, November 13, 2002 9:34 PM
+Subject: 8260 - Spurious interrupts again
 
 
-
---- zhongqx <zhongqx@guoguang.com.cn> wrote:
-> I don't use SELF ,I use busybox you can download it
-> from it's web.
 >
-> ----- Original Message -----
-> From: "rekha gvv" <rekhagvvc@yahoo.co.in>
-> To: "zhongqx" <zhongqx@guoguang.com.cn>
-> Sent: Wednesday, November 13, 2002 12:12 PM
-> Subject: Re: Hi
+> I am running a 750 with a 8260 as slave. Since I get heaps of spurious
+> interrupts I started digging into it. The old thread "8260 - Spurious
+> interrupt when calling __sti()" and the latest code didn't help but this
+> does:
+>
+> - A sync instruction last in m8260_mask_irq and m8260_mask_and_ack in
+> ppc8260_pic.c.
+>
+> I guess you need to let the write to SIMR make it before enabling
+> external interrupts in the 750 (603). This is probably due to our use of
+> 8260 as a slave processor but I think it makes sense anyway.
+>
+> Note that this problem is not related to the fact that I am running the
+> new ATM driver, this also happens as indicated in the old mail thread
+> with serial and Ethernet interrupts only.
+>
+> Thanks,
+> Hans
+>
+> P.S. Tack Magnus!
+>
+> without sync:
+> ==============
+> bash-2.04# cat /proc/interrupts
+>             CPU0
+>    4:       9777   8260 SIU   Edge      uart
+>    5:          0   8260 SIU   Edge      uart
+>   32: 1396813673   8260 SIU   Edge      atm
+>   33:      57596   8260 SIU   Edge      fenet
+>   41:          0   8260 SIU   Edge      uart
+>   42:          0   8260 SIU   Edge      uart
+>   60:         11   8260 SIU   Edge      ide0
+> BAD: 1396813185
+>
+> with sync:
+> ===========
+> bash-2.04# cat /proc/interrupts
+>             CPU0
+>    4:       4709   8260 SIU   Edge      uart
+>    5:          0   8260 SIU   Edge      uart
+>   32:     217671   8260 SIU   Edge      atm
+>   33:      10395   8260 SIU   Edge      fenet
+>   41:          0   8260 SIU   Edge      uart
+>   42:          0   8260 SIU   Edge      uart
+>   60:         11   8260 SIU   Edge      ide0
+> BAD:          0
 >
 >
-> > Hi,
-> > I am using kernel version of 2.4.4 and SELF from
-> that
-> > denx site ..I have compiled SELF using uclibc ..i
-> have
-> > got the images but then wheni download it gives
-> the
-> > kernel panic error:(
-> > how do check if they are executables for powerpc
-> ...
-> > did u use SELF ..or u created your own ramdisk ??
-> > bye!
-> >
-> > --- zhongqx <zhongqx@guoguang.com.cn> wrote:
-> > > I also meet this problem before when I used
-> version
-> > > 2.4.18,and I do not known how to do.
-> > > now I am used linux-2.4.4-2002-02-14 ,it is ok
-> for
-> > > ramdisk.image,so I advise you not to waste
-> > > you time if you use linux-2.4.18,you should use
-> > > other version such as 2.4.4.
-> > > ----- Original Message -----
-> > > From: "rekha gvv" <rekhagvvc@yahoo.co.in>
-> > > To: <zhongqx@guoguang.com.cn>
-> > > Sent: Tuesday, November 12, 2002 8:30 PM
-> > > Subject: Hi
-> > >
-> > >
-> > > > HI zhongqx,
-> > > > I am facing some problems with the ramdisk
-> image
-> > > ..
-> > > > wheni created my own ramdisk also i faced this
-> > > error
-> > > > Kernel panic: No init found.  Try passing
-> init=
-> > > option
-> > > > to kernel.
-> > > >
-> > > > and now after downloading SELF and compiling
-> the
-> > > > kernel also am facing the same problem ...
-> > > >
-> > > > I am sure u are much ahead of this problem and
-> > > solved
-> > > > it ..can u please help regarding this ...
-> > > >
-> > > > I have used uclibc which is a small library
-> > > compared
-> > > > to glibc ...
-> > > > expecting some hints ..thankyou
-> > > >
-> > > > Regards
-> > > > Rekha.c
-> > > >
-> > > >
-> > > >
-> > >
-> >
-> >
 >
-
-
-Yahoo! Web Hosting - Let the expert host your site
-http://webhosting.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
