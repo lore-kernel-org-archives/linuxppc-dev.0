@@ -1,27 +1,36 @@
-From: Paul Mackerras <paulus@linuxcare.com>
-To: howarth@bromo.med.uc.edu (Jack Howarth), linuxppc-dev@lists.linuxppc.org
+Date: Sun, 13 Feb 2000 21:16:29 -0800 (PST)
+From: Brad Midgley <brad@turbolinux.com>
+To: Jack Howarth <howarth@bromo.med.uc.edu>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: linux-pmac-devel
-Date: Mon, 14 Feb 2000 13:43:50 +1100
-Content-Type: text/plain
-References: <200002140006.QAA49713@bromo.med.uc.edu>
+In-Reply-To: <200002140006.QAA49713@bromo.med.uc.edu>
+Message-ID: <Pine.LNX.4.20.0002132115280.7804-100000@mail.turbolinux.com>
 MIME-Version: 1.0
-Message-Id: <00021413444901.00486@argo.linuxcare.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 14 Feb 2000, Jack Howarth wrote:
+yes. it's probably an easy fix but then you could just use make
+menuconfig.
 
-> I think there is error somewhere in the config scripts in the 2.3.xx
+>
+>    I think there is error somewhere in the config scripts in the 2.3.xx
 > tree. When I rsync, do a make clean and then make config I get...
+>
+> *
+> * General setup
+> *
+> scripts/Configure: [: missing `]'
+> Networking support (CONFIG_NET) [Y/n/?]
+> Sysctl support (CONFIG_SYSCTL) [Y/n/?] make: *** [config] Error 1
+>
+> Is anyone else seeing this now?
+>                Jack
+>
 
-I just updated the tree to 2.3.45-pre2, maybe you were rsyncing out of it
-while I was updating it?  Try rsyncing again and see if it still happens.
+Brad
+brad@turbolinux.com | http://www.turbolinux.com/~brad/
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
