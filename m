@@ -1,30 +1,28 @@
+Date: Tue, 30 Oct 2001 09:14:35 -0500
+Message-Id: <200110301414.JAA09542@missioncriticallinux.com>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: recording audio?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: Josh Huber <huber@alum.wpi.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200110300216.VAA01211@missioncriticallinux.com>
 References: <200110300216.VAA01211@missioncriticallinux.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 30 Oct 2001 14:04:47 +0100
-Message-Id: <1004447087.20679.2102.camel@pismo>
-Mime-Version: 1.0
+	<1004447087.20679.2102.camel@pismo>
+From: Josh Huber <huber@alum.wpi.edu>
+In-Reply-To: <1004447087.20679.2102.camel@pismo> (Michel
+ =?iso-8859-1?q?D=E4nzer's?= message of "30 Oct 2001 14:04:47 +0100")
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2001-10-30 at 03:16, Josh Huber wrote:
->
-> In short, is this possible?  I've played around with the mixer
-> settings but can't seem to figure it out.
->
-> I've found very little information in the archives about this...is
-> anyone recording audio?
+Michel Dänzer <michdaen@iiic.ethz.ch> writes:
 
-dmasound doesn't support recording AFAIK, but ALSA might.
+> dmasound doesn't support recording AFAIK, but ALSA might.
 
+hmm, I wasn't even aware that there was an ALSA driver for powermac
+sound hardware.  I'll have to check that out...
+
+PS. you don't need to CC me on replies (see headers)
 
 --
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Josh Huber
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
