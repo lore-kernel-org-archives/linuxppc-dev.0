@@ -1,47 +1,51 @@
-Date: Wed, 2 Jan 2002 17:23:17 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: mod+linuxppc-dev@MissionCriticalLinux.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Changes to gt64260 interrupt support code
-Message-ID: <20020102172317.V25200@altus.drgw.net>
-References: <200112271744.MAA03341@missioncriticallinux.com> <3C33890F.E89E4D3F@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C33890F.E89E4D3F@mvista.com>; from mgreer@mvista.com on Wed, Jan 02, 2002 at 03:26:23PM -0700
+From: jkl@miacid.net
+Date: Wed, 2 Jan 2002 16:55:08 -0800 (PST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] C undefined behavior fix 
+In-Reply-To: <25193.1010018130@redhat.com>
+Message-ID: <Pine.BSI.4.10.10201021651180.29444-100000@hevanet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 02, 2002 at 03:26:23PM -0700, Mark A. Greer wrote:
+I don't have the ANSI standard in front of me, isn't it the case that
+casting a pointer to/from an integer is implementation defined, rather
+than undefined, so people who need to do pointer arithmatic that relies on
+the machine's memory map can do
+ (void *)(((int)p) + some_magic_number)
+
+and have some sort of assurance that the compiler won't mess with it?
+
+-JKL
+
+
+On Thu, 3 Jan 2002, David Woodhouse wrote:
+
 >
-> mod+linuxppc-dev@MissionCriticalLinux.com wrote:
+> (cc list trimmed)
 >
-> > Please introduce these changes into the linuxppc
-> > sources in order that the existing gt64260 interrupt
-> > support code be usable on platforms other than the
-> > Galileo Eval Board.
+> alan@lxorguk.ukuu.org.uk said:
+> >  If you want a strcpy that isnt strcpy then change its name or use a
+> > different language 8)
 >
-> Michael,
+> The former is not necessarily sufficient in this case. You've still done the
+> broken pointer arithmetic, so even if the function isn't called strcpy() the
+> compiler is _still_ entitled to replace it with a call to memcpy() or even
+> machine_restart() before sleeping with your mother and starting WW III.
 >
-> I'm pushing your patch as I write this.  I made one change, though.
-> I changed the variable name gt64260_firstIRQ to gt64260_irq_base since it
-> seems more descriptive--firstIRQ makes me think of a special case for the
-> very first intr to happen.
+> Granted, it probably _won't_ do any of those today, but you should know
+> better than to rely on that.
+>
+> What part of 'undefined behaviour' is so difficult for people to understand?
+>
+> --
+> dwmw2
+>
+>
+>
+>
 
-err, if you're going to commit this, let's be consistent with openpic
-and use 'gt64260_pic_irq_offset'....
-
-(arch/ppc/kernel/open_pic_irq_offset)
-
-Also see openpic_init() .... the offset is passed in
-
-
---
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Schulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
