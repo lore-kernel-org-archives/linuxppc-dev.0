@@ -1,39 +1,46 @@
-Message-ID: <396C9E3A.B1775C43@embeddededge.com>
-Date: Wed, 12 Jul 2000 12:35:06 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: Dan Malek <dan@netx4.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.0-t1 & t3: dmasound
-References: <200007121558.QAA32590@hyperion.valhalla.net>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200007121801.TAA14537@hyperion.valhalla.net>
+Date: Wed, 12 Jul 2000 19:01:44 +0100
+Subject: dmasound (2.1.27pre10, 2.4.0-test1, 2.4.0-test3)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+CC: Benjamin Herrenschmidt <bh40@calva.net>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+OK.
 
-> Cool... can you tell me what AWACS rev you have working?
-> (we have one report of rev == OK) My rev 3 (!OK)
+I've now made a *single* code base for all three versions.
 
-Here is what I have been able to discover by poking around in the
-device-tree and in memory.  It has "davbus" and "sound", so it isn't
-Burgandy.  The value of awacs_revision in memory appears to be 3......
+There are two areas that change (between 2.2.17pre10 & 2.4.0-testxx):
 
-Now, when I say "works"......I have lots of my own custom audio
-programs (lots of hacks, nothing interesting) and I don't typically
-use any of the mixer or other playback programs (except mpeg3 players).
-I can control speaker/line volume, enable disable speaker.  I am
-really interested in audio processing (hence the G4 :-), and use
-the output to just validate things sound correct.
+    * the wait_queue stuff
+    * the ADB access stuff
 
-> [I'm struggling right now to try and get a common code base between
-> 2.2.17prexx & 2.4.0 - to avoid confusion on *my* part :-)]
+These are conditionalised on the KERNEL_VERSION .
 
-You mean it won't just "drop in" (just kidding, been there :-).  Good
-Luck...Have fun!
+results are exactly as before:
+    2.2.7pre10-ben1   OK
+    2.4.0-testx            no sound, no crash, no apparent problem (!)
 
+I will go back and look harder at the init code - although I diffed the
+2.3.52 version against the 2.2.17pre7 version whilst I was doing the
+backport (at Geert's suggestion)... 2.3.52 was the split point IIRC.
 
-	-- Dan
+Any ideas how the two changed areas could affect things would be appreciated
+- although from reports:
+
+    AWACS rev 2 *does* appear to work with the new version
+    AWACS rev 3 appears to work on G4 but not on G3... hmmm.
+
+I must be missing something obvious (yes I have tried altering the volume -
+kmixer seems to think all is OK as well).
+
+BTW there is a call that reads a particular byte in nvram (to determine
+initial volume)  - is this still valid at 2.4 ?
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
