@@ -1,63 +1,60 @@
-Message-ID: <3C7E3DA3.9010800@cambridgebroadband.com>
-Date: Thu, 28 Feb 2002 14:24:35 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-MIME-Version: 1.0
-To: laurent.pinchart@capflow.com
+Message-ID: <D73A25AA6E54D511AD74009027B1110F237026@ORION>
+From: Ken Applebaum <applebaumk@embeddedplanet.com>
+To: "'RSR - Dominioni Piero'" <pdominioni@rsr.it>,
+	Dan Malek <dan@embeddededge.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Development tools version
-References: <3C7E3471.4080708@capflow.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: RE: Lite LCD on MBX860
+Date: Thu, 28 Feb 2002 09:48:56 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Laurent,
+For some reason, this request has come up a lot lately. we make an 860 board
+and a video board with an Epson video controller on it.
 
-We're also use the MPC860.  For the tools we use CDK 2.0 from Montavista, and we've had no problems
-with this.  To install CDK 2.0 for the 860 do this:
+The 860 does not have video out, but you can certainly attach a video chip
+to it. We used the Epson SED1386 which is now called the S1D13806. You can
+find the Linux driver at:
+http://www.erd.epson.com/vdc/html/contents/S1D13806.htm#drivers
 
- > cd /mnt/cdrom/bin
- > ./hhl-host-install
-  ... and then select "embeddedplanet-rpxlite" for the board
+Ken
+
+-----Original Message-----
+From: RSR - Dominioni Piero [mailto:pdominioni@rsr.it]
+Sent: Thursday, February 28, 2002 2:40 AM
+To: Dan Malek
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Litle LCD on MBX860
 
 
-This provides you with:
 
-i) libraries
-ii) a root filesystem for NFS mounting your target
-iii) standard tools ppc_8xx-gcc, ppc_8xx-ld, etc.
+Hi all.
+ I wanted to connect a LCD to a MPC823-based board and to use
+microwindows too .
 
-After this installation all you need to do to compile a linuxppc kernel is change CROSS_COMPILE to
-ppc_8xx- in the top level Makefile.
+Dan Malek answered:
+> You aren't going to connect an LCD to the MBX860 and see anything.
+> There isn't any LCD controller on the 860.  You need an 823 or
+> some external graphics controller.
 
-Alex
+Correct.
+But what happens when the externel controller is provided?
+Is there a LinuxPPC driver for it?
+Does the LCD device become such as a character device
+(or something like that) that needs a suitable node in /dev
+with its own driver to be registered?
 
-Laurent Pinchart wrote:
+I tryed to configure Wolfgang's 2.4.4-2001-11-24 kernel for
+TQM860L and while (obviously) there is no LCD driver for
+860, the framebuffer is still there...
+Does it mean that anyway it is possible to use a LCD with MPC860?
+Thank you for any answer!
+Bye
 
->
-> Hi everybody.
->
-> I searched the web for some information about this, but haven't been
-> able to find any answer to my question.
->
-> I'd appreciate if someone could give me an advice about which version of
-> the different development tools (namely binutils & gcc), and which
-> version of the C library (either glibc or newlib) I should use for a
-> MPC860T processor.
->
-> I currently use the Hard Hat Journeyman Edition (and recompiled
-> everything from the rpm sources), but was wondering if it would be
-> better to stick with it or use a newer version of some tools.
->
-> I suppose that GCC 3.x is not ready for the MPC8xx yet (but I might be
-> wrong).
->
-> Thanks in advance for your help.
->
-> Laurent Pinchart.
->
->
->
+Piero
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
