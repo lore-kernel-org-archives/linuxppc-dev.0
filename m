@@ -1,54 +1,53 @@
-Date: Tue, 2 Mar 1999 10:45:44 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: loopback <david.de.ridder@bitsmart.com>
-cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <3.0.6.32.19990302104633.00800150@hsins.uia.ac.be>
+Date: Tue, 02 Mar 1999 10:46:33 +0100
+To: "Mike McQuade" <mmcquade@aa.net>
+From: David De Ridder <david.de.ridder@bitsmart.com>
 Subject: Re: Kernel boot arguments over network
-In-Reply-To: <Pine.SO4.4.05.9903011559500.22676-100000@hsins.uia.ac.be>
-Message-ID: <Pine.HPP.3.96.990302103807.3871Y-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <000801be6425$b23751d0$0100a8c0@mikem>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Mike McQuade, with bold words breaking the horrid silence thus began :
 
+>The params you pass in are at the Linux boot prompt,
+>you see this prompt at the serial term right after
+>you start the boot process.
 
-On Mon, 1 Mar 1999, David.DeRidder wrote:
+ But therefore, the kernel needs a serial console at boot -
+ which it doesn't have. With CONF_SERIAL_ECHO, it is possible
+ to echo all kernel messages (e.g. the ones you see when linux
+ boots) to a serial port, but it's one-way traffic. You cannot
+ type anything before the file system is mounted (because you
+ need getty or the like to create a serial console).
 
-> Hi,
-> 
-> in my continueing efforts to get our MVME2306 board running, I ran
-> across another problem. All Linux (mini-)HOWTOs talk about passing
-> boot arguments (like 'root=/dev/nfs') to the kernel. Some also
-> mention the case where one is booting a diskless station (such as
-> an MVME230x board). However, no document describes *how* to pass these
-> arguments over the network to the kernel.
+ The MVME230x series boards have NO harddisk, so using LILO or
+ LoadLin doesn't seem possible.
 
-You don't have to (and can't AFAICT). For now on my MVME2302, I have to
-sit at the serial console and add root=/dev/nfs to the LinuxPPC boot
-prompt. If you don't have a bootp server correctly settup, you also have
-to add other parameters like internet addresses in the ip or nfsaddrs
-parameter as explained in Documentation/nfsroot.txt.
+>I rmember having to modify one of the C files in the kernel
+>to make the boot device == NFS, without this mod,
+>the kernel would panic.
 
-When I have time, I'll merge code to take default parameters from the
-NVRAM in prepboot. The code exists, but I'm too busy on the VME driver
-right now.
+ Doesn't the option 'root=/dev/nfs' do the same ?
 
-> I'm starting to doubt whether this is possible. I want the BOOTP/TFTP
-> server to have the initial boot arguments for each of its clients, and
-> pass them when a client (i.c. an MVME2306 board) boots over the
-> network. Other than the file name, BOOTP doesn't seem capable to me
-> to passing anything as long as a command line - but I may be wrong.
+>do you get anything out the serial port on startup ?
 
-The right solution is to use the NVRAM I think, at least for very early
-setup since you'll end up with a chicken and egg problem (you have to
-tell the kernel root=/dev/nfs so that it attempts to use bootp to
-configure its network interface).
+ Yes, the kernel I have (from Gabriel Paubert) gets as far as
+ 'Now booting...', and then hangs. Does anyone know what phase should 
+ be next ?
 
-BTW: the latest version on my ftp server is a tested version which I have
-actually booted.
+ Regards,
 
-	Gabriel. 
++-----------------------------------------------------------------+
+  David 'Septimus' De Ridder       <david.de.ridder@bitsmart.com> 
+
+"Philosophy is not a supermarket."
+
++-----------------------------------------------------------------+
+  
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
