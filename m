@@ -1,41 +1,52 @@
-Message-ID: <3C114C63.3050102@embeddededge.com>
-Date: Fri, 07 Dec 2001 18:10:27 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Steve Rossi <srossi@labs.mot.com>
-Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: high priority interrupts disabled
-References: <3C112297.6DE37608@labs.mot.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: jtm@smoothsmoothie.com
+Date: Fri, 7 Dec 2001 18:01:06 -0600
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: QSPAN PCI and 860
+Message-ID: <20011208000106.GA2323@shamus.smoothsmoothie.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Rossi wrote:
+I'm trying to build a kernel with support for the QSPAN PCI bridge
+and am running into some problems. Is there a best config to start
+from? I've tried both RPX-Lite and MBX, and both failed.
 
-> .....IRQ2 gets asserted and remains asserted (without
-> being serviced) in excess of 10ms during which IRQ6 (hard disk) is
-> asserted and quickly serviced over 120 times, and IRQ1 is also asserted
-> and quickly serviced several times in that 10ms. IRQ2 doesn't get
-> serviced until the disk activity completes
+When trying to compile for the RPX-Lite, I get errors in
+m8xx_setup.c about i8259 not being defined. Does this really
+need to be defined, even if we don't have an i8259?
 
-That's interesting.  We read the SIVEC, which gives us the highest priority
-unmasked pending interrupt.  We don't read and parse bitmasks.  Since IRQ1
-is getting serviced, I wonder if IRQ2 is being masked.  It is possible
-to mask an irq, service others, then unmask the irq again, so ensure your
-driver isn't doing this.  Of course, we are also doing a mask_and_ack in
-the 8xx interrupt handler, which may not be the right thing either.
+If we comment that stuff out (just to get it to build), we
+get an error on the following inline assembly from qspan860.c:
+#define __get_qspan_pci_config(x, addr, op)		\
+	__asm__ __volatile__(				\
+		"1:	"op" %0,0(%1)\n"		\
+		"	eieio\n"			\
+		"2:\n"					\
+		".section .fixup,\"ax\"\n"		\
+		"3:	li %0,-1\n"			\
+		"	b 2b\n"				\
+		".section __ex_table,\"a\"\n"		\
+		"	.align 2\n"			\
+		"	.long 1b,3b\n"			\
+		".text"					\
+		: "=r"(x) : "r"(addr) : " %0")
 
-You could try changing the mask_and_ack function in the ppc8xx_pic.c to
-just ack the interrupt and let us know what happens.
-
-> .... IRQ1 is requested with the SA_INTERRUPT flag,
-> while IRQ2 is not - should this matter?
-
-I didn't think this flag had any effect anymore.
+The error is
+	qspan_pci.c:125: unknown register name ` %0' in `asm'
 
 
-	-- Dan
+Finally, what is the correct way to allocate 256K or more
+of host RAM to map into the PCI address space? The peripheral
+we are working with needs at least 256K of host memory.
 
+
+Thanks.
+
+--
+Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
+monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
+		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
