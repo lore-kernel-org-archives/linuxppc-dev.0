@@ -1,32 +1,37 @@
-Date: Wed, 3 Oct 2001 16:31:05 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Grant Erickson <erick205@umn.edu>
-Cc: dmalek@mvista.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH]: linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_setup.c
-Message-ID: <20011003163105.A18612@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.SOL.4.20.0110031419450.10159-200000@garnet.tc.umn.edu>
-Mime-Version: 1.0
+Message-ID: <3BBBA395.3B812898@india.infogain.com>
+Date: Thu, 04 Oct 2001 05:17:33 +0530
+From: ashish anand <ashisha@india.infogain.com>
+MIME-Version: 1.0
+To: "Prasad, Siva" <Siva.Prasad@smartm.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EPIC <=> OpenPIC
+References: <35C119252057D511BB9F0003476BF8A208E5DB@freexc01.smartm.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.SOL.4.20.0110031419450.10159-200000@garnet.tc.umn.edu>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Oct 03, 2001 at 02:22:06PM -0500, Grant Erickson wrote:
+Yah..it is already available.
+Epic has been ported for MPC 107 and MPC 106 as well.
+for mpc 106 can refer montavista port .
+I assume we have for mpc107 and 750 board.
+I will find that and would give you for refrence.
+you can't use directly openpic structure as there is small deviation.
+try to adjust your openpic structure as per epic manual.
+set appropiately the triggering and polarity mode for irq lines
+from winbond bridge and for shared pci slots.
+refer the epic chapter and eumbbar chapter (for epic base)
+in MPC 107 manual for correct programming
 
-> Please accept the attached patch to ppc4xx_setup.c. It attempts to make
-> the 4xx 'progress' method more consistent with other subarchitectures and,
-> at the very least, makes it respectful of the kernel 'quiet'
-> flag--important when you want a fast kernel boot.
-
-Ack, no, please no.  How does removing the other bits it prints out
-make it respectful of the 'quiet' argument anyways?  Anyhow, I'd really
-rather not push this since I've got a more 'proper' version (that
-writes directly to the serial port instead of waiting for printks to
-go) that I'll hopefully get right soon.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> Is there code written or ported to EPIC (Embedded programmable interrupt
+> controller - MPC 107)?.
+>
+> EPIC is adopted from OpenPIC.
+>
+> Our PPC 750 based board uses MPC107 as PCI bridge, and direct interrupts.
+> Since I can't use OpenPIC directly, it would be great if some one can share
+> the code for EPIC.
+>
+> If it is already available some place... I would appreciate the pointer.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
