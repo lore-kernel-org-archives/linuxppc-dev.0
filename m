@@ -1,19 +1,51 @@
-Date: Mon, 13 Mar 2000 12:41:25 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: Daniel Jacobowitz <drow@false.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Quik 2.0e patches and issues
-Message-ID: <20000313124125.K671@medea.fsmlabs.com>
-References: <20000312201207.A4674@drow.res.cmu.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20000312201207.A4674@drow.res.cmu.edu>; from Daniel Jacobowitz on Sun, Mar 12, 2000 at 08:12:08PM -0500
+Date: Mon, 13 Mar 2000 14:56:34 -0500
+Subject: Re: Xfree86 4.0
+From: "James B. Parker" <pajama1@mindspring.com>
+To: LinuxPPC Developer <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B4F2B222.152C%pajama1@mindspring.com>
+In-Reply-To: <38CD39B5.A91B1B92@erols.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Great, thanks for the patches.  I did some hacks to quik for chrp and
-called it quik-2.0.  I wasn't even sure it worked on powermac hardware :)
-Thanks for the patches!  I'll look into folding them in.
+<snip> from pogtal@erols.com on 3/13/00 1:55 PM
+
+> "James B. Parker" wrote:
+>
+>> _first_
+>> It asks for a file call libqt.0.2 or something like that (I know the libqt
+>> part is correct).  Although this problem may have cleared up after I built
+>> it a second time, I tried to reinstall KDE from a rpm (thinking this may
+>> solve the second issue) and a message was displayed requesting the above
+>> mentioned file.
+>
+> I would assume that libqt (probably libqt.so.2 or something like that) is part
+> of the qt developement package..
+>
+> According to rpmfind.net, libqt.so.2 is provided by the qt package, you
+> probably also want the qt-devel package.
+
+I was a little incorrect.  It is looking for liqt.so.1 and I have libqt.so.2
+in my libs folder.  But I will install the qt dev package and see what
+happens.
+
+>
+>> _second_
+>> When I try to start the server (xinit, startx, X) there is a fatal error:
+>> no screens
+>
+> What is the fatal error?  I don't think this would be related to the libqt, as
+> qt is a kde package for graphics, and shouldn't be related to the X server
+> working/not working (AFAIK).
+>
+> What is the fatal error?
+
+>> no screens
+no screens
+
+James
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
