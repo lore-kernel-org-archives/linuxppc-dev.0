@@ -1,26 +1,61 @@
-Message-Id: <200009202105.WAA08889@hyperion.valhalla.net>
-Date: Wed, 20 Sep 2000 22:05:40 +0100
-Subject: Re: 2.4.0-t8 (dumb question & two crashes)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Martin Costabel <costabel@wanadoo.fr>,
-        "Michel Ddnzer" <daenzerm@student.ethz.ch>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: dwayne@austin.ibm.com
+To: linuxppc-dev@lists.linuxppc.org
+cc: dwayne@austin.ibm.com
+Subject: IBM PowerPC Linux Source Trees (draft)
+Reply-To: dwayne@austin.ibm.com
+Date: Wed, 20 Sep 2000 16:58:02 -0500
+Message-Id: <E13brsR-0005j7-00@gnulinux>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Wrong distro? ;^)
->>
->> You need at least 2.3.14 or 13, Debian woody has it.
->
-> LinuxPPC has it, too: Version 2.3.15 is in
-> ftp://dev.linuxppc.org/users/fsirl/R5/RPMS/ppc/
+The IBM PowerPC Team is now maintaining several PowerPC Linux
+kernel source trees which represent IBM's current efforts on PowerPC
+Linux. Information about these trees is available at:
 
-so much for rpmfind :-/
+http://oss.software.ibm.com/developerworks/opensource/linux/projects/ppc/code.php
 
-Thanks,
-Iain.
+We intend to be in sync with the PowerPC Linux community and do not
+want to break any platform with our changes. Members of our team
+will be participating in linuxppc-dev and linuxppc-workstation on
+lists.linuxppc.org.
+
+We have stable and development source trees for both Linux 2.2 and
+Linux 2.4.  The stable versions will have been tested to some degree on
+some set of hardware. The degree of testing will be nominal initially
+but improving over time. The development versions may not compile or have
+incomplete function. Information on specific machines is available at:
+
+http://oss.software.ibm.com/developerworks/opensource/linux/projects/ppc/models.php
+
+The trees are available via BitKeeper. To obtain the trees use the following
+commmands:
+
+bk clone bk://oss.software.ibm.com:8000 stable_2_2
+bk clone bk://oss.software.ibm.com:8001 dev_2_2
+bk clone bk://oss.software.ibm.com:8002 stable_2_4
+bk clone bk://oss.software.ibm.com:8003 dev_2_4
+
+If you do not have BitKeeper it may be obtained from BitMover at:
+
+http://www.bitmover.com/
+
+In addition rsync versions of the trees will be provided in the future.
+
+If you find a bug or have a patch to submit, please use use the ppclinux
+project on sourceforge.net. This project is available at:
+
+http://sourceforge.net/projects/ppclinux/
+
+IBM's PowerPC Linux page is available at:
+
+http://oss.software.ibm.com/developerworks/opensource/linux/projects/ppc/
+
+Dwayne & Tom
+
+--
+Dwayne Grant McConnell		work:  dwayne@austin.ibm.com
+Linux/PowerPC Team		home:  dgm69@austin.rr.com
+Linux Technology Center		notes: dwayne@us.ibm.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
