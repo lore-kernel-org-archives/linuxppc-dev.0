@@ -1,46 +1,83 @@
-Message-Id: <200203270931.RAA09753@isdn.iscas.ac.cn>
-Date: Wed, 27 Mar 2002 17:37:24 +0800
-From: weiwu <weiwu@isdn.iscas.ac.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: UPM works for 16MB PC SDRAM but fails for 32MB memory
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <015601c1d5d0$b0278b60$64d4047e@research.liebert.com>
+From: "Ed Brady" <mailinglist@ebrady.net>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Compiling 2.4.18 for Motorola MBX board
+Date: Wed, 27 Mar 2002 15:47:57 -0500
+MIME-Version: 1.0
 Content-Type: text/plain;
-      charset="GB2312"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have bootrom code (ppcboot) for which I have UPM values with which I
-can access the 16MB PC SDRAM okay but for 32MB memory
-my bootrom fails to execute out of RAM.
+Hello,
 
-software: Now I have modifyed the AMA and MAMR registers,but it still not work!
+I am trying to cross compile the latest 2.4.18 kernel to run on an MBX board
+(MPC 860).  However, I consistently run into problems whenever the final
+link is performed.    See error text below....
 
-Hardware:
-My board uses HY57V281620A SDRAM and it's configuration is 4 Banks x 2M x 16bits, 12 rows and 9 column.
+This code is comprised of the following:
 
-MPC SDRAM
-=========
-A29 A0
-A28 A1
-A27 A2
-A26 A3
-A25 A4
-A24 A5
-A23 A6
-A22 A7
-A21 A8
-A20 A9
-GPL_A0 A10
-A18 A11
+linux 2.4.18 kernel from kernel.org with the ppc-patch-2.4.18 applied.
 
-A7 BA0
-A8 BA1
-OE_GPL_A1 RAS
-GPL_A2 CAS
-GPL_A3 WE
+I have not tried cross compiling the kernel without the ppc patch applied.
 
-What do I have to do get 32MB memory going?
-Thanks!
+The compiler is the gcc packaged build to cross-compile on an i386 linux
+host with a target of powerpc-unknown-eabi.
+
+Note:  This is the first time that I have attempted to cross-compile a
+kernel for an embedded target, so if this is caused by a bone-headed
+mistake, please be kind :)
+
+Any thoughts or pointers would be appreciated...
+
+powerpc-eabi-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
+arch/ppc/kernel/head_8xx.o init/main.o init/version.o \
+        --start-group \
+        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
+kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o arch/ppc/xmon/x.o \
+         drivers/char/char.o drivers/block/block.o drivers/misc/misc.o
+drivers/net/net.o drivers/media/media.o drivers/video/video.o
+drivers/i2c/i2c.o arch/ppc/8xx_io/8xx_io.o \
+        net/network.o \
+        /usr/src/ppc/linux/lib/lib.a \
+        --end-group \
+        -o vmlinux
+arch/ppc/kernel/kernel.o: In function `lookup_partitions':
+arch/ppc/kernel/kernel.o(.text.init+0xa22): undefined reference to
+`pmac_newworld'
+arch/ppc/kernel/kernel.o(.text.init+0xa26): undefined reference to
+`pmac_newworld'
+arch/ppc/kernel/kernel.o: In function `pmac_nvram_init':
+arch/ppc/kernel/kernel.o(.text.init+0xb38): undefined reference to
+`find_devices'
+arch/ppc/kernel/kernel.o(.text.init+0xb38): relocation truncated to fit:
+R_PPC_REL24 find_devices
+arch/ppc/kernel/kernel.o(.text.init+0xb6c): undefined reference to
+`device_is_compatible'
+arch/ppc/kernel/kernel.o(.text.init+0xb6c): relocation truncated to fit:
+R_PPC_REL24 device_is_compatible
+arch/ppc/kernel/kernel.o(.text.init+0xc9a): undefined reference to
+`sys_ctrler'
+arch/ppc/kernel/kernel.o(.text.init+0xc9e): undefined reference to
+`sys_ctrler'
+arch/ppc/xmon/x.o: In function `xmon':
+arch/ppc/xmon/x.o(.text+0x600): undefined reference to `xmon_enter'
+arch/ppc/xmon/x.o(.text+0x600): relocation truncated to fit: R_PPC_REL24
+xmon_enter
+arch/ppc/xmon/x.o(.text+0x664): undefined reference to `xmon_leave'
+arch/ppc/xmon/x.o(.text+0x664): relocation truncated to fit: R_PPC_REL24
+xmon_leave
+arch/ppc/xmon/x.o: In function `dump_hash_table_seg':
+arch/ppc/xmon/x.o(.text+0x16b2): undefined reference to `Hash_size'
+arch/ppc/xmon/x.o(.text+0x16ba): undefined reference to `Hash_size'
+arch/ppc/xmon/x.o(.text+0x16ce): undefined reference to `Hash'
+arch/ppc/xmon/x.o(.text+0x16d6): undefined reference to `Hash'
+make: *** [vmlinux] Error 1
+
+Ed Brady
+ed@ebrady.net
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
