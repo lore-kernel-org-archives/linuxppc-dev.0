@@ -1,26 +1,26 @@
-Date: Thu, 29 Jul 2004 14:46:53 +0200
-From: Marc Leeman <marc.leeman@barco.com>
+Message-ID: <4108FA45.6080205@246tNt.com>
+Date: Thu, 29 Jul 2004 15:23:17 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
+MIME-Version: 1.0
 To: m madhuker <mythri_madhuker@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: problem with compiling ppcboot
-Message-ID: <20040729124652.GL21917@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
 References: <20040729121949.23526.qmail@web13603.mail.yahoo.com>
-Mime-Version: 1.0
 In-Reply-To: <20040729121949.23526.qmail@web13603.mail.yahoo.com>
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> ppcstring.o ppcstring.S
-> ppc-elf-gcc: installation problem, cannot exec `cpp0':
-> No such file or directoryas: unrecognized option `-mppc'
+>
+>        Please give suggestion....
+>
+>
 
-Check your installation and/or path. I don't think this is related to
-ppcboot, but rather to your system you compile the sources on.
+Don't use ppcboot. Use U-Boot ( new version ... ) and ask questions on
+the u-boot list.
 
-btw, change to u-boot if you only start porting, you'll avoid problems
-(inherited code, been there, done that): http://u-boot.sourceforge.net/
+
+Sylvain Munaut
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
