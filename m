@@ -1,43 +1,33 @@
-Message-ID: <XFMail.001009181549.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <19340903045945.2380@192.168.1.2>
-Date: Mon, 09 Oct 2000 18:15:49 +0200 (CEST)
-From: Giuliano Pochini <pochini@shiny.it>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: can't boot 2.4.0-t9
-Cc: linuxppc-dev@lists.linuxppc.org,
+Date: Mon, 9 Oct 2000 20:24:06 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Giuliano Pochini <pochini@shiny.it>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
         Giuliano Pochini <pochini@denise.shiny.it>,
         Topi Kanerva <tkanerva@ees2.oulu.fi>
+Subject: Re: can't boot 2.4.0-t9
+In-Reply-To: <XFMail.001009181549.pochini@shiny.it>
+Message-ID: <Pine.LNX.4.10.10010092018570.30240-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>is this the plain 2.4.0-test9 or linuxcare devel version?
->>If I were you, I'd try to backport the test7 scsi code to make
->>the hack work again.
->>I don't know about the drivers/scsi stuff, because I have a pismo
->>(and hence no scsi), but for sure none of the 2.4.0-testx kernels
->>have worked for me in terms of X: if I start X (4.0.1c), the
->>lcd screen goes black, or then just completely wild.
->>
->>Can anyone else with a pismo confirm this?
+> > For the X 4 vs. 2.4 issue, I've been biten by this for a long time (on a
+> > Pismo too and on a G4) until I figured out that the X server dies when
+> > looking up font path.
 >
-> For the SCSI resources problem, I have to check is the main tree is up-
-> to-date with the latest PPC fixes. You may want to try with the PPC
-> bitkeeper tree.
+> 4.0.0 works fine here (test7).
 
-Can I download only the arch/ppc tree ?
+4.0.1 runs fine here on -test9, slightly patched to restore adbmouse
+function.
 
-> For the X 4 vs. 2.4 issue, I've been biten by this for a long time (on a
-> Pismo too and on a G4) until I figured out that the X server dies when
-> looking up font path.
+BTW: has the cputemp diff been posted for 2.4 already? If not I'd be happy
+to provide it. There's been some discussion on what CPU clock to use if we
+can't get the clock from OF - is there a max. CPU clock known for such
+machines?
 
-4.0.0 works fine here (test7).
-
-
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
