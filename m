@@ -1,34 +1,35 @@
-Subject: Re: ibmstb4 fixes
-From: Andreas Oberritter <obi@saftware.de>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20040115193619.GF983@stop.crashing.org>
-References: <1074028643.1526.42.camel@shiva.eth.saftware.de>
-	 <20040115193619.GF983@stop.crashing.org>
+Subject: Re: cpu_setup_6xx.S:19:22: ppc_defs.h: No such file or directory
+From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Christian <evil@g-house.de>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <200401151925.24746.hollisb@us.ibm.com>
+References: <1074025766.23751.2.camel@chuck.arlut.utexas.edu>
+	 <1074131648.5123.48.camel@gaston>
+	 <1074186989.23751.9.camel@chuck.arlut.utexas.edu>
+	 <200401151925.24746.hollisb@us.ibm.com>
 Content-Type: text/plain
-Message-Id: <1074196707.1526.8.camel@shiva.eth.saftware.de>
+Message-Id: <1074198036.23751.17.camel@chuck.arlut.utexas.edu>
 Mime-Version: 1.0
-Date: Thu, 15 Jan 2004 20:58:28 +0100
+Date: Thu, 15 Jan 2004 14:20:37 -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2004-01-15 at 20:36, Tom Rini wrote:
-> > - two typo fixes for i2c and the ocp definition
->
-> Is the first one related to dgibsons latest changes?
+On Thu, 2004-01-15 at 13:25, Hollis Blanchard wrote:
+> Just a guess, but I don't think 2.4 trees work perfectly with parallel builds
+> (make -jN). It could be that one build needs ppc_defs.h before the other has
+> created it yet.
 
-Yes, the buggy #define was introduced in rev. 1.5. It results in a
-compile error if IBM_IIC_IS_FAST is not overridden by the board's
-header.
+This appears to be the problem. I am compiling this kernel on a dual cpu
+machine and I suppose make takes the liberty of running in -j2 mode.
+Running make with the -j1 option fixes the problem.
 
-> > Now that linuxppc_2_4_devel seems to be rather dead, would you accept a
-> > patch that adds the smc91111 network driver to linuxppc-2.4?
->
-> I'd rather the smc91111 driver be sent to Jeff Garzik for review so he
-> can push it into linux-2.4 and offer hints / help to get it into 2.6.
+Thanks everyone for the help
 
-ok.
+--
+Matthew S. McClintock <mattsm@arlut.utexas.edu>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
