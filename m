@@ -1,53 +1,37 @@
-Date: Thu, 24 Jun 1999 09:53:53 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Michel Lanners <mlan@cpu.lu>
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-Subject: Re: MESH problems in 2.2.x
-In-Reply-To: <199906231213.OAA00419@piglet.cpu.lu>
-Message-ID: <Pine.LNX.4.10.9906240953080.4063-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 24 Jun 1999 10:59:52 +0000
+Message-Id: <v04003a03b397d30d4f1d@[204.22.210.180]>
+In-Reply-To: <3770E666.BE940A92@americasm01.nt.com>
+References: <v04003a00b39506f352e3@[204.22.210.180]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+To: "Jerry Quinn" <jquinn@nortelnetworks.com>
+From: "sean o'malley" <oses.mde.state.mi.us@lists.linuxppc.org>
+Subject: Re: Project ?
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 23 Jun 1999, Michel Lanners wrote:
-> On  22 Jun, this message from Geert Uytterhoeven echoed through cyberspace:
-> > So to boot recent kernels when you have sync-capable devices on the MESH, two
-> > conditions have to be met:
-> > 
-> >   - boot 2.1.130 first
-> >   - mesh_sync_targets = 0 (setting CONFIG_SCSI_MESH_SYNC_RATE=0 doesn't work)
-> > 
-> > Anyone else seeing this?
-> 
-> No:
-> 
-> scsi0 : MESH
-> scsi1 : 53C94
-> scsi : 2 hosts.
-> mesh: target 1 synchronous at 10.0 MB/s
->   Vendor: IBM       Model: DFHSS1F       !c  Rev: 1717
->   Type:   Direct-Access                      ANSI SCSI revision: 02
-> Detected scsi disk sda at scsi0, channel 0, id 1, lun 0
-> mesh: target 2 synchronous at 10.0 MB/s
->   Vendor: IBM       Model: DCAS-34330        Rev: S65A
->   Type:   Direct-Access                      ANSI SCSI revision: 02
-> Detected scsi disk sdb at scsi0, channel 0, id 2, lun 0
-> mesh: target 3 synchronous at 5.0 MB/s
->   Vendor: MATSHITA  Model: CD-ROM CR-8008    Rev: 8.0e
->   Type:   CD-ROM                             ANSI SCSI revision: 02
+I have seen it but it would be really cool if it was coming from the PPC
+camp instead of the Intel camp.
+=)
 
-Then it's my QUANTUM FIREBALL_TM3200S 300X :-(
+>There's a site dedicated to free software projects that have a bounty
+>attached.  I can't find the reference at the moment, but I believe Eric
+>Raymond posts it on comp.os.linux.announce periodically.
+>
+>Perhaps if the sniping is removed, it can get posted there and someone
+>would take it on.
+>
+>I also have no clue about the issues involved :-)
+>
+>--
+>Jerry Quinn                             Tel: (514) 761-8737
+>jquinn@nortelnetworks.com               Fax: (514) 761-8505
+>Speech Recognition Research
 
-Greetings,
 
-						Geert
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
