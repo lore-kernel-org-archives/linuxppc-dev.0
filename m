@@ -1,42 +1,40 @@
-Message-ID: <38BCC721.2EA651F1@mpifr-bonn.mpg.de>
-Date: Wed, 01 Mar 2000 08:30:41 +0100
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Date: Wed, 1 Mar 2000 09:49:57 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Andreas Tobler <toa@pop.agri.ch>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, paulus@linuxcare.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: PPC should not use -fno-builtin (was Re: 2.3.47 imac build?)
+In-Reply-To: <38BC513A.9893292D@pop.agri.ch>
+Message-ID: <Pine.LNX.4.10.10003010915370.10015-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
-CC: linuxppc-dev@lists.linuxppc.org, Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: FireWire + Apple PB G3: some success
-References: <38BA7122.44C833A9@mpifr-bonn.mpg.de> <20000301010720K.roikawa@rr.iij4u.or.jp>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ryuichi Oikawa wrote:
-> Have you checked if the patch you used is really working correctly?
-> It setups CardBus bridge's interrupt routing for only TI1130(0xac12)
-> and TI1131(0xac15) (see the patch to arch/ppc/kernel/pmac_pci.c).
-> You will have to add support for your CardBus bridge(ID 0xac1e)
-> referring the document from TI.
+> > Tried both. I get the arch: exit if I set ppc_md.progress in pmac_setup
+> > arch. Shortly after this output, the color fringe fun starts again.
+> >
+> > I'll strip my .config to the bare minimum to narrow this down. Thanks for
+> > getting me this far :-)
+> Well, I wanted to reply earlier, but unfortunately my telco dropped my
+> line for two hours and I was thinking about having destroied my modems
+> until I had a look to my /var/log/messages arghhhh.
+>
+> What I did: I have both trees living around on my PB. I did a diff
 
-I also found that problem as I could not see the pcibios_fixup kernel message in
-the logs...
+Which trees? Unfortunatly I removed 2.3.29 before I could test 2.3.48 ...
 
-As Ben already said, it it TI's PCI1211.  Although the data sheet states that
-the two registers you alter with your patch (0x91 and 0x91) are "...provided for
-PCI1130 campatibility", just adding the signature to activate the setup does not
-work.
+> I may post a patch, but I'm not quite satiesfied with since I don't know
+> at all what's really necessary. Sorry, but I think it's better not to
+> distribute a wrong patch.
 
-Unfortunately I do not have a card for which I know for sure that it will work
-with LinuxPPC.  In the meantime I tested so many different combinations of
-with/without your patch, with/without the PCMCIA package ver. 3.0.something/
-3.1.something enables/diabled and an Adaptec SCSI CardBus Card/FireWire2Go
-CardBus card (and got all sorts of nasty reactions like freezes and panics) that
-I am a litte confused now.  I am afraid I have to try a more systematic
-approach, and to read TI's docs first.
+Just tell me which files you had to patch :-) I'll start poking around in
+drivers/video first. It seems like other parts of the kernel are fine
+(sound is switched on, the disk spins up) and it's just atyfb acting
+funny.
 
-Anyway, thanks a lot for your help!
-
-Yours, Albrecht.
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
