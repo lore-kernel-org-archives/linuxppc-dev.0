@@ -1,9 +1,9 @@
-Date: Thu, 15 Jul 2004 07:15:40 -0700
+Date: Thu, 15 Jul 2004 07:23:30 -0700
 From: Tom Rini <trini@kernel.crashing.org>
 To: Olaf Hering <olh@suse.de>
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [PATCH] fix missing option in binutils version check
-Message-ID: <20040715141540.GQ21856@smtp.west.cox.net>
+Message-ID: <20040715142329.GR21856@smtp.west.cox.net>
 References: <20040712180321.GB16877@smtp.west.cox.net> <20040713134945.GA5104@suse.de> <20040713140127.GJ16877@smtp.west.cox.net> <20040713140220.GA20213@suse.de> <20040713142015.GK16877@smtp.west.cox.net> <20040713151854.GA7858@suse.de> <20040713152633.GL16877@smtp.west.cox.net> <20040713152950.GB7858@suse.de> <20040714232336.GO21856@smtp.west.cox.net> <20040715125032.GA20266@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,9 +25,29 @@ On Thu, Jul 15, 2004 at 02:50:32PM +0200, Olaf Hering wrote:
 >
 > How is this supposed to work? You get either 0 or 1.
 
-OK.  The intent was that GCC_VERSION is always run, which will give
-'0304' on gcc-3.4 (tested) and if the binutils test also fails it will
-always give '1'.
+There was a slight problem with the first patch.  The following on top
+of it should fix things (lightly tested by making sure I could make it
+fail):
+diff -u edited/arch/ppc/Makefile edited/arch/ppc/Makefile
+--- edited/arch/ppc/Makefile	2004-07-14 16:22:58 -07:00
++++ edited/arch/ppc/Makefile	2004-07-15 07:20:40 -07:00
+@@ -114,13 +114,14 @@
+ endif
+ # gcc-3.4 and binutils-2.14 are a fatal combination.
+ GCC_VERSION	:= $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-version.sh $(CC))
+-BAD_GCC_AS	:= $(shell echo mftb 5 | $(AS) -mppc -many -o /dev/null 2>/dev/null 2>&1 && echo 0 || echo 1)
++BAD_GCC_AS	:= $(shell echo mftb 5 | $(AS) -mppc -many -o /dev/null >/dev/null 2>&1 && echo 0 || echo 1)
+
+ checkbin:
+ ifeq ($(GCC_VERSION)$(BAD_GCC_AS),03041)
+-	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no lonber build '
++	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build '
+ 	@echo 'correctly with gcc-3.4 and your version of binutils.'
+ 	@echo '*** Please upgrade your binutils or downgrade your gcc'
++	@false
+ endif
+ ifneq ($(NEW_AS),0)
+ 	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build '
 
 --
 Tom Rini
