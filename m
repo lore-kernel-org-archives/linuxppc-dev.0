@@ -1,49 +1,42 @@
-Date: Sat, 9 Mar 2002 10:43:28 +0100
-From: Harald Welte <laforge@gnumonks.org>
-To: <benh@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.18-ben0 on G4 SMP: do_IRQ waiting for irq lock
-Message-ID: <20020309104328.F6936@sunbeam.de.gnumonks.org>
-References: <20020308090750.W6936@sunbeam.de.gnumonks.org> <20020308183409.25542@mailhost.mipsys.com>
+Subject: Re: pbbuttons, need some help
+From: Tuomas Kuosmanen <tigert@ximian.com>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>
+Cc: Matthias Grimm <joker@cymes.de>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20020307134140.56d70400.jpgarcia@execpc.com>
+References: <3C852E12.3030300@cymes.de>
+	<20020306090814.15511@mailhost.mipsys.com> <3C87B6C8.9070905@cymes.de>
+	<20020307134140.56d70400.jpgarcia@execpc.com>
+Content-Type: text/plain
+Date: 09 Mar 2002 16:43:42 +0200
+Message-Id: <1015685023.2150.86.camel@quicksilver>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020308183409.25542@mailhost.mipsys.com>; from benh@kernel.crashing.org on Fri, Mar 08, 2002 at 07:34:09PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 08, 2002 at 07:34:09PM +0100, benh@kernel.crashing.org wrote:
-> Could be a driver bug showing up, difficult to say. The problem definitely
-> doesn't happen here (dual G4 450Mhz, 2x7400 CPU with highmem). The fact that
-> the IRQ lock can be held by the other CPU is normal though, both CPUs don't
-> take external IRQs but decrementer ones for example happen on both.
->
-> That said, I don't know what is causing your problem.
+On Thu, 2002-03-07 at 21:41, Joseph P. Garcia wrote:
 
-I've now managed to get the kernel running - so far without any crashes for
-one day.
+    Along those same lines, I have a sugesstion for the gtk client for
+    pbbuttons.  The program should use the X keycodes rather than associate
+    with the daemon that controls the hardware.  This serves two purposes: X
+    handles any client/server mess, and the GUI will be the system independant
+    figurehead it should be (IMO).  Bastien wrote a similar program that uses
+    the keycodes, so it could be used on any system with the keys, even an x86.
+    (hadess.net)
 
-The problem seemed connected with the cups daemon.  If I don't start (or use)
-any part of the cups (common unix printing system), it runs fine.
+Now, I dont know if this is a problem or not but please note that the
+"dim the lcd after inactivity" -kind of stuff should not rely on X
+screen being active. I mean, if I use MOL for example the keyboard
+activity happens on the console - resulting a dimmed display in a moment
+if one monitors for X keyboard stuff. Which is rather annoying.
 
-I don't know what cups is trying to do, since there are no local printers
-configured.  Everything it is supposed to do is to submit remote printjobs
-to my printer server.
+Best,
 
-As of drivers, the only hardware driver (apart from standard pmu, aty128fb,
-sungem) I'm using is tulip for a 21x4x network board.
-
-But the problems are not related with this network interface, since I'm
-heavily using it for NFS, etc.  I've also tried to pingflood the machine
-on both network interfaces - no problem.
-
-> Ben.
+Tuomas
 
 --
-Live long and prosper
-- Harald Welte / laforge@gnumonks.org               http://www.gnumonks.org/
-============================================================================
-GCS/E/IT d- s-: a-- C+++ UL++++$ P+++ L++++$ E--- W- N++ o? K- w--- O- M+
-V-- PS++ PE-- Y++ PGP++ t+ 5-- !X !R tv-- b+++ !DI !D G+ e* h--- r++ y+(*)
+:: :: Tuomas Kuosmanen  :: Art Director, Ximian :: ::
+:: :: tigert@ximian.com :: www.ximian.com       :: ::
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
