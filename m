@@ -1,21 +1,22 @@
-Message-ID: <002101c00b25$4ce2c780$2801a8c0@thanhnguyen>
-From: "jari" <thanh_nguyen@smartstors.com>
-To: <nboppuri@myiagent.com>
-CC: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Flash programming questions 
-Date: Mon, 21 Aug 2000 11:07:19 +0700
+Message-ID: <39A0C695.978A01AF@dgt-lab.com.pl>
+Date: Mon, 21 Aug 2000 08:05:09 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: [Fwd: Re: FADS problem]
+Content-Type: text/plain; charset=iso-8859-2
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Now, I have the same problem.
-Have you solved it, yet? If you can, write to me the way you do boot fads
-823 from flash, pls.
-thanks
-jari
+OK, thank You for all.
 
+Now my FADS runs with linux.
+
+
+--
+* * * * * * * * * * * * *
+* per pedes ad astra !  *
+* * * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
