@@ -1,16 +1,15 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
-	by ozlabs.org (Postfix) with ESMTP id 8AD9367A7A
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id D1B1267A7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Feb 2005 04:12:50 +1100 (EST)
-Date: Fri, 18 Feb 2005 10:12:46 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: jgarzik@pobox.com
-Message-ID: <20050218101245.D11439@cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: netdev@oss.sgi.com, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] emac: filter illegal frame sizes
+	Sat, 19 Feb 2005 04:14:47 +1100 (EST)
+Message-ID: <42162280.6040909@ru.mvista.com>
+Date: Fri, 18 Feb 2005 20:14:40 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="------------080201010202020705020901"
+Subject: [PATCH][PPC32] SCC4 UART for MPC8272
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,119 +20,157 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fix to drop frames that are too large for the current MTU.
+This is a multi-part message in MIME format.
+--------------080201010202020705020901
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+This patch adds support for SCC4 UART on MPC8272ADS, it is created
+against current linuxppc-2.4 tree.
 
-===== drivers/net/ibm_emac/ibm_emac_core.c 1.9 vs edited =====
---- 1.9/drivers/net/ibm_emac/ibm_emac_core.c	2005-01-20 13:25:10 -07:00
-+++ edited/drivers/net/ibm_emac/ibm_emac_core.c	2005-02-18 09:23:08 -07:00
-@@ -665,14 +665,21 @@
- 				fep->rx_skb[i]->dev = dev;
- 				fep->rx_skb[i]->protocol =
- 				    eth_type_trans(fep->rx_skb[i], dev);
--				error = netif_rx(fep->rx_skb[i]);
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+
+--
+Sincerely, Vitaly
+
+
+--------------080201010202020705020901
+Content-Type: text/x-patch;
+ name="cpm2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpm2.diff"
+
+===== uart.c 1.19 vs 1.21 =====
+--- 1.19/arch/ppc/cpm2_io/uart.c	2005-01-04 20:12:19 +03:00
++++ 1.21/arch/ppc/cpm2_io/uart.c	2005-02-18 13:57:22 +03:00
+@@ -179,7 +179,11 @@
+ static struct serial_state rs_table[] = {
+ 	/* UART CLK   PORT          IRQ      FLAGS  NUM   */
+ 	{ 0,     0, PROFF_SCC1, SIU_INT_SCC1,   0, SCC_NUM_BASE},    /* SCC1 ttyS2 */
++#ifdef CONFIG_ADS8272
++	{ 0,	 0, PROFF_SCC4, SIU_INT_SCC4,	0, SCC_NUM_BASE + 3 }, /* SCC4 ttyS1 */
++#else
+ 	{ 0,     0, PROFF_SCC2, SIU_INT_SCC2,   0, SCC_NUM_BASE + 1},    /* SCC2 ttyS3 */
++#endif
+ };
+ #endif /* SCC_CONSOLE */
  
--				if ((error == NET_RX_DROP) ||
--				    (error == NET_RX_BAD)) {
--					fep->stats.rx_dropped++;
-+				/* Filter frame sizes > our MTU */
-+				if (fep->rx_skb[i]->len <= (dev->mtu + ENET_HEADER_SIZE + ENET_FCS_SIZE)) {
-+					error = netif_rx(fep->rx_skb[i]);
-+					if ((error == NET_RX_DROP) ||
-+							(error == NET_RX_BAD)) {
-+						fep->stats.rx_dropped++;
-+					} else {
-+						fep->stats.rx_packets++;
-+						fep->stats.rx_bytes += frame_length;
-+					}
- 				} else {
--					fep->stats.rx_packets++;
--					fep->stats.rx_bytes += frame_length;
-+					dev_kfree_skb(fep->rx_skb[i]);
-+					fep->stats.rx_length_errors++;
-+					fep->stats.rx_errors++;
- 				}
- 				fep->rx_skb[i] = NULL;
- 			} else {
-@@ -752,15 +759,23 @@
- 					fep->rx_skb[buf[0]]->protocol =
- 					    eth_type_trans(fep->rx_skb[buf[0]],
- 							   dev);
--					error = netif_rx(fep->rx_skb[buf[0]]);
+@@ -2575,6 +2579,12 @@
+ 	volatile	cpm2_map_t	*immap;
+ 	volatile	iop_cpm2_t	*io;
  
--					if ((error == NET_RX_DROP)
--					    || (error == NET_RX_BAD)) {
--						fep->stats.rx_dropped++;
-+					/* Filter frame sizes > our MTU */
-+					if (fep->rx_skb[buf[0]]->len <= (dev->mtu + ENET_HEADER_SIZE + ENET_FCS_SIZE)) {
-+						error = netif_rx(fep->rx_skb[buf[0]]);
++#ifdef CONFIG_ADS8272
++	/* Enable the RS-232 transceivers.
++	*/
++	*(volatile uint *)(BCSR_ADDR + 4) &= ~(BCSR1_RS232_EN1 | BCSR1_RS232_EN2);
++#endif
 +
-+						if ((error == NET_RX_DROP)
-+								|| (error == NET_RX_BAD)) {
-+							fep->stats.rx_dropped++;
-+						} else {
-+							fep->stats.rx_packets++;
-+							fep->stats.rx_bytes +=
-+								fep->rx_skb[buf[0]]->len;
-+						}
- 					} else {
--						fep->stats.rx_packets++;
--						fep->stats.rx_bytes +=
--						    fep->rx_skb[buf[0]]->len;
-+						fep->stats.rx_length_errors++;
-+						fep->stats.rx_errors++;
-+						dev_kfree_skb(fep->rx_skb[buf[0]]);
- 					}
- 					for (b = 0; b < bnum; b++)
- 						fep->rx_skb[buf[b]] = NULL;
-@@ -1041,7 +1056,7 @@
- 	/* set speed (default is 10Mb) */
- 	switch (speed) {
- 	case SPEED_1000:
--		mode_reg |= EMAC_M1_JUMBO_ENABLE | EMAC_M1_RFS_16K;
-+		mode_reg |= EMAC_M1_RFS_16K;
- 		if (fep->rgmii_dev) {
- 			struct ibm_ocp_rgmii *rgmii = RGMII_PRIV(fep->rgmii_dev);
+ 	init_bh(SERIAL_BH, do_serial_bh);
  
-@@ -1118,6 +1133,7 @@
- {
- 	struct ocp_enet_private *fep = dev->priv;
- 	int old_mtu = dev->mtu;
-+	unsigned long mode_reg;
- 	emac_t *emacp = fep->emacp;
- 	u32 em0mr0;
- 	int i, full;
-@@ -1160,10 +1176,17 @@
- 			fep->rx_skb[i] = NULL;
+ 	show_serial_version();
+@@ -2693,7 +2703,14 @@
+ 	 */
+ 	immap->im_cpmux.cmx_scr &= ~0x00ffff00;
+ 	immap->im_cpmux.cmx_scr |= 0x00121b00;
+-#else
++#else /* SCC_CONSOLE */ 
++#if !defined(CONFIG_ADS8272) /* SCC_CONSOLE && !ADS8272 */
++	/* Connect SCC1, SCC2, SCC3 to NMSI.  Connect BRG1 to SCC1,
++	 * BRG2 to SCC2, BRG3 to SCC3.
++	 */
++	immap->im_cpmux.cmx_scr &= ~0xffffff00;
++	immap->im_cpmux.cmx_scr |= 0x00091200;
++
+ 	/* This configures SCC2 and SCC3 as the IO pins.
+ 	*/
+ #if !defined(CONFIG_MPC85xx_GP3)
+@@ -2711,13 +2728,31 @@
+ 	io->iop_psord |= 0x00000002;	/* Tx */
+ 	io->iop_pdird &= ~0x00000001;	/* Rx */
+ 	io->iop_pdird |= 0x00000002;	/* Tx */
+-
+-	/* Connect SCC1, SCC2, SCC3 to NMSI.  Connect BRG1 to SCC1,
+-	 * BRG2 to SCC2, BRG3 to SCC3.
++#else /* SCC_CONSOLE && CONFIG_ADS8272 */
++	/* wire BRG1 to SCC1 and BRG4 to SCC4 */
++	immap->im_cpmux.cmx_scr &= ~0xff0000ff;
++	immap->im_cpmux.cmx_scr |= 0x0000001b;
++
++	/* The ADS8272 has serial ports on SCC1 and SCC2 configured as follows:
++	 *	TXD1	PD30	SCC1 Output
++	 *	RTS1	PD29	General Purpose Output
++	 *	RXD1	PD31	SCC1 Input
++	 *	DCD1	PC14	General Purpose Input
++	 *
++	 *	TXD2	PD21	SCC4 Output
++	 *	RTS2	PD20	General Purpose Output
++	 *	RXD2	PD22	SCC4 Input
++	 *	DCD2	PC8	General Purpose Input
+ 	 */
+-	immap->im_cpmux.cmx_scr &= ~0xffffff00;
+-	immap->im_cpmux.cmx_scr |= 0x00091200;
++	io->iop_ppard |= 0x00000e07;
++	io->iop_psord &= ~0x00000e05;	/* Rx */
++	io->iop_psord |= 0x00000002;	/* Tx */
++	io->iop_pdird &= ~0x00000201;	/* Rx */
++	io->iop_pdird |= 0x00000c06;	/* Tx */
++	io->iop_pparc &= ~0x00820000;
++	io->iop_pdirc &= ~0x00820000;
+ #endif
++#endif /*SCC_CONSOLE*/
+ 
+ 	for (i = 0, state = rs_table; i < NR_PORTS; i++,state++) {
+ 		state->magic = SSTATE_MAGIC;
+@@ -2916,6 +2951,11 @@
+ 					page = CPM_CR_SCC3_PAGE;
+ 					sblock = CPM_CR_SCC3_SBLOCK;
+ 					break;
++				case 3:
++					page = CPM_CR_SCC4_PAGE;
++					sblock = CPM_CR_SCC4_SBLOCK;
++					break;
++
+ 				}
+ #else
+ 				if (state->smc_scc_num == 2) {
+@@ -3014,6 +3054,16 @@
+ 	scp->scc_gsmrl &= ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+ 
+ #ifdef CONFIG_SCC1_CONSOLE
++#ifdef CONFIG_ADS8272
++	/* Use Port D for SCC1 and SCC4 */
++	io->iop_ppard |= 0x00000e07;
++	io->iop_psord &= ~0x00000e05;	/* Rx */
++	io->iop_psord |= 0x00000002;	/* Tx */
++	io->iop_pdird &= ~0x00000201;	/* Rx */
++	io->iop_pdird |= 0x00000c06;	/* Tx */
++	io->iop_pparc &= ~0x00820000;
++	io->iop_pdirc &= ~0x00820000;
++#else
+ 	/* Use Port D for SCC1 instead of other functions.
+ 	*/
+ 	io->iop_ppard |= 0x00000003;
+@@ -3021,6 +3071,7 @@
+ 	io->iop_psord |= 0x00000002;	/* Tx */
+ 	io->iop_pdird &= ~0x00000001;	/* Rx */
+ 	io->iop_pdird |= 0x00000002;	/* Tx */
++#endif /* CONFIG_ADS8272 */
+ #endif
+ #if defined(CONFIG_SCC2_CONSOLE) && !defined(CONFIG_MPC85xx_GP3)
+ 	/* Use Port B for SCC2.
+@@ -3133,6 +3184,11 @@
+ 			page = CPM_CR_SCC3_PAGE;
+ 			sblock = CPM_CR_SCC3_SBLOCK;
+ 			break;
++		case 4:
++			page = CPM_CR_SCC4_PAGE;
++			sblock = CPM_CR_SCC4_SBLOCK;
++			break;
++
  		}
  
--		/* Set new rx_buffer_size and advertise new mtu */
--		fep->rx_buffer_size =
--		    new_mtu + ENET_HEADER_SIZE + ENET_FCS_SIZE;
-+		/* Set new rx_buffer_size, jumbo cap, and advertise new mtu */
-+		mode_reg = in_be32(&emacp->em0mr1);
-+		if (new_mtu > ENET_DEF_MTU_SIZE) {
-+			mode_reg |= EMAC_M1_JUMBO_ENABLE;
-+			fep->rx_buffer_size = EMAC_MAX_FRAME;
-+		} else {
-+			mode_reg &= ~EMAC_M1_JUMBO_ENABLE;
-+			fep->rx_buffer_size = ENET_DEF_BUF_SIZE;
-+		}
- 		dev->mtu = new_mtu;
-+		out_be32(&emacp->em0mr1, mode_reg);
- 
- 		/* Re-init rx skbs */
- 		fep->rx_slot = 0;
-===== drivers/net/ibm_emac/ibm_emac_core.h 1.3 vs edited =====
---- 1.3/drivers/net/ibm_emac/ibm_emac_core.h	2005-02-08 22:24:52 -07:00
-+++ edited/drivers/net/ibm_emac/ibm_emac_core.h	2005-02-18 09:30:07 -07:00
-@@ -77,6 +77,8 @@
- 
- #define ENET_HEADER_SIZE	14
- #define ENET_FCS_SIZE		4
-+#define ENET_DEF_MTU_SIZE	1500
-+#define ENET_DEF_BUF_SIZE	(ENET_DEF_MTU_SIZE + ENET_HEADER_SIZE + ENET_FCS_SIZE)
- #define EMAC_MIN_FRAME		64
- #define EMAC_MAX_FRAME		9018
- #define EMAC_MIN_MTU		(EMAC_MIN_FRAME - ENET_HEADER_SIZE - ENET_FCS_SIZE)
+ 		cp->cp_cpcr = mk_cr_cmd(page, sblock, 0,
+
+
+--------------080201010202020705020901--
