@@ -1,46 +1,63 @@
-Date: Fri, 20 Jul 2001 16:09:41 +0100
-Subject: Re: Video acceleration on IMSTT with bk (and Ben's) 2.4.7-pre6
-	 kernel
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Hollis Blanchard <hollis@austin.ibm.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010720151155.4DB2E2EFEC@apollo.valhalla.net>
+Message-ID: <000b01c11134$81939930$2502a8c0@cwx053a>
+From: "David Burg" <david.burg@nero.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+References: <002a01c11120$1895f130$2502a8c0@cwx053a>
+Subject: Re: R_PPC_REL24 relocation out of range
+Date: Fri, 20 Jul 2001 17:56:15 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Fri, Jul 20, 2001, Hollis Blanchard wrote:
-> On Fri, Jul 20, 2001 at 11:49:30AM +0100, Iain Sandoe wrote:
->>
->> > Other symptom is that the splash screen #cpus penguin is missing it's
->> > background.
->>
->> this symptom remains (as does missing graphics on the redhat logo etc. on
->> the KDE2 login splash screen).
+Hello again,
+
+I "simply"* need to update my tool chain. The bug seems to be fixed in newer
+release.
+
+Sorry for disturbing you,
+
+David Burg.
+*: compiler compilation, so much fun and crasy error messages...
+----- Original Message -----
+From: "David Burg" <david.burg@nero.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Sent: Friday, July 20, 2001 3:30 PM
+Subject: R_PPC_REL24 relocation out of range
+
+
 >
-> This symptom is because the penguin logo changed recently.
+> Hello,
+>
+> I'm making cross-compilation from x86 to powerpc and I got such nice error
+> while executing :
+> dlopen: ./libf.so: R_PPC_REL24 relocation at 0x6fdb6458 for symbol
+> `L_OFFSET_TABLE_' out of range
+>
+> With dynamic linked libraries. Making a search on the internet, I have
+seen
+> someone got the same trouble :
+>
+> http://lists.linuxppc.org/listarcs/linuxppc-dev/200003/msg00025.html
+>
+> I try this simple program and got the error with the cross-compiler (a
+> powerpc-linux-gcc 2.95.2 with matching g++ and ld behind). This web page
+was
+> of previous year, so I bet there exist a fix now but I can't find it.
+>
+> I allready use -fpic -fPIC flags to my g++ calls. Note that the bug happen
+> when cross-compiling the libraries but not when localy compiling the
+> libraries.
+>
+>
+>
+> Best regards,
+>
+> David Burg.
+>
+>
+>
 
-Ah...
-
-> However, missing graphics in X sound like either misconfiguration or a bug.
-
-well, it's been there ever since I got IMSTT acceleration working (Xpmac) -
-the setup, otherwise, is the same as on my other machines (atyfb).
-
-**Only** seems to happen on the KDE splash/login screen (otherwise we seem
-to be OK).  Haven't tried other desktops/things that write directly to the
-root window (which, I guess, is the difference).
-
-When the system is first brought up the RedHat logo is all black ... as is
-the other icon (the login button)...  when you subsequently log out of X
-these two items are filled with colour-noise.
-
-I've a feeling it might be a known bug - but can't find a reference to the
-mail describing it.  It's not a major problem - just slightly naff-looking.
-
-ciao,
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
