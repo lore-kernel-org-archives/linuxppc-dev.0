@@ -1,32 +1,31 @@
-Message-ID: <3CB7708E.63151603@carts.com>
-Date: Fri, 12 Apr 2002 16:41:02 -0700
-From: Kevin Fry <kevin@carts.com>
+Message-ID: <3CB773B7.657288AB@mvista.com>
+Date: Fri, 12 Apr 2002 16:54:31 -0700
+From: Scott Anderson <scott_anderson@mvista.com>
 MIME-Version: 1.0
-To: linuxppc emb3dd3d list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Variable name inconsistancies / resources on building patches
+To: Jer_57 <jer_57@cox.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dhcpd/bootp and 405 (walnut)
+References: <184-1503797947.20020412145158@cox.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Looking at 2.4.18, I see that the the variable in immap_8260.h  for the
-SCC's Protocol-Specific Mode Register is called the scc_pmsr. All the
-#defines for it are called SCC_PMSR_blah.
+Jer_57 wrote:
+> [root@vail root]# rpm -qa |grep dhcp
+> dhcp-2.0pl5-8
 
-As you can see someone called it the pmsr instead of the psmr which it
-should be. All of the code for the FCC's uses the correct acronym
-however..
+I believe that the problem is that OpenBIOS is doing a DHCP request
+directed to a specific IP, but the response that that particular
+dhcpd does is to a broadcast address instead of directed back to the
+IP that sent it.  You can verify that using tcpdump or ethereal.
 
-The code I look at and compile all uses the correct (incorrect) name for
-the SCC PSMR, so should we bother to write a patch to fix this?  I'm
-inclined to say yes, only because it's frustrating to me to program
-drivers and such with incorrect names :)
+This is fixed in the 2.0pl5 available from isc.org, but the 2.0pl5
+in RH7.2 seems to be broken in this regards.
 
-Since this would be my first kernel patch, are there any resources on
-how to build patches and against what, and who to submit em
-too??? thanks!
-
-Kevin Fry
-
+    Scott Anderson
+    scott_anderson@mvista.com   MontaVista Software Inc.
+    (408)328-9214               1237 East Arques Ave.
+    http://www.mvista.com       Sunnyvale, CA  94085
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
