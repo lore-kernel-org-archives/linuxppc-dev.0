@@ -1,30 +1,42 @@
-Message-ID: <3A8C0BC4.DB7F6F7A@mvista.com>
-Date: Thu, 15 Feb 2001 12:03:00 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Subodh Nijsure <subodh@best.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How does one get physical address for iorempped window?
-References: <200102151605.IAA16934@shell9.ba.best.com>
+Message-ID: <20010215175433.8317.qmail@dag.newtech.fi>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PCI confusion
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Date: Thu, 15 Feb 2001 19:54:33 +0200
+From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Subodh Nijsure wrote:
+Hi,
 
-> If I map memory window using ioremap_nocache() if I use virt_to_phys()
-> should one get back the actual physical address?
+I just got a 2.2.17 port working OK and started
+with the 2.4.1 (from www.kernel.org).
+I used the same BAT mapping and replaced my
+old PCI mapping code with the one in arch/ppc/kernel/pci.c.
 
-Ummmm....you give ioremap_nocache() a physical address to map, so
-you have to know it........Using virt_to_phys() may not give you
-the proper physical address, depending upon the platform.  I'm working
-on a solution for 2.5 that will work.  Currently, it is wrapped into
-a heavier weight virt_to_bus/phys() but that many not be the right
-place.
+Now I am confused.....
+The BAT maps PCI MEM space from 0xc0000000 to 0xe0000000 in
+mm/init.c.
+The PCI devices can bee seen fine when printing ie. the first one
+in pci.c, after the fixup of the addresses. (with address 0xexxxxxxx).
+
+But later when the driver tries to access the PCI devices memory space
+the kernel oops:es with a memory access error (11).
+
+What could I have overlooked?
+What changed from 2.2.17 to 2.4.1 on the PCI side ?
+
+BRGDS
 
 
+--
+Dag Nygren                               email: dag@newtech.fi
+Oy NewTech Ab                            phone: +358 9 8024910
+Trasktorpet 3                              fax: +358 9 8024916
+02360 ESBO                                 GSM: 0400-426312
+FINLAND
 
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
