@@ -1,30 +1,27 @@
-Date: Mon, 7 Jan 2002 15:15:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: mod+linuxppc-dev@MissionCriticalLinux.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Link-time failures from "simple" CFLAGS changes
-Message-ID: <20020107221531.GA13931@cpe-24-221-152-185.az.sprintbbd.net>
-References: <200201072201.RAA05808@missioncriticallinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200201072201.RAA05808@missioncriticallinux.com>
+Message-Id: <200201072223.RAA06381@missioncriticallinux.com>
+From: mod+linuxppc-dev@MissionCriticalLinux.com
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] Link-time failures from "simple" CFLAGS changes
+Date: Mon, 07 Jan 2002 17:23:09 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 07, 2002 at 05:01:51PM -0500, mod+linuxppc-dev@MissionCriticalLinux.com wrote:
+Sheesh!    Well, OK then: please apply this patch:
 
-> When I change -O2 to -O0 in my CFLAGS definition in Makefile thus:
-[snip]
-> ...I am astounded to see thousands of unresolved references
-> at kernel link time.  WTF?  Any ideas?  These are the
-> sorts of symbols that come up undefined:
 
-You need at least -O1 for the kernel to compile.  I _think_ this is
-documented somewhere even, but I don't recall where right now.
+===== Documentation/Changes 1.12 vs edited =====
+--- 1.12/Documentation/Changes  Fri Dec  7 14:01:21 2001
++++ edited/Documentation/Changes        Mon Jan  7 17:20:20 2002
+@@ -92,6 +92,8 @@
+ greater than -O2 may not be wise.  Similarly, if you choose to use gcc-2.95.x
+ or derivatives, be sure not to use -fstrict-aliasing (which, depending on
+ your version of gcc 2.95.x, may necessitate using -fno-strict-aliasing).
++On the other hand, -O0 will cause your build to fail because inline
++functions are only defined when *some* optimization is in effect.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+ Make
+ ----
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
