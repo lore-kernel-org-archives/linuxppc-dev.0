@@ -1,45 +1,39 @@
-Message-ID: <395722C9.8510A7EE@student.ethz.ch>
-Date: Mon, 26 Jun 2000 11:30:49 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Mon, 26 Jun 2000 12:11:01 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: Adam Lebsack <lebsack@mac.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF86Config 4.0
+In-Reply-To: <39571F40.5D42D578@student.ethz.ch>
+Message-ID: <Pine.LNX.4.05.10006261210000.5601-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: Wolfgang Haeuptli <whaeuptli@bluewin.ch>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: scsi-experts needed: target aborted
-References: <00062523582400.00479@lobo.localnet>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wolfgang Haeuptli wrote:
-
-> I was never able to access my scanner (UMAX astra 1200S, scsi).
+On Mon, 26 Jun 2000, Michel Dänzer wrote:
+> Yep, in the XFree86 CVS, so you'd currently have to join as a developer.
 >
-> mesh reports: target 6 aborted, interrupt in idle phase ?
+> If you don't want to do that, you'll have to wait for either
 >
-> Some time ago, somebody posted a patch (see end of message) to enable
-> scsi-debugging, which miraculously makes the scanner get recognized by the
-> kernel and work (partly) with SANE...
-> I had to disabled the patch again, because my log file (and the console) got
-> filled up with tons of debug infos.
+> - the 4.0.1 release
 >
-> Now my question to scsi-cracks:
-> Why does the device only gets registered with debugging enabled (no other
-> changes to mesh)
+> - public anonymous CVS access
+>
+> both of which should be available RSN.
 
-I'm not a SCSI crack, but anyway :)
+The public anonymous CVS access was on /. lately.
 
-Debugging slows down very much, so - sounds to me like the SCSI driver needs
-idle loops and/or memory barriers here and there...
+Gr{oetje,eeting}s,
 
-
-Michel
-
+						Geert
 
 --
-No gates, no windows ... It's open!
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
