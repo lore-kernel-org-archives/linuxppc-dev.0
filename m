@@ -1,27 +1,39 @@
-Date: Wed, 14 May 2003 16:04:53 +0900
-From: YOSHIMURA Keitaro <ramsy@linux.or.jp>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Porting to 405GPr based router.
-Message-Id: <20030514160311.9F4E.RAMSY@linux.or.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Subject: Re: set_rtc_time() cleanup / normalization
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <5.1.0.14.2.20030513161846.03805338@mail.ebshome.net>
+References: <20030512211733.B489EC6092@atlas.denx.de>
+	 <20030512211733.B489EC6092@atlas.denx.de>
+	 <5.1.0.14.2.20030513161846.03805338@mail.ebshome.net>
+Content-Type: text/plain
+Message-Id: <1052901153.664.15.camel@gaston>
+Mime-Version: 1.0
+Date: 14 May 2003 10:32:33 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi. all ppc developper.
+>
+> 2) set_rtc_time() implementation for concrete RTC device *maybe* slow or
+> just cannot
+>     be called from the interrupt context.
+>     Why just don't fix actual RTC code in each case ?
+>     It may be useful to provide some *generic* facility for such cases.
 
-I'm porting 2.5.x kernel to 405gpr based router.
+It may just not be fixable cleanly. If you RTC is on a bus which requires
+some semaphoring for access (i2c does on pmac, though so far, the RTC isn't
+on i2c on these, I admit), or which is just so slow that you really do NOT
+want to block the machine in an interrupt that long ?
 
-In oder to unify a result thing, what procedure is best in where?
+Actually, the later is the most nasty. Also, since set_rtc_time() is used for
+both interrupt call and non-interrupt call, it cannot make assumptions about
+beeing able to schedule or not, thus causing the same latency problem when
+called via /dev/rtc, possibly a good DOS attack tool, but more simply, it
+just suck that way...
 
-target: OpenBlockS 266 by Plat'Home CO .,LTD
-uri:    http://openlab.plathome.co.jp/OpenBlockS266/index.html
-	(solly, vender page are japanese lang only...)
-
-<|> YOSHIMURA 'ramsy' Keitaro / Japan Linux Association
-<|> mailto:ramsy@linux.or.jp
-<|> http://jla.linux.or.jp/index.html
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
