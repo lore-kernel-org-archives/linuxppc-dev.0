@@ -1,50 +1,40 @@
-Subject: Tiny fix to fec.c for RPX boards using only fast ethernet
-To: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
-Date: Thu, 30 Mar 2000 10:11:15 +1000 (EST)
+Message-ID: <38E2AD1C.3DF0E0@embeddededge.com>
+Date: Wed, 29 Mar 2000 20:25:48 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Doug Rogers <rogers@innocon.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Another try at the run-from-Flash issue for MPC8xx/MBX/custom
+References: <38E27471.83CCAC10@innocon.com>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000330001115.4B3FF5067E@brixi.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi y'all,
+Doug Rogers wrote:
 
-There's an elegant engineering solution in fec.c to the problem of RPX boards
-with both FEC and SCC ethernet ports. Unfortunately, it isn't desirable if the
-SCC port isn't being used, because it still renumbers the FEC MAC address from
-the one in the board info structure.
+> ..... It is simply a matter of size.
 
-Here's a simple patch that only enables the renumbering if SCC ethernet is
-also being used. It also makes the decision non-board-specific, so other boards
-with dual FEC & SCC ports benefit too:
+So, what methods are you planning to use for storing the applications,
+libraries and other files you need to use and update?
+
+> ....... I've timed the decompression of our smaller test image
+> and it takes over 40 seconds on a 40MHz MBX860 board. That's too slow.
+
+You are doing something very wrong.  I have worked on production
+set top boxes that uncompress a kernel and 16 Mbyte ram disk from an
+8-bit flash rom that are executing in the application in under 5 seconds.
+This is a 50 Mhz 860......turn on some caches, align some data, use
+faster memory.....
 
 
-*** fec.c.old	Thu Mar 30 10:05:58 2000
---- fec.c	Thu Mar 30 10:06:30 2000
-***************
-*** 994,1000 ****
-  	eap = (unsigned char *)my_enet_addr;
-  	iap = bd->bi_enetaddr;
+> I was hoping that Linux was to that point, but apparently not. Just
+> having the kernel run from ROM would be helpful for now,
 
-! #ifdef CONFIG_RPXCLASSIC
-  	/* The Embedded Planet boards have only one MAC address in
-  	 * the EEPROM, but can have two Ethernet ports.  For the
-  	 * FEC port, we create another address by setting one of
---- 994,1000 ----
-  	eap = (unsigned char *)my_enet_addr;
-  	iap = bd->bi_enetaddr;
+That saves only about 800K or so of memory.  If you are counting bytes
+at that level you are in trouble already.
 
-! #ifdef CONFIG_SCC_ENET
-  	/* The Embedded Planet boards have only one MAC address in
-  	 * the EEPROM, but can have two Ethernet ports.  For the
-  	 * FEC port, we create another address by setting one of
 
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
