@@ -1,49 +1,59 @@
-Message-Id: <l03010d02b2964c6d306d@[207.244.110.26]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 10 Dec 1998 23:33:22 -0500
-To: <linuxppc-user@lists.linuxppc.org>
-From: Ezekiel <dwheeler@eris.cs.umb.edu>
-Subject: Info
-Cc: <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <3670AF4C.23FF463D@jlc.net>
+Date: Fri, 11 Dec 1998 00:36:12 -0500
+From: Dan Malek <dmalek@jlc.net>
+MIME-Version: 1.0
+To: "Mark S. Mathews" <mark@absoval.com>
+CC: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Cross compiling kernels.
+References: <Pine.LNX.3.96.981209121231.12326B-100000@tristar.cc.absoval.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm gonna put together a page with a bunch of info (and hopefully keep it
-up to date). Basically I'd like to make a somewhat constant site which will
-keep track of things pertaining to the ppc side of linux. flaws/advantages
-of kernels, statusdifferent projects. for example, alot of people are
-having trouble with Xfree and kernels, a clear description of the issue
-would aid everyone I'm sure. also, keeping links to where things can be
-gotten, where there are sites for downloading ppc.rpms (for example, unless
-you dig through miles of old mail it might be hard to find the
-enlightenment for linuxppc page, I'd like to keep track of specialty things
-such as this. ) Linuxppc.org does this to some degree, but isnt for this
-purpose, and therefore doesnt really cater to people who want to know more
-about whats going on, nor to the total novice. I'd like to make an archive
-of Xf86 config files, bootvars, kernel configs, etc. all that stuff. So,
-this is somewhat of a request toboth the dev and the user sides of the
-lists. if the dev people could send me updates on where things stand, and
-users with what they want and with any tips or questions that they think
-people might want to know etc. I suppose Im looking for anything that
-people think would be useful. links/info/news etc. personal experiences
-anything pertaining to linux on ppc. anyhow, I'll put something up that has
-not much on it but it will be there and will grow with whatever people want
-to contrib.
-it will be at
+Mark S. Mathews wrote:
 
-www1.shore.net/~cp/zk/lppc/news.html
+> I'm currently trying to build a cross compiler (hosted on x86) for
+> building PPC kernels.....
 
--zk
-dwheeler@eris.cs.umb.edu
-dwheeler@mars.cc.umb.edu
+Has anyone been successful doing this?  I get personal
+e-mail almost weekly from people either using gcc 2.x.x.x,
+which we all know is incorrect, or having problems building
+a cross egcs.  I use only egcs tools natively on LinuxPPC
+machines, so I have no suggestions other than that.
 
-<><><><><><><><><><><><><><><><><><><><>
-Donn Ezekiel Wheeler
-dwheeler@eris.cs.umb.edu
-dwheeler@mars.cs.umb.edu
-http://www1.shore.net/~cp/zk/zk.html
+
+> 1) What kernel version is recommended to run the MPC8xx processors?  I've
+> seen references to 2.1.129, but I'm not sure.
+
+I found a couple of minor bugs in 2.1.129 when I build it
+for the MPC8xx.  Cort said he fixed them in 2.1.130, so
+I would start with the latest vger CVS sources.
+
+
+> 2) What compiler/binutils packages are considered 'best' for this?
+> The latest I've tried is binutils-2.9.1 and egcs 1.1b
+
+That's it.
+
+
+> 3) Is there a recommended kernel release for running with the MPC8xx
+> processors?  i.e. on the Moto MBX boards?
+
+The original port was done on the MBX860 board, so that
+always seems to work.   I have recently finished some 823/850
+stuff and realized the configuration needs lots of work, so
+I am doing that right now.  The major changes include
+moving most of the CONFIG_MBX to generic CONFIG_8xx,
+uart/serial driver configuration, the Ethernet configurable
+on any SCC, and boot code changes.  I have one more board
+to port next week, and I will dump the changes on Cort :-).
+
+In my spare time I am trying to port the latest USB software
+to the 850.  Anyone else interested, let me know.
+
+
+    -- Dan
 
 
 
