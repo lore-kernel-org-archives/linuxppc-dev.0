@@ -1,39 +1,47 @@
-Message-ID: <40EB1C28.3000402@246tNt.com>
-Date: Tue, 06 Jul 2004 23:39:52 +0200
+Message-ID: <40EB28C7.5020105@246tNt.com>
+Date: Wed, 07 Jul 2004 00:33:43 +0200
 From: Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
 To: ppc linux embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Getting rid of static IO mapping
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Getting rid of static IO mapping
+References: <40EB1C28.3000402@246tNt.com>
+In-Reply-To: <40EB1C28.3000402@246tNt.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Sylvain Munaut wrote:
 
-In the mpc5200 2.6 support, I'm trying to get rid of all static io
-mapping.
-So every address I use must be ioremaped. For the device drivers, no
-problem they are remaped during probe and released if modules get
-unloaded. For some routines used at boot & setup, I just ioremap at
-the function begining and ioumap at the end. For interrupt handling,
-since ioremap at each interrupt is not really nice, I just do it
-durint irq_init and then keep the vaddr in a global var to the file
-(static).
+ > In the current situation, I use the physical address and there is a
+ >  1:1 mapping. The mapping is first done by directly manipulating
+ > {D,I}BAT2, then by setup_io_mappings.
 
-Until there, it works fine. My only problem left is with the
-ppc_md.progress. I'm not sure what is the memory environment at each
-time it might be called. Can I use ioremap/iounmap at each call ? (I
-know I could just try but that might work even if it's wrong(tm) ).
+Actually, looking at the code in arch/ppc/mm/init.c
 
-In the current situation, I use the physical address and there is a
-1:1 mapping. The mapping is first done by directly manipulating
-{D,I}BAT2, then by setup_io_mappings.
-If I understood correctly, I should use the physical address while the
-BAT2 mapping is still active, then when the memory managment is ok,
-ioremap it. Is it correct ? How can I know when BAT2 has been
-overwritten and ioremap ready to go ? Is this the purpose of
-mem_init_done ?
+        /* Map in all of RAM starting at KERNELBASE */
+        if (ppc_md.progress)
+                ppc_md.progress("MMU:mapin", 0x301);
+        mapin_ram();
+
+#ifdef CONFIG_HIGHMEM
+        ioremap_base = PKMAP_BASE;
+#else
+        ioremap_base = 0xfe000000UL;    /* for now, could be 0xfffff000 */
+#endif /* CONFIG_HIGHMEM */
+        ioremap_bot = ioremap_base;
+
+        /* Map in I/O resources */
+        if (ppc_md.progress)
+                ppc_md.progress("MMU:setio", 0x302);
+        if (ppc_md.setup_io_mappings)
+                ppc_md.setup_io_mappings();
+
+
+I wonder how it works. At the mapin_ram(), my BAT are overwritten,
+then the "MMU:setio" progress is called, but at this point, my BAT is
+no longer active and my setup_io_mappings is not yet called. Shouldn't
+that crash ? During these two calls, the uart zone shouldn't be mapped.
 
 
 Sylvain Munaut
