@@ -1,65 +1,28 @@
-Subject: RE: 2.6 kernel ppc tree
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 18 Feb 2004 10:55:16 +1300
-Message-ID: <A3240F62EF3C2749B1A25D3BC9548F41030A00@ExchWENZ02.wenz.global.vpn>
-From: "Rod Boyce" <rod_boyce@stratexnet.com>
-To: "Mike Welliington" <wellington@lucent.com>
-Cc: "Lokesh Kumar" <kumar.lokesh@wrx-us.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 17 Feb 2004 15:19:57 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Rod Boyce <rod_boyce@stratexnet.com>
+Cc: Lokesh Kumar <kumar.lokesh@wrx-us.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.6 kernel ppc tree
+Message-ID: <20040217221957.GH16881@smtp.west.cox.net>
+References: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <A3240F62EF3C2749B1A25D3BC9548F410309FE@ExchWENZ02.wenz.global.vpn>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I downloaded it from www.kernel.org I was very surprised how far I got but there you go.
+On Wed, Feb 18, 2004 at 10:30:41AM +1300, Rod Boyce wrote:
 
-Regards,
-Rod Boyce
+> I downloaded the the 2.6.1 Linux kernel and compiled it for the RPX-Lite board.  I discovered that the UART driver in arch/ppc/8xx_io/ has not been ported to the 2.6 kernel otherwise I had no problems.  I have not had time to get back to the 2.6 porting effort and update the uart.c file.  If ther eis another one out there I could try it out but that is where I left my effort.  Otherwise I would guess you may not have too many more problems but I have not been able to spend much time on this.
 
------Original Message-----
-From: Mike Welliington [mailto:wellington@lucent.com]
-Sent: Wednesday, February 18, 2004 10:47 AM
-To: Rod Boyce
-Cc: Lokesh Kumar; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.6 kernel ppc tree
+The linuxppc-2.5 tree already has most of this done (as it did as of
+2.6.1 or 2.6.2, I haven't re-checked the drivers).  However, head_8xx.S
+still needs some updates for VM/exception changes.
 
-
-Rod -
-   Can I ask *where* you got your 2.6.1 kernel?  I do not see it
-in the Monta Vista archives, or in the archives from www.penguinppc.org.
-
--mike wellington
- wellington@lucent.com
-
-
-Rod Boyce wrote:
-
->I downloaded the the 2.6.1 Linux kernel and compiled it for the RPX-Lite board.  I discovered that the UART driver in arch/ppc/8xx_io/ has not been ported to the 2.6 kernel otherwise I had no problems.  I have not had time to get back to the 2.6 porting effort and update the uart.c file.  If ther eis another one out there I could try it out but that is where I left my effort.  Otherwise I would guess you may not have too many more problems but I have not been able to spend much time on this.
->
->Regards,
->Rod Boyce
->
->-----Original Message-----
->From: owner-linuxppc-embedded@lists.linuxppc.org
->[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Lokesh
->Kumar
->Sent: Wednesday, February 18, 2004 10:22 AM
->To: linuxppc-embedded@lists.linuxppc.org
->Subject: 2.6 kernel ppc tree
->
->
->
->Is there a tree for ppc for 2.6 kernel, which I can download and compile for
->mpc8xx based boards? Any help is welcome.
->
->Lokesh Kumar
->Wireless Matrix USA Inc.
->703-262-4032
->
->
->
->
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
