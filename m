@@ -1,33 +1,39 @@
-Mime-Version: 1.0
-Message-Id: <p04310104b5b5105d93f2@[192.168.1.5]>
-Date: Mon, 7 Aug 2000 20:31:02 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: Justin Shore <listuser@vinnie.ksu.ksu.edu>
-Subject: Using the Altivec GNU patches
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: Paul Mackerras <paulus@linuxcare.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14735.25805.953473.825729@argo.linuxcare.com.au>
+Date: Tue, 8 Aug 2000 11:39:25 +1000 (EST)
+To: Gabriel Paubert <paubert@iram.es>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: rtc again... 
+In-Reply-To: <Pine.HPX.4.10.10008071127140.9070-100000@gra-ux1.iram.es>
+References: <200008041525.LAA30014@mal-ach.watson.ibm.com>
+	<Pine.HPX.4.10.10008071127140.9070-100000@gra-ux1.iram.es>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	I just acquired a couple of true G4s at the job I just
-started last week.  These are my first LPPC G4s.  I'm curious, can I
-use the Altivec enchanced gcc (available at www.altivec.org) to
-optimize my compilations for those G4s?  I compile most of my own
-software; would it actually utilize the patched gcc or would it
-require special code changes to make it work?  The boss ordered me a
-dual-500 so I'm hoping the LPPC support appears quickly. ;-)
+Gabriel Paubert writes:
 
-Thanks!
-   Justin
+> Hard reset also clears the timebase on all the processors I know, so the
+> time bases should be synchronized unless the firmware plays with them
+> (assuming the HRESET pins are wired together).
+
+Certainly on my 7600 with a 2-cpu powersurge board, with the code that
+is currently in the devel kernel to use the tb register, you don't get
+the same time on both cpus.
+
+I haven't had a chance to look at your patch in detail yet, hopefully
+soon.  At a quick glance it seemed to be touching a lot of stuff so it
+will take more than a quick glance. :-)
+
+Paul.
+
 --
-
---
-Justin Shore       K-State Linux Distro Mirror, Sysadmin
-macdaddy@vinnie.ksu.ksu.edu
-<http://vinnie.ksu.ksu.edu/mirror/rpm2html>
-<ftp://vinnie.ksu.ksu.edu/pub/mirror/linux>
-
-*Internet2 Users*
-<ftp://quest.ksu.ksu.edu/pub/mirror/linux>
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
