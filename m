@@ -1,43 +1,76 @@
-Message-ID: <37809EF1.45C3C3F5@mpifr-bonn.mpg.de>
-Date: Mon, 05 Jul 1999 14:02:57 +0200
-From: Albrecht =?iso-8859-1?Q?Dre=DF?= <ad@MPIfR-Bonn.MPG.de>
-Reply-To: ad@MPIfR-Bonn.MPG.de
+Date: Tue, 6 Jul 1999 13:54:24 -0700 (PDT)
+From: Jonathan Moore <moore@eds.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Jason Haas <jhaas@madison-web.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Fwd: Macsbug conflict w/BootX?
+In-Reply-To: <19990706222944.001895@mail.mipsys.com>
+Message-ID: <Pine.LNX.3.96.990706133431.18599C-100000@zen.eds.org>
 MIME-Version: 1.0
-To: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>
-CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Countour (3 button) mouse
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+	The computer is a 7500 with a 604e 120 upgrade card. This happens
+even with all extenctions turned off. The boot x vertion is the 1.1
+vertion from the R5 cd I reseaved last week and the os is 7.5.1. The
+kernels that showed this
+problime are the finle and with video driver form the same R5 cd. I am not
+at home so I don't know the vertion of macsbug but it is serteanly
+srevreal years old (most likley pre 1995). I don't think I have anny thing
+funkey set up in macsbug but I might; I rilly only use it to try to
+recover from applacation crasheses. The dealitals of the failular are that
+after doing a small amount of file writes the systome lockes  up and when
+after a reboot the systome complaines about files with sared blocks.
 
-	I use LinuxPPC R5 on a PowerBook G3 with a Contour 3-button mouse. 
-Unfortunately it is not recognised as a three-button-device, the middle and
-right button both give a ButtonPress event for button 1 upon the first and a
-ButtonRelease event upon the second click.  `mousemode 3 4' doesn't work; the
-handler remains set to 102.
+The os was installed using the mklinux installer becouse the redhat
+linuxppc vertion would die with mesh errors farley quickly (possibaly
+related error) and the x installer would refuse to swich keybord fosic
+making it usless.
 
-I know that this mouse does in fact work with all three buttons, because it did
-out of the box with MkLinux DR3-something.
+seance I have removed macsbug form the systome folder on the mac side I
+have hade no problimes. The only othere problime I have hade is that the
+kernel with video is 2.2.9 and not 2.2.6 and you provied no kernal mods or
+systome map to 2.2.9.
 
-Can anybody help me to resolve this issue?
+-Jonathan
 
-Thanks, Albrecht.
 
--- 
-+-----------------------------------------------------------------------------+
-| Dr.-Ing. Albrecht Dre\ss                                     ----           |
-| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
-| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
-| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
-| D-53121 Bonn (Germany)          ------------+------+-------------------     |
-|                                             |    / |                        |
-| Phone (+49) 228 525 319                     |  /  /                         |
-| Fax   (+49) 228 525 411                     |/   /                          |
-| Mail  ad@mpifr-bonn.mpg.de                                                  |
-+-------------- electrical engineers do it with less resistance --------------+
+On Tue, 6 Jul 1999, Benjamin Herrenschmidt wrote:
+
+> On Tue, Jul 6, 1999, Jason Haas <jhaas@madison-web.com> wrote:
+> 
+> >---------- Forwarded message ----------
+> >Date: Mon, 05 Jul 1999 13:24:28 -0700
+> >From: moore@eds.org
+> >To: support@linuxppc.org
+> >Subject: Nasty bug (data loss)
+> >Resent-Date: Tue, 6 Jul 1999 12:58:59 -0500 (CDT)
+> >Resent-From: <support@www.linuxppc.org>
+> >Resent-To: Jason Haas <jhaas@www.linuxppc.org>
+> >
+> >    I have discuverd that mascbug is incompatabull with boot x using at
+> >least kernels 2.2.6 and 2.2.9; I have tryed no otheres. If you boot
+> >linux using bootx while macsbug is installed on you mac it will cause
+> >linux to have bad writes to disc and will destroy you fs.
+> 
+> I don't think I ever booted a Mac without Macsbug for the past few years,
+> so I don't think there is such an incompatibility. Are you sure you have
+> the latest version of MB ? Also, check that you MB install don't have
+> weird dcmd's (Macsbug external commands).
+> 
+> Some infos about your configuration may help me find out what's going on:
+> kind of machine, expansion boards, disk controller, version of BootX, etc...
+> 
+> -- 
+>            Perso. e-mail: <mailto:bh40@calva.net>
+>            Work   e-mail: <mailto:benh@mipsys.com>
+> BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+> 
+> 
+> 
+> 
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
