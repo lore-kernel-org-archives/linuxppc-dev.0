@@ -1,30 +1,68 @@
-From: Brad Boyer <flar@allandria.com>
-Message-Id: <200009262009.NAA14039@marcus.allandria.com>
-Subject: Re: hfsplus 1.0.0 source -- anyone able to compile this?
-To: rshapiro@bbn.com, khalfmann@libra.de
-Date: Tue, 26 Sep 2000 13:09:31 -0700 (PDT)
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <14800.60766.981624.170736@esb.bbn.com> from "R Shapiro" at Sep 26, 2000 02:39:26 PM
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14801.3419.973780.175624@esb.bbn.com>
+Date: Tue, 26 Sep 2000 16:55:55 -0400
+From: R Shapiro <rshapiro@bbn.com>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Cc: daenzerm@student.ethz.ch,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
+In-Reply-To: <Pine.LNX.4.10.10009262127370.21452-100000@zirkon.biophys.uni-duesseldorf.de>
+References: <39D0F7EB.C0415571@relog.ch>
+	<Pine.LNX.4.10.10009262127370.21452-100000@zirkon.biophys.uni-duesseldorf.de>
+Reply-To: rshapiro@bbn.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-R Shapiro wrote:
-> I wanted to make an rpm of the brand new hfsplus utils, but I can't
-> compile the sources at ftp://penguinppc.org/pub/hfsplus/.  The src tar
-> seems to be missing a number of header files.  Or is it my environment
-> that's missing headers?  I sent a note to the author several days ago
-> but never heard back.
+Michael Schmitz writes:
+ > > > (--) ATI(0): VideoRam: 1 kByte (EDO)
+ > >
+ > > That's quite little VRAM :)
+ >
+ > Yep, that can't really be the 2048 bug anymore.
 
-You're right, the source available there seems to be missing quite a few
-files, including at least 10 header files. I have a local copy of the
-original source that is in the CVS repository, but I'm not sure if I have
-permission to put out a new tar file. Sorry I can't really help more.
 
-	Brad Boyer
-	flar@pants.nu
+Fwiw the probed VideoRam on my rev. b beige G3 is also some
+ridiculously small number (though not as small as this) yet it runs
+the ati driver without any problems.  That one has a single monitor
+and Rage Pro video.
+
+
+ > But that's also quite a lot of mach64 cards. Are there really two GI's in
+ > the machine?
+
+It's a three-headed machine: two Rage Pro cards plus the onboard Rage
+II.  If I set all three Devices to use fbdev, X happily drives all
+three displays (in xinerama, even).  It's only the ati driver that
+causes the trouble.
+
+
+
+ > You will have to pass multipe atyfb= kernel parameters to make the kernel
+ > initialize one framebuffer device for each.
+
+Right now my kernel args are
+
+ video=atyfb:vmode:20,cmode:8
+
+I don't know the syntax for specifying multiple atyfb's.
+
+I'm using BootX to boot.  I tried miBoot but I couldn't get X 4.0.1 to
+run at all that way, even with the fbdev driver.  I don't think quik
+booting works on this machine, so BootX seems to be the only option.
+
+
+
+ > Also helpful: a dump of the OF device tree.
+
+Remind me how to get that and I'll try to generate one.
+
+
+
+--
+rshapiro@bbn.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
