@@ -1,11 +1,10 @@
-Message-ID: <008901c451b5$0aa87880$5200a8c0@transengfb16d1>
+Message-ID: <00a401c451bb$7b65a650$5200a8c0@transengfb16d1>
 From: "LarrZheng" <larryzheng@transengines.com>
 To: "Matt Porter" <mporter@kernel.crashing.org>,
-	"Travis Sawyer" <tsawyer+linuxppc@sandburst.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <1086979205.29360.5.camel@pavement.sandburst.com> <20040611142437.A1795@home.com>
-Subject: Re: 440GX tlb problem?
-Date: Mon, 14 Jun 2004 10:12:27 +0800
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <20040419115634.A19863@home.com>
+Subject: Re: PPC440GX GigE support
+Date: Mon, 14 Jun 2004 10:58:33 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -14,11 +13,33 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi Matt
-    I think TLB entry has something wrong between linuxppc-2.5-ocp and
-linuxppc-2.4 kerenl,  in 2.4 all works right. but in 2.5-cop tlb entry 63
-will not work right on our 440gx board, so i change tlb entry to 62(as same
-as linuxppc-2.4/head_44x.s),  then the board can be boot normally, would you
-check it?
+    I have test GigE driver,  EMAC2/3 can be initialized but con't work on
+my 440gx board,  i guess that CIS8201 phy driver need support 1000FULL ange
+mode .  but current driver only support 100FULL ange mode in routine
+genmii_setup_aneg(), do we need update  cis8201_setup_aneg() to support
+1000FULL ange?
+
+    another question is that performance test for EMAC0/1, here is test
+result using SmartBit 6000.
+
+linux-2.5-ocp 440gx test result:
+    package size(byte)      single-direction(Mbps)      bi-direction(Mbps)
+    1518                            99
+99
+    64                                35
+8
+
+linux-2.4-26  440gx test result:
+     package size(byte)      single-direction(Mbps)      bi-direction(Mbps)
+    1518                            95
+N/A
+    64                                44
+N/A
+
+
+    It seems that small(64byte) package performance is not good as our
+image. do you have any suggestion?
+    BTW, when the TAH driver for 440gx will released?
 
 Larry
 
@@ -28,52 +49,32 @@ Larry
 
 ----- Original Message -----
 From: "Matt Porter" <mporter@kernel.crashing.org>
-To: "Travis Sawyer" <tsawyer+linuxppc@sandburst.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Saturday, June 12, 2004 5:24 AM
-Subject: Re: 440GX tlb problem?
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Tuesday, April 20, 2004 2:56 AM
+Subject: PPC440GX GigE support
 
 
 >
-> On Fri, Jun 11, 2004 at 02:40:05PM -0400, Travis Sawyer wrote:
-> >
-> > Greetings:
-> >
-> > I'm attempting to bring up a new board (our custom hw) and am blowing an
-> > Instruction TLB error in head_440.S where the original TLB for SDRAM
+> I've pushed a bunch of code for this to the linux-2.5-ocp tree. It
+> overhauls the EMAC driver a bit and adds a number of fields to the
+> new OCP EMAC .additions field that are set per SoC or by the board
+> specific code.  There's support for GigE on EMAC2/3, the TAH,
+> zerocopy, and jumbo frames.
 >
-> head_440.S indicates you are using a really old kernel.
+> There's still work to be done on jumbo frames > 4062 MTU since
+> the RX side requires a copy. If we get some assumptions about
+> linear skbs in various protocol implementations removed, this can
+> be fixed. TSO support is the only major thing unimplemented.
 >
-> > (u-boot and initial kernel space) is invalidated after we've switched to
-> > 0xc000_0000.
+> Performance is right on par with an e1000 in the same platform,
+> showing anywhere from 700-850Mbps TX throughput depending on
+> MTU size and sendfile usage. RX range is slightly less.
 >
-> What do you mean?  Your u-boot port has invalidated caches? are you
-> running out of 0xc0000000 before you get here?  Which TLB entry are
-> you executing from?
+> Pull from bk://source.mvista.com/linux-2.5-ocp
 >
-> > the instructions:
-> > 3:/* iccci   r0,r0    rcblach 12/19/02 clear all caches again on 1/17/03
-> > I took out these changes
-> > dccci   r0,r0    again clear all caches */
-> > cmpwi r23,62
-> > beq 4f
-> > li r6,0
-> > tlbwe   r6,r23,PPC440_TLB_PAGEID
-> > sync
->
-> By the comments, it's an IBM supplied kernel.  This isn't anything
-> in the kernel.org or linuxppc kernel trees.
->
-> > The exception hits when the sync is executed.
->
-> Maybe you are executing from TLB entry 62, that's one of the
-> undocumented limitations...you can entry head_44x.S running in
-> entry 62.
->
-> > Any ideas?
->
-> Can you try a current kernel tree? kernel.org 2.4 or 2.6.  The IBM
-> kernel trees are old and buggy (_buggier_).
+> Once the new OCP stuff goes into linux-2.5, I'll send some
+> version of this (plus previous EMAC driver work for 2.6) to
+> jgarzik.
 >
 > -Matt
 >
