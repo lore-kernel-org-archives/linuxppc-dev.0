@@ -1,30 +1,34 @@
-Message-ID: <3DD4E4D3.4030805@motorola.com>
-Date: Fri, 15 Nov 2002 12:13:07 +0000
-From: John Traill <john.traill@motorola.com>
+From: Jeff Kowing <jeffrey.d.kowing@nasa.gov>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15829.8892.699280.307557@igor.jsc.nasa.gov>
+Date: Fri, 15 Nov 2002 10:37:16 -0600
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: linuxppc-2.5 / Sandpoint X2
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: NFS root manipulation without being superuser?
+Reply-To: jeffrey.d.kowing@nasa.gov
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm having problems getting linuxppc-2.5 running on an X2 Sandpoint system. Firstly there are a couple of failures
-during the build relating to changes in the interrupt handling. I've made the obvious changes in sandpoint_setup.c
+During embedded system developement, I use an NFS root mounted
+filesystem that is exported from my development workstation.  I am
+constantly having to "su root" on my development workstation when I
+want to manipulate the root filesystem for the target machine. I was
+wondering if anyone uses a safer technique that allows manipulation of
+the target's root filesystem without being root on the development
+workstation.
 
-openpic_init(1,0,NULL,-1) -> openpic_init(0)
-i8259_poll() -> i8259_irq(regs)
+I know I could make the exported filesystem all be owned by my
+unprivledged user and group name, but I would like the target machine
+to see those files as owned by root as would normally be the case.
 
-The kernel boots, mounts file system etc...  but after "Freeing unused kernel memory: 96k init" no prompt - Initial
-debug shows that the kernel is executing some of the interrupt routines (sandpoint_get_irq(), openpic_irq() etc ).
-However I'm not sure if this is indicative of an error in the changes above or just the fact that the kernel isn't doing
-anything else but service irq's.
+Anyways, I was just curious if I am missing out on some cool technique
+that other's use that I am not brilliant enough to come up with on my
+own.
 
-Any help/pointers would be gratefully received.
-
+Thanks.
 --
-
-Regards, John
-
+Jeff Kowing
+jeffrey.d.kowing@nasa.gov
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
