@@ -1,68 +1,44 @@
-Date: Mon, 16 Jun 2003 21:50:19 -0700
-From: Peter Ryser <Peter.Ryser@xilinx.com>
-Subject: Re: GPL inconsistency in arch/ppc/ocp/xlinx/
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Christoph Hellwig <hch@lst.de>,
-	Peter Ryser <Peter.Ryser@xilinx.com>, akuster@mvista.com,
-	linuxppc-embedded@lists.linuxppc.org,
-	Scott Anderson <sanders@mvista.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Rafael Aguirre-Sacasa <Rafael.Aguirre-Sacasa@xilinx.com>
-Message-id: <3EEE9E0B.87DE9E6F@xilinx.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <20030524201213.GA8256@lst.de> <20030612203205.GA23017@lst.de>
- <20030612205523.GI828@ip68-0-152-218.tc.ph.cox.net>
+Date: Tue, 17 Jun 2003 07:34:21 +0200 (CEST)
+From: Marius Groeger <mag@sysgo.de>
+To: Robin Gilks <robin.gilks@tait.co.nz>
+Cc: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: lowlat & preeempt
+In-Reply-To: <3EEE93C5.4090302@tait.co.nz>
+Message-ID: <Pine.LNX.4.56.0306170732170.1316@mag.devdep.sysgo.de>
+References: <3EEE93C5.4090302@tait.co.nz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm working with our legal departement on straightening the licensing issues
-out. Our intention is to distribute the source code under GPL. Most likely, we
-will remove
+On Tue, 17 Jun 2003, Robin Gilks wrote:
 
-*     Xilinx products are not intended for use in life support
-*     appliances, devices, or systems. Use in such applications are
-*     expressly prohibited.
+> With the recent release of 2.4.21 I see many patches have been swept up
+> and incorporated. No sign of the low latency & preemption patches though
+> (not really suprising in a stable series) but does anyone have a set of
+> patches for this new tree for ppc only?
 
-without replacement.
+The low latency patch is now part of the kpreempt patch. A kpreempt
+patch for 2.4.21-pre1 can be found here:
 
-- Peter
+http://www.kernel.org/pub/linux/kernel/people/rml/preempt-kernel/v2.4/
 
+Some tweaks may be required to apply it on the current development
+kernel.
 
-Tom Rini wrote:
+Regards,
+Marius
 
-> On Thu, Jun 12, 2003 at 10:32:05PM +0200, Christoph Hellwig wrote:
-> >
-> > On Sat, May 24, 2003 at 10:12:13PM +0200, Christoph Hellwig wrote:
-> > >
-> > > you seem to have added the the directory in the topic to the
-> > > LinuxPPC trees. Unfortunately they have a license consitency that
-> > > basically makes them illegal to distribute, they claim to be under
-> > > GPL but have the following notice:
-> > >
-> > > *     Xilinx products are not intended for use in life support
-> > > *     appliances, devices, or systems. Use in such applications are
-> > > *     expressly prohibited.
-> > >
-> > > Could you please contact Xilinc to clarify the license and/or remove
-> > > those files from the tree? Thanks.
-> >
-> > As there hasn't been any answer yet I think these files should be
-> > remove to ensure the linuxppc tree is legally distributable.
->
-> I think you should ask someone responsible first.  And on the correct
-> mailing list as well.  Armin is not responsible for this code, Scott
-> Anderson is.  Armin just put it into the linuxppc-2.5 tree.  Second,
-> Peter Ryser (who handles the Xilinx side of things) is on the
-> linuxppc-embedded list, where most of the 4xx people are.  Finally,
-> Peter knows about this, and last I knew was talking to their legal
-> department.  Peter, any news on this?
->
-> --
-> Tom Rini
-> http://gate.crashing.org/~trini/
->
+--
+Marius Groeger <mgroeger@sysgo.de>
+Software Engineering
 
+SYSGO Real-Time Solutions AG | Embedded and Real-Time Software
+Am Pfaffenstein 14
+55270 Klein-Winternheim, Germany
+
+Voice: +49-6136-9948-0 | FAX: +49-6136-9948-10
+www.sysgo.de | www.elinos.com | www.osek.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
