@@ -1,38 +1,44 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?J=F6rn=20Nettingsmeier?= <nettings@folkwang-hochschule.de>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
-Date: Sat, 8 Dec 2001 21:05:41 +0100
-Message-Id: <20011208200541.19242@smtp.wanadoo.fr>
-In-Reply-To: <3C126A90.C9768C76@folkwang-hochschule.de>
-References: <3C126A90.C9768C76@folkwang-hochschule.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [PATCH] Permedia2 fb on PPC
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: mzyngier@freesurf.fr
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <wrpadwxth3m.fsf@hina.wild-wind.fr.eu.org>
+References: <wrpsnaq0xkx.fsf@hina.wild-wind.fr.eu.org>
+	<1007572780.21734.65.camel@pismo>
+	<wrpadwxth3m.fsf@hina.wild-wind.fr.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 08 Dec 2001 22:47:54 +0100
+Message-Id: <1007848074.9125.10.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> >after a few days of frequent use, i can say that sleep/wakeup
->> >bahaviour has improved vastly.
->> >however there was again one hard lockup yesterday.
->> >i was on the road when it hit, so i haven't been able to ping or ssh
->> >into the machine.
->> >i think it only happens when you strike a key immediately after
->> >sleep, before the standby led starts glowing.
->>
->> Ok, I'll do some experiments and see if I can find something.
+On Wed, 2001-12-05 at 23:52, Marc ZYNGIER wrote:
+> >>>>> "Michel" == Michel Dänzer <michdaen@iiic.ethz.ch> writes:
 >
->let me know if can test something for you.
->is there any bulletproof method to capture kernel messages on a
->pismo when it goes bang ?
->has somebody used the modem port as a serial console ? i have a
->spare modem lying around, perhaps it might be worth trying...
+> Michel> Why is this needed?
+>
+> Because it simply crashes the system without it ;-).
+>
+> This prevent the driver from using a non-existant (at least on the
+> board I own) big endian aperture for registers.
 
-xmon_printf (on screen) is usually a working properly if you add
-your own messages, but if you are debugging sleep, you may have to
-disable display sleep to see the messages.
+Oh my...
 
-Ben.
 
+> Michel> And does it work with the XFree86 glint driver with Option
+> Michel> "UseFBDev"?
+>
+> Don't know yet. _Now_ that I have a console (thanks to this patch),
+> I'll have a look at the X11 thingy.
+
+Well at least when I last worked on the glint driver, it relied on the
+register aperture being big endian.
+
+
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
