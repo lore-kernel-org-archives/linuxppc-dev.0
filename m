@@ -1,47 +1,38 @@
-Message-ID: <39A3899A.CA375CE8@relog.ch>
-Date: Wed, 23 Aug 2000 10:21:46 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: mlan@cpu.lu, geert@linux-m68k.org, linuxppc-dev@lists.linuxppc.org,
-        dmj+@andrew.cmu.edu
+Date: Wed, 23 Aug 2000 13:51:59 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org, dmj+@andrew.cmu.edu
 Subject: Re: Control fb problem on 8500
-References: <Pine.LNX.4.10.10008231008510.13478-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <39A2F6C7.F2743BF7@student.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10008231350530.380-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
+On Tue, 22 Aug 2000, Michel [iso-8859-1] Dänzer wrote:
+> Michel Lanners wrote:
+> > supposing someone actually finds out how control's hardware cursor works,
+> > and supposing someone would actually take the time to implement this,
+> > wouldn't we need to provide a XFree driver as well? I guess plain fbdevhw
+> > doesn't support hw cursor...
 >
-> > > > I don't think having to use ShadowFB with the fbdev driver is too bad
-> > > > because it should generally enhance performance :)
-> > >
-> > > I guess control is the exception. I found out it isn't worth the memory
-> > > impact. I once ran a complete x11perf run comparing with and without
-> > > shadowfb, and with shadowfb was overall slower. Some operations were
-> > > faster, though, but not in general.
-> >
-> > Oh no. This is very bad.
->
-> But that was on 4.0, not 4.0.1, right? shadowfb on 4.0 fbdev treated me to
-> a ~5sec delay on logout while that nice grey pattern was drawn line by
-> line. Someone said it was due to a bug in shadowfb... and I'd assume it
-> was fixed in 4.0.1.
+> Don't think that there are fbdev ioctls to control it either.
 
-This is GNOME, right? There has been discussion about that on an XFree86 list
-(if it was Xpert, you can search the archive if you like), it's a GNOME bug.
-It used stippled rectangles to draw that, which led to the whole rectangle
-area being considered updated and copied from the shadow framebuffer to the
-real one.
+Actually there are, but they are highly experimental since about 4 years :-)
+Only Amifb should support them more or less.
 
+Gr{oetje,eeting}s,
 
-Michel
-
+						Geert
 
 --
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
