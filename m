@@ -1,37 +1,67 @@
-Date: Thu, 23 Dec 1999 22:18:01 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: vger-now on LongTrail
-Message-ID: <Pine.LNX.4.05.9912232214330.369-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 25 Dec 1999 01:28:11 +0100
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+From: BenH <bh40@calva.net>
+Subject: OF simple boot chooser
+Message-Id: <19991225012811.003886@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi Guys,
+A chrismas present for happy hackers ;)
 
-Now vger is again up-to-date, I gave it a try. Unfortunately the MESH driver
-seems to be broken after the SCSI subsystem changes. The last line it dumps is
+I did a few hacking with OF tonight. On newworld machine, you can use the
+following script as a bootfile (and set OF to boot from this script
+instead of the toolbox ROM image):
 
-    mesh: target 5 synchronous at 10.0 MB/s
+<CHRP-BOOT>
+<COMPATIBLE>
+iMac,1 PowerMac1,1 PowerBook1,1 PowerMac2,1 PowerMac3,1 PowerBook2,1
+</COMPATIBLE>
+<DESCRIPTION>
+Linux/PPC Yaboot bootloader
+</DESCRIPTION>
+<BOOT-SCRIPT>
+" get-key-map" " keyboard" open-dev $call-method
+dup 20 dump
+5 + c@ 08 = if
+" Booting MacOS ..." cr " boot hd:,\\:tbxi" eval
+else
+" Booting Yaboot ..." cr " hd:,\\yaboot" eval
+then
+</BOOT-SCRIPT>
+</CHRP-BOOT>
 
-and then nothing, except cursor flashing, so interrupts are still alive.
-If I set the sync target mask to 0, I don't even get that message.
 
-I'll check in a few small changes at vger soon (haven't heard from Larry about
-the bk license :-(
+Setting OF boot to this script (with OF "setenv" command) instead of
+yaboot or the toolbox ROM image will cause the following behaviour:
 
-Note that my current kernel is 2.3.22. I got it working since yesterday, after
-fixing a stupid Sym53c8xx bug (fix showed up in vger thanks to the SPARC guys).
+if the spacebar is _not_ pressed, yaboot will be loaded. If the spacebar
+is pressed, MacOS will be loaded. Note that the path " hd:, \\:tbxi" and
+" hd:,yaboot"  may need to be changed depending on your configuration.
+Those ones respectively means "the fist MacOS ROM Image file you find on
+the internal ATA HD" and "the first file named yaboot you find at the
+root of any HFS partition of the internal ATA HD".
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+The syntax is:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+" device:partition,file" (do not forget the space after the first
+double-quote)
+
+"device"     is the OF device. "hd:" usually means the internal ATA hard-disk
+
+"partition"  is the partition number. You can omit it (but you need to
+leave the ",").
+             In  this case, OF will try to look for the file on all
+partitions of the
+             device (HFS partitions) until it finds it
+
+"file"       is the path to the file to load. "\\" means the active MacOS
+system folder
+             and ":xxxx" means a file whose MacOS type is "xxxx". so
+"\\:tbxi" means a
+             file of type "tbxi" in the active MacOS system folder
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
