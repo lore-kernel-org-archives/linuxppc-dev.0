@@ -1,47 +1,31 @@
-Date: Thu, 21 Sep 2000 16:18:52 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Paolo Scaffardi <arsenio@tin.it>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Custom serial keyboard: playing dirty with the serial console
-In-Reply-To: <003601c02397$670ccd60$0a00010a@paoloweb>
-Message-ID: <Pine.LNX.4.10.10009211618430.28518-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <39CA22CE.BD0804F1@gnu.org>
+Date: Fri, 22 Sep 2000 02:01:34 +1100
+From: Andrew Clausen <clausen@gnu.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+CC: bug-parted@gnu.org
+Subject: Please test GNU Parted's Mac support
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->From schmitz@opal.biophys.uni-duesseldorf.de Thu Sep 21 16:18:37 2000
-Newsgroups:
-Date: Thu, 21 Sep 2000 16:18:37 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Paolo Scaffardi <arsenio@tin.it>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Custom serial keyboard: playing dirty with the serial console
-Fcc: sent-mail
-In-Reply-To: <003601c02397$670ccd60$0a00010a@paoloweb>
-Message-ID: <Pine.LNX.4.10.10009211614300.28518@opal.biophys.uni-duesseldorf.de>
-X-Reply-UID: (2 > )(1 940426103 5996)/home/opal/schmitz/mail/linuxppc-dev
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Hi all,
 
-> Everything is now ok: i receive correct packets, convert them to XT
-> scancodes and call 'handle_scancode' to process them.
->
-> But 'handle_scancode' only prints characters to the console, without
-> apparently processing them. I see everything i write, but when i press enter
-> (scancode 0x1c), i only see a new line in the console, not any new bash
-> prompt.
->
-> Why this? Is it correct to intercept the serial console and not returning
-> single characters from inside it but from 'handle_scancode' mode?
+I would be very happy if a few of you went over Parted's Mac
+partition map support :-)
 
-I don't think so - serial console is supposed to be used with terminals or
-terminal emulators which send ASCII codes not scancodes. Try to directly
-call handle_scancode (possibly via some glue code like keyboard_input for
-ADB) from the serial interrupt without going over the tty line discpline.
+ftp://ftp.gnu.org/gnu/parted/devel/parted-1.4.0-pre1.tar.gz
 
-	Michael
+There are some things it can't do, that it should be able to do,
+like "blessing" boot partitions... so, I need to figure out how
+to document this stuff.  Since I don't have a ppc box, I'd
+appreciate comments to help me write the docs...
 
+Also: is there a special system name that is used to identify
+RAID and LVM partitions?
+
+Thanks!
+Andrew Clausen
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
