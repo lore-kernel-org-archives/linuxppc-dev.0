@@ -1,46 +1,30 @@
-From: supas100@astrophysik.uni-kiel.de (Derek Homeier)
-Message-Id: <199901141731.SAA11562@juliet.astrophysik.uni-kiel.de>
-Subject: Re: Apple's cdrom driver & non Apple CDROM drives
+Date: Thu, 14 Jan 1999 10:38:13 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
 To: linuxppc-dev@lists.linuxppc.org
-Date: Thu, 14 Jan 1999 18:31:04 +0100 (MET)
-Cc: martins1@col.bsf.alcatel.fr
-In-Reply-To: <199901140800.CAA24661@lists.linuxppc.org> from "owner-linuxppc-dev-digest@lists.linuxppc.org" at Jan 14, 99 02:00:02 am
-Reply-to: Derek Homeier <homeier@astrophysik.uni-kiel.de>
+Subject: halt turns off dirty cache in hard drive?
+Message-ID: <Pine.LNX.3.95.990114103321.18926A-100000@pacific.pht.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 13 Jan 1999 16:00:22, Alexandre MARTINS MELO <martins1@col.bsf.alcatel.fr>
-wrote:
+hi,
 
-> Hi,
->  
-> does anybody know what CDROM drive models & constructors are supported
-> by the apple cdrom driver ?
-> I have a PM7200/75 and a Nec CDR222. Since I formatted my HD in HFS+, the
-> cdrom driver seems to have problems with its cache file. It works, but
-> very, very slowly.
->  
-> With LinuxPPC, there's no problem, but I would like to play a bit with
-> Lara Croft...
-somewhat off topic, really, but look at the recent (or, meanwhile, perhaps 
-'previous') news section at macintouch for two links describing a patch to 
-the apple cdrom and dvd drivers to make them work with non-apple drives. 
-One is at c't magazine:
-	http://www.heise.de/ct/english/98/26/188/
-the other one improves a bit on this in that it supports both apple and non-
-apple drives with the same driver, but I don't have it at hand right now.
+i found a troubling problem. if i
 
-Hope this helps,
-							Derek
+ shutdown -r now
 
--- 
-Derek Homeier                                           Tel: +49-431-880-4103
-Institut fuer Theoretische Physik und Astrophysik       Fax: +49-431-880-4100
-der Christian-Albrechts-Universitaet                    Feet:        Room 142
-D-24098 Kiel, Germany		      email:  homeier@astrophysik.uni-kiel.de
+the root filesystem is clean when i get back into linux. however, if i
+
+ shutdown -h now
+
+the root filesystem has to be fsck'd. i only noticed this with the pre-x
+kernel. the drive is a quantum 1225s connected to mesh. i am guessing from
+this behavior that the latter command removes power from the drive while
+its write cache is still dirty. any other possibilities? 
+
+brad
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
