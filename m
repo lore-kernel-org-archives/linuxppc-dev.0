@@ -1,34 +1,29 @@
-Date: Tue, 18 Mar 2003 16:59:45 +0100
-Message-Id: <HBYCFL$662FE8F3AA02562685A2FED9FE2287DA@libero.it>
-Subject: =?iso-8859-1?Q?Problem_with_interrupts_handling?=
+Message-ID: <3E776A02.9060505@embeddededge.com>
+Date: Tue, 18 Mar 2003 13:48:34 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "=?iso-8859-1?Q?en=5Fch@libero.it?=" <en_ch@libero.it>
-To: "=?iso-8859-1?Q?linuxppc-embedded?=" <linuxppc-embedded@lists.linuxppc.org>
+To: "en_ch@libero.it" <en_ch@libero.it>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Problem with interrupts handling
+References: <HBYCFL$662FE8F3AA02562685A2FED9FE2287DA@libero.it>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all!!
+en_ch@libero.it wrote:
 
-I have to realize a char driver to set ATM Utopia for a linux
-embedded system using motorola mpc850sar.
+> I think i set correctly all the cpm and siu registers but it doesn't work!!!!!
 
-I need help to cofigure interrupt (maybe with registering the interrupt handler function).I used this code
+As I said in a previous e-mail, you are calling these functions
+correctly, but there are lots and lots of other configuration
+parameters that need to be configured correctly for ATM to work
+at all.  I suspect you need to take a look at all of that.
 
-if(request_8xxirq(INTERRUPT_LEVEL, MyHandler, 0, DEVICE_NAME, NULL)
-panic("Could not allocate irq");
-cpm_install_handler(CPMVEC_IDMA1, MyHandler, NULL);
+Thanks.
 
-(note that INTERRUPT_LEVEL = 4 and CPMVEC_IDMA1 = 0x15)
 
-I think i set correctly all the cpm and siu registers but it doesn't work!!!!!
-
-is this the right code??
-Or there are errors in setting the registers???
-Can someone help me?!??!!!!
-
-Tanks a lot!
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
