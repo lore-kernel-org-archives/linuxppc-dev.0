@@ -1,34 +1,32 @@
-Subject: Re: Debug PowerPC application with GDB over network on a i386
-To: raphael.bossek@solutions4linux.de (Raphael Bossek)
-Date: Mon, 10 Jul 2000 12:57:56 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20000709150022.A1493@raphael.bossek.home> from "Raphael Bossek" at Jul 09, 2000 03:00:22 PM
+From: "Kwansuk Kim" <kskim@neowave.co.kr>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
+Subject: printk before CPM reset
+Date: Mon, 10 Jul 2000 16:39:06 +0900
+Message-ID: <NEBBKFENMLEDKDHMEHPJAEOLCAAA.kskim@neowave.co.kr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000710025756.F235624C@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Raphael Bossek writes:
-> is it possible to use a graphical GDB frontend, e.g. DDD, on a i386 and
-> debug application running on the PowerPC hardware where gdb is running too.
-> I'm not talking about debugging the kernel, only simple applications!
-> I thing about using the LAN interface for both GDB's... Using someone
-> such a environment successfully here ?!
+After decompressing kernel, the first line displayed through the console is ttyS initialization comment.
 
-Yes, you run gdbserver on the embedded system. It worked fine for me under
-gdb-4.18. I haven't had the need to try it again under gdb-5.0. You can get
-the precompiled gdbserver from:
-    ftp://ftp.ppc.kernel.org/pub/linuxppc/embedded/gdbserver.tgz
+ttyS00 at 0x0380 is a SMC
+ttyS01 at 0x0100 is a SCC
+ttyS02 at 0x0200 is a SCC
 
-Regards,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+in function serial_console_setup in arch/ppc/8xx_io/uart.c.
+
+As above, I use SMC2 for ttyS0. I changed everything and got bash prompt.
+
+Anyway, I heard the first line displayed is the version of the kernel.
+
+I saw the string ,log_buf, stored in memory, and the string begins with 'Linux version 2.2.13 ...'
+
+Is it because CPM is reset just before serial_console_setup? But I changed also bootloader and I can see the comment 'Now booting the kernel' before the kernel booting.
+
+Why can't I get the comment?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
