@@ -1,35 +1,26 @@
-Message-ID: <004301c01712$24e03ee0$0a00010a@paoloweb>
-From: "Paolo Scaffardi" <arsenio@tin.it>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: HARDHAT 1.2 -> libc_nonshared.a not found by LD!
-Date: Tue, 5 Sep 2000 10:20:22 +0200
+Message-ID: <39B4B90C.94379F1F@dgt-lab.com.pl>
+Date: Tue, 05 Sep 2000 11:12:44 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: falc-lh + mpc823
+Content-Type: text/plain; charset=iso-8859-2
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I installed HardHat 1.2 on my i386 Linux box to cross-compiling for my
-mpc823 fads board on the previous working hardhat version (Journeyman). I
-had many projects and packages configured to cross-compile. I tried to
-rebuild them with the new toolkit but i experienced one big problem that i
-cannot resolve by myself.
+Does anyone used FALC-LH chip (PEB2255 from Siemens) connected to
+MPC823?
 
-While trying to configure and compile GGI, i got this error from the linker
-(/opt/hardhat/devkit/ppc/8xx/powerpc-hardhat-linux/bin/ld):
+Do You have any idea how to make it run?
 
-cannot find /lib/libc_nonshared.a
+I found only some falc references in pc300 driver (linux-2.2.17),
+but it uses PCI a lot (i don't have PCI of course).
 
-It seems that the linker looks for it in the host /lib instead of target
-/lib (under /opt/hardhat/devkit/8xx/powerpc-hardhat-linux/lib).
 
-How can resolve this?
-
-I spent one day to indagate on this... :-((
-
-Bye,
-Paolo
-
+--
+* * * * * * * * * * * * *
+* per pedes ad astra !  *
+* * * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
