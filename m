@@ -1,22 +1,25 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp6.wanadoo.fr (smtp6.wanadoo.fr [193.252.22.25])
-	by ozlabs.org (Postfix) with ESMTP id A0CAB67A7D
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-41-71-119.roch.qwest.net [67.41.71.119])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1322667A7C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Mar 2005 06:22:19 +1100 (EST)
-Date: Sun, 6 Mar 2005 20:10:34 +0100
-To: Dale Farnsworth <dale@farnsworth.org>
-Message-ID: <20050306191034.GA10975@pegasos>
-References: <41F6E0E1.6000803@mvista.com> <20050224082508.GA30005@pegasos>
-	<421DF2B8.6040007@mvista.com> <20050224160411.GA11197@pegasos>
-	<20050224172420.GA6932@xyzzy> <20050305192752.GA28491@pegasos>
-	<20050305203254.GB30151@pegasos> <20050305225128.GC16904@xyzzy>
-	<20050306070248.GA6673@pegasos> <20050306102924.GA32386@xyzzy>
+	Mon,  7 Mar 2005 08:11:44 +1100 (EST)
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Takeharu KATO <takeharu1219@ybb.ne.jp>
+In-Reply-To: <422B56CD.9020708@ybb.ne.jp>
+References: <4226FF62.30007@jp.fujitsu.com>
+	<c56d8feba0d803d74d77ab20f54287e9@freescale.com>
+	<42272B69.8000303@ybb.ne.jp>	<20050303101146.A8869@cox.net>
+	<42282C83.9040707@jp.fujitsu.com>
+	<1109982868.1479.22.camel@jdub.homelinux.org>
+	<422969B9.6040303@ybb.ne.jp> <422B56CD.9020708@ybb.ne.jp>
+Content-Type: text/plain
+Date: Sun, 06 Mar 2005 15:11:36 -0600
+Message-Id: <1110143496.28218.2.camel@jdub.homelinux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20050306102924.GA32386@xyzzy>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Nicolas DET <det.nicolas@free.fr>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] mv64x60 updates
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] WDT Driver for Book-E [2/2] Device driver part.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,69 +30,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 06, 2005 at 03:29:24AM -0700, Dale Farnsworth wrote:
-> On Sun, Mar 06, 2005 at 08:02:48AM +0100, Sven Luther wrote:
-> > On Sat, Mar 05, 2005 at 03:51:28PM -0700, Dale Farnsworth wrote:
-> > > By all means, try it.  Several people are using it without complaints, but
-> > > I'd appreciate your feedback.  There isn't anything dangerous in there.
-> > > Gigabit works for me.  I'm not sure what Kconfig parts would be needed
-> > > specifically for gigabit support.
-> > 
-> > I added just a PPC_CHRP dependency on the MV64XXX_ETH entry, and i was able to
-> > build it, and even insmod it, but the module doesn't do a thing, and not even
-> > a single line shows up in dmesg. I guess i am either missing a part of the
-> > patch or there is something wrong with the probe code.
-> > 
-> > I have gotten the diff against : 
-> > 
-> > include/linux/mv643xx.h drivers/net/mv643xx_eth.[ch] and drivers/net/Kconfig,
-> > adding :
-> > 
-> >  config MV643XX_ETH
-> >         tristate "MV-643XX Ethernet support"
-> > -       depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX
-> > +       depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX || MV64360 || PPC_CHRP
-> >         help
-> >           This driver supports the gigabit Ethernet on the Marvell MV643XX
-> > -         chipset which is used in the Momenco Ocelot C and Jaguar ATX.
-> > +         chipset which is used in the Momenco Ocelot C and Jaguar ATX and
-> > +         Pegasos II, amongst other PPC and MIPS boards.
-> > 
-> > I have no idea where your MV64360 comes from, it seems to be not existent in
-> > any other Kconfig, ... oh well, maybe i am wrong, i wasn't able to do a
-> > recursive bk co, so maybe i missed a bunch of Kconfig files with my grep/find
-> > combo :/ Will have to look more.
+On Mon, 2005-03-07 at 04:15 +0900, Takeharu KATO wrote:
+> Hi, Josh:
 > 
-> MV64360 is in arch/ppc/Kconfig, and is currently defined for KATANA and
-> CHESTNUT.  If I understand correctly, it should be defined for any
-> board using the MV64360.  I don't think we want the PPC_CHRP dependency.
-
-Ah, i guess that was the missing bit. Basically i need to set MV64360 for my
-board, but since it is a generic PPC_CHRP, how is that supposed to work ? 
-
-Could you send me maybe a list of files which need merging yet, compared to
-2.6.11 ? I guess it just doesn't work because i am missing pieces.
-
-> > Anyway, how do you probe for the chip ? On the pegasos we used to map on the
-> > marvell pci id :
+> Takeharu KATO wrote:
+> >>
+> > To tell the truth, this matter has been examined, but I forgot this.
+> > Thank you for making it recall(^^
 > > 
-> >   0000:00:00.0 Host bridge: Marvell Technology Group Ltd. MV64360/64361/64362
-> >   System Controller (rev 03)
-> > 
-> > too bad Marvell didn't do the logical thing and made the ethernet port appear
-> > as separated devices on a third internal pci bus.
+> I performed minor fixes which you pointed out.
+> But I leaves WDT_WP[0123] on purpose.
+> The interpretation of this value is different between PPC4xx and e500.
+> To unite them, I leaves this.
+
+Ok, that makes sense.
+
 > 
-> The mv643xx_eth probe is dependent on having the appropriate
-> platform device entry.  See eth0_device and mv64x60_add_pds() in
-> arch/ppc/syslib/mv643x60.c .
+> >>
+> >> In include/linux/device.h there are dev_printk and dev_dbg macros that
+> >> do pretty much the same thing.  Could you use those instead?
+> >>
+> > I did not know such thing.
+> > I'll try to use them.
+> > 
+> On second thought, I found that it is not so good idea.
+> If I change this according to what you said, it is not
+> easy to find which driver outputs messages when we can
+> use multiple WDT in a system.
+> 
+> Macros in include/linux/device.h will use name member in miscdevice 
+> struct as driver's name, and this is commonly named as "watchdog".
+> 
 
-The pegasos has the mv64360 registers mapped at 0xf1000000, and the ports
-(only port1 is wired though) mapped at interrupt 9, shared with other devices.
-I guess that would be the only real difference with the other currently
-supported hardware, right ? 
+Ok, that's fine too.  No complaints here.
 
-Will look at the above mentioned files and function and try to enable it.
+> FYI, I show the difference with the patch submitted last time.
+> 
+> 
+> Regards,I'll test this driver today, just in case, before I post the 
+> revised edition of this driver.
 
-Friendly,
+Thanks!  Looks good.
 
-Sven Luther
+josh
