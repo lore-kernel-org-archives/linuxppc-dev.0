@@ -1,32 +1,34 @@
-Message-ID: <008001c43f61$247bb080$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "'Carlo Parravicini'" <c.parravicini@sehitaly.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <762A181C0D966E459A2EB3B810142C770386143A@nmrusdunsx12.nmrlan.net>
-Subject: Re: ELDK 3.0 C++ Problem
-Date: Fri, 21 May 2004 14:26:30 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 21 May 2004 12:23:33 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Rune Torgersen <runet@innovsys.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 CPM DP ram free function
+Message-ID: <20040521192333.GI6763@smtp.west.cox.net>
+References: <DCEAAC0833DD314AB0B58112AD99B93B06DADE@ismail.innsys.innovsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DADE@ismail.innsys.innovsys.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I'll bet _two_ cases of beer that Wolfgang won the beer. The seg. fault is
-> happening in the memset.
->
+On Fri, May 21, 2004 at 12:35:01PM -0500, Rune Torgersen wrote:
 
-Before this goes any further, I think we need to put the beer in escrow.  I
-humbly offer my garage.  I will sample it and make sure it's worthy of this
-duel.
+> It adds functionality to the 8260 CPM to free() allocated host and dp
+> ram memory. (nice for loadable drivers that use DP ram)
 
-By the way - on the printf - do you have a '\n' on the end of your
-diagnostic message?  If you're right, you're going to have to go the next
-step and find out exactly what is failing in new().  'new' should basically
-boil down to malloc(4), possibly followed by 'if (p == 0) branch_to_catch',
-then *p = 10000;  Hard to imagine what could go wrong there...
+First, when this has come up in the past, the first question is why is
+this useful, given that with the hardware and peripherals in question,
+loadable drivers aren't really useful (and don't shoot the messenger
+please).
 
-Mark Chambers
+Second, you removed the EXPORT_SYMBOL for the old alloc, but I didn't
+see quickly how a module would make use of the new infrastructure since
+there weren't any new EXPORT_SYMBOLs.
 
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
