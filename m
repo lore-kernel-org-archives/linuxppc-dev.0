@@ -1,36 +1,39 @@
-Date: Thu, 13 Jul 2000 18:26:04 -0500 (CDT)
-From: Grant Erickson <erick205@tc.umn.edu>
-To: linuxppc-users@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: [ACTION]: Rational Purify for Linux/PPC
-Message-Id: <Pine.SOL.4.20.0007131816430.18347-100000@garnet.tc.umn.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200007132354.AAA20368@hyperion.valhalla.net>
+Date: Fri, 14 Jul 2000 00:53:45 +0100
+Subject: [ANN] DMA sound patches V2[2.217pre10-ben2 & 2.4.0-test4]
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Linuxppc-dev@lists.linuxppc.org,
+        Linux-audio-dev@ginette.musique.umontreal.ca
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just got off the phone with Deborah (1-800-728-1212 x76620), a sales
-representative at Rational Software--makers of Purify. I had called to
-inquire about the availability of Purify for Linux/PPC.
+Hello all,
 
-She did confirm that Rational did have plans "in progress" to support
-Linux on IA32, IA64 and possibly SPARC. The IA32 release is close to
-completion (July/August). Unfortunately, when I asked her about Linux/PPC
-she neither knew what the PowerPC was or that Linux even ran on it.
-Unfortunate.
+I have posted a version 2 of the LinuxPPC dmasound back-port from
+V2.4.0-test4 to 2.2.17pre10-ben2.
 
-However, she consulted the product development and engineering resources,
-and came back with the response that there were no plans at this time or
-in the near future to support Linux/PPC due to perceived lack of demand.
+Patches against this and 2.4.0-test4 (to add a bit more info about record
+buffers on the AWACS) can be found on:
 
-So, if you or your company see the value of Purify for Linux/PPC (or AIX
-for that matter), please call Deborah or e-mail Rational requesting
-support for it. It seemed to work for RealPlayer 7.0, maybe it'll work
-here (although porting Purify is a lot more work I imagine).
+http://www.drfruitcake.com/linux/linuxppc.html
 
-Thanks,
+along with explanations etc.
 
-Grant Erickson
+Basically, there is now a single code-base with KERNEL_VERSION()
+conditionals...
+
+There is also a temporary (I expect) patch there that will get sound working
+on G3 Minitower & desktops under 2.4.0-test4.  It is not especially
+elegant... but it will get you going again.
+
+Thanks to those who have tested so far - particularly Gwyn Judd.
+Also thanks to Ben H & Geert for putting up with my dumb questions...
+
+have fun,
+Iain.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
