@@ -1,43 +1,52 @@
-Message-ID: <3CB5AEBC.D564B34C@imc-berlin.de>
-Date: Thu, 11 Apr 2002 17:41:48 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3CB5B452.3080603@pacbell.net>
+Date: Thu, 11 Apr 2002 16:05:38 +0000
+From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
-References: <Pine.LNX.4.44.0204110914100.18980-100000@sole.infis.univ.trieste.it> <3CB539DF.CF3BDD85@imc-berlin.de> <20020411153136.GE15663@opus.bloom.county>
-Content-Type: text/plain; charset=us-ascii
+To: andrew may <acmay@acmay.homeip.net>
+Cc: John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] early serial init
+References: <Pine.LNX.4.30.0204111424410.10803-100000@hill.cs.ucr.edu> <3CB5A370.4080409@pacbell.net> <20020411153642.C18158@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
-> > I got the kernel from the linuxppc_2_4_devel tree using
-> >
-> > bk export ... -rv2.4.18
-> >
-> > So I guess I do have a 2.4-devel. Right?
+andrew may wrote:
+> On Thu, Apr 11, 2002 at 02:53:36PM +0000, Armin wrote:
 >
-> No.  -rv2.4.18 got you 2.4.18 from kernel.org, no PPC changes at all.
+>>John Tyner wrote:
+>>
+>>>I remember seeing something awhile ago about early boots, but I didn't
+>>>think it was for Walnut. Where is it/would it be?
+>>>
+>>>On Thu, 11 Apr 2002, Armin wrote:
+>>>
+>>>
+>>>
+>>>>John Tyner wrote:
+>>>>
+>>>>
+>>
+>>David G did something and he hit the head_4xx.S & ppc4xx_setup.c and a
+>>few header files imb405gp.h
+>>
+>
+> This patch is to remove the need for the BASE BAUD define. If we ever start
+> trying to get a single kernel to build for multiple 405 boards that run at
+> various clock rates it becomes helpful to calc the base baud for the serial
+> ports rather than forcing it at compile time.
+>
+>
 
-Well Tom,
+This patch did not remove BASE_BAUD from the headers??? Having an option
+for early boot is a good thing, this patch removes that option.  Your
+patch would only affect the walnut?  David's is at least in setup.c
+where more boards have access to the early serial init code.
 
-I do a "bk pull" from http://ppc.bkserver.net/linuxppc_2_4_devel once in
-a while.
-And when I do a "bk export -r2.4.18 ..." I definetly get PPC stuff in
-the resulting tree. Otherwise it would be easy to notice that there is
-something strange!
 
-Anyway, from noe on I try to remember not to use the tags but the
-changeset to export the tree.
 
-BTW does anyone know a good and easy way to get the changes from the
-bitkeeper tree into a local CVS?
-For now I "bk pull" then "bk export" and then "cvs import" and then
-merge... :-(
+armin
 
-Cheers,
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
