@@ -1,72 +1,37 @@
-Message-ID: <002f01c2f4aa$b60b80a0$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: "Till Straumann" <strauman@SLAC.Stanford.EDU>,
-	"Tom Rini" <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-References: <IGEFJKJNHJDCBKALBJLLIEHKFLAA.joakim.tjernlund@lumentis.se> <3E81F6FD.2000407@embeddededge.com>
-Subject: Re: dcbz works on 862 everywhere!
-Date: Thu, 27 Mar 2003 22:49:09 +0100
+Subject: pcmcia microdrive support on 2.4.21-rev5 for arctic2
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF5A440509.F12D8E5A-ON87256CF6.0080427D-85256CF6.00811364@us.ibm.com>
+From: John F Davis <johndavi@us.ibm.com>
+Date: Thu, 27 Mar 2003 18:29:33 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > hmm, why would not dcbz execute properly? Surely the instruction is restarted
-> > when the DTLB Miss/Error handler return?
->
-> Write a test to verify it.  I know there were cases in the past when
-> it didn't work.  You would notice it when you expected to have some
-> zero initialized spaces that weren't.
+Hello
 
-I think Till's superb analysis show that this is not a problem.
+I am trying to get my microdrive working with 2.4.21.rev5.  I have the
+following config options set:
+CONFIG_PCMCIA=m
+CONFIG_PCMCIA_PCCF_4xx=m
+CONFIG_IDE=y
+CONFIG_BLK_DEV_IDE=y
+CONFIG_BLK_DEV_IDECS=m
 
->
-> > In a earlier mail you said the there was a case where the "normal" instructions
-> > would not set MD_EPN in the DTLB Error handler and that it was documented.
-> > What case is this and where can I find this documentation?
->
-> Well, it's more of an interpretation of the documentation and discussions
-> with Motorola engineers.
+I can insmod pcmcia_core, pccf_4xx, and ds.
 
-So this case is mere speculation and has never been proven?
+I built the latest pcmcia package from sourceforge in order to get cardmgr.
 
-[SNIP]
-> For TLB miss exceptions, the Mx_xxx hardware assist registers work
-> properly, as documented, to minimize the number of instructions needed
-> to determine what PTE to load.  The TLB miss exception has exactly
-> one function, to as quickly as possible locate the PTE from the table
-> hierarchy and stuff the bits into the MMU.  That's it and it should
-> really be implemented in five lines of code.
+When I insert my microdrive, it says "insmod ide_cs.o" no module by that
+name found.
+I indeed do not have this module in my tree.  What's the deal?
 
-Five lines of code, that I would like to see :-) Seriously, why do the
-DTLB handlers have two tables, one for kernel space and one for the rest?
 
-Can the DataAccess path be removed in the DTLB Miss handler?
+FWIW, I tried building 2.4.17 kernel from kernel.org but it had the same
+result.
 
-[SNIP]
-> > Maybe Till Straumann's suggestion to set the DAR register to a known "bad" address
-> > when leaving an exception. Then test for this bad address in the DTLB error handler
-> > to decide what register to trust?
->
-> Not necessary.
->
-> By not "correctly" tracking usage and dirty pages, as we did in the past,
-> it caused us to never generate DTLB Error exceptions unless it was truly
-> an access to a non-recoverable bad address or if the page was swapped out.
-> I would just set 'used' on every instruction page and 'used + dirty' on
-> every data page allocation.  A static embedded system would just converge on
-> this point anyway, but in more dynamic systems it cost more real memory.
+JD
 
-hmm, don't you loose copy-on-write by doing so?
-
-Would the suggested instruction decoding in the DLTB Error handler
-be too ugly for your liking?
-Since dcbi also causes DTLB Errors with undefined values in DAR and MD_EPN it
-might be a good idea.
-
- Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
