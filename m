@@ -1,47 +1,47 @@
-Subject: Re: X works somewhat on DFP with latest radeonfb.c
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	linuxppc-dev@lists.linuxppc.org, Daniel Berlin <dan@cgsoftware.com>,
-	ghannon@cspi.com
-In-Reply-To: <20011117160749.13478@smtp.wanadoo.fr>
-References: <20011117154533.UWKB21717.tomts13-srv.bellnexxia.net@there>
-	<20011117160749.13478@smtp.wanadoo.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 18 Nov 2001 00:17:29 +0100
-Message-Id: <1006039050.4572.2.camel@pismo>
-Mime-Version: 1.0
+Date: Sun, 18 Nov 2001 01:45:12 -0500 (EST)
+From: Bill Fink <billfink@mindspring.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Cc: Bill Fink <billfink@mindspring.com>
+Subject: GigE Performance Comparison of GMAC and SUNGEM Drivers
+Message-ID: <Pine.LNX.4.33.0111180047090.20750-100000@gwiz.nasa.atd.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2001-11-17 at 17:07, Benjamin Herrenschmidt wrote:
->
-> >Thought you might like to know.  I took a look at the XF410
-> >radeon_driver.c and compared it to the latest versions of radeon_driver.c
-> >in XFreee86 CVS HEAD and they are quite different.
-> >
-> >CVS HEAD has a *lot* more support for DFP but since I had the radeonfb
-> >working on the DFP I thought what the hell, and started to try to use XF
-> >4.1.0 radeon_driver.c with only a few small tweaks (ignoring all of the
-> >Flat Panel code which is old and not-working in XF410) with the UseFBDev
-> >Option so all the DFP register stuff is handled by the radeonfb.c driver.
-> >
-> >X actually starts up with depths of 8 and depths of 24 (32bpp), and works
-> >but the colors are all wrong:  too many pinks in the 8 bit version and
-> >seemingly random colors in the 24 depth.
-> >
-> >So I am going to try and play around with the pallette setting.
->
-> Ask Ani for his patches. I think the engine must be properly configured
-> for big endian.
+Hi,
 
-With Option "UseFBDev", the framebuffer device is used for setting the
-palette.
+I just did a GigE performance comparison of the GMAC and SUNGEM drivers
+using the latest 2.4.15-pre4-ben0 kernel.  The two test systems were
+both 867 MHz G4s connected to two ports on the same Extreme 5i GigE
+switch.  The test was simply to measure the sustained TCP network
+throughput for a 60 second period (using memory-to-memory transfers
+of 64 KB buffers with a 768 KB window size).  The test was run shortly
+after both systems had been rebooted, and there was nothing else of
+significance running on either system (not even X windows).
 
+The GMAC driver had significantly better performance.  It sustained
+663 Mbps for the 60 second test period, and used 63 % of the CPU on
+the transmitter and 64 % of the CPU on the receiver.  By comparison,
+the SUNGEM driver only achieved 588 Mbps, and utilized 100 % of the
+CPU on the transmitter and 86 % of the CPU on the receiver.  Thus,
+the SUNGEM driver had an 11.3 % lower network performance while
+using 58.7 % more CPU (and was in fact totally CPU saturated).
 
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+I was actually somewhat disappointed even by the GMAC GigE performance.
+I was expecting to achieve nearly full GigE performance, and since there
+was still about 1/3 of the CPU available, the bottleneck was obviously
+elsewhere.  Perhaps it is just a limitation of the actual Broadcom BCM5411
+GigE chip built into the 867 MHz G4.  I am hoping that this is in fact
+the case.  I will be trying more tests later using a NetGear GA620T
+PCI NIC using the ACENIC driver to see if it has better performance.
+This NetGear NIC is also supposed to support jumbo frames (9K MTU),
+and I am very interested in determining the presumably significant
+performance benefits and/or reduced CPU usage associated with using
+jumbo frames.
+
+						-Bill
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
