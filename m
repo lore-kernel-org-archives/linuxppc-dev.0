@@ -1,36 +1,28 @@
-To: greggiraud@netcourrier.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC8266ADS 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 26 Mar 2003 08:42:26 +0700."
-             <mnet1.1048664546.22205.greggiraud@netcourrier.com>
-Date: Wed, 26 Mar 2003 16:40:47 +0100
-Message-Id: <20030326154052.4D658C58BA@atlas.denx.de>
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-ID: <WG969672994640.06957@webmail2.inner-21cn.com>
+Date: Thu, 27 Mar 2003 00:53:59 +0800 (CST)
+From: "li" <slowforce@21cn.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: 
+Subject: XPC850SR atm help
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <mnet1.1048664546.22205.greggiraud@netcourrier.com> you wrote:
->
-> I am using a MPC8266ADS card, and I want to put a PPCBOOT1.2.1 into it.
+Hi all,
+I experienced atm native PVC connection based on XPC850SR board and ppc linux kernel 2.4.4(downloaded from DENX).
+First of all, i modified mpc860sar atm driver to fit for my board, and use atm-0.79.ppc to perform data transmit and receive.
 
-You should use U-Boot instead of PPCBoot for new projects.
+Now, with two such board connect each other, i use
+aread 0.0.1 on board A, and use awrite 0.0.1 hello on board B. From the driver code output, i know that board A has send out the cell, and board B has received the cell, but the received cell with the channel num is 0 so it is treated as a raw cell, so aread will not get the data.
 
-> => The file board/mpc8260ads/mpc8260ads.c contain a function named
-> intdram. In that file, we init a local sdram and the sdram on the 60x
-> bus. We mustn't intilializase the local sdram.
+But if i use the aread command in a pc with an ATM interface card, the board B can receive the data correctly!
+I think there still may be some code about send cell need to be changed for XPC850SR, but where is it?
 
-Well, so comment out this part of the code.
+Any advice will be appreciated!
+Regards
+Li
 
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Fascinating, a totally parochial attitude.
-	-- Spock, "Metamorphosis", stardate 3219.8
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
