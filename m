@@ -1,43 +1,38 @@
-Message-ID: <3F29280D.5020600@imc-berlin.de>
-Date: Thu, 31 Jul 2003 16:30:37 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3F2949D3.8020106@windriver.com>
+Date: Thu, 31 Jul 2003 17:54:43 +0100
+From: Richard Danter <richard.danter@windriver.com>
 MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: large file support?
-References: <20030731125013.64881C602D@atlas.denx.de> <3F2912C3.6060204@imc-berlin.de>
-In-Reply-To: <3F2912C3.6060204@imc-berlin.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 750/107 CHRP question
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I wrote:
+Hi All,
 
-> And I just got these lines:
->
-> Fillod Stephane wrote:
->  > Recent kernel and glibc are fine.
->  >
->  > Pass O_LARGEFILE to the second open() arg, and compile
->  > with "-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64" should do it.
->
-> and rebuilt my application. But the test (with my app) will take a
-> while...
+Sorry if this is a bit of a newbie question....
 
-Now I the app is still running although the file is > 2GB. I get
+I am trying to port a 2.4.x kernel to a PPC750 board with a 107
+controller. The board has a serial port connected to one of the ROM
+select lines (at 0x7C000000) and I would like to use this as my console
+port.
 
-~ # ls -l /mnt/intern/HDD_STRESS/2003-07-31\ 1*
-/mnt/intern/HDD_STRESS/2003-07-31 14-54-57 (1):
-ls: /mnt/intern/HDD_STRESS/2003-07-31 14-54-57 (1)/V001_G0.raw: Value
-too large for defined data type
--rw-r--r--    1 root     root    1080356864 Jul 31 16:25 K001_G0.raw
--rw-r--r--    1 root     root    1080356864 Jul 31 16:25 K002_G0.raw
+So far I can boot the board and see (via the serial port) the kernel
+load addresses etc, and the kernel gets decompressed and starts to run.
+This is all fine as the MMU is off at this point. However, when the
+serial_console_setup() code starts trying to configure the serial port
+again, I get a kernel panic as I am accessing an invalid mem space (MMU
+now on!).
 
-I guess I have to rebuild busybox with LFS as well...
+How do I map this correctly???
 
-Thanks to you all!
+My build is based on the sandpoint but with all the init stuff for
+devices, such as the RTC, removed. So I have the "standard" mapping in
+the MMU_init code.
 
-Steven
+Many thanks
+Rich
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
