@@ -1,38 +1,54 @@
-Message-ID: <20040430040048.85521.qmail@web40411.mail.yahoo.com>
-Date: Thu, 29 Apr 2004 21:00:48 -0700 (PDT)
-From: Raghu <raghu_dk@yahoo.com>
-Subject: Using 2GB RAM kernel ppc-2.4.20
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <40925BBF.1010708@g-house.de>
+Date: Fri, 30 Apr 2004 15:59:27 +0200
+From: Christian Kujau <evil@g-house.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: rsync'ed sources out of date?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello All,
 
-My board is - PowerPC 750FX, System Controller- Marvel
-64360, Internal reg Map at- 0xFE000000,SDRAM 2GB.
+hi,
 
-Refering mail:
-"http://lists.linuxppc.org/linuxppc-embedded/200307/msg00018.html"
+the issue about different kernel-trees was brought up a few month ago,
+but i still fail to understand what the "current" tree might be. i use
 
-CONFIG settings I have are:
-CONFIG_HIGHMEM=y
-CONFIG_HIGHMEM_START_BOOL=y
-CONFIG_HIGHMEM_START=fc000000
-CONFIG_KERNEL_START_BOOL=y
-CONFIG_KERNEL_START=90000000
+~ rsync source.mvista.com::
 
-And io_block_mapping is
-io_block_mapping( 0xFE000000, 0xFE000000, 0x10000000,
-_PAGE_IO );
+and see various version for 2.4 and 2.5 (ok, it's 2.6., but still left
+to be renamed, right?)
 
-I changed the PKMAP_BASE to 0xFC000000, but still see
-the "init" not working on doing a NFS rootfs mount.
+fetching via rsync gives (today)
 
-Regards,
-Raghu.
+rsync source.mvista.com::linuxppc_2_4       -> 2.4.25
+rsync source.mvista.com::linuxppc-2.4       -> 2.4.26
+rsync source.mvista.com::linuxppc_2_4_benh  -> 2.4.25-ben1
+rsync source.mvista.com::linuxppc_2_4_devel -> 2.4.25
+rsync source.mvista.com::linuxppc-2.5       -> 2.6.5
+rsync source.mvista.com::linuxppc-2.5-benh  -> 2.6.5-rc3-ben0
+
+that leaves only "linuxppc-2.4" and for 2.6 "linuxppc-2.5"
+to fetch from in order to get a recent tree, right? they already differ
+from a vanilla 2.4.26 or 2.6.5, but the timestamp for "linuxppc-2.5" for
+example says "2004-04-15", so it's obviously not a daily -BK snapshot
+(descritiption goes "based on Linus' BitKeeper tree").
+
+so where do i get the most current copy of a 2.4/2.6 kernel for ppc?
+is it possible at all with "rsync"?
+or shall i go with the -BK snapshots on kernel.org?
+
+(i seem to need a current copy of the kernel, as i still fail to compile
+a ppc-kernel with KGDB enabled. see
+http://nerdbynature.de/bits/sheep/kgdb/ for make-logs)
+
+thanks for comments,
+Christian
+- --
+BOFH excuse #271:
+
+The kernel license has expired
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
