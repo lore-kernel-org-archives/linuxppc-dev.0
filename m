@@ -1,53 +1,33 @@
-Date: Wed, 13 Jan 1999 17:25:01 +0100
-From: Hubert Figuiere <Hubert.Figuiere@solsoft.fr>
-To: Gary Thomas <gdt@linuxppc.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Porting to NuBus PowerMacs
-Message-ID: <19990113172501.C2870@dirkpitt.solsoft.fr>
-References: <19990113104026.C1056@dirkpitt.solsoft.fr> <XFMail.990113161857.gdt@linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <XFMail.990113161857.gdt@linuxppc.org>; from Gary Thomas on Wed, Jan 13, 1999 at 04:18:57PM -0000
+Date: Wed, 13 Jan 1999 18:27:39 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Hubert Figuiere <Hubert.Figuiere@solsoft.fr>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: [OT] Re: Porting to NuBus PowerMacs
+In-Reply-To: <19990113172501.C2870@dirkpitt.solsoft.fr>
+Message-ID: <Pine.LNX.4.03.9901131826420.774-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-According to Gary Thomas <gdt@linuxppc.org>:
+On Wed, 13 Jan 1999, Hubert Figuiere wrote:
+> I know this. But it helps finding out the general architecture
+> and tells what is inside so we can start to gather code from
+> other ports that already guessed things. (like Linux Mac68k)
 
-[ porting to 6200 ]
- 
-> > You can find the technote here:
-> > 
-> > http://developer.apple.com/techpubs/hardware/hardware2.html
-> > 
-> 
-> This document does not have enough detail to be able to make a port 
-> for this hardware.  
+There's no such thing is Linux Mac68k, AmigaLinux, AtariLinux, ApolloLinux...
+They're all called Linux/m68k.
 
-I know this. But it helps finding out the general architecture
-and tells what is inside so we can start to gather code from
-other ports that already guessed things. (like Linux Mac68k)
+Greetings,
 
-> As far as I know, such details are only available
-> directly from Apple under NDA until they decide to "leak" the info
-> out, such as releasing ports, drivers, etc.
+						Geert
 
-I know this too. 
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
-> > Note that I have no porting experience. :-)
-> 
-> We all start somewhere :-)
-
-Well... you are probably right. I'd better try to boot Linux on
-my BeBox :-)
-
-
-Hub
--- 
-> Je souhaiterais essayer Internet Explorer 4.0 sous Linux.
-> Il existe 2 versions: une sous HP/UX et une sous Solaris
-> Laquelle dois je utiliser?
--+- MJM in Guide du linuxien pervers : "Choisir son environnement" -+-
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
