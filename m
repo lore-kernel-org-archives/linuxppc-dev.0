@@ -1,110 +1,62 @@
-Message-Id: <200004061620.MAA07501@hoover.gilbarco.com>
-From: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
-To: "'Brown, David (dbrown03)'" <DBrown03@harris.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Interfaces supported on PPC860?
-Date: Thu, 6 Apr 2000 12:20:54 -0400 
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Thu, 6 Apr 2000 15:12:53 -0400 (EDT)
+From: Pavel Roskin <pavel_roskin@geocities.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Minor makefile fixes
+Message-ID: <Pine.LNX.4.21.0004061428150.9152-100000@sunapee.transcept.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David,
+Hello!
 
-Off the top of my head, I am pretty sure that you will not be able to
-support RTS/CTS flow control over the  SMC/SCC's, I believe that at one time
-we thought that the SCC's could do it but it isn't truely done in hardware.
-You will have to refer the the Motorola PowerQUICC Manual, or look through
-the list's archives.  The ethernet driver included in the mpc8xx-2.2.13.tgz
-works great, you will need to tweak the kernel in several places to fit your
-board configuration, especially the GPIO for your ethernet signals, but it
-is straightforward.  Also, you will have to modify fadsrom.tgz pretty
-significantly to support the DRAM timings for your board, chip selects, and
-so on... mpc8xx-2.2.13 will not work right out of the box on your custom
-board, you have a lot of work to do with the bootrom (fadsrom is a great
-starting point) and kernel changes.  Drop me a line if you run into problems
-and I'll see if I can assist you.
+I'm going to post some trivial differences between the kernel sources used
+in Transcept, Inc. and the kernel used in MontaVista's Hard Hat linux.
 
-Jason
+I hope that somebody will take care of them.
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Brown,
-David (dbrown03)
-Sent: Thursday, April 06, 2000 12:04 PM
-To: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Interfaces supported on PPC860?
+The patch for arch/ppc/kernel/Makefile is necessary because we are using a
+version control system that makes files read-only.
+If ppc_defs.head is read-only, then ppc_defs.h is read-only too, and the
+subsequent grep fails.
 
+I believe that the build system should not assume source files being
+writeable.
 
+The patch to drivers/macintosh/Makefile reduces the number of bloat that
+goes into the kernel e.g. for RPX/Lite. No embedded boards should ever
+need the ADB stuff. This is for PMAC and CHRP only.
 
-I am planning on running Linux on an existing custom 860-based board, and on
-a second board which is still being designed.  The application will include
-TCP/IP over Ethernet and PPP interfaces.
+Regards,
+Pavel Roskin
 
-Can someone please give me feedback on how difficult this will be?
-Specifically, are all of the interfaces I require currently supported in the
-kernel?
-Or will I have to tweak the kernel code?
-Or will I have to write some new drivers?
-What could I change on the new board to work better with Linux?
-Do the serial drivers support RTS/CTS flow control?
+=== cut here ===
+diff --exclude-from=reviewed -urN linux/arch/ppc/kernel/Makefile out/arch/ppc/kernel/Makefile
+--- linux/arch/ppc/kernel/Makefile	Tue Apr  4 12:36:23 2000
++++ out/arch/ppc/kernel/Makefile	Thu Mar  2 11:35:59 2000
+@@ -68,7 +68,7 @@
+ 		$(TOPDIR)/include/asm/pgtable.h \
+ 		$(TOPDIR)/include/asm/ptrace.h
+ 	$(CC) ${CFLAGS} -S mk_defs.c
+-	cp ppc_defs.head ppc_defs.h
++	cat ppc_defs.head >ppc_defs.h
+ 	grep '^#define' mk_defs.s >>ppc_defs.h
+ 	rm mk_defs.s
 
-If I should be reading some existing document or web-page instead of asking
-the list, please kindly redirect me.  I have looked at the mpx8xx-2.2.13.tgz
-code from ppc.kernel.org (I think that's where I got it from), and I have
-successfully built and loaded it on a BSE ipEngine.  I haven't looked at the
-2.3.x series code yet.
+diff --exclude-from=reviewed -urN linux/drivers/macintosh/Makefile out/drivers/macintosh/Makefile
+--- linux/drivers/macintosh/Makefile	Thu Apr 29 15:53:48 1999
++++ out/drivers/macintosh/Makefile	Tue Jan 18 16:08:52 2000
+@@ -15,7 +15,7 @@
+ L_TARGET := macintosh.a
+ M_OBJS   :=
 
-
-Interfaces of the existing board:
-
-Flash: 1MB(AMD) + 8MB(Intel)
-
-SCC1:	Ethernet (external PHY), using RXD, TXD, RTS, CTS, CD, and RCLKI
-	(ethernet chip supplies 20MHz clock on RCLKI)
-
-SCC3:	Async serial: RXD, TXD
-
-SCC4:	Ethernet loopback and enable (using RXD and TXD lines)
-
-SMC1:	Async serial: RXD, TXD
-
-SMC2:	Async serial: RXC, TXD
-
-PortC: general purpose I/O, for a user-space driver of a simple LCD display
-and keyboard.
-
-
-
-Interfaces of the new board:
-
-Flash: 1MB(AMD) + 8MB(Intel)
-
-SCC1:	Ethernet (external PHY), using RXD, TXD, RTS, CTS, CD, and RCLKI
-
-SCC2: Async serial: RXD, TXD (and flow control if possible)
-
-SCC3:	Async serial: RXD, TXD (and flow control if possible)
-
-SCC4:	Async serial: RXD, TXD (and flow control if possible)
-
-SMC1:	Async serial: RXD, TXD
-
-SMC2:	Async serial: RXC, TXD
-
-PortA: Ethernet loopback and enable control signals
-
-SPI:	Communication with another processor.
-	Does the Linux kernel use this at all today?
-	If not, I'd probably try to expose it to user space.
-
-PCMCIA: no use for it now, but looking to the future
-
---
-Dave Brown <dbrown03@harris.com>
+-ifndef CONFIG_MBX
++ifndef CONFIG_8xx
+ L_OBJS   := via-cuda.o macio-adb.o via-pmu.o mediabay.o
+ LX_OBJS  := adb.o
+ endif
+=== cut here ===
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
