@@ -1,29 +1,34 @@
-Date: Thu, 23 Mar 2000 16:50:05 -0500 (EST)
+Date: Thu, 23 Mar 2000 16:58:52 -0500 (EST)
 From: Pavel Roskin <pavel_roskin@geocities.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Disabling interrupts
-Message-ID: <Pine.LNX.4.21.0003231641120.31824-100000@sunapee.transcept.com>
+To: Cort Dougan <cort@fsmlabs.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Disabling interrupts
+In-Reply-To: <20000323144536.J11342@medea.fsmlabs.com>
+Message-ID: <Pine.LNX.4.21.0003231654120.31863-100000@sunapee.transcept.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+Hello, Cort!
 
-I need to disable interrupts for a short time from a user program on
-RPX/Lite. This needs to be done only once, but it's absolutely essential
-that the program is not interrupted during a certain period of time.
+> Does it have to be a user mode piece of code?  You're going to have real
+> trouble figuring that out if so.  Could you put that small portion of code
+> into a kernel module and just load it from your user program to do what it
+> needs to?
 
-Using the __cli() function from the kernel sources in a user-space program
-doesn't work. The first instruction "mfmsr %r0" (Get current interrupt
-state) causes SIGILL.
+Well, this code needs to read some data continously. Then the data must
+be processed and written to a file.
 
-Probably I could hack the kernel to make processes with very high priority
-uninterruptible.
+If you expect problems, I could create a new syscall and pass a buffer to
+it. Probably this should be Ok. But the buffer can be huge (comparable
+with the RAM size), so I would like to avoid copying data. This means that
+the kernel needs to write to the userspace buffer directly.
 
-I'm quite sure that the problem is not new. Anybody has a better idea?
+Thank you for the reply.
 
+Regards,
 Pavel Roskin
 
 
