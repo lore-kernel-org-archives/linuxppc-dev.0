@@ -1,44 +1,47 @@
-Message-ID: <38DB969A.E5088271@ocegr.fr>
-Date: Fri, 24 Mar 2000 17:23:54 +0100
-From: Zirong WANG <zirong.wang@ocegr.fr>
-MIME-Version: 1.0
-To: Cort Dougan <cort@fsmlabs.com>
-CC: "Dan A. Dickey" <ddickey@charter.net>,
-        "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Anyone tried 2.3.99.pre?
-References: <38DAB8D3.F930393@charter.net> <20000323174654.B11626@medea.fsmlabs.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v03130300b50187c39132@[10.0.0.55]>
+In-Reply-To: <Pine.SOL.4.20.0003231028490.25183-100000@garnet.tc.umn.edu>
+References: <38DA4031.8C1177E8@telecom.ntua.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 24 Mar 2000 13:05:42 -0800
+To: linuxppc-embedded@lists.linuxppc.org
+From: Gilbert Coville <gilbert@mvista.com>
+Subject: Re: www.ppc.kernel.org and gcc for PPC(Cross Compiler) ...
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everybody,
-
-Cort Dougan wrote:
+Young-Han Kim wrote:
+>   Nowadays, have you been visit the http://www.ppc.kernel.org ?
+>   Currently, I can't access the www.ppc.kernel.org...
+>   If someone know the reason, please answer to me...
 >
-> The latest v2.3.99-pre3-pre7 works on PPC.  8xx doesn't work since it's not
-> finished in 2.3.
-
-I am just wondering when this release will be merged in the
-kernel.org tree for easy downloading. I am looking for a version
-of PPC linux that deals well with IDE disk on my MTX board.
-
+>   I want to find the gcc compiler(base on i386) for PPC(Cross Compiler).
+>   If someone know the site, please answer to me...
 >
-> } Just was curious and was wondering if anyone has
-> } been following the 2.3 kernel development.  2.3.99.pre
-> } is out, and so it appears as if 2.4 is imminent.
-> } Does the 2.3.99.pre-anything work out of the box
-> } on some powerpc?  I realize this probably isn't
-> } quite appropriate for the embedded list, but it's
-> } the list that I spend most of my time around right now.
+>   Thanks for in advance !
 
-I have tried the 2.3.99.pre3 (from kernel.org, of 24 mars), I could not
-even compile it on my MTX 603 machine which works well with 2.2.13,
-except for IDE disks.
+Michael Manousos wrote:
+> Sources and info about the setup of a cross-compiling environment
+> can be found on the site below:
+>
+> http://members.home.net/mmporter/linux/cross/
 
-The compile error is about ncr53c8xx.c with 'base_io' not defined.
+Grant Erickson wrote:
+>And also at:
+>
+>	http://www.lcse.umn.edu/~grant/Linux/cross.html
 
-Zirong
+Or alternatively, you may be able to use the pre-built RPMS in the
+MontaVista Cross Development Kit:
+
+	ftp://ftp.mvista.com/pub/CDK/
+
+Gilbert
+
+--
+Gilbert Coville			MontaVista Software Inc.
+gilbert@mvista.com		+1 408-328-9208
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
