@@ -1,60 +1,42 @@
-Date: Mon, 14 Feb 2000 19:51:25 +0100 (MET)
-From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-Reply-To: Derek Homeier <supas100@astrophysik.uni-kiel.de>
-To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Atherosclerotic Linux Mice Uni-Mouse Only ...
-In-Reply-To: <200002130600.AAA05020@lists.linuxppc.org>
-Message-ID: <Pine.SOL.3.95.1000214192157.7820D-100000@juliet>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 14 Feb 2000 14:38:09 -0500
+From: Josh Huber <huberj@wpi.edu>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: 2.3.x w/pcmcia?
+Message-ID: <20000214143809.B8313@wpi.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 12 Feb 2000 08:44:15 -0800, Jeremy Knope <swttiggr2@yahoo.com> wrote:
->
-> I'm using an XLR8 Point&Scroll mouse... works great.
-> plugged it in... booted linux... worked! now if i only
-> could get the scroll wheel to work... pressing it is a
-> button tho so it's a full 3 button mouse. there are
-> things for scroll wheels in linux but not sure if
-> it'll work. specially cuz the one i found uses
-> XF86Config, i'm using Xpmac which i seemed to read
-> that it doesn't use that file.
+I'd like to try and get PCMCIA working with later development kernels.  In
+particular, the file i82365.c from pcmcia-cs 3.1.10 has code like this:
 
-Yep, I'm not aware of any way to use it with Xpmac. With XF68_FBDev it's
-working great. Now, if I could only get the wheel recognized in /dev/gpmdata!
-When I pass the mouse input through gpm to use th usb mouse and the
-trackpad, the wheel doesn't work. I've already installed a patched gpm
-from debian (in /debian/dists/potato/main/source/misc/gpm_1.17.8.*) that's
-supposed to fix this, but gpm still either doesn't repat the wheel action
-properly or XFree doesn't recognize it. Maybe all it would take is to have
-XFree read /dev/gpmdata in "IMPS/2" protocoll (currently this only works
-with "MouseSystems")? Any ideas?
+/* These definitions must match the pcic table! */
+typedef enum pcic_id {
+#ifdef CONFIG_ISA
+    [isa cards]
+#endif
+#ifdef CONFIG_PCI
+    [pci cards]
+#endif
+}
 
->
-> - --- NTR <ntr@mindmachine.com> wrote:
-> > Dear Uni Mouse Fanatics,
-> >
-What's the Uni Mouse?
+The i82365.c file in the 2.3.45 kernel doesn't have any CONFIG_PCI sections,
+leaving empty enums, which fail to compile. like so:
+typedef enum pcic_id {
+#ifdef CONFIG_ISA
+    [isa cards]
+#endif
+}
 
-> > Is this the only mouse that will work in 3 button
-> > mode for Linux....or
-> > will any USB Mouse work.
-> >
-> > I am particular towards the Kensington Turbo Ball
-> > for purely
-> > atherosclerotic reasons.  You move your palm or
-> > fingers, not your whole
-> > hand and elbow.  Helps keep the years off my
-> > wrist/elbow replacement  Its
-> > USB.  Will it work?
-> >
-Like these, too. I've a Logitech ADB Trackman on my old 8100. Wish I'd find
-such a thing for my PB.
+The pcmcia-cs package fails to compile becuase it requires that pcmcia be
+enabled in the kernel for versions past 2.3.37.
 
-Greetings,
-							Derek
+Why is the pcmcia in the kernel so
+a) out of date
+b) screwed up, in that it doesn't have support for PCI???
 
+Josh
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
