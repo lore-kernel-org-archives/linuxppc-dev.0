@@ -1,30 +1,29 @@
-Message-Id: <20000828173712.A2056@sirizidl.dialin.rrze.uni-erlangen.de>
-Date: Mon, 28 Aug 2000 17:37:12 +0200
-From: Richard Zidlicky <Richard.Zidlicky@stud.informatik.uni-erlangen.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Iain Sandoe <iain@sandoe.co.uk>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-        Linux/PPC on APUS <linux-apus-devel@lists.sourceforge.net>
-Subject: Re: [RFC] DMAsound 2.4.0-tx => 2.2.17 back-port.
-References: <200008070101.CAA05135@hyperion.valhalla.net> <Pine.LNX.4.10.10008081558060.442-100000@cassiopeia.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.10008081558060.442-100000@cassiopeia.home>; from Geert Uytterhoeven on Thu, Aug 24, 2000 at 03:07:59PM +0200
+Message-Id: <a04320400b5d0407f3cc6@[207.201.103.10]>
+In-Reply-To: <200008280459.XAA09022@lists.linuxppc.org>
+References: <200008280459.XAA09022@lists.linuxppc.org>
+Date: Mon, 28 Aug 2000 10:19:25 -0600
+To: linuxppc-dev@lists.linuxppc.org
+From: "David Dolinar (Work)" <daved@mail.drbookman.com>
+Subject: Re: any cube news ?
+Cc: bh40@calva.net
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 24, 2000 at 03:07:59PM +0200, Geert Uytterhoeven wrote:
+>The only infos I have so far with new machines is from a user who booted
+>the dual G4 succesfully with a UP kernel. SMP for those machines is not
+>supported yet.
+>
+>Ben.
 
->   - Is it OK to use `AFMT_S16_LE' as startup mode for /dev/dsp? WAV-files can
->     be 8-bit as well, and always have a header so you can't just cat them to
->     /dev/dsp without static in the beginning anyway.
+	Woo!  Is there any way I can get in touch with this user?
+I've got my hands on a Dual G4 & have not been able to get it to
+boot.  Did they simply use a newer kernel?  Hmm, I guess this is a
+little more appropriate for the User list =S.
 
-I think it is not a good idea for machines that don't even support
-16 bit sampling, Q40 and some Atari versions come to mind.
-
-Bye
-Richard
+--Dave
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
