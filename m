@@ -1,41 +1,39 @@
-Message-ID: <3A241DDB.16C1B621@mvista.com>
-Date: Tue, 28 Nov 2000 13:04:27 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Message-ID: <3A242BE5.C34D48FC@mvista.com>
+Date: Tue, 28 Nov 2000 17:04:21 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Tom Shaver <tom_shaver@psilongbeach.com>
+To: Brian Ford <ford@vss.fsi.com>
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IBM Walnut 405GP eval board
-References: <NCBBJBFMKKFOJFGDOKNBEEGHEGAA.tom_shaver@psilongbeach.com>
+Subject: Re: EST SBC8260 and Canary CTX-1170
+References: <Pine.GSO.4.21.0011281308070.493-100000@eos>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Shaver wrote:
->
-> Would anyone happen to know where I could pick one of these up? We've
-> contacted Avnet and Arrow. Avnet has quoted us 90-120 days lead time, we're
-> still waiting on Arrow. It seems to me IBM would be more interested in
-> getting eval systems into engineers hands.
->
-> Tom Shaver
-> Electrical Engineer
-> Planning Systems Inc.
-> 21294 Johnson Rd
-> Long Beach, MS 39560
-> 228-863-0007 x121
-> 228-863-0281 Fax
+Brian Ford wrote:
 
-You might try contacting one the of IBM regional sales offices. Look at
-http://www.chips.ibm.com/support/howtobuy.html for contact info.
+> So does this mean that a "complete" implementation would have a
+> "command/status MII interface" or that a "complete" implementation does
+> not need one?
 
-I haven't actually tried ordering this way, please let us know if you
-get a better lead time from IBM.
+The complete implementation should have a real command/status MII
+interface.
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+
+> Can you help point me to where I need to write code that would initialize
+> the FCC to do full duplex,
+
+I just checked in the newer driver that will properly do this on
+the EST board with the National PHY in the CTX-1170 gizmo.  If for
+some reason this doesn't work, just modify mii_discover_phy_poll() to
+set 'phy_duplex' to '1'.
+
+I checked this into linuxppc_2_5 BitKeeper on FSM Labs.  My 2.3/2.4
+kernel is broken and I need to clone a new tree before I can make
+changes.  That will take a little while......
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
