@@ -1,57 +1,50 @@
-Date: Tue, 21 Sep 1999 12:06:39 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Brad Midgley <brad@pht.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: how to build rs/6000 kernels
-In-Reply-To: <Pine.LNX.4.10.9909210911420.21470-100000@web1.turbolinux.com>
-Message-ID: <Pine.LNX.4.10.9909211206150.26337-100000@newhope.terraplex.com>
+From: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
+Message-Id: <199909211811.LAA28416@falcon.csc.calpoly.edu>
+Subject: Re: USB driver not detecting mouse? (lots of detail)
+To: hay@colorado.edu
+Date: Tue, 21 Sep 1999 11:11:47 -0700 (PDT)
+Cc: linuxppc-dev@lists.linuxppc.org (linuxdev)
+In-Reply-To: <19990921003754.25514.rocketmail@web125.yahoomail.com> from "David Hay" at Sep 20, 99 05:37:54 pm
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+I get similar results with the 2.2 kernel.  Have you tried Paul's patches for
+the USB code?  Or I should ask where you got the 2.3 USB code.  I could not get
+the 2.3 code to compile with the 2.2 kernel.  But I have the cvs 2.3 which I
+know is like bleeding edge and I am sure the directions on the USB-HowTo don't
+take that into account.  I get tons of include file missing and symbols
+errors...
 
-Brad,
+So I though I would compile it against the 2.3 kernel and see if I can run
+that.  Of course now I have to get the 2.3 kernel to actually run!!!
 
-you want the zImage that's in chrpboot/ not boot/. The one in boot/ is for
-PReP machines.
+Anyway Paul has patches to the 2.3 USB which take into acount endianes issues
+which LinuxPPC needs.
 
-On Tue, 21 Sep 1999, Brad Midgley wrote:
+I can look up the web page if you want for the patches.  Alternativly the 2.3
+cvs source has the endianess issues in the code and no need to patch, which I
+for one can never get to work.  ;-(
+
+Good luck.  If I get anything working I will let you know.
+Ira Weiny
 
 > 
-> hi,
-> 
-> i'm trying to find out why i haven't been able to build my own kernel that
-> will boot. (the YDL rs6k kernel will boot on this f50)
-> 
-> i did "make common_config xconfig dep clean zImage" (i saved without
-> changing any of the config options) and copied arch/boot/zImage to
-> /tftpboot. then I booted the f50 from the net. the machine gets a default
-> catch saying "PreP BOOT: Could not open deblocker." it does exactly the
-> same thing if i try to boot from a floppy.
-> 
-> is this the right build procedure?
-> 
-> is openprojects a good mirror of vger? i'm using openprojects. 
-> 
-> is there a known-good kernel source snapshot?
-> 
-> do some combinations of build tools work better than others? i'm using
-> fsirl's latest egcs with the latest binutils.
-> 
-> Brad
-> brad@pht.com | http://www.pht.com/~brad/
-> 
-> 
-> 
+> I have a Kensington USB Mouse-In-A-Box Scroll mouse which works fine under
+> MacOS, so I know there's nothing wrong with the mouse or the Entegra 4-Port
+> USB card it's connected to.  I have a Power Tower Pro 225 (if that makes a
+> difference)
 
-Dan
+...
 
-Terra Soft Solutions, Inc.
-   Yellow Dog Linux
-   "The Ultimate Companion for a Dedicated Server"
-   http://www.yellowdoglinux.com/
-
+> 
+> Sep 20 18:20:57 dhay kernel:       bEndpointAddress    =   81 (in) 
+> Sep 20 18:20:57 dhay kernel:       bmAttributes        =   03 (Interrupt) 
+> Sep 20 18:20:57 dhay kernel:       wMaxPacketSize      = 0001 
+> Sep 20 18:20:57 dhay kernel:       bInterval           =   ff 
+> Sep 20 18:20:57 dhay kernel: ohci-control thread sleeping
+> 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
