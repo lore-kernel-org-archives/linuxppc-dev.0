@@ -1,11 +1,11 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kaoru Fukui <k_fukui@highway.ne.jp>,
+To: R Shapiro <reshapiro@mediaone.net>,
 	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Fwd: CPU features
-Date: Sun, 1 Apr 2001 17:03:22 +0200
-Message-Id: <20010401150322.4825@smtp.wanadoo.fr>
-In-Reply-To: <20010401213009.Postino-020381@smtp01.highway.ne.jp>
-References: <20010401213009.Postino-020381@smtp01.highway.ne.jp>
+Subject: Re: newer aic7xxx driver DOES WORK with cdrecord
+Date: Sun, 1 Apr 2001 17:05:06 +0200
+Message-Id: <20010401150506.19348@smtp.wanadoo.fr>
+In-Reply-To: <15047.12608.336940.84028@ipa.ne.mediaone.net>
+References: <15047.12608.336940.84028@ipa.ne.mediaone.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,12 +13,15 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 >
->When I used the patch,The kernel boot stop displaying
->at "smp_core99_kick_cpu".
+>As reported in my last message, the linuxcare sources are not using
+>Gibbs' latest patches, presumably because Linus hasn't approved them
+>yet.  The 6.1.5 driver included in that kernels doesn't work reliably
+>but the 6.1.8 driver does, at least for the one test that I just ran
+>(writing an iso image to a cd-r at 4x).  Can we get the 6.1.8 sources
+>into the linuxcare devel kernel?
 
-Ok. I'm not too surprised as I wrote this new version more or less
-blinldy. I'll get that fixed next week when I have access to the
-dual G4 at work.
+You would have to ask paulus for that. I'll include them in my kernels
+however.
 
 Ben.
 
