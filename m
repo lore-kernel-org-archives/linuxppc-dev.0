@@ -1,64 +1,67 @@
-Date: Wed, 30 Oct 2002 12:57:14 -0700
-From: Matt Porter <porter@cox.net>
-To: Aman <aman@mistralsoftware.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Kernel panic
-Message-ID: <20021030125714.B31666@home.com>
-References: <000701c27f86$9a27a5b0$370da8c0@aman>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000701c27f86$9a27a5b0$370da8c0@aman>; from aman@mistralsoftware.com on Wed, Oct 30, 2002 at 01:36:00AM +0530
+Message-ID: <3DC039D1.370D6B02@wvi.com>
+Date: Wed, 30 Oct 2002 11:58:09 -0800
+From: Jim Potter <jrp@wvi.com>
+Reply-To: jrp@wvi.com
+MIME-Version: 1.0
+To: Paul White <pwhite@bivio.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: NFS client-side components question
+References: <Pine.LNX.4.21.0210281936170.26340-100000@stimpy.bivio.net>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Oct 30, 2002 at 01:36:00AM +0530, Aman wrote:
->
-> Hi All
->
-> I am trying to build linux image with ramdisk and download to the PPC 440GP
-> evalkit. Earlier the filesystem was using nfs mount, now I hv builded a
-> zImage.initrd with ramdisk.image [I havent compressed the ramdisk image]. To
-> build the ramdisk, I used the procedure defined by HHL.. I defined the
-> ramdisk size as 8MB. However when I booted  with the image built. I am
-> getting a kernel panic error. I have pasted the output below.  One question
-> , how should we decide about the files to be loaded in ramdisk which will
-> be needed by  kernel image.
->
-> Thanking you in advance.
-> Regards
-> Aman
->
->
-> Loading file "zImage.initrd" ...
-> Sending tftp boot request ...
-> Transfer Complete ...
-> Loaded successfully ...
-> Entry point at 0x1000000 ...
-> loaded at:     01000000 018821BC
-> zimage at:     01005950 0107E2C9
-> initrd at:     0107F000 0187F000
-> avail ram:     00400000 00800000
->
-> Linux/PPC load: root=/dev/ram ramdisk_size=8192
-> Uncompressing Linux...done.
-> Now booting the kernel
-> Linux version 2.4.17_mvl21-ebony (root@hardhat) (gcc version 2.95.3 20010315
-	        ^^^^^^^^^^^^^^^^^^
+Thanks -- that did it for me!
 
-Basic questions like this on a vendor-specific kernel (and a
-"procedure defined by HHL") might be better answered by contacting
-your vendor's support arm.
 
-I have no problem with initrds using a ramdisk.image.gz created via
-"dd if=/dev/zero ...", mke2fs, and populated via a loopback mount.
-Looks like you have ramdisk size set properly...make sure the
-filesytem (ext2) is built-in.
+> Jim,
+>
+> It sounds like its trying to use portmap for locking purposes.  Try
+> using a -o nolock argument to your mount call, as it sounds like you
+> don't have the port mapper installed or running on your ram disk.
+> This is what we had to do with ours, and it works great.
+>
+> Here's what we do:
+>
+> mount -t nfs -o nolock $SERVER:/home/log /log
+>
+> Hope this helps..
+>
+> Paul
+>
+>
+> >
+> > I'm developing a moderate sized ramdisk image to be used on an embedded
+> > project, and I'm having trouble getting all of the NFS client-side file
+> > dependencies sorted out on the ramdisk.  I'm using YDL installed on
+> > powermacs for my hosts & servers (not cross-hosted from x86 boxes).  The
+> > NFS mounts work fine when mounted from another powermac or when the
+> > embedded system is Root-On-NFS booted (both of which have a full YDL
+> > install).
+> >
+> > The problem is that when the embedded system is booted to ramdisk, and
+> > then an NFS mount of the server is attempted;  the mount command goes
+> > away, and eventually a "portmap: server localhost not responding, timed
+> > out" message pops up.  The NFS server box is listed in the /etc/hosts
+> > file.
+> >
+> > My ramdisk image has been built by taking various components from a YDL
+> > install;  this is so that the target embedded environment (ramdisk) has
+> > compatibility with customer's lab machines (typically YDL boxes).  It's
+> > my opinion that I have missed something on the client-side when
+> > assembling the ramdisk image.  Does anyone know where I can find a
+> > listing of the dependencies within the various NFS client components
+> > (mount, nfs, rpc, libs, etc)?  Thanks, everyone.
+> >
 
-Regards,
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Sincerely,
+
+Jim Potter
+45th Parallel Processing
+
+  Firefighting: Bustin' ours, Savin' yours.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
