@@ -1,33 +1,25 @@
-From: zjuzhou@163.net
+Message-ID: <3AE9972D.FEF28339@nexus-tech.net>
+Date: Fri, 27 Apr 2001 11:58:37 -0400
+From: Kyle Harris <kharris@nexus-tech.net>
 MIME-Version: 1.0
-Message-Id: <3AE9527E.15072@bjapp3>
-Date: Fri, 27 Apr 2001 19:05:34 +0800 (CST)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Can't execute /bin/sh /bin/init ?
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [Ppcboot-users] 16 Bit wide Flash on MPC8xx]
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all,
-	With maillist's help,i can run kernel in my borad.But when kernel mount
-the NFS root files,then execute /sbin/init ,/usr/init etc,but when  kernel run
-here,in minicom's term noting happen,i try to ping this borad,no answer.I use
-hhl for linuxplanet ,and nfs file is in /opt/hardhat/devkit/ppc/8xx/target/.
-my borad is use MPC850.kernel is for RPXlite.
+Geir Frode Raanes wrote:
 
-main.c
+[..snip..]
 
-......
-        printk("%s\n",execute_command);
-        if (execute_command)
-                execve(execute_command,argv_init,envp_init);
+> to DQ_mpc8xx[31..24(#WE3), 23..16(#WE2)]/#OE(GPL1)/#CS0
+> http://www.amd.com/products/nvd/techdocs/21415.pdf)
 
-        /*execve("/sbin/init",argv_init,envp_init);*/ ---------it can't not run term is noting--------
-        execve("/etc/init",argv_init,envp_init);
-        execve("/bin/init",argv_init,envp_init);
-        execve("/bin/sh",argv_init,envp_init); -----it also can't  run ,term is noting------------
-        panic("No init found.  Try passing init= option to kernel.");
-}
+Is this signal numbering mpc style (0 = MSB)? If so, shouldn't this be
+D0..D7(#WE0) and D8..D15(#WE1)? We're getting ready to spin hardware and
+I want to make sure I understand this correctly.
 
+Kyle.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
