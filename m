@@ -1,19 +1,14 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc64-dev@ozlabs.org
-Date: Sun, 6 Feb 2005 12:57:34 +0100
-References: <20050204072254.GA17565@austin.ibm.com>
-	<20050205184647.GA17417@austin.ibm.com>
-	<20050206032645.GA18845@austin.ibm.com>
-In-Reply-To: <20050206032645.GA18845@austin.ibm.com>
+Return-Path: <Idit.Ben-Moshe@motorola.com>
+Message-ID: <0F48024310E5D6118D200002B3A440DB0FA5FAB0@zil01exm08.mcil.comm.mot.com>
+From: Nagar-Halevi Idit-BIB019 <Idit.Ben-Moshe@motorola.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>,
+	"'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>
+Date: Sun, 6 Feb 2005 14:32:11 +0200 
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=pgp-sha1; boundary="Boundary-02=_0YgBCOfG9h2gYcV";
-	charset="iso-8859-15"
-Message-Id: <200502061257.40798.arnd@arndb.de>
-Cc: akpm@osdl.org, trini@kernel.crashing.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, hpa@zytor.com
-Subject: Re: [PATCH] PPC/PPC64: Abstract cpu_feature checks.
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C50C47.E16D144D"
+Cc: Nagar-Halevi Idit-BIB019 <Idit.Ben-Moshe@motorola.com>
+Subject: Support  Marvell's Fast Ethernet Switch, 88E6060, at Linux2.4 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +18,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
---Boundary-02=_0YgBCOfG9h2gYcV
+------_=_NextPart_001_01C50C47.E16D144D
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+	charset="windows-1255"
 
-On S=FCnndag 06 Februar 2005 04:26, Olof Johansson wrote:
->=20
-> Abstract most manual mask checks of cpu_features with cpu_has_feature()
-> =A0
-Just to get back to the point of consistant naming: In case we do the
-other proposed changes as well, is everyone happy with the following
-function names?
+All,
+ 
+I need to use the fast Ethernet switch of Marvell - 88E6060 - on a PowerPC processor with Linux 2.4 OS.
+I would like to know whether linux2.4 support the fast Ethernet switch of Marvell, 88E6060 ?
+Which driver is needed and how can I get ?
+ 
+The link to Marvel site, where an information about the 88E6060 can be found, is:
+http://www.marvell.com <http://www.marvell.com> 
+ 
+ 
+Thanks & Regards,
+Idit
+ 
 
-cpu_has_feature(CPU_FTR_X)	cur_cpu_spec->cpu_features & CPU_FTR_X
-cpu_feature_possible(CPU_FTR_X)	CPU_FTR_POSSIBLE_MASK & CPU_FTR_X
+------_=_NextPart_001_01C50C47.E16D144D
+Content-Type: text/html;
+	charset="windows-1255"
+Content-Transfer-Encoding: base64
 
-fw_has_feature(FW_FEATURE_X)	cur_cpu_spec->fw_features & FW_FTR_X
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05U
+RU5UPSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9d2luZG93cy0xMjU1Ij4NCg0KDQo8TUVUQSBjb250ZW50
+PSJNU0hUTUwgNi4wMC4yODAwLjE0NzkiIG5hbWU9R0VORVJBVE9SPjwvSEVBRD4NCjxCT0RZPg0K
+PERJVj48Rk9OVCBmYWNlPUFyaWFsIGNvbG9yPSMwMDAwODAgc2l6ZT0yPjxTUEFOIA0KY2xhc3M9
+MDE3MTQwNzEyLTA2MDIyMDA1PkFsbCw8L1NQQU4+PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBm
+YWNlPUFyaWFsIGNvbG9yPSMwMDAwODAgc2l6ZT0yPjxTUEFOIA0KY2xhc3M9MDE3MTQwNzEyLTA2
+MDIyMDA1PjwvU1BBTj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9QXJpYWwg
+Y29sb3I9IzAwMDA4MCBzaXplPTI+PFNQQU4gY2xhc3M9MDE3MTQwNzEyLTA2MDIyMDA1PkkgbmVl
+ZCANCnRvIHVzZSB0aGUgZmFzdCBFdGhlcm5ldCBzd2l0Y2ggb2YgTWFydmVsbCAtIDg4RTYwNjAg
+LSBvbiBhIFBvd2VyUEMgcHJvY2Vzc29yIA0Kd2l0aCBMaW51eCAyLjQgT1MuPC9TUEFOPjwvRk9O
+VD48L0RJVj4NCjxESVY+PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCBmYWNlPUFyaWFsIHNpemU9
+Mj48U1BBTiANCmNsYXNzPTAxNzE0MDcxMi0wNjAyMjAwNT5JIHdvdWxkIGxpa2UgdG8ga25vdyB3
+aGV0aGVyIGxpbnV4Mi40IHN1cHBvcnQgdGhlIGZhc3QgDQpFdGhlcm5ldCBzd2l0Y2ggb2YgTWFy
+dmVsbCw8L1NQQU4+PC9GT05UPjxGT05UIGZhY2U9QXJpYWw+PEZPTlQgc2l6ZT0yPiANCjg4RTYw
+NjA8U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+IDwvU1BBTj48U1BBTiANCmNsYXNzPTAx
+NzE0MDcxMi0wNjAyMjAwNT4/PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvRElWPg0KPERJ
+Vj48Rk9OVD48Rk9OVCBzaXplPTI+PFNQQU4gDQpjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+PC9T
+UEFOPjwvRk9OVD48L0ZPTlQ+PFNQQU4gDQpjbGFzcz0xNDk1MDI2MTUtMDMwMjIwMDU+PEZPTlQg
+ZmFjZT1BcmlhbD48Rk9OVCBjb2xvcj0jMDAwMDgwPjxGT05UIHNpemU9Mj5XaGljaCANCmRyaXZl
+cjxTUEFOIGNsYXNzPTAxNzE0MDcxMi0wNjAyMjAwNT4mbmJzcDtpczwvU1BBTj4gbmVlZGVkIGFu
+ZCBob3cgDQpjYW4mbmJzcDs8U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+SSA8L1NQQU4+
+Z2V0Jm5ic3A7PFNQQU4gDQpjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+PzwvU1BBTj48L0ZPTlQ+
+PC9GT05UPjwvRk9OVD48L1NQQU4+PC9ESVY+DQo8RElWPjxTUEFOIGNsYXNzPTE0OTUwMjYxNS0w
+MzAyMjAwNT48Rk9OVCBmYWNlPUFyaWFsPjxGT05UIGNvbG9yPSMwMDAwODA+PEZPTlQgDQpzaXpl
+PTI+PFNQQU4gDQpjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+PC9TUEFOPjwvRk9OVD48L0ZPTlQ+
+PC9GT05UPjwvU1BBTj4mbmJzcDs8L0RJVj4NCjxESVY+PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAz
+MDIyMDA1PjxGT05UIGZhY2U9QXJpYWw+PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCANCnNpemU9
+Mj48U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+VGhlIGxpbmsgdG8gTWFydmVsIHNpdGUs
+IHdoZXJlIGFuIA0KaW5mb3JtYXRpb24gYWJvdXQgdGhlIDg4RTYwNjAgY2FuIGJlIA0KZm91bmQs
+Jm5ic3A7aXM6PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvU1BBTj48L0RJVj4NCjxESVY+
+PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAzMDIyMDA1PjxGT05UIGZhY2U9QXJpYWw+PEZPTlQgY29s
+b3I9IzAwMDA4MD48Rk9OVCANCnNpemU9Mj48U1BBTiBjbGFzcz0wMTcxNDA3MTItMDYwMjIwMDU+
+PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvU1BBTj48U1BBTiANCmNsYXNzPTE0OTUwMjYx
+NS0wMzAyMjAwNT48Rk9OVCBmYWNlPUFyaWFsPjxGT05UIGNvbG9yPSMwMDAwODA+PEZPTlQgc2l6
+ZT0yPjxTUEFOIA0KY2xhc3M9MDE3MTQwNzEyLTA2MDIyMDA1PjxGT05UIGNvbG9yPSMwMDAwODAg
+c2l6ZT0yPjxBIA0KaHJlZj0iaHR0cDovL3d3dy5tYXJ2ZWxsLmNvbSI+aHR0cDovL3d3dy5tYXJ2
+ZWxsLmNvbTwvQT48L0ZPTlQ+PC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05UPjwvU1BBTj48L0RJ
+Vj4NCjxESVY+PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAzMDIyMDA1PjxGT05UIGZhY2U9QXJpYWw+
+PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCANCnNpemU9Mj48U1BBTiANCmNsYXNzPTAxNzE0MDcx
+Mi0wNjAyMjAwNT48L1NQQU4+PC9GT05UPjwvRk9OVD48L0ZPTlQ+PC9TUEFOPiZuYnNwOzwvRElW
+Pg0KPERJVj48U1BBTiBjbGFzcz0xNDk1MDI2MTUtMDMwMjIwMDU+PEZPTlQgZmFjZT1BcmlhbD48
+Rk9OVCBjb2xvcj0jMDAwMDgwPjxGT05UIA0Kc2l6ZT0yPjxTUEFOIA0KY2xhc3M9MDE3MTQwNzEy
+LTA2MDIyMDA1PjwvU1BBTj48L0ZPTlQ+PC9GT05UPjwvRk9OVD48L1NQQU4+Jm5ic3A7PC9ESVY+
+DQo8RElWPjxTUEFOIGNsYXNzPTE0OTUwMjYxNS0wMzAyMjAwNT48Rk9OVCBmYWNlPUFyaWFsPjxG
+T05UIGNvbG9yPSMwMDAwODA+PEZPTlQgDQpzaXplPTI+PFNQQU4gY2xhc3M9MDE3MTQwNzEyLTA2
+MDIyMDA1PlRoYW5rcyAmYW1wOyANClJlZ2FyZHMsPC9TUEFOPjwvRk9OVD48L0ZPTlQ+PC9GT05U
+PjwvU1BBTj48L0RJVj4NCjxESVY+PFNQQU4gY2xhc3M9MTQ5NTAyNjE1LTAzMDIyMDA1PjxGT05U
+IGZhY2U9QXJpYWw+PEZPTlQgY29sb3I9IzAwMDA4MD48Rk9OVCANCnNpemU9Mj48U1BBTiANCmNs
+YXNzPTAxNzE0MDcxMi0wNjAyMjAwNT48L1NQQU4+PC9GT05UPjwvRk9OVD48L0ZPTlQ+PC9TUEFO
+PjxTVFJPTkc+PEVNPjxGT05UIA0KZmFjZT1TY3JpcHQgY29sb3I9IzAwMDA4MCBzaXplPTY+SWRp
+dDwvRk9OVD48L0VNPjwvU1RST05HPjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPUFyaWFsIGNvbG9y
+PSMwMDAwODAgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8L0RJVj48L0JPRFk+PC9IVE1MPg0K
 
-platform_is(PLATFORM_X)		systemcfg->platform =3D=3D PLATFORM_X
-platform_possible(PLATFORM_X)	PLATFORM_POSSIBLE_MASK & PLATFORM_X
-platform_compatible(PLATFORM_X)	systemcfg->platform & PLATFORM_X
-
-
-It's not as consistant as I'd like it to be, but it's the best I could
-come up with.
-
-	Arnd <><
-
---Boundary-02=_0YgBCOfG9h2gYcV
-Content-Type: application/pgp-signature
-Content-Description: signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQBCBgY05t5GS2LDRf4RAnO4AJ4xhr2vU8CdfRIqHoy+BndYSudGkwCfe/fA
-bBX9FXaAJz2WLOEbGGzGyyM=
-=dfoX
------END PGP SIGNATURE-----
-
---Boundary-02=_0YgBCOfG9h2gYcV--
+------_=_NextPart_001_01C50C47.E16D144D--
