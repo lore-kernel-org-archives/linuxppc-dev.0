@@ -1,37 +1,52 @@
-From: supas100@astrophysik.uni-kiel.de (Derek Homeier)
-Message-Id: <199908301652.SAA13704@juliet.astrophysik.uni-kiel.de>
-Subject: Re: Acclerated video driver on Powerbook G3 (lombard)
-To: dnb0@gmx.net
-Date: Mon, 30 Aug 1999 18:52:41 +0200 (MET DST)
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <37C6E999.284BB6B@gmx.net> from "dnb0@gmx.net" at Aug 27, 99 07:40:29 pm
-Reply-to: Derek Homeier <homeier@astrophysik.uni-kiel.de>
-Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <37CACCD3.91581C81@broadlink.com>
+Date: Mon, 30 Aug 1999 11:26:27 -0700
+From: Scott Wood <scott@broadlink.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: GLIBC wont compile for MPC860
+References: <37C9DA7A.14DF14B0@dgs.monash.edu.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-dnb0@gmx.net wrote:
+Brendan Simon wrote:
 > 
-> the standard kernels fail to accelerate the ATI RAGE LT PRO on the
-> lombard, but 
-> the kernel modified by Paul Mackerras supports it well. you have to use
-> rsync against
-> samba.anu.edu.au/linux-pmac-stable to get it. the command should look like:
-> 
-> # rsync -arvz rsync://samba.anu.edu.au/linux-pmac-stable the-directiory-you-want-it
-> (the r option may be obsolete, but i'm not shure)
-> 
-> you may point it to an existing source-tree, so rsync will only copy the diffs.
-> 
-Thanks, I'm going to try that out when I've set up a source tree, access
-to samba.anu.edu.au is quite slow from up here.
-Do you know if this one also contains the ethernet and/or USB patches?
+> I am using egcs-1.1.2 powerpc-linux cross-compiler to compile
+> glibc-2.1.1.  The whole thing compiles fine (gee, doesn't it take a
+> while).
 
-Greetings,
-							Derek
+> 
+> I tried compiling for the MPC860 with the following command "make
+> CFLAGS=-mcpu=860".  It got a little way but then died.  I think it is
+> trying to do something with floating point.
+> 
+
+The MPC8xx have no floating point, so it should be compiled with -msoft-float,
+(I think)...  ./configure --without-fp  will do it.
+
+> Is glibc known to compile for this processor ?
+> I'm pretty sure I need the -mcpu=860 option so that only mpc860 valid
+> instructions are generated.  Is this correct ?
+> 
+
+I have tried this both with the egcs cross-compiler and with egcs on an
+MPC750 and I have recieved 'internal compiler error' both times, but I'm trying
+again.
+
+> I don't have the error message at hand but will post it if it will help.
+> 
+> What can I do to compile glibc for the MPC860 processor.
+> 
+
+I would also like to know how to sucessfully build glibc for the MPC850.
+
+-- 
++---------------------+----------------------+
+|     Scott Wood      |   Systems  Engineer  |
+|=====================+======================|
+|           BroadLink Communications         |
++--------------------------------------------+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
