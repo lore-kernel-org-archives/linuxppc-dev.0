@@ -1,49 +1,33 @@
-Message-ID: <399BA174.A02BBE43@relog.ch>
-Date: Thu, 17 Aug 2000 10:25:24 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Date: Thu, 17 Aug 2000 11:48:56 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Giuliano Pochini <pochini@shiny.it>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: keyboard
+In-Reply-To: <XFMail.000817093717.pochini@shiny.it>
+Message-ID: <Pine.LNX.4.10.10008171147270.8338-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xlib Question
-References: <Pine.LNX.3.96.1000816200011.30198E-100000@deepspace.mklinux.org>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"David A. Gatwood" wrote:
-
-> > > xlib messages stop being delivered from xlib to the program, resulting
-> > > in XNextEvent stalling.  Most of the time, if you click somewhere in
-> > > that window, those events all get delivered at once, sometimes twenty or
-> > > thirty at a time.
-> >
-> > I've noticed that Netscape often stalls up/downloads to/from the roaming
-> > access server. When I click into the window, it continues. Is that the
-> > problem you are seeing as well?
+> > You can solve your problem much easier with loadkeys and a tailored
+> > console keymap.
 >
-> I'm actually seeing the thing not update the window, then when you click
-> over to another one, and click back, the thing (most of the time) updates.
+> No, I can't. mac_keyb.c uses a byte to store the pressed key. 1 bit is used
+> for pressed/released flag, so key codes range is 1-127. That special keys
+> have a code > 127 so currently they're not mapped at all.
 
-Yes, that's what I mean. If only the window updates stalled, it wouldn't be a
-problem, but for me the transfer stalls as well.
+So it's a more generic problem ...
 
-
-> > This makes me suspect the 4.0.1 server (I don't remember it happening with
-> > 4.0), are you using that as well?
+> I must change the kernel to remap that codes to something < 128.
 >
-> No, using Xpmac, from 3.3.6 XFree.
+> Or perhaps I'll fix it by allowing int16_t keycodes just like on peecees.
 
-Hmm. Wonder what's causing this then - I'm pretty sure it didn't happen some
-time ago.
+The latter, if at all possible (because that allows for using the console
+keymap tools again if I'm not mistaken).
 
+	Michael
 
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
