@@ -1,31 +1,35 @@
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: New XF68_FBDev
-In-Reply-To: Your message of "Sat, 5 Dec 1998 20:41:05 +0100 (MET)"
-	<Pine.LNX.4.02.9812051920540.864-100000@cassiopeia.home>
-References: <Pine.LNX.4.02.9812051920540.864-100000@cassiopeia.home>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF68_FBDev under MkLinux?
+In-Reply-To: Your message of "Sat, 5 Dec 1998 23:12:03 -0600"
+	<19981205231203.A1422@merelda.uiuc.edu>
+References: <19981205231203.A1422@merelda.uiuc.edu>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <19981207012607B.roikawa@rr.iij4u.or.jp>
-Date: Mon, 07 Dec 1998 01:26:07 +0900
+Message-Id: <19981207014016F.roikawa@rr.iij4u.or.jp>
+Date: Mon, 07 Dec 1998 01:40:16 +0900
 From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > Known problems:
-> > >   - Twm menus aren't drawn correctly on Mach64.
-> >  Try KDE or xv, too. You will see non-update window contents.
+From: anthony tong <atong@uiuc.edu>
+Subject: Re: XF68_FBDev under MkLinux?
 > 
-> It's been a long time ago I ran KDE on my box. And I never saw the problem with
-> xv.
- Sorry, then it is a different(new ?) problem.
- 
-> > I've made a probably same mistake for Xpmac_mga before(it was
-> > fixed for version 981108 or later).
-> Hmm, basically what I did to update was create a diff between your 981017-3 and
-> 981122 and apply that, with some minor modifications.
- Fix on that was done for pmac*ScreenInit(), not for mach64* funcs.
+> Geert Uytterhoeven (Sat, Dec 05, 1998 at 11:20:33PM +0100):
+> >   2. Adopt XF68_FBdev so it can use the MkLinux video mode ioctl stuff. This
+> >      requires no kernel changes. In XF68_FBDev, the video ioctl and mmap stuff
+> >      has to be changed slightly.
+> > 
+> > I think the second solution is the least amount of work.
+> 
+> Agreed.
+
+Simple question: What is the advantage of fbdev server without
+ frame buffer device ?
+
+Please note I am NOT against this project. More possible selection
+is better.
+
 
 Regards,
 
