@@ -1,91 +1,29 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A4288905844015@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "''linuxppc-dev@lists.linuxppc.org' '" <linuxppc-dev@lists.linuxppc.org>
-Subject: Kernel Module; globals badly initialized, help needed.
-Date: Thu, 7 Mar 2002 16:38:46 +0100 
+Message-ID: <3C879933.8090200@embeddededge.com>
+Date: Thu, 07 Mar 2002 11:45:39 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: benh@kernel.crashing.org, Paul White <pwhite@bivio.net>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC7455
+References: <Pine.LNX.4.21.0203062152510.30207-100000@stimpy.networkrobots.com> <20020306214849.11643@mailhost.mipsys.com> <20020307153005.GF19531@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Tom Rini wrote:
 
-I am having lots of problems with global variables that are badly
-initialized in a kernel
-module. I wrote some very simple code showing the problem. The compiler I
-use is gcc 2.95.3
-(the one that comes with HHL2.0).
+> I'd think that outside of CONFIG_ALL_PPC (or wherever CHRP/Pmac end up
+> in 2.5.x) we don't care what the firmware did.
 
-Is this a compiler problem -do I need to use some special options?- or could
-it
-be a problem with insmod, the kernel, ...?
+That's a very good point.  Anything we do inside of the kernel with
+cputable/features must be generic to all of the boards we support.  If
+there is something unique (which is always the case of embedded boards :-),
+that needs to be done in the bootloader before we get to the kernel or
+in the board specific setup files for the platform.
 
-I had this problem before with DECLARE_WAIT_QUEUE_HEAD where the pointers
-inside the structure where badly initialized. The only sollution was to
-reinitialize the fields at runtime. I posted this issue and somebody
-reported he had seen the same issue.
+	-- Dan
 
-Who can help we with this?
-
-Thanks!
-Frederic
-
-
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/init.h>
-
-
-#if defined(CONFIG_SMP)
-#define __SMP__
-#endif
-
-#if defined(CONFIG_MODVERSIONS)
-#define MODVERSIONS
-#include <linux/modversions.h>
-#endif
-
-char MyMemSpace[2*0x100];
-char *MemPointers[2] = {&(MyMemSpace[0]), &(MyMemSpace[0x100])};
-
-typedef struct
-{
-	char *szName;
-	char *szName2;
-} MyStruct_t;
-
-MyStruct_t MyStruct[] = {{"A", "A2"}, {"B", "B2"}};
-
-int init_module(void)
-{
-	printk("TestDriver 3 Loaded\n");
-
-	printk("MyMemSpace: 0x%lx 0x%lx \n",  (long)&(MyMemSpace[0]),
-(long)&(MyMemSpace[0x100]));
-	printk("MemPointers: 0x%lx 0x%lx \n", (long)(MemPointers[0]),
-(long)(MemPointers[1]));
-
-	printk("First Char is MyStruct[0].szName %c\n",
-MyStruct[0].szName[0]);
-
-
-	return -1;
-}
-
-void cleanup_module(void)
-{
-	return;
-}
-
-
-
-
-This is what I get:
-
-MyMemSpace: 0xc304a1ec 0xc304a2ec
-MemPointers: 0xc304a1ec 0xc304a3ec
-First Char is MyStruct[0].szName e
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
