@@ -1,42 +1,48 @@
-Date: Thu, 29 Nov 01 14:24:17 PST
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0111292224.AA01126@ivan.Harhan.ORG>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ide_init_hwif_ports
+Date: Thu, 29 Nov 2001 15:27:41 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Keith Owens <kaos@ocs.com.au>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: include/asm-ppc/platforms/
+Message-ID: <20011129152741.L29541@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011129082625.R29541@cpe-24-221-152-185.az.sprintbbd.net> <30560.1007072360@ocs3.intra.ocs.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <30560.1007072360@ocs3.intra.ocs.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras <paulus@samba.org> wrote:
-
-> Thanks for the explanation.  I'll ask Vojtech Pavlik and Andre Hedrick
-> if they can suggest a better way (drivers/ide/via82cxxx.c has
-                                    ^^^^^^^^^^^^^^^^^^^^^^^
-> Vojtech's name on it).
-
-That VIA82CXXX fast mode code makes the Adirondack *hang* on the partition
-check if enabled... I'm keeping it out of the picture for now.
-
-> Actually, I have just noticed this code in drivers/ide/ide-pci.c:
+On Fri, Nov 30, 2001 at 09:19:20AM +1100, Keith Owens wrote:
+> On Thu, 29 Nov 2001 08:26:25 -0700,
+> Tom Rini <trini@kernel.crashing.org> wrote:
+> >On Thu, Nov 29, 2001 at 10:48:46PM +1100, Paul Mackerras wrote:
+> >> The only reason for having include/asm-ppc/platforms under
+> >> include/asm-ppc is so that serial.h can include the right
+> >> blah_serial.h file.  We can get around that by using
+> >> early_serial_setup except that that doesn't work if the serial driver
+> >> is built as a module.  The boot stuff also needs to get at the first
+> >> serial port but we can manage that by requiring the platform.h file to
+> >> define e.g. BOOT_SERIAL_ADDRESS, BOOT_SERIAL_REG_SHIFT, etc., if it
+> >> wants to use a serial port in the boot wrapper.  The boot wrapper code
+> >> then just does #include <platform.h>.
+> >
+> >What would <asm/serial.h> contain here?  Keep in mind that some ports
+> >'just work' with the default <asm/serial.h>.
 >
->                 if (IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8886A) ||
->                     IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8886BF) ||
->                     IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8673F)) {
->                         hwif->irq = hwif->channel ? 15 : 14;
->                         goto bypass_umc_dma;
->                 }
+> The make rules I sent to Paul automatically generate platform.h and
+> platform_serial.h by copying the platform specific files to arch/ppc
+> under standard names.  If the platform has no *_serial.h file then
+> platform_serial.h is a zero length file.  So ppc code can always
 >
-> We may be able to get something similar added for our case(s).
+> #include <platform.h>
+> #include <platform_serial.h>
 
-Keep in mind that, as I just said, from what I could tell the IDE interrupt
-routing is fixed by the board circuitry *outside* the chip, although I doubt
-that anyone out there has routed the IDE interrupts anywhere other than IRQ14
-and IRQ15... But never say never, we have some new boards coming up with a
-GT64260 and a VT82C686B, and it seems like they want to avoid using the PeeCee
-dual 8259 PIC as much as possible, so who knows, maybe they'll route the IDE
-interrupts upstairs bypassing the VT82C686B altogether... Didn't I just hear
-someone on this list talk about their IDE interrupts going to an EPIC?
+So <asm/serial.h> just has the above two lines and all platforms need a
+platform/platform_serial.h file for serial to work with this scheme?
 
-MS
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
