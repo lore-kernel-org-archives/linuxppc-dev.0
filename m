@@ -1,31 +1,28 @@
-Date: Fri, 6 Aug 2004 09:14:01 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Ralph Siemsen <rsiemsen@rossvideo.com>,
-	PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Init hangs
-In-Reply-To: <884A8F94-E7A5-11D8-9B14-003065F9B7DC@embeddededge.com>
-Message-ID: <Pine.LNX.4.60.0408060912370.7391@localhost.localdomain>
-References: <20040806081151.B77FCC109F@atlas.denx.de> <411369F9.5060506@rossvideo.com>
- <884A8F94-E7A5-11D8-9B14-003065F9B7DC@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <20040806124639.3E765C109F@atlas.denx.de>
+References: <20040806124639.3E765C109F@atlas.denx.de>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <C47B18AA-E7AE-11D8-9B14-003065F9B7DC@embeddededge.com>
+Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>,
+	Ralph Siemsen <rsiemsen@rossvideo.com>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: Init hangs 
+Date: Fri, 6 Aug 2004 09:44:41 -0400
+To: Wolfgang Denk <wd@denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 6 Aug 2004, Dan Malek wrote:
+On Aug 6, 2004, at 8:46 AM, Wolfgang Denk wrote:
 
-> On the MPC8xx, which does not have a floating point unit, there is
-> still sufficient support in the kernel to trap and emulate FPU reset
-> and context save/restore for this purpose.  You only need the
-> CONFIG_MATH_EMULATION is you intend to really do floating point
-> arithmetic.
+> Second, he mentioned that he was using the ELDK which takes  care  of
+> using soft-float on processors without a MMU.
 
-thanks for that tidbit.  i've always wondered, for our 850DE, hmmm ...
-math emulation or no math emulation?  i guess i can just make sure
-it's turned off, and see if it ever causes a problem.
+Without an MMU?  Really? :-)  Just kidding.  I'm just glad I'm
+not the only one that types stuff like that once in a while.
 
-rday
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
