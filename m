@@ -1,41 +1,38 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3F140928.60403@imc-berlin.de>
-Date: Tue, 15 Jul 2003 16:01:12 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: DENX ELDK Kernel
-References: <20030715135119.5782CC6D82@atlas.denx.de>
-In-Reply-To: <20030715135119.5782CC6D82@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Tue, 15 Jul 2003 07:12:29 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Steve Boorman <steveb@baydel.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Hangup booting Linux on PPC440GP
+Message-ID: <20030715071229.A6208@home.com>
+References: <3F13FA14.16183.5C9485B@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3F13FA14.16183.5C9485B@localhost>; from steveb@baydel.com on Tue, Jul 15, 2003 at 12:56:52PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+Please fix your mailer to set a lower linewrap value, it is
+difficult to compose a reply.
 
->>never stopped me before!  Basically, the answer is yes - at least I
->>have been using the ELDK with a linux-2.4.20 kernel (from kernel.org).
->>The key point to remember is that you should always compile user
->>applications against the Linux include files that glibc (and all the
->>rest of the target ELDK apps) are built against - Do NOT compile your
->>user applications against the newer Linux kernel.
->
->
-> 10 of 10 points :-)
+On Tue, Jul 15, 2003 at 12:56:52PM +0100, Steve Boorman wrote:
+> 1) Using ebony_defconfig as the kernel config file should, I would have thought, set
+> CONFIG_MATH_EMULATION=y but it does not.
 
-Stupid question (TM):
+It assumes that one is using an optimized userland for 4xx.  This
+means that the expectation is that you have soft-float binaries.
+Most people are using ELDK or MVL.
 
-If I'd built the ELDK from scratch and used Linux-2.4.20 include files
-to build "glibc (and all the rest of the target ELDK apps)" I should
-build my "applications against the newer Linux kernel"! Shouldn't I?
+> 3) I expected the kernel to panic with some form of illegal
+> instruction trap if floating point instructions were being
+> attempted with no emulator code present.
 
-And in general: shouldn't I used a glibc that "matches" the kernel
-version?
+Good point.  Maybe we should add in an illegal instruction warning
+on the no mathemu path in the 4xx program check exception.
 
-Thanks,
-
-Steven
-
+Regards,
+--
+Matt Porter
+mporter@kernel.crashing.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
