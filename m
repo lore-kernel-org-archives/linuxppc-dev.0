@@ -1,29 +1,32 @@
-Message-ID: <36062.192.168.1.2.995129406.squirrel@fridge.bcc.co.uk>
-Date: Sat, 14 Jul 2001 17:50:06 +0100 (BST)
-Subject: More on booting 43P-140
-From: "Leigh Brown" <leigh@solinno.co.uk>
+Message-Id: <4.2.2.20010714123138.01d64dc0@mail.inkverse.com>
+Date: Sat, 14 Jul 2001 13:02:17 -0400
 To: linuxppc-dev@lists.linuxppc.org
-Reply-To: leigh@solinno.co.uk
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+From: Jeremy Radlow <jtr@sourcerers.com>
+Subject: Internal airport card not working? (2.4.6-benh)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Under 2.4.6 on an iBook, I'm apparently having ARP problems with Airport...
 
-After an embarrasing hour when I couldn't work out why the root fs disk
-wasn't being recognised for my kernels but was for the one I downloaded,
-I have finally made it into the install program for SuSE 7.1 and Debian
-woody.  However, both have the same problem - they say I don't have any
-disks!  This is weird because in both installers I can bring up a shell
-and manually create and mount an ext2 partition on hdisk1 (/dev/sdb).
+When I try to ping other machines on the network, I can see the activity
+lights on my base station and the target machines' ethernet ports, and the
+other machines on my LAN see the airport card in their ARP cache, but the
+laptop with the airport card doesn't get anything in its ARP cache.
 
-Any ideas?
+When I snoop the traffic using tcpdump, all I see is a bunch of spurious ARP
+who-has messages originating from the laptop, and is-at messages originating
+from the target machines.
 
-Cheers,
 
-Leigh.
+My setup:
+    transparent bridging on base station
+    static IP's for all devices on the network (192.168.1.*)
+    laptop is 5 feet away from base station
+
+-Jeremy
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
