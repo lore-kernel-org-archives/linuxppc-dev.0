@@ -1,56 +1,68 @@
-Message-Id: <v04003a00b43d2b8b3cd6@[216.81.1.41]>
-In-Reply-To: <Pine.HPX.4.10.9910271432490.18743-100000@gra-ux1.iram.es>
-References: <3816BEA7.23AF7175@agelectronics.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 27 Oct 1999 17:39:02 -0500
-To: Gabriel Paubert <paubert@iram.es>
-From: Tony Mantler <eek@escape.ca>
-Subject: Re: question about altivec registers
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+From: Marco Reichwald <marcoppc@gmx.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: mol hangs at startup
+Date: Wed, 27 Oct 1999 20:40:35 -0400
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-Id: <99102720415501.00801@marco>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 8:21 AM -0500 10/27/99, Gabriel Paubert wrote:
-[...]
->And why would you want to use a bitmap ? This seems braindead to me, put a
->value between 0 and 32 in vrsave. Since all registers are identical
->in use and purpose, save registers 0 to n. Disclaimer: I've not seen if
->the ABI specifies how and which Altivec registers are saved restored
->across calls.
-
-It would seem to me that using a bitmap to mark used registers would allow
-more flexibility on the compiler side to play with register usage without
-incurring longer context switch times. I wouldn't try to guess the relative
-tradeoff values though.
+I tried to run MoL on my beige G3 without luck. (I'm using an unpatched generic
+2.2.13 Kernel) 
+I don't no much about asm but when I use the debugger, mol seems
+to be caught in a endless-loop between adress 0x0 and the "Trap_700_Program"
+(whatever this is) 
+I get no error messages and no video output, it just hangs.
+I tried to disable everything and boot from an "Disk Tools" floppy image. Same
+problem.
+Any ideas?
 
 
->Paranoid point of view: the restore must reload all altivec registers
->(or clear the ones which are not specified as used by VRSAVE), otherwise
->you might leak the contents of the Altivec registers of another process.
->I'm not a security expert, but I don't like this possibility at all.
-[...]
+Mac-on-Linux 0.9.22 
+(C) 1997-1999 Samuel Rydh, <samuel@ibrium.se>
+Using resource file '/etc/molrc'
+in_security_mode 0
+MOL kernel module 1.1.22
+OF Device tree copied from kernel
+Loading OF device tree from 'oftrees/oftree.8500'
+32MB RAM mapped at 0x20000000
+4096K ROM mapped at 0x4fc00000 from 'rom/rom.g3'
+ROM checksum = 0x134
+Running in PowerPC 604 mode
+DEC frequency: 0x00fee5e8 (16 MHx), 167:10 mticks/usec
+Running on VT 8.
+Using console mouse driver
+Initing PCI bus services
+PCI-bridge 'bandit' (bus 0..0) installed at 0xf2000000
+PCI-bridge 'chaos' (bus 1..1) installed at 0xf0000000
+GC, Grand Central, (0:16) found
+Descriptor based DMA services inited
+Using nvram-image 'nvram/nvram.8500.image'
+Floppy image 'images/floppy' used for drive A.
+Swim3 floppy driver installed
+AWACS disabled
+Hammerhead driver installed
+Control driver disabled (no pci entry added)
+osi_enet: *** OSI ENET DISABLED**
+53c94 SCSI-driver installed (IRQs 12/0)
+Could not register MESH SCSI unit. Need a second bus ??
 
-Beyond security, clearning the registers would also serve to enforce strict
-usage of whatever is defined as the VRSAVE format, and avoid the
-possibility of a mouth-breathing code-typist releasing a binary that
-doesn't mark it's registers, which in theory would only break once a
-different application touches the altivec registers, resulting in a
-situation of either A: the kernel being forced to save all altivec
-registers (bad) or B: allowing those binaries to be broken and upsetting
-it's users (slightly less bad). Obviously pre-breaking those binaries would
-be the preferable solution, so they never need see the light of day.
+SCSI-Disk (hw-0):    0 MB
 
+driver_mgr_list: hacks console pci gc pic dbdma via-cuda adb nvram escc swim3 hammerhead mol_video scsi 
+Starting emulation...
 
-That's my 2c.
+here it hangs  
 
-Cheers - Tony :)
+------------------------------------------------
+hooray for captain spalding!
+-------------------------------------------------------
 
+-- 
 
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
-
+------------------------------------------------
+hooray for captain spalding!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
