@@ -1,39 +1,32 @@
-To: greyham@research.canon.com.au (Graham Stoney)
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Console on SMC2 (was: Re: MPC823 Serial ports)
-References: <19991025013531.7E210705@elph.research.canon.com.au>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 25 Oct 1999 14:47:10 +0200
-In-Reply-To: greyham@research.canon.com.au's message of "Mon, 25 Oct 1999 11:35:31 +1000 (EST)"
-Message-ID: <kfyu2nfr4j5.fsf@kieraypc01.p.y.ki.era.ericsson.se>
+From: Sorin Balea <sorin@nitechinc.com>
+Reply-To: sorin@nitechinc.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: dev boards comparison
+Date: Mon, 25 Oct 1999 09:48:15 -0400
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-Id: <99102509535300.00577@splash.nitechinc.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-greyham@research.canon.com.au (Graham Stoney) writes:
+Hello all
 
-> Hi Marcus,
-> 
-> Marcus Sundberg writes:
-> > TTYAUX_MAJOR corresponds to the /dev/cua* devices, which are obsolete.
-> 
-> Could you please clarify what you mean here? Are you saying that the /dev/cua*
-> devices are obsolete?
+We're in the process of deciding which board to use for the 
+developement of our embedded products... we have now a
+FADS 860 board... but we aren't that much impressed by it.
 
-Yes, has been so since before 2.2.0 IIRC.
+So can anyone please tell me which one is better from the 
+point of view of developing embedded solutions based on 
+Linux?
+We are considering the FADS, along with the MBX boards 
+from Motorola and the RPX boards from Embedded Planet
+Any pros and cons for this boards? 
+Are there other boards that might be considered?
 
-> If so, what's the replacement?
+>From what i now right now, i think the MBX is better...
 
->From linux/Documentation/Changes:
-     Also, please remember that cua* devices are now obsolete.  Switch to
-  the corresponding ttyS* device instead (e.g., cua0 -> ttyS0, cua1 ->
-  ttyS1, etc.).
-
-//Marcus
--- 
--------------------------------+------------------------------------
-        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
- Royal Institute of Technology |       Phone: +46 707 295404
-       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
+Best regards
+Sorin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
