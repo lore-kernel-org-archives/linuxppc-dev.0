@@ -1,57 +1,45 @@
-Reply-To: <tschaefer@giga-stream.de>
-From: =?iso-8859-1?Q?Thomas_Sch=E4fer?= <tschaefer@giga-stream.de>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Boot problems with MPC8280 PowerQUICC
-Date: Mon, 13 Oct 2003 19:35:47 +0200
-Message-ID: <FIEJJAKAABLMHFKFECNJOEKIGPAA.tschaefer@giga-stream.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: [PATCH] fix bad merge in drivers/video/Config.in (linuxppc-2.4)
+From: Andreas Oberritter <obi@saftware.de>
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Content-Type: multipart/mixed; boundary="=-RpMEd7TQfFp88SJqrH+g"
+Message-Id: <1066071151.1582.2.camel@shiva.eth.saftware.de>
+Mime-Version: 1.0
+Date: Mon, 13 Oct 2003 20:52:32 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+--=-RpMEd7TQfFp88SJqrH+g
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
 Hi,
 
-I'm working on a custom board with Motorola MPC 8280 PowerQUICC processor
-and linux 2.4.18 kernel. When booting the kernel, I get the following
-messages at the end of the boot procedure when init scripts are executed:
+menuconfig didn't work anymore because of invalid syntax in Config.in.
+Please apply.
 
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Looking up port of RPC 100003/2 on 192.10.11.190
-Looking up port of RPC 100005/1 on 192.10.11.190
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 60k init
-INIT: version 2.78 booting
-INIT: Entering runlevel: 2
-Inconsistency detected by ld.so: dynamic-link.h: 62: elf_get_dynamic_info:
-Assertion `! "bad dynamic tag"' failed!
-INIT: Id "con" respawning too fast: disabled for 5 minutes
-INIT: no more processes left in this runlevel
-INIT: Id "con" respawning too fast: disabled for 5 minutes
-INIT: Id "con" respawning too fast: disabled for 5 minutes
+Regards,
+Andreas
 
-The kernel did not crash, ping is working and the last message is repeated
-every 5 minutes. It seems that all processes started by the INIT process are
-killed immediately.
-Booting the same kernel with the same root fs mounted over nfs on the same
-board but with a MPC8266 PowerQUICC is working without problems.
-Anybody who faced a similar problem? Any hints would be appreciated.
+--=-RpMEd7TQfFp88SJqrH+g
+Content-Disposition: attachment; filename=video_config.diff
+Content-Type: text/plain; name=video_config.diff; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 
-Best regards,
+===== drivers/video/Config.in 1.34 vs edited =====
+--- 1.34/drivers/video/Config.in	Tue Sep 16 07:20:21 2003
++++ edited/drivers/video/Config.in	Mon Oct 13 20:48:45 2003
+@@ -425,7 +425,7 @@
+ 	      "$CONFIG_FB_INTEL" = "m" -o \
+ 	      "$CONFIG_FB_SGIVW" = "m" -o "$CONFIG_FB_SIS" = "m" -o \
+ 	      "$CONFIG_FB_PVR2" = "m" -o "$CONFIG_FB_VOODOO1" = "m" -o \
+-	      "$CONFIG_FB_CYBER2000" = "m" -o "$CONFIG_FB_STI" = "m" ]; then
++	      "$CONFIG_FB_CYBER2000" = "m" -o "$CONFIG_FB_STI" = "m" -o \
+ 	      "$CONFIG_FB_XILINX" = "m" ]; then
+ 	    define_tristate CONFIG_FBCON_CFB32 m
+ 	 fi
 
-Thomas Schäfer
-
-____________________________________
-
-GIGA STREAM GmbH
-
-Konrad-Zuse-Str. 7
-66115 Saarbrücken
-
-Tel.: + 49 (0)681 / 95916 - 203
-Fax:  + 49 (0)681 / 95916 - 100
-E-mail: tschaefer@giga-stream.de
+--=-RpMEd7TQfFp88SJqrH+g--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
