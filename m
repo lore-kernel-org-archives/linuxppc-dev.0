@@ -1,34 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: =?ISO-8859-1?Q?Michel=20D=E4nzer?= <michdaen@iiic.ethz.ch>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: xfree86/fbdevhw not sending right mode to radeonfb.c
-Date: Sat, 24 Nov 2001 19:04:16 +0100
-Message-Id: <20011124180416.25049@smtp.wanadoo.fr>
-In-Reply-To: <1006623522.24435.63.camel@pismo>
-References: <1006623522.24435.63.camel@pismo>
+Date: Sat, 24 Nov 2001 16:32:01 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Again with the firewire
+In-Reply-To: <20011124122119.19280@smtp.wanadoo.fr>
+Message-ID: <Pine.LNX.4.40.0111241629360.10788-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> That is only part of the problem, the other is that if you change the
->> depth from what is used by the frame buffer it does mess up as others have
->> reported.
->
->I believe Ben's work on radeonfb should fix this.
->
->We were talking about different resolutions, which probably breaks due
->to the fbdev driver.
+Also, I've found that plugging in a FireWire device, then unplugging it
+before doing anything with it (but after waiting ~30 seconds, long enough
+for the kernel to see the plug event and try to load the driver) will
+cause a system freeze. If I do something with the device (try to mount it
+or something), then it's fine, the unplug goes off without a hitch, and
+the system continues running.
 
-Well, radeonfb has a nasty bug in switch() that could make it lose
-track of what console is current if you change only the depth. I
-fixed that along with a few other things, it should be in my rsync
-tree now (you might need some time for mirrors to be up to date
-on rsync.penguinppc.org). It also does 5:5:5 now (for MOL).
-
-Ben.
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
