@@ -1,77 +1,68 @@
 Reply-To: <joakim.tjernlund@lumentis.se>
 From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
 To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: <linuxppc-embedded@lists.linuxppc.org>, <scop@digitel.com.br>,
-	<thomas@corelatus.com>
-Subject: RE: [PATCH] arch/ppc/8xx_io/enet.c, version 2
-Date: Fri, 1 Nov 2002 12:01:38 +0100
-Message-ID: <IGEFJKJNHJDCBKALBJLLEEIOFHAA.joakim.tjernlund@lumentis.se>
+Cc: <linuxppc-embedded@lists.linuxppc.org>,
+	<sensors@stimpy.netroedge.com>
+Subject: RE: 8xx i2c refers to unspecified chip errata
+Date: Fri, 1 Nov 2002 12:01:45 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLIEIOFHAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLOEFLFHAA.joakim.tjernlund@lumentis.se>
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLMEFNFHAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi Tom
 
-Will you apply this patch?  No problems reported so far.
+Will you apply this patch? No problems reported so far.
 
  Jocke
 
+> > >
+> > > Here is a patch against the PPC 2.4 devel tree for the i2c-algo-8xx.c
 > >
-> > On Thu, Oct 24, 2002 at 04:23:31PM +0200, Joakim Tjernlund wrote:
-> >
-> > > This is the second version of my patch that removes the expensive memcpy of
-> > > received
-> > > ethernet frames in interrupt context.
-> > >
-> > > I have 1 report(from Ricardo Scop) of 20% increase in packets/second, packet
-> > > size 1500 when
-> > > applied to 8260 FEC(needs to be applied manually). But min packet size
-> > > decreased with 10 %.
-> > > This version should fix the 10% decrease case.
-> > >
-> > > This patch could be adapted 8xx_io/fec.c and 8260_io/enet.c and
-> > > 8260/fcc_enet.c with little effort.
-> > >
-> > > Better fix a bug in set_multicast_list(), move the dmi list forward when
-> > >     walking it(dmi = dmi->next;)
-> > >
-> > > New stuff:
-> > >    - Configrable: copy small packets or pass them directly, see
-> > > COPY_SMALL_FRAMES in code.
-> > >    - Collision reporting fix form Thomas Lange.
-> > >    - Don't pass receive frames which has error upwards.
-> > >    - Report RX_OV errors as fifo errors, not crc errors.
-> > >
-> > > Please test and report any problems and performace improvements.
-> >
-> > All of this sounds good, but can you please break this one patch up into
-> > seperate logical patches?
+> > Can you please split this into logical chunks, or give me a list of each
+> > fix in here?  Thanks.
 >
-> I rather not.
+> ohh, kind of hard to remember all that went into that patch. The path
+> has evoled over many days, but I can try summarize. I have tested this code
+> pretty well it does not fail for me. Speed has been between 10-150KHz. The
+> old code fails as soon you start to stress it a little.
 >
-> The logical pices in this patch are:
->  1) remove the expensive memcpy.
->    - This is the main part of the patch.
+>  - replace invalidate_dcache_range with flush_dcache_range, since buffers are
+>    NOT cache aligned. flush will write to memory AND invalidate the cache.
 >
->  2) dmi->next fix, which is a one liner.
->     Don't pass receive frames which has error upwards.
->    - Trival stuff.
+>  - move the chip errata stuff from irq routine into read/write routines. Made
+>    it default off since it causes lock ups on my I2C device. I think it causes
+>    a too short STOP condition. If enabled I2C will behave better than before, but
+>    may still cause problems if the read/write is interrupted with a signal while
+>    microcode is enabled.
 >
->  3) Collision reporting fix form Thomas Lange.
->     Report RX_OV errors as fifo errors, not crc errors.
->    - These are just minor accounting fixes.
+>  - set default speed to 60 KHz instead.
 >
-> So I don't think it's worth the effort. Let's just wait a few days and see
-> if it was success or not.
+>  - missing/faulty initialization of parameter ram when I2C micro patch is active.
 >
-> Folks, please report you findings to the list.
+>  - replaced assingments with mask operations with relevant bits. Example:
+>       /* Shut down IIC. */
+>       i2c->i2c_i2mod = 0;
+> 	i2c->i2c_i2mod &= ~1;
 >
->     Jocke
+>  - When reading from I2C device, let the receive BD generate interrupt instead of
+>    the dummy trasmit. This is important since the TX interrupt will be too early sometimes, before
+>    the RX BD has closed. There is one case where the RX irq is before the TX irq, if iic_mrblr is set
+>    to match the number of bytes to read. Therefore must the iic_mrblr be one byte larger than
+>    the expected number of bytes.
 >
+>  - busy wait for small transfers since it's faster.
+>
+>  - save_flags(flags); cli(); cleanups
+>
+>  - interruptible_sleep_on_timeout() instead of interruptible_sleep_on() so it won't hang forever if an
+>    irq is lost.
+>
+>  Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
