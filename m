@@ -1,36 +1,30 @@
-In-Reply-To: <l03130301b2e69f7f1da5@[209.251.79.177]>
-Date: Wed, 10 Feb 1999 12:49:19 +0100
-To: "Michael R. Zucca" <mrz5149@acm.org>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04020a00b2e6f5596238@[136.152.65.18]>
+Date: Wed, 10 Feb 1999 14:20:25 +0100
+To: Brian C Burke <bcburke@socrates.berkeley.edu>,
+        linuxppc-dev@lists.linuxppc.org
 From: BenH <bh40@calva.net>
-Subject: Re: NuBus PowerMacs and PDM video
-Message-Id: <19990210124919.012660@mail.mipsys.com>
+Subject: Re: v2.2.1 and serial fixes
+Message-Id: <19990210142025.007673@mail.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Feb 9, 1999, Michael R. Zucca <mrz5149@acm.org> wrote:
+On Wed, Feb 10, 1999, Brian C Burke <bcburke@socrates.berkeley.edu> wrote:
 
->You just need to know the physical base address of the frame buffer.
->Once you know that you can just rewrite the page tables to put the
->frame buffer anywhere you'd like it.
+>Over the last few weeks I seen reference to BenH fixing some serial driver
+>bugs that may be involved in ppp hangs. I grapped the 2.2.1 kernel in hopes
+>that these fixes were incorporated. Unfortunatelly I'm still finding ppp
+>connections often hang and the only fix is to reboot. If I boot into
+>mklinux ppp is stone reliable, so the problem is in linuxppc  Were the
+>serial fixes incorporated in 2.2 or do I need to get the latest sources?
 
-I was thinking about the machines that store the framebuffer in main
-memory (I beleive the 6100 does this). In this case, several people told
-me that the physical address was actually 0. Anyway, I now have some code
-to mess with the video controller, so I will be able to work around this
-problem.
-
->You need to write a program under MacOS that will find a physical address
->for a given virtual address. You'll probably need to do this in assembly
->or there may even be a toolbox call that will do this for you.
-
-There is a MacOS call for logical->physical mappings. The base address
-sent by BootX to the kernel is already a physical address (actually both
-are sent with BootX >= 1.0.2b1)
-
-
+I'm not 100% sure I have have fixed _all_ the problems, but PPP works
+reliably for me using the internal modem of the PowerBook. The fixes are
+currently in vger or in Paul's kernel. I beleive the binary snapshot on
+samba.anu.edu.au do have them. Are you using a kernel.org kernel distrib
+? This one may lack the latest PPC patches.
 -- 
            E-Mail: <mailto:bh40@calva.net>
 BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
