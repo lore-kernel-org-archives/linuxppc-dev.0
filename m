@@ -1,32 +1,42 @@
-From: Sorin Balea <sorin@nitechinc.com>
-Reply-To: sorin@nitechinc.com
-To: Jim Lewis <jlewis@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Beginner / FADS
-Date: Wed, 20 Oct 1999 11:24:14 -0400
-Content-Type: text/plain
-References: <199910200854.DAA26910@lists.linuxppc.org> <99102009373601.00563@splash.nitechinc.com> <380DD62F.E427068A@mvista.com>
-In-Reply-To: <380DD62F.E427068A@mvista.com>
+Message-ID: <380DFDD4.EEDC570E@netx4.com>
+Date: Wed, 20 Oct 1999 13:37:24 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Message-Id: <99102011370101.00597@splash.nitechinc.com>
+To: Jim Lewis <jlewis@mvista.com>
+CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PCMCIA use
+References: <380DCA0D.B272F889@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 20 Oct 1999, Jim Lewis wrote:
-> Hello Sorin and Evan,
+Jim Lewis wrote:
 > 
-> I have the 2.2.5 kernel running on an 823FADS. I will send you a snapshot of
-> the arch directory.
+> Hello,
+> 
+> Has anyone out there done anything with PCMCIA on the 8xx?
 
-Hi Jim,
+Yes.  I put some hacks in the kernel to support an ATA/IDE
+flash card.  At one time this worked, and with the IDE and
+interrupt stuff changing so much recently I am not sure if
+it works any longer.  Look in the arch/ppc/kernel/m8xx_setup.c
+file.  I have some more elaborate functions if you need
+better examples.
 
-Thanks for your help. 
+In addition to what is there, you also need to sense and enable
+the proper power supply, which is very implementation specific.
+You will also have to initialize the PCMCIA control/address
+registers and make sure it gets mapped in somplace (either a
+driver or mm/init.c).
 
-Anyone else here has any experience with FADS boards and 860?
-Any sugestions are _strongly_ appreciated...
+I continue to have nightmares about porting pcmcia-cs to the
+8xx, and should probably do it some day with David's help.  Since
+my experience with applications using PCMCIA on the 8xx has been
+they are quite unique and static, I have always just initialized
+the interface for the application.  Less code, less overhead.
 
-Best regards
 
-Sorin
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
