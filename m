@@ -1,29 +1,31 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Timothy A. Seufert" <tas@mindspring.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: About TAU (and ICTC)
-Date: Mon, 20 Aug 2001 00:02:14 +0200
-Message-Id: <20010819220214.32000@smtp.wanadoo.fr>
-In-Reply-To: <p05100301b7a5c073cc62@[10.0.0.42]>
-References: <p05100301b7a5c073cc62@[10.0.0.42]>
+Message-ID: <3B803FEE.7079F34C@acm.org>
+Date: Sun, 19 Aug 2001 15:38:38 -0700
+From: Ira Weiny <iweiny@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Linux1394dev <linux1394-devel@lists.sourceforge.net>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Task Queue Imediate Bottom Halfs question.
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->The exception would be when it's desired to use the feature for its
->original intended purpose, reduction of die temperature when that
->temperature reaches a critical threshold.  That would also mean using
->the TAU the way it was intended: you set the upper and lower TAU
->thresholds as desired, and the TAU ISR turns ICTC on when the high
->threshold is passed and off when it moves past the lower.
+This is going to seem like a real stupid question but I just got burned
+because I did not know the answer and I would like to know.
 
-Unfortunately, the TAU is too badly calibrated to be useful. There
-_might_ be some other temp sensors in recent Apple machines, on the
-I2C bus, I'll do some "probing" one of these days.
+In the 1394 stack (OHCI) the IRQ handler schedules "bottom half tasklets
+(task queues in the old stack)".  They are scheduled to be "imediate"
+bottom half's.  I thought (wrongly) that a bottom half executed out of
+IRQ time with interrupts __enabled__.  As a result I put in a Async Rec
+handler which used printk (60ms worth to be exact).  Needless to say
+this greatly disturbed our ISO transfers which did not get processed.
 
-Ben.
+So, my question is, why use a bottom half here?  Or really what is the
+difference between scheduling a task queue (tasklet) imediate vs just
+running the code in the IRQ handler?
 
+Thanks,
+Ira Weiny
+iweiny@acm.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
