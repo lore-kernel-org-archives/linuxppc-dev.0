@@ -1,66 +1,56 @@
-Message-ID: <313680C9A886D511A06000204840E1CF08F430C9@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Cc: "'mcclintock@freescale.com'" <mcclintock@freescale.com>
-Subject: Has anybody successfuly run linux-2.6.8-rc2 (or any previous linu
-	x 2.6 version) on MPC 82xx ?
-Date: Thu, 5 Aug 2004 04:39:22 -0400 
+Message-ID: <036601c47acb$e9e0cc70$30c8a8c0@zorans>
+From: "Zoran Stojsavljevic" <zoransto@dkts.co.yu>
+To: "Alex Zeffertt" <ajz@cambridgebroadband.com>,
+	<linux-atm-general@lists.sourceforge.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <1075117282.1504.17.camel@zambia.cambridgebroadband.com>
+Subject: MPHY supported in mpc8260sar
+Date: Thu, 5 Aug 2004 11:09:24 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hello to all,
 
-I have been told that the first linux 2.6 version, which should work on MPC
-82xx is linux-6.8-rc2 ...?
-So I have cross-compiled "vanilla" linux-2.6.8-rc2 (using Cygwin with quite
-a few patches from Dan Kegel , Martin Schaffner and others to make
-cross-compiling work - except for netfilter code, which doesn't
-cross-compile on Cygwin and needs to be disabled, which I did) for ppc, 82xx
-and created uimage (used mkimage tool from u-boot-1.1.1, which I have built
-also on Cygwin with the latest Yuli Barcohen's patch). I have loaded this
-uimage onto PQ2 ADS witn MPC8270 (U-Boot version loaded on the PQ2 ADS flash
-is still 1.0.0.) and tried to run it with "bootm" - but it fails (resets)
-immediately after decompressing the image ... and I do not have 82xx
-back-end Jtag probe/debugger available to me to see what is happening...
+I finally achieved multiphy mpc8260sar (with some limitations).
+The driver is able to support 8 PHYs (one PHY per unique priority).
+The driver is developed out of Peter's McCormick single PHY version.
 
-U-Boot 1.0.0 (Jan 30 2004 - 16:09:23)
-=> tftpboot 200000 uimagenfs
-TFTP from server 172.16.240.200; our IP address is 172.16.119.3
-Filename 'uimagenfs'.
-Load address: 0x200000
-Loading: T #################################################################
-         #################################################################
-         #################################################################
-         #################################################################
-         #############################################################
-done
-Bytes transferred = 1641554 (190c52 hex)
-=>bootm
+For some unknow reason I could NOT achieve MPHY support with
+only one priority (for example highest PRIority 0). In order to make
+MPHY to work correctly I assigned a unique priority per PHY. With
+8 PHYs the mapping looks like: PHY0/PRIO0, PHY1/PRIO1...
+PHY7/PRIO7, eg. PHYx/PRIOx, where x is in range [0..7]!
 
-Has anybody successfuly run linux-2.6.8-rc2 (or previous linux 2.6 version)
-on MPC 82xx ?
-If so, could you share with me ".config" file used ?
+The another limitation is that I did NOT fix the VP range, eg. I am using
+only VP0 (one VP) with different VCs, where least three (3) significant
+bits of each VC assume the selected PHY. In other words, I am using
+8 nas interfaces, and VCs (decimal radix) from 40 (0x28) to 47 (0x2F),
+where VC 40 is attached to PHY0, VC 41 to PHY1... VC47 to PHY7.
+While issuing ATM xmit command I am deriving least three significant
+bits of currently processed VC and I'm putting them to the
+COMM_INFO words (offset 0x86, field PHY#), described in section
+30.14 of MPC8260 PowerQUICC II Family Reference Manual
+(Revision 1, date 05/2003).
 
-On another more general subject - does Freescale (former Motorola) has a
-single focal point person who's charter is to promote Linux board support on
-Motorola development boards (aka Linux czar) - do you have his contact info
-?
+If you all find this info of (some) interest, I can do the patch (against
+latest
+version in CVS) so we can store this limited edition of the MPHY version
+under the mpc8260sar driver project.
 
-I know that there were Linux OS Development Breakout Sessions SNDF (Smart
-Networks Developer Forum ) April,  2004 Dallas
-http://www.freescale.com/webapp/sps/site/overview.jsp?nodeId=02VS0llCc5pzMP5
-51361587974
-So somebody should stand behind Linux development activity  at  Freescale/
-Motorola (both IBM and HP do have dedicated Linux Labs and people working
-strictly on Linux ...) I guess ...
-
-Thanks,
 Best Regards,
-Alex
+Zoran Stojsavljevic
+DKTS Pupin Telecom
+zoransto@dkts.co.yu
 
+----- Original Message -----
+From: "Alex Zeffertt" <ajz@cambridgebroadband.com>
+Sent: Monday, January 26, 2004 1:41 PM
+Subject: Announcement: MPHY now supported in mpc860sar
+
+> Just a quick note to say that multi-phy is now supported by the
+> mpc860sar ATM driver, thanks to a patch by Rodolfo Giometti.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
