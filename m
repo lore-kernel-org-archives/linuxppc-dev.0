@@ -1,26 +1,27 @@
-Message-ID: <3E6647A0.3050300@embeddededge.com>
-Date: Wed, 05 Mar 2003 13:53:20 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3E666DB2.4030901@ecubics.com>
+Date: Wed, 05 Mar 2003 14:35:46 -0700
+From: emanuel stiebler <emu@ecubics.com>
 MIME-Version: 1.0
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mpc8241/8245 floating point unit
-References: <5.1.0.14.2.20030305131034.02661008@falcon.si.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linux-emb <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: kernel boot on mpc8245, internal UART
+References: <3E654405.6020904@ecubics.com> <3E662D79.9030904@pp.iij4u.or.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jerry Van Baren wrote:
+> emanuel stiebler wrote:
+>>I have a board which is close to Sandpoints mpc8245 cpu board.
+>>(using internal DUARTs, EPIC_MODE_SERIAL)
 
-> It has always had a FPU.  For a while, Mot was not advertising it because
-> they had not verified that it worked properly,
+Trying to figure out what is going wrong, I tried to locate the driver
+for the internal DUART of the MPC8245 ...
 
-The story is much more interesting than that :-)  You need to find
-someone at Motorola that is willing to tell it.
+So, probably a stupid question, but where is the link/information, or
+where do I provide it, that the MPC8245 should use the internal UART as
+a console on linux ?
 
-
-	-- Dan
+Thanks a lot in advance, but I guess I got lost ...
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
