@@ -1,68 +1,96 @@
-Subject: Re: bash: Segmentation fault on 8280
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: Srinivasa Hebbar <sshebbar@yahoo.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <000f01c3ad19$16bc9070$3d40000a@wisdom>
-References: <000f01c3ad19$16bc9070$3d40000a@wisdom>
-Content-Type: multipart/mixed; boundary="=-EazrijlpldVTXedA3wiK"
-Message-Id: <1069084615.1046.2.camel@jarjar.hsv.redhat.com>
-Mime-Version: 1.0
-Date: 17 Nov 2003 09:56:56 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: SDRAM mirroring problem
+Date: Mon, 17 Nov 2003 10:25:36 -0700
+Message-ID: <8039970AF146314597457D3B51A68B382E042E@cossmgmbx02.email.corp.tld>
+From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-EazrijlpldVTXedA3wiK
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Well, an uninformed response may be better than no response???  Here goes...
 
-On Mon, 2003-11-17 at 08:42, Srinivasa Hebbar wrote:
-> Dear All,
+I don't understand how your hardware is set up.
+
+a) Are you connecting the two 64Mbyte chips in parallel as a 32 bit
+wide data bus (this is implied by your use of one chip select). This is
+contradicted by your statement "My problem is that when i write some
+word in first RAM chip is mirrored in the other RAM chip.And Effectivly
+i m able to use only 64 MB of RAM." which implies that the two chips are
+expected to be sequential in memory address space.
+
+b) If you are connecting the two chips up sequentially as 64MB by 16
+bits wide on the data bus, you need separate chip selects with the first
+one providing the first 64MBytes of decoded address space and the second
+one the second 64MBytes.
+
+Cheap ASCII art:
+
+a) +----+----++----+----+ 00000000
+   |byt0|byt1||byt2|byt3|
+   |    |    ||    |    |
+   |    |    ||    |    |
+   +----+----++----+----+ 03FFFFFF
+      chip0      chip1
+
+b) +----+----+ 00000000
+   |byt0|byt1|
+   |byt2|byt3| chip0
+   |    |    |
+   +----+----+ 01FFFFFF
+   +----+----+ 02000000
+   |    |    |
+   |    |    | chip1
+   |    |    |
+   +----+----+ 03FFFFFFF
+
+gvb
+
+
+> -----Original Message-----
+> From: Anil Giri [mailto:anil@india.tejasnetworks.com]
+> Sent: Monday, November 17, 2003 3:54 AM
+> Subject: SDRAM mirroring problem
 >
-> We have 2 identical custom board with MPC-8260 and MPC-8280 CPUs.
-> The bash (Came with denx CD) works fine on MPC-8260 board.
-> But the same bash program encounters a "Segmentation Fault"
-> on 8280 based custom board.
+>   My board uses SAMSUNG K4S511632M SDRAM in 8M * 16 bit * 4 banks
+> configuration (13 rows & 10 columns).Two such chips are used to get
+> 128 MB and uses CS1 for chip select.My board uses MPC852T processor.
 >
-> We are using ppc_82xx-gcc compiler to build the linux.
-> The linux version is denx-2.4.20
-
-Your kernel might not have 8280 support. See if something like the
-attached patch has been applied.
-
---Guy
-
+> MPC to SDRAM configuration is as follows:
+> ======================
+> A29 :A0
+> A28 :A1
+> A27 :A2
+> A26 :A3
+> A25 :A4
+> A24 :A5
+> A23 :A6
+> A22 :A7
+> A21 :A8
+> A20 :A9
+> GPL_A0 : A10
+> A18 :A11
+> A17 :A12
 >
-> Any help is highly appreciated.
+> A6 :BA0
+> A5 :BA1
+> GPL_A3 :CAS
+> GPL_A2 :RAS
+> GPL_A5 :WE
+> =====================
+> My problem is that when i write some word in first RAM chip is
+> mirrored in the other RAM chip.And Effectivly i m able to use only 64
+> MB of RAM. What could be the problem??? Following SDRAM settings are
+> used
 >
-> Regards,
-> S. Hebbar.
->
-
---=-EazrijlpldVTXedA3wiK
-Content-Disposition: attachment; filename=8280.patch
-Content-Type: text/plain; name=8280.patch; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
---- v2.4.22_linuxppc_2_4_devel/arch/ppc/kernel/cputable.c	2003-07-25 14:39:48.000000000 +0000
-+++ sbcPowerQUICCII/arch/ppc/kernel/cputable.c	2003-10-14 18:51:45.000000000 +0000
-@@ -299,6 +299,14 @@ struct cpu_spec	cpu_specs[] = {
- 	32, 32,
- 	__setup_cpu_603
-     },
-+    {	/* 8280 is a G2_LE (603e core, plus some) */
-+	0x7fff0000, 0x00820000, "8280",
-+	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_CAN_DOZE | CPU_FTR_USE_TB |
-+	CPU_FTR_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
-+	COMMON_PPC,
-+	32, 32,
-+	__setup_cpu_603
-+    },
-     {	/* default match, we assume split I/D cache & TB (non-601)... */
-     	0x00000000, 0x00000000, "(generic PPC)",
-     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
-
---=-EazrijlpldVTXedA3wiK--
-
+> IMMR:0xff000000
+> OR1: 0xf8000e00
+> BR1: 0x00000081
+> MSTAT:0x00000400
+> MAMR: 0x80a06114
+> MAR: 0x88
+> MCR:0x80002105
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
