@@ -1,66 +1,71 @@
-Date: Mon, 3 Feb 2003 10:44:52 -0700 (MST)
-From: daRonin <daronin@digimerc.com>
+Date: Mon, 3 Feb 2003 14:01:43 -0500
+From: Brad Sawatzky <brad+linuxppc@lamorak.phys.virginia.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: external cinema 22" display
-In-Reply-To: <20030202213541.GC22344@haar.ae.gatech.edu>
-Message-ID: <Pine.LNX.4.50L0.0302031032090.1676-100000@daronin.digimerc.com>
-References: <20030120155921.GA22300@haar.ae.gatech.edu>
- <1043086974.2456.9.camel@tsunami.lan.stampflee.com> <20030202213541.GC22344@haar.ae.gatech.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Mach64-GX using fbdev problem
+Message-ID: <20030203190143.GB20673@lamorak.phys.virginia.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  I finally got my Cinema display working on TiBook G4 with Radeon M6 LY
-in it.
+Hi all,
 
- It would seem that radeonfb doesn't even look for CRT port on M6 LY.
+If anyone has managed to get this card to work I would appreciate an email
+with the relevant ModeLine and/or kernel arguments.  I would like to get
+this thing to run in at least 800x600x24.  A configuration for 1024x768x16
+would also be nice.
 
- At the line 1058 of radeonfb.c (v 0.1.6):
- <snip>
-        switch (rinfo->arch) {
-                case RADEON_M6:
-                case RADEON_M7:
-                case RADEON_M9:
-                        rinfo->dviDisp_type = MT_LCD;
-                        break;
+I have gotten to the stage where I can see a mangled X screen (ie. the kind
+of thing you see when you are using a bogus mode for the monitor).  I have
+tried quite few different (stock) resolution/depth combos as well as
+explicitly defining some reasonable looking ModeLines taken from successful
+'fbset -x' commands.  The monitor (NEC XV17" CRT) works fine at all of the
+refresh rates, geometries and depths under OSX.  (Is there a tool
+comparable to 'fbset -i' in OSX?)  I've also tested with my 21" Apple CRT
+without success so I don't think the problem is monitor related.
 
-   <snip>
+Some relevant info:
+  Blue&White G3, kernel 2.4.20-ben1
 
-  The code just assumes that if I have RADEON_M6 all I've got is LCD. So I
-added another command line option called "crt" and added a line:
+  XFree86 Version 4.2.1.1 (Debian 4.2.1-5 20030121181741 branden@debian.org)/ X Window System
+  (protocol Version 11, revision 0, vendor release 6600)
+  Release Date: 18 October 2002
 
-<snip>
+>From lspci:
+  01:03.0 VGA compatible controller: ATI Technologies Inc 210888GX [Mach64 GX] (rev 03)
 
-        switch (rinfo->arch) {
-                case RADEON_M6:
-                case RADEON_M7:
-                case RADEON_M9:
-                        /* modified by daRonin */
-                        if (force_crt) radeon_get_moninfo(rinfo);
-                        else rinfo->dviDisp_type = MT_LCD;
-                        break;
+>From /proc/fb:
+  0 ATY Rage128
+  1 ATY Mach64
 
-<snip>
+>From 'fbset -fb /dev/fb1 -i' (right after a reboot, X hasn't fired up)
+Frame buffer device information:
+    Name        : ATY Mach64
+    Address     : 0x81800000
+    Size        : 1048576
+    Type        : PACKED PIXELS
+    Visual      : PSEUDOCOLOR
+    XPanStep    : 8
+    YPanStep    : 1
+    YWrapStep   : 0
+    LineLength  : 640
+    MMIO Address: 0x817ffc00
+    MMIO Size   : 1024
+    Accelerator : ATI Mach64GX
 
-  After this my cinema display started working properly, though still
-throughing me into 640x480-8@70 mode.
+>From XF86Config
+Section "Device"
+        Identifier      "Mach64-GX"
+        Driver          "fbdev"
+        BusID           "PCI:1:3:0"
+        Option          "UseFBDev"              "true"
+        Option          "fbdev"                 "/dev/fb1"
+EndSection
 
- So I added an fbset command in my rc scripts. I still had to play with
-timings quite a bit. For one I had to set vsync to high, otherwise the
-monitor wouldn't even come up in any resolution.
-
-  I also got this working only with my ebuild Gentoo kernel (2.4.20-r2), I
-tried 2.4.20-ben4 and 2.4.20-ben5. In both of those, after my
-modifications the cinema display worked, but the LCD didn't blank, instead
-it went white. I played around with the code, but couldn't find the source
-of the problem...
-
-  If anyone is interested I can send them the modified radeonfb.c as well
-as the timings for 1600x1024-60...
-
-  Andrew
-
+--
+Brad Sawatzky <bds9e@virginia.edu>
+University of Virginia Physics Department
+Ph: (434) 924-6580    Fax: (434) 924-4576
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
