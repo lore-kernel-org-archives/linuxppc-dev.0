@@ -1,50 +1,82 @@
-Date: Wed, 26 May 2004 07:19:53 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Matt Porter <mporter@kernel.crashing.org>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: curious about BK checkin protocol
-In-Reply-To: <20040525102352.A1329@home.com>
-Message-ID: <Pine.LNX.4.58.0405260714540.24178@localhost.localdomain>
-References: <Pine.LNX.4.58.0405250909280.14496@localhost.localdomain>
- <20040525102352.A1329@home.com>
+Message-ID: <40B485D3.7050703@fh-landshut.de>
+Date: Wed, 26 May 2004 13:56:03 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [Fwd: Memory layout question]
+References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
+In-Reply-To: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 25 May 2004, Matt Porter wrote:
+Below I sketched out a function that may give an address from the bus the Tundra
+Universe is on - it is designed to be used, where normally the
+allocate_resource() call is used (e.g. in create_slsi_window()).
 
-> On Tue, May 25, 2004 at 09:12:10AM -0400, Robert P. J. Day wrote:
-> >
-> >   i just bk-cloned a fresh copy of the source tree from
-> > http://ppc.bkbits.net:8080/linuxppc-2.5, and once again, had to fix the
-> > file arch/ppc/kernel/ppc_ksyms.c to remove the now-obsolete snippet of
-> > code:
-> >
-> > #if defined(CONFIG_8xx)
-> > EXPORT_SYMBOL(request_8xxirq);
-> > #endif
-> >
-> >   i thought it had been well-established by now that this had to go.
-> > what's the protocol for someone putting these changes into the tree?
-> > just curious.
->
-> Post a patch.  If it's something that is incorrect in linux-2.5
-> as well, then the patch is expected to be against linux-2.5.
+With kind regards,
+Oliver Korpilla
 
-post to this list?  sure, if that's the right place.  the only reason i'm
-obsessed about that little fix as opposed to all the others that are going
-in is that, WRT the most recent BK pull from
-http://ppc.bkbits.net:8080/linuxppc-2.5, that's the *only* thing that
-keeps the kernel from compiling, and letting me build that a kernel that,
-while it loads and runs, admittedly still blows up upon starting init.
+/* Try getting a resource (range of PCI addresses) from the PCI bus we're on */
+static int allocate_pci_resource(unsigned long size, unsigned long align,
+				 struct resource *new_resource) {
 
-while i realize that the current kernel still has user land problems, it
-seems a shame to not at least fix the single minor thing that prevents a
-simple build.
+   /* Determine the bus the Tundra is on */
+   struct pci_bus *bus = universe_pci_dev->bus;
+   int i;
 
-rday
+   for (i=0; i<4; i++) {
+     int retval;
 
+     /* Get one of the bus address ranges */
+     struct resource *r = bus->resource[i];
+
+     /* Check if that resource "exists" */
+     if (!r)
+       continue;
+
+     /* If the resource is not I/O memory (e.g. I/O ports) */
+     if (! (r->flags & IORESOURCE_MEM))
+       continue;
+
+#ifdef DEBUG
+     /* Print out name of resource for debugging */
+     if (r->name)
+       printk(KERN_INFO "Checking bus resource with name \"%s\".\n", r->name);
+     printk(KERN_INFO "resource.start: %08lX, resource.end: %08lX.\n",
+	   r->start, r->end);
+#endif
+
+     /* Try to allocate a new sub-resource from this
+        given the proper size and alignment*/
+     retval = allocate_resource(r, new_resource, size, 0, ~0,
+			       align, NULL, NULL);
+
+     /* If this allocation fails, try with next resource
+        (and give debug message) */
+     if (retval < 0) {
+
+#ifdef DEBUG
+       if (r->name)
+	printk(KERN_INFO
+	       "Failed allocating from bus resource with name \"%s\".\n",
+	       r->name);
+       else
+	printk(KERN_INFO
+	       "Failed allocating from bus resource with number %d.\n", i);
+#endif
+
+       continue;
+     }
+     /* If this allocation succeeds, return what allocate_resource() returned */
+     else
+       return retval;
+   }
+
+   /* return busy if no resource could be successfully allocated */
+   return -EBUSY;
+}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
