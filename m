@@ -1,25 +1,38 @@
-From: Gabriel Paubert <paubert@iram.es>
-Date: Fri, 14 Mar 2003 12:43:17 +0100
-To: Dale Farnsworth <dale@farnsworth.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
-Message-ID: <20030314114317.GB26518@iram.es>
-References: <20030304191644.GA4524@rover.farnsworth.org> <3E64FD53.3030107@embeddededge.com> <20030304201302.GA4683@rover.farnsworth.org> <3E650AAF.7060804@embeddededge.com> <20030313223853.GA6921@rover.farnsworth.org>
+Subject: Re: 2.4.20-ben8 vmlinux.coff CLAIM error on PowerMac 4400
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: mikpe@csd.uu.se
+Cc: Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <15985.4233.198025.809102@gargle.gargle.HOWL>
+References: <15984.39762.858447.704784@gargle.gargle.HOWL>
+	 <20030313152506.GB28311@suse.de>
+	 <15984.43692.736225.647094@gargle.gargle.HOWL>
+	 <1047571502.790.76.camel@zion.wanadoo.fr>
+	 <15984.47873.428447.186049@gargle.gargle.HOWL>
+	 <1047576187.789.82.camel@zion.wanadoo.fr>
+	 <15985.4233.198025.809102@gargle.gargle.HOWL>
+Content-Type: text/plain
+Message-Id: <1047648731.689.7.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030313223853.GA6921@rover.farnsworth.org>
+Date: 14 Mar 2003 14:32:11 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 13, 2003 at 03:38:53PM -0700, Dale Farnsworth wrote:
-> -	li	r9,0x0000
-> +	li	r9,0x000c
->  	mtlr	r9
->  	blr
+> vmlinux.coff built from 2.4.18, both vanilla and with Olaf's patch in
+> http://penguinppc.org/~olaf/2.4.18/01_linux-2.4.18-rc4-lxppc_devel-0.diff.gz,
+> boots Ok. However, 2.4.18 has the "excessively slow swim3 floppy writes"
+> problem I mentioned earlier that 2.2.24 doesn't have.
+>
+> I also tried 2.4.20-ben8 with coffmain.c from 2.4.18 as you suggested,
+> but it got the same CLAIM error as before. (hack-coff.c was unchanged
+> and I didn't find anything else coff-related.)
 
-Why not "ba 0x000c" instead? Just saves 8 bytes cheaply.
+Can you try -ben8 and change _both_ ALIGN(8) to ALIGN(4096) ?
 
-	Gabriel
+Part of the problem is that oldworld OF has known bugs in its
+implementation of CLAIM(), I wonder if we should merge text, data
+and bss into a single segment in the COFF to make it happy...
+
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
