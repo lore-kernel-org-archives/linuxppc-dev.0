@@ -1,38 +1,28 @@
-Date: Tue, 20 Jun 2000 21:43:49 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: "Timothy A. Seufert" <tas@mindspring.com>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: [linux-fbdev] Re: 3D accel on PPC
-In-Reply-To: <Pine.LNX.4.05.10006201235030.17597-100000@callisto.of.borg>
-Message-ID: <Pine.LNX.4.21.0006201748210.25040-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <v04220800b575b0dd6382@[192.168.0.1]>
+Date: Tue, 20 Jun 2000 19:39:54 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: can't build 2.4.0-test1; matroxfb parse error?
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 20 Jun 2000, Geert Uytterhoeven wrote:
+I just rsynced to the linux-pmac-devel tree to try the latest compile
+on my PM6500. I believe this is 2.4.0-test1. With all default config
+options, I get this error:
 
-> On Mon, 19 Jun 2000, Kostas Gewrgiou wrote:
-> > What is holding back ppc voodoo3 in xfree right now
-> > is PIO support, i tried to use tdfxfb to get away from
-> > this but there a problems there as well (the xserver
-> > needs a 2*vramsize mapping in the framebuffer but fbdev
-> > can't do this unless i patch tdfxfb to think that its
-> > vram is 2*realsize, Geert any ideas how we can get away
-> > from this ?)
->
-> Why do they want 2*vramsize? Is the extra space where no RAM is used for
-> something different? Can they map something there?
->
+matroxfb_base.c:1146: parse error before `matroxfb_set_cmap'
+make[4]: *** [matroxfb_base.o] Error 1
 
- In voodoo you can setup one part of the framebuffer as tiled memory,
-access to this tiled memory needs more address space thats why a
-mapping of 2*ram is needed.
+I'm using /gcc version 2.95.2 19991024 (release/franzo)/ if that
+makes any difference. I don't know how to handle a "parse error."
+What is it and how might I fix it (or do I just not compile with
+matrox support for now)?
 
-  Kostas
+
+Stefan Jeglinski
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
