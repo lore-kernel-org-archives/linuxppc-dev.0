@@ -1,64 +1,34 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Manuel Tovar Dall'Orso" <mtovar@tcc.com.pe>
-Reply-To: mtovar@tcc.com.pe
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux Embedded - TFT serial input problem
-Date: Fri, 8 Feb 2002 12:10:58 -0500
-MIME-Version: 1.0
-Message-Id: <02020812105804.01564@id05.tcc.com>
+Date: Fri, 8 Feb 2002 17:46:36 +0000
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Jim Thompson <jim@musenki.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC107 I2C
+Message-Id: <20020208174636.08cddc5e.adrian@humboldt.co.uk>
+In-Reply-To: <15459.65390.787694.577725@gargle.gargle.HOWL>
+References: <20020208094057.799c099a.adrian@humboldt.co.uk>
+	<3C63F5A4.5070608@embeddededge.com>
+	<20020208162309.395f7c2f.adrian@humboldt.co.uk>
+	<15459.65390.787694.577725@gargle.gargle.HOWL>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We have an embedded TQM823 system working with a TFT Prime View V16C6448, in
-ppcboot-1.1.3 after settings the lcd.c file the system display the info in
-the LCD and our input comes from the Keyboard of the PC attached to the STK
-by a SMC1 (serial line).  When we configure the system for mounting rootp
-artition by NFS in linux, the output works fine but our input for keyboard
-fails.
+On Fri, 8 Feb 2002 10:40:14 -0600
+Jim Thompson <jim@musenki.com> wrote:
 
+> No linux drivers, but the moto code (for the 8240) is in the ppcboot
+> tree these days, and I know that gbios has enough of i2c up to read
+> SODIMMs.
 
+I suspected as much. I wrote the GBIOS code, which does DIMM reading and
+also can store environment variables in I2C eeproms. If there's no
+driver out there I'll need to convert the code from polling to
+interrupts and fit it into the Linux i2c framework.
 
-Description
-===========
-Source --->    kernel 2.4.4-2002-01.19
-adding ld.so.1 from ftp://ftp.denx.de/pub/LinuxPPC/usr/src/ld.so.1.tar.bz2
-CrossCompiler -> CDK from denx, LinuxPPC-2.2.13 for TQM823L(27_Jan_2000)
-
-Our STK8xx (TQM823L_module) have been setup for TFT Prime View V16C6448AC
-compatibility, in ppcboot-1.1.3 the TFT output, and PC Keyboard input works
-perfect in the communications made by SMC1
-
-
-
-
-NFS-Compiling
-=============
-For compiling:    > make TQM823L_LCD_config
-
-Addings:  > Plataform Suport   -> standalone shell = /bin/sash
-              > MPC8xx CPM Options -> Type of LCD Display
-                           arch/ppc/8xx_io/lcd823.c
-                           arch/ppc/8xx_io/Config.in
-                            (modify for our TFT like ppcboot)
-
-we setup /dev/console->tty0
-
-That works OK, the system initialize and we got the prompt in the TFT, but we
-don't have access to the system by the keyboard of the PC connected to the
-STK by the serial line SMC1.
-
-
-Question
-=======
-
-We need to configure another thing in the kernel for working with that serial
-imput ?
-
-
-
-Regards Manuel
+--
+Adrian Cox
+http://www.humboldt.co.uk/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
