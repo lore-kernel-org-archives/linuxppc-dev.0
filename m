@@ -1,32 +1,38 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: iBook and Kernel 2.2.17pre7
-Date: Mon, 26 Jun 2000 18:45:27 +0200
-Message-Id: <20000626164527.9318@mailhost.mipsys.com>
-In-Reply-To: <20000626124613.7321@mailhost.mipsys.com>
-References: <20000626124613.7321@mailhost.mipsys.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-Version: 1.0
+Message-Id: <a04320400b57d5c94cf5d@[192.168.0.3]>
+In-Reply-To: <Pine.LNX.4.05.10006261210000.5601-100000@callisto.of.borg>
+References: <Pine.LNX.4.05.10006261210000.5601-100000@callisto.of.borg>
+Date: Mon, 26 Jun 2000 14:17:05 -0500
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Michel Dänzer  <daenzerm@student.ethz.ch>
+From: Adam Lebsack <lebsack@mac.com>
+Subject: Re: XF86Config 4.0
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jun 26, 2000, Benjamin Herrenschmidt <bh40@calva.net> wrote:
-
->>- The atyfb driver now recognize my iBook ATI Mobility 3D Rage L
->>chipset. The only problem I have with it is that the initialisation
->>mode detection is bad and you have to issue a "vmode 10" to get it
->>working properly.
+At 12:11 PM +0200 6/26/00, Geert Uytterhoeven wrote:
+>On Mon, 26 Jun 2000, Michel Dänzer wrote:
+>>  Yep, in the XFree86 CVS, so you'd currently have to join as a developer.
+>>
+>>  If you don't want to do that, you'll have to wait for either
+>>
+>>  - the 4.0.1 release
+>>
+>>  - public anonymous CVS access
+>>
+>>  both of which should be available RSN.
 >
->Glad to know it works. I'll look into this init problem. Note that you
->may want to try increasing slightly the mclk value. It defaults to 50,
->but some users got it working well at 55. for some reason, the speed
->difference can be important.
+>The public anonymous CVS access was on /. lately.
+>
+>Gr{oetje,eeting}s,
+>
 
-BTW. Many thanks to 'Mike' Michal Palczewski who found what was wrong in
-my code for the iBook !
+yeah, this is what I have been looking for...  http://www.xfree86.org/cvs/
 
-Ben.
+Thanks!
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
