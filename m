@@ -1,33 +1,33 @@
-Message-ID: <40F55AAC.3000405@gcctech.com>
-Date: Wed, 14 Jul 2004 12:09:16 -0400
-From: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Reply-To: cjohnson@gcctech.com
+Message-ID: <40F56540.9070303@ru.mvista.com>
+Date: Wed, 14 Jul 2004 20:54:24 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: looking for an implementation
+Cc: Gennadiy Kurtsman <gkurtsman@ru.mvista.com>
+Subject: [PATCH]  for linuxppc-2.4 tree: Gigabit Ethernet driver for Xilinx
+ ML300
+References: <4034C37D.20909@ru.mvista.com> <405B2C46.90108@ru.mvista.com> <40A8FED6.9000809@ru.mvista.com>
+In-Reply-To: <40A8FED6.9000809@ru.mvista.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm looking at creating a "server-side" parallel port driver for a
-system that wants to look like a parallel port -based printer.  Some
-(probably dumb) questions:
+Hi,
 
-1. Should the existing parport arch be the right way to do this?  I
-suppose I'll have to write low-level support for the particular
-device/chipset, etc.
+Here is the Gigabit Ethernet driver for Xilinx ML300.
 
-2. Or perhaps a simpler kernel driver which handles just the minimum
-needed to implement the "server"?
+The patch affects Xilinx ML300 board only.
 
-3. Does anyone know of any examples of #2?
+The patch itself can be found here:
+http://source.mvista.com/~ank/xilinx_xgige_update.040629.diff
 
-4. I suppose that (at least on an intel machine) a user-mode program
-with ioperms might be able to do this, but I'm on ppc405.  Is this still
-a possibility on ppc?
+The patch is against the kernel version 2.4.27-pre6.
 
-any observations or comments are appreciated
+The patch author is Gennadiy Kurtsman.
+
+Best regards,
+Andrei Konovalov
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
