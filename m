@@ -1,38 +1,45 @@
-Subject: Re: [PATCH] Fixup for DEC 21154 bridge to allow CardBus support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pavel Roskin <proski@gnu.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.58.0405240227210.3182@portland.hansa.lan>
-References: <Pine.LNX.4.58.0405231954120.10093@portland.hansa.lan>
-	 <1085363158.15315.11.camel@gaston>
-	 <Pine.LNX.4.58.0405240031200.2676@portland.hansa.lan>
-	 <1085376973.14969.47.camel@gaston>
-	 <Pine.LNX.4.58.0405240227210.3182@portland.hansa.lan>
-Content-Type: text/plain
-Message-Id: <1085381211.24948.60.camel@gaston>
+Date: Sun, 23 May 2004 23:47:04 -0700
+From: Jamie Heilman <jamie@audible.transient.net>
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: BriQ & Linux 2.6
+Message-ID: <20040524064703.GI1946@audible.transient.net>
+References: <20040521074018.GD8520@audible.transient.net> <1085181034.6755.7.camel@gaston> <20040521233523.GJ8520@audible.transient.net> <1085199239.9230.4.camel@gaston> <20040522064520.GM8520@audible.transient.net> <1085209944.9234.7.camel@gaston> <20040522193639.GO8520@audible.transient.net>
 Mime-Version: 1.0
-Date: Mon, 24 May 2004 16:46:52 +1000
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040522193639.GO8520@audible.transient.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I guess we don't understand each other.  I thought you didn't like that I
-> the PCI bridge would handle all buses from 1 to 255.  I assumed that you
-> meant that some of those buses can be used by some other PCI bridges.  I
-> assumed that if the P2P bridge is behind the main PCI bridge, the buses
-> handled by the P2P bridge would be a subset of the buses handles by the
-> the main PCI bridge.
+Well played around with the pcnet32 driver, reverting some of the
+changes since 1.27a, and it didn't help at all, so I gave up on that
+problem and focused on the spontaneous rebooting.  SMART tests on the
+disk revealed nothing, acording to the selftests everything is fine.
 
-You are right, I was on crack
+On a whim I removed the gargoyle expansion board from the briq, and lo
+and behold - stability improved dramatically.  Its hard to know why it
+helped.  But more disturbing is that it didn't solve the issue by a
+long shot.  So I ran bonnie++ for a few itterations ... and it worked
+flawlessly (in 2.6.6-bk8).  Then I ran:
+while :; do tar jxf linux-2.6.6-bk8.tar.bz2; echo -n .; done
 
-> I assure you that every CardBus bridge would only use 4 buses.  It won't
-> use all 253 buses.
->
-> Anyway, you know PowerPC architecture much better.  I might be missing
-> something obvious.  After all, the upper bus range is just a number.
-> Adjust it in any direction if you want.
+The second time through the machine spontaneously rebooted.  :-(
+So I booted up 2.4.24-2004021601briq from TI's site, reran the above
+test, and it got through about 4 itterations before it locked up hard,
+and VFD went dark (didn't reboot).  So then I stepped back to
+2.4.23-2004012801briq also from TI... ran the test again, got maybe 1
+itteration further and locked up again.  So, swearing up a storm, I
+booted up 2.2.19 and ran the test again, this got through quite a few
+itterations (like around 11 or 12) but in the end the machine still
+locked up and the VFD went dark.
+
+Frustrating; I'm starting to wonder if the software is the real issue
+though.
+
 --
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
+Jamie Heilman                     http://audible.transient.net/~jamie/
+"I was in love once -- a Sinclair ZX-81.  People said, "No, Holly,
+ she's not for you." She was cheap, she was stupid and she wouldn't
+ load -- well, not for me, anyway."                     -Holly
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
