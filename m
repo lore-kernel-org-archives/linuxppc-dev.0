@@ -1,31 +1,47 @@
-Date: Mon, 10 Jul 2000 16:38:14 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Ethan Benson <erbenson@alaska.net>
-cc: Hollis Blanchard <hollis@amulet.co.jp>, Tom Gall <tom_gall@vnet.ibm.com>,
-        yellowdog-devel@lists.yellowdoglinux.com,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: RFC: Changing default partition type for linux/ppc
-In-Reply-To: <20000707211607.D7162@plato.local.lan>
-Message-ID: <Pine.LNX.4.10.10007101636380.26278-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <3969E6B8.D0AE0169@pop.agri.ch>
+Date: Mon, 10 Jul 2000 17:07:39 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-test3
+References: <200007101156.MAA26609@hyperion.valhalla.net> <20000710121009.20193@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > So can we get all distributions to agree on this partition type scheme?
-> > IIRC Debian currently relies on the Apple_Unix_SVR2 type, and ignores
-> > everything else for the purpose of installing or creating swap space. I'd
-> > like to update the Debian version of pdisk to recognize types used by
-> > other distributions if possible.
+Benjamin Herrenschmidt wrote:
 >
-> this would certainly have to wait for woody...
+> >Does anyone know of a source of 2.4.0-test3 that will build for PPC?
+> >
+> >I grabbed the bitkeeper 2_3 rsync last night - but it doesn't build...  and
+> >linux-pmac-devel is currently at test1-ac21...
+>
+> Grab the bk tree again, I fixed the build yesterday evening (late)
 
-Sure, but isn't woody right around the corner ?? :-)
+It doesn't compile per se, in pmac_backlight.c asm/pmu.h & asm/adb.h
+should be linux/pmu.h & linux/adb.h. This isn't a tragedy.
 
-Just wanted to make sure we get some sort of agreement.
+More problems I get on booting on a wallstreet I. A panic occurs in
+combination with mesh. Have to figure out. I removed mesh and 53c94 from
+the kernel and now it boots.
 
-	Michael
+A patched 7200 fails completely to boot, it stops on displaying
+'booting....'. This kernel is patched with mftb patch from Takashi,
+pci-resource & serial-console patch from Michel. (Otherwise a 7200 would
+not boot)
+
+In the sccstool I read in prom.c Calc BAT..... this may cause trouble if
+the framebuffer is really badly aligned.......
+TODO: Check 601 case...
+
+How can I help?
+
+
+Regards,
+Andreas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
