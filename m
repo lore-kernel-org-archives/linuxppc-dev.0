@@ -1,54 +1,38 @@
-Message-Id: <20010710210004.Postino-030256@smtp01.highway.ne.jp>
-Date: Tue, 10 Jul 2001 21:00:04 +0900
-To: linuxppc-dev@lists.linuxppc.org
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Kernel-2.4.7.pre5
-MIME-Version: 1.0
+Date: Tue, 10 Jul 2001 14:19:07 +0200
+From: Olaf Hering <olh@suse.de>
+To: Samuel Rydh <samuel@suse.de>, linuxppc-dev@lists.linuxppc.org
+Cc: Samuel Rydh <samuel@ibrium.se>
+Subject: Re: 640x480 on iBook/Titanium
+Message-ID: <20010710141907.A21458@suse.de>
+References: <20010709224810.A1931@ibrium.se>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010709224810.A1931@ibrium.se>; from samuel@ibrium.se on Mon, Jul 09, 2001 at 10:48:10PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+On Mon, Jul 09, Samuel Rydh wrote:
 
-I had this problem in linuxppc_2_4 bk tree's linux-2.4.7.pre5.
-Is my fix correct ?
+>
+> Does anybody know how to the fb.modes configuration for 640x480
+> on the iBook and/or on the titanium? I would like to bundle these
+> mode lines with MOL.
 
-Kaoru
+I guess 640x480 will not work on any ibook or powerbook becasue it
+requires some sort of hardware scaling.
+Btw, your 800x600 iBook mode has 75Hz instead of 60Hz, just noticed that
+:)
 
-------------- fix ---------------
-diff -urN base/include/asm-ppc/hardirq.h fixed/include/asm-ppc/hardirq.h
---- base/include/asm-ppc/hardirq.h	Tue Jul 10 14:42:03 2001
-+++ fixed/include/asm-ppc/hardirq.h	Tue Jul 10 20:26:26 2001
-@@ -20,6 +20,7 @@
- 	unsigned int __local_bh_count;
- 	unsigned int __syscall_count;
- 	unsigned int __last_jiffy_stamp;
-+	struct task_struct * __ksoftirqd_task;
- } ____cacheline_aligned irq_cpustat_t;
 
- #include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above
-*/
+Gruss Olaf
 
---------------------------------
--------- problem -------------
-gcc -D__KERNEL__ -I/usr/src/redhat/BUILD/linux/include -Wall -Wstrict-prototypes -
-Wno-trigraphs -O2 -fomit-frame-pointer -fno-strict-aliasing -D__powerpc__ -
-fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring
-  -c -o softirq.o softirq.c
-softirq.c: In function `wakeup_softirqd':
-softirq.c:58: structure has no member named `__ksoftirqd_task'
-softirq.c: In function `ksoftirqd':
-softirq.c:393: structure has no member named `__ksoftirqd_task'
-softirq.c: In function `spawn_ksoftirqd':
-softirq.c:420: structure has no member named `__ksoftirqd_task'
-make[2]: *** [softirq.o] Error 1
-make[2]: Leaving directory `/usr/src/redhat/BUILD/linux/kernel'
-make[1]: *** [first_rule] Error 2
-make[1]: Leaving directory `/usr/src/redhat/BUILD/linux/kernel'
-make: *** [_dir_kernel] Error 2
-error: Bad exit status from /var/tmp/rpm-tmp.33988 (%build)
------------------------------
+Ps: why does your email address change to @suse.de? argh :)
 
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
