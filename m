@@ -1,19 +1,19 @@
 Return-Path: <david.jander@protonic.nl>
 Received: from protonic.xs4all.nl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 0F7D62BDB5
+	by ozlabs.org (Postfix) with ESMTP id 635132BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Dec 2004 22:59:52 +1100 (EST)
+	Thu, 30 Dec 2004 23:11:04 +1100 (EST)
 Received: from linux.local (linux.local [192.168.1.97])
 	by protonic.xs4all.nl (Postfix on SuSE Linux 7.2 (i386)) with ESMTP id
-	84ECBD4057 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Dec 2004 12:49:17 +0100 (CET)
+	D1E3BD405A for <linuxppc-embedded@ozlabs.org>;
+	Thu, 30 Dec 2004 12:36:16 +0100 (CET)
 From: David Jander <david.jander@protonic.nl>
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Date: Thu, 30 Dec 2004 12:59:48 +0100
+Date: Thu, 30 Dec 2004 12:46:48 +0100
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200412301259.49177.david.jander@protonic.nl>
+Message-Id: <200412301246.48870.david.jander@protonic.nl>
 Subject: SMC/SCC uart problem with MPC852T
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
