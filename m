@@ -1,36 +1,38 @@
-Message-ID: <37C559FF.E2E08A76@usa.net>
-Date: Thu, 26 Aug 1999 11:15:12 -0400
-From: David Riley <happyoscar42@usa.net>
-Reply-To: happyoscar42@usa.net
-MIME-Version: 1.0
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BootX enhancement request
-References: <Pine.LNX.4.10.9908261010520.29782-100000@mercator.cs.kuleuven.ac.be>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Message-Id: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com>
+Date: Thu, 26 Aug 1999 18:25:19 +0200
+To: Martin Costabel <costabel@wanadoo.fr>
+From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
+Subject: Re: vger-2.3.15 on pmac
+Cc: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
+In-Reply-To: <37C4FD7C.BBEC0F1@wanadoo.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven wrote:
+At 10:40 26.08.99 , Martin Costabel wrote:
+>In a second post, I'll have some questions about things that don't yet
+>work. I hope this is the right forum for this. I didn't see many
+>discussions on kernel development for the PPC like on the linux-kernel
+>list.
 
-> On Wed, 25 Aug 1999, Takashi Oe wrote:
-> > On Tue, 24 Aug 1999, David Riley wrote:
-> > > Some of the drivers don't do video=xxxx.  I know controlfb doesn't.  Is there
-> > > a _good_ reason for this, or does controlfb just not like me?
-> >
-> > It's probably a simple oversight.  Last I checked,
-> > controlfb does have the necessary code for "video=...", while
-> > drivers/video/fbmem.c lacks an entry for controlfb to actually activate
-> > the code.
->
-> Fixed this in vger, and sent a patch to Linus.
+You'll probably talking about the problems with adbmouse. I have a patch 
+for this one. I have also a fixed version of my Xpmac-style 3-mousebutton 
+emulation with the "buttons locked before 1st use" problem. I'll forward 
+this stuff to Paul later today when I'm home.
 
-Neat.  Will there ever be a way to do vmode 14?
+What's still NOT fixed in 2.3.15 and really annoying for a lot of users is 
+"FB. overflow" aka "macserial: flipbuffer overflow". This was introduced 
+somewhere late 2.1 or early 2.2. I think this one is responsible for some 
+of the hard crashes reported on linuxppc-users under the "Communicator 
+crashes X" thread.
 
+Another problem probably worth a look is the near to zero serial/PPP 
+performance during heavy disk activity. One could argue this is a problem 
+with my slow 7200/75, but I don't have similar problems under MacOS...
 
---
---"Your mouse has been moved.  Windows 95 must be restarted for change to take
-effect."
+Franz.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
