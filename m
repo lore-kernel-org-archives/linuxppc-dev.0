@@ -1,25 +1,44 @@
-Date: Fri, 12 Nov 1999 15:10:26 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Frank Smith <frank.smith@amirix.com>
-cc: Frank Smith <frank.smith@aeat.co.uk>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on MVME2600
-In-Reply-To: <99Nov12.095336ast.7306@dragon.appliedmicro.ns.ca>
-Message-ID: <Pine.HPX.4.10.9911121508170.16204-100000@gra-ux1.iram.es>
+Message-ID: <382C58ED.C782DCBB@broadlink.com>
+Date: Fri, 12 Nov 1999 10:14:05 -0800
+From: Scott Wood <scott@broadlink.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: bsimon@ctam.com.au
+CC: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: LinuxEmbedded: minimal network system packages.
+References: <382B4396.57669F9B@ctam.com.au> <382BC934.EB69AB6D@linuxembedded.com> <382BBE88.12C92D9C@ctam.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+> I need to know what packages I NEED and where to find the sources for
+> them.  RedHat and Debian supply all the sources for the releases.  I
+> have been to the LinuxPPC mirror and also found RPM sources.  I am
+> currently looking at these these packages are put together by the
+> vendors and they must get the sources from somewhere else.  eg. where is
+> the orignal site for "mount" ?  I prefer to use a tarball than some
+> proprietry distribution package.
+> 
 
-	Hi Franks :-),
+There is a utility in the Linux Router Project
+(http://www.linuxrouter.org/)
+called 'busybox' which contains many useful utilities and it's about 80k
+(430k statically linked).  busybox can 'mount' but it just silently failed
+on my MPC850 board, so I'm using 'mount' from util-linux-2.9.  If you're
+using
+a RedHat-based distribution, you can use 'rpm -qf </path/to/filename>' 
+to find the name of the package that <filename> belongs to.  
 
-the images on my ftp site are used in production on MVME2600, and I'm
-puttnig the fiinshing touches to the VME driver.
 
-	ftp://vlab1.iram.es/pub/linux2.2/  
+> Thanks,
+> Brendan Simon.
 
-	Gabriel (2 MVME2600 observing at a radiotelescope since early October)
-
+-- 
++---------------------+----------------------+
+|     Scott Wood      |   Systems  Engineer  |
+|=====================+======================|
+|           BroadLink Communications         |
++--------------------------------------------+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
