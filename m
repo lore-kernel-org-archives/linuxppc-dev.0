@@ -1,30 +1,39 @@
-Message-ID: <38968743.2DA6D666@netx4.com>
-Date: Tue, 01 Feb 2000 02:12:03 -0500
+Message-ID: <38968938.71C46FD5@netx4.com>
+Date: Tue, 01 Feb 2000 02:20:24 -0500
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Lachlan Audas <laudas@transport.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Looking for cllf-2.2.13.tgz
-References: <38960E11.6F73E8C1@transport.com>
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: Pavel Roskin <pavel_roskin@geocities.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Download timeout problems on Embedded Planet CLLF (was Patch for zsrec.c)
+References: <20000201005642.914451B3E8@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Lachlan Audas wrote:
+Graham Stoney wrote:
 
 
-> I was looking the for the linux kernal cllf-2.2.13.tgz on
+> ....... but I'm having no end of
+> trouble with the download timeouts
 
 
-Use linuxplanet-2.2.13.tgz.  This is complete for all RPX boards
-and other 8xx boards.  For the CLLF, configure for RPX Classic,
-860T, no PCI, Ethernet on SCC1 and FEC.  Don't enable any
-serial driver/console stuff (or most anything else :-).
+There is some trouble with large downloads and high network
+traffic.  I don't know exactly the trouble, but Embedded Planet
+is working to correct this.  I have discussed it with them, and
+probably bypassed their normal technical support channel so the
+person that answered the phone or replied to your e-mail may not
+see any problem report.......
 
-After some announcements this week at Linux World, these
-kernels (among many other tools) will find a new home on some
-better server.
+I get around this two ways.  First, split the download into
+smaller pieces.  Second, modify a Linux/PPC kernel to only
+use the first 4 Mbytes of memory, put it into the flash rom,
+write a program to copy a file from the (NFS) file system into
+mmap()'ed physical memory, and modify the kernel restart
+function so a reboot with the appropriate parameters jumps to
+this new code.
+
 
 
 	-- Dan
