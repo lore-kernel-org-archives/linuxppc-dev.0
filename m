@@ -1,69 +1,45 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Mon, 21 Jun 2004 17:41:11 -0700
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.6 networking support for Redwood[56]
-Message-ID: <20040622004111.GB8849@zenos.farnsworth.org>
-References: <20040621213948.GA8849@zenos.farnsworth.org> <20040621161214.A5851@home.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040621161214.A5851@home.com>
+Subject: Re: Lite5200 PCI not working
+Date: Tue, 22 Jun 2004 08:08:40 +0200
+Cc: Mark Jonas <mark.jonas@gmx.de>,
+	=?iso-8859-1?q?I=F1igo_Lopez_Barranco?= <ilopez@albatros-sl.es>
+References: <42A622EB18325843894BB8E1040E3DF5022753@sinaexchf> <40D734CE.9090502@gmx.de>
+In-Reply-To: <40D734CE.9090502@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200406220808.41005.g.jaeger@sysgo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jun 21, 2004 at 11:12:14PM +0000, Matt Porter wrote:
-> On Mon, Jun 21, 2004 at 02:39:48PM -0700, Dale Farnsworth wrote:
-> >
-> > I'm adding network support for the IBM Redwood5 and Redwood6 in 2.6.
-> >
-> > It looks like the best supported driver for the smc91111 chip
-> > is used by the ARM folks and is found in drivers/net/arm/smc91x.[ch]
-> > This driver recently went into the linux-2.5 tree.
-> >
-> > I moved these two files into drivers/net so they are available for
-> > PPC as well as ARM and added some Redwood-specific support.  That
-> > was straightforward.  This driver calls a couple of ARM-specific
-> > functions platform_get_resource() and platform_get_irq().  ARM
-> > implements these functions in arch/arm/common/platform.c.  I
-> > copied arch/arm/common/platform.c into arch/ppc/syslib/platform.c
-> > which works fine, but I don't care for duplicated code.  Maybe a
-> > better approach would be to add these functions to drivers/base/platform.c
->
-> How about wrapping each arch-specific call up in something more abstract
-> and then using OCP to get the PPC info?
->
-> roughly...
->
-> #ifdef CONFIG_PPC_OCP
-> TO_SMC_DEV		to_ocp_device()
-> SMC_GET_BASE_ADDR	dev->def->paddr
-> ...
-> #else /* ARM */
-> TO_SMC_DEV		to_platform_device()
-> SMC_GET_BASE_ADDR	platform_get_resource(dev, IORESOURCE_MEM, 1)
-> ...
-> #endif
->
-> There's only about 4 places in the probe/remove calls to do this.
-> Add an ocp_add_one_device in your redwood*.c to enable the smc9111
-> device with the board-specific attributes.
->
-> You may have to play a bit with the prove/remove calls since they
-> want to deal with a resource struct, but it might be worth looking
-> at.
+Hi,
 
-Sounds like a better approach.  I'll modify the driver to present
-either the ARM interface or the PPC_OCP interface.  Muddles the
-driver a bit, but should keep both archs happy.
-
-> > Comments?  Suggestions on how to go about getting this into linux-2.5?
+On Monday 21 June 2004 21:19, Mark Jonas wrote:
+> Iñigo,
 >
-> Send a two part patch, 1/2 (file moves) 2/2 PPC changes to Nicolas
-> and cc jgarzik
+> I experienced this behavior with an USB card before. With that card the
+> reason was a short on the USB card between 3.3V and 5V supply pins. In a
+> normal PC this seems to be no problem (maybe because a PC's PCI ports
+> are 5V only).
 
-Yes without architectural changes, should be easier to get in.
+there seem to be more cards like these, they're in fact badly designed - they
+shorten the VI/O pins and 5V on the card, which could cause some trouble
+on the Lite5200, as the VI/O stuff is directly connected to the RAM chips and
+their I/O does not like the 5V...
+We sorted out some cheap networking adaptors...
 
-Thanks,
--Dale
+> The Lite5200 survived.
+"What a lucky man he was" :-)
+
+> To be sure if this is the problem I recommend testing the card for the
+> short.
+
+That's a great idea, check esp. shortage between the VI/O and 5V lines on the
+card...
+
+Gerhard
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
