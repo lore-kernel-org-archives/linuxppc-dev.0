@@ -1,52 +1,44 @@
-Date: Mon, 22 Feb 1999 16:19:17 +0100 (MET)
-From: Marc Dejardin <Marc.Dejardin@cern.ch>
-Reply-To: Marc Dejardin <Marc.Dejardin@cern.ch>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Kernel panic with kernel 2.2.1
-Message-ID: <Pine.A41.3.95a.990222150156.146678A-100000@rsplus05.cern.ch>
+Date: Mon, 22 Feb 1999 09:38:47 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+cc: Paul.Mackerras@cs.anu.edu.au,
+        Hartmut Koptein <koptein@et-inf.fho-emden.de>,
+        zankel@tarantel.rz.fh-muenchen.de, bh40@calva.net,
+        davidsen@prodigy.com, marsmail@globegate.utm.edu, dvdoug@tiac.net,
+        paubert@iram.es, jskov@cygnus.co.uk, hozer@drgw.net,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ppc-dev] Summary: Restructuring Efforts
+In-Reply-To: <Pine.LNX.3.96.990219132018.12450A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.LNX.3.96.990222093231.1072A-100000@liberty.chnd1.az.home.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
-I have experienced kernel panics with kernel 2.2.1
-when I run X. I got a beep and then everything freezed.
-In the /ver/log/messages file I have found the following :
+On Fri, 19 Feb 1999, Cort Dougan wrote:
 
- NIP: C00D56B0 XER: 00000000 LR: C00D1998 REGS: c1e69c90 TRAP: 0300
- MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
- TASK = c1e68000[322] 'X' mm->pgd c1e67000 Last syscall: 142 
- last math c483c000
- GPR00: 00000000 C1E69D80 C1E68000 C200F100 C200F970 00000000 C1ADC86C 00000010 
- GPR08: 00000010 C200F000 00000000 00000001 0000009C 01A87568 01A80000 215C7C5A 
- GPR16: 01A8B3AC 01A8B52C 01A80000 01A80000 00009032 00000001 C1E69E28 C4227000 
- GPR24: 0000000F 00000028 00000000 00000000 C1E69D88 C1E69E08 C1C83560 C200F000 
- Call backtrace: 
- C008B274 C00D1998 C00358C4 C0035D20 C0007E80 C00038AC 01837B64  0180E1D4 01822310 01801BD4 
- Instruction DUMP: 38000000  3b810008  901c0004 <801b0084> 2c000000  41820150 3bbb0970  7fe000a6  4bf329ad 
- Kernel panic: kernel access of bad area pc c00d56b0 lr c00d1998 address 84 tsk X/322
+I was concerned that people might think that ALL embedded boards would
+fall into the "embedded" bootloader and it could cause confusion down the
+line.  I think most MTX systems out there are running 32MB+ usually.  I
+can't answer for sure what most are using as a boot device, but it does
+vary.  Usually it's going to be out of FLASH since it is intended and
+priced for rugged embedded applications.  Since VxWorks runs on most MCG
+boards in general, you can bet that it is quite common to boot out of
+FLASH.
+  
+> The concern in this discussion (If I'm following along correctly) is RAM
+> size, that's all.  The PReP bootloader works on MTX even though it's not
+> in the embedded dir.  Since RAM is the issue how much RAM does a typical
+> MTX installed system have?  Do they boot from flash or from a hd once
+> deployed?
+> 
+> }PReP and CHRP machines are not necessarily desktops/servers.
 
-Call traceback in System.map :
-C008B274: c008b220 T tcp_poll
-C00D1998: c00d18e8 t tty_poll
-C00358C4: c00357a4 T do_select
-C0035D20: c00359e0 T sys_select
-C0007E80: c0007dcc T ppc_select
-C00038AC: c00038ac T syscall_ret_1
-
-C00D56B0: c00d5688 T tty_wait_until_sent
-
-If somebody could help me to debug this problem, I would apreciate very much !
-It seems that this problem occur with all kernels > 2.1.1xx
-and If I run with 2.1.24 everything is very stable.
-
- thanks in advance...
-                                 Marc Dejardin
-
-PS: If it stays like that, I will not be able to run the R5 release that I have
-already ordered... 
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
