@@ -1,45 +1,34 @@
-Date: Thu, 13 Nov 2003 16:20:23 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Jon Masters <jonathan@jonmasters.org>
+Message-ID: <3FB423AB.80805@jonmasters.org>
+Date: Fri, 14 Nov 2003 00:36:59 +0000
+From: Jon Masters <jonathan@jonmasters.org>
+MIME-Version: 1.0
+To: Eugene Surovegin <ebs@ebshome.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: [Fwd: ppc4xx Ports]
-Message-ID: <20031114002023.GA9509@gate.ebshome.net>
-References: <3FB416F9.7080303@jonmasters.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3FB416F9.7080303@jonmasters.org>
+References: <3FB416F9.7080303@jonmasters.org> <20031114002023.GA9509@gate.ebshome.net>
+In-Reply-To: <20031114002023.GA9509@gate.ebshome.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Nov 13, 2003 at 11:42:49PM +0000, Jon Masters wrote:
-> I am working on a 405D port using a base kernel of originally 2.4.20 and
-> now 2.4.21 from kernel.org rather than Montavista etc.
->
-> There are several 4xx ports kicking around and each bodges the tlb stuff
-> in pgtable.h and elsewhere makes simple fixes to make the stock kernel
-> actually work...though there are several different offerings by now.
-> Would someone care to share experiences privately about 4xx ports?
->
-> Cheers,
->
-> Jon.
->
-> P.S. The stock 2.4.21 kernel on has a bunch of very trivial bugs (from
-> losing a register in the syscall handler to breaking shared ptes) and
-> will not compile correctly out of the box so to speak. A lot of people
-> seem to be using the Montavista tree as a result. Now rather than
-> whining I would also like to help so am asking to make contact with
-> whoever co-ordinates merging these trees together etc.
->
 
-I use linuxppc-2.4 based tree in our 40x based products. I haven't
-checked the most recent version of this tree though (mine is based on
-2.4.21 version + some stuff from more recent one (mostly for 440)).
+Eugene Surovegin wrote:
 
-If you have problems with linuxppc-2.4 on 40x hw, report them here :)
+| If you have problems with linuxppc-2.4 on 40x hw, report them here :)
 
-Eugene.
+Only problem at the moment is that I am reworking some of the pte stuff
+to kludge in some of the Montavista code in to 2.4.21 rather than the
+homebrew solution I have been using which modifies the bits in hardware
+TLB entries from everyone else :-). Some random other bugs too which
+amuse me like I can only use half of the TLBs due a known errata with
+the Virtex II Pro. The other ports seem to have missed that errata...
+
+Fun.
+
+Cheers,
+
+Jon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
