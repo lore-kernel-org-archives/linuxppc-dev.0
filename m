@@ -1,36 +1,36 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: New nintendo console with embedded PPC cpu
-References: <373AAF24.1BE1@post.uni-bielefeld.de>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 13 May 1999 13:32:53 +0200
-In-Reply-To: "Jens Ch. Restemeier"'s message of Thu, 13 May 1999 12:53:28 +0200
-Message-ID: <8xlnet19y2.fsf@s50.informatik.uni-bremen.de>
+Message-ID: <373ABE18.BDE5C08B@wanadoo.fr>
+Date: Thu, 13 May 1999 13:57:12 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
+Reply-To: costabel@wanadoo.fr
+MIME-Version: 1.0
+To: Tom Rini <tmrini@ntplx.net>
+CC: Konstantinos Margaritis <kmargar@cc.uoa.gr>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: cvs kernel does not compile
+References: <Pine.LNX.4.05.9905121737010.651-100000@pc.wackyland.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Jens Ch. Restemeier" <jenschrr@uni-bielefeld.de> writes:
+Tom Rini wrote:
+> 
+> On Wed, 12 May 1999, Martin Costabel wrote:
+> 
+> > 2.3.0 (cvs) compiled fine for me this morning, I'm running it now
+> > (LinuxPPC R5 beta):
+> >
+> > root[8]#dmesg | grep Linux
+> > Linux version 2.3.0 (root@chezmoi) (gcc version egcs-2.91.66 19990314
+> > (egcs-1.1.2 release)) #14 Wed May 12 09:30:40 CEST 1999
+> 
+> Well.  2.3.0 is 2.2.8.  2.3.1-pre2 (in CVS now) is not. :)
 
-> Hi !
-> 
-> Maybe you already heard, that the new nintendo console is based on an
-> embedded PPC processor
-> 
-> http://www.next-generation.com/jsmid/news/6615.html
-> 
-> I think this is very interesting, because it may open the way for
-> videogame development on MacOS and Linux/PPC. I remeber how excited
-> everybody was that Sony based the PSX2 (MIPS based) development tools on
-> Linux/i386.
-> 
-> Now let's see how fast we can port Linux/PPC to this system :-)
->
-More information is available at EETimes and IBM:
+Indeed. 2.3.1-pre2 (in CVS now) is deeply broken. This gives us
+non-developers time to compile other things than kernels :-)
 
-http://www.eet.com/story/OEG19990512S0025
-http://www.chips.ibm.com/news/1999/gekko/index.html
-
-  Holger
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
