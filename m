@@ -1,37 +1,37 @@
-Subject: Re: io write not working
-To: darin_smith@adc.com (Darin Smith)
-Date: Fri, 8 Sep 2000 10:52:50 +1100 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <39B7F7A7.1B36ACBD@adc.com> from "Darin Smith" at Sep 07, 2000 03:16:39 PM
+Message-ID: <002201c019ae$a1d57a20$0a00010a@paoloweb>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: keyboard+trackball on the SMCx?
+Date: Fri, 8 Sep 2000 18:05:37 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000907235251.14EC412C@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Darin Smith writes:
-> Maybe somebody out there sees something obvious that I'm doing / not
-> doing?
+We have a keyboard with trackball with a serial out that we want to connect
+and use with the MPC823 based board under Linux.
 
-Did you remember to invalidate the D-cache before trying to access the data
-via the CPU?  It sounds like your CPU isn't cache snooping (8xx don't, for
-example) the PCI master writes from your device.  I assume your PCI device is
-writing directly to a pre-allocated skbuff, which you then pass up to
-netif_rx.  The fill pattern may just be is sitting around in the cache, which
-explains the symptoms you're seeing.
+I wrote the driver that polls the serial and converts its protocol to
+standard PS/2 protocol (i'd like to emulate the psaux char-device). This
+works fine...
 
-The other possibility is that your hardware isn't asserting the byte lane
-enables on the PCI bus, but my first guess would be a missing call to
-invalidate_dcache_range.
+Now, i'm working on the keyboard module, but i dont know how how to enable
+the SMCx interrupt when a character (or more) are received, to keep always
+in the memory the state of the keyboard from single event messages.
 
-Regards,
-Graham
---
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+I looked at the m8xx_tty.c code, and it seems to work without interrupts,
+but i fear polling because i have to make a thread on the background that
+always checks and reads the SMC. And if i loss anything?
+
+Then, i'll have to insert my keyboard driver in some place to replace the
+standard one for embedded powerpc... where is the right place to do that?
+
+Please, give me an hint...
+
+Bye,
+Paolo Scaffardi.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
