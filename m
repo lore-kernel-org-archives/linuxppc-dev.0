@@ -1,54 +1,73 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: gdbserver and gdb cross debug?
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: Andreas Beranek <a.beranek@cci.isar.de>
-Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <006001c28989$fb0922c0$0564a8c0@Obelix>
-References: <200210260458.g9Q4wpq15745@ftp1.mvista.com>
-	<3DCF5E9B.406F7565@bmrtech.com> <1037020322.22840.70.camel@spawn>
-	<006001c28989$fb0922c0$0564a8c0@Obelix>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 11 Nov 2002 15:18:02 +0100
-Message-Id: <1037024283.15616.17.camel@spawn>
+Date: Mon, 11 Nov 2002 07:49:57 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Murray Jensen <Murray.Jensen@csiro.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] ethtool support to 8260 fcc ethernet driver (and other stuff)
+Message-ID: <20021111144957.GB602@opus.bloom.county>
+References: <431.1036986935@msa.cmst.csiro.au>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <431.1036986935@msa.cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2002-11-11 at 14:55, Andreas Beranek wrote:
-> Hello,
->
-> > > I am porting Linux on EP405 board. So I use gdbserver and gdb......
->
-> > Has anybody tried the bdi2000 is that also broken now ? ....
->
-> We encountered similar problems. We got it to work with the BDI2000.
->
-> Some hints:
->
-> Use the latest Firmware from Abatron.
-> Use the latest Tools and Kernel.
-> Set the Breakpoint-type to "HARD" in BDI config file.
-> Check the MMU setup.
-> Avoid setting software breakpoints in FLASH.
->
-> Mit freundlichen Grüßen,
->
+On Mon, Nov 11, 2002 at 02:55:35PM +1100, Murray Jensen wrote:
 
-What version of gdb ?
+> This patch does the following:
+>
+> 1. adds support for a "/proc/bus/mii/fccN" file that displays the contents of
+>    all MII PHY registers
+>
+> 2. adds support for the generic MII interface available in drivers/net/mii.c
+>
+> 3. adds support for the ioctls used by the ethtool program
+>
+> 4. changes statistics recording so that FIFO Overrun errors are accumulated in
+>    rx_fifo_errors instead of rx_crc_errors and Late Collision errors are
+>    accumulated in rx_over_errors instead of rx_frame_errors - this means that
+>    all the possible errors from the 8260 fcc have their own counter
+>
+> 5. fixes comments such as /* CONFIG_FEC_... */ to be /* CONFIG_FCC_... */
+>
+> 6. fixes a bug in the DM9131 PHY support where the wrong value for link status
+>    was being seen because the bit in the status register is marked as "latch low"
+>    which means if it goes low (e.g. you pull out the TP cable), it will stay that
+>    way until the register is read - I simply always read the register twice now
+>    to ensure that the current link status is seen (not the latched status).
+>    Other PHY driver writers should beware of this.
+>
+> 7. fix a printk which had "fec: ..." to output "fccN: ..." instead
+>
+> 8. the fcc driver version is tagged as containing these changes by appending
+>    " (mjj)" after the version number (which is still 0.3). People will probably
+>    want to leave this one out, or else bump the version number to 0.4 instead.
+>    (I did this so I could tell which of our boards here had the fixes).
+>
+> 9. set and clear the LPB (local protect bit) bit in the FCC PSMR in tandem with
+>    setting and clearing the FDE (full duplex enable) bit - if LPB is not set, the
+>    receiver is blocked while transmitting - on my board this resulted in very low
+>    throughput on input to the board (e.g. ftp to the board and PUT a file).
+>    I found this fix in a message to the list, and it solved by problem, but the
+>    official 2_4_devel sources still doesn't have it. Sorry, I don't have the
+>    reference at hand - but a search on the list should pick it up pretty quick
+>    (so the right person gets credit for the fix).
 
-Is bdi broken for soft breakpoint ?? has it ever worked with soft
-breakpoint? I tried to get bdi working once and never got soft
-breakpoints to work but I did not spend much time on it I needed to
-solve my problem and used printk as usual :(.
+Could you please split this up into 9 logical patches then?  This makes
+it easier for others to track things and to get it reviewed as well (ie
+someone who knows /proc and is well aware of common mistakes people make
+probably wouldn't mind looking over the patch, if it was just /proc
+bits).
 
-Anybody used kgdb ?
+> Note that this requires a patch to drivers/net/Makefile so that mii.c is compiled
+> if CONFIG_FCC_GENERIC_MII is enabled - obviously this violates the rule that
+> non-ppc specific files shouldn't be touched, but it is essential to the patch.
+
+That part should also just be:
+obj-$(CONFIG_FCC_GENERIC_MII) += mii.o
 
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
