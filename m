@@ -1,27 +1,27 @@
-Message-Id: <9907221904.AA22476@marc.watson.ibm.com>
-To: "Ringeman, Tim" <tim_ringeman@gilbarco.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: x86 --> powerpc/MBX Cross Compiler 
-In-Reply-To: Message from "Ringeman, Tim" <tim_ringeman@gilbarco.com>
-   of "Thu, 22 Jul 1999 14:46:32 EDT." <199907221847.OAA29580@hoover.gilbarco.com>
-Date: Thu, 22 Jul 1999 15:04:39 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Fri, 23 Jul 1999 12:41:51 +1000
+Message-Id: <199907230241.MAA25100@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: valette@crf.canon.fr
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <m117EQ0-0000WZC@tri-yann.crf.canon.fr> (valette@crf.canon.fr)
+Subject: Re: Is the vger 2.2 kernel branch dead
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.LNX.4.10.9907221012590.18625-100000@mercator.cs.kuleuven.ac.be> <m117EQ0-0000WZC@tri-yann.crf.canon.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Ringeman, Tim" writes:
+VALETTE Eric <valette@crf.canon.fr> wrote:
 
-Tim> I was wondering if anyone has been able to get binaries for or build a C and
-Tim> C++  x86 --> powerpc/MBX cross-compiler. I was able to get a C compiler a
-Tim> while ago but now I need a C++ cross-compiler to be able to develop more
-Tim> apps. Your help would be greatly appreciated.
+> So why did I get no single comment on patches I submitted?
+> The Prep IDE handling is broken...
 
-	EGCS fully supports cross-builds.  You should be able to use the
-same egcs-1.1.2 source, configure for powerpc/MBX with C and C++
-languages, and use the "make cross" build target.  See the gcc cross FAQ.
+The trouble is that "PReP" is such an ill-defined idea.  I was
+interested to see your patch, but I assume that some other PReP
+machines need it the way it is without your patch.
 
-David
+Paul.
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
