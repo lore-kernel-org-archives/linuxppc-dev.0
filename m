@@ -1,42 +1,26 @@
-From: "Petr Vandrovec Ing. VTEI" <VANDROVE@vc.cvut.cz>
-To: Owen Waller <O.Waller@ee.qub.ac.uk>
-Date: Mon, 1 Feb 1999 12:51:40 MET-1
+Date: Sun, 31 Jan 1999 23:02:10 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: Beecher Greenman <rbg6038@ritvax.isc.rit.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: EGCS upgrade?
+In-Reply-To: <01J77GMEJG9Q9JDPMS@ritvax.isc.rit.edu>
+Message-ID: <Pine.LNX.3.96.990131230125.11192A-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Subject: Re: matroxfb, anybody? (More details...)
-CC: dhiltgen@toocool.itslab.calpoly.edu, mlan@cpu.lu,
-        Geert.Uytterhoeven@cs.kuleuven.ac.be, linuxppc-dev@lists.linuxppc.org
-Message-ID: <1EDE67B39D1@vcnet.vc.cvut.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  1 Feb 99 at 11:35, Owen Waller wrote:
-> > (my PReP does not have OF and I never saw it...) If you uncommented #define
-> > above, be sure that you commented out complement part from
-> > drivers/video/offb.c - otherwise matroxfb can be initialized twice, thus
-> > you'll get two fb's per one hardware :-(
-> Is there any way that this could be changed? I don't need my internal
-> video (control) to work, but I'd rather have it and the matrox compiled
-> into the one kernel without a hack. Unless Geert you know some way of
-> "fudging" an non-OF card into the OF device tree? OR Petr could you
-> possibly work in a #define construct so that Daniel's "hack" became
-> official? (mind you neither of these are very general solutions).
-There is a problem. What if you HAVE matrox in OF ? Of course,
-I remove this #ifdef from driver and add some variable to ensure, that
-driver will be initialized only once... And if matroxfb is not your primary
-head, you can, as temporary solution, compile it as module. It should
-work without problems then.
-> Also does anybody know how this situation changes if you use BootX to boot
-> (I don't so I can't comment on this). Would BootX map the mystique from
-As I do not have anything with OF around here, tell me what you want
-and I'll do it...
-                                                    Petr Vandrovec
-                                                    vandrove@vc.cvut.cz
+I keep regular updates at
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/kernel-images/
 
-P.S.: I'm not on the list, so please CC me...
-P.P.S.: Should not I remove whole #ifdef CONFIG_FB_OF from driver?
-Is there anybody who uses this additional feature?
+}high as I can, since I want to try running Kernel 2.2.1 (anyone have a 
+}prebuilt kernel out there, by any chance?)
+
+Check the latest out via anon cvs :)
+
+}Anyway, what's the best way to upgrade my EGCS installation past the 1.0 
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
