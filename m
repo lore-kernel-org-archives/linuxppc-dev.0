@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 71AC32BDF2
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Dec 2004 21:28:14 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D768E2BDF2
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Dec 2004 21:34:39 +1100 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	gentoo-ppc-user@gentoo.org, fedora-ppc@lists.infradead.org
 Content-Type: text/plain
-Date: Sun, 05 Dec 2004 21:25:28 +1100
-Message-Id: <1102242328.11763.68.camel@gaston>
+Date: Sun, 05 Dec 2004 21:34:15 +1100
+Message-Id: <1102242855.11763.70.camel@gaston>
 Mime-Version: 1.0
-Subject: TEST: Sleep patch #6
+Subject: TEST: Sleep patch #7
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
