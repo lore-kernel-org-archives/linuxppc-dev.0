@@ -1,40 +1,25 @@
-Message-Id: <5.1.0.14.2.20020612200144.00ab2398@mail.zultys.com>
-Date: Wed, 12 Jun 2002 20:22:23 -0700
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3D08132B.5080705@fiberlogic.com>
+Date: Thu, 13 Jun 2002 11:36:11 +0800
+From: "Lin, Nan-Hung" <carl@fiberlogic.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-From: Eugene Surovegin <ebs@innocent.com>
-Subject: consistent_alloc from an interrupt context
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Will PPCBoot support Cogent CSB272 ?
+Content-Type: text/plain; charset=Big5
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+Will PPCBoot support Congent CSB272 ?
 
-Current PPC implementation of consistent_alloc cannot be called from an
-interrupt context.
-This function is used by pci_alloc_consistent when
-CONFIG_NOT_COHERENT_CACHE is defined.
+The board has IBM 405GP, 32-bit wide StrataFLASH (2*16-bit),
+32-bit wide SDRAM, S1D13506 video controller, 1 Fast Ethernet,
+2 PCI slots, Dallas DS1307 RTC, 2 UART, PS/2 keyboard,
+PS/2 mouse, ...
 
-Unfortunately it contradicts Documentation/DMA-mapping.txt which clearly
-states that pci_alloc_consistent can be called from an interrupt context,
-and some drivers breaks under PPC because of it.
 
-The only part of consistent_alloc that may sleep is a call to get_vm_area.
-
-I did quick (and dirty) fix for this problem.
-I reserved a virtual address space  of a reasonable size (16M), and later
-just use some part of it for real page allocations when called from
-interrupt context. No deallocation support :( though
-
-Correct implementation will require something like stuff from vmaloc.c and
-it seems like a lot of code duplication to me.
-
-So, my question to "big guys" here :), is there a better way to implement this?
-
-Thanks,
-
-  Eugene Surovegin <mailto:ebs@innocent.com>
+------------------------------------------------
+Lin, Nan-Hung                carl@fiberlogic.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
