@@ -1,54 +1,41 @@
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problems rebuilding the DENX ELDK 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 24 Jul 2003 10:18:05 +0200."
-             <3F1F963D.4010609@imc-berlin.de>
-Date: Thu, 24 Jul 2003 12:47:38 +0200
-Message-Id: <20030724104743.780D1C602D@atlas.denx.de>
+Message-Id: <5.1.0.14.2.20030724075021.02105a58@falcon.si.com>
+Date: Thu, 24 Jul 2003 07:54:27 -0400
+To: linuxppc-embedded@lists.linuxppc.org
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: Motorola finally anounces the MPC5200
+In-Reply-To: <0005FF37.C22236@dgt-lab.com.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Steven,
+The spec sheet said it was built on the 603e core so linux support of the
+core is already present.  The peripherals may or may not be supported
+already, I did not look at them.  The 82xx is based on the 603e core as
+well, so this will be a close cousin to the 82xx.  The 8xx is a different
+PPC core, would that make it an in-law :-)?
 
-in message <3F1F963D.4010609@imc-berlin.de> you wrote:
+gvb
+
+
+At 08:23 AM 7/24/2003 -0400, krom@dgt-lab.com.pl wrote:
+
+> >
+> > I had given up hope of them ever releasing it. I know some people were
+> > working on the MGT5100 ( the MPC5200's cousin ) . Where are the
+> > development trees hosted? Any status on stability/maturity of the
+> > peripheral drivers?
+> >
+>What about linux-kernel on this chip?
+>Is it binary compatible (userspace programs) to mpc8xx/82xx ???
 >
-> I made it once to rebuild the ELDK under a modified SuSE 8.0. But I
-> can't do it again. I just can't remember what I did. But as long as I
+>--
+>* * * * * * * * * * * *
+>* per pedes ad astra! *
+>* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+>
+>
 
-I still have the description you sent me back then. Shall  I  forward
-it to you? :-)
-
-> So I think I can wait (how long?). But any idea about my original
-> question?
-
-I think we will have an initial test version before the end  of  next
-week. I can keep you posted, if you like.
-
-As for your question: I don't know. And I don't have  a  SuSE  system
-here (yet), so I cannot test it myself.
-
-> I'd love to understand this whole automake/autoconf/rpm stuff?
-
-Me too. Ummm... Actually I don't want, but I'm afraid I must ;-)
-
-> I suppose the times of handwriten/optimized Makefiles are gone...
-> Forever... ;-)
-
-Nope. There is a niche for everyhting :-)
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-One does not thank logic.
-	-- Sarek, "Journey to Babel", stardate 3842.4
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
