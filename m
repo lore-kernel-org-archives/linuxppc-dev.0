@@ -1,58 +1,50 @@
-From: Keith Owens <kaos@melbourne.sgi.com>
-To: Thomas Graichen <graichen@innominate.de>, thomas.graichen@innominate.de
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: SGI XFS on ppc 
-In-reply-to: Your message of "31 Jul 2000 06:12:29 GMT."
-             <news2mail-8m35cd$3nu$2@mate.bln.innominate.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 31 Jul 2000 16:34:17 +1000
-Message-ID: <15081.965025257@ocs3.ocs-net>
+Message-ID: <F14441D40E5AD3118886005004607AD10BDD62@mail.libra.de>
+From: "Halfmann, Klaus" <khalfmann@libra.de>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Cc: "'Olaf Hering'" <olh@suse.de>
+Subject: Status of HFS+ Support
+Date: Mon, 31 Jul 2000 08:35:56 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 31 Jul 2000 06:12:29 GMT,
-Thomas Graichen <news-innominate.list.sgi.xfs@innominate.de> wrote:
->Keith Owens <kaos@ocs.com.au> wrote:
->> More specific please.  kallsyms has no ifdefs.  It should only be
->> included if you select kdb but kdb has not been ported to ppc.  I
->> maintain modutils, kallsyms and kdb.
->
->just have a look at the diff at
->
->  http://innominate.org/~graichen/projects/xfs-ppc/
+I hope you dont mind me posting this here,
+I can't imagine a better place right now.
 
-I can see the problem but need some ppc help in fixing it.  Part of the
-kallsyms patch updates arch/xxx/vmlinux.lds on every arch.  I did not
-patch arch/ppc/vmlinux.lds because it did not have any entries for
-section __ksymtab.  kallsyms is module related and the absence of
-__ksymtab in arch/ppc/vmlinux.lds made me think that ppc does not use
-modules.
+In cooperation with Suse (thanks to Olaf Hering and other People at Suse),
+we have set up an CVS repository for the hfsplus stuff.
+Olaf Hering, some Suse internal and I have write access and there is an
+anonymous access,too.
 
-Does ppc support modules?  I know that modutils has an obj-ppc.c file
-but I don't think I have ever seen any ppc bug reports for modutils.
-If ppc does use modutils then we need lines like this in
-arch/ppc/vmlinux.lds.
+The hfsplus tools _shall_ work like the hfsutils (from rob@mars.org)
+once I get so far. Currently Im stuck in grasping the B*-Tree structure
+and it may take a while until I have presentable progress. I can only
+spare some hours at the weekend (and my wife would like to get some time,
+too) or when traveling to work by train.
 
-  __start___ksymtab = .;        /* Kernel symbol table */
-  __ksymtab : { *(__ksymtab) }
-  __stop___ksymtab = .;
+Meanwhile everybody interested may help me in some of the following ways:
 
-  __start___kallsyms = .;       /* All kernel symbols */
-  __kallsyms : { *(__kallsyms) }
-  __stop___kallsyms = .;
+	Provide HFS+ formatted images with known content.
+	(via mounting a ramdisk in MOL, thanks to BenH for this tip)
 
-The first section is standard for any arch that supports modules but is
-not in pppc for some reason.  The second section is part of kallsyms.
-Most of the kallsyms code needs to be wrapped in #ifdef but
-arch/xxx/vmlinux.lds, include/modules.h and kernel/module.c do not,
-they are global to provide a standard userspace ABI, independent of
-kernel options.
+	Review my code (The code for the allocation bitmap does'nt work,
+	but I dont know why, yet).
 
-If ppc does not support modules then forget the above update.  However
-the code in kernel/module.c that refers to kallsyms entries should not
-be compiled when CONFIG_MODULES=n is set, why is it being compiled?
+	Help pushing this thing foreward.
 
+Whoever is interestet in the anoymous access can mail Olaf Hering or me.
+In case there is overwhelming interest I'll post it here
+I'll be happy to accepts comments and diffs agains the cvs tree.
+
+Greeting,
+
+|       |                  Klaus Halfmann       khalfmann@libra.de
+|       |				  			(aka Hasi)
+|    i  | --.  r---  -- |  Libra Software GmbH  Tel +49 (0)621 41997-0
+|    |  b-- |  |    a-- |  Erzbergerstr. 17     Fax +49 (0)621 41997-30
+L--- |  --- |  |    .---.  68165 Mannheim
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
