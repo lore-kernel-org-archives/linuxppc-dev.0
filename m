@@ -1,42 +1,45 @@
-Subject: Re: [PATCH]: Fixes CONFIG_CONFIG_CPM2_UART bug in tty_io.c
-From: Jeff Angielski <jangiels@speakeasy.net>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040809232548.GD22109@smtp.west.cox.net>
-References: <1092088985.4368.8.camel@localhost.localdomain>
-	 <20040809232548.GD22109@smtp.west.cox.net>
+Subject: Re: [PATCH] pmac_zilog.c: Fix break handling, add sysrq support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: rmk+serial@arm.linux.org.uk,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040808112147.GA31341@obroa-skai.de.gnumonks.org>
+References: <20040806104328.GL11638@sunbeam2>
+	 <1091789077.5227.236.camel@gaston>
+	 <20040808112147.GA31341@obroa-skai.de.gnumonks.org>
 Content-Type: text/plain
-Message-Id: <1092096437.6859.4.camel@localhost.localdomain>
+Message-Id: <1092097456.14100.54.camel@gaston>
 Mime-Version: 1.0
-Date: 09 Aug 2004 20:07:18 -0400
+Date: Tue, 10 Aug 2004 10:24:17 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-It was for the BK linuxppc-2.4 tree.  However, it looks like Dan already
-make a patch and fixed it himself.
-
-$ bk sccslog tty_io.c
-drivers/char/tty_io.c
-  1.34 04/08/06 17:13:21 dan@geefour.embeddededge.com +2 -2
-  Typos that needed fixing.
-
-
-Jeff
-
-On Mon, 2004-08-09 at 19:25, Tom Rini wrote:
-> On Mon, Aug 09, 2004 at 06:03:05PM -0400, Jeff Angielski wrote:
 >
-> > Here is a very small patch to fix a configuration bug in
-> > drivers/char/tty_io.c where the CPM2 UART would not work for non-8xx
-> > targets.
+> Yes, I agree, that sounds way cleaner than just not lock at all in
+> console_write().  But then of course you could still runt into a race
+> condition where another thread is already spinning for the lock.  As
+> soon as we drop the lock, the other thread would grab it... and when
+> console_write() is called via handle_sysrq(), it's already too late,
+> isn't it?
+
+Ugh ? handle_sysrq() is called from irq, this should be an irqsafe
+lock, another thread on another cpu would just cause us to wait a bit...
+
+> I think this is a generic issue that all serial drivers supporting
+> sysrq() face.  Instead of putting some special different solution into
+> each driver, I'd say the code from sn_sal_console_write() needs to be
+> generalized.
 >
-> What tree is this against?  Thanks.
+> Cc'ing the serial maintainer exactly for this reason.
 >
-> --
-> Tom Rini
-> http://gate.crashing.org/~trini/
+> Russell, what is the preferred solution for this deadlock-prone
+> situation?
 >
+> > I'll have a look, thanks much.
+> > Ben.
+--
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
