@@ -1,29 +1,20 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <mlan@cpu.lu>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: crash on sleep with 2.4.19-pre4-ben0
-Date: Fri, 29 Mar 2002 05:57:09 +0100
-Message-Id: <20020329045710.13227@smtp.wanadoo.fr>
-In-Reply-To: <E16rLfu-00009C-00@piglet.grunz.lu>
-References: <E16rLfu-00009C-00@piglet.grunz.lu>
+Message-ID: <3CA48DEE.78A803@drea.dnd.ca>
+Date: Fri, 29 Mar 2002 11:53:18 -0400
+From: Gavin Hemphill <hemphill@drea.dnd.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: bk trees broken?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->AAArrgh! It doesn't crash anymore now! Thanks for the solution ;-))).
->
->Seriously, after adding a call to backtrace upon entry of xmon's main
->(infinte) loop, I've not been able to reproduce the crash. And I tried
->sleeping and waking up in a loop at least 50 times...
->
->I'll keep on trying.
-
-Hrm, look at timing related race in one of the driver, maybe IDE or
-ethernet...
-
-Ben.
-
+Are there problems with the bk trees for linuxppc_2_4 and linuxppc-2.5.
+I've been getting error messages "ERROR-Lock fail: possible permission
+problem." on them for the last few days.  I've made sure I'm running the
+latest bk (BitKeeper/Free version is bk-2.1.6-pre3 20020328212052 for
+powerpc-glibc21-linux) and even tried re-cloning the repositories.  The
+linuxppc_2_4_devel tree seems to work fine.
+	G++
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
