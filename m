@@ -1,42 +1,29 @@
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: different device file name when relocating SMC1? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 24 Jul 2004 09:07:46 EDT."
-             <Pine.LNX.4.60.0407240816340.11139@localhost.localdomain>
-Date: Sun, 25 Jul 2004 18:27:35 +0200
-Message-Id: <20040725162740.AF9C3C109F@atlas.denx.de>
+Message-ID: <22313616.1090788110569.JavaMail.root@wamui02.slb.atl.earthlink.net>
+Date: Sun, 25 Jul 2004 16:41:50 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+Reply-To: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Song Sam <samlinuxppc@yahoo.com.cn>,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Could 2_4_devel support RPXlite DW LCD panel?
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.LNX.4.60.0407240816340.11139@localhost.localdomain> you wrote:
->
->       so, simple question -- until now, we've identified the console as
-> ttyS0, and it's worked fine.  does relocation require referring to the
-> console with a different device file name?  i (vaguely) recall /dev
+From: Song Sam <samlinuxppc@yahoo.com.cn>
 
-No.
+> I want to port 2_4_devel on RPXlite DW with
+> framebuffer support and tried linuxppc_2_4_devel in
+> linuxppc official BK tree and DENX tree repectively
+> but failed.Could anyone try it before?Worked?
 
-> entries with names like cpmuart0 or something like that.  given
+is it just the FB selection that's causing problems?
+and what do you mean by "failed"?  you'll have to
+be more specific.  does the system fail to boot?
+does it boot but the FB doesn't work?  etc, etc.
 
-No.
+rday
 
-> relocation, should i be using something other than "ttyS0"?
-
-No. [Unless you changed the driver and/or configured your  system  so
-that SMC1 is not the first entry in the port table.]
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Never underestimate the bandwidth of a station wagon full of tapes.
-                                -- Dr. Warren Jackson, Director, UTCS
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
