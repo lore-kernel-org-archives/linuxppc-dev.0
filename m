@@ -1,59 +1,49 @@
-To: "Francis Yu <francisy@luxn.com>" <francisy@luxn.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Hung inside execve 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 09 Dec 2002 12:10:15 PST."
-             <B0CD235912AED411B69800D0B7C9F60F1DF8A7@mail>
-Date: Mon, 09 Dec 2002 21:55:37 +0100
-Message-Id: <20021209205542.59FB4C63F0@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: boot flash problem,
+Date: Mon, 9 Dec 2002 16:42:29 -0500
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B9B@mail1.mediatrix.com>
+From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+To: "Li Xiangrong" <lixiangrong@china.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Francis,
+> Both time, i set the base address 0xffe00000, which
+> means i can use a flash of 2M words here.
 
-in message <B0CD235912AED411B69800D0B7C9F60F1DF8A7@mail> you wrote:
->
-> Thanks a lot for your reply and hints. I finally got the OK to purchase a
-> BDI2000. While I am waiting for its arrival, I want to spend more time
-> looking into my problem of hanging right after the line "execve /bin/sh". My
-> question is: Is it normal to get the return value 0xfffffffe from the
-> functions "execve /sbin/init", "execve /etc/init", and 'execve /bin/init",
-> while the line "execve /bin/sh" returns zero? I am using the
+I don't think so.
 
-Check your root filesystem.
+The 32-bits address bus of the PPC is still
+on a byte boundary, not on a word of 16 bits.
 
-Which of the files "/bin/sh", "/sbin/init", "/etc/init" and "/bin/init"
-do exist, and which don't?
+A 16-bits flash means the GPCM reads 16 bits at a time from
+the data bus, and outputs addresses aligned on 16 bits.
+Then you wire PPC:A30 to Flash:A0, PPC:A29 to Flash:A1, and so on,
+leaving PPC:A31 unconnected.
 
-> mini-2048kB-ramdiskimage.gz downloaded from DENX.
+Here, both flashes you specified are 16-bits wide,
+so I understand the connections were compatible
+between the 16MBits and the 32MBits,
+with one more address line PPC:A10 wired to Flash:A20.
 
-In this filesystem only "/bin/sh" exists, while the ohers don't. This
-explains the exit codes.
+If you have a flash of 32Mbits (4MBytes), even if it has a port
+size of 8, 16 or 32 bits wide, you will address it from your code
+(running on the PPC) using an address range of 4MBytes also.
 
-> Should I spend the time in studying how to build my own ramdisk? Thanks.
+Thus, its base address should be at 0xFFC00000,
+both in BDI and (very important) in the boot loader also.
 
-I have put a set of more complete ramdisk images (based on  the  SELF
-RPM  from our ELDK 2.0 distribution) for download from or FTP server;
-see ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/images/
-
-But there is nothing wrong with the mini-2048kB-ramdiskimage.gz  file
-- it still works fine here.
-
-I think you should try to boot the system with root  filesystem  over
-NFS  instead - it is much easier to debug (use a network sniffer like
-ethereal to check the traffic on the wire).
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Business is like a wheelbarrow. Nothing ever happens until you  start
-pushing.
+Good luck,
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
