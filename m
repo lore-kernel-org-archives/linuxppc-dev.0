@@ -1,68 +1,53 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Compile gdbserver for powerpc 
-In-Reply-To: Message from Lucinda Schafer <lucsch@adaptivemicro.com>
-   of "Tue, 20 Jun 2000 10:35:21 EST." <A109131318C4D1119AC20060088DECE330F451@amwmail.adaptivemicro.com>
+To: Mike Coy <coym@embeddedplanet.com>
+cc: Lucinda Schafer <lucsch@adaptivemicro.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA ATA flash support? 
+In-Reply-To: Message from Mike Coy <coym@embeddedplanet.com>
+   of "Tue, 20 Jun 2000 20:43:21 -0400." <4.3.2.7.0.20000620203521.00acd470@10.0.0.2>
 Mime-Version: 1.0
 Content-Type: text/plain
-Mime-Version: 1.0
-Date: Wed, 21 Jun 2000 11:49:51 +1000
-Message-ID: <5804.961552191@msa.cmst.csiro.au>
+Date: Wed, 21 Jun 2000 12:09:26 +1000
+Message-ID: <5824.961553366@msa.cmst.csiro.au>
 From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 20 Jun 2000 10:35:21 -0500, Lucinda Schafer <lucsch@adaptivemicro.com>
-writes:
->>From Graham Stoney's "Linux for PowerPC Embedded Systems HOWTO/FAQ", Section
-...
->18.3 Kernel
->It is not currently possible to use gdb for kenel debugging.
+On Tue, 20 Jun 2000 20:43:21 -0400, Mike Coy <coym@embeddedplanet.com> writes:
+>>Emulation routine where the panic is called. Use your System.map file to see
+>>if you can find the last functions called, for example:
+>>                 show_regs(regs);
+>>                         print_backtrace( (unsigned long *)regs->gpr[1] );
+>>                         instruction_dump((unsigned long *)regs->nip);
+>>                         panic("Kernel Mode Software FPU Emulation");
+>
+>OK, i added the  backtrace, but hardly any of the calls are IN my system.map!
+>Odd!
 
-Whoops. This should probably change. I use gdb for kernel debugging on
-the (8xx) 2.[34].x kernels (its *very* handy!). You need to enable
-CONFIG_KGDB first though, and if you don't want to use the default serial
-port (via SMC1?? for 8xx) you need to do a bit of hacking. Here's how:
+They won't be - the backtrace prints the return (or link in ppc speak)
+address i.e. the next instruction to be executed after a return from the
+current function (or stack frame). Just sort your System.map file on the
+first column (hex address) and then look for the largest value in the
+first column that is still less than the next address in the backtrace.
+This gives you some idea of which function that address is within, and
+how far in that function it is. A bit tedious but ok for a start.
 
-1. make sure either CONFIG_SERIAL_CONSOLE, or CONFIG_KGDB, itself is undefined
-   when 8xx_io/uart.c is compiled
+What would be better is to get kgdb working, then gdb will work all this
+out for you - and tell you a lot of other information as well. You can
+compile in a breakpoint() just before the panic() and then hunt around
+using gdb to try and find anything unusual e.g. you could examine the
+memory at the address contained in "regs->nip", and the mmu page table
+entries that map that kernel address. A "where" will give you all the
+function names in the stack including the arguments they were called with.
 
-2. ensure the call to kgdb_map_scc() is not done in arch/ppc/kernel/setup.c;
-   replace it with a call to your own serial port init routine, if required.
-
-3. write three functions (usually in your serial driver, and inside #ifdef
-   CONFIG_SERIAL_CONSOLE, inside #ifdef CONFIG_KGDB):
-
-	extern void putDebugChar(char kgdb_char);
-	extern char getDebugChar(void);
-	extern void kgdb_interruptible(int yes);
-
-   the first two are fairly obvious - busy-wait put and get character to
-   the chosen serial port. the third enables (yes==1) or disables (yes==0)
-   *serial* interrupts (not all interrupts - at least I don't think so).
-
-   e.g.	#ifdef CONFIG_SERIAL_CONSOLE
-	... (serial console stuff) ...
-	#ifdef CONFIG_KGDB
-	void
-	putDebugChar(char c)
-	{
-	...
-	#endif /* CONFIG_KGDB */
-	#endif /* CONFIG_SERIAL_CONSOLE */
-
-1 and 2 are for the 8xx kernel - there will be similar steps for other
-platforms (i.e. making sure the code for the default kgdb serial "driver" is
-not compiled in, obviously so there is not a clash with the ones you write).
-
-One thing to remember: if you enable CONFIG_KGDB, setup_arch() in
-arch/ppc/kernel/setup.c will execute a breakpoint() and for the kernel
-to proceed past that point, you must start gdb on your host in "remote"
-mode (on the appropriate serial port with the appropriate speed) and
-perform a gdb "continue" command (this caused me some concern when it
-was added a few months ago, I thought my kernel was dead :-)
-
-Hope this helps. Cheers!
+See the other message I just sent to the list about kgdb. One thing I
+forgot to say in that message was that I like to compile my kernel with
+the "-g" flag and then run "gdb <ksrctopdir>/vmlinux" before doing the remote
+to the target (actually you just chuck all these things into a .gdbinit
+file e.g. in arch/ppc/mbxboot so it is all done automatically when gdb
+is run in that directory). The "-g" shouldn't make your kernel any bigger
+because only certain sections are copied when <topdir>/vmlinux is copied
+into the arch/ppc/coffboot directory and compressed. Cheers!
 								Murray...
 --
 Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
