@@ -1,22 +1,22 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 7E2DC67A46
+Return-Path: <patrick.huesmann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.195])
+	by ozlabs.org (Postfix) with ESMTP id 1684367A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Mar 2005 01:33:29 +1100 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j2HENraV016666
+	Fri, 18 Mar 2005 02:05:56 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so310892wra
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 16:23:54 +0200 (EET)
-Message-ID: <42399036.3010609@intracom.gr>
-Date: Thu, 17 Mar 2005 16:12:06 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
+	Thu, 17 Mar 2005 07:05:55 -0800 (PST)
+Message-ID: <93579fec05031706597355371c@mail.gmail.com>
+Date: Thu, 17 Mar 2005 15:59:14 +0100
+From: Patrick Huesmann <patrick.huesmann@gmail.com>
 To: "Robert P. J. Day" <rpjday@mindspring.com>
-References: <Pine.LNX.4.61.0503161125560.5095@localhost.localdomain>
 In-Reply-To: <Pine.LNX.4.61.0503161125560.5095@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <Pine.LNX.4.61.0503161125560.5095@localhost.localdomain>
+Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: looking for a model for building CRAMFS(?)-based system
+Reply-To: Patrick Huesmann <patrick.huesmann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,46 +27,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Robert P. J. Day wrote:
->   i'm hoping someone has an example of the following that they're
-> willing to share.
-> 
+Hi,
+
+On Wed, 16 Mar 2005 11:33:39 -0500 (EST), Robert P. J. Day
+<rpjday@mindspring.com> wrote:
 >   currently, the system i've built for our 850 board incorporates
 > 
-> 	- boot loader (sadly, not u-boot, but i'm working on it)
-> 	- standard zImage.initrd.bin kernel+initrd image
-> 	... mountable JFFS2 filesystem with persistent stuff ...
+>         - boot loader (sadly, not u-boot, but i'm working on it)
+>         - standard zImage.initrd.bin kernel+initrd image
+>         ... mountable JFFS2 filesystem with persistent stuff ...
 > 
 >   obviously, with this layout, it's kind of a nuisance to update
 > anything individually in the initrd portion of the system, so i'd like
 > to at least experiment with a layout that has separate
 > 
-> 	- boot loader (ideally, u-boot)
-> 	- kernel image
-> 	- updateable (normally mounted read-only?) root filesystem
-> 	... rest of stuff the same ...
-> 
->   i'm going to start over at DENX with their docs since that seems to
-> be the canonical place to get the scoop on this but, in the meantime,
-> if anyone has built something like this and is willing to share, say,
-> their makefile so i can see how it goes together, i'd be thrilled.
-> 
->   if your example happens to *require* u-boot, well, perhaps so much
-> the better since that will give me the incentive to switch. :-)
+>         - boot loader (ideally, u-boot)
+>         - kernel image
+>         - updateable (normally mounted read-only?) root filesystem
+>         ... rest of stuff the same ...
 
-We use a scheme on NAND with redundant cramfs rootfs partitions
-that also contain the proper kernel image(s).
+I'm using separate MTD partitions for bootloader, device parameters,
+zImage, initrd and persistent storage.
 
-It is u-boot specific since it depends on u-boot loading the
-cramfs kernel image.
+When updating the initrd, the only thing necessary is a
+eraseall /dev/mtdX
+cat initrd.gz > /dev/mtdX
 
-For persistent storage we use a small JFFS2 partition.
+When booting the kernel, you need something like this in the commandline:
+root=/dev/mtdblockX prompt_ramdisk=0 load_ramdisk=1 ramdisk_size=8192
 
-> 
->   thanks.
-> 
-> rday
+This is bootloader independent, of course.
 
-Regards
-
-Pantelis
+HTH,
+Patrick
