@@ -1,40 +1,34 @@
-Date: Sun, 30 Sep 2001 11:52:06 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PowerStack interrupt?problem
-Message-ID: <20010930115206.E776@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.GSO.4.10.10109301319240.29063-100000@rose.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.10.10109301319240.29063-100000@rose.sonytel.be>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.10-ben0 doesn't see ide1
+Date: Sun, 30 Sep 2001 21:12:11 +0200
+Message-Id: <20010930191211.31520@smtp.wanadoo.fr>
+In-Reply-To: <20010930131308.156a8063.jpgarcia@execpc.com>
+References: <20010930131308.156a8063.jpgarcia@execpc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Sep 30, 2001 at 01:23:46PM +0200, Geert Uytterhoeven wrote:
+>I'll see about testing one from today.  I still have a nasty problem of
+>ADB locking up at random. Sometimes 2 minutes after boot, once almost 24
+>hours after boot.  Gotten it in the console and X, so I was thinking its
+>either some corruption from the new video drivers (ATY-CT) or maybe some
+>funky DMA race condition.  Would the semaphore proposed in adb.c help
+>this?  PMU interrupts still get thru.  remote login -> procinfo show
+>things still good, battery status still updated (maybe).
 
-> We're having interrupt problems with a Motorola PowerStack running 2.4.9 (from
-> MontaVista rsync).
+Interesting... what is the exact symptom ? trackpad and keyboard
+not working any more ? I don't think the semaphore thing would
+change as it's quite specific to the ADB probe sequence.
 
-Goody, which? :)  I've got a 604/100 right here.
+Do you get things back if you send ADB flush commands to the
+trackpad and/or keyboard ? (You can do that from userland
+via /dev/adb).
 
-> Symptoms are:
->   - We receive lots of PS/2 mouse interrupts (irq 12), a few hundreds or
->     thousands for each mouse move
->   - The number of BAD interrupts increases when moving the mouse, a few tens
->     for each mouse move
->   - Sometimes the machine locks up (no ping response) after heavy mouse
->     movement
->   - The PS/2 keyboard is fine
+Ben.
 
-Hmm.  I sort-of wonder if the PS/2 changes a while back goofed something up.
-My kbd is fine too, and I'll try and throw a mouse on later this week.
-Can you grab the bk version and go back to 2.4.8, .7, et al and see if
-it works?  I think some PS/2 stuff was done in maybe .5 or .6..
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
