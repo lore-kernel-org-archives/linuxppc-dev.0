@@ -1,42 +1,28 @@
-Message-ID: <37D0F88E70D96C428C19EEB865701A38027D1105@buda902a.siemens.hu>
-From: =?iso-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.com>
-To: Mark Chambers <markc@mail.com>,
-	"Wells, Charles" <Charles.Wells@NielsenMedia.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Linux is not reliable enough?
-Date: Tue, 27 Jul 2004 17:59:42 +0200
+Date: Tue, 27 Jul 2004 12:32:43 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH] add reserved and smc_rpbase field to smc_uart
+Message-ID: <Pine.LNX.4.60.0407271230520.5926@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> >   int a[100], b = 123;
-> >   a[b] = 0;
-> >
-> > I guess I'm taking exception to your use of the phrase "all
-> software".
-> >
-> >
->
-> What I mean is, if &a = 0x10000, then a[b] will always write
-> 0 to 0x101ec.
-> That may not be smart, may not be what you intended to do,
-> but the uP will
-> always do the exact same thing.  (Does this mean 'C' is
-> unreliable because
-> it lets you do things like that?)
+   first patch to add the required reloc field for SMC1 relocation --
+is this the appropriate format?
 
-Yes, 'C' is unreliable because writing beyond the
-"maxindex" lets you overwrite other's data, other's
-code and DOES make backdoor for viruses.
 
-On the other hand testing every index every time
-for min and max slowes the executing.
+--- linuxppc-2.5/include/asm-ppc/commproc.h 2004-07-27 12:23:32.723864264 -0400
++++ linuxppc-2.5.new/include/asm-ppc/commproc.h	2004-07-27 12:29:27.609913384 -0400
+@@ -145,6 +145,8 @@
+  	ushort	smc_brkec;	/* rcv'd break condition counter */
+  	ushort	smc_brkcr;	/* xmt break count register */
+  	ushort	smc_rmask;	/* Temporary bit mask */
++	uchar	smc_res[8];	/* Reserved to push next field to 0x3C */
++	ushort	smc_rpbase;	/* Relocation pointer */
+  } smc_uart_t;
 
-So what?
-
-    Ludwig
+  /* Function code bits.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
