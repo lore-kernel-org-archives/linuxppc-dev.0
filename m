@@ -1,70 +1,60 @@
-From: benh@kernel.crashing.org
-To: <paulus@samba.org>
-Cc: Troy Benjegerdes <hozer@drgw.net>,
-	<linux-galileo@source.mvista.com>, <linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 3 Apr 2002 13:24:45 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: GT64260 merge warning
-Date: Wed, 3 Apr 2002 09:53:34 +0100
-Message-Id: <20020403085334.6438@mailhost.mipsys.com>
-In-Reply-To: <15531.32246.283097.469203@argo.ozlabs.ibm.com>
-References: <15531.32246.283097.469203@argo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20020403132444.T6003@altus.drgw.net>
+References: <20020402230411.G6003@altus.drgw.net> <15530.40918.517084.226235@argo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15530.40918.517084.226235@argo.ozlabs.ibm.com>; from paulus@samba.org on Wed, Apr 03, 2002 at 04:23:18PM +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Interesting...  I hope we're not going to end up with a lot of extra
->complexity for not very much gain, though.  If we are going to have a
->more complex bi_rec setup, let's make sure that it is capable of
->expressing a complete device tree.  If not then I would prefer to see
->a minimal amount of extra complexity.
+On Wed, Apr 03, 2002 at 04:23:18PM +1000, Paul Mackerras wrote:
+> Troy Benjegerdes writes:
 >
->In other words I think there are 2 tenable positions: the minimal one,
->which just adds a BI_MAC_ADDR and maybe a BI_GT64260_ADDR tag to the
->existing list of tags (and makes no change to the bi_rec structure),
->and a full-featured one which allows for a tree of device records with
->each device having a list of properties, each with a string name and
->arbitrary binary data.
+> > I'm getting close to a point where I want to start merging appropriate
+> > things from the linuxppc_2_4_galileo tree on source.mvista.com into
+> > 2_4_devel.
+>
+> I'll be interested to see it - I'm in code review mode at the moment. :)
 
-Well, have you read the previous discussion ? We finally managed to
-agree on some mecanism after much arguments, and now you come up with
-something different :)
+Good, can you review drivers/char/gt64260_mpsc.{c,h} for me then?
 
-What I'm coming up with is 2 more functions that allow to 1) find
-a bi_rec by tag (so one don't have to modify the parse loop in setup.c
-to locate a bi_rec), and 2) find a BI_DEVICE record based on BI_DEV_TYPE
-and BI_DEV_ID within it. (the first function has the ability to look
-for bi_recs within a bi_rec). That, along with some code to handle
-saving the bi_recs in a persistent place and retreiving them by pointer.
+I want to change the filenames to 'gt642xx_mpsc' in the hopes that the
+same driver can be used on the MIPS gt64240 brige chips. Other than that,
+I'd say this driver is ready to go..  It works and it's pretty clean.
 
-Now that you have the functions, how you use them is up to you. I define
-a simple mecanism for devices (BI_DEVICE composite rec with BI_DEV_TYPE
-and BI_DEV_ID tags to locate it). That record contains whatever you want
-to pass to your device.
+>
+> > The first thing I'm going to do is a moderately large cleanup to
+> > drivers/net/gt64260_eth.c.
+>
+> Good.  Can you get rid of the config option for the MAC address?
+> Please? :)  I suggest that we define a BI_MAC_ADDRESS bi_rec type
+> which is used to pass in a default MAC address for the system, and we
+> use that (single) MAC address for all the ethernet interfaces on the
+> system which don't have any way to find out a MAC address for that
+> specific interface.
+>
+> Paul.
 
-It is _not_ intended, at first, to act like a device tree. Most embedded
-targets really don't need that, it's more intended to pass _only_ those
-informations that may be variable to a given driver. That is things like
-HW MAC address, and eventually, interrupt routing, chipselect routing for
-external bus peripherials, but that's completely up to a given board
-designer to decide what he wants to retreive from bi_recs and what is
-hard coded in the driver.
+Yeah, the config option needs to die. I'm waiting for
 
-In my case, I know I will pass all the chipselect & interrupt routing
-informations for my non-OCP peripherials, but that isn't mandatory.
+a) benh to get his new bi_rec implementation done,
 
-Confusing ? Well... The mecanism is very simple, flexible enough for
-you to be able to use as a kind of device-tree if you like, but enough
-people here expressed the need NOT to use it as a device tree. I know
-for example most OCP peripherials _could_ be indeed described with
-bi_recs, but it's up to the 4xx/8xx platform maintainer to decide how
-he wants to deal with those.
+b) get this damn driver working on SMP
 
-Now, it would be nice if all of this could be discussed around a table
-at OLS, do you have plans to schedule a PPC BOF there ? :)
+Also, I'd need to have two BI_MAC_ADDRESS records, since I need to be able
+to pass the mac addresses of both ethernets from the firmware for the
+board I have.
 
-
-Ben.
-
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Schulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
