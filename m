@@ -1,28 +1,49 @@
-Date: Mon, 2 Oct 2000 16:59:18 +0200 (CEST)
+Date: Mon, 2 Oct 2000 17:00:21 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Olaf Hering <olh@suse.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch: PCI resource fixup for atyfb (was: Re: xf 4.0.1 + ati
- driver with rage II/rage pro)
-In-Reply-To: <20001001224427.A18368@suse.de>
-Message-ID: <Pine.LNX.4.10.10010021658320.1581-100000@cassiopeia.home>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        R Shapiro <rshapiro@bbn.com>, Michel Dänzer <daenzerm@student.ethz.ch>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
+In-Reply-To: <Pine.LNX.4.10.10010011855010.1560-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10010021659560.1581-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 1 Oct 2000, Olaf Hering wrote:
-> while we are about to improve the atyfb, is it possible to fix the color
-> depth switching?
-> When I boot without a kernel arg I end up with 8 bit at console. I can't
-> increase the color depth afterwards with fbset, and mol crashes when it
-> tries to do that. When I specify atyfb:cmode:24 everythings works fine
-> and I can switch down to 8 and back to 24 and mol starts fine.
+On Sun, 1 Oct 2000, Michael Schmitz wrote:
+> > > Another idea (strictly in the Unix tradition): X knows how to mess up the
+> > > PCI config from user space so why shouldn't we, before X gets a shot at
+> > > it? 'Just' write the correct mapping to the offending BAR from a rc
+> > > script. Obvious drawback: the kernel OF tree won't be updated, and the
+> > > kernel can't safeguard against insane BAR settings (at least I can't tell
+> > > how that would work, one of the PCI gurus please enlighten me). Makes a
+> > > nice local DOS tool.
+> > >
+> > > (Don't tell me that's been done already - something like PCI PNP utils
+> > > for Linux, anyone?)
+> >
+> > Hmm fixing the resources from userland wont help you, you have to do it
+> > before atyfb starts up. If i remember right from your logs X didn't had
+> > any problems doing the relocation.
+>
+> Wrong - X didn't relocate anything, X just disabled one of the overlapping
+> regions IIRC (vram with the MMIO mirror region atyfb uses, in my case).
+> Even assuming X relocates the vram region, atyfb would never know it.
+> That's the root cause of our problem: X changing the PCI config while
+> kernel drivers rely on the PCI config remaining unchanged once the driver
+> inits.
+>
+> I know it doesn't sound like it can work, but in this particular case
+> (MMIO regs being accessed not via the MMIO PCI mapping but via one of the
+> MMIO register mirror areas in video RAM) the user space tool would
+> actually work if we relocate the MMIO resource - it's not used by the
+> kernel, and the video RAM mapping can remain untouched by X.
 
-Does it also crash when you increase the color depth with fbset?
-
-I don't use MOL (I don't have MacOS), but I never saw this problem.
+Ever tried setpci (from pciutils)?
 
 Gr{oetje,eeting}s,
 
