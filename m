@@ -1,36 +1,41 @@
-Date: Wed, 26 Jul 2000 21:28:08 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: Steffen Haeuser <SteffenH@hyperion-software.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: sound again [was: Re: xf4 bug report]
-In-Reply-To: <397F3271.FE3C0310@student.ethz.ch>
-Message-ID: <Pine.LNX.4.10.10007262055580.29744-100000@zirkon.biophys.uni-duesseldorf.de>
+From: tom_gall@vnet.ibm.com
+Message-ID: <397F60D4.E5A417E6@vnet.ibm.com>
+Date: Wed, 26 Jul 2000 22:06:12 +0000
+Reply-To: tom_gall@vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: modprobe and exec format error
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > All I've got configured so far is a (PowerMac/PReP/CHRP) Machine Type
-> > combination. Not what I asked for, as you will no doubt notice.
->
-> When Jesper Skov was the strong leader of APUS development, he worked on
-> making that possible, but he hasn't succeeded. Not that I think it's really
-> needed...
+Hi All,
 
-:-) Jesper's another one from the m68k port. I don't think it's really
-needed for PPC either, all I wanted to point out that it's been possible
-on m68k, because it was designed that way in the first place. And to
-support what Geert said in response to the silly Amiga/Atari topic - for a
-long time, the kernels that were released by the m68k maintainer had
-support for both, mainly because he was too lazy to compile twice. I've
-benefited far too much from the joint efforts from Amiga and Atari hackers
-to be told there's no way these would ever work together.
+  Here's a strange one...
 
-Sorry for veering so far off topic.
+  I'm bringing up a 2.4.0-testX kernel (Paul's latest PMac tree) and the kernel
+does come up quite a ways (tho how far is a bit hard to tell as things scroll by
+and scroll lock doesn't work)
 
-	Michael
+I get the following repeated item on my screen ... so imagine this line times N
 
+/sbin/modprobe -s -k binfmt_4c46 errno=8
+
+Well errno 8 is Exec format error as I recall...    time to upgrade modutils?
+
+Anyone with any suggestions or have seen this one before?
+
+Thanks in advance!
+
+Tom
+
+--
+Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
+Linux Technology Center           supposed to be an earth
+(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
+(w) 507-253-4558                 -- Marvin Martian
+(h) tgall@uswest.net
+http://oss.software.ibm.com/developerworks/opensource/linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
