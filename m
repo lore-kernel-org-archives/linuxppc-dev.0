@@ -1,30 +1,79 @@
-Message-Id: <5.1.0.14.0.20020723145817.00a8c120@pop1.mail.com>
-Date: Tue, 23 Jul 2002 15:13:49 -0400
-To: Arun Dharankar <ADharankar@ATTBI.Com>
-From: Mark Chambers <markc@mail.com>
-Subject: Re: console problem
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200207211506.57760.ADharankar@ATTBI.Com>
-References: <5.1.0.14.0.20020719083530.00a11d50@raven-villages.net>
- <5.1.0.14.0.20020719083530.00a11d50@raven-villages.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.terrasoftsolutions.com
+Subject: why isync in atomic icc and return and atomic dec and return for CONFIG_SMP 
+Date: Tue, 23 Jul 2002 17:25:30 -0400
+MIME-Version: 1.0
+Message-Id: <200207231725.30067.kevin.hendricks@sympatico.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Arun,
+Hi,
 
-I've got a question about your situation:  If you have no terminal attached
-to your system, how do you know what Linux is doing?  Or to put it
-conversely, how do you know that it's failing?  Are you sure the problem is
-really related to removing the cable or do you change something else to run
-without a terminal?
+Can anyone tell me the reason why we need to use an isync in the
+atomic_add_return and atomic_sub_return (see kernel source in
+asm/atomic.h) only for SMP machiens and only when a value is returned?
 
-I have seen my code hang in the very same place - but it did it whether a
-cable was attached or not, because the UART was not set up correctly.
+My understanding of an "isync" is that it forces all instruction issued
+previous to the isync to be completed before any new instructions can be
+fetched on that cpu (not on all cpus?).
 
-Mark Chambers
+Why is this needed only for SMP machines?
+
+Why is it only needed when a value is actually returned (there are no isync
+instructions on the non-returning versions)?
+
+Can someone explain exactly what the isync does for us here?
+
+
+#ifdef CONFIG_SMP
+#define SMP_ISYNC       "\n\tisync"
+#else
+#define SMP_ISYNC
+#endif
+
+static __inline__ int atomic_add_return(int a, atomic_t *v)
+{
+        int t;
+
+        __asm__ __volatile__(
+"1:     lwarx   %0,0,%2         # atomic_add_return\n\
+        add     %0,%1,%0\n\
+        stwcx.  %0,0,%2\n\
+        bne-    1b"
+        SMP_ISYNC
+        : "=&r" (t)
+        : "r" (a), "r" (&v->counter)
+        : "cc", "memory");
+
+        return t;
+}
+
+
+static __inline__ int atomic_sub_return(int a, atomic_t *v)
+{
+        int t;
+
+        __asm__ __volatile__(
+"1:     lwarx   %0,0,%2         # atomic_sub_return\n\
+        subf    %0,%1,%0\n\
+        stwcx.  %0,0,%2\n\
+        bne-    1b"
+        SMP_ISYNC
+        : "=&r" (t)
+        : "r" (a), "r" (&v->counter)
+        : "cc", "memory");
+
+        return t;
+}
+
+
+Thanks,
+
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
