@@ -1,65 +1,42 @@
-To: Steven Rothweiler <Stevenr@raritan.com>
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: AgileDB and Abatron BDI 2000 ICE 
+Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Jul 2003 11:12:46 EDT."
-             <159C486347C8D3119B1D005004A469400244BC6B@OLIVE>
-Date: Fri, 11 Jul 2003 17:33:05 +0200
-Message-Id: <20030711153310.7DD2FC6D82@atlas.denx.de>
+In-reply-to: Your message of "Fri, 11 Jul 2003 08:18:34 PDT."
+             <20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net>
+Date: Fri, 11 Jul 2003 17:43:18 +0200
+Message-Id: <20030711154323.4B267C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Steven,
+Dear Tom,
 
-in message <159C486347C8D3119B1D005004A469400244BC6B@OLIVE> you wrote:
+in message <20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net> you wrote:
 >
-> >From the AgileDB product data sheet (I can send it to you if
-> you'd like), it is clearly a GUI front end for GDB, or any
+> > We changed this in our kernel tree some time ago. If no valid PHY  is
+> > found  we simply do not enable the interface, but we do not panic any
+> > more.
+>
+> Which raises two fun questions:
+> 1) Do you plan on ever trying to re-sync your 2.4 tree with the
+> community tree (which should become kernel.org before too long)?
 
-Thanks, I've read it.
+We do this from time to time. The last  (visible)  re-sync  was  with
+2.4.20  (ChangeSet  1.1174  =  20021129181904|49831), which is half a
+year ago. On the other hand, we don't have the  resources  to  follow
+each and every change immediately.
 
-> other debugger you want to use.  They allow you to issue any
-> GDB (or any tool's) command-line command from a prompt, if
-> that's what you're familiar with.  From their data sheet:
+> 2) Do you plan on trying to keep in sync with 2.6 now that it's coming
+> up on us?
 
-This is why I wonder what they provide which  is  not  available  for
-example  in  DDD,  which is available for free and pre-installed with
-all major Linux distributions.
+Of course we will follow 2.6 as well.
 
-> * The BDI 2000 ICE Command Set
+Why are you asking? Did I give any reason to think we might go out of
+business?
 
-available with DDD/GDB though GDB's "monitor" command
-
-> * The GDB Command Set
-
-available through GDB itself.
-
-> * Target Serial I/O (over telnet)
-> * Any Tool or Service that uses Telnet
-> * Boot Agents Like: PPC/U-BOOT
-> * User-Defined Tests and Target Services
-
-Yeah, all available without AgileDB, too.
-
-> Theoretically, you're supposed to have productivity gains
-> by using their GUI (if you invest the time to learn it, just
-> as you've invested time to learn a CLI) over the equivalent
-
-You can use DDD if you want a GUI.
-
-> debuggers suffer from.  In a particular debug session, you
-> can put all of the things that are most important to you
-> into a single window.  I have no idea if this enhances
-> productivity, but I know that one of the reasons that I
-> prefer CLIs is that I spend more time opening, closing,
-> re-sizing, and just plain fiddling with the GUI windows.
-
-As mentioned before, you will have to test yoursdelf if you like  the
-tool,  or  not.  But do yourself a favour and test DDD, too. And then
-compare the prices.
 
 Best regards,
 
@@ -68,6 +45,8 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"If you are afraid of loneliness, don't marry."             - Chekhov
+"There are three principal ways to lose money: wine, women,  and  en-
+gineers.  While  the first two are more pleasant, the third is by far
+the more certain."                      -- Baron Rothschild, ca. 1800
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
