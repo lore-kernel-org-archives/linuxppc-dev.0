@@ -1,41 +1,42 @@
-Message-ID: <399A4220.23A3B0F5@research.canon.com.au>
-Date: Wed, 16 Aug 2000 17:26:24 +1000
-From: Graham Stoney <greyham@research.canon.com.au>
+Date: Wed, 16 Aug 2000 10:51:31 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: David Riley <oscar@the-rileys.net>
+cc: jlquinn@us.ibm.com, tom_gall@vnet.ibm.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI Buses
+In-Reply-To: <39999677.4790E775@the-rileys.net>
+Message-ID: <Pine.HPX.4.10.10008161029090.8448-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: dan@netx4.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help with string.S
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Casting our minds back to July, Dan Malek wrote:
-> OK, I think I am bailing out here.  For some reason, if I remove
-> the 'dcbz' instructions on the MPC8xx processor the world is just
-> a better place.  I don't know why, maybe because of some of the
-> TLB mapping, but I can't find a reason.
+On Tue, 15 Aug 2000, David Riley wrote:
 
-What was the eventual outcome of this?  I've been doing some 2.2.13
-kernel profiling on the 860, and __copy_tofrom_user is coming up as a
-hotspot.
-I tried dropping in the new improved version from
-linux-2.4.0-test7-pre4, and none of the 8xx mods are in there: it'l only
-work for 32 byte cache lines.
+> On a side note, does anyone know if Linux properly supports the 64-bit PCI
+> slots in the Blue G3's and G4's?  The only cards I know of that use them are
+> several SCSI cards and TotalImpact cards.
 
-I hacked it around and found the same as you: it won't work with the
-dcbz in there, and of course it doesn't run any faster than the old
-version without it.  It's certainly getting more complex in there, and I
-see your point about whether the extra code will actually make it run
-any faster, especially on 8xx CPUs with small I-caches. I'd be keen to
-test whatever you've come up with to see if it's actually better than
-the old 2.2 code on 8xx CPUs.
+>From a software point of view 64 bit PCI is indistinguishable from 32 bit.
+Actually MVME boards have a 64 bit PCI host bridge, although only the VME
+bridge (Tundra's Universe) is a 64 bit device. The software just does not
+care. PIO transfers of 32 bit or less (in practice all on a 32 bit
+processor) will use standard PCI bus protocol for reads; writes may be
+merged under some conditions by the processor or the host bridge as
+explained for example in the PPC750 or CPC710 (IBM) doc. Still these
+operations are often short (with the exception of graphics adapter memory
+accesses) and the benefit of 64 bit transfers versus a short burst of 32
+bit transfers is minimal.
 
-It sounds like a few people have at least had a shot at adding support
-for other than 32 byte cache lines, but none have propagated into the
-official kernels; how does that happen anyway?
+DMA operations on the other hand benefit a lot from 64 bit transfers,
+since well designed adapters will have large FIFOs and generate bursts of
+several tens of transfers at which point the overhead of setting up the
+operation becomes small. In practice this almost halves the bus
+utilization.
 
-Thanks,
-Graham
+
+	Regards,
+	Gabriel
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
