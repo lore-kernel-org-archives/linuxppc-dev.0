@@ -1,30 +1,45 @@
-Message-ID: <36DF0960.404624C0@andrew.cmu.edu>
-Date: Thu, 04 Mar 1999 17:29:52 -0500
-From: Randy Gobbel <gobbel@andrew.cmu.edu>
-MIME-Version: 1.0
-To: kbhend@business.wm.edu
-CC: gdt@linuxppc.org, sbb@gnu.org, linuxppc-dev@lists.linuxppc.org,
-        egcs@egcs.cygnus.com
-Subject: Re: Problem with egcs and denormalized constants?
-References: <36DEBCB0.7A98EB80@business.wm.edu>
+Date: Thu, 4 Mar 1999 18:22:03 -0500
+From: Michael Meissner <meissner@tiktok.cygnus.com>
+To: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MVME 2306 almost up and running
+Message-ID: <19990304182203.A1856@tiktok.cygnus.com>
+References: <Pine.SO4.4.05.9903041715480.4479-100000@hsins.uia.ac.be> <199903041951.UAA00814@macintoy.masq.in-berlin.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199903041951.UAA00814@macintoy.masq.in-berlin.de>; from Gerd Knorr on Thu, Mar 04, 1999 at 08:51:55PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-P.S.: I just said the flMin problem was an egcs bug.  It's actually an
-asm bug, because the constant is correct in the .s file:
+On Thu, Mar 04, 1999 at 08:51:55PM +0100, Gerd Knorr wrote:
+> 
+> > Hi,
+> > 
+> > My final question : our board now finally boots, it can mount an
+> > NFS partition as root fs, but does anybody know where on the Internet
+> > I can find a file system tree with the binaries for LinuxPPC ? I mean,
+> > like Slackware, but for LinuxPPC. (We have no other [spare] PPC based
+> > machines, so I need a full binary file tree to set up on the NFS fs).
+> 
+> Just download the basic rpm's and install them on the NFS Server
+> with "rpm --root=/export/nfsroot4ppc -i *.rpm".
 
-.LC8:
-	.float 0d1.40129846432481707092e-45
+I think the point is that the normal rpm's (ie, ftp.linuxppc.{org,com}) won't
+work too well on an ppc860, since that machine does not have a FPU, and the
+kernel support for emulating fp might not be present or even if present, too
+slow.
 
--Randy
+One thought is to build a cross compiler on some other system, and manually
+build the compiler and enough tools to run native and then bootstrap the old
+fashioned way (you probably want to use the --with-cpu=860 switch when
+configuring, so that binaries by default don't reference the fpu).  However,
+setting up a cross compiler is somewhat tricky if you've never done it before.
+
 -- 
-http://www.cnbc.cmu.edu/~gobbel/
-PGP fingerprint: 32 8A E8 24 A1 46 26 BC  F9 9D 0E B6 81 A9 02 0C
-
-NOTICE: I DO NOT ACCEPT UNSOLICITED COMMERCIAL EMAIL MESSAGES OF ANY
-KIND.
+Michael Meissner, Cygnus Solutions
+PO Box 98, Ayer Massachusetts, USA 01432-0098
+meissner@cygnus.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
