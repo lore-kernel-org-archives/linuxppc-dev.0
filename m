@@ -1,25 +1,31 @@
-Message-ID: <39864DEA.9A9B89C6@embeddededge.com>
-Date: Tue, 01 Aug 2000 00:11:22 -0400
-From: Dan Malek <dan@netx4.com>
+From: "Ron Bianco" <ronb@junction.net>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Using SCSI driver sym53c8xx.c - no nvram - no symbios BIOS
+Date: Tue, 1 Aug 2000 11:48:42 -0700
+Message-ID: <000301bffbe9$1d708b90$4d012ac7@warp-speed>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Embedded and 2.4.0-test5
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I just pushed the latest version of the 8260 FCC Ethernet driver.
-The MII/MDIO for PHY control status is not complete and is very
-board specific.  I am testing the funky MDIO pulse for interrupt,
-which people claim will work.....we'll see.
+Referring to my previous email:
 
-I found trouble with the inclusion of the drivers/macintosh
-directory that is automatically included with CONFIG_PPC.  I had
-to remove this from the Makefiles, and I am now working with the
-workstation folks to find a solution.
+Oops, I found the #define options in:  sym53c8xx_defs.h !
+I also found a few config pins that were not set properly and probably explain the
+problems I was having.
 
+Still would like to know if anyone else is using the driver tho'.
 
-	-- Dan
+Also, should I set the 53c895 to little endian mode?  It is set this way at the moment and
+the chip is detected and config data read OK.
+
+So, with the PPC in big endian and the SCSI chip in little endian, and the kernel compiled
+accordingly, I should be able to access files on a disk that were written by an intel box,
+properly, right?
+
+Ron
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
