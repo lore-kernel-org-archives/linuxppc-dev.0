@@ -1,45 +1,49 @@
-Message-Id: <199901102229.XAA26438@denx.muc.de>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: MBX860: How to boot with initrd ? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 10 Jan 1999 09:26:08 +0100."
-             <36986420.3281E1A4@wanadoo.fr>
-Date: Sun, 10 Jan 1999 23:29:07 +0100
+Date: Sun, 10 Jan 1999 16:46:11 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Dan Malek <dmalek@jlc.net>
+cc: Wolfgang Denk <wd@denx.muc.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: MBX860: How to boot with initrd ?
+In-Reply-To: <36983326.EA43D05F@jlc.net>
+Message-ID: <Pine.LNX.4.04.9901101642350.926-100000@narn.local.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <36986420.3281E1A4@wanadoo.fr> you write:
+On Sat, 9 Jan 1999, Dan Malek wrote:
+
 > 
-> If you use egcs-1.1.1 from the rpms in Gary Thomas' directory on
-> linuxppc.org, the kernel should build OK (C++ is a different story...).
-> I also had problems with recent egcs versions:
+> Wolfgang Denk wrote:
+> 
+> > ....  But  I  must be missing something, because such an image will
+> > not boot; all I see is:
+> 
+> Hmmm.  I know initrd works because I use it quite often.  All of the
+> memory relocation looks OK.  Cort had a good suggestion, can you
+> build a kernel that boots using NFS (or at least boots to the point of
+> trying to mount the root fs).
+> 
+> 
+> >         Linux/PPC load: console=tty0 console=ttyS0,9600n8
+> 
+> This looks a little weird.  It should not be necessary and I
+> don't know what happens when it is used.
 
-You mean ftp://ftp.linuxppc.org/gary/redhat/RPMS/ppc/egcs*-1.1*ppc.rpm ?
+Actually, it's pretty handy, if you have a VGA display.. it will duplicate
+everything printed to the console to tty0 (VGA) and ttyS0 (the serial
+port).  This is hardcoded in arch/ppc/boot somewhere.
 
-They don't work for me - same result: no problems during compilation,
-but the kernel hangs.
+I don't know how much this will help, but I have had some problems with
+the bootloader when compiled with some versions of egcs on a Blackhawk
+board. You could try compiling arch/ppc/boot/*.c with -O instead of -O2.
 
-So far the only reliably working version of EGCS for me is the one in
-linuxppc-R4 :-(
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
-> I wrote about this to egcs-bugs and to this list, but there was no
-> answer except one from Franz Sirl saying that he sees these errors, too.
-
-Do you know if anybody takes care of this problem at all? [Especially
-the missing availability of a cross development environment bites  my
-quite hard.]
-
-Wolfgang
-
--- 
-Phone:  (+49)-89-95720-110   Fax: (+49)-89-95720-112   wd@denx.muc.de
-Office: (+49)-89-722-27328               Wolfgang.Denk@ICN.Siemens.DE
-Fascinating is a word I use for the unexpected.
-	-- Spock, "The Squire of Gothos", stardate 2124.5
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
