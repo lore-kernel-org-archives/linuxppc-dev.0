@@ -1,39 +1,49 @@
-In-Reply-To: <1083251690.16941.1.camel@veena.timesys>
-References: <1083251690.16941.1.camel@veena.timesys>
-Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A5AD09EC-9A30-11D8-A9B8-000393DBC2E8@freescale.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: MPC8560 FCCs
-Date: Thu, 29 Apr 2004 17:57:53 -0500
-To: Jason McMullan <jason.mcmullan@timesys.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: "S. Hebbar" <shebbar@india.tejasnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: JFFS2 problem when data cache enabled
+Date: Fri, 30 Apr 2004 13:50:20 +0530
+Cc: shebbar@india.tejasnetworks.com
+MIME-Version: 1.0
+Message-Id: <200404301350.20513.shebbar@india.tejasnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jason,
+Hello,
 
-I've been able to do this on an 8560 ADS, however I'm setting the
-jumpers such that the PHYs are in 'legacy' mode.  This means that we
-use GPIO pins to talk to them rather than the TSEC MDIO bus.
+I am experiencing JFFS2 FS problem when I enable data cache on 8260 based
+custom board.  (266/166/66 MHz).
 
-- kumar
+While the node is booting up, I get the following error on the console.
+I am using linuxppc-2.4.20-denx. with latest patches for JFFS2 and MTD.
 
-On Apr 29, 2004, at 10:14 AM, Jason McMullan wrote:
+The board has 8MB of AMD AM29LV641 chipset.
 
->
-> Out of curiosity, has *anyone* gotten the MPC8560's (rev 1 OR Rev 2)
-> FCCs to generate proper ethernet frames?
->
-> I am having a lot of trouble with them.
->
-> The TSECs work just fine.
->
-> --
-> Jason McMullan <jason.mcmullan@timesys.com>
-> TimeSys Corporation
->
+When I disable the datachache on linux kernel, everything works fine.
+
+Any help on debugging this problem is very much appreciated.
+
+Thanks,
+Hebbar.
+
+=====================
+Freeing unused kernel memory: 52k init
+Mounting /dev/mtdblock3 on /etc as jffs2 file system.
+init started:  BusyBox v0.60.5 (2004.03.04-09:24+0000)
+multi-call<5>jffs2_get_in
+ode_nodes(): Data CRC failed on node at 0x00011b90: Read 0x0000053f,
+calculated
+0xd06df7c8
+floating point used in kernel (task=c759c000, pc=c0395a20)
+Machine check in kernel mode.
+Caused by (from SRR1=4b030): Transfer error ack signal
+Oops: machine check, sig: 7
+NIP: C0395A28 XER: 00000000 LR: C0395A20 SP: C759DB60 REGS: c759dab0 TRAP:
+0200
+   Not tainted
+================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
