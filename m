@@ -1,42 +1,43 @@
-Date: Thu, 7 Jan 1999 10:22:58 +1100
-Message-Id: <199901062322.KAA00858@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <19990106110256.031920@mail.mipsys.com> (message from Benjamin
-	Herrenschmidt on Wed, 6 Jan 1999 11:02:56 +0100)
-Subject: Re: Strange PMAC IDE performance problem
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <19990106110256.031920@mail.mipsys.com>
+Date: Wed, 6 Jan 1999 18:22:31 -0600 (CST)
+From: Vinai Roopchansingh <vroopcha@post.its.mcw.edu>
+To: linuxppc-user@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: PPP PCI client ??
+In-Reply-To: <Pine.HPX.4.03.9901061550060.1275-100000@monet.artisan.calpoly.edu>
+Message-ID: <Pine.SOL.3.96.990106181356.10863L-100000@post.its.mcw.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <bh40@calva.net> wrote:
+Users and Guru's,
 
-> By curiousity, did someone tried to locate the exact instruction in
-> do_IRQ when those bogus interrupt happens ? Looks it's always the same...
+I have a "wish" for Linux and I am willing to undertake the investment
+of time and resources to _TRY_ to get this to work, if it isn't already
+happening ..
 
-It's usually the instruction that reenables interrupts globally, after
-we have disabled the particular interrupt we are servicing.  I think
-what happens is this: we write to the interrupt controller enable
-register to disable the interrupt.  This write percolates through the
-PCI bridge down into the gc/ohare/heathrow/whatever chip, and some
-time later that chip will negate the interrupt request signal
-(assuming there are no other enabled interrupts).  In the meantime the
-CPU has been proceeding from the write to the instruction where it
-reenables interrupts (by putting a new value in the MSR).  If the CPU
-gets there first, you can get a bogus interrupt.
+As my subject says, I was wondering if anyone out there has hacked out
+a Linux PPP client that would use the new PCI modems that some makers
+are producing.  I would like to get my modem "internal" on my 7500 and
+getting this to work would be the only way.
 
-I put in a sync instruction after the write to make the cpu wait at
-least until the pci bridge has acknowledged the write.  That helps on
-many machines but isn't sufficient on some.  Reading a register in the
-interrupt controller should help, especially if there was an eieio
-between the read and the write.  (The eieio goes out onto the system
-bus and should therefore be seen by the PCI host bridge.  Whether the
-bridge honors it by not allowing subsequent reads to bypass previous
-writes is another question. :-)
+I have a couple of questions that I would like answers to before I dive
+into this ...  Has this been done already and is there a chipset for the
+modems that are more "favoured" that others (I know that Rockwell is
+pretty much the gold standard now for modem chipsets) ??
 
-Paul.
+Is it possible, with the current implementation of PPP, to deal with the
+hardware access just from the client end (from a program such as ezppp)
+instead of diving into the kernal (providing the kernal already gives me
+access to the PCI bridge) ??
+
+TIA.
+
+Vinai
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
