@@ -1,74 +1,68 @@
-Date: Wed, 26 Apr 2000 14:15:12 +0200
+Date: Wed, 26 Apr 2000 14:22:56 +0200
 From: Bernhard Reiter <bernhard@intevation.de>
-To: Andreas Tobler <toa@pop.agri.ch>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Serial driver problem (modem Lombard)
-Message-ID: <20000426141512.I2544@cheops.usf.Uni-Osnabrueck.DE>
-References: <20000422123747.B8503@cheops.usf.Uni-Osnabrueck.DE> <3901D09B.4B25722F@pop.agri.ch> <20000424125228.A15804@cheops.usf.Uni-Osnabrueck.DE> <39043F06.CDED1B99@pop.agri.ch>
+To: Mario Scarpa <m.scarpa@mondonet.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard hard freeze
+Message-ID: <20000426142256.J2544@cheops.usf.Uni-Osnabrueck.DE>
+References: <20000424161311.23404.qmail@web1705.mail.yahoo.com> <20000424191708.C16557@cheops.usf.Uni-Osnabrueck.DE> <39058B20.7D29A470@mondonet.net> <20000425144459.E22219@cheops.usf.Uni-Osnabrueck.DE> <390594BF.97FD809E@mondonet.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+Z7/5fzWRHDJ0o7Q"
-In-Reply-To: <39043F06.CDED1B99@pop.agri.ch>; from toa@pop.agri.ch on Mon, Apr 24, 2000 at 02:33:13PM +0200
+	protocol="application/pgp-signature"; boundary="IR1Y5IvQhrKgS4e6"
+In-Reply-To: <390594BF.97FD809E@mondonet.net>; from m.scarpa@mondonet.net on Tue, Apr 25, 2000 at 02:51:11PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---+Z7/5fzWRHDJ0o7Q
+--IR1Y5IvQhrKgS4e6
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 24, 2000 at 02:33:13PM +0200, Andreas Tobler wrote:
-> Bernhard Reiter wrote:
-> > =20
-> > > Now I can report a clean, more or less, well ppp operation.
-> > As I wrote, it always works on the first try.
-> > It sometimes fials on the second and following tries with 2.2.15pre19.
-> > It always works with the 2.2.15pre3 which does not have ir support build
-> > in.
+On Tue, Apr 25, 2000 at 02:51:11PM +0200, Mario Scarpa wrote:
+> > > Same here. I would say that it all started when I bought
+> > > my USB mouse and started using the USB bus: before I was
+> > > using the trackpad and do not remember about similar locks.
+> > > Just a hint.
+> >=20
+> > So do you think, just not pluggin in the usb mouse might help?
+> > This should be easy to test. Or do I need a kernel without usb support?
 >=20
-> I'm not sure, is it possible to disable IR in the kernel build? worth a t=
-ry.
+> When I was not using my USB mouse I neither had the support
+> into the kernel; if it's not a great deal to you we can try
+> not to use (and not to enable) USB for a while and see what
+> happens. Due to the type of crash (total hang) it's quite
+> difficult to me to find out what's wrong so having a hint about
+> the possible cause could tighten the search a lot.
 
-Probably.
+Compiled kernel 2.2.15pre19 without usb support.
+According to my first tests the system is more stable now.
+I have not encountered a hard freeze yet, though running compiles which
+usually trigger one for certain.
 
-> > If wvdialconf scans the ir port ttyS1 on 2.2.15pre19, die machine bombs.
-> have you tried with something other than wvdial? (which I don't know), I
-> use netcfg.
+Test are continuing, though.
 
-Wvdialconf scans all devices and tries to detect a modem.
-For that reason it writes normal modem commands to the device.
-So when scanning the ir port in my case, it should not detect a=20
-modem, because there is none.=20
-
-I just like to report the bug that the machine bombs with the
-2.2.15pre19 kernel when wvdial writes the nonsense to the IR port. =20
-A machine should never bomb.
-
-My ppp runs fine with the configured modemport, apart from a couple
-of occasion where I could only use it once.
-
-I guess the next step of debuggin would be to try to use the IR for
-something useful.
+The first diagostic of the problem is, that it is a usb problem.
+Even when no usb device is used. So who is the person we have to
+report this bug to? Or is everybody relevant reading this list anyhow?
+:-)
 	Bernhard
-	=20
-
 --=20
 Professional Service around Free Software                (intevation.net) =
 =20
 The FreeGIS Project				            (freegis.org)
 Association for a Free Informational Infrastructure            (ffii.org)
 
---+Z7/5fzWRHDJ0o7Q
+--IR1Y5IvQhrKgS4e6
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.0.1 (SunOS)
 Comment: For info see http://www.gnupg.org
 
-iEYEARECAAYFAjkG3c4ACgkQh9ag3dpKERYt6QCghPnwof+F7ID0vOYJLzv0nu4M
-IsUAn1C/6rXo9bQ/O8CK9VSINbhFAT3x
-=co3s
+iEYEARECAAYFAjkG358ACgkQh9ag3dpKERYLDQCfS3IQLkHIuS2+d1fPVqcXrwP4
+KTEAoI9mu6gGIitz8Usvc6wj3n1mIjV4
+=1gce
 -----END PGP SIGNATURE-----
 
---+Z7/5fzWRHDJ0o7Q--
+--IR1Y5IvQhrKgS4e6--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
