@@ -1,41 +1,26 @@
-Message-Id: <9909012147.AA27400@marc.watson.ibm.com>
-To: Scott Wood <scott@broadlink.com>
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: GLIBC wont compile for MPC860 
-In-Reply-To: Message from Scott Wood <scott@broadlink.com>
-   of "Wed, 01 Sep 1999 13:27:55 PDT." <37CD8C4B.43C595EE@broadlink.com>
-Date: Wed, 01 Sep 1999 17:47:00 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Wed, 1 Sep 1999 15:58:27 -0600 (CST)
+From: Kamran Karimi <karimi@cs.uregina.ca>
+To: linuxppc-announce@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-user@lists.linuxppc.org
+Subject: DIPC 2.0-pre10 for PowerPC
+Message-ID: <Pine.SGI.3.91.990901155123.29307A-100000@MERCURY.CS.UREGINA.CA>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Scott Wood writes:
+Hi,
 
-Scott> Graham Stoney wrote:
->> 
->> Scott Wood writes:
->> > The MPC8xx have no floating point, so it should be compiled with -msoft-float,
->> > (I think)...  ./configure --without-fp  will do it.
->> 
->> Is this implied when gcc has been configured --with-cpu=860?
+ DIPC 2.0-pre10 (http://wallybox.cei.net/dipc) is now available for 
+downloading from orion.cs.uregina.ca/pub/dipc. There are no known bugs 
+in it, and unless some new problems are detected, this will be the base for 
+the final DIPC 2.0 release.
 
-Scott> I don't think so...  I put -msoft-float into the sysdeps/powerpc/Makefile and I see
-Scott> it twice below, so I would imagine that if you use both flags then -msoft-float
-Scott> will be used.
+ As of 2.0-pre5, DIPC is GPL. Please test 2.0-pre10 and inform me of the 
+results.
 
-	Unfortunately, the people who wrote PowerPC support for glibc did
-not create a sysdeps/powerpc/fpu directory containing FP-specific code.
-There currently is no way to disable FP code in glibc-2.1, but I believe
-that the maintainers were suppose to fix this for glibc-2.2; I do not know
-about the status.  People who have been working on Linux for embedded
-processors have been building glibc somehow, but I do not know the details.
-
-David
-===============================================================================
-David Edelsohn                                      T.J. Watson Research Center
-dje@watson.ibm.com                                  P.O. Box 218
-+1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
+-Kamran
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
