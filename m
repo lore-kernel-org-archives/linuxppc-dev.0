@@ -1,40 +1,32 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Mon, 25 Nov 2002 18:59:56 +0800
-From: caixupeng <edmoon@huawei.com>
-Subject: ppcboot, linux , hang  at the last step
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <000d01c29471$ca5b94d0$92690b0a@DBKQW41X>
-MIME-version: 1.0
-Content-type: text/plain
+Message-Id: <200211251219.GAA14313@lists.linuxppc.org>
+Date: Mon, 25 Nov 2002 20:25:32 +0800
+From: "Li Xiangrong" <lixiangrong@china.com>
+To: "wd@denx.de" <wd@denx.de>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: problem about mac address 
+Mime-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all,
+Hello, Mr. Denk,
+I am now using the PPCBOOT in my system. I boot my board(mpc860t) by ppcboot and then port the hardhat linux. However, i got a problem with the mac address. I have set the mac address(CONFIG_ETHADDR 00:10:EC:00:23:20) in ppcboot. It's okay in ppcboot, but when the kernel boots up i find the kernel config the mac of eth0 (08:00:3e:26:15:59).That means the parameters of mac have not been transfered to kernel.However, the other paras, such as ip addr., host addr., netmask and such other is the same that i configured.I searched the kernel and have not find the place to set that addr. The kernel gets the mac addr. from and only from the SDRAM(enet.c):
 
-When I boot a linux image use "bootm ffa00000 ffb00000"
-the linux hang at the last step:
+				mcptr = (u_char *)dmi->dmi_addr + 5;
+				tdptr = (u_char *)&ep->sen_taddrh;
+				for (j=0; j<6; j++)
+					*tdptr++ = *mcptr--;
 
-VFS: Cannot open root device "" or 16:01
-Please append a correct "root=" boot option
-Kernel panic: VFS: Unable to mount root fs on 16:01
+The samethig happened with the fec mac. I read the fec.c and noticed that we use a random mac address tmpaddr[6], but the kernel config the fec mac of (08:00:be:26:15:59). The issue results that i can debug and test only one board in my group. How does this happen and may u give me an advice to solve it?
+I really appreciat ur help
 
-I have set the "bootargs=root=/dev/ram"
 
-what's wrong ?
+Best regards.
 
-Is my linux kernel's erro or ppcboot's problem?
-Does ppcboot send the bootargs to linux kernel correctly?
-
-Where can set the boot params in the linux source code ?
-I want to set the params in code to force it correctly.
-
-I use linux-2.4-develop-rc1 which download from bitkeeper.
-
-my board is Ebony.
-
-thanks!
-
-                    edmoon
+Li Xiangrong
+lixiangrong@china.com
+2002-11-25
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
