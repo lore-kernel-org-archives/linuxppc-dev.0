@@ -1,59 +1,52 @@
-Date: Fri, 22 Nov 2002 18:26:04 +0800
-From: caixupeng <edmoon@huawei.com>
-Subject: Re: compile a linux kernel for ppc4xx, error message
-To: Aman <aman@mistralsoftware.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <000701c29211$90689eb0$33690b0a@DBKQW41X>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <001501c291c2$04745150$33690b0a@DBKQW41X>
- <001001c291ec$be79adf0$370da8c0@aman>
- <000901c291f2$952c3250$33690b0a@DBKQW41X> <009901c291fb$16c84e40$370da8c0@aman>
+Message-ID: <3DDE26E8.9050508@elsoft.ch>
+Date: Fri, 22 Nov 2002 13:45:28 +0100
+From: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linuxppc_2_5 and PPCBoot / U-Boot
+Content-Type: multipart/mixed;
+ boundary="------------090701000607040301020602"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wonderful!
-I  download the newest develeping version of linux kernel from bitkeeper.
-And compiled without any errors.
+This is a multi-part message in MIME format.
+--------------090701000607040301020602
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I don't have any Montvista or others. I only have binutils-2.13 and gcc-core-2.95.3.
+Hello
 
-thank you very much!
+The attached patch fixes PPCBoot (U-Boot) image generation for linuxppc_2_5.
 
-        edmoon
+Dave
 
 
------ Original Message -----
-From: "Aman" <aman@mistralsoftware.com>
-To: "caixupeng" <edmoon@huawei.com>
-Sent: Friday, November 22, 2002 3:45 PM
-Subject: Re: compile a linux kernel for ppc4xx, error message
+--------------090701000607040301020602
+Content-Type: application/octet-stream;
+ name="ppcboot.patch.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="ppcboot.patch.bz2"
 
-> 1. The Linux kernel is available as a tar'd file from the following site:
-> http://www.ppckernel.org/tree.php?id=5
-> 2. These kernels are in a constant state of change, as developers upload
-> revised versions.
-> 3. The latest version is titled "BitKeeper  2.4 development".  This actually
-> contains  kernels targeted to a number of  processors in addition to the
-> 440.
-> 4. The tar'd file should be downloaded to a local machine then  untar'd,
-> which will in turn yield a set of directories for the  different kernel
-> targets.
-> 5. Traverse to the 4xx directory, and therein will reside the necessary
-> source code.
-> 6. In order to compile the software, I believe you will need the MontaVista
-> cross compiler. [ Do you have Montavist compiler, if not try "Embedded Linux
-> Development Kit" at www.denx.de]
-> 7. In order to make the kernel,  If you just want to play with the _devel
-> tree then use your
->  ppc_405- toolchain to build the kernel. Edit the top-level Makefile to say
-> "ARCH := ppc" and "CROSS_COMPILE := ppc_405-". [ If you don't have
-> "ppc_405-" tool set, set the appropriate compiler you hv]
-> make ebony_config
-> make oldconfig
-> make dep
-> make clean
-> make zImage
+QlpoOTFBWSZTWXN8KlkAAVVfgGAwTP//9n/v3+S//9/wUAMtKh63LNwsMkRpMk9MSYJ6m0TJ
+6hoaaGmmm1NBk0yM1NpBJUaU3pqbTUyR5R6nqZAAAaADRoAAAkiARJkyj1PTTSGho9QHqHqa
+M1DTI9Rp6gA4yZNGIYmmAgYE0wRgmJppoAMIJJTSbUMTKPU8mmkZABoAANAAABpZtgoQL+FO
++hoMh8EC4U9gWxnlo27FsTQp3Wyq8XJ91KNW/3UOcip9cNTOphdQxtDhA3mQ52fRx8Tz1PS5
+nkCpPPixBHgLE7eurJUZhfbg2WR2oiIw2TQYTk8mmjJ0AWTjpF8BZnMqsT8D142g6MliPeb5
+bdmfd7tXi5duOSoJqbUCgtHPskEQoGUMfNs8/s5NmGDkYsK9kzIm0250hcEPQKlz6dVZFXNF
+0b1gBBFIBXKIUAhArKAsRvyqwIiR51p43VlehjrcO4xythYZqx0DYRR3+gwYwmEID/yuucXd
+2Z9/wNkbBEKMmVGCoh04sFE03F4TKJkNq6uagoTM2SK0soQtbSwqJmvVz1QVq60FgoDk1RyC
+rWtxEuckmWs1Erv1ozbYTLcGRQqrcXSmNuYVNIZrEAeBq9MQKFaiyhcGBwOCv2WTrxcqNu7y
+9c7dgau5+VrO0cN18NdL/axP8FqQgVkjESa18s6hzF4hNrBxCWJSZg5FQOUBE/SQq0RXD271
+XBW0xHkjtKO1BkHRJgqWlbydK4k11Y3EZ+F9jL8TY0RuWCNFhQ+eOZErJKvt9r0XEQZTIOdg
+TMI0fRFZSinJf+EI2yBNjFMe8cgXlUFIEPDKeFLOAxAEJYd9S8MCkBHD6cSFTo2yO3Ku8KXT
+FJ4KXmtHESFiX2FjueML4LHDAwggmYhVf1MrxTigvzRySGJWRgoBuythQQhdo+khVsghQUzO
+hBQErL1SM0MqqYCpaUSxSvHsLMA/ll0aEieCZimSoWBkyqLT2C3aRDbMY5kAzMiIoD6RYVq6
+RBiscsMMqeQQTkV8CCECpkn04MKnoJS/kZmEEMscwkbIrxcvD1xtWkPZpAdUIoz3Sxj7ppvQ
+sYDNGcCtPdJYnaAMFDSzJqiAIkAiLorQljApaDHGis4LEnCtJ5UXoTpaILvSCaYHYBz/i7ki
+nChIOb4VLIA=
+--------------090701000607040301020602--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
