@@ -1,21 +1,14 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp3.wanadoo.fr (smtp3.wanadoo.fr [193.252.22.28])
-	by ozlabs.org (Postfix) with ESMTP id 18E4A67A76
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2005 03:52:03 +1100 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0306.wanadoo.fr (SMTP Server) with ESMTP id 222651C00354
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Mar 2005 17:51:56 +0100 (CET)
-Date: Fri, 18 Mar 2005 17:37:13 +0100
-To: "Brian V. Madzarevic" <Brian.Madzarevic@uav.com>
-Message-ID: <20050318163713.GA9798@pegasos>
-References: <A79EE6739F2C7348A857541FB5CD92D6011566F6@asimail1.rb.uav.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <A79EE6739F2C7348A857541FB5CD92D6011566F6@asimail1.rb.uav.com>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org
-Subject: 2.6.11 prep powerstack and sym53c8xx brokeness (was Re: 2.6.11 prep
-	image on radstone ppc4a not booting)
+Return-Path: <dank@kegel.com>
+Received: from relay03.pair.com (relay03.pair.com [209.68.5.17])
+	by ozlabs.org (Postfix) with SMTP id 0EE0367A72
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Mar 2005 12:58:28 +1100 (EST)
+Message-ID: <423B788F.7040705@kegel.com>
+Date: Fri, 18 Mar 2005 16:55:43 -0800
+From: Dan Kegel <dank@kegel.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: gcc4 compile fixes
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +18,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 08, 2005 at 10:11:31AM -0800, Brian V. Madzarevic wrote:
-> I am trying to boot a Linux 2.6.11 prep image on a Radstone PPC4A.
-> PPC4A Specifications http://www.radstone.com/rtcd/pdfs/ppc4a.pdf
-> 
-> I was trying to get an nfs filesystem mounted, but after the bios
-> retrieves the kernel using tftp, no more packets are even sent out.  I
-> don't know if there is a problem with the network driver or the PCI bus
-> or what.
+Howdy all.  I'm trying to bring up gcc-4.0 toolchains
+using the headers from linux-2.6.11.3, and as a sanity
+check, I'm trying to build ppc750 and ppc970 kernels, too.
 
-By the way, i can confirm that the 2.6.11 kernels seem to be broken on
-motorola powerstack, due to the sym53c8xx driver which was already mentioned
-previously i think.
+I'm finding things here and there that need patching to let
+the build finish.  For instance:
 
-Any hint on this ? 
+In file included from include/asm/setup.h:8,
+                  from include/asm/machdep.h:8,
+                  from include/asm/irq.h:6,
+                  from include/asm/hardirq.h:8,
+                  from include/linux/hardirq.h:6,
+                  from include/asm-generic/local.h:6,
+                  from include/asm/local.h:4,
+                  from include/linux/module.h:21,
+                  from init/main.c:16:
+include/asm-m68k/setup.h:365: error: array type has incomplete element type
 
-Friendly,
+(This pops up because asm-ppc/setup.h just includes asm-m68k/setup.h.)
 
-Sven Luther
+That's a garden-variety 'used before defined' problem, fixed thus:
+
+--- linux-2.6.11.3/include/asm-m68k/setup.h.old Fri Mar 18 13:48:03 2005
++++ linux-2.6.11.3/include/asm-m68k/setup.h     Fri Mar 18 13:48:14 2005
+@@ -362,12 +362,13 @@
+  #ifndef __ASSEMBLY__
+  extern int m68k_num_memory;            /* # of memory blocks found (and used) */
+  extern int m68k_realnum_memory;                /* real # of memory blocks found */
+-extern struct mem_info m68k_memory[NUM_MEMINFO];/* memory description */
+
+  struct mem_info {
+         unsigned long addr;             /* physical address of memory chunk */
+         unsigned long size;             /* length of memory chunk (in bytes) */
+  };
++
++extern struct mem_info m68k_memory[NUM_MEMINFO];/* memory description */
+  #endif
+
+  #endif /* __KERNEL__ */
+--- snip ---
+
+Ditto for the next one:
+
+In file included from include/asm/current.h:4,
+                  from include/linux/wait.h:27,
+                  from include/asm/semaphore.h:15,
+                  from include/linux/sched.h:19,
+                  from arch/ppc64/kernel/asm-offsets.c:18:
+include/asm/paca.h:25: error: array type has incomplete element type
+make[1]: *** [arch/ppc64/kernel/asm-offsets.s] Error 1
+
+--- linux-2.6.11.3/include/asm-ppc64/paca.h.old Fri Mar 18 13:23:40 2005
++++ linux-2.6.11.3/include/asm-ppc64/paca.h     Fri Mar 18 13:24:04 2005
+@@ -22,7 +22,6 @@
+  #include       <asm/iSeries/ItLpRegSave.h>
+  #include       <asm/mmu.h>
+
+-extern struct paca_struct paca[];
+  register struct paca_struct *local_paca asm("r13");
+  #define get_paca()     local_paca
+
+@@ -114,5 +113,7 @@
+         struct ItLpRegSave reg_save;
+  #endif
+  };
++
++extern struct paca_struct paca[];
+
+  #endif /* _PPC64_PACA_H */
+--- snip ---
+
+If somebody else has already fixed all of these, I'd rather
+just use their sources.   So... shall I keep on patching
+and posting, or are these already fixed somewhere?
+
+Thanks,
+Dan
+
+-- 
+Trying to get a job as a c++ developer?  See http://kegel.com/academy/getting-hired.html
