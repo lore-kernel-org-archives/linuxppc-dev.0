@@ -1,181 +1,44 @@
-Date: Wed, 22 May 2002 12:53:24 -0700
-From: andrew may <acmay@acmay.homeip.net>
-To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-Cc: andrew may <acmay@acmay.homeip.net>,
-	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Armin Kuster <akuster@mvista.com>
-Subject: Re: 405 I2C
-Message-ID: <20020522125324.A23591@ecam.san.rr.com>
-References: <1021995053.7265.22.camel@swb11> <20020521085924.F9190@ecam.san.rr.com> <1021997793.7265.36.camel@swb11> <20020521110050.B20012@ecam.san.rr.com> <1022063796.7265.74.camel@swb11>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="C7zPtVaVf+AK4Oqc"
-In-Reply-To: <1022063796.7265.74.camel@swb11>
+Message-ID: <3CEC1E95.4CCCA5CA@esteem.com>
+Date: Wed, 22 May 2002 15:41:25 -0700
+From: Conn Clark <clark@esteem.com>
+MIME-Version: 1.0
+To: Dan Kegel <dkegel@ixiacom.com>,
+	May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: What problems are there with floating point emulation in the kernel?
+References: <9A9C83C019F35D47A570460E87D5D8AB0125EAB9@racerx.ixiacom.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---C7zPtVaVf+AK4Oqc
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, May 22, 2002 at 12:36:36PM +0200, Kenneth Johansson wrote:
-> On Tue, 2002-05-21 at 20:00, andrew may wrote:
+Dan Kegel wrote:
 >
-> > well i2c...read_byte_data is really a write of 1 byte followed by a read
-> > of 1 byte. The scan is just a read of 1 byte.
+> Since it's very easy to avoid the use of floating point in
+> the kernel, it has not been a big issue.
 >
-> Yepp thats the difference.
->
-> >
-> > So you should be going through the combined xfer function.
->
-> Yes your right I missed that. It dose look like it's the first write
-> that never get an ack. This is the debug output from a one byte read
-> from address 0 from a non existing device.
->
-> kernel: iic_xfer: iic_xfer: Clearing status register
-> kernel: iic_xfer: Waiting for any pending transfers to complete
-> kernel: iic_xfer: Clearing master data buffer
-> kernel: iic_xfer: Loading slave address
-> kernel: iic_xfer: Call combined transaction
-> kernel: Beginning combined transaction
-> kernel: This one is a write
-> kernel: iic_sendbytes: Waiting for interrupt
-> kernel: iic_ibmocp_handler: in interrupt handler
-> kernel: iic_ibmocp_handler: status = 26
-> kernel: i2c-algo-ppc405.o: fail: only wrote -1 bytes.
->
-> It dose look like I actually have to learn how this is supposed to work
-> we seem to have more than one problem with the current code :(
+> Do you need to use floating point in the kernel for some reason?
+> - Dan
 
-Here is a patch to my latest working copy. The comments describe the new
-iic_xfer function. The stuff is in the #if 1 section and it is about 280 lines
-and it replaces the #else section which is about 470 lines. So if you are going
-to work on it I would suggest starting with the new iic_xfer rather than the one
-that is there now.
+Its not the use of floating point in the kernel thats the problem.
 
-You will need to remove the ibm_gpio_out_timer calls in the IRQ handler I used
-to trigger stuff.
+	I would like to "emulate" the fpu in the kernel so I can
+compile glibc and everything else with fpu instructions to save
+ram. I have been told however that there are "issues" with this
+approach, and the only way to go is to emulate the fpu in the
+kernel and compile everything with soft float. What I want to
+know is what these issues are? (accuracy,segment_fault,etc..)
 
-There is still plenty of things to do with this, but it is in a works for me state,
-and I am not planning on spending time on this stuff right now.
+Conn
 
---C7zPtVaVf+AK4Oqc
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="i2c-522.patch.gz"
-Content-Transfer-Encoding: base64
+--
 
-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
+*****************************************************************
+  If you live at home long enough, your parents will move out.
+*****************************************************************
 
---C7zPtVaVf+AK4Oqc--
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
