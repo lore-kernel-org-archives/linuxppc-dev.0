@@ -1,128 +1,386 @@
-Date: Thu, 26 Jun 2003 16:47:28 -0400 (EDT)
-From: Chris Studholme <cvs@cs.utoronto.ca>
-To: Terry Greeniaus <tgree@phys.ualberta.ca>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: how to setup PLL1 on 750FX
-In-Reply-To: <Pine.LNX.4.10.10306261126040.7619-100000@pneuma.phys.ualberta.ca>
-Message-ID: <Pine.LNX.4.44.0306261631001.9491-100000@stoa.dhs.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 26 Jun 2003 22:06:38 -0500
+Subject: Patches for single stepping emulated instructions
+Content-Type: multipart/mixed; boundary=Apple-Mail-5-1066586933
+Mime-Version: 1.0 (Apple Message framework v552)
+Cc: linuxppc-dev@lists.linuxppc.org
+To: paulus@samba.org
+From: Kumar Gala <kumar.gala@motorola.com>
+Message-Id: <5E35612E-A84C-11D7-83F6-000393DBC2E8@motorola.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok, I've got PLL1 setup correctly now.  It seems that there is a switch to
-PLL1 in power_save_6xx.  Also, a copy of HID1 is saved in init_idle_6xx
-and restored in power_save_6xx_restore.  Ben mentioned something about
-this earlier with the clue:
+--Apple-Mail-5-1066586933
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed
 
-  If PLL1 isn't set, you should probably not set powersave_lowspeed
-  in arch/ppc/platforms/pmac_feature.c.
+Paul,
 
-I don't understand how it is that my machine didn't lockup when PLL1 was
-in the off state.
+Here are patches for 2.4devel and 2.5 to properly handle single
+stepping of emulated instructions.
 
-Anyway, I decided to set PLL1 in identify_cpu in misc.S.  Actually, I put
-the code to detect the 750fx and set PLL1 in a seperate method.  Here's
-what I have:
+- kumar
 
-/*
- * identify_cpu,
- * called with r3 = data offset and r4 = CPU number
- * doesn't change r3
- */
-_GLOBAL(identify_cpu)
-        mfpvr   r7
 
-        /* if pvr reports 750, check for 750fx */
-        srwi    r6,r7,16
-        cmpli   0,r6,8
-        bne     2f
-        mflr    r8
-        bl      identify_cpu_750fx
-        mtlr    r8
+--Apple-Mail-5-1066586933
+Content-Disposition: attachment;
+	filename=single-step.2.5.bk
+Content-Transfer-Encoding: 7bit
+Content-Type: application/octet-stream;
+	x-unix-mode=0644;
+	name="single-step.2.5.bk"
 
-2:
-        addis   r8,r3,cpu_specs@ha
-        addi    r8,r8,cpu_specs@l
+This BitKeeper patch contains the following changesets:
+1.1018
 
-1:
-        lwz     r5,CPU_SPEC_PVR_MASK(r8)
-        and     r5,r5,r7
-        lwz     r6,CPU_SPEC_PVR_VALUE(r8)
-        cmplw   0,r6,r5
-        beq     1f
-        addi    r8,r8,CPU_SPEC_ENTRY_SIZE
-        b       1b
-1:
-        addis   r6,r3,cur_cpu_spec@ha
-        addi    r6,r6,cur_cpu_spec@l
-        slwi    r4,r4,2
-        sub     r8,r8,r3
-        stwx    r8,r4,r6
-        addis   r6,r3,real_pvr@ha
-        stw     r7,real_pvr@l(r6)
-        blr
+# This is a BitKeeper patch.  What follows are the unified diffs for the
+# set of deltas contained in the patch.  The rest of the patch, the part
+# that BitKeeper cares about, is below these diffs.
+# User:	galak
+# Host:	blarg.somerset.sps.mot.com
+# Root:	/local0/bk/linuxppc-2.5
 
-/* Check for 750fx cpu strapped on as a 750.  Also, if 750fx and PLL1 is
- * not in use, set PLL1 to 4x and delay as needed to lock pll.
- * Called with pvr in r7 (assumed to be 0x0008nnnn).
- * Returns new pvr in r7.
- * r5,r6 are changed.
- */
-identify_cpu_750fx:
-        mfspr   r5,SPRN_HID1
-        andis.  r6,r5,0x0001
-        xori    r6,r5,0x0002
-        beq     1f
-        xori    r6,r5,0x0200
-1:
-        mtspr   SPRN_HID1,r6
-        mfspr   r6,SPRN_HID1
-        cmplw   0,r5,r6
-        beqlr
+#
+#--- 1.32/arch/ppc/kernel/traps.c	Tue Jun 10 22:18:49 2003
+#+++ 1.33/arch/ppc/kernel/traps.c	Thu Jun 26 22:00:21 2003
+#@@ -351,16 +351,29 @@
+# {
+# 	int errcode;
+#
+#-#if defined(CONFIG_4xx)
+#+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+# 	unsigned int esr = regs->dsisr;
+# 	int isbpt = esr & ESR_PTR;
+# 	extern int do_mathemu(struct pt_regs *regs);
+#
+# #ifdef CONFIG_MATH_EMULATION
+#-	if (!isbpt && do_mathemu(regs) == 0)
+#+	if (!isbpt && do_mathemu(regs) == 0) {
+#+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+#+		/* If we were single stepping and emulated an instruction
+#+		 * send a SIGTRAP to emulate the single step as well */
+#+		if (current->thread.dbcr0 & DBCR0_IC) {
+#+			current->thread.dbcr0 &= ~DBCR0_IC;
+#+			_exception(SIGTRAP, regs);
+#+		}
+#+#else
+#+		if (regs->msr & MSR_SE) {
+#+			regs->msr &= ~MSR_SE;
+#+			_exception(SIGTRAP, regs);
+#+		}
+#+#endif
+# 		return;
+#+	}
+# #endif /* CONFIG_MATH_EMULATION */
+#-
+# #else /* ! CONFIG_4xx */
+# 	int isbpt = regs->msr & 0x20000;
+#
+#@@ -389,6 +402,20 @@
+# 			_exception(SIGBUS, regs);
+# 		else
+# 			_exception(SIGILL, regs);
+#+	} else {
+#+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+#+		/* If we were single stepping and emulated an instruction
+#+		 * send a SIGTRAP to emulate the single step as well */
+#+		if (current->thread.dbcr0 & DBCR0_IC) {
+#+			current->thread.dbcr0 &= ~DBCR0_IC;
+#+			_exception(SIGTRAP, regs);
+#+		}
+#+#else
+#+		if (regs->msr & MSR_SE) {
+#+			regs->msr &= ~MSR_SE;
+#+			_exception(SIGTRAP, regs);
+#+		}
+#+#endif
+# 	}
+# }
+#
+#
 
-        /* pvr is actually 0x7000nnnn, not 0x0008nnnn */
-        xoris   r7,r7,0x7008
-        mtspr   SPRN_HID1,r5
+# Diff checksum=60afb446
 
-        andis.  r6,r5,0x0001
-        bnelr
 
-        li      r6,0x00FE
-        andc    r5,r5,r6
-        ori     r5,r5,0x0044
-        mtspr   SPRN_HID1,r5
+# Patch vers:	1.3
+# Patch type:	REGULAR
 
-        /* delay for at least 0.5sec (on 1GHz or slower cpu) */
-        lis     r6,0x1DCE
-        mtctr   r6
-2:      bdnz    2b
-        blr
+== ChangeSet ==
+torvalds@athlon.transmeta.com|ChangeSet|20020205173056|16047|c1d11a41ed024864
+mporter@kernel.crashing.org|ChangeSet|20030626232810|16045
+D 1.1018 03/06/26 22:02:44-05:00 galak@blarg.somerset.sps.mot.com +1 -0
+B torvalds@athlon.transmeta.com|ChangeSet|20020205173056|16047|c1d11a41ed024864
+C
+c Made emulated instructions respect single step tracing.
+K 17579
+P ChangeSet
+------------------------------------------------
 
-I know HID1 is being set correctly as I modified cpuinfo to output a few
-SPR's:
+0a0
+> torvalds@athlon.transmeta.com|arch/ppc/kernel/traps.c|20020205174025|09576|13ab26ac96ad2190 galak@blarg.somerset.sps.mot.com|arch/ppc/kernel/traps.c|20030627030021|07044
 
-  $ cat /proc/cpuinfo
-  cpu             : 750FX
-  temperature     : 19-21 C (uncalibrated)
-  clock           : 898MHz
-  revision        : 2.2 (pvr 7000 0202)
-  HID0            : 0xC010C0AC
-  HID1            : 0x92000044
-  L2CR            : 0xBB000000
-  bogomips        : 1795.68
-  machine         : PowerBook3,1
-  motherboard     : PowerBook3,1 MacRISC2 MacRISC Power Macintosh
-  detected as     : 70 (PowerBook Pismo)
-  pmac flags      : 0000000f
-  L2 cache        : 512K unified
-  memory          : 256MB
-  pmac-generation : NewWorld
+== arch/ppc/kernel/traps.c ==
+torvalds@athlon.transmeta.com|arch/ppc/kernel/traps.c|20020205174025|09576|13ab26ac96ad2190
+paulus@samba.org|arch/ppc/kernel/traps.c|20030611031849|10106
+D 1.33 03/06/26 22:00:21-05:00 galak@blarg.somerset.sps.mot.com +30 -3
+B torvalds@athlon.transmeta.com|ChangeSet|20020205173056|16047|c1d11a41ed024864
+C
+c Made emulated instructions respect single step tracing.  If an
+c emulated instruction completes and single tracing is enabled we
+c should send a SIGTRAP to the process.
+K 7044
+O -rw-rw-r--
+P arch/ppc/kernel/traps.c
+------------------------------------------------
 
-Comments/critique?  I haven't tried cpufreq yet.  That's next.
-Chris.
+D354 1
+I354 1
+#if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+D360 1
+I360 14
+	if (!isbpt && do_mathemu(regs) == 0) {
+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+		/* If we were single stepping and emulated an instruction
+		 * send a SIGTRAP to emulate the single step as well */
+		if (current->thread.dbcr0 & DBCR0_IC) {
+			current->thread.dbcr0 &= ~DBCR0_IC;
+			_exception(SIGTRAP, regs);
+		}
+#else
+		if (regs->msr & MSR_SE) {
+			regs->msr &= ~MSR_SE;
+			_exception(SIGTRAP, regs);
+		}
+#endif
+I361 1
+	}
+D363 1
+I391 14
+	} else {
+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+		/* If we were single stepping and emulated an instruction
+		 * send a SIGTRAP to emulate the single step as well */
+		if (current->thread.dbcr0 & DBCR0_IC) {
+			current->thread.dbcr0 &= ~DBCR0_IC;
+			_exception(SIGTRAP, regs);
+		}
+#else
+		if (regs->msr & MSR_SE) {
+			regs->msr &= ~MSR_SE;
+			_exception(SIGTRAP, regs);
+		}
+#endif
+
+# Patch checksum=556e94e2
+
+--Apple-Mail-5-1066586933
+Content-Disposition: attachment;
+	filename=single-step.2_4_devel.bk
+Content-Transfer-Encoding: 7bit
+Content-Type: application/octet-stream;
+	x-unix-mode=0644;
+	name="single-step.2_4_devel.bk"
+
+This BitKeeper patch contains the following changesets:
+1.1321,1.1322
+
+# This is a BitKeeper patch.  What follows are the unified diffs for the
+# set of deltas contained in the patch.  The rest of the patch, the part
+# that BitKeeper cares about, is below these diffs.
+# User:	galak
+# Host:	blarg.somerset.sps.mot.com
+# Root:	/local0/bk/linuxppc_2_4_devel
+
+#
+#--- 1.46/arch/ppc/kernel/traps.c	Mon Apr  7 16:59:37 2003
+#+++ 1.48/arch/ppc/kernel/traps.c	Thu Jun 26 21:58:45 2003
+#@@ -343,8 +343,22 @@
+# 	 * hardware people - not sure if it can happen on any illegal
+# 	 * instruction or only on FP instructions, whether there is a
+# 	 * pattern to occurences etc. -dgibson 31/Mar/2003 */
+#-	if (!(reason & REASON_TRAP) && do_mathemu(regs) == 0)
+#+	if (!(reason & REASON_TRAP) && do_mathemu(regs) == 0) {
+#+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+#+		/* If we were single stepping and emulated an instruction
+#+		* send a SIGTRAP to emulate the single step as well */
+#+		if (current->thread.dbcr0 & DBCR0_IC) {
+#+			current->thread.dbcr0 &= ~DBCR0_IC;
+#+			_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+#+		}
+#+#else
+#+		if (regs->msr & MSR_SE) {
+#+			regs->msr &= ~MSR_SE;
+#+			_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+#+		}
+#+#endif
+# 		return;
+#+	}
+# #endif /* CONFIG_MATH_EMULATION */
+#
+# 	if (reason & REASON_FP) {
+#@@ -380,8 +394,22 @@
+#
+# 	if (reason & REASON_PRIVILEGED) {
+# 		/* Try to emulate it if we should. */
+#-		if (emulate_instruction(regs) == 0)
+#+		if (emulate_instruction(regs) == 0) {
+#+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+#+			/* If we were single stepping and emulated an instruction
+#+			 * send a SIGTRAP to emulate the single step as well */
+#+			if (current->thread.dbcr0 & DBCR0_IC) {
+#+				current->thread.dbcr0 &= ~DBCR0_IC;
+#+				_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+#+			}
+#+#else
+#+			if (regs->msr & MSR_SE) {
+#+				regs->msr &= ~MSR_SE;
+#+				_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+#+			}
+#+#endif
+# 			return;
+#+		}
+# 		_exception(SIGILL, regs, ILL_PRVOPC, regs->nip);
+# 		return;
+# 	}
+#@@ -481,7 +509,7 @@
+#
+# 		if (!user_mode(regs) && debugger_bpt(regs))
+# 			return;
+#-		_exception(SIGTRAP, regs, 0, 0);
+#+		_exception(SIGTRAP, regs, TRAP_BRKPT, 0);
+#
+# 	} else if (debug_status & DBSR_IC) {	/* instruction completion */
+#
+#@@ -490,7 +518,7 @@
+#
+# 		if (!user_mode(regs) && debugger_sstep(regs))
+# 			return;
+#-		_exception(SIGTRAP, regs, 0, 0);
+#+		_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+# 	}
+# }
+# #endif /* CONFIG_4xx || CONFIG_BOOKE */
+#
+
+# Diff checksum=d9786509
+
+
+# Patch vers:	1.3
+# Patch type:	REGULAR
+
+== ChangeSet ==
+cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+mporter@kernel.crashing.org|ChangeSet|20030626005737|39517
+D 1.1321 03/06/26 21:28:17-05:00 galak@blarg.somerset.sps.mot.com +1 -0
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c - Made emulated instructions respect single step tracing.
+c - Added signal codes to SIGTRAPs raised by DebugException.
+K 39517
+P ChangeSet
+------------------------------------------------
+
+0a0
+> cort@ftsoj.fsmlabs.com|arch/ppc/kernel/traps.c|20010106073007|59482|a197725432ca2496 galak@blarg.somerset.sps.mot.com|arch/ppc/kernel/traps.c|20030627022719|46504
+
+galak@blarg.somerset.sps.mot.com|ChangeSet|20030627022817|39517
+D 1.1322 03/06/26 21:58:47-05:00 galak@blarg.somerset.sps.mot.com +1 -0
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c removed additional if checking
+K 39519
+P ChangeSet
+------------------------------------------------
+
+0a0
+> cort@ftsoj.fsmlabs.com|arch/ppc/kernel/traps.c|20010106073007|59482|a197725432ca2496 galak@blarg.somerset.sps.mot.com|arch/ppc/kernel/traps.c|20030627025845|43326
+
+== arch/ppc/kernel/traps.c ==
+cort@ftsoj.fsmlabs.com|arch/ppc/kernel/traps.c|20010106073007|59482|a197725432ca2496
+galak@blarg.somerset.sps.mot.com|arch/ppc/kernel/traps.c|20030407215937|43451
+D 1.47 03/06/26 21:27:19-05:00 galak@blarg.somerset.sps.mot.com +32 -4
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c Made emulated instructions respect single step tracing.  If an emulated instruction
+c completes and single tracing is enabled we should send a SIGTRAP to the process.
+c
+c Added signal codes to SIGTRAPs raised by DebugException.
+K 46504
+O -rw-rw-r--
+P arch/ppc/kernel/traps.c
+------------------------------------------------
+
+D346 1
+I346 14
+	if (!(reason & REASON_TRAP) && do_mathemu(regs) == 0) {
+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+		/* If we were single stepping and emulated an instruction
+		* send a SIGTRAP to emulate the single step as well */
+		if ((current->thread.dbcr0 & DBCR0_IC) == DBCR0_IC) {
+			current->thread.dbcr0 &= ~DBCR0_IC;
+			_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+		}
+#else
+		if ((regs->msr & MSR_SE) == MSR_SE) {
+			regs->msr &= ~MSR_SE;
+			_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+		}
+#endif
+I347 1
+	}
+D383 1
+I383 14
+		if (emulate_instruction(regs) == 0) {
+#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+			/* If we were single stepping and emulated an instruction
+			 * send a SIGTRAP to emulate the single step as well */
+			if ((current->thread.dbcr0 & DBCR0_IC) == DBCR0_IC) {
+				current->thread.dbcr0 &= ~DBCR0_IC;
+				_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+			}
+#else
+			if ((regs->msr & MSR_SE) == MSR_SE) {
+				regs->msr &= ~MSR_SE;
+				_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+			}
+#endif
+I384 1
+		}
+D484 1
+I484 1
+		_exception(SIGTRAP, regs, TRAP_BRKPT, 0);
+D493 1
+I493 1
+		_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+
+galak@blarg.somerset.sps.mot.com|arch/ppc/kernel/traps.c|20030627022719|46504
+D 1.48 03/06/26 21:58:45-05:00 galak@blarg.somerset.sps.mot.com +4 -4
+B cort@ftsoj.fsmlabs.com|ChangeSet|20010106071759|19793|5c81b698cda31832
+C
+c removed additional if checking
+K 43326
+O -rw-rw-r--
+P arch/ppc/kernel/traps.c
+------------------------------------------------
+
+D350 1
+I350 1
+		if (current->thread.dbcr0 & DBCR0_IC) {
+D355 1
+I355 1
+		if (regs->msr & MSR_SE) {
+D401 1
+I401 1
+			if (current->thread.dbcr0 & DBCR0_IC) {
+D406 1
+I406 1
+			if (regs->msr & MSR_SE) {
+
+# Patch checksum=5e4c17b8
+
+--Apple-Mail-5-1066586933--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
