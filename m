@@ -1,27 +1,23 @@
-Message-ID: <005d01c0795e$a4848990$1e894b82@pc30>
-From: "Nils Hagge" <Nils.Hagge@stud.uni-hannover.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Expansion receptacle RPX lite (p1_p2.xls file)?
-Date: Mon, 8 Jan 2001 11:34:55 +0100
+Message-ID: <3A59A2D7.5080207@galileo.co.il>
+Date: Mon, 08 Jan 2001 13:21:59 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
+Reply-To: rabeeh@galileo.co.il
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SCSI Drivers
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi altogether,
+Hi,
 
-does anyone have the pin specification file for the bus and I/O expansion
-receptacles of the RPX lite board. This file should be named "p1_p2.xls"
-I thought I already saw it somewhere on embedded planet's homepage, but
-I can't find it anymore.
+Which SCSI Cards are known to work on PowerPC Platforms ?
 
-Can someone please send it to me or show me the link to it?
+Is aic7xxx (adaptec) does work ?
 
-Thanks.
-
-Nils
+Regards,
+Rabeeh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
