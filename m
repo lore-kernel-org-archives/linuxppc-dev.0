@@ -1,56 +1,64 @@
-Message-ID: <393704B5.6B809CE6@embeddededge.com>
-Date: Thu, 01 Jun 2000 20:49:57 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
 To: Steve Tarr <tarr@lucent.com>
-CC: LINUX-PPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Motorola MPC8260-ADS Boot hassel
-References: <3936790D.9BD7680E@lucent.com> <3936F0F2.DDA90328@embeddededge.com> <3936A547.7C34A0BF@lucent.com>
-Content-Type: text/plain; charset=us-ascii
+cc: LINUX-PPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Motorola MPC8260-ADS Boot hassel 
+In-Reply-To: Message from Steve Tarr <tarr@lucent.com>
+   of "Thu, 01 Jun 2000 08:54:05 CST." <3936790D.9BD7680E@lucent.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Date: Fri, 02 Jun 2000 14:29:53 +1000
+Message-ID: <430.959920193@msa.cmst.csiro.au>
+From: Murray Jensen <Murray.Jensen@cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Steve Tarr wrote:
+>OK, I' stumped. I'm trying to do a port to Motorola's
+>MPC8260 evaluation board using 2.3.99-pre7. Aside from
+>hacking the loader and the 8260_io/uart.c to handle
+>the console on SCC1, I've done nothing. The following is the
+>boot messages:
 >
-> Sorry for the confusion. I am not familiar with the
-> Linux PANIC messages.
+>loaded at:     00600000 0060B288
+>relocated to:  00400000 0040B288
+>board data at: 00407140 00407164 <= this is within range on line above
+>relocated to:  00200100 00200124
+>zimage at:     00606000 00675258
+>initrd at:     00675258 0084C0A3
+>avail ram:     0084D000 01000000
 
-You will be soon :-).
+The secondary boot code is being relocated over the top of the board data
+(before it is relocated). Perhaps this is your problem?
 
-> 1. NIP 0xC0010D90 is in wake_up_process()
+Also, check that your uncompressed kernel image size (use objdump on vmlinux
+in the top level directory - only the important sections are copied) is less
+than 2Mbyte (0x200000) - if it's bigger, it will overwrite the kernel boot
+arguments and relocated board data.
 
-> 3. Disasembling sched.o gave me a file offset of 0x1dc0 for
-> wake_up_process(). The failing
+Finally, I have found that a NULL pointer access in wakeup_process() is
+usually because something early on has prevented an essential kernel task
+from being started, but somewhere else wants to wake that kernel task up
+(in particular bdflush, which is woken up when buffers are low). Fix the
+early problem and the NULL access goes away. But to be safe, try this:
 
-Thanks, this was good and it all makes sense now......
+diff -u -r1.1.1.12 buffer.c
+--- buffer.c	2000/05/16 01:31:41	1.1.1.12
++++ buffer.c	2000/06/02 04:26:16
+@@ -2336,7 +2336,7 @@
+ {
+ 	DECLARE_WAITQUEUE(wait, current);
 
+-	if (current == bdflush_tsk)
++	if (bdflush_tsk == 0 || current == bdflush_tsk)
+ 		return;
 
->     1dd4:   7c 7e 1b 78     mr  r30,r3
+ 	if (!block) {
 
->  >> 1e00:   81 3e 00 3c     lwz r9,60(r30)
+Hope this helps. Cheers!
+								Murray...
+--
+Murray Jensen, CSIRO Manufacturing Sci & Tech,         Phone: +61 3 9662 7763
+Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+Internet: Murray.Jensen@cmst.csiro.au  (old address was mjj@mlb.dmt.csiro.au)
 
->     Note: r30 is loaded from the paramenter passed in, r3.
-
-Yep.
-
-> 4. I made a seemingly foolish assumption that the TRAP: 0300
->    was the exception vector. Hence that it was a DSI exception.
-
-Not foolish, that's correct.
-
->    Looking at the register dump shows r30 = 0xc0100000. Hence
->    my question.
-
-Mistake.  R30 is zero.  Null pointer.  Decimal 60 is the offset 0x3c.
-The wake_up_process() was passed a NULL task pointer.  Track it down
-through the stack backtrace.
-
-> 5. The SUNI-lite is an SDH/ATM framer for the Fiber that uses FCC2.
-
-Cool.  That shouldn't be causing any trouble at this point.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
