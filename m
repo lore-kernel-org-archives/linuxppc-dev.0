@@ -1,32 +1,30 @@
-Message-ID: <005801c1be60$88bcd8a0$6401a8c0@attbi.com>
-Reply-To: "Greg Griffes" <ggg@ieee.org>
-From: "Greg Griffes" <ggg@ieee.org>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <200202252229.g1PMTdQ02395@xdr.com>
-Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
-Date: Mon, 25 Feb 2002 19:57:15 -0500
+Message-ID: <3C7AE635.7080001@embeddededge.com>
+Date: Mon, 25 Feb 2002 20:34:45 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: David Ashley <dash@xdr.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
+References: <200202252229.g1PMTdQ02395@xdr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-(snip)
-> The crucial thing is mmap some region of io space
-> read from a page write to the same page
-> Repeat and rinse, something will corrupt the system.
->
-> reads alone are ok.
-> writes alone are ok.
-> write followed by any combination of reads or writes is ok
-> read followed by write = trouble
+David Ashley wrote:
 
-I am an embedded PPC Linux novice, so, tell me if I'm way off base.
-This sounds like a pipeline problem; out of order I/O execution.
-Could there be an "eieio" missing somewhere?
 
-Greg Griffes
+> There is a bug in linux PPC, and that's what I'm trying to resolve. Here
+> is the last part of the printout of the execution of that program:
+
+You must have some unique hardware :-).  I've run 10,000 iterations on a 8260
+and 860 with the 2.4.18-pre7 kernel, and on my 7410 PowerBook with 2.4.11
+without any failures........Let us know what you fix to make it work for you.
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
