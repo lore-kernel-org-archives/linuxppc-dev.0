@@ -1,55 +1,69 @@
-From: bob@kunk.jriver.com
-Message-ID: <20000803032548.2702.qmail@kunk.jriver.com>
-Subject: Ethernet problem on 7200
-To: linuxppc-dev@lists.linuxppc.org
-Date: Wed, 2 Aug 2000 22:25:48 -0500 (CDT)
+Message-ID: <3988F65E.9DBBAF68@home.com>
+Date: Wed, 02 Aug 2000 21:34:38 -0700
+From: William Blew <wblew@home.com>
 MIME-Version: 1.0
+To: Iain Sandoe <iain@sandoe.co.uk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.0-t5 lockup on shutdown.
+References: <200008022120.WAA28609@hyperion.valhalla.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-For some unknown reason, I had trouble getting this message to post. Here
-is is without the Re: in it. It is related to a number of problems I
-and other uses have been having with mace and 53c94 drivers on various
-PowerMac 7200's.
+Iain Sandoe wrote:
+>
+> Does anyone know the cause of the (sometimes) complete lock-up of 2.4.0-t5
+> when shutdown & restart is selected from run level 5?
+>
+> Observations/Symptoms:
+>
+> the switch of VC occurs OK
+> Then *zilch*.  No panic, no response to SysRq keys... no response to
+> telnet...  three finger salute is the only way I've found out of it.
 
+It does sound familiar. I have found that occasionally (under high IDE?
+loads
+like digital audio CD ripping) the CUDA (VIA under 2.2) interrupt ceases
+(as
+in its /proc/interrupts counter stops increasing). Under these
+circumstances
+my beige G3/266's ADB bus has stopped at the software level as it is
+handled
+by the CUDA (noted as the VIA interrupt with 2.2 on my beige G3/266).
 
-> It's been my experience with several machines that the mace driver doesn't
-> work most of the time on the 7200.
->
-> Not sure why. The stats are useless. I've tried it with the built-in
-> RJ45 and with the AAUI to TP transceiver as well. I'm pretty certain it
-> isn't a duplex problem. It appears to be dropping incoming packets.
->
-> Only thing you can do (other than fix it ;) is to put in a PCI ethernet
-> card. I can tell you that most any tulip (21xxx) based card will work as
-> well as the ne2k-pci clones (realtek, etc chips).
->
-> It a bummer for me as I'm out of slots and I need to add a decent scsi card.
->
-> The 53c94 scsi driver appears to have serious problems on the 7200 as well.
-> I can't even write a CD at 1x with it without the fifo emptying even
-> with a big buffer and less than 50 megs of data! It looks like it
-> may not be doing disconnects properly, the raw speed is OK when testing
-> with iozone it's only about 40% slower than a controller in the
-> PCI slot. However when it has to wait for the CDwriter to do something
-> that doesn't return right away, it just appears to hang the machine.
-> Eventually it comes back when the writer is finished (i.e. fixating).
-> (no it's not the cable).
->
-> If I take out one of the ethernet cards and put in a 2940 I can write at 4x
-> without the buffer getting less than 98% full!!! Heck, my 68k performa
-> can write at 4x in MacOs.
->
-> I've tried this with a bunch of kernels and am currently running the
-> 2.2.17pre7 version.
+The symptoms that I observe are identical: An otherwise healthy mac
+ignores
+its keyboard completely (until the three finger salute is used).
 
+I diagnosed my situation by ssh'ing in from another workstation and
+watching
+the /proc/interrupts file while ripping a digital audio CD.
 
-Bob
+I find that my bug is fairly easy to create on my beige G3/266. Just rip
+a
+cd with the grip under helix-gnome and wait. Anywhere from 1 to 11
+tracks
+layer, the VIA (CUDA) interrupt dies *grin*.
+
+Another side effect of this interrupt failure is that the
+'reboot/shutdown'
+commands do not work. After all they are also via the CUDA on my G3. So,
+when I reboot via ssh the G3 'hangs' at right at the end of the shutdown
+sequence.
+
+Be warned: my bug may be a red herring and unrelated to your issue. On
+the
+other hand... (isn't debugging fun?).
+
+> bk-tree  (linuxppc_2_3) as of 19:00 (BST) today. (but it's been happening on
+> & off with the 2.4.0 tree since I've been trying it).
+>
+> Iain.
+>
+
 --
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+William Blew, wblew@home.com
+Gamer by Choice, Geek by Birth
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
