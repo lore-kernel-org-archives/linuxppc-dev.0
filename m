@@ -1,34 +1,38 @@
-Message-ID: <375BCEC2.FE8B95B1@jlc.net>
-Date: Mon, 07 Jun 1999 09:53:06 -0400
-From: Dan Malek <dmalek@jlc.net>
+Message-ID: <375C213C.90DBE256@uab.ericsson.se>
+Date: Mon, 07 Jun 1999 21:45:00 +0200
+From: Leif Lindholm <Leif.Lindholm@uab.ericsson.se>
 MIME-Version: 1.0
-To: Alexander Larsson <alex@signum.se>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Bug report
-References: <Pine.LNX.4.04.9906071049580.26155-100000@tammy.signum.se>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: udelay not exported to kernel(?)
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alexander Larsson wrote:
+Hello
 
-> 
-> In the embedded 2.2.5 sources i found the following in
-> arch/ppc/kernel/ppc-stub.c
-> 
-> static inline void set_msr(int msr)
-> {
->         asm volatile("mfmsr %0" : : "r" (msr));
-> }
-> 
-> Shouldn't that be mtmsr?
+I guess probably most here don't mess around with real time processes,
+so this wouldn't be noticed. I may need to in a while though.
 
-Yes....Fortunately, it is only used in the kgbd portion of the
-kernel, so normal operations are not affected.
+Now, the problem is this:
+udelay, which is used (at least) in linux/kerne/sched.c:sys_nanosleep
+when a process is running in real time mode doesn't seem to be compiled
+into the finished kernel (embedded-2.2.5), it is only available in the
+loader. This is of course on my own port, but looking at the source
+there is no EXPORT_SYMBOL(udelay) there among with the others.
 
+Is this just me, or is it a real problem?
 
-	-- Dan
+Would a udelay for all ports in ppc/lib/something.S (heavily #ifdef:d if
+needed) do it? This being how the string and memory functions have been
+exported.
+
+Any thoughts?
+
+Grateful for replies
+
+/
+	Leif
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
