@@ -1,51 +1,38 @@
-Date: Sat, 6 Jan 2001 18:54:00 -0800
-From: Keith Clayton <clay-ton@pacbell.net>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Endianness and comparing IP's
-Message-ID: <20010106185400.A17606@yoda>
-References: <20010106234445.44216E690@apollo.valhalla.net>
+Message-Id: <v04003a08b67ddaff44fe@[24.70.162.12]>
+In-Reply-To: <20010106171733.M556@opus.bloom.county>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010106234445.44216E690@apollo.valhalla.net>; from iain@sandoe.co.uk on Sat, Jan 06, 2001 at 11:37:24PM +0000
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 7 Jan 2001 02:57:30 -0600
+To: Tom Rini <trini@kernel.crashing.org>,
+        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: [PATCH] drivers/macintosh/Config.in
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Good catch!
+At 6:17 PM -0600 1/6/2001, Tom Rini wrote:
+>Hey all.  I was wondering what both camps would think of a
+>drivers/macintosh/Config.in?  It would simply a few things and remove some
+>duplicated bits.  I've attached my first attempt at it, and everything should
+>look the same as before (I did rename some of the ADB driver comments from
+>the m68k side so they matched the others).
+>
+>Comments?  (We probably wouldn't see this until 2.5 anyways tho..)
+
+Does the input layer work on the 68k drivers? I don't know that I've ever
+heard of anyone testing it.
+
+The patch looks fairly sane to me. If it breaks something, it's not very
+hard to fix a config file.
 
 
-On Sat, Jan 06, 2001 at 11:37:24PM +0000, Iain Sandoe wrote:
->
->
-> > /* convert the bytes of a 32-bit integer to little endian */
-> > #define BSWAP32(c)
-> > ((c>>24)&0xff)|((c>>8)&0xff00)|((c<<8)&0xff0000)|(c<<24)
->
->  #define BSWAP32(c) \
-> (((c>>24)&0xff)|((c>>8)&0xff00)|((c<<8)&0xff0000)|(c<<24))
->
->
-> will work as you expect it too... ;-)
->
-> precedence is a funny thing...
->
-> Iain.
->
->
+Cheers - Tony 'Nicoya' Mantler :)
+
 
 --
-<><><><><><><><><><><><>
-Keith Clayton
-clay-ton@pacbell.net
-
-"If you don't trust me with your source code,
-            why should I trust you with my computer?"
-
-GPG key: http://www.jps.net/kclayton/keith_public_key.html
-         http://www.keyserver.net
-
-GPG fingerprint: 0C47 F1A1 0434 588C 9457  D53F D86A 5449 43F6 09A0
-
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
