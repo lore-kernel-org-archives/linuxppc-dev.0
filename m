@@ -1,19 +1,19 @@
 Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 4B9E767A78
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0151D67A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Mar 2005 18:10:11 +1100 (EST)
-In-Reply-To: <422FEFBE.4070903@varma-el.com>
-References: <422FEFBE.4070903@varma-el.com>
+	Thu, 10 Mar 2005 18:30:09 +1100 (EST)
+In-Reply-To: <Pine.LNX.4.61.0503040150480.16127@blarg.somerset.sps.mot.com>
+References: <Pine.LNX.4.61.0503040150480.16127@blarg.somerset.sps.mot.com>
 Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6bac59cd11e3d6fd005b8630e67bee33@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <1047a05d13208f6f49df5590040d3c16@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 10 Mar 2005 01:10:08 -0600
-To: "Andrey Volkov" <avolkov@varma-el.com>
-Cc: Sylvain Munaut <tnt@246tNt.com>, paulus@samba.org,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: RFC/Commit: New ocp id for CANbus devs
+Date: Thu, 10 Mar 2005 01:30:02 -0600
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Netdev <netdev@oss.sgi.com>,
+	inuxppc-embedded List <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] gianfar: Update Marvell PHY name
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +24,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I would assume you plan on moving your driver over to the driver model 
-which will make all of this moot.
+Jeff,
 
-So I think Sylvain's suggestion of allocating a number for the time 
-being makes the most sense until we get 52xx convert over to platform 
-devices.
+Just wondering if this got lost?  Might be moot depending what=20
+likelihood of getting Andy's PHY Abstraction Layer changes into the=20
+kernel.
 
 - kumar
 
-On Mar 10, 2005, at 12:57 AM, Andrey Volkov wrote:
+On Mar 4, 2005, at 1:55 AM, Kumar Gala wrote:
 
-> Sylvain Munaut wrote:
->  >
-> >> Sylvain, but what I wish now - only single number
->  >> (until driver will done).
->  >
-> > If you only need a temporary ocp ID, just fix it youself in your 
-> local
-> > tree, no need to try to push that upstream.
+> Jeff,
 >
-> I already use it as temp, but I don't want pitfalls in future (when
->  smb. take this number).
+> This patch updates the name identifier to list both of the Marvell =
+PHYs
+> that are supported.
 >
-> Also, since CAN ocp present not only in MPC5200, but, AFAIK, in another
-> chips too, IMHO, it must be well known constant id.
+> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 >
-> Regards
->  Andrey
+> ---
+>  diff -Nru a/drivers/net/gianfar_phy.c b/drivers/net/gianfar_phy.c
+> --- a/drivers/net/gianfar_phy.c 2005-03-02 14:20:27 -06:00
+>  +++ b/drivers/net/gianfar_phy.c 2005-03-02 14:20:27 -06:00
+>  @@ -572,7 +572,7 @@
+>  =A0static struct phy_info phy_info_marvell =3D {
+>  =A0=A0=A0=A0=A0=A0=A0 .phy_id =A0=A0=A0=A0=A0=A0=A0 =3D 0x01410c00,
+>  =A0=A0=A0=A0=A0=A0=A0 .phy_id_mask=A0=A0=A0 =3D 0xffffff00,
+>  -=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =3D "Marvell =
+88E1101",
+>  +=A0=A0=A0=A0=A0=A0 .name=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =3D "Marvell =
+88E1101/88E1111",
+> =A0=A0=A0=A0=A0=A0=A0 .features=A0=A0=A0=A0=A0=A0 =3D =
+MII_GBIT_FEATURES,
+> =A0=A0=A0=A0=A0=A0=A0 .config_aneg=A0=A0=A0 =3D &marvell_config_aneg,
+> =A0=A0=A0=A0=A0=A0=A0 .read_status=A0=A0=A0 =3D &marvell_read_status,
+> _______________________________________________
+> Linuxppc-embedded mailing list
+>  Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
