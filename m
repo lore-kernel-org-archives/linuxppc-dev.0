@@ -1,42 +1,30 @@
-Subject: Re: [PATCH] Fix byte-swapped ethernet addr for Asante Fast 10/100
-	PCI Adapter
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: "David D. Kilzer" <ddkilzer@kilzer.net>,
-	Jeff Garzik <jgarzik@pobox.com>, tulip-devel@lists.sourceforge.net,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.44.0312221520490.10152-100000@opal.biophys.uni-duesseldorf.de>
-References: 
-	 <Pine.LNX.4.44.0312221520490.10152-100000@opal.biophys.uni-duesseldorf.de>
+From: "labblelabble" <labblelabble@hotmail.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: how to write my own keyboard module
+Date: Tue, 23 Dec 2003 16:19:52 +0800
+MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <1072137958.705.9.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 23 Dec 2003 11:05:58 +1100
+Message-ID: <BAY8-DAV441oXNIfFsf00011065@hotmail.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 2003-12-23 at 01:27, Michael Schmitz wrote:
-> >   Original:  00:00:B5:94:71:86  [INCORRECT]
-> >    Patched:  00:00:94:B5:86:71  [CORRECT]
-> >
-> > Is it sufficient to simply check the first two bytes of the mac address
-> > to determine this?  (This is what the attached patch does.  I added a
-> > check for the first byte being 0x00 for the Asante card.)
-> >
-> > Should the first three bytes of the mac address be used intead?  (Note
-> > that I can only identify 00:A0:CC as one of the Lite-On mac addresses
-> > that would be matched by the code segment above.  I don't see a 00:C0:**
-> > entry for Lite-On in the IEEE database.)
->
-> I'd check the first three bytes (after byte swapping :-) - there's plenty
-> of other OUIs with the leading two bytes zero.
+hello:
+    I must add a new keyboard module to my own system ,and then i will try
+to explain my system in details .My system use the IBM powerpc 823e cpu,and
+the linux kernel is the Montivista hardhar linux 2.4.18_mv130. I have read
+some books about linux driver module,and the powerpc 823 user manul. and my
+keyboard signals are directly connected to powerpc 823 IPB0_IPB7 pins, so I
+want to poll the keyboard device .How can i do it ? Use the tasklet ,kernel
+timer,t_quenes or use the mpc 823 CPM timers interrupt.And another question
+,I read the sourcecodes of linux and i know the part which is responsible
+for the system times according to the 823 reatime timer and periodic
+interrupt timer ,but if there is some module used to manage the 823CPM
+timers ,and if there is some function interfaces provided by the kernel for
+powrpc can be used.maybe the useage of the 823 cpm timers is just the
+interrupt management of the kernel...so wish someone could give me some hint
+about my problems ....
 
-This is a card with an Open Firmware driver or not ? If it has, then
-I'd rather use the OF properties (like name property) to detect this
-specific card and flip the MAC
-
-Ben.
-
+Merry Christamas!!!!!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
