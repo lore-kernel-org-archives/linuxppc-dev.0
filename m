@@ -1,36 +1,33 @@
-Date: Wed, 28 Apr 2004 15:18:10 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Brian Hawley <bhawley@luminex.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ebony PPC440GP & linux 2.6.3
-Message-ID: <20040428221810.GA18371@gate.ebshome.net>
-References: <5.0.2.1.2.20040428124651.035cbd98@bhawley.mailhost.luminex.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5.0.2.1.2.20040428124651.035cbd98@bhawley.mailhost.luminex.com>
+From: Ton van den Broek <tvdbroek@tsc.leica.nl>
+Reply-To: tvdbroek@tsc.leica.nl
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ttyS1 on an MVME5100
+Date: Thu, 29 Apr 2004 16:54:22 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200404291654.22823.tvdbroek@tsc.leica.nl>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Apr 28, 2004 at 12:48:21PM -0700, Brian Hawley wrote:
-> It is clear from the archives that people have gotten the Ebony 440GP
-> working with linux.
->
-> We are using the linux 2.6.3 kernel, and have had little luck getting it
-> booted up.
->
-> We are using u-boot as the boot loader to load the zImage.
->
-> It decompresses the kernel, and says it transfers control, but then just
-> stops.
->
-> Any suggestions or directions would be most helpful and appreciated.
->
+Hi everybody
 
-Try newer kernel, e.g. 2.6.5, there were some bugs in previous versions.
+does somebody ever uses the second serial channel on a Motorola MVME5100?
+Are there any known problems?
+When I want to write() a string  the CPU-activity LED burns green, and nothing
+else happens. The whole Linux stops responding, probably because it is
+polling some bit(s) in kernel-space.
+When I open ttyS0 I see my string appearing on the debug-channel, no problems
+there.
+I'm using Linux version 2.4.7-timesys-3.1.246 from Timesys. Since this is a
+free download there is no support from them.
 
-Also, does it boot with standard IBM boot loader?
+Thanks for any feedback
+Ton van den Broek
+Software engineer
+Leica Microsystems Lithography
+Best, NL.
 
-Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
