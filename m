@@ -1,77 +1,49 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <C7FFFEA58B43D311920D0004ACE5333F0F53583A@amer25.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Charles Lockhart'" <lockhart@jeans.ifa.hawaii.edu>,
+To: "Kerl, John" <John.Kerl@Avnet.com>
+Cc: "'Charles Lockhart'" <lockhart@jeans.ifa.hawaii.edu>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Linux on the Virtex II Pro?
-Date: Thu, 10 Jul 2003 13:48:29 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: Linux on the Virtex II Pro? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 10 Jul 2003 13:48:29 PDT."
+             <C7FFFEA58B43D311920D0004ACE5333F0F53583A@amer25.avnet.com>
+Date: Thu, 10 Jul 2003 23:02:52 +0200
+Message-Id: <20030710210258.046B5C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Charles,
+Dear John,
 
-For our Virtex-II Pro board I used ELDK with minor mods,
-mostly for my board.  Current Linux/PPC trees already
-include support for 405 as well as the Xilinx ML300 board.
-(The Linux/PPC tree I got had slightly stale libgen'ed
-code, which I simply replaced with current libgen'ed code
-from my XPS project.)  I can send you a patch file on request.
+in message <C7FFFEA58B43D311920D0004ACE5333F0F53583A@amer25.avnet.com> you wrote:
+>
+> If I keep mentioning ELDK a lot, it's because:
 
-A couple years ago (before ELDK was released) I built
-a toolchain from scratch, thinking I'd learn something
-in the process.  What I learned was that it's a pain.
-My $0.02 is that you're better off using pre-compiled
-tool chains (e.g. ELDK).
+Thanks for the friendly words...
 
-If I keep mentioning ELDK a lot, it's because:
+> *	ELDK supports multiple PPC families (e.g. 4xx, 8xx,
+> 	82xx, ...) as well as ARM.
 
-*	Denx has already done this right.  You can do
-	it all over again yourself, but (a) you'd been
-	spending time building tool chains, RAM disks,
-	etc. which you could have gotten easily, and (b)
-	you would be hard pressed to do a better job of
-	it than Denx already has.
+... and MIPS.
 
-*	The ELDK build environment comes with nice RPM packaging.
+> *	Did I mention it's not expensive ...
 
-*	The ELDK runtime environment comes with nice init-style
-	startup.
+= free for download.
 
-*	ELDK supports multiple PPC families (e.g. 4xx, 8xx,
-	82xx, ...) as well as ARM.
+> to re-invent the wheel anymore.  You can spent your time on more
+> advanced automotive engineering. :)
 
-*	Did I mention it's not expensive ...
-
-Denx Software has done a great service for the embedded Linux
-community:  if you read back through this mailing list, you'll
-see that many people (including myself) re-invented the wheel,
-over and over again.  People would have a bare board, apparently
-get a kernel from somewhere, get some GCC source code, and start
-hacking.  It was a sad thing.  Now, with ELDK out, you don't have
-to re-invent the wheel anymore.  You can spent your time on more
-advanced automotive engineering. :)
-
------Original Message-----
-From: Charles Lockhart [mailto:lockhart@jeans.ifa.hawaii.edu]
-Sent: Thursday, July 10, 2003 1:36 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux on the Virtex II Pro?
+Happy hacking.
 
 
 
-Hello,
+Wolfgang Denk
 
-I was looking to see who supports the Virtex2Pro chip for Linux?  In
-terms of a tool chain, support, etc?  Has anyone tried building a custom
-tool chain for it on their own?  Results?
-
-Thanks,
-
--Charles Lockhart
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Perfection is reached, not when there is no longer anything  to  add,
+but when there is no longer anything to take away.
+                                           - Antoine de Saint-Exupery
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
