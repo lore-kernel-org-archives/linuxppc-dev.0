@@ -1,53 +1,61 @@
-Message-ID: <3D64C445.836C2FC9@opensource.se>
-Date: Thu, 22 Aug 2002 13:00:21 +0200
-From: Magnus Damm <damm@opensource.se>
+Message-ID: <3D64DA41.3000104@cambridgebroadband.com>
+Date: Thu, 22 Aug 2002 13:34:09 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-To: John.Fisher@nec.com.au
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cygwin and embedded linux
-References: <000501c24979$6348a190$37d34c93@neca.nec.com.au>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org,
+	Magnus Damm <damm@opensource.se>
+Subject: PCMCIA on an MPC860
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Are there others in this situation and how have they chosen to solve it?
+All,
 
-Vmware could be one way to solve it. Good if you want to develop and
-test
-device drivers.
+Has anybody had any luck getting PCMCIA to work on an MPC860?
 
-Or use separate Linux boxes and use a X server to connect to them.
-There are commercial X servers for Windows like X-Win32 and it should
-also be possible to use Xfree86 on Windows for free. Both work great.
+I have a custom MPC860 board, with a single PCMCIA socket connected to Slot B.  This is what I have
+so far done:
 
-That way you can stay on Windows for a while, use the X-Server to access
-the Linux box (and other boxes that supports X), and then maybe later
-switch to a Linux-only solution.
+1.
+Downloaded pcmcia-cs-3.2.0.tar.gz
+2.
+Added board specific definitions in modules/m8xx_pcmcia.c for
+		hardware_enable()
+		hardware_disable()
+		voltage_set()
+		socket_get()
+3.
+Cross compiled for the 8xx.
+4.
+In my kernel (linux-2.4.4-2001-11-24 from Denx) I added the following lines
+		include/asm-ppc/<board>.h:
+			/* define IO_BASE for pcmcia */
+			#define _IO_BASE 0x80000000
+			#define _IO_BASE_SIZE (1024*64)
+		arch/ppc/mm/init.c:
+			void __init MMU_init(void) {
+			...
+			ioremap(_IO_BASE,_IO_BASE_SIZE);
 
-Another way to solve it would be to switch to Linux and use VNC to
-connect
-to your Windows boxes. I'm not sure how well this works out, though.
 
-/ magnus
+	...as suggested by Magnus Damm in
+	http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html
 
-> John Fisher wrote:
->
-> > Actually, my personal opinion on that matter is that I'm not very fond
-> > of using Windows for a Linux kernel development platform. Doing --
->
-> So what are the issues: How is cygwin significantly different from Linux
-> that you would not want to use it?
-> Are there useful tools that run under Linux but not under cygwin?
->
-> The reason I ask is that my organization currently does its software
-> development under windows using proprietary tools. We have to maintain our
-> existing products using these tools. We are however contemplating new
-> development using linux. If we have to dual boot our PCs or have an extra PC
-> running Linux for each developer, that is going to bring its own set of
-> nuisances and problems.
->
-> Are there others in this situation and how have they chosen to solve it?
->
+
+HOWEVER,
+
+5. 	When I boot my board with a Flash card in the PCMCIA slot, and I run:
+	/etc/rc.d/rc.pcmcia start
+	I find that ide_cs.o causes an Oops when it calls ide_register().  "cardctl status"
+	and "cardctl ident" work though.
+
+
+Can anybody suggest what I'm doing wrong?
+
+Thanks in advance,
+
+Alex
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
