@@ -1,50 +1,59 @@
-To: =?ISO-8859-1?Q?S=E9bastien_C=F4t=E9?= <scote1@matrox.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Progress - new problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 09 Feb 2001 16:19:31 EST."
-             <20010209161931.A30585@dyn-52-73.matrox.com>
-Date: Fri, 09 Feb 2001 23:11:00 +0100
-Message-Id: <20010209221105.4CE2C28161@denx.denx.de>
+Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF7063EB6@NAPA>
+From: Hua Ji <hji@netscreen.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: About eabi and stack
+Date: Fri, 9 Feb 2001 15:08:05 -0800 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010209161931.A30585@dyn-52-73.matrox.com> you wrote:
->
-> I progressed quite a bit since my last e-mail... I put back KERNELBASE +
-> PAGE_OFFSET + KERNELLOAD to 0xc0000000 even though it complicates debugging
-> quite a bit.  Now, the kernel goes through create_elf_tables without a
+ I got confused by the EABI stack usage. Help needed. Thanks in advance.
 
-Oops? Why do you think this makes debugging more complicated? I don't
-care where something is mapped, it's  the  job  of  the  debugger  to
-resolve those addresses, isn't it?
+What I did is:
 
-> Board is similar to Sandpoint, processor is 7400 running in little-endian.
-                                                              ^^^^^^^^^^^^^^
-							      ^^^^^^^^^^^^^^
+* Wrote a dummy c function and got its asm codes like below with objdump
+utility.
+* From EABI convention, I can understand that testStack function first move
+its stack pointer %r1
+16 words down and meantime save the old stack position onto the lowest
+address. However, I can't understand
+where it puts the lr(link register). I can't understand the "stw r0, 20(r1)"
+instruction. I THOUGHT, we **only**
+moved the stack pointer **-16** down. How can we save the lr value with
+"20(r1)"??
 
-Are you really trying to run in little-endian mode? Really???
-You are not supposed to do that.
+Hua
 
-> P.S.:  What do you guys use for debugging?  Is there any debugger out there
-> that does address translation (from MMU) to see what instruction gets
-> executed when you're at a virtual address?
+---------------------------------
 
-We use the Abatron BD2000; it supports the MMU, interfaces to  GDB  /
-DDD,  comes  with  3  years  of warranty on the hardware, _excellent_
-support from the Abatron folks, and is cheaper than  other  solutions
-(2500 Euro).
+ void testStack(){
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Visit us at Embedded Systems: Feb 14-16 2001, Nuremberg, Halle 12/K01
-(with TQ Components); our presentation "Starke Zwerge: Embedded Linux
-auf PowerPC-Systemen" on Thursday, Feb 15 2001, 13:30 Forum Halle 11.
+	testFunction();
+}
+
+---------------------------------
+ <testStack>:
+
+ 2b8:	94 21 ff f0 	stwu	r1,-16(r1)
+ 2bc:	7c 08 02 a6 	mflr	r0
+ 2c0:	93 e1 00 0c 	stw	r31,12(r1)
+                        ***************
+ 2c4:	90 01 00 14 	stw	r0,20(r1)   ???? Where 20(r1) will point
+to??
+                        ***************
+ 2c8:	7c 3f 0b 78 	mr	r31,r1
+ 2cc:	48 00 00 01 	bl	2cc <testStack+0x14>
+
+/* Below is to restrore stack and lr*/
+ 2d0:	81 61 00 00 	lwz	r11,0(r1)
+ 2d4:	80 0b 00 04 	lwz	r0,4(r11)
+ 2d8:	7c 08 03 a6 	mtlr	r0
+ 2dc:	83 eb ff fc 	lwz	r31,-4(r11)
+ 2e0:	7d 61 5b 78 	mr	r1,r11
+ 2e4:	4e 80 00 20 	blr
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
