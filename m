@@ -1,26 +1,32 @@
-Message-ID: <3BE6C6E5.7070505@mvista.com>
-Date: Mon, 05 Nov 2001 12:05:41 -0500
+Message-ID: <3BE6E477.1090508@mvista.com>
+Date: Mon, 05 Nov 2001 14:11:51 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Various patches against linuxppc_dev-2.4.14-pre7
-References: <3BE2C0A5.7080707@elsoft.ch> <20011102092032.F26147@cpe-24-221-152-185.az.sprintbbd.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Ofer Rashuk <OferR@Radlan.co.il>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: virtual memory issue
+References: <42AB6BE23C29D511831E0002B32024881999FF@messenger.radlan.co.il>
+Content-Type: text/plain; charset=windows-1255; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Ofer Rashuk wrote:
 
 
-> Shouldn't board_setup_rtc_access() do all of the RTC stuff,
+> my question is who can i translate the virtual address to a physical one.
 
-Please try to coordinate your RTC stuff with Armin.  I don't have
-enough knowledge of the details to discuss this, and it appears there
-is a very standard way of working with the RTC, which is board
-specific.
+You can't from a user program, nor do you want to do this.  Using
+mmap() to physical devices from a user application must be done
+with great care, and is often used just for debugging purposes.  There
+are resources used by the kernel and other applications that cause
+race conditions you can't control.
+
+If you need access to physical memory for any reason, you must
+write a kernel device driver for this device so you can properly
+manage the resources necessary to ensure proper system operation.
+
+Thanks.
 
 
 	-- Dan
