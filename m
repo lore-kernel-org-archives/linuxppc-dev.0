@@ -1,34 +1,30 @@
-Message-Id: <199908042221.HAA01183@mail.cc.tohoku.ac.jp>
+Date: Wed, 4 Aug 1999 18:32:05 -0400 (EDT)
+From: Tom Rini <trini@disparity.net>
+Reply-To: Tom Rini <trini@disparity.net>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
+        yellowdog-general@lists.yellowdoglinux.com
+Subject: Xautoconfig 0.2
+Message-ID: <Pine.BSF.3.96.990804181141.16262d-100000@silver.teardrop.net>
 MIME-Version: 1.0
-Date: Thu, 05 Aug 1999 07:21:32 +0900
-From: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [Q] Bootup PReP installer ?
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi.
+Hello.  As some of you may know, Xautoconfig is a nifty program that
+generates an XF86Config file that will work on any hardware[1].  In
+theory, it does anyways.  I've just released version 0.2 to
+http://devel.linuxppc.org/~trini, after hearing back from two of the
+people that said the old one failed.
 
-I am making new kernel with installer for PReP.
-Thanks for new kernels of Motorola.
+[1] system must be using frame buffers, but not a problem on ppcs :)
 
-I put "ramdisk.image.gz" on linux/arch/ppc/boot
-And I made zImage.initrd.
-Compileation is succeeded, but it cannot boot installer 
-but HDD kernel.
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
-I would like to know how to boot up installer.
-I need to add some options like "initrd=" or something?
 
-Best regards.
-----------------------
-Kaz Aoshima = PReP station
-Material deveropment, Faculty of engineering, 
-Tohoku University, Japan
-E-mail:aoshimak@mail.cc.tohoku.ac.jp
-#I am appreciate if you could tell me suggestions
- for my bad English expressions.
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
