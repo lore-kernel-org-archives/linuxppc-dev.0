@@ -1,77 +1,34 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-To: Michel Daenzer <michdaen@iiic.ethz.ch>
-Date: Wed, 31 Jan 2001 20:29:09 MET-1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Jeglinski <jeglin@4pi.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: continuing XF402 (atimisc) problems
+Date: Wed, 31 Jan 2001 15:05:17 +0100
+Message-Id: <19341226073701.30276@mailhost.mipsys.com>
+In-Reply-To: <p04330102b69d64c82c08@[24.163.36.97]>
+References: <p04330102b69d64c82c08@[24.163.36.97]>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-2
-Subject: Re: [linux-fbdev] Re: r128 DRI driver now fully functional 
-CC: andi@convergence.de, benh@kernel.crashing.org,
-        linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu,
-        geert@linux-m68k.org
-Message-ID: <142B99D154AF@vcnet.vc.cvut.cz>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 31 Jan 01 at 19:53, Michel Dänzer wrote:
-> > The disadvantage is that if you change the palette, the text colors don't
-> > change until you redraw the screen (or switch VC back-and-forth). That's why
-> > I decided to use the hardware palette in directcolor modes.
+>I've been over this on the -user list and the YDL list, and cc-ed Ani
+>a few times with it (no response). No one seems to have a clue as to
+>the cause of the problem, which is described concisely at:
 >
-> I don't mind using the hardware palette if you (or anyone) tell me how to get
-> RGB565 working with that. :)
+><http://lists.linuxppc.org/listarcs/linuxppc-user/200101/msg00672.html>
+>
+>(more detail available if necessary)
+>
+>This is on a 6500 (on-board RageII) with a RagePro PCI card. I have
+>tried rolling my own XF402 build, with Ani's driver updates, and get
+>the exact same XFree log result. I've also tried several of kfukui's
+>402 rpms, including use of his "old drivers," again with exactly the
+>same result.
 
-It depends on how your hardware works:
+Check that you have the correct fbdevhw module and that it's loaded in
+your XF86Config file.
 
-If it uses palette entries 0-31 for R/B and 0-63 for G, program
-dispsw_data pointed array (pseudo_palette) with
-
-for (i = 0; i < 16; i++) arr[i] = i * ((1 << 11) | (1 << 5) | 1);
-
-and your setcolreg should program r,g,b fields for regno register.
-
-If your hardware uses entries 0,8,16,24...248 for R/B and
-0,4,8,12,... for G, things are worse:
-
-program pseudo_palette with same 'arr[i] = i * ((1 << 11) | (1 << 5) | 1);'
-
-But setcolreg is much worse:
-
-if (regno) {
-  if (regno & 1) {
-    oldR = oldB = 0;
-  } else {
-    outb(regno * 4, PALETTE_R_INDEX);
-    oldR = inb(PALETTE_DATA);
-    inb(PALETTE_DATA);
-    oldG = inb(PALETTE_DATA);
-  }
-  outb(regno * 4, PALETTE_W_INDEX);
-  outb(oldR, PALETTE_DATA);
-  outb(g, PALETTE_DATA);
-  outb(oldB, PALETTE_DATA);
-
-  outb(regno * 8, PALETTE_R_INDEX);
-  inb(PALETTE_DATA);
-  oldG = inb(PALETTE_DATA);
-  inb(PALETTE_DATA);
-} else {
-  oldG = g;
-}
-outb(regno * 8, PALETTE_W_INDEX);
-outb(r, PALETTE_DATA);
-outb(oldG, PALETTE_DATA);
-outb(g, PALETTE_DATA);
-
-I think that you should create 3x256 (or 3x64) array which will mirror
-DAC state, as otherwise you have to do too many ops to set
-one register...
-
-Also do not forget that you must use only low 16 color registers (regno
-on input to setcolreg) for text console, as others (16-31/16-63) are not
-saved/restored by console palette handling code.
-                                            Best regards,
-                                                Petr Vandrovec
-                                                vandrove@vc.cvut.cz
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
