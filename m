@@ -1,47 +1,59 @@
-Message-ID: <3AAB1146.C39B35A1@mvista.com>
-Date: Sat, 10 Mar 2001 21:46:46 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: EST SBC8260 and Canary CTX-1170
 MIME-Version: 1.0
-To: David Blythe <blythe@routefree.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU_init buglet in 2.4.0-mvista_010216
-References: <3AAB06CC.F5E5A5BA@routefree.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Sun, 11 Mar 2001 07:28:27 -0600
+Message-ID: <CD5CA14300A9D54A8D13D58CD3C87B422DD72B@advcorp-exc01.advent.com>
+From: "Oliver Brown" <obrown@adventnetworks.com>
+To: "Dan Malek" <dan@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Blythe wrote:
->
-> memory sizes > 16M but not a multiple of 16M not quite right.  for the
-> 24M config i was playing with it manifests itself as a tlb miss/kernel
-> stack overflow.
->
-> patch attached.
->         david
->
->   ------------------------------------------------------------------------------------------------------------------------------------
-> Index: arch/ppc/mm/init.c
-> ===================================================================
-> diff -u -r1.1.1.4 init.c
-> --- arch/ppc/mm/init.c  2001/02/21 00:52:57     1.1.1.4
-> +++ arch/ppc/mm/init.c  2001/03/11 04:52:27
-> @@ -1015,7 +1015,7 @@
->         /* -----  pin 4MB chunks of memory  ----- */
->
->         if (size_pinned < size_DRAM) {
-> -               pinned_tlbs = ((size_DRAM - size_pinned) / SIZE_4MB);
-> +               pinned_tlbs += ((size_DRAM - size_pinned) / SIZE_4MB);
->
->                 if (pinned_tlbs > PPC4xx_MAX_PINNED_TLB) {
->                         printk(KERN_ERR "MMU_init(): memory configuration requires %d tlb entries.\n",
+The fcc driver that was working for ppcboot was in version 0.8.2,
+however the 0.8.3 will have the fixes for the EST SBC8260.
 
-Thank you David, I merged your fix.
+The 2.4.1 kernel I am using came from kernel.org. I didn't realize that
+there were updates in Bitkeeper tree. I'll try the latest Bitkeeper
+kernel.
 
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+Regards,
+Oliver
+
+-----Original Message-----
+From: Dan Malek [mailto:dan@mvista.com]
+Sent: Thursday, March 08, 2001 6:36 PM
+To: Oliver Brown
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: EST SBC8260 and Canary CTX-1170
+
+
+Oliver Brown wrote:
+
+> I can't generate any traffic on the fast ethernet port.
+
+The CTX-1170 worked at one time on the EST board.  Unfortunately,
+I had to make little changes for just about every different 8260
+board I have seen.  Further, my EST boards have all failed in some
+way or another so I can't even test this anymore.
+
+Even when it "worked", I had trouble with some 10/100 switches.
+
+> Ppcboot works fine on this setup, so I know that the hardware is
+> working.
+
+Is this driver available from sourceforge, or is it something you have
+locally?  I would like to look at it and I may see some differences.
+
+Most of the changes surround the MDIO interface and the software
+"clocking" of the bits on those lines.  The PHYs seem sensitive to
+timing I just can't get right with the software.  I was able to get
+one, or a small subset, working at the same time, but not all of them
+at once.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
