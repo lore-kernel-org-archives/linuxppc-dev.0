@@ -1,26 +1,20 @@
-Message-Id: <5.1.1.6.0.20030415094707.01cee220@dns.struinfo.it>
-Date: Tue, 15 Apr 2003 10:12:23 +0200
+From: brian.auld@adic.com
+Message-ID: <995FF289C9D69747A09E42992644595405B23704@penguin.adic.com>
 To: linuxppc-embedded@lists.linuxppc.org
-From: llandre <r&d@wawnet.biz>
-Subject: Differences between PPC405GP(r) and PPC405EP Ethernet
-  controllers
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Karim Yaghmour's book??
+Date: Tue, 15 Apr 2003 05:40:07 -0700
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm porting U-Boot to the 405EP evaluation board. I have some troubles with
-the Ethernet interface. I assumed the ethernet driver written for the
-405GP(r) is ok for the 405EP, too. Is this right? If no, anybody can tell
-me the differences between the two controller?
-I posted the question here because the kernel has already been ported to
-the 405EP ev. board and it supports the Ethernet controllers.
+If this is off-topic, let me know.
 
-Many thanks in advance.
+I asked this questions a while back. Does anyone know when Karim's book will hit the stands. I've had it on back-order for about a month from Amazon. If there's a quicker way to get it, please let me know...
 
+Thanks,
 
-llandre
-
+-- Brian
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
