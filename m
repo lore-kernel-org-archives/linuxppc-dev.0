@@ -1,24 +1,32 @@
-Message-ID: <3BA83E0C.F6AC686B@mvista.com>
-Date: Wed, 19 Sep 2001 02:41:16 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3BA86732.363312A4@imc-berlin.de>
+Date: Wed, 19 Sep 2001 11:36:50 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: Mark Hatle <fray@mvista.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Errata 67/77 / walnut bugs (was: Re: Erratum 51 bugfix?)
-References: <20010917152316.O3851@zax> <3BA62583.55E48A97@mvista.com> <20010918102901.A1183@zax> <3BA7980B.EEBF1F5D@mvista.com> <20010919121954.D13693@zax> <3BA801A9.B6311C93@mvista.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: BitKeeper and linuxppc_2_4_devel
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Hatle wrote:
+Hi there,
 
-> Just as an FYI, we also do this in glibc to be safe.
+I am trying to get the latest kernel sources.
 
-We use stwcx. in user space?  Hmmm....Hmmmm....
+But "bk clone http://source.mvista.com/linuxppc_2_4_devel linux/"
 
+results today (!?) in
 
-	-- Dan
+drainErrorMsg: Unexpected response:
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+
+Has anyone else the same problem?
+
+BTW which one has the most recent source: ppc.bkserver.net oder
+source.mvista.com???
+
+Cheers,
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
