@@ -1,43 +1,39 @@
-To: Gabriel Paubert <paubert@iram.es>
-Cc: "Srinivas Rao.M" <msrao@vxl.co.in>,
-	Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: speed and space Optimization 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 08 Mar 2001 15:54:16 +0100."
-             <Pine.HPX.4.10.10103081551290.9166-100000@gra-ux1.iram.es>
-Date: Thu, 08 Mar 2001 18:18:01 +0100
-Message-Id: <20010308171806.B446B281E1@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3AA7D8A9.92476309@intel.com>
+Date: Thu, 08 Mar 2001 11:08:25 -0800
+From: "Bruno R. Barreyra" <bruno.r.barreyra@intel.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: make dep bug and patches
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <Pine.HPX.4.10.10103081551290.9166-100000@gra-ux1.iram.es> you wrote:
->
-> Actually, the gcc code generation of PPC lacks in this area. There are
-> very few differences between -O2 -Os (first one is the standard for speed
-> although you might want to try -O3). -Os is in theory the space
-> optimization, but there are very few places in the rs6000/ppc description
-> that depend on whether the code should be optimized for space or not.
-> There will be some difference, but relatively very small.
+On today's linuxppc_2_4 snapshot, doing a make dep having selected
+a 8xx CPU will bomb because of an include. On arch/ppc/Makefile,
+line 34, the -I../8xx_io argument should be removed. It compiles
+fine without it.
 
-Just tested on our PPCBoot firmware:
+Also, I was wondering if two patches would be accepted to go in
+the main trunk:
 
-   text    data     bss     dec     hex filename	==> size
-  80628   22096   10476  113200   1ba30 ppcboot-Os	100%
-  86332   22096   10476  118904   1d078 ppcboot-O2	105%
-  90464   22328   10476  123268   1e184 ppcboot-O3	109%
+1 - reactivate FADS support : I've re-hacked FADS support on my
+    local tree and it works fine. Actually, I was having some problems
+    with the kernel available on Area51 from Montavista, and doing
+    this kernel upgrade fixed it.
 
-Differences are  small,  but  they  exist  (and  they  can  make  the
-difference if the code fits in a 128k boot ROM or not).
+2 - having an option to automatically set up the headers for PPCBoot.
+    I'm sure a lot of folks would appreciate this, and it wouldn't be
+    hard to automatically generate a PPCBoot image.
 
-
-Wolfgang Denk
+If I know the patches will be included, I'll most gladly write them and
+send them.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Hindsight is an exact science.
+[]'s Bruno Renato Barreyra
+bruno.r.barreyra@ufl.edu
+barreyra@ufl.edu
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
