@@ -1,21 +1,23 @@
-Return-Path: <robin@india.tejasnetworks.com>
-Received: from pop-mail.india.tejasnetworks.com (india.tejasnetworks.com
-	[164.164.94.83]) by ozlabs.org (Postfix) with SMTP id 5AFBF67A65
+Return-Path: <carjay@gmx.net>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.176]) by ozlabs.org (Postfix) with ESMTP id 31C8F67A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Feb 2005 17:29:44 +1100 (EST)
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: robin <robin@india.tejasnetworks.com>
-To: Gerhard Jaeger <g.jaeger@sysgo.com>,
-	linuxppc-embedded@ozlabs.org, etux@embeddedtux.org
-Date: Fri, 11 Feb 2005 11:59:04 +0530
-References: <20050204192117.4F29CC108D@atlas.denx.de>
-	<200502101137.07711.robin@india.tejasnetworks.com>
-	<200502100840.38232.g.jaeger@sysgo.com>
-In-Reply-To: <200502100840.38232.g.jaeger@sysgo.com>
+	Fri, 11 Feb 2005 17:50:13 +1100 (EST)
+Received: from [212.227.126.208] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1CzU6e-0000kC-00
+	for linuxppc-embedded@ozlabs.org; Fri, 11 Feb 2005 07:16:44 +0100
+Received: from [80.133.47.118] (helo=[192.168.99.1])
+	by mrelayng.kundenserver.de with asmtp (TLSv1:RC4-MD5:128)
+	(Exim 3.35 #1) id 1CzU6d-0007B0-00
+	for linuxppc-embedded@ozlabs.org; Fri, 11 Feb 2005 07:16:44 +0100
+Message-ID: <420C4DCB.6030104@gmx.net>
+Date: Fri, 11 Feb 2005 07:16:43 +0100
+From: Carsten Juttner <carjay@gmx.net>
 MIME-Version: 1.0
-Message-Id: <200502111159.04265.robin@india.tejasnetworks.com>
-Subject: Memory leak problem
+To: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="------------070001000801060006010403"
+Subject: Patch for 8xx watchdog handler for >=2.6.10
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,61 +28,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi=20
-Thanks for your help.=20
+This is a multi-part message in MIME format.
+--------------070001000801060006010403
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-We found the memory leak in the syncppp module in linux.
+Hi,
 
-1. Did somebody encounter any problems(leaks) with the=20
-syncppp module in denx 2.4.20 kernel??=20
+our mpc 823 based embedded board (STB, dbox2) would hang with every 
+kernel starting from 2.6.10-rc1_linuxppc. I tracked the problem down to 
+the watchdog interrupt handler setup and the new generic interrupt 
+handling routines (which caused an uninitialized pointer because kmalloc 
+was used before the kmem_cache was initialized).
 
-2. Are there any known issues with this module??
+As said, this was only an issue if CONFIG_8xx_WDT was set.
 
-The scenario is we are ftp-ing continuosly between=20
-two nodes using syncppp module. The leak is ocuring at=20
-both the nodes.
+I have attached a simple patch for the handler.
 
 Regards,
-Robin
+Carsten Juttner
 
 
+--------------070001000801060006010403
+Content-Type: text/x-patch;
+ name="m8xx_wdt.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="m8xx_wdt.diff"
 
-On Thursday 10 Feb 2005 1:10 pm, Gerhard Jaeger wrote:
-> On Thursday 10 February 2005 07:07, robin wrote:
-> > Hi
-> > We have an application running on  denx linux kernel 2.4.20.
-> >
-> > Apparently there is a memory leak that we are not able to find.
-> > The application is giving out of memory error. Even if we restart
-> > the application without rebooting the kernel, (killing all applicatio=
-n
-> > processes and restarting), it gives the same out of memory error.
-> > Rebooting the kernel solves the problem.
-> >
-> > It seems that the memory leak is not at the application level
-> > 'cos restarting the application doesnt solve the problem..
-> >
-> > 1. Any ideas where I should look for the leak??
->
-> Check /proc/slabinfo and see if there are some "supicious" buffer,
-> that only increase and never decrease. From the kind of buffer
-> showing this behaviour you might find out where to dig...
-> Check it before running the application and afterwards.
->
-> > 2. Is there any known memory leak problems with the kernel??
->
-> There are enough places, where a kernel could leak, but in general
-> such leaks in the main part are detected really fast. Undiscovered
-> leaks are often found in the drivers itself.
->
-> What's your kernel config?
-> Which HW are you using?
-> What does this application?
->
-> Ciao,
-> Gerhard
+diff -Nru a/arch/ppc/syslib/m8xx_wdt.c b/arch/ppc/syslib/m8xx_wdt.c
+--- a/arch/ppc/syslib/m8xx_wdt.c	2005-02-11 07:08:20 +01:00
++++ b/arch/ppc/syslib/m8xx_wdt.c	2005-02-11 07:08:20 +01:00
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
++#include <linux/irq.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <asm/8xx_immap.h>
+@@ -18,6 +19,14 @@
+ 
+ static int wdt_timeout;
+ 
++static irqreturn_t m8xx_wdt_interrupt(int, void *, struct pt_regs *);
++static struct irqaction m8xx_wdt_irqaction = {
++    .handler = m8xx_wdt_interrupt,
++    .flags = 0,
++    .name = "watchdog",
++    .dev_id = NULL
++};
++
+ void m8xx_wdt_reset(void)
+ {
+ 	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
+@@ -84,8 +93,8 @@
+ 	imap->im_sit.sit_piscr =
+ 	    (mk_int_int_mask(PIT_INTERRUPT) << 8) | PISCR_PIE | PISCR_PTE;
+ 
+-	if (request_irq(PIT_INTERRUPT, m8xx_wdt_interrupt, 0, "watchdog", NULL))
+-		panic("m8xx_wdt: could not allocate watchdog irq!");
++	if (setup_irq(PIT_INTERRUPT, &m8xx_wdt_irqaction))
++		panic("m8xx_wdt: error setting up the watchdog irq!");
+ 
+ 	printk(KERN_NOTICE
+ 	       "m8xx_wdt: keep-alive trigger installed (PITC: 0x%04X)\n", pitc);
 
---=20
-And I hate redundancy, and having different functions for the same thing.
-
-=09- Linus Torvalds on linux-kernel
+--------------070001000801060006010403--
