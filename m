@@ -1,56 +1,50 @@
-Date: Wed, 14 Nov 2001 15:19:07 -0500 (EST)
-From: Daniel Berlin <dan@cgsoftware.com>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: DFP support for kernel radeonfb.c added
-In-Reply-To: <20011114201244.CRPO11133.tomts9-srv.bellnexxia.net@there>
-Message-ID: <Pine.LNX.4.33.0111141518370.25545-100000@www.cgsoftware.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: AGP : ATI128,powerpc
+From: Vincent Katz <vincent.katz@laposte.net>
+To: jhartmann@precisioninsight.com
+Cc: paulus@samba.org, linuxppc-dev@lists.linuxppc.org,
+	paulus@au.ibm.com
+Content-Type: text/plain
+Date: 14 Nov 2001 21:52:42 +0100
+Message-Id: <1005771164.6732.19.camel@avalon>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 14 Nov 2001, Kevin B. Hendricks wrote:
+Hi,
 
-> Hi Daniel,
->
-> > > My tree has both "DFP,EDID", and "LCD,DFP" so my code only looks for:
-> > >
-> > > DFP,EDID
-> > > LCD,EDID
-> > > and
-> > > EDID
-> > >
-> > > I will add "EDID1" also (and "EDID2") just to make sure nothing breaks
-> > > along the way.
-> > >
-> > > Ben is correct here, perhaps we should do our own I2C to grab our own
-> > > EDID block directly from the monitor and not play the "what name did
-> > > OF give it" game.
-> >
-> > The problem is that i can't seem to get this to work on the tibook2.
-> > Strangely, osx appears to do it.
->
-> What doesn't work... is it my radeonfb.c version that doesn't work for you
-No, I mean using i2c to grab it.
-> > > I have not looked at the I2C code to see how complex it is.  Does
-> > > anyone have any working code or sample code I can look at?
-> >
-> > Yes, I do.
-> >
-> > At least, i have code that *should* work. I can't test it, of course.
-> >
-> > Want it?
->
-> Sure....please send it along.
-Give me a few minutes.
+Linux version : 2.4.14
+File with a supposed probleme : linux/drivers/char/agp/agpgart_be.c
 
+I have a powerpc with an ati128 AGP.
+
+When i compile the kernel i have this error : error "Please define
+flush_cache."
+
+this error come from the function flush_cache in agpgart_be.c where
+definition for powerpc are not setting . Why ?
+
+
+
+> static inline void flush_cache(void)
+>{
+>#if defined(__i386__) || defined(__x86_64__)
+>        asm volatile ("wbinvd":::"memory");
+>#elif defined(__alpha__) || defined(__ia64__) || defined(__sparc__)
+>        /* ??? I wonder if we'll really need to flush caches, or if the
+>           core logic can manage to keep the system coherent.  The ARM
+>           speaks only of using `cflush' to get things in memory in
+>           preparation for power failure.
 >
-> Thanks,
+>           If we do need to call `cflush', we'll need a target page,
+>           as we can only flush one page at a time.
 >
-> Kevin
->
+>           Ditto for IA-64. --davidm 00/08/07 */
+>        mb();
+>#else
+>#error "Please define flush_cache."
+>#endif
+>}
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
