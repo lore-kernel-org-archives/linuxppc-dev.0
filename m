@@ -1,8 +1,8 @@
-Date: Wed, 24 Mar 2004 09:49:22 +0100
-Message-ID: <4057CCD40004143F@mssbzhh-int.msg.bluewin.ch>
+Date: Wed, 24 Mar 2004 09:59:56 +0100
+Message-ID: <4057CCD40004167A@mssbzhh-int.msg.bluewin.ch>
 In-Reply-To: <20040323183122.GA6724@gate.ebshome.net>
 From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
-Subject: Re: IBM 440GX, Ocotea...
+Subject: IBM 440GX performance (was Re: IBM 440GX, Ocotea...)
 To: "Eugene Surovegin" <ebs@ebshome.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
@@ -17,51 +17,7 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 >To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 >Cc: linuxppc-embedded@lists.linuxppc.org
 >Subject: Re: IBM 440GX, Ocotea...
->
->
->
->On Tue, Mar 23, 2004 at 12:02:31PM +0100, Wolfgang Grandegger wrote:
->>
->> we are currently trying to understand which PPC Linux
->> kernel tree is best suited for the IBM 440GX on the
->> Ocotea eval board. We would like to support the 405GP
->> and 440GP as well.
->
->linuxppc-2.4
->
->>
->> The Ocotea 440GX board seems to be supported in the
->> "linuxppc_2_4_devel" tree. Is this board configuration
->> up-to-date and still maintained?
->
->unlikely. linuxpp_2_4_devel is officialy "dead" tree :).
->
->> A more up-to-date implementation seems to be in the
->> "linuxppc-2.4" tree. Are there some open issues or known
->> problems?
->
->New UIC mode isn't supported yet.
->Work on GigE support is still not finished yet.
->
->> I realized that the L2 cache has been disabled
->> recently:
->>
->>   $ cat arch/ppc/platforms/ocotea.c
->>   ...
->>   /* Disable L2-Cache due to hardware issues */
->>   ibm440gx_l2c_disable();
->>
->> Does this mean that the L2 cache is unusable on current
->> revisions of the chip? [That's why we would like to use
->> this chip.]
->
->Yes, we found problems with current chip revisions (A & B).
->Ask your IBM contact for more information.
->
->> Does this tree support the 405GP and 440GP as well?
->
->Yes.
->
+[...deletions...]
 >> Could
 >> anybody make some comments on the stability? We currently
 >> use the "linuxppc_2_4_devel" tree for these processors
@@ -70,9 +26,10 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 >I'm using linuxppc-2.4 as of 2.4.21 in production for 440GP,
 >440GX, 405GPr, 405EP based hardware.
 
-Great, thanks a lot for the clearification. Unfortunately there
-is some confusion and disappointment on what board is well
-supported in what tree.
+BTW, do you or somebody else have some performance figures
+(LMbench?) for the GX compared to the other processor.
+
+Thanks.
 
 Wolfgang.
 
