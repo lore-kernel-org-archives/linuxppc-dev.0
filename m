@@ -1,23 +1,19 @@
-Return-Path: <jalmeida@apes.fr>
-Received: from mail.apes.fr (unknown [80.125.80.241])
+Return-Path: <joakim.tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C667567A71
+	by ozlabs.org (Postfix) with ESMTP id 64FCD67A6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Feb 2005 22:05:41 +1100 (EST)
-Received: from [172.24.10.13] (jose.apes.fr [172.24.10.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mail.apes.fr (Postfix) with ESMTP id 7B949634397
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Feb 2005 11:41:52 +0100 (CET)
-Message-ID: <421B0C70.1070301@apes.fr>
-Date: Tue, 22 Feb 2005 11:41:52 +0100
-From: Jose Almeida <jalmeida@apes.fr>
+	Tue, 22 Feb 2005 22:20:52 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>,
+	<gautran@mrv.com>
+Date: Tue, 22 Feb 2005 12:20:44 +0100
+Message-ID: <JPEALJAFNGDDLOPNDIEEIECNDBAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: FCC on 8560 ADS
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Linux 2.6.x on 8xx status
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,24 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-All,
+dcbz(and a few other cache instr.) is buggy on 8xx CPU:s.
+See http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/000867.html
+for a litte more input or google.
 
-I'm trying to get a linux 2.6 kernel up and running on an freescale 8560 
-ADS board. I have every peace of this up and running apart from the FCC 
-ethernet.
+This bug will cuase random craches or "hangs" if not used with care.
+There is an old patch floating around for 2.4 that will workaround the bug by
+doing instr. decoding in the TLB Error handler.
 
-I've switched to the legacy mode, which now allow me to talk to the PHY 
-and negocite properly @ 100BT FD.
-
-But I don't seem to get any ethernet packet going out. The FCC 
-controller does not seem to read the BDs, and all the packet's I'm 
-placing in the BD just stay there for ever !
-
-I'm wondering if you have a driver which works properlly ? I'm thinking 
-on some wrong setup in the ioports, but is all seems to be correct !
-
-I'm using a 2.6.9 kernel, but I also tryed other versions (2.6.11r4), 
-with the same problems ...
-
-Thanks
- Jose
+ Jocke
