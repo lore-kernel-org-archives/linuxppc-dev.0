@@ -1,33 +1,26 @@
-Date: Thu, 19 Oct 2000 17:11:05 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Tom Rini <trini@kernel.crashing.org>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Graichen <graichen@innominate.de>,
+Message-Id: <200010191513.LAA25626@mal-ach.watson.ibm.com>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Nelson Abramson <pogtal@erols.com>, Jean-Jacques.Levy@inria.fr,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: openoffice on ppc anyone?
-In-Reply-To: <20001019080331.H15104@opus.bloom.county>
-Message-ID: <Pine.LNX.4.10.10010191709430.2489-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: video mirroring mode + acrobat reader 
+In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
+   of "Thu, 19 Oct 2000 16:22:32 +0200." <Pine.HPX.4.10.10010191619560.3208-100000@gra-ux1.iram.es>
+Date: Thu, 19 Oct 2000 11:13:26 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Well, make sure to update your tree.  One of the mailing lists on that page
-> says some diffs for linux/ppc have been checked in.
+>>>>> Gabriel Paubert writes:
 
-Yep, I've seen that - do they check in these changes under the 605 tag?
+Gabriel> Maybe Linux/PPC binaries can be made to run under AIX ?
 
-> > I'm already using a recent gcc 2.95.3 but libc upgrades always freak me
-> > out ...
->
-> It's not as bad as it used to be. :)
+	With the start addres change, running PowerPC Linux binaries in a
+compatibility mode under AIX is possible.  At the earlier address, the
+executables loaded at the top of the AIX kernel segment which was
+impractical to overcome in AIX.
 
-Sure, but I barely survived one or two botched ones a while ago :-) (m68k,
-not ppc though)
-
-	Michael
-
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
