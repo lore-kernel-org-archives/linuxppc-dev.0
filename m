@@ -1,37 +1,45 @@
-Date: Tue, 15 Feb 2000 05:13:26 -0600 (CST)
-From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
-To: Paul Mackerras <paulus@linuxcare.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: my web page
-In-Reply-To: <0002151714050B.09337@argo.linuxcare.com.au>
-Message-ID: <Pine.GSU.4.05.10002150511340.23877-100000@oddjob.uchicago.edu>
+Message-ID: <38A93FBC.7D983C3E@mpifr-bonn.mpg.de>
+Date: Tue, 15 Feb 2000 12:59:56 +0100
+From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+CC: paulus@linuxcare.com
+Subject: Missing declaration in 2.2.14-pmac sources?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi all,
 
-Paul (also Jeff Garzik) -
+I tried to compile the ieee1394 stuff I found at
+http://eclipt.uni-klu.ac.at/ieee1394/ and had problems with Paul's
+linux-pmac-stable sources as the symbol __ashldi3 could not be resolved.  I
+_think_ the following patch to arch/ppc/kernel/ppc_ksyms.c will solve this
+problem.  Is this correct?
 
-Jeff had a patch that allowed 2.3.42 to boot. Would that provide the fix
-for 2.3.45?
+Thanks, Albrecht.
 
-Ramprasad
-On Tue, 15 Feb 2000, Paul Mackerras wrote:
+---snip here-------------------------------------------------------------------
+--- ppc_ksyms.c.orig    Tue Feb 15 10:43:40 2000
++++ ppc_ksyms.c Tue Feb 15 10:45:22 2000
+@@ -47,6 +47,7 @@
+ extern int do_signal(sigset_t *, struct pt_regs *);
 
->
-> I have done a little web page describing the current state of kernel
-> development for the powermac and how to get my rsync trees.  It's at
-> http://linuxcare.com.au/paulus/kernels.html.  Let me know if there is
-> anything I should explain better (or more).  :-)
->
-> --
-> Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-> +61 2 6262 8990 tel, +61 2 6262 8991 fax
-> paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-> Linuxcare.  Support for the revolution.
->
+ asmlinkage long long __ashrdi3(long long, int);
++asmlinkage long long __ashldi3(long long, int);
+ asmlinkage long long __lshrdi3(long long, int);
+ asmlinkage int abs(int);
+
+@@ -218,6 +219,7 @@
+ EXPORT_SYMBOL(abs);
+
+ EXPORT_SYMBOL_NOVERS(__ashrdi3);
++EXPORT_SYMBOL_NOVERS(__ashldi3);
+ EXPORT_SYMBOL_NOVERS(__lshrdi3);
+ EXPORT_SYMBOL_NOVERS(memcpy);
+ EXPORT_SYMBOL_NOVERS(memset);
+---end patch-------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
