@@ -1,55 +1,48 @@
-Message-ID: <3A634565.ED2F77C6@mvista.com>
-Date: Mon, 15 Jan 2001 13:45:57 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3A6367E0.1D9499FE@brainlink.com>
+Date: Mon, 15 Jan 2001 16:13:04 -0500
+From: Ormund Williams <ormundw@brainlink.com>
 MIME-Version: 1.0
-To: Timothy Ritchey <tritchey@vacuumgenesis.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kswapd Oops
-References: <3A625423.E0F6C9AC@vacuumgenesis.com> <3A628C9B.489E401A@mvista.com> <3A633075.5952B4C0@vacuumgenesis.com> <3A6331BF.FB53A3FF@mvista.com> <3A6342EA.DEA7FA9B@vacuumgenesis.com>
+To: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>,
+        Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: UART configuration problems
+References: <003b01bfbc02$88afc3c0$4a1f76d8@washington> <3A5FBDC0.6785393F@brainlink.com> <008201c07eec$52fd7da0$4a1f76d8@washington>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Timothy Ritchey wrote:
-
-> That is what I figured, although I had to make some changes to get the
-> FEC driver to compile
-
-Hmmm...you may have grabbed something a little old.  I would suggest
-starting with the Embedded Planet "CLLF" LSP.
-
-> > Are you including the software work arounds for the CPU6 silicon
-> > errata?
+Navin Boppuri wrote:
 >
-> yes
+> Hello Ormund,
+>
+> >From your mail, I can make out that you worked on the MAX3100 uart before.
+> Can you please tell me how I can do a read from the buffer? I am confused as
+> to how to read the buffer without overwriting it with the following data.
+> How much delay is the right delay? Please help, I am kinda stuck here.
+>
+I have no experience with the 823, my interest in PPC-Linux is for a
+future project using the IBM 403GC, I am familiar with the 3100 from
+another project.
 
-Although it shouldn't be causing the trouble, there is/was a bug
-in the code with this option enabled.  Check the file
-arch/ppc/kernel/head.S and make sure the 'cpu6_bug' buffer is
-declared '.space 16' instead of '.space 4'.
+I had already sent you the following steps for reading the FIFO without
+loosing characters, you must read the entire FIFO to clear it.
 
-> ARRRGGGGHHH. You can't imagine how much this pains me. Well.... perhaps
-> you can :)
+Here are the steps to take:
 
-Yes, I can.  You are not the first to see this and won't be the
-last.  I have been very fortunate to work with some awesome hardware
-engineers in the past, where the the first round of hardware had
-high speed logic connectors to the processor bus.  The MPC8xx
-memory controller can do some pretty weird things, all legitimate
-and logical, and not something you will comprehend from reading
-the manual.  You have to see it in action, especially when running Linux.
+        1. Read 16bit data from 3100
+        2. Check R (bit 15) to see if there is data in FIFO
+        3. If R is set: check Framing Error (bit 10)
+           and Parity, if used (bit 8), read the character (bit 0-7)
+        4. Do the above 3 three steps till R is clear
+        5. Set delay for 60 x baud rate period
+           (for 9600bps 8-n-1: 6250 micro seconds)
 
-> .... I am going to disable everything I can WRT caches, etc. and
-> see if it clears up.
+I am assuming that you are not using the interrupt pin on the 3100.
 
-Another thing to test is setting burst inhibit in the ORx for the DRAM.
-This will prevent the CPM DMA from generating burst cycles as well.
-Most people can get the single cycle memory operations working because
-the timing isn't as critical and there is lots of overhead so a few
-wasted clock cycles are seldom noticed.  Burst mode has to be perfect.
+I see that you have written a driver for SPI can you send me a copy?
+TIA.
 
-
-	-- Dan
+--
+Ormund
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
