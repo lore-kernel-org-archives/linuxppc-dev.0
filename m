@@ -1,47 +1,35 @@
-Message-Id: <199908121730.TAA03489@piglet.cpu.lu>
-Date: Thu, 12 Aug 1999 19:30:24 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-cc: Paul.Mackerras@cs.anu.edu.au, drow@false.org, mj@ucw.cz,
-        linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.9908101455510.32043-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <37B30E49.844CA5A8@pop.agri.ch>
+Date: Thu, 12 Aug 1999 20:11:24 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+To: Linux-User <linuxppc-user@lists.linuxppc.org>,
+        Linux-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: xhfs & MacOS standard disks corruption
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  10 Aug, this message from Geert Uytterhoeven echoed through cyberspace:
->> One way might be to adjust the base addresses in all the pci_dev
->> structs and then make sure all drivers use the address from the
->> pci_dev struct rather than reading config space themselves.
-> 
-> Which will make our /proc/ioports look funny.
+Hi,
+ 
+has anybody made similar experiences with xhfs (from hfsutils-3.2-1b):
 
-[mlan@piglet ~]$ cat /proc/ioports
-f2000480-f2000487 : ide2
-f2000488-f200048f : ide3
-f2000490-f20004bf : PDC20262
+Under MacOs 8.6 cleaned the disk with DiskFirstAid 8.5.2. 
+Boot into Linux, startx, xhfs & open the cleaned partition, transfer a
+file, in my case 9MB, to the mounted partition.
+Afterwards closed the xhfs shut the machine down to reboot into MacOS.
 
-I don't see why this would be funny.... except if you're used to the
-PeeCee definition of IO ports being below 64 k ;-))
+A check on this partition gives me an error in the catalog tree. 
+Ok, doing a repair to it works. But as it happened to me doing that
+several times without checking/reparing the partition I got an
+unreparable partition which I had to erase.
+This is done with 2.2.10 & 2.2.11.
+Question: is xhfs bad? or is there something uggly with hfs support?
 
-In any case, I still find it much better to adjust pci_dev, than to
-play with offsets in inb()/outb().
+Thanks for any responses
 
-But most important, adjusting struct pci_dev is the only way I see to
-support IO space on more than one host bridge.
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Andreas
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
