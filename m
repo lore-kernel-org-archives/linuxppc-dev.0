@@ -1,47 +1,36 @@
-Date: Thu, 21 Aug 2003 10:49:27 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michel D?nzer <michel@daenzer.net>
-Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: linuxppc-2.5 fixlets
-Message-ID: <20030821174927.GL848@ip68-0-152-218.tc.ph.cox.net>
-References: <1061487408.1862.10.camel@thor.holligenstrasse29.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: linuxppc-dev@lists.linuxppc.org
 In-Reply-To: <1061487408.1862.10.camel@thor.holligenstrasse29.lan>
+References: <1061487408.1862.10.camel@thor.holligenstrasse29.lan>
+Content-Type: text/plain
+Message-Id: <1061496837.18043.1.camel@gaston>
+Mime-Version: 1.0
+Date: 21 Aug 2003 22:13:57 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 21, 2003 at 07:36:49PM +0200, Michel D?nzer wrote:
-
-> First of all, export flush_tlb_page, which is needed by ext3 and SCSI
-> modules.
-
-Applied.
-
-> Then, thanks to the great new build system, some warnings stood out:
+> I'm not sure how to fix the same warning in drivers/ide/ppc/pmac.c
+> though:
 >
-> Fix 'comparison is always false due to limited range of data type' in
-> net/sched/estimator.c by changing char to signed char.
-
-Send to DaveM (davem at redhat.com).
-
-> Finally, fix
+> if (drive->waiting_for_dma >= DMA_WAIT_TIMEOUT) {
 >
-> drivers/usb/misc/usbtest.c:438: warning: passing arg 1 of `__swab32s'
-> from incompatible pointer type
->
-> by using le16_to_cpus instead of le32_to_cpus .
+> DMA_WAIT_TIMEOUT is 500, but drive->waiting_for_dma is a u8.
 
-Send to Greg KH (greg at kroah.com)
+Fixed in my tree and in the version pending for Linus
 
 > PS: I guess Ben's PM fixes haven't made it into linuxppc-2.5 yet? The
 > display is garbled after sleep.
 
-linuxppc-2.5-benh tree, I suspect.
+Not yet.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+I'm preparing a new set of patches that include all my driver
+changes except the video ones. I'll send those ones separately to
+James first as they rely on some fbdev infrastructure changes.
+
+ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
