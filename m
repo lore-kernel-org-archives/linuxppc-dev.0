@@ -1,43 +1,39 @@
-Date: Sat, 3 Jul 1999 23:11:45 -0500 (CDT)
-From: Derek Moeller <moeller@networksplus.net>
-To: Rich Dedeyan <richd@globalserve.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Gnome Panel
-In-Reply-To: <377E8D18.2EFB1FAA@globalserve.net>
-Message-ID: <Pine.LNX.4.10.9907032306580.6689-100000@vetil>
+From: Joshua Gargus <gargus@cs.ualberta.ca>
+To: LinuxPPC Development Mailing List <linuxppc-dev@lists.linuxppc.org>
+Subject: DMA sound compatability with OSS API
+Date: Mon, 5 Jul 1999 00:44:58 -0600
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99070500554905.22100@24.65.216.209.ab.wave.home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 3 Jul 1999, Rich Dedeyan wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
 
->   I accidently added an application to the Gnome Panel and Add Applet
-> submenu.  I can't figure out how to get this off.  I am fairly new to
-> Gnome, since I was using KDE in LinuxPPC 4.
+Hello,
 
-	linuxppc-dev is a developers mailing list, please use it for
-developing purposes. You may want to check our linuxppc-user for a
-question such as this, however, you would find best results should you
-read the GNOME manuals and documentation to discover the solution to this
-problem. Generally with issues such as this, like how
-hardware-platform-independant software works, you'll find much better
-information from the people who actually made it.  
+I'm trying to compile an application (the virtual machine for Squeak 
+Smalltalk) that requires several ioctl() calls defined in 'soundcard.h', 
+including 'SNDCTL_DSP_GETCAPS' and 'SNDCTL_DSP_GETOSPACE'.
+These are not defined in 'drivers/sounds/dmasound.c', although the 
+comment at the top of the file declares it to be 'OSS compatable'.
 
-<http://www.gnome.org> will contain pertinent information.
+I don't know too much about this stuff at all.  Is there some reason that
+the Macintosh sound hardware cannot support these calls, or have they
+just not been implemented yet?  Is adding support for these calls in the
+works, or is it an itch I'll have to scratch for myself?
 
-Thank you,
+Thanks,
+Josh
+-----BEGIN PGP SIGNATURE-----
+Version: PGPfreeware 5.0i for non-commercial use
+MessageID: o8pJk7aZZUqYQcdDtvEGZYJUhah7A8qv
 
-Derek Moeller <moeller@networksplus.net>
--- 
-+--------------------------------------------+
-\  Derek Moeller <moeller@networksplus.net>  /
- \    http://www.networksplus.net/moeller   /
-  \-\   Modern man is the missing link   /-/
-   \-\  between apes and human beings.  /-/
-    +------------------------------------+
-
+iQA/AwUBN4BW+W99D+Gh4jVMEQLwxwCfXzwAw6+QnpyD0tCwKKYB4r3cmtwAoOrY
+/jKA/04Xm9i98WBZ6+QvOgBG
+=rZGz
+-----END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
