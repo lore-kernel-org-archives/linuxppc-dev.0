@@ -1,59 +1,38 @@
-From: tom_gall@vnet.ibm.com
-Message-ID: <38FB305F.319624B1@vnet.ibm.com>
-Date: Mon, 17 Apr 2000 15:40:15 +0000
-Reply-To: tom_gall@vnet.ibm.com
+Date: Mon, 17 Apr 2000 21:30:39 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: /proc/ppc_htab
+Message-ID: <Pine.LNX.4.10.10004172130210.455-100000@cassiopeia.home>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: prep_pci structures
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi All,
+A few days ago I saw `mmu_context_overflow' in my kernel messages.
+The machine locked up on `cat /proc/ppc_htab'. Fortunately it autorebooted
+after 180 seconds and came back to life again.
 
-  I'm trying to bring up a 7043 43p model 140. I'm making progress
-however I've hit some code that I'm not quite sure what it means... thus
-the post...
+Since I don't have direct access to my PPC box now (I'm recovering from knee
+surgery) and rely on it for receiving email, I'm not very eager to do some
+more experiments with /proc/ppc_htab.
 
-in arch/ppc/kernel/prep_pci.c
+Note that I have no idea what mmu_context_overflow means nor what ppc_htab
+really does. Are these two related?
 
-  What is the meaning of the structures at the beginning of the file?
-Specifically:
-
-static char ibm8xx_pci_IRQ_map[23] __prepdata = {
-        0, /* Slot 0  - unused */
-        0, /* Slot 1  - unused */
-        0, /* Slot 2  - unused */
-        0, /* Slot 3  - unused */
-        0, /* Slot 4  - unused */
-        0, /* Slot 5  - unused */
-        0, /* Slot 6  - unused */
-        0, /* Slot 7  - unused */
-        0, /* Slot 8  - unused */
-        0, /* Slot 9  - unused */
-        0, /* Slot 10 - unused */
-        0, /* Slot 11 - FireCoral */
-        4, /* Slot 12 - Ethernet  PCIINTD# */
-        2, /* Slot 13 - PCI Slot #2 */
-        2, /* Slot 14 - S3 Video PCIINTD# */
-        0, /* Slot 15 - onboard SCSI (INDI) [1] */
-        3, /* Slot 16 - NCR58C810 RS6000 Only PCIINTC# */
-        0, /* Slot 17 - unused */
-        2, /* Slot 18 - PCI Slot 2 PCIINTx# (See below) */
-        0, /* Slot 19 - unused */
-        0, /* Slot 20 - unused */
-        0, /* Slot 21 - unused */
-        2, /* Slot 22 - PCI slot 1 PCIINTx# (See below) */
-};
+For what it's worth, I'm running the bk tree at the 2.3.99-pre3 level.
 
 
-What are the "magic" numbers there? 4? 2? 0? What do those mean and how
-are they used?
+Gr{oetje,eeting}s,
 
- Thanks!
+						Geert
 
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-http://oss.software.ibm.com/developerworks/opensource/linux
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
