@@ -1,43 +1,45 @@
-Date: Wed, 3 Mar 1999 16:19:26 +1100
-Message-Id: <199903030519.QAA01628@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: Loic.Prylli@ens-lyon.fr
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <199901301505.QAA14745@porto.ens-lyon.fr> (message from Loic
-	Prylli on Sat, 30 Jan 1999 16:05:36 +0100 (MET))
-Subject: Re: bug in arch/ppc/mm/init.c
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199901301505.QAA14745@porto.ens-lyon.fr>
+Message-ID: <85C62C3F8121D211BA290000F847A7DC1BAB@MGRSEX02.thu.gr.admin.ch>
+From: Christen Andreas <Andreas.Christen@gr.admin.ch>
+To: "'linuxppc-users@lists.linuxppc.org'"
+	 <linuxppc-users@lists.linuxppc.org>,
+        "'linuxppc-user-digest@lists.linuxppc.org'"
+	 <linuxppc-user-digest@lists.linuxppc.org>,
+        "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>,
+        "'linuxppc-announce@lists.linuxppc.org'"
+	 <linuxppc-announce@lists.linuxppc.org>
+Subject: SAP R/3 under LinuxPPC!!!
+Date: Wed, 3 Mar 1999 07:25:32 +0100 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Loic Prylli <Loic.Prylli@ens-lyon.fr> wrote:
+We are thinking of running SAP R/3 Applicationservers under Linux in the
+near future. As a user of LinuxPPC I will, if possible, try to convince
+management to buy Macs instead of Intels as performance will be higher. So
+does anyone know or has already tried out a SAP-Kit for Linux? Or any ftp
+site where I could grab a beta-version? What about Oracle 8.x for Linux,
+does this work under LinuxPPC?? Where can I find this? I know SAP is under
+construction and will be available in the 3rd quarter..but I'm afraid maybe
+only for Intels.
+Any news or commentary is very much appreciated!
 
-> The init function of some drivers use ioremap, which may call
-> MMU_get_page (if the target zone cross a 4Mbyte/s bounday(. But
-> MMU_get_page is marked as an initfunc, so it is no longer
-> present->panic.
+Thanks, Andreas 
 
-You're right, MMU_get_page shouldn't be an initfunc.
-
-> Here one possible solution:
-> 
-> --- arch/ppc/mm/init.c~ Thu Jan  7 21:06:57 1999
-> +++ arch/ppc/mm/init.c  Sat Jan 30 16:01:17 1999
-> @@ -883,7 +883,7 @@
->         }           
->  }
->  
-> -__initfunc(static void *MMU_get_page(void))
-> +static void *MMU_get_page(void)
->  {
->         void *p;
->  
-
-Looks good to me.
-
-Paul.
+~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+Andreas Christen             Sysadmin Unix-R/3-Oracle 
+RUAG Suisse                  Feuerwerkerstr. 39 
+CH-3602 Thun                 Switzerland 
+Phones:++41 
+Work           Fax           Pager 
+33 2282479     33 2283039    74 0324624 
+Work:      andreas.christen@gr.admin.ch 
+Private:  aendu_vero@datacomm.ch 
+Knowing languages may bring you love and happiness. 
+It'll enrich your life and widen your horizon. 
+Think about it...I know why!!
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
