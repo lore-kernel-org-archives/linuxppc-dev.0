@@ -1,38 +1,31 @@
-Date: Tue, 21 Nov 2000 15:20:56 +0100
-From: Andi Kleen <ak@suse.de>
-To: Todd Inglett <tinglett@vnet.ibm.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bitops porting question
-Message-ID: <20001121152056.A21375@gruyere.muc.suse.de>
-References: <3A1A6E42.43E8663D@vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A1A6E42.43E8663D@vnet.ibm.com>; from tinglett@vnet.ibm.com on Tue, Nov 21, 2000 at 06:44:50AM -0600
+Date: Tue, 21 Nov 2000 15:29:26 +0100 (CET)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Stefan Jeglinski <jeglin@4pi.com>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: whacked out 2.2.18preX - last gasp
+In-Reply-To: <p04330100b6402f5ab1e6@[192.168.0.1]>
+Message-ID: <Pine.LNX.4.10.10011211526530.20741-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Nov 21, 2000 at 06:44:50AM -0600, Todd Inglett wrote:
-> So set_bit(2, &b_state) will set a bit in the 4th byte of the virtual
-> doubleword.  Not good.  A simple fix seems to be to change the
-> set_bit(), etc, functions to 64 bit.  In general I think this is the
-> best approach, but consider what will happen with the following:
+> >  > I want 2.2.18 because it appears to have the full USB backport
+> >>  (according to linux-usb.org). Also AFAICT, the "backports" on
+> >
+> >The PPC source trees always had the 'full USB backport' (nothing else
+> >would work on PPC) for all I know.
 >
->     int flags;		/* 32 bits */
 >
->     set_bit(2, &flags);  /* bad memory ref! */
->
-> On a little endian machine this won't happen since the low order bytes
-> come first.
+> Hmm, I've tried compiling in the USB stuff that's in 2.2.17. I have
 
-iirc David Miller did a big sweep of such things in the generic source
-when doing the sparc64 port which has exactly the same problem.
-To make sure you should probably define the macro so that you get
-a warning for &flags being anything that unsigned long, e.g. using
-a inline with a prototype and do a regular grep of the tree if anything
-shows these warnings.
+I can safely assume you are talking about BenH's or Paul's 2.2.17 here?
+I've only tried with standard PowerMac and USB hardware (as in: mouse,
+keyboard), and that worked fine since I forgot when.
 
+	Michael
 
--Andi
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
