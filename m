@@ -1,15 +1,35 @@
-Message-Id: <3.0.1.32.20000524115459.00698868@trinc.com>
-Date: Wed, 24 May 2000 11:54:59 +0500
-To: <linuxppc-embedded@lists.linuxppc.org>
-From: "RAJESH.B.V" <rajeshbv@trinc.com>
-Subject: Re: cross compiling of bash for 8xx
-In-Reply-To: <veln15asyf.fsf@lipta.cendio.se>
-References: <"RAJESH.B.V"'s message of "Sat, 20 May 2000 10:07:36 +0500">
- <3.0.1.32.20000520100736.006c7434@pop.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: "Jason Wohlgemuth" <jsw-embedded@mindspring.com>
+To: "RAJESH.B.V" <rajeshbv@trinc.com>, <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: cross compiling of bash for 8xx
+Date: Wed, 24 May 2000 08:58:17 -0400
+Message-ID: <NCBBKJKKGDLPHKDPAFFMIELMCEAA.jsw-embedded@mindspring.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <3.0.1.32.20000524115459.00698868@trinc.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Rajesh,
+
+Did you also download the pre-built 8xx glibc 2.1?  If I were you, I would
+try and use all the pre-built binaries and executables from mvista to make
+sure everything is working, then attempt to build everything yourself.
+Building everything yourself just takes a significant amount of time and has
+a couple gotchas.
+
+Good luck,
+Jason
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
+RAJESH.B.V
+Sent: Wednesday, May 24, 2000 2:55 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: cross compiling of bash for 8xx
+
 
 
 Hi Marcus,
@@ -70,7 +90,8 @@ At 10:04 PM 5/20/00 +0200, you wrote:
 >--target is afaik only applicable for binutils, gcc and gdb, and
 >specifies the system to generate code for (debug in the case of gdb).
 >
->> And when i compile the ping application it is compiling well and when i try
+>> And when i compile the ping application it is compiling well and when i
+try
 >> to run it on my mbx860 board it is displaying an error that
 >> "shared library libc.s0.6 is not found. failed to open libc.so.6"
 >> but actually that lib file is there in the /lib path.
