@@ -1,38 +1,66 @@
-Date: Thu, 17 Oct 2002 14:16:03 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
-To: "D'Abbraccio Joe-ljd015" <Joe.D'abbraccio@motorola.com>
-Cc: "'Steven Scholz'" <steven.scholz@imc-berlin.de>,
-	"'Hollis Blanchard'" <hollis@austin.ibm.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: cross-compiler and stdarg.h
-In-Reply-To: <6D4DC8B4AD16D6118E8200D0B76FE2620231973C@ONT06EXM01>
-Message-ID: <Pine.LNX.4.40.0210171411090.1181-100000@mag.devdep.sysgo.de>
+From: "Dominique Letty" <dletty@interfaceconcept.com>
+To: "'John Nikiforos'" <ppclinuxuser@yahoo.gr>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Problem with MPC8260 buffer descriptor
+Date: Thu, 17 Oct 2002 14:36:51 +0200
+Message-ID: <000e01c275da$33148ba0$3501a8c0@none>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-7"
+In-Reply-To: <20021017075647.54441.qmail@web13114.mail.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 11 Oct 2002, D'Abbraccio Joe-ljd015 wrote:
+I don't find any information about this ECE bit in MPC8260UM and 603eUM.
+Where can I enable it?
 
-> Doesn't this patch simply negate the -nostdinc switch (i.e. the resulting
-> switch is something like "-I /usr/opt/eldk-1.0.1/usr/lib/gcc-lib/ppc-linux/2.95.3/include"
-> which is part of stdinc) ?
+Thinks for your help.
 
-It only negates _parts_ of -nostdinc. You are right in pointing out the
-potential ugliness of this solution. The culprit lies IMHO pretty deep in
-strong interconnection of components which is inherent to UNIX. (Note that
-this is not meant to be flame bait, please ignore this mail if it offends
-you. :-)
+Dominique
+-----Message d'origine-----
+De : John Nikiforos [mailto:ppclinuxuser@yahoo.gr]
+Envoye : jeudi 17 octobre 2002 09:57
+A : acurtis@onz.com; Dominique Letty; linuxppc-embedded@lists.linuxppc.org
+Objet : RE: Problem with MPC8260 buffer descriptor
 
-Regards,
-Marius
 
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+ Is the ECE bit enabled?
+(Cache coherency for the 8260, so that the
+CPM wont get any stalled data)
+
+                    John
+
+ --- Allen Curtis <acurtis@onz.com> έγραψε: >
+> > Now I try to port this driver under Linux 2.4.17
+> Kernel for a MPC8260. I
+> > have allocated
+> > Buffer Descriptors in DPRAM and Data Buffers in
+> SDRAM. When I try
+> > to send a
+> > buffer, I fill
+> > a data buffer and the first BD registers, I think,
+> with the
+> > correct values.
+> > It doesn't work
+> > anytimes. When the buffer is transmited, the
+> sending data are correct. The
+> > problem seems to
+> > come from the CPM which can't access to the BD
+> modifications in the DPRAM.
+> >
+> > Does anyone have already meet these problems?
+>
+> Would it be a problem to post your:
+>
+> 1. GSMRH & GSRM_L initialization
+> 2. SCC Parameter RAM configuration
+> 3. Location of your BDs in DPRAM
+>
+> THX
+>
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
