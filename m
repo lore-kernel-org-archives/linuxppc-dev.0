@@ -1,16 +1,42 @@
-From: "Stefan Roese" <stefan.roese@esd-electronics.com>
-To: "Laurent Mohin" <laurent.mohin@acterna.com>,
-	"Michael Meriin" <Michael@KSWaves.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: How to change endian attribute for a memory region
-Date: Tue, 15 Oct 2002 11:55:51 +0200
-Message-ID: <EFEAIMDCOOOHIEPHDNFJAENOEHAA.stefan.roese@esd-electronics.com>
+To: "Stefan Roese" <stefan.roese@esd-electronics.com>
+Cc: "Michael Meriin" <Michael@KSWaves.com>,
+	linuxppc-embedded@lists.linuxppc.org
+From: "Laurent Mohin" <laurent.mohin@acterna.com>
+Date: Tue, 15 Oct 2002 13:07:19 +0200
+Message-ID: <OFC1D42D18.CCDFA3B3-ONC1256C53.003C90BA@eni.wago.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <OF5FAD415F.66B42502-ONC1256C53.003189A8@eni.wago.de>
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Stefan,
+
+I'm the initiator of the question.
+I use the Epson chip in big endian mode. The problem is that in 16 bpp
+mode, the RGB mapping into video memory is fixed by the chip and described
+in little endian format.
+
+By the way, I really studied the chip and if I want to be able to manage
+both 8 bpp and 16 bpp mode, I need to be able to change the endianness
+attribute of the memory region.
+
+Thanks for your answer,
+
+Laurent
+
+
+
+
+"Stefan Roese" <stefan.roese@esd-electronics.com> on 15/10/2002 11:55:51
+
+To:    Laurent Mohin/SE/Wavetek@Global, "Michael Meriin"
+       <Michael@KSWaves.com>
+cc:    linuxppc-embedded@lists.linuxppc.org
+Subject:    Re: How to change endian attribute for a memory region
+
+
 
 
 Michael,
@@ -60,7 +86,8 @@ Stefan.
 >
 >
 > > I'm trying to interface a 405GP chip with an EPSON S1D13506 graphic
-> > controller. Because the EPSON chip is a little endian, I need to have my
+> > controller. Because the EPSON chip is a little endian, I need to have
+my
 > > framebuffer memory acceded in little endian mode.
 > > What is the best way to change endian attribute for a specific memory
 > > region (ioremap little endian)?
