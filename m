@@ -1,89 +1,39 @@
-Message-ID: <3CA1E22C.C86C0D78@mvista.com>
-Date: Wed, 27 Mar 2002 10:15:56 -0500
+Message-ID: <3CA1E962.471968E8@mvista.com>
+Date: Wed, 27 Mar 2002 10:46:42 -0500
 From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>, benh@kernel.crashing.org,
-	msokolov@ivan.Harhan.ORG, linuxppc-dev@lists.linuxppc.org
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: EV-64260-BP & GT64260 bi_recs
-References: <0203270237.AA03006@ivan.Harhan.ORG> <20020326215235.21322@mailhost.mipsys.com> <20020327071527.A2510@home.com> <3CA1E0FB.EC5935DB@mvista.com>
+References: <0203271732.AA04381@ivan.Harhan.ORG>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Forget the last one, here's attempt #3:
+Michael Sokolov wrote:
 
-Example for ev64260:
---------------------
+> Mark A. Greer <mgreer@mvista.com> wrote:
+>
+> > Forget the last one, here's attempt #3:
+>
+> I can live with this.
 
-[0] tag: BI_CMD_LINE
-    size: 36                            (4 + 4 + 26 chars + 2 pad)
-    data: "console=ttyS0,115200 ip=on"
-    pad: 2
+I like it too.
 
-[1] tag: BI_MEMSIZE
-    size: 12
-    data: 33554432                      (32 MB)
+> But why is the MAC address in ASCII? Why not simply put the 6 bytes in there?
+> Why the extra burden of parsing the ASCII?
 
-[2] tag: BI_GT64260_BASE
-    size: 12
-    data: fc000000
+Yes, it is ASCII.  I prefer the actual 6 bytes too but I know others have
+expressed a strong preference for ASCII when dumping the bi_rec data (although
+in this example the mac addr is just as easy to read in a hex dump).
 
-[3] tag: BI_DEVICE                      (embedded enet cltr 0)
-    size: 64                            (8 + 2*12 + 28 + 4 == 64)
+Does anyone have a problem if the MAC address is changed to be binary?  Come to
+think of it, since its of BI_DEV_TYPE_GT_ETH we can probably do what we want
+since it only affects us.  Let'see if anyone comes up with a valid reason not to
+change...
 
-    [3.0] tag: BI_DEV_TYPE
-          size: 12
-          data: BI_DEV_TYPE_GT_ETH
-
-    [3.2] tag: BI_DEV_ID
-          size: 12
-          data: 0                       (1st enet device)
-
-    [3.3] tag: BI_MAC_ADDR
-          size: 28
-          data: aa:bb:cc:dd:ee:ff       (ascii)
-          pad: 3
-
-    [3.4] 0x00000000                    (NULL Termination of BI_STRUCT)
-
-[4] tag: BI_DEVICE                      (embedded enet cltr 1)
-    size: 64                            (8 + 2*12 + 28 + 4 == 64)
-
-    [4.0] tag: BI_DEV_TYPE
-          size: 12
-          data: BI_DEV_TYPE_GT_ETH
-
-    [4.2] tag: BI_DEV_ID
-          size: 12
-          data: 1                       (2nd enet device)
-
-    [4.3] tag: BI_MAC_ADDR
-          size: 28
-          data: gg:hh:ii:jj:kk:ll       (ascii)
-          pad: 3
-
-    [4.4] 0x00000000                    (NULL Termination of BI_STRUCT)
-
-[5] tag: BI_DEVICE                      (embedded enet cltr 2)
-    size: 64                            (8 + 2*12 + 28 + 4 == 64)
-
-    [5.0] tag: BI_DEV_TYPE
-          size: 12
-          data: BI_DEV_TYPE_GT_ETH
-
-    [5.2] tag: BI_DEV_ID
-          size: 12
-          data: 2                       (3rd enet device)
-
-    [5.3] tag: BI_MAC_ADDR
-          size: 28
-          data: mm:nn:oo:pp:qq:rr       (ascii)
-          pad: 3
-
-    [5.4] 0x00000000                    (NULL Termination of BI_STRUCT)
-
-[6] 0x00000000                          (NULL Termination of whole list)
+Mark
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
