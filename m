@@ -1,29 +1,25 @@
-Message-ID: <3E776A02.9060505@embeddededge.com>
-Date: Tue, 18 Mar 2003 13:48:34 -0500
-From: Dan Malek <dan@embeddededge.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+From: Rakesh Jagota <j.rakesh@gdatech.co.in>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Tuner
+Date: Wed, 19 Mar 2003 09:02:02 +0530
 MIME-Version: 1.0
-To: "en_ch@libero.it" <en_ch@libero.it>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problem with interrupts handling
-References: <HBYCFL$662FE8F3AA02562685A2FED9FE2287DA@libero.it>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <aoupdd247x3zp3l.190320030853@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-en_ch@libero.it wrote:
+Hi all,
 
-> I think i set correctly all the cpm and siu registers but it doesn't work!!!!!
+i am working on custom design settop Box project in linux based on valcun
+chip(stbx25xx) ibm ppc405 . I am using montavista linux previewkit. I want to
+include the tuner driver for sharp tuner. I didnt see any driver for sharp
+tuner. Is it available and how to select this driver in our kernel.
 
-As I said in a previous e-mail, you are calling these functions
-correctly, but there are lots and lots of other configuration
-parameters that need to be configured correctly for ATM to work
-at all.  I suspect you need to take a look at all of that.
+Thanks in advance,
 
-Thanks.
-
-
-	-- Dan
+Rakesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
