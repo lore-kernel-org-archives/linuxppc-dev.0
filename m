@@ -1,90 +1,46 @@
-Date: Wed, 14 Jul 1999 15:09:21 +1000
-Message-Id: <199907140509.PAA21467@tango.anu.edu.au>
+Date: Wed, 14 Jul 1999 15:13:47 +1000
+Message-Id: <199907140513.PAA21479@tango.anu.edu.au>
 From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+To: joe_julicher@macktrucks.com
 CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: 
-	<Pine.LNX.4.10.9907131538530.6336-100000@mercator.cs.kuleuven.ac.be>
-	(message from Geert Uytterhoeven on Tue, 13 Jul 1999 15:45:54 +0200
-	(CEST))
-Subject: Re: MESH problems in 2.2.x
+In-reply-to: <3.0.5.32.19990713083902.0080d910@mailhost.bulldog.com> (message
+	from Joe Julicher on Tue, 13 Jul 1999 08:39:02 -0400)
+Subject: Re: Interesting Beige G3 Storage Stuff
 Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.10.9907131538530.6336-100000@mercator.cs.kuleuven.ac.be>
+References: <3.0.5.32.19990713083902.0080d910@mailhost.bulldog.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+Joe Julicher <joe_julicher@macktrucks.com> wrote:
 
-> Just made some diff between 2.1.130 and the `broken' kernels. The following
-> two things make me suspicious:
+> IDE HD.  The drive gives > 12mb/sec under MacOS.  Runs great and I have
+> used it to record movies at 30fps.  Not bad.  However, under linux a hdparm
+> -t /dev/hda gives 1.96mb/s  If I do a hdparm -T /dev/hda (to measure cache
+> performance) it gives 64mb/s.  The drive speed seems VERY slow using this
+> simple benchmark.  I would expect much better.  There are parameters to
+> adjust with hdparm, but I haven't messed with them.
+
+Do `hdparm -u1 -m16 -p /dev/hda' and you should get around 10MB/s out
+of it.
+
+> The kernel probes the ID's correctly and establishes a sync connection to
+> each except for the Exabyte tape drive.  Later when the kernel probes for
+> partitions on the 40mb drive, it times out and eventually reboots.  I
+> haven't recorded the information in the big MESH dump that is provided.  If
+> somebody wants that, I will get it.
 > 
-> Index: drivers/scsi/mesh.c
-> @@ -1643,6 +1643,7 @@
->  static void
->  mesh_completed(struct mesh_state *ms, Scsi_Cmnd *cmd)
->  {
-> +#if 0
->  	if (ms->completed_q == NULL)
->  		ms->completed_q = cmd;
->  	else
-> @@ -1651,6 +1652,9 @@
->  	cmd->host_scribble = NULL;
->  	queue_task(&ms->tqueue, &tq_immediate);
->  	mark_bh(IMMEDIATE_BH);
-> +#else
-> +	(*cmd->scsi_done)(cmd);
-> +#endif
->  }
->  
->  /*
-> 
-> Why did Dave (mesh.c 1.20, according to the vger CVS logs, which don't help me
-> much) do this?
+> I swapped the 40mb with a 250mb Quantum (pull from 7100).  This establishes
+> a sync connection at 10mb/s and runs great.  I don't mind ditching the 40mb
+> but I would like to understand the problem.  It seems that the MESH driver
+> could still use some work OR, I need to recompile a kernel that does not do
+> sync. transfers.  Perhaps I need to blacklist this 40mb drive.  Is there a
+> no-sync blacklist?
 
-I made that change, I think maybe I sent it straight to Linus and it
-got into vger via the official releases or something.
-
-The point was that I realized, looking at the scsi code (which has
-changed quite a bit since I wrote the original mesh driver) that the
-scsi done routine was going to schedule a BH handler anyway so there
-was no point in mesh.c having complexity to arrange for that.  I was
-cleaning up the SMP locking in mesh.c at the time and making that
-change was an alternative to getting the locking right for the
-completed_q stuff.
-
-> Index: drivers/scsi/scsi_obsolete.c
-> @@ -354,6 +357,18 @@
->      printk("In scsi_done(host = %d, result = %06x)\n", host->host_no, result);
->  #endif
->  
-> +    if(SCpnt->flags & SYNC_RESET)
-> +    {
-> +        /*
-> +        * The behaviou of scsi_reset(SYNC) was changed in 2.1.? .
-> +        * The scsi mid-layer does a REDO after every sync reset, the driver
-> +        * must not do that any more. In order to prevent old drivers from
-> +        * crashing, all scsi_done() calls during sync resets are ignored.
-> +        */
-> +        printk("scsi%d: device driver called scsi_done() "
-> +	       "for a syncronous reset.\n", SCpnt->host->host_no);
-> +        return;
-> +    }
->      if(SCpnt->flags & WAS_SENSE)
->      {
->  	SCpnt->use_sg = SCpnt->old_use_sg;
-> 
-> And after the `return', my machine no longer does anything...
-
-The mesh driver really needs someone to go through and update the
-abort and reset handling to the new way.  The first problem is of
-course to work out exactly how the scsi mid-layer expects host adaptor
-drivers to behave... :-)
-
-> Things are a bit difficult now, because I no longer have Internet connectivity
-> on my boxes. DDS 2 GB packets with high latency form my sole link now :-(
-
-The latency sucks, but the bandwidth is phenomenal, right? :-) :-)
+Not as such.  There is a word in the driver with one bit per target
+which says whether the driver can do sync connections with that
+target.  You could edit the source and recompile to get a kernel where
+the mesh driver won't do sync with that target.  A bit gross, I know.
 
 Paul.
 
