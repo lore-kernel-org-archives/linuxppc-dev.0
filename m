@@ -1,33 +1,42 @@
-Message-ID: <38DC73C2.36142025@iiic.ethz.ch>
-Date: Sat, 25 Mar 2000 09:07:30 +0100
-From: Michel Dänzer <michdaen@iiic.ethz.ch>
+Message-ID: <38DC7847.A9DF9E7A@ncal.verio.com>
+Date: Sat, 25 Mar 2000 00:26:47 -0800
+From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
-To: khendricks@ivey.uwo.ca
-CC: Kostas Gewrgiou <gewrgiou@imbc.gr>, Ani Joshi <ajoshi@shell.unixbox.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Found bug in mode switching but who is at fault...XFree86 or
- aty128fb.c?
-References: <Pine.LNX.4.10.10003230911180.6826-100000@shell.unixbox.com> <00032313263100.01328@localhost.localdomain> <00032423100100.00584@localhost.localdomain> <38DC7171.735D9DF5@iiic.ethz.ch>
-Content-Type: text/plain; charset=iso-8859-1
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: offb.c fix (Re: PB2000 (pismo) install feedback
+References: <20000323174416.031445@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer wrote:
->
-> Kevin Hendricks wrote:
->
-> > This is not a problem if xres == vxres.  Which is what happens when the
-> > aty128fb.c starts up.
->
-> Not necessarily. The problem could have shown up if someone had put a mode
-> with xres < vxres as first in the "Modes" line, but apparently only
-> configuration tools tend to do that...
+Ben,
 
-Oops. I misread you were writing about the r128 driver. My apologies.
+I've found the real problem with the linux-pmac_benh offb.c.
+Simple pointer arithmetic problem. This fixes both the
+"burnout" effect and the colormap problems.
 
+Henry
 
-Michel
-
+*** offb.c.orig4        Sat Mar 25 00:20:05 2000
+--- offb.c      Sat Mar 25 00:20:44 2000
+***************
+*** 914,920 ****
+      case cmap_r128:
+        /* Set palette index & data */
+        out_8(info2->cmap_adr + 0xb0, regno);
+!       out_le32((unsigned *)(info2->cmap_adr) + 0xb4,
+                (red << 16 | green << 8 | blue));
+        break;
+      case cmap_M3B:
+--- 914,920 ----
+      case cmap_r128:
+        /* Set palette index & data */
+        out_8(info2->cmap_adr + 0xb0, regno);
+!       out_le32((unsigned *)(info2->cmap_adr + 0xb4),
+                (red << 16 | green << 8 | blue));
+        break;
+      case cmap_M3B:
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
