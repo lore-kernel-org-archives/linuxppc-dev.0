@@ -1,28 +1,40 @@
-Message-ID: <39528935.8F19F543@embeddededge.com>
-Date: Thu, 22 Jun 2000 17:46:29 -0400
+Message-ID: <39528FC7.DD7983BC@embeddededge.com>
+Date: Thu, 22 Jun 2000 18:14:31 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Pavel Roskin <proski@gnu.org>
-CC: Dan Malek <dan@netx4.com>, "Mark S. Mathews" <mark@absoval.com>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can't mmap the top 1MB of /dev/mem?
-References: <Pine.LNX.4.21.0006221552290.11967-100000@sunapee.transcept.com>
+To: Lucinda Schafer <lucsch@adaptivemicro.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Software Emulation Panic,
+References: <A109131318C4D1119AC20060088DECE330F4C0@amwmail.adaptivemicro.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pavel Roskin wrote:
+Lucinda Schafer wrote:
+>
+> When I get a kernel panic I see:
+>
+> NIP: 00001FFC XER: 8000FF7F LR: 00000988 REGS: c0e87c90 TRAP: 1000
+> MSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
 
-> Already. This should be The Right Thing. Anybody wants to send it to
-> Linus?
+Well, this one is pretty easy.  PR, IR, DR all zero.  So you were
+executing in kernel space with the MMU disabled.  This is standard
+context phase 1 exception processing.  Trap 0x1000 is an illegal
+or unimplemented instruction.
 
-I'll try to sneak it in.  We are already "discussing" some of my
-other changes :-).
+The root of the problem is the kernel executed an illegal instruction
+while exception processing.  I know there isn't any valid code at
+00001ffc, so you need to determine how it got there.  Since the
+kernel executes very little code in this state, you either have written
+over some instructions, which isn't likely because the kernel is write
+protected and you would get a different fault, or the memory subsystem
+supplied some bogus bits during an instruction fetch, or while restoring
+some processor context it read bad bits from memory.
 
-There you go Mark.  Patch it and try it.
+I'd say, attach a logic analyzer, trigger on this trap, and determine
+how it got those bits.
 
-Thanks.
 
 
 	-- Dan
