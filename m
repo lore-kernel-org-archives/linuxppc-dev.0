@@ -1,45 +1,60 @@
-Subject: Re: 2.4.20-ben8 vmlinux.coff CLAIM error on PowerMac 4400
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: mikpe@csd.uu.se
-Cc: Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <15985.64740.932276.359232@gargle.gargle.HOWL>
-References: <15984.39762.858447.704784@gargle.gargle.HOWL>
-	 <20030313152506.GB28311@suse.de>
-	 <15984.43692.736225.647094@gargle.gargle.HOWL>
-	 <1047571502.790.76.camel@zion.wanadoo.fr>
-	 <15984.47873.428447.186049@gargle.gargle.HOWL>
-	 <1047576187.789.82.camel@zion.wanadoo.fr>
-	 <15985.4233.198025.809102@gargle.gargle.HOWL>
-	 <1047648731.689.7.camel@zion.wanadoo.fr>
-	 <15985.64740.932276.359232@gargle.gargle.HOWL>
-Content-Type: text/plain
-Message-Id: <1047658433.558.28.camel@zion.wanadoo.fr>
+Date: Fri, 14 Mar 2003 11:27:46 -0500
+From: Bill Fink <billfink@mindspring.com>
+To: Ethan Benson <erbenson@alaska.net>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Bill Fink <billfink@mindspring.com>
+Subject: Re: Serial Console on XServe and yaboot???
+Message-Id: <20030314112746.52828395.billfink@mindspring.com>
+In-Reply-To: <20030314072405.GE20925@plato.local.lan>
+References: <20030313222901.79512cfc.billfink@mindspring.com>
+	<20030314072405.GE20925@plato.local.lan>
 Mime-Version: 1.0
-Date: 14 Mar 2003 17:13:53 +0100
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2003-03-14 at 17:01, mikpe@csd.uu.se wrote:
-> Benjamin Herrenschmidt writes:
->  >
->  > > vmlinux.coff built from 2.4.18, both vanilla and with Olaf's patch in
->  > > http://penguinppc.org/~olaf/2.4.18/01_linux-2.4.18-rc4-lxppc_devel-0.diff.gz,
->  > > boots Ok. However, 2.4.18 has the "excessively slow swim3 floppy writes"
->  > > problem I mentioned earlier that 2.2.24 doesn't have.
->  > >
->  > > I also tried 2.4.20-ben8 with coffmain.c from 2.4.18 as you suggested,
->  > > but it got the same CLAIM error as before. (hack-coff.c was unchanged
->  > > and I didn't find anything else coff-related.)
->  >
->  > Can you try -ben8 and change _both_ ALIGN(8) to ALIGN(4096) ?
+Hi Ethan,
+
+On Thu, 13 Mar 2003, Ethan Benson wrote:
+
+> On Thu, Mar 13, 2003 at 10:29:01PM -0500, Bill Fink wrote:
+> >
+> > Thanks a bunch for the info!  Using this method, with scca instead
+> > of ttya, and a baud rate of 57600 (using a laptop), I was able to
+> > verify this basically works.  The initial menu that asks you what
+> > you want to boot (Linux, MacOS 9, MacOS X, etc) still goes to the
+> > screen (at least it does if you have a screen attached) but the
 >
-> In ld.script you mean? I noticed the second ALIGN(8) for bss and
-> changed it to 4096 yesterday: it doesn't fix the problem.
+> yes this is because i had to write all my text directly to the
+> framebuffer, apple takes all kinds of special efforts to prevent
+> `archaic peecee text' from showing up on the screen...  this problem
+> should be fixed in yaboot 2.0
+>
+> i don't consider it too serious right now since if your doing serial
+> console your probably not running any macos.
+>
+> you could probably fix this easily enough for your setup by altering
+> the `.printf' definition in ofboot.
 
-Ok, thanks
+It's not a big deal since I only want to run Linux at the moment.
 
-Ben.
+> > yaboot menu where you select the Linux kernel to boot does show
+> > up on the serial port of the XServe, and this is what I'm most
+> > interested in.  Now if I can just figure out how to set the baud
+> > rate of the serial console for OF to 38400 or less to make my
+> > console server happy, I'd be in business.  If nothing else I can
+> > use the laptop approach which is at least a lot easier than toting
+> > a big monitor around.
+>
+> hmm, not sure on that one.
 
+I figured it out.  I just set the OpenFirmware parameters input-device
+and output-device to scca:38400 and it worked fine (except it put my
+window into reverse video mode for some reason).
+
+						-Thanks again
+
+						-Bill
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
