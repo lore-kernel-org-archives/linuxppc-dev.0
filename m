@@ -1,61 +1,52 @@
-Date: Sun, 17 Sep 2000 00:32:08 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Cort Dougan <cort@fsmlabs.com>, Paul Mackerras <paulus@linuxcare.com.au>,
-        Takashi Oe <toe@unlserve.unl.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: success 2.4.0-test8 with latest bk
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000914012752.12786A-100000@ofey.earthlink.net>
-Message-ID: <Pine.LNX.4.21.0009170029140.20663-100000@altus.drgw.net>
+Message-ID: <39C4C5C4.6186D08A@student.ethz.ch>
+Date: Sun, 17 Sep 2000 15:23:16 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Thomas Graichen <graichen@innominate.de>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree86 4.0 auf imac dv
+References: <news2mail-8psnl8$1gb$5@mate.bln.innominate.de> <news2mail-8pvund$d4i$1@mate.bln.innominate.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I got curious, and I tracked down the commented out
-__clear_user(Hash, hash_size)
+Thomas Graichen schrieb:
+>
+> Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de> wrote:
+>
+> > does anyone here have XFree86 4 running suscessfully on a imac dv (or
+> > blueberry which should be basically the same)? - i ask because i tried
+> > the DRI test server from michael daenzer and get problems with the
+> > screen: it shows only the left half and also shows this half again
+> > on the right side - the mousecursor is moving fine over the full
+> > screen btw.
+>
+> > some more details about the setup: latest paulus kernel, XF86Config
+> > standard for a r128 card (the card is an 8mb r128 rl) - if you need
+> > any more information please let me know ...
+>
+> > so has anyone else seen this too or has it working on a similar
+> > machine ... i just wanted to know this before i start looking
+> > deeper
+>
+> ok - it works with an own built tree of XFree86 4.0.1 plus the
+> ppc additions mentioned at linuxppc.org
+>
+> question: is all the r128 ppc dri stuff in that tree (rsync
+> penguinppc.org::xfree86-pmac) too or are there any extra patches
+> required to get it working?
 
-to version 1.10 of init.c
+No, the DRI stuff isn't in there yet. However, someone here (sorry I don't
+remember the name) has merged DRI and xfree86-pmac 2D driver code, using
+r128_drv.o from that with my DRI binaries should work for you.
 
-arch/ppc/mm/init.c
-  1.10 00/02/04 13:20:23 cort@medea.fsmlabs.com +15 -2
-  Changes to fix PPC64 MM (short term fix) and protect the system
-  map memory from being written over.
 
-Cort, any chance you happen to recall why that was needed
+Michel
 
->
-> On Thu, 14 Sep 2000, Paul Mackerras wrote:
->
-> > Takashi Oe writes:
-> >
-> > > Could you try the following change for arch/ppc/mm/init.c?
-> > [snip]
-> > > 		Hash = mem_pieces_find(Hash_size, Hash_size);
-> > > 		clear_hash_table();
-> >
-> > Huh?  There is a __clear_user(Hash, Hash_size) call in there but it's
-> > commented out, which I don't understand at all.  Certainly the hash
-> > table needs to be cleared.
->
-> Yeah, that's what I thought when I first saw the code a few months ago.
->
-> >                             Using cacheable_memzero would probably be
-> > the fastest way to do it.
->
-> __clear_user() works but I can't use cacheable_memzero() since frame
-> buffer memory resides on the same memory block.
->
->
-> Takashi Oe
->
->
->
->
 
 --
---------------------------------------------------------------------------
-Troy Benjegerdes                'da hozer'                hozer@drgw.net
-
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
