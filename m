@@ -1,21 +1,24 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id 1F92F2BD6A
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 383BE2BD6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Oct 2004 02:43:39 +1000 (EST)
-Date: Mon, 4 Oct 2004 09:43:38 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Marius Groeger <mgroeger@sysgo.com>
-Message-ID: <20041004094338.E11487@home.com>
-References: <Pine.LNX.4.60.0410041110320.13645@dell.enoriver.com>
-	<20041004084858.B11487@home.com>
-	<Pine.LNX.4.61.0410041809210.11176@mag.sysgo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.61.0410041809210.11176@mag.sysgo.com>;
-	from mgroeger@sysgo.com on Mon, Oct 04, 2004 at 06:11:05PM +0200
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: what is the protocol for getting patches into the tree?
+	Tue,  5 Oct 2004 03:15:44 +1000 (EST)
+In-Reply-To: <35fb2e5904100405451423c391@mail.gmail.com>
+References: <35fb2e59040930165327f2dd59@mail.gmail.com>
+	<87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com>
+	<20041001220648.GJ21896@smtp.west.cox.net>
+	<4160E898.9080905@intracom.gr>
+	<35fb2e5904100405451423c391@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <80A86B0F-1624-11D9-A7BA-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 4 Oct 2004 12:43:21 -0400
+To: jonathan@jonmasters.org
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: bi_recs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,26 +29,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 04, 2004 at 06:11:05PM +0200, Marius Groeger wrote:
-> On Mon, 4 Oct 2004, Matt Porter wrote:
-> 
-> > Yes, submit it over and over until there is some feedback. argue
-> > or follow the feedback...eventually it will go in unless it's not
-> > a desirable change. If no feedback, keep submitting until the
-> > maintainer has time to look at it.
-> 
-> Well, how about asking Russel to hand out the scripts for
-> 
->    http://www.arm.linux.org.uk/developer/patches/
-> 
-> Would this help?
 
-No, it just provides a web-based interface to what is handled
-via mailing lists. It's just as easy for a maintainer to get
-busy and not ack a patch submission on a web-based system as well.
+On Oct 4, 2004, at 8:45 AM, Jon Masters wrote:
 
-I suspect that this is an 8xx-specific problem. The source of
-the problem is that 8xx has been undermaintained for some time
-and it only recently has gained a new maintainer.
+> I think that's an approach which works up to a point. It's nice to
+> have a hierachy of devices like with OF because then we can infer
+> things like order of devices on a bus that need to be shutdown for a
+> suspend.
 
--Matt
+The problem with a hierarchy of devices is that isn't the kind of
+information we need in an embedded system.  With the embedded
+system, you have a pretty good idea what you have.  We need
+_environment_ information, such as MAC addresses, memory sizes
+and other information tidbits are are likely to vary within an embedded
+system.  This is something an OF tree doesn't give us.
+
+The OF tree is great for workstations or other highly configurable
+systems where you don't know what kind of device is plugged into
+a PCI bus and you have an OF function to initialize that device.
+When you have a bunch of integrated peripherals, you know they
+are present and you need unique configuration information for
+them, not where they are located on the address bus (because
+you already know that).
+
+Thanks.
+
+
+	-- Dan
