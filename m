@@ -1,57 +1,95 @@
-Date: Thu, 14 Mar 2002 17:17:43 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc405_dma warnings
-Message-ID: <20020314061743.GA1755@zax>
-References: <20020314022146.GP22020@zax> <3C8FBEC2.4030206@pacbell.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C8FBEC2.4030206@pacbell.net>
+Message-ID: <6B546A602AD2D211BFF00008C7A428890584401D@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Kernel Module; globals badly initialized, help needed.
+Date: Thu, 14 Mar 2002 08:39:49 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Mar 13, 2002 at 09:04:02PM +0000, Armin wrote:
-> David Gibson wrote:
-> >Armin,
-> >
-> >ppc405_dma.c has several constructs like:
-> >	p_dma_ch->polarity = polarity & GET_DMA_POLARITY(0);
-> >where GET_DMA_POLARITY() is defined:
-> >	#define GET_DMA_POLARITY(chan) DMAReq##chan##_ActiveLow | \
-> >		DMAAck##chan##_ActiveLow | EOT##chan##_ActiveLow
-> >
-> >Note the macro has no parentheses around its definition, which is
-> >unusual.  IIRC C precedence will mean this code turns out as:
-> >	p_dma_ch->polarity = (polarity & DMAReq0_ActiveLow) | \
-> >		DMAAck0_ActiveLow | EOT0_ActiveLow
-> >which looks wrong to me and if correct is an insane use of a macro.
-> >It's also giving compiler warnings.
-> >
-> >I'm guessing that the macro should just get parentheses, but that's a
-> >semantic change so I don't want to make it without knowing for sure.
-> >Could you check this?
->
-> Thanks.. I missed the parentheses.  The macro is there to allow me to
-> use the same driver for the 405gp dma and the stb0xxxx cpu since the the
-> stbxxxx does not have a polarity.  I could have poluted the driver with
-> #ifdefs or mask the deltas with a few macros.  I went with macros.
+(This messages was already posted on the linuxppc-dev list, put posting it
+to this list failed...)
 
-Seems reasonable.  Will you put in the missing parentheses, or should
-I?
+Hi,
 
-> armin
->
-> PS I am insane
+I am having lots of problems with global variables that are badly
+initialized in a kernel
+module. I wrote some very simple code showing the problem. The compiler
+I use is gcc 2.95.3
+(the one that comes with HHL2.0).
 
-That may be true, but accidentally missing the () doesn't prove it.
-Deliberately missing the () would :-)
+Is this a compiler problem -do I need to use some special options?- or
+could it
+be a problem with insmod, the kernel, ...?
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+I had this problem before with DECLARE_WAIT_QUEUE_HEAD where the
+pointers inside the structure where badly initialized. The only
+sollution was to reinitialize the fields at runtime. I posted this issue
+and somebody reported he had seen the same issue.
+
+Who can help we with this?
+
+Thanks!
+Frederic
+
+
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+
+
+#if defined(CONFIG_SMP)
+#define __SMP__
+#endif
+
+#if defined(CONFIG_MODVERSIONS)
+#define MODVERSIONS
+#include <linux/modversions.h>
+#endif
+
+char MyMemSpace[2*0x100];
+char *MemPointers[2] = {&(MyMemSpace[0]), &(MyMemSpace[0x100])};
+
+typedef struct
+{
+	char *szName;
+	char *szName2;
+} MyStruct_t;
+
+MyStruct_t MyStruct[] = {{"A", "A2"}, {"B", "B2"}};
+
+int init_module(void)
+{
+	printk("TestDriver 3 Loaded\n");
+
+	printk("MyMemSpace: 0x%lx 0x%lx \n",  (long)&(MyMemSpace[0]),
+(long)&(MyMemSpace[0x100]));
+	printk("MemPointers: 0x%lx 0x%lx \n", (long)(MemPointers[0]),
+(long)(MemPointers[1]));
+
+	printk("First Char is MyStruct[0].szName %c\n",
+MyStruct[0].szName[0]);
+
+
+	return -1;
+}
+
+void cleanup_module(void)
+{
+	return;
+}
+
+
+
+
+This is what I get:
+
+MyMemSpace: 0xc304a1ec 0xc304a2ec
+MemPointers: 0xc304a1ec 0xc304a3ec
+First Char is MyStruct[0].szName e
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
