@@ -1,32 +1,40 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Derrik Pates <dpates@dsdk12.net>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	Ani Joshi <ajoshi@shell.unixbox.com>
+Date: Sun, 28 Oct 2001 21:01:14 -0700 (MST)
+From: Derrik Pates <dpates@dsdk12.net>
+To: Ethan Benson <erbenson@alaska.net>
+Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: GeForce on PPC == _no work_
-Date: Sun, 28 Oct 2001 21:41:10 +0100
-Message-Id: <20011028204110.4499@smtp.wanadoo.fr>
-In-Reply-To: <Pine.LNX.4.33.0110281153080.24940-100000@andromeda.dsdk12.net>
-References: <Pine.LNX.4.33.0110281153080.24940-100000@andromeda.dsdk12.net>
+In-Reply-To: <20011028033420.Q22102@plato.local.lan>
+Message-ID: <Pine.LNX.4.33.0110282056370.29516-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I don't suppose anyone knows if there's any hope of reverse-engineering
->the MacOS 9 or OS X nVidia drivers?
+On Sun, 28 Oct 2001, Ethan Benson wrote:
 
-If your problem is only to get the display to the DVI connector,
-then it should be doable with register dumps from macos and/or
-some tracing of the macos driver.
+> I suggest going to ebay and finding a Rage128 Mac edition.   I found
+> quite a few there when i was tasked with setting up a Silver G4 for
+> someone, i even got two Rage128s so i would have an extra just in case
+> i would be able to afford one those nice machines in the near future.
+>
+> the Rage128 works very well in those machines, the mac edition is
+> needed since you want to be able to see OpenFirmware.
 
-I don't have such a machine so I can't try hacking the driver,
-but maybe Ani has ideas about what registers to look for ?
+Yeah, I know that part. But will any of those cards (or any Radeon boards
+for Mac) have an ADC port? The problem is, the system has a flatpanel
+display - in this case, a 17" Apple Cinema Display LCD - and the nVidia
+driver might work if not for that.
 
-Ani, if you tell me how to get at these, I can write a macos 9
-tool to dump them.
+I have been in contact with Mark Vojkovich at nVidia, and he's going to
+try to bug the right people to maybe get the info for programming nVidia
+cards with DVI/ADC flatpanels, or at least make sure they know who's
+interested in this info - in this case, not just Linux-on-Mac people, but
+also FreeBSD people, since they also can't use nVidia's binary drivers. I
+hope he has some success.
 
-Ben.
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
