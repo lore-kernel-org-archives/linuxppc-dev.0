@@ -1,26 +1,36 @@
-Message-ID: <8D4C69676E66D511A1CB00508BBBB1921BCF4D@ranmx1.ran.harris.com>
-From: "Walser, Martin" <mwalser@harris.com>
+Message-ID: <8D4C69676E66D511A1CB00508BBBB1922C4173@ranmx1.ran.harris.com>
+From: "Kappl, Hannes" <hkappl@harris.com>
 To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: no link changed interrupt
-Date: Fri, 5 Jul 2002 01:51:55 -0400 
+Subject: set a limit for the cache
+Date: Fri, 5 Jul 2002 03:38:05 -0400 
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+ Hi,
 
-I'm using kernel 2.4.4.
-The problem is, that I get no link changed interrupt when connecting or
-disconnectiong the ethernet. I'm using the DP83846 from National. There is no
-hardware interrupt, but it's possible to generate an interrupt flag in a special
-register
-Is it possible to get this software interrupt in the fec.c ?
-Is there another way to get a link change without a hardware interrupt?
+ I am using kernel 2.4.4. I have 32M RAM with a 10M Ramdisk. Now my problem is
+that
+ the Ramdisk is cached in the RAM(4 - 8M!). Is it possible to set the size of
+the
+ cache to a limit or to disable the cache complete?
 
-best regard
-Martin
+
+
+   7:13pm  up 34 min,  0 users,  load average: 0.12, 0.33, 0.30
+ 22 processes: 21 sleeping, 1 running, 0 zombie, 0 stopped
+ CPU states:  0.9% user,  4.3% system,  0.0% nice, 94.7% idle
+ Mem:   30612K av,   9216K used,  21396K free,   9904K shrd,      0K buff
+ Swap:      0K av,      0K used,      0K free                  5392K cached
+
+  PID USER     PRI  NI  SIZE  RSS SHARE STAT  LIB %CPU %MEM   TIME COMMAND
+  107 root      14   0   836  836   644 R       0  4.5  2.7   0:00 top
+
+
+ best regard
+ Hannes
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
