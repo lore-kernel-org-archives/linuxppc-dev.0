@@ -1,55 +1,56 @@
-To: "Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>
-Subject: Implementing support a PHY device connected to FCC2 on the PM826 board.
-From: "vishal" <vishal@isofttech.com>
-Reply-To: "vishal" <vishal@isofttech.com>
-Content-Type: text/plain; charset=utf-8
-Mime-Version: 1.0
-Message-Id: <20040808165523.1177387099.vishal@isofttech.com>
-Date: Sun, 8 Aug 2004 16:55:23 +0530
+From: Matthias Grimm <matthiasgrimm@users.sourceforge.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [BUG] Problem in via-pmu.c, various kernel versions
+Date: Sun, 8 Aug 2004 14:34:50 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200408081434.50582.matthiasgrimm@users.sourceforge.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
-  I am trying to add the support for a Ethernet PHY device in the
-PPC kernel. I am using a PM826 development board, With my PHY device
-connected to the FCC2 via the PORTB lines.
-  Most of the pins used in connecting the PHY to the FCC2 correspond to
-the PORTB assignments.As is in the existing source:
+Hi,
+The current pmu driver have a problem with detecting AC-Power.
 
-#define PB2_TXER        ((uint)0x00000001)
-#define PB2_RXDV        ((uint)0x00000002)
-#define PB2_TXEN        ((uint)0x00000004)
-#define PB2_RXER        ((uint)0x00000008)
-#define PB2_COL         ((uint)0x00000010)
-#define PB2_CRS         ((uint)0x00000020)
-#define PB2_TXDAT       ((uint)0x000003c0)
-#define PB2_RXDAT       ((uint)0x00003c00)
+The following code snippet shows that the battery states will only be updated
+if TICK interrupts are received. The AC power flags will be taken from the
+battery request answered by the PMU (see done_battery_state_ohare() and
+done_battery_state_smart() ).
 
-    ^^^ for these pins the existing code should suffice.
- The pins that are diffently implemented for the FCC2 are:
- 1. The Recieve clock(Rx_CLK) is connected to CLK17 (PB17)
- 2. The Transmit clock(Tx_CLK) is connected to CLK18 (PB16)
- 3. The MDIO corresponds to PB15, & MDC corresponds to PB14.
+--- code snippet from via-pmu.c, kernel 2.6.7 ---
 
- I am doing the following additional configuration (in init_fcc_ioports)for the
-   1. setting PSORB to 1 for Rx_CLK &TxCLK pins.
-   2. setting PDIRB to 0 Rx_CLK &TxCLK pins.
-   3. setting PPARB to 1 for Rx_CLK &TxCLK pins.
-   4. Setting the PDIRB (as input) for the MDIO & MDC pins
-   5. Setting the PPARB (as General Purpose) the MDIO & MDC pins
+	/* Tick interrupt */
+	else if ((1 << pirq) & PMU_INT_TICK) {
+#ifdef CONFIG_PMAC_PBOOK
+		/* Environement or tick interrupt, query batteries */
+		if (pmu_battery_count) {
+			if ((--query_batt_timer) == 0) {
+				query_battery_state();
+				query_batt_timer = BATTERY_POLLING_COUNT;
+----
 
-     I expected this to work and atleast be able to read the PHY ID
-during the fec_enet_init(), but It doesnt.
-  I am *not* doing any settings for the ClockMask & clockroute register
-of PORTB for FCC2. Is it needed considering my scenario?
-  Or am i missing something else?
+On my Powerbook G3 (Pismo) there won't be any TICK interrupts if it is running
+on AC only (No batteries plugged in). Therefore neither the battery states
+nor the AC power flags will be updated in this case.
 
-  Hope someone can point me out to anything else that needs to be handled?
-  All help will be greatly appreciated.
-  Thnaks in advance.
+This leads to incorrect power flags under following circumstances:
+Machine runs on battery, put machine to sleep, connect AC plug, remove
+battery, wakeup machine -> AC flag in /proc/pmu/info  still signals 'running
+on battery'.
 
-regards,
-Vishal
+The same problem occur if the machine boots without batteries plugged in: the
+AC flag is false.
+
+My recommendations:
+- update battery states independently from TICK or environment interrupts on a
+regular time basis or
+- distangle battery states and power flags. You could get the power flags also
+with the PMU_GET_COVER request (only tested on PBG3 Pismo yet). Let the
+battery states bounded to TICK interrupts but update the power flags on a
+regular tiime basis.
+
+  Best Regards
+     Matthias
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
