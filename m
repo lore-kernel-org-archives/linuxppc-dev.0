@@ -1,45 +1,70 @@
-Date: Sat, 26 Dec 1998 23:59:04 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: fbcon + X Server + Cirrus/Powerstack
-Message-ID: <Pine.BSI.3.96.981226234556.25149A-100000@usr09.primenet.com>
+Message-ID: <XFMail.981227120521.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <3685BC4F.EB0D2158@jlc.net>
+Date: Sun, 27 Dec 1998 12:05:22 -0000 (GMT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Dan Malek <dmalek@jlc.net>
+Subject: RE: Need ld.so help
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm having a couple problems using X Servers with the clgenfb framebuffer
-console on the Motorola Powerstack and was wondering if anyone else had
-similar problems with other framebuffers/X Server combinations.  I have the
-clgenfb console as the only console in the kernel right now, and it works
-fine as a console.
 
-1) When I try to use XF68_FBDev from the XFree 3.3.3 binaries, I get a while
-screen.  However, everything seems to be running fine -- the window manager
-and X Server, etc are included in the list of running processes. My first
-guess is the XF86Config file, but it could be something else.  Where isa
-good location to get a simple, basic XF86Config file that defaults to  
-640x480x8 or similar?  (Or if you have a clue that it could be another
-problem with something in the clgenfb driver to look at?)
+On 27-Dec-98 Dan Malek wrote:
+> 
+> I discovered the problem I am having with the embedded 8xx
+> processors and cache is that there are several assumptions
+> about cache block size in various functions.  The 8xx processors
+> have a 4 word (16 byte) cache line while other PPCs have
+> a 8 word line.  This causes problems when trying to flush and
+> invalidate caches.
+> 
+> One place this is done is dynamic linking functions of ld.so,
+> where it is assumed a cache line is 8 words.  Unfortunately,
+> I have been unable to build ld.so from the glibc SRPM.  I am
+> using the 961212-1h SRPM from the linuxppc.org server, and
+> the appropriate egcs and binutils.  All of the other libraries
+> I build from this SRPM are fine.  From looking at the RPM of
+> the same version, all of the resulting *.so files appear to be
+> nearly identical, except for ld.so which is much larger than
+> found in the RPM.
+> 
+> The details....I have tracked it down to the elf_get_dynamic_info()
+> function, called from _dl_start().  The failure occurs following
+> the 'while' loop.  It appears info[DT_RELA] is OK, or at least
+> not NULL.  However, info[DT_RELAENT] is NULL, causing the
+> program to segfault at this point.
+> 
+> I don't understand enough about the libraries to know where to
+> look from here, so I need some help :-)
+> 
+> Oh yeah, the SRPM didn't build quite right.  I had to hand patch
+> stdlib/exit.c.....
+> 
 
-2) I can run Xbh normally, and exit it back to the framebuffer console.
-However, the 1st time I run Xbh, the cursor is garbage (basically a large
-square, but not all the bits are set).  When I quit Xbh and run it again,
-the cursor looks normal.
+I'm confused.  Are all of these problems attributable to the cache-line
+size stuff?  Or are there other problems?
 
-3) If I set the console to 1024x768, I get a lot more rows on the screen.
-However, if I run gpm, it doesn't allow me to highlight text on the entire
-screen -- I think it only allows it on the original 80 column by 24 (?) row
-size.  Has anyone fixed this or looked into it yet?
+I [obviously] build the libraries directly from the SRPMS, so I'd like
+to understand what your problems are.
 
-Thanks for any pointers/assistance/etc.  
+Which software pieces are you running?
+  EGCS?
+  BINUTILS?
+  GLIBC?
+  Kernel?
 
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
 
-...Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
+------------------------------------------------------------------------
+Gary Thomas                              |
+email: gdt@linuxppc.org                  | "Fine wine is a necessity of
+   ... opinions expressed here are mine  |        life for me"
+       and no one else would claim them! |
+                                         |      Thomas Jefferson
+------------------------------------------------------------------------
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
