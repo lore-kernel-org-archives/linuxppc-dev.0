@@ -1,62 +1,60 @@
-Message-ID: <3E64C8DD.5010100@mvista.com>
-Date: Tue, 04 Mar 2003 09:40:13 -0600
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <3E64DC21.4060802@tataelxsi.co.in>
+Date: Tue, 04 Mar 2003 22:32:25 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
 MIME-Version: 1.0
-To: Aman <aman@mistralsoftware.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Serial Console
-References: <000801c2e25d$d560ec10$370da8c0@aman>
-In-Reply-To: <000801c2e25d$d560ec10$370da8c0@aman>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: problem in ppc-linux-gcc cross compiler.
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Aman wrote:
->  Hi
->
->  In the Redhat 7.0 linux, I was able to enable/disable the serial console
->  using the following command in the inittab
->  " T0:12345:respawn:/sbin/getty ttyS0 9600 vt100"
+I am not very sure if this is off topic.
+I am facing a problem in variable argument passing in linux-gcc-ppc.
 
-That is actually not a serial "console", it is a serial "login".  (It's a small
-distinction but an important one)
+[om@pandatest1 ~/prg]$ cat macro2.c
+#define __KERNEL__
+#define bet_syslog(warning, format, msg...)\
+do \
+{ \
+         printk( "<%d> In file %s, line %d, function %s(). " format "\n",\
+              warning, __FILE__, __LINE__, __FUNCTION__, ##msg) ;\
+} while (0)
 
-On a workstation system (with say VGA), when the system boots the "console"
-comes up and displays your boot messages.  Eventually init executes and starts a
-login sesssion on the same device as the default console.  Thus your screen has
-both a "console" and "login" active.
+void hell()
+{
+     bet_syslog(1,"Test Message - 1");
+     bet_syslog(2,"Test Message - 2%d",100);
+     return ;
+}
 
->  However in the case of the 440 Linux the serial console is enabled already.
->  I wanted to know how this enabling is done. Can someone add some points to
->  this.
+[om@pandatest1 ~/prg]$ ppc-linux-gcc  -E macro2.c
+# 1 "macro2.c"
+void hell()
+{
+     do { printk( "<%d> In file %s, line %d, function %s(). "  "Test
+Message - 1"  "\n",  1 , "macro2.c", 11,  ) ;} while (0) ;
+     do { printk( "<%d> In file %s, line %d, function %s(). "  "Test
+Message - 2%d"  "\n",  2 , "macro2.c", 12, __FUNCTION__,100 ) ;} while (0) ;
+     return ;
+}
+[om@pandatest1 ~/prg]$ ppc-linux-gcc  -v
+ppc-linux-gcc: Actual path = '/opt/hardhat/previewkit/ppc/82xx/bin/'
+         Actual name = 'ppc_82xx-gcc'
+         Invoking
+/opt/hardhat/previewkit/ppc/82xx/bin/../lib/gcc-lib/powerpc-hardhat-linux/2.95.3/ppc_82xx-gcc
+Reading specs from
+/opt/hardhat/previewkit/ppc/82xx/bin/../lib/gcc-lib/powerpc-hardhat-linux/2.95.3/specs
+gcc version 2.95.3 20010315 (release/MontaVista)
+[om@pandatest1 ~/prg]$
 
-Probably with your configuration, the default system console is on a serial
-port.  This means all boot and kernel messages will go there.
 
-Again you will want to start a login process via init in order to do multi-user
-logins.
+In the first message, __FUNCTION__ is missing and one `,` is extra.
+Because of this, it will not compile, stating a parse error.
+I am using monta vista linux.
 
-(But in the embedded world, init, getty/login and such aren't required.  You can
-just as easily boot right into /bin/sh.)
-
-Now back to your original question.. How is it enabled:
-
-The console is enabled either by the system configuration or by the kernel
-command line, "console=".  Look in the "Documentation" directory in the kernel,
-something in there explains serial consoles and the cmdline semantics.
-
---Mark
-
->
->  Thanking you in advance
->  Regards
->  Aman
->
->
->
->
->
+Thanks in acvance.
+Om.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
