@@ -1,31 +1,41 @@
-Date: Fri, 30 Jul 1999 14:22:28 -0400 (EDT)
-From: Tom Rini <trini@disparity.net>
-Reply-To: Tom Rini <trini@disparity.net>
-To: Aidan Cully <aidan@kublai.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH]: Support for Mouse Systems A3 protocol mice
-In-Reply-To: <19990718144949.A764@xanadu.kublai.com>
-Message-ID: <Pine.BSF.3.96.990729223411.16262F-100000@silver.teardrop.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v03110700b3c7ae18bc4c@[209.183.133.178]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 30 Jul 1999 15:39:02 -0400
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+Subject: What's up with Applix and R5
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 18 Jul 1999, Aidan Cully wrote:
+Hi,
 
-> This patch adds 3-button support for (at least) the Mouse Systems A3
-> Trackball, and Mac Point Pro products.  I've also changed a bit of how
-> the button-change logic works, since I think it's allowed for mice to
-> slip back into the 1-button mouse protocol.  I don't know if that's
-> entirely appropriate, but both Darwin and NetBSD seem to take that
-> precaution..
+Why no Applixware for R5 yet?  I really need a good office package.
 
-Ok.  One problem I've noticed with this patch that the orig. MacX patch
-didn't have is sometimes in X middle-clicking in NS spawns 2 windows
-(up&down event repeated).  This is with an A3 optical.
+I already have ported jdk118 to run on R5 and would be happy to post the
+jre for use by Applix before my general release if they need or want it.
 
-http://gate.crashing.org/~trini/
+I would also be happy to help them with any porting issues (I seem to
+remember a call for help on the user or dev list that went unanswered from
+somebody affliated with Applix).
+
+I have tried running the fix961212 trick on the Applixware for 4.1 and it
+seems to work so far (although I am surprised because jdk116 used some non
+glibc 2.1 calls).  I would rather not have to use that trick to get things
+running so that development on ppc by Applix does not stop due to problems.
+
+Does anyone from Applixware read this list?  Do you need a jre 1.1.8 for
+glibc 2.1?
+
+If not, does anyone have a contact person for the engineer doing the port?
+
+Or any relevant info.
+
+Thanks,
+
+Kevin
+
 
 
 
