@@ -1,53 +1,38 @@
-Date: Thu, 18 Nov 1999 21:11:29 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Nelson Abramson <pogtal@erols.com>
-cc: LinuxPPC-User List <linuxppc-user@lists.linuxppc.org>,
-        linuxppc-developer <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: gEDA
-In-Reply-To: <3834522D.16BE27ED@erols.com>
-Message-ID: <Pine.LNX.4.05.9911182110520.3289-100000@callisto.of.borg>
+From: Paul Mackerras <paulus@linuxcare.com>
+To: linuxppc-dev@lists.linuxppc.org, Kevin Hendricks <khendricks@ivey.uwo.ca>
+Subject: Re: Kernel debugging??
+Date: Fri, 19 Nov 1999 10:29:20 +1100
+Content-Type: text/plain
+References: <99111813382301.00618@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99111912073001.09736@argo.linuxcare.com.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 18 Nov 1999, Nelson Abramson wrote:
-> Anyone good at making rpms-
->     The gEDA package is a really good software.  Totally GPL and it
-> compiled from the source on my machine w/o any alteration of the
-> gEDA source (it required deleting the gtk+, guile, and glib rpms and
-> compiling the newest ones from source though..).  Having an rpm of this
-> in the science directory on linuxppc would be nice :)
-> Hey, debian already has one!! :) (for ix86 that is...)
+On Fri, 19 Nov 1999, Kevin Hendricks wrote:
 
-Wrong... Debian GNU/Linux for PowerPC also has it:
+> By the way, I updated from the samba site after the linuxcare site went up (I
+> didn't know about the linuxcare site).  To get a good source tree I had to do
+> the following:
+> 
+> -arv --delete
+> 
+> The -u update kept thinking my samba version was newer than the linuxcare
+> version and wouldn't get the new version and there were lots of files that
+> needed to be deleted.
 
-| [21:10:19]~# dpkg -s geda
-| Package: geda
-| Status: install ok installed
-| Priority: optional
-| Section: electronics
-| Installed-Size: 11
-| Maintainer: Hamish Moffatt <hamish@debian.org>
-| Version: 19990919
-| Depends: geda-gschem
-| Suggests: geda-gnetlist, geda-utils, geda-gsymcheck
-| Description: GNU EDA -- Electronics design software
-|  GNU EDA, an electronics design package, including
-|  gschem, a schematic editor. This is alpha software!
-| 
-| [21:10:41]~# uname -a
-| Linux callisto 2.3.18 #71 Mon Oct 25 19:35:36 CEST 1999 ppc unknown
-| [21:10:46]~# 
+If you have done a compilation in the tree, it may have touched some of
+the header files.  The way the kernel Makefiles take care of header
+dependencies is that if a.h includes b.h, and b.h is newer than a.h, it
+will touch a.h.
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+I usually keep separate trees and only compile in one of them.  I use
+dirdiff to keep track of the differences between the trees.  Dirdiff is a
+tool I wrote for seeing the differences between directory trees.  It can
+handle up to 5 directory trees.  It's a tcl/tk script and it's available
+at ftp://ftp.linuxcare.com.au/pub/ppclinux/dirdiff.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
