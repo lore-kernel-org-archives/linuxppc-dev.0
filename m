@@ -1,44 +1,37 @@
-Date: Thu, 6 Sep 2001 10:48:30 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Matt Porter <mporter@mvista.com>
-Cc: Brian Waite <bwaite@cspi.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MVME5100 and bugboot fails
-Message-ID: <20010906104830.K21172@cpe-24-221-152-185.az.sprintbbd.net>
-References: <85256ABF.00549667.00@pine.cspi.com> <200109061544.LAA11977@orchid.cspi.com> <20010906085639.F21172@cpe-24-221-152-185.az.sprintbbd.net> <20010906070358.A9316@cx258813-a.chnd1.az.home.com>
-Mime-Version: 1.0
+Message-ID: <3B97B8B9.115B1569@mvista.com>
+Date: Thu, 06 Sep 2001 13:56:09 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Mark Hatle <fray@mvista.com>
+Cc: Navin Boppuri <navin.boppuri@newisys.com>,
+	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Ctrl-C does not work
+References: <3A494DE356A49A40B37442E1E0D9F3B506343E@ptah.ad.newisys.com> <3B97984C.CCE09FE7@mvista.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010906070358.A9316@cx258813-a.chnd1.az.home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 06, 2001 at 07:03:58AM -0700, Matt Porter wrote:
-> On Thu, Sep 06, 2001 at 08:56:39AM -0700, Tom Rini wrote:
-> >
-> > On Thu, Sep 06, 2001 at 11:36:39AM -0400, Brian Waite wrote:
-> >
-> > > I tried that and I was unable to relocate just the initrd. Right now, I just
-> > > tested to see:
-> > > if  ((zImage_start >= 0xf0000000) || (zImage_start <= 0x00800000))
-> > >
-> > > That seems to work for now, but I'll take a peek at the gemeni and see how
-> > > they do it.
-> >
-> > Er, after re-reading, it's wrong too.  I'll send you a patch
-> > privately, if you can test it.
->
-> This location checking logic is all a hack...I've already stared at this
-> a while to make it work for someone.  I recommend we _always_ relocate
-> both zImage and initrd (if present).
+Mark Hatle wrote:
 
-Right, but if the initrd happens to start off at below the 16 mb barrier,
-why do it?  For example anyhow, my PowerStack doesn't need to relocate the
-zimage (and if I can make it happily netboot, I'll test initrd, but that
-might need it..)
+> .....  There is a problem with the
+> way the serial consoles are started on CDK 1.0 and 1.2, it was left up
+> to the serial driver to turn on or off the control-c activation.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+It actually has to do with the way tty process groups are created and
+signals are managed.  If you boot _any_ Linux kernel using something
+like 'init=/bin/sh', ctl-C doesn't work because the process in slot 1
+(normally init) is treated with special signal handling by the kernel.
+
+> .... login has a patch that ensures that the
+> control-c stuff is enabled.
+
+Huh?  All you need to do is properly start up an interactive
+session from init to get process group signal handling.  This is
+just standard Linux userland stuff documented in a variety of places.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
