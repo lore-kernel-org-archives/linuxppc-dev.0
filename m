@@ -1,54 +1,38 @@
-Date: Sun, 23 Sep 2001 22:18:39 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: More problems with Kernel 2.4.10-pre12 and mounting
-Message-ID: <20010923221839.G14835@plato.local.lan>
-References: <20010923191713.E14835@plato.local.lan> <Pine.LNX.4.21.0109232320480.13300-100000@cr242184-a.etob1.on.wave.home.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="G1IH56i3DES2a+WZ"
-In-Reply-To: <Pine.LNX.4.21.0109232320480.13300-100000@cr242184-a.etob1.on.wave.home.com>; from tendim@tendim.cjb.net on Mon, Sep 24, 2001 at 12:22:22AM -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: hdparm and disc errors
+References: <4vr8t0veui.fsf@darbujan.fzu.cz>
+	<20010921142218.5696@smtp.adsl.oleane.com>
+From: Jiri Masik <masik@pc203b.fzu.cz>
+Date: 24 Sep 2001 11:40:45 +0200
+Message-ID: <4vhett0vvm.fsf@darbujan.fzu.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---G1IH56i3DES2a+WZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-On Mon, Sep 24, 2001 at 12:22:22AM -0400, patrick wrote:
->=20
-> On Sun, 23 Sep 2001, Ethan Benson wrote:
->=20
-> > the dd trick shows you can read the device without problems, are you
-> > sure the filesystem is not corrupt? or that the disk is not failing?
->=20
-> But the problem isn't limited to /dev/sdb, since /dev/sda also has
-> problems.  (I can't do any of the tricks, i.e., dd or pdisk -l /dev/sda
-> with it either.  Again, this is all under 2.4.10-pre12, 2.2.18 works
-> fine.)
+> >Do you think it is a real disc failure or is anything wrong with the
+> >hdparm setting? Is the unmasking dangerous for Pismo?
+>
+> That's weird. Note that there are chances that 2.2 lockup on such IDE errors.
+>
+> The driver did evolve slightly, but not in a way that explains your problem.
+>
+> Ben.
 
-well sounds to me like your scsi driver is hosed then. =20
-=20
-> > badblocks -sv /dev/sdb
->=20
-> Nothing bad happened, and no error messages came out (I checked
-> the entire /dev/sdb drive), so I'm assuming my drive is ok.
+Hi Ben,
 
-well if badblocks has no problem reading the entire device why should
-anything else.  this clearly has nothing to do with partition table
-support.
+it does not happen with 2.2 at all. I think there was a change in the
+driver before 2.4.8-ben0. This is the first kernel I tried which
+actually reports the error. Before that I had 2.4.7-ben0 and
+2.4.6-pre8 which were crashing without anything reported. I guess it
+was caused by the disc as well as the crash was accompanied by the
+sound of repeated access to a faulty floppy disc.
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Jiri
 
---G1IH56i3DES2a+WZ
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---G1IH56i3DES2a+WZ--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
