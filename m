@@ -1,38 +1,43 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C860@usdfo011.usac.danfoss.net>
-From: Hihn Jason <JasonHihn@DANFOSS.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Adding monochrome support for 823e
-Date: Thu, 29 Aug 2002 17:43:04 +0200
+Message-ID: <3D6E41C6.D20D9DCA@synergymicro.com>
+Date: Thu, 29 Aug 2002 08:46:14 -0700
+From: Dave Wilhardt <wilhardt@synergymicro.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: vandana mehtani <vandana_mehtani123@rediffmail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: documentation
+References: <20020829093939.21236.qmail@webmail28.rediffmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've completed the kernel work for using the 832e in monochrome mode. It
-requires changes to drivers/video/fbcmap.c. You need to add a palette for
-it's monochrome mode that looks like:
-832mono_red[16]={0};
-832mono_green[16]={0};
-832mono_blue[16]={0x0000, 0x1000, 0x2000, 0x3000, 0x4000, 0x5000, 0x6000,
-0x7000, 0x8000, 0x9000, 0xa000, 0xb000, 0xc000, 0xd000, 0xe000, 0xf000}; //
-not really blue, but it lines up
+Try this:
 
-then make a new cmap struct
-struct fb_cmap default_832mono { 0, 16, 832mono_red, 832mono_green,
-832mono_blue, NULL};
+http://e-www.motorola.com/webapp/sps/site/taxonomy.jsp?nodeId=01M0ylsbTdG
 
-then modify fb_default_cmap()
-if (len<=2)
-   return &default_832mono;
+vandana mehtani wrote:
 
-Then you have to do some work in arch/ppc/8xx_io/lcd832.c where indicated.
-Without the work above, you may get garbage. I don't think you'd ever get
-right output.
+> Hello everybody,
+> I am trying to study the code for head8xx.h.
+> but the documentation to understand the powerpc assembly is
+> somehow inadequate,
+> I have the powerpc programming environment.
+> but it seems that there is a need to understand the "as" specific
+> assembler ..
+> Where can i get the documentation.
+> The information is very scattered.
+>
+> thanks in advance
+> regards
+> vandana
+>
 
-I just wanted to get this out there so it goes in the archives.
--Jason
+--
+Dave Wilhardt
+Synergy Microsystems
+9605 Scranton Road, Suite 700
+San Diego, CA 92121
+858 452-0020 x164
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
