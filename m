@@ -1,16 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id A5EDC67A6C
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 2C37167A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Feb 2005 04:45:47 +1100 (EST)
+	Wed,  9 Feb 2005 07:59:39 +1100 (EST)
+Message-ID: <42092835.1040701@mvista.com>
+Date: Tue, 08 Feb 2005 13:59:33 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Date: Tue, 8 Feb 2005 11:45:44 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592B1@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: 8266 SMC uart corruption
+To: akpm <akpm@osdl.org>
+Content-Type: multipart/mixed; boundary="------------070800090907020909060702"
+Cc: Nathaniel Case <ncase@xes-inc.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH][PPC32] Fix mv64x60 register relocation bug in bootwrapper
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,38 +22,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-TW9yZSBJbmZvOg0KVGhpcyBzZWVtcyB0byBiZSByZWxhdGVkIHRvIGNwbV91YXJ0X3N0b3BfdHgo
-KQ0KVGhlcmUgc2VlbXMgdG8gYmUgYW4gZXhjZXNzaXZlIGFtb3VudCBvZiBzdG9wcyBhbmQgc3Rh
-cnRzIGdvaW5nIG9uDQpJbiB0aGUgZm9sbG93aW5nLCBJIHByaW50IGFuIFwgZm9yIGVhY2ggdGlt
-ZSBzdG9wX3R4IGlzIGNhbGxlZCwgYW5kIGEgLyBmb3Igc3RhcnRfdHgNCg0KLS0tLS0tLS0tDQpF
-WFQzLWZzOiBtb3VudGVkIGZpbGVzeXN0ZW0gd2l0aCBvcmRlcmVkIGRhdGEgbW9kZS4NClZGUzog
-TW91bnRlZCByb290IChleHQzIGZpbGVzeXN0ZW0pLg0KRnJlZWluZyB1bnVzZWQga2VybmVsIG1l
-bW9yeTogMjg4ayBpbml0DQpcL0lcL1RcL8K3XC92ZXJzXC9pXC9vbiAyXC8uXC84NSBiXC9vXC9v
-dGluXC/CoC8NClwvQWN0aVwvdlwvYXRpblwvZ1wvIGFsbFwvIFwvc3dhcFwvIFwvZmlsZVwvc1wv
-L3BhclwvdFwvaXRpb1wvblwvcy4uLlw8Nj5BZGRpbmcgMTAyODE1Mmsgc3dhcCBvbiAvZGV2L2hk
-YTIuICBQcmlvcml0eToxIGV4dGVudHM6MQ0KLyAgICAgICBcL1sgIFwvT0tcLyAgXVwvDQpcL01v
-dW5cL3RcL2luZyBcL3BcL3JvYyBcL2ZcL2lsZSBcL3NcL3lzdGVcL21cLy4uLlwvICAgIFwvWyAg
-XC9PS1wvICBdXC8NClwvTW91blwvdFwvaW5nIFwvclwvb290IFwvZlwvaWxlIFwvc1wveXN0ZVwv
-bVwvIGluIFwvclwvZWFkLVwvb1wvbmx5IFwvbVwvb2RlLlwvLlwvLlwvDQoNCi0tLS0tLS0tLS0N
-CkFuZCBzbyBvbi4NCg0KSWYgSSBwdXQgaW4gYSB1ZGVsYXkoMTAwMDApIGF0IHRoZSBlbmQgb2Yg
-Y3BtX3VhcnRfc3RvcF90eCwgYWxsIG91dHB1dCBwcmludHMgT0ssIGJ1dCBzbG93Lg0KDQoyLjYu
-NyBhbmQgcHJpb3IgZG9lcyBub3QgdXNlIHRoZSBzdG9wIGF0IGFsbCBmb3JtIHdoYXQgSSBjYW4g
-c2VlLg0KIA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJ1bmUgVG9y
-Z2Vyc2VuIA0KPiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSAwMSwgMjAwNSAwODo0Mg0KPiBUbzog
-bGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KPiBTdWJqZWN0OiA4MjY2IFNNQyB1YXJ0IGNv
-cnJ1cHRpb24NCj4gDQo+IEhpDQo+IA0KPiBIYXMgYW55Ym9yZHkgZWxzZSBzZWVuIGNvcnJ1cHRp
-b24gb2YgdGhlIG91dHB1dCBmcm9tIFNNQzEgDQo+IHdoZW4gdXNlZCBhcyBzZXJpYWwgY29uc29s
-ZT8NCj4gVGhpcyBvbmx5IG9jY3VycyBpbiBpbiAyLjYuOCBhbmQgbGF0ZXIgKHdoZW4gdGhlIENQ
-TSBzZXJpYWwgDQo+IGRyaXZlcnMgZ290IG1vdmVkKQ0KPiBBbmQgaXQgb25seSBvY2N1cnMgd2hl
-biBpbml0IGlzIHdyaXRpbmcgdG8gc2NyZWVuLiAyLjYuNyBhbmQgDQo+IGVhcmxpZXIgd29ya3Mg
-cGVyZmVjdGx5Lg0KPiBJdCBoYXBwZW5zIGF0IGFsbCBiYXVkcmF0ZXMgdGVzdGVkICg5NjAwIGFu
-ZCAxMTUyMDApDQo+IA0KPiBBbnlib2R5IHNlZW4gc29tZXRoaW5nIHNpbWlsYXIgYW5kL29yIGhh
-dmUgYSBjbHVlIHdoZXJlIHRvIA0KPiBzdGFydCBsb29raW5nIGZvciB0aGlzPw0KPiBJIGhhdmUg
-bG9va2VkIGF0IHRoZSBzZXJpYWwgZHJpdmVycywgYW5kIGNhbm5vdCBmaW5kIGFueSANCj4gZGlm
-ZmVyZW5jZXMgbGFyZ2UgZGlmZmVyZW5jZXMgZnJvbSB3aGVudGhleSBzdGlsbCB3ZXJlIGluIA0K
-PiBhcmNoL3BwYy84MjYwX2lvIHRvIHRoZSBvbmVzIGluIGRyaXZlcnMvc2VyaWFsL2NwbV91YXJ0
-DQo+IA0KPiBDYXB0dXJlOg0KPiANCj4gRnJlZWluZyB1bnVzZWQga2VybmVsIG1lbW9yeTogMjg4
-ayBpzrV0DQo+IEnilqBUOiB2ZXJzaW9uIDIuODUgYm9vdOKImWcNCj4gLi4uDQo+IEnilqBUwqBF
-bnRlcmluZyBydW5sZXZlbDogMw0KPiANCj4gDQo+IFRoZXNlIGxpbmVzIGFyZSB0aGUgb25seSBv
-bmVzIHRoYXQgZ2V0IGNvcnJ1cHRlZC4gQWxsIG90aGVyIA0KPiBvdXRwdXQgKGtlcm5lbCBwcmlu
-dG91dHMsIGNvbnNvbGUgYW5kIHN0YXJ0dXAgc2NyaXB0cykgYXJlIG5vcm1hbC4NCg==
+
+This is a multi-part message in MIME format.
+--------------070800090907020909060702
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+The gt64260 looks at the highest 20 bits while the mv64[34]60 looks at 
+only the highest 16 bits when determining the base address for the 
+bridge's registers.  This patch adds support for both.
+
+Please apply.
+
+Signed-off-by: Nate Case <ncase@xes-inc.com>
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+--
+
+--------------070800090907020909060702
+Content-Type: text/plain;
+ name="misc-mv64x60.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="misc-mv64x60.patch"
+
+diff -Nru a/arch/ppc/boot/simple/misc-mv64x60.S b/arch/ppc/boot/simple/misc-mv64x60.S
+--- a/arch/ppc/boot/simple/misc-mv64x60.S	2005-02-08 13:55:06 -07:00
++++ b/arch/ppc/boot/simple/misc-mv64x60.S	2005-02-08 13:55:06 -07:00
+@@ -32,7 +32,11 @@
+ #if (CONFIG_MV64X60_NEW_BASE != CONFIG_MV64X60_BASE)
+ move_base:
+ 	li	r20,0
++#ifdef CONFIG_GT64260
+ 	li	r23,20
++#else /* Must be mv64[34]60 which uses top 16 bits */
++	li	r23,16
++#endif
+ 
+ 	/* Relocate bridge's regs */
+ 	addis	r25,0,CONFIG_MV64X60_BASE@h
+
+--------------070800090907020909060702--
