@@ -1,35 +1,35 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Joseph Garcia <jpgarcia@execpc.com>,
-        linuxppc-dev
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: future of drivers/macintosh (was Re: CONFIG_PPC != Mac)
-Date: Thu, 3 Aug 2000 00:02:45 +0200
-Message-Id: <20000802220245.20854@mailhost.mipsys.com>
-In-Reply-To: <398895AC.C6576613@execpc.com>
-References: <398895AC.C6576613@execpc.com>
+Date: Thu, 3 Aug 2000 00:16:54 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Martin Costabel <costabel@wanadoo.fr>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: New input layer and ADB (Was Re: CONFIG_PPC != Mac)
+In-Reply-To: <Pine.LNX.4.10.10008021445550.427-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.4.10.10008030011181.14639-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> I don't think there's real need anymore for an adb directory. The only
->> file in it would be adb.c. The mouse and kbd drivers are moving to input,
->> the controller drivers (Cuda,PMU) do not only ADB but all sort of other
->> machine admin tasks (like power control, I2C, ...) and so are needed even
->> whithout ADB support as part of "PowerMac" support. Cuda can be shared
->> with m68k, maybe PMU too, so drivers/macintosh is not a so bad place
-for it.
+> > Sometimes after a console switch, I end up in capslock mode. Switching
+> > capslock on then gives lowercase letters (except the letter "L"). After
+> > a further console switch, things return to normal.
 >
->would it be a prudent move to relocate most of drivers/macintosh to
->drivers/char, with the exception of mediabay.c to drivers/block/mac-
->mediabay.c?
->
->Something that fits the current layout scheme in a bi-partisan way.
+> That's normal. With PC keyboards, the LED state of the Caps Lock key is
+> controlled by Linux, while Mac (and Amiga) keyboards remember the Caps Lock
+> state in the keyboard. Hence if you do a VC switch to a VC where Caps Lock is
 
-Hum... The system controllers are not char drivers (well, PMU can be
-occasionally), mediabay is not really a block driver, and I fell those
-generic char and block drivers are already quite messy.
+Wrong for Mac. We explicitly set LED state from the keyboard bottom half
+if necessary (though it stopped working consistently sometime in 2.1
+IIRC).
+
+The CapsLock on ADB keyboards is worth a million laughs actually. It
+is sticky by hardware, and never sends a key up event, only key down. See
+mac_keyb.c.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
