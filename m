@@ -1,33 +1,47 @@
-Date: Wed, 5 Sep 2001 18:16:54 -0400
-Message-Id: <200109052216.f85MGsi32749@hyper.wm.sps.mot.com>
-From: Peter Barada <pbarada@mail.wm.sps.mot.com>
-To: elan@nxnetworks.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-reply-to: <NDBBLJKOJGKDOFBHNPGEMENACEAA.elan@nxnetworks.com>
-Subject: Re: Cross GDB and core files
-References: <NDBBLJKOJGKDOFBHNPGEMENACEAA.elan@nxnetworks.com>
+Message-ID: <3B96BA46.6040604@ixiacom.com>
+Date: Wed, 05 Sep 2001 16:50:30 -0700
+From: Bryan Rittmeyer <bryan@ixiacom.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: dan@mvista.com
+Subject: pthread support in ppc405 gdb
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->I'm trying to get gdb compiled with host of 386-linux and target of
->ppc-linux, mostly for debugging core files.  The ppc_8xx-gdb that came with
->hardhat doesn't work, when I run it on a core file I get:
->
->And if I try to build gdb from scratch using
->"./configure --target=ppc-linux" I get a cross gdb that has no clue how to
->read PPC ELF core files.
+Hi,
 
-I've had luck building gdb-5.0 for powerpc-linux and used it to
-debug a PPC linux kernel via a serial port, as well as use it (in
-conjunction with gdbserver) to debug application code over the
-network.  I used the following to configure:
+The company I work for is porting a large, threaded C++ program to
+proprietary ppc405-based hardware. We are using a custom in-house
+toolchain I developed based on gcc 3.0.1 and the Montavista HHL 2.0
+release--the gcc 2.95.3 release in HHL 2.0 lacks sufficient C++
+support to build our codebase, which is primarily developed in
+M$ Visual C++.
 
-../gdb-5.0/configure --target=powerpc-linux
+We have a mission-critical need for a ppc405 source level debugger
+(gdb) which can handle complex, threaded C++ applications. However,
+the HHL 2.0 release notes say the following:
+
+* gdb 5.0
+   gdb 5.0 included with HHL 2.0 does not support
+   debugging multi-threaded (pthread) applications.
+
+What are the problem areas that prevent gdb 5.0 from debugging
+threaded applications on the ppc405? Is anyone on the
+list or within MontaVista willing to work with me to fix
+threading support in gdb?
+
+We are willing to do whatever it takes to get x86-workstation-quality
+gdb on the embedded ppc405 (and, tangentially, the sh4).
+
+Thanks!
+
+-Bryan
 
 --
-Peter Barada                                   Peter.Barada@motorola.com
-Wizard                                         781-852-2768 (direct)
-WaveMark Solutions(wholly owned by Motorola)   781-270-0193 (fax)
+Bryan Rittmeyer
+mailto:bryan@ixiacom.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
