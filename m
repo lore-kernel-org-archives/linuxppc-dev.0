@@ -1,30 +1,57 @@
-Message-ID: <3700D047.D4B769F0@singnet.com.sg>
-Date: Tue, 30 Mar 1999 21:23:20 +0800
-From: "Steven Lai K. T." <laikt@singnet.com.sg>
+Date: Tue, 30 Mar 1999 08:12:57 -0600 (EST)
+From: Norman R Weathers  <norman@lithe.uark.edu>
+To: Andrew J Benie <ha6380@qmw.ac.uk>
+cc: David Edelsohn <dje@watson.ibm.com>, Dave Weis <djweis@plconline.com>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: modifying boot loader 
+In-Reply-To: <199903300953.KAA17140@alpha.qmw.ac.uk>
+Message-ID: <Pine.LNX.4.04.9903300810130.2841-100000@lithe.uark.edu>
 MIME-Version: 1.0
-To: Gary Thomas <gdt@linuxppc.org>
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        Linux LInux <linuxppc-user@lists.linuxppc.org>
-Subject: Re: Linux for MVME1600
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
 
-I am looking for a kernel that will work on the MVME1600 board. I've
-tried all the recent releases and none of them are working correctly. I
-would like to compile one that works, unforturnately I was not very
-successfully with the cross compiler (I only have a Linux86 PC). I
-understand you did the first port some years back on this board.
-Appreciated if you point me to some place where I can download a working
-kernel.
 
-Thanks in advance.
+On Tue, 30 Mar 1999, Andrew J Benie wrote:
 
-Regards
-Steven Lai K. T.
+> 
+> Hi
+> I would have thought that linuxPPC would work on the PowerPC 601 chip as 
+> that is the chip that was in the first generation PCI based powermacs 
+> such as the 7200. LinuxPCC definately works on the 7200 as I am currently 
+> running release 4 on one.
+
+Indeed, we too have used the R4 release(kernel 2.0.30) with our Nobis
+based IBM
+PowerPC's.  The only problem we ever had was with the new kernels, which
+at the time that we had a spare moment to try them, there were problems
+with the BATs if I remember correctly (Cort, remember us from University
+of Arkansas and the ****ed 601 we had?).   We haven't had time to try
+recent releases of the kernel.
+
+Norman Weathers
+Technology Coordinator ETS
+University of Arkansas
+
+> 
+> yours
+> Andy
+> 
+> Laboratory of Structural Biochemistry,
+> Molecular and Cellular Biology,
+> Division of Biomedical Sciences,
+> Queen Mary and Westfield College,
+> Mile End Road
+> London E1 4NS
+> 
+> Tel:(44) 171 982 6976
+> Fax:(44) 181 983 0531
+> Messages&Paging: 04325 397544
+> http://newton.biochem.bms.qmw.ac.uk/wwwfolder/people/ab.html
+> 
+> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
