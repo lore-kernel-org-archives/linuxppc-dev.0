@@ -1,60 +1,61 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8260 Network Performance update
-Date: Wed, 5 Jun 2002 21:55:51 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFCEDMDIAA.acurtis@onz.com>
+Message-ID: <3CFEEBB7.3080804@embeddededge.com>
+Date: Thu, 06 Jun 2002 00:57:27 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: First cut at large page support on 40x
+References: <20020531042153.GD16537@zax> <3CFC0D3F.9030901@embeddededge.com> <20020604035947.GH2762@zax> <3CFCFC20.80101@embeddededge.com> <20020605001034.GB17752@zax> <3CFE49A1.7080105@embeddededge.com> <20020606013535.GP2630@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-1. Unidirectional TCP/IP traffic (ftp):   get 180MBfile /dev/null
-(Thanks Jean-Denis)
+David Gibson wrote:
 
-			10T Hub	|	100BT switch
-		 -------------------------------------|
-	2.4.2  |	839KBps	|	6526KBps	  |
-		 --------------------------------------
-	2.4.19 |	838KBps	|	9412KBps	  |
-		 --------------------------------------
+> Ok, which PTE do you use to load the RPN for the large page entry?
 
-These numbers look good!
+The PMD plus the PTE, both loaded into the 8xx MMU registers, provide
+the information for page size and the real address.
 
-2. Here is a description of the original test and some new test results.
+> The first one in the page directory, or the one corresponding to the
+> actual address you're looking up?
 
-		-------------	FTP Put	-------------
-		|		|---------------->|		|
-		|   Host	|	NFS save	| 8260 PPC	|
-		|		|<----------------|		|
-		-------------			-------------
+The one corresponding to the offset lookup.  The LS bits are masked.
 
-Given that the unidirectional transfers look good I assume that the problem
-is either resource related (running out of Ethernet buffers) or scheduling
-related. The following tests use the 2.4.19pre9 kernel but vary the number
-of RX/TX buffers. (symmetric allocation)
+> I don't know about 8xx, but on 4xx the low bits in the RPN when
+> putting a large page entry into the TLB *must* be zeroed, or general
+> wierdness may occur.
 
-			10T Hub	|	100BT switch
-		 -------------------------------------|
-	16 RTB |	440KBps	|	190KBps	  |
-		 --------------------------------------
-	32 RTB |	450KBps	|	230KBps	  |
-		 --------------------------------------
-	64 RTB |	450KBps	|	240KBps	  |
-		 --------------------------------------
+Doesn't seem to be that way on 8xx, so I guess I'm lucky :-)
+
+> ...  So using the PTE corresponding to the actual
+> address would mean an extra branch in the large-page case and clearing
+> some bits.
+
+Or, just generic code to clear bits based upon the page size.
+
+> The fact that our implementation works now, and yours is still
+> unstable, does not encourage me to take this approach.
+
+I just haven't had time to finish it and verify it works.  I still
+intend to continue to use the page tables as they exist and let
+the PMD contain additional page size information, even if I have to
+add some code to the tlbmiss exception.  There are more processors
+coming in the future that will benefit from this rather than continuing
+to make processor specific hacks in the generic MM code.
+
+> We already must test to see if the PMD is present in the normal case.
+> In our implementation large page PMDs show up as not present.  So it's
+> only in the uncommon case (not present) that we test for a large page
+> PMD entry.
+
+OK.
 
 
-The above data shows that this is not a raw communication speed issue but
-rather a scheduling or resource issue where either FTP or NFS is getting
-starved. My guess is that FTP is taking all the receive buffers leaving
-nothing for NFS to work with when storing the file.
 
-Does this help to identify the problem and a possible solution? Additional
-tests recommendations?
-
-TIA!
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
