@@ -1,76 +1,77 @@
-Date: Thu, 12 Oct 2000 19:22:05 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-Subject: Re: dual head r128
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-Cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber <huber@mclx.com>,
+Date: Thu, 12 Oct 2000 20:44:30 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber <huber@mclx.com>,
         Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Message-id: <39E5F33D.8166A4DD@student.ethz.ch>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <Pine.LNX.4.21.0010121849230.1017-100000@idd-01.imbc.gr>
+Subject: Re: dual head r128
+In-Reply-To: <39E5F33D.8166A4DD@student.ethz.ch>
+Message-ID: <Pine.LNX.4.21.0010122029001.1217-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kostas Gewrgiou wrote:
->
-> On Wed, 11 Oct 2000, Josh Huber wrote:
->
-> > On Wed, Oct 11, 2000 at 08:43:28PM +0200, Michel D?nzer wrote:
->
-> > > Does aty128fb work on the second card? If yes, try Option "UseFBDev".
+On Thu, 12 Oct 2000, Michel [iso-8859-1] Dänzer wrote:
+
+> Kostas Gewrgiou wrote:
 > >
-> > The secondary card is a PC card, so it's not initialized by OF, but I
-> > think the r128 fb driver does a proper initialization of the card, so
-> > that shouldn't be the problem.
+> > Kevin Hendricks patches from Ani's tree will fix the memory/clock values
+> > for OF cards only, the patch breaks the calculations for the x86 cards
+> > (thats the reason why its not in the xfree cvs),
 >
-> Kevin Hendricks patches from Ani's tree will fix the memory/clock values
-> for OF cards only, the patch breaks the calculations for the x86 cards
-> (thats the reason why its not in the xfree cvs),
+> But there is an #ifdef _powerpc_ so it can't break x86 machines?
 
-But there is an #ifdef _powerpc_ so it can't break x86 machines?
+Yes but it *does* break x86 cards used in ppc machines.
+(linux/ppc isn't the only ppc os supported in xfree and they won't
+be happy if we break things for them)
 
-
-> On Thu, 12 Oct 2000, Hendricks, Kevin wrote:
+> > The new r128 code needs to read extra values from the rom for the flatpanel
+> > setup as well (Michel knows more about this) which we will have to find a
+> > solution too.
 >
-> The new r128 code needs to read extra values from the rom for the flatpanel
-> setup as well (Michel knows more about this) which we will have to find a
-> solution too.
+> And it will be hard. Rumour has it that the correct values are in MacOS and
+> only Apple knows how to do it right, not even ATI. The default values work
+> more or less on my Pismo, but there is always the danger of damaging the
+> panel.
 
-And it will be hard. Rumour has it that the correct values are in MacOS and
-only Apple knows how to do it right, not even ATI. The default values work
-more or less on my Pismo, but there is always the danger of damaging the
-panel.
+Damn thats not good :(
 
-Note that the FP code is only needed for stretching modes with a lower
-resolution than the panel's, just disabling it altogether works fine for the
-full resolution.
-
-
-> > Since he has a bios on a ppc card it would be interesting to see the
-> > results of some "bios present?" tests to help determine if a bios is
-> > really there or not.  The current test sometimes passes on macs without a
-> > bios (possibly OF rom?) and garbage values are returned.
+> Note that the FP code is only needed for stretching modes with a lower
+> resolution than the panel's, just disabling it altogether works fine for the
+> full resolution.
 >
-> The current test only checks if a rom is present not if a bios or OF segment
-> is there, it needs to be fixed to check that its really reading from a
-> bios rom and not from something else (OF).
+> > The current test only checks if a rom is present not if a bios or OF segment
+> > is there, it needs to be fixed to check that its really reading from a
+> > bios rom and not from something else (OF).
+>
+> So this code from the current X CVS:
+>
+>     R128ReadBIOS(0x0000, info->VBIOS, R128_VBIOS_SIZE);
+>     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
+>         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+>                    "Video BIOS not detected in PCI space!\n");
+>
+> only checks if there is a ROM, not if it's a BIOS?
 
-So this code from the current X CVS:
+Right, from the pci spec the table is something like this
+Offset    Length    Value    Description
+0h          1        55h    ROM Signature, byte 1
+1h          1        AAh    ROM Signature, byte 2
+...
+18h-19h     2        xx     Pointer to PCI Data Structure
 
-    R128ReadBIOS(0x0000, info->VBIOS, R128_VBIOS_SIZE);
-    if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
-        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-                   "Video BIOS not detected in PCI space!\n");
+PCI Data Structure
+Offset    Length  Description
+...
+14           1    Code Type
+..
 
-only checks if there is a ROM, not if it's a BIOS?
+Code Type is 0 for bios and 1 for OF
 
+So you'll have to add one more test to check for BIOS/OF
 
-Michel
+ Kostas
 
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
