@@ -1,47 +1,39 @@
-Message-Id: <3.0.6.32.19990608182608.0089b480@sins.uia.ac.be>
-Date: Tue, 08 Jun 1999 18:26:08 +0200
-To: Gabriel Paubert <paubert@iram.es>
-From: David De Ridder <david.de.ridder@bitsmart.com>
-Subject: Re: 2.2.9 patch for Motorola support.
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.HPP.3.96.990607140855.27048C-100000@gra-ux1.iram.es>
-References: <Pine.LNX.3.96.990526163555.23472S-100000@fwrsl-11.phx.mcd.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 8 Jun 1999 20:28:48 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: ioremap() on ISA memory space
+Message-ID: <Pine.LNX.4.10.9906082022070.25878-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a suggestion for your PRePboot patches. (I don't know whether you've
-already incorporated it in the latest patch, since I don't have access to
-the patched source tree right now).
 
-It's something that could make people using root NFS on MVME boards (like
-the MVME230x series) happy and their lives easier ;-)
+I found one reason why current kernels don't work on my LongTrail: my NVRAM is
+in ISA memory space. When the kernel tries to ioremap() it in
+pmac_nvram_init(), I get
 
-You could do something like (in pseudo-C) :
+    __ioremap(): phys addr e0000 is RAM lr c000e43c
 
-#ifdef CONFIG_ROOT_NFS
- strcpy(kernelarguments,"console=ttyS0 root=/dev/nfs");
-#else
- strcpy(kernelarguments,"console=ttyS0");
-#endif
+and ioremap() returns NULL, causing all later accesses to NVRAM (e.g. in atyfb)
+to fail due to NULL pointer dereferences.
 
-As I said, I don't have the sources right now, but I think
-you see what I mean. This way people who use NFS for their
-root file system do not have to type "root=/dev/nfs".
-It's hardly a 'patch', but it could make life easier...
+Do all CHRP boxes have NVRAM in ISA memory space? The comment (by Corey) near
+the call to pmac_nvram_init() in chrp_init2() already wonders whether
+pmac_nvram_init() should be called or not.
 
-Kind regards,
+Besides, I'd say one must call ioremap() to access ISA memory space anyway, so
+it sounds like a bug in the memory management subsystem to me.
 
-+-----------------------------------------------------------------+
-  David 'Septimus' De Ridder       <david.de.ridder@bitsmart.com> 
+Greetings,
 
-"I want you to find happiness."
- - Marilyn Monroe in 'Gentlemen prefer Blondes'
+						Geert
 
-+-----------------------------------------------------------------+
-  
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
