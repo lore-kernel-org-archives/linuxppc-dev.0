@@ -1,81 +1,42 @@
-Message-ID: <3AC0EF44.E2BCE2F6@mvista.com>
-Date: Tue, 27 Mar 2001 14:51:32 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>,
-	linuxppc-commit@fsmlabs.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PVR hell
-References: <Pine.HPX.4.10.10103271719590.392-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 27 Mar 2001 21:21:45 +0100
+Subject: aci7xxxx build fails 2.4.3-p{3..8}
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="utf-8"
+Message-Id: <20010327202214.1A68ADBA52@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
->
-> On Tue, 27 Mar 2001, Benjamin Herrenschmidt wrote:
->
+Hi,
+I've been getting build failures for the aic7xxx driver since -pre3 (the
+complaint varies but the end result is the same).  I don't use this driver
+but normally build-in in case I post a binary for the kernel....
 
-> > Currently we have bloat of code testing against PVR,
+here's the tail end of the failed build from -pre8
 
-I have been thinking of this quite a bit recently because most of
-my projects are new processors with different PVRs.  Fortunately, I
-believe a majority of conditional execution is done only at set up
-time, so it shouldn't be a major concern.  I would like to find a way
-to opimize some of the more frequent cache management.....
+yacc  aicasm/aicasm_gram.y
+mv -f y.tab.c aicasm/aicasm_gram.c
+lex  -t aicasm/aicasm_scan.l > aicasm/aicasm_scan.c
+make -C aicasm
+make[5]: Entering directory
+`/usr/src/linuxppc_2_4/drivers/scsi/aic7xxx/aicasm'
+gcc -I/usr/include -ldb1 aicasm_gram.c aicasm_scan.c aicasm.c
+aicasm_symbol.c -o aicasm
+aicasm/aicasm_gram.y:45: ../queue.h: No such file or directory
+aicasm/aicasm_gram.y:50: aicasm.h: No such file or directory
+aicasm/aicasm_gram.y:51: aicasm_symbol.h: No such file or directory
+aicasm/aicasm_gram.y:52: aicasm_insformat.h: No such file or directory
+aicasm/aicasm_scan.l:44: ../queue.h: No such file or directory
+aicasm/aicasm_scan.l:49: aicasm.h: No such file or directory
+aicasm/aicasm_scan.l:50: aicasm_symbol.h: No such file or directory
+aicasm/aicasm_scan.l:51: y.tab.h: No such file or directory
+make[5]: *** [aicasm] Error 1
+make[5]: Leaving directory
+`/usr/src/linuxppc_2_4/drivers/scsi/aic7xxx/aicasm'
 
-> .... in different ways &
-> > places, sometimes using constants, sometimes, not, and possibly missing
-> > some CPUs (in fact, we do miss some: with the 7410 used in the TiPB, we
-> > will miss the L2 cache and Altivec).
-
-With 7450, we not only miss it but there are changes in bit positions
-in HID0, more things to enable/initialize, and the addition of the L3
-cache.
-
-> That's exactly why I did not like the solution of emulting mfpvr in user
-> space: applications or libraries using Altivec on a 7400 will have to be
-> at least recompiled when run on later processors.
-
-That has nothing to do with emulating mfpvr (which I think most people
-don't like because they didn't think of it first :-).  You can't predict
-the future, only anticipate what may be coming and be prepared.  You
-would have to recompile software in any case, and worse link against
-a specific library for all Altivec processors.  We have to even do it
-again for 7450 even if we got it right for 7410.  The real advantage to
-doing this is we have a single set of library functions, that once we
-add something for the new processor all of the older ones will continue
-to work just fine.  The funny thing is, in the kernel we seem very
-sensitive to any extra instruction we execute to help with such
-modularity,
-but we fully expect user applications to operate this way.
-
-I think we should just continue the ppc_md indirect function call
-concept and just use it earlier in the kernel for more things.  All
-of the low level initialization in 'head.S' or other processor specific
-things in other files should just be indirect fucntion calls that are
-processor specific.  Sure makes porting and understanding the software
-much easier.
-
-
-> I basically agree for now (the definitive solution would be a boot time
-> link of all the critical code, but that's a long term project).
-
-It's kind of hard to link in a cache invalidate function when you
-need a cache invalidate function for the linking (for example).  It
-would
-also be nice if people keep in mind that a majority of systems running
-Linux today are not desktops with lots of flexibility and disk
-drives......
-
-Thanks.
-
-
-	-- Dan
-
->
->         Regards,
->         Gabriel.
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
