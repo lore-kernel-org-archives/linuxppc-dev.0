@@ -1,56 +1,33 @@
-Message-ID: <20030711204434.77298.qmail@web40307.mail.yahoo.com>
-Date: Fri, 11 Jul 2003 13:44:34 -0700 (PDT)
+Message-ID: <20030711204850.10107.qmail@web40301.mail.yahoo.com>
+Date: Fri, 11 Jul 2003 13:48:50 -0700 (PDT)
 From: Miku Jha <jha_miku@yahoo.com>
-Subject: Re: cross compiling gdb for ppc 
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20030711070251.DEC2EC6D82@atlas.denx.de>
+Subject: setting persistent ulimit
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-The solution worked.
+Hi,
+I have cross compiled linux for target-ppc on host
+ix86.
 
-I had to change the variable in solib.c file.
+I wanted to know how can I set the
+ulimit -c size permanently to dump core.
 
-Thanks a ton
+I tried doing it in etc/sysctl.conf and etc/rd.sysinit
+but doesnot work.
+
+Please let me know the right place and syntax to get
+this working.
+
+ps:Do I need to recompile the kernel for this ?
+
+Thanks
 
 
---- Wolfgang Denk <wd@denx.de> wrote:
-> In message
-> <20030711045749.4201.qmail@web40306.mail.yahoo.com>
-> you wrote:
-> >
-> > When I run the gdb to debug the core file it
-> somehow
-> > refers to the libraries in the /lib path
-> > the libraries for my target machine are somewhere
-> > else.
-> >
-> > I wanted to know if there is any option or
-> workaround
-> > to make gdb point to correct libraries.
->
-> RTFM.
->
-> See especially the "solib-absolute-prefix" variable.
->
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime
-> Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88
-> Email: wd@denx.de
-> What the gods would destroy they first submit to  an
->  IEEE  standards
-> committee.
+
 
 
 =====
