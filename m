@@ -1,41 +1,35 @@
-Message-ID: <XFMail.990301222929.hcaley@loomer.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 1 Mar 1999 21:38:30 -0800
+From: Sean Harding <sharding@gutenberg.uoregon.edu>
+Reply-To: Sean Harding <sharding@oregon.uoregon.edu>
+To: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: platinum video card not in kernels >2.1.128?
+In-Reply-To: <Pine.SOL.3.96.990301170514.17781A-100000@mcmail.cis.McMaster.CA>
+Message-ID: <Pine.SGI.4.10.9903012137000.29072-100000@gutenberg.uoregon.edu>
 MIME-Version: 1.0
-Date: Mon, 01 Mar 1999 22:29:29 -0500 (EST)
-From: Batmensch <hcaley@loomer.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: strdup and pre-R5
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm having a problem building OpenLdap 1.2 on a pre-R5 installation; the error
-seems to be with strdup(); the make complains :
+On Mon, 1 Mar 1999, P. Barrette wrote:
 
-"In file included from args.c:22:
-../../include/ac/string.h:49 macro `strdup' using without args"
+> I've been told that the new kernels 2.2.x no longer support the platinum
+> video driver which the 7200 uses;  but I note that there is a platinum
+> option in the config.  Since I have no OF and serial output dumps garbage
 
-I've been able to build it without error on both LinuxPPC 4 and Linux X86. 
-Also the build of 1.0.2 that is included with the R5 distribution seems to work
-properly.
+It works fine for me. The video shoudn't be the problem. The 7200 does
+have OF, you just can't have it output to the screen. If you're getting
+garbage from the serial port, your terminal probably isn't configured
+correctly.
 
-Anything i can do about this?
+sean
 
-BTW, I'm using the late February build of R5, and a 2.2.2 kernel I built from
-CVS at Samba.
+-- 
+Sean Harding sharding@oregon.uoregon.edu|"art may imitate life
+http://gladstone.uoregon.edu/~sharding/ | but life imitates t.v."
+Consulting: http://www.efn.org/~seanh/  | --ani difranco
 
-Hugh
-
-
-
-
-----------------------------------
-E-Mail: Batmensch <hcaley@loomer.com>
-Date: 01-Mar-99
-Time: 22:19:28
-
-This message was sent by XFMail
-----------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
