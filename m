@@ -1,38 +1,41 @@
-Date: Thu, 2 Sep 1999 18:39:06 -0700 (PDT)
-From: Brad Midgley <brad@pht.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: new boot procedures (Re: LinuxPPC on CDROM as an emergency boot)
-In-Reply-To: <19990902194938.025327@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.9909021440520.17575-100000@web1.turbolinux.com>
+From: phandel@cise.ufl.edu
+Date: Fri, 3 Sep 1999 03:10:21 -0400 (EDT)
+To: Alex Vallens <Vallens@Colorado.EDU>
+cc: linuxppc mail list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Ethernet on a PowerCenter Pro
+In-Reply-To: <37CEF60F.D1AA12A4@Colorado.EDU>
+Message-ID: <Pine.LNX.4.10.9909030308530.656-100000@dialup-l118.cise.ufl.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>some people have looked into making vmlinux new-OF-bootable but then it
->>must live on an hfs[+] partition and again we have no ramdisk capability.
-> I'm interested in those fixes.
+On Thu, 2 Sep 1999, Alex Vallens wrote:
 
-i've put some of the discussion on the subject and the relevant netbsd
-sources online if you want to more easily browse them:
-         http://web1.turbolinux.com/~brad/newboot/
+> Although this may be a very simple problem, I just can't get LinuxPPC 5
+> to recognize the built-in ethernet controller on my Power Computing
+> Power Center Pro 240. Has anyone had any success with this particular
+> machine, or have any insight to the right settings under the control
+> panel?
 
-the best plan of attack would be to first look at the kernel:
+My PowerCenter Pro 210's built-in ethernet has worked fine with every
+kernel I've found & made myself.  Here's what dmesg says:
 
- - get vmlinux to boot from new OF directly
- - adapt kernel to allow for compiled-in ramdisk, as is done for prep
+eth0: MACE at 00:05:[etc.], chip revision 9.64
 
-this allows for cdboot and a kind of hd boot, provided you have hfs[+];
-then tackle quik:
+Just make sure you compile a kernel with PowerMac MACE ethernet support,
+and you should be fine.
 
- - get quik to work with new OF 
- - get quik to load ramdisks (this would be optional if we already have
-   compiled-in-ramdisk support, even on older OF)
 
-Brad
-brad@pht.com | http://www.pht.com/~brad/
+Thanks,
+Pete
+
+-- 
+Peter F. Handel          "[The anti-Christ] also forced everyone, small and
+phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
+www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
+FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
