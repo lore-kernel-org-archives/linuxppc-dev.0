@@ -1,46 +1,42 @@
-Subject: [RFC] Machine check handling
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain
-Message-Id: <1092835012.10314.46.camel@localhost>
-Mime-Version: 1.0
-Date: Wed, 18 Aug 2004 14:16:53 +0100
+Message-ID: <4124C965.1020907@nortelnetworks.com>
+Date: Thu, 19 Aug 2004 11:38:13 -0400
+From: Chris Friesen <cfriesen@nortelnetworks.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.linuxppc.org
+Subject: pagetable changes for ppc between 2.6.5 and 2.6.7?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The current handling of machine check in Linux 2.6 on the PowerPC has
-some problems. If the processor was in user_mode, the handler returns a
-SIGBUS even if the machine check cause was a hardware fault such as an
-internal cache parity error or ECC memory failure. This is quite
-different to the handling of machine checks from hardware faults on
-i386.
+I'm seeing some strange behaviour, and before I dove into it I thought I'd
+double-check with you guys to see if it was something obvious.
 
-I propose restructuring the machine check handling as follows:
-1) On entry to the machine handler, call a CPU specific handler to tell
-us whether the cause was internal or external.
-1a) If internal, log the fault and either panic or return.
-2) If the cause was external, call a platform specific handler to tell
-us whether the cause can be associated with a process.
-2a) If yes (such as the I/O code for PowerMac), handle as current
-(SIGBUS, drop to debugger, etc.).
-2b) If no, log the fault and either panic or return.
+We're running on a dual G5 with a 1.5GB of memory.
 
-In the absence of specific handlers, the code would assume that the
-machine check was external to the processor and the result of process
-actions. This should leave the current behaviour intact on machines
-which use it for PCI probing, while on machines with genuine hardware
-faults the mysterious SIGBUS arrivals will be replaced with clear log
-messages.
+We needed a way to track when particular application pages (which would be
+mlock'd) were being modified.
 
-For part 1 I'm thinking of an extra function pointer in struct cpu_spec,
-and for part 2 an extra function pointer in ppc_md. I'd like to know if
-anyone has any strong opinions on this before I update my old Linux 2.4
-patch:
-http://www.humboldt.co.uk/Downloads/PowerPC/mcheck-1.156.html
+We added a bit (_PAGE_MEMMON=0x800) to the PTE flags, and expanded
+_PAGE_CHG_MASK to include that bit as well.  The new bit signified whether the
+page was to be monitored or not.
 
-- Adrian Cox
-Humboldt Solutions Ltd.
+The app could then (through a driver) mark each page that it wanted to monitor,
+and later it could trigger the driver to walk all its page tables, and if the
+page was being monitored and was dirty, it would add the page to a list and mark
+it as clean.  Since the memory was locked, the kernel (we assumed, and it seemed
+to work) would never mark the page as clean itself.
+
+Somewhere between 2.6.5 and 2.6.7 the results for identical application runs
+changed, and we are now getting far fewer dirty pages.  Our assumption is that
+something in the kernel is marking pages as clean before we get around to
+scanning them.  Does anyone know of the top of their heads what would be doing this?
+
+The next step for me is to try running with no swap, just to see if that changes
+things.  After that, I guess I'll start playing binary search with patches...
+
+Chris
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
