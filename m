@@ -1,60 +1,46 @@
-Message-ID: <3B616383.E539C269@seranoa.com>
-Date: Fri, 27 Jul 2001 08:50:11 -0400
-From: Andrew Dixon <andrew.dixon@seranoa.com>
+Subject: usb function driver
+Date: Fri, 27 Jul 2001 13:42:32 -0000
 MIME-Version: 1.0
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: root=/dev/ram0
-References: <3B607757.6D4BFE4A@seranoa.com> <01072616453702.25105@sarge> <3B608CA5.2A774BD9@seranoa.com> <3B60D970.7080201@brocade.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31459233@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Linux Embedded ppc (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Amit D Chaudhary wrote:
->
-> Hi,
->
-> Can you give the following details,
-> Are you trying to load it as initrd? Not I assume, else confirm that
-> CONFIG_BLK_DEV_INITRD=y
+Hi,
 
-I am trying to load it as initrd.
+I am playing around with the usb function driver from the old linux_2_5
+source tree.
+When ever I connect the device to a usb host I get a sequence of idle
+and reset events.
+As far as I can gather from the usb docs the host should respond with
+USB device request
+on the default control pipe (address 0 endpoint 0). The host now starts
+by enumerating the
+devices which ends with a unique (per bus I believe) number assigned to
+the device. After that
+the device is addressed with this unique number.
 
-andrew.dixon@pig2:/usr/src/linux$ cat .config |grep
-CONFIG_BLK_DEV_INITRD
-CONFIG_BLK_DEV_INITRD=y
+By monitoring the bus with o.scope I can see the sofs flowing for a
+while after plugging in the
+device. But none of the sofs are cought by the cpm, nor any usb device
+requests.
 
-And this is set up correctly in the kernel.  Just to make sure that my
-configuration was a workable solution I recompiled everything for an i86
-architecture and I tried it out on my laptop.  I put my compressed
-ramdisk image and kernel onto a floppy and used ldlinux.sys as a boot
-loader passing it the command:
+The host is a dual cpu w2k machine with intel chipset.
 
-	root=/dev/ram0 initrd=fs.gz
+I have gone over the initialisation and setup of the USB part of the cpm
+couple of times and do not see anything strange compared to the mpc823e
+documentation.
 
-and it works fine.  This prompted me to do a little searching through
-the ramdisk source (/usr/src/linux/drivers/block/rd.c) and I found that
-the ramdisk expects to find the ramdisk image on the floppy drive:
+I am using BRG4 for USB clock.
 
-	if (MAJOR(ROOT_DEV) != FLOPPY_MAJOR
-#ifdef CONFIG_BLK_DEV_INITRD
-		&& MAJOR(real_root_dev) != FLOPPY_MAJOR
-#endif
-	)
-	  //ADD
-	  //we don't want to return here because our real_root_dev is not the
-	  //floppy but the disk or flash device.  Right?  Right!
-	  //		return;
+Any ideas?
 
+Thanks,
 
-It still doesn't work but I've got that feeling that I'm getting
-closer.  I'm going to make sure that the hard disk is detected before
-the ramdisk tries to load the image
-
-later,
-Andy
-
-P.S. Do people on the list like to be cc'd on responses or should I keep
-all mail to the list only?
+K.D.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
