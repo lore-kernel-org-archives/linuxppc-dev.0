@@ -1,41 +1,35 @@
-From: jpgarcia@execpc.com
-Message-Id: <200011072304.RAA23594@localhost.localdomain>
-Date: Tue, 7 Nov 2000 17:04:09 -0600 (CST)
-Subject: Re: bad vidmode on debian install
-To: sjh@wibble.net
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20001108094625.B10734@svana.org>
+Message-ID: <3A08BE08.6CD64925@denise.shiny.it>
+Date: Tue, 07 Nov 2000 21:44:24 -0500
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: Giuliano Pochini <pochini@shiny.it>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lots of problems
+References: <XFMail.001103111328.pochini@shiny.it> <19340928070822.11693@192.168.1.2>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  8 Nov, Steven Hanley wrote:
-> it is a Mach 64 video card
+> >- all: G4 internal modem doesn't work. Suggestions ? I absolutely need it !!
 >
->> Do you have 834x624 and more than 8 bit color depth? If yes, change the
->> resolution or set the color depth to 8 bit.
+> That's something I've not checked. Paul fixed some internal modem issues
+> in macserial.c recently, I beleive those fixes are in the bk and rsync trees.
+
+With bk 2.2 tree it doesn't work. By doing echo lhkljjhkl > /dev/ttyS0 SCC
+interrupts
+counters change, so it's not completely dead.... but, again, the G4 is not
+mine, it's
+the my friend's new computer after his Amiga1200. You can imagine how
+difficult
+is to explain things to him by phone :-)
+
+> >- 2.4.0*: G4 ethernet goes at 100Mbps even if it's connected to a 10Mbps
+> >hub. Is
+> >there a way to force it to a lower speed ? Can the G3 eth go at 100MBps ?
 >
-> wouldnt doing this involve the passing of a video=atyfb:vmode:8 or some such
-> ?
+> You need the latest gmac driver which is, again, in the trees mentioned above.
 
-vmode for resolution, using values available in nvvideo's manpage
-cmode for color mode (bit count works).
-
-in reference to the nervous text, I get this on my PDQ when the mclk is
-set incorrectly.  this can be specified using the mclk: param.  my
-cmdline is "video=atyfb:vmode:14,cmode:32,mclk:100", but I am aware that
-earlier systems, even wallstreets use smaller mclk values.  the
-default/autodetect in the kernel does not work for me.  could try 83 or
-60, two other fairly successful values IIRC.
-
-Hope this is helpful.
-
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
-
+Bye.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
