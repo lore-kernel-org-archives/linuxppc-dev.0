@@ -1,42 +1,30 @@
-Date: Fri, 3 Sep 1999 23:33:12 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: jeramy b smith <ultrapenguin@netscape.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Possible Bug in XFree3.3.5
-In-Reply-To: <19990904001345.11766.qmail@www0m.netaddress.usa.net>
-Message-ID: <Pine.LNX.4.10.9909032331190.8429-100000@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19990904065630.24625.qmail@ww187.netaddress.usa.net>
+Date: 4 Sep 99 01:56:30 CDT
+From: jeramy b smith <ultrapenguin@netscape.net>
+To: Tom Rini <trini@kernel.crashing.org>
+Subject: Re: [Re: Possible Bug in XFree3.3.5]
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 3 Sep 1999, jeramy b smith wrote:
+Tom Rini <trini@kernel.crashing.org> wrote:
+>Well shoot.  I hadn't made an announcement yet for a reason 
+>(newer, -1a locally :))
 
-> I downloaded the 3.3.5 rpms from Tom's directory and installed them. I have a
-> 2meg ati rage IIc. Before upgrading the rpm, I was using vmode 18 and cmode 16
-> and the same for my X resolution (1152x864@16bpp). However, trying to startx
-> with this configuration would crash.
+Unfortunately the interim linuxppc.org page had a link to your directory for
+the 3.3.4 release. Since the interim page is the old page, I went there to see
+if you had 3.3.5.
 
-Well shoot.  I hadn't made an announcement yet for a reason (newer, -1a
-locally :))
+>I wonder if all of this has to do w/ the 15/16 bit fix...  Hmm..---Tom >Rini
+(TR1265)<br>http://gate.crashing.org/~trini/
 
-> Changing the depth in to 8bpp in XF86config solved this. I tried setting the
-> the resolution to 800x600 and bumping the colors up to 16bpp. XFB initializes
-> the accel code, reports the font and pixmap caches are disabled. Then I get
-> the BBdebug message that it is setting up gnome support. I catch the signal
-> 11. blackbox then tells me:
-> 
-> X Error of failed request:   16 Badlength (poly request too large or internal
-> Xlib length error
-> Major/minor opcode of failed request: 72 / 0
-> Resource id in failed request: 0x8000014
-
-Odd.  I wonder if all of this has to do w/ the 15/16 bit fix...  Hmm..
-
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+The first time I ran the new setup, it gave me a non-reproducible error in the
+same place that is now in my buffer history. I think it might take a reboot to
+get the original eror, not sure. There was a method or variable mach64?????blt
+(not sure) that had an illegal size or number. Vague, yes.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
