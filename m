@@ -1,55 +1,37 @@
-Message-ID: <3A5FBDC0.6785393F@brainlink.com>
-Date: Fri, 12 Jan 2001 21:30:24 -0500
-From: Ormund Williams <ormundw@brainlink.com>
-Reply-To: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: ppcboot compile issues
+Date: Sat, 13 Jan 2001 09:29:45 +0100
+Message-Id: <19341208020129.22479@smtp.wanadoo.fr>
 MIME-Version: 1.0
-To: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: UART configuration problems
-References: <003b01bfbc02$88afc3c0$4a1f76d8@washington>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Navin Boppuri wrote:
->
-> Hello everyone,
->
-> I am trying to interface a MAX3100 uart to an SPI controller on the MPC823.
-> I have a functional SPI driver running. The transmit part of the UART works
-> just fine. I am able to transmit characters at 9600 8N1 baud. The problem
-> arises when I do a receive. The uart documentation says that the internal
-> fifo is 8 word long. But I notice that the FIFO is able to store only 8
-> characters. For example, if I transmit the characters
->             abcdefghijklmnopqrstuvwxyz
->
-> The uart shows only "yz" in its buffers. The other 24 characters are lost. I
-> noticed that 8 charaters are written in the buffer. It first writes
-> "abcdefgh" and then overwrites that with "ijklmnop" and so on. The uart
-> generates an irq interrupt whenever there is incoming data. I do not see why
-> the buffer is not big enough.
->
-The MAX3100 is working as designed, the 8 word fifo can only hold 8
-characters the other bits in the word hold the parity, framing error,
-etc.  If the fifo overflows all characters are lost.  The following is
-from page 5 and 7 of the datasheet.
+Hi !
 
-"Read data from a 16-bit register that holds the oldest
-data from the receive FIFO, the received parity data,
-and the logic level at the CTS input pin. This register
-also contains a bit that is the framing error in normal
-operation and a receive-activity indicator in shutdown."
+I've just ported ppcboot to a custom 860T based board and noticed a few
+issues with it while tracing with GDB via BDM.
 
-"Receive data is stored in an 8-word FIFO. The FIFO is
-cleared if it overflows."
+Basically, it looks like a lot of the IOs to internal registers are
+happily re-ordered by GCC. I didn't yet checked all the various
+combinations, but I'm not sure using volatile actually helped (and it's
+not used everywhere in ppcboot anyway). Also, I noticed eieio is only
+rarely used. I beleive 8xx CPUs don't have the same execution ordering
+issues than 6x/7xx/7xxx CPUs, do they ?
 
-> Can someone give me some insight into this problem? What do I need to do to
-> correct this?
->
-Read the data before the fifo overflows.
+For now, I'm compiling ppcboot with -O0, and the result is fine. However,
+to avoid any potential problem, especially with future cores that may
+more agressively re-order execution, shouldn't we wrap all IOs in some
+macros like we do in the 6xx/7xx/7xxx kernel ? (The macro beeing a load/
+store instruction marked volatile with the appripriate constraints, and
+eventually eieio).
 
+The same is probably true for the 8xx kernel.
 
---
-Ormund
+What do you people think ?
+
+Ben.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
