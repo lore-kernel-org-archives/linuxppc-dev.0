@@ -1,34 +1,37 @@
-Date: Tue, 5 Mar 2002 15:47:39 -0500
-From: Benjamin LaHaise <bcrl@redhat.com>
+Message-ID: <3C855BA4.2020003@embeddededge.com>
+Date: Tue, 05 Mar 2002 18:58:28 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
 To: David Ashley <dash@xdr.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Cc: bcrl@redhat.com, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: mmap wrapping around to 0 revisited
-Message-ID: <20020305154739.C432@redhat.com>
-References: <200203041605.g24G5Ts15070@xdr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200203041605.g24G5Ts15070@xdr.com>; from dash@xdr.com on Mon, Mar 04, 2002 at 08:05:29AM -0800
+References: <200203060006.g2606g123689@xdr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Mar 04, 2002 at 08:05:29AM -0800, David Ashley wrote:
-> The fix is in
-> arch/ppc/kernel/syscalls.c
-> in the sys_mmap function, change this line:
-> 	err = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
-> to
-> 	err = do_mmap2(addr, len, prot, flags, fd, (unsigned long)offset >> PAGE_SHIFT);
+David Ashley wrote:
+
+> .... The do_mmap itself is broken, the check
+> for overflow is like this:
+> 	if ((offset + PAGE_ALIGN(len)) < offset)
+> 		goto out;
 >
-> Possibly it would be better to have the argument as an unsigned long instead
-> of an off_t.
+> It should be:
+> 	if ((offset + PAGE_ALIGN(len)-1) < offset)
+> 		goto out;
 
-Wrong fix.  sys_mmap on ppc should really be using do_mmap which already
-includes the cast to unsigned long and checks for overflow.  Arguably,
-it could well check for -'ve offsets and reject them, but traditionally
-Linux has accepted up to 4GB offsets with its 32 bit APIs and changing
-this would break a few things like X.
 
-		-ben
+This has been fixed and broken over and over more times than
+anything else in the kernel.  Anytime someone makes a generic VM
+change you can bet this will be broken again.  The only people that
+seem to care are those that want to map the last 4K page at the top
+of the physical address space from a user application using mmap().
+There aren't many of those people :-).
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
