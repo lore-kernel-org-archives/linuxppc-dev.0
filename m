@@ -1,45 +1,49 @@
-From: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15456.30159.56888.598661@igor.jsc.nasa.gov>
-Date: Tue, 5 Feb 2002 18:16:15 -0600
-To: Hollis Blanchard <hollis@austin.ibm.com>
+Date: Tue, 5 Feb 2002 16:46:13 -0800 (PST)
+From: "David A. Gatwood" <dgatwood@gatwood.net>
+To: murali nagarajan <muralin@gdatech.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: io.h and I/O port access from user space
-In-Reply-To: <1012950466.1350.17.camel@granite>
-References: <15456.16854.183292.343027@igor.jsc.nasa.gov>
-	<1012945690.1265.11.camel@granite>
-	<15456.23060.255087.831957@igor.jsc.nasa.gov>
-	<1012950466.1350.17.camel@granite>
-Reply-To: jeffrey.d.kowing1@jsc.nasa.gov
+Subject: Re: Problem with ping/telnet
+In-Reply-To: <028801c1aea2$610d96a0$0900a8c0@Domain.invalid>
+Message-ID: <Pine.LNX.3.96.1020205163126.16943I-100000@gatwood.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hollis Blanchard writes:
- > Have you tried enabling CONFIG_PNP and CONFIG_ISAPNP? That's all I had
- > to do to get ISA PnP working for an onboard sound card here.
+On Tue, 5 Feb 2002, murali nagarajan wrote:
 
-Yes, I had tried that but all I got was the following message on my
-console during bootup:
+> With your info, I am able to do a telnet from my board to the host, only if
+> I specify the port number. What surprises me is that the presence of both
+> /etc/services (entry to telnet is available with a port number) and the
+> /etc/protocols files. For some reason, may be the boot process is unable to
+> read these information.  But when I want to do a telnet to my board from my
+> host iMAc, I am unable to do. I get an error message "connection refused".
 
-isapnp: Scanning for PnP cards...
-isapnp: No Plug & Play device found
+This sounds vaguely familiar like I've run into it before, but I can't
+remember where.
 
-I did notice that on my Redhat 7.1 host machine I have a
-/usr/lib/modules/modules.isapnpmap file that I lack the equivalent for
-on my target powerpc machine.  The file is a listing of
-vendor/device/function ids.  Perhaps this may be important for the
-CONFIG_ISAPNP functionality?  Any suggestions or pointers welcome !
+The boot process doesn't read /etc/services.  That's read on-the-fly by
+the telnet program itself with calls to either getservbyname or
+getservent, which are standard C library calls, and should always work if
+the service is listed and the files (and directory) are readable by the
+user that telnet is being run as.
 
-Anyways, thanks for the suggestion.  I guess I need to go educate
-myself on the PnP protocol a bit more.
+You said this is an NFS root, right?  Is it set to squash root permissions
+to nobody, by chance?  If so, you might try turning that off.  Just a
+vague notion.
 
-Regards,
-Jeff
+Beyond that, I'm out of ideas.  Maybe some of the folks who do daily
+embedded work could say more.  I haven't done that in the better part of a
+year, and I'm a little rusty.  :-)
 
---
-Jeff Kowing
-jeffrey.d.kowing1@jsc.nasa.gov
+
+Later,
+David
+
+---------------------------------------------------------------------
+                    Check out my weekly web comic:
+                     http://www.techmagazine.org
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
