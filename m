@@ -1,34 +1,30 @@
-Message-ID: <3ABB54DF.83D364D4@mpifr-bonn.mpg.de>
-Date: Fri, 23 Mar 2001 14:51:27 +0100
-From: Albrecht =?iso-8859-1?Q?Dre=DF?= <ad@mpifr-bonn.mpg.de>
+From: xander@xjmaas.demon.nl
+Date: Fri, 23 Mar 2001 20:44:52 +0100 (CET)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.2 and ANS
+Message-ID: <Pine.LNX.4.21.0103232040230.1169-100000@xjmaas.demon.nl>
 MIME-Version: 1.0
-To: Takashi Oe <toe@unlserve.unl.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: anyone with bmac network problem?
-References: <Pine.A41.3.96LJ1.1b7.1010315122129.41552B-100000@unlserve.unl.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe wrote:
-> I'm looking for testers on a possible workaround for bmac network problem.
-> As some of you might know, bmac tx dies abruptly when network environment
-> is very busy and never recovers.  A patch enclosed might alleviate the
-> situation, and I want to know if it works for anybody else.
->
-> This problem is hard to reproduce in that it takes time and you must have
-> busy traffic.  I can say I have not been able to reproduce the problem
-> when the patch is applied, whereas I could eventually reproduce the bmac
-> hang without the patch, but YMMV.
+Hi all,
 
-IT WORKS!!! My test is to run the security scanner nessus against several hosts
-in parallel, and it *always* crashed the network. Now it works like a dream,
-absolutely stable. Good work, indeed!!! When does it go into the standard
-kernel?
+I have a little dispute with kernel 2.4.2 on my ANS. When I install the
+new kernel and reboot, I get:
 
-Thanks, Albrecht.
+Calling quiesce ...
+DEFAULT CATCH!, code=FF00300
 
---
+When I disable the support for 'early boot text console', the kernel won't
+continue to boot either.
+
+I really would like to get 2.4.2 running on my ANS ( as do others I know)
+
+Thanks,
+
+Xander
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
