@@ -1,75 +1,67 @@
-Date: Sun, 27 Jun 1999 01:36:07 -0400 (EDT)
-From: Peter Handel <phandel@cise.ufl.edu>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: HELP - I'm going mad: mp3/adb conflict; r5/mouse button emu; twm/menu
-Message-ID: <Pine.GSO.4.05.9906270129400.10109-100000@eclipse.cise.ufl.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v03110700b39bed3e38b4@[209.183.130.98]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 27 Jun 1999 11:08:06 -0400
+To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
+        "Conrad M. Hirano" <placebo2@pobox.com>
+From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+Subject: Re: Machine Check in Kernel Mode with Paul's 2.2.10 on B+W G3,
+ workaround
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've got a few problems with my new r5 system, the first of which is
-absolutely driving me nuts.
+Hi,
 
-PowerCenter Pro 210 / 96MB RAM.
+>>  hda: hda timeout waiting for DMA
 
-1) Say I'm playing an mp3 with either xmms or mpg123.  If I move a
-window around w/the mouse, the music will stop completely!  I have to
-quit xmms/mpg123 and restart it for it to work again.  This only
-happens with kernels I compile myself.  I have even tried compiling
-2.2.10 and 2.3.6 with all default values, but still the same problem.
-(Had same problem under r4!)  The only constant here is egcs 2.91.66,
-which I built under r4 and which came prebuilt in r5.  This has been
-extremely frustrating, as I'd like to start playing with the kernel
-code myself.
+>>Machine check in kernel mode
+>>Caused by (from msr): regs c01a4c18 Unknown values in msr
 
-Other problems:
+>>Here are some register values:
+>>   NIP: C00BDE58  LR: C00BDE14  MSR: 00009030  Trap: 0200
+>>Task= c01a2f58[0] 'swapper' mm->pgd
+>>Last syscall: 112
 
-2) Mouse: I cannot get the middle mouse button emulated using XFree86
-- I've tried all the suggestions with the adb_buttons in the bootx
-kernel-args space, and even tried the patched kernel in the
-faq-o-matic; nothing.  Control-click does send a right mouse event and
-has been from day 1, I just can't get the middle one emulated [I'd
-actually like to get option and command-click *and* option-2/3 again, 
-like r4].
+>>Backtrace: C00BDE14 COO13C04 C001C850 C0003B68 C001F460 C00069F4 ...
 
-3) twm menus are all blue in the background, until I move my mouse
-over the selections, thus making them visible.  Here is a snip of my
-.twmrc:
+>>There does not seem to be anything unusual until the DMA timeout message
+>>waiting for hda.
 
-menu "hosts"
-{
-"Logins"        ("white":"DarkSlateGrey")       f.title
-"Local Shell"   !"xterm &" #theres more here
-...
-"-----"         f.title
-"Exit"          ("white":"CornFlowerBlue") f.quit
-}
+>From reading the comp.os.linux newsgroups, I found some more information
+about this problem and a workaround that may help some people.
 
-So, when I initially click, the menu is all blue until I move my mouse
-over a selection, which then makes the selection act normal.  This
-exact .twmrc worked perfectly under r4.
+First the workaround:
 
-4) By the way, does anyone have a good /etc/X11/XF86Config file for
-the PowerComputing's 17" monitor?  I don't have my monitor manual
-here, so I don't have the exact h/v frequencies handy.  It works, but
-I'm sure it'd work at a higher refresh rate (ie. 76hz)
+In BootX in the extra kernel arguments field put the following:
 
+hda=none hdb=none
+
+
+That stops the kernel from doing the partion check on the hda device (from
+seeing the device at all?) and thus the timeout error.
+
+As for why this is happening:
+
+- it seems some newer IBM drives BIOS says the drive is capable of UDMA
+(ultra DMA) which seems to be messing things up somewhat for both x86 and
+ppc recent kernels.  One post attributed the bug to insuffiecient memory
+being available for the DMA buffers in the kernel that results in a kernel
+stack overflow (this is the error message you get with the Yellowdog 2.2.6
+and blue/g3 kernels).
+
+So the problem occurs with later kernels and newer Maxtor and IBM drives
+which say they support UDMA.
+
+I will keep digging.
 
 Thanks,
-Peter
 
--- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
-> > You are perfectly free to believe what you want to, and so am I.
-> Actually, this turns out not to be the case. God does not give us
-> the freedom to believe anything we wish. We are morally obligated to
-> believe the truth. Doing anything else is a sin. You are not free to
-> interpret the Bible anyway you wish. -DFL (Pretty neat, huh?)
+Kevin
+
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
