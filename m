@@ -1,55 +1,43 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
+Date: Mon, 13 Aug 2001 21:45:46 -0700 (PDT)
+From: James F Dougherty <jfd@GigabitNetworks.COM>
+Message-Id: <200108140445.VAA05340@krakatoa.gigabitnetworks.com>
+To: trini@kernel.crashing.org, jrp@wvi.com
+Subject: Re: PCI IDE Adapter for PPC/Linux
+Cc: jfd@GigabitNetworks.COM, mlocke@mvista.com, dmj+@andrew.cmu.edu,
+	linuxppc-dev@lists.linuxppc.org
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15224.38931.44226.806453@cargo.ozlabs.ibm.com>
-Date: Tue, 14 Aug 2001 13:16:35 +1000 (EST)
-To: Edward Swarthout <swarthou@ibmoto.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: assorted kernel patches
-In-Reply-To: <200108131910.f7DJAAd09710@pacific.somerset.sps.mot.com>
-References: <200108131910.f7DJAAd09710@pacific.somerset.sps.mot.com>
-Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Edward Swarthout writes:
+http://ppcboot.sourceforge.net/
 
-> There are a small set of patches that we think would be useful to
-> merge back into linuxppc_2_4_devel.  What is the procedure to discuss
-> these changes, get them reviewed, and merged (if so desired)?
+Download PPCBoot
 
-Well the primary thing is to make the actual patches available to us;
-post them to the list or post a URL or something.  Since I am the
-maintainer you need to persuade me that the patches are interesting
-and useful and won't break anything too badly. :)
+ppcboot/common/cmd_ide.c
+ppcboot/include/ide.h
+ppcboot/disk/*
 
-> 1. Support for hardware breakpoints for process threads.
-
-A good idea in general although I will be interested to see how this
-interacts with xmon's and kgdb's use of iabr/dabr.
-
->    - Add iabr and dabr to the end of the pt_regs structure.
-
-Why save them there rather than in the thread_struct?  Do you change
-them on every kernel entry from userspace?
-
->    - add IABR and DABR register numbers for ptrace
-
-Is this so that gdb can change them?
-
-> 2. Allow superviser (MSR[PR]=0) user threads.
-
-Hmmm, you'll need to explain exactly why this is a good idea and why
-it won't break anything.  Without a good strong argument I would be
-inclined to reject this.  I don't see what you can do with a "user"
-thread running in supervisor mode that you can't do with a kernel
-module.
-
->    indicate this.  A good alternative is MSR[RI].
-
-Huh?  Why is RI good?
-
-Paul.
+>
+>
+> > > Also, how come it is not running in Native mode? Does anyone know what
+> > > the changes are to the pdc driver to enable this?
+> >
+> > iirc, that means the BIOS didn't set it up, thats all.
+>
+> Hey, I've got an embedded PPC project in the works and this touches on it
+> -- where can I find out what kind of boot rom setup I need to perform for
+> the IDE adapter to work under Linux?
+>
+> --
+> Sincerely,
+>
+> Jim Potter
+> 45th Parallel Processing
+> jrp@wvi.com
+>
+>
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
