@@ -1,80 +1,97 @@
-Date: Wed, 28 Jul 1999 12:34:42 +0000 (GMT)
-From: laveren <laveren@ifir.ifir.edu.ar>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: PowerBook '99 ethernet problem.
-In-Reply-To: <BFC0587634C3D111AACB00805FA766FA02C1C6AE@exchny12.ny.smb.com>
-Message-Id: <Pine.BSF.3.96.990728120357.22251A-100000@ifir>
-Mime-Version: 1.0
+Date: Wed, 28 Jul 1999 07:53:21 -0500 (CDT)
+From: "ian reinhart geiser (ADMIN)" <geiseri@msoe.edu>
+To: Neil Jolly <jollyn@cadvision.com>
+cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        LinuxPPC List <linuxppc-user@lists.linuxppc.org>
+Subject: Re: G3 Upgrade Questions....
+In-Reply-To: <379E8995.31CA136B@cadvision.com>
+Message-ID: <Pine.OSF.3.96.990728074858.32588A-100000@torres.msoe.edu>
+MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi, I'm using R5, it works great, but the ethernet hardware is not
-responding ie:
+On Tue, 27 Jul 1999, Neil Jolly wrote:
 
-	during the boot precess the eth is recognized as
-	eth0: BMAC+ at 00:50:e4:7a:37:51
-	after booting I issue:
+> 
+> ian geiser wrote:
+> 
+> > Hello,
+> >     I just installed a G3 upgrade card into my powercenter132
+> >     It is a 400Mhz with 1Meg at 200Mhz....
+> >     It registers under MacOS perfectly but i get the following under
+> >     proc/cpuinfo:
+> >     processor       : 0
+> >     cpu             : 750
+> >     temperature     : 0 C            <--Is this correct?!
+> >     clock           : 195MHz        <-- Is this correct?!
+> >     revision        : 130.1
+> >     bogomips        : 399.77
+> >     zero pages      : total 0 (0Kb) current: 0 (0Kb) hits: 0/1084 (0%)
+> >     machine         : Power Macintosh
+> >     motherboard     : AAPL,7300 MacRISC
+> >     memory          : 112MB
+> >
+> >     it only registers 195 Mhz and 0C for the temp... is the correct?
+> >     i am running Kernel 2.2.10
+> 
+> Here's a peek at my cpu info. A 233 G3 clocked to 292 with 83mhz bus, and
+> runs around 106 degrees F. Obviously the temp is not accurate, but clock
+> seems to be pretty close.
+> 
+> processor       : 0
+> cpu             : 750
+> temperature     : 0 C
+> clock           : 290MHz
+> revision        : 2.2
+> bogomips        : 581.63
+> zero pages      : total 0 (0Kb) current: 0 (0Kb) hits: 0/558 (0%)
+> machine         : Power Macintosh
+> motherboard     : AAPL,Gossamer MacRISC
+> L2 cache        : 512K unified pipelined-syncro-burst
+> memory          : 96MB
+> 
+	i have a powercenter 132, is it feasable that the 
+	motherboard can only run a 200MHz CPU or is the
+	card being set to half speed some how?
 
-# ifconfig eth0 192.168.3.2 broadcast 192.168.3.255 netmask  255.255.255.0
-# ifconfig eth0
-	eth0  Link encap: Ethernet  HWaddr 00:50:e4:7a:37:51
-              inet addr: 192.168.3.40 Bcast:192.168.3.255 Mask:255.255.255.0
-              UP BROADCAST RUNNING MULTICAST MTU: 1500 Metric: 1
-              RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-              TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-              collisions:0 txqueuelen:100
-              Interrupt:42 Base address:0xc000
+	under MacOS it says it is at 400 and when i run
+	MacBench i get the numbers a little lower than
+	what the box says ( like 25 points low ).
 
-# route
-Kernel IP routing table
-Destination     GW     GenMask          Flags Metric  Ref Use Iface
-192.168.3.40    *      255.255.255.255  UH    0       0   0   eth0
-192.168.3.0     *      255.255.255.0    U     0       0   0   eth0
-127.0.0.0       *      255.0.0.0        U     0       0   0   lo
+	under LinuxPPC my setiat home client takes almost
+	24h to process a block while my P][ 400 takes
+	only 10 hours....
 
-So the net is ok but when i try to ping any box in the net nothing
-happends:
+	is this the client?
+	am i really running half as fast?
 
-# ping -c 5 192.168.3.1
-PING 192.168.3.1 (192.168.3.1): 56 data bytes
+	should i send this bugger back and just get
+	a 200Mhz one because that is all my board can	
+	do?
 
---- 192.168.3.1 ping statistics ---
-5 packets transmited, 0 received, 100% packet loss
+	thanks for the input all.
 
-#ifconfig eth0
-  XXX --- Same as before but
-  RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-  TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+	-ian reinhart geiser
+	
 
-Then I guess that no packets were efectively transmited by the kernel eth
-driver. Why?? What wrong?? There is other things yet, after boot
-/dev/interrupts says:
-     CPU0
-XX:  XXX
-32:     0     PMAC-PIC    BMAC-txdma
-33:     0     PMAC-PIC    BMAC-rxdma
-42:     0     PMAC-PIC    BMAC-misc
+.-----------------------------------------------------------.
+|[]                   NeXT Generation                    [X]|
+|--------------------------,--------------------------------.
+|  UNIX GEEK,              | Office:    I have none...      |
+|  Macintosh Specialist @  | Phone:     414.277.7288        |
+|  Milwaukee School of     |                                |
+|        Engineering       |--------------------------------|
+|                          |                                |
+|   ian reinhart geiser    | phone:   414.220.9683          |
+|   Apt #5                 | email:   geiseri@msoe.edu      |
+|   828 N Milwaukee St     | web:     www.msoe.edu/~geiseri |
+|   Milwaukee, WI 53202    |  NeXT/Be/Cyberdog Mail okay!   |
+|                          |   MIME or BinHex preferred     |
+|--------------------------'--------------------------------|
+'-----------------------------------------------------------'
 
-after the ping the interrupts remains as before so no interrupts were
-handled by the driver, well if no packets were TX as i guess no intr were
-generated that coherent. but if I issue:
-
-#ifconfig eth0 down
-#ifconfig eth1 up
-#ifconfig eth0
-XXX --- same as before
-RX packets:0 errors:1 dropped:1 overruns:0 frame:1
-TX packets:1 errors:0 dropped:0 overruns:0 carrier:0
-XXX --- same as before
-
-why r RX errors? and why i try to TX 1 packet??
-
-Any ideas why is this appening to me????
-
-
-					J.Laverense
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
