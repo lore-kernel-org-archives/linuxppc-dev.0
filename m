@@ -1,19 +1,22 @@
-Date: Mon, 25 Sep 2000 19:37:12 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Date: Mon, 25 Sep 2000 20:39:34 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: R Shapiro <reshapiro@mediaone.net>,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        R Shapiro <reshapiro@mediaone.net>,
         Michel Dänzer <daenzerm@student.ethz.ch>,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
 In-Reply-To: <Pine.LNX.4.10.10009241541130.421-100000@cassiopeia.home>
-Message-ID: <Pine.LNX.4.10.10009251934340.5676-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.21.0009251945050.1113-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Sun, 24 Sep 2000, Geert Uytterhoeven wrote:
+
+>
 > On Sun, 24 Sep 2000, Michael Schmitz wrote:
 > > >  > 	/* hack */
 > > >  > 	pScrn->videoRam = 2048;
@@ -32,14 +35,14 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 > However, I see a problem. Atyfb reports the video RAM size minus the cursor
 > area. If you divide that number of bytes by 1024 to get pScrn->videoRam, you
 > end up with 1 MB too few :-(
+>
 
-Rather 1k too few if you mean the truncation error - or is the cursor area
-really 1 MB?
+  Hmm does this mean that mmapping the framebuffer doesn't give you the
+start of vram but vram+offset ? if yes then we have a big problem here.
 
-My LT Pro reports 8188 kB. Seems I can live without the four that have
-gone missing.
+BTW you'll end up 1KB too few not 1MB, pScrn->videoRam is in KBytes :)
 
-	Michael
+ Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
