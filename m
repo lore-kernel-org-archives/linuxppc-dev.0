@@ -1,34 +1,25 @@
-Date: Tue, 31 Oct 2000 02:39:14 +1100
-From: Chris Leishman <chris@sharinga.com>
-To: Paul Mackerras <paulus@linuxcare.com.au>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.18-pre17 candidate
-Message-ID: <20001031023914.B364@nina.dev.fol>
-References: <14837.11341.207379.903189@argo.linuxcare.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <14837.11341.207379.903189@argo.linuxcare.com.au>; from paulus@linuxcare.com.au on Tue, Oct 24, 2000 at 05:29:33PM +1100
+Date: Mon, 30 Oct 2000 12:31:12 -0500
+Subject: BMAC driver issue addressed?
+From: Jim Blackburn <blackbjm@jmu.edu>
+To: <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B6231A90.1458%blackbjm@jmu.edu>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Oct 24, 2000 at 05:29:33PM +1100, Paul Mackerras wrote:
-<snip>
-> I'll be interested to hear how people go with it.  I'll check the
-> changes into the bitkeeper linuxppc_2_2 tree within the next day or
-> so.  If it goes OK I'll send the patch to Alan for inclusion in
-> 2.2.18.
->
-> Paul.
+Hi all:
 
-If you compile the GMAC driver as a module it complains about an unresolvable
-symbol "feature_set_gmac_phy_reset".  This is a symbol in the matching kernel,
-so I'm not sure whats going on...
+I experience the infamous problems with the bmac driver on my beige g3
+minitower.  A while back there was talk of analyzing Darwin's workaround for
+the bmac's hardware issues and implementing that into Linux's kernel.  Has
+anyone taken on this project since that discussion, or has it been shuffled
+down to the bottom of the deck in light of more pressing issues with the
+kernel?
+--
+Jim Blackburn
+blackbjm@jmu.edu
 
-Also, when I tried using the new input stuff my mapping of right/middle mouse
-buttons to F9 and F10 (use append="adb_buttons=101,109" in yaboot) stopped
-working.
-
-Chris
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
