@@ -1,81 +1,105 @@
-From: Daniel Wu <Daniel.Wu@alcatel.com.au>
 Subject: Re: kernel crashes at InstructionTLBMiss
-To: Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-Id: <00Jun6.135659est.115272@border.alcanet.com.au>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <00Jun4.144038est.115228@border.alcanet.com.au>
- <393BBE5D.49B17E9C@embeddededge.com>
-Date: Tue, 6 Jun 2000 13:56:59 +1000
+To: dan@netx4.com (Dan Malek)
+Date: Tue, 6 Jun 2000 13:59:59 +1000 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org (LinuxPPC Embedded Mailing List)
+In-Reply-To: <393BCD68.556D4423@embeddededge.com> from "Dan Malek" at Jun 05, 2000 11:55:20 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000606035959.799D81B61D@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Dan Malek writes:
+> I was just reminded of a patch to correct a mistake I made in this
+> particular kernel.  It is attached.  Apply just this one to the
+> MontaVista kernel :-).
 
-Dan Malek wrote:
-
-> > boot the target, I get the following output and nothing more.
-> >
-> > loaded at:     00800000 0080B1D8
-> > relocated to:  00B00000 00B0B1D8
-> > board data at: 00B00190 00B001B8
-> > relocated to:  007F0100 007F0128
-> > zimage at:     00806000 0087C6C1
-> > initrd at:     0087C6C1 00A53511
-> > avail ram:     00A54000 02000000
->
-> There are several things to watch for.  First, I am surprised you see
-> this much output.  You have obviously changed link addresses in the
-> Makefile, which you shouldn't do.  Because of the early kernel
-> mapping, everything should reside in the lower 8Mbytes of memory.  The
-> zImage support loader (arch/ppc/mbxboot/...stuff...) should link to
-> low memory, 0x00100000.  You should load the image either just above
-> that, at 0x00200000 or in very high ROM addresses ( > 16 Mbyte).
->
-
-The reason why I changed the address was because my uncompressed kernel is
-about 1.3M. This means if I load at 0x100000 (the default), then the board data
-gets trashed and I get nothing after the kernel has finished decompressing. I
-initially moved the address to 0x200000, but then I was getting other strange
-errors so I moved the whole thing higher into memory.
-
-BTW, I found the probelm that caused the crash in InstructionTLBMiss, partly
-thanks to Murray Jensen. I did not implement his patches but while reading his
-email, and trying to follow it, I realised that the M_TWB was not initialised
-properly in the first place! There was some code that was not suppose to be
-there - probably introduced while trying to patch the file from various
-sources.
-
-I now get further, but unfortunately I'm not there yet. The code stops after
-the RAM disk driver inits. Anyway, I'm thinking of starting from scratch with
-the kernel and patches at the MontaVista site. Come to think of it, all my
-changes are in one file so it should not be too difficult to port. I will let
-you know how I go.
-
->
-> You are also running an 860T at 50 MHz, so you are likely to discover
-> the "CPU6" silicon errata.  You need all of the patches for this.
->
-> Go to the MontaVista ftp site (ftp.mvista.com), /pub/CDK/wip/ppc_8xx/RPMS.
-> Get the kernel sources/headers from there (along with any other tools
-> you may want or need).  This is a 2.2.13 kernel with all patches and
-> the option to include the "CPU6" patch.  Don't apply any other patches
-> from anywhere.  Just use it and make the minimal changes for your
-> board.
->
-> Using a BDM is more likely to cause trouble than help.  This kernel
-> has XMON and KGDB options.  Use them instead of BDM.
-
-Unfortunately, if you get no output, BDM is the _only_ option you have - at
-least it will give you some details of the registers, although you can't step
-through code die to the virtual addresses.
-
-Thanks for everyone suggestions.
+I'd like to suggest the following patch as a more complete fix to avoid any
+possible cmd_line corruption due to the CPU6 workaround.
 
 Regards,
-Daniel
+Graham
 
+Index: arch/ppc/kernel/head.S
+===================================================================
+retrieving revision 1.1.1.3
+diff -u -r1.1.1.3 head.S
+--- arch/ppc/kernel/head.S	2000/03/10 01:11:12	1.1.1.3
++++ arch/ppc/kernel/head.S	2000/06/06 03:53:32
+@@ -2286,15 +2286,15 @@
+         lwz     r9,PGD(r9)              /* get new->mm->pgd */
+         addis   r9,r9,-KERNELBASE@h     /* convert to phys addr */
+ #ifdef CONFIG_8xx_CPU6
+-	lis	r6, cmd_line@h
+-	ori	r6, r6, cmd_line@l
++	lis	r6, cpu6_bug@h
++	ori	r6, r6, cpu6_bug@l
+ 	li	r7, 0x3980
+-	stw	r7, 12(r6)
+-	lwz	r7, 12(r6)
++	stw	r7, 0(r6)
++	lwz	r7, 0(r6)
+         mtspr   M_TWB, r9               /* Update MMU base address */
+ 	li	r7, 0x3380
+-	stw	r7, 12(r6)
+-	lwz	r7, 12(r6)
++	stw	r7, 0(r6)
++	lwz	r7, 0(r6)
+         mtspr   M_CASID, r5             /* Update context */
+ #else
+         mtspr   M_TWB, r9               /* Update MMU base address */
+@@ -2432,11 +2432,11 @@
+ 	SYNC			/* Some chip revs need this... */
+ 	mtmsr	r6
+ 	SYNC
+-	lis	r7, cmd_line@h
+-	ori	r7, r7, cmd_line@l
++	lis	r7, cpu6_bug@h
++	ori	r7, r7, cpu6_bug@l
+ 	li	r4, 0x3980
+-	stw	r4, 12(r7)
+-	lwz	r4, 12(r7)
++	stw	r4, 0(r7)
++	lwz	r4, 0(r7)
+         mtspr   M_TWB, r3               /* Update MMU base address */
+ 	SYNC
+ 	mtmsr	r5
+@@ -2452,11 +2452,11 @@
+ 	SYNC			/* Some chip revs need this... */
+ 	mtmsr	r6
+ 	SYNC
+-	lis	r7, cmd_line@h
+-	ori	r7, r7, cmd_line@l
++	lis	r7, cpu6_bug@h
++	ori	r7, r7, cpu6_bug@l
+ 	li	r4, 0x2c00
+-	stw	r4, 12(r7)
+-	lwz	r4, 12(r7)
++	stw	r4, 0(r7)
++	lwz	r4, 0(r7)
+         mtspr   22, r3		/* Update Decrementer */
+ 	SYNC
+ 	mtmsr	r5
+@@ -2899,6 +2899,11 @@
+ 	.globl	cmd_line
+ cmd_line:
+ 	.space	512
++
++#ifdef CONFIG_8xx_CPU6
++cpu6_bug:
++	.space 4
++#endif
+
+ /*
+  * An undocumented "feature" of 604e requires that the v bit
+
+
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
