@@ -1,64 +1,47 @@
-In-Reply-To: <9812159137.AA913779792@ccmail.ray.ca>
-Date: Thu, 17 Dec 1998 19:38:27 +0100
-To: linuxppc-dev@lists.linuxppc.org
-CC: Paul Mackerras <paulus@cs.anu.edu.au>
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Small error?? in IDE dma processing?
-Message-Id: <19981217193827.008878@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 17 Dec 1998 13:46:00 -0500 (EST)
+From: "Mark S. Mathews" <mark@absoval.com>
+To: Corey Minyard <minyard@acm.org>
+cc: linuxppc-dev@lists.linuxppc.org, Cort Dougan <cort@persephone.cs.nmt.edu>
+Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc, part 2
+In-Reply-To: <m2ww3sd422.fsf@wf-rch.cirr.com>
+Message-ID: <Pine.LNX.3.96.981217133832.9446E-100000@tristar.cc.absoval.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul !
 
-On the linux kernel mailing list, I've catched the following message :
+Hi Corey,
 
-On Tue, Dec 15, 1998,  <jason.harp@mail.ray.ca> wrote:
+Just a suggestion here.
 
->   Can you confirm an error in the following code for dma_intr(): (2.0)
->     
->     
->             dma_stat = inb(dma_base+2);             /* get DMA status */
->             outb(inb(dma_base)&~1, dma_base);     /* stop DMA operation */
->             stat = GET_STAT();                      /* get drive status */
->     
->     
->     Should this not be:
->     
->     
->             outb(inb(dma_base)&~1, dma_base);      /* stop DMA operation*/
->             dma_stat = inb(dma_base+2);             /* get DMA status */
->             stat = GET_STAT();                      /* get drive status */
->     
->      
->     Similar for (2.1) the DMA status is retrieve before you stop the DMA 
->     operation.
+>   * Lots of CONFIG_8xx still occur.  I'm not sure what to do for these,
+>     it's hard to tell exactly what is 8xx specific and MBX specific.
+>     Are all MBX cards 8xx based?  I'd assume so, from the code.  And
+>     I doubt we are going to be able to get rid of these.
 
-The error was then confirmed I think by Andre M. Hedrick.
-
-Then, I looked at our ide-dma.c and ide-pmac.c, and it looks like we have
-the same kind of issue:
-
-ide-pmac.c, line 301:
-
-    case ide_dma_end:
-        drive->waiting_for_dma = 0;
-        dstat = in_le32(&dma->status);
-        out_le32(&dma->control, ((RUN|WAKE|DEAD) << 16));
-        /* verify good DMA status */
-        return (dstat & ((RUN|DEAD|ACTIVE)) != RUN;
-
-shouldn't we do the same split and reverse the status read and the
-control write ?
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+Would it be possible to keep in mind that the MBX is _not_ the only board
+that uses the MPC8xx.  We're doing some work here with two different
+boards that use MPC8xx processors, but are definitely _not_ MBX boards.
+Perhaps have separate config options for the 8xx processor and the board
+design.
 
 
+i.e.
+CONFIG_8xx
+CONFIG_MBX  
 
+Thanks,
+Mark 
+
+
+Mark S. Mathews
+
+AbsoluteValue Software     Web:    http://www.absoval.com
+P.O. Box 941149            e-mail: mark@absoval.com
+Maitland, FL 32794-1149    Phone:  407.644.8582
+USA                        Fax:    407.539.1294
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
