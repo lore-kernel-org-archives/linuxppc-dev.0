@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
-	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 816232BDB5
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
+	by ozlabs.org (Postfix) with ESMTP id 95A922BF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jan 2005 01:46:42 +1100 (EST)
-To: Jens-Peter.Oswald@kayser-threde.de
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 13 Jan 2005 13:37:12 +0100."
-	<1D40077EC04042479FDA552D718E051B010D7528@ktms3.net.local>
-Date: Thu, 13 Jan 2005 15:46:05 +0100
-Sender: wd@denx.de
-Message-Id: <20050113144610.7E0A9C1466@atlas.denx.de>
+	Fri, 14 Jan 2005 01:46:45 +1100 (EST)
+Received: from tq-mailsrv-1.tq-net.de (tq-mailsrv-1 [172.20.1.1])
+	by mail.tqs.de (Postfix) with ESMTP id AE7EE3CD0
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 13 Jan 2005 15:46:34 +0100 (CET)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 13 Jan 2005 15:46:34 +0100
+Message-ID: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B31@TQ-MAILSRV-1>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: <Jens-Peter.Oswald@kayser-threde.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: TQM860L hangs after soft reboot 
+Subject: AW: TQM860L hangs after soft reboot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1D40077EC04042479FDA552D718E051B010D7528@ktms3.net.local> you wrote:
-> 
-> After a soft reset (from linux or bootloader u-boot) the board hangs. 
+Hi Jens-Peter,
 
-I don't know which Linux kernel you're running, but U-Boot triggers a
-checkstop reset of the CPU to reboot the system.  If  this  does  not
-restart the board, then there is a hardware problem.
+linuxppc-embedded-bounces@ozlabs.org wrote on Donnerstag, 13. Januar
+2005 13:37:=20
+> Hi all,
+> We've designed a custom board for an TQM860L module from
+> TQ-Components.=20
+> Now the following behaviour occurs:
+> After a soft reset (from linux or bootloader u-boot) the board hangs.
+> Only a hard reset (power cycle or RESIN# pin low of TQ-Modul) wakes
+> it up.
 
-> I assume it might be a forgotten pullup- or pull down in our custom
-> board.
-> 
-> Any hints which pins I must check?
+RESIN# is routed to pin PORESET# of the CPU (with some reset logic in =
+between).
 
-You should probably contact TQ Support with such a question. I  doubt
-that this is a topic for this mailing list. Try asking Andreas Widder, 
-08153-9308-235, <Andreas.Widder@tqc.de>
+> In the evaluation board STK8xxL from TQ the modul boots normally
+> after a soft reset. I assume it might be a forgotten pullup- or pull
+> down in our custom board.
+
+Try a look at the user manual: MPC860UM 3/2003, REV 2, Table 11-1.MPC860 =
+
+Reset Responses and the following chapter.
 
 > By the way, how does linux handle a soft reset?
 
-See function m8xx_restart() in "arch/ppc/kernel/m8xx_setup.c"; in our
-linuxppc_2_4_devel tree the  same  mechanism  as  in  U-Boot  (i.  e.
-checkstop reset) is used.
+U-Boot uses the checkstop reset (caused by a machine check after=20
+trying to execute an instruciton at a non-existing address).
 
-Best regards,
+Hope this was somewhat of a help.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The best things in life are for a fee.
+Regards,
+Martin
