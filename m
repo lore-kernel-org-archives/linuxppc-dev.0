@@ -1,15 +1,31 @@
-Message-ID: <393C1149.E24765F0@embeddededge.com>
-Date: Mon, 05 Jun 2000 16:44:57 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <7283DE19D141D111AD0E00A0C95B195502D96922@mail2.aiinet.com>
+From: "Dayton, Dean" <dean@aiinet.com>
+To: "'Dan Malek'" <dan@netx4.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: fec on 8260
+Date: Mon, 5 Jun 2000 17:28:33 -0400 
 MIME-Version: 1.0
-To: "Dayton, Dean" <dean@aiinet.com>
-CC: "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: fec on 8260
-References: <7283DE19D141D111AD0E00A0C95B195502D96921@mail2.aiinet.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I'm using the MII interface on an EST SBC8260 board. I have a Canary
+CTX-1170 100Base-TX transceiver that connects to the MII header.
+
+===================================
+Dean Dayton - dean@aiinet.com
+
+
+
+-----Original Message-----
+From: Dan Malek [mailto:dan@netx4.com]
+Sent: Monday, June 05, 2000 4:45 PM
+To: Dayton, Dean
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: fec on 8260
 
 
 "Dayton, Dean" wrote:
