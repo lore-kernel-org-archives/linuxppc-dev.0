@@ -1,47 +1,40 @@
-From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: insmod trouble
-Date: Thu, 27 May 2004 09:15:58 +0200
-References: <20040525095554.A5EC4C109F@atlas.denx.de>
-In-Reply-To: <20040525095554.A5EC4C109F@atlas.denx.de>
-Cc: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <40B595F7.3080801@fh-landshut.de>
+Date: Thu, 27 May 2004 09:17:11 +0200
+From: Oliver Korpilla <okorpil@fh-landshut.de>
+Reply-To: okorpil@fh-landshut.de
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200405270915.58686.Schramel.Linux@go.bartec.de>
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ioremap() question
+References: <40B4AB27.5020202@fh-landshut.de> <20040526171234.GA4255@gate.ebshome.net>
+In-Reply-To: <20040526171234.GA4255@gate.ebshome.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Eugene Surovegin wrote:
 
-my problem was ...
-> > --------------------------------------------------
-> > bash-2.05b# insmod demodriver.o
-> > demodriver.o: unresolved symbol module_unregister_chrdev
-> > demodriver.o: unresolved symbol register_chrdev
-> > demodriver.o: unresolved symbol led_init
-> > demodriver.o: unresolved symbol printk
-> > ------------------------------------------------
-> >
-> > What is the reason for this messages ??
+>You cannot use virt_to_bus() on ioremap returned addresses.
+>
+>Eugene.
+>
+>
+>
+Hello!
 
-Solution: You have to disable "Set version information on all module symbols" under "Loadable module support" in our kernel config.
+Maybe I may go like this:
 
-Thanx for comments
-Marco
+I know my PCI from the device bus, so:
 
+unsigned long bus_address;
+struct pci_bus *my_bus = universe_pci_dev->bus;
+bus_address = pci_phys_to_bus(physical_address, my_bus->number);
 
----------
-Marco Schramel
-R&D
-Bartec GmbH
-Schulstr. 30
-94239 Gotteszell, Germany
-www.bartec.de
-Marco.Schramel@go.bartec.de
-Phone:  +49 (0)9929/301332
-Fax:    +49 (0)9929/301112
+Since pci_phys_to_bus() is an exported symbol, this should work in my
+module, shouldn't it?
 
+Thanks in advance,
+Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
