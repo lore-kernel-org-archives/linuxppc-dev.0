@@ -1,68 +1,64 @@
-Subject: Re: IRQS on 6 Slot Macs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 5 Nov 2003 10:47:13 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Jeff Walther <trag@io.com>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <a04310100bbce446f4c17@[199.170.89.149]>
-References: <20031103033529.24416.qmail@kunk.qbjnet.com>
-	 <1067842481.17970.8.camel@gaston> <a04310106bbcd1501d614@[199.170.89.118]>
-	 <1067937269.680.92.camel@gaston>  <a04310102bbcda40d92fc@[199.170.89.159]>
-	 <1067985081.707.124.camel@gaston> <a04310101bbce0854283b@[199.170.89.118]>
-	 <1068000383.692.132.camel@gaston>  <a04310100bbce446f4c17@[199.170.89.149]>
-Content-Type: text/plain
-Message-Id: <1068016722.12704.148.camel@gaston>
-Mime-Version: 1.0
-Date: Wed, 05 Nov 2003 18:18:43 +1100
+Subject: Re: IRQS on 6 Slot Macs
+In-Reply-To: <a04310101bbce0854283b@[199.170.89.118]>
+Message-ID: <Pine.GSO.4.21.0311051041500.3572-100000@waterleaf.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> It went internal after the PowerSurge machines.   The Beige G3 lacks
-> a Fast SCSI bus and SCSI isn't built in after that.  However,
-> according to an Apple Tech note, one of the Blue & White chips has an
-> internal MESH cell because some part of the OS or firmware expects to
-> find a MESH.   However, the MESH connections are not carried to the
-> exterior of the chip.
+On Tue, 4 Nov 2003, Jeff Walther wrote:
+> At 09:32 +1100 11/05/2003, Benjamin Herrenschmidt wrote:
+> >Isn't MESH an IBM part ? I may be confused... Also, I would have
+> >expected MESH to be actually _inside_ GC, it isn't ?
+>
+> It is an Apple part.  I do not know for certain where it came from
+> originally.  However, following the evolution of Apple design
+> suggests that it's based on the NCR 53CF96.   The previous generation
+> of machines, the PPC NuBus machines, included the PMac 8100 and 9100
+> which used exactly the same CURIO chip as the x500 machines to
+> provide the slow (5 MB/s) ethernet and used the NCR 53CF96 to provide
+> the Fast SCSI bus.   Earlier machines (the Quadras) used the NCR
+> 53C96 to handle their SCSI bus.   And, of course, the earlier
+> machines used the NCR 53C80.
+>
+> Additionally, the 53CF96 chip in the 8100 is in a 100 pin, 20 X 30
+> quad flat pack.   MESH is in exactly the same package.    This is not
+> definitive, but suggests to me that MESH is simply a licensed 53CF96.
+>
+>
+> MESH is a separate chip and is not contained in GC.   It would be
+> kind of cool if MESH was in GC, because then one could implement the
+> Fast SCSI bus on 7200s and the PCC Catalyst clones, but that's not
+> the way it is....
+>
+> In my queue of projects (massive and ever lengthening) is to install
+> a 53CF96 in place of a MESH and/or vice versa and see what happens.
+> However, I wonder if a similar test could be done with software.   I
+> assume that Linux implements some kind of driver to support MESH.
+> Is there a driver for the 53CF96 which could be substituted or
+> compared as an experiment.
 
-Well, it's not that the OS/firm expect a MESH... It's that the B&W G3
-and the early Yikes G4 used the Paddington ASIC which contain a MESH...
-Apple didn't produce a entire new ASIC line just to strip it from there.
+There's a driver for the 53C96 in the Quadra (mac_esp.c and NCR53C9x.c).
 
-Next MacIO chip is KeyLargo (coming with UniNorth that is AGP machines)
-and this one doesn't have MESH anymore.
+The NCR53C9x.c core supports various 53C9x chips, including (53CF9x and FAS*),
+and is used on various platforms.  It's very similar to the esp.c core for
+SPARC, but Dave didn't like us to merge non-SPARC support in his driver.
 
-> The SCSI cell in CURIO is a 53C94, but CURIO provides SCSI, ethernet
-> and serial port support all in one chip.   So the pinout of the 53C94
-> doesn't tell one about the pinout of CURIO, except it does identify
-> some of the pins which must be present on CURIO somewhere.
+Gr{oetje,eeting}s,
 
-Ah ? Interesting. I though like for MESH that the ESCC and MACE were
-also part of GC. They do appear as cells of GC in the OF device
-tree, so it may be that they just "split" the ASIC for production
-reasons.
+						Geert
 
-> In fact, a great deal of the pinout of GC would be revealed if one
-> had a pinout for CURIO, because much of what GC does is connect to
-> CURIO.
->
-> It's interesting that the drivers are available in Darwin.  Thank
-> you.  I'm going to have to brush off those programming skills, I
-> think.   That's such a huge learning curve in my case, though.
->
-> CURIO was used from the NuBus power macs (or was it first in the AV
-> Quadras?) through the x500 series.   It had quite a long life.   It
-> is marked AM79C950KC.
->
-> >It would be interesting if someone acutally had time to review those
-> >and find out which of the HW bugs they work around in darwin for which
-> >we would need equivalent fixes in linux :)
->
-> Yes, it would.
->
-> Jeff Walther
->
->
 --
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
