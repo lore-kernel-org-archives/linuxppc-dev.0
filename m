@@ -1,41 +1,28 @@
-Message-Id: <200002092058.VAA24849@denx.local.net>
-To: Sebastien Articlaux <sebastien_articlaux@yahoo.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Converting vmlinux.initrd to S-RECORD
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 09 Feb 2000 06:59:05 PST."
-             <20000209145905.11737.qmail@web207.mail.yahoo.com>
-Date: Wed, 09 Feb 2000 21:58:12 +0100
+From: "Todd_Tomaino"@vnci.net
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256880.007E7FD2.00@ushq1.objectivecom.com>
+Date: Wed, 9 Feb 2000 18:08:57 -0500
+Subject: Linux w/ Motorola 860ADS target
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20000209145905.11737.qmail@web207.mail.yahoo.com> you write:
->
-> I've just read a message posted by Dan in november.
-> He said that he would post in ppc.kernel.org a prog
-> to convert file into S-Records.
->
-> He wrote:
-> The program just strips the 64K ELF header and
-> converts the rest of the file into S-Records.  You can
+Hello,
 
-No special tools needed. You have everything you need in your
-toolbox:
+I am brand new to Linux as well as the list.  I am interested in using
+Linux with the 860ADS demo board as a target.  Could anyone suggest a
+version of Linux that is well suited for this purpose.  Also, drivers for
+the PCMCIA interface would be a real plus.  In looking around under the
+search criteria for "Linux PPC" I am seeing versions such as Black Lab,
+Yellow Dog, Debian, etc.  These appear to be geared more towards desktop
+power pc units.  Is it possible to use one of these for an embedded
+application??
 
-	# Strip ELF header
-	dd if=zImage of=image bs=64k skip=1
-	# Convert to S-records
-	objcopy -I binary -O srec image image.srec
+best regards,
 
-Wolfgang Denk
+Todd
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Heavier than air flying machines are impossible.
-                    -- Lord Kelvin, President, Royal Society, c. 1895
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
