@@ -1,114 +1,60 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: Oops on core dumping
-Date: Tue, 30 Dec 2003 11:05:02 -0500
-Message-ID: <3D848382FB72E249812901444C6BDB1D1D189F@exchange.timesys.com>
-From: "Whitney, John" <John.Whitney@timesys.com>
-To: "Vincent Bernat" <bernat@free.fr>,
-	<linuxppc-dev@lists.linuxppc.org>
+To: zjzhou@newrocktech.com
+Cc: "'Mailing List: linuxppc-dev'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: A question on kernel clock: 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 30 Dec 2003 18:45:42 +0800."
+             <000501c3cec2$130dbab0$b702a8c0@newrock2>
+Date: Tue, 30 Dec 2003 19:49:46 +0100
+Message-Id: <20031230184951.94F07C12DD@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Vincent,
+Dear John,
 
-This looks like the same problem (application core dumps, caused in dump_fpu()) that I posted a patch for last week.  Look in the archives for my solution.  (basically, dump_fpu() is getting a NULL "regs" argument, and then referencing off of it.)
+in message <000501c3cec2$130dbab0$b702a8c0@newrock2> you wrote:
+>
+> The processor I mentioned is MPC82xx. Now, I have kernel from kernel.org
 
-John Whitney
+[I guessed that from the ...BRG8 part.]
+
+> run on the board. But, my "nsleep()" is not exactly. So, I want to
+> realize the timer mechanism of Linux used.
+
+> (1) which timer is used for nsleep?
+
+I have not the slightest idea. I don't know of any  standard  funtion
+with that name - neither in user space nor in kernel code.
+
+> (2) can udelay() be changed to be preempted by other process?
+
+That makes little sense. If you allow to run other prcesses inbetween
+you will have  looong  delays  -  udelay()  was  not  made  for  such
+purposes,  but  for  very  short delays (as the name suggests: in the
+range of a few microseconds).
+
+> (3) which is good choice for Kernel timeslice?
+
+What's wrong with the standard 10 ms ?
+
+> Additional, could we develop a bootloader like vxworks' bootloader? (
+> vxworks bootloader is a little vxworks, I think.)
+
+Of course you can. But what for? If you like the VxWorks boot loader,
+then use it. If you like something more powerful, use U-Boot.
 
 
------Original Message-----
-From:	Vincent Bernat [mailto:bernat@free.fr]
-Sent:	Tue 12/30/2003 4:17 AM
-To:	linuxppc-dev@lists.linuxppc.org
-Cc:
-Subject:	Oops on core dumping
+Best regards,
 
+Wolfgang Denk
 
-Hello !
-
-I am trying to get a dump for an application (vlc) that got a sig kill
-each time I try  to use it. When setting   to limit for the core  dump
-size to something different of 0 (8 MB or 88 MB), I get an oops :
-
-Oops: kernel access of bad area, sig: 11 [#1]
-NIP: C0008FDC LR: C00803B4 SP: C1995CC0 REGS: c1995c10 TRAP: 0301    Not tainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000084, DSISR: 40000000
-TASK = c3273540[14134] 'vlc' Last syscall: 125
-GPR00: C00803B4 C1995CC0 C3273540 00000000 D616C118 00000001 0000010C D616C008
-GPR08: 00000000 0000010C 00000000 00000000 175C8940
-Call trace:
- [c00803b4] elf_dump_thread_status+0xbc/0x130
- [c0080568] elf_core_dump+0x140/0x75c
- [c006354c] do_coredump+0x1d8/0x1f4
- [c002b63c] get_signal_to_deliver+0x244/0x314
- [c000a4b0] do_signal+0x30/0x24c
- [c0006098] do_user_signal+0x74/0xc4
-Oops: kernel access of bad area, sig: 11 [#2]
-NIP: C0008FDC LR: C00803B4 SP: D4663CC0 REGS: d4663c10 TRAP: 0301    Not tainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000084, DSISR: 40000000
-TASK = c79179e0[14223] 'vlc' Last syscall: 119
-GPR00: C00803B4 D4663CC0 C79179E0 00000000 D154B918 00000001 0000010C D154B808
-GPR08: 00000000 0000010C 00000000 00000000 15651298
-Call trace:
- [c00803b4] elf_dump_thread_status+0xbc/0x130
- [c0080568] elf_core_dump+0x140/0x75c
- [c006354c] do_coredump+0x1d8/0x1f4
- [c002b63c] get_signal_to_deliver+0x244/0x314
- [c000a4b0] do_signal+0x30/0x24c
- [c0006098] do_user_signal+0x74/0xc4
-Oops: kernel access of bad area, sig: 11 [#3]
-NIP: C0008FDC LR: C00803B4 SP: CB4CDCC0 REGS: cb4cdc10 TRAP: 0301    Not tainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000084, DSISR: 40000000
-TASK = c92110a0[14251] 'vlc' Last syscall: 119
-GPR00: C00803B4 CB4CDCC0 C92110A0 00000000 C6041D18 00000001 0000010C C6041C08
-GPR08: 00000000 0000010C 00000000 00000000 158395E8
-Call trace:
- [c00803b4] elf_dump_thread_status+0xbc/0x130
- [c0080568] elf_core_dump+0x140/0x75c
- [c006354c] do_coredump+0x1d8/0x1f4
- [c002b63c] get_signal_to_deliver+0x244/0x314
- [c000a4b0] do_signal+0x30/0x24c
- [c0006098] do_user_signal+0x74/0xc4
-Oops: kernel access of bad area, sig: 11 [#4]
-NIP: C0008FDC LR: C00803B4 SP: C73EFCC0 REGS: c73efc10 TRAP: 0301    Not tainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000084, DSISR: 40000000
-TASK = c768e0e0[14282] 'vlc' Last syscall: 37
-GPR00: C00803B4 C73EFCC0 C768E0E0 00000000 D154B118 00000001 0000010C D154B008
-GPR08: 00000000 0000010C 00000000 00000000 138C1F40
-Call trace:
- [c00803b4] elf_dump_thread_status+0xbc/0x130
- [c0080568] elf_core_dump+0x140/0x75c
- [c006354c] do_coredump+0x1d8/0x1f4
- [c002b63c] get_signal_to_deliver+0x244/0x314
- [c000a4b0] do_signal+0x30/0x24c
- [c0006098] do_user_signal+0x74/0xc4
-Oops: kernel access of bad area, sig: 11 [#5]
-NIP: C0008FDC LR: C00803B4 SP: CB613CC0 REGS: cb613c10 TRAP: 0301    Not tainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000084, DSISR: 40000000
-TASK = c7941ae0[14338] 'vlc' Last syscall: 119
-GPR00: C00803B4 CB613CC0 C7941AE0 00000000 C6041118 00000001 0000010C C6041008
-GPR08: 00000000 0000010C 00000000 00000000 124BBC78
-Call trace:
- [c00803b4] elf_dump_thread_status+0xbc/0x130
- [c0080568] elf_core_dump+0x140/0x75c
- [c006354c] do_coredump+0x1d8/0x1f4
- [c002b63c] get_signal_to_deliver+0x244/0x314
- [c000a4b0] do_signal+0x30/0x24c
- [c0006098] do_user_signal+0x74/0xc4
-
-(one for each attempt)
-
-The kernel is a 2.6.0-ben2.
 --
-die_if_kernel("Whee... Hello Mr. Penguin", current->tss.kregs);
-	2.2.16 /usr/src/linux/arch/sparc/kernel/traps.c
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+This all sounds complicated, but it mostly does excatly what you  ex-
+pect. It's just difficult for us to explain what you expect...
+                       - L. Wall & R. L. Schwartz, _Programming Perl_
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
