@@ -1,41 +1,47 @@
-Date: Mon, 22 Oct 2001 09:33:38 -0700
-From: Paul Mundt <pmundt@MVista.COM>
-To: Stefan Wanner <stefan.wanner@gmx.ch>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: invert lcd on mpc823l
-Message-ID: <20011022093338.A2836@mvista.com>
-References: <3BD3E484.1030909@gmx.ch>
-Mime-Version: 1.0
-In-Reply-To: <3BD3E484.1030909@gmx.ch>; from stefan.wanner@gmx.ch on Mon, Oct 22, 2001 at 11:19:00AM +0200
-Content-Type: text/plain; charset=us-ascii
+From: "Chris Hallinan" <clh@net1plus.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: ppc_4xx-gdb and modules
+Date: Mon, 22 Oct 2001 13:27:06 -0400
+Message-ID: <NEBBKJPFOLJNBMFNKBIIKEDICJAA.clh@net1plus.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Oct 22, 2001 at 11:19:00AM +0200, Stefan Wanner wrote:
-> i'm using a sharp LQ64D341 tft lcd on a MPC823L board with the
-> kernelsources from denx.de. now when i use /dev/tty0 (the frambuffer
-> character device) the output apears inverse (white background, black
-> text). the tux in the upper left corner has also strange colors (looks
-> also like inverse). how can i fix that?
->
-Try inverting your colormap. Try something like the following:
+We are having a problem displaying variables from a loadable module
+using gdb.  The short description of the problem is this:
+configuration: Linux version 2.4.2-mvista_010303, gdb version 5.0
+(from MV distribution) configured as powerpc-hardhat-linux, custom
+h/w platform.
 
---- arch/ppc/8xx_io/lcd823.c.orig       Mon Oct 22 09:30:43 2001
-+++ arch/ppc/8xx_io/lcd823.c    Mon Oct 22 09:30:46 2001
-@@ -638,6 +638,7 @@
-     }
+In order to break/step/etc in module code using gdb, one loads the
+module symbol file with an offset, determined in a number of ways,
+like this:
+add-sym module.o OFFSET, where offset is the module load address,
+i.e. THIS_MODULE.  This tells gdb where the module ended up when
+loaded with insmod.
 
-     lcd823_init_dev();
-+    fb_invert_cmaps();
-     lcd823_install_cmap(0, &fb_info);
+However, when we try to access data variables (ours are located in
+the initialized data section according to the output of ppc_4xx-nm),
+gdb apparently uses only the OFFSET given on the add-sym command
+line to evaluate the address of the variable, and does not apply the
+offset of the 'text' section.  The result is garbage, essentially
+the offset of the variable in the initialized data section added to
+the value passed on the add-sym command, usually right in the middle
+of the text (code) section.
 
-     if (register_framebuffer(&fb_info) == 0) {
+Is this a bug in gdb, or are we using it wrong?  Is there a way to
+tell gdb that this data variable is in the initialized data section,
+and it must add not only the OFFSET given on the add-sym command
+line, but also an offset determined by it's actual location in the
+module beyond the text section?
 
-Regards,
+I hope this appreviated description proves useful...
 
---
-Paul Mundt <pmundt@mvista.com>
-MontaVista Software, Inc.
+-Chris Hallinan
+DS4.COM, Inc.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
