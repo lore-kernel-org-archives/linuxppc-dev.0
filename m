@@ -1,38 +1,31 @@
-Date: Fri, 23 Apr 2004 21:18:13 -0300
-From: Ricardo Scop <scop@digitel.com.br>
-Reply-To: Ricardo Scop <scop@digitel.com.br>
-Message-ID: <14887.040423@digitel.com.br>
-To: "T Michael Turney" <tmike@recipes4linux.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: FEC support for 8260 in kernel 2.4.25
-In-reply-To: <GEEKLLHMFHLAJOBEEELHGEDNCJAA.tmike@recipes4linux.com>
-References: <GEEKLLHMFHLAJOBEEELHGEDNCJAA.tmike@recipes4linux.com>
+Subject: Re: Guidance Request Regarding openpic_hookup_cascade()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Randy Vinson <rvinson@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+In-Reply-To: <40898231.20002@mvista.com>
+References: <40898231.20002@mvista.com>
+Content-Type: text/plain
+Message-Id: <1082769227.6442.40.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 24 Apr 2004 11:13:48 +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello T,
+On Sat, 2004-04-24 at 06:53, Randy Vinson wrote:
+>
+>   In updating some of the boards for 2.6, I've encountered one
+> without an 8259. I can either stub-out the call to i8359_irq() in
+> my board-specific code or pull the openpic_hookup_cascade() support
+> forward from 2.4. I've been told that the cascade approach is no
+> longer in favor, but I have not been able to locate an alternative.
+> So, does anyone have a recommendation on how to proceed?
 
-Friday, April 23, 2004, 8:23:37 PM, you wrote:
+Yes, we wanted to do better but never found the time to do so. I
+suppose pulling the 2.4 approach in 2.6 is the best solution at this
+point.
 
-TMT> I am working on a kernel port to an 8260 board that
-TMT> has all three FCCs wired up to PHYs (BCM5221).
-
-TMT> The first FCC is working fine, but I haven't been
-TMT> successful with getting FCC2 and FCC3 going yet.
-
-TMT> Is anybody out there successfully using the 2.4.x
-TMT> fcc_enet.c code with all three channels active?
-
-Yes!
-
-Cheers,
-
--Scop.
-
-Best regards,
- Ricardo                            mailto:scop@digitel.com.br
+Ben
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
