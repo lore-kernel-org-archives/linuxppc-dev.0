@@ -1,107 +1,88 @@
-Message-Id: <v03110706b505609771ce@[129.100.29.243]>
-In-Reply-To: <Pine.LNX.4.10.10003270958530.10064-100000@shell.unixbox.com>
-References: <20000328024133B.roikawa@rr.iij4u.or.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 27 Mar 2000 14:06:35 -0500
-To: Ani Joshi <ajoshi@shell.unixbox.com>,
-        Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: Some issues to resolve with XFree 4.0 yet
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <200003271909.VAA01187@piglet.grunz.lu>
+Date: Mon, 27 Mar 2000 21:09:49 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: pci-resources feedback
+To: toa@pop.agri.ch
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <38DF96D0.9823B129@pop.agri.ch>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ani and Ryuichi,
+Hi Andreas,
 
->are you using the patch I posted last week?  If not, then I suggest you
->do.  I fixed the improper load/stores in r128 and it shows a 200% increase
->in almost all x11perf tests.
+On  27 Mar, this message from Andreas Tobler echoed through cyberspace:
+> Also I'm confused about the ati memory range two. Which base is the one
+> I have to take?
 
-Actually, you might want to try Gabriel Paubert's patch which simply
-removes the "volatile" from the base_addr parameter.  The incirrectly
-specified volatile on the parameter (which really makes no sense if you
-think about it ;-)) is what was causing all the problems with inefficiency.
+As I understand it (which may be wrong ;-) that's the MMIO region
+corresponding to the (VGA?) IO ports used for configuring the device.
 
-Interestingly, with this patch you can actually save one extra instruction
-over Ani's patch but either one is a big big improvement.
+Problem is by default it lies within the framebuffer region...
 
-Kevin
+> ---2399-dmesg---
+> PCI: Probing PCI hardware (semiautomatic)
+> Scanning bus 00
+> Found 00:00 [1057/0002] 000600 00
+> Found 00:68 [106b/0010] 00ff00 00
+> Found 00:80 [106b/0010] 00ff00 00
 
+Hmmm... two times the same dev?? You really have two heathrows?
 
-----snip-here-for Gabriel_Paubert's_e-mail_with_patch----
+> Found 00:88 [1002/4c47] 000300 00
+> Found 00:98 [104c/ac15] 000607 02
+> Found 00:99 [104c/ac15] 000607 02
+> Fixups for bus 00
+> Scanning CardBus bridge 00:13.0			<------ sounds good for CardBus!!
+> Scanning CardBus bridge 00:13.1
 
-> Hi,
->
-> >From comparing the performance of the XFree 4.0 r128 drivers across x86 and
-> ppc we noticed that the ppc version was much slower.  The following patch
-> made a huge change in x11perf results (improivement).  This is on a ppc
-> with glibc 2.1.3 and the latest gcc 2.95.2 from Franz Sirl.
->
-> Did I write the output constraint version incorrectly?  Is this what you
-> expected the generated code to look like?
+Cool ;-)
 
-I have just made a test with suppressing the volatile in the parameter to
-the regr/regw/regr16/regw16 macros and the code is even better (one
-instruction less than with the memory clobber):
+> Bus scan for 00 returning with max=09
+> PCI: Fixing device 00:00.0 (1057:0002)
+> PCI: Fixing device 00:0d.0 (106b:0010)
+> PCI: Fixing device 00:10.0 (106b:0010)
+> PCI: Fixing device 00:11.0 (1002:4c47)
+> PCI: Setting IRQ 24 on device 00:11.0.
+> PCI: Correcting IO address 1 on device 00:11.0, now fe000400.
 
-000003d4 <R128Blank>:
-     3d4:       81 43 00 f8     lwz     r10,248(r3)
-     3d8:       81 6a 00 24     lwz     r11,36(r10)
-     3dc:       39 20 00 54     li      r9,84
-     3e0:       7c 09 5c 2c     lwbrx   r0,r9,r11
-     3e4:       7c 00 06 ac     eieio
-     3e8:       60 00 04 00     ori     r0,r0,1024
-     3ec:       7c 09 5d 2c     stwbrx  r0,r9,r11
-     3f0:       7c 00 06 ac     eieio
-     3f4:       4e 80 00 20     blr
+Hey, it even works on grackle!
 
-the diff is:
---- r128_reg.h~	Sat Feb 26 06:38:43 2000
-+++ r128_reg.h	Fri Mar 24 23:47:31 2000
-@@ -48,19 +48,19 @@
+> PCI: Enabling device 00:11.0 (0086 -> 0087)
+> PCI: Fixing device 00:13.0 (104c:ac15)
+> PCI: Setting IRQ 22 on device 00:13.0.
+> PCI: Fixing device 00:13.1 (104c:ac15)
+> PCI: Setting IRQ 23 on device 00:13.1.
+> PCI: Resource f4000000-f407ffff (f=200, d=0, p=0)
+> PCI: Resource f3000000-f307ffff (f=200, d=0, p=0)
+> PCI: Resource 82000000-82ffffff (f=200, d=0, p=0)
+> PCI: Resource fe000400-fe0004ff (f=101, d=0, p=0)
+> PCI: Resource 82fff000-82ffffff (f=200, d=0, p=0)
+> PCI: Cannot allocate resource region 2 of device 00:11.0
 
- #if defined(__powerpc__)
+Here the resource code notices the conflict on the ATI.
 
--static inline void regw(volatile unsigned long base_addr, unsigned long
-regindex, unsigned long regdata)
-+static inline void regw(unsigned long base_addr, unsigned long regindex,
-unsigned long regdata)
- {
-  asm volatile ("stwbrx %1,%2,%3; eieio"
-           : "=m" (*(volatile unsigned *)(base_addr+regindex))
-           : "r" (regdata), "b" (regindex), "r" (base_addr));
- }
+> PCI: Resource 81803000-81803fff (f=200, d=0, p=0)
+> PCI: Resource 81802000-81802fff (f=200, d=0, p=0)
+>   for root[0:ffffffff] min[80000000] size[1000]
+>   got res[80000000:80000fff] for resource 2
 
--static inline void regw16(volatile unsigned long base_addr, unsigned long
-regindex, unsigned short regdata)
-+static inline void regw16(unsigned long base_addr, unsigned long regindex,
-unsigned short regdata)
- {
-   asm volatile ("sthbrx %0,%1,%2; eieio": : "r"(regdata), "b"(regindex),
-"r"(base_addr));
- }
+This is the message as the conflicting (second) region of the ATI gets
+remapped. It did work... as can be seen ba the lspci outtput.
 
--static inline unsigned long regr(volatile unsigned long base_addr,
-unsigned long regindex)
-+static inline unsigned long regr(unsigned long base_addr, unsigned long
-regindex)
- {
-   register unsigned long val;
-   asm volatile ("lwbrx %0,%1,%2; eieio"
-@@ -70,7 +70,7 @@
-   return(val);
- }
+So far, so good :-)
 
--static inline unsigned short regr16(volatile unsigned long base_addr,
-unsigned long regindex)
-+static inline unsigned short regr16(unsigned long base_addr, unsigned long
-regindex)
- {
-   register unsigned short val;
-   asm volatile ("lhbrx %0,%1,%2; eieio": "=r"(val):"b"(regindex),
-"r"(base_addr));
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
