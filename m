@@ -1,37 +1,46 @@
-Date: Sat, 11 Aug 2001 20:57:07 -0700
-From: Ira Weiny <iweiny@acm.org>
-Subject: pmu_suspend/resume
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Message-id: <3B75FE93.DC81EBFE@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+Date: Sun, 12 Aug 2001 14:57:27 +1000
+From: Steven Hanley <sjh@svana.org>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: serial cable problem (for of output)
+Message-ID: <20010812145727.A2927@shiva.marian>
+Reply-To: Steven Hanley <sjh@wibble.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have been using pmu_suspend and pmu_resume to keep my TiBook from
-turning off when debugging some kernel stuff.  Is this ok?
+All
 
-The reason I ask is that pmu_suspend seems to have the desired effect,
-temporarily turning off the PMU.  But pmu_resume does not seem to leave
-the PMU in a stable state.  Now I realize that I am debuging a kernel
-and that it could/probably is other factors which are causing these
-problems but I just wanted to make sure that there is not some better
-way of disabiling the PMU or that I might be using these functions
-incorrectly.
+Okay I am trying to use my serial cable hookup to the modem port on an
+oldworld for the first time now.
 
-Basically:
+I have a mac modem to 25 pin serial cable, linked to a null modem (though I
+hhave tried without the null modem also) connector, then I have tried plugging
+it into the back of a pc, the back of my pismo (with a keyspan usb to serial
+cable) and to a serial mouse.
 
-pmu_suspend();
+None of these seem to do anything, and I also cant type or see anything when
+booting amachine and tryying to get into OF.
 
-/* suspicious/known bad code here */
+What am I doing wrong?
 
-pmu_resume();
+Running minicom with 38400 8N1 on the mac and the pc or pismo, I cant type at
+either end or see anything. When i have the mouse plugged in and cat
+/dev/ttyS0 or minicom running I also see nothing.
 
-Just like that right?
+As mentioned  I have tried all this both with and without the null modem
+connected in the middle.
 
-Thanks,
-Ira Weiny
-iweiny@acm.org
+        See You
+            Steve
+
+--
+sjh@wibble.net http://wibble.net/~sjh
+Look Up In The Sky
+    Is it a bird?   No
+        Is it a plane    No
+            Is it a small blue banana?
+Yes
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
