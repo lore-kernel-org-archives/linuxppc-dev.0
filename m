@@ -1,33 +1,38 @@
-Message-ID: <XFMail.001218151729.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3A3E417E.A5B259C2@kis.uni-freiburg.de>
+Date: Mon, 18 Dec 2000 17:55:30 +0100
+From: Thomas Berkefeld <berke@kis.uni-freiburg.de>
+Reply-To: berke@kis.uni-freiburg.de
 MIME-Version: 1.0
-In-Reply-To: <19341110154330.5294@192.168.1.10>
-Date: Mon, 18 Dec 2000 15:17:29 +0100 (CET)
-From: Giuliano Pochini <pochini@shiny.it>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: problem compiling test12
-Cc: linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PCI-to-parallel port problem
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>I can't compile 2.4.0-test12:
->>
->>arch/ppc/mm/mm.o: In function `map_page':
->>arch/ppc/mm/mm.o(.text+0xd90): undefined reference to `set_pgdir'
->
-> Are you using the bk source trees ?
+Hello,
 
-No.
+I have FASTPCI 4008 PCI parallel port card from Dolphin Peripherals. To
+use the card,
+the manual tells to modprobe parport_pc.o with io-address and irq.
+Unfortunatley
+parport_pc.c cannot be compiled with
+kernel 2.4.0-test11 on my G4 Mac  (a header is missing).
+Furthermore /proc/pci says the interrupt number is 53 which seems a bit
+high.
+This is what /proc/pci says about the card:
+Bus  2, device   3, function  0:
+    Parallel controller: PCI device 1409:7268 (Timedia Technology Co
+Ltd) (rev 1).
+      IRQ 53.
+      I/O at 0x1010 [0x1017].
+      I/O at 0x1000 [0x1007].
 
-> The main linus tree is far outdated on PPC specific parts
+Any hints?
 
-Yes, I know it, but I have to test a patch against t12p7 :(  Never mind,
-I'll try to adapt it to work on the bk tree.
+Thanks
 
-
-Bye.
-    Giuliano Pochini ->)|(<- Shiny Corporation {AS6665} ->)|(<-
+Thomas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
