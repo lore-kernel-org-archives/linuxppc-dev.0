@@ -1,44 +1,64 @@
-Date: Fri, 05 Nov 1999 01:36:35 -0600
-Subject: 2.2.13 vger kernel panic on iMac - whoa.
-From: Geoffrey Pursell <purs0007@tc.umn.edu>
-To: <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B447E523.775%purs0007@tc.umn.edu>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Fri, 5 Nov 1999 09:42:17 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+cc: Cort Dougan <cort@ppc.kernel.org>,
+        David Monro <davidm@amberdata.demon.co.uk>,
+        linuxppc-workstation@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: IRQ problems on IBM 850
+In-Reply-To: <Pine.LNX.3.96L.991104145520.4298C-100000@unix47.andrew.cmu.edu>
+Message-ID: <Pine.HPX.4.10.9911050931010.2724-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I wonder if anyone else has had the same problems I've had with recent
-kernels.
 
-I'm running LinuxPPC 1999 Q3 w/ BootX 1.1.3 on a Rev. C iMac.  I've been
-looking for a more recent kernel than the included 2.2.6 so I can have a
-shot at trying Mac-on-Linux.  What I ended up doing was checking out the
-linux_2_2 branch of the vger tree and patching it with the 2.2.13 vger patch
-that comes with MoL, since run-time patching didn't seem to work with any
-kernel I tried.  The source patched fine, though.
 
-I configured everything as I thought it should be (actually, more or less as
-suggested on imaclinux.net), and everything compiled okay, but I've got two
-problems.
+On Thu, 4 Nov 1999, Hollis R Blanchard wrote:
 
-1)  I don't see the USB mouse/keyboard drivers I supposedly compiled in
-showing up anywhere.  Ever.  Do I still need a patch for USB, or what?
+> The spinlock patch doesn't appear to have any affect on the situation. Still
+> lots of "hda - lost interrupt"'s.
 
-And slightly more disturbing,
+Now I might start to understand why.
 
-2)  I get a kernel panic on startup right after it figures out that I've got
-a Rage Pro 3D.  I think that's what it finds, anyway...I'd have to go back
-and look to be sure.
+> 
+> A normal (no disk activity) /proc/interrupts:
+> 1:     1321     i8259   keyboard
+> 2:        0     i8259   82c59 secondary cascade
+> 5:        1     i8259   Crystal audio controller
+> 13:   82733     i8259   ide0
+> 15:   30749     i8259   PCnet/PCI II 79C970A
+> BAD:      1
+> 8259 IMR/ISR/IRR = 5f99/0000/0001
+> 
+> When "lost interrupts" are occuring (the keyboard does still function Gabriel,
+> my mistake), the last line consistantly looks like:
+> 
+> 8259 IMR/ISR/IRR = 5f99/0000/a001
+> 
+> The 'a' indicates that interrupts have come in on irq's 13 & 15, which would
+> be ide0 and the ethernet controller. So it seems Cort's memory is correct. (In
+> your output, is irq 6 '0x0040' the floppy drive you mention?)
 
-Strangely enough, many of the prebuilt kernels in the /imaclinux directory
-on yellowdog's ftp server cause the same kernel panic.  Does anyone have a
-clue what's going wrong here?
+Using interrupt 13 is strange, to say the least. It was reserved for FPU
+errors on x86 processors. In your case obviously the interrupts are
+expected (since you have a timeout) but have stayed masked for some
+reason. We have to find where this happens. Some code paths might have an
+unbalanced enable/disable_irq but I suspect that it will be hard to find.
 
-Thanks!
+Perhaps we should add some debugging code (again bloating
+/proc/interrupts :-)) giving the address of the caller of the last
+{en,dis}able_irq for every interrupt (just add 2 fields to each interrupt
+struct ({dis,en}abled_by) set to builtin_return_address in
+{dis,en}able_irq. Then print those addresses in /proc/interrupts. Can you
+write such a patch or should I do it myself ?
 
-- Geoff
+And yes, irq 6 is the floppy drive, although I've no floppy connected. But
+the controller is here. 
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
