@@ -1,18 +1,17 @@
-Return-Path: <jjboor@aimsys.nl>
-Received: from smtp04.wanadoo.nl (smtp04.wanadoo.nl [194.134.35.144])
-	by ozlabs.org (Postfix) with ESMTP id CCF932BDB3
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Oct 2004 04:46:00 +1000 (EST)
-In-Reply-To: <20041007173449.GA3540@gate.ebshome.net>
-References: <200410071529.12909.g.jaeger@sysgo.com>
-	<20041007173449.GA3540@gate.ebshome.net>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <C3EF3884-188D-11D9-841F-000A95B15278@aimsys.nl>
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-Date: Thu, 7 Oct 2004 20:21:54 +0200
-To: Gerhard Jaeger <g.jaeger@sysgo.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [BUG][PPC32] Preemption patch for 2.4 Kernels
+Return-Path: <arrigo@vision.caltech.edu>
+Received: from kla-tencor.com (smtp.kla-tencor.com [192.146.1.134])
+	by ozlabs.org (Postfix) with ESMTP id 3D8592BDB4
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Oct 2004 07:52:39 +1000 (EST)
+Received: from [10.35.5.214] ([10.35.5.214])
+	by kla-tencor.com (8.11.6+Sun/KLAC-1.0i) with ESMTP id i98Lgwj17246
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Oct 2004 14:42:58 -0700 (PDT)
+Message-ID: <416709B8.8080107@vision.caltech.edu>
+Date: Fri, 08 Oct 2004 14:42:16 -0700
+From: Arrigo Benedetti <arrigo@vision.caltech.edu>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Update frequency of Time Base reg?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Dear all,
 
-On 7-okt-04, at 19:34, Eugene Surovegin wrote:
+I'm looking for information about the update frequency of the Time Base 
+register
+for the latest dual G5 Powermac and Xserve models.
+By the way, what is the best way to find this kind of information?
 
-> On Thu, Oct 07, 2004 at 03:29:12PM +0200, Gerhard Jaeger wrote:
->> maybe the 2.4 series is somewhat outdatet, but nevertheless used in
->> several embedded systems and also with your preemption patches.
->> During some investigations, we found out that the patches found on
->> http://www.kernel.org/pub/linux/kernel/people/rml/preempt-kernel/
->> contain a severe bug, when using the patches on PPC systems.
->
-> Yes, it's a known problem with rml preempt patches - DON'T USE THEM
-> on PPC. I sent him similar patch _two_ years ago - nothing happened.
-> MVL tree is IMHO better place to get preempt stuff for 2.4 - it's
-> actually tested and works.
+Thanks,
 
-yes, because there are more changes then only the forgotten '{'
-
-Jaap-Jan
-
->
-> Also, I wish -embedded archives were online, this problem was
-> discussed there around a year ago as well.
->
-> --
-> Eugene
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-Arrigo
