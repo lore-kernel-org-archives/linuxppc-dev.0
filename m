@@ -1,18 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 70DA52BF0E
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id 0B75D2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Jan 2005 02:54:35 +1100 (EST)
-In-Reply-To: <20050114155131.22836.qmail@web53809.mail.yahoo.com>
-References: <20050114155131.22836.qmail@web53809.mail.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <900E00FE-6644-11D9-A3DB-000393DBC2E8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 14 Jan 2005 09:54:24 -0600
-To: "annamaya" <annamaya@yahoo.com>
+	Sat, 15 Jan 2005 03:03:09 +1100 (EST)
+To: Clemens Koller <clemens.koller@anagramm.de>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 14 Jan 2005 15:36:39 +0100."
+	<41E7D8F7.4060901@anagramm.de>
+Date: Fri, 14 Jan 2005 17:02:29 +0100
+Sender: wd@denx.de
+Message-Id: <20050114160234.3FC70C108D@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: ELDK on a PowerPC host machine?
+Subject: Re: Kernel 2.6.x to MPC8540/Microsys Board 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm guessing in the MV case it was cost vs demand.
+In message <41E7D8F7.4060901@anagramm.de> you wrote:
+> 
+> >>Which is the best Kernel source tree to start porting 2.6.x to the pm854 
+> >>platform? I would prefer to stuck with the official sources. Is that a 
+> >>good idea?
+>  >
+> > Yes.
+> 
+> Thank you, that's what I wanted to hear :-)
 
-- kumar
+Note that I didn't comment on using 2.6 in the first place.
 
-On Jan 14, 2005, at 9:51 AM, annamaya wrote:
+Best regards,
 
-> I noticed that ELDK from denx does not support running
->  on a PowerPC host machine like the Power G4 or G5.
->  When I tried rebuilding it on a Power G4 with
->  YellowDog installed on it, it complained that the
->  PowerPC host machine is not supported. Why is this
->  host architecture not supported? I also found out that
->  MontaVista does not support the PowerPC host
->  architecture anymore which they did a while ago. What
->  seems to be the real reason for not supporting this?
->  Thanks for the reply.
->
->
->
-> =A0=A0=A0=A0=A0=A0=A0
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0
->  __________________________________
->  Do you Yahoo!?
-> Yahoo! Mail - You care about security. So do we.
-> http://promotions.yahoo.com/new_mail
-> _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+F u cn rd ths u cnt spl wrth a dm!
