@@ -1,56 +1,32 @@
-Date: Mon, 18 Mar 2002 08:00:49 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] My GT-64260 enhancements
-Message-ID: <20020318150049.GC3762@opus.bloom.county>
-References: <20020316151505.GA713@opus.bloom.county> <0203170703.AA00587@ivan.Harhan.ORG>
-Mime-Version: 1.0
+Message-ID: <3C960D92.37FE6EFF@mvista.com>
+Date: Mon, 18 Mar 2002 10:53:54 -0500
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Michael Sokolov <msokolov@ivan.Harhan.ORG>,
+	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Linux-galileo] Re: [PATCH] My GT-64260 enhancements
+References: <20020315170433.GA691@opus.bloom.county> <0203160821.AA28474@ivan.Harhan.ORG> <20020316151505.GA713@opus.bloom.county>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0203170703.AA00587@ivan.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Mar 16, 2002 at 11:03:13PM -0800, Michael Sokolov wrote:
+Tom Rini wrote:
 
-> Tom Rini <trini@kernel.crashing.org> wrote:
+> > Ditto. BTW, do you really want that 115200 thing in there? I've axed it in my
+> > personal tree, but didn't include that in my posted patch to reduce the patch
+> > scare factor.
 >
-> > Well, (and I do need to check out the _galileo tree) iirc the stuff to
-> > support that option is in one of the generic files.  Or generic to the
-> > work currently in there.  If that's the case, and you're explicitly not
-> > going to support it in your files (and ports) then add a -a
-> > "$CONFIG_xxx" = "n" .
->
-> You still don't get it. I find that logic offensive. It makes me not want to
-> use the GT-64260 in my designs because your logic implies that if someone uses
-> the GT-64260 s/he wants to do things your way.
+> I'd be willing to bet $5 it's from Troy.  IMHO, 9600 is the defacto
+> default rate, but Troy likes 'fast' serial consoles.
 
-Yes, it assumes that if you're going to make a GT-64260 based port and
-get it into the main tree you're going to use the common files for said
-chipset so that all of the boards can be said to have certain things
-working and reduce the ammount of coding needed to be done by you.
+No, its from me.  The reason its 115200 is because that's what that version of DINK that
+comes with it uses.  Having to set minicom to 115200, then change it to 9600 in the
+middle of a boot doesn't make sense to me.
+Why do what DINK does??  Because that's what comes with the board.
 
-Like Troy said in an earlier message, it's great that you've got all of
-this work done, but if you want to get it into the main tree and not
-just keep up your own fork of it, some of your code will have to be
-modified.  The current stuff has the feature that it can make use of
-CONFIG_SERIAL_TEXT_DEBUG on all ports.
+Mark
 
-> Just because there is a generic file doesn't mean I'm obligated to use
-> it in my ports.
-
-Actually, unless you've got good and preferably technical objections to
-it, you are.  Once it gets into the main trees, it's not just your board
-port, it's everyones board port.  And duplication of code isn't
-generally a good thing.
-
-If you've done your GT-64260 board without duplicating most of the work
-in gt64260_common.c, then we can add in tests for your board(s) or even
-just define a CONFIG_STARMON and test for that.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
