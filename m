@@ -1,35 +1,25 @@
-Message-ID: <406433AB.4070709@embeddededge.com>
-Date: Fri, 26 Mar 2004 08:44:11 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <406448EC.5030009@euronet.nl>
+Date: Fri, 26 Mar 2004 16:14:52 +0100
+From: Jos Beck <jos_beck@euronet.nl>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel Mode Software Emulation NIP: 00001FFC - cache coherency
- problem on m8xx processors
-References: <20040326090421.B103EC118A@atlas.denx.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Preferred Phy for MPC8260
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+Hi,
 
-> Can you define which sort of network load is suitable to  sfficiently
-> stress  the  system? We ave many kinds of systems of all types in the
-> lab, and I can easily run such a test.
+I hope I am not too much off-topic in this mail list .. but
 
-Copying files on a root NFS usually works for me. :-)
+Would anyone of you know a preferred 10/100baseT phy for the MPC8260?
+Or specific brands/types to avoid?
+Or does it really not matter what we use?
 
-> But I actually doubt that we would see any  problem,
+Thanks,
 
-I just don't have an 855T handy, although I doubt this problem would
-be unique to that part.  I just wanted to cover that base.
-
-Thanks.
-
-
-	-- Dan
+Jos
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
