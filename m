@@ -1,21 +1,28 @@
-Message-ID: <299848370240D611A24400B0D079FBEB91D016@smtcn3.ap.mt.mtnet>
-From: Zhang Qiang MT-CN <Qiang.Zhang@mt.com>
-To: "'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: about usb wirless network device in MPC8xx board
-Date: Thu, 6 Nov 2003 17:57:31 +0800 
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: bogoMips Problem on MPC8270 Custom Baord
+Date: Thu, 6 Nov 2003 06:29:36 -0500
+Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B437133F@tarpon.mangrovesystems.com>
+From: "Muhammad Sarwar" <msarwar@mangrovesystems.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-HI,
-I have to drive an usb wirless network device on my MPC8xx board  on which
-have successed to  use a usb storage disk,
-the usb device use PRISM2 chipset from INTERSIL co. My embeded linux version
-is 2.4.4.
-Could anyboday help me to deal with it or give me some hint?
-I have downloaded the driver source code from the linux-wlan web site, but I
-can not port it to my target board successfully.
+Hi,
+I am working on MPC8270 based custom board with 2.18.4 kernel. I have also enabled PCI Bridge on the board.  
+However once the kernel boots up, bogoMips value is only 19.71. Core processor freq is 450 MHz.
+Any ideas what I could be missing?
+ 
+
+
+
+
+Regards,
+ 
+Muhammad Sarwar
+Mangrove Systems Inc.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
