@@ -1,12 +1,19 @@
-Return-Path: <sachinpc@gmail.com>
-Message-ID: <66164fbc0501190353485dc8e4@mail.gmail.com>
-Date: Wed, 19 Jan 2005 17:23:17 +0530
-From: Sachin P <sachinpc@gmail.com>
-To: Linuxppc-dev@ozlabs.org
+Return-Path: <SRS0+10f07f6f278ab718f41d+514+infradead.org+dwmw2@canuck.srs.infradead.org>
+Received: from canuck.infradead.org (canuck.infradead.org [205.233.218.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8035767A2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jan 2005 00:45:55 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1106011958.4533.25.camel@gaston>
+References: <1106011958.4533.25.camel@gaston>
+Content-Type: text/plain
+Date: Wed, 19 Jan 2005 13:45:44 +0000
+Message-Id: <1106142344.26551.517.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: consistent_alloc() on PPC
-Reply-To: Sachin P <sachinpc@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] ppc32: pmac sleep support update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,12 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi , 
-I am facing some problems porting my drivers to the PPC platform . Am
-currently using consistent_alloc() and consistent_free() to
-allocate/free (non-cached) DMA ble memory.
-Is there any function/patch/macro, equivalent to
-phy_to_virt()/virt_to_phy() for memory returned by consistent_alloc()?
+On Tue, 2005-01-18 at 12:32 +1100, Benjamin Herrenschmidt wrote:
+> This patch updates the PowerMac sleep support. The ability to sleep is now broken
+> into 2 different flags, one, "may sleep" is set for all motherboards that we know
+> how to put to sleep and wakeup. It gets turned into "can sleep" upon a call from
+> the video driver indicating the ability to wakeup the video card. 
 
-Regards
-sachin
+Why do it like this? Drivers already have the ability to veto sleep
+requests, surely?
+
+-- 
+dwmw2
