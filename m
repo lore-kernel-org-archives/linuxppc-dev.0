@@ -1,45 +1,35 @@
-Date: Mon, 18 Dec 2000 08:06:04 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BootX (the MacOS X kind)
-Message-ID: <20001218080604.A8526@plato.local.lan>
-References: <19341110161621.11025@192.168.1.10> <Pine.LNX.4.10.10012181028400.4672-100000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
-In-Reply-To: <Pine.LNX.4.10.10012181028400.4672-100000@opal.biophys.uni-duesseldorf.de>; from schmitz@opal.biophys.uni-duesseldorf.de on Mon, Dec 18, 2000 at 10:30:40AM +0100
+From: cpg@aladdin.de
+Subject: Re: PCI-to-parallel port problem
+To: berke@kis.uni-freiburg.de
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <OF270176E6.48AE87B6-ONC12569B9.006050DF@aladdin.de>
+Date: Mon, 18 Dec 2000 18:35:38 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Mon, Dec 18, 2000 at 10:30:40AM +0100, Michael Schmitz wrote:
->=20
-> > >You should've trademarked the BootX name :-) This'll result in some
-> > >confusion ...
-> >
-> > Yeah, I know. I suggested them to change the name long before they
-> > released it, but they apparently didn't care.
->=20
-> Now who's surprised?
->=20
-> What's the license on their version of BootX? Maybe we can hijack it :-)
+On 12/18/2000 05:55:30 PM CET Thomas Berkefeld wrote:
+>
+>I have FASTPCI 4008 PCI parallel port card from Dolphin Peripherals. To
+>use the card,
+>the manual tells to modprobe parport_pc.o with io-address and irq.
+>Unfortunatley
+>parport_pc.c cannot be compiled with
+>kernel 2.4.0-test11 on my G4 Mac  (a header is missing).
 
-we can't, its apsl like everything else.
+You can copy the parport.h file from another architecture
+subdirectory, I think they are (at least on i386, alpha and ia64)
+the same. Then it should compile at least.
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
+But when I compiled the parport modules they didn't find the
+ports. I haven't looked much further into it yet...
 
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+regards,
+chris
 
-
---fdj2RfSjLxBAspz7--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
