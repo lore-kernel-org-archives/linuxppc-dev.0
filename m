@@ -1,32 +1,43 @@
-Message-Id: <200009222036.QAA26082@mal-ach.watson.ibm.com>
-To: Ryan T Boder <rboder@grn.georet.net>
+Message-Id: <200009222037.WAA00829@piglet.grunz.lu>
+Date: Fri, 22 Sep 2000 22:37:55 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Re; 2.4.0-test9 on B&W G3 
+To: benh@mipsys.com
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PowerPC simulator 
-In-Reply-To: Message from Ryan T Boder <rboder@grn.georet.net>
-   of "Thu, 21 Sep 2000 21:33:34 EDT." <39CAB6ED.B7D4A3E0@mail.georet.net>
-Date: Fri, 22 Sep 2000 16:36:38 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+In-Reply-To: <20000922164705.32547@mail.mipsys.com>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Ryan T Boder writes:
+Ben,
 
-Ryan> What's available to use for playing with assembly language on my G4? I
-Ryan> am familiar with MIPS and IA/32 but not PowerPC. Is there a simulator
-Ryan> for LinuxPPC? I have used SPIM on Solaris before but that's about it.
+On  22 Sep, this message from Benjamin Herrenschmidt echoed through cyberspace:
+> This changeset revives Geert PCI code, adds Samuel fix (indeed the
+> correct fix), and
+> add some more IDE fix for PCI-IDE controllers like the CMD646.
 
-	PSIM, written by Andrew Cagney, is distributed with GDB.  A number
-of architecture simulators are distributed in the gdb "sim" subdirectory.
+The pci_enable_device() in your changeset is not enough, unfortunately.
+My Promise Ultra66 (which others, including Andre Hedrick also use)
+doesn't identify as an IDE storage controller:
 
-	There also is a PowerPC version of Stanford's SimOS simulator
-developed by IBM's Austin Research Lab which we are working to get
-released.
+[mlan@piglet ~]$ lspci
+00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+00:0d.0 Unknown mass storage controller: Promise Technology, Inc. 20262 (rev 01)
 
-David
-===============================================================================
-David Edelsohn                                      T.J. Watson Research Center
-dje@watson.ibm.com                                  P.O. Box 218
-+1 914 945 4364 (TL 862)                            Yorktown Heights, NY 10598
+Would it be possible to select on mass storage in general? If that is an
+'official' classification, that is...
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
