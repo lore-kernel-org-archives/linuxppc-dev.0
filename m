@@ -1,117 +1,91 @@
-Message-ID: <3820A90B.E0D77EDE@denise.shiny.it>
-Date: Wed, 03 Nov 1999 22:28:43 +0100
+Message-ID: <3820AA1F.AC7D84D@denise.shiny.it>
+Date: Wed, 03 Nov 1999 22:33:19 +0100
 From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: [patch] controlfb update
+Subject: [patch] Macally 2-button mouse support
 Content-Type: multipart/mixed;
- boundary="------------E1B7FBA721308A401B87EA84"
+ boundary="------------34E688A8C00EA6F450885127"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------E1B7FBA721308A401B87EA84
+--------------34E688A8C00EA6F450885127
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 
 
-Hi!  I've just linked this ML, so if someone already send a similar patch,
-please don't shot me :)
-This patch make possible to pass boot parameters to the "control" display
-driver.
+This patch adds support for that mouse. The code is tested only by me. I
+didn't get any infos from Macally (GRRR!) so I don't know if the values I use
+to identify the mouse are the same for all M2BM mouses on the market.
 
 Bye.
---------------E1B7FBA721308A401B87EA84
+--------------34E688A8C00EA6F450885127
 Content-Type: text/plain; charset=us-ascii;
- name="control.patch.2.2.13"
+ name="mouse.patch.2.2.13"
 Content-Disposition: inline;
- filename="control.patch.2.2.13"
+ filename="mouse.patch.2.2.13"
 Content-Transfer-Encoding: 7bit
 
---- drivers/video/fbmem.old	Wed Sep  1 18:50:55 1999
-+++ drivers/video/fbmem.c	Wed Sep  1 18:58:34 1999
-@@ -92,6 +92,8 @@
- extern void sbusfb_setup(char *options, int *ints);
- extern void valkyriefb_init(void);
- extern void valkyriefb_setup(char *options, int *ints);
-+extern void control_init(void);
-+extern void control_setup(char *options, int *ints);
- extern void g364fb_init(void);
- extern void fm2fb_init(void);
- extern void fm2fb_setup(char *options, int *ints);
-@@ -178,6 +180,9 @@
- #endif 
- #ifdef CONFIG_FB_VALKYRIE
- 	{ "valkyriefb", valkyriefb_init, valkyriefb_setup },
-+#endif
-+#ifdef CONFIG_FB_CONTROL
-+	{ "controlfb", control_init, control_setup },
- #endif
- #ifdef CONFIG_FB_G364
- 	{ "g364", g364fb_init, NULL },
---- drivers/video/controlfb.old	Wed Sep  1 18:30:38 1999
-+++ drivers/video/controlfb.c	Wed Sep  1 19:44:06 1999
-@@ -531,24 +531,30 @@
+--- drivers/macintosh/mac_keyb.old	Fri Aug 27 23:44:58 1999
++++ drivers/macintosh/mac_keyb.c	Sat Aug 28 00:02:23 1999
+@@ -272,6 +272,7 @@
+ #define ADBMOUSE_MICROSPEED	6	/* Microspeed mouse (&trackball ?), MacPoint */
+ #define ADBMOUSE_TRACKBALLPRO	7	/* Trackball Pro (special buttons) */
+ #define ADBMOUSE_MS_A3		8	/* Mouse systems A3 trackball (handler 3) */
++#define ADBMOUSE_MACALLY2	9	/* MacAlly 2-button mouse */
  
- 	p->sense = read_control_sense(p);
- 	printk(KERN_INFO "Monitor sense value = 0x%x, ", p->sense);
-+
- 	/* Try to pick a video mode out of NVRAM if we have one. */
--	par->vmode = nvram_read_byte(NV_VMODE);
--	if(par->vmode <= 0 || par->vmode > VMODE_MAX || !control_reg_init[par->vmode - 1])
--		par->vmode = VMODE_CHOOSE;
--	if(par->vmode == VMODE_CHOOSE)
--		par->vmode = mac_map_monitor_sense(p->sense);
--	if(!control_reg_init[par->vmode - 1])
--		par->vmode = VMODE_640_480_60;
-+	if (default_vmode == VMODE_NVRAM){
-+		par->vmode = nvram_read_byte(NV_VMODE);
-+		if(par->vmode <= 0 || par->vmode > VMODE_MAX || !control_reg_init[par->vmode - 1])
-+			par->vmode = VMODE_CHOOSE;
-+		if(par->vmode == VMODE_CHOOSE)
-+			par->vmode = mac_map_monitor_sense(p->sense);
-+		if(!control_reg_init[par->vmode - 1])
-+			par->vmode = VMODE_640_480_60;}
-+	else
-+		par->vmode=default_vmode;
+ static int adb_mouse_kinds[16];
  
--	par->cmode = nvram_read_byte(NV_CMODE);
--	if(par->cmode < CMODE_8 || par->cmode > CMODE_32)
--		par->cmode = CMODE_8;
--	/*
--	 * Reduce the pixel size if we don't have enough VRAM.
--	 */
-+	if (default_cmode == CMODE_NVRAM){
-+		par->cmode = nvram_read_byte(NV_CMODE);
-+		if(par->cmode < CMODE_8 || par->cmode > CMODE_32)
-+			par->cmode = CMODE_8;}
-+	else
-+		par->cmode=default_cmode;
+@@ -490,6 +491,18 @@
+     data[3] = byyy bxxx Third button and fourth button.  Y is additional
+ 	      high bits of y-axis motion.  XY is additional
+ 	      high bits of x-axis motion.
 +
-+	/* Reduce the pixel size if we don't have enough VRAM. */
- 	while(par->cmode > CMODE_8 && control_vram_reqd(par->vmode, par->cmode) > p->total_vram)
- 		par->cmode--;
--	
++    MacAlly 2-button mouse protocol.
 +
- 	printk("using video mode %d and color mode %d.\n", par->vmode, par->cmode);
- 	
- 	par->vxres = par->xres = control_reg_init[par->vmode - 1]->hres;
-@@ -1176,9 +1182,9 @@
++    For MacAlly 2-button mouse protocol the data array will contain the
++    following values:
++
++		BITS    COMMENTS
++    data[0] = dddd 1100 ADB command: Talk, register 0, for device dddd.
++    data[1] = bxxx xxxx Left button and x-axis motion.
++    data[2] = byyy yyyy Right button and y-axis motion.
++    data[3] = ???? ???? unknown
++    data[4] = ???? ???? unknown
+   */
+ 	struct kbd_struct *kbd;
+ 
+@@ -521,6 +534,11 @@
+ 		data[2] = (data[2] & 0x7f) | ((data[3] & 0x02) << 6);
+ 		data[3] = ((data[3] & 0x04) << 5);
+ 		break;
++            case ADBMOUSE_MACALLY2:
++		data[3] = (data[2] & 0x80) ? 0x80 : 0x00;
++		data[2] |= 0x80;	/* 2nd button is mapped as button 3 */
++		nb=4;
++                break;
+ 	}
+ 
+ 	if (adb_mouse_interrupt_hook)
+@@ -825,6 +843,14 @@
+ 			    (req.reply[1] == 0x4b) && (req.reply[2] == 0x4d) &&
+ 			    (req.reply[3] == 0x4c) && (req.reply[4] == 0x31))
+ 				init_turbomouse(id);
++			else if ((req.reply_len == 9) &&
++			    (req.reply[1] == 0x4b) && (req.reply[2] == 0x4f) &&
++			    (req.reply[3] == 0x49) && (req.reply[4] == 0x54)){
++				if (adb_try_handler_change(id, 0x42)) {
++					printk("\nADB MacAlly 2-button mouse at %d, handler set to 0x42", id);
++					adb_mouse_kinds[id] = ADBMOUSE_MACALLY2;
++				}
++			}
  		}
- 		if (!strncmp(this_opt, "vmode:", 6)) {
- 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
--		if (vmode > 0 && vmode <= VMODE_MAX)
--			default_vmode = vmode;
--		} else if (!strncmp(this_opt, "cmode:", 6)) {
-+			if (vmode > 0 && vmode <= VMODE_MAX)
-+				default_vmode = vmode;}
-+		else if (!strncmp(this_opt, "cmode:", 6)) {
- 			int depth = simple_strtoul(this_opt+6, NULL, 0);
- 			switch (depth) {
- 			 case CMODE_8:
+ 		printk("\n");
+         }
 
---------------E1B7FBA721308A401B87EA84--
+--------------34E688A8C00EA6F450885127--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
