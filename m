@@ -1,50 +1,34 @@
-Date: Tue, 8 Jun 1999 16:16:49 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ioremap() on ISA memory space
-Message-ID: <19990608161648.A7950@drow.res.cmu.edu>
-References: <Pine.LNX.4.10.9906082022070.25878-100000@mercator.cs.kuleuven.ac.be> <Pine.HPP.3.96.990608205122.27048K-100000@gra-ux1.iram.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPP.3.96.990608205122.27048K-100000@gra-ux1.iram.es>; from Gabriel Paubert on Tue, Jun 08, 1999 at 09:08:04PM +0200
+Date: Wed, 9 Jun 1999 09:54:18 +1000
+Message-Id: <199906082354.JAA05316@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: drow@false.org
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <19990608101236.A5738@drow.res.cmu.edu> (message from Daniel
+	Jacobowitz on Tue, 8 Jun 1999 10:12:36 -0400)
+Subject: Re: Q: control is a C&T 65550?
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <19990608095844.A5496@drow.res.cmu.edu> <Pine.LNX.4.10.9906081600260.20992-100000@mercator.cs.kuleuven.ac.be> <19990608101236.A5738@drow.res.cmu.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jun 08, 1999 at 09:08:04PM +0200, Gabriel Paubert wrote:
-> be compulsory in 2.3 even on i386), but this is not necessarily a mm bug
-> IMHO. It would be better to define a macro that conditionally adds a
-> platform dependant offset for addresses < 16 Mb (I've heard that
-> ISA_MEM_BASE has been killed, and I disagree just because of this kind
-> of things).
-> 
-> I would rather use ioremap(dev->base_address[n],...) for standard PCI
-> devices and ioremap(ISA_PHYSICAL_ADDRESS(xxx),...) for devices which might
-> be on ISA with: 
-> 
-> #define ISA_PHYSICAL_ADDRESS(x) \ 
-> (((x)<0x1000000) ? ((x)+ISA_PHYSICAL_BASE) : (x))
-> 
-> where ISA_PHYSICAL_BASE is a boot time constant (0xfd000000 on MPC106,
-> don't know on others). 
+Daniel Jacobowitz <drow@false.org> wrote:
 
+> That's one of those if-i-had-more-time things - and more specifically,
+> if I knew how to dump video regs under macos.  Is it trivial?
 
-Incidentally, and somewhat related to this:
+This is where I use xmon.  There is a macos version at (I think)
+ftp://ftp.linuxppc.org/users/paulus/misc/xmon.bin.  From memory, the
+control registers are at 0x90010000 and the RADACAL (ramdac/cursor
+chip) registers are at 0xf301b000.
 
-When I was hacking on tulip.c, I wanted to use tulip-daig to get the
-state of the card.  But it uses inl/outl, and on powerpc these have a
-kernel private variable (isa_io_base) in their macro expansion.  Is
-there any way to make the PCI space available to userland on powerpc,
-as iopl() and inb/outb can on x86?
+The other thing to do is to browse through the darwin sources from
+apple and see if they have a control driver somewhere.
 
+IIRC, the hardware cursor uses some extra bytes on each scan line and
+some registers in the RADACAL.
 
-Dan
-
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
