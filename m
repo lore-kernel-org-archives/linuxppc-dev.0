@@ -1,28 +1,25 @@
-Message-ID: <396617C5.4C4812E5@uncc.edu>
-Date: Fri, 07 Jul 2000 13:47:50 -0400
-From: "William H. Schultz" <whschult@uncc.edu>
-MIME-Version: 1.0
+Date: Fri, 7 Jul 2000 21:29:58 +0200
+From: Claus Enneper <enneper@olis.north.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Mac OS X UFS support for Linux kernel
-References: <200007070459.XAA03660@lists.linuxppc.org>
+Cc: Iain Sandoe <iain@sandoe.co.uk>
+Subject: Re: 2.2.17pre10-ben1 & dmasound & atfb driver
+Message-ID: <20000707212958.E1640@olis.north.de>
+Reply-To: cl.en@gmx.net
+References: <200007071603.RAA18464@hyperion.valhalla.net> <3965F335.42ABEEFD@erols.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3965F335.42ABEEFD@erols.com>; from Nelson Abramson on Fri, Jul 07, 2000 at 11:11:49AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello all.
+ >:
+ >: I can't find the message in my archive, but here's the skinny (mainly quoted
+ >: from BenH--I wrote it down :-) ):
 
-I've compiled UFS support into the kernel, but have not been able to
-mount my Mac OS X volumes.  Is there any Mac OS UFS support, and if so,
-which ufstype do I need to use to mount them?  I tried 44bsd, since that
-is supposed to be the type that all of the bsd's use (and macos x is
-based on free bsd), but I keep getting errors.
+<http://home.munich.netsurf.de/Franz.Sirl/inputppc.html>
 
-
-Does anyone know if there is any work on ext2 support for OS X?
-
-
-
-Hank
+--
+Yours, ce
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
