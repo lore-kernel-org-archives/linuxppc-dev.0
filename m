@@ -1,44 +1,38 @@
-Message-ID: <397FE1BE.2416FE2@jvc.nl>
-Date: Thu, 27 Jul 2000 09:16:16 +0200
-From: Stephan Leemburg <sleemburg@jvc.nl>
-Reply-To: sleemburg@jvc.nl
+Message-ID: <397FEEE5.265963BF@execpc.com>
+Date: Thu, 27 Jul 2000 03:12:21 -0500
+From: Joseph Garcia <jpgarcia@execpc.com>
 MIME-Version: 1.0
-To: Joseph Garcia <jpgarcia@execpc.com>
-CC: Stephan Leemburg <pmud-bugs@jvc.nl>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+To: sleemburg@jvc.nl
+CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: powerbook hang from post-sleep cdrom access - fix
-References: <397FE132.1690D2DD@execpc.com>
-Content-Type: text/plain; charset=us-ascii
+References: <397FE132.1690D2DD@execpc.com> <397FE1BE.2416FE2@jvc.nl>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks!
+Stephan Leemburg wrote:
+> I wil put the code also in pmud itself. This should in fact be done at
+> kernel level, so a patch will be needed for the current tree.
 
-I wil put the code also in pmud itself. This should in fact be done at
-kernel level, so a patch will be needed for the current tree.
+So would this always be done on wake to hdc and hde?  I read Pismos, and maybe
+iBooks, have their drives at hde.  I'm not sure if they are afflicted by this
+problem.
 
-Joseph Garcia wrote:
->
-> I think I have a fix to prevent a system hang when trying to access a cdrom
-> after sleeping.  I have a small util "wakebay" that simply does a
-> CDROM_MEDIA_CHANGED ioctl on a specified device.  I added a the line "wakebay
-> /dev/hdc" to PMUD's wakeup script on my PDQ.  This seems to get the desired
-> response from the drive, in that it locks the door and spins the disk when it
-> should, and if its not there, mounted, or otherwise, does nothing.
->
-> my code can be grabbed from http://www.execpc.com/~jpgarcia
->
-> Can this be done automatically at the kernel level?
->
-> Thanks.
->
-> --
-> Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-> CS Undergraduate                      Student Employee - Systems Programmer
-> University of Wisconsin - Madison                            UW Lidar Group
+might also need to consider ide-floppy drives, like ls-120 and zip.  I don't
+have one myself, so I don't know if these need it either.  They dont have much
+for ioctls, just eject.  If they have this problem, an ioctl to
+idefloppy_media_change may be needed.
+
+I'm not concerned about it, but might genuine floppies have the hang problem
+too?
+
+I assume a bay hard drive would error/exit without a problem because they can't
+change.
 
 --
-Stephan
+Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
+CS Undergraduate                      Student Employee - Systems Programmer
+University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
