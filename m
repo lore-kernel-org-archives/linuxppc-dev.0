@@ -1,45 +1,44 @@
-Date: Sun, 18 Jan 2004 13:49:57 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Greg Kroah-Hartman <greg@kroah.com>, sensors@stimpy.netroedge.com,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [PATCH 2.6] Hydra i2c
-Message-ID: <20040118124957.GA7585@lst.de>
-References: <Pine.LNX.4.58.0401181323130.653@callisto>
+Subject: Re: multiple separate pci bridges ...
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Rob Baxter <robb@synergymicro.com>
+In-Reply-To: <20040118121507.GB4603@iliana>
+References: <1073252724.780.5.camel@gaston> <20040104220608.GA1667@iliana>
+	 <20040105164038.GA16158@iliana> <1073338095.9497.70.camel@gaston>
+	 <20040105214239.GA20252@iliana> <1073340725.9497.105.camel@gaston>
+	 <20040106073955.GF735@iliana> <1073376024.26508.220.camel@gaston>
+	 <20040106081143.GA1644@iliana>
+	 <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be>
+	 <20040118121507.GB4603@iliana>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1074430817.9700.157.camel@thor.asgaard.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.58.0401181323130.653@callisto>
+Date: Sun, 18 Jan 2004 14:00:18 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jan 18, 2004 at 01:28:22PM +0100, Geert Uytterhoeven wrote:
-> +static int __devinit hydra_probe(struct pci_dev *dev,
-> +				 const struct pci_device_id *id)
-> +{
-> +	unsigned int base_addr;
-> +
-> +	base_addr = dev->resource[0].start;
+On Sun, 2004-01-18 at 13:15, Sven Luther wrote:
+>
+> Finally, X works, altough DRI freezes after a second or two with my
+> radeon 9200SE, while it works for a Radeon 7500, but this is probably a
+> DRI issue.
 
-I think you should use pci_resource_start here.
+Could also be AGP related.
 
-> +	hydra_bit_data.data = ioremap(base_addr, 0x100);
 
-And pci_resource len instead of hardcoding it?  Also you need to
-check the ioremap return value.
+> What makes me wonder, is that X needs around 20 seconds to launch, which
+> could not be something normal. It usually takes 5-8 seconds only.
 
-You should also add a safety exit for the case the probe callback is
-called more than once.  Or dynamic allocate a per-device struct instead
-of using hydra_bit_data.
+DDC timeouts? As Ben pointed out, one can only speculate without seeing
+the server log.
 
-> +static void __exit i2c_hydra_exit(void)
-> +{
-> +	pci_unregister_driver(&hydra_driver);
-> +	iounmap(hydra_bit_data.data);
 
-The ioremap should move into the hydra_remove.
+--
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
