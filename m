@@ -1,28 +1,18 @@
-Return-Path: <ALEBAS@televes.com>
-Received: from mailext.televes.com (unknown [212.163.42.136])
-	by ozlabs.org (Postfix) with ESMTP id 6267567A2F
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.173]) by ozlabs.org (Postfix) with ESMTP id 10D9967A84
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 16:51:29 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mailext.televes.com (Postfix) with ESMTP id 079ED2B7544
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 08:56:42 +0200 (CEST)
-Received: from mailext.televes.com ([127.0.0.1])
-	by localhost (mailext [127.0.0.1]) (amavisd-new, port 10024) with SMTP
-	id 18487-06 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 08:56:41 +0200 (CEST)
-Received: from televes.com (unknown [212.163.42.137])
-	by mailext.televes.com (Postfix) with SMTP id BB4402B7542
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Mar 2005 08:56:41 +0200 (CEST)
-Message-ID: <51DB8827D393D411BB69003048003F4601B1C1CE@tvesntr>
-From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
-To: "'Walter L. Wimer III'" <walt.wimer@timesys.com>
-Date: Tue, 29 Mar 2005 08:29:50 +0200
+	Tue, 29 Mar 2005 18:35:01 +1000 (EST)
+Message-ID: <42491419.4070405@anagramm.de>
+Date: Tue, 29 Mar 2005 10:38:49 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Problem running Linux 2.6.11 on MPC8272ADS
+To: "Wimer, Walt" <walt.wimer@timesys.com>,
+	linuxppc-embedded@ozlabs.org
+References: <1111705036.15834.29.camel@excalibur.timesys.com>
+In-Reply-To: <1111705036.15834.29.camel@excalibur.timesys.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: PCI support under 2.6.11.4 on MPC8272ADS ???
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,75 +23,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, 
+Hi Walt!
 
->From "linux/arch/ppc/platforms/pq2ads.h"
-#define BCSR_ADDR ((uint) 0xf4500000)
->From "u-boot/include/configs/MPC8260ADS.h"
-#define CFG_BCSR 0xF4500000
-So ...
-Which version of u-boot and/or linux tree are you using?
-With linuxppc-2.5 and u-boot 1.2 everything works fine for me.
-Maybe Mike's problem is other. Maybe not. :-)
+> Using Vitaly's 2.4-based patch below as a starting point, I've been
+> adding PCI support to 2.6.11.4 for the MPC8272ADS board.
+> 
+> The good news is that I think I have PCI interrupts pretty well sorted
+> out, and I see *something* half-way reasonable from "lspci".
+> 
+> The bad news is that neither of the ethernet cards that I'm trying will
+> actually work, and I see some very weird behavior with PCI configuration
+> space:
+> 
+>   Card 1:  Some Realtek RTL8139D-based card
+>   Card 2:  NETGEAR FA311 (National Semi DP83815 chip)
+> 
+> With either card installed alone, both U-Boot and my kernel identify the
+> cards correctly in PCI configuration space.
+> 
+> With *both* cards installed, both U-Boot and my kernel see the Realtek-
+> based card correctly, but the NETGEAR card has a corrupted Vendor ID
+> (e.g. 0x1000 or 0x1003 instead of the correct 0x100b).  This happens
+> regardless of which PCI slots I use for the cards (I've tried virtually
+> every combination).  This smells of a power problem or something to me.
 
-Best regards,
-Alex
+Check your ADx-IDSEL connections (resistors, 220 Ohms) on the PCI Bus.
+I had _two_ AD lines connected to _one_ IDSEL which means that two
+AD lines are 'shorted' over 440Ohm which lead to data corruption on the 
+PCI bus. Check your schematics and the boards.
 
-> -----Original Message-----
-> From:	Walter L. Wimer III [SMTP:walt.wimer@timesys.com]
-> Sent:	Monday, March 28, 2005 6:07 PM
-> To:	Mike Rapoport
-> Cc:	linuxppc-embedded@ozlabs.org
-> Subject:	Re: Problem running Linux 2.6.11 on MPC8272ADS
-> 
-> 
-> Hi Mike,
-> 
-> I had the same "hang" experience.  The file arch/ppc/platforms/pq2ads.c
-> contains the following function:
-> 
->   void __init
->   m82xx_board_setup(void)
->   {
->   	/* Enable the 2nd UART port */
->   	*(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
->   }
-> 
-> 
-> I had to ifdef-out the assignment statement above.  It appears that the
-> definition for BCSR_ADDR in the kernel code differs from what U-Boot is
-> using, and that area of memory isn't properly mapped into the kernel
-> address space this early in the boot sequence.  As a result, I was
-> getting an Oops() before the console was even enabled (I could see the
-> Oops message by examining the kernel's printk log buffer using a
-> BDI-2000 hardware debugger).
-> 
-> 
-> 
-> Good luck,
-> 
-> Walt Wimer
-> TimeSys Corporation
-> 
-> 
-> 
-> 
-> On Sun, 2005-03-27 at 11:31 +0200, Mike Rapoport wrote:
-> > Hi,
-> > I'm trying to bring up the Linux 2.6.11 on MPC8272ADS and it seem to 
-> > hang up at the very beginning.
-> > I use ads8272_defconfig and then enable console on SCC:
-> > 
-> > CONFIG_SERIAL_CPM=y
-> > CONFIG_SERIAL_CPM_CONSOLE=y
-> > CONFIG_SERIAL_CPM_SCC1=y
-> > 
-> > 
-> > when I boot the kernel from the u-boot the system hangs up right after 
-> > the kernel decompression.
-> > 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Maybe one of your card's PCI pad drive strength (like with the SM501
+Voyager GX (where it is programmable)) isn't strong enough to drive
+against the resistors in between the AD lines (which would explain that 
+the problems get worse with 'more' cards plugged in).
+
+> And again, even with either card alone, the drivers have serious
+> problems talking to the cards.  I get various error messages from
+> the drivers and I see badly mangled packets on the wire.  It's also
+> not uncommon for the whole system to freeze...
+
+Smells like data corruption on the bus... the behaviour you describe
+is exactly as on mine system. (MPC8540 with SM501 Graphics Board
+and Promise IDE Ctrl. on PCI)
+
+Best greets,
+
+-- 
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
