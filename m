@@ -1,19 +1,63 @@
-Date: Mon, 25 Nov 2002 20:11:08 -0600 (CST)
-From: "Milton D. Miller II" <miltonm@realtime.net>
-Message-Id: <200211260211.gAQ2B8b05324@sullivan.realtime.net>
-To: linuxppc-embedded@lists.linuxppc.org, mpilon@midrivers.com
-Subject: Re:  "Extra cflags for kbuild 2.4." [ _devel tree ] 
+Message-ID: <3DE2F1BD.C9D8F109@redswitch.com>
+Date: Mon, 25 Nov 2002 19:59:57 -0800
+From: Jin Cheng <jcheng@redswitch.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problem on usnig BDI2000 with IBM PPC440 board
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You didn't say which compiler you were using.  This code was added to
-prevent user space headers from being included.  The -iwithprefix include
-was supposed to cause gcc to add its compiler include path to the headers.
-I think i read on lkml that one version of the compiler didn't do the
-right think and there is an alternative command (probably posted by
-Keith Owens) -- make sure you get the one that sets LANG.
+Hi,
 
-milton
+I have a problem trying to use BDI2000 with IBM PPC440 reference board.
+When I use the configuration file provided by the Abatron to load
+the Linux kernel, the PC always stops at 0xc0000d40, which is
+"InstructionTLBError".
+
+I am using the ppclinux-2.4.20pre.
+
+Can anyone give me some advice on how to solve this problem?
+
+Thanks.
+
+Jin
+
+Following is the script on BDI:
+
+BDI>reset
+- TARGET: processing user reset request
+- TARGET: reseting target passed
+- TARGET: processing target startup ....
+- TARGET: processing target startup passed
+BDI>load
+Loading C:\osop4m_vm\440gp\samples\zImage.ebony , please wait ....
+Loading program file passed
+BDI>info
+    Target state      : debug mode
+    Debug entry cause : JTAG stop request
+    Current PC        : 0x01000000
+    Current CR        : 0x228ffff2
+    Current MSR       : 0x00000000
+    Current LR        : 0x0100153c
+BDI>go
+BDI>halt
+    Target state      : debug mode
+    Debug entry cause : JTAG stop request
+    Current PC        : 0xc0000d40
+    Current CR        : 0x228ffff2
+    Current MSR       : 0x00000000
+    Current LR        : 0x0100153c
+BDI>go
+BDI>halt
+    Target state      : debug mode
+    Debug entry cause : JTAG stop request
+    Current PC        : 0xc0000d40
+    Current CR        : 0x228ffff2
+    Current MSR       : 0x00000000
+    Current LR        : 0x0100153c
+BDI>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
