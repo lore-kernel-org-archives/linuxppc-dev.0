@@ -1,68 +1,34 @@
-To: greyham@research.canon.com.au (Graham Stoney)
-Cc: Brendan.Simon@ctam.com.au, linuxppc-dev@lists.linuxppc.org (linuxppc-dev),
-        linuxppc-embedded@lists.linuxppc.org (linuxppc-embedded),
-        dmalek@jlc.net
-Subject: Re: MPC860 patches for glibc
-References: <20000105233607.0D48DED@elph.research.canon.com.au>
-From: Jesper Skov <jskov@cygnus.co.uk>
-Date: 06 Jan 2000 14:18:15 +0100
-In-Reply-To: greyham@research.canon.com.au's message of "Thu, 6 Jan 2000 10:36:06 +1100 (EST)"
-Message-ID: <otg0wb8hk8.fsf@thinktwice.zoftcorp.dk>
+From: jlquinn@us.ibm.com
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <8525685E.0054AAAB.00@D51MTA03.pok.ibm.com>
+Date: Thu, 6 Jan 2000 10:25:15 -0500
+Subject: Building 2.3.35?
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Graham" == Graham Stoney <greyham@research.canon.com.au> writes:
+I tried to build the standard 2.3.35 kernel without success.  Does anyone
+know what's going on?
 
-Graham> Brendan J Simon writes:
->> I didn't realise there were 860 patches for glibc.  Where can I get
->> these patches from ?
+I'm building a kernel for powermac only and having problems with irq_offset
+not being a member of
+struct hw_interrupt_info(?).  In particular, arch/ppc/kernel/open_pic.c
+doesn't build in this kernel.  The struct is defined in include/linux/irq.h
+and doesn't have this field.  Also, to my uninformed eye, pmacs don't even
+require open_pic.c
 
-Graham> The magic mailing list archive, of course (-:
+In 2.2.13, irq_offset is a member of struct hw_interrupt_info, which is
+declared in arch/ppc/kernel/local_irq.h.  So obviously this struct was
+deemed to be useful to other architectures but in the meantime, this field
+was removed.
 
-Graham> http://lists.linuxppc.org/listarcs/linuxppc-embedded/199909/msg00000.html
+I've tried to untangle this enough to build, but haven't succeeded so far.
 
->> What do they do ?
+Thanks for any help,
+Jerry Quinn
+jlquinn@us.ibm.com
 
-Graham> Fix the cache line size for dynamic loading, and rearrange the
-Graham> FPU stuff so it doesn't get included when you build.
-
-I think the below patch for dl-machine.c would be better. It incurs no
-loop overhead on the 32-byte cache line CPUs - and I think the double
-flush of the same line should be harmless (and cheaper than the loop
-overhead).
-
-There is one small potential for error; if the macro is called with a
-(32-byte aligned pointer)+16/17/18...31 in which case the first 16
-bytes (of the 32-byte aligned address) would not be flushed on a 8xx,
-while they would be on a bigger CPU. (did that make any sense at all ;)
-
-Comments? Is it as safe/sensible as I think it is?
-
-Thanks,
-Jesper
-
---- powerpc/dl-machine.c~	Fri Mar  5 00:26:43 1999
-+++ powerpc/dl-machine.c	Thu Jan  6 14:09:34 2000
-@@ -63,10 +63,17 @@
- #define OPCODE_SLWI(ra,rs,sh) OPCODE_RLWINM(ra,rs,sh,0,31-sh)
- 
- 
--#define PPC_DCBST(where) asm ("dcbst 0,%0" : : "r"(where) : "memory")
-+/* The macros dealing with cache lines affect both (where) and
-+   (where+16).  This is in order to support the 8xx CPUs which have
-+   16-byte cache lines.  On the CPUs with 32-byte cache lines this
-+   should have no noticable effect as the first store instruction
-+   would effectively make the second instruction a NOP (since the line
-+   would no longer be dirty). */
-+#define PPC_DCBST(where) asm ("dcbst 0,%0;dcbst 0,%1" : : "r"(where), "r"((unsigned long)(where)+16) : "memory")
-+#define PPC_ICBI(where) asm ("icbi 0,%0;icbi 0,%1" : : "r"(where), "r"((unsigned long)(where)+16) : "memory")
-+
- #define PPC_SYNC asm ("sync" : : : "memory")
- #define PPC_ISYNC asm volatile ("sync; isync" : : : "memory")
--#define PPC_ICBI(where) asm ("icbi 0,%0" : : "r"(where) : "memory")
- #define PPC_DIE asm volatile ("tweq 0,0")
- 
- /* Use this when you've modified some code, but it won't be in the
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
