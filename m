@@ -1,22 +1,30 @@
-Return-Path: <torsten.demke@motorola.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id 29F4C67A5C
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 21BF767A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Jan 2005 19:59:36 +1100 (EST)
-Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
-	by motgate8.mot.com (Motorola/Motgate8) with ESMTP id j0H91PJD013672
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Jan 2005 02:01:25 -0700 (MST)
-Received: from zwg57exm01.ds.mot.com (zwg57exm01.ea.mot.com [10.170.189.6])
-	by il06exr04.mot.com (Motorola/il06exr04) with ESMTP id j0H8wCdV016620
-	for <linuxppc-embedded@ozlabs.org>; Mon, 17 Jan 2005 02:58:12 -0600
-Message-ID: <43395BE65409D911B9FF00110A9BFFDC9F86EB@zwg57exm01.ea.mot.com>
-From: Demke Torsten-atd012 <torsten.demke@motorola.com>
-To: annamaya <annamaya@yahoo.com>, linuxppc-embedded@ozlabs.org
-Date: Mon, 17 Jan 2005 09:59:29 +0100
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: RE: ELDK on a PowerPC host machine?
+	Tue, 18 Jan 2005 04:17:27 +1100 (EST)
+Date: Mon, 17 Jan 2005 18:17:16 +0100
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Andy Fleming <afleming@freescale.com>
+Message-ID: <20050117171715.GA21744@wohnheim.fh-wedel.de>
+References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
+	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
+	<20050106070245.GA6539@gate.ebshome.net>
+	<61A37C72-659C-11D9-8D70-000393C30512@freescale.com>
+	<20050113212152.GA16041@gate.ebshome.net>
+	<20050113215808.GA15124@wohnheim.fh-wedel.de>
+	<20050114010016.GA16635@gate.ebshome.net>
+	<20050114145518.GA21418@wohnheim.fh-wedel.de>
+	<4D217F72-666F-11D9-8D70-000393C30512@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <4D217F72-666F-11D9-8D70-000393C30512@freescale.com>
+Cc: Netdev <netdev@oss.sgi.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
+	model)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,50 +35,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, 14 January 2005 15:00:20 -0600, Andy Fleming wrote:
+> >
+> >Wrt. the proposed PHY lib, I agree.  Didn't even bother to look at the
+> >code, it's mere size said enough.
 
-we use the ELDK on G4 here in the following way:
-a) install ELDK on x86
-b) move target directory (the one you would use for NFS) to your G4
-c) chroot into that target directory on yout G4
-d) manually mount /proc, setup path, ...
+Ok, this time I did bother to look at the code...
 
-Compilation of u-boot and Linux Kernel works fine. 
-(tested with 82xx and 8xx).
+> Hmm... Before I spend too much time revising based on previous comments 
+> ebs made, is there a general consensus that the code is much too large? 
+>  I know there's a lot in there, but the goal is to simplify PHY 
+> management for all ethernet drivers, new and old, and thus reduce code 
+> size, overall.  Is this code heading in the right direction?  Does it 
+> do too much?  Too little?
 
-Regards,
-Torsten
+ drivers/net/Kconfig          |   33 +-
+ drivers/net/Makefile         |    3 
+ drivers/net/phy/Kconfig      |   45 +++
+ drivers/net/phy/Makefile     |    9 
+ drivers/net/phy/cicada.c     |  165 +++++++++++
+ drivers/net/phy/davicom.c    |  277 +++++++++++++++++++
+ drivers/net/phy/lxt.c        |  237 +++++++++++++++++
+ drivers/net/phy/marvell.c    |  173 ++++++++++++
+ drivers/net/phy/mdio_bus.c   |  173 ++++++++++++
+ drivers/net/phy/phy.c        |  512 ++++++++++++++++++++++++++++++++++++
+ drivers/net/phy/phy_device.c |  598 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/net/phy/qsemi.c      |  183 +++++++++++++
+ include/linux/phy.h          |  355 +++++++++++++++++++++++++
+ 13 files changed, 2743 insertions(+), 20 deletions(-)
 
+Imo, the general idea to combine phy code makes sense - to a degree.
+Advantage is less code copied over most existing drivers.  But few
+people have more than one driver compiled in (or loaded, in case of
+modules) at a time, so that bloat is source code only.  The big danger
+here is that real compiled kernels will actually grow.
 
+As an example, drivers that don't bother with suspend/resume should
+have a slightly smaller binary, compared to generic code that supports
+it.  There are valid reasons why people might want such a device, so
+no size fits 'em all.
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org
-> [mailto:linuxppc-embedded-bounces@ozlabs.org]On Behalf Of annamaya
-> Sent: Freitag, 14. Januar 2005 16:52
-> To: linuxppc-embedded@ozlabs.org
-> Subject: ELDK on a PowerPC host machine?
-> 
-> 
-> I noticed that ELDK from denx does not support running
-> on a PowerPC host machine like the Power G4 or G5.
-> When I tried rebuilding it on a Power G4 with
-> YellowDog installed on it, it complained that the
-> PowerPC host machine is not supported. Why is this
-> host architecture not supported? I also found out that
-> MontaVista does not support the PowerPC host
-> architecture anymore which they did a while ago. What
-> seems to be the real reason for not supporting this?
-> Thanks for the reply.
-> 
-> 
-> 	
-> 		
-> __________________________________ 
-> Do you Yahoo!? 
-> Yahoo! Mail - You care about security. So do we. 
-> http://promotions.yahoo.com/new_mail
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+If you manage to convert existing drivers to your new proposed model,
+you can show some numbers.  Is the compiled kernel smaller or bigger
+after your changes.  About the same?
+
+If there is significant growth, I'm pretty unexcited about the idea.
+If it shrinks, you're a genius and sure, the patch should go in.  With
+roughly the same binary size, you can point to code size and show how
+that has decreased.
+
+Right now, all I see is more code and I get this feeling that binary
+size will grow as well.  So please try to prove me wrong.
+
+Jörn
+
+-- 
+Time? What's that? Time is only worth what you do with it.
+-- Theo de Raadt
