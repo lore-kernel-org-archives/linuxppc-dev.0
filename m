@@ -1,41 +1,30 @@
-Message-Id: <200105072040.f47KeI628767@stimpy.networkrobots.com>
-Date: Mon, 07 May 2001 13:46:43 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Paul White <pwhite@networkrobots.com>
-Subject: Loadable Modules
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <3AF713D7.3B3500C2@arlut.utexas.edu>
+Date: Mon, 07 May 2001 16:29:59 -0500
+From: Ken Offer <koffer@arlut.utexas.edu>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Yellow-dog-linux troubles
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-All,
+Hello all-yall-linuxppc-hackers,
 
-Does anyone have loadable modules working sucessfully on LinuxPPC v2.4.0?
-Here is the problem I am seeing:
+Has anybody out there had any luck getting a Synergy-micro VSS4 board
+(i.e. a cool one-board computer with 4 PPC-G3s on it) to compile the
+latest 2.4.4 and 2.4.2 yellow-dog kernels cleanly?  I'm using gcc
+2.95.2.  Any gcc above 2.6.3 should compile the kernel cleanly, right?
 
-When attempting to insert a module, I will receive a floating point
-exception.  However, if I force the board to
-think it has 8 Meg of memory (it actually has 32 Meg), by placing "mem=8M"
-on the command line, all
-loadable modules work fine.  It seems as though it has something to do with
-the page table stuff.
+--
+______________________________________________________________
+Kenneth Ray Offer, II
+Sr. Systems Analyst
+Applied Research Laboratories/SDD
+University of Texas at Austin
+Office (512) 835-3859   FAX (512) 835-3259
 
-Has anyone seen this problem before?
-
-Thanks,
-
-Paul W.
-
-
--------------------------------------------------------------
-Network Robots, Inc.         /--\               Paul H. White
-                           / ____ \
-4695 Chabot Dr. #200      / ( oo ) \       Software Developer
-Pleasanton, CA 94588     /   ----   \             Engineering
-(925) 924-8600           \   ----   /          (925) 580-4883
-                          \  V--V  /
-                           \      /
-                             \--/
+Any opinions expressed above are mine and not necessarily
+those of my employer.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
