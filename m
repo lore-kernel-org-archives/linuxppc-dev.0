@@ -1,56 +1,37 @@
-Message-ID: <3E9657D2.2030907@kegel.com>
-Date: Thu, 10 Apr 2003 22:51:14 -0700
-From: Dan Kegel <dank@kegel.com>
-MIME-Version: 1.0
-To: Jikun Sun <jack.sun@bmrtech.com>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux crash when big application executing on PPC405GP board
-References: <3E95E275.1050002@kegel.com> <3E9617D4.40EB5B63@bmrtech.com>
-In-Reply-To: <3E9617D4.40EB5B63@bmrtech.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: parse error before `{', stray '\' in program 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 11 Apr 2003 09:01:33 +0200."
+             <3E96684D.7000601@imc-berlin.de>
+Date: Fri, 11 Apr 2003 09:24:58 +0200
+Message-Id: <20030411072503.64755C5877@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jikun Sun wrote:
->>jack.sun@bmrtech.com wrote:
->>
->>>Board: CSB272 IBM PPC405GP
->>>Linux kernel version: 2.4.17
->>>Linux kernel can boot nfs root filesystem on the board. Shell works
->>>correctly.
->>>However the system will oops when execute big applications, such as
->>>copying a file which is larger than 2MBytes.
->>>The following is ksymoops:
->>>
->>>The size of vmlinux.srec is 2.076Mbytes.
->>>root@192.9.200.145:/# cp vmlinux.srec vmlinux.srec.bak
->>>
->>>Oops: kernel access of bad area, sig: 11
->>
->>Where did you get your kernel?
+In message <3E96684D.7000601@imc-berlin.de> you wrote:
 >
+> Good you please post the URL to the list if you find one!
+> I am facing this problem from time to time ...
 >
-> MontaVista
+> Does anyone know if the ppc_8xx-gcc 2.95.4 from DENX ELDK has this
+> patch applied?
 
-Which version, Montavista Linux 2.1?
-Are you using their software unmodified, or have you changed anything?
-I assume this is the unsupported preview edition,
-otherwise you'd be on the phone to Montavista?
+No, it has not, and will not.
 
->>What compiler did you use to build it?
->
->
-> ppc_405-gcc
+I see no sense in a modification that supports violations  of  the  C
+standard.
 
-What does ppc_405-gcc --version say?
-- Dan
+Best regards,
 
+Wolfgang Denk
 
 --
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Work 8 hours, sleep 8 hours; but not the same 8 hours.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
