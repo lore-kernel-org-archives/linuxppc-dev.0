@@ -1,37 +1,45 @@
-Subject: Re: cache coherence problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Juergen Kienhoefer <juergen@kienhoefer.com>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20031118093711.GB3924@iram.es>
-References: <3FB972E8.5090701@kienhoefer.com>
-	 <1069122238.7168.63.camel@gaston>  <20031118093711.GB3924@iram.es>
-Content-Type: text/plain
-Message-Id: <1069202105.31665.4.camel@gaston>
+Date: Wed, 19 Nov 2003 08:58:34 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dale Farnsworth <dale@farnsworth.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC5xxx code issues
+Message-ID: <20031119155834.GB935@ip68-0-152-218.tc.ph.cox.net>
+References: <20031117202944.GH30251@ip68-0-152-218.tc.ph.cox.net> <20031118150406.GB8092@zenos.farnsworth.org>
 Mime-Version: 1.0
-Date: Wed, 19 Nov 2003 11:35:06 +1100
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20031118150406.GB8092@zenos.farnsworth.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  newly mapped in blank pages,
+On Tue, Nov 18, 2003 at 08:04:06AM -0700, Dale Farnsworth wrote:
 >
-> If you mean zeroed pages for blanked, I believe that it is wrong.
-> The reason being that 0 is an invalid instruction so that the code
-> would trap in any case.
+> On Mon, Nov 17, 2003 at 08:29:44PM +0000, Tom Rini wrote:
+> > Must clean: These files need some sort of rewrite to look less like a
+> > drop of commerical code into the kernel and more like working the
+> > commercial code into the kernel:
+> > arch/ppc/5xxx_io/bestcomm/capi/Makefile
+> > arch/ppc/5xxx_io/bestcomm/code_dma/image_rtos1/Makefile
+> > arch/ppc/5xxx_io/bestcomm/code_dma/image_rtos2/Makefile
+> > arch/ppc/5xxx_io/bestcomm/include/dummy files (should these be needed?)
 >
-> Maybe I'm wrong, but I seem to remember this as an optimization
-> that Paulus implemented some time ago.
+> The code beneath the arch/ppc/5xxx_io/bestcomm directory is supplied
+> by Motorola.  To ease the adoption of later revisions of this code,
+> we made minimal modifications.  Stupidly, the bestcomm code references
+> stdio.h, stdlib.h, string.h, but doesn't use their contents, so we
+> added empty files with these names.
 
-And that we had to undo because glibc relied on it, not invalidating
-cache lines in some conditions assuming newly mapped zeroed pages
-are delivered icache-clean by the kernel.
+.. but those files _should_ be OK anyhow, if I recall all of the include
+magic correctly.
 
-One of the arguments of the glibc folks for not fixing that was that
-it would be a security hole to let stale icache content leak, so the
-kernel has to invalidate them anyway.
+> The Makefiles are also supplied by Motorola and are not used by Linux
+> at all.  We can safely omit them to reduce confusion.
 
-Ben.
+Can you give me a list of all of the files we don't actually need?
+Thanks.
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
