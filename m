@@ -1,36 +1,39 @@
-From: "Bob White" <bwhite@perigee.com>
+From: Andreas Weder <andreas@lowtexx.de>
 To: linuxppc-embedded@lists.linuxppc.org
-Date: Thu, 06 May 2004 11:35:31 -0400
+Subject: EDK 6.2 genace.tcl problem (solaris)
+Date: Thu, 6 May 2004 22:41:26 +0200
 MIME-Version: 1.0
-Subject: DPRAM driver on 440gp
-Message-ID: <409A2303.2640.2967B3DD@localhost>
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200405062241.37808.andreas@lowtexx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've got a basic read/write driver working (thanks to O'reilly ldd2) on
-the dpram on the peripheral bus.
+I'm trying to build a ace file to boot linux on a ml300-board. I have
+the system.bit and the linux kernel  zImage.embedded.
 
-I remap the physical addresses using "io_base = ioremap64(...)" in the
-driver open call and then the user read and write functions can access
-the dpram just fine.
+Documentation told me to do this:
+xmd genace.tcl -hw implementation/system.bit -elf zImage.embedded -board
+ml300 -ace out.ace      
 
-I'd like the user to be able to access the dpram using a pointer, but I
-am having trouble figuring out the mmap examples.
+This doesn't work. Genace.tcl aborted with the message  that it can't generate
+the svf-file for the kernel. (Doesn't work for smaller files like
+hello_gpio.elf ...)
+Problem is the xconnect command in genace.tcl. It does nothing (I don't
+get any return value) and generation fails. I tried to exchange
+xconnect with the (new?) ppcconnect command --> same result.
+Why do I have to use xconnect/ppcconnect to generate a svf file from elf
+file?
+Does the ML300 Board have to be connected to the computer I use to execute
+genace.tcl? (Not possible in my case ...)
 
-Given that the physical address has already been mapped, via
-ioremap64(), do I need remap_page_range()?  Does anyone have any ideas
-on what the mmap file_op for this driver would look like?  Do I even
-need mmap() or should I just use an ioctl to return the pointer I've
-already got to the user?
+Board: ML300
+OS: solaris 2.8
+EDK: 6.2
+PPC-Kernel: 2.4.18
 
-Bob
---
-Robert B. White        Perigee, A Division of Sensis Corp
-Software Design Engr   316 Commerce Blvd.
-TEL: 315.453.7842x29   Liverpool, NY  13088
-FAX: 315.453.7917      www.Perigee.com
-
+cu
+Andreas Weder
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
