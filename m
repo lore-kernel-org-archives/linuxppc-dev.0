@@ -1,44 +1,43 @@
-Date: Mon, 9 Feb 2004 22:16:30 +0000
-From: Gabriel Paubert <paubert@iram.es>
-To: Harald Welte <laforge@gnumonks.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: XServe G5 and Linux ?
-Message-ID: <20040209221630.A21966@mrt-lx3.iram.es>
-References: <20040208180539.GG18479@sunbeam.de.gnumonks.org> <1076299574.887.118.camel@gaston> <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
+Subject: Re: MPC8272 Fast Ethernet Controller drver
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: dan@embeddededge.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1078145848.12061.11.camel@linpc003.aimsys.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040209103652.GM18913@obroa-skai.de.gnumonks.org>
+Date: Mon, 01 Mar 2004 13:57:28 +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Feb 09, 2004 at 11:36:53AM +0100, Harald Welte wrote:
->
-> On Mon, Feb 09, 2004 at 03:06:14PM +1100, Benjamin Herrenschmidt wrote:
-> > On Mon, 2004-02-09 at 05:05, Harald Welte wrote:
-> > >
-> > > I currently have the requirement for some 1U servers running linux,
-> > > but specifically being not x86. So apart from the sparc64 systems,
-> > > there's of course the Apple XServe.
-> > >
-> > > I have a couple of questions though:
-> >
-> > Well, the machine hasn't yet been released, or if it has, I yet
-> > haven't had any feedback of linux running on it.
->
-> I see.  It's just that the XServe G5 is sold cheaper than the XServe G4
-> (at least the dealers have a lower price).  That's why I somehow feel
-> reluctand of buying an old machine.
->
-> Also, I can positively confirm that we've had a G5 XServe at the 20C3
-> (CCC Chaos Communication Congress) at the end of december.  It was used
-> to relay the A/V streams of the lecture halls into the congress network.
+Dan,
 
-Wow, even before they were officially announced! I'd express some
-doubts about it. Apple does not let many unannounced machines in
-the wild AFAICT ;-)
+I did a 'bk clone bk://ppc.bkbits.net/linuxppc-2.4' but
+can't find a reference to fcc microcode. Is it not in yet?
 
-	Gabriel
+thanks,
+
+Jaap-Jan
+
+On Feb 26, 2004, at 9:10 AM, Dan Malek wrote:
+>
+> challaharikumar wrote:
+>
+>> I want to know about the MPC8272 Fast Ethernet Controller. Is it same
+>> as MPC8260??? In what way MPC8272 FCC differs from MPC8260.
+>
+> The FCC is the same, the CPM is slightly different.
+>
+>> Is there any Ethernet driver available for MPC8272 Fast Ethernet
+>> Controller??
+>
+> There are some minor patches on the way into the source code, along
+> with updates to documentation errors in the manuals. We caught all
+> of this while merging the existing 82xx CPM2 with the 85xx CPM2 into
+> common code. Take a look at the ADS8272 configuration.
+>
+> I don't know where the patches are in the pipeline. I think the
+> linuxppc-2.4 in BitKeeper is current.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
