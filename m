@@ -1,80 +1,58 @@
-Date: Mon, 23 Aug 1999 16:16:23 -0400
-From: brad allison <jackal@aol.net>
-To: rshaw@inficad.com
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
-        puetzk@iastate.edu
+Date: Mon, 23 Aug 1999 16:27:46 -0400 (EDT)
+From: Tom Rini <trini@disparity.net>
+To: brad allison <jackal@aol.net>
+cc: rshaw@inficad.com, Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org, puetzk@iastate.edu
 Subject: Re: BootX enhancement request
-In-Reply-To: <37C16FFE.84ACEA73@motorola.com>
-Message-ID: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com>
+In-Reply-To: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com>
+Message-ID: <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Mon, 23 Aug 1999, brad allison wrote:
 
-On Mon, 23 Aug 1999, Robert Shaw wrote:
-
-> Brad,
+> On Mon, 23 Aug 1999, Robert Shaw wrote:
 > 
-> Once again, you DO NOT NEED TO DO THIS! The B&W G3 now has video support.
-> 
-> If you've downloaded the latest kernel from my web-site, you can specify the
-> video mode you want from the kernel arguments of BootX. Add the following to you
-> kernel arguments:
-> 
-> video=aty128fb:vmode:17,cmode:32
-> 
-> That will give you 1024x768 @ 75Hz, w/32bpp. Piece of cake, no init'ing, no
-> rebooting, no running Xautoconfig.
-> 
+> > Brad,
+> > 
+> > Once again, you DO NOT NEED TO DO THIS! The B&W G3 now has video support.
 
-I think you missed my point.  Don't get me wrong, that's cool to know.
-But I was thinking more along the lines of a drop down menu to set the
-resolution from BootX rather than cryptic kernel arguements.
+This, BETA, driver. :)
 
-It seems the 2.2.10 kernel will not sync to the video settings at all
-without the kernel arguements.
+> I think you missed my point.  Don't get me wrong, that's cool to know.
+> But I was thinking more along the lines of a drop down menu to set the
+> resolution from BootX rather than cryptic kernel arguements.
 
-> The FAQ page at my site (http://www.inficad.com/~rshaw/g3_faq.shtml) 
-> also has the
-> reproduction of the vmode settings that are available. They work, and
-> no running of Xautoconfig is needed.
+So you want BootX to be able to do what Monitors & Sound can do.  Either
+pick a mode there and use BootX from MacOS, or once 2.4.0 rolls around,
+specify video=aty128fb:1024x768@75 (or so).  There is no need for BootX to
+do this.
 
-Well i think putting Xautoconfig in the rc.local file is still a good
-idea.
+> It seems the 2.2.10 kernel will not sync to the video settings at all
+> without the kernel arguements.
 
--b
+What, aty128fb?  It's beta and not done.  You're prolly better off using
+No Video Driver, unles you're gonna play w/ the source (Anthony, speak up
+if i'm wrong). :)
 
-
+> > The FAQ page at my site (http://www.inficad.com/~rshaw/g3_faq.shtml) 
+> > also has the
+> > reproduction of the vmode settings that are available. They work, and
+> > no running of Xautoconfig is needed.
 > 
-> 
-> brad allison wrote:
-> 
-> > I'm not sure how hard/not hard this would be to do, but right now in order
-> > to change resolutions I have to boot into MacOS, set my resolution, launch
-> > BootX, boot into init 3, run Xautoconfig, boot into init 5.
-> >
-> > That's a lot of work to just change the resolution for X.
-> >
-> > It would be nice if you could set the resolution and color from BootX on
-> > boot up.
-> >
-> > If there's a easier way to change pixel depth and resolution from inside X
-> > please let me know....
-> >
-> > -b
-> >
-> > --
-> > AOL SAPI                                        703.265.0908     AIM:jackal242
-> > http://jackal.fudge.org        `I was never more certain of how far away I was
-> > from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
-> 
+> Well i think putting Xautoconfig in the rc.local file is still a good
+> idea.
 
---
-AOL SAPI 		                        703.265.0908     AIM:jackal242
-http://jackal.fudge.org        `I was never more certain of how far away I was
-from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
+Xautoconfig is nice for monitors that don't work right w/ Xconfigurator.
+It's not a tool for "No Video Driver" machines, it's a tool for wierd
+monitors/easier to setup X.
+
+---
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
