@@ -1,36 +1,31 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3B921560.C12A9444@imc-berlin.de>
-Date: Sun, 02 Sep 2001 13:17:52 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: What's the purpose of _MACH_8xx?
-Content-Type: text/plain; charset=us-ascii
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: What's the purpose of _MACH_8xx? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 02 Sep 2001 13:17:52 +0200."
+             <3B921560.C12A9444@imc-berlin.de>
+Date: Sun, 02 Sep 2001 17:43:27 +0200
+Message-Id: <20010902154333.1070910CC1@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+In message <3B921560.C12A9444@imc-berlin.de> you wrote:
+>
+> I'm just digging through the LinuxPPC sources.
+> What do we need the define _MACH_8xx for?
 
-I'm just digging through the LinuxPPC sources.
+Don't worry about this. It's gone in current kernel releases.
 
-What do we need the define _MACH_8xx for?
+Wolfgang Denk
 
-Who is assigning new values for it? See include/asm-ppc/processor.h:
-
-#define _MACH_prep      0x00000001
-#define _MACH_Pmac      0x00000002      /* pmac or pmac clone (non-chrp)
-*/
-#define _MACH_chrp      0x00000004      /* chrp machine */
-#define _MACH_mbx       0x00000008      /* Motorola MBX board */
-#define _MACH_apus      0x00000010      /* amiga with phase5 powerup */
-#define _MACH_fads      0x00000020      /* Motorola FADS board */
-etc.
-
-It looks like plattform depending. But why then is it in PROCESSOR.h?
-
-Thanks.
-
-Steven
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Worlds may change, galaxies disintegrate, but a woman always  remains
+a woman.
+	-- Kirk, "The Conscience of the King", stardate 2818.9
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
