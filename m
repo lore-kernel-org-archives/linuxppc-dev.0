@@ -1,36 +1,44 @@
-Message-Id: <v01530501b797398fbfcc@[199.170.89.133]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 8 Aug 2001 13:51:11 -0500
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-From: trag@io.com (Jeff Walther)
-Subject: Re: [off topic] switching cpus
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Hollis <hollis-lists@austin.rr.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PReP and generic PCI resource assignment
+Date: Wed, 8 Aug 2001 20:34:30 -0500
+Cc: Matt Porter <mporter@mvista.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+References: <01080800112002.00491@silence.internal> <20010808102731.24623@smtp.adsl.oleane.com>
+In-Reply-To: <20010808102731.24623@smtp.adsl.oleane.com>
+MIME-Version: 1.0
+Message-Id: <01080820343003.00492@silence.internal>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 12:47 8/8/2001, Mike Fedyk wrote:
+On Wednesday 08 August 2001 05:27, Benjamin Herrenschmidt wrote:
+> >The problem is that root in this case is the PCI memory resource of the
+> > host bridge, which correctly starts at 0xc0000000... but NOT in bus
+> > terms. In bus terms it starts at 0x0. (CPU physical 0xc0000000 = PCI bus
+> > 0x0 [IO mem].) So the new resource is assigned 0xc1000000, which is
+> > written back to the BAR with pcibios_update_resource... which is way
+> > wrong.
+>
+> The resource is in CPU space. The problem must be with
+> pcibios_update_resource, which is responsible for doing the proper
+> offset. If you look closely, it substracts hose->pci_mem_offset from the
+> resource before writing it to the BAR.
+> If your hose pci_mem_offset is wrong, then it can't work. It should be
+> 0xc0000000 on PReP.
 
->On Wed, Aug 08, 2001 at 12:21:52PM -0500, Jeff Walther wrote:
+Yes, it is. I misinterpretted my debug output... :/
 
+At any rate, relocating PCI resource 1 on this controller from 0x0 to
+0x01000000 causes my VGA console to go backwards endian. I don't know why
+this would be the case... Re-moving it back to 0x0 fixes the symptom. Any
+ideas on why this could happen? I think VGA is all IO, no memory at all?
 
->> The motherboards in question all have the same part number and range from
->> 75 MHz to 110 MHz, so I have not been able to determine any rhyme or reason
->            ^^^
->One small correction, 7200s go up to 120Mhz.
+I'm curious about PCIBIOS_MIN_MEM... Why does that exist, and why was it
+given that value?
 
-Yep.  Sorry about that.   I was looking under the heat sink last night and
-the CPU markings read 110 MHz, and I guess my fingers grabbed that number
-instead of the 120 MHz speed the machine actually runs at.   Although,
-truth to tell, I'm not sure if that board was a 120 with a 110 CPU or a 90
-with a 110 CPU.  It seems kind of odd that they would put a 110 into a 90,
-since they'd have to also change the resistors on the voltage regulator
-because the 100+ MHz PPC601s use a lower supply voltage.  On the other
-hand, this board didn't have the peltier equipped heat sink, so I don't
-think it was a 120, though the heat sink could have been changed before it
-reached me.
-
-Jeff Walther
-
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
