@@ -1,27 +1,32 @@
-Message-ID: <3AA7216F.15BE4872@mvista.com>
-Date: Thu, 08 Mar 2001 01:06:39 -0500
-From: Dan Malek <dan@mvista.com>
+From: kingseft@samsung.co.kr
+Date: Thu, 8 Mar 2001 15:43:34 +0900
+Message-Id: <H00002af04a94e43@MHS>
+Subject: [Question] rc.sysinit .. auto start scripts??
 MIME-Version: 1.0
-To: Magnus Damm <damm@opensource.se>
-Cc: brendan.simon@bigpond.com,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Dan Malek <dmalek@jlc.net>
-Subject: Re: linuxppc-embedded: mpc8260 bus frequency calculations
-References: <3A9EFA26.8030805@bigpond.com> <3A9F4B2B.294B91CA@mvista.com> <3A9FAC18.2162E4AF@opensource.se>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Magnus Damm wrote:
+ Hi, all developers...
 
-> I think that would be nice for the mpc8xx boards too.
+ Thanks for your kind answers for my previous ramdisk problem..
+ I made my own ramdisk and it workd fine... Really Thanks for helps..!!
 
-My plan is to just change them all.  It was originally this
-way because it is the value given to me by the MBX boot rom
-and was just propagated through all of the code.
+ I have one question about /etc/rc.sysinit !!
 
 
-	-- Dan
+ I think rc.sysinit runs automatically on system booting.. Is that right??
+ but, when I booted my target, of course I got linux shell prompt.
+ but /proc directory doesn't mount and didn't work ping, telnet, ifconfig...etc.
+
+ After I tried /etc/rc.sysinit , every thing worked fine..
+
+ Is it not possible to run etc.sysinit automatically on my linux booting??
+ I don't want to type /etc/rc.sysinit on command shell prompt line when target boots..
+
+ any comments will help me.. thanks.....
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
