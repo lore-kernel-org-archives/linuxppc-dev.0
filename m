@@ -1,36 +1,45 @@
-Message-ID: <38BE41BF.EAF1A0DD@ict.ac.cn>
-Date: Thu, 02 Mar 2000 18:26:07 +0800
-From: LiuTao <tliu@ict.ac.cn>
-MIME-Version: 1.0
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
-        "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: problem on MPC8xx
-References: <NCBBKJKKGDLPHKDPAFFMKEBMCDAA.jsw-embedded@mindspring.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <v04220801b4daa2e26f84@[10.0.0.42]>
+Date: Thu, 2 Mar 2000 15:22:44 +0100
+To: linuxppc-dev@lists.linuxppc.org
+CC: "Timothy A. Seufert" <tas@mindspring.com>, dledford@redhat.com
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Need reports about PCI I/O conflicts
+Message-Id: <20000302152244.014464@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi:
+Hi all !
 
-I can see everything on console port now.
-The last a few messages are:
+I need reports about the PCI I/O space conflicts that have been mentioned
+here. According to Apple, there is no known OF bug.
 
-CPM UART driver version 0.02
-ttyS00 at 0x0280 is a SMC
-ttyS01 at 0x0100 is a SCC
-ttyS02 at 0x0200 is a SCC
-RAM disk driver initialized:  16 RAM disks of 4096K size
-eth0: CPM ENET Version 0.2, 00:00:00:00:00:00
-RAMDISK: Compressed image found at block 0
-VFS: Mounted root (ext2 filesystem).
-mount_initrd:1,dev:256,256,ma:1,mi:0Freeing unused kernel memory: 32k in
+Please include your machine model, the dump of /proc/pci, and eventually
+the result of lsprop on the offending card /proc/device-tree entries.
 
-Then, what should happen? Is that all right?
+Note about the Adaptec problem reported earlier, this is apparently not
+an OF bug, but a combination of an OF "feature" along with a bug in
+Michel patches.
 
-Thanks!
+What I think happens is that the firmware (and I suspect this is done by
+the Adaptec OF code on the card, not by OF itself) will "disable" the IO
+accesses and decides that the card should use only memory-mapped
+registers on PPC. It does this by writing 0 in the io space register, but
+doesn't disable IO accesses to the card in the PCI config header (or
+maybe they get re-enabled by the kernel fixup code). Also, I still have
+to check if the bit 0 is actually 0 or 1.
 
-LiuTao
+However, Michel code doesn't see this and do it's fixup, causing a
+remapping of the io space to fe000000 instead of leaving 0, which may let
+some driver think the address was actually assigned. This is a problem
+since in theory, io 0 is perfectly valid, isn't it ? In this case, it
+should be considered wrong.
+
+Anyway, I don't see at first why the driver would not work since both
+cards have a valid memory base and the driver should be compiled with
+MMIO enabled on PPC, and so should not use the IO address anyway.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
