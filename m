@@ -1,57 +1,67 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3DEC78AC.7080106@intracom.gr>
-Date: Tue, 03 Dec 2002 11:26:04 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20021204105147.13636.qmail@web8007.mail.in.yahoo.com>
+Date: Wed, 4 Dec 2002 02:51:47 -0800 (PST)
+From: rekha gvv <rekhagvvc@yahoo.co.in>
+Subject: glibc 2.2.3  undefined reference  
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Reinhard Schwillinsky <rsw@maxxio.at>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [linuxppc-embedded:] Re: QMC driver for 860?
-References: <IGEFJKJNHJDCBKALBJLLEEHBFIAA.joakim.tjernlund@lumentis.se> <3DEB7A88.1030205@intracom.gr> <3DEC7281.80202@maxxio.at>
-In-Reply-To: <3DEC7281.80202@maxxio.at>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Reinhard Schwillinsky wrote:
+Hello everbody ,
 
->
-> Pantelis Antoniou wrote:
->
->> [...]
->> P.S. Is there anyone in the list interested in this?
->> Should I clean it up, and submit it?
->>
-> Yes! I am interested in this!
-> rg Reinhard
->
-> --
-> ----------------------------------------------------
-> Reinhard Schwillinsky        Tel.: ++43/1/205 255/210
-> Maxxio technologies GmbH     Fax.: ++43/1/205 255/900
-> Prinz Eugen Strasse 8        A-1040 Vienna/Austria
->
->
->
->
->
-OK, since there is apparently great interest (of two persons)
-I'll try and clean it up, so that only the relevant QMC bits remain.
-I will also add the change suggested by Joakim.
+I had been very unsuccessful in trying to run the
+application on linux kernel 2.4.4
+I had compiled glibc-2.2.3 without the option
+ --without-fp
+and hence  used to get either illegal instruction or
+segmentation fault...when everi tried to run the
+application .theni read from the mailing list that
+glibc need to be compiled with the option
+"--without-fp"
+Now i have given the configure line as
+./configure --host=powerpc-linux \
+> --enable-add-ons --with-headers=/kernel/include \
+> --without-fp
+CFLAGS="msoft-float -D_SOFT_FLOAT -mcpu=860"
 
-In the meantime I'll try to find some hosting place for the
-current code so that you can see it.
-
-Keep in mind that a QMC driver by itself is not interesting.
-It is some kind of a meta-driver, that needs another
-'instantazation' driver to make it something useful.
-I.e. it could be a simple read/write driver for connection
-to a codec, or it could be a ISDN driver.
-
-Anyway, please be patient.
-
-Pantelis Antoniou
-INTRACOM S.A.
+but still i end up with errors  at link time ....
+****************************************************
+rm -f ../libc.so.6.new
+/bin/sh ../scripts/rellns-h ../libc.so
+../libc.so.6.new
+mv -f ../libc.so.6.new ../libc.so.6 powerpc-linux-gcc
+-nostdlib -nostartfiles -o iconv_prog
+-Wl,-dynamic-linker==/lib/ld.so.1   ../csu/crt1.o
+../csu/crti.o `powerpc-linux-gcc
+--print-file-name=crtbegin.o` iconv_prog.o
+iconv_charmap.o charmap.o charmap-dir.o linereader.o
+dummy-repertoire.o simple-hash.o xstrdup.o xmalloc.o
+-Wl,-rpath-nk=..:../math:../elf:../dlfcn:../nss:../nis:../rt:../resolv:../crypt:../linuxthreads
+../libc.so.6 ../libc_nonshared.a -lgcc
+`powerpc-linux-gcc --print-file-name=crtend.o`
+../csu/crtn.o
+../libc.so.6: undefined reference to
+`_dl_debug_printf'
+../libc.so.6: undefined reference to
+`_dl_check_map_versions'../libc.so.6: undefined
+reference to `_dl_nloaded'../libc.so.6: undefined
+reference to `_dl_lookup_versioned_symbol_skip'
+../libc.so.6: undefined reference to
+dl_profile_output'
+../libc.so.6: undefined reference to
+`__libc_stack_end'
+collect2: ld returned 1 exit status
+make[1]: *** [iconv_prog] Error 1
+make[1]: Leaving directory `/usrsrc/glibc-2.2.3/iconv'
+make: *** [iconv/others] Error 2
+*****************************************************
+I really dont know how to move further ...any help
+fairly welcomed ....
+Thankyou
+Rekha
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
