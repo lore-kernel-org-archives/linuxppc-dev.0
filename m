@@ -1,54 +1,39 @@
+Message-ID: <3C88C54E.7040402@bluewin.ch>
+Date: Fri, 08 Mar 2002 15:06:06 +0100
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: linux-2.4.18 & copy-back cache mode
-Date: Thu, 7 Mar 2002 16:18:04 -0600
-Message-ID: <D3A72C5007329A4F991C0DD87202259F096A96@sekhmet.ad.newisys.com>
-From: "Navin Boppuri" <navin.boppuri@newisys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: <laurent.pinchart@capflow.com>
+To: Adam Wozniak <awozniak@comdev.cc>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: problems with shared memory
+References: <Pine.LNX.4.33.0203070831490.16428-100000@rangers.comdev.cc>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am sorry. I meant 64Mhz , not 66Mhz.
+ Adam Wozniak wrote:
 
-Navin.
+>On Thu, 7 Mar 2002, Wolfgang Grandegger wrote:
+>> David Ashley has reported lately a bug in arch/ppc/mm/ppc_mmu.c (see
+>> http://lists.linuxppc.org/linuxppc-embedded/200202/msg00307.html),
+>> which seems to be present in the linuxppc_2_4 tree but not in the
+>> linuxppc_2_4_devel tree.
+>>
+>> Hope it helps,
+>
+>Thanks so much.  I think that fixed it.  10000+ iterations without problem.
+>
+The real thank goes to David who found it.
 
------Original Message-----
-From: Navin Boppuri
-Sent: Thursday, March 07, 2002 2:33 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: laurent.pinchart@capflow.com
-Subject: RE: linux-2.4.18 & copy-back cache mode
+Well, for me the linuxppc_2_4 tree seems to be less up-to-date. It would
+be nice if somebody could give a brief status or even recommandation
+on the various trees (linuxppc_2_4, linuxppc_2_4_devel, linuxppc_2_5)
+including their future ... or point me to a list where it's already
+dicussed.
 
+Thanks,
 
-
-I am running my MPC855T at 66Mhz 1:1 CPU/bus clock mode without any problems. I used an app. note from Motorola to do this and according to the app.note, we just need to satisfy some timing constraints on the processor (latency of data reaching the MPC pins from SDRAM). The app. note suggests using specific Micron SDRAM which satisfy all these requirements.
-
-Navin.
-
------Original Message-----
-From: Dan Malek [mailto:dan@embeddededge.com]
-Sent: Wednesday, March 06, 2002 1:50 PM
-To: Wolfgang Denk
-Cc: laurent.pinchart@capflow.com; linuxppc-embedded@lists.linuxppc.org
-Subject: Re: linux-2.4.18 & copy-back cache mode
-
-
-
-Wolfgang Denk wrote:
-
-> There are no differences AFAIK. It's just a faster CPU that allows 66
-> or even 76 MHz with 1:1 CPU/bus clock mode.
-
-Interesting.  Faster than 50 MHz cores used to require the 2:1 bus
-clock division.  I don't remember timing parameters that would
-exceed 50 MHz.  Yes, the part will let you do that, but I thought that
-was outside of the part specification.  I guess I'll have to take a look.
-
-
-	-- Dan
+Wolfgang.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
