@@ -1,57 +1,64 @@
-Date: Thu, 22 Feb 2001 06:49:14 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
+Message-Id: <200102221603.f1MG3k716096@ashley.ivey.uwo.ca>
+Date: Thu, 22 Feb 2001 11:03:45 -0500
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+Content-Type: text/plain;
+	charset=us-ascii
 Subject: Re: do md5sums differ across architectures?
-Message-ID: <20010222064913.N18058@plato.local.lan>
-References: <200102221524.f1MFO2709134@ashley.ivey.uwo.ca>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xTKfHyrFnSV9DG3y"
-In-Reply-To: <200102221524.f1MFO2709134@ashley.ivey.uwo.ca>; from khendricks@ivey.uwo.ca on Thu, Feb 22, 2001 at 10:24:01AM -0500
+Cc: linuxppc-dev@lists.linuxppc.org
+To: Ethan Benson <erbenson@alaska.net>
+Mime-Version: 1.0 (Apple Message framework v337)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---xTKfHyrFnSV9DG3y
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Thu, Feb 22, 2001 at 10:24:01AM -0500, Kevin B. Hendricks wrote:
->=20
-> Hi,
->=20
-> I ran md5sum on a big bz2 archive on my ppc linux box and then
-> ftp'd it to my Sun Solaris 7 box at work.
->=20
-> I checked it with md5sum on that machine and it differed.
->=20
-> Okay I thought, a bad packet during upload.
->=20
-> So I tried again, same result.
->=20
-> I then passed back and forth (known good archives) and the md5sums
-> were different.
->=20
-> Okay, I thought maybe an endian issue but both Solaris Sparc and PPC
-> Linux are big endian.
->=20
-> Should these sums be different?
+No, ftping in binary.
 
-no, that would rather defeat the purpose of md5sum hashes.  one of
-your md5sum programs is broken. =20
+I am running textutils-2.0e6 rpm (the latest) from www.linuxppc.org which supplies
+md5sum
 
-or perhaps you ftp'd in text mode instead of binary mode. =20
+I will check what I am running on Solaris.
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
+hmm, I wonder which one is broken?
 
---xTKfHyrFnSV9DG3y
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Thanks,
 
+Kevin
 
---xTKfHyrFnSV9DG3y--
+On Thursday, February 22, 2001, at 10:49 AM, Ethan Benson wrote:
+
+> On Thu, Feb 22, 2001 at 10:24:01AM -0500, Kevin B. Hendricks wrote:
+> >
+> > Hi,
+> >
+> > I ran md5sum on a big bz2 archive on my ppc linux box and then
+> > ftp'd it to my Sun Solaris 7 box at work.
+> >
+> > I checked it with md5sum on that machine and it differed.
+> >
+> > Okay I thought, a bad packet during upload.
+> >
+> > So I tried again, same result.
+> >
+> > I then passed back and forth (known good archives) and the md5sums
+> > were different.
+> >
+> > Okay, I thought maybe an endian issue but both Solaris Sparc and PPC
+> > Linux are big endian.
+> >
+> > Should these sums be different?
+>
+> no, that would rather defeat the purpose of md5sum hashes.  one of
+> your md5sum programs is broken.
+>
+> or perhaps you ftp'd in text mode instead of binary mode.
+>
+> --
+> Ethan Benson
+> http://www.alaska.net/~erbenson/
+>
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
