@@ -1,57 +1,45 @@
-Message-ID: <3FC2F1D8.9020400@kegel.com>
-Date: Mon, 24 Nov 2003 22:08:24 -0800
-From: Dan Kegel <dank@kegel.com>
+Message-ID: <3FC30F17.1070904@imc-berlin.de>
+Date: Tue, 25 Nov 2003 09:13:11 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-To: cjohnson@gcctech.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Tools question
-References: <3FC24EB1.60106@gcctech.com>
-In-Reply-To: <3FC24EB1.60106@gcctech.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Marius Groeger <mgroeger@sysgo.com>
+Cc: Jaap-Jan Boor <jjboor@aimsys.nl>,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Preemptive Kernel and MPC8xx ???
+References: <3FC0A1D3.70706@imc-berlin.de> <B82FB2A3-1E4E-11D8-A8D4-003065E2BB06@aimsys.nl> <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
+In-Reply-To: <Pine.LNX.4.56.0311241732200.2581@mag.devdep.sysgo.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Christopher R. Johnson wrote:
-> This is probably way too big a question to ask here, but I'm hoping
-> someone can help me.  I have inherited a gcc 2.95.3 cross development
-> tool chain, which has been working fine to build for my powerpc-linux
-> target machine.  I'm building the kernel and user programs fine.  I'm
-> beginning to find as I add things in that I'm missing libraries.  Today
-> its libresolv which I need for pump.  Some questions:
+Hi,
+
+> On Mon, 24 Nov 2003, Jaap-Jan Boor wrote:
 >
-> 1. Do I really need to go back and build my own tool chain?  I've tried
-> grabbing 2.95.3 sources and building by running configure with
-> --target=powerpc-linux, but I get some missing include file errors
-> building libgcc2.a.  I'm on a 405GP (no fp).  Should I even bother doing
-> this?
+>>Yes I do on 2.4.20 and 2.4.22 from kernel.org. So far all seems
+>>to work but didn't do any measurements on it.
+>>(I both use the preempt and low-latency patches)
+Have you writting your own device drivers?
+How did you make them preemptable?
 
-Only if you run into trouble with your old compiler.
-If and when you decide to rebuild the compiler, see
-http://kegel.com/crosstool for a recipe you can follow.
+Marius Groeger wrote:
+> AFAIK, you can pretty much drop the low-latency patch in favor of
+> using the lock-breaking patch. It is also available from Robert Love
+> at the cited home page.
+How about homemade device drivers when using the lock-breaking patch?
 
-> 2. On my intel development machine I see that libresolv.a comes from
-> glibc-devel-2.2.5-34.  I have gcc-2.96-110 for my compiler.  Should I go
-> find a version of glibc-devel that matches up with my existing 2.95.3
-> tools?  How will I know if its the right version?
+Thanks!
 
-Again, http://kegel.com/crosstool (if you study it, and compare it
-with Karim's book) will help show you how to build the glibc of your
-choice.
+--
+Steven Scholz
 
-> 3. Better yet, is there somewhere I can just obtain a reasonable tool
-> chain that's ready-built for my target machine?  Complete with libraries?
+imc Measurement & Control               imc Meßsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
+fon: +49 30 467090-0                    Tel: 030 / 467090-0
+fax: +49 30 4631576                     fax: 030 / 4631576
 
-That same URL can show how to build a reasonable toolchain for the ppc405
-without any thought on your part, if you choose to not read and
-understand the script.  It's always better to read and understand, though.
-
-> Sorry for the newbie type questions.  I have the "Using and Porting GNU
-> CC" book, but am finding it a little too Stallman-esque to follow.  Anyone?
-
-Your question is quite reasonable.
-
-BTW, which glibc does your toolchain use?
-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
