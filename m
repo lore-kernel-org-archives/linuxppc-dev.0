@@ -1,33 +1,27 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <39F0983D.1FEE3672@snmc.com>
-Date: Fri, 20 Oct 2000 14:08:45 -0500
-From: Daris A Nevil <dnevil@snmc.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <67505026E29DD311A9AA00508B7315F350A569@EXCHANGE>
+From: Julia Elbert <jelbert@enerdyne.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
 Subject: HDLC/PPP Driver
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 20 Oct 2000 15:54:39 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have receive several requests for information regarding the HDLC/PPP
-driver in QSLinux.  In response I have put together a small white paper
-describing the driver, and it is located at:
+Hello,
+Thank you for the white paper.
+My problem is my hdlcppp is confused with enet. It appears my enet is
+calling the xmit in hdlcppp after the enet open is called. Weird. How could
+this happen? My enet is on SCC1 and hdlcppp is SCC2. Could some parameter in
+hdlcppp have priority even when enet is loaded?
+Thank you for your help. I hope this is not to elementary.
+--Julia
+
 
 http://qslinux.org/docs/snmc/hdlc/index.html
 
-Regards,
-Daris
-
---
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
-qslinux.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
