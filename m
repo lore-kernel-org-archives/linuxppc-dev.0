@@ -1,31 +1,40 @@
-Date: Thu, 6 May 1999 13:34:54 -0500 (CDT)
-From: Dave Weis <djweis@plconline.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: linux expo ppc hacking
-Message-ID: <Pine.LNX.3.95.990506133250.20228O-100000@catbert.desm.plconline.com>
+Date: Thu, 6 May 1999 13:51:13 -0500 (CDT)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
+cc: John L Grantham <jgrantha@hannover.sgh-net.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Partitions > 2GB?
+In-Reply-To: <3731824C.3600@post.uni-bielefeld.de>
+Message-ID: <Pine.LNX.3.96.990506134907.9670B-100000@globegate.utm.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, 6 May 1999, Jens Ch. Restemeier wrote:
 
-are any of the kernel developers here going to the expo in two weeks? if
-so and you feel adventurous, i can try to drag along my rs6000 for some
-coding :-) i'll be there the afternoon of the 19th until the morning of
-the 23rd. it would be a fun time for anyone that feels like they are up to
-a good challenge!
+> 
+> Hi !
+> 
+> > It at least _used_ to be so that the various PPC Linuxen couldn't handle
+> > partitions larger than 2 GB. Is that still the case as of LinuxPPC R4 and
+> > newer?
+> 
+> I don't know where rumors like that come from... I'm running LinuxPPC on
+> a 5 GB partition of a 10 GB IBM harddisk...
 
-dave
+Not just a rumor.  It was true at one time for LinuxPPC.  I _think_ it's
+still the case under MkLinux, so keeping partitions under 2 gigs is a good
+idea if you're planning on using both OSes.
 
--- 
-David Weis                | 10520 New York Ave, Des Moines, IA 50322
-djweis@plconline.com      | Voice 515-278-0133 Ext 231
 
-When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
-When they took the Sixth Amendment, I was quiet because I was innocent.
-When they took the Second Amendment, I was quiet because I didn't own a gun.
-Now they've taken the First Amendment and I can't say anything.
+Later,
+David
+
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
