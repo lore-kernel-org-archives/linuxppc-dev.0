@@ -1,46 +1,185 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: "Qsyang" <yangqs@163.com>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: close to porting success.....
-Date: Fri, 12 Dec 2003 20:50:54 -0200
-References: <200312120632.AAA23173@lists.linuxppc.org>
-In-Reply-To: <200312120632.AAA23173@lists.linuxppc.org>
+Message-ID: <005201c3c224$135c4090$5100a8c0@davey033ce6193>
+From: "DaveyWu" <daveywu@transengines.com>
+To: "Stefan Roese" <stefan.roese@esd-electronics.com>,
+	"'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>,
+	<benh@kernel.crashing.org>, <akuster@mvista.com>
+References: <004601c3c09e$8cfea410$0212000a@PCSTEFAN>
+Subject: Re: PPC4xx enet driver problem (version 2.0)
+Date: Sun, 14 Dec 2003 17:24:26 +0800
 MIME-Version: 1.0
-Message-Id: <200312122050.54421.scop@digitel.com.br>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Qsyang:
+Stefan,
 
-On Friday 12 December 2003 04:36, Qsyang wrote:
-> dear all,
->  I am porting U-boot-1.0.0 to my custom MPC8xx board and success is
-> being expectted coming soon(maybe too conceited^&^). Now i have a
-> question which describes below.
->     So far it is working fine when i am using BDI2000 and runing 'BDI>go
-> 0x02800100' in Telnet console,and then all the U-boot commands are
-> working very well.
->  But when i disconnected BDI and power on board directly ,U-Boot
-> crasheed after relocation to RAM. FAQ say that SDRAM initialization is
-> bad ,if this is the case why it is OK when using BDI to boot it. What's
-> the difference between the two conditions? Maybe some hardware problem?
+Thanks for your reply. My bootloader is OpenBios. I think the problem is not caused by the wrong MAC addresses, because when I boot the 2.4.18 kernel the MAC address of eth1 is same 00:00:00:00:00:00 but both EMACs work well.
 
-Maybe there's some SDRAM controller initialization in BDI2000 configuration
-file that's missing in your U-boot code. You should check this first.
+Our engineers is continuing to work with the problem. I would like to share any achievements about the problem with you.
 
-Have fun,
+Best regards,
+Davey Wu
 
--Scop.
 
+
+----- Original Message -----
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "'DaveyWu'" <daveywu@transengines.com>; "'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>; <benh@kernel.crashing.org>; <akuster@mvista.com>
+Sent: Friday, December 12, 2003 6:56 PM
+Subject: RE: PPC4xx enet driver problem (version 2.0)
+
+
+> Davey!
 >
-> 	Any help would be highly appreciated !
+> No, we didn't solve this problem so far. Eugene did some tests on an
+> ppc440 board and had no problems with the multiple enet devices. So it
+> seems to be 405ep related! I still have to send some debug output to
+> Eugene (hopefully today)!
+>
+> By the way: Did you notice that your MAC-address of the 2nd ethernet
+> channel (eth1) is 00:00:00:00:00:00? This is wrong and probably a
+> problem in passing MAC-addresses from your bootloader to linux. What
+> bootloader are you using? U-Boot/OpenBios?
+>
+> Best regards,
+> Stefan.
+>
+> > -----Original Message-----
+> > From: DaveyWu [mailto:daveywu@transengines.com]
+> > Sent: Friday, December 12, 2003 3:40 AM
+> > To: Stefan Roese; Linuxppc-Embedded;
+> > benh@kernel.crashing.org; akuster@mvista.com
+> > Subject: Re: PPC4xx enet driver problem (version 2.0)
+> >
+> >
+> > Hi Stefan,
+> >     I have suffered the same problem when I am trying swtich
+> > to 2.4.22 from 2.4.18 on IBM405ep board. Following is the
+> > output on my board:
+> >
+> > # ifconfig eth0 down
+> > # ifconfig eth1 down
+> > # ifconfig eth0 192.168.1.1
+> > eth0: adjust to link, speed: 100, duplex: 1, opened: 1
+> > eth0: Speed: 100, Full duplex.
+> > # ping 192.168.1.123
+> > PING 192.168.1.123 (192.168.1.123): 56 data bytes
+> > 64 bytes from 192.168.1.123: icmp_seq=0 ttl=128 time=5.2 ms
+> > 64 bytes from 192.168.1.123: icmp_seq=1 ttl=128 time=2.8 ms
+> > 64 bytes from 192.168.1.123: icmp_seq=2 ttl=128 time=2.7 ms
+> > 64 bytes from 192.168.1.123: icmp_seq=3 ttl=128 time=2.6 ms
+> > 64 bytes from 192.168.1.123: icmp_seq=4 ttl=128 time=2.7 ms
+> > 64 bytes from 192.168.1.123: icmp_seq=5 ttl=128 time=2.7 ms
+> >
+> > --- 192.168.1.123 ping statistics ---
+> > 6 packets transmitted, 6 packets received, 0% packet loss
+> > round-trip min/avg/max = 2.6/3.1/5.2 ms # ifconfig eth1 192.168.2.1
+> > eth1: adjust to link, speed: 100, duplex: 1, opened: 1
+> > eth1: Speed: 100, Full duplex.
+> > SIOCSIFFLAGS: Device or resource busy
+> > # ifconfig
+> > eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
+> >           inet addr:192.168.1.1  Bcast:192.168.1.255
+> > Mask:255.255.255.0
+> >           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+> >           RX packets:104 errors:0 dropped:0 overruns:0 frame:0
+> >           TX packets:7 errors:0 dropped:0 overruns:0 carrier:0
+> >           collisions:0 txqueuelen:100
+> >           RX bytes:10027 (9.7 kiB)  TX bytes:630 (630.0 iB)
+> >           Interrupt:15
+> >
+> > lo        Link encap:Local Loopback
+> >           inet addr:127.0.0.1  Mask:255.0.0.0
+> >           UP LOOPBACK RUNNING  MTU:16436  Metric:1
+> >           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+> >           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+> >           collisions:0 txqueuelen:0
+> >           RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
+> >
+> > # ping 192.168.1.123
+> > PING 192.168.1.123 (192.168.1.123): 56 data bytes
+> >
+> > --- 192.168.1.123 ping statistics ---
+> > 25 packets transmitted, 0 packets received, 100% packet loss
+> > # ifconfig -a
+> > eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
+> >           inet addr:192.168.1.1  Bcast:192.168.1.255
+> > Mask:255.255.255.0
+> >           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+> >           RX packets:104 errors:0 dropped:0 overruns:0 frame:0
+> >           TX packets:15 errors:0 dropped:0 overruns:0 carrier:0
+> >           collisions:0 txqueuelen:100
+> >           RX bytes:10027 (9.7 kiB)  TX bytes:966 (966.0 iB)
+> >           Interrupt:15
+> >
+> > eth1      Link encap:Ethernet  HWaddr 00:00:00:00:00:00
+> >           inet addr:192.168.2.1  Bcast:192.168.2.255
+> > Mask:255.255.255.0
+> >           BROADCAST MULTICAST  MTU:1500  Metric:1
+> >           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+> >           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+> >           collisions:0 txqueuelen:100
+> >           RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
+> >           Interrupt:17
+> >
+> > lo        Link encap:Local Loopback
+> >           inet addr:127.0.0.1  Mask:255.0.0.0
+> >           UP LOOPBACK RUNNING  MTU:16436  Metric:1
+> >           RX packets:25 errors:0 dropped:0 overruns:0 frame:0
+> >           TX packets:25 errors:0 dropped:0 overruns:0 carrier:0
+> >           collisions:0 txqueuelen:0
+> >           RX bytes:2800 (2.7 kiB)  TX bytes:2800 (2.7 kiB)
+> >
+> > #
+> > Have you already solved the problem?
+> >
+> > ----- Original Message -----
+> > From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+> > To: "Linuxppc-Embedded"
+> > <linuxppc-embedded@lists.linuxppc.org>;
+> > <benh@kernel.crashing.org>; <akuster@mvista.com>
+> > Sent: Wednesday, December 03, 2003 7:29 PM
+> > Subject: PPC4xx enet driver problem (version 2.0)
+> >
+> >
+> > >
+> > > Hello!
+> > >
+> > > We are trying to switch to the 2.4.23 linuxppc_2_4_devel
+> > kernel (from
+> > > 2.4.21) and experience a problem with the "new" ethernet driver for
+> > > the ibm ppc4xx (version 2.0 from Benjamin Herrenschmidt). On our
+> > > boards with only one active enet interface we have no problems. But
+> > > our PPC405EP boards with 2 active enet devices, the traffic stops
+> > > completely upon initializing the 2nd devices (emac_reset_configure).
+> > >
+> > > Has anybody experienced similar problems? Has anybody seen
+> > this driver
+> > > working properly with more than one ppc4xx enet devices (especially
+> > > ppc405ep)?
+> > >
+> > > With the previous driver (from linuxppc_2_4_devel 2.4.21
+> > maintained by
+> > > mvista) we had no problems with 2 enet interfaces on the
+> > ppc405ep so
+> > > far!
+> > >
+> > > By the way: What is the future of the ppc4xx enet driver. I
+> > found that
+> > > the 2.5 kernel  has a newer mvista driver included
+> > (modifications for
+> > > 440gx, etc.). Is the driver from 2.4.23 a dead end?
+> > >
+> > > Thanks and best regards,
+> > > Stefan.
+> > >
+> > >
+> > >
+> > >
+> >
 >
 >
-> Qsyang
->
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
