@@ -1,52 +1,73 @@
-Message-ID: <393D5CB0.448D6235@embeddededge.com>
-Date: Tue, 06 Jun 2000 16:18:56 -0400
+Message-ID: <393D6779.1EFD794A@embeddededge.com>
+Date: Tue, 06 Jun 2000 17:04:57 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Daniel Wu <Daniel.Wu@alcatel.com.au>
-CC: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel crashes at InstructionTLBMiss
-References: <00Jun4.144038est.115228@border.alcanet.com.au>
-	 <393BBE5D.49B17E9C@embeddededge.com> <00Jun6.135659est.115272@border.alcanet.com.au>
+To: Kent Borg <kentborg@wavemark.com>
+CC: dan@netx4.com, tmontgom@miranda.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Running from ROM
+References: <200006052137.RAA29282@rome.wavemark.com> <393C23CC.3289DD1F@mvista.com> <00060516034300.24189@minotaur.mvista.com> <200006061339.JAA30741@rome.wavemark.com> <393D06BD.ADEDF247@miranda.com> <393D3D63.E3504DE9@embeddededge.com> <200006062011.QAA31478@rome.wavemark.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Daniel Wu wrote:
+Kent Borg wrote:
 
-> The reason why I changed the address was because my uncompressed kernel is
-> about 1.3M. This means if I load at 0x100000 (the default), then the board data
-> gets trashed
+> As a preface, let me say that I don't know that it *is* better for us
+> to run from ROM, only that I suspect it *might* be.  See if the
+> following makes any sense.
 
-Yes, but just move it up a little.  I know you are running the 2.2.xx
-kernel, and in the 2.3/2.4 kernel I moved this to 0x180000, which is
-the only change necessary.
+Yes, it does.  Count bytes and make trade offs.  What "fudge factor"
+do you use :-).
 
-> .... I realised that the M_TWB was not initialised
-> properly in the first place!
+> .....  I am not talking about merely
+> running the kernel out of ROM (though that seems the easy part),
 
-I would believe this in a 2.3.xx kernel, but not 2.2......
+I know a few people that would disagree with this statement, having
+actually done the work.  There is this minor problem of branch targets
+not able to cover 32 bits of address, and it is all uphill from there
+when you are trying to span a 4 GByte space in code/data (plus fit
+some user applications in the middle).
 
-> ... Anyway, I'm thinking of starting from scratch with
-> the kernel and patches at the MontaVista site.
 
-Please do.  I know that runs on many platforms.
+> Who says that development has to happen in flash ROM?
 
-> Unfortunately, if you get no output, BDM is the _only_ option you have - at
-> least it will give you some details of the registers, although you can't step
-> through code die to the virtual addresses.
+I didn't mean to imply all development happens there.  Execute from
+ROM (in my experience) was an additional step for testing that
+didn't always work the first time, and debugging in this environment
+is more challenging.  For 8xx development, I typically use NFS root
+disk filesystems, then just make these into a compressed ram disk.
+In this case, you are done because the final product is still running
+from RAM just like the original development.  Further, if you design
+the product to use some (carefully) removeable media like compact flash,
+your initial guess at the amount of flash rom doesn't have to be
+accurate.  You may wish it was less, but it won't stop the shipment of
+products and you can squeeze it or update the features over time.
+It really sucks when you have soldered down the maximum amount and you
+can't make the software fit....
 
-A good boot rom is a better debugging tool than a BDM.  The BDM is only
-useful for the first few instructions of the kernel.  Dumping out key
-kernel data structures is more useful than the contents of registers
-at the time a BDM catches a trap.
 
-Porting to a new 8xx board is almost a no brainer with the MontaVista
-2.2.13 and later kernels.  All you need to do is properly set the IMMR
-and the processor clock speed in the board information structure.  Any
-board will boot far enough to get console output and attach KGDB or XMON.
-When you start changing lots of code before this point, you are just
-asking for trouble.
+> But how much application code can you fit in that 8-bit device?
+
+Lots, until you fill it up :-).  Seriously, in products I have seen,
+you can achieve at least 50% reduction in Flash requirement by
+compressing the kernel and file system.  As you said, some things
+compress better than others.
+
+> So I am still wondering how we might do this as I worry about possibly
+> having to muck in the deep innards of MMU manipulating code.
+
+It's not only the MMU.  When you use the standard Linux file system
+features like RAM disks, ROM file systems, and program loaders, your
+software just works and your product is out the door.  People also forget
+that the kernel is a small part in the product development.  Many of
+these "features" affect the libraries, which are substantially more
+code and more complex (to someone like me that doesn't really understand
+dynamic loading).  It also affects the tools used to develop the
+software. You have to also consider if saving that dollar or two of
+flash or RAM is worth additional time of not shipping products.
+
+OK, back to real work now......I must write some code.
 
 
 	-- Dan
