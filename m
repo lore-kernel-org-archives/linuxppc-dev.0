@@ -1,34 +1,43 @@
-Date: Tue, 5 Dec 2000 19:12:29 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: alex@cosmo.allay.net
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org, max@trega.com
+Date: Tue, 5 Dec 2000 13:20:49 -0500 (EST)
+From: Alex Avriette <alex@macachu.yi.org>
+Reply-To: alex@cosmo.allay.net
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+cc: alex@cosmo.allay.net, linuxppc-dev@lists.linuxppc.org
 Subject: Re: lots of questions (va_list, embedded perl, cvsd, introduction
  - sort of)
-In-Reply-To: <Pine.LNX.4.10.10012051221430.22364-100000@macachu.ex-pressnet.com>
-Message-ID: <Pine.LNX.4.10.10012051911150.25035-100000@zirkon.biophys.uni-duesseldorf.de>
+In-Reply-To: <Pine.LNX.4.10.10012051837160.24871-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10012051319490.22364-100000@macachu.ex-pressnet.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > pass [4] int: 25 string: somestring
-> > Speicherschutzverletzung (core dumped)
-> >
-> > is what I get. On Intel, that is. gcc version is egcs-2.91.66. Seems
-> > something's wrong with your code in general.
->
-> well, thats the thing. there isnt, i dont think, wrong with my code (apart
-> from what you said earlier (later? i get this as being 15 minutes
-> "new"er). it doesnt segfault at all here. i get some screwed up variables,
+And lo there was much discussion regarding:
 
-I found the reason for the segfault, BTW. Please compile your test code
-using the -Wall option to see for yourself.
+> No segfault. Just garbage if you use vsnprintf (which completely exhausts
+> the va_list so there are no unprocessed arguments left after the call)
+> twice without restoring ap in between.
 
-Thanks for wasting my time.
+thanks, franz has explained this quite a bit.
 
-	Michael
+> I don't care what the maintainers of opennap claim about 'it can't run on
+> Mac because Mac is broken anyway'. Writing portable code may be tough in
+> this special neck of the woods, but it's possible. I've seen maintainers
+> of other free software packages act reasonably about this very issue. Send
+> them a patch, and explain why the patch is required.
+
+thats what im doing here, trying to get everything figured out in the
+context of the ppc so i can submit a patch and explain why.
+
+thanks michael.
+
+--
+alex avriette [alex@cosmo.allay.net]
+
+"No man who uses EMACS is deserving of love."
+	Tom Christiansen <tchrist@perl.com>,
+	_Perl Cookbook_, pp. 653
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
