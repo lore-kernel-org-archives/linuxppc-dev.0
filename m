@@ -1,75 +1,77 @@
-Date: Sat, 13 Feb 1999 18:50:09 +0100
-To: Paul Mackerras <paulus@cs.anu.edu.au>,
-        Cort Dougan <cort@ladron.cs.nmt.edu>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Message-Id: <19990213185009.020602@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 13 Feb 1999 13:28:38 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
+Reply-To: Brad Midgley <brad@pht.com>
+To: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
+cc: linux-fbdev@vuser.vu.union.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [linux-fbdev] some modes "default" solutions
+Message-ID: <Pine.LNX.3.96LJ1.1b7.990213120624.657A-100000@cricket>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+geert,
 
-I would like your point of view about the following:
+> With `mode default' XF68_FBDev will use this virtual screen, unless you
+> override the virtual screen size with `Virtual x y' in your XF86Config.
+                                         ^^^^^^^^^^^ 
 
-The kernel entry code starts playing with BATs as soon as it is entered.
-Isn't that dangerous ? I mean, you must have enough luck for this BAT not
-to be used at this specific time, or not overlapping another BAT setup by
-MacOS (overlapping BATs causes undefined behaviour according to the PPC
-manual) ?
+"Virtual" is ignored in Xfb when using modes default. i looked at fbdev.c
+in xfree to find a reason for this. i think it's because this line of code
 
-I have made a test bootx that I'll upload to
-ftp.linuxppc.org/developement/users/benh later today (the archive will
-probably be called BootX_phys_test.sit). This version of BootX doesn't
-jump directly to the kernel but goes to a small piece of PPC asm that
-will cause the kernel to be entered with MMU (and interrupts) disabled. I
-beleive this should get rid of potential problems with TLB misses during
-boot too. Of course, all addresses passed to the kernel are turned into
-physical addresses (frame buffer, stack, boot_infos).
+ fbdevInfoRec.SwitchMode = fbdevSwitchMode;
 
-This version works on my desktop G3, I didn't have time to test it on
-other machines yet.
-The bootstrap code is simple (it's entered with the same parameters as
-the kernel, but with physical addresses and with the kernel physical
-entry in r6) :
+is only executed if the mode is NOT default. fbdevSwitchMode() is
+responsible for ultimately making the ioctl call that changes mode
+(including virtual size) so the higher layers of the X server won't even
+know how to change the virtual size. 
 
-    /* switch interrupts off */
-    mfmsr   r0;
-    ori     r31,r31,MSR_EE;
-    andc    r0,r0,r31;
-    sync;
-    mtmsr   r0;
-    sync;
+it's probably not a simple matter of adding that line however. i'm not
+sure how you'd make sure all the other parameters of the graphics mode
+match up. 
 
-    /* put kernel entry (phys) in ssr0 */
-    mtspr   SSR0, r6;
+The config below comes up with virtual 1024x1024 on my 7500 and 1024x6128
+on the imac. (using v3.3.3 18Nov1998) 
 
-    /* Setup ssr1 (kernel entry MSR) */
-    ori     r31,r31,(MSR_IR|MSR_DR);
-    andc    r0,r0,r31;
-    mtspr   SSR1, r0;
+brad
 
-    /* Branch to the kernel */
-    rfi;
-
-Note: I wrote this little piece of asm with CodeWarrior. Since I would
-like to make a C boostrap that takes place between this and the kernel, I
-still need to figure out how to build code for this with egcs. If I could
-find the correct MakeFile options to get an output like prom.c
-(PC-relative branches, datas accessed thru a RELOC macro), I think it
-would be just fine. A better approach would be to store datas relative to
-a register that I can setup before entering the boostrap, but that means
-parsing enough of the ELF to extract the offset of the datas. I would
-appreciate if someone could give me some tips about what is usually done
-in those cases or some pointers to infos/samples.
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
+---------- Forwarded message ----------
+Section "Files"
+    RgbPath	"/usr/X11R6/lib/X11/rgb"
+    FontPath	"/usr/X11R6/lib/X11/fonts/misc/"
+    FontPath	"/usr/X11R6/lib/X11/fonts/Type1/"
+    FontPath	"/usr/X11R6/lib/X11/fonts/Speedo/"
+    FontPath	"/usr/X11R6/lib/X11/fonts/75dpi/"
+    FontPath	"/usr/X11R6/lib/X11/fonts/100dpi/"
+EndSection
+Section "ServerFlags"
+EndSection
+Section "Keyboard"
+    Protocol	"Standard"
+    AutoRepeat	500 5
+XkbDisable
+EndSection
+Section "Pointer"
+    Protocol	"busmouse"
+    Device	"/dev/mouse"
+EndSection
+Section "Monitor"
+    Identifier	"Generic"
+EndSection
+Section "Device"
+    Identifier "Linux Frame Buffer Device"
+    Option "noaccel"
+EndSection
+Section "Screen"
+    Driver	"fbdev"
+    Device	"Linux Frame Buffer Device"
+    Monitor	"Generic"
+    SubSection	"Display"
+        Modes	"default"
+	Virtual 1024 768
+    EndSubsection
+EndSection
 
 
 
