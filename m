@@ -1,46 +1,69 @@
-Date: Tue, 19 Nov 2002 15:33:47 -0500
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: "Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Unexpected sleep on old iBook
-Message-ID: <20021119203347.GK8575@paco.resnet.purdue.edu>
-References: <2C5637A6A7CE844EA3C0A94565479F5275A2E2@dest-as20-002.int.bauer-partner.com> <Pine.LNX.4.33.0211191743560.11419-100000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-In-Reply-To: <Pine.LNX.4.33.0211191743560.11419-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Unexpected sleep on old iBook
+Date: Wed, 20 Nov 2002 12:11:45 +0100
+Message-ID: <2C5637A6A7CE844EA3C0A94565479F5275A2E7@dest-as20-002.int.bauer-partner.com>
+From: "Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>
+To: "Ethan Blanton" <eblanton@cs.ohiou.edu>,
+	"linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Cc: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz spake unto us the following wisdom:
-> Please try running pmud with the -s or -S flag (signal init on power low)
-> and take note of the battery power level readings. I suspect the kernel
-> does return erroneous power readings on occasion, causing pmud to trigger
-> sleep. I've not been able to reproduce this on my Lombard Powerbook -
-> other users (iBook IIRC) report the battery power suddenly dropping to
-> zero from as much as 80%. I'm currently trying to collect more information
-> on this new feature.
+> From: Ethan Blanton [mailto:eblanton@cs.ohiou.edu]
+> Sent: Dienstag, 19. November 2002 21:34
+>...
+> If I can provide any information that might be useful, please let me
+> know.  I have both of these laptops sitting in the same room with me
+> pretty much every day of the world for at least some period of time.
+>
+Ok, when I do
+	pmud -ds 2>&1 | tee pmud.txt
+I get:
+pmud[1226]: pmud [treshold = 420, margin = 15] started
+pmud[1226]: opening /dev/adb
+pmud[1226]: opening /dev/pmu
+pmud[1226]: pmu_op(0xea, ..., version req)
+pmud[1226]: PMU version 12: iBook/G3 Pismo/G4 Titanium
+pmud[1226]: starting monitoring loop
+pmud[1226]: pmu_op(0xdc, ..., switch req)
+pmud[1226]: pmu_op(0x6f, ..., smart battery req)
+pmud[1226]: pmu_op(0x6f, ..., smart battery req)
+pmud[1226]: timeleft = -1
+pmud[1226]: running /etc/power/pwrctl maximum ac
+pmud[1226]: PMU interrupt:
+pmud[1226]:  40
+pmud[1226]:  14
+pmud[1226]: pmu_op(0xdc, ..., switch req)
+pmud[1226]: pmu_op(0x6f, ..., smart battery req)
+pmud[1226]: pmu_op(0x6f, ..., smart battery req)
+pmud[1226]: timeleft = -1
+... several seconds later ...
+pmud[1226]: PMU interrupt:
+pmud[1226]:  40
+pmud[1226]:  14
+pmud[1226]: pmu_op(0xdc, ..., switch req)
+pmud[1226]: pmu_op(0x6f, ..., smart battery req)
+pmud[1226]: pmu_op(0x6f, ..., smart battery req)
+pmud[1226]: timeleft = -1
+pmud[1226]: initiating user requested sleep
+			... I did not touch the iBook at all ...
+pmud[1226]: polling adb for trackpad
+pmud[1226]: found a trackpad (id = 3)
+pmud[1226]: trackpad settings tap drag lock
+pmud[1226]: calling sync()
+pmud[1226]: running /etc/power/pwrctl sleep ac
+pmud[1226]: going to sleep
+pmud[1226]: system awake again
+pmud[1226]: requested settings tap drag lock
+pmud[1226]: trackpad settings tap drag lock
+pmud[1226]: running /etc/power/pwrctl wakeup ac
 
-I have a first generation iceBook (500MHz/64MB stock/Rage128
-Mobility), and I never see this behavior ... however, I recently
-talked my girlfriend into a new iceBook, and the model she got
-(600MHz/128MB stock/Radeon Mobility M6 LY) does.  It doesn't seem to
-be predictable as best we can tell, and it doesn't happen often.  It
-seems to happen whether the laptop is plugged into wall power or not.
+May I need to add additional debug output ?
 
-(Does it irritate anyone else that there seems to be no *good* way to
- differentiate iBook versions?  I'm sure there's some motherboard
- resource version that's unambiguous, but come on...)
-
-If I can provide any information that might be useful, please let me
-know.  I have both of these laptops sitting in the same room with me
-pretty much every day of the world for at least some period of time.
-
-Ethan
-
---
-And if I claim to be a wise man / it surely means that I don't know.
-                -- Kansas, "Carry on Wayward Son"
+klaus.halfmann@t-online.de, 		(49)-(0)-6172/492497
+Klaus Halfmann, Mainstrasse 8, 61352 Bad Homburg GERMANY
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
