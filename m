@@ -1,45 +1,54 @@
-Subject: Re: [PATCH] pmac_zilog.c: Fix break handling, add sysrq support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Harald Welte <laforge@gnumonks.org>
-Cc: rmk+serial@arm.linux.org.uk,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040808112147.GA31341@obroa-skai.de.gnumonks.org>
-References: <20040806104328.GL11638@sunbeam2>
-	 <1091789077.5227.236.camel@gaston>
-	 <20040808112147.GA31341@obroa-skai.de.gnumonks.org>
-Content-Type: text/plain
-Message-Id: <1092097456.14100.54.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 10 Aug 2004 10:24:17 +1000
+Date: Wed, 11 Aug 2004 02:14:44 +0200 (MEST)
+Message-Id: <200408110014.i7B0Eit6017963@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@csd.uu.se>
+To: linux-ide@vger.kernel.org, linuxppc-dev@lists.linuxppc.org
+Subject: PDC20269 problems on PowerMac with 2.4.27 kernel
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
-> Yes, I agree, that sounds way cleaner than just not lock at all in
-> console_write().  But then of course you could still runt into a race
-> condition where another thread is already spinning for the lock.  As
-> soon as we drop the lock, the other thread would grab it... and when
-> console_write() is called via handle_sysrq(), it's already too late,
-> isn't it?
+I have a PowerMac G3 (beige) upgraded with a 1GHz G4 processor
+and a PDC20269 (Promise Ultra 133 TX2) IDE PCI controller,
+which works reliably with the 2.6.8-rc kernels. The controller,
+disk, and cable also work in an x86 box with both 2.6 and 2.4 kernels.
 
-Ugh ? handle_sysrq() is called from irq, this should be an irqsafe
-lock, another thread on another cpu would just cause us to wait a bit...
+However, with 2.4.27 on the PowerMac I frequently get DMA timeouts
+while doing heavy I/O operations like a cp -ax from my scsi root
+to a partition on the PDC20269's disk:
 
-> I think this is a generic issue that all serial drivers supporting
-> sysrq() face.  Instead of putting some special different solution into
-> each driver, I'd say the code from sn_sal_console_write() needs to be
-> generalized.
->
-> Cc'ing the serial maintainer exactly for this reason.
->
-> Russell, what is the preferred solution for this deadlock-prone
-> situation?
->
-> > I'll have a look, thanks much.
-> > Ben.
---
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+hde: dma_timer_expiry: dma status == 0x20
+hde: timeout waiting for DMA
+PDC202XX: Primary channel reset.
+hde: timeout waiting for DMA
+hde: (__ide_dma_test_irq) called while not waiting
+hde: status error: status=0x58 { DriveReady SeekComplete DataRequest }
 
+hde: drive not ready for command
+
+Occasionally I instead get EXT3 meta-data errors, which I suspect
+are caused by data corruption.
+
+I've compared lspci -vvx on 2.4 and 2.6, but the only difference
+is a ParErr setting on the 53c875 SCSI controller.
+
+There are some differences in /proc/ide/ide2/hde/settings between
+2.4 and 2.6, for multicount and wcache, but I don't know if they're
+relevant. (Manually setting multicount on 2.4 to zero like 2.6 reports
+it leads to immediate data corruption. Weird.)
+
+I've disabled IDEDMA_AUTO and manually lowered the transfer mode to
+udma3 or even udma2, but that doesn't help at all. It does udma4 w/o
+problems in 2.6 kernels.
+
+Strangely enough, the card worked better earlier when the box still
+had its original 300MHz CPU. It did throw _one_ error at kernel
+boot-up, but never anything afterwards. Disabling IDEDMA_AUTO
+silenced that error.
+
+Any ideas on what might be causing this? At this point I'm beginning
+to suspect big-endian or timing bugs in pdc202xx_new.c, or a general
+problem with IDE/DMA/PCI in the 2.4.27 kernel on ppc32/pmac.
+
+/Mikael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
