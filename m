@@ -1,42 +1,57 @@
-Message-ID: <3C7FD350.F6FEC68F@mvista.com>
-Date: Fri, 01 Mar 2002 14:15:28 -0500
-From: "Mark A. Greer" <mgreer@mvista.com>
+From: "Jon-Erling Dahl" <jon-erling.dahl@its4mobility.com>
+To: "Michael Habermann" <MHabermann@gmx.de>,
+	"'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: libraryopt
+Date: Sat, 2 Mar 2002 10:53:58 +0100
+Message-ID: <GKEKJGELJKLLBBAFIGAIMEKACAAA.jon-erling.dahl@its4mobility.com>
 MIME-Version: 1.0
-To: Tzahi Oved <tzahio@voltaire.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ppcboot 1.1.4 & MPSC
-References: <20083A3BAEF9D211BDB600805F8B14F3010A15AB@NTSERVER>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <5.1.0.14.0.20020301083221.01d7da58@pop.gmx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Where are you getting the source, linuxppc_2_4_devel or linux-galileo?
-linux-galileo, I hope, because there is not mpsc driver in 2_4_devel.
-
-Some gotcha:
-1) you must change jumpers J42 & J43 to pins 2&3 for mpsc.
-2) DINK will not put anything out the mpsc but will still run so you have to
-wait some unknown amount of time before running your image (assuming you're
-downloading with a bdi or something like that).
-3) You have turned on the mpsc and turned off the 16550 in make config, right?
-
-That's all I can think of right now?
-
-Mark
---
-
-Tzahi Oved wrote:
-
-> Hi,
-> I'm trying to work with the internal uart (MPSC) on the Galileo EVB64260
-> board. When I set the definition CONFIG_MPSC in the EVB64260 config file
-> (which supposed to set the terminal to work on the MPSC) I'm not getting any
-> response on my console, do I need to configure anything else ?? any
-> suggestions ?
+> >I'm having problems getting libraryopt doing something.
+> >(http://libraryopt.sourceforge.net)
+> >Is there anybody out there that have used this utility
+> >successfully?
 >
-> Thanks
+> There was a thread about this topic, with detailed descriptions.
+> Maybe this
+> link helps you:
+> http://lists.linuxppc.org/linuxppc-embedded/200110/msg00156.html
 >
+> I have not managed to use libraryopt (I tried not very hard), but was
+> successful with mklibs.sh.
+> If you are using hardhat linux, libraryopt is recommended.
 
+I managed to get it working. The libopt program seems to look
+for the build script in the wrong directory (at least according
+to my setup ;). Changing that, and the build script executed.
+
+However, the build script is supposed to get all needed object
+files as input. My build script didn't get any object files at
+all and I think its because of this:
+
+I have an application 'myapp' that depends on a shared library
+'mylib'. 'mylib' in turn depends on 'somelib', like this:
+
+myapp -> mylib -> somelib -> libc, libstdc++, etc
+
+What I tried was to create an optimizer for somelib. But since
+myapp doesn't depend on somelib directly, it seems that libopt
+doesn't think any of the object files in 'somelib' is needed,
+and hence no object files as input to the build script.
+Is this correct? Does libopt only work when an application is
+linked directly against the lib you're trying to optimize?
+Am I completely missing something here?
+I built an optimizer for 'mylib', and it worked correctly...
+
+Are there any other utilities for solving this problem? Does
+mklibs.sh solve it better?
+
+Regards,
+Jon-Erling
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
