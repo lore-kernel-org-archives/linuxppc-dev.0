@@ -1,149 +1,49 @@
-Date: Thu, 11 Mar 2004 16:37:04 +0100 (CET)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Jean-Denis Boyer <jdboyer@m5t.com>
-Cc: yang <wchyang_hn@sina.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Can't set the schedual parameter of threads in linux
-In-Reply-To: <AB5AF73EAF23304EA1B932174137CED70304B4@m5tmail.m5t.com>
-Message-ID: <Pine.LNX.4.44.0403111633570.29956-100000@linpc003.aimsys.nl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Subject: Re: MPC8560ADS issues
+From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
+To: Jason McMullan <jason.mcmullan@timesys.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <1078945499.3748.4.camel@veena.timesys>
+References: <1078945499.3748.4.camel@veena.timesys>
+Content-Type: text/plain
+Message-Id: <1079019785.29565.36.camel@chuck.arlut.utexas.edu>
+Mime-Version: 1.0
+Date: Thu, 11 Mar 2004 09:43:05 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 11 Mar 2004, Jean-Denis Boyer wrote:
+On Wed, 2004-03-10 at 13:04, Jason McMullan wrote:
+> I'm trying to work with FCCs on my PowerQuick III with a
+> MPC8560 Rev 1, and I'm having quite a difficult time attempting
+> to get the FCC ethernet ports to work.
+>
 
->
-> Your program logic is absolutely correct.
-> I ran it in my embedded PPC environment (as root) and got the following results:
->
-> policy: 2       priority: 20
->
-> The problem is elsewhere...
+What version of u-boot are you using? There was a patch around Feb. 24th
+that fixed some things in the ethernet driver for u-boot. Although since
+you seem to have the TSEC ports working it seems you have the latest
+version.
 
-RedHat 9 uses ntpl, that is a difference.
+> The GigE (TSEC) ports work just fine, but the FCC ports don't seem
+> to TX or RX anything. No IRQs from the FCC, but I get IRQs from the
+> PHYs
 
->
-> --------------------------------------------
->  Jean-Denis Boyer, Eng.
->  M5T Centre d'Excellence en Télécoms Inc.
->  4283 Garlock Street
->  Sherbrooke (Québec)
->  J1L 2C8  CANADA
->  (819)829-3972 x241
-> --------------------------------------------
-> > -----Original Message-----
-> > From: owner-linuxppc-embedded@lists.linuxppc.org
-> > [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of yang
-> > Sent: 10 mars, 2004 20:07
-> > To: linuxppc-embedded@lists.linuxppc.org
-> > Subject: Can't set the schedual parameter of threads in linux
-> >
-> >
-> >
-> > Hello,
-> >     I encounter a problem when I transplant application.
-> >     There is no effect to the pthread when I call
-> > pthread_setschedparam() function in test program,  and it's
-> > policy and priority are stilll zero, not what I expected,
-> > after call pthread_getschedparam(). The codes  is as the follow:
-> >
-> > #include <sched.h>
-> > #include <pthread.h>
-> > #include <stdio.h>
-> > #include <stdlib.h>
-> > #include <sys/types.h>
-> > #include <linux/ipc.h>
-> > #include <linux/msg.h>
-> > #include <errno.h>
-> > #include <stddef.h>
-> > #include <string.h>
-> >
-> > void * func()
-> > {
-> >         while (1);
-> >     return;
-> > }
-> >
-> > int main()
-> > {
-> >     pthread_attr_t tattr;
-> >     pthread_t tid;
-> >     int policy;
-> >     int ret;
-> >     int newprio = 20;
-> >     struct sched_param param;
-> >
-> >     ret = pthread_attr_init (&tattr);
-> >     if (ret != 0)
-> >     {
-> >         printf("Error in init: %s\n", strerror(errno));
-> >     }
-> >
-> >     ret = pthread_attr_getschedparam (&tattr, &param);
-> >     if (ret != 0)
-> >     {
-> >         printf("Error in get after init: %s\n", strerror(errno));
-> >     }
-> >     ret = pthread_attr_setdetachstate(&tattr,
-> > PTHREAD_CREATE_DETACHED);
-> >    if (ret != 0)
-> >     {
-> >         printf("Error in setdea: %s\n", strerror(errno));
-> >     }
-> >     ret = pthread_attr_setschedpolicy(&tattr, SCHED_RR);
-> >     if (ret != 0)
-> >     {
-> >         printf("Error in setpolicy: %s\n", strerror(errno));
-> >     }
-> >
-> >     param.sched_priority = newprio;
-> >     ret = pthread_attr_setschedparam (&tattr, &param);
-> >     if (ret != 0)
-> >     {
-> >         printf("Error in set: %s\n", strerror(errno));
-> >     }
-> >
-> >     ret = pthread_create (&tid, &tattr, (int*) func, NULL);
-> >     if (ret != 0)
-> >     {
-> >         printf("Error in create: %s\n", strerror(errno));
-> >     }
-> >
-> >     param.sched_priority = -1;
-> >     ret = pthread_getschedparam (tid, &policy, &param);
-> >     if (ret != 0)
-> >     {
-> >         printf("Error in get after create: %d %s\n", ret,
-> > strerror(errno));
-> >     }
-> >
-> >     printf("policy: %d\tpriority: %d\n", policy,
-> > param.sched_priority);
-> >
-> >     return 0;
-> >
-> > }
-> >
-> >     The output is :
-> >     policy: 0    priority: 0
-> >
-> >     Would you like to tell me how to set the policy and
-> > priority to pthreads in Red Hat.? Thank you very much!
-> >     Best regards,
-> >                                      yang
-> >
-> >
->
->
->
+U-boot does not use interrupts for networking, it just uses polling. How
+are you determining you are seeing interrupts from the PHYs and not the
+FCC?
+
+
+>   Has anyone had any success with the MPC8560ADS and FCCs? In either
+> Linux or u-boot?
+
+I have not attempted to use the FCC in u-boot but I have it working in
+Linux, well sort of anyways... it is going extremely slow and I am still
+investigating that. That being said I don't think u-boot has support for
+using the FCC, so what changes did you make to get u-boot?
+
+
 
 --
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+Matthew S. McClintock <mattsm@arlut.utexas.edu>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
