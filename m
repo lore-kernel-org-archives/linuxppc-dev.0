@@ -1,72 +1,42 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Thu, 03 Feb 2000 16:39:30 +0100 (CET)
-Subject: initrd
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <0FPD00LDV2DPNM@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_4GUJaszyQMgWB48sXhaxrQ)"
+Message-ID: <2044A9F15B38D211A89900104BD36C02381B4B@thebank.audesi.com>
+From: Clinton Lam <clinton@AudeSi.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: mpc8xx-2.2.13 booting problem
+Date: Thu, 3 Feb 2000 10:12:33 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hi,
 
---Boundary_(ID_4GUJaszyQMgWB48sXhaxrQ)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+I am new to the embeded linux. I am trying to port mpc8xx-2.2.13 kernel to
+our custom board, called Touchstone. It is a reference design based on
+mpc823, which has 32 Mbyte of SDRAM, and 4 Mbyte of flash.
 
-Hi
+So far, I've developed a network bootloader, which downloads the zImage to
+the target. I am at the stage where I can unzip the kernel image to address
+location 0x0, and jump to it. Then, inside the routine "start_kernel", I am
+able to get the console up and have the linux banner partially displayed at
+the cosole.
 
-Is there something wrong with the mapping???
+However, after some more kernel initialization in "start_kernel", the
+program stuck in a routine called "sti()". I've debugged through this
+routine (it is an assembly routine) , and it seems that it is looping
+forever inside the routine. I know that the routine is trying to set the EE
+bit in MSR, and also doing some thing with ppc_n_lost_interrupts, which I
+don't quite understand.
 
-Boot message in case of failure..
+Does anyone have any idea what is wrong with my port? Can someone explain to
+me what is the purpose of this "sti()" routine, what are the possible cause
+for it to hang?
 
-loaded at:     0011C000 001271BC
-relocated to:  00100000 0010B1BC
-board data at: 00FF0000 00FF001C
-relocated to:  00200100 0020011C
-zimage at:     00122000 00182FEC
-initrd at:     00182FEC 00236655
-avail ram:     00237000 01000000
+Your response is greately appreciated!
 
+Thanks in advance.
 
-Did you change something in this part of the Makefile (in mbxboot) to get it working?
-
-zvmlinux.initrd: zvmlinux
-        $(LD) $(ZLINKFLAGS) -o zvmlinux.initrd.tmp $(OBJECTS)
-        $(OBJCOPY) $(OBJCOPY_ARGS) -R .comment \
-                --add-section=initrd=ramdisk.image.gz \
-                --add-section=image=../coffboot/vmlinux.gz \
-                zvmlinux.initrd.tmp zvmlinux.initrd
-        $(CC) $(CFLAGS) -DINITRD_OFFSET=`sh offset $(OBJDUMP)
-zvmlinux.initrd initrd` \
-                -DINITRD_SIZE=`sh size $(OBJDUMP) zvmlinux.initrd
-initrd` \
-                -DZIMAGE_OFFSET=`sh offset $(OBJDUMP) zvmlinux.initrd
-image` \
-                -DZIMAGE_SIZE=`sh size $(OBJDUMP) zvmlinux.initrd image`
-\
-                -c -o misc.o misc.c
-        $(LD) $(ZLINKFLAGS) -o zvmlinux.initrd.tmp $(OBJECTS)
-        $(OBJCOPY) $(OBJCOPY_ARGS) -R .comment \
-                --add-section=initrd=ramdisk.image.gz \
-                --add-section=image=../coffboot/vmlinux.gz \
-                zvmlinux.initrd.tmp $@
-        rm zvmlinux.initrd.tmp
-
-
-
-Any ideas?
-
-TIA
-\Ruedi
-
-
-
-
-
-
-
-
---Boundary_(ID_4GUJaszyQMgWB48sXhaxrQ)--
+Clinton Lam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
