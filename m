@@ -1,20 +1,11 @@
-Return-Path: <nico-linux-ppc@schottelius.org>
-Received: from scice.schottelius.org (ns.schottelius.org [213.146.113.242])
-	by ozlabs.org (Postfix) with SMTP id 6ABC167A8E
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Feb 2005 01:56:47 +1100 (EST)
-Date: Fri, 18 Feb 2005 15:57:52 +0100
-From: Nico Schottelius <nico-linux-ppc@schottelius.org>
-To: Joerg Dorchain <joerg@dorchain.net>
-Message-ID: <20050218145752.GA11139@schottelius.org>
-References: <20050118094216.GB25470@Redstar.dorchain.net>
-	<20050126113554.GD19633@schottelius.org>
-	<20050127163606.GN14866@Redstar.dorchain.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7AUc2qLy4jB3hD7Z"
-In-Reply-To: <20050127163606.GN14866@Redstar.dorchain.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: ibook-led (finished) (was: [PATCH] Heartbeat LED for iBook)
+Return-Path: <jvan_1@students.concordia.ca>
+Message-ID: <1108746180.42161fc4a86f6@webmail.cam.org>
+Date: Fri, 18 Feb 2005 12:03:00 -0500
+From: Philip Van-Houtte <jvan_1@students.concordia.ca>
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: oops in process_backlog : kernel 2.6.9
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,53 +16,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---7AUc2qLy4jB3hD7Z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I have an embedded application, running a stock kernel 2.6.9, on an 8240 
+receiving UDP. Occasionaly after a (re)boot the system will oops after 
+opening (socket/bind) its first connection just as the traffic comes in.
 
-Hello everybody!
-
-Thank you everybody for the help.
-
-I found the correct bytes in the beginning of this thread and wrote
-ibook-led (should work with powerbooks, too).
-
-The program works as following:
-
-ei nico # ./ibook-led =20
-ibook-led <0,1,2> <delay>
-   0: switch led off
-   1: switch led on
-   2: switch led on for <delay> useconds
+It always occurs after the call to netif_receive_skb has competed.
 
 
-The source code can be found on http://linux.schottelius.org/hacks/.
+Oops: kernel access of bad area, sig: 11 [#1]
+PREEMPT
+NIP: C021FD14 LR: C021FCB4 SP: C3049C70 REGS: c3049bc0 TRAP: 0300    Tainted: P
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00003CAE, DSISR: 20000000
+TASK = c309d050[162] 'rtp_daemon' THREAD: c3048000Last syscall: 102
+GPR00: 00001032 C3049C70 C309D050 00000000 C3049B50 00000000 00000000 C5023E04
+GPR08: 00000002 0000000D 00000000 C036496C 2010C002 00000000 037FB000 038D0000
+GPR16: 00002020 00000000 10000000 7FFFF960 00000001 00000000 C0300000 C3049CB8
+GPR24: FFFBDE37 C0364960 C0364988 00000040 00000000 C0429800 00000001 C036496C
+NIP [c021fd14] process_backlog+0x108/0x188
+LR [c021fcb4] process_backlog+0xa8/0x188
+Call trace:
+ [c021fe2c] net_rx_action+0x98/0x178
+ [c011fdd0] __do_softirq+0xdc/0xec
+ [c011fe38] do_softirq+0x58/0x5c
+ [c0106188] do_IRQ+0xdc/0xe0
+ [c01048ec] ret_from_except+0x0/0x14
+ [c0217f68] lock_sock+0x6c/0x84
+ [c02152ac] sys_bind+0x70/0x94
+ [c0215f58] sys_socketcall+0xc8/0x1d8
+ [c0104240] ret_from_syscall+0x0/0x44
+Kernel panic - not syncing: Aiee, killing interrupt handler!
+ <0>Rebooting in 180 seconds..
 
-Sincerly,
 
-Nico
-
---7AUc2qLy4jB3hD7Z
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iQIVAwUBQhYCbrOTBMvCUbrlAQI/xw//XDlIwNY9MG16HpnmrrPMEnYoD2Oh7vlB
-F9IxzaCKrwCiA/660K4k/5Ov/q6+Cwhqy+DYYVynf+SxxkXntD197w95S6HTd8GO
-SKSDJOyfUBv97fuEGYFt2vKZdXaArA/vD1F5I4hAv9a7dhZbXozPAjiUxMakA+o2
-JVGBBS1NJi5O3d2MI/Zdozdsh9knK87aseHxL28WG79vEyLZXjVEN9PzENNnGJtL
-KiUGivZLOHbIQ+S1gh3FiyaTws81JVDynucQiEPhGWfW+eTGEd/yc6rNfAAaAZmk
-+ykQG1X+8eQOdgOOfmUQDhwWXvupZ5vVh3KpNLaZkkBKgnktzMES1c4ZscHzUdnQ
-PL3RhMUxDkrLsmYXqimST+SCOc1vPWl/16R+W7ayO6fC4bJCu5ITmqO+eTUvI3Jh
-I40XaCINpbQ4wUZaXQkltiw55tckI6xelYWIF/NiZvv85m/FFgU0biM7i1KAlpbI
-IXC14gHp4zDQhI0nTNUOR+AGQpejjC3ksObgdY2e6jZbbnYU24dBOFVHqmQcrhYE
-RNc2s6YdA6KsEMy7uWD9V2aDNTcPsXSlm64zKYHTGrSHHK40VH3kDoi7Z5t0wcsl
-2CR0OwZu27yQg/VQeOgIUv7jBXrF2HxJIBMvkbd9DaorxAaqEzGeKbIZohYcqlnM
-YZbPd2syVYI=
-=qpvB
------END PGP SIGNATURE-----
-
---7AUc2qLy4jB3hD7Z--
+Any insights/work-arounds/ would be appreciated.
