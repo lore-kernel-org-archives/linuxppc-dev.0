@@ -1,53 +1,41 @@
-To: "Brian S. Park" <brian@corelis.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: getting Linux working on IBM Walnut demo board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 27 May 2003 11:49:51 PDT."
-             <5.1.1.6.2.20030527114004.01282240@corelis.com>
-Date: Tue, 27 May 2003 21:53:08 +0200
-Message-Id: <20030527195313.187E8C6162@atlas.denx.de>
+Date: Tue, 27 May 2003 13:13:43 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Jean-Denis Boyer <jdboyer@m5t.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PATCH: arch/ppc/8xx_io_fec.c
+Message-ID: <20030527201343.GM3453@ip68-0-152-218.tc.ph.cox.net>
+References: <AB5AF73EAF23304EA1B932174137CED702FB6D@m5tmail.m5t.com> <20030527165824.GG3453@ip68-0-152-218.tc.ph.cox.net> <3ED3BDA0.3030208@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3ED3BDA0.3030208@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Brian,
+On Tue, May 27, 2003 at 03:33:52PM -0400, Dan Malek wrote:
 
-in message <5.1.1.6.2.20030527114004.01282240@corelis.com> you wrote:
+> Tom Rini wrote:
 >
-> I'm trying to boot Linux on IBM Walnut demo board with PPC405GP.
-> I download ELDK, installed it on a RedHat Linx 7.3 machine.
-> I was able to build u-boot 3.0 which came with ELDK and it booted
-> successfully on my demo board.
+> >Dan, do you see any problems with this?
+>
+> Yes.  There are silicon revisions that require the FEC to
+> be enabled for the MDIO to operate.  I don't remember if it was
+> listed in errata or in some of the early supplements.  This code
+> change may work in this particular case, but I know it's required
+> for some parts.  I have not looked at the detail of the patch
+> and the code it moves to see if this is done elsewhere.
 
-Fine.
+How would you suggest working around both this problem, and the problems
+that Jean-Denis reported?  Having either be broken for the sake of the
+other can't be acceptiable, can it? :)
 
-> However, when I tried to rebuild the kernel (2.4.4 which came with ELDK) it
-> gives me the following error.
+> The code formatting looks like crap, so that needs to be fixed.
 
-This is a deficiency in the ELDK. For 4xx systems you need  a  recent
-kernel.  I  recommend  the linuxppc_2_4_devel tree from the bitkeeper
-archives, or from our CVS server.
-
-> Also, the documentation on http://www.denx.de/doc/ seems a bit old (it
-> still talks about ppcboot instead u-boot). Are there new ocuments or FAQ's
-> for a newbie like me?
-
-There aren't any significant differences between U-Boot  and  PPCboot
-if  you're  working  on  PowerPC  systems.  We  are in the process of
-setting up new documentation (as a wiki), but this  is  not  complete
-yet.
-
-If you have questions or problems, just ask, and we will help you.
-
-Best regards,
-
-Wolfgang Denk
+That's trivial 'tho. :)
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Neckties strangle clear thinking.                       -- Lin Yutang
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
