@@ -1,33 +1,25 @@
-Message-ID: <37A18EA3.7E0ED880@mitre.org>
-Date: Fri, 30 Jul 1999 07:38:11 -0400
+Message-ID: <37A19963.AE7DBE66@mitre.org>
+Date: Fri, 30 Jul 1999 08:24:03 -0400
 From: Charles Lepple <clepple@mitre.org>
 MIME-Version: 1.0
-To: Takayuki Yamaizumi <zumi@yamato.ibm.co.jp>
+To: Wolfgang Denk <wd@denx.de>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: G3 Upgrade Questions....
-References: <XFMail.990728151208.jeremy@goop.org> <lcr9lsqd0d.fsf@yamato.ibm.com> <37A01A3D.E9A83C73@agelectronics.co.uk> <lcemhq29xv.fsf@yamato.ibm.com>
+Subject: embedded PowerPC porting coordination [was Re: Motorola Web Site]
+References: <199907290636.IAA07134@denx.muc.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takayuki Yamaizumi wrote:
-[...]
->   I've never checked that document, so I download it (but, today I
+Wolfgang Denk wrote:
+> To support a  broader  range  ofborads  some  cleanup  is  necessary,
+> isolating  HW  dependent  parts  of  the  code  in "BSP" like groups,
+> allowing for easier configuration of device configuration,  port  pin
+> assignment etc.
 
-The code listed in that app note does not seem to include any bit
-reversals (did I miss something?) and it works fine (the temperatures
-are linear, just 20 degrees too high) on a 740 card here.
-
-I used the code for a different reason (it seems that the board fails
-right when the TAU reads between 66 and 70 degrees C) but I held off on
-turning it into a kernel patch because I can see it now -- as soon as a
-patch gets into the 2.2 kernel tree, people are going to start hitting
-the list with questions like "why does my computer think that it's 70 C
-in here?". At the very least, whoever puts the code in the kernel should
-take a hint from Motorola's code and also spit out whether the value has
-been calibrated or not (compile-time option? or an OF variable?
-thoughts?)
+I'm not exactly volunteering for the job of coordinating this, but I
+would have to agree. Would it make sense to start another list
+("linuxppc-embedded," perhaps?) to discuss this at greater length?
 
 --Charles Lepple
 clepple@mitre.org
