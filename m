@@ -1,37 +1,40 @@
-Date: Mon, 16 Aug 1999 22:07:23 -0500
-From: anthony tong <atong@uiuc.edu>
-To: linux-fbdev@vuser.vu.union.edu
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Preliminary Rage128 fb driver
-Message-ID: <19990816220722.A17917@mango.aol.edu>
-Mime-Version: 1.0
+Message-ID: <37B92306.A8377B94@lip6.fr>
+Date: Tue, 17 Aug 1999 10:53:26 +0200
+From: Anthony Lester <Anthony.Lester@lip6.fr>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: gnome-ppp and the mac serial ports
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-http://www.students.uiuc.edu/~atong/aty128/aty128.diff(.gz)
+I've finally got gnome-ppp working after commenting out a section of the source code which
+checks the DCD (Data Carrier Detect) line of the serial port. The kernel code
+corresponding to this check is in the file "macserial.c" and sets various bits of a status
+byte according to the value of a register in the zilog uart which handles the standard mac
+serial ports.
 
-Diff is based off of the cvs.on.openprojects 2.2.11 tree today (8/66).
+However the standard RS422 mac ports only have handsake-in and handshake-out lines
+(corresponding to RTS and DTR for the RS232 I think) so there is no line corresponding to
+DCD. So how would it get DCD?
 
-It's has been tested on PowerMacs only--the B&W's, and my PowerCenter
-Pro, with the ATY,Rage128y. I'll probably do a x86 port at some
-point, if someone else doesn't do it first.
+The most surprising thing is that the kernel source contains explicit treatment for DCD,
+so unless I am very much mistaken (or I have a dodgy modem cable) there is something
+strange.
 
-Allegedly, the following are currently working:
- - mode switching (using calculated timings)
- - 8bpp and 32bpp X (using XF68_FBDev)
- - 8bpp console
- - video=aty128fb:vmode:<vmode> kernel arguments. cmode is also there, but
-   I would sugguest selecting 8bpp. :)
+Any comments, what should be modified, applications, kernel, or both?
 
-Of course, fixes/features/finished implementations to come. Just thought
-that I'd get this out there before the 2.3 feature freeze. :)
+Anthony
 
-Let me know how/if this driver works, and all comments are welcome.
-
-Thanks,
--at
+--      _            ---------------------------------------
+       (_)          |                     Anthony LESTER    |
+    _   _   ___     |    Coul. 65-55,  2e etg,  Bur. 230    |
+   | | | | |   )    |    UPMC  /  LIP6  /  ASIM  /  CNRS    |
+   | | | | | 6  )   |    4 pl Jussieu, 75252 PARIS cdx 5    |
+   | | |_| |  _)    |                                       |
+   | |___  | |      |    Tel: +33 1 4427 7124 (fax 7280)    |
+   |_____| |_|      |       http://www-asim.lip6.fr/        |
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
