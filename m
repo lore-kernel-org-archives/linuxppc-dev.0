@@ -1,32 +1,62 @@
-Date: Thu, 11 Oct 2001 09:12:26 -0600 (MDT)
-From: Derrik Pates <dpates@dsdk12.net>
-To: Stefan Wanner <stefan.wanner@ymail.ch>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: vfat on bigendian
-In-Reply-To: <3BC5AE61.5060700@ymail.ch>
-Message-ID: <Pine.LNX.4.33.0110110911320.7496-100000@andromeda.dsdk12.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 11 Oct 2001 17:35:21 +0200
+From: Olaf Hering <olh@suse.de>
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
+	linuxppc-dev@lists.linuxppc.org, Herbert Duerr <duerr@sun.com>
+Subject: Re: bug in XFree86 4.1.0 with Rage 128 driver?
+Message-ID: <20011011173521.B6869@suse.de>
+References: <200110111256.f9BCuuf07110@ashley.ivey.uwo.ca> <1002814351.12609.408.camel@pismo>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1002814351.12609.408.camel@pismo>; from michdaen@iiic.ethz.ch on Thu, Oct 11, 2001 at 05:32:31PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 11 Oct 2001, Stefan Wanner wrote:
+On Thu, Oct 11, Michel Dänzer wrote:
 
-> i tried the patch you posted today:
-> http://lists.linuxppc.org/linuxppc-dev/200110/msg00075.html
+> On Thu, 2001-10-11 at 14:53, Kevin Hendricks wrote:
 >
-> now, i can read files with long names created on windows. but it's no
-> more possible to create files on the linux system (also 8.3 names). they
-> apear on linux as ????.
+> > >> I don't feel qualified to do that. Xpert@XFree86.Org is a mailing list
+> > >> which the author of this code and other very competent XFree86 hackers read,
+> > >> or if you're absolutely sure the fix is correct, please submit it to
+> > >> fixes@XFree86.Org .
+> >
+> > Michel:
+> >
+> > I just don't see how using an uninitialized variable in an "if"
+> > statement can be anything else but a bug.
+>
+> You're probably right. Never meant to say otherwise.
+>
+> > You could have at least looked at the code in question before replying.
+>
+> If I had enough time...
+>
+> > You are a member of XFree representing ppc linux aren't you?
+>
+> Yes, but I don't have any experience with this code, and I'm not member of
+> the core team so I have to submit patches for inclusion as well. I was
+> referring you to places I thought would allow for faster inclusion.
+>
+>
+> > > keithp already put something in the CVS. It did not work with "ati", but
+> > > with fbdev (clgen).
+> > > The patch fixed it for me on the Pismo.
+>
+> So what's in CVS only works for fbdev, Kevin's patch is needed for r128?
 
-*self-baps* Doh. I see where I need to add another translation, and I'm
-doing so now.
+Its clearly needed for everyone, Keith already did the commit a few
+hours ago.
 
-/me == idiot...
 
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
