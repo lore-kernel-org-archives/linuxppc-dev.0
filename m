@@ -1,42 +1,54 @@
-Date: Sun, 08 Apr 2001 15:47:43 +0100
-Subject: Re: DMASOUND->rev6  (2.4.3)(attn: Xine, MOL, PowerComputing,
-	 ibook, Tumbler)
+Date: Sun, 08 Apr 2001 15:52:41 +0100
+Subject: Re: Sound skips
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: phandel@cise.ufl.edu
-Cc: linuxppc-dev@lists.linuxppc.org, gewrgiou@imbc.gr
+To: Giuliano Pochini <pochini@denise.shiny.it>
+Cc: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010408144747.361B92F074@apollo.valhalla.net>
+Message-Id: <20010408145245.304002F00D@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Apr 7, 2001, Peter wrote:
-> On Sat, 7 Apr 2001, Iain Sandoe wrote:
->> >>  - fix bug where TX stops when dbdma status comes up "DEAD"
->> >>    so far only reported on PowerComputing clones ... but.
->> >>    (PowerComputing clones - NOT TESTED - please let me know what happens).
->> >
->> > Nope, I can still kill sound by merely moving the mouse.  Here is the new
->> > line from the console:
->> > Apr  7 03:31:13 like kernel: dmasound_pmac: tx-irq: xfer died - patching
->> > it up...
->> >
->> > ...but sound is dead, along with the player app, just as before.
+Note: this is a completely *different* problem from the PowerComputing
+"DEAD" dbdma one...
 
-It's disappointing that the sound won't re-start... (with Kostas' tests - it
-_was_ - just from the 'wrong' place).
+This problem exist for _all_ PPC Linux users - and _did_ exist for all x86
+users (without) applying Andrew Morton's LL patches.
 
-> Another datapoint: It seems as if I can kill sound more easily when I play
-> mp3s that reside on my fast drive -> I can kill it within 30sec from the
-> IBM 7200rpm UltraSCSI drive, but it takes a few minutes of playing from
-> the Seagate 5400rpm UltraSCSI drive.
+Perhaps I'll ask Andrew about libtool (it may still give hassles on x86).
 
-Hmmm. I'm getting a bit confused... the disk problem we think we (might)
-understand - the mouse one is different, maybe ?
+If you look at my latest patches they log overruns (reported as xrun in
+/dev/sndstat output).
 
-I need to get a report from Kostas - because I don't (think) he has the
-mouse problem?
+I get *lots* on all my systems (without LL patches) even when lightly
+loaded.
+
+>> >(if it doesn't involve libtool).
+>>
+>> hmmm.  Have you got any idea what libtool does that is different ?
+>> (does strace work at the moment?)
+>
+> The only unusual thing strace shows is thai it calls rt_sigprocmask()
+> hundred times. rt_sigprocmask() stops irqs for a very short time. A
+> prog that calls it 1M time shows this is not what I'm looking for.
+> I searched in all /arch/ppc for something interesting... nothing. I
+> definitely need a tool to measure how much time the various
+> spinlock_irq's are hold.
+
+Well, I did something for 2.2.x - maybe I'll try and re-do this soon for
+2.4.x.
+
+>> mmap-ing files is "bad news" even with the LL patches (IIRC).
+>
+> strace libtool shows 13 lines like this:
+>
+> mmap(ptrace: umoven: input/output error
+> )                                  = 0x30019000
+>
+> I don't know what does it mean.
+
+Me neither... (exactly) - but maybe it's the problem  ;-)
 
 ciao,
 Iain.
