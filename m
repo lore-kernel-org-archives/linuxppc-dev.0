@@ -1,45 +1,26 @@
-Message-ID: <393D5429.32BEFB20@relog.ch>
-Date: Tue, 06 Jun 2000 21:42:33 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Date: Tue, 6 Jun 2000 21:49:22 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Tony Mantler <nicoya@apia.dhs.org>
+cc: mlan@cpu.lu, drow@false.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [patch] VRAM detection in controlfb
+In-Reply-To: <v04003a00b5614aa89cff@[24.66.67.194]>
+Message-ID: <Pine.LNX.4.10.10006062147140.1984-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: Joseph Garcia <jpgarcia@execpc.com>
-CC: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        Francois Felix Ingrand <felix@ingrand.net>,
-        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Debian pmud package available
-References: <Pine.LNX.4.10.10006062043470.29453-100000@zirkon.biophys.uni-duesseldorf.de> <393D4D15.7CF12E4E@execpc.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Joseph Garcia wrote:
+>
+> Anyways, that's the long answer. The short answer is: no, you probably
+> don't want to cache the framebuffer.
 
-> What PMU_VERSION id does the Pismo have?  the plugin is written to support
-> up to 12 (keylargo/iBook).
+Thanks for the long answer, and all those nasty gremlins have actually
+been observed long time ago when people started to play with the
+framebuffer drivers. At least on m68k, the framebuffer address space was
+set non-cacheable right from the start (in head.S). I would hope that
+somehow translated to PPC as well :-)
 
-Is reported as 12 on my Pismo.
-
-> My page lists Pismo as unsupported because I know nothing about how PMUD
-> handles it.  Looking at the code, it appears as if it is just another smart
-> battery.  But there is no evidence to a PMU_VERSION relating to it.
-
-The gkrellm plugin (v0.9) always shows an empty battery and 0:00 rest time.
-
-> Does Batmon display for Pismo systems?  I could update it to support Pismo
-> ASAP if I get some input.
-
-Francois told me it does; haven't tested it myself.
-
-
-Michel
-
-
---
-Been there, done that, can't remember why...
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
