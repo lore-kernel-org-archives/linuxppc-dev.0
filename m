@@ -1,33 +1,31 @@
-From: Christophe.LINDHEIMER@fr.thalesgroup.com
-Message-ID: <66CE949D18BCB249ABE8D9AF48C4F1CE777746@helios.gnv.tcc.thomson-csf.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Problem with msgget that returns ENOSYS.
-Date: Fri, 3 Oct 2003 13:15:50 +0200 
+Date: Fri, 3 Oct 2003 13:54:25 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Typo fix in 2.6.0-test5
+In-Reply-To: <20031002190616.GA21029@ip68-0-152-218.tc.ph.cox.net>
+Message-ID: <Pine.LNX.4.44.0310031352420.1192-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi.
+> > Seeing as linuxppc-2.5 is the latest for those stuck with rsync, can we
+> > get this typo fix in?
+>
+> Only by sending it to lkml and/or jeff garzik.
 
-I try to execute this line :
-	msgget(IPC_PRIVATE, IPC_CREAT);
+OK; I'll collect some more things for that.
 
-It return -1 and errno == 38 == ENOSYS.
+> > Also, include/video/macmodes.h is missing (used by matroxfb).
+>
+> Is it in the bk tree as of then (can be checked via web pages)?
 
-Kernel is 2.4.4 on a 860 board.
+Nope. Missing in the 2.5 devel bk tree as well. It might be by design, and
+matroxfb is really what's broken, though.
 
-The same soft works fine on a linux running on I386.
-
-Is there something special to configure in the kernel to make this work ?
-
-Thanks
-
-Regards
-
-Chris
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
