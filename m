@@ -1,48 +1,33 @@
-Message-ID: <20011102112155.3436.qmail@dag.newtech.fi>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: RFC 8259 handling suggestion and MPC107 in openpic
+Date: Fri, 2 Nov 2001 09:03:02 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: APUS irq patch
+Message-ID: <20011102090302.D26147@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011101175703.A26802@cpe-24-221-152-185.az.sprintbbd.net> <Pine.LNX.4.33.0111021055210.11002-100000@serv>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Date: Fri, 02 Nov 2001 13:21:55 +0200
-From: Dag Nygren <dag@newtech.fi>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.33.0111021055210.11002-100000@serv>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Fri, Nov 02, 2001 at 10:59:00AM +0100, Roman Zippel wrote:
+> Hi,
+>
+> On Thu, 1 Nov 2001, Tom Rini wrote:
+>
+> > Well, could we accomidate APUS with some PPC-specific changes that don't
+> > touch generic stuffs?
+>
+> Hmm, only by adding the call to apus_end_irq directly to the interrupt
+> routine (within an #ifdef CONFIG_APUS).
 
-just browsed through the different PPC setups
-with an 8259.
-
-Every single one has  the following code in xxx_init_IRQ:
-
- for ( i = 0 ; i < NUM_8259_INTERRUPTS  ; i++ )
-        irq_desc[i].handler = &i8259_pic;
- i8259_init();
-
-Seems like everyone having an i8259 wants to use it ;-)
-Would it make sense to move the loop into
-the beginning of i8259_init()
-in the following format ?
-
-for ( i =i8259_pic.irq_offset  ; i < i8259_pic.irq_offset +
-NUM_8259_INTERRUPTS  ; i++ )
-        irq_desc[i].handler = &i8259_pic;
-
-I would also suggest that the "dummy" handling of
-the MPC107, now in some ports (my project included)
-would be integrated into open_pic.c
-
-BRGDS
-
-
+IMHO, that's a better solution for 2.4.  I'm assuming the end goal of
+all of this merging is to get APUS working in kernel.org, right? :)
 
 --
-Dag Nygren                               email: dag@newtech.fi
-Oy Espoon NewTech Ab                     phone: +358 9 8024910
-Träsktorpet 3                              fax: +358 9 8024916
-02360 ESBO                              Mobile: +358 400 426312
-FINLAND
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
