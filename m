@@ -1,43 +1,31 @@
-From: Cort Dougan <cort@fsmlabs.com>
-Date: Mon, 16 Dec 2002 12:49:31 -0700
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Support for Arctic platform (405LP based)
-Message-ID: <20021216124931.B9431@duath.fsmlabs.com>
-References: <20021213043628.GI21319@zax.zax> <20021212215126.V23952@duath.fsmlabs.com> <20021213151808.GI19456@opus.bloom.county> <20021215121526.M30941@duath.fsmlabs.com> <15869.5023.549830.146265@argo.ozlabs.ibm.com> <20021215174120.E30568@duath.fsmlabs.com> <20021216150442.GJ6095@opus.bloom.county>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021216150442.GJ6095@opus.bloom.county>; from trini@kernel.crashing.org on Mon, Dec 16, 2002 at 08:04:42AM -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Unable to mount root fs on 01:00 ... 
+Date: Mon, 16 Dec 2002 14:59:51 -0500
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B0B408B@mail1.mediatrix.com>
+From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+To: "James Don" <JDon@spacebridge.com>
+Cc: "Embedded Linux PPC List" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-} I'm not sure how that would stop the growth of the '_devel' tree, it
-} would just split it up into 4xx, and everything else.  And my goal of
-} the new few weeks is to try and move everything that's not 4xx that I
-} can get my hands on to test into the _2_4 tree.  I'm not sure just how
-} much of that I'll actually be able to do, but I'm going to try.
+James,
 
-There would be no _devel tree in that case.  They'd all be based on
-Marcelo's so moving back and forth would be easier.  There would also be
-more trees and smaller patches.
+> Kernel panic: VFS: Unable to mount root fs on 01:00
 
-Right now, if you want an embedded board to boot your only chance is to try
-the wildly divergent - likely unstable - _devel tree.  Having something
-like this would be much nicer:
+Did you include EXT2 file system in your kernel image?
+If not, you would obtain this error.
 
-
-marcelo ---> linuxppc_2_4 --- linuxppc_2_4_4xx
-                  |                 |
-		  |		    ---> linuxppc_2_4_4xx_walnut
-		  |		    |
-		  |		    ---> linuxppc_2_4_4xx_crazystuff
-		  |		    |
-		  |		    ---> linuxppc_2_4_4xx_some_whacky_port
-		  |
-		  |
-		  |
-		  |---> linuxppc_2_4_something
+Regards,
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
