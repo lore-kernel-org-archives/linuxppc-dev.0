@@ -1,33 +1,38 @@
-Message-ID: <39090775.BFEECFA1@uncc.edu>
-Date: Thu, 27 Apr 2000 23:37:25 -0400
-From: root <whschult@uncc.edu>
-MIME-Version: 1.0
+Date: Thu, 27 Apr 2000 23:39:59 -0400
+From: Clint Hepner <chepner@cs.dartmouth.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Latest XFree86 v4.0 crashing (possible culprit sawmill)
-References: <200004270502.AAA08920@lists.linuxppc.org>
+Subject: VRAM detection in controlfb.c
+Message-ID: <20000427233956.A604@cs.dartmouth.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I want to say that this wasn't introduced with the rpms released the
-other day, but I'm still having the problem with them.  I can't really
-pinpoint exactly when I started having this problem (except while
-working on my last major project for my graphics class).
+I recently added another 2MB of VRAM to my PM8500
+with control video, and was dismayed when linux wouldn't
+recognize it.  I remembered some discussion on this
+issue about a month ago, but I haven't seen anything
+since then.
 
-Here's the problem:
+I got the most recent version of the stable kernel,
+2.2.15_pre20, and poked around a bit to try to understand
+what was going on.  In the end, I just hardcoded the value
+of bank2 after line 725 in controlfb.c to 1, to
+override the kernel's failure to detect the memory
+in bank 2. It worked; I can now drive my 17" monitor at
+1280x1024 @16bpp.
 
-While switching desktops, X completely dies on me.  It's not
-consistently repeatable, but I've had to kill the programs it didn't
-pull with it enough times to know that something's wrong.
+My question is, is the problem only with detecting the
+VRAM, or could there be problems addressing the VRAM as
+well if the kernel isn't able to detect it on its own.
 
-That's all it's doing.  X dies when I'm switching desktops, either by
-dragging the mouse, or by clicking the desktop in the deskguide.
+(On a slightly unrelated issue, is control capable of
+resolutions greater than 1280x1024? I've never seen
+any documentation on it.  MacOS doesn't give me the option
+of going higher, but I'm not sure if that means anything.)
 
-
-Please tell me I'm crazy and that it isn't really happenning...
-
-
-Hank
+Clint Hepner
+Dartmouth College
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
