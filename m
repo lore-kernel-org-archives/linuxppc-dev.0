@@ -1,38 +1,51 @@
-Subject: Re: [RFC] generic MIPS RTC driver
-From: Pete Popov <ppopov@mvista.com>
-To: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Jun Sun <jsun@mvista.com>,
-	Linux/MIPS Development <linux-mips@oss.sgi.com>,
-	Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <Pine.GSO.3.96.1011112142501.24771K-100000@delta.ds2.pg.gda.pl>
-References: <Pine.GSO.3.96.1011112142501.24771K-100000@delta.ds2.pg.gda.pl>
-Content-Type: text/plain
-Date: 12 Nov 2001 08:14:39 -0800
-Message-Id: <1005581679.459.4.camel@zeus>
-Mime-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: IrDA-patched binaries
+References: <Pine.LNX.4.33.0111012312360.888-100000@auryn.jones.dk>
+	<87y9lc6h13.fsf@openinformatics.com> <3BEF9DA6.14AF8E49@iiic.ethz.ch>
+From: jason@openinformatics.com (Jason E. Stewart)
+Date: 12 Nov 2001 09:39:01 -0700
+In-Reply-To: <3BEF9DA6.14AF8E49@iiic.ethz.ch>
+Message-ID: <87vggg2bbu.fsf@openinformatics.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2001-11-12 at 05:29, Maciej W. Rozycki wrote:
-> On Mon, 12 Nov 2001, Geert Uytterhoeven wrote:
->
-> > >  Unless you use a non-MC146818 RTC, which you need to write a separate
-> > > driver for anyway.
+"Michel Dänzer" <michdaen@iiic.ethz.ch> writes:
+
+> "Jason E. Stewart" wrote:
 > >
-> > Yep, so that's why both m68k and PPC have common routines to read/write the
-> > RTC, with a /dev/rtc-compatible abstraction on top of it.
+> > "Jonas Smedegaard" <dr@jones.dk> writes:
+> >
+> > > I have made available kernel and irda-packages with the irda-hacks
+> > > added to make .
+> >
+> > I was totally thrilled to see this. Because of reiserfs, I need to
+> > compile my own kernel, so I grabbed the patches a couple of weeks
+> > ago. I just had time to look at them and it seems that parameters.h
+> > has changed a *lot* since this patch was made.
+> >
+> > >From BenH's latest kernel:
+> >
+> > typedef union {
+> >         char   *c;
+> >         __u32   i;
+> >         __u32 *ip;
+> > } irda_pv_t;
 >
->  OK, then you need an RTC chipset-specific driver and not a CPU
-> architecture-specific one.  Otherwise we'll end with a zillion of similar
-> RTC drivers like we already have for LANCE and SCC chips.
+> Yup, 2.4.15-pre2 has my better fix. :)
 
-I agree.  We don't have arch specific network drivers so why have arch
-specific rtc drivers.
+sorry Michel, I don't understand. Is the irda_pv_t listed above your
+fix? Or will your fix being showing up in BenH's kernel soon, or???
 
-Pete
+> Now we're working on fixing macserial such that the 'cat /dev/ttyS1
+> trick' isn't needed anymore...
 
+Hmmm.. Sorry, must have missed that one. What is the trick, and why is
+it needed?
+
+Thanks,
+jas.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
