@@ -1,44 +1,40 @@
-Message-ID: <20020622030607.432.qmail@web21108.mail.yahoo.com>
-Date: Fri, 21 Jun 2002 20:06:07 -0700 (PDT)
-From: Tim Lai <laitingwai@yahoo.com>
-Subject: Re: Can I run linux without a file system?
-To: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3.0.3.32.20020621145425.006d0618@hollabaugh.com>
+Message-ID: <3D140299.2010005@broadon.com>
+Date: Fri, 21 Jun 2002 21:52:41 -0700
+From: David Blythe <blythe@broadon.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can I run linux without a file system?
+References: <5.1.0.14.2.20020621155315.05f3e830@falcon.si.com> <20020621194234.37274.qmail@web21103.mail.yahoo.com> <200206211835.g5LIZDL01282@hofr.at> <5.1.0.14.2.20020621164532.05f55b50@falcon.si.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> >
-> >Do I need to install all these files in the file
-> >system? Can I have "/", with no file in it?
+use uclibc and busybox.  it is pretty straightforward to get a root file
+system smaller than 1M with lots of useful stuff, either with or without
+shared libraries (shared uclibc is < 300K including ld.so on my ppc
+system, busybox is 200K including ash,mv,cp,ls,...).  The downside is
+you have to build all of the stuff yourself, but if you want to optimize
+for space, sooner or later you'll end up building it all yourself.
+
+	david
+
+
+Jerry Van Baren wrote:
+>
+> OK, you and John Kerl caught me fear-mongering :-).  Thank you for the link
+> and shameless plug, it looks very, very useful.  4.8MB is very respectable
+> but not what most people think about when they say "minimal file
+> system".  Tim wants less than 1MByte, care to take up THAT challenge
+> :-)?  That would require shrinking the libraries to just the necessary
+> functions, which is a big jump in difficulty.
+>
+> gvb
 >
 >
-> What do you want to do? Do you want a shell, run a
-> program, load a device driver? What is it exactly?
+> At 02:31 PM 6/21/2002 -0600, Dr. Craig Hollabaugh wrote:
 >
-
-I 'll run my application which is build in the kernel.
-
-No shell in the beginning. But I will need the shell
-later when more NVRAM is available. With the hardware
-that I have in the future, I can build my application
-seperately and store it in the file system. The
-application do some network processing, I'll not
-have any display other then the console and maybe
-telnet session.
-
-Where or how do I get these lib for ppc?
-         ./lib/ld.so.1
-	./lib/libc-1.99.so
-	./lib/libc.so.6
-	./lib/libtermcap.so.2.0.8
-	./lib/libtermcap.so.2
-
-BTW, I just ordered the Dr.Hollabaugh's book.
-Thanks for the advice.
+...
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
