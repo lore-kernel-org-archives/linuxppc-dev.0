@@ -1,56 +1,56 @@
-Message-ID: <37834109.17B9FDC3@switchboard.ericsson.se>
-Date: Wed, 07 Jul 1999 13:59:05 +0200
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <37834219.3500D361@mpifr-bonn.mpg.de>
+Date: Wed, 07 Jul 1999 14:03:37 +0200
+From: Albrecht Dre_ <ad@MPIfR-Bonn.MPG.de>
 MIME-Version: 1.0
-To: Scott Wood <scott@broadlink.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RPX Lite kernel
-References: <37823F71.2BD5AF5F@broadlink.com> <3782515B.471DCEBE@broadlink.com>
+To: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>,
+        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: linux-pmac 2.2.10: media bay panics on PBG3
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Scott Wood wrote:
-> I'd still like to know if anyone has a working 2.2 kernel on the RPX Lite...  I'd compile one myself, but my B&W G3 LinuxPPC box
-> is getting its guts replaced and I've heard horror stories about cross-compling the kernel...
+Hi!
 
-Well, I've heard horror stories about compiling "hello world" too,
-but that doesn't mean it's particularly complicated. ;)
+	At last, I managed to upgrade my PB G3 to linux-pmac 2.2.10.  Sound works
+definitely better, and my 3-button Contour mouse is recognised.  However,
+removing the floppy drive from the right media bay and inserting the cd-rom
+results in a kernel panic:
 
-If "cross-compiling" from PPC I can't see why you should need to do
-anything else than configure the kernel properly.
-And this diff is all that is needed to cross-compile from ix86 Linux:
+[media bay contains the floppy drive, which is now replaced by the cd drive]
+media bay 0 is empty
+media bay 0 contains a CD-ROM drive
+NIP: C00E7D9C XER: 20000000 LR: C00E7C9C REGS: c01dde70 TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c01dc000[2] 'media-bay' mm->pgd c0123000 Last syscall: -1
+last math cb062000
+GPR00: 000003E7 C01DDF20 C01DC000 00000000 00000003 6000381C 0000003C C0125F58
+GPR08: C0193540 F5021000 00000000 00000000 44800424 018498B4 FFFFFFFF 0B96FB70
+GPR16: 4A000484 FFD603B0 C0193548 C019356C C019354C C019355C C0193540 C0140000
+GPR24: 00000000 C0193544 C0193560 C0193540 00000001 00000000 00000000 C0193540
+Call backtrace:
+C00E7C9C C00090CC
+Kernel panic: kernel access of bad area pc c00e7d9c lr c00e7c9c address F5021070
+tsk media-bay/2 
+syslogd 1.3-3: restart.
 
-diff -urN linux-2.2.10.orig/Makefile embedded-2.2.10/Makefile
---- linux-2.2.10.orig/Makefile	Sat May 29 03:10:19 1999
-+++ embedded-2.2.10/Makefile	Tue Jul  6 18:32:40 1999
-@@ -3,7 +3,8 @@
- SUBLEVEL = 10
- EXTRAVERSION =
- 
--ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
-+ARCH := ppc
-+#ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
- 
- .EXPORT_ALL_VARIABLES:
- 
-@@ -18,7 +19,7 @@
- HOSTCC  	=gcc
- HOSTCFLAGS	=-Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
- 
--CROSS_COMPILE 	=
-+CROSS_COMPILE 	= ppc-linux-
- 
- AS	=$(CROSS_COMPILE)as
- LD	=$(CROSS_COMPILE)ld
+Any idea how I could fix this?  Because of the mouse support, I would prefer to
+stay wit 2.2.10.
 
-//Marcus
+Thanks, Albrecht.
+
 -- 
--------------------------------+------------------------------------
-        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
- Royal Institute of Technology |       Phone: +46 707 295404
-       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
++-----------------------------------------------------------------------------+
+| Dr.-Ing. Albrecht Dre\ss                                     ----           |
+| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
+| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
+| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
+| D-53121 Bonn (Germany)          ------------+------+-------------------     |
+|                                             |    / |                        |
+| Phone (+49) 228 525 319                     |  /  /                         |
+| Fax   (+49) 228 525 411                     |/   /                          |
+| Mail  ad@mpifr-bonn.mpg.de                                                  |
++-------------- electrical engineers do it with less resistance --------------+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
