@@ -1,33 +1,27 @@
-Message-Id: <v04003a03b315cd6d0f6a@[205.161.35.44]>
-In-Reply-To: <36EFCF5D.8892052A@nc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 17 Mar 1999 16:23:35 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: Douglas Godfrey <dvdoug@tiac.net>
-Subject: Re: L2CR for upgrade cards.
+Date: Thu, 18 Mar 1999 10:28:19 +1100
+Message-Id: <199903172328.KAA18385@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: dmalek@jlc.net
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <36EFDDD8.44C8F5EB@jlc.net> (message from Dan Malek on Wed, 17
+	Mar 1999 11:52:40 -0500)
+Subject: Re: Mac Audio
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <36EFDDD8.44C8F5EB@jlc.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Make a copy of your Mac OS Cache enable INIT and change the type to "scri"
-and rename it to load before the BootX INIT. When BootX gets control the
-L2 cache will already be enabled.
+Dan Malek <dmalek@jlc.net> wrote:
 
-Reoly to Rick Meier, 3/17/99 8:50 AM -0700: L2CR for upgrade cards.
->Has anyone actually seen the a G3 upgrade card working with the backside
->cache under LinuxPPC?  I have tried a NewerTECH G3/300 w/512k and a
->PowerLogix 400/200.  I was never able to get the cache working.  I am
->using BootX 1.0.2 and kernel 2.2.4 (checked out from vger).  I never see
->the "override" statement in my dmesg and when I look at
->/proc/sys/kernel/l2cr is shows the cache disabled.
->
->Any Ideas?
+> I am working on some interactive multimedia and could really use
+> full duplex audio on my PowerBook G3.  Is anyone working on this?  If
+> not, I will start investigating the details.  If so, let's work together.
 
-Thanx...
-  Doug
+Peter Barker and Nathan Hurst here spent some time working on sound
+input.  I'll try to dig up the patch and post it here.
 
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
