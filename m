@@ -1,40 +1,26 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Thu, 3 Apr 2003 13:08:52 -0700
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [TRIVIAL PATCH] linuxppc_2_4_devel: boot/common/misc-simple.c
-Message-ID: <20030403200852.GA3137@rover.farnsworth.org>
+Date: Thu, 3 Apr 2003 13:19:16 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dale Farnsworth <dale@farnsworth.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [TRIVIAL PATCH] linuxppc_2_4_devel: boot/common/misc-simple.c
+Message-ID: <20030403201916.GB4284@ip68-0-152-218.tc.ph.cox.net>
+References: <20030403200852.GA3137@rover.farnsworth.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030403200852.GA3137@rover.farnsworth.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Declare decompress_kernel to avoid compiler warnings about type mismatches.
+On Thu, Apr 03, 2003 at 01:08:52PM -0700, Dale Farnsworth wrote:
 
-Thanks,
--Dale
+> Declare decompress_kernel to avoid compiler warnings about type mismatches.
 
-===== arch/ppc/boot/common/misc-simple.c 1.13 vs edited =====
---- 1.13/arch/ppc/boot/common/misc-simple.c	Thu Mar 27 02:24:15 2003
-+++ edited/arch/ppc/boot/common/misc-simple.c	Thu Apr  3 12:57:39 2003
-@@ -78,6 +78,8 @@
- extern void serial_close(unsigned long com_port);
- extern void gunzip(void *, int, unsigned char *, int *);
- extern void serial_fixups(void);
-+struct bi_record *decompress_kernel(unsigned long load_addr, int num_words,
-+		unsigned long cksum, void *bp);
+That's a "d'oh", and fixed in a different manner that will be pulled in
+for 2.4.21-pre7, once tagged.
 
- /* Allow decompress_kernel to be hooked into.  This is the default. */
- void * __attribute__ ((weak))
-@@ -88,7 +90,8 @@
- }
-
- struct bi_record *
--decompress_kernel(unsigned long load_addr, int num_words, unsigned long cksum)
-+decompress_kernel(unsigned long load_addr, int num_words, unsigned long cksum,
-+		void *bp)
- {
- #ifdef INTERACTIVE_CONSOLE
- 	int timer = 0;
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
