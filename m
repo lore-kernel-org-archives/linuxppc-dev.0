@@ -1,41 +1,41 @@
-From: Roland Riegel <roland.riegel.maillist@gmx.de>
-To: benh@kernel.crashing.org
-Subject: Re: iBook G4 LCD backlight misbehaviours
-Date: Sat, 3 Jan 2004 18:59:58 +0100
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-References: <200401030014.07254.roland.riegel.maillist@gmx.de> <1073087414.10543.9.camel@gaston>
-In-Reply-To: <1073087414.10543.9.camel@gaston>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200401031859.58576.roland.riegel.maillist@gmx.de>
+Date: Sat, 3 Jan 2004 19:24:44 +0100
+From: Samuel Rydh <samuel@ibrium.se>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: benh@kernel.crashing.org
+Subject: [PATCH] kauai ATA for G4 windtunnel
+Message-ID: <20040103182444.GA1309@ibrium.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am Samstag, 3. Januar 2004 00:50 schrieb Benjamin Herrenschmidt:
-> On Sat, 2004-01-03 at 10:15, Roland Riegel wrote:
-> > Hi everybody!
-> >
-> > Recently I bought an iBook G4 and installed Linux on it. I am using
-> > linux-2.4.23-ben1 and have the following problem:
-> >
-> > When configured with CONFIG_PMAC_BACKLIGHT=y, on startup the screen
-> > switches completely off (it took me some time to notice that the kernel
-> > does not crash but only the screen turns dark and the system keeps
-> > booting).
->
-> This machine isn't currently fully supported by 2.4.23 kernels, you will
-> have better success using my current 2.6.1-rc1 tree
->
-> Ben.
+Hi,
 
-Ok, I will try to switch then.
+The kauai ATA support in the 2.5 linuxppc tree for the G4 windtunnel is currently
+broken due to a missing PCI id. The pci_ids.h file defines PCI_DEVICE_ID_APPLE_KAUAI_ATA
+to be 0x3b while the actual hardware (in my machine) has id 0x33.
 
-Thanks for your answer!
+The following patch fixes the problem (although the define should of course be pushed to
+pci_ids.h).
 
-Greetings,
-Roland
 
+===== drivers/ide/ppc/pmac.c 1.25 vs edited =====
+--- 1.25/drivers/ide/ppc/pmac.c	Mon Sep  1 00:49:53 2003
++++ edited/drivers/ide/ppc/pmac.c	Sat Jan  3 18:27:32 2004
+@@ -1439,8 +1439,10 @@
+ 	.resume		= pmac_ide_macio_resume,
+ };
+
++#define PCI_DEVICE_ID_APPLE_KAUAI_G4WT_ATA 0x33
+ static struct pci_device_id pmac_ide_pci_match[] __devinitdata = {
+ 	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_KAUAI_ATA, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_KAUAI_G4WT_ATA, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ };
+
+ static struct pci_driver pmac_ide_pci_driver = {
+
+
+/Samuel
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
