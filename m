@@ -1,41 +1,52 @@
-Date: Thu, 21 Sep 2000 13:22:40 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Dan Malek <dan@mvista.com>
-Cc: paulus@linuxcare.com.au,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Linux/PPC Development
+ <linuxppc-dev@lists.linuxppc.org>
+Cc: <paulus@linuxcare.com.au>
 Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-Message-ID: <20000921132240.F13197@cx258813-a.chnd1.az.home.com>
-References: <14790.58502.25252.825448@argo.linuxcare.com.au> <20000919150621.A9826@cx258813-a.chnd1.az.home.com> <14791.61311.118516.747495@argo.linuxcare.com.au> <39C8DE1A.BC8EF0B6@mvista.com> <14793.18115.38314.912204@argo.linuxcare.com.au> <39C96EBC.6BE23535@mvista.com> <14793.29680.948198.119368@argo.linuxcare.com.au> <39C98739.B3656E8F@mvista.com> <14793.38735.809789.111193@argo.linuxcare.com.au> <39C9AFE2.25CB0ADA@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <39C9AFE2.25CB0ADA@mvista.com>; from dan@mvista.com on Thu, Sep 21, 2000 at 02:51:14AM -0400
+Date: Fri, 22 Sep 2000 00:40:42 +0200
+Message-Id: <19340816161226.30414@192.168.1.10>
+In-Reply-To: <Pine.LNX.4.10.10009211544591.375-100000@cassiopeia.home>
+References: <Pine.LNX.4.10.10009211544591.375-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Sep 21, 2000 at 02:51:14AM -0400, Dan Malek wrote:
 >
-> I actually think we are in nearly violent agreement, and I am getting
-> way too tired tonight to continue much further.....
->
-> Paul Mackerras wrote:
-> > We could do that too, we would just have to make sure that we assigned
-> > PCI I/O addresses so that no two bridges had devices in the same 4k
-> > range, then we could set up the virtual->physical mapping to give the
-> > illusion of a single I/O space.
->
-> I think we agree that we just use the PCI bridges to the best of
-> their ability, and let the MMU do the reset.  There are combinations
-> of this that are more efficient on some systems that others.  I have
-> no illusion of requiring a single I/O space (that's what MMUs are for :-).
+>And how to access PCI I/O space from user space? There the MMU doesn't help,
+>since the user application (usually XFree86) just look at the BARs from
+>/proc/bus/pci/...
 
-I think that for a lot of bridges we won't have to have the MMU do
-the heavy lifting.  Now that I understand the virtual mapping approach
-better I'm in agreement.
+There are two ways:
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+ - 2.4 and my 2.2.x kernels have a new syscall that returns for a given
+PCI card, the io base for that card (the offset that must be added to the
+BAR in physical space). AFAIK, Kostas is working on adding support for
+this in XFree.
+
+ - DaveM and I discussed about a better solution based on some mmap'ing
+mecanisms & ioctls on /proc/bus/pci entries. It would obviously require
+some arch-specific changes for IO (which are mmap'ed for us but not for x86).
+I had no time to look more in depth at this, but this is probably the way
+to go. We need also an ioctl that would give XFree access to
+pci_enable_device()/pci_disable_device() and possiblty to the device PM
+features.
+
+>This is very similar to what many people already suggested on linux-kernel
+>years ago: inb() and friends should take an additional argument pci_dev *.
+
+Which could be NULL for legacy.. yup. Well, IOs are slow, so a bit of
+overhead is ok ;)
+
+>For kernel space. This doesn't work for user space, unless you mmap
+>/dev/pci_{io,mem}_space, which don't exist at the moment.
+
+DaveM have made a patch some month ago. I'll ask him if he made any
+progress. In the mantime, we have the syscall.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
