@@ -1,28 +1,25 @@
-Message-ID: <3AA7054A.7B0B7587@mvista.com>
-Date: Wed, 07 Mar 2001 23:06:34 -0500
+Message-ID: <3AA7216F.15BE4872@mvista.com>
+Date: Thu, 08 Mar 2001 01:06:39 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Prashant Patel <pmpatel@trinetcommunication.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: usb question
-References: <000901c0a72b$3b43b820$4d1f76d8@kennedy>
+To: Magnus Damm <damm@opensource.se>
+Cc: brendan.simon@bigpond.com,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
+	Dan Malek <dmalek@jlc.net>
+Subject: Re: linuxppc-embedded: mpc8260 bus frequency calculations
+References: <3A9EFA26.8030805@bigpond.com> <3A9F4B2B.294B91CA@mvista.com> <3A9FAC18.2162E4AF@opensource.se>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Prashant Patel wrote:
->
-> Hello Everybody
->       Is usb host controller supported fully for the MPC823 processor ?
+Magnus Damm wrote:
 
-Yes, with some design restrictions.  The code is in the FSM Labs
-BitKeeper linuxppc_2_5 tree.  Please download and read the Motorola
-application notes associated with using host mode.  I don't remember
-all of the details, but there are hardware requirements for connecting
-two pins on the part (baud clock out to a Port C input).  Since you
-can only load one microcode patch at a time, selecting host mode USB
-means you can't use any of the device relocation patches.
+> I think that would be nice for the mpc8xx boards too.
+
+My plan is to just change them all.  It was originally this
+way because it is the value given to me by the MBX boot rom
+and was just propagated through all of the code.
 
 
 	-- Dan
