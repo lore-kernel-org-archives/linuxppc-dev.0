@@ -1,94 +1,53 @@
-To: Peter Allworth <linsol@zeta.org.au>
-Cc: duncanp@research.canon.com.au, linuxppc-embedded@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Low memory problems in 8xx Linux
-References: <20000201235813.4F5611B51A@elph.research.canon.com.au> <38977960.40E014A1@zeta.org.au>
-From: Jesper Skov <jskov@redhat.com>
-Date: 08 Feb 2000 11:01:55 +0100
-In-Reply-To: Peter Allworth's message of "Wed, 02 Feb 2000 11:25:04 +1100"
-Message-ID: <ot1z6of1ws.fsf@thinktwice.zoftcorp.dk>
+Date: Tue, 8 Feb 2000 11:02:02 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [linux-fbdev] Retrace
+Message-ID: <Pine.LNX.4.05.10002081101510.27293-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Peter" == Peter Allworth <linsol@zeta.org.au> writes:
+---------- Forwarded message ----------
+Date: Mon, 7 Feb 2000 18:16:21 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: Stefan Berndtsson <stefan@nocrew.org>, linux-fbdev@vuser.vu.union.edu,
+     Linux/PPC Development <linuxppc-dev@cs.wisc.edu>
+Subject: Re: [linux-fbdev] Retrace
 
-Peter> duncanp@research.canon.com.au wrote:
->>  Dan,
->>
->> On 1 Feb, Dan Malek wrote: > I have already incorporated most of
->> these into 2.3.xx > kernel, and a 2.2.13 version that I will update
->> as a tar file > on a server.
->>
->> would you mind posting a diff against the current 2.2.13 kernel on
->> the ftp server when you do this as well? we've got a kernel in CVS
->> here (i imagine plently of others are doing this too), and it would
->> be easier for us if we can patch it.
->>
->> Dunk.
+On Tue, 1 Feb 2000, Petr Vandrovec wrote:
+> On  1 Feb 00 at 13:14, Stefan Berndtsson wrote:
+> > >   For now you have to do iopl(3); inb(0x3DA); iopl(0);... (you have to be
+> > > root to do this. As alternative on matroxfb, you can mmap accelerator
+> > > space and read register at offset 0x1FDA in this space. It contains
+> > > same value as port 0x3DA does, but for mmapping /dev/fbX you do not
+> > > need root rights.
+> > You (or anyone really) wouldn't happen to know how to access 0x3da, or
+> > whatever equivalent method there is, on an ATI Rage Pro LT, running
+> > on PPC?
+> I believe that on PReP it is byte in memory (/dev/mem) at physical address
+> 0x800003DA, but Geert probably knows more details (maybe there is even
 
-Peter> Dunk,
+First you have to mmap() ISA I/O space using /dev/mem and put the mapped
+address in isa_io_base. Then you can use inb() and friends (cfr.
+include/asm-ppc/io.h).
 
-Peter> If you need the MMU patches straight-away, I've put them on
+And now the bad news: the address you have to mmap() depends on the machine
+type :-(
 
-Peter> http://www.zeta.org.au/~linsol
+> /dev/ioport on PPC).
 
-Peter> They only work against cllf-2.2.13 for now. Marcus Sundberg has
-Peter> sent me a revised patch which should work for other 2.2 kernels
-Peter> (caveat emptor).  I'll try to add that asap.
+Nope. But perhaps we should remove the #if !defined(CONFIG_PPC) around the
+port operations in drivers/char/mem.c?
 
-Peter and Duncan,
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-The 2.2.13 patch you posted was slightly (but critically) wrong, if
-I'm not mistaken. The value updated in memory was not reloaded into
-r21 which is where the code below this snipped expects to find the
-value.
-
-This patch should do the trick. At least my kernel seems to work.
-
-
---- head.S.orig	Sat Oct 23 00:18:03 1999
-+++ head.S	Tue Feb  8 10:34:02 2000
-@@ -1024,6 +1024,18 @@
- 	ori	r21, r21, 1	/* Set valid bit in physical L2 page */
- 	mtspr	MD_TWC, r21	/* Load pte table base address */
- 	mfspr	r21, MD_TWC	/* ....and get the pte address */
-+	lwz	r20, 0(r21)			/* Get the pte */
-+	andi.	r20, r20, _PAGE_PRESENT		/* Set cr0 if it's invalid */
-+	beq	4f				/* Skip update if invalid */
-+	mfspr	r20, DSISR			/* Check for store op */
-+	andis.	r20, r20, 0x0200		/* If set, indicates store */
-+	lwz	r20, 0(r21)			/* Get the pte again */
-+	beq	3f
-+	ori	r20, r20, _PAGE_DIRTY|_PAGE_HWWRITE /* Set the dirty flags */
-+3:
-+	ori	r20, r20, _PAGE_ACCESSED	/* Set the accessed flag */
-+	stw	r20, 0(r21)			/* Update the pte */
-+4:
- 	lwz	r21, 0(r21)	/* Get the pte */
-
- 	/* Set four subpage valid bits (24, 25, 26, and 27).
-
-
-An alternative and slighly faster implementation might be to skip the
-_PAGE_PRESENT check. Any reason something like this wouldn't work?
-
-
- 	ori	r21, r21, 1	/* Set valid bit in physical L2 page */
- 	mtspr	MD_TWC, r21	/* Load pte table base address */
- 	mfspr	r21, MD_TWC	/* ....and get the pte address */
-	mfspr	r20, DSISR			/* Check for store op */
-	andis.	r20, r20, 0x0200		/* If set, indicates store */
-	lwz	r20, 0(r21)			/* Get the pte again */
-	beq	3f
-	ori	r20, r20, _PAGE_DIRTY|_PAGE_HWWRITE /* Set the dirty flags */
-3:
-	ori	r20, r20, _PAGE_ACCESSED	/* Set the accessed flag */
-	stw	r20, 0(r21)			/* Update the pte */
- 	mr	r21, r20	/* Get the pte */
-
-
-Cheers,
-Jesper
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
