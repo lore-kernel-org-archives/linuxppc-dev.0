@@ -1,40 +1,53 @@
-Message-ID: <3BD3A110.40703@metaparadigm.com>
-Date: Mon, 22 Oct 2001 12:31:12 +0800
-From: Michael Clark <michael@metaparadigm.com>
+Date: Sun, 21 Oct 2001 23:28:11 -0600 (MDT)
+From: Derrik Pates <dpates@dsdk12.net>
+To: Dave Ray <g4tinker@yahoo.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sound on G4 tower, almost
+In-Reply-To: <20011021225419.11793.qmail@web13107.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.33.0110212322060.26280-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Late Broadcom link detection makes IP config (bootp) fail
-References: <3BD38515.40808@metaparadigm.com> <20011021195758.E1419@cpe-24-221-152-185.az.sprintbbd.net> <3BD39166.7020600@metaparadigm.com> <20011021202843.B4933@cpe-24-221-152-185.az.sprintbbd.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+On Sun, 21 Oct 2001, Dave Ray wrote:
 
-> On Mon, Oct 22, 2001 at 11:24:22AM +0800, Michael Clark wrote:
-[snip]
->>Okay, changed to BMAC and it works okay - should BMAC detection come
->>before GMAC?
->>
->
-> Er, say again?  And ignore what I just sent out (got confused fer a
-> second).
+> Has anyone explored sound on the G4 towers? I
+> understand they use an 12c-based sound card similar to
+> the iBook2.
 
+Texas, aka Tumbler. AFAIK exact same chipset as the iBook2's are outfitted
+with.
 
-It seems that GMAC and BMAC support some common hardware. What I was
-suggesting is whether BMAC should be linked earlier so it's init
-function runs before GMAC. Although I release this is not necessarily a
-real solution for what may be a bug in GMAC (just means I and up using
-BMAC which works and allows me to have both compiled in).
+> I tried the iBook sound hack on the G4 tower to see
+> what happens. It appears to be partly successful. The
+> sound driver loads and registers the deq, but when I
+> try to do anything that writes to the device I get
+> silence and "can't locate module..." errors in the
+> syslog. Below are the details. I'm guessing the hack
+> is partly successful but the "tumbler" is failing.
 
-Some of GMAC initialisation seems to be delayed and done asynchronously.
-Shouldn't link be detected and the interface brought up before return
-from the init function? Otherwise it is impossible to use this driver
-with IP autoconfig and NFS root.
+Looking at the messages, it looks like everything is loading and initing
+correctly. The messages below, however:
 
-~mc
+> Oct 19 20:54:38 garuda modprobe: modprobe: Can't
+> locate module sound-slot-1
+> Oct 19 20:54:38 garuda modprobe: modprobe: Can't
+> locate module sound-service-1-0
+
+seem to indicate something is trying to open /dev/mixer1 instead of
+/dev/mixer0 (which /dev/mixer should either be a symlink pointing to, or a
+dev node with the same major/minor numbers). What does your /dev/mixer
+look like? It shuld be major 14, minor 0. Check
+/usr/src/linux/Documentation/devices.txt for all the major/minor numbers
+for devices (including sound devices).
+
+In other words, the Texas chip is probably functioning fine - you have to
+tell it to do something now, though...
+
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
