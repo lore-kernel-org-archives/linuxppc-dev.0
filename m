@@ -1,9 +1,9 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Poor 8260 FCC Ethernet performance
-Date: Thu, 30 May 2002 20:07:41 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFMENODHAA.acurtis@onz.com>
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFFA04F@mail.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'acurtis@onz.com'" <acurtis@onz.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Poor 8260 FCC Ethernet performance
+Date: Thu, 30 May 2002 23:25:29 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,27 +11,28 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have successfully booted our board using an EST like configuration.
-(yeah...) Then I started testing Ethernet performance and came across
-something interesting.
+Allen,
 
-1. Tested FTP transfers with a dumb 10T hub and got about 444.6 kBps
-2. Swapped the 10T hub for a 100T switch and the performance went down to
-41.7kBps!!
+The 8260 Ethernet controller needs to know about the duplex mode in which
+the PHY operates. The driver sets it to half duplex by default, and needs
+the feed back of the PHY to set it to full duplex.
 
-I do not understand what is happening. Went from an environment that was
-slow and had many collisions to a much faster, no collision environment and
-got majorly penalized on performance? It is almost like the error handling
-helped to keep things moving. The 100T switch produced very bursty
-performance where the 10T was much more consistent.
+As you may know, the hub always operates in half duplex, while the switch
+usually operates in full duplex, if it is directly connected to your unit,
+and your PHY accepts to negociate to full duplex.
 
-Source version:  linuxppc_2_4_devel - less than a week old
-MII PHY option:  disabled in the kernel configuration
+Both the Ethernet controller and the PHY should be set to the same mode, or
+your likely to run into communication problems (as you see ;-).
 
-Has anyone experience this? Ideas on how to track down the problem?
+Regards,
 
-BTW: Large FTP transfers work. (which was a problem with HHL 2.0) I assume
-that this has to due with the thread safe page table fixes.
-
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., System Architect
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
