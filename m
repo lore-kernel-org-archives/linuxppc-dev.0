@@ -1,56 +1,47 @@
-Message-Id: <199908092113.XAA00412@piglet.cpu.lu>
-Date: Mon, 9 Aug 1999 23:13:49 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: drow@false.org
-cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19990808232621.B352@them.org>
+Date: Mon, 9 Aug 1999 14:28:57 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: SOCKS5 (fwd)
+Message-ID: <Pine.BSI.3.96.990809142731.8362A-100000@usr08.primenet.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Dan,
+I sent this over the weekend, but I didn't see it come through so I'm
+wondering if it got lost somewhere.  I'm still getting messages for the
+list, and its in the archives, but several of the archived messages I never
+got, so just in case.... I'm sorry if you've gotten it before.
 
-I'm getting returned mail (user unknown) on Andre's email address. Do
-you happen to know his new address?
+---------- Forwarded message ----------
+Date: Fri, 6 Aug 1999 20:29:00 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: SOCKS5
 
-On   8 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
-[Io port mapping funnies]
->
-> This didn't, oddly, stop my card from working.  It does, however, make
-> me lock up hard if I hdparm -i /dev/hda.
+Has anyone gotten socks5 compiled and working under LinuxPPC?  I'm going
+through the instructions at:
 
-What is your machine? Any IDE devices onboard?
+http://www.sfu.ca/~yzhang/linux/socks5/index.html
 
-I'm getting lockups myself on hdparm -I and -d1 -X66 (for the Maxtor
-drive) and at drive identification on bootup with a Quantum Fireball.
-Weired....
+And can build it fine, but the test he says to run before really doing
+anything gives a segmentation fault when using some variable args stuff.
 
-> Oh, if you didn't pick this up, you can make it ide0/1 instead of
-> ide2/3 by enable CONFIG_BLK_DEV_OFFBOARD.
+A function is called that accepts a variable parameter list, and it causes a
+seg fault.  Are there any weirdnesses in R5 on the PowerPC with the varargs
+stuff that can get by on other platforms?  Or does anyone have patches to
+get it to work?  Or is there an alternate proxy server that I've somehow
+missed that will work?
 
-Yeah, I was just too lazy to enable it, thanks ;-)
+Thanks.
 
->> /dev/hde:
->>  Timing buffered disk reads:  64 MB in  6.60 seconds = 9.70 MB/sec
->> Maxtor 91024D4; 10G 7200 RPM, UDMA-2 ie 33 MB/s.
-> 
-> Eek.  I want that :)
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
 
-Yeah, interesting drive, as it is _very_ silent; nothing to do with the
-usual 7200 RPM stuff, plus it is relatively fast. And affordable ;-) 
+...Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
