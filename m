@@ -1,43 +1,54 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kaoru Fukui <k_fukui@highway.ne.jp>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Fwd: CPU features
-Date: Sat, 31 Mar 2001 19:14:33 +0200
-Message-Id: <20010331171433.11295@smtp.wanadoo.fr>
-In-Reply-To: <20010401003513.Postino-002933@smtp01.highway.ne.jp>
-References: <20010401003513.Postino-002933@smtp01.highway.ne.jp>
+Date: Sat, 31 Mar 2001 19:51:55 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Samuel Rydh <samuel@ibrium.se>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: I-cache flushing on the 7400
+In-Reply-To: <20010331153031.A10946@ibrium.se>
+Message-ID: <Pine.HPX.4.10.10103311944390.18988-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->
->Please fix your typo in arch/ppc/kernel/feature.c
->it's in void feature_core99_kick_cpu(int cpu_nr)
->
->
->void
->feature_core99_kick_cpu(int cpu_nr)
-><snip>
->     if (!keylargo_base || nr > 3 )    <-- cpu_nr ?
->
->
->I guess, that nr is your typo.
->Is it cpu_nr   ?
->
->Please fix it where compile stop.
+On Sat, 31 Mar 2001, Samuel Rydh wrote:
 
-Right, I didn't test it on SMP yet. I've pushed that fix to my
-devel tree along with a few other stuffs & updated to 2.4.3.
-The rsync should be up-to-date in a few minutes.
+>
+> I recently discovered that the following sequence
+>
+> 	LI_PHYS( r2,split_store_patch )
+> 	stw     r4,0(r2)			// store instruction
+> 	dcbst   0,r2				// Flush cache
+> 	sync
+> 	icbi    0,r2
+> 	isync
+>
+> 	.... some instructions and then a rfi to split_store_patch ....
+> 	rfi
+>
+> split_store_patch:
+> 	nop
+>
+> did not work properly on a G4s (but it did work flawlessly on my G3).
+> To make the i-cache flush effective, I had to insert an extra
+> 'sync' before the last isync. Consulting my Motorola manuals,
+> the recommended sequence for the 7400 (but not for the 750) did have
+> that extra sync. Looking at the 2.4.3-pre8 BK source, I discovered
+> the 'sync' was sometimes missing (in flush_icache_range and in a
+> few places in head.S). Shouldn't the sync really be added?
 
-Please tell me if the dual G4 kicks properly the other CPU as
-I changed the way it's done but didn't have a chance to test my
-new code yet.
+It should, while actually the isync does not seem necessary since rfi
+is a context synchronizing instruction (rfi and sc include implicitly the
+equivalent of an isync).
 
-Ben.
+As a side note, this or something similar might have been the cause of a
+recently reported problem with 7450 which crash when enabling MaxBUS but
+work in traditional 60x bus mode. The reordering of bus operations which
+takes place with maxbus makes this kind of bug much more likely to become
+visible.
+
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
