@@ -1,84 +1,100 @@
-Date: Thu, 6 Jul 2000 13:01:20 -0400 (EDT)
-From: "Peter R. Wood" <pwood@gordon.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: GAIM compile error
-Message-ID: <Pine.LNX.4.21.0007061254230.8579-100000@dyn-133-196.gordon.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 6 Jul 2000 13:14:09 -0400
+From: Josh Huber <huber@mclinux.com>
+To: "Peter R. Wood" <pwood@gordon.edu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: GAIM compile error
+Message-ID: <20000706131409.C820@mclx.com>
+References: <Pine.LNX.4.21.0007061254230.8579-100000@dyn-133-196.gordon.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="d01dLTUuW90fS44H"
+In-Reply-To: <Pine.LNX.4.21.0007061254230.8579-100000@dyn-133-196.gordon.edu>; from pwood@gordon.edu on Thu, Jul 06, 2000 at 01:01:20PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+--d01dLTUuW90fS44H
+Content-Type: multipart/mixed; boundary="eRtJSFbw+EEWtPj3"
+Content-Disposition: inline
 
-I've contacted the authors of GAIM regarding this problem, but they don't
-seem to have a clue about it so I thought I'd submit it here. I'm trying
-to compile GAIM, the AOL instant messenger clone, from its CVS source.  I
-get this error during the compile:
 
-make[2]: Entering directory `/usr/src/gaim/src'
-/bin/sh ../libtool --mode=link gcc  -g -O2 -I/usr/local/include
--I/opt/include -I../ -I../libfaim -I../libfaim/faim
--I/usr/lib/glib/include -D_REENTRANT -I/usr/X11R6/include
--DLOCALEDIR=\"/usr/local/share/locale\"  -o gaim  about.o aim.o away.o
-browser.o buddy.o buddy_chat.o conversation.o dialogs.o
-gaimrc.o gnome_applet_mgr.o gtkhtml.o html.o idle.o network.o oscar.o
-plugins.o prefs.o proxy.o rvous.o server.o sound.o toc.o util.o ticker.o
-gtkticker.o -L../libfaim -lfaim -pthread -L/usr/lib -lesd -laudiofile -lm
--L/usr/lib -L/usr/X11R6/lib -lgtk -lgdk -rdynamic -lgmodule -lgthread
--lglib -lpthread -ldl -lXi -lXext -lX11 -lm
-gcc -g -O2 -I/usr/local/include -I/opt/include -I../ -I../libfaim
--I../libfaim/faim -I/usr/lib/glib/include -D_REENTRANT
--I/usr/X11R6/include -DLOCALEDIR=\"/usr/local/share/locale\" -o gaim
-about.o aim.o away.o browser.o buddy.o buddy_chat.o conversation.o
-dialogs.o gaimrc.o gnome_applet_mgr.o gtkhtml.o html.o idle.o network.o
-oscar.o plugins.o prefs.o proxy.o rvous.o server.o sound.o
-toc.o util.o ticker.o gtkticker.o -L../libfaim -lfaim -pthread -L/usr/lib
--lesd -laudiofile -lm -L/usr/lib -L/usr/X11R6/lib -lgtk -lgdk -rdynamic
--lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm
-oscar.o: In function `gaim_parse_incoming_im':
-/usr/src/gaim/src/oscar.c:537: undefined reference to
-`__va_arg_type_violation'
-/usr/src/gaim/src/oscar.c:537: relocation truncated to fit: R_PPC_REL24
-__va_arg_type_violation
-oscar.o: In function `gaim_parse_user_info':
-/usr/src/gaim/src/oscar.c:627: undefined reference to
-`__va_arg_type_violation'
-/usr/src/gaim/src/oscar.c:627: relocation truncated to fit: R_PPC_REL24
-__va_arg_type_violation
-oscar.o: In function `gaim_parse_motd':
-/usr/src/gaim/src/oscar.c:658: undefined reference to
-`__va_arg_type_violation'
-/usr/src/gaim/src/oscar.c:658: relocation truncated to fit: R_PPC_REL24
-__va_arg_type_violation
-oscar.o: In function `gaim_chatnav_info':
-/usr/src/gaim/src/oscar.c:677: undefined reference to
-`__va_arg_type_violation'
-/usr/src/gaim/src/oscar.c:677: relocation truncated to fit: R_PPC_REL24
-__va_arg_type_violation
-collect2: ld returned 1 exit status
-make[2]: *** [gaim] Error 1
-make[2]: Leaving directory `/usr/src/gaim/src'
+--eRtJSFbw+EEWtPj3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This is at the last step as it's about to link the object files in to the
-gaim binary. If you're not familiar with the gaim source you can browse
-the CVS repository at:
+On Thu, Jul 06, 2000 at 01:01:20PM -0400, Peter R. Wood wrote:
+>=20
+> Hello,
+>=20
+> I've contacted the authors of GAIM regarding this problem, but they don't
+> seem to have a clue about it so I thought I'd submit it here. I'm trying
+> to compile GAIM, the AOL instant messenger clone, from its CVS source.  I
+> get this error during the compile:
+[snip]
 
-http://cvs.sourceforge.net/cgi-bin/cvsweb.cgi/gaim/src/?cvsroot=gaim
+grr, more va_arg errors :)
 
-Note that's the src directory under the main distribution.
+Attached is a patch that I'll forward onto the maintainer.
 
-If you have any clues, please Cc: me since I read this in digest mode.
+--=20
+Josh
+6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
+61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
-Thanks,
+--eRtJSFbw+EEWtPj3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="gaim.diff"
+Content-Transfer-Encoding: quoted-printable
 
-Peter
+--- oscar.c	Thu Jul  6 13:12:42 2000
++++ oscar.c.orig	Thu Jul  6 13:11:09 2000
+@@ -534,8 +534,8 @@
+ 		userinfo  =3D va_arg(ap, struct aim_userinfo_s *);
+ 		msg       =3D va_arg(ap, char *);
+ 		icbmflags =3D va_arg(ap, u_int);
+-		flag1     =3D (u_short)va_arg(ap, u_int);
+-		flag2     =3D (u_short)va_arg(ap, u_int);
++		flag1     =3D va_arg(ap, u_short);
++		flag2     =3D va_arg(ap, u_short);
+ 		va_end(ap);
+=20
+ 		serv_got_im(userinfo->sn, msg, icbmflags & AIM_IMFLAGS_AWAY);
+@@ -624,7 +624,7 @@
+ 	info =3D va_arg(ap, struct aim_userinfo_s *);
+ 	prof_enc =3D va_arg(ap, char *);
+ 	prof =3D va_arg(ap, char *);
+-	infotype =3D (u_short)va_arg(ap, u_int);
++	infotype =3D va_arg(ap, u_short);
+ 	va_end(ap);
+=20
+ 	if (prof =3D=3D NULL || !strlen(prof)) {
+@@ -655,7 +655,7 @@
+ 	va_list ap;
+=20
+ 	va_start(ap, command);
+-	id  =3D (u_short)va_arg(ap, u_int);
++	id  =3D va_arg(ap, u_short);
+ 	msg =3D va_arg(ap, char *);
+ 	va_end(ap);
+=20
+@@ -674,7 +674,7 @@
+ 	u_short type;
+=20
+ 	va_start(ap, command);
+-	type =3D (u_short)va_arg(ap, u_int);
++	type =3D va_arg(ap, u_short);
+=20
+ 	switch(type) {
+ 		case 0x0002: {
 
---
-Peter R. Wood		pwood@gordon.edu
-Computer Science	http://www.cs.gordon.edu/~pwood/
-Gordon College		http://www.gordon.edu/
-Wenham, MA		http://www.boston.com/
+--eRtJSFbw+EEWtPj3--
 
+--d01dLTUuW90fS44H
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--d01dLTUuW90fS44H--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
