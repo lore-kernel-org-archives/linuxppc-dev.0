@@ -1,21 +1,17 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtai02.cox.net (fed1rmmtai02.cox.net [68.230.241.57])
-	by ozlabs.org (Postfix) with ESMTP id 60E4B2BDB4
+Return-Path: <segher@kernel.crashing.org>
+Received: from localhost.localdomain (adsl-63-203-10-66.dsl.lsan03.pacbell.net
+	[63.203.10.66]) by ozlabs.org (Postfix) with SMTP id 490A32BDAB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Sep 2004 01:28:24 +1000 (EST)
-Date: Mon, 27 Sep 2004 08:16:29 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: jonathan@jonmasters.org
-Message-ID: <20040927081629.C25675@home.com>
-References: <Pine.LNX.4.21.0409271244030.8658-100000@aqua.aspd.pwr.wroc.pl>
-	<20040927065758.B25288@home.com>
-	<35fb2e5904092707106d056d46@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <35fb2e5904092707106d056d46@mail.gmail.com>;
-	from jonmasters@gmail.com on Mon, Sep 27, 2004 at 03:10:47PM +0100
-Cc: Piotr Perak <peri@aqua.aspd.pwr.wroc.pl>, linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x on 405CR
+	Tue, 28 Sep 2004 15:46:10 +1000 (EST)
+Received: from [172.20.101.118] by localhost.localdomain for
+	<linuxppc-embedded@ozlabs.org>; Tue, 28 Sep 2004 05:43:40 -7GMT
+Mime-Version: 1.0 (Apple Message framework v619)
+Message-Id: <7EA6A11C-1111-11D9-8370-000A95A4DC02@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linuxppc-embedded@ozlabs.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Tue, 28 Sep 2004 00:44:42 -0500
+Subject: Fwd: powerpc with gigabit card hanging
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,34 +22,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-[oops...we are supposed to be on linuxppc-embedded now]
+[Whoops, SMTP problem.  Sorry if it's a duplicate now.]
 
-On Mon, Sep 27, 2004 at 03:10:47PM +0100, Jon Masters wrote:
-> On Mon, 27 Sep 2004 06:57:58 -0700, Matt Porter
-> <mporter@kernel.crashing.org> wrote:
-> > On Mon, Sep 27, 2004 at 12:46:07PM +0200, Piotr Perak wrote:
-> > > Hi.
-> > >
-> > > Anyone seen 2.6.x kernel working on 405CR?
-> > > I can't make it boot.
-> 
-> > I can't recall anybody around here having a 405CR.  That's probably
-> > why you didn't get a reponse the first time you posted this.
-> 
-> I might get access to one at some point - I'll be getting my Virtex II
-> tree up and running on 2.6 (PowerPC 405D) sometime soon hopefully too.
+Begin forwarded message:
 
-Great, it would be nice to have some COTS 405CR board in the tree.
-If somebody wants to send me one, I'll do it, otherwise send patches.
-
-> > I wish I could rent you my BDI2000 to speed up your debugging,
-> > but we're too far away from each other. :)
-> 
-> I hate you guys. I'm using insight on an XP box with that horrid
-> Xilinx xygwin - it's not aware of any virtual memory and I have no
-> symbols nicely available so it's all done by hand.
-
-Ouch...cygwin stuff is very ghetto.  Maybe we can take up a collection
-for you. :)
-
--Matt
+> From: Segher Boessenkool <segher@kernel.crashing.org>
+> Date: 28 september 2004 0:39:32 GMT-05:00
+> To: Matt Porter <mporter@kernel.crashing.org>
+> Cc: David Gardiner <daveg@sonartech.com.au>, 
+> linuxppc-embedded@ozlabs.org
+> Subject: Re: powerpc with gigabit card hanging
+>
+>>> What kernel are you using?
+>
+> 2.6.whatever, and I've used 2.4 in the past I believe.
+>
+>>> it's just that the irq's I'm getting for the
+>>> gigabit devices are zero (dual gigabit ethernet card) for the 
+>>> 2.6.9-rc2
+>>> plus patchs kernel but for the 2.4 series I was getting 12 and 9 as 
+>>> can
+>>> be seen below and configuring the devices worked fine.
+>
+> PCI device IRQs are normally retrieved straight from the PCI device
+> itself.  Sounds like a firmware problem (or the bootloader, if that
+> sets up the PCI devices for you).
+>
+>> irqs for PCI devices do not come from the driver, they are platform
+>> specific.  If you are having problems with the interrupt reported
+>> by xyz PCI driver then that is something wrong with your platform.
+>> On pmac, interrupt routing is retrieved from OF.
+>
+> I believe Linux for PowerMac actually gets the IRQ number straight
+> from the device.  Some other routing might be gotten out of the OF
+> device-tree, yes.
+>
+>
+> Segher
+>
