@@ -1,38 +1,53 @@
-Date: Fri, 12 Mar 1999 07:50:03 -0500
-Message-Id: <199903121250.HAA18674@pc1.fred.org>
-From: "F. Heitkamp" <fheitka@ibm.net>
-To: Franz.Sirl-kernel@lauterbach.com
-CC: fheitka@ibm.net, linuxppc-dev@lists.linuxppc.org, hjl@varesearch.com
-In-reply-to: <4.2.0.25.19990311162952.03ed2b80@mail.lauterbach.com> (message
-	from Franz Sirl on Thu, 11 Mar 1999 16:37:18 +0100)
-Subject: Re: binutils-2.9.1.0.22b
-References: <4.2.0.25.19990311162952.03ed2b80@mail.lauterbach.com>
+Date: Fri, 12 Mar 1999 14:10:47 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Lundkvist <ml@epact.se>
+cc: David De Ridder <david.de.ridder@bitsmart.com>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: MVME 2306 almost up and running
+In-Reply-To: <qphfrxhw15.fsf@erbium.epact.se>
+Message-ID: <Pine.HPP.3.96.990312140258.1078B-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-   X-Sender: fsirl-kernel@mail.lauterbach.com
-   Date: Thu, 11 Mar 1999 16:37:18 +0100
-   From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-   Cc: linuxppc-dev@lists.linuxppc.org,hjl@varesearch.com (H.J. Lu)
-   Content-Type: text/plain; charset="us-ascii"; format=flowed
 
-   Hmm, are you sure you did everything right during configure/make? I have no 
-   problems with 22b on glibc-2.1 (R5) here. Just the usual ld testsuite FAILs:
 
-I've been using all the latest tools I can find (the usuall gettext,
-autoconf, automake etc.  I also am using glibc-2.1.  I would like to 
-recompile it though, since the texinfo I had at the time was broken.
-I do get a problem in the math library that I sort of ignored.  The 
-system has been running mostly fine in spite of that error.  I did not
-add any special options to configure, other than a --prefix=<dir>.
+On 7 Mar 1999, Michael Lundkvist wrote:
 
-I'll going to replace my kernel header files and try again.  There may
-be a problem there.  I'll let you know what happens.
+> Aaaaah! This one helped a lot!
+> 
+> But I'm not quite there yet. Now the kernel panics when it tries to
+> configure the ethernet devices.
+> 
+> It looks to me like it dies in net/ipv4/ipconfig.c:ic_open_devs since
+> i see the line "IP-Config: Entered." but I never see the 
+> "IP-Config: Opened %s (able=%d)\n", dev->name, able).
+> 
+> I'm attaching the boot log and I'm cc-ing to linuxppc-dev to see if
+> anyone there has any help to give me.
+> 
 
-Any tips are greatly appreciated.
+> My board is a MVME 2307SC-1 with 64MB RAM and a DEC 21143-TD etherne chip.
 
-Fred
+Matt Porter had a fix for the problems with the 21143, but I don't know
+where they can be found. Perhaps it will be simpler now that vger is back
+(although I won't switch back to vger for at least a few weeks). 
+
+> Is there anymore info I can provide. I feel like I know absolutely
+> nothing about this hardware.
+
+BTW: my driver for the Universe (PCI<->VME bridge chip) is now close to
+its final state. It still needs some cleanup, but I hope to be able to ask
+for testers next week.  (Even DMA is working now, this was quite a
+headache to get right and it took me several iterations to find a simple
+and relatively easy to use interface for the callers). 
+
+	Regards,
+	Gabriel.
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
