@@ -1,41 +1,43 @@
-To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: RAMDISK Segv 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 04 Dec 2003 06:34:08 EST."
-             <3FCF1BB0.9060005@catapult.com>
-Date: Thu, 04 Dec 2003 12:43:35 +0100
-Message-Id: <20031204114340.42AD1C5F5F@atlas.denx.de>
+Subject: Trying to Build ArmBoot for EPXA1
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 4 Dec 2003 08:21:06 -0500
+Message-ID: <704F2B356FCC3E49A909C625BD9E5C40040261@ultsol01.tewks.ultsol.local>
+From: "Fahd Abidi" <fabidi@ultsol.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3FCF1BB0.9060005@catapult.com> you wrote:
->
-> Thanks, I'll build busy box from scratch with my
-> distro and see how that goes.  The Arabella free
-> package seems to do a few thing s different, such
-> as dpr allocation...
+Hi,
 
-??
+I am trying to build armboot for the EPXA1, I know a ppc group might
+not be the best place to post but I was hoping someone here could
+give me pointers where to look or what to do. When I try and build
+ArmBoot 1.0 for the EPXA1 using mvista tools for the 920t I load the
+.hex file onto the board using the exc_flash_programmer but I get no
+response form the serial port. I then repeated the process using the
+arm9TDI tools from denx and got the same behavior. I was wondering if
+anyone had successfully built and loaded armboot onto the EPXA1 and
+what tools they used to do it.
 
-> IMMR is 0xF000_0000   with virt=phys
-> BCSR is 0xF450_0000    this seems a little strange
+Also Separately, I downloaded the Mvista Linux Preview Kit 3.0 for
+the EPXA1 board. It comes with Armboot sources init, when I try and
+compile this using the mvista tools I get the following message:
 
-This is probably correct, other MPC82xxADS boards use the same.
+/opt/hardhat/previewkit/arm/920t_le/bin/arm_920t_le-ld: ERROR: board/epxa1db/excalibur.o uses hardware FP, whereas armboot uses software FP
+File format not recognized: failed to merge target specific data of file board/epxa1db/excalibur.o
+/opt/hardhat/previewkit/arm/920t_le/bin/arm_920t_le-ld: ERROR: /opt/quartus/libraries/software/boot/libboot_xa_ads.a(boot-arm-ADS.o) is compiled for EABI version 2, whereas armboot is compiled for version 0
+File format not recognized: failed to merge target specific data of file /opt/quartus/libraries/software/boot/libboot_xa_ads.a(boot-arm-ADS.o)
+make: *** [armboot] Error 1
+[root@localhost armboot]#
 
-Sorry, I don't have such hardware, so I can't help.
+It looks like there is a FP mismatch in armboot. Once again I am just
+looking for pointers.
 
-Best regards,
+thanks allot!!
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Uuencode/uudecode is just a mickey-mouse archiver.
-                       - Doug Gwyn in <1995Mar4.011139.22820@arl.mil>
+Fahd Abidi
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
