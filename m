@@ -1,54 +1,49 @@
-Message-Id: <4.2.2.20040519134735.04c20180@bhawley.mailhost.luminex.com>
-Date: Wed, 19 May 2004 13:52:25 -0700
-To: Eugene Surovegin <ebs@ebshome.net>
+Message-Id: <4.2.2.20040519135413.04c21930@bhawley.mailhost.luminex.com>
+Date: Wed, 19 May 2004 13:54:38 -0700
+To: Wolfgang Denk <wd@denx.de>
 From: Brian Hawley <bhawley@luminex.com>
-Subject: Re: Ebony Board, PPC440GP and NFS panics
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040519211929.GB13351@gate.ebshome.net>
-References: <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
- <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
- <4.2.2.20040519101456.0509d340@bhawley.mailhost.luminex.com>
- <4.2.2.20040519123513.05074da0@bhawley.mailhost.luminex.com>
- <4.2.2.20040519132218.050b0df0@bhawley.mailhost.luminex.com>
+Subject: Re: /dev/ram in ramdisk_image.gz 
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20040519211120.B4177C109F@atlas.denx.de>
+References: <Your message of "Wed, 19 May 2004 13:09:46 PDT." <4.2.2.20040519130806.050a0340@bhawley.mailhost.luminex.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+ext2 is configured in the kernel.
+
+At 11:11 PM 5/19/04 +0200, Wolfgang Denk wrote:
+
+>In message <4.2.2.20040519130806.050a0340@bhawley.mailhost.luminex.com>
+>you wrote:
+> >
+> > Does anyone know if the ramdisk_image.gz on the DENX site for the ppc has
+> > the /dev/ram device
+> > already created?
 >
->Actually, a lot of people succefully boot Ebony using stock IBM boot
->loader (me
->included)
+>Yes, it has. But it doesn't need to. The kernel cannot look into /dev
+>before mounting the root filesystem anyway.
 >
->Please, post boot log for the _default_ Ebony configuration (using IBM
->bootlader
->_not_ u-boot and build with ebony_defconfig), maybe we can help you.
-
-We're in the process of trying to get the IBM bootloader to work.  We think
-perhaps
-what came with the board from the vendor was somehow not correct.  So, we
-are trying to find another source for the IBM bootloader that we can flash.
-
-The ebony_defconfig doesn't have support for initrd, and since, at present,
-the EMAC
-driver seems to only find ff:ff:ff:ff:ff:ff as the Mac address, we aren't
-able to boot over
-the network [ ebony_defconfig default bootargs ].
-
-Am I correct in assuming that u-boot will not be capable of booting linux
-on the ebony
-regardless?  It does appear to boot linux okay, but we haven't been
-successful in getting
-it to mount the ramdisk [ which is in u-boot format -- although we've also
-tried just the ramdisk_image.gz
-and pRamdisk directly tftp'd into memory ].  And, with the network MAC
-address issue, we haven't
-had any luck with the network stuff either.
-
-Thanks for offering assistance.
-
--- Brian
+> > When we boot an initrd [ created using mkimage from uboot on the
+> > ramdisk_image.gz ], we get
+> >
+> > Kernel panic: VFS: Unable to mount root fs on ram0
+> > <0>Rebooting in 180 seconds..<6>eth0: Link is Up
+>
+>Must be a problem with your kernel and/or your  kernel  configuration
+>(for example: do you have ext2 support enabled?).
+>
+>Best regards,
+>
+>Wolfgang Denk
+>
+>--
+>Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+>Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+>Things are not as simple as they seem at first.        - Edward Thorp
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
