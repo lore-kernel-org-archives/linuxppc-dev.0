@@ -1,41 +1,33 @@
-To: cedric_aubert@yahoo.fr
-Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Denx linuxdevel 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 26 Jun 2003 04:15:59 PDT."
-             <20030626111559.21943.qmail@web41805.mail.yahoo.com>
-Date: Thu, 26 Jun 2003 13:39:15 +0200
-Message-Id: <20030626113920.B9D2BC5FD7@atlas.denx.de>
+Message-ID: <3EFAE8C6.2070809@gmx.net>
+Date: Thu, 26 Jun 2003 14:36:22 +0200
+From: Oliver Amft <oam@gmx.net>
+MIME-Version: 1.0
+To: chris@cryptoapps.com, wd@denx.de
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCI DMA memory problem
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Cedric,
+The problem was a wrong PCI configuration of the 405 with two colliding
+PCI target mappings (PTM1 and PTM2).
 
-in message <20030626111559.21943.qmail@web41805.mail.yahoo.com> you wrote:
+Oliver
+
+>> To map the data buffers from skb the driver uses pci_map_single().
+>> When starting the kernel with SDRAM size configurations other
+>> than 32MByte the device is unable to transfer data (currupted
+>> data) - descriptor dword read/write-back works (set up with
+>> pci_alloc_consistent()). For the kernel start option mem=32MB
+>> everything is fine (descriptor + correct data).
 >
-> Does the current cvs tree of linuxdev on denx past to
-> 2.4.21 ???
-
-2.4.21 is still pretty new - less than two weeks old. I think we will
-move to 2.4.21 soon, but not within the next few days. Until then you
-should be able to use our existing 2.4.20 code.
-
-> I don't have access to cvs here.
-
-Please let me know if there  is  something  I  can  do  to  help  you
-(providing a snapshot for FTP or similar).
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-As in certain cults it is possible to kill a process if you know  its
-true name.                      -- Ken Thompson and Dennis M. Ritchie
+> My first thought is -- is/are the SDRAM bank(s) configured correctly?
+>
+> I don't know that it'd necessarily be related, but for the 405GP,
+> PPCBoot 1.2.0 doesn't have the PCI bridge setup quite right for all
+> PCI devices (eg. 82559 won't work). I have code to fix the bridge
+> setup if you need it -- although I'm not even certain they exist in
+> the GPR.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
