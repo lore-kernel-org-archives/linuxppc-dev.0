@@ -1,40 +1,51 @@
-Message-ID: <380DFDD4.EEDC570E@netx4.com>
-Date: Wed, 20 Oct 1999 13:37:24 -0400
+Message-ID: <380E002A.92B3AEC8@netx4.com>
+Date: Wed, 20 Oct 1999 13:47:22 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Jim Lewis <jlewis@mvista.com>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA use
-References: <380DCA0D.B272F889@mvista.com>
+To: Jeff Millar <jeff@wa1hco.mv.com>
+CC: Dan Malek <dan@penguin.netx4.com>,
+        Graham Stoney <greyham@research.canon.com.au>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
+References: <19991019085603.D1026B23A@elph.research.canon.com.au> <380CCBAC.7C0DB544@netx4.com> <003e01bf1a9e$59f44980$0201a8c0@home>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jim Lewis wrote:
-> 
-> Hello,
-> 
-> Has anyone out there done anything with PCMCIA on the 8xx?
+Jeff Millar wrote:
 
-Yes.  I put some hacks in the kernel to support an ATA/IDE
-flash card.  At one time this worked, and with the IDE and
-interrupt stuff changing so much recently I am not sure if
-it works any longer.  Look in the arch/ppc/kernel/m8xx_setup.c
-file.  I have some more elaborate functions if you need
-better examples.
+> If the boot process goes bad, then the interrupt driven watchdog will
+> keep getting reset and prevent the watchdog from firing...
 
-In addition to what is there, you also need to sense and enable
-the proper power supply, which is very implementation specific.
-You will also have to initialize the PCMCIA control/address
-registers and make sure it gets mapped in somplace (either a
-driver or mm/init.c).
 
-I continue to have nightmares about porting pcmcia-cs to the
-8xx, and should probably do it some day with David's help.  Since
-my experience with applications using PCMCIA on the 8xx has been
-they are quite unique and static, I have always just initialized
-the interface for the application.  Less code, less overhead.
+Yes....The alternative is finding all of the places in the kernel
+where you would have to service the watchdog during the boot process.
+Probably not many.....Depends upon the timeout value.
+
+
+> .......  So, what's the likely hood of the boot process
+> going bad?
+
+My experience has been that unless the hardware is broken, it
+tends to either work every time or fail every time.
+
+> Our application requires downloading new kernels and applications and this
+> may
+> increase the likely hood that a kernel fails to complete the boot process.
+
+Yes, it will.  But....what do you do after the new software
+load fails to boot?  It will just keep resetting and running the
+same broken software......
+
+
+> Maybe the timer can be set longer than the longest bootup time or at least
+> until the first daemon gets going?
+
+All of the timeout and other controls are in the write-once SYPCR.
+Once you select the timeout and behavior, you have it until the
+next reset.
+
 
 
 	-- Dan
