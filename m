@@ -1,37 +1,62 @@
-Date: Fri, 18 Aug 2000 23:00:44 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Olaf Hering <olh@suse.de>
-cc: mlan@cpu.lu,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: some stuff about controlfb in 2.2
-In-Reply-To: <20000818134234.A11762@suse.de>
-Message-ID: <Pine.LNX.4.10.10008182259510.378-100000@cassiopeia.home>
+Message-Id: <200008182102.XAA00828@piglet.grunz.lu>
+Date: Fri, 18 Aug 2000 23:02:25 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Control fb problem on 8500
+To: kevin_myer@iu13.k12.pa.us
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.21.0008151339190.734-100000@pegmatite.iu13.k12.pa.us>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 18 Aug 2000, Olaf Hering wrote:
-> My question is: How can we improve the support for the controlfb? The
-> xf4 patch is needed to remove the offset problem. It is no perfect yet.
-> 16bit does not work, colors are screwed up. 8bit has some shift to the
-> left (proably one byte/ 8 pixels). 24bit worked fine with 832x624 on the
-> 7500. I can not use that high colordepth on the 7600, only 2mb vram.
+Hi there,
 
-What exactly do you mean? What is the problem? Is it that smem_start is not on
-a page boundary? If yes, this worked fine in XFree86 3.3.x.
+On  15 Aug, this message from Kevin M. Myer echoed through cyberspace:
+> A couple of issues have cropped up with my PowerMac 8500.  I am running
+> Paulus' 2.4.0-test6 kernel and my console has developed a sort of mirror
+> image on the far right one-eighth of the screen.  Basically, everything on
+> the screen is mirrored in that eighth of the screen albeit much
+> smaller.  For example, as I type this, tiny white lines are being drawn to
+> my right.  If I were to `ls --color` a directory, different color lines
+> show up.  This behaviour wasn't there in Paulus' 2.4.0-test1-ac21 kernel
+> of a few rsyncs ago.
 
-Gr{oetje,eeting}s,
+I was able to boot a 2.4.0-t6 kernel tonight (it's like once in a
+million boots for me right now with 2.4.0) and experienced the same
+problem; although I had only like 6-8 pairs of single-pixel horizontal
+lines, maybe 150 or so pixels long, on the right edge of the screen.
 
-						Geert
+Those lines mirrored image content from the left side of the screen, at
+the same height, and around 150 pixels inside the screen. I could also
+verify that those 'lines' are not part of the pixel data in VRAM, but
+are only added on-screen by control.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I've also had a look at what changed on control from earlier versions,
+and found only the pitch of the lines that changed.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+In fact, before, the line length was exactly hpixels * bytes/pixel,
+whereas now there's an additional 0x20 bytes in each line. I have not
+been able to boot a 2.4.0 kernel with any fix applied, but you could try
+and build a version without those 0x20 bytes added (they are found in a
+few spots inside controlfb.c).
+
+As to why these 0x20 bytes were added, anybody know an explanation? And,
+if they do serve a purpose (I suppose so ;-), it would be better to add
+the exact number of bytes as a #define somewhere...
+
+Thanks
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
