@@ -1,24 +1,19 @@
-Message-ID: <369F785E.8D30C1BC@phx.mcd.mot.com>
-Date: Fri, 15 Jan 1999 10:18:22 -0700
-From: Johnnie Peters <jpeters@phx.mcd.mot.com>
+Date: Fri, 15 Jan 1999 10:45:11 -0700 (MST)
+From: Cort Dougan <cort@persephone.cs.nmt.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: new irq.c
+In-Reply-To: <369F393C.56F964FF@ibm.net>
+Message-ID: <Pine.LNX.3.96.990115104436.9566I-100000@persephone.cs.nmt.edu>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: VGER sources
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Everybody,
+Damn list won't let me send the file itself (too large) so it's at
+ftp://linuxppc.cs.nmt.edu/misc/irq.c
 
-Is there an archive somewhere with a tar file of the latest sources from
-
-the vger tree.  I do not know when vger is going to be made available
-for anonymous cvs again and I do not want to get too far out of date.
-
-Thanks for any information
-
-Johnnie
+Please try it out.
 
 
 
