@@ -1,25 +1,39 @@
-Date: Tue, 18 Apr 2000 20:00:52 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2 GB RAM support??
-Message-ID: <Pine.LNX.4.10.10004181958060.32190-100000@altus.drgw.net>
+Message-ID: <38FD06B2.EC638512@erols.com>
+Date: Tue, 18 Apr 2000 21:06:58 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Francis G. McCabe" <fgm@fla.fujitsu.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Putting linuxPPC on my new pismo
+References: <38FD00AA.6C423CB@fla.fujitsu.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have the opportunity to play with a G4 AGP machine with 4 512MB DIMMS in
-it.. i.e 2 GB of RAM.
+"Francis G. McCabe" wrote:
 
-I recall there was some discussion on this list awhile ago about how to
-support 2 GB, but I can't seem to find it in the archives.
+> I realize that there has been a lot of discussion about this. However, I
+> havent seen my problem mentioned.
+>
+> When I try to install linuxPPC 2000 on my brand new PB2000, I get the
+> error:
+>
+> hda: lost interrupt
 
-Does anyone have any suggestions on how this might be accomplished?
+If you searched the archives for your error message, you would find the
+answer you seek (it is not a powerbook only problem).
 
-I know there are going to be some interesting issues related to mapping
-all the RAM after KERNELBASE. Does anyone have any ideas on the right way
-to do this?
+Make sure you are using yaboot to boot the powerbook, not bootX.  Using
+bootX on the newworld machines causes that problem to occur.
+
+HTH
+--Nelson Abramson
+
+--
+"Apparently if you play the Windows NT CD backwards you hear satanic messages"
+"You think that's bad, if you play it forwards it installs Windows NT!"
+--orlando
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
