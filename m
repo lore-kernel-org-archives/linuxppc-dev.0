@@ -1,46 +1,36 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <thomas.graichen@innominate.com>
-Subject: Re: ppc initrd problem?
-Date: 25 Feb 2001 09:06:22 GMT
-Message-ID: <news2mail-97ahue$qt6$1@mate.bln.innominate.de>
-References: <news2mail-97ag1d$52i$3@mate.bln.innominate.de> <Pine.A41.3.96LJ1.1b7.1010225024100.85078A-100000@unlserve.unl.edu>
-To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <004501c09fa4$df5fe2f0$2501000a@sid>
+From: "Sid" <sid@siddhartha.8m.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: MPC860 - minicom
+Date: Mon, 26 Feb 2001 11:33:18 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe <toe@unlserve.unl.edu> wrote:
+Hi,
 
-> On 25 Feb 2001, Thomas Graichen wrote:
+I have an MBX860 board.
 
-> [...]
->> thanks a lot - btw. also tried it with 16M - same thing - compressed
->> initrd image hangs and an uncompressed loads but seems to have only
->> trash in it ("cannot find init" while /sbin/init is definitely in it)
+After powering up the board, lights DS1 and DS2 light up.
 
-> You may want to make the ramdisk under 2.2.x kernel or 2.4.2+loop fixes.
-> I've seen some loop device problem reports in linux-kernel, and it could
-> be contributing to your problem.
+When I connect the board to the serial port of my host via COM/SMC1, minicom
+shows a target online, but I do not get a debug prompt on minicom. And there
+seems to be no activity at all on the board.
 
-i know - but i tested the images on a normal running system both
-via loopback mount and via dd to ramdisk and mount of it - both
-were perfectly fine - also an fsck -f of the image file is com-
-pletely ok
+Is this a common problem? What steps should I take for troubleshooting?
 
-i did some more trying now: it seems to work with 16M (maybe with more
-too) if the image is only lightly loaded - but if i fill the 16M
-more it hangs at boot with
+Thank you for your time.
 
-  RAMDISK: Compressed image found at block 0
-
-t
-
-p.s.: this is yaboot 0.8.SuSE btw.
-
+regards,
+Sid
 --
-thomas.graichen@innominate.com
-                                                         innominate AG
-                                                  the linux architects
-tel: +49-30-308806-13   fax: -77             http://www.innominate.com
+sid@siddhartha.8m.com
+
+Q: "Don't fret, Riker.  My good fortune is your good fortune."
+--"Deja Q", Stardate 43539.1
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
