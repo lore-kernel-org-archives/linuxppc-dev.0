@@ -1,32 +1,36 @@
-Message-ID: <00cc01c0913a$7d647480$6c125acf@mrsl.com>
-From: "Tim Moloney" <moloney@mrsl.com>
-To: <linuxppc-dev@lists.linuxppc.org>,
-        <yellowdog-devel@lists.yellowdoglinux.com>
-Subject: Accessing global symbols from shared library
-Date: Wed, 7 Feb 2001 14:16:35 -0500
+Date: Wed, 7 Feb 2001 22:16:28 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Roman Zippel <zippel@fh-brandenburg.de>
+Cc: Dan Malek <dan@mvista.com>, paulus@linuxcare.com.au,
+	tom_gall@vnet.ibm.com, linuxppc-commit@hq.fsmlabs.com,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: context overflow
+In-Reply-To: <Pine.GSO.4.10.10102071921140.14928-100000@zeus.fh-brandenburg.de>
+Message-ID: <Pine.HPX.4.10.10102072117240.15523-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am currently trying to port a Solaris application to Linux.  The
-Solaris application dynamically loads custom shared libraries which
-can access symbols in the main executable.  This is not a clean
-design, but it works.  From what I've seen so far, the Linux
-runtime loader does not allow a shared library to access symbols in
-the main executable.
+	Hi,
 
-If someone knows of a linker switch or something that allows shared
-libraries to access global symbols, please let me know.
+> CONFIG_HIGHMEM has little to do with the kernel virtual space. The main
+> purpose is to get the memory into user space, where user programs can use
+> them. I really don't understand, what problem you're trying to solve. The
+> kernel only wants to manage high memory and rarely access it (and uses
+> kmap for this), most of the time these pages should be in the user virtual
+> address space only.
 
-Tim Moloney
+Confused. If you have up to 64 Gb or RAM (the 7450 has 36 address lines)
+and can use not even use one gigabyte for cache, you end up with a
+seriously unbalanced system. Depending on what you do of course.
 
-ManTech Real-time Systems Laboratory
-2015 Cattlemen Road
-Sarasota, FL  34232
-(941) 377-6775 x208
+Hey 64 Gb of RAM is not even that expensive today (the only problem is
+buffering and additional latency caused by the additional layers
+you need to access 100+ modules).
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
