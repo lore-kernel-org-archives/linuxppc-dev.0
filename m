@@ -1,27 +1,40 @@
-Subject: Re: BOOTP problems on Embedded Planet CLLF with Monta Vista kernel
-To: PaulFagerburg@RenaissanceNT.com
-Date: Fri, 4 Aug 2000 10:22:45 +1000 (EST)
-Cc: linuxppc-embedded@lists.linuxppc.org ('linuxppc')
-In-Reply-To: <000c01bffda4$9a12f220$5301a8c0@RenaissanceNT.com> from "Paul Fagerburg" at Aug 03, 2000 04:43:18 PM
+Message-ID: <398A1BE9.BFAFDF57@cyclades.com>
+Date: Thu, 03 Aug 2000 18:27:05 -0700
+From: "Edson Ap. Seabra" <seabra@cyclades.com>
 MIME-Version: 1.0
+To: Linux List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Ramdisk using libc5
+References: <20000725004105.DDC919D@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000804002245.CC901BE@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Fagerburg writes:
-> Once I started dhcpd (the DHCP *server*), nothing went right from then
-> on; the TFTP client on the CLLF timed out with ARP failures.
+I am having two problems running the  "mklibs.sh":
 
-Here's my guess: The IP addresses of both your TFTP server and your CLLF board
-have to be static, and you must configure both addresses into the CLLF using
-"C)onfigure EEROM", "7) Modify parameters..." from the main menu.  While the
-kernel will get its IP address dynamically via DHCP, the ROM monitor isn't
-smart enough to do so before it launches its TFTP request.
+1) The script asks for files libxxx_pic.a and I do not know how to generate or to get them...
 
-Regards,
-Graham
+2) The script calls a command "readlink" that is not available  in the Red Hat Linux 6.0
+
+Beside this I have replaced many files from the directory bin by the busybox. I could save about 0.5M.
+
+Regards.
+Edson.
+
+Graham Stoney wrote:
+
+> Edson Ap. Seabra writes:
+> > This helps a lot. The libc now has 1.03 Mb ... I guess libc still have a lot
+> > of code that I don't need.  I have to find a easy way to strip them.
+>
+> There is a magic script named mklibs.sh which removes unused functions from     the shared C library in the Debian Boot Floppies package, at:
+>     ftp://ftp.us.debian.org/debian/dists/potato/main/source/admin/boot-floppies_2.2.16.tar.gz
+>
+> Let us know how you go!
+>
+> Regards,
+> Graham
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
