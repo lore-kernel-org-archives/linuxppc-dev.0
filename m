@@ -1,66 +1,34 @@
-Date: Sun, 7 Feb 1999 19:19:05 -0600 (EST)
-From: Jeff Zahourek <jeffzahourek@cjnetworks.com>
-Reply-To: jeffzahourek@cjnetworks.com
+Date: Sun, 07 Feb 1999 22:09:01 -0500
+From: Beecher Greenman <rbg6038@ritvax.isc.rit.edu>
+Subject: A different Window Maker problem
 To: linuxppc-dev@lists.linuxppc.org
-Subject: atyfb.c detecting vram size incorrectly for XClaim 3D 8MB
-Message-ID: <Pine.LNX.3.96.990207185451.1793A-100000@thor.valhalla.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-id: <01J7H7PIJZ9EA3CISC@ritvax.isc.rit.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Recently I tried to install XFree86 on my R4 system. I downloaded the 
+3.3.3.1 binaries from ftp.xfree86.org, and everything installed fine. 
+However, now Window Maker refuses to start. WHen it tries, it complains 
+about an error in the shared libs...
 
-I have found the following small problem with
-linux/drivers/video/atyfb.c in the 2.2.0-pre9 kernel source from the
-vger tree and in the 2.2.1 kernel source from kernel.org.
+wmaker:error in loading share libraries
+: undefined symbol _Xsetlocale
 
-Beginning at line 2571 (vger tree) is the following conditional which 
-adds 4 MB to the variable(?) info->total_vram. Commenting this out and 
-replacing with a ";" results in no lies being told about the size of
-the available vram. BootX no longer reports 12MB, rather a correct 8MB
-of SGRAM, and OF booting results in kernel reporting the 4MB that is 
-actually initialised. This is not really useful in itself but it does 
-reveal that the vram-size of Rage Pro (GI_CHIP_ID) cards is not being 
-properly sensed. I don't know why anyone would set a bogus value here, 
-but that is what is being done. Perhaps someone smarter than me can
-figure out what to change to get the vram size properly recognized 
-during initialisation. I have simply copied the code which sets the vram 
-size from the default supplied with kernel arguments to always initalise 
-the card to 8MB. Since this is the beauty of open source for the amateur  
-schmuck, I'm quite happy. Geert may want to investigate and actually fix 
-this so it does the right thing. I'm not having much luck muddling
-through.
+No indication of what library to use or anything. A recompile did not 
+appear to solve the problem. Other windowmanagers compile and run fine. I 
+haven't even run into the FD_ZERO bug that's currently plaguing some 
+listmembers.
 
-Offending code
+LinuxPPC R4, kernel 2.2.1 with appropriate sources and modules, XFree 
+3.3.3.1 (unaccelerated), Window Maker 0.50.2, rev3 G3, 128 megs RAM, 128 
+megs swap, 2 gig /
 
-    if (Gx == GI_CHIP_ID) {
-        if (aty_ld_le32(CONFIG_STAT1, info) & 0x40000000)
-          info->total_vram += 0x400000;
-    }
+Thanks!
 
-What I did
-
-    if (Gx == GI_CHIP_ID) {
-        if (aty_ld_le32(CONFIG_STAT1, info) & 0x40000000)
-/*          info->total_vram += 0x400000;               */
-/*  replace line above with the following ugliness      */
-/*  to avoid passing the video=atyfb:vram:8192 argument */
-/*  to kernel at boot time. I really dislike that.      */
-            info->total_vram = 0x800000;
-            i = i & ~(gtb_memsize ? 0xF : MEM_SIZE_ALIAS);
-            i |= gtb_memsize ? MEM_SIZE_8M_GTB : MEM_SIZE_8M;
-            aty_st_le32(MEM_CNTL, i, info);
-    }
-
-I'm certain this will be properly fixed soon, but maybe nobody has
-noticed this specific minor problem with the code.
-
-{]>===-                       {]>===-                         {]>===- 
-Jeff Zahourek                            Because without beer, things
-jeffzahourek@cjnetworks.com              do not seem to go as well.
-http://www.cjnetworks.com/~jeffzahourek/                 -- Anonymous
-
+-Beecher Greenman
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
