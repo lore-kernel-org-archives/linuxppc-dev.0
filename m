@@ -1,28 +1,38 @@
-Message-ID: <000701c4187d$38be9810$0400a8c0@portatile>
-Reply-To: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi (LAN)" <gianfranco.morandi@euro-studio.it>
-To: "???" <shchoi@airpoint.co.kr>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <006101c4184c$2c14fa90$14589edd@alpha>
-Subject: Re: Quetions : insmod command error
-Date: Fri, 2 Apr 2004 08:39:14 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+Date: Fri, 2 Apr 2004 08:42:05 +0200
+From: Marc Leeman <marc.leeman@barco.com>
+To: Rune Torgersen <runet@innovsys.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Insmod trouble
+Message-ID: <20040402064205.GB22365@smtp.barco.com>
+Reply-To: Marc Leeman <marc.leeman@barco.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B06DAAE@ismail.innsys.innovsys.com>
+Mime-Version: 1.0
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DAAE@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=iso-8859-15
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> 3) using kernel 2.6.3
-> 4) using modutils 2.4.22
-> 5) include/config/modules.h had #define CONFIG_MODULES 1
+> proc_sysinfo: Unknown symbol __fixsfsi
+> proc_sysinfo: Unknown symbol __subsf3
+> proc_sysinfo: Unknown symbol __extendsfdf2
+> proc_sysinfo: Unknown symbol __floatsisf
+> proc_sysinfo: Unknown symbol __muldf3
+> proc_sysinfo: Unknown symbol __truncdfsf2
+> proc_sysinfo: Unknown symbol __mulsf3
+> proc_sysinfo: Unknown symbol __addsf3
 
-For what is my knowledge loading a module in 2.6.x is quite different from
-previous 2.4.x.
+I would assume that these functions are not compiled in the kernel.
+While compiling them as modules, the compiler assumes (via the include
+file) that they are external and will not complain about these.
 
-Look at the available HOWTOs.
+Double check if the source files that contain this functionality are
+compiled and linked in the code. You can try to quick-'fix' it by static
+inlining these functions in you module.
 
-Gianfranco
+Maybe these functions assume some architecture and are in a conditional
+ifdef CONFIG_XXX flag.
 
+  marc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
