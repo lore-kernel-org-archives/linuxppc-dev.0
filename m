@@ -1,17 +1,18 @@
-From: zjuzhou@163.net
+Message-ID: <001901c0d7b5$426f0b80$8021690a@huawei.com>
+From: "machael thailer" <dony.he@huawei.com>
+To: "Zehetbauer Thomas" <TZ@link.topcall.co.at>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <41EA756DBC9FD0118CFC0020AFDB5C5A188DC9@tcint1ntsrv>
+Subject: Re: Uncompress Ok, but cannot run linux kernel...
+Date: Tue, 8 May 2001 19:51:37 +0800
 MIME-Version: 1.0
-Message-Id: <3AF7D69E.03527@bjapp1>
-Date: Tue, 8 May 2001 19:21:02 +0800 (CST)
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RE: Uncompress Ok, but cannot run linux kernel...
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-
-
-> Tom:
-
+>
 > I stumbled into the same problem a while ago.
 >
 > While I did not use a hardware debugger I used the sample demonstrating
@@ -20,15 +21,19 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 > address translation and to set the instruction pointer to the (remapped)
 > start_here label. Unfortunately I lost my PPC hardware (405GP Walnut
 > board) before I could find any solution.
->
 
-	I meet same problem now.When I add CONFIG_MODULES into config file
-HHL 2.2.14 works well(my borad is mpc850),but after add it ,I meet same
-situation :after uncompressing kernel ,it do noting.It shoud display
-LINUX_BANNER.
-	If you find the solution,tell me.Thanks.
+Yes, this is also exactly what i meet now.
+I find that "turn_on_mmu" use SYNC as following:
+turn_on_mmu:
+    .....
+    SYNC
+    RFI
 
-Dross
+here SYNC may do nothing according to your .config(CONFIG_PPC601_SYNC_FIX)
+if you look into arch/ppc/kernel/ppc_asm.h.
+Will this be a problem? I use linux-2.4.2 .
+
+machael
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
