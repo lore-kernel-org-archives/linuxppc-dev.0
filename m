@@ -1,47 +1,44 @@
-From: "Jon Erick Ween" <jween@som.llu.edu>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Jon Erick Ween <jween@som.llu.edu>
-Cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-Date: Thu, 28 Sep 2000 12:49:22 -0700
-Message-ID: <7736FE93133A.AAA55EE@som.llu.edu>
+Message-Id: <200009282107.XAA00763@piglet.grunz.lu>
+Date: Thu, 28 Sep 2000 23:07:30 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: beige g3 rage II xf4.0.1 and miBoot
+To: gewrgiou@imbc.gr
+cc: rshapiro@bbn.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.21.0009282015220.15193-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> wrote:
->> I tried the changes you suggested, no difference. (I couldn't figure out
+On  28 Sep, this message from Kostas Gewrgiou echoed through cyberspace:
+> PS> Any ideas why writing to a disabled pci device in ppc crashes
+> the machine but not the x86 ones ? Is this something that can be fixed
+> in the kernel or an arch thing ?
 
->> what you meant by "layout at the end.", was there more to the email that
+Accessing config registers or device resources?
 
->> didn't get through?)
->
->I meant move the first section (server layout IIRC) to the end of the
->file. Nothing complicated.
+Accessing config registers should work ok, if not, there's something
+_really_ wrong somewhere.
 
-OK, I'll try this.
+Accessing resources that are not enabled, yes, you get a machine check,
+because the device will not answer your accesses, so the bus will hit a
+timeout, which will be signaled to the processor (was that a PCI master
+abort?), in a way that the processor will throw a machine check
+exception.
 
->> But, honestly, I can't see why these changes should influence whether or
-not
->> the Xserver detects the video device. That seems to be the main problem.
+And that machine check exception is not recovered from (would that even
+be possible?), hence a plain old kernel panic.
 
->> It's looking for a particular device at a particular memory address
->> (presumably specified by the "ati" driver file) and is not finding it. I
+Michel
 
->
->Neither do I, and it works perfectly for me ...
->
->I can send you my config if nothing else helps.
-
-Well, I recompiled the server and reinstalled. Now it doesn't exit with an
-error, it just hangs, requiring a hard reboot. Looking at the XFree86.0.log
-file it seems to be hanging on the ati probe step, suggesting that it finds
-the device finally. Previous lines inform of reassigning pci memory
-overlaps, but there are no errors. Maybe if I tried your config file and
-modified for my ati driver?
-
-Jon
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
