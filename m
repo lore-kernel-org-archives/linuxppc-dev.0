@@ -1,83 +1,62 @@
-Message-ID: <BFC0587634C3D111AACB00805FA766FA0123B86B@exchny12.ny.smb.com>
-From: "Velasquez, Carlos" <cv49989@imcnam.sbi.com>
-To: "'Packer, Dave'" <dPacker@uppercase.xerox.com>
-Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: Umax S900 CD Rom problems...
-Date: Fri, 21 May 1999 14:42:10 -0400
+Date: Fri, 21 May 1999 14:47:50 -0400 (EDT)
+From: Kevin Hendrickson <hndrcksn@net178019.hcv.com>
+To: Ray Allis <ray@bcstec.ca.boeing.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Umax S900 CD Rom problems...
+In-Reply-To: <37447E78.56C232F9@bcstec.ca.boeing.com>
+Message-ID: <Pine.LNX.3.96.990521141437.6255A-100000@net178019.hcv.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dave,
+On Thu, 20 May 1999, Ray Allis wrote:
 
-Thanks for the help. I am running Mac OS 8.1 and using the BootX utility.
-Out of curiousity, is there a difference whether I run 8.1 or 8.5? (If so, I
-will load upgrade to 8.5, I have the disk but wasn't sure if it was fully
-compatible with clones.)
+> "Velasquez, Carlos" wrote:
+> 
+> > Hello,
+> >
+> > Has anyone successfully installed  Linux on a Umax S900 Mac clone? If so,
+> > can you share your stories with me? I am having problems installing Linux on
+> > my Umax S900 (225 Mhz ppc with 162Meg ram, ixMicro Twin Turbo 8Meg video
+> > card.) Apparently, when I try to do a CD install, the installer doesn't
+> > recognize the CD Rom device. I believe I have a Matshita CD rom drive
+> > installed as an internal SCSI device (bus 0, Id 4).
+> 
+> I gave up. ;)  First attempt, the installer did not recognize the Twin
+> Turbo.  Someone on this list offered a fixed installer.  Then, the
+> machine lost track of the CD, so the installer displayed o.k. but could
+> not see anything to install. ;)  Then the whole SCSI went invisible - no
+> CD, no floppy, no Zip.  Soooo, sent it to the shop, where they replaced
+> the motherboard (where the SCSI chip was mounted).  Now the installer
+> won't write (correctly) to the internal hard drives.  Seems the E100
+> chip sorta refuses to let the two 2-gig disks be anything but RAID, no
+> matter how I initialize them.  And then too, it's a twin processor SMP,
+> and THAT won't run anything but the Umax-supplied demos (MacOS 7.6) and
+> then for a maximum of 30 minutes. 
 
-I will try passing the arg video='tt128fb'. Your suspicions were correct, I
-am trying to go with the Pre-R5 version. I will try 4.1 then try moving up
-to Pre-R5 instead. Someone else also suggested that I try YellowDog Linux's
-ramdisk.gz file (it is supposed to have an improvement in the installer for
-the CD method.)
+What version of LinuxPPC are you trying to install? I've gotten R4.0 and
+pre-R5 to install on my dual 180MHz S900. Though both installed over the
+net, but both were able to see both SCSI busses and both my Matsushita CD
+and Panasonic CD-R. I've also gotten it to run MacOS 8.0 and 8.1. Haven't
+bothered with 8.5 or 8.6 yet. I am currently having my latest kernel
+2.2.6-15apmac to use my Matsushita CD though. I don't use it very often,
+so I don't know if any earlier 2.2.x kernels also gave trouble. My CD-R
+works just fine though.
 
-Will keep y'all posted!
+> 
+> I'm parting it out ;).
+> 
+> Ray Allis
+> 
+> 
 
-Carlos
+*--------+---------+---------+---------+---------+---------+---------+-*
+Kevin Hendrickson          "On the internet, no one knows you're a dog."
+hndrcksn@net178019.hcv.com   "Why, oh why, didn't I take the BLUE pill?"   
+hndrcksn@braincraft.com   _DreaD_    http://net178019.hcv.com/~hndrcksn/ 
 
-______________________________________________________________________
-C.F. Velasquez
-Asst. Vice President
-Global Database and Technology Division
-Salomon Smith Barney, Inc.
-
-> -----Original Message-----
-> From:	Packer, Dave [SMTP:dPacker@uppercase.xerox.com]
-> Sent:	Friday, May 21, 1999 2:03 PM
-> To:	'linuxppc-dev@lists.linuxppc.org'
-> Subject:	Umax S900 CD Rom problems...
-> 
-> 
-> 
-> Carlos - 
-> 
-> I have a UMAX S900/200 with the Matsashita drive.  I've been able to
-> install
-> without any problems.  What
-> OS are you running? I'm running 8.5.1.  I've installed 4.1 and now am
-> running Pre-R5, except for some very small FBDev problems I'm perfectly
-> satisfied with what I have.  Are you installing with BootX? make sure you
-> de-select no-video-driver and you can pass the arg of video='tt128fb' to
-> the
-> kernel.  
-> 
-> Other Notes:
-> 
-> Don't run the installer from a HFS+ partition
-> I've had the best success by dragging the RedHat onto an non-HFS+
-> partition
-> and installing from there
-> 
-> If you are shooting for Pre-R5: I know that about a week ago I thought I
-> might try re-installing and had some problems with the recent
-> redhat.ramdisk.gz where it couldn't recognize any of my drives.  That
-> might
-> be where your problem is.  Can't help you there though probably have to
-> wait
-> until R5 comes out sometime in the next week or so.
-> 
-> Dave-
-> 
-> 
-> 
-> [[ This message was sent via the linuxppc-dev mailing list.  Replies are
-> ]]
-> [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your
-> ]]
-> [[ reply is of general interest. Please check http://lists.linuxppc.org/
-> ]]
-> [[ and http://www.linuxppc.org/ for useful information before posting.
-> ]]
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
