@@ -1,52 +1,54 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04011702b2914dc3594d@[209.86.156.28]>
-Date: Mon, 7 Dec 1998 01:52:04 -0800
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        paulus@cs.anu.edu.au, daveray@wellsfargo.com
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Partial fix for 2400 16-bit video problem
+Date: Mon, 7 Dec 1998 11:28:47 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: XF68_FBDev under MkLinux?
+In-Reply-To: <19981207014016F.roikawa@rr.iij4u.or.jp>
+Message-ID: <Pine.LNX.4.03.9812062113110.26833-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The Problem: In recent kernels, the chipsfb driver for the C&T 65550
-chipset has been broken for 16-bit modes.
+On Mon, 7 Dec 1998, Ryuichi Oikawa wrote:
+> From: anthony tong <atong@uiuc.edu>
+> Subject: Re: XF68_FBDev under MkLinux?
+> > 
+> > Geert Uytterhoeven (Sat, Dec 05, 1998 at 11:20:33PM +0100):
+> > >   2. Adopt XF68_FBdev so it can use the MkLinux video mode ioctl stuff. This
+> > >      requires no kernel changes. In XF68_FBDev, the video ioctl and mmap stuff
+> > >      has to be changed slightly.
+> > > 
+> > > I think the second solution is the least amount of work.
+> > 
+> > Agreed.
+> 
+> Simple question: What is the advantage of fbdev server without
+>  frame buffer device ?
 
-The Solution: I did some poking around, and discovered some lines related
-to turning palettes on and off missing from the 16/8-bit mode switch code
-in chipsfb.c.  These were present in 2.1.115 but disappeared somewhere
-along the road to 2.1.130.
+This is indeed a very good question!
 
-With the lines restored, the 2/3400 accelerated version of Xpmac works in
-16-bit mode again.  I haven't been trying XF68FBDev, so I don't know if it
-was ever broken, but I suspect it would be as this shouldn't be specific to
-any one X server.
+I think the most important reason is that you're integrated with XFree86 (like
+all the other Linux ports), and get all its extra features for free.
 
-The console is still broken for 16-bit mode, and I have no idea why.
-Fortunately, 16-bit color is not a necessity on the console.  For whatever
-reason, the fb console driver does not seem to be capable of writing
-anything to a chipsfb display; it doesn't even manage to clear the frame
-buffer when the switch to 16-bit is made, so you get to see leftover
-garbage from when it was 8-bit.
+Another approach would be to create a new subdirectory
+xc/programs/Xserver/hw/xfree68/xpmac/, that only differs from the xfree68/fbdev
+directory by the differences between the frame buffer device API and the
+MkLinux graphics API. The disadvantage of this is that you still have two
+server binaries, though.
 
-Here is the diff relative to the version of chipsfb.c in the latest vger
-kernel that I synced with:
+Greetings,
 
-----------cut here-----------
-360a361
-> 			write_xr(0x82, 0x00);		// disable palettes
-381a383
-> 			write_xr(0x82, 0x08);		// Graphics gamma
->enable
-----------cut here-----------
+						Geert
 
-If your chipsfb.c is different from mine, here is the context:  The first
-line should be inserted after the line containing "write_xr(0x81, 0x14)"
-and the second line should be inserted after the line containing
-"write_xr(0x81, 0x12)".
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
-  Tim Seufert
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
