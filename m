@@ -1,33 +1,61 @@
-Message-ID: <396504F6.8C36D79C@m2tech.co.nz>
-Date: Fri, 07 Jul 2000 10:15:18 +1200
-From: ben bodley <benb@m2tech.co.nz>
-MIME-Version: 1.0
-To: mailing list <linuxppc-embedded@lists.linuxppc.org>
-Subject: ide driver - where do i start?
+Message-ID: <20000706170655.E26935@lx.c-side.com>
+Date: Thu, 6 Jul 2000 17:06:55 -0700
+From: Neil Russell <caret@c-side.com>
+To: ppcboot-internal@lists.sourceforge.net,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Licensing of LiMon
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all!
+When I published LiMon, I included a discussion on what my feeling were
+about the GPL.  I'm now posting this message to solicit opinions on how
+I should proceed with regards licensing of LiMon.
 
-listen, we are using a ppc 403gcx running at 80 mips, and have connected
-an ide drive straight up to the data bus (through some buffers)..
+While I firmly believe that public source is a good thing and that GPL
+is generally a good thing, I do not think that GPL is appropriate for
+LiMon.  This is generally because I what I call the virus clause that
+tends to "infect" additions to a piece of GPL software with a GPL license.
 
-i can look at the driver command/control registers fine as memory mapped
-i/o, etc.. the hd is dma-able and the interface is setup to be stable at
-pio4 possibly udma/33..
+In the case of the version of LiMon I am doing for the custom hardware
+that the company I'm working for is building, there are parts of the
+hardware whose details we wish to remain proprietary and confidential.
+This means that parts of the source used to build our version of LiMon,
+and the associated ".o" files would not be publicly available, which in
+turn means that LiMon could not be rebuilt for our hardware from the
+public source.  Since our hardware is not generally useful to the public
+in its basic form, I think that this is OK, however, a GPL version of
+LiMon would not allow this.
 
-the next step for me is to modify the linux ide code to talk to my
-drive.. has anyone hooked up ide directly to the processor bus?? i am
-currently looking at basing my code off drivers/block/ide-pmac.c and
-changing the probe and dma code to fit.. is this the place to start??
+The current public release of LiMon is covered by the GPL, however, the
+source that this release was derived from is not.  This means that future
+versions of LiMon need not be covered by the GPL.  (Note that at present,
+no part of the LiMon public distribution was derived from GPL source).
 
-cheers for any insights,
+Some have expressed the desire to be able to add GPL source to LiMon, and
+I think that this would be a good thing.
+
+I can think of two solutions:
+
+    1)	LiMon could be distributed under the LGPL (the "Lesser GNU Public
+	License"), however, this license was written for libraries, and
+	may not be completely appropriate for LiMon.
+
+    2)  LiMon could be changed so that it is a combination of modules that
+	are aggregated at run-time.  Some modules could be GPL while
+	others are covered under other licenses.  This is how OpenBoot
+	(used on SUNs and Apples) is done.
+
+I'm interested in opinions, both technical and legal.
+
+
+Thanks,
+	Neil.
+
 
 --
-/\\------------------------------------------------------------------
-:::::::::::..ben.b..m2technologyltd.nz..64.9.4448307.130..:::::::::::
-
+Neil Russell <caret@c-side.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
