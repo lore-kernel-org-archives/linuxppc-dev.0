@@ -1,37 +1,34 @@
-Subject: Re: R128 Scaling.
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-Cc: Stefan Berndtsson <stefan@nocrew.org>,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.BSF.4.44.0204162241110.49666-100000@shell.unixbox.com>
-References: <Pine.BSF.4.44.0204162241110.49666-100000@shell.unixbox.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 17 Apr 2002 13:54:56 +0200
-Message-Id: <1019044496.1617.448.camel@tibook>
-Mime-Version: 1.0
+Message-ID: <3CBD9361.4060203@cymes.de>
+Date: Wed, 17 Apr 2002 17:23:13 +0200
+From: Matthias Grimm <joker@cymes.de>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: muteing speakers if headphones were plugged in?
+References: <3CBC59C0.7000505@cymes.de> <20020416173026.16606@smtp.wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2002-04-17 at 07:44, Ani Joshi wrote:
->
-> On 16 Apr 2002, Michel [ISO-8859-1] Dänzer wrote:
->
-> > Is that with a driver with optimized ImageWrite acceleration? I don't
-> > think any stock XFree86 driver is really optimized there yet, I'm
-> > working on radeon now and the results should be easily applicable to
-> > r128.
->
-> There are several that do ImageWrie acceleration.  The radeon driver already
-> does indirect ImageWrite acceleration (its the same as CPUToScreen color
-> expansion).
+Benjamin Herrenschmidt wrote:
 
-Which is slower than memcpy for a simple upload. I'm finishing a CP based
-implementation which is significantly faster, at least in 16 bit.
+>>I don't know where to get the information if headphones are plugged in
+>>or not, so I had a look into the recent kernel and I saw some code (for
+>>eg. headphone_intr() ) that seems to do what I am asked for. On the
+>>other hand the code seems very experimental and not really complete as I
+>>could see at some comments.
+>>
+>>What is the status? Should this feature (muting the speakers ...) be
+>>part of the kernel or was it only a fast shot to get it work?
+>>
+>
+> It works with recent drivers though only if your chipset is Tumbler afaik.
 
 
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Is someone working on that issue to implement it for the other chipsets?
+
+  Matthias
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
