@@ -1,132 +1,50 @@
-Message-ID: <3D091C9F.134A8A0C@mvista.com>
-Date: Thu, 13 Jun 2002 15:28:47 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Steffen Rumler <Steffen.Rumler@icn.siemens.de>
-Cc: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Accessing the user stack inside system call service routine
-References: <3D084D1F.95AFFCBB@icn.siemens.de>
-		<3D087D95.5070206@lvl7.com>
-		<3D08AA25.9AF41113@icn.siemens.de> <15625.4799.671581.186354@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <5.1.0.14.2.20020613160339.02e4cbd0@pop.prodigy.net>
+Date: Thu, 13 Jun 2002 16:07:15 -0700
+To: Dan Malek <dan@embeddededge.com>
+From: Eugene Surovegin <ebs@innocent.com>
+Subject: [PATCH] pci_alloc_consistent in an interrupt context, part 2
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <3D0912F4.4020300@embeddededge.com>
+References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com>
+ <20020613205824.GX13541@opus.bloom.county>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="=====================_277061203==_"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
->
-> Steffen Rumler writes:
->
-> > The copy_from_user() works fine. The printk() message does not
-> > appear.
->
-> The copy_from_user call looks correct to me.
->
-> > Later, when I inspect 'current->user_stack_xxx' (temporary
-> > added to struct_task) for all processes with 'current->in_suspend'
-> > set, all seems to be zero. I do this check within a kernel
-> > module, I can load when the threads are hanging.
->
-> That is indeed very strange.  The first word should be non-zero at the
-> very least.  Is it possible that your program has in fact trashed its
-> stack?  Another thing to try would be to check the contents of
-> current->user_stack_xxx immediately after you copy it to see whether
-> it is all zero at that point.
+--=====================_277061203==_
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 
-Here is how the Linux Trace Toolkit (LTT) kernel patch searches back
-through the stack, in the case of a syscall, to find the caller of
-the library function that resulted in a syscall (for example, the
-place that printf() was called from, not the place that the resulting
-syscall was called from in the library).  It sounds like you don't
-need to dig that far back in the calling sequence.  Hopefully this example
-can point you in the right direction.
+Hi!
 
+Here is an addition to my first patch.
 
+Instead of using gfp which was passed to consistent_alloc,
+I use a modified version with masked out zone modifiers (like __GFP_DMA).
 
-#if (CONFIG_TRACE || CONFIG_TRACE_MODULE)
-asmlinkage void trace_real_syscall_entry(struct pt_regs * regs)
-{
-        int                 use_depth;
-        int                 use_bounds;
-        int                 depth = 0;
-        int                 seek_depth;
-        unsigned long       lower_bound;
-        unsigned long       upper_bound;
-        unsigned long       addr;
-        unsigned long*      stack;
-        trace_syscall_entry trace_syscall_event;
+Thanks,
 
-        /* Set the syscall ID */
-        trace_syscall_event.syscall_id = (uint8_t) regs->gpr[0];
+Eugene
+--=====================_277061203==_
+Content-Type: application/octet-stream; name="consistent_alloc_2.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="consistent_alloc_2.patch"
 
-        /* Set the address in any case */
-        trace_syscall_event.address  = instruction_pointer(regs);
+PT09PT0gY2FjaGVtYXAuYyAxLjE0IHZzIDEuMTUgPT09PT0KLS0tIDEuMTQvYXJjaC9wcGMvbW0v
+Y2FjaGVtYXAuYwlUaHUgSnVuIDEzIDExOjQ3OjQxIDIwMDIKKysrIDEuMTUvYXJjaC9wcGMvbW0v
+Y2FjaGVtYXAuYwlUaHUgSnVuIDEzIDE2OjAwOjE1IDIwMDIKQEAgLTg4LDggKzg4LDEwIEBACiAJ
+aW52YWxpZGF0ZV9kY2FjaGVfcmFuZ2UocGFnZSwgcGFnZSArIHNpemUpOwogCiAJLyogQWxsb2Nh
+dGUgc29tZSBjb21tb24gdmlydHVhbCBzcGFjZSB0byBtYXAgdGhlIG5ldyBwYWdlcy4KKwkgICBN
+YXNrIG91dCB6b25lIG1vZGlmaWVycyBmcm9tIGdmcDsgd2UgZG9uJ3Qgd2FudCAKKwkgICB0byBy
+ZXN0cmljdCB2bV9zdHJ1Y3QgYWxsb2NhdGlvbiB0byBETUEgb3IgaGlnaCBtZW1vcnkgcG9vbCBv
+bmx5CiAJKi8KLQlhcmVhID0gZ2V0X3ZtX2FyZWEoc2l6ZSwgVk1fQUxMT0MsIEdGUF9BVE9NSUMp
+OworCWFyZWEgPSBnZXRfdm1fYXJlYShzaXplLCBWTV9BTExPQywgZ2ZwICYgfihfX0dGUF9ETUEg
+fCBfX0dGUF9ISUdITUVNKSk7CiAJaWYgKGFyZWEgPT0gMCkgewogCQlmcmVlX3BhZ2VzKHBhZ2Us
+IG9yZGVyKTsKIAkJcmV0dXJuIE5VTEw7Cg==
+--=====================_277061203==_--
 
-        /* Are we in the kernel (This is a kernel thread)? */
-        if(!user_mode(regs))
-          /* Don't go digining anywhere */
-          goto trace_syscall_end;
-
-        /* Get the trace configuration */
-        if(trace_get_config(&use_depth,
-                            &use_bounds,
-                            &seek_depth,
-                            (void*)&lower_bound,
-                            (void*)&upper_bound) < 0)
-          goto trace_syscall_end;
-
-        /* Do we have to search for an eip address range */
-        if((use_depth == 1) || (use_bounds == 1))
-          {
-          /* Start at the top of the stack (bottom address since stacks grow downward) */
-          stack = (unsigned long*) regs->gpr[1];
-
-          /* Skip over first stack frame as the return address isn't valid */
-          if(get_user(addr, stack))
-            goto trace_syscall_end;
-          stack = (unsigned long*) addr;
-
-          /* Keep on going until we reach the end of the process' stack limit (wherever it may be) */
-          while(!get_user(addr, stack + 1)) /* "stack + 1", since this is where the IP is */
-            {
-            /* Does this LOOK LIKE an address in the program */
-            if((addr > current->mm->start_code)
-             &&(addr < current->mm->end_code))
-              {
-              /* Does this address fit the description */
-              if(((use_depth == 1) && (depth == seek_depth))
-               ||((use_bounds == 1) && (addr > lower_bound) && (addr < upper_bound)))
-                {
-                /* Set the address */
-                trace_syscall_event.address = addr;
-
-                /* We're done */
-                goto trace_syscall_end;
-                }
-              else
-                /* We're one depth more */
-                depth++;
-              }
-            /* Go on to the next address */
-            if(get_user(addr, stack))
-              goto trace_syscall_end;
-            stack = (unsigned long*) addr;
-            }
-          }
-
-trace_syscall_end:
-        /* Trace the event */
-        trace_event(TRACE_EV_SYSCALL_ENTRY, &trace_syscall_event);
-}
-
-
-
-
-
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
