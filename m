@@ -1,21 +1,21 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+Return-Path: <bdonadt@arabellasw.com>
+Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C5C6B67A7E
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 48A3767A7B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Mar 2005 06:03:30 +1100 (EST)
-Date: Mon, 21 Mar 2005 11:03:27 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Guillaume Autran <gautran@mrv.com>
-Message-ID: <20050321190327.GA4438@gate.ebshome.net>
-References: <423F0FFB.10307@mrv.com> <20050321185056.GB11734@gate.ebshome.net>
-	<423F1A05.4080308@mrv.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <423F1A05.4080308@mrv.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC885 CryptoApi support.
+	Tue, 22 Mar 2005 08:08:44 +1100 (EST)
+From: "Bruce Donadt" <bdonadt@arabellasw.com>
+To: "Guillaume Autran" <gautran@mrv.com>,
+	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Date: Mon, 21 Mar 2005 15:54:39 -0500
+Message-ID: <NEBBIHDFOLIPIPJAKJAMCEDLGEAA.bdonadt@arabellasw.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <423F0FFB.10307@mrv.com>
+Subject: RE: MPC885 CryptoApi support.
+Reply-To: bdonadt@arabellasw.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,23 +26,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 21, 2005 at 02:01:25PM -0500, Guillaume Autran wrote:
-> >Current kernel CryptoAPI is lacking sane support for hw crypto engines 
-> >(e.g. there is no async crypto). Until there is such generic support, 
-> >it's highly difficult to efficiently integrate hw crypto into the 
-> >kernel. I did such stuff for Hifn 7955 accelerator and didn't like the 
-> >result :).
-> >
-> >--
-> >Eugene
-> >
-> > 
-> >
-> Thanks Eugene,
-> Do you know if anybody is working on HW crypto engine support ?
+Guillaume:
 
-There were some patches posted to lkml around a month or so ago. Don't 
-know what happened to them.
+Arabella Software provides asynchronous 2.6 kernel CryptoApi support for the
+MPC885 as well as the PowerQUICC II devices as part of our commercially
+supported Linux distribution. If you would be interested in a commercial
+open source offering, please feel free to contact me and I can provide
+further detail.
+
+Best Regards,
+
+Bruce
+
+*********************************************************************
+
+Bruce Donadt
+Arabella Software Inc.
+300B West Main Street
+Northborough, MA. 01532
+
+Phone (508) 393-4144
+
+bdonadt@arabellasw.com
+
+www.arabellasw.com
+
+
+-----Original Message-----
+From: Guillaume Autran [mailto:gautran@mrv.com]
+Sent: Monday, March 21, 2005 1:19 PM
+To: linuxppc-embedded
+Subject: MPC885 CryptoApi support.
+
+
+Hi,
+
+Is there any open source development done to integrate the MPC885
+security coprocessor into the linux 2.6 kernel CryptoApi framework ?
+Did anyone wrote a driver for it yet ?
+
+Best regards,
+Guillaume.
+
 
 --
-Eugene
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: gautran@mrv.com
+=======================================
