@@ -1,29 +1,27 @@
-Message-ID: <37DD7D3C.6D16FBEC@virginia.edu>
-Date: Mon, 13 Sep 1999 18:39:56 -0400
-From: "David J. Topper" <topper@virginia.edu>
+Message-ID: <37DD90D8.790A15E7@jlc.net>
+Date: Mon, 13 Sep 1999 20:03:36 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: LinuxPPC audio?
+To: "David J. Topper" <topper@virginia.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC audio?
+References: <37DD7D3C.6D16FBEC@virginia.edu>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi folks,
+David J. Topper wrote:
 
-I'm not a member of this list yet, but am very interested in trying out
-LinuxPPC on some of our B&W G3s.  What's the scoop on audio under
-LinuxPPC?  What API is used?  I've heard OSS does not support LinuxPPC. 
-Is full duplex audio a possibility?  There are lots of apps. myself and
-some others would love to port over ...
 
-Thanks all,
+> Is full duplex audio a possibility?
 
-Dave Topper
---
-Technical Director, Virginia Center for Computer Music
-Programmer / Analyst, Dean's Office (School of A&S)
-http://www.people.virginia.edu/~djt7p
-(804) 924-6887
+Recording and full duplex work in the 2.3.x kernels. I just
+never checked out a 2.2.x kernel to make the same updates.
+I'll get around to it after some of the other more pressing
+embedded things I have to do.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
