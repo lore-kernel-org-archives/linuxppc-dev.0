@@ -1,31 +1,46 @@
-Message-Id: <200101210058.TAA27346@mal-ach.watson.ibm.com>
-To: Brad Parker <brad@parker.boston.ma.us>
-cc: khendricks@ivey.uwo.ca, Andy Johnson <andyj@mc.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Issue with small struct return values 
-In-Reply-To: Message from Brad Parker <brad@parker.boston.ma.us>
-   of "Sat, 20 Jan 2001 19:44:16 EST." <200101210044.TAA64354@p2.parker.boston.ma.us>
-Date: Sat, 20 Jan 2001 19:58:57 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: David Edelsohn <dje@watson.ibm.com>, khendricks@ivey.uwo.ca
+Subject: Re: Issue with small struct return values
+Date: Sat, 20 Jan 2001 20:52:39 -0500
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: Andy Johnson <andyj@mc.com>, linuxppc-dev@lists.linuxppc.org
+References: <200101210041.TAA25654@mal-ach.watson.ibm.com>
+In-Reply-To: <200101210041.TAA25654@mal-ach.watson.ibm.com>
+MIME-Version: 1.0
+Message-Id: <01012020523900.13943@localhost>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Brad Parker writes:
+Hi David,
 
-Brad> translation?  object files from ibm's c compiler won't work when linked
-Brad> with object files from gcc...
+> 	Proposing an extension to GCC is a lot more difficult than having
+> GCC follow the ABI as written.
 
-Brad> who's ox are we stabbing here?  :-)
+Whose decision will this be?  Is this going to be a community based decision
+or will gcc decide to do this unlaterally with or without the community's
+support?
 
-	If you were not being such a cynic, you might realize that there
-are other vendors with commercial SysV and eABI compilers for PowerPC.
-GCC does not work with any of the others, or people who hand-code assembly
-for the ABI, like JITs.
+What voice should the currently shipping distributions have in this?
 
-	I guess that PowerPC Linux does not want to use anyone else's
-commercial software.
+I saw no discussion on gcc-bugs about this issue (and was not privy to your
+and Geoff's previuous discussion with Andy about this issue).
 
-David
+That is why I responded to Andy in the first place.
+
+What process, if any exists for this decision to be made?
+
+I assume you wanted a community based decision since you asked Andy to cc
+this to the linuxppc dev list.
+
+Also, on a more technical note, how many <= 8 byte structures are there in
+actual use anyway?  I would guess that most uninos are less than or eqaul to
+8 bytes and so returning unions would change.  So according to the abi, would
+we would passing a union in to a function via a pointer but returning one in
+registers?
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
