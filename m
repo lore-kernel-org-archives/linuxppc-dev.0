@@ -1,9 +1,9 @@
-Message-ID: <3C4C62B1.6DA79017@web.de>
-Date: Mon, 21 Jan 2002 19:49:22 +0100
+Message-ID: <3C4C6553.D4087061@web.de>
+Date: Mon, 21 Jan 2002 20:00:35 +0100
 From: Frank Haverkamp <f.haverkamp@web.de>
 MIME-Version: 1.0
-To: PowerPC Linux Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Critical Interrupt Handling
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: handling critical interrupts on 40x processors
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
