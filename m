@@ -1,59 +1,118 @@
-Subject: Re: BriQ & Linux 2.6
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jamie Heilman <jamie@audible.transient.net>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040522064520.GM8520@audible.transient.net>
-References: <20040521074018.GD8520@audible.transient.net>
-	 <1085181034.6755.7.camel@gaston>
-	 <20040521233523.GJ8520@audible.transient.net>
-	 <1085199239.9230.4.camel@gaston>
-	 <20040522064520.GM8520@audible.transient.net>
-Content-Type: text/plain
-Message-Id: <1085209944.9234.7.camel@gaston>
+Date: Sat, 22 May 2004 09:40:06 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org, Paul Mackeras <paulus@samba.org>
+Subject: [PATCH] serial console autodetection 
+Message-ID: <20040522074006.GB2893@suse.de>
 Mime-Version: 1.0
-Date: Sat, 22 May 2004 17:12:26 +1000
+Content-Type: text/plain; charset=utf-8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2004-05-22 at 16:45, Jamie Heilman wrote:
-> Benjamin Herrenschmidt wrote:
-> >
-> > Well... the base clock isn't what the driver thinks, so it must be
-> > hacked. But the driver doesn't provide a clean way to set another
-> > base clock, I'm trying to find something better than what the hack
-> > in the patch does.
->
-> Well progress so far, I have 2.6.6 booting now, had to fumble a little
-> to apply one chunk but the rest was easy.  Problems so far: during the
-> entire boot, my console is line-noise-like hash[1], until runlevel 2,
-> then it starts behaving correctly.  The NICs (I have the PCI
-> expansion + extra NIC board) are having some issues....
+We have something like this in our kernel since many months.
+It sets the console device to what OF uses. ppc64 does the same, and it
+works ok. serial is found on CHRP, ch-a is used on all powermacs.
 
-Linux console starts at 9600 while the briq firmware use a different
-speed (I don't remember which). Try adding the speed ot the kernel
-command line
+diff -p -purN linux-2.6.6-bk8/arch/ppc/kernel/setup.c linux-2.6.6-bk8.autoconsole/arch/ppc/kernel/setup.c
+--- linux-2.6.6-bk8/arch/ppc/kernel/setup.c	2004-05-22 09:18:42.000000000 +0200
++++ linux-2.6.6-bk8.autoconsole/arch/ppc/kernel/setup.c	2004-05-22 09:29:18.000000000 +0200
+@@ -16,6 +16,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
+ #include <linux/cpu.h>
++#include <linux/console.h>
 
-console=ttyS0,<speed>
+ #include <asm/residual.h>
+ #include <asm/io.h>
+@@ -474,6 +475,60 @@ platform_init(unsigned long r3, unsigned
+ 		break;
+ 	}
+ }
++
++#ifdef CONFIG_SERIAL_CORE_CONSOLE
++extern char *of_stdout_device;
++
++static int __init set_preferred_console(void)
++{
++	struct device_node *prom_stdout;
++	char *name;
++	int offset;
++
++	/* The user has requested a console so this is already set up. */
++	if (strstr(saved_command_line, "console="))
++		return -EBUSY;
++
++	prom_stdout = find_path_device(of_stdout_device);
++	if (!prom_stdout)
++		return -ENODEV;
++
++	name = (char *)get_property(prom_stdout, "name", NULL);
++	if (!name)
++		return -ENODEV;
++
++	if (strcmp(name, "serial") == 0) {
++		int i;
++		u32 *reg = (u32 *)get_property(prom_stdout, "reg", &i);
++		if (i > 8) {
++			switch (reg[1]) {
++				case 0x3f8:
++					offset = 0;
++					break;
++				case 0x2f8:
++					offset = 1;
++					break;
++				case 0x898:
++					offset = 2;
++					break;
++				case 0x890:
++					offset = 3;
++					break;
++				default:
++					/* We dont recognise the serial port */
++					return -ENODEV;
++			}
++		}
++	} else if (strcmp(name, "ch-a") == 0)
++		offset = 0;
++	else if (strcmp(name, "ch-b") == 0)
++		offset = 1;
++	else
++		return -ENODEV;
++	return add_preferred_console("ttyS", offset, NULL);
++}
++console_initcall(set_preferred_console);
++#endif /* CONFIG_SERIAL_CORE_CONSOLE */
+ #endif /* CONFIG_PPC_MULTIPLATFORM */
 
-For example
+ struct bi_record *find_bootinfo(void)
+diff -p -purN linux-2.6.6-bk8/arch/ppc/syslib/prom_init.c linux-2.6.6-bk8.autoconsole/arch/ppc/syslib/prom_init.c
+--- linux-2.6.6-bk8/arch/ppc/syslib/prom_init.c	2004-05-22 09:18:42.000000000 +0200
++++ linux-2.6.6-bk8.autoconsole/arch/ppc/syslib/prom_init.c	2004-05-22 09:26:54.000000000 +0200
+@@ -118,7 +118,7 @@ ihandle prom_stdout __initdata = 0;
+ char *prom_display_paths[FB_MAX] __initdata = { 0, };
+ phandle prom_display_nodes[FB_MAX] __initdata;
+ unsigned int prom_num_displays __initdata = 0;
+-static char *of_stdout_device __initdata = 0;
++char *of_stdout_device __initdata = 0;
+ static ihandle prom_disp_node __initdata = 0;
 
-console=ttyS0,38400
+ unsigned int rtas_data;   /* physical pointer */
+@@ -880,6 +880,11 @@ prom_init(int r3, int r4, prom_entry pp)
+ 	for (i = 0; i < prom_num_displays; ++i)
+ 		prom_display_paths[i] = PTRUNRELOC(prom_display_paths[i]);
 
->           RX packets:118521 errors:0 dropped:0 overruns:0 frame:0
->           TX packets:1 errors:57244 dropped:0 overruns:0 carrier:57244
->
-> ...and yet, strangly I don't seem to be having any obvious network
-> performance problems.
++#ifdef CONFIG_SERIAL_CORE_CONSOLE
++	/* Relocate the of stdout for console autodetection */
++	of_stdout_device = PTRUNRELOC(of_stdout_device);
++#endif
++
+ 	prom_print("returning 0x");
+ 	prom_print_hex(phys);
+ 	prom_print("from prom_init\n");
 
-Interesting. I keep seeing reports of problems with pcnet32 driver,
-that's weird though.
-
-> Now this isn't the first time I've had issues with either of those,
-> and I think there are some patches in the Total Impact kernel source
-> for the NIC issue.  So I'm definately a lot closer than I was.
 --
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+USB is for mice, FireWire is for men!
 
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
