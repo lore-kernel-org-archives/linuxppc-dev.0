@@ -1,47 +1,39 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
-Date: Tue, 25 Jul 2000 23:39:53 +0200
-Message-Id: <20000725213953.24969@192.168.1.10>
-In-Reply-To: <Pine.LNX.4.10.10007251413580.434-100000@cassiopeia.home>
-References: <Pine.LNX.4.10.10007251413580.434-100000@cassiopeia.home>
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+CC: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 25 Jul 2000 16:41:05 -0500
+Message-ID: <yam8241.298.146589904@mail.lf-online.de>
+In-Reply-To: <397DA319.D7342DA2@relog.ch>
+Subject: Re: xf4 bug report
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> I still haven't found the "hard-block" that is effecting the overall audio
->> latency performance... ah well, back to the drawing board...
->
->Do you have IDE? The IDE driver turned out to be the major interrupt messing
->problem on m68k, since it can disable interrupts for quite a while.
+Am 25-Jul-00 schrieb Michel Dänzer:
 
-We have some great IRQ blockers in Linux currently. IDE is one,
-especially in PIO mode where it disables IRQs by default during
-transferts (AFAIK), but I think also in the fbdevs where, I think, a
-bunch of lenghtly things like scrolling are done with IRQs disabled.
+>Steffen Haeuser wrote:
 
-This has caused me troubles in the past since the PMU on new machines is
-very sensitive to timeouts. If IRQ get blocked too long while an
-asynchronous PMU request is beeing serviced, the PMU will time out and
-shut down the machine abruptly. This happened several times in the past
-during IDE probe on PowerBooks while some backlight or ADB requests where
-beeing handled.
+Hi!
 
-In my latest kernels, I had to add a pmu_safe_poll() function that polls
-until the PMU has finished servicing any pending request in order to
-avoid crashes in xmon while scrolling the screen for example.
+>> >> >> All fullscreen modes (1024x769, 640x481 and 800x601 ( :) ) ) start
+>> >> >> directly, the monitor makes click and there they are. Just only the
+>> >> >> 1024x768 (or x769 :) ) mode displays correctly.
+>>
+>> >I think this is a known bug...
+>>
+>> Ah. Which one, BTW, the "vertical one to high" or the "displayed screwed
+up"
+>> one ?
 
-I'm wondering if we could eventually turn ON the IDE unmask interrupt
-options on a per-arch or per-machine basis. It's really not necessary
-with recent chipsets anyway.
+>The latter. Don't know about the other one. At least no other X developer has
+>replied on the Xpert list...
 
-I don't know how the fbdev case can be improved, I beleive James has some
-plans about that for 2.5...
+Ah. Any idea when the next Beta of the X Server will be out ?
 
-Ben.
+Steffen
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
