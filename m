@@ -1,74 +1,39 @@
-Message-ID: <412CC13A.2050009@eircom.net>
-Date: Wed, 25 Aug 2004 17:41:30 +0100
-From: Conor McLoughlin <cml3227@eircom.net>
+Date: Wed, 25 Aug 2004 20:52:07 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
+Reply-To: Andrey Volkov <avolkov@varma-el.com>
+Message-ID: <1134038006.20040825205207@varma-el.com>
+To: Sylvain Munaut <tnt@246tnt.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re[2]: mpc5200 and ddr
+In-Reply-To: <412CBFCD.1000001@246tNt.com>
+References: <856066558.20040825185955@varma-el.com>
+ <412CBFCD.1000001@246tNt.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Conor McLoughlin <cml3227@eircom.net>
-Subject: Anyone with MPC82xx PCI on kernel 2.6?
-References: <4124E315.9090009@eircom.net>
-In-Reply-To: <4124E315.9090009@eircom.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to bring up a custom board which contains an MPC8250, a
-three-port PCI-PCI bridge and a few pci devices. I am using kernel
-2.6.8.1. I am having a number of problems.
+Hello Sylvain,
 
-Currently I have just four devices hanging off one secondary bus of the
-pci-pci bridge. Apart from the bridge, I have no other devices hanging
-off bus 0.  I have nothing yet hanging off bus 2.
+Wednesday, August 25, 2004, 8:35:25 PM, you wrote:
 
-                 | bus 0
-                 |
-     ------------------
-     |                |
-   ============      ============
-   |bridge     |     | bridge    |
-   |device 0x10|     |device 0x10|
-   |function 0 |     |function 1 |
-   ============      ============
-       |bus 1             |bus 2
-       |                  |
-   ---------------------
-   |         |         |
-  device 1   device 2 device 3
+> Hi,
 
-Initially, the bios initialization would not assign resources to my
-devices on bus 1. The reason appeared to be that in
-pci_read_bridge_bases it reads the memory base and limit registers
-from the bridge. As these are initially zero, it sets a limit
-of 1MB for the resources assigned to bus 1.
-My devices (DSP processors) look for a lot more memory space that that.
-I modified the function to assign sufficient resources for my needs
-and it now appears to assign memory resources to the devices correctly.
+> Sorry I don't have informations, but I'm interested too ;)
 
-First question: Should the memory limit register be set in the bridge
-becore pci_read_bridge_bases? Is it perhaps assumed that the bios (boot
-code) sets this up?
+> I guess you just "connect" them, but I wonder about terminations ? ( or
+> maybe keeping short trace is ok ? ).
 
-I still have an issue with I/O resources that I am ignoring for now.
-My primary concern right now is verifying the hardware.
 
-Now I try to access the devices on bus 1. I can read the configuration
-space no problem, but get bus error if I read the pci memory space.
-Checking everything obvious, I see that the the command register of
-the pci-pci bridge does not have the memory or I/O space bits set.
-Setting these bits eliminates the bus error.
+Certainly - termination, time diagrams, restrictions (especially
+capacitors length and likewise) etc. As I wrote before
+datasheet very foggy and miserly, but may be David or somebody from freescale
+enlighten me, if so, then I send info to ml.
 
-Second question: What function should set the command register for
-the pci-pci bridge to enable access to the secondary bus for
-memory and I/O cycles?
+--
+Best regards,
+ Andrey Volkov
 
-Now I am at the stage where I don't get a bus error, but I read all FFs
-no matter where I read from bus 1. It doesn't appear to matter if a
-device is configured at the address or not.
-
-Next question: What should I look at now?  How do I tell if
-the device responded to the pci access?
-
-Any help would be much appreciated.
-Conor
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
