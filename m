@@ -1,46 +1,67 @@
-Date: Tue, 1 Oct 2002 13:01:10 -0700
-From: Andrew May <acmay@acmay.homeip.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: amay@viasat.com, akuster@pacbell.net
-Subject: status of 2_4_devel
-Message-ID: <20021001200110.GA10094@acmay.homeip.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <4926614F7A31D411820F00D0B74FF7E0013D1998@RDC03>
+From: "Gallant, John" <jgallant@vanteon.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Pointers for the information on the Low-core stuff and the Boot R
+	OM interactions
+Date: Tue, 1 Oct 2002 16:07:05 -0400 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have been off doing other stuff so I haven't done a resync of the tree
-since June.
+Wolfgang Denk wrote:
+>You can download the kernel, but it will not run ;-)
+>
+>The Linux kernel relies on a lot of initialization to be done by  the
+>firmware  -  things  like initializing and sizing the memory, passing
+>boot arguments etc.
 
-First thing I ran into was a compile problem with the IBM OCP ethernet driver.
-Have things really not even compiled for the 405GP since Aug 22? This little
-patch should fix that problem.
+This is perfect timing on my part, I have a project to port PPC Linux to a
+custom
+board that is based on an 8245.  I've been searching on and off for the last
+few
+days to try and get a handle on the low level files, i.e. platform/* or
+ppc/kernel/*
+and how they are interrelated.  I've also tried to understand what files I
+will need
+to create, i.e. newBoardFoo_setup.c or newBoardBar() in head.S.
 
-==== ibm_ocp_enet.c 1.41 vs edited =====
---- 1.41/drivers/net/ibm_ocp/ibm_ocp_enet.c	Mon Sep 30 18:34:10 2002
-+++ edited/ibm_ocp_enet.c	Mon Sep 30 19:45:24 2002
-@@ -1195,7 +1195,7 @@
- /*	if (tmp_em0isr & EMAC_ISR_MOS ) fep->stats.ZZZ++;		*/
- /*	if (tmp_em0isr & EMAC_ISR_MOF ) fep->stats.ZZZ++;		*/
+My upfront question(s) to this group, and those who frequent the PPCBoot
+list is:
+Can you give me pointers of Doc's, white papers or even a Doctoral Thesis to
+read
+up on to understand what I will need to do for a New Board LSP effort.
+Along
+with this, what documents might describe the interface/interactions needed
+for
+the PPCLinux kernel and the PPCBoot support.
 
--	ppc405_bl_mac_eth_dump(dev, tmp_em0isr);
-+	ppc405_bl_mac_eth_dump((struct net_device*)dev_instance, tmp_em0isr);
+I'm not looking to be spoon fed this stuff (honest), even an RTFM will be
+fine
+if you can tell me where the FM's are.
 
- 	out_be32(&emacp->em0isr, tmp_em0isr);
- }
+>I suggest you start porting PPCBoot.
 
-Next I ran into problems with the UART init. Looking at arch/ppc/kernel/ocp_uart.c
-I was absolutely amazed. Why would you call early_serial_init with values from
-rs_table when early_serial_init puts the values right back into rs_table?
+Well I planned on it, but after the Kernel work.  Perhaps it is time to
+readdress the schedule :-)
 
-When I had John post the patch to add the call to early_s..., it was to
-get the base baud rate dynamically from the clock speed, so the value
-didn't need to be compiled in. As it is now the code in early_uart_init
-is completely pointless and just wastes space.
+Thanks a lot!
 
-http://lists.linuxppc.org/linuxppc-embedded/200204/msg00129.html
+--------------------------------------------
+John A. Gallant
+Sr. Embedded Software Engineer
+Vanteon Inc.
+2851 Clover Street
+Pittsford, NY 14534
+Phone: 585.248.0510 x279
+Fax  : 585.248.0537
+email: jgallant@vanteon.com
+web: www.vanteon.com
 
-ps: my home email is having problems so I cc'd my work/outlook account.
+Delivering Innovative Engineering Solutions
+--------------------------------------------
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
