@@ -1,68 +1,44 @@
-Date: Tue, 14 Mar 2000 11:08:24 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: David Monro <davidm@amberdata.demon.co.uk>
-cc: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.3.50+vlab mvme bootload
-In-Reply-To: <38CBD2E8.B19C67B@amberdata.demon.co.uk>
-Message-ID: <Pine.HPX.4.10.10003131254080.22162-100000@gra-ux1.iram.es>
+Date: Tue, 14 Mar 2000 11:10:53 +0100 (MET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        linux-m68k@phil.uni-sb.de
+Subject: Re: dmasound split
+In-Reply-To: <Pine.LNX.4.10.10003141052260.12315-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.GSO.4.10.10003141109340.15255-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-
-On Sun, 12 Mar 2000, David Monro wrote:
-
-> Yes but the funny thing is, the run where I got output was when I had
-> the keyboard plugged in. Even unplugging the keyboard didn't get me any
-> messages agin. I will have to hack it to always use serial console for
-> now (the '850 has built in video etc).
-
-Ok, maybe your keyboard controller behaves differently. These beasts are
-so weird.
-
-> Oops, I cut and pasted too much - this the beginning of the bootloader
-> messages from the next time I booted. Sorry about that...
-
-Ok...
-
-> Mine stops here; I never get to the next line.
-
-That's very unfortunate, this is the most difficult to debug transition
-period. As soon as you get a single kernel message,  everything is often
-right. Maybe I've busted interrupt controller code on yur machine...
-
-> > I don't understand how you got this, but did I mention how to use prepboot
-> > or not ?
+On Tue, 14 Mar 2000, Michael Schmitz wrote:
+> > > And here's a first patch:
 > >
-> > select CONFIG_EXPERIMENTAL to make CONFIG_PREPBOOT available. Then take
-> > the zImage in arch/ppc/prepboot prodiced by make zImage. it can be dd'ed
-> > onto a 0x41 type partition or netbooted if your netboot provides residual
-> > data.
+> > No comments whether it works on PowerMac and Atari?
 >
-> I did the above, and dd'd it onto a floppy which seems to work just fine
-> for other kernels.
+> No. I haven't done 2.3.x in a long time on m68k. I can try PowerMac
+> though. Would 2.3.48-linuxcare be a good code base?
+
+Yes. Any recent 2.3.x tree will do.
+
+> > I'd like to let this go in 2.4.0, since a driver for the Q40 is soon to be
+> > added.
 >
-> I've just rebuilt it to ignore the keyboard and vga, and the bootloader
-> now prints on the serial port again. But I never get past the following:
->
-> Linux/PPC load: console=ttyS0 root=/dev/fd0 load_ramdisk=1
+> I figure Atari will have more serious problems with 2.4 :-(
 
-Did you try witout load_ramdisk ? The strange thing in any case is that
-you don't get any message. Try with console=ttyS0 only just in case, but I
-suspect sommething else which is probably very stupid like a mismatch
-between bootloader and kernel about parameter passing or so but hard to
-track from here :-(
+Yep. Time to ship Andreas' TT to SuSE...
 
-When I had this kind or problems, I usually added code to send a single
-char to the serial port and looked where it stopped in head.S. If the
-video is in text mode this can also be done by writing chars to the
-screen. But the kernel at least has to reach the point where BATs are
-loaded...
+Gr{oetje,eeting}s,
 
-	Gabriel.
+						Geert
+
+--
+Geert Uytterhoeven ------------- Sony Software Development Center Europe (SDCE)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Voice +32-2-7248638 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
