@@ -1,26 +1,34 @@
-Message-ID: <370DBBD3.9559B590@fi.infn.it>
-Date: Fri, 09 Apr 1999 10:35:31 +0200
-From: Simone Piccardi <piccardi@fi.infn.it>
-MIME-Version: 1.0
+From: Thomas Capricelli <capricel@enst.fr>
+Reply-To: capricel@enst.fr
 To: linuxppc-dev@lists.linuxppc.org
-Subject: LinuxPPC on a Motorola MVME2400
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: quik vs. bootx
+Date: Fri, 9 Apr 1999 10:57:54 +0200
+Content-Type: text/plain
+References: <19990409014349.A25983@bleck.ksu.ksu.edu>
+MIME-Version: 1.0
+Message-Id: <99040911040807.11864@gauss>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-we buy just some day ago a Motorola MVME 2431 VME board, to use it for
-data acquisition for a Cosmic Ray Physics experiment. I saw from
-previous mail that someone has started LinuxPPC on this board. 
-Could you give us some info about it? 
-Because I'm new to this board and to LinuxPPC (I always used linux on a
-PC machine), there is some place (or any kind of documentation)
-describing the boot procedure (we would like to use the net booting by
-tftp)? 
-Thank you in advance
--- 
-Simone Piccardi
+
+
+On Fri, 09 Apr 1999, Zach Metzinger wrote:
+
+>for pmac. I really enjoy not having to have macos boot before getting
+
+  I'm happy to heard that. Reading www.linuxppc.{org,com}, it seems that
+everybody is happy with bootX and that developpment of quik has been stopped. 
+
+  I was wondering if you all still have MacOs. I'm willing of getting rid of
+MacOs (not that it's bad, but I don't use it anymore, now), but I'm afraid if
+it was safe, seeing linuxppc site.
+
+Thomas
+ --
+
+Thomas Capricelli	<capricel@enst.fr>
+http://www.ecoledoc.lip6.fr/~capricel/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
