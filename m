@@ -1,50 +1,62 @@
-Date: Tue, 21 Mar 2000 18:52:05 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: anthony tong <atong@uiuc.edu>
-cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        Kevin Hendricks <khendricks@ivey.uwo.ca>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patches to fix aty128fb and xf400 r128 to work with both Rage128
- and Rage128Pros
-In-Reply-To: <20000321112355.A5368@rogue.genunix.net>
-Message-ID: <Pine.LNX.4.05.10003211849030.994-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <38D7B56B.3E351682@ncal.verio.com>
+Date: Tue, 21 Mar 2000 19:21:24 +0100
+To: Henry Worth <haworth@ncal.verio.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Powerbook 2000 (Pismo) status.
+Message-Id: <20000321192124.010641@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 21 Mar 2000, anthony tong wrote:
-> Kostas Gewrgiou (Tue, Mar 21, 2000 at 06:56:25PM +0200):
-> > #ifdef __powerpc__ for this it should be better to see if the card has
-> > an OF or BIOS rom first since that will allow people to keep using cards
-> > with bios roms under ppc (i wonder if anyone is doing this)
-> > Any ideas on how we can check if a card has OF or BIOS roms ?
->
-> this is from memory (probably from the mach64 days): Bit 0 of the
-> PCI configuration register 0x30 is 0 if a PC style BIOS doesn't
-> exist. So we could do a check for that instead if this is verified
-> to still be true.
+On Tue, Mar 21, 2000, Henry Worth <haworth@ncal.verio.com> wrote:
 
-Not true. Register 0x30 is 0 for both my S3 (with PC BIOS) and ATI (with OF
-BIOS). I think you refer to the indiator for the enabled ROM?
+>> Like the iBook there is no power management yet, the new
+>  PMU is undocumented and hasn't been reverse engineered. Ben's
+>  iBook has a dead hard disk which is holding up his efforts,
+>  though he seems to keep pretty busy on other projects...
 
-    #define  PCI_ROM_ADDRESS_ENABLE 0x01
+yeah, not difficult to find things to do ;)
 
-So you have to enable the ROM and check for the PC BIOS signature (don't know
-what it is, but it should exist).
+>> The LCD display is bright! There are no brightness or
+>  contrast controls yet, the question that needs to be
+>  researched is whether these are controlled by the PMU or
+>  the Rage Mobility's power management facilities.
 
-Gr{oetje,eeting}s,
+Well, I think it's the ATI chip. The device tree is full of
 
-						Geert
+backlight-control = "ati"
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+stuffs and there's no backlight node under the PMU like there used to be
+on other machines. I'll look at the docs, I hope it's not wired on the
+GPIOs...
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+>> Sound??? Haven't tried, haven't even inquired as to the
+>  iBook's status.
+
+The device tree says it's an awacs/screamer on a davbus, like my G4, and
+mine works. There is probably some trick to power it up since it's a
+powerbook, but the chip itself is not the i2s stuff of the ibook for
+which we don't know anything (yet). We just need to find out how to power
+it up.
+
+>> USB traps: some combinations of the keyboard and mouse I have
+>  will work on one boot and cause a trap on the next (I think
+>  the mouse, a Logitech 4-button scroller is causing the
+>  driver's confusion).
+
+Well, the USB stack we use is a backport of an old 2.3.x stack and may
+still have problems. It works for me but I use only a MacAlly kbd and a
+basic low cost 3 btn mouse.
+
+>> PCMCIA/card slot: there is a new PCI bridge used that will
+>  need support.
+
+It's a TI1210, I think it's the same in the Lombard.
+
+
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
