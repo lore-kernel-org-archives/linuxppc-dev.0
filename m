@@ -1,27 +1,27 @@
-Return-Path: <afleming@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0406C2BF0E
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id B1AA367A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Jan 2005 08:00:43 +1100 (EST)
-In-Reply-To: <20050114145518.GA21418@wohnheim.fh-wedel.de>
-References: <FC6D9B81-5514-11D9-8D51-000393C30512@freescale.com>
-	<A3A281FF-5525-11D9-80ED-000393C30512@freescale.com>
-	<20050106070245.GA6539@gate.ebshome.net>
-	<61A37C72-659C-11D9-8D70-000393C30512@freescale.com>
-	<20050113212152.GA16041@gate.ebshome.net>
-	<20050113215808.GA15124@wohnheim.fh-wedel.de>
-	<20050114010016.GA16635@gate.ebshome.net>
-	<20050114145518.GA21418@wohnheim.fh-wedel.de>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4D217F72-666F-11D9-8D70-000393C30512@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Fri, 14 Jan 2005 15:00:20 -0600
-To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
-Cc: Netdev <netdev@oss.sgi.com>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] Patch to Abstract Ethernet PHY support (using driver
-	model)
+	Mon, 17 Jan 2005 06:55:29 +1100 (EST)
+Received: from mailman.pit.comms.marconi.com (mailman.pit.comms.marconi.com
+	[169.144.2.12])
+	by mailgate.pit.comms.marconi.com (8.12.10+Sun/8.12.10) with ESMTP id
+	j0GJtPDR027252 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 16 Jan 2005 14:55:25 -0500 (EST)
+Received: from uspitsmsgrtr01.pit.comms.marconi.com
+	(uspitsmsgrtr01.pit.comms.marconi.com [169.144.2.221])
+	by mailman.pit.comms.marconi.com (8.9.3/8.9.3) with ESMTP id OAA08622
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 16 Jan 2005 14:55:27 -0500 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A6474EC@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Sun, 16 Jan 2005 14:54:44 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Subject: Linux 2.6-10.rc3  8xx  - Only 3 characters are printed well in __
+	init start_kernel() upon kernel booting - why ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,22 +32,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> In fact, we use different switch chips connected to PPC4xx directly.
->> In this situation, in my NAPI IBM EMAC driver I just have special
->> "PHY-less" case which is trivial "fixed settings" one. And all this
->> PHY lib is completely unneeded bloat.
->
-> Wrt. the proposed PHY lib, I agree.  Didn't even bother to look at the
-> code, it's mere size said enough.
-
-Hmm... Before I spend too much time revising based on previous comments 
-ebs made, is there a general consensus that the code is much too large? 
-  I know there's a lot in there, but the goal is to simplify PHY 
-management for all ethernet drivers, new and old, and thus reduce code 
-size, overall.  Is this code heading in the right direction?  Does it 
-do too much?  Too little?
-
-
-Andy Fleming
-Open Source Team
-Freescale Semiconductor, Inc
+> Per kind advise I have got, I have added baud rate to the command =
+line (I
+> did not have it there before):
+>=20
+> CONFIG_CMDLINE=3D"console=3DttyCPM0,115200 panic=3D3 root=3D/dev/ram"
+>=20
+> 	However, my real current problem (just 3 characters get printed
+> correctly during the kernel boot) did not go away.
+>=20
+> 	Is there a way to check if the baud rate specified in the .config's
+> commandline is indeed in effect for the kernel booting ?
+>=20
+> 	Any other reasons/explanation for my "3 character" problem ?
+>=20
+> 	 -----Original Message-----
+> 	From: 	Povolotsky, Alexander =20
+> 	Sent:	Sunday, January 16, 2005 5:59 AM
+> 	To:	'linuxppc-dev@ozlabs.org'
+> 	Subject:	Linux 2.6-10.rc3  8xx kernel booting - how to set
+> baud rate for the serial driver ?
+>=20
+> 	Hi,
+> 	...=20
+> 	    =20
+> 	My bootloader uses 115200 baud rate for the serial output during
+> boot strapping.
+>=20
+> 	I have:
+> 	CONFIG_SERIAL_CPM_CONSOLE
+> 	in my .config=20
+> 	...=20
+> I could see some output during the kernel boot -
+> I noticed that (only 3) characters (see below) from the linux_banner =
+are
+> printed
+> in __init start_kernel() upon booting . Then a lot of garbage is =
+outputted
+> and eventually kernel hangs ...
+>=20
+> after gunzip
+> done.
+> Now booting the kernel
+> =
+Lin=FF=FF=FF=FF=FF=FF=FF=FF=C0=FF=FF=FF=FF=FF=FF=FF=FF=C08=C0=FF=FF=FF=FF=
+=FF=FF=FF=FF=C0X=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0x=C0=FF=FF=FF=FF=FF=FF=FF=FF=
+=C0~=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0=B8=C0=FF=FF=FF=FF=FF=FF=FF
+> =FF=C0=D8=C0=FF=FF
+> <more garbage>
+> <hangs>
+>=20
+> to prove it I added printk("ALEX\n"); in __init start_kernel() prior =
+to
+> printk(linux_banner);
+>=20
+> ...=20
+> lock_kernel();
+> page_address_init();
+> printk("ALEX\n");
+> printk(linux_banner);
+> setup_arch(&command_line);
+> setup_per_cpu_areas();
+> ...
+>=20
+> after gunzip
+> done.
+> Now booting the kernel
+> =
+ALE=FF=FF=FF=FF=FF=FF=FF=FF=C0=FF=FF=FF=FF=FF=FF=FF=FF=C08=C0=FF=FF=FF=FF=
+=FF=FF=FF=FF=C0X=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0x=C0=FF=FF=FF=FF=FF=FF=FF=FF=
+=C0~=C0=FF=FF=FF=FF=FF=FF=FF=FF=C0=B8=C0=FF=FF=FF=FF=FF=FF=FF
+> =FF=C0=D8=C0=FF=FF
+> <more garbage>
+> <hangs>
+>=20
+> Why would first 3 characters come out right ?
+> Any ideas ?
+> Thanks,
+>=20
