@@ -1,31 +1,53 @@
-Date: Thu, 2 Nov 2000 15:15:58 -0500 (EST)
-From: Rod Stewart <stewart@lab43.org>
-To: Chris Leishman <masklin@debian.org>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: airport woes?
-In-Reply-To: <20001025023642.B2505@nina.dev.fol>
-Message-ID: <Pine.LNX.4.21.0011021511110.11184-100000@dystopia.lab43.org>
+Date: Thu, 2 Nov 2000 23:18:47 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: "Joseph P. Garcia" <jpgarcia@execpc.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
+In-Reply-To: <19340927113820.10453@192.168.1.2>
+Message-ID: <Pine.LNX.4.10.10011022245140.8669-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 25 Oct 2000, Chris Leishman wrote:
+> The sleep code in via-pmu.c does a sync, and the sleep code ide-pmac.c
+> locks the IDE request queue preventing any other request from coming in
+> until it's unlocked on wakeup. I did this part. Michael did the VFS
+> stuffs, I must admit I didn't look at the VFS layer in depth myself.
 
-> I don't think its signal strength, since I'm almost sitting on top of
-> the base station 90% of the time - and it doesn't seem to affect data
-> coming back to me.
+I've looked at other uses of check_disk_change and there are no special
+precautions (the function is called at mount or open time and doesn't seem
+critical). I don't interpret the comment before media_changed() to
+indicate a race, rather the unit attention signaling a media change isn't
+persistent and the CD driver must keep track of the change condition
+separately. Unit attention not being persistent is the reason why the
+DRIVER(drive)->media_change(drive) call has to be the first command the
+drive sees after wakeup. Otherwise the drive status gets reset and the IDE
+driver never really checks for sense info...
+
+First causing the low level media change check, and then kicking the VFS
+check_disk_change() is what we do now, and we do indeed need both in order
+to avoid a panic and later error messages from VFS (leaving out the
+check_disk_change() call still requires you to issue that call later via
+ioctl before you can access the disk again).
+
+> >Could also be that the wakebay app/hack runs on the drive after DMA was
+> >re-enabled.  I assume there is no problem with the media change acting on a
+> >non-mediabay disk, which it appears to me it would be doing.
 >
-> Also, I've got a pismo - with the built in "apple branded" airport
-> card, and I'm using BenH's airport driver (not the pcmcia one).  Ben
-> mailed me earlier to say he is working on something...
+> Well, the devices beeing powered down, it can't harm to send them a media
+> change.
 
-Anyone know if this is fixed, or a work around?  I've got the same setup,
-with the same problem.  My ssh connections over airport freeze.
+The wakebay app runs on the drive only after all kernel based wakeup
+(including the revalidate kicked by check_disk_change()). If the drive
+wasn't a mediabay device we would need separate code to wake it, if it was
+never powered down there would be no disk change status pending.
 
-Thanks,
--Rms
+With the full revalidate done in the kernel we don't really need the
+wakebay app anymore.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
