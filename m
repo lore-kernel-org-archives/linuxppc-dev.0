@@ -1,33 +1,48 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Using the Altivec GNU patches
-References: <p04310104b5b5105d93f2@[192.168.1.5]>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 08 Aug 2000 11:46:21 +0200
-In-Reply-To: Justin Shore's message of Mon, 7 Aug 2000 20:31:02 -0500
-Message-ID: <8x4s4w13wy.fsf@s63.informatik.uni-bremen.de>
+Date: Tue, 8 Aug 2000 13:20:39 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org,
+        Iain Sandoe <iain@sandoe.co.uk>
+Subject: Re: rtc again...
+In-Reply-To: <Pine.LNX.4.10.10008041515510.879-100000@cassiopeia.home>
+Message-ID: <Pine.HPX.4.10.10008081233550.22126-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Justin Shore <listuser@vinnie.ksu.ksu.edu> writes:
+	Hi Geert,
 
+On Fri, 4 Aug 2000, Geert Uytterhoeven wrote:
+
+> > Actually given the problems with RTC being UTC or local time, the offset
+> > might perhaps better be setup as a kernel parameter so that th system
+> > start up in a known good state. It seems that it is in RAM for Macs, but
+> > what about other machines (I have no problems since all my machines are
+> > UTC and I simply refuse to use an OS which requires anything else) ?
 >
-> I'm curious, can I
-> use the Altivec enchanced gcc (available at www.altivec.org) to
-> optimize my compilations for those G4s?  I compile most of my own
-> software; would it actually utilize the patched gcc or would it
-> require special code changes to make it work?
+> Why do you want to handle the offset in the kernel???
+>
+> Any decent distro (e.g. Debian) allows to configure the time system for a
+> hardware clock running in either UTC or local time, so the correction will be
+> done on boot up.
+>
 
-You can use gcc-vec, but it won't automatically vectorize
-code. Programs currently have to be rewritten to make use of
-AltiVec. (I know of one commercial preprocessor application that does
-some automatic vectorization at the source code level, but it's been
-in beta stage for almost a year, I think.)
+I think there is some misunderstanding here. I don't want to handle the
+offset in the kernel, with one possible exception: when reading the
+RTC for the first time to initialize xtime. Getting timestamps right as early
+as possible might be important in some cases, and it's not a big deal
+since the code to do this is small and thrown away anyway.
 
-The high level programming model for AltiVec is quite nice and not too
-hard to grasp; and gcc-vec does a respectable job generating good
-machine code. If you're a programmer, you should take a look.
+Oh and I can't remember whether the clock or hwclock command ever worked
+on my machines. I think hwclock did once upon a time; life is so much
+simpler with NTP anyway (but it is run quite late in the boot process,
+actually just before the rc.local script on most of my machines and after
+mounting NFS file systems and starting daemons like syslogd/crond/inetd).
 
-  Holger
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
