@@ -1,41 +1,62 @@
-Date: Mon, 14 Jun 1999 20:00:16 -0400 (EDT)
-From: Claude Robitaille <root@videotron.ca>
-cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: cache line size (was Help booting MBX through bootd)
-In-Reply-To: <376501C2.FAF2B207@switchboard.ericsson.se>
-Message-ID: <Pine.LNX.4.10.9906141947170.2444-100000@modemcable220.93-200-24.mtl.mc.videotron.net>
+Message-ID: <37665FCD.68C61F58@fi.infn.it>
+Date: Tue, 15 Jun 1999 16:14:37 +0200
+From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: How to boot VME from HD?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi Gabriel,
 
+today I tried to upgrade the system to 2.2.9 using your new patches, but
+I had some problem when I tried to compile the kernel. I downloaded the
+sources and then I applied the mvme2600.generic-patch-2.2.9 and
+mvme2600.vme-patch-2.2.9.
+At the make distclean command I get this error:
+make[1]: Leaving directory `/usr/src/linux-2.2.9/arch/ppc/mbxboot'
+make[1]: Entering directory `/usr/src/linux-2.2.9/arch/ppc/prepboot'
+Makefile:74: .depend: No such file or directory
+make[1]: *** No rule to make target `.depend'.  Stop.
+make[1]: Leaving directory `/usr/src/linux-2.2.9/arch/ppc/prepboot'
+make: *** [archclean] Error 2
+I also copied also mvme2600.config.nfsroot as .config; make oldconfig
+worked, but make dep gave me the same error:
+make[1]: Entering directory `/usr/src/linux-2.2.9/arch/ppc/prepboot'
+Makefile:74: .depend: No such file or directory
+make[1]: *** No rule to make target `.depend'.  Stop.
+make[1]: Leaving directory `
+make: *** [archdep] Error 2
+It seems that I'm missing the .depend file that does not have in the
+/usr/src/linux-2.2.9/arch/ppc/prepboot directory, when I have it in the 
+/usr/src/linux-2.2.6/arch/ppc/prepboot; can I use this last?
 
-On Mon, 14 Jun 1999, Magnus Damm wrote:
+And just another question, more general; to install the system I started
+from the rpm packages that I find in a LinuxPPC mirror site (they were a
+pre-R5), but I had some problem with this "rough" installation: for
+example I had to remove the Unix pty support otherwise I cannot login in
+to the board using telnet. Now it seems impossible to use sockets to
+communicate with other computer (a client program that is working
+perfectly between two PC, o when stasted from the board, cannot connect
+to the server on the board from an external computer). 
 
-> 
-> budget   core: 850/823 - 8/8 TLBs, 2/1 Kbyte cache.
-> standard core: 860/821 - 32/32 TLBs, 4/4 Kbyte cache.
-> deluxe   core: 860P    - 32/32 TLBs, 16/8 Kbyte cache
-> 
-> All seem to have 4 words a 32 bits in each cache line.
-> 
-> What about the other cpus; 60x, 750/740?
-> And the other embedded ones; 8240/8260?
-> 
-> 8 words a 32 bits in each cache line? 
-> 
-the 82x0 are based on the 603 and therefore have 32 bytes cache
-lines.
+So there is a standard distribution to use for these board? or a
+standard procedure to have a clean installation? And there is somewhere
+an iso image for such a distribution (I would like to put everyting on a
+CDrom)?
 
-BTW, there is a 603 variant that do not have floating
-point capability, so the discussion about FP support will
-also apply to it (and to the 8260, the 8240 has FP
-support).
+Bye (and thanks for the suggestion about the boot!) 
 
-Claude
-
+-- 
+Simone Piccardi
+Microsoft is NOT the answer. Microsoft is the Question.
+The answer is: "NO!"
+-- 
+Simone Piccardi
+Microsoft is NOT the answer. Microsoft is the Question.
+The answer is: "NO!"
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
