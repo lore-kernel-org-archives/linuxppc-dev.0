@@ -1,31 +1,39 @@
-Date: Mon, 18 Oct 1999 19:38:47 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: "Neugebauer, Bob" <bneugebauer@falconbridge.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Support for Sawtooth (New G4) Motherboards
-In-Reply-To: <19991018175740.027184@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.05.9910181938290.401-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 18 Oct 1999 10:52:01 -0700
+From: "David N. Welton" <davidw@linuxcare.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Kernel questions
+Message-ID: <19991018105201.B17058@bassano.linuxcare.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 18 Oct 1999, Benjamin Herrenschmidt wrote:
-> Finally, there is the sound, which is on an i2s bus. I don't know how
-> such a bus looks like, and so I don't know if I'll be able to make a
-> driver for this one, at least not immediately.
+Hi, I have several questions regarding the latest devel kernel
+(2.3.22), that I am trying to get running on an RS6000.
 
-i2s? Not i2c?
+1) Why does everything seem to want to access NVRAM things?  I've
+   found it scattered in several places throughout the kernel, such as
+   matroxfb.c.
 
-Greetings,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+2) Why is it trying to compile and use pmac_support (amongst other
+   pmac_* things).  I have it set to the CHRP architecture.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+3) Why does pmac_support.c assume that you have ADB stuff compiled in?
 
+nvram_read_byte contains: "struct adb_request req".
+
+If I have understood correctly, ADB is an Apple thing, and really
+shouldn't have anything to do with my RS6000.  Is this correct?
+
+I'm sorry if some of these are silly questions, and hope my ignorance
+isn't too glaring:-)
+
+Thanks,
+-- 
+David N. Welton, Developer, Linuxcare, Inc.
+415.354.4878 x241 tel, 415.701.7457 fax
+dwelton@linuxcare.com, http://www.linuxcare.com/
+Linuxcare. At the center of Linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
