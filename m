@@ -1,29 +1,50 @@
-Message-ID: <3BB3315C.A66FC4FF@chinook.com>
-Date: Thu, 27 Sep 2001 10:02:04 -0400
-From: Peter Desnoyers <pdesnoyers@chinook.com>
+Message-ID: <003001c14762$ac453b70$7e7e7e7e@server>
+From: "RSR - Piero Dominioni" <pdominioni@rsr.it>
+To: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <F1BED55F35F4D3118C0F00E0295CFF4D414C18@mail.mediatrix.com>
+Subject: R: NFS mount for TQM823L
+Date: Thu, 27 Sep 2001 16:42:40 +0200
 MIME-Version: 1.0
-Cc: ibm405gp <ibm405.linux@laposte.net>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: debugging modules
-References: <B7D8251A.270D%scott_anderson@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Take a look in Documentation/i386/kgdb.  (a couple of the build options
-may be different for PPC, but the gdb instructions are the same)
+< The portmapper (portmap) and the lock daemon (rpc.lockd) are not running
+on
+< your target.
+< Either you start them, or just add option "-o nolock" when calling mount.
+<  # mount -o nolock -t nfs 126.126.126.106:/home /tmp
 
-> on 9/27/01 12:05 AM, ibm405gp at ibm405.linux@laposte.net wrote:
-> > I saw in a previous message that I would be able to debug modules
-> > instead of generating the kernel each time.
-> > Can somebody give me the procedure to follow?
->
+Thank you, Jean-Denis,
+but your hint is correct only in one direction:
+giving your command
 
---
-.....................................................................
- Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
- Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
- 100 Hayden Ave, Lexington MA 02421
+  # mount -o nolock -t nfs 126.126.126.106:/home /tmp
+
+from the target's command line prompt to mount the remote host's
+"/home" directory under the local filesystem the error messages
+don't appear anymore.
+But it seems not to be enough in the opposite direction:
+the command
+
+  # mount -o nolock -t nfs 126.126.126.107:/  /tmp
+
+given from host's command line prompt to mount the remote
+target's "/" directory (that is the whole filesystem) under the local
+filesystem obtains the same error message I got without the
+"nolock" option.
+[Note: 126.126.126.107 is the target's IP address,
+while 126.126.126.106 is host's one!]
+What else is wrong or still missing now?
+However thank you for your help.
+
+Best regards
+
+Piero Dominioni
+R.S.R.srl
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
