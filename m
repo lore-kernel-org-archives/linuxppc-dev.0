@@ -1,34 +1,47 @@
-Message-ID: <40A4DC36.1000707@intracom.gr>
-Date: Fri, 14 May 2004 17:48:22 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20040514150316.61675.qmail@web15207.mail.bjs.yahoo.com>
+Date: Fri, 14 May 2004 23:03:16 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: RPX-CLLF porting
+To: Prabhakar Kalasani <kalasani@sena.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <ACEDKFIMODAHBNCONGOHGEOFCDAA.kalasani@sena.com>
 MIME-Version: 1.0
-To: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
-	Dan Malek <dan@embeddededge.com>, Wolfgang Denk <wd@denx.de>,
-	sanjeevr@myw.ltindia.com
-Subject: Re: [PATCH] Driver for FECs on motorola DUET (87x/88x)
-References: <40A38968.6060701@intracom.gr> <40A4C04A.8060508@intracom.gr>
-In-Reply-To: <40A4C04A.8060508@intracom.gr>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Progress report.
+Prabhakar Kalasani <kalasani@sena.com> wrote:
+> I have got RPX-CLLF target , I'm trying to port PPC Linux , I made
+> tftp,nfs and DHCP setup and I could able to load the kernel using tftp
+> , the problem is I couldn't able to run the kernel .
 
-Got it to move even further.
+> File                                           =
+> vmlinux
+> ENET                                           =
+> 0010EC002D1E
+> DefaultENET                                    =
+> ENET
+> TftpRAM                                        =
+> High
+> Start                                          =
+> 400000
+> Format                                         =
+> NetBin
 
-No longer crashes but it seems stuck in something related
-to the serial console.
+> Enter server filename   <vmlinux> :
+> Enter (B)inary or (S)record input mode <B> :
+> Enter address offset  : <00400000 hex> :
+> .512.1024..2048...
+> Total bytes = 1839078 in 9948811 uSecs
 
-Still responds to pings, so I'm very hopefull.
+Pls check your LINUX kernel format.As you set in the
+configuation,image format is NetBin.But it seemed that
+you downloaded ELF kernel.Pls try zImage.embedded
+rather than vmlinux.
 
-Come Monday I'll probably get it to work...
+Best regards,
 
-Regards
-
-Pantelis
-
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
