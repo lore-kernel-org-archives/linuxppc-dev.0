@@ -1,36 +1,34 @@
-Date: Wed, 1 Dec 1999 11:43:47 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Jason Kim <jwk2@eecs.lehigh.edu>
-cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>
-Subject: Re: patch for problem with va-ppc.h included with egcs and   gcc-2.95.2
-In-Reply-To: <384574A2.A003F5F6@eecs.lehigh.edu>
-Message-ID: <Pine.LNX.3.96.991201114002.11654K-100000@deepspace.mklinux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a00b46b4a1f735f@[216.81.25.5]>
+In-Reply-To: <m11tDzU-0000WVC@tri-yann.crf.canon.fr>
+References: <XFMail.991201105013.gdt@linuxppc.org> (message from Gary
+ Thomas	on Wed, 01 Dec 1999 10:50:13 -0700 (MST))
+ <XFMail.991201105013.gdt@linuxppc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 1 Dec 1999 15:59:19 -0600
+To: "VALETTE Eric" <valette@crf.canon.fr>
+From: Tony Mantler <eek@escape.ca>
+Subject: Re: PPC Compiler Problem?
+Cc: linuxppc-dev@lists.linuxppc.org, alois_fertl@muenchen.europe.mcd.mot.com
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 1 Dec 1999, Jason Kim wrote:
+At 11:56 AM -0600 12/1/99, VALETTE Eric wrote:
+[... snip ...]
+>
+>Where do you see long long in the example???
 
-> Having a fixed size array as a user accessible item (which is TYPEDEF'ed to
-> resemble a structure, no less) which could be passed around is just a BAD idea
-> in C/C++. I have yet to hear any concrete reasons (besides just plain
-> obstinacy) why va_list HAS to be implemented this way.
+Watch the commas:
 
-Years of legacy binaries that would have to be rebuilt, for one.  The fact
-that we _just_ had a varargs-related rework of some programs (linux
-kernel, mach kernel, etc. come to mind) for gcc 2.95.x is another reason. 
-Mucking with the way the compiler builds varargs can have really nasty
-implications.  It should not be changed for trivial reasons.  The macros
-are there to be used.  Attempting to do anything else with varargs breaks
-spec, and changing the compiler and everything ever built with it just to
-make it easier for coders to be sloppy is a bad idea (tm).
+>extern int foo(long, long, long, long long, long);
+
+5 args, not 6. arg 4 is a long long.
 
 
-David
+--
+Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
+Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
