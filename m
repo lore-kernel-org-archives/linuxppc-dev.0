@@ -1,38 +1,54 @@
-Message-Id: <5.1.0.14.2.20020826100602.02cea478@pop.prodigy.net>
-Date: Mon, 26 Aug 2002 10:13:11 -0700
-To: Hollis Blanchard <hollis@austin.ibm.com>
-From: Eugene Surovegin <ebs@innocent.com>
-Subject: Re: IBM 440GP 36-bit addressing
-Cc: Vishwanath <vishwanath@mistralsoftware.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1030376908.1348.73.camel@granite.austin.ibm.com>
-References: <001101c24b3c$ae0cca70$faffa8c0@VISHWANATH>
- <001501c24ab5$daee9500$faffa8c0@VISHWANATH>
- <1030114823.8559.37.camel@granite.austin.ibm.com>
- <001101c24b3c$ae0cca70$faffa8c0@VISHWANATH>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3D6A6D9D.20404@redswitch.com>
+Date: Mon, 26 Aug 2002 11:04:13 -0700
+From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Wolfgang Denk <wd@denx.de>
+Subject: Re: LXT972 FEC problem on MPC855
+References: <3D69826A.6020504@redswitch.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hollis,
+> After running ppcboot on our board successfully (including the fast
+> ethernet LXT972), we have trouble on enabling FEC on linux kernel. The
+> problem is that we cannot send any packets through the network after the
+> kernel is booted. The ethernet looks OK during initialization according
+> to the printed messages. We are trying to locate the problem but haven't
+> found yet so far. Any hints on what caused such problem?
 
-At 08:48 AM 8/26/2002, you wrote:
+The booting messages are as follows,
+-------------duing initialization-----------------------------
+eth0: FEC ENET Version 0.2, FEC irq 9, MII irq 10, addr 00:06:17:01:02:00
+eth0: Phy @ 0x0, type LXT971 (0x001378e2)
+-------------duing initialization-----------------------------
+-------------Stack init (I guess)-----------------------------
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind 4096)
+eth0: config: auto-negotiation on, 100FDX, 100HDX, 10FDX, 10HDX.
+IP-Config: Incomplete network configuration information.
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+-------------Stack init (I guess)-----------------------------
 
->The usual(32-bit) way is to mmap(/dev/mem). I don't know if that will work
->with
->36-bit addresses.
+Using FLUKE to test the ethernet interface, it looks OK. No problem is
+reported. But we couldn't see any packets transmitted out by the
+interface. Have you encountered such problem before? Any hints will be
+greatly appreciated. Thanks a lot.
 
-It will work only for first 4G of physical address space.
-/dev/mem cannot be used to access EPB/OCP or PCI address space on 440.
+> My configuration on kernel (linux-2.4.4-08-09 from DENX) is
+>              860T FEC Ethernet
+>              Use MDIO for PHY configuration
+>              Support LXT971 PHY
 
-For this purpose "/dev/mem-like" device can be easily written that takes
-into account 36-bit phys addresses.
+BTW, if I disable "Use MDIO for PHY configuration", after I ping an
+address, it'll dump data in TX ring buffer. If those data will help to
+diagnose the problem, I'll paste them later.
 
-Thanks,
-
-  Eugene Surovegin <mailto:ebs@innocent.com>
+- Shawn.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
