@@ -1,34 +1,19 @@
-To: Silverton Aron-C1710C <Aron.J.Silverton@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross-compile package combinations 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 16 Dec 2003 12:53:40 CST."
-             <6F8DFFA2C996D711945800065BFC9E4A03B9910C@il02exm11>
-Date: Tue, 16 Dec 2003 21:14:17 +0100
-Message-Id: <20031216201422.2A3FAC5F5F@atlas.denx.de>
+Date: Wed, 17 Dec 2003 16:16:17 +0100
+Message-Id: <HQ1P35$3B2DD599425FFFEED071BBE420BEE803@libero.it>
+Subject: PPC 405 OCP EMAC MAL problem
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+From: "l.lucrezia.tiesse@iol.it" <l.lucrezia.tiesse@iol.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <6F8DFFA2C996D711945800065BFC9E4A03B9910C@il02exm11> you wrote:
->
-> I do have a another question, though.  Let's say that I want to use my own kernel instead of having crosstool download it.  What would be the proper set of steps to take to specify a local kernel?  My current kernel is 2.4.20 and I know that the combina
+We have developped a board with NPE405 processor with PPC Linux 2.4.20 kernel, we also have reported various patchs to ibm_ocp device driver, but when we run a test that outputs via FTP big files of both ethernet interfaces contemporarly, we observe that there is a period (few seconds) in which we did not receive any data, then we get a RXDE interrupt and then we see a RXEOB interrupt pending on the MAL, CPU is not interrupted at all.....
 
-The steps are: download a kernel, unpack it, configure it, compile it, boot it.
+Does somebody have any idea ?
 
-Kernel and tools are more or less unrelated to each other.
+thanks a lot
 
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I will also, for an appropriate fee, certify that  your  keyboard  is
-object-oriented,  and  that  the bits on your hard disk are template-
-compatible.            - Jeffrey S. Haemer in <411akr$3ga@cygnus.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
