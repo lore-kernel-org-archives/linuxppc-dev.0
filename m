@@ -1,22 +1,18 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp7.wanadoo.fr (smtp7.wanadoo.fr [193.252.22.24])
-	by ozlabs.org (Postfix) with ESMTP id EA26E67A79
+Return-Path: <jakob.viketoft@bitsim.se>
+Received: from amsfep13-int.chello.nl (amsfep13-int.chello.nl [213.46.243.23])
+	by ozlabs.org (Postfix) with ESMTP id B3F3667A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Mar 2005 18:04:03 +1100 (EST)
-Date: Mon, 7 Mar 2005 07:52:10 +0100
-To: Dale Farnsworth <dale@farnsworth.org>
-Message-ID: <20050307065210.GA21270@pegasos>
-References: <421DF2B8.6040007@mvista.com> <20050224160411.GA11197@pegasos>
-	<20050224172420.GA6932@xyzzy> <20050305192752.GA28491@pegasos>
-	<20050305203254.GB30151@pegasos> <20050305225128.GC16904@xyzzy>
-	<20050306070248.GA6673@pegasos> <20050306102924.GA32386@xyzzy>
-	<20050306191034.GA10975@pegasos> <20050307010058.GB22642@xyzzy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20050307010058.GB22642@xyzzy>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Nicolas DET <det.nicolas@free.fr>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] mv64x60 updates
+	Mon,  7 Mar 2005 21:03:08 +1100 (EST)
+Message-ID: <422C27FE.6000709@bitsim.se>
+Date: Mon, 07 Mar 2005 11:07:58 +0100
+From: Jakob Viketoft <jakob.viketoft@bitsim.se>
+MIME-Version: 1.0
+To: acmay@acmay.homeip.net
+References: <4226F904.5010104@bitsim.se> <1109875809.25252.24.camel@mud>
+In-Reply-To: <1109875809.25252.24.camel@mud>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: Adding machine types to the kernel tree...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,43 +23,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Mar 06, 2005 at 06:00:58PM -0700, Dale Farnsworth wrote:
-> On Sun, Mar 06, 2005 at 08:10:34PM +0100, Sven Luther wrote:
-> > On Sun, Mar 06, 2005 at 03:29:24AM -0700, Dale Farnsworth wrote:
-> > > MV64360 is in arch/ppc/Kconfig, and is currently defined for KATANA and
-> > > CHESTNUT.  If I understand correctly, it should be defined for any
-> > > board using the MV64360.  I don't think we want the PPC_CHRP dependency.
-> > 
-> > Ah, i guess that was the missing bit. Basically i need to set MV64360 for my
-> > board, but since it is a generic PPC_CHRP, how is that supposed to work ? 
-> > 
-> > Could you send me maybe a list of files which need merging yet, compared to
-> > 2.6.11 ? I guess it just doesn't work because i am missing pieces.
+Thanks for the comments!
+
+Andrew May wrote:
+> I think a huge first step would be to banish xparameters.h from all the
+> kernel code.
+> Our HW guys just seem to do the strangest things without checking.
+> So I have 2 spins of a board with 2 Virtex-II pro's each.
+> The 2 spins have a small refrence clock change and the 2 CPU's have
+> different IRQ mappings.
+
+I understand that there is numerous resentment against having this file 
+in the kernel and I've been thinking of a solution without it. One such 
+path would be serving the kernel with a OCP list of the devices used, 
+but I'm unsure about the current status of OCP. Is this The Right Way to 
+do it, or are OCP likely to be abandoned further along the 2.6 road?
+
+Matt (Porter), I've seen that you've "ported" this to the 2.6 kernel, 
+what do you say?
+
+> There is no way I wanted to build 4 kernels to handle these.
+> I don't have the code with me, but the basic thing I did was fixup
+> the compiled in arrays like rs_table in the board_io_mapping.
 > 
-> I would be guessing, since I've focused on the ethernet driver.  Mark
-> Greer <mgreer@mvista.com> has done the core mv64[34]60 core support.
-> Nicholas is working with regarding Pegasos II support.
+> So the quick way to start tracking things down may be to just
+> replace all the constants in xparmaters.h with function calls
+> that got the info from the boot loader if possible.
+> You will get plenty of compile errors for the arrays, but then
+> just this type of code needs to be fixed up to setup the arrary
+> at run time rather than just get the pointer to it at run time.
 
-Nicolas even, and i work with him on this.
+The question is, do you want to have a bootloader (as U-boot) on a small 
+embedded system? In the FPGA case, you might need something that puts 
+the bitstream in the right place, but I'm not quite sure it would 
+constitute a bootloader. Maybe just having a static OCP list at a 
+certain location in flash and let the little bitstream prog send the 
+pointer to it as a kernel parameter at startup?
 
-> > The pegasos has the mv64360 registers mapped at 0xf1000000, and the ports
-> > (only port1 is wired though) mapped at interrupt 9, shared with other devices.
-> > I guess that would be the only real difference with the other currently
-> > supported hardware, right ? 
-> 
-> Nicholas implied that the PCI IRQs are different as well.
+Reactions appreciated!
 
-The real problem as far as i see it, is that the mv6[34]60 code does too much.
-The pegasos OpenFirmware implementation initializes the chip, and we really
-only need the ethernet part. It seems that the code from Mark Greer
-initializes the whole stuff, since it has no usefull firmware under it anyway,
-and thus mis-initializes some of it and thus fully break everything.
+Cheers!
 
-Mark, any comment on this ? 
-
-But i hear Nicolas has done some useful work yesterday evening, i will review
-it as soon as he is back from dreamland :)
-
-Friendly,
-
-Sven Luther
+	/Jakob
