@@ -1,35 +1,64 @@
-Message-ID: <20001213045523.1673.qmail@kunk.jriver.com>
-Subject: Mace woes solved, NOT!
+Message-Id: <200012150805.RAA23300@mail.geocities.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 15 Dec 2000 16:43:33 +0900
 To: linuxppc-dev@lists.linuxppc.org
-Date: Tue, 12 Dec 2000 22:55:23 -0600 (CST)
-From: Robert E Brose II <bob@kunk.jriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Takayuki YAMAGUCHI <tyamaguchi@geocities.co.jp>
+Subject: Strange behavior of signal stack.
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Unfortunatly the mace has taken a turn for the worse again. Turning off
-syncookies made it work longer but it still gets screwed up after a
-while (this has nothing to do with the HW, the machine is on 24/7 and
-the dropping only seems to depend on the number of packets handled by
-the driver and the problem is quite reproducable with other hubs,
-macs, etc and of course, it always works in macos).
+How do you do, all.
 
-I flood pinged the 7500 from a slower machine (486 linux portable) and
-after 800,000 packets or so it started dropping. I stopped the flood
-and went to a simple 1/sec ping and started loosing around 40%. I
-am just guessing but there may be something wrong with collisions or
-missing an interrupt or something.
+I'm embarrassed by a strange behavior of signal stack.
 
-Foo, I though it was working. I'm back to the pci tulip now which
-always works. Hopefully I'll get some time to try other possibilities
-on the mace driver....
+When testing the program like below by executing at a
+terminal and sending SIGUSR1 from another terminal on
+x86-linux and linuxppc, the value represented at
+terminal is differnt (1 on x86-linux, 0 on linuxppc).
 
-Bob
---
-Robert E. Brose II    N0QBJ
-http://www.jriver.com/~bob/
-bob@kunk.jriver.com
+Moreover, when executing the program by using strace like
+
+term:>strace -f -o /dev/null ./foobar		<-test program's name
+
+returns 1 on linuxppc.
+
+Does anyone know the reason?
+
+Thank you.
+
+----test program----
+#include <signal.h>
+#include <stdio.h>
+
+main(){
+  void func();
+  struct sigaltstack ss;
+  struct sigaction sa;
+
+  ss.ss_sp = (void *)(((int) &ss)-8192);
+  ss.ss_size = 8192;
+  ss.ss_flags = 0;
+  sigaltstack(&ss, 0);
+
+  sa.sa_handler=func;
+  sa.sa_flags=SA_ONSTACK;
+  sigaction(SIGUSR1,&sa,NULL);
+  while(1);
+}
+
+void func(){
+  struct sigaltstack ss2;
+
+  sigaltstack (((void *)0), &ss2);
+  printf("%d\n", ss2.ss_flags);
+}
+
+--------
+Takayuki YAMAGUCHI
+tyamaguchi@geocities.co.jp
+yamaguchi@ppc.linux.or.jp
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
