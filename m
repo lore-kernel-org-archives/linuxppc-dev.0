@@ -1,28 +1,38 @@
+Message-ID: <41097299.7060804@icarus.com>
+Date: Thu, 29 Jul 2004 14:56:41 -0700
+From: Stephen Williams <steve@icarus.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: 826x MCC
-Date: Thu, 29 Jul 2004 15:54:57 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DB3B@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: Scott Anderson <scott_anderson@mvista.com>
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Patch for SystemACE without CONFIG_XILINX_OCP
+References: <41055881.6000707@icarus.com> <4107DAB8.6080509@mvista.com>
+In-Reply-To: <4107DAB8.6080509@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
 
+Scott Anderson wrote:
+|
+| Stephen Williams wrote:
+|
+|> I passed around the attached patch in hopes that it could be
+|> integrated into the linuxppc-2.4 bitkeeper tree, assuming that
+|> is the best place to maintain linux 2.4 for PPC. But I don't
+|> see it showing up in the repository.
+|
+|
+| Looks like it went into linuxppc-2.4 back on June 17th to me:
 
-Have anybody ever made a MCC driver for linux?
-Trying to get something working that  will read HDLC (first,SS7 later)
-off of a TDM.
+I see it has indeed. My mistake, thanks.
 
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
+- --
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
