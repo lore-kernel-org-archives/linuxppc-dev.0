@@ -1,44 +1,30 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3DFA05C3.30703@ccrl.mot.com>
-Date: Fri, 13 Dec 2002 10:07:31 -0600
-From: "Steve Rossi" <Steve.Rossi@motorola.com>
-MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: 823 Video Controller Driver - where ?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Fri, 13 Dec 2002 09:35:02 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Support for Arctic platform (405LP based)
+Message-ID: <20021213163502.GK19456@opus.bloom.county>
+References: <20021213043628.GI21319@zax.zax> <20021212215126.V23952@duath.fsmlabs.com> <1039789562.7542.14781.camel@hermes.chez-thomas.org> <20021213151642.GH19456@opus.bloom.county>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20021213151642.GH19456@opus.bloom.county>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've seen some reference on the list regarding a driver for the 823
-Video Controller -
-i.e.
-http://lists.linuxppc.org/results.html?restrict=linuxppc-embedded&words=vid823
-however I've been unable to locate the source to vid823.c
-apparently this question was asked before:
-http://lists.linuxppc.org/linuxppc-embedded/200201/msg00164.html
-and the answer was that its in the 2_4_devel tree, but I was unable to
-find it in a recent snapshot of the tree (I'm unable to get the tree
-from the bitkeeper repository due to a problem in bitkeeper 3.0 related
-to http proxy with authentication - but thats another story!) so I got
-the snapshot from http://ppckernel.org/tree.php?id=5
-All I could find was the RPX framebuffer driver rpxfb.c for various LCD
-panels using the LCD controller..
-I'm looking for a driver for the video controller to output to an NTSC
-encoder. Am I just missing something?
-Anyone know where I can get vid823.c (or whatever it might be called
-now) and whether its a true framebuffer driver?
+On Fri, Dec 13, 2002 at 08:16:43AM -0700, Tom Rini wrote:
 
-Regards,
-Steve
+[snip]
+> If you aren't already on the linuxppc-commit@source.mvista.com list, you
+> might want to join that.
+
+And since this is at a possibly non obvious location:
+http://source.mvista.com/cgi-bin/mailman/listinfo/linuxppc-commit
+
+<hint>Hopefully PenguinPPC.org will have a link to this somewhere.</hint>
 
 --
--------------------------------------------------------
-Steven K. Rossi                     srossi@labs.mot.com
-Principal Staff Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
