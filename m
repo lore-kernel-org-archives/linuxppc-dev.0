@@ -1,63 +1,52 @@
-Message-ID: <3982B587.31F515D4@gmx.de>
-Date: Sat, 29 Jul 2000 12:44:23 +0200
-From: Matthias Pfisterer <Matthias.Pfisterer@gmx.de>
+Date: Sat, 29 Jul 2000 14:40:08 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: Roman Zippel <zippel@fh-brandenburg.de>,
+        Linux/PPC on APUS <linux-apus-devel@lists.sourceforge.net>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: bogus dmasound.o module (was: Re: 2.4.0-test4 success (Re: affs))
+In-Reply-To: <3981DBA6.7203A5B9@student.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10007291437400.1201-100000@cassiopeia.home>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: internal speakers on Pismo
-References: <3981F1F7.9314DAD3@gmx.de> <20000728221634.5701@192.168.1.10>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Fri, 28 Jul 2000, Michel [iso-8859-1] Dänzer wrote:
+> 'make modules_install' tries to install dmasound.o (which doesn't exist
+> anymore) instead of dmasound_paula.o and dmasound_core.o
 
-Benjamin Herrenschmidt wrote:
->
-> Ok, I got it working here too. I've pushed changes in my rsync tree
-> (dmasound 2.2, I'll take care of 2.4 later, I'll send you patches, Iain).
->
-> Basically, clearing the additional registers is not what made it work as
-> I originally expected ! What made it work was _not_ to enable the
-> parallel port output.
+Does this help? IIRC, I have it in my tree since a while, but I forgot about
+it.
 
-Huh? Are you shure about this? I tried this first (not setting these two
-bits, but leaving the additional registers alone) and it didn't work.
-Well, I haven't tried only setting the new registers but enable parallel
-output. Perhaps I should.
+--- linux-2.4.0-test5/drivers/sound/Makefile.orig	Tue Jul 18 14:09:03 2000
++++ linux-2.4.0-test5/drivers/sound/Makefile	Sat Jul 29 14:37:01 2000
+@@ -92,11 +92,11 @@
 
- However, it is needed on some machines. So what I
-> did was to enable it conditionally in a way similar to what Darwin does.
-> I also fixed up detection of screamer chips.
+ ifeq ($(CONFIG_DMASOUND),y)
+   SUB_DIRS += dmasound
+-  MOD_SUB_DIRS += dmasound
++  MOD_IN_SUB_DIRS += dmasound
+   obj-y += dmasound/dmasound.o
+ else
+   ifeq ($(CONFIG_DMASOUND),m)
+-    MOD_SUB_DIRS += dmasound
++    MOD_IN_SUB_DIRS += dmasound
+   endif
+ endif
 
-> Oddly, the master volume doesn't work (but the speaker volume does).
 
-I have no problems with this. I can use both independently from each
-other. What exactely is the behaviour for you?
+Gr{oetje,eeting}s,
 
-> Also, Apple code has some weird thing: They detect two different device-
-> id's for new iMacs (DV/SE). One is an inverted version. But they only
-> enable the parallel output one of them. I don't know if it's normal or if
-> it's actually a bug in their code. I did the same thing but left the case
-> of normal iMacDV in comments, so users of this machine can try and see if
-> it helps. I suspect that like other iMacs, there's an I2C amplifier/SRS
-> module that needs to be setup too, but I'm not completely sure.
->
-> Ben.
+						Geert
 
 --
-Matthias Pfisterer	<mailto:Matthias.Pfisterer@gmx.de>
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-        Share your knowledge.
-        It's a way to achieve immortality.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-                 (from a nepalese mantra)
-
-Java Sound Examples:
-http://rupert.informatik.uni-stuttgart.de/~pfistere/jsexamples/
-Tritonus, the open source implementation of the Java Sound API:
-http://tritonus.sourceforge.net/
---------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
