@@ -1,29 +1,33 @@
-Message-ID: <380B80D2.E8A89455@jlc.net>
-Date: Mon, 18 Oct 1999 16:19:30 -0400
+Message-ID: <380B821B.F1C79A32@jlc.net>
+Date: Mon, 18 Oct 1999 16:24:59 -0400
 From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: Claude Robitaille <crobitaille@videotron.ca>
-CC: Jim Lewis <jlewis@mvista.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Enet on FADS
-References: <Pine.LNX.4.10.9910142037320.991-100000@localhost.localdomain>
+To: Graham Stoney <greyham@research.canon.com.au>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
+References: <19991015033031.18664848C@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Claude Robitaille wrote:
-
+Graham Stoney wrote:
 > 
-> It seems that the FADS was supported in the past since there is some
-> trace of it. Is it possible to put it back in a public tree?
+> Dear Embeddees,
+> 
+> I'm wondering if anyone is working on a driver to provide the /dev/watchdog
+> interface to the MPC860's on-chip watchdog?
 
-The FADS was never really supported because I didn't have one long
-enough to ensure all of the modifications were done.  I had an 860T
-FADS for developing the initial FEC driver, and the fadsrom code.
+The difficulty with the on-chip watchdog isn't the driver but
+the coordination with the boot roms.  The "auto-reset" features
+of the 8xx (watch dog, bus monitor, etc.) are part of a write once
+configuration register.  Once disabled, they can't be enabled
+again until the processor is reset.
 
-I am getting updates from a few folks that I will put into the CVS tree,
-but I can't verify they are correct against other modifications.  Those
-will be in my next batch of updates.....soon :-).
+If the boot rom enables these features (especially the watch dog),
+you must service this as part of the Linux kernel processing.  You
+can't wait around for some application at a later time to determine
+it now wants to enable and process the watchdog.
 
 
 	-- Dan
