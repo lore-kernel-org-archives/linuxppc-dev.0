@@ -1,46 +1,41 @@
-Date: Wed, 9 Dec 1998 09:09:44 -0600 (CST)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Nathan Hurst <njh@cs.monash.edu.au>
-cc: Laurent Vivier <Laurent.Vivier@frec.bull.fr>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Floppy driver
-In-Reply-To: <Pine.LNX.3.96.981124080712.8148C-100000@central>
-Message-ID: <Pine.LNX.3.96.981209090751.24614A-100000@globegate.utm.edu>
+Date: Wed, 9 Dec 1998 12:34:25 -0500 (EST)
+From: "Mark S. Mathews" <mark@absoval.com>
+To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Cross compiling kernels.
+Message-ID: <Pine.LNX.3.96.981209121231.12326B-100000@tristar.cc.absoval.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 24 Nov 1998, Nathan Hurst wrote:
+Hello,
 
-> On Mon, 23 Nov 1998, Laurent Vivier wrote:
-> 
-> A working driver exists at:
-> /usr/src/linux/drivers/block/swim3.c
-> 
-> As for for 'documentation' good luck!  I don't think apple has published
-> anything on this.
+I'm currently trying to build a cross compiler (hosted on x86) for
+building PPC kernels to run on a single board computer with an MPC850
+processor.  I've read a bunch of docs, built the cross compiler from
+3 different source trees, and looked at a _bunch_ of kernel stuff (docs
+and code). I still have a few unanswered questions:
 
-Documentation... the best that I can think of (still not a lot) is the
-code comments from MkLinux's driver.  Of course, it's spread out over
-about 19 files.... :-)
+1) What kernel version is recommended to run the MPC8xx processors?  I've
+seen references to 2.1.129, but I'm not sure.
+
+2) What compiler/binutils packages are considered 'best' for this?
+The latest I've tried is binutils-2.9.1 and egcs 1.1b
+
+3) Is there a recommended kernel release for running with the MPC8xx
+processors?  i.e. on the Moto MBX boards?
+
+TIA,
+Mark
 
 
-Later,
-David
+Mark S. Mathews
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
-
------BEGIN GEEK CODE BLOCK-----
-Version 3.1
-GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
-P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
-M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
-b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
-------END GEEK CODE BLOCK------
+AbsoluteValue Software     Web:    http://www.absoval.com
+P.O. Box 941149            e-mail: mark@absoval.com
+Maitland, FL 32794-1149    Phone:  407.644.8582
+USA                        Fax:    407.539.1294
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
