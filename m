@@ -1,61 +1,44 @@
-From: Matthias Grimm <matthias.grimm@htp-tel.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Any known problems with usleep() in 2.6.7?
-Date: Tue, 13 Jul 2004 21:34:57 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200407132134.58687.matthias.grimm@htp-tel.de>
+Date: Tue, 13 Jul 2004 12:45:10 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] fix missing option in binutils version check
+Message-ID: <20040713194510.GB21856@smtp.west.cox.net>
+References: <20040712090618.GB32413@suse.de> <20040712151119.GL28002@smtp.west.cox.net> <20040712180321.GB16877@smtp.west.cox.net> <20040713134945.GA5104@suse.de> <20040713140127.GJ16877@smtp.west.cox.net> <20040713140220.GA20213@suse.de> <20040713142015.GK16877@smtp.west.cox.net> <20040713151854.GA7858@suse.de> <20040713152633.GL16877@smtp.west.cox.net> <20040713152950.GB7858@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040713152950.GB7858@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-Recently I have had a strange phenomenon with kernel 2.6.7: sometimes usleep()
-doesn't return. it  hangs. I haven't discovered yet under which circumstances
-usleep() doesn't work. With kernel 2.4 I haven't seen this behaviour.
+On Tue, Jul 13, 2004 at 05:29:50PM +0200, Olaf Hering wrote:
 
-Are there any known problems with usleep() in kernel 2.6.7?
-Is there a better method to wait a while?
+>  On Tue, Jul 13, Tom Rini wrote:
+>
+> > On Tue, Jul 13, 2004 at 05:18:54PM +0200, Olaf Hering wrote:
+> > >  On Tue, Jul 13, Tom Rini wrote:
+> > >
+> > > > OK.  Perhaps gcc should be refusing to build with older binutils
+> > > > perhaps?  It sounds like gcc-3.4 + binutils-2.14 or older won't work
+> > > > unless we ensure that any -mppc/altivec/etc type flags that gcc itself
+> > > > would pass, excluding -many, are re-passed by the kernel itself.
+> > >
+> > > Its just the 2.14 + gcc 3.4 combo that does not work.
+> > > binutils 2.12, 2.13  and 2.15 works ok with gcc 3.4.
+> >
+> > Does gcc not pass down -many with 2.12/2.13, or does -many actually work
+> > there?
+[snip]
+> looks like gas 2.14 has different -many behaviour.
 
-I attached the code fragment with the problematic usleep() call. that. Maybe
-there is something wrong I haven't seen yet. I would appreciate every hint.
-I know that I should check the return value of fork() for error but this has
-nothing to do with the usleep() problem, because the child has been created.
+Yes, gas 2.14 has a broken -many behavior, as I've described before.
+But if only gcc-3.4 always passes -many, how common (i.e. is anyone
+shipping) gcc-3.4 + binutils-2.14 ?
 
- Best Regards
-    Matthias Grimm
-
---------------
-	pid = fork();
-	if (pid == 0) {
-		for (i=0; i < maxfiles; i++)
-			close(i);      /* close all possible file handles */
-
-		open("/dev/null", O_RDONLY);  /* STDIN */
-		open("/dev/null", O_WRONLY);  /* STDOUT */
-		open("/dev/null", O_WRONLY);  /* STDERR */
-
-		execv(argv[0], argv);
-		exit(99);
-	}
-	rc = E_CLDKILL;
-	for (i=base->timeforcmd * 10; i > 0; i--) {
-		usleep(100000);  /* sleep 100ms */
-		if (waitpid (pid, &status, WNOHANG)) {
-			if (WIFEXITED(status)) {
-				if ((base->rc = WEXITSTATUS(status)))
-					rc = E_CLDEXIT;
-				else
-					rc = 0;
-			} else if (WIFSIGNALED(status))
-				rc = E_CLDSIG;
-			break;
-		}
-	}
-	if (i == 0)
-		kill (pid, SIGKILL);
----------
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
 ** This list is shutting down 7/24/2004.
