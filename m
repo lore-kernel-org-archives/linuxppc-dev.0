@@ -1,57 +1,36 @@
-Message-ID: <37512D45.1088A55A@wanadoo.fr>
-Date: Sun, 30 May 1999 14:21:25 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-Id: <199905301326.IAA26669@lists.linuxppc.org>
+Date: Sun, 30 May 1999 15:26:07 +0200 (CEST)
+From: laures@esiea.fr
+Subject: Pcmcia-cs
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc-user@lists.linuxppc.org
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem compiling egcs
-References: <374E4267.5BF46F98@wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just to set the record straight:
+Hi,
 
-This problem is now solved. It came from a kernel header file
-include/asm-ppc/ptrace.h which, in the vger version 2.3.3 of the last 2
-weeks, contained the definition
-   #define REG unsigned long
-It has been fixed yesterday. Thanks, Cort.
+I just wanted to know if someone was working on this.
 
-Martin Costabel wrote on Fri, 28 May 1999:
-> 
-> When trying to compile egcs-1.1.2 from the src.rpm, I get the following
-> error:
-> 
->   gcc  -DIN_GCC    -g  -DHAVE_CONFIG_H -DHAIFA    -I.
-> -I/usr/src/redhat/BUILD/egcs-1.1.2/gcc
-> -I/usr/src/redhat/BUILD/egcs-1.1.2/gcc/config  \
->     -DTARGET_NAME=\"ppc-redhat-linux\" \
->     -c `echo /usr/src/redhat/BUILD/egcs-1.1.2/gcc/toplev.c | sed
-> 's,^\./,,'`
->   In file included from /usr/src/redhat/BUILD/egcs-1.1.2/gcc/rtl.h:41,
->                  from /usr/src/redhat/BUILD/egcs-1.1.2/gcc/toplev.c:49:
->   /usr/src/redhat/BUILD/egcs-1.1.2/gcc/rtl.def:549: parse error before
-> `unsigned'
->   make[2]: *** [toplev.o] Error 1
->   make[2]: Leaving directory `/mnt/root2/BUILD/obj-ppc-linux/gcc'
->   make[1]: *** [bootstrap-lean] Error 2
-> 
-> The same error occured when I tried to compile gcc-2.95 from the cvs
-> tree. I am using egcs-1.1.2-1c on pre-R5 with
-> binutils-2.9.1.0.990418-1c. Processor is 603ev (PMac 6400/200).
-> 
-> There is no `unsigned' in gcc/rtl.def anywhere. Line 549 reads
->   DEF_RTL_EXPR(REG, "reg", "i0", 'o')
-> 
-> Since no one else seems to have this problem, I am beginning to believe
-> that it is 603 related. Is this possible?
-> 
-> Any help appreciated.
-> 
-> --
-> Martin
+I just compiled the 3.0.9 version with a vger 2.2.10 kernel, and when I
+insert a card the machine (WallStreet) hangs (cursor blinking at top
+left of the screen).
+
+Otherwise if I put it in at startup time, the kernel dumps a little more
+insteresting feedback (kernel access to bad area, pc=...)
+
+The compilation went fine (and given the number of built-in equipment in
+Apple laptops) I guess that this problem simply has not been
+enlightened. Am I true ?
+
+I'd like to use a 10/100 card from MacSense Tech. BTW, they told me that
+teir engineers where "playing" with linux to figure out how difficult
+support for this OS would be.
+
+-- 
+Guillaume Laurès - student @ ESIEA (www.esiea.fr)
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
