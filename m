@@ -1,41 +1,30 @@
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: ashish anand <ashisha@india.infogain.com>
+Cc: <Hollis@india.infogain.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PReP and generic PCI resource assignment
+Date: Wed, 8 Aug 2001 14:23:52 +0200
+Message-Id: <20010808122352.14864@smtp.adsl.oleane.com>
+In-Reply-To: <3B70D192.AAF239AB@india.infogain.com>
+References: <3B70D192.AAF239AB@india.infogain.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <15217.8602.545455.836867@mediaone.net>
-Date: Wed, 8 Aug 2001 07:25:14 -0400
-From: R Shapiro <reshapiro@mediaone.net>
-To: daenzer@debian.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: lcd17 kernel patches?
-In-Reply-To: <3B708C81.DE87DDC2@iiic.ethz.ch>
-References: <Pine.LNX.4.05.10108070947420.5836-100000@callisto.of.borg>
-	<3B708C81.DE87DDC2@iiic.ethz.ch>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer writes:
- > > video=mode specifies the global mode, for all fbdevs that use modedb.
- >
- > Ah, cool. So what's your theory on why it didn't work for R?
+>
+>if I remember correctly there should be some a board specific variable
+>like pci_dram_offset
+>it is zero for your case.
+>0xc1000000 is a virtual address ..while pci bar should be programmed with
+>bus address .
+>your case bios is not apropiately updating the resource assignment with
+>0xc0000000 , the kernel_base.
 
+pci_dram_offset is the offset of system memory as seen by PCI devices,
+what Hollis needs to look at is the pci_controller's pci_mem_offset.
 
-I'm also curious about this.
-
-Is video=1280x1024-8@60 supposed to haved worked?  It doesn't work for
-me, but video=atyfb128:1280x1024-8@60 does work -- does that mean my
-system is misconfigured in some way?  If so I'd like to fix it.  I'm
-running 2.4.8-pre3-ben0 on a G4/450 with a Rage128 graphics card, a
-DVIator dvi->adc adapter, and an Apple lcd17.  dmesg says:
-
-aty128fb: Rage128 Pro PF (AGP) [chip rev 0x1] 16M 128-bit SDR SGRAM (1:1)
-Console: switching to colour frame buffer device 160x64
-fb0: ATY Rage128 frame buffer device on PCI
-
-
-
---
-reshapiro@mediaone.net
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
