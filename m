@@ -1,59 +1,41 @@
-Date: Sun, 1 Apr 2001 17:24:18 -0400 (EDT)
-From: Bill Fink <billfink@capu.net>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-	linuxppc-dev@lists.linuxppc.org, billfink@capu.net
-Subject: Re: xine, ppc and illegal instructions
-In-Reply-To: <01040116021700.15950@localhost>
-Message-ID: <Pine.LNX.4.21.0104011709010.9900-100000@gwiz.nasa.atd.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v04003a01b6ed50bf1d86@[24.70.162.12]>
+In-Reply-To: <20010401200959.23374@smtp.wanadoo.fr>
+References: <v04003a00b6ed2078c77d@[24.70.162.12]>
+ <v04003a00b6ed2078c77d@[24.70.162.12]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 1 Apr 2001 16:45:18 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	<linuxppc-dev@lists.linuxppc.org>
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: Fwd: CPU features
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Sun, 1 Apr 2001, Kevin B. Hendricks wrote:
+At 3:09 PM -0500 4/1/2001, Benjamin Herrenschmidt wrote:
+>>
+>>I got the linux-2.4-benh from rsync.penguinppc.org (I assume this is the
+>>up-to-date one) around noontime today, and got a crash after arch:exit on
+>>my 9600/200mp.
 >
-> Hi,
->
-> couple of  things:
->
-> - was the shared library loaded by dlopen properly built with -fPIC or -fpic?
+>I fixed that. Maybe the rsync is not fully up-to-date, I'll check that asap.
 
-I assume so.  It's Franz Sirl's latest 2.1 glibc RPM.
+Ok, that crash appears to be fixed now.
 
-> - could there be a cache flushing bug?  When run in gdb if you set some
-> breakpoints in the shared library, it will flush the icache (to make sure the
-> breakpoint gets flushed out of data cache and any preloaded instruction are
-> thrown away) this in turn seems to "fix" the cache flush problem if one
-> exists.
+Now after arch:exit, it just... stops. Cmd-power doesn't bring up xmon, so
+I have no idea where it's died.
 
-That makes sense to me.
+The sti replacement code still looked kinda weird, but I have no idea what
+it's supposed to look like, so I guess that's ok...
 
-> - can you set ulimit -c unlimited and generate a core file from xine
->   and post the resulting backtrace.
->
->   If it looks empty, try the following:
->   x/20i $lr -32
->   in gdb just in case the problem was a branch out into the weeds
 
-I was never able to get a core dump.  My coredumpsize is unlimited.
-Earlier in the xine code, I could force a core dump by doing a "*0 = 1"
-before the first call to pthread_create, but I couldn't get a core dump
-by doing the same thing right after that call.
+Cheers - Tony 'Nicoya' Mantler :)
 
-> (if we are lucky lr will have the return address so that we can
-> possibly see at least where the bad branch comes from).  One way to get
-> an illegal instruction is to follow a calculated branch into the weeds
-> (happens sometimes in some C++ code during tailcalls when compiled above -O0).
 
-As reported in my previous message, it's now working using the latest
-BenH kernel (2.4.3 final) instead of the Paulus kernel (2.4.3-pre8) I
-was previously trying with, so I'm happy.
-
-						-Thanks
-
-						-Bill
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
