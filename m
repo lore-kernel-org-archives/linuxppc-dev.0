@@ -1,37 +1,35 @@
-Message-ID: <19991023054805.29308.qmail@www0e.netaddress.usa.net>
-Date: 23 Oct 99 00:48:05 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: linuxppc-user@lists.linuxppc.org
-Subject: Re: enlightenment--0.16.0-1.ppc.rpm causes crash
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 23 Oct 1999 09:39:03 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andreas Tobler <a.tobler@schweiz.ch>
+cc: Dev-Linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Working developer Kernle?
+In-Reply-To: <380DA996.C6F3E84A@schweiz.ch>
+Message-ID: <Pine.LNX.4.05.9910230938141.388-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I have had problems with the pager from enlightenment on bigendian
-> machines for some time (dox or epp?), and the new rpm 0.16.0-1 is no
-> exception. 
+On Wed, 20 Oct 1999, Andreas Tobler wrote:
+> which is the latest working 2.3.x kernel? Which I can get from
+> ftp.kernel.org?
 
-> Too bad I really like 16 and the new themes on my intel machine.  Any
-> ideas?
-> 
+I don't know.
 
-I compiled the CVS e 16.1 on Tuesday along with CVS imlib 1.9.8. I've been
-running the x server 24/7 since then without a hitch except for an Eterm
-induced segfault. E caught it though, stayed in gui, and gave me the option to
-quit or restart. It then restarted with no problems.
+> On Geert side I saw 2.3.18 he has installed. Is there still any higher
+> working?
 
-The web address for my RPMS is www.penguinppc.org/meat.html
+That's vger-2.3.18. Plain 2.3.23 may work since we (Cort, Paul and I) have been
+sending tons of patches to Linus.
 
-On that page I also have the october gnome link up. I compiled with the
-october gnome devel packages installed so e might bug you to fulfill some
-dependencies. That's where you'll find em.
+Greetings,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-You might want to try my stuff if your having problems. There's a fourth theme
-in my rpm and e runs very nicely if you turn off gmc and gnome-panel. My pager
-works fine but I turned off the screen scanning garbage.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
