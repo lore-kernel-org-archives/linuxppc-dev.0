@@ -1,28 +1,54 @@
-Date: Mon, 7 Dec 1998 22:00:07 -0700 (MST)
-From: Cort Dougan <cort@persephone.cs.nmt.edu>
-To: Troy Benjegerdes <hozer@drgw.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP RTC vs Decrementer accuracy...
-In-Reply-To: <Pine.LNX.4.04.9812071456450.13527-100000@narn.local.drgw.net>
-Message-ID: <Pine.LNX.3.96.981207215711.7923A-100000@persephone.cs.nmt.edu>
+Message-ID: <366CBDC9.6BCB3C57@bivwood.com>
+Date: Tue, 08 Dec 1998 00:48:57 -0500
+From: "Mohammad A. Haque" <mhaque@bivwood.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Tim Perdue, The Des Moines City.net" <tim@dmcity.net>
+CC: php3@lists.php.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Compilation Problems - PHP / APACHE
+References: <005e01be2251$f0d3a490$61246ccf@timnt.desm.uswest.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Right, the rtc is probably more accurate over a long period of time.  The
-idea is that the rtc will be sync'd with the decrementer so when we change
-time it'll be set in the rtc as well.  The drift should be corrected by
-a time daemon.
+Did you compile php with ORACLE support?
 
-If my assumption here isn't correct let me know.  I'm not adamant about
-this and if I'm wrong about this I'm happy to change it.
+--Mohammad
 
-}The PReP code also tries to reset the RTC to match the Kernel's
-}(decrementer's) version of the time every 11 minutes or so. The question I
-}have is, isn't the RTC more accurate for long periods of time?
-
+"Tim Perdue, The Des Moines City.net" wrote:
+> 
+> I still have not solved my compilation problems with PHP 3.0.5 / Apache
+> 1.3.3
+> 
+> Apache compiles fine by itself, but if you try to compile it with support
+> for PHP, I get these errors. I'm seriously stuck on this one - for over a
+> day now.
+> 
+> Any takers?
+> 
+> This is what I get when I MAKE apache, after having made and installed PHP
+> (successfully).
+> 
+> util.c: In function `ap_find_token':
+> util.c:1015: `test_char_table' undeclared (first use this function)
+> util.c:1015: (Each undeclared identifier is reported only once
+> util.c:1015: for each function it appears in.)
+> util.c:1015: `T_HTTP_TOKEN_STOP' undeclared (first use this function)
+> util.c: In function `ap_escape_shell_cmd':
+> util.c:1074: `test_char_table' undeclared (first use this function)
+> util.c:1074: `T_ESCAPE_SHELL_CMD' undeclared (first use this function)
+> util.c: In function `ap_escape_path_segment':
+> util.c:1198: `test_char_table' undeclared (first use this function)
+> util.c:1198: `T_ESCAPE_PATH_SEGMENT' undeclared (first use this function)
+> util.c: In function `ap_os_escape_path':
+> util.c:1227: `test_char_table' undeclared (first use this function)
+> util.c:1227: `T_OS_ESCAPE_PATH' undeclared (first use this function)
+> make[3]: *** [util.o] Error 1
+> make[2]: *** [subdirs] Error 1
+> make[2]: Leaving directory `/tmp/apache_1.3.3/src'
+> make[1]: *** [build-std] Error 2
+> make[1]: Leaving directory `/tmp/apache_1.3.3'
+> make: *** [build] Error 2
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
