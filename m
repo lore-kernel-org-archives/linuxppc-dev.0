@@ -1,42 +1,39 @@
-Message-ID: <19991127233809.1109.rocketmail@web1002.mail.yahoo.com>
-Date: Sat, 27 Nov 1999 15:38:09 -0800 (PST)
-From: Dan Bethe <dan_bethe@yahoo.com>
+Message-Id: <l03110701b4668dc013af@[216.98.239.234]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 27 Nov 1999 23:44:09 -0800
+To: linuxppc-dev@lists.linuxppc.org
+From: Patrik Jonsson <patrik@ucolick.org>
 Subject: Re: A.Joshi: What is the status of Voodoo3 drivers?
-To: Ani Joshi <ajoshi@shell.unixbox.com>, Michael Greer <mgreer@sirius.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>	unfortunately not :(   we were supposed to recieve a voodoo3 from
+>MacTell but they went out of business, do you or anyone else know of a
+>place that sells Mac PCI voodoo3's?  i'd imagine the "mac" version is
+>different then the pc one, with an of driver orsomething...
 
+Hi,
+3dfx has drivers on their page, including a rom image so you can flash a pc
+card with OF firmware. They just released an OpenGL driver as well, they
+are pretty good for calling it "unsupported"...
+Anyway, that should contain what you want, so you can just buy a pc pci V3
+card for <$100 and flash it. (That's what all the Mac folks that use V3
+cards have done.)
 
---- Ani Joshi <ajoshi@shell.unixbox.com> wrote:
-> 
-> 
-> 	unfortunately not :(   we were supposed to recieve
-> a voodoo3 from
-> MacTell but they went out of business, do you or
-> anyone else know of a
-> place that sells Mac PCI voodoo3's?  i'd imagine the
-> "mac" version is
-> different then the pc one, with an of driver
-> orsomething...
+I would also LOVE to have a V3 driver!
 
-	I know that a gentlemen on this list is the author of
-a small real-mode x86 emulator designed for emulating
-x86 BIOS code found on PCI cards, so that they can run
-on LinuxPPC.
-	I'm not sure if that's applicable to this situation! 
-It's called "EM86".  Try the following search:
+Hope that helps,
 
-http://lists.linuxppc.org/cgi-bin/wilma/wilma_glimpse/linuxppc-dev?query=x86+emu&partial=on&errors=0&maxfiles=50&maxlines=10&.cgifields=lineonly&.cgifields=filelist&.cgifields=case&.cgifields=partial&.cgifields=restricttofiles
+	/Patrik
 
-=====
-"Don't expect your own messiah; this neverworld which you desire is
-only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
-Thousands of Stores.  Millions of Products.  All in one place.
-Yahoo! Shopping: http://shopping.yahoo.com
+==============================================================================
+ Patrik Jonsson/SM5WGH	Astronomy Dept., Univ. of California, Santa Cruz
+ 256 Dufour St.		phone: +1-(831)-457-0723 / +1-(831)-459-4485
+ Santa Cruz, CA 95060	email: patrik@ucolick.org
+ USA                    		URL: http://www.ucolick.org/~patrik
+==============================================================================i
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
