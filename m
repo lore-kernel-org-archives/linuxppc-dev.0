@@ -1,33 +1,40 @@
-From: Graf Alex <alex.graf@siemens.com>
-To: "'somshekar chandrashekar kadam'" <som_kadam1@rediffmail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Message-ID: <791B3205DB661A42B4BFE5464A7D1D0204B36C64@chzugexch01.abatos.com>
-Subject: AW: compact flash
-Date: Mon, 29 Sep 2003 09:08:06 +0200
+Message-ID: <3F77DF36.5000609@einfochips.com>
+Date: Mon, 29 Sep 2003 12:58:54 +0530
+From: bhavin <bhavinp@einfochips.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ELDK & ppc-boot1.1.5
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-which compact flash card can i use with maximum memory ,
->> u can use any CF (compact flash) card. The thing is, how you address the
-card. PCMCIA or CF. With PCMCIA u can address up to 64 MB. With IDE much
-more as any CF card memory has :-)
+  Hello,
+    I downloaded ELDK 2.0.2 . When I tried to compile ppcboot 1.1.5 it
+gave me following error.  I did not even change the code of ppcboot. I
+tried to compile it for PM826 card. Can anyone please please tell me the
+possible reasons??
 
-apart from kernel support for hot pluggable , IDE support and
-flash file system support , what are things i need to get compact
-flash working , I am confused here
->> best is to start work with ELDK from denx.de. There is the PCMCIA and IDE
-support solved.
+Error: Unrecognized opcode: `psdmr_acttorw_1w'
+/home/bhavin/ppcproj/ppcboot-1.1.5/include/config_PM826.h:427:
+Error: Unrecognized opcode: `psdmr_ldotopre_1c'
+/home/bhavin/ppcproj/ppcboot-1.1.5/include/config_PM826.h:428:
+Error: Unrecognized opcode: `psdmr_wrc_1c'
+/home/bhavin/ppcproj/ppcboot-1.1.5/include/config_PM826.h:429:
+Error: Unrecognized opcode: `psdmr_cl_2)'
+make[1]: *** [ticks.o] Error 1
+make[1]: Leaving directory
+`/home/bhavin/ppcproj/ppcboot-1.1.5/ppc'
+make: *** [subdirs] Error 1
 
-MPC860 provide interface for PCMCIA, which can be interfaced to
-COMPACT FLASH also if i am not wrong ?
->> No, u are rigth.
 
-cheers
+Your help will be highly appreciated.
 
-Alex Graf
+Thanks,
+Bhavin Shah
+Embedded Engineer
+eInfochips Ltd.,
+bhavinp@einfochips.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
