@@ -1,32 +1,68 @@
-Message-Id: <199906042049.WAA14062@post.webmailer.de>
-Date: Fri, 04 Jun 1999 22:50:46 +0200
-Subject: turbomax
-From: "Sascha M=?ISO-8859-1?B?/A==?=llner" <sascha@muellner.de>
-To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
+Date: Fri, 4 Jun 1999 16:26:27 -0500 (CDT)
+From: Mark Lin <mlin@MPI-Softtech.Com>
+To: Johnnie Peters <jpeters@phx.mcd.mot.com>
+cc: Mark Lin <mlin@MPI-Softtech.Com>, Michael Meissner <meissner@cygnus.com>,
+        Adrian Cox <apc@agelectronics.co.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Support for Motorola Platforms
+In-Reply-To: <37584638.340D9D11@phx.mcd.mot.com>
+Message-ID: <Pine.SOL.4.05.9906041625360.27410-100000@mpi.mpi-softtech.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
 
-the turbomax card works fine with LinuxPPC (use the blue kernel v1 or v2) it
-is real fast like on MacOS. But I have got real Problems on compiling a
-Kernel - don´t no why but after starting my kernel (kernel 2.2.0-pre15 from
-the Developer Release) it runs a complete IDE initializing sequenze from hde
-to hdh - with no detects.
+Can you point me to the exact URL?  I'm having problems finding it.
 
-I realized that the controller adress shown in my kernel is half long as in
-the blue kernel don´t know why has anyone an idea how to get a running
-kernel ? (I have checked out every possible conf. with no results long
-compiling time and very long script :-))
+--
+Mark Lin
+MPI Software Technology, Inc.
 
-PS. If anyone know how to get a running kernel 2.2.9 - i have just
-downloaded the patches from kernel.org but got problems compiling it (break
-in arch)
+On Fri, 4 Jun 1999, Johnnie Peters wrote:
 
-thanx 
+> Mark Lin wrote:
+> > 
+> > Where did you get these patches?  Are they available to the public?
+> 
+> I did most of the work but a few others have had contributions to
+> these.  Motorola has allowed me to release these particular changes
+> to the web at this time.
+> 
+> Johnnie
+> 
+> 
+> > On Fri, 4 Jun 1999, Michael Meissner wrote:
+> > 
+> > >
+> > > On Fri, Jun 04, 1999 at 03:37:13PM +0100, Adrian Cox wrote:
+> > > >
+> > > > Johnnie Peters wrote:
+> > > > > Motorola has a new version of the MVME2400 with the MAX processor and
+> > > > > as soon as I can get my hands on one I will do the work to get Linux
+> > > > > to run on it.  Plans are also underway for new versions of the MTX
+> > > > > series
+> > > > > supporting the MAX processor.
+> > > >
+> > > > Has anybody started work on GNU tools and kernel porting for Altivec
+> > > > processors? The issues I see are:
+> > > > (1) Altivec intructions in gas, so I don't have to enter the codes by
+> > > > hand.
+> > > > (2) Linux Kernel patches to load/save Altivec registers. These are large
+> > > > enough that a lazy load/save might be useful.
+> > > > (3) (Questionable) Patches to EGCS to support the C extensions that
+> > > > Motorola specify in the Altivec PIM. I detest C extensions that add the
+> > > > keyword "vector", but all Motorola's example code uses them.
+> > >
+> > > I have patches from Motorola to add Altivec support to egcs 1.0.3.  I haven't
+> > > been in PowerPC mode recently and haven't looked at them.
+> > >
+> > > > All of these can be done based on documentation from Motorola's website.
+> > > > I suspect that (1) has already happened inside some RTOS vendors, but
+> > > > will take a long time to filter into the standard releases.
+> > > >
+> > > > - Adrian Cox
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
