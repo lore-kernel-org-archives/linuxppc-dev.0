@@ -1,15 +1,34 @@
-Message-ID: <384F2412.EF8123E9@huawei.com.cn>
-Date: Thu, 09 Dec 1999 11:37:54 +0800
-From: dony <dony.he@huawei.com.cn>
-MIME-Version: 1.0
-To: Ruedi Hofer <ruedi.hofer@ascom.ch>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: fadsrom.tgz
-References: <384E09E0.9102ED79@ascom.ch>
-Content-Type: text/plain; charset=us-ascii
+From: Ruedi.Hofer@ascom.ch
+Date: Thu, 09 Dec 1999 08:46:19 +0100 (CET)
+Subject: Re: Re: fadsrom.tgz
+To: dony.he@huawei.com.cn
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-id: <0FMG00J04QXOGM@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_W1ReRDURpdY9F7/Tupq4Qg)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+
+--Boundary_(ID_W1ReRDURpdY9F7/Tupq4Qg)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
+
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
+
+Please tell me if you found out how it works!
+
+Cheers, Ruedi
+
+
+
+
+
+dony.he@huawei.com.cn on 09.12.99 04:37:54
+An: ruedi.hofer@ascom.ch @ MailGate
+Kopie: linuxppc-embedded@lists.linuxppc.org @ MailGate 
+Thema: Re: fadsrom.tgz
 
 Where can I download the "fadsrom.tgz"? Thank you very much.
 dony
@@ -32,5 +51,9 @@ Ruedi Hofer wrote:
 >
 > Ruedi Hofer
 
+
+
+
+--Boundary_(ID_W1ReRDURpdY9F7/Tupq4Qg)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
