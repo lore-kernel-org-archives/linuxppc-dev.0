@@ -1,24 +1,30 @@
-Reply-To: <fred@sc23.sc.mcel.mot.com>
-From: "fred" <fred@sc23.sc.mcel.mot.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: How can I boot with nfsroot on eth1?
-Date: Thu, 13 Jun 2002 10:04:53 +0100
-Message-ID: <000901c212b9$62001ee0$940879c8@sc.mcel.mot.com>
+Message-ID: <8D4C69676E66D511A1CB00508BBBB192011C9F41@ranmx1.ran.harris.com>
+From: "Fend, Matthias" <mfend@harris.com>
+To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: problems with I2C 
+Date: Thu, 13 Jun 2002 05:24:16 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+hello everybody,
 
-My board has two ether interfaces, one is SCC1 (eth0), and the other is FEC
-(eth1). But I need boot through FEC (eth1). How can I?  Or can I dedicate
-FEC to eth0?
+i use a mpc860 with iic,fec and ethernet at SCC3; iic-communication normally
+works fine, but sometimes
+especially if there is heavy traffic on SCC3 or fec (eg. download of big files)
+iic-communication stops with error
 
-Thanks for your help
-Fred
+... iic-read; short, wanted 32 got 1 ...
+
+also the data seems to be corrupt
+
+it looks like receive buffer descriptor is not the same as before ... ?
+
+has anybody else had these problems or some ideas ?
+
+thx matthias
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
