@@ -1,53 +1,41 @@
-Date: Mon, 31 May 1999 09:54:42 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+Date: Mon, 31 May 1999 13:43:03 +0200 (CEST)
+From: Philipp Tomsich <mac@mars.zserv.tuwien.ac.at>
+To: Martin Costabel <costabel@wanadoo.fr>
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: g200 hw 3d on powerpc
-In-Reply-To: <99053103585003.30874@proton>
-Message-ID: <Pine.LNX.4.10.9905310951250.29997-100000@mercator.cs.kuleuven.ac.be>
+Subject: Re: OF booting news
+In-Reply-To: <374456FE.F3AD5501@wanadoo.fr>
+Message-ID: <Pine.LNX.4.03.9905311339270.6986-100000@mars.zserv.tuwien.ac.at>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 31 May 1999, Konstantinos Margaritis wrote:
->    If anyone noticed, the g200-dev project is proceeding along very nicely
-> (http://lists.openprojects.net/mailman/listinfo/g200-dev), and it's about
-> writing a hw OpenGL driver for the Matrox G200 card. Now I don't really
-> care about having a video card that will only work on linux (I think it
-> does already on powerpc, using matroxfb) and both mac-on-linux and
-> shapeshifter could make a mac card unnecessary even.
 
-Nice!
 
->    I talked to some g200-dev developers and the opinions were divided. In
-> particular, one thinks that fbdev+g200-glx will work, another one does not.
->    The point is if a user-mode 3d driver, could access the raw hardware
-> thru a fb device. I understand that the framebuffer gets mmap'd but what
-> about the registers?
+On Thu, 20 May 1999, Martin Costabel wrote:
 
-You can map the MMIO registers from userspace. That's what the mmio_start and
-mmio_len fields in fb_fix_screeninfo are for. More info about the frame buffer
-device subsystem can be found in my paper I presented at Linux Expo '99:
+> I am curious: Has anyone ever compared the actual booting times for OF
+> booting and BootX booting (I can't, because my 6400 doesn't OF boot
+> anymore). I suspect the difference is less than 10 seconds. On a total
+> booting time of more than 60 seconds, this is really minimal.
+> 
+> I just rebooted, and the total time of 110 seconds (from typing "reboot"
+> until the login prompt) was spent as follows:
+> 
+> 35 sec: shutdown
+> 23 sec: starting MacOS and BootX extension, hitting the button, waiting
+> for the  
+>         penguin to show up and the kernel messages to start scrolling by
+> 52 sec: rest of linux boot procedure.
 
-    http://www.cs.kuleuven.ac.be/~geert/Linux/Expo/
+I upgraded a PowerMac 8500 based PPC target system to YDL-1.0 and
+compared the boot times last week. My findings make a rather strong
+argument for OF booting: while BootX booting (using MacOS 8.6) takes about
+30 secs, the kernel is loaded and started from OF in typically 3 seconds
+(stopwatch timing).
 
->    Anyway, I hope you will see it's an important issue here. If this
-> just works on one system, chances are that there will be more willing to
-> buy the g200 (and even g400 which is also open-specs).
 
-And once one manufacturer provides specs for their 3D acceleration, others will
-follow...
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
