@@ -1,31 +1,45 @@
-Subject: Re: PPC405GP: Spurious interrupt during handing level triggered
-	interrupts
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: "listmember@orkun.us" <listmember@orkun.us>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <33774.216.110.51.8.1078964058.squirrel@www.orkun.us>
-References: <16763.216.110.51.8.1078873137.squirrel@www.orkun.us>
-	 <1078936213.16427.27.camel@spawn.uab.ericsson.se>
-	 <33774.216.110.51.8.1078964058.squirrel@www.orkun.us>
+Subject: Re: MPC8560ADS issues
+From: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Jason McMullan <jason.mcmullan@timesys.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <405090F3.1000900@embeddededge.com>
+References: <1078945499.3748.4.camel@veena.timesys>
+	 <1079019785.29565.36.camel@chuck.arlut.utexas.edu>
+	 <405090F3.1000900@embeddededge.com>
 Content-Type: text/plain
-Message-Id: <1079025214.16429.32.camel@spawn.uab.ericsson.se>
+Message-Id: <1079025268.29565.51.camel@chuck.arlut.utexas.edu>
 Mime-Version: 1.0
-Date: Thu, 11 Mar 2004 18:13:35 +0100
+Date: Thu, 11 Mar 2004 11:14:29 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-03-11 at 01:14, listmember@orkun.us wrote:
-> Kenneth,
->
+On Thu, 2004-03-11 at 10:16, Dan Malek wrote:
 
-> However, I think, code could be enhanced to reset the SR bit, "only" for
-> level triggered interrupts and leave edge triggered interrupts alone. This
-> would require looking at UIC0_TR register as well.
+> Do you keep up to date with the linuxppc trees?  Some of us have been
+> pushing lots of CPM updates lately.  We recently updated all of the
+> common code for 82xx and 85xx.  If this doesn't work there must be
+> some I/O or board configuration that is amiss.
 
-Yes If you could do a patch for this for level triggered only it would
-be good. I can't see this affecting anything negative so it should be no
-problem getting it integrated.
+I'm running the latest linuxppc-2.4 branch. I'm not using the MPC8540ADS
+board, the board I am using has an Intel LXT971A PHY attached to the
+FCC. I've added support for that physical layer to
+drivers/gianfar_phys.c. I'm guessing something is wrong with that code
+that is making it go so slow, but I have been unable to pinpoint what
+might be wrong.
+
+I've noticed that the interrupts for the FCC come in at a very very slow
+pace, that is the only thing I have really noticed that is odd. I've
+also tried changing the priority of the interrupt via the IIVPR register
+for the FCC with no results. I can't think of anything else I can
+investigate, unless you have any ideas?
+
+Thanks,
+Matthew
+
+--
+Matthew S. McClintock <mattsm@arlut.utexas.edu>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
