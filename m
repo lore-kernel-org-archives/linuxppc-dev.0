@@ -1,43 +1,46 @@
-From: linas@austin.ibm.com
-Date: Mon, 1 Mar 2004 16:38:44 -0600
-To: Albert Cahalan <albert@users.sourceforge.net>
-Cc: linuxppc-dev@lists.linuxppc.org, benh@kernel.crashing.org
 Subject: Re: 64-bit user-space on G5? Never, soonish, or unknown?
-Message-ID: <20040301163844.G74832@forte.austin.ibm.com>
+From: Albert Cahalan <albert@users.sourceforge.net>
+To: linas@austin.ibm.com
+Cc: Albert Cahalan <albert@users.sourceforge.net>,
+	linuxppc-dev@lists.linuxppc.org, benh@kernel.crashing.org
+In-Reply-To: <20040301163844.G74832@forte.austin.ibm.com>
 References: <1078010187.2233.105.camel@cube>
+	 <20040301163844.G74832@forte.austin.ibm.com>
+Content-Type: text/plain
+Message-Id: <1078184561.2255.338.camel@cube>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1078010187.2233.105.camel@cube>; from albert@users.sourceforge.net on Sat, Feb 28, 2004 at 06:16:28PM -0500
+Date: 01 Mar 2004 18:42:42 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Albert,
+On Mon, 2004-03-01 at 17:38, linas@austin.ibm.com wrote:
+> On Sat, Feb 28, 2004 at 06:16:28PM -0500, Albert Cahalan wrote:
 
-On Sat, Feb 28, 2004 at 06:16:28PM -0500, Albert Cahalan wrote:
+> > You'd better have a 64-bit ncurses. If you don't,
+> > your procps will be compiled incorrectly. Data
+> > will get truncated, mangled, etc. -- assuming you
+> > can even run the tools at all.
 >
-> Benjamin Herrenschmidt writes:
+> ? My ps, top, w all work fine:
 >
-> > The 64 bits kernel allow you to run both 32 and
-> > 64 bits userland, the common practice is to have
-> > a 32 bit userland with the necessary libs to be
-> > able to build & run _some_ 64 bits executables.
+> linas@panic:~> file /usr/bin/top
+> /usr/bin/top: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), dynamically linked (uses shared libs), stripped
+> linas@panic:~> file /bin/ps
+> /bin/ps: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), dynamically linked (uses shared libs), stripped
 >
-> You'd better have a 64-bit ncurses. If you don't,
-> your procps will be compiled incorrectly. Data
-> will get truncated, mangled, etc. -- assuming you
-> can even run the tools at all.
+> They've been running fine, with all manner of mangled and hacked
+> 2.4 and 2.6 kernels.
 
-? My ps, top, w all work fine:
+Try this:
+ps -eo drs,trs,tsiz,dsiz,start_stack,esp,eip,nwchan,wchan
 
-linas@panic:~> file /usr/bin/top
-/usr/bin/top: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), dynamically linked (uses shared libs), stripped
-linas@panic:~> file /bin/ps
-/bin/ps: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1 (SYSV), dynamically linked (uses shared libs), stripped
+(especially when examining a 64-bit process or when
+running on the 2.4 kernel)
 
-They've been running fine, with all manner of mangled and hacked
-2.4 and 2.6 kernels.
+By "assuming you can run the tools at all" I mean that
+you might end up with 32-bit libraries in /lib64.
+If you build on a pure 32-bit system this won't happen.
 
---linas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
