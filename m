@@ -1,59 +1,86 @@
-Message-Id: <199906230641.BAA10268@lists.linuxppc.org>
-Date: Wed, 23 Jun 1999 08:40:52 +0200 (CEST)
-From: laures@esiea.fr
-Subject: Re: preferred Sync rates in X for PDQ/Wallstreet 2.0
-To: jpgarcia@execpc.com
-cc: linuxppc-dev@lists.linuxppc.org,
-        fr.comp.os.unix.mac@Jaws.gom.cybercable.fr
-In-Reply-To: <Pine.GSO.3.95.990622132502.21035A-100000@earth>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=iso-8859-1
+From: Michael Engel <engel@math.uni-siegen.de>
+Message-Id: <199906230835.KAA26148@fourier.numerik.math.uni-siegen.de>
+Subject: Re: Xbh not working (Cirrus X server)
+To: jrugen@primenet.com
+Date: Wed, 23 Jun 1999 10:35:10 +0200 (MET DST)
+Cc: engel@math.uni-siegen.de, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.BSI.3.96.990622225336.2245A-100000@usr08.primenet.com> from "Jeff Rugen" at Jun 22, 99 11:09:02 pm
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 22 Jui, Joseph Palani Garcia wrote:
+
+Jeff,
+
+> On Wed, 23 Jun 1999, Michael Engel wrote:
 > 
-> Does anyone know the preferred HorzSync and VertRefresh rates for the LCD
-> display on a PBG3/300?
+> > I'm experiencing a problem with Xbh on the Motorola PowerStack Series E
+> > and PowerStack II here. Xbh crashes with segmentation fault shortly after
+> > starting the server, gdb shows that the server is crashing in
+> > gd54xx_memsize
+> > (in xc/programs/Xserver/hw/bh/gd54xx.c). I built XFree from source
+> > (rpm --rebuild) with the same result. When setting a fixed memsize of 2 MB
+> > in gd54xx_memsize, the server crashes in outb() in
+> > gd54xx_setcolor
 
->From my /etc/X11/XF86Config file:
+[...]
 
-# **********************************************************************
-# Monitor section
-# **********************************************************************
+> Are you starting Xbh with the -mmap option?  If you're using 2.2.x or later,
+> you have to have that option selected, and it might not be default:
+> 
+> startx -- -mmap
 
-# Any number of monitor sections may be present
+Thanks a lot, that did it ! (and promptly hung up my keyboard somehow and with
+it my telnet session where I wanted to write that reply ... ;-) - but the display
+works fine now).
 
-Section "Monitor"
+> If that doesn't work, read on. :-)
 
-    Identifier	"WallStreet built-in LCD Panel"
-    VendorName	"Apple"
-    ModelName	"14,1 TFT"
+Still reading on ;-).
 
-    HorizSync   48.115
+> I might be the de-facto maintainer for Xbh right now (I'm the latest person
+> I know to play with it much).  A couple questions:
 
-    VertRefresh 59.696
+If you need a tester or some help, please let me know. As I wrote, I don't 
+know much about X servers yet but writing a server was a thing I wanted to 
+learn for some time now (I got around it for our DECstation port by writing
+a frame buffer device driver ;-)).
 
-    Mode "1024x768"
-        DotClock	64.666
-        HTimings	1024 1032 1176 1344
-        VTimings	768 771 777 806
-    EndMode
+> 1) How much video memory does your graphics chip have (it sounds like 2 MB
+> with you setting a fixed memsize).
 
-EndSection
+I've got a 2 MB card with a 5446 chip set.
 
-...
+> 2) What version of Linux are you running.
 
-works like a charm on my PBG3 292, I took these values from fbset.
+LinuxPPC R5 with kernel 2.2.1 (as I can't get any later kernels to run without
+SCSI timeouts on the PowerStack E, the PowerStack II works fine with kernels
+2.2.6 and 2.2.10).
 
-french version: 
-voici les valeurs a inserer dans le fichier /etc/X11/XF86Config pour un
-fonctionnement optimal de l'ecran LCD 14,1 ' des PB G3 Series. Elles on
-ete obtenues a partir du programme fbset
+> 3) Is your Series E one in a black case, or is it a standard PC
+> tower/desktop model (I can't remember if my motherboard is considered the
+> series E, but its a standard PC tower with 2MB video memory -- I'm using
+> various 2.2.x and 2.3.x kernels, though Xbh mainly with an older 2.2.x
+> kernel).
 
--- 
-Guillaume Laurès - student @ ESIEA (www.esiea.fr)
+It's the black stackable case model, the video card is a separate PCI board.
+
+> Which version of glibc do you have?  (Are you a R5 or pre-R5 distribution,
+> with the newer glibc, or an older R4+ with glibc 1.99?)
+
+glibc-2.1 with R5 final.
+
+> If you're running R5 (glibc of 2.1 or something like that), is it convenient
+> for you to download the Xbh I have compiled at
+> ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/Xbh-16bit-glibc2x
+
+OK, I'll try it right now.
+
+Once again, thanks a lot !
+
+Best regards,
+	Michael Engel	(engel@unix-ag.org)
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
