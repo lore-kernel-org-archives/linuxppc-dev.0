@@ -1,33 +1,26 @@
-Message-ID: <3CBC5625.9020000@mvista.com>
-Date: Tue, 16 Apr 2002 09:49:41 -0700
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <3CBC7469.4070701@embeddededge.com>
+Date: Tue, 16 Apr 2002 14:58:49 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Jacky Wang <jacky@premierme.com.tw>
+To: Val Henson <val@nmt.edu>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
-References: <NFBBLKLHNAGPKBMPDMALEEHMKAAA.jacky@premierme.com.tw>
-Content-Type: text/plain; charset=Big5
+Subject: Re: 8260 - Spurious interrupt when calling __sti()
+References: <000b01c1e0cd$b8f02d30$4d012ac7@warp-speed> <3CB4ADC1.6070007@embeddededge.com> <20020415123358.B15153@boardwalk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jacky Wang wrote:
+Val Henson wrote:
 
->Hi everyone,
->
->I am interesting about how to port m8xx_pcmcia driver to linux kernel w/ MPC850.
->
->Would you mind to share your successful experience with me?
->
-I did (w/ the help of others). It is on its way upstream now. If you
-need it soon, let me know and I can make it available.
 
->
->
->Best Regards
->Jacky Wang
->
->
+> And here I thought we were the only PPC embedded board to go that
+> route.  I feel better.
+
+It doesn't have anything to do with the board, it's the design of
+the integrated peripherals with the CPU core.
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
