@@ -1,43 +1,56 @@
-Date: Sat, 23 Jun 2001 06:20:48 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linuxppc-commit@fsmlabs.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch for SBS K2: don't initialise the L2 cache
-Message-ID: <20010623062048.A4239@cx258813-a.chnd1.az.home.com>
-References: <0106210201.AA22756@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ati_drv.o & fonts in XFree86-4.1
+From: Kohkichi Hosoda <khosoda@venus.dti.ne.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0106210201.AA22756@ivan.Harhan.ORG>; from msokolov@ivan.Harhan.ORG on Wed, Jun 20, 2001 at 07:01:01PM -0700
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20010624015513C.kohkichi@venus.dti.ne.jp>
+Date: Sun, 24 Jun 2001 01:55:13 +0900
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jun 20, 2001 at 07:01:01PM -0700, Michael Sokolov wrote:
-> Hi there,
->
-> Below is a patch to linuxppc_2_4_devel for the SBS K2 board. The current
-> linuxppc_2_4_devel when booting on the K2 does its own L2 cache initialisation.
-> This is no good. L2 cache initialisation should be left to the board firmware.
-> The way the current linuxppc_2_4_devel sets up the L2 cache on the K2 works for
-> a really ancient K2 we've had laying in the office since before the Flood (it
-> was on that board that I reported success with linuxppc_2_4_devel earlier), but
-> it blows up on all K2s of any recency (since April of last year I think). It
-> certainly doesn't work on the K2s that are being shipped now (rev J), as SBS
-> has changed (corrected) the L2 cache hardware on the new K2 revisions.
+Hi,
 
-The only firmware available to date for an SBS K2 is PMON.  PMON does not
-configure the L2 cache.  Older rev boards used a differential clock.  I've
-finally received the new docs, so I'm updating the port to read the
-single-ended/differential l2clk onboard register so it sets the L2CR
-accordingly.  If docs were provided as they were updated with this new
-feature, then the port would have been working.
+First of all, I'm not a developer.  But I guess someone
+might be interested in this problem.  If this is not
+appropriate in this list, please ignore.
 
-When a firmware release is made available that properly sets up the L2CR
-then I'll be happy to remove the L2CR setup code, not before.
+Anyway, I compiled and installed XFree86-4.1 on my iMac revB
+(Mach64, kernel 2.4.6-pre1, gcc-2.95.3 & glibc-2.2).
+Actually, I applied XFree86-4.0.99.3-latin2.patch from
+Fukui-san's src.rpm.  After the installation, X became much
+faster with new ati_drv.o.  x11perf --scroll500 showed
+118.0/sec on 24 depth.  In contrast, it had showed 54/sec on
+XFree86-4.0.2 (actually, I had used ati_drv.o which Ani
+Joshi had hacked for xf-4.0.1 because it's faster than that of
+xf-4.0.2).
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+However, all fonts including Japanese fonts in windows
+looked very ugly.  Actually, they were reversed and/or too
+condensed, so they could not even be read.  This happened on
+almost all software like xterm, Eterm, kterm, XEmacs,
+netscape, etc.  However, fonts looked normal when I used
+tkdesk to open and read files.  It's very weird.
+
+When I deleted ati module and used fbdev module in
+XF86Config, all fonts returned to normal appearance.
+However, x11perf --scroll500 demonstrated 11-12/sec.  This
+speed is only one-tenth compared with the speed with ati.
+
+I exchaged ati_drv.o of xf-4.1 for ati_drv.o which Ani Joshi
+hacked for xf-4.0.1 and deleted fbdev and added ati in
+XF86Config.  Then, all fonts in X looked normal.  x11perf
+--scroll500 showed 54/sec again.  Therefore, I guess
+ati_drv.o of xf-4.1 is the cause of this font weirdness.
+
+Does someone have any idea about working around this
+problem?  I really want to use the new ati driver because
+it's much faster.
+
+Thanks a lot in advance.
+
+Kohkichi Hosoda
+
+E-mail address: khosoda@venus.dti.ne.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
