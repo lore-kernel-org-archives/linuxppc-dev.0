@@ -1,26 +1,35 @@
-Message-ID: <20040814075327.46116.qmail@web15601.mail.cnb.yahoo.com>
-Date: Sat, 14 Aug 2004 15:53:27 +0800 (CST)
-From: Song Sam <samlinuxppc@yahoo.com.cn>
-Subject: Re: JTAG debug mechanism
-To: Mark Chambers <markc@mail.com>
+Date: Sat, 14 Aug 2004 09:40:56 -0500
+From: Chris Zimman <chris@wmpp.com>
+To: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <004301c48145$a072a150$0301a8c0@chuck2>
-MIME-Version: 1.0
-Content-Type: text/plain
+Subject: Re: Linux 2.4.27-pre6-bk hangs on MPC8540 board
+Message-ID: <20040814144056.GA9300@dingdong.cryptoapps.com>
+Reply-To: Chris Zimman <chris@wmpp.com>
+References: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAD@emss09m06.us.lmco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAD@emss09m06.us.lmco.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Chambers <markc@mail.com> wrote£º
+On Thu, Aug 12, 2004 at 05:07:30PM -0500, Cordes, Aaron M wrote:
 
-> Motorola does not release all the information about the debug
-> interface on all their processors. However, the BDM interface
-> is well documented, and there is an open source project called
-> bdm4gdb.sourceforge.net, which has the raw material for you to learn
-> all you could want to know about bdm.
+> I completely disabled L1 and L2 cache in the processor and I am not
+> seeing the memory corruption anymore.  So, good news is board is now
+> booting, bad news is it's dog slow and we have a memory design to debug.
+> Thanks to everyone for your prompt and helpful advice.
 
-Thanks for giving this info.I enjoy it. :-)
+Before you spend too much time debugging the memory design, did you follow
+Wolfgang's advice and take another look at your memory controller setup?
 
-Sam
+If it's working with cache disabled, and then failing in burst mode, 9 out of
+10 times, it's because the SDRAM controller setup is wrong.  It only has to
+be very subtly wrong to fail like this.
+
+If you're using DIMMs versus having memory right on the board, are you
+reading from the SPD for the config parameters?
+
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
