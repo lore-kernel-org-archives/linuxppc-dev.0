@@ -1,45 +1,44 @@
-Message-ID: <008201c11b28$75bfcb30$5b9e8aa3@cello>
-From: "kenji core" <kenji@core.ecl.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: POS 2.4G card on linuxppc
-Date: Thu, 2 Aug 2001 16:55:12 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-2022-jp"
+Date: Thu, 2 Aug 2001 01:30:04 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: POS 2.4G card on linuxppc
+Message-ID: <20010802013004.F13103@plato.local.lan>
+References: <008201c11b28$75bfcb30$5b9e8aa3@cello>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="XStn23h1fwudRqtG"
+In-Reply-To: <008201c11b28$75bfcb30$5b9e8aa3@cello>; from kenji@core.ecl.net on Thu, Aug 02, 2001 at 04:55:12PM +0900
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, I am new to this list.
+--XStn23h1fwudRqtG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-now i am porting the driver for 2.4G POS PCI cards to linuxppc.
-and succeeded!
+On Thu, Aug 02, 2001 at 04:55:12PM +0900, kenji core wrote:
 
-but i will never be able to see the max transmisson performance as
-the developing environment is on the PowerMacintosh 8500/150 ;-(
-(kernel 2.2.17 Vinelinux2.1CR)
+> and, I have a simple question. I think new Apple G4 is the fastest machin=
+e,
+> having
+> some troubles about Geforce video cards for booting linuxppc.
 
-actually the output of netperf test is about 180Mbps while it could be
-2.3Gbps on Intel/Linux driver.
+you need to replace the useless Geforce card with an ATI card.
 
-so i made up my mind to buy the fastest machine to test the max performance
-on linuxppc.
+> then, Can I take the story below for boot linuxppc on Apple new G4?
 
-and, I have a simple question. I think new Apple G4 is the fastest machine,
-having
-some troubles about Geforce video cards for booting linuxppc.
-then, Can I take the story below for boot linuxppc on Apple new G4?
+http://penguinppc.org/usr/ybin/doc
 
-1) put yaboot files in System folder , using Geforce. and shutdown.
-2) change the video card to supported video cards in
-(http://linuxppc.org/hardware/videocards/index.php3?css_ok=1)
-3) then boot linuxppc install cd.
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
-Is it Okay??
+--XStn23h1fwudRqtG
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-I think it's great to realize the 2.4G transmission on PowerMac(linuxppc)!!
 
-kenji in japan.
-
+--XStn23h1fwudRqtG--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
