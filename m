@@ -1,55 +1,43 @@
-Subject: Re: GT64260_eth (Ethernet) Driver
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <40DCBE32.2030008@mvista.com>
-References: <20040620202719.25741.qmail@web60407.mail.yahoo.com>
-	 <40DA06BE.204@mvista.com>
-	 <1088066228.18627.3352.camel@hades.cambridge.redhat.com>
-	 <40DB2199.2050006@mvista.com>
-	 <1088147437.4636.114.camel@imladris.demon.co.uk>
-	 <40DCA1A3.6000401@mvista.com>
-	 <1088207000.4636.136.camel@imladris.demon.co.uk>
-	 <40DCBE32.2030008@mvista.com>
-Content-Type: text/plain
-Message-Id: <1088518106.14216.1415.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Date: Tue, 29 Jun 2004 15:08:27 +0100
+Date: Tue, 29 Jun 2004 16:15:38 +0200 (CEST)
+From: Marius Groeger <mgroeger@sysgo.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: kernel option "Command line partition table parsing" 
+In-Reply-To: <Pine.LNX.4.60.0406290859430.24373@localhost.localdomain>
+Message-ID: <Pine.LNX.4.56.0406291606500.5355@mag.sysgo.com>
+References: <20040629125710.B6B28C109F@atlas.denx.de>
+ <Pine.LNX.4.60.0406290859430.24373@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2004-06-25 at 17:07 -0700, Mark A. Greer wrote:
-> Let me know how it goes.
+On Tue, 29 Jun 2004, Robert P. J. Day wrote:
 
-I have memory probing working at last. I don't quite understand what I
-was doing wrong there -- I think I was just being stupid and/or the code
-to move the GT64x60 internal registers doesn't work. If I leave it where
-the bootloader put it, it's OK.
+> excellent, this just gets better and better.  however, will partition
+> definitions on the command line override those in rpxlite.c?  i notice
+> that the generic rpxlite.c that comes from the bk tree has a default
+> partition definition of fe000000/800000.  should that be removed
+> first?  or will it be ignored?  it's not clear from the comments in
+> the source.
 
-Automatic detection of the chip type still isn't working, because it
-tries to work it out from its own PCI ident, but the MV64360 doesn't
-seem to appear on the PCI bus -- there _is_ no device 0.
+I don't think your version of rpxlite.c supports command line
+partitioning at all. The official one doesn't. You should see the
+existing mapping drivers such as physmap.c to learn how to add this,
+it is not difficult.
 
-The memory windows aren't right -- you have base_bits == 20 but those 20
-bits actually hold bits 16-35 of the address. That's not a typo, so
-setting base_bits to 16 seems to be the correct thing to do unless we're
-going to handle 'extended address mode'.
+The implementation should always give precedence to the command line
+defininition.
 
-Also we disable all the memory windows for I/O and only re-enable them
-later. That breaks if we actually try to access any of the I/O in the
-meantime -- which we do if we enable MV64x60 debugging, because it keeps
-calling printk() :)
-
-Is there a reason we need to disable the windows? Could we pass an array
-of the desired settings to mv64x60_init() and have them set up
-immediately, rather than just disabled and then fixed again later?
-
-I could register my console later, I suppose, and live without printk
-until after setup_arch()... but that sucks.
+Regards,
+Marius
 
 --
-dwmw2
+Marius Groeger <mgroeger@sysgo.com>           Project Manager
+SYSGO AG                      Embedded and Real-Time Software
+Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
