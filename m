@@ -1,33 +1,54 @@
-Message-ID: <4047B907.5070902@embeddededge.com>
-Date: Thu, 04 Mar 2004 18:17:27 -0500
-From: Dan Malek <dan@embeddededge.com>
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: about tinylogin
+Date: Fri, 5 Mar 2004 09:54:20 +0800
+Message-ID: <000e01c40254$c714bcf0$b702a8c0@newrock2>
 MIME-Version: 1.0
-To: Richard Williams <richard_williams@stratexnet.com>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: uncached user space mapping with mmap() ???
-References: <A3240F62EF3C2749B1A25D3BC9548F4103EED2@ExchWENZ02.wenz.global.vpn>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Richard Williams wrote:
+Hi,
 
-> I just tried this using pread....
+I'm meeting a problem:
 
-No, no.
+When I type "su testUser" under shell "ash", it report "Cannot execute
+/bin/sh: Permission denied" after I had used command "adduser" to add one
+user name.
 
-Open /dev/mem and use mmap() to map your physical address:
+I used tinylogin(v0.80) for "adduser" and "login" and ash(v0.3.5) for
+shell.
 
-   mmap(NULL, <page_size_bytes>, (PROT_READ|PROT_WRITE), MAP_SHARED, mem_fd, phys_addr);
+My target is based on Linux 2.4.1.
 
+Could anyody give me any hint or point?
 
-Then, use the pointer returned from mmap() as the base of your
-registers.
+Thanks very much!
 
+John
 
-	-- Dan
+The command process is following:
+------------------------------------------------------------------
+#adduser John
+Changing password for John
+Enter the new password (minimum of 5, maximum of 8 characters)
+Please use a combination of upper and lower case lette.
+Enter new password:
+Re-enter new password:
+Password changed.
+#
+# su John
+Cannot execute /bin/sh: Permission denied
+#
+# chmod 777 /bin/sh
+#
+# su John
+Cannot execute /bin/sh: Permission denied
+#
 
+-------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
