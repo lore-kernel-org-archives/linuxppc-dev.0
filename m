@@ -1,40 +1,44 @@
-Message-ID: <3ABA441C.6261BC52@mvista.com>
-Date: Thu, 22 Mar 2001 13:27:40 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3ABA5152.34E4F5B4@mvista.com>
+Date: Thu, 22 Mar 2001 11:24:02 -0800
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
 To: Ralph Blach <rblach@intrex.net>
 Cc: linuxppc-embedded@lists.linuxppc.org,
 	David Blythe <blythe@routefree.com>
 Subject: Re: Proposed new kernel noncaching memory allocator for the 405gp
-References: <3ABA1B6A.87C5FE9B@intrex.net> <3ABA291D.A7A82D8A@mvista.com> <3ABA3A5B.2EFA8D6D@intrex.net>
+References: <3ABA1B6A.87C5FE9B@intrex.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Ralph Blach wrote:
-
-> Using these in the OHCI driver would greatly simply the driver because the
-> TD would not be cached.
-
-I'm not sure that is for us to decide.  I don't really want to
-know that much detail about USB, and the experts that ported these
-drivers to processors without cache coherent DMA requested the
-functions as you see them now.  If they decide they want something
-different, we'll provide those.  The IBM4xx is a late-comer to
-the issues of ensuring cache coherency, and all we are doing is
-adopting existing functions that standard Linux software has been
-using on other platforms.
+>
 
 
-> Where are these functions that you say you have implemented?
-
-arch/ppc/8xx_io/commproc.c allocates one (or more) pages of memory
-during early initialization, marks them uncached, and will allocate
-a few bytes for some drivers.  I think only the uart driver uses
-this right now for allocating its DMA FIFOs.
+>
+> David Blythe wrote:
 
 
-	-- Dan
+> > I think something more general then pci_alloc_consistent would be
+> better
+> > for devices that are not pci based.  We are still working on getting a
+>
+> > pci OHCI usb to work with the walnut card and are running into a lot
+> of
+> > cache coherency problems.
+
+
+Dan Malek has provided the functions consistent_alloc(), consistent_free(),
+and consistent_sync() for uses other than PCI.  They are in linuxppc_2_5
+rev 1.446 and later (I'm not sure if they are in any earlier version).
+They are also in my active development kernel, but not yet in any kernel
+that I have put on my ftp site.
+
+-Frank
+--
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
