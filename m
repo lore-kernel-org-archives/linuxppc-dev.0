@@ -1,11 +1,10 @@
-Message-ID: <015801c2a2c1$57fecf20$0700a8c0@pc005>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: <acurtis@onz.com>, "Omanakuttan" <omanakuttan@tataelxsi.co.in>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <NCBBIINEHIPFGJPLBEIFAEBDEAAA.acurtis@onz.com>
-Subject: Re: mcc support on mpc8260
-Date: Fri, 13 Dec 2002 17:04:40 +0100
+Message-ID: <00b801c2a2c1$70bc9470$370da8c0@aman>
+From: "Aman" <aman@mistralsoftware.com>
+To: "Matt Porter" <porter@cox.net>
+Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+References: <000901c2a20b$23472400$370da8c0@aman> <20021212145243.A5263@home.com>
+Subject: Re: NVRAM/RTC
+Date: Fri, 13 Dec 2002 21:35:22 +0530
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -13,37 +12,57 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I mean that by using the revision A.1 You could have some troubles.
-Main reason is related to the Global Underrun (GUN) that often occours when
-many channels are active (we use continuosly 64 channels on one mcc). This
-issue has been repored by Motorola in its document "mpc8260cesumm.pdf" and
-finally soved in the revision C.2 (6K23A)
-Second issue, is related to the possibility of having a bit rotation into a
-time slot. This problem has never been reported by Motorola but it seems to
-be any more present in revisione C.2.
+Hi Matt
 
-Regards
+This might be a very basic question. By porting what do you mean?. As of now
+I copied the ebony bsp to different location and did changes to boot on the
+custom board. Till now it was booting without any problem. Once I changed
+the EBC configuration to configure some other FPGA ,bcos of which  linux
+booting hangs at " Now Booting the kernel ".
+I commented the ioremap of RTC, and the definitions of
+ppc_md.set_rtc_time = todc_set_rtc_time;
 
-Gianfranco
+ppc_md.get_rtc_time = todc_get_rtc_time;
+
+ still the same problem. Should I hv to do something else also.
+
+Thanking you in advance
+regards
+Aman
+
 
 ----- Original Message -----
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>;
-"Omanakuttan" <omanakuttan@tataelxsi.co.in>;
-<linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, December 13, 2002 3:59 PM
-Subject: RE: mcc support on mpc8260
+From: "Matt Porter" <porter@cox.net>
+To: "Aman" <aman@mistralsoftware.com>
+Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Sent: Friday, December 13, 2002 3:22 AM
+Subject: Re: NVRAM/RTC
 
 
 >
-> > Be aware do not use the mcc with the silicon revision older than B.1.
+> On Thu, Dec 12, 2002 at 11:50:23PM +0530, Aman wrote:
+> >
+> > Hi All
+> >
+> > I have customized board , which has PPC 440GP as its processor. In this
+> > board there is no NVRAM/RTC as in the 440GP evalkit. In the Rom monitor,
+> > configuration related to it NVRAM/RTC has been removed. Because of this
+> > changes in the rom monitor code, the linux image is hanging after " Now
+> > Booting the Kernel". If  NVRAM/RTC EBC bank1 is enabled in rom monitor,
+the
+> > linux image is executing without any problem. Can anyone say , how to
+> > disable the NVRAM/RTC option in the linux kernel.
 >
-> Could you provide more information on this comment. There are lots of
-> reasons not to use a rev A.1 chip. This is the first time that I heard
-about
-> using too new of a chip.
+> Are you trying to run an ebony image on this board?  Sounds like it,
+> and that would be the wrong thing to do.  Make a new port, and
+> in your <board>.c file, don't ioremap the RTC area (since you don't
+> have one) and delete (or set NULL) all the time/nvram machdeps.
 >
-> THX
+> Regards,
+> --
+> Matt Porter
+> porter@cox.net
+> This is Linux Country. On a quiet night, you can hear Windows reboot.
 >
 >
 >
