@@ -1,45 +1,30 @@
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: Problems bring up NFS mount on MPC8270 board
-Date: Thu, 23 Oct 2003 21:15:23 -0400
-Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B41673CC@tarpon.mangrovesystems.com>
-From: "Joe Birch" <jbirch@mangrovesystems.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <6.0.0.22.0.20031024105749.01f704d0@192.168.2.1>
+Date: Fri, 24 Oct 2003 11:08:33 +0200
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+From: llandre <r&d@wawnet.biz>
+Subject: RE: PCI graphics cards for 405-based system
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C0AC0@ORION>
+References: <D73A25AA6E54D511AD74009027B1110F3C0AC0@ORION>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+>
+>sensoray make a nice one.
 
-I am trying to bring up the kernel on custom hardware based on the
-MPC8270.
+Hi Steven,
 
-I've ported the LSP from Embedded Planet EP8260. I am using u-boot 4.0
-
-After doing NFS mount of FS, I usually get these message on the console:
-
-INIT: version 2.78 bootimory: 56k init.
-INIT: Entering runlevel:
-INIT: no more processes left in this runlevel
-
-Console locks but I can ping the board successfully
-
-Sometimes get passed this and get:
-
-INIT: version 2.78 bootimory: 56k init.
-Activating swap...
-Checking all file systems...
-Parallelizing fsck version 1.22 (22-Jun-2001)
-Calculating module dependencies...
-
-And then the target stops (crashes)
+unfortunately Sensoray does not make any PCI VGA graphics card that is what
+I'm looking for.
+Thanks anyway for the suggestion.
 
 
-I have checked SDRAM memory (U-boot post) and its OK.
+Regards,
 
-Any ideas?
-Thanks
-Joe
+llandre
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
