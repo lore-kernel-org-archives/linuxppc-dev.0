@@ -1,27 +1,33 @@
-Date: Fri, 16 Aug 2002 10:02:33 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: James Dougherty <jfd@broadcom.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: rsynch to date/tag
-Message-ID: <20020816170233.GE26993@opus.bloom.county>
-References: <3D5AF45E.2E42C48B@broadcom.com>
-Mime-Version: 1.0
+To: Conn Clark <clark@esteem.com>
+Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Is there a new G4 that supports DDR SDRAM?
+References: <3D5995D0.8D9C2ED6@esteem.com>
+From: Roland Dreier <roland@topspin.com>
+Date: 16 Aug 2002 10:02:40 -0700
+In-Reply-To: <3D5995D0.8D9C2ED6@esteem.com>
+Message-ID: <52bs82virz.fsf@topspin.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D5AF45E.2E42C48B@broadcom.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Aug 14, 2002 at 05:22:54PM -0700, James Dougherty wrote:
+>>>>> "Conn" == Conn Clark <clark@esteem.com> writes:
 
-> How is it possible to rsynch to a particular date
-> for linuxppc_2_4_devel. Better yet, is there an anonymous
-> CVS server out there I can use?
+    Conn> Apple just released there new Macs with DDR SDRAM
+    Conn> support. Does that mean there is a new G4 that supports DDR
+    Conn> SDRAM ? Apple has to be using a new G4 because they claim a
+    Conn> 1.25GHz clock speed and a 166MHz FSB clock rate.  Any body
+    Conn> heard anything about this?
 
-Nope.  You can convert from BK to CVS, with only minor hassels however.
+For "G4" PPC chips (really Motorola 74xx) the RAM controller is on a
+separate companion chip.  For example Marvell's Discovery 2 companion
+chip supports DDR and works with Mororola 74xx and IBM 750 chips.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+However, the fastest Motorola 7455 chips I've heard of are 1 GHz with
+a 133 MHz bus.  Perhaps the new Macs are using CPUs available only to
+Apple?
+
+ - Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
