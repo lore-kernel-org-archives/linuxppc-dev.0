@@ -1,37 +1,46 @@
-Date: Thu, 3 Jun 1999 22:57:09 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: brad@turbolinux.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: rsync kernel compile fails
-In-Reply-To: <199906040237.MAA00492@tango.anu.edu.au>
-Message-ID: <Pine.LNX.4.05.9906032255040.642-100000@pc.wackyland.com>
+Date: Thu, 3 Jun 1999 21:01:03 -0700 (PDT)
+From: Patrik Jonsson <patrik@ucolick.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Problem with linux/in.h
+In-Reply-To: <Pine.LNX.4.05.9906032255040.642-100000@pc.wackyland.com>
+Message-ID: <Pine.GSO.4.03.9906032056170.28081-100000@isis.ucolick.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 4 Jun 1999, Paul Mackerras wrote:
+Hi all,
+When I try to compile code that uses networking (I tried ssh and freeciv) 
+I get this error:
 
-> Tom Rini <tmrini@ntplx.net> wrote:
-> 
-> > I haven't looked at the current USB stack, but if it does what you seem to
-> > be implying (changing the keycodes into their normal PC equiv) it's doing
-> > something Wrong.  I'll go and skim what's in vger shortly..
-> 
-> That's what it does all right.  I don't like it either but I don't
-> hold much hope of changing it.  I figure the best we will be able to
-> do is to change the USB keycodes into ADB keycodes instead of PC
-> keycodes.  That way the existing keymaps etc. should still work.
+In file included from /usr/include/netinet/in.h:27,
+                 from packets.c:19:
+/usr/include/linux/in.h:109: parse error before `sa_family_t'
+/usr/include/linux/in.h:109: warning: no semicolon at end of struct or
+union
+/usr/include/linux/in.h:116: parse error before `}'
 
-Has anyone found out just why that's being done?   It doesn't really make
-sense.  There's already usb keymaps for the things that would need 'em.
-Perhaps a plea for sanity on linux-usb before things become too set in
-stone?
+The offending part of in.h is:
 
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+struct sockaddr_in {
+  sa_family_t		sin_family;	/* Address family		*/
+  unsigned short int	sin_port;	/* Port number			*/
+  struct in_addr	sin_addr;	/* Internet address		*/
+
+  /* Pad to size of `struct sockaddr'. */
+  unsigned char		__pad[__SOCK_SIZE__ - sizeof(short int) -
+			sizeof(unsigned short int) - sizeof(struct
+in_addr)];
+};
+
+The problem seems to be that sa_family_t is never defined. Anyone got an
+idea what's going on? This is with the 2.3.4 cvs sources.
+
+Thanks,
+
+	/Patrik
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
