@@ -1,54 +1,42 @@
-Subject: Re: two aty128 frame buffers?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Jeffery von Ronne <jronne@ics.uci.edu>
+Date: Thu, 7 Feb 2002 20:02:27 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Val Henson <val@nmt.edu>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20020207171550.L3189@reepicheep.ics.uci.edu>
-References: <20020204154626.C28199@reepicheep.ics.uci.edu>
-	<20020207115559.G3189@reepicheep.ics.uci.edu>
-	<20020207171550.L3189@reepicheep.ics.uci.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 08 Feb 2002 02:34:26 +0100
-Message-Id: <1013132066.23818.3341.camel@pismo>
+Subject: Re: Highmem on PPC?
+Message-ID: <20020208030227.GA15584@opus.bloom.county>
+References: <20020205115618.D6834@boardwalk> <20020205193316.19866@smtp.wanadoo.fr> <20020207144308.C19569@boardwalk>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020207144308.C19569@boardwalk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fre, 2002-02-08 at 02:15, Jeffery von Ronne wrote:
+On Thu, Feb 07, 2002 at 02:43:08PM -0700, Val Henson wrote:
 >
-> On Thu, Feb 07, 2002 at 11:55:59AM -0800, Jeffery von Ronne wrote:
-> > FYI, hacking the kernel's aty128fb driver---by removing the return 0;
-> > in aty128fb_init's PCI probe loop---I can get an aty128fb for both cards.
-> > So far, I've only gotten X's fbdev driver to work with it.  I looks closer
-> > into why r128/UseFB isn't working some other time.
+> On Tue, Feb 05, 2002 at 08:33:16PM +0100, Benjamin Herrenschmidt wrote:
+> >
+> > And let me know if you find something ;)
 >
-> I can get X's r128_drv/UseFB driver to work with /dev/fb0, but attempting
-> to use anything other than X's fbdev with /dev/fb1 sig-11's (it seems to
-> be the same no matter what driver /dev/fb0 is using).
-
-The r128 driver lacks Option "fbdev" to choose the framebuffer device to
-use, so it will always try to use /dev/fb0. Should be easy to add
-looking at the fbdev driver.
-
-> > Second, it seems to have trouble erasing things (e.g. instead of putting
-> > up the X background grid when I move a window or even initially.)
+> I pulled the latest linuxppc_2_4_devel, ported gemini to it, and ran
+> an overnight test with:
 >
-> This actually happens on both /dev/fb0 and /dev/fb1 when X's fbdev driver
-> is used.  It seems that it often just forgets to copy its shadow framebuffer
-> to the real framebuffer.  Setting ShadowFB to false, seemed to fix that.
+> NFS mounted root filesystem
+> while (true) do make clean; make -j8 zImage; done
+> crashme +2000 666 100 8:00:00 2
+> Flood ping in and out
+>
+> On a dual 7410 Gemini with 1 GB RAM.  Used all but 70MB of memory.  No
+> hangs.
+>
+> The weird thing is that crashme was supposed to run for 8 hours but
+> it's been running for over 14 hours now.  Any ideas?
 
-Bummer, sounds like there's a problem with the mishadow code.
-
-> PS An XF86Config-4 and XFree86.0.log from when I tried to use fbdev on /dev/fb0
->    and r128 on /dev/fb1 is at http://www.ics.uci.edu/~jronne/tmp
-
-I guess the segfault is due to both drivers trying to use /dev/fb0, but
-keep in mind that vgaHW only works for bus 0 unless you change that in
-lnx_video.c.
-
+Hmm.  Have you tried timing some 'simple' things and seeing if thats
+correct?
 
 --
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
