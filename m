@@ -1,55 +1,68 @@
-Message-ID: <37CD0CE1.9A2BC014@wanadoo.fr>
-Date: Wed, 01 Sep 1999 13:24:17 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+Date: Wed, 1 Sep 1999 17:16:38 +0200 (MET DST)
+From: Geert Uytterhoeven <geert@sonycom.com>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Sym53c8xx in 2.3.now
+Message-ID: <Pine.GSO.4.10.9909011709520.5612-100000@oleander.sonytel.be>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: vger-2.3.16 on pmac
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I must say, I am impressed! 
 
-I watched a little how the semaphore code and all the pci stuff were
-completely changing the last two days and thought it would take weeks to
-bring the ppc port up to date. But it is working already and better than
-in 2.3.15. I cannot any more produce kernel panics as before (at least
-not with the same method). Greaat work, guys! 
+Anybody who has the sym53c8xx or ncr53c8xx driver working with the latest 2.3.x kernels?
 
-I had, however, to apply one hack to make my ethernet card work: The new
-(certainly not quite finished) pci code gives it a wrong IRQ number. And
-this is something I would like to understand: 
+I get:
 
-There are 2 different IRQs for a given PCI card. If I do a 'lspci -v', I
-get the one that is actually used and shows up in /proc/interrupts and
-also in the boot messages, like for me
+| sym53c8xx: at PCI bus 0, device 6, function 0
+| sym53c8xx: setting PCI_COMMAND_IO PCI_COMMAND_MEMORY...
+| sym53c8xx: setting PCI_COMMAND_MASTER PCI_COMMAND_PARITY...(fix-up)
+| sym53c8xx: 53c875 detected 
+| sym53c875-0: rev=0x04, base=0xc3000000, io_port=0x1400, irq=31
+| sym53c875-0: NCR clock is 40218KHz, 40218KHz
+| sym53c875-0: ID 7, Fast-20, Parity Checking
+| sym53c875-0: on-chip RAM at 0xc3001000
+| sym53c875-0: restart (scsi reset).
+| sym53c875-0: Downloading SCSI SCRIPTS.
+| ncr53c8xx: at PCI bus 0, device 6, function 0
+| ncr53c8xx: IO region 0x1400 to 0x147f is in use
+| mesh: assuming 50MHz clock frequency
+| scsi0 : sym53c8xx - version 1.3c
+| scsi1 : MESH
+| scsi : 2 hosts.
+| scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0, lun 0 Test Unit Ready 00 00 00 00 00 
+| sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
 
-eth0: DC21041 at 0x0400 (PCI bus 0, device 14), h/w address
-00:00:c5:47:6a:7c,
-      and requires IRQ25 (provided by PCI BIOS).
+And then the system hangs in a wait loop...
 
-If I do a 'lspci -v -b', I get another one, in this case IRQ160. This
-one is also in the memory at /proc/bus/pci/devices, or in 'lspci -vx',
-where I see a0=160.
+My devices (from 2.3.6 dmesg):
 
-This, at least, was the situation before 2.3.15-final. Now the unpatched
-2.3.15-final or 2.3.16-final (with trivial patches to make it compile)
-give me a boot message with IRQ160 and 'lspci -v' and 'lspci -v -b' both
-give the same value 160. This is not a valid interrupt number, and of
-course the card does not work.
+|   Vendor: QUANTUM   Model: VIKING II 4.5WLS  Rev: 3506
+|   Type:   Direct-Access                      ANSI SCSI revision: 02
+| Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
+|   Vendor: PLEXTOR   Model: CD-ROM PX-12TS    Rev: 1.02
+|   Type:   CD-ROM                             ANSI SCSI revision: 02
+|   Vendor: HP        Model: HP35480A          Rev: T503
+|   Type:   Sequential-Access                  ANSI SCSI revision: 02
+| sym53c875-0-<0,0>: tagged command queue depth set to 8
+|   Vendor: QUANTUM   Model: FIREBALL_TM3200S  Rev: 300X
+|   Type:   Direct-Access                      ANSI SCSI revision: 02
+| Detected scsi disk sdb at scsi1, channel 0, id 5, lun 0
+| scsi : detected 2 SCSI disks total.
+| sym53c875-0-<0,*>: FAST-20 WIDE SCSI 40.0 MB/s (50 ns, offset 16)
+| SCSI device sda: hdwr sector= 512 bytes. Sectors= 8910423 [4350 MB] [4.4 GB]
+| SCSI device sdb: hdwr sector= 512 bytes. Sectors= 6281856 [3067 MB] [3.1 GB]
 
-My question is: At what place in the kernel is (or used to be) the
-bus-centered IRQ160 translated into the cpu-centered IRQ25?
+Disabling sym53c8xx and using ncr53c8xx instead doesn't fix the problem.
 
-My hack was to put some 'if (irq == 160) irq=25;' somewhere in
-pmac_setup.c, like in chrp_setup.c, where IRQ2 is translated into IRQ9.
-This works (I am writing this using it) and it shows that there is
-really not much wrong otherwise with the pci code (at least not for the
-devices in my machine).
+Greetings,
+
+						Geert
 
 --
-Martin
+Geert Uytterhoeven                   Geert.Uytterhoeven@sonycom.com
+Sony Suprastructure Center Europe (SUPC-E) --- Brussels --- Belgium
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
