@@ -1,40 +1,27 @@
-From: Konstantinos Margaritis <kmargar@cc.uoa.gr>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: cvs kernel does not compile
-Date: Wed, 12 May 1999 17:08:23 +0300
-Content-Type: text/plain
+Message-ID: <37399524.9D22A030@madison-web.com>
+Date: Wed, 12 May 1999 10:50:12 -0400
+From: Jason Haas <jhaas@madison-web.com>
 MIME-Version: 1.0
-Message-Id: <99051217114000.00658@proton>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: New PPC/Mac features of 2.2.8?
+References: <37387B1D.544ABDE9@d.umn.edu> Message from Joel Klecker
+	 <jk@espy.org>    of "Tue, 11 May	 1999 01:36:38 PDT."
+	 <v04204e08b35d9989574a@[206.163.71.146]>
+	 <v03010d00b35e1bc270f4@[209.96.179.8]> <37387B1D.544ABDE9@d.umn.edu> <v04011701b35e71c158ed@[199.174.98.46]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-   The 2.3.0 kernel found on cvs.on.openprojects.net does not compile on
-my powerpc system (debian glibc 2.1, egcs 1.1.2pre), with the following
-error: 
+Hi folks,
 
-gcc -D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -DEXPORT_SYMTAB -c ksyms.c
-/usr/src/linux/include/linux/fs.h: In function `mark_buffer_clean':
-In file included from /usr/src/linux/include/linux/capability.h:13,
-                 from /usr/src/linux/include/linux/binfmts.h:5,
-                 from /usr/src/linux/include/linux/sched.h:8,
-                 from /usr/src/linux/include/linux/mm.h:4,
-                 from /usr/src/linux/include/linux/slab.h:14,                                    from /usr/src/linux/include/linux/malloc.h:4,
-                 from ksyms.c:13:
-/usr/src/linux/include/linux/fs.h:763: warning: implicit declaration of function
- `test_and_clear_bit'
-/usr/src/linux/include/linux/fs.h: In function `mark_buffer_dirty':
-/usr/src/linux/include/linux/fs.h:771: warning: implicit declaration of function
- `test_and_set_bit'
-ksyms.c: At top level:
-ksyms.c:361: `init_special_inode' undeclared here (not in a function)
-ksyms.c:361: initializer element for `__ksymtab_init_special_inode.value' is not
- constant
+The cutting-edge linux site says there are "major PPC arch" updates and
+mac arch updates in 2.2.8.  What are they?  Or, is there somewhere I can
+look to find out?
 
-It's the first time it does this. Any ideas?
+Thanks,
 
---
-Konstantinos Margaritis
+-- h.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
