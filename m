@@ -1,41 +1,34 @@
-Date: Mon, 31 Jul 2000 11:22:03 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Crusman <Lionel.TAILLURAT@wanadoo.fr>
-cc: Lionel TAILLURAT <Lionel.TAILLURAT@ecrin.com>,
-        ppc_mailing_list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: -= MVME 2300 boot args=-
-In-Reply-To: <000a01bff9b0$fab528c0$4c388aa4@crusman>
-Message-ID: <Pine.HPX.4.10.10007311118140.9070-100000@gra-ux1.iram.es>
+Message-ID: <00c301bffad2$fbb85120$640a0a0a@server>
+From: "Paolo Scaffardi" <arsenio@tin.it>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: FrameBuffer support on PPC Kernels
+Date: Mon, 31 Jul 2000 11:24:45 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, 30 Jul 2000, Crusman wrote:
+I'm writing a framebuffer device for my 8xx PPC platform (a loadable
+module). To do this i must enable the framebuffer support on the kernel, to
+resolve the calls to "register_framebuffer" of the device.
 
-> Hi,
->
-> I resolve the problem with the following Haddrive map :
->
-> sda2:  Prep boot partition starting at the first sector of the harddrive.
-> sda1:  root partition.
-> sda3:  swap partition.
+The problem is that by enabling the framebuffer support on the kernel
+(without any other fb driver inside) the kernel doesn't compiles and reports
+that "video_init" doesn't exists (called from main.c).
 
-Fine, mine is root on sda1, swap on sda2 and prepboot on sda3 at the end
-of the disk with an extented partition between sda2 and sda3.
+I am using MPC8xx-2.2.13 kernel. With the mvista kernel 2.2.13-7 i have the
+same problem and another one when i try to enable "loadable module support".
+It can be done because of "init_modules" and other functions that cannot be
+referenced by "main.c". Why that? How can i enable the framebuffer support?
 
-> and all work well.
+Please help me!
 
-Yes, this does not mean that we should not trry to improve it. I just
-booted 2.4.0-test5 this morning. I hope to make patches available soon,
-especially for timing which is horrendous in the official kernel right
-now (in several weeks now, I've never seen one of my machines locked on
-the NTP server be off by more than 20 microseconds, versus tens of
-milliseconds in the stock kernel).
+- MAY THE PINGUIN B WITH U -
 
-	Regards,
-	Gabriel.
-
+Best regards,
+Paolo Scaffardi
+AIRVENT SAM s.p.a - RIMINI (ITALY)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
