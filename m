@@ -1,42 +1,34 @@
+Date: Thu, 14 Oct 1999 08:44:07 -0400
+From: Daniel Jacobowitz <drow@false.org>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: serial on lombard 
-In-reply-to: Your message of "Thu, 14 Oct 1999 14:31:51 +0300." <3805BF27.1944652E@fadata.bg> 
+Subject: Re: PowerPC function returning long long
+Message-ID: <19991014084407.A27958@drow.res.cmu.edu>
+References: <38041087.62AB190@primenet.com> <Pine.HPX.4.10.9910130940210.7415-100000@gra-ux1.iram.es> <19991013082759.A7133@elmo.cygnus.com> <3805582E.2D32F329@primenet.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Thu, 14 Oct 1999 13:35:48 +0100
-Message-ID: <4461.939904548@MessagingDirect.com>
-From: Chris Ridd <Chris.Ridd@messagingdirect.com>
+In-Reply-To: <3805582E.2D32F329@primenet.com>; from Bob Doyle on Thu, Oct 14, 1999 at 04:12:30AM +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 14 Oct 1999 14:31:51 +0300, Momchil Velikov wrote:
+On Thu, Oct 14, 1999 at 04:12:30AM +0000, Bob Doyle wrote:
+> Thanks, thats just what I was looking for... 
 > 
-> Michael Schmitz wrote:
-> > 
-> > > alarm(0x2, 0x7ffff7b4, 0, 0x8, 0x7f7f7f7f) = 0
-> > > open("/dev/ttyS0", O_RDWR|O_NONBLOCK)   = 3
-> > > --- SIGALRM (Alarm clock) ---
-> > > alarm(0, 0x1, 0, 0x8, 0x7f7f7f7f)       = 0
-> > > rt_sigaction(0xe, 0x7ffff698, 0x7ffff728, 0x8) = 0
-> > > write(2, "minicom: cannot open /dev/ttyS0:"..., 59minicom: cannot open /dev/ttyS0: No such file or directory
-> > > ) = 59
-> > 
-> > The port blocks on open, and you get a timeout.
-> 
-> But there is O_NONBLOCK, and according to POSIX, 
-> " ... if O_NONBLOCK flags is set or if CLOCAL has been set,
->   the open() function shall return immediately without
->   waiting for the connection."
-> 
-> Note that this is the/a way to set CLOCAL -- open the device with O_NONBLOCK
-> and then tcsetattr() or whatever.
+> I've found several tutorials on x86 GNU inline asm but none on the
+> PowerPC.
+> If I were to write a HOWTO would anyone volunteer to proof read
+> and/or contribute code examples?  I suspect I'm not the only one 
+> struggling through this.
 
-The open on /dev/ttyS0 returns a valid fd, so it is succeeding. As BenH 
-pointed out, the problem is the SIGALRM ringing which causes Minicom to 
-erroneously think it couldn't open the device.
+Yes!  I'd certainly help as I could, and I would love to see someone
+put such a document together.
 
-Chris
+Dan
 
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
