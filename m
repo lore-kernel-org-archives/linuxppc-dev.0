@@ -1,42 +1,47 @@
-Date: Wed, 24 Nov 1999 12:41:56 -0700 (MST)
-From: Jeff Hubbach <hubbach@esus.cs.montana.edu>
-To: Giuliano Pochini <pochini@denise.shiny.it>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Floppy problems
-In-Reply-To: <383C1032.9C117E07@denise.shiny.it>
-Message-ID: <Pine.OSF.3.95.991124123858.9528B-100000@esus.cs.montana.edu>
+Message-ID: <383C4E64.5EF3D193@jlc.net>
+Date: Wed, 24 Nov 1999 15:45:24 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: raphael.bossek@solutions4linux.de
+CC: linuxppc-dev@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: newbie: get ppc823fads working with linux 2.3.x kernel...
+References: <E11qX1y-0007yx-00@mx00.kundenserver.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I finally got my floppy working on a 8500 running LinuxPPC '99 Q3, but if
-I try a mkfs /dev/fd0 on my 9600 with the same Linux, it gets to the part
-where it's "writing superblock" and just hangs. I don't understand why it
-would work on the 8500, but not on the 9600. Same install, same kernel,
-maybe it's the different motherboard?
+raphael.bossek@solutions4linux.de wrote:
 
-Any input would be greatly appreciated...
 
-------------------------------------
-Jeff Hubbach                       |
-Computer Science Student           |   
-Montana State University           |      
-http://www.cs.montana.edu/~hubbach |
-------------------------------------
+> i tried here to cross-compile the unstable linux kernel for the FADS
+> ppc823 evaluation board but i get ONLY errors while compiling... For
+> instance the serial.c source does not compile or other stuff too...
 
-On Wed, 24 Nov 1999, Giuliano Pochini wrote:
-> >     I've never gotten my floppy drive to work under Linuxppc, it works fine
-> >     under MacOS.  When accessing the floppy, it sounds ok, but the close ()
-> >     system call doesn't return.  After this, the fd0 device can't be accessed
-> >     again because it's busy.  The process can't be killed.
-> >     [...]
-> Same problem here, mainly on write accesses.
-> 
-> Pmac 7300 with all kernels.
-> 
-> Bye.
 
+I guess I didn't write this enough times in the notes....Do not, do not,
+configure _any_ of the serial I/O options, and many other things, like
+CONFIG_VT.  When you select 8xx for the processor type, the proper
+serial I/O selections are automatically made to use the internal
+CPM serial ports.
+
+
+> Where will be CONFIG_FADS #defined ?
+
+
+Somewhere, someplace, someday, when I get around to making the CVS
+updates.  It was a configuration option a very long time ago, it
+never worked, I couldn't test it, so I removed it.  I will put it
+back in based upon tested patches from others......
+
+Get Magnus Damm to send you his (F)ADS patches (which he was going
+to send to me :-)......
+
+Get on the linuxppc-embedded mailing list.  Search the old mail
+archives for FADS messages.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
