@@ -1,56 +1,58 @@
-From: flar@allandria.com
-Message-Id: <200008300222.TAA13173@marcus.allandria.com>
-Subject: Re: Btree directories (Re: Status of HFS+ support)
-To: matthew@wil.cx (Matthew Wilcox)
-Date: Tue, 29 Aug 2000 19:22:05 -0700 (PDT)
-Cc: khalfmann@libra.de (Halfmann Klaus), matthew@wil.cx ('Matthew Wilcox'),
-        roman@augan.com (Roman Zippel), linuxppc-dev@lists.linuxppc.org,
-        linux-fsdevel@vger.kernel.org
-In-Reply-To: <20000829181851.D6395@parcelfarce.linux.theplanet.co.uk> from "Matthew Wilcox" at Aug 29, 2000 06:18:51 PM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Michel Lanners <mlan@mcp.cpu.lu>
+Message-Id: <200008300922.LAA09244@mcp.cpu.lu>
+Subject: Re: [PATCH] via-cuda (CUDA_COMBINED_FORMAT_IIC)
+To: iain@sandoe.co.uk
+Date: Wed, 30 Aug 2000 11:22:48 METDST
+Cc: linuxppc-dev@lists.linuxppc.org
+Reply-To: mlan@cpu.lu
+In-Reply-To: <200008300837.JAA16257@hyperion.valhalla.net>; from "Iain Sandoe" at Aug 30, 100 9:37 am
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matthew Wilcox wrote:
-> You can lock while you're in a call, but eventually, you fill up the
-> user's buffer and return.  At that point, you have to drop the lock
-> because they might never call you again.  So you have to consider
-> the case of a file being added or removed between calls to getdents.
-> Current HFS doesn't even pretend to try.  It just stores an index (0
-> .. n-1) and you pick up from there.  So sometimes you get files twice,
-> sometimes files don't show up at all.
+Hi Iain,
+
+> Hi Michel,
+> The G3-beige has a perch slot and in the perch slot is one of three types of
+> card... all of these have either AWACS or Burgundy - but also a "tone
+> control" chip controlled by i2c.  The so called "tone control" chip does a
+> fair bit of the level & routing control (which is why I want to access it's
+> settings)
 >
-> I suspect you need to store the key of the item you just found, and
-> then continue filling in the buffer from there on subsequent calls.
-> The trouble is that there frequently isn't enough space available to
-> do that.  The proposed ext2 btree extensins needed 64 bits of space and
-> there was only 32 bits available.  What size keys does HFS+ have?
-
-Catalog keys in HFS+ can be anywhere from 8 bytes all the way up to
-518 bytes. I actually do save the key and do a search in the btree
-in my HFS+ module. (It doesn't seem to work however. And yes, I'm
-helping out Klaus with his code as well as working on a kernel
-module with completely separate code.)
-
-> Hmmm.. now the LFS patches have gone in and f_pos is now a 64-bit quantity,
-> this sounds more plausible.  I'd be curious to hear from the ReiserFS
-> people how they solved this problem.
-
-The support for 64 bit filesystems is important for HFS+ as well, since
-it uses 64 bit file sizes for all files.
-
-> > I'd really like to know how the concurrency of the kernel filesystem
-> > should work, can anybody feed me with documentations about that ?
+> Apple's stuff from Darwin refers to this as an SGS7433 (and, after looking
+> at SGS/Thompson's web site) I came up with the TDA7433 which does the right
+> things.  It has i2c address 0x8a - which is the address that the dmasound
+> driver writes to to set the volume on g3-beige (using the GET_SET_IIC
+> command).
 >
-> I've cc'd linux-fsdevel, where people can fill you in.
+> With the modified driver posted, the CUDA_COMBINED_FORMAT_IIC command
+> recognises that there is a device at address 0x8a - but returns all 0xff
+> bytes instead of the hoped for register contents :-(
 
-I've been ignoring this issue, but I certainly would love pointers to
-more documentation.
+Ah, ok. So you have been able to see the device... Are you sure that it does
+return register contents? I'm no I2C specialist, but for PlanB, the video
+chip on I2C can only return a single byte on a read request, not a stream of
+data (like a register file). Also, that chip uses bit 0 of the address as
+R/W flag, and, IIRC, bit 0 set to one indicates read. So, have you tried
+reading from address 0x8b?
 
-	Brad Boyer
-	flar@pants.nu
+> I checked the TDA7433 data sheet and it should be able to do
+> COMBINED_FORMAT...
 
+What exactly is COMBINED_FORMAT?
+
+> Yes, there are different implementations for i2c on different models...
+> CUDA, PMU (PlanB and other mac-IO implementations).... and on the newer
+> machines "cereal" (and multiple i2c busses)...  if the ability to probe the
+> i2c bus is useful, I guess we'll have a few more drivers to update... :-)
+
+We could even provide a generic I2C interface (isn't that available on i386
+already?)... Give the different buses numbers, ala PCI, have a list of
+devices found on the bus, etc... Wouldn't that be a nice overkill? ;-))
+
+
+Michel
+--
+.sig home alone
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
