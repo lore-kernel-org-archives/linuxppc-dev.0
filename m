@@ -1,39 +1,27 @@
-Date: Thu, 18 Jan 2001 09:50:47 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Tom Shaver <tom_shaver@psilongbeach.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Booting MCP750 stand alone
-Message-ID: <20010118095047.A4838@cx258813-a.chnd1.az.home.com>
-References: <3A5DF3CB.BDDCB756@mvista.com> <NCBBJBFMKKFOJFGDOKNBMEDLEJAA.tom_shaver@psilongbeach.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NCBBJBFMKKFOJFGDOKNBMEDLEJAA.tom_shaver@psilongbeach.com>; from tom_shaver@psilongbeach.com on Thu, Jan 18, 2001 at 01:35:20PM -0600
+Message-Id: <200101181805.MAA88737@ns5.arlut.utexas.edu>
+Date: Thu, 18 Jan 2001 12:05:14 -0600
+Content-Type: text/plain;
+	charset=us-ascii
+From: Gregory Allen <gallen@arlut.utexas.edu>
+To: linuxppc-embedded@lists.linuxppc.org
+Mime-Version: 1.0 (Apple Message framework v337)
+Subject: Ethernet controller
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jan 18, 2001 at 01:35:20PM -0600, Tom Shaver wrote:
->
-> Is it possible to boot MVista Linux on a Motorola MCP750 without a
-> bootp/tftp server? ie, off of the on board flash, or possibly a compact
-> flash card?
+I am designing an embedded PPC8240 board with an ethernet interface. I am down to 2 choices: i82559 and RTL8139
 
-Of course, otherwise how would you deploy an MCP750 system? :)
+I prefer to avoid the BGA package of the i82559, but the RTL8139 driver support is listed as having "limited PowerPC testing". I am also curious about their relative performance.
 
-Booting out of the onboard flash is mentioned in the README, you
-need to use the BugBoot utility.
+Can anyone speak to this?
 
-IDE is supported so the device in the onboard CF socket will show
-up as hda.  Make a type 41 PReP partition on there, dd a kernel
-directly into the partition.  Reboot and do a 'pboot 14' at the
-PPCBUG prompt.
+Thanks,
+-Greg
 
-Oh yes, make sure you populate an initrd or CF partition with the
-HHL filesystem to root off of.
-
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+------
+ Gregory E. Allen, MSEE Research Engineer
+ Applied Research Laboratories:
+ The University of Texas at Austin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
