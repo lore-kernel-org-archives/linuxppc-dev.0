@@ -1,24 +1,22 @@
-Return-Path: <sydneymartin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
-	by ozlabs.org (Postfix) with ESMTP id 418202BF07
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 15:15:39 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 70so74598wra
-	for <linuxppc-dev@ozlabs.org>; Sun, 02 Jan 2005 20:15:35 -0800 (PST)
-Message-ID: <855e88d0050102201540148511@mail.gmail.com>
-Date: Sun, 2 Jan 2005 23:15:35 -0500
-From: Mike Martin <sydneymartin@gmail.com>
-To: Sven Luther <sven.luther@wanadoo.fr>
-In-Reply-To: <855e88d00501011715633922b2@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp5.wanadoo.fr (smtp5.wanadoo.fr [193.252.22.26])
+	by ozlabs.org (Postfix) with ESMTP id 9CF1B2BDB5
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 17:57:47 +1100 (EST)
+Date: Mon, 3 Jan 2005 08:05:35 +0100
+To: mikemartin@linux.ca
+Message-ID: <20050103070535.GA1644@pegasos>
 References: <20050101150055.GA15400@pegasos>
 	<200501011630.j01GUP1R007603@arbas.nms.ulrich-teichert.org>
 	<20050101165758.GA18559@pegasos>
 	<855e88d00501011715633922b2@mail.gmail.com>
+	<855e88d0050102201540148511@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <855e88d0050102201540148511@mail.gmail.com>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
 	debian-powerpc@lists.debian.org
 Subject: Re: 43p-140 install issues
-Reply-To: mikemartin@linux.ca
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,90 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now I'm very confused .... on my next reboot ... the network wouldn't
-work. After much trial and error, I got the current unstable d-i image
-to work. It did it all right up to the reboot (where is warns you that
-it doesn't have a boot loader installed).
+On Sun, Jan 02, 2005 at 11:15:35PM -0500, Mike Martin wrote:
+> Now I'm very confused .... on my next reboot ... the network wouldn't
+> work. After much trial and error, I got the current unstable d-i image
+> to work. It did it all right up to the reboot (where is warns you that
+> it doesn't have a boot loader installed).
 
-Now what!
+There may be some problems with 2.6 kernels and pci irqs on prep. I will
+investigate this shortly.
 
-I have an installed system, but I can't figure out how to boot it! I
-have /boot/vmlinux on /dev/sdb1 and a root on /dev/sdb1. How do I
-write a boot sector or tell OpenFirmware to boot from this file? I
-tried to netboot and set root=/dev/sdb1 - but without the scsi modules
-loaded it fails to read the drives and panics.
+There is indeed no prep boot-loader installer available. I hear there is a
+partman-prep prepared, but not yet part of d-i. more to this below.
 
-I think I neet to create a type 41 PReP boot partition and get the
-kernel onto it. I've found this thread:
-http://lists.gnu.org/archive/html/bug-parted/2002-09/msg00016.html
-
-and this:
-http://www.yellowdoglinux.com/support/solutions/champion_server/rs6k.shtml
-
-I tried booting up with the installer, going to a shell after the scsi
-was active and the installed system was mounted. I used sfdisk from
-/target/sbin to create a 10 Meg type 41 partition on the first HD
-(/dev/sdb0 eventually). I used dd to copy /target/boot/vmlinux to this
-partition. But it still won't boot.
-
-I'm very close. If I can get the system to boot (really it needs to
-boot itself - not netboot) I'd call this a success.
-
-Thanks!
-MikeM
-
-
-
-
-On Sat, 1 Jan 2005 20:15:13 -0500, Mike Martin <sydneymartin@gmail.com> wrote:
-> I can boot with this image:
-> http://debian.yorku.ca/debian/dists/testing/main/installer-powerpc/current/images/powerpc/netboot/vmlinuz-prep.initrd
+> Now what!
 > 
-> And things seems to go very well. Network configures, hard drives
-> partition, it dies at "Install the base system"  with "The debootstrap
-> program exited with an error (return value 255)." It instructs me to
-> check /var/log/messages which now contains: "execv: No such file or
-> directory"
+> I have an installed system, but I can't figure out how to boot it! I
+> have /boot/vmlinux on /dev/sdb1 and a root on /dev/sdb1. How do I
+> write a boot sector or tell OpenFirmware to boot from this file? I
+> tried to netboot and set root=/dev/sdb1 - but without the scsi modules
+> loaded it fails to read the drives and panics.
+
+You need to install mkvmlinuz, i think it is already, but not use
+/boot/vmlinux-2.6.8-powerpc, but /boot/vmlinuz-2.6.8-powerpc, which is the
+result of mkvmlinuz adding the initrd containing the modules onto the kernel,
+and then adding the prep simple bootloader. Check if you have the
+vmlinuz-2.6.8-powerpc, which should have been generated at install time, and
+copy it to your netboot tftp server, and try again. It should even recognize
+the root= partition automatically.
+
+> I think I neet to create a type 41 PReP boot partition and get the
+> kernel onto it. I've found this thread:
+> http://lists.gnu.org/archive/html/bug-parted/2002-09/msg00016.html
 > 
-> The previous step, partitioning, added:
->   "No matching physical volumes found
->   No volume groups found
->   Reading all physical volumes.  This may take a while..."
-> 
-> Anyone?
-> 
-> MikeMartin
-> 
-> On Sat, 1 Jan 2005 17:57:58 +0100, Sven Luther <sven.luther@wanadoo.fr> wrote:
-> > On Sat, Jan 01, 2005 at 05:30:25PM +0100, Ulrich Teichert wrote:
-> > > Hi,
-> > >
-> > > [del]
-> > > >I would prefer that we fix the debian kernels for them to work correctly
-> > > >though. More on this on monday.
-> > >
-> > > I failed to configure a stock 2.4.28 kernel to detect the SCSI controler.
-> > > I think some of Leigh patches for this must be applied, but I haven't
-> > > gone any further.
-> >
-> > I had some report on a power3 box, that only the SMP sym53c8xx driver worked.
-> > When configuring in UP mode,
-> >
-> > > [del]
-> > > >Do the debian 2.4.27 kernel work on it ? I was unable to boot the 2.4.27 d-i
-> > > >kernel on my powerstack, but this is a different machine, so the issues may be
-> > > >a bit different.
-> > >
-> > > I've only tried the Woody PREP kernel, which failed in a way which I can't
-> > > remember, but I'll give it a try.
-> >
-> > Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel too.
-> > Let' try to get this fixed before the sarge release, which is not so far off
-> > now.
-> >
-> > Friendly,
-> >
-> > Sven Luther
-> >
-> >
->
+> and this:
+> http://www.yellowdoglinux.com/support/solutions/champion_server/rs6k.shtml
+
+Yep. Until partman-prep is ready, you should simply try to add the prep flag
+to the a small partition. I think the normal scheme is to create /dev/sdb1 as
+a small (8MB ?) prep partition, /dev/sdb2 as swap, and /dev/sdb3 as /. If
+partman is not able to do it, jump to console 2, and launch parted directly,
+and do a set 1 prep on.
+
+Then i suppose that copying the kernel is just a matter of :
+
+  dd if=/boot/vmlinuz-2.6.8-powerpc of=/dev/sdb1
+
+but you have to have a small prep partition as /dev/sdb1, or the above will
+erase whatever you have on /dev/sdb1.
+
+> I tried booting up with the installer, going to a shell after the scsi
+> was active and the installed system was mounted. I used sfdisk from
+> /target/sbin to create a 10 Meg type 41 partition on the first HD
+> (/dev/sdb0 eventually). I used dd to copy /target/boot/vmlinux to this
+> partition. But it still won't boot.
+
+Ah, no sure what is wrong. I don't think /dev/sdb0 exists. Not sure really.
+
+> I'm very close. If I can get the system to boot (really it needs to
+> boot itself - not netboot) I'd call this a success.
+
+Friendly,
+
+Sven Luther
