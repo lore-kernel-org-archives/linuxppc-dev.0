@@ -1,22 +1,22 @@
-From: "Qi zhaoling" <zlqi@utstar.com>
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Can't boot up from flash but from nfs
-Date: Mon, 8 Dec 2003 11:51:09 +0800
-Message-ID: <KFEIKONMCIJOKNIGLDCFOEOCCJAA.zlqi@utstar.com>
+Subject: Question on excutable image
+Date: Mon, 8 Dec 2003 13:28:06 +0800
+Message-ID: <000101c3bd4c$0ff98200$b702a8c0@newrock2>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="utf-8"
+In-Reply-To: <KFEIKONMCIJOKNIGLDCFOEOCCJAA.zlqi@utstar.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
+Hi,
 
-         I boot up Linux kernel with ramdisk successfully from NFS(kernel in flash, ramdisk in NFS),
-but when I write the ramdisk to flash, boot linux from flash totally, it panic when kernel lauch the
-bash, has anybody meet such problem?
+I built a application image based on libc. When run it on linux environment, if I still need these lib files?
 
-Best Regards,
-
+Thanks in advance!
+John
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
