@@ -1,68 +1,336 @@
-Message-ID: <3973D3E6.578C8B5C@execpc.com>
-Date: Mon, 17 Jul 2000 22:49:58 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
+Message-ID: <3973FF28.F9990DF9@noos.fr>
+Date: Tue, 18 Jul 2000 08:54:33 +0200
+From: Guillaume Laurès <guillaume.laures@noos.fr>
+Reply-To: guillaume.laures@noos.fr
 MIME-Version: 1.0
-To: Stephan Leemburg <pmud-bugs@jvc.nl>
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: preliminary 3400 APM support for PMUD
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: progress on l2cr
+References: <3973882B.1C9A581E@noos.fr>
 Content-Type: multipart/mixed;
- boundary="------------1C732C24407074E821B3A976"
+ boundary="------------10D51DB086CF77B6D3D7C6B1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------1C732C24407074E821B3A976
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
+Il s'agit d'un message multivolet au format MIME.
+--------------10D51DB086CF77B6D3D7C6B1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-attached is a patch against pmud-0.6.1.tar.gz to add untested APM emulation
-support for Ohare-based powerbooks.  I don't have access to a system to test it,
-however the code used is based on that from my GKrellM-PMU plugin.  I tested
-that code to be consistant with what Paul's Batmon displays.
 
-Just my contribution to PMUD.  Any feedback is welcome.
 
-Thanks for your time.
+Guillaume Laurès a écrit :
+[...]-
+
+>
+> Here are two patches against current stable tree,
+
+Sorry, they didn't make trough, here there are in the body and in attachement
+again :
+
+l2cr-display-gom.diff---------------
+
+--- linux-pmac-stable-orig/arch/ppc/kernel/ppc_htab.c Mon Jul 17 21:30:43
+2000
++++ linux-pmac-stable/arch/ppc/kernel/ppc_htab.c Mon Jul 17 22:14:46 2000
+@@ -536,8 +536,8 @@
+   "unknown size", "256KB", "512KB", "1MB"
+  };
+  static const char *clockstrings[8] = {
+-  "clock disabled", "+1 clock", "+1.5 clock", "reserved(3)",
+-  "+2 clock", "+2.5 clock", "+3 clock", "reserved(7)"
++  "clock disabled", "˜1 clock", "˜1.5 clock", "reserved(3)",
++  "˜2 clock", "˜2.5 clock", "˜3 clock", "reserved(7)"
+  };
+  static const char *typestrings[4] = {
+   "flow-through burst SRAM", "reserved SRAM",
+@@ -547,6 +547,17 @@
+   "0.5", "1.0", "(reserved2)", "(reserved3)"
+  };
+
++ if ((_get_PVR() >> 16) == 12) {
++   /* update those values when CPU is a G4 */
++  sizestrings[0] = "2MB";
++  clockstrings[3] = "˜3.5 clock";
++  clockstrings[3] = "˜4 clock";
++  holdstrings[0] = "0.6";
++  holdstrings[1] = "1.0";
++  holdstrings[2] = "1.4";
++  holdstrings[3] = "1.8";
++ }
++
+  if ( ((_get_PVR() >> 16) != 8) && ((_get_PVR() >> 16) != 12))
+   return -EFAULT;
+
+@@ -590,25 +601,43 @@
+    _set_L2CR(val);
+    while ( _get_L2CR() & 0x1 )
+     /* wait for invalidate to finish */;
+-
++
+   } else {
+    p = buf;
+    if (!first)
+     *p++ = '\t';
+    val = _get_L2CR();
+-   p += sprintf(p, "%08x: ", val);
+-   p += sprintf(p, " %s",
+-         (val&0x80000000)?"enabled":"disabled");
+-   p += sprintf(p,",%sparity",(val&0x40000000)?"":"no ");
+-   p += sprintf(p, ",%s", sizestrings[(val >> 28) & 3]);
+-   p += sprintf(p, ",%s", clockstrings[(val >> 25) & 7]);
+-   p += sprintf(p, ",%s", typestrings[(val >> 23) & 0x2]);
+-   p += sprintf(p,"%s",(val>>22)&1?"":",data only");
+-   p += sprintf(p,"%s",(val>>20)&1?",ZZ enabled":"");
+-   p += sprintf(p,",%s",(val>>19)&1?"write-through":"copy-back");
+-   p += sprintf(p,",%sns hold", holdstrings[(val>>16)&3]);
++   p += sprintf(p, "0x%08x: ", val);
++   p += sprintf(p, " %s", (val >> 31) & 1 ? "enabled" :
++     "disabled");
++   p += sprintf(p, ", %sparity", (val>>30)&1 ? "" : "no ");
++   p += sprintf(p, ", %s", sizestrings[(val >> 28) & 3]);
++   p += sprintf(p, ", %s", clockstrings[(val >> 25) & 7]);
++   p += sprintf(p, ", %s", typestrings[(val >> 23) & 2]);
++   p += sprintf(p, "%s", (val>>22)&1 ? ", data only" : "");
++   p += sprintf(p, "%s", (val>>20)&1 ? ", ZZ enabled": "");
++   p += sprintf(p, ", %s", (val>>19)&1 ? "write-through" :
++     "copy-back");
++   p += sprintf(p, "%s", (val>>18)&1 ? ", testing" : "");
++   p += sprintf(p, ", %sns hold",holdstrings[(val>>16)&3]);
++   p += sprintf(p, "%s", (val>>15)&1 ? ", DLL slow" : "");
++   p += sprintf(p, "%s", (val>>14)&1 ? ", diff clock" :"");
++   p += sprintf(p, "%s", (val>>13)&1 ? ", DLL bypass" :"");
++   if ((_get_PVR() >> 16) == 12) {
++     /* G4 have more significant bits than G3 */
++    p += sprintf(p, "%s", (val>>12)&1 ? ",
++      flush assist" :"");
++    p += sprintf(p, "%s", (val>>11)&1 ? ",
++      hardware flush" :"");
++    p += sprintf(p, "%s", (val>>10)&1 ? ",
++      instruction-only" :"");
++    p += sprintf(p, "%s", (val>>9)&1 ? ",
++      clock stop" :"");
++    p += sprintf(p, "%s", (val>>8)&1 ? ",
++      rollover checkstop" :"");
++   }
+
+-   p += sprintf(p,"\n");
++   p += sprintf(p, "\n");
+
+    len = strlen(buf);
+    if (len > left)
+
+l2cr-cmdline-gom.diff-----------------------
+--- linux-pmac-stable-orig/arch/ppc/kernel/setup.c Mon Jul 17 21:30:43 2000
++++ linux/arch/ppc/kernel/setup.c Mon Jul 17 23:13:58 2000
+@@ -549,15 +549,19 @@
+  return 0;
+ }
+
+-/* Checks "l2cr=xxxx" command-line option */
++/* Takes care of "l2cr=xxxx" command-line option */
+ void ppc_setup_l2cr(char *str, int *ints)
+ {
+  if ( ((_get_PVR() >> 16) == 8) || ((_get_PVR() >> 16) == 12) )
++  /* Make sure cpu is G3 or G4 */
+  {
+   unsigned long val = simple_strtoul(str, NULL, 0);
+   printk(KERN_INFO "l2cr set to %lx\n", val);
+-  _set_L2CR(0);
+-  _set_L2CR(val);
++  val |= 0x00200000; /* perform global invalidate */
++  _set_L2CR(0);  /* disable cache */
++  _set_L2CR(val);  /* enable it */
++ } else {
++  printk(KERN_INFO "l2cr: cpu is not suitable\n");
+  }
+ }
+
+--- linux-pmac-stable-orig/init/main.c Mon Jul 17 21:31:00 2000
++++ linux/init/main.c Mon Jul 17 21:04:15 2000
+@@ -355,6 +355,9 @@
+ #ifdef CONFIG_ADBMOUSE
+ extern void adb_mouse_setup(char *str, int *ints);
+ #endif
++#ifdef CONFIG_PPC
++extern void ppc_setup_l2cr(char *str, int *ints);
++#endif
+ #ifdef CONFIG_WDT
+ extern void wdt_setup(char *str, int *ints);
+ #endif
+@@ -1044,6 +1047,9 @@
+ #endif
+ #ifdef CONFIG_ADBMOUSE
+  { "adb_buttons=", adb_mouse_setup },
++#endif
++#ifdef CONFIG_PPC
++ { "l2cr=", ppc_setup_l2cr },
+ #endif
+ #ifdef CONFIG_LTPC
+  { "ltpc=", ltpc_setup },
+
+
+
+@+
 
 --
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
---------------1C732C24407074E821B3A976
-Content-Type: application/x-gzip;
- name="pmud-0.6-3400APM-jpg.patch.gz"
+Guillaume
+--------------10D51DB086CF77B6D3D7C6B1
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="522A6368";
+ name="l2cr-display-gom.diff"
+Content-Description: Unknown Document
 Content-Disposition: inline;
- filename="pmud-0.6-3400APM-jpg.patch.gz"
-Content-Transfer-Encoding: base64
+ filename="l2cr-display-gom.diff"
+Content-Transfer-Encoding: 7bit
 
-H4sICHfMczkAA3BtdWQtMC42LTM0MDBBUE0tanBnLnBhdGNoAIVWbW/aSBD+bH7FHFUjO7bB
-a2NeQxXa0ijXvFSEXq/KIcuBNdkUbJ9tEqIq99tv9sVOSJq7iLAwO/Ps7DPPjFmwKAI720C6
-3ixsp9FuzpO4yNhVs8jC+Y80XDTm1V7jJl3+Yr9m2/Z/xWvf6AJGaQakB8Tv+92+2wHXcZya
-aZr/B66dJjH8vlkBwRi37zj9VksGHx6C7XtWB0zxfnhYgxq8YdGCRvBx/P7rUQ34X5qxuIj0
-+ttFH+pWbAxqNjezCPQY3oFjwM+a+cQylCbQMAzYAD9ESQY6GzoDYHAAMS6maaD9Kbqzfeu4
-Wzzg/pLN8AyeHOn0eHZy4ekBaA/inYMuYAhJSmO93lzQ22a4uKpbcB5MPn6b8Bw1ng46Hah8
-zMpQ5qelNMuSTK9zFBYvocIxeNYa3bJCH/95PA0+jY5Pvk7GwvxQW7woOX5oXO8WQph2CytM
-z2rpdrGcr9RS+u+Wj7h9130sH+lZXSSoZ3ll+bB4LKbw5fRrcHE6mkyD96PpVNOcbTvSmvuQ
-0TTJCsjXIb5fhUVBs3vIi7CgsN/cDT8aT4M/xpOL4/MzHk9DHr+kBU8SIpat78KMwi3NcoYp
-vuHxds1Gn88sXkAScRDQ18mCrgyxSePNGom3NY7+efz9ZDQ5Osf8LsYfh57F0dn7JPkhfB8G
-v6b5RTdJ2wuiufCn1xs4De+BEHB6fd/r+/7rTL/sFKwO8R6p9pBl4oIp1paiGzWlR6twme99
-OjkKRl9OuaxRa9hF4HAN4T6CByVLw6GgVtEaeC0Htcj9hB41AQV7Q/hHwQkdavl9vkqW+sn5
-UfBtNDk7PjuyoB4nEKZryDepqCjvMQ6HDUVzGhdKww9CyKucYk40RkoFIAYGVf8E+E3H/4it
-qFI4iBu3Pd9C7sy217FIV9xY5omV2uQU6LZASJRzqaOM/r2heQF6+0pUHF03cc6WMfrMr8OM
-q291f9mdDbAbxXhIuXlJLZArjohyZ77JMryGskSrJCxglYXxkl7OMPGf4DQcC9yOz5euL76R
-dldaPdeXu22xeqQt7J7vyLXribVFiNhveWKfH8T/cMC0/K7c6fTk2uuJCJ905IpUi9Uncu2o
-tSeR20RmhNTJVZzMD3h4cp+bgdCQGExcJUmqc3Xwjh1PvgcX09F0bIEjXoI6vClWntMte7Zu
-iGkmaprRYpPFCjG9y5AkSbczgz0gA03UbfQBsDvZPCxQL1gizEVQz8ffToAr5HN7hVZdmskM
-Dg6ga4Cp/NzZgEOW1b9NVkW4lHOEx8qpj/Fq7ncHYJrMkNJqda02KsvvWJ4vlaXl6lHAb7bJ
-TX5TeLvYfW3/inHI314pPi69maUuz7+1ZqXdx08q7fbztDsqJr9jxfya5qh5U6gOq/AbEicf
-Fpp8npVw+KDDSWDIDcAMwERiMF9Df/SxhQ/sozaJb4hCPwBvPgFV8qxAEMIeApH6vuE0e56D
-ELfYO03gcpK9AOoc0G8kJMdi8rEmkWTvCKK5oTqQ8WexS557cS1Wjs/2dNVizCT8OuW3mbGv
-39i6UK3BOJXVzqCSkIgnOC4xUBma0G748jpV6qXG9pxty6m4Th8hXi3boNlUbo/1KePeiWtV
-9Ulf3nbnDJVm+kqeu9gH6joVeoWjPGSlBRFqapWSGDwVFuztoQqkh/jhpAALtqYrGhVQKUod
-sI8TrMXTUkGy/jiqG6rnAvwFM8eNUGTzJBl+5Ct+7/CSJVGvQhFOGj4JeCMLPYnR/y9vBN0M
-7AoAAA==
---------------1C732C24407074E821B3A976--
+--- linux-pmac-stable-orig/arch/ppc/kernel/ppc_htab.c	Mon Jul 17 21:30:43 2000
++++ linux-pmac-stable/arch/ppc/kernel/ppc_htab.c	Mon Jul 17 22:14:46 2000
+@@ -536,8 +536,8 @@
+ 		"unknown size", "256KB", "512KB", "1MB"
+ 	};
+ 	static const char *clockstrings[8] = {
+-		"clock disabled", "+1 clock", "+1.5 clock", "reserved(3)",
+-		"+2 clock", "+2.5 clock", "+3 clock", "reserved(7)"
++		"clock disabled", "ò1 clock", "ò1.5 clock", "reserved(3)",
++		"ò2 clock", "ò2.5 clock", "ò3 clock", "reserved(7)"
+ 	};
+ 	static const char *typestrings[4] = {
+ 		"flow-through burst SRAM", "reserved SRAM",
+@@ -547,6 +547,17 @@
+ 		"0.5", "1.0", "(reserved2)", "(reserved3)"
+ 	};
+
++	if ((_get_PVR() >> 16) == 12) {
++			/* update those values when CPU is a G4 */
++		sizestrings[0] = "2MB";
++		clockstrings[3] = "ò3.5 clock";
++		clockstrings[3] = "ò4 clock";
++		holdstrings[0] = "0.6";
++		holdstrings[1] = "1.0";
++		holdstrings[2] = "1.4";
++		holdstrings[3] = "1.8";
++	}
++
+ 	if ( ((_get_PVR() >> 16) != 8) && ((_get_PVR() >> 16) != 12))
+ 		return -EFAULT;
+
+@@ -590,25 +601,43 @@
+ 			_set_L2CR(val);
+ 			while ( _get_L2CR() & 0x1 )
+ 				/* wait for invalidate to finish */;
+-
++
+ 		} else {
+ 			p = buf;
+ 			if (!first)
+ 				*p++ = '\t';
+ 			val = _get_L2CR();
+-			p += sprintf(p, "%08x: ", val);
+-			p += sprintf(p, " %s",
+-				     (val&0x80000000)?"enabled":"disabled");
+-			p += sprintf(p,",%sparity",(val&0x40000000)?"":"no ");
+-			p += sprintf(p, ",%s", sizestrings[(val >> 28) & 3]);
+-			p += sprintf(p, ",%s", clockstrings[(val >> 25) & 7]);
+-			p += sprintf(p, ",%s", typestrings[(val >> 23) & 0x2]);
+-			p += sprintf(p,"%s",(val>>22)&1?"":",data only");
+-			p += sprintf(p,"%s",(val>>20)&1?",ZZ enabled":"");
+-			p += sprintf(p,",%s",(val>>19)&1?"write-through":"copy-back");
+-			p += sprintf(p,",%sns hold", holdstrings[(val>>16)&3]);
++			p += sprintf(p, "0x%08x: ", val);
++			p += sprintf(p, " %s", (val >> 31) & 1 ? "enabled" :
++					"disabled");
++			p += sprintf(p, ", %sparity", (val>>30)&1 ? "" : "no ");
++			p += sprintf(p, ", %s", sizestrings[(val >> 28) & 3]);
++			p += sprintf(p, ", %s", clockstrings[(val >> 25) & 7]);
++			p += sprintf(p, ", %s", typestrings[(val >> 23) & 2]);
++			p += sprintf(p, "%s", (val>>22)&1 ? ", data only" : "");
++			p += sprintf(p, "%s", (val>>20)&1 ? ", ZZ enabled": "");
++			p += sprintf(p, ", %s", (val>>19)&1 ? "write-through" :
++					"copy-back");
++			p += sprintf(p, "%s", (val>>18)&1 ? ", testing" : "");
++			p += sprintf(p, ", %sns hold",holdstrings[(val>>16)&3]);
++			p += sprintf(p, "%s", (val>>15)&1 ? ", DLL slow" : "");
++			p += sprintf(p, "%s", (val>>14)&1 ? ", diff clock" :"");
++			p += sprintf(p, "%s", (val>>13)&1 ? ", DLL bypass" :"");
++			if ((_get_PVR() >> 16) == 12) {
++					/* G4 have more significant bits than G3 */
++				p += sprintf(p, "%s", (val>>12)&1 ? ",
++						flush assist" :"");
++				p += sprintf(p, "%s", (val>>11)&1 ? ",
++						hardware flush" :"");
++				p += sprintf(p, "%s", (val>>10)&1 ? ",
++						instruction-only" :"");
++				p += sprintf(p, "%s", (val>>9)&1 ? ",
++						clock stop" :"");
++				p += sprintf(p, "%s", (val>>8)&1 ? ",
++						rollover checkstop" :"");
++			}
+
+-			p += sprintf(p,"\n");
++			p += sprintf(p, "\n");
+
+ 			len = strlen(buf);
+ 			if (len > left)
+
+
+--------------10D51DB086CF77B6D3D7C6B1
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="522A6368";
+ name="l2cr-cmdline-gom.diff"
+Content-Description: Unknown Document
+Content-Disposition: inline;
+ filename="l2cr-cmdline-gom.diff"
+Content-Transfer-Encoding: 7bit
+
+--- linux-pmac-stable-orig/arch/ppc/kernel/setup.c	Mon Jul 17 21:30:43 2000
++++ linux/arch/ppc/kernel/setup.c	Mon Jul 17 23:13:58 2000
+@@ -549,15 +549,19 @@
+ 	return 0;
+ }
+
+-/* Checks "l2cr=xxxx" command-line option */
++/* Takes care of "l2cr=xxxx" command-line option */
+ void ppc_setup_l2cr(char *str, int *ints)
+ {
+ 	if ( ((_get_PVR() >> 16) == 8) || ((_get_PVR() >> 16) == 12) )
++		/* Make sure cpu is G3 or G4 */
+ 	{
+ 		unsigned long val = simple_strtoul(str, NULL, 0);
+ 		printk(KERN_INFO "l2cr set to %lx\n", val);
+-		_set_L2CR(0);
+-		_set_L2CR(val);
++		val |= 0x00200000;	/* perform global invalidate */
++		_set_L2CR(0);		/* disable cache */
++		_set_L2CR(val);		/* enable it */
++	} else {
++		printk(KERN_INFO "l2cr: cpu is not suitable\n");
+ 	}
+ }
+
+--- linux-pmac-stable-orig/init/main.c	Mon Jul 17 21:31:00 2000
++++ linux/init/main.c	Mon Jul 17 21:04:15 2000
+@@ -355,6 +355,9 @@
+ #ifdef CONFIG_ADBMOUSE
+ extern void adb_mouse_setup(char *str, int *ints);
+ #endif
++#ifdef CONFIG_PPC
++extern void ppc_setup_l2cr(char *str, int *ints);
++#endif
+ #ifdef CONFIG_WDT
+ extern void wdt_setup(char *str, int *ints);
+ #endif
+@@ -1044,6 +1047,9 @@
+ #endif
+ #ifdef CONFIG_ADBMOUSE
+ 	{ "adb_buttons=", adb_mouse_setup },
++#endif
++#ifdef CONFIG_PPC
++	{ "l2cr=", ppc_setup_l2cr },
+ #endif
+ #ifdef CONFIG_LTPC
+ 	{ "ltpc=", ltpc_setup },
+
+
+--------------10D51DB086CF77B6D3D7C6B1--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
