@@ -1,45 +1,78 @@
-From: Brian Waite <waite@skycomputers.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: GT64260_eth (Ethernet) Driver
-Date: Thu, 24 Jun 2004 07:23:17 -0400
-Cc: "Mark A. Greer" <mgreer@mvista.com>,
-	Dieu Morales <dieumorales@yahoo.com>,
-	linuxppc-embedded@lists.linuxppc.org
-References: <20040620202719.25741.qmail@web60407.mail.yahoo.com> <40DA06BE.204@mvista.com> <1088066228.18627.3352.camel@hades.cambridge.redhat.com>
-In-Reply-To: <1088066228.18627.3352.camel@hades.cambridge.redhat.com>
+Message-ID: <20040624115640.49843.qmail@web13606.mail.yahoo.com>
+Date: Thu, 24 Jun 2004 04:56:40 -0700 (PDT)
+From: m madhuker <mythri_madhuker@yahoo.com>
+Subject: problem with usb webcam in MPC8245
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <200406240723.18346.waite@skycomputers.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+hello all,
 
-I think this is just a "sprout" Basically, Mark started an entire code
-refactor for the 2.6 kernel. I started bugging him so he put up a terr where
-we can colaborate on getting the code to a working state.
-I don't think it is expected t live any longer than hey all the peices work
-and boot a board. Today I don't think we have that. Ethernet driver and MPSC
-driver are the 2 major sticking points right now.
+             Iam working with MPC8245 board.and iam
+using timesys GPL-linux(kernel ver: 2.4.7).
 
-Thanks
-Brian
+        We have logitec quickcam 3000 pro webcam.
+which supports philips driver. in x86 linux system its
+working well.(since driver was already installed).
 
-On Thursday 24 June 2004 04:37 am, David Woodhouse wrote:
-> You are lost in a twisty maze of BK trees, all alike.
->
-> On Wed, 2004-06-23 at 15:39 -0700, Mark A. Greer wrote:
-> > You should sync up with Brian Waite (look at CC: list) who has been
-> > looking at writing a new enet driver for the 2.6 kernel using the latest
-> > bridge support code.  You can get a look at the latest support code by
-> > cloning bk://source.mvista.com/linux-2.5-marvell.  Note the the mpsc
-> > driver that's there still isn't working correctly.
->
-> Ooh look another one. What's in here that merits it having its own tree
-> and prevents it from being accepted upstream?
->
-> Please be as specific as you can -- my task for the next few weeks
-> involves making Dy-4 DMV-182 support happen.
+        But in this board kernel has pwc-8.0 version,
+which not support our webcam. so we downloaded philips
+8.8 version. which supports quickam 3000 pro webcam.
+and as per installation notes we followed...
+      but when we compile kernel(make zImage.initrd.)
+        it got error as follows:
+        ----------------
+      pwc-if.c:2023: parse error before string
+constant
+        cc1: warnings being treated as errors
+    pwc-if.c:2023: warning: type defaults to `int' in
+declaration of `MODULE_LICENSE'
+        pwc-if.c:2023: warning: function declaration
+isn't a prototype
+        pwc-if.c:2023: warning: data definition has no
+type or storage class
+        make[3]: *** [pwc-if.o] Error 1
+        make[3]: Leaving directory
+`/usr/src/timesys/ampenpp1/2.4.7-timesys-3.1.554/kernel/drivers/usb'
+        make[2]: *** [first_rule] Error 2
+        make[2]: Leaving directory
+`/usr/src/timesys/ampenpp1/2.4.7-timesys-3.1.554/kernel/drivers/usb'
+        make[1]: *** [_subdir_usb] Error 2
+        make[1]: Leaving directory
+`/usr/src/timesys/ampenpp1/2.4.7-timesys-3.1.554/kernel/drivers'
+        make: *** [_dir_drivers] Error 2
+        [root@mail kernel]#
+        -------------------------
+
+        so we masked the line no: 2023 as follows:
+        MODULE_LICENCE("GPL");
+        then after it was complied sucessesfully...and
+
+        while booting kernel in board its dispalyed as
+follows:
+        -------------
+        usb.c: registered new driver usbdevfs
+        usb.c: registered new driver hub
+        pwc Philips PCA645/646 + PCVC675/680/690 +
+PCVC730/740/750 webcam module versio.pwc Also supports
+the Askey VC010, Logitech Quickcam 3000 Pro, Samsung
+MPC-C10 ,pwc the Creative WebCam 5, SOTEC Afina Eye
+and Visionite VCS-UC300 and VCS-UM10.usb.c: registered
+new driver Philips webcam
+        ----------------
+        we thought board was detected.
+        but, when we run application it is saying:
+        /dev/video0: No such device.
+
+        we created the node also as 'mknod /dev/video0
+c 81 0'
+        please give suggestion.
+                            Thanking you.
+                                       Regards
+                                       Madhukar
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
