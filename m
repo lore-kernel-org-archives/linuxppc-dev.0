@@ -1,50 +1,41 @@
-Date: Tue, 13 Apr 1999 17:53:52 +0300 (EET DST)
-From: "Thomas E. Arvanitis" <tharvan@ellemedia.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: LinuxPPC on FADS
-Message-ID: <Pine.GSO.4.05.9904131709060.29269-100000@lucifer>
+Date: Tue, 13 Apr 1999 17:22:20 +0200 (MET DST)
+From: David De Ridder <s970707@uia.ua.ac.be>
+Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Cannot telnet into pre-R5 board (PAM?)
+Message-ID: <Pine.SO4.4.05.9904131707080.18847-100000@hsins.uia.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello All,
+Hi,
 
-I am trying Linux-2.2.0-pre7 (provided by Dan) on a FADS-860SAR with 4MB
-DRAM. After a few modifications, I am now up to the point where I boot ok
-and kernel runs execve for "init". 
+I have a small problem that I would like to see fixed. I'm running
+a pre-R5 on our MVME2306 board. I cannot telnet to the board, i.e.
+I get the login prompt, but always ``Login incorrect''. 
 
-I use initrd, because NFS_ROOT (as I have read in the list's archive)
-just doesn't work (is that true by the way? any news on that?), and I
-personally have reached a dead-end: although root over NFS mounted ok,
-never worked properly after that.
-In the initrd case, ramdisk image is based on mbxroot.min (By Dan
-again). I boot with the following args:
+First I thought it was because I tried to login as root. So I tried 
+to create a new non-root account, which fails. When I do a ``useradd'', 
+followed by a ``passwd'', then the passwd fails with ``passwd: permission
+denied'' (what permission ?).
 
-root=/dev/ram ramdsik_size=1536 ip=###.###.###.### init=/bin/sh
+I strongly suspect PAM being responsible for all this, but I have no
+experience whatsoever with PAM. It seems to me that the /etc/pam.d/
+are all correct.
 
-So what I get is:
-- kernel uncompresses fine
-- uart and ethernet initialize ok
-- ramdisk also starts up ok
-- ramdisk is uncompressed ok and mounted
-- unused memory (28k init) is freed
-- elf proccessing of sh is done also (I think) normally
+Can anybody please help ?
 
-After or around setup_arg_pages the kernel starts behaving realy weirdly.
-Either it just hangs or I get a panic for a "page fault in interrupt".
-In almost all cases I find that memory especially in the range of
-0x300-0x1200 (ISRs) is strangely modified. In many places I find instead 
-of expected code (e.g. EXCEPTION PROLOG instructions) virtual addresses or
-physical addresses numbers. It seems like it goes crazy running arround
-and writting where it shouldn't.
++-----------------------------------------------------------------+
+   David 'Septimus' De Ridder     <david.de.ridder@bitsmart.com>
 
-Has anyone any idea what's going on? Has anybody seen something like that
-again?
+"Fortunately, Hill Giants have large blind  spots in
+ which a human can easily hide. Unfortunately, these
+ blind spots are beneath the bottoms of their feet."
+ - 'Hill Giant' (M:TG)
++-----------------------------------------------------------------+
 
-Thanks for your help,
--Thomas.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
