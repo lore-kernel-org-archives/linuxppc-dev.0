@@ -1,39 +1,45 @@
-Message-ID: <3C94D78E.3010100@embeddededge.com>
-Date: Sun, 17 Mar 2002 12:51:10 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Date: Sun, 17 Mar 02 10:16:02 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0203171816.AA01595@ivan.Harhan.ORG>
+To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [PATCH] My GT-64260 enhancements
-References: <0203170703.AA00587@ivan.Harhan.ORG>
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov wrote:
+Dan Malek <dan@embeddededge.com> wrote:
 
-> But Troy's personal preferences shouldn't affect the public tree, should they?
-> If 9600 is the default baud rate for all of Linux, why should one port be
-> different?
+> I didn't know there was a "default" baud rate for Linux.  I think the lowest
+> I have ever seen is 9600, but I certainly wouldn't call it a default.  It
+> seems every one of the boards I have uses something different,
+>
+> The debug console serial port rates are either provided by passing some
+> bootloader information to the kernel or by a kernel command line option.
+> Either one is locally configurable.
 
-I didn't know there was a "default" baud rate for Linux.  I think the lowest
-I have ever seen is 9600, but I certainly wouldn't call it a default.  It
-seems every one of the boards I have uses something different,
+But if you don't specify the baud rate in any way, it'll default to 9600 except
+on the EV-64260-BP.
 
-The debug console serial port rates are either provided by passing some
-bootloader information to the kernel or by a kernel command line option.
-Either one is locally configurable.
+Also I don't like calling the standard serial console "debug". A standard
+computer running UNIX or a UNIX-like system must have a standard serial port as
+the console for root to do sysadmin work, not a PeeCee video/keyboard. Just
+like every standard VAX.
 
-> .... Who is the maintainer with authority over this? Would s/he accept a
-> patch to axe that 115200 line out?
+> It shouldn't be a hard-coded value.  It should at least be the standard Linux
+> command line option.
 
-It shouldn't be a hard-coded value.  It should at least be the standard Linux
-command line option.  Bootloaders should simply use the port as it was
-configured by the boot rom.
+That option works of course. I'm simply asking to remove the line from
+arch/ppc/config.in that makes the EV-64260-BP port have a different default
+from the rest of Linux, which I claim is inappropriate.
 
+> Bootloaders should simply use the port as it was
+> configured by the boot rom.
 
-	-- Dan
+I'm not talking about any bootloader, I'm talking about the kernel (vmlinux).
+My bootloader (ppc-linux-boot) doesn't know anything about UARTs at all, it
+makes console user services calls to the firmware ROM to talk to the abstract
+console device.
 
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
