@@ -1,27 +1,36 @@
-Message-ID: <3C6940AD.8010800@mvista.com>
-Date: Tue, 12 Feb 2002 08:19:57 -0800
-From: Matthew Locke <mlocke@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3C695395.7DEC4A71@opensource.se>
+Date: Tue, 12 Feb 2002 18:40:37 +0100
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Cc: "Embedded Linux PPC List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: where can I get pdisk
-References: <3C693537.3090701@cambridgebroadband.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "David Marqvar (DAM)" <DAM@tt.dk>
+Cc: "Embedded Linux PPC List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>,
+	"Laurits Lassen Petersen (LLP)" <LLP@tt.dk>
+Subject: Re: Kernel 2.4.4
+References: <E8F83D6D2A6AD3118E0300902786A20502371417@NTEX>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Alex Zeffertt wrote:
+> My next step is to find a simple bootloader..
 
->
-> Sorry for the silly question - but where can I get the sources for
-> pdisk?  I've looked on google,
-> but every link to them seems to be broken.
->
-why do you want pdisk?  parted can do mac partitions.  I recommend using
-parted instead.
+Try Miniboot!
+It is almost as simple as a bootloader can be.
 
->
+http://opensource.se/projects/
 
+Miniboot now supports 4 different boards,
+all with mpc8xx processors.
+
+A new version will be released soon...
+
+And, you may want to boot PPCBoot from Miniboot.
+This will make it possible to update PPCBoot
+without any BDM.
+
+Cheers /
+
+Magnus
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
