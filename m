@@ -1,35 +1,67 @@
+Message-ID: <3EF9CB72.7030808@esteem.com>
+Date: Wed, 25 Jun 2003 09:18:58 -0700
+From: Conn Clark <clark@esteem.com>
+MIME-Version: 1.0
 To: cedric_aubert@yahoo.fr
-Cc: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: (Sudo off topic)Simple cheap IDE intrerface for IBM 405 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 25 Jun 2003 00:06:37 PDT."
-             <20030625070637.16435.qmail@web41812.mail.yahoo.com>
-Date: Wed, 25 Jun 2003 18:03:08 +0200
-Message-Id: <20030625160313.29C3BC5FD7@atlas.denx.de>
+Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: (Sudo off topic)Simple cheap IDE intrerface for IBM 405
+References: <20030625070637.16435.qmail@web41812.mail.yahoo.com>
+In-Reply-To: <20030625070637.16435.qmail@web41812.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030625070637.16435.qmail@web41812.mail.yahoo.com> you wrote:
+Cedric Aubert wrote:
+>>-----Original Message-----
+>>From: Chris Zimman
+>>Sent: Wednesday, June 25, 2003 8:50 AM
+>>Subject: Re: (Sudo off topic)Simple cheap IDE intrerface for IBM 405
+>>
+>> On Tue, Jun 24, 2003 at 03:17:24PM -0700, Conn Clark wrote:
+
+<snip>
+
+>>controllers from surplus suppliers, either should work fine.
+>
+>
+> Hi
 >
 > For information, what is the cheap simple IDE interface for the MPC8xx
 > that you talk about ?
+>
+> Thanks
+>
+> Cedric
+>
+>
+>
+>
 
-Using the internal PCMCIA controller. All you need is bus drivers and
-a trivial (2 gates) address decoder.
+	There is a way to hook up an IDE interface to the PCMCIA interface of
+the Motorola 8xx family of processors. The code for controling it is in
+the sourcefile /drivers/ide/ide-m8xx.c . I think that there is more info
+on it in the PPCBoot/U-Boot source code.
+
+	Enough people are doing it that it made it in the kernel so there must
+be documentation some where.
 
 
-Best regards,
+Hope this helps,
 
-Wolfgang Denk
+
+	Conn
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-On the subject of C program indentation: "In My Egotistical  Opinion,
-most  people's  C  programs  should be indented six feet downward and
-covered with dirt."                               - Blair P. Houghton
+
+*****************************************************************
+   If you live at home long enough, your parents will move out.
+  (Warning they may try to sell their house out from under you.)
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
