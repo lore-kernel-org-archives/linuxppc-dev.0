@@ -1,54 +1,39 @@
-Date: Wed, 19 Feb 2003 09:43:47 +0100
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: [PATCH] 8xx_io/uart.c
-In-reply-to: <3E43DA00.7030808@embeddededge.com>
-To: Dan Malek <dan@embeddededge.com>
-Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLOEGFFKAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Message-Id: <5.1.0.14.2.20030219004853.00b12e08@mail.ebshome.net>
+Date: Wed, 19 Feb 2003 00:54:45 -0800
+To: "Laurent Mohin" <laurent.mohin@acterna.com>
+From: Eugene Surovegin <ebs@ebshome.net>
+Subject: Re: 405GPr support in linux2.4.18
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <OFA7B6F432.6CF96B48-ONC1256CD1.00372BF7@eng.eni.wago.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Dan Malek
-> Joakim Tjernlund wrote:
-> > Please can you change TX_NUM_FIFO to 8 and TX_BUF_SIZE to 96,
-> > since chars are lost when pasting text into the console otherwise.
+At 02:11 AM 2/18/2003, Laurent Mohin wrote:
+>I'm designing a board with 405GP processor. I'm now trying to have it
+>working with a 405GPr version.
+>I've started to configure it working in legacy mode and made the necessary
+>changes in PPCBoot.
 >
-> What makes 96 a big enough number?  If you want to do this locally,
-> that's fine, but only flow control can guarantee you won't overflow
-> a serial port of any fifo depth.
+>Once downloaded, my kernel hung in early_init function when it called the
+>memset_io to zero the BSS. Using a BDI2000 debugger, I saw that I've
+>reached the bad_page_fault function.
+>
+>The only difference I know between 405GP and 405GPr in legacy mode is data
+>cache size. How does the kernel manage it?
 
-The fix I posted for drivers/char/n_tty.c is buggy w.r.t looking and
-noone wants to play with the tty layer since it is a mess.
+We successfully run 405GPr based board (in legacy mode) with the _same_
+kernel we used for 405GP.
+We don't use any 405GPr specific features though.
 
-So I have been looking into what can be done in the uart.c.
-opost_block(in n_tty.c) will never write more that 80 chars in
-one go so it makes sense if we can match that size(TX_BUF_SIZE >= 80).
-That should not be a problem since this memory is allocated with
-m8xx_cpm_hostalloc()and the only user that function is uart.c
+As far as I understand, the only function which depends on the data cache
+size is flush_dcache_all in (arch/ppc/kernel/misc.S).
+But it already handles the worst case which is 440GP (32K), so no change is
+needed for 405GPr.
 
-Increasing TX_NUM_FIFO to 8 is not big deal either IMHO.
-Possibly one could let serial_console_setup allocate all the
-BDs that is needed and make rs_8xx_init() reuse them. That
-will save 24 bytes(3 BDs) from dp memory. This may be tricky though.
-
-Another thing that will help is to make rs_8xx_put_char() build
-a transmit queue and impl. rs_8xx_flush_chars() to actually write
-them. I have tested this and it helps but it won't solve all cases.
-
-What do you think?
-
-> I don't want to arbitrarily make
-> this fifo so large as there are other processing/latency/memory
-> tradeoffs.  The SMC is not a high performance interface and it
-> consumes lots of CPM cycles.
-
-  I can't see the processing and latency implications.
-
-   Jocke
+Eugene
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
