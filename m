@@ -1,18 +1,15 @@
-Return-Path: <rvinson@mvista.com>
-Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
-	by ozlabs.org (Postfix) with ESMTP id 7858267A30
+Return-Path: <ningmin@yahoo.co.jp>
+Received: from web605.mail.yahoo.co.jp (web605.mail.yahoo.co.jp [211.14.15.79])
+	by ozlabs.org (Postfix) with SMTP id 2CC2367A88
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Jan 2005 08:28:08 +1100 (EST)
-Message-ID: <41F16B51.1000003@mvista.com>
-Date: Fri, 21 Jan 2005 13:51:29 -0700
-From: Randy Vinson <rvinson@mvista.com>
+	Sun, 23 Jan 2005 20:03:32 +1100 (EST)
+Message-ID: <20050123085652.42295.qmail@web605.mail.yahoo.co.jp>
+Date: Sun, 23 Jan 2005 17:56:51 +0900 (JST)
+From: ning <ningmin@yahoo.co.jp>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: annamaya <annamaya@yahoo.com>
-References: <20050121201632.69802.qmail@web53804.mail.yahoo.com>
-In-Reply-To: <20050121201632.69802.qmail@web53804.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel booting issues on a MPC8270 board
+Content-Type: text/plain; charset=iso-2022-jp
+Subject: Serial console problem on MPC8272ADS board 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-annamaya wrote:
-> I debugged this problem a little more and realized
-> that the reset was happenning right after the
-> execution of the first kernel instruction at
-> 0x0000000c. The instruction at this location was
-> "mfpvr r28". I traced this back to a snippet of code
-> that was dealing with pipeline depth issues on the
-> MPC8260. Once I commented this code out, more
-> instructions were issued but the reboot happens
-> elsewhere. I am not able to pin-point the location of
-> the debug since my BDI fails to catch the reset when
-> it happens. Can someone point me to the cause of this
-> situation? Thanks in advance.
+Hello to all
 
-I'm not familiar with the 8260, but this sounds very much like a 
-hardware watchdog is expiring somewhere. Check to see if the hardware 
-has an on-board watchdog (most likely in the timer section of the 8260) 
-and see if the firmware has armed it. If so, you'll need to add a 
-snippet of code to disable the watchdog to allow boot-up to complete.
+I am trying to use ttyS1(SCC4) as Linux serial console
+port on on MPC8272ADS board.
+but it doesn't work. 
+My linux kernel is 2.4.22,and using u-boot-1.1.1 as a
+bootload.
+Linux kernel doesn't output any log information after
+u-boot's message:
+ Uncompressing kernel Image ...  OK
+ 
+If I use ttyS0(SCC1) as a serial console port,Linux will
+startup successfully.
 
-		Randy Vinson
+  CPM UART driver version 0.01
+  ttyS0 at 0x8000 is a SCC
+  ttyS1 at 0x8300 is a SCC
+  ...
+
+I found serial console port seems be defined in
+/arch/ppc/8260_io/uart.c,
+but it doesn't work enen if I change
+CONFIG_SERIAL_CONSOLE_PORT to 1 (default:0) 
+
+I wonder serial console port only can be set to
+ttyS0(SCC1) on MPC8272ADS?
+
+Thanks.
+
+__________________________________
+Do You Yahoo!?
+Upgrade Your Life
+http://bb.yahoo.co.jp/
