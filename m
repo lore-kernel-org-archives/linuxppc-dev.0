@@ -1,78 +1,59 @@
-Date: Tue, 22 Jun 1999 23:09:02 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-Reply-To: Jeff Rugen <jrugen@primenet.com>
-To: Michael Engel <engel@math.uni-siegen.de>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Xbh not working (Cirrus X server)
-In-Reply-To: <199906230224.EAA24948@fourier.numerik.math.uni-siegen.de>
-Message-ID: <Pine.BSI.3.96.990622225336.2245A-100000@usr08.primenet.com>
+Message-Id: <199906230641.BAA10268@lists.linuxppc.org>
+Date: Wed, 23 Jun 1999 08:40:52 +0200 (CEST)
+From: laures@esiea.fr
+Subject: Re: preferred Sync rates in X for PDQ/Wallstreet 2.0
+To: jpgarcia@execpc.com
+cc: linuxppc-dev@lists.linuxppc.org,
+        fr.comp.os.unix.mac@Jaws.gom.cybercable.fr
+In-Reply-To: <Pine.GSO.3.95.990622132502.21035A-100000@earth>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 23 Jun 1999, Michael Engel wrote:
-
+On 22 Jui, Joseph Palani Garcia wrote:
 > 
-> 
-> Hi,
-> 
-> I'm experiencing a problem with Xbh on the Motorola PowerStack Series E
-> and PowerStack II here. Xbh crashes with segmentation fault shortly after
-> starting the server, gdb shows that the server is crashing in
-> gd54xx_memsize
-> (in xc/programs/Xserver/hw/bh/gd54xx.c). I built XFree from source
-> (rpm --rebuild) with the same result. When setting a fixed memsize of 2 MB
-> in gd54xx_memsize, the server crashes in outb() in
-> gd54xx_setcolor
-> 
+> Does anyone know the preferred HorzSync and VertRefresh rates for the LCD
+> display on a PBG3/300?
 
-Ok, I wrote the reply below before I remembered the first important
-question:
+>From my /etc/X11/XF86Config file:
 
-Are you starting Xbh with the -mmap option?  If you're using 2.2.x or later,
-you have to have that option selected, and it might not be default:
+# **********************************************************************
+# Monitor section
+# **********************************************************************
 
-startx -- -mmap
+# Any number of monitor sections may be present
 
-If that doesn't work, read on. :-)
+Section "Monitor"
 
-------------------
+    Identifier	"WallStreet built-in LCD Panel"
+    VendorName	"Apple"
+    ModelName	"14,1 TFT"
 
-I might be the de-facto maintainer for Xbh right now (I'm the latest person
-I know to play with it much).  A couple questions:
+    HorizSync   48.115
 
-1) How much video memory does your graphics chip have (it sounds like 2 MB
-with you setting a fixed memsize).
-2) What version of Linux are you running.
-3) Is your Series E one in a black case, or is it a standard PC
-tower/desktop model (I can't remember if my motherboard is considered the
-series E, but its a standard PC tower with 2MB video memory -- I'm using
-various 2.2.x and 2.3.x kernels, though Xbh mainly with an older 2.2.x
-kernel).
+    VertRefresh 59.696
 
-Which version of glibc do you have?  (Are you a R5 or pre-R5 distribution,
-with the newer glibc, or an older R4+ with glibc 1.99?)
+    Mode "1024x768"
+        DotClock	64.666
+        HTimings	1024 1032 1176 1344
+        VTimings	768 771 777 806
+    EndMode
 
-If you're running R5 (glibc of 2.1 or something like that), is it convenient
-for you to download the Xbh I have compiled at
-ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/Xbh-16bit-glibc2x
+EndSection
 
-If you have R4, you could download my updates to the Xbh source from the
-same directory and try rebuilding as well, though I can't think of any
-changes I made which would affect that -- however, a full gdb output using
-that source may be easier for me to deal with, since it represents the
-current source that I look at occasionally.
+...
 
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
+works like a charm on my PBG3 292, I took these values from fbset.
 
-...Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
+french version: 
+voici les valeurs a inserer dans le fichier /etc/X11/XF86Config pour un
+fonctionnement optimal de l'ecran LCD 14,1 ' des PB G3 Series. Elles on
+ete obtenues a partir du programme fbset
 
-
-
+-- 
+Guillaume Laurès - student @ ESIEA (www.esiea.fr)
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
