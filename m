@@ -1,24 +1,49 @@
-Date: Tue, 8 Jun 2004 20:19:21 +0200
-From: Colin Leroy <colin@colino.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.6.7-rc3: another strange bug(?)
-Message-Id: <20040608201921.7059a87a@jack.colino.net>
+Subject: Re: [PATCH][RFC] have_residual_data()
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Leigh Brown <leigh@solinno.co.uk>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <1290.81.137.83.225.1086682323.squirrel@www.solinno.co.uk>
+References: <1290.81.137.83.225.1086682323.squirrel@www.solinno.co.uk>
+Content-Type: text/plain
+Message-Id: <1086809994.3227.83.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Wed, 09 Jun 2004 14:39:54 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Tue, 2004-06-08 at 03:12, Leigh Brown wrote:
 
-I've installed 2.6.7-rc3, and it seems to work quite fine. However
-something strange happened after a few hours of uptime: pbbuttonsd had
-dimmed the display, I came back on the laptop (iBook G4), moved the
-trackpad, and when the display came back it was all garbled - as when
-UseFBDev isn't used in X. It's ok after a reboot...
+> I just read Gustavo's email, and co-incidently have finally began looking
+> again at my patches over the last couple of days to see about making
+> them good enough to submit.  To this end, please find attached a patch
+> to create a new inline function have_residual_data(), which looks like
+> this:
+>
+> static inline int have_residual_data(void) {
+> #if       defined(CONFIG_PREP_RESIDUAL)
+> 	return res && res->ResidualLength;
+> #else /* !defined(CONFIG_PREP_RESIDUAL) */
+> 	return 0;
+> #endif /* defined(CONFIG_PREP_RESIDUAL) */
+> }
 
-I'll let you know if this happens again.
+Sounds like a great idea. :) Without having time to read the whole
+patch, I think preferred style is:
+
+#if       defined(CONFIG_PREP_RESIDUAL)
+static inline int have_residual_data(void) {
+	return res && res->ResidualLength;
+}
+#else /* !defined(CONFIG_PREP_RESIDUAL) */
+static inline int have_residual_data(void) {
+	return 0;
+}
+#endif /* defined(CONFIG_PREP_RESIDUAL) */
+
 --
-Colin
+Hollis Blanchard
+IBM Linux Technology Center
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
