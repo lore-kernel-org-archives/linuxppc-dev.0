@@ -1,51 +1,92 @@
-Date: Mon, 12 May 2003 10:41:36 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Christophe.LINDHEIMER@fr.thalesgroup.com
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem with parse_bootinfo on a Board with 2Mb of SRAM
-Message-ID: <20030512174136.GA6571@ip68-0-152-218.tc.ph.cox.net>
-References: <D96E2AFA0DF3D211B139009027454948034CBD21@helios.gnv.tcc.thomson-csf.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D96E2AFA0DF3D211B139009027454948034CBD21@helios.gnv.tcc.thomson-csf.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: set_rtc_time() cleanup / normalization
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Mon, 12 May 2003 23:17:28 +0200
+Message-Id: <20030512211733.B489EC6092@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, May 06, 2003 at 07:40:51PM +0200, Christophe.LINDHEIMER@fr.thalesgroup.com wrote:
+Hi everybody,
 
-> I am trying to start Linux with a custom board.
-> This board has only 2Mb of SRAM.
->
-> Linux crashes in the function parse_bootinfo.
->
-> In my Systemp.map I have got __bss_start == 0xc0091000
->
-> In parse_bootinfo I have :
->
-> rec = ( struct bi_record *)_Align((ulong)__bss_start+(1<<20)-1, 1<<20))
->
-> So rec equals 0xc0200000
->
-> and then
->
-> if (rec->tag != BI_FIRST )
->
-> but this line crashes because it tries to access 0xc0200000 whereas my sram
-> is between 0xc0000000 and 0xc01fffff.
+I would like to find out if there is some consensus about the use  of
+set_rtc_time() in the timer interrupt handler.
 
-There's a few issues here.  First, in 2.4 we do the 'bad' thing of
-making up a magic location where these bi_recs are, on the fly.  If you
-don't mind making an incompatible change (i.e., you would need to change
-arch/ppc/boot/* as well as arch/ppc/kernel/setup.c, and
-arch/ppc/kernel/head.S), you can do what will be done for 2.5, which is
-to allow the location of the bi_recs to be picked by whatever booted the
-kernel, and passed along in a register.  So for your 2mb board, you
-could pick say 0xc01880000 as where to put them.  Or wherever you want,
-that will be not part of the BSS.
+    Note: this question relates to a thread that was started by
+    Stephen Johnson on Tue, 22 Apr 2003; see message:
+    http://lists.linuxppc.org/linuxppc-embedded/200304/msg00233.html
+
+The problem: some systems use RTC chips which  are  attached  to  the
+system  using an I2C bus (or similar). To control the device you will
+have to setup one or more I2C transactions, which usually  result  in
+one or more interrupts which must be processed.
+
+Depending on which architecture and/or board you are using, there may
+or may not be a call to set_rtc_time()  be  performed  in  the  timer
+interrupt  handler.  This  call  will  happen  every  11 minutes (659
+seconds, to be precise) - see "arch/ppc/kernel/time.c".
+
+
+I would like to know if there is a rationale  in  putting  this  call
+into a general part of the source code.
+
+Other architectures handle this differently. For example, in the  ARM
+kernel   tree  the  timer  interrupt  implementation  is  essentially
+board-specific (located in a include/asm/arch-.../time.h file).  Some
+ARM  boards'  timer interrupt handlers do call set_rtc_time(), others
+don't.
+
+Shouldn't we do the same on PPC?
+
+Or maybe we should delete this code completely? If somebody wants  to
+sync the RTC against the system time a simple daemon or cron job (for
+example calling "hwclock --systohc" every 11 minutes) would result in
+more or less identical results.
+
+
+
+More information:
+
+Calling set_rtc_time() is useful only in a situation where  there  is
+an  external reference time against which the system time is synchro-
+nized. In such a configuration this call would make sure that the RTC
+is kept in sync with the reference time. This allows  to  start  with
+minimal  deviation  in case of a crash, where no orderly shutdown was
+performed. In case of a normal shutcown / reboot the shutdown scripts
+would take care of saving the system time to RTC anyway...
+
+In all other cases such a call to set_rtc_time() is  not  needed,  or
+even harmful.
+
+Many embedded systems run in a configuration where they  use  a  high
+precision RTC chip and want to have the system time kept in sync with
+it.  In  such  a configuration, the call to set_rtc_time() is plainly
+wrong and must be avoided.
+
+
+Oliver Amft posted a solution which includes spawning a kernel thread
+to perform the set_rtc_time() call outside the timer  inteerupt;  see
+http://lists.linuxppc.org/linuxppc-embedded/200304/msg00272.html;  in
+my opinion this is only a workaround, but  not  a  solution.  Limited
+accuracy (scheduling delay for the thread) and code size overhead are
+just two of the problems of such a solution.
+
+
+All feedback welcome.
+
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+PROGRAM - n.  A magic spell cast over a computer  allowing it to turn
+one's input into error messages.
+v. tr. - To engage in a pastime similar to banging one's head against
+a wall, but with fewer opportunities for reward.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
