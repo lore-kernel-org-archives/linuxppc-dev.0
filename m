@@ -1,75 +1,60 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Gabriel Paubert <paubert@iram.es>, <linuxppc-dev@lists.linuxppc.org>
-Cc: <cort@fsmlabs.com>
-Subject: Re: 2.4.0-test3
-Date: Tue, 11 Jul 2000 12:41:05 +0200
-Message-Id: <20000711104105.21032@mailhost.mipsys.com>
-In-Reply-To: <Pine.HPX.4.10.10007111104060.9548-100000@gra-ux1.iram.es>
-References: <Pine.HPX.4.10.10007111104060.9548-100000@gra-ux1.iram.es>
+Date: Tue, 11 Jul 2000 12:48:02 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Matt Porter <mmporter@home.com>
+cc: Michael Lundkvist <ml@epact.se>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Going from 2.2.12 to 2.2.17pre10
+In-Reply-To: <20000710231251.B23538@cx258813-a.chnd1.az.home.com>
+Message-ID: <Pine.HPX.4.10.10007111242020.9548-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Now imagine here that IBAT3U is zero (I think the code is executing in
->1:1 mapped mode here). You just have set IBATL on a 601 hence the valid
->flag and you temporarily have a mapping that says:
->
->(1st 8 Mb of virtual address space) -> video memory
->
->what happens if the instruction fetcher decides to start loading a cache
->line (executing from video memory) ? Might it also depending on firmware,
->create a multiple BAT match (which is a definitive no-no) ?
+On Mon, 10 Jul 2000, Matt Porter wrote:
 
-Well, in theory, this code is run with MMU off.
-
->That's a single instruction slot, yes, but it may hurt. Simply swapping
->these instructions might solve the problem since you are not supposed to
->access the display virtual address at this time, it will have a transient
->mapping:
+> > Ok, my queston was rather: does PPCBUG have support for generic IDE
+> > interfaces or not ?
 >
->(video memory) -> first 8 Mb of physical memory
+> Do you mean standard PCI IDE interfaces as in the PCI spec addon?  I'm
+> pretty sure that the init code doesn't put the onboard controllers in
+> native mode so the Ramix controller on the bus will need massaged to
+> get into native mode so it can relocated safely in I/O space.  So,
+> the answer is no.
+
+Thanks, this anwers my question.
+
+> > The other change I would like to see in PPCBUG is that it complies with
+> > the documentatioon that claims that its services will work when the MMU is
+> > enabled. At least on 603e it does not work since it sets the MSR IP bit
+> > and then silently crashes in the TLB handlers. I doubt that this would
+> > work on a 604 or a 750 either (I did not test it), but if you get an ISI
+> > or DSI exception, you are probably screwed too.
 >
->but it sounds harmless.
+> :)
 
-Ok, I'll flip them anyway.
+Actually I think that the only way it will work is if everything that
+PPCBUG accesses is mapped with BATs. But I chose not to use BATs for
+simplicity in PrePboot.
 
->Oh and please add an isync before and after touching the BATS, this is
->required by the architecture (as I've indicated with my hand made pseudo
->unified diffs).
+> > If people volunteer to write a new MVME bootrom from scratch (or a working
+> > OF), I shall be the first in line to get it and flash it in my boards.
+> > ppc*BUG* deserves its name, at least the second part :-(
 >
->The fact that the valid bits are BATL on 601 and BATU on the other makes
->all the BAT manipulation extremely delicate. Maybe it would be better for
->robustness not to try to save a few instructions and have 2 completely
->different code paths...
+> There's a few different bootrom projects in fairly early stages and
+> lots of interest from various embedded Linux parties since many
+> board manufacturers don't have anything more than VxWorks BSPs for
+> their hardware and now want Linux support.  I'm predicting that you'll
+> see some usable GPL bootrom frameworks/code come out of this need in
+> the near future.  I swear I saw a free OF project forming somewhere
+> too.
 
-Well, I'll try that. But again, the MMU is supposed to be off at this point.
+I would swear it too, but I've lost the pointers.  Actually I thought of
+adding more early init code to prepboot (towards which I'm understandably
+biased) to get something of this kind running, but I don't have the time.
 
->Besides looking at load_bat macros, the comment does not quite exactly
->reflect the code and might crash on 601:
->/* 601 only have IBAT cr0.eq is set on 601 when using this macro */
->It should be reordered, even if slightly bigger. I believe that, once upon
->a time, there was a LOAD_601_BAT macro.
->#define LOAD_BAT(n, offset, reg, RA, RB) \
->        /* see the comment for clear_bats() -- Cort */ \
->        li      RA,0;                   \
->        mtspr   IBAT##n##U,RA;          \
->        mtspr   DBAT##n##U,RA;          \   <-- Wrong, might crash 601 !
->        lwz     RA,offset+0(reg);       \
->        lwz     RB,offset+4(reg);       \
->        mtspr   IBAT##n##U,RA;          \
->        mtspr   IBAT##n##L,RB;          \
->        beq     1f;                     \
->
->This should be fixed but it seems to be there since so long...
->
->I don't know whether one of the chunks of code that I suspect is the
->source of the problem, but they might well be.
-
-Ok, that would cause a crash when loading the BAT after MMU is re-
-enabled. Cort, what's your explanation ?
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
