@@ -1,6 +1,6 @@
-Date: Mon, 1 Apr 02 11:31:41 PST
+Date: Mon, 1 Apr 02 11:52:16 PST
 From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0204011931.AA28474@ivan.Harhan.ORG>
+Message-Id: <0204011952.AA28527@ivan.Harhan.ORG>
 To: linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: [Linux-galileo] ev64260 bi_rec patch
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -9,18 +9,25 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Tom Rini <trini@kernel.crashing.org> wrote:
 
-> So the always-correct call for platform_init() is:
-> parse_bootinfo((struct bi_record *) (r3 + KERNELBASE));
+> IIRC, your original patch did the parsing in parse_bootinfo() or so in
+> arch/ppc/kernel/setup.c which means each new driver bi_rec needs to
+> modify arch/ppc/kernel/setup.c,
 
-Yes!
+Yes.
 
-Mark A. Greer <mgreer@mvista.com> responded:
+> which isn't nice.
 
-> Is there a reason we shouldn't just fix find_bootinfo then?
+Agreed.
 
-How are you going to fix it? How is it going to find out where in the vast
-expanses of system memory the bootloader has stuffed the bi_recs? How do you
-code ESP in C?
+> What we need is
+> something like how we save Motorola residual data or bd_info stuffs
+> (memcpy in platform_init).
+
+Both of those structures are fixed-length and are copied to static variables.
+The bi_recs list has a variable length and can't be copied to a static variable
+(unless we agree on a maximum size for it and make a static buffer of that
+size, but someone other than me has to make that decision), and I don't know
+how to make a dynamic memory allocation that early.
 
 MS
 
