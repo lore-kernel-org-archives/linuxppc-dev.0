@@ -1,36 +1,35 @@
-Message-ID: <389EE56C.47EEBDE@haulpak.com>
-Date: Mon, 07 Feb 2000 09:31:56 -0600
-From: William Gatliff <gatliff@haulpak.com>
+From: "Stuart" <stu@asyn.com>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Hostname problems
+Date: Tue, 8 Feb 2000 15:40:11 -0800
+Message-ID: <000501bf728d$d717f550$0100000a@asyn.com>
 MIME-Version: 1.0
-To: all@cideas.com, linuxppc-embedded@lists.linuxppc.org,
-        gdb@sourceware.cygnus.com
-Subject: Re: [Looking for the PPC gdb debug stubs]
-References: <Pine.SGI.3.95.1000207100549.24603E-100000@world.std.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <389EEA75.4982DC88@eng.uct.ac.za>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Aleksey:
+Hi all.
+What's the status on the 860 port in the 2.3.x tree from kernel.org.
+Specifically I'm working with an MBX box.
 
-> > > - If so, where can I find the PPC gdb debug stubs?
->
-> You can try the thing I put togehter at
-> http://www.std.com/qqi/labslave/rproxy.html
->
-> Among other things it provides an application bridge between wiggler (BDM
-> debugger from macraigor) and gdb remote protocol.
+I recall seeing something recently from Dan about collecting many
+patches, and hoping to have something together soon.  I think it was
+for the 860.
 
-Yes, that's an even better solution than a stub, on targets and platforms that can
-support it, becuase it does in hardware what the stub does in software.
+The 2.3.42 kernel did not compile out of the box.  But I've made
+several changes to get it to build.  However it still does not run.
+I've either messed up on something in my fixes to get it building,
+or there are more significant problems with it.
 
-b.g.
+Are there others working with the current versions of the 2.3.x
+development?  Anyone have it working on an MBX?
 
---
-William A. Gatliff
-Senior Design Engineer
-Komatsu Mining Systems
-To teach is to learn.
+Thanks...
+
+-- Stuart --
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
