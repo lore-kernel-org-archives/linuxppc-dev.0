@@ -1,85 +1,54 @@
-From: v.sudeep@exgate.tek.com
-Message-ID: <301A812E6528D511A8F70008C71E578602B6D857@ap-bang-m02.india.tek.com>
-To: samsongshzu@yahoo.com.cn, wd@denx.de, xmiville@oerlikon.ca,
-	mporter@kernel.crashing.org, laurent.mohin@acterna.com
+Date: Thu, 26 Feb 2004 16:18:39 +0100 (CET)
+From: Marius Groeger <mgroeger@sysgo.com>
+To: Prabhakar Kalasani <kalasani@sena.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: PCI daughter card with USB on a 405GP 
-Date: Thu, 26 Feb 2004 06:05:20 -0800
+Subject: Re: How to set up KGDB
+In-Reply-To: <NCEHKHHDAHEBBGFMCFHCCEHCCBAA.kalasani@sena.com>
+Message-ID: <Pine.LNX.4.56.0402261615030.14226@mag.sysgo.com>
+References: <NCEHKHHDAHEBBGFMCFHCCEHCCBAA.kalasani@sena.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi !!!
+On Thu, 26 Feb 2004, Prabhakar Kalasani wrote:
 
-Thanks all for your response... I apologise profusely for the delay in
-responding....
+> I have a customised target board with MPC855t Processor , ppcboot-1.1.3
+> bootloader , linux-2.4.2 kernel. I'm new to this environment, I got to set
+> up KGDB for this target.can anybody please help me how to go about .
+...
+> If i boot the Image from Teratem(Remote) , I'm getting log like....
+>
+> Bootloader 1.1.3 (Dec 10 2003 - 17:02:39)
+..
+> =>setenv bootargs
+> =>tftpboot
+> ARP broadcast 1
+> TFTP from server 192.168.222.208; our IP address is 192.168.161.5
+> Filename 'zImage.vts8nfs.v1.4.1'.
+> Load address: 0x100000
+> Loading: #################################################################
+>          ###############################################################
 
-I did go through all of your responses and this is what I did ...
+Just a guess: This looks *a lot* like the well-known U-Boot bootloader
+in disguise (see http://sf.net/projects/u-boot). U-Boot usually
+doesn't run zImages (vmlinux kernel + some glue code). Could be that
+you are booting a wrong image. Go inside your kernel tree and try a
+"make pImage" and boot that.
 
-1.  lspci -vvx  : the following is the output.  I still am finding out how
-to understand this..
-00:00.0 Host bridge: IBM 405GP PLB to PCI Bridge (rev 01)
+Regards,
+Marius
 
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort+ >SERR- <PERR-
-        Latency: 7
+--
+Marius Groeger <mgroeger@sysgo.com>
+Project Manager
 
-        Interrupt: pin A routed to IRQ 0
+SYSGO Real-Time Solutions AG | Embedded and Real-Time Software
+Am Pfaffenstein 14
+55270 Klein-Winternheim, Germany
 
-        Region 1: Memory at <unassigned> (32-bit, prefetchable)
-
-        Capabilities: [58] Power Management version 2
-
-                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00: 14 10 56 01 06 00 10 22 01 00 00 06 00 07 00 00
-
-10: 00 00 00 00 08 00 00 00 00 00 00 00 00 00 00 00
-
-20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-30: 00 00 00 00 58 00 00 00 00 00 00 00 00 01 00 00
-
-
-2. ==== arch/ppc/mm/cachemap.c
-I found that this file does not exist at all in the montevista Hard hat
-Linux ver 2.0.  So I downloaded ver 3.0 as a preview kit and I am checking
-to see if it exists ... I suppose it does... I have made the changes
-suggested. But have not able to bring it to a workable state.
-
-3. I downloaded and built the tool chain for the 405GP. And am running into
-problems trying to compile the linux 2.4.22 kernel. I am not sure of what I
-must do to create the treeboot image... I think by default it does not do
-it.. it creates only the vmlinux.gz
-
-4.  Both ALi and OPTi are having OHCI support
-
- I am in the process of procuring a Adaptec card to see if it could make a
-difference for me...
-
-- S u d e e p    V
-When so many are lonely as seem to be lonely, it would be inexcusably
-selfish to be lonely alone.
-
------Original Message-----
-From: song sam [mailto:samsongshzu@yahoo.com.cn]
-Sent: Tuesday, February 24, 2004 8:09 PM
-Subject: Re: PCI daughter card with USB on a 405GP
-
-Wolfgang Denk wrote:
-> We tested a Adaptec AUA-200LP USB 2.0 card in some PPC sytems. It
-> worked fine when the devices were already connected at power-on or
-> at least when booting Linux, while hot-plug would reliably crash the
-> kernel. As far as I understand such behaviour is typical of some of
-> the alignment/cache bugs in the Linux kernel's USB code.
-
-I also met this USB problem on LITE_DW board when using USB keyboard and
-mouse.Has it solved or not?
+Voice: +49-6136-9948-0 | FAX: +49-6136-9948-10
+www.sysgo.com | www.elinos.com | www.osek.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
