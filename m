@@ -1,50 +1,31 @@
-Message-ID: <39903341.6195EF62@relog.ch>
-Date: Tue, 08 Aug 2000 18:20:17 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+Date: Tue, 8 Aug 2000 18:54:34 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Josh Huber <huber@mclx.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [Dri-devel] Re: Kind of success! (r128 on PPC (Re: LinuxPPC X
+ Server))
+In-Reply-To: <20000808091311.B248@mclx.com>
+Message-ID: <Pine.LNX.4.10.10008081853280.13215-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: How to get up-to-speed on the 3D / DRI in Rage 128
-References: <39902BE4.44DE97C1@ivey.uwo.ca> <39902E69.67F50604@relog.ch> <3990310E.6C3EF59B@ivey.uwo.ca>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Kevin B. Hendricks" wrote:
-
-> > > - DRI patches?
 > >
-> > Yep. What I'm running is the DRI CVS trunk (which is basically X 4.0.1 and
-> > some DRI changes) and a patch that I've posted to dri-devel. If you can't
-> > get it from there, I can send it to you privately or put it up for...
+> > Is this XF4.0.1 in `fbdev' mode? If yes, it's a bug in the X server. Setting
+> > the DSP registers is part of the video mode initialization and thus is the
+> > sole responsability of the frame buffer device, when running in `fbdev' mode.
 >
-> Yes, I found patches named drm-r128.diff and drm_panning.patch you posted
-> recently to the dev list.
+> Yes.  The server shows the SAME behavior using the fbdev driver and
+> the ati driver.  Also, as a note, the 3.3.6 XF68FB_Dev server with ati
+> accel also does the same thing!   So there's some code that's getting
+> used by all three that is wrong?
 
-The second one is just for aty128fb's panning and not directly related to DRI.
+Both the fbdev and ati driver use the fbdvhw functions to do mode init and
+the like. So it seems the bug is in the kernel driver (sorry Geert).
 
-The first one is to get the DRM kernel module working, but you can also build
-that from the DRI tree - read below ...
+	Michael
 
-
-> Where or how do I go about getting the DRI CVS trunk?  Is this a project on
-> sourceforge?  Is there anonymous cvs access?
-
-The great news is that I've just been added to the DRI project at sourceforge
-(http://dri.sourceforge.net). I'll start a PPC branch which you should be able
-to just checkout and build and it should work (and which will eventually be
-integrated into the trunk of course :).
-
-I'll post the announcement for that branch to this list as well.
-
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
