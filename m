@@ -1,35 +1,61 @@
-Date: Thu, 24 Oct 2002 10:26:42 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PrPMC800 interrupt problem
-Message-ID: <20021024172642.GL669@opus.bloom.county>
-References: <37671D04-E772-11D6-A4F1-0003931C2BFA@control.lth.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <37671D04-E772-11D6-A4F1-0003931C2BFA@control.lth.se>
+Date: Thu, 24 Oct 2002 20:21:50 +0200
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: 8xx i2c refers to unspecified chip errata
+In-reply-to: <20021024161053.GK669@opus.bloom.county>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	sensors@stimpy.netroedge.com
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLMEFNFHAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Oct 24, 2002 at 07:01:19PM +0200, Anders Blomdell wrote:
+> >
+> > Here is a patch against the PPC 2.4 devel tree for the i2c-algo-8xx.c
 >
-> When trying to use the linuxppc_2_4_devel on a PrPMC800, the system stops
-> responding to external interrupts after the first serial interrupt. Many
-> things works, since the system correctly gets its IP address via DHCP.
->
-> The system handles a little more than 100 interrupts that gets routed to
-> 'e100intr', then it starts up my shell that does a write to the console.
-> This write triggers an interrupt that gets routed to 'rs_interrupt_single'
-> . After this no more interrupts are received, but 'rs_interrupt_single' is
-> called from the timer task in the serial driver, but the ethernet is
-> totally dead. Anybody that has a good idea what to do about this?
+> Can you please split this into logical chunks, or give me a list of each
+> fix in here?  Thanks.
 
-Did you update the prpmc800_openpic_initsenses[] table and related?
-(Look at how the lopec or sandpoint work now).
+ohh, kind of hard to remember all that went into that patch. The path
+has evoled over many days, but I can try summarize. I have tested this code
+pretty well it does not fail for me. Speed has been between 10-150KHz. The
+old code fails as soon you start to stress it a little.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+ - replace invalidate_dcache_range with flush_dcache_range, since buffers are
+   NOT cache aligned. flush will write to memory AND invalidate the cache.
+
+ - move the chip errata stuff from irq routine into read/write routines. Made
+   it default off since it causes lock ups on my I2C device. I think it causes
+   a too short STOP condition. If enabled I2C will behave better than before, but
+   may still cause problems if the read/write is interrupted with a signal while
+   microcode is enabled.
+
+ - set default speed to 60 KHz instead.
+
+ - missing/faulty initialization of parameter ram when I2C micro patch is active.
+
+ - replaced assingments with mask operations with relevant bits. Example:
+      /* Shut down IIC. */
+      i2c->i2c_i2mod = 0;
+	i2c->i2c_i2mod &= ~1;
+
+ - When reading from I2C device, let the receive BD generate interrupt instead of
+   the dummy trasmit. This is important since the TX interrupt will be too early sometimes, before
+   the RX BD has closed. There is one case where the RX irq is before the TX irq, if iic_mrblr is set
+   to match the number of bytes to read. Therefore must the iic_mrblr be one byte larger than
+   the expected number of bytes.
+
+ - busy wait for small transfers since it's faster.
+
+ - save_flags(flags); cli(); cleanups
+
+ - interruptible_sleep_on_timeout() instead of interruptible_sleep_on() so it won't hang forever if an
+   irq is lost.
+
+ Jocke
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
