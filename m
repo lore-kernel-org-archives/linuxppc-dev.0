@@ -1,29 +1,40 @@
-Date: Sat, 13 Feb 1999 11:19:36 -0500
-From: Michael Meissner <meissner@cygnus.com>
-To: Gavriel State <u497w7n9@umail.furryterror.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Why is -msoft-float used in Kernel compilation?
-Message-ID: <19990213111936.A1449@wogglebug.cygnus.com>
-References: <199902131436.JAA07672@linuxmaster.corel.eng>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199902131436.JAA07672@linuxmaster.corel.eng>; from Gavriel State on Sat, Feb 13, 1999 at 09:37:46AM -0500
+Date: Sat, 13 Feb 1999 09:57:38 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        Linux Framebuffer List <linux-fbdev@vuser.vu.union.edu>
+Subject: clgenfb updates (mainly for PReP)
+Message-ID: <Pine.BSI.3.96.990213095048.24001A-100000@usr07.primenet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Feb 13, 1999 at 09:37:46AM -0500, Gavriel State wrote:
-> 
-> I can understand using -msoft-float if CONFIG__8xx is on,
-> but why use it when compiling for 60x or 7x0 CPUs?
+Well, I (mostly) have 16- and 32-bit color depths working.  A few modes are
+still causing problems, and I have some small problem with the accelleration
+code for those bit-depths, but they are coming up.  I also fixed a bug where
+I was only using 5 of the 6 bits for the clock denominator, so more modes
+are working then before.  In the higher color modes, occasionally my blit
+code will move or clear more pixes than it should -- usually either when
+deleting character or when scrolling up and down through the command
+history.  Higher color modes won't work as a module (with 2.2.1 anyway) --
+but you should just have to modify fbcon-cfbX.c the same way I have
+fbcon-cfb8.c patched.
 
-I would imagine to prevent the compiler from using the FPU to move 64-bit
-aligned items via fp registers.
+The fix may also allow higher color depths to work on non-prep boards
+(previously, text colormaps for other depths were not being set).
 
--- 
-Michael Meissner, Cygnus Solutions (Massachusetts office)
-4th floor, 955 Massachusetts Avenue, Cambridge, MA 02139, USA
-meissner@cygnus.com,	617-354-5416 (office),	617-354-7161 (fax)
+Thanks to Cort, I have the patches at
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/patches/clgenfb-prep
+
+Patches are against 2.2.1.
+
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
+
+...Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
