@@ -1,50 +1,47 @@
-Date: Sat, 11 Aug 2001 12:14:36 +0200
-From: Olaf Hering <olh@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Hollis Blanchard <hollis@austin.ibm.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: VGA console endian bug
-Message-ID: <20010811121436.A704@suse.de>
-References: <20010811110554.E13486@suse.de> <Pine.LNX.4.05.10108111145260.8907-100000@callisto.of.borg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.10108111145260.8907-100000@callisto.of.borg>; from geert@linux-m68k.org on Sat, Aug 11, 2001 at 11:52:09AM +0200
+Date: Sat, 11 Aug 2001 19:43:20 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Hollis Blanchard <hollis@austin.ibm.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PReP and generic PCI resource assignment
+In-Reply-To: <20010810143423.B28326@austin.ibm.com>
+Message-ID: <Pine.LNX.4.05.10108111942220.11186-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 11, Geert Uytterhoeven wrote:
-
-> +       for(i = 0; i < sizeof(welcometext); i++)
-> +           welcomestring[i] = 0x0700 | welcometext[i];
->             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> +       fbcon_putcs( conp, welcomestring, sizeof(welcometext), 0, 0 );
+On Fri, 10 Aug 2001, Hollis Blanchard wrote:
+> On Fri, Aug 10, 2001 at 10:38:04AM +0200, Geert Uytterhoeven wrote:
+> > There are (or were, read as in `were the last time I
+> > tried it, a few months ago) still some problems, though. One of them is that
+> > the hardcoded ISA motherboard resources (i8259 and legacy stuff) are
+> > requested before PCI resources are done, and that the PCI bus parent
+> > resources were not requested and thus don't appear in the full resource
+> > tree.
 >
-> That's not correct, you _must_ use scr_{read,write}w() to access screen
-> buffers. fbcon_putcs() expects a pointer to a shadow screen buffer.
+> There is still that problem with VGA console, which does a
+> request_resource(&ioport_resource,...) after the PCI host bridge has been
+> found, but well before the PCI code has reserved all of *its* resources. So
+> reserving 0-ffffffff IO fails because VGA already grabbed a tiny chunk at
+> 0x3d0 or so.
 >
-> Please try
->
->     scr_writew(0x0700 | welcometext[i], &welcomestring[i]);
->
-> instead.
->
-> Your code works on ia32 because ia32 and VGA are both little endian.
-> It works on SPARC because SPARC and fbdev on SPARC are both big endian.
-> I guess it fails on a real VGA textconsole on SPARC too (iff SPARC would
-> support VGA text mode).
+> Even regardless of order, VGA console is requesting directly from
+> ioport_resource, which probably should be changed (Paul suggested
+> request_region instead)...
 
-Well, that fixes "the last known problem".
+Yes, using request_region() is the correct fix.
 
-But it still leaves the question whats really wrong with the vga console :)
+Gr{oetje,eeting}s,
 
-
-Gruss Olaf
+						Geert
 
 --
- $ man clone
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-BUGS
-       Main feature not yet implemented...
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
