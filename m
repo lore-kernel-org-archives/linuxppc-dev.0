@@ -1,49 +1,43 @@
-Message-ID: <3F3BEE49.4050806@mvista.com>
-Date: Thu, 14 Aug 2003 15:17:13 -0500
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: Stephen Williams <612dlag102@sneakemail.com>
+To: "Stephen Williams" <612dlag102@sneakemail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Hardware Requrements for Linux on 405GPr
-References: <21518-79162@sneakemail.com>
-In-Reply-To: <21518-79162@sneakemail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: Hardware Requrements for Linux on 405GPr 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 14 Aug 2003 13:05:33 PDT."
+             <21518-79162@sneakemail.com>
+Date: Thu, 14 Aug 2003 22:26:33 +0200
+Message-Id: <20030814202638.969A0C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-An RTC is not required for Linux.  Many designs I have seen do not have
-one.  However, an RTC is an excellent device to have available!  Various
-applications and services may require a consistant, ever increasing
-time.  NFS is the one that comes to mind immediatly.  If the device is
-rebooted and the time goes back to default, NFS may have problems.
+Dear Steve,
 
-RAM is something else thats nice to have.. :)  While 16 MB is usable, 32
-MB or more is preferred in the applications that I am used to.  (You can
-get away with 8 MB, but thats very tight usually.)
-
---Mark
-
-Stephen Williams wrote:
+in message <21518-79162@sneakemail.com> you wrote:
 >
 > We are in the process of designing a PCI board that will have
 > a 405GPr, some SDRAM and a Compact Flash. (Not to mention
 > the functionality of our device.) Outside the 405GPr itself,
 > are there any minimum device requirements for a Linux that
 > can for example run some simple servers?
->
+
+You need some boot device (flash?); you  need  some  RAM  (>=  16  MB
+recommended).
+
 > For example, the matter of whether or not a RTC is required
 > came up amongst the designers.
-> --
-> Steve Williams                "The woods are lovely, dark and deep.
-> steve at icarus.com           But I have promises to keep,
-> http://www.icarus.com         and lines to code before I sleep,
-> http://www.picturel.com       And lines to code before I sleep."
->
->
->
->
->
 
+If you don't need a current time of day then no RTC is needed.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Ever try. Ever fail. No matter. Try again. Fail again.  Fail  better.
+                                                        -- S. Beckett
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
