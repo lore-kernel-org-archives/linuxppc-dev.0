@@ -1,10 +1,10 @@
-Message-ID: <001f01c0b25d$d1d6c5b0$029515d1@skelmir>
-From: skelmir@skelmir.com (Mimir Reynisson)
-To: "John F. Davis" <davis@skink.net>
+Message-ID: <002301c0b279$16591e20$8021690a@huawei.com>
+From: "machael" <dony.he@huawei.com.cn>
+To: "Wolfgang Denk" <wd@denx.de>, "Dan Malek" <dan@mvista.com>,
+	"Murray Jensen" <Murray.Jensen@cmst.csiro.au>
 Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <20010321175758.A7228@skink.net>
-Subject: Re: ramdisk size using montevista
-Date: Wed, 21 Mar 2001 18:22:38 -0500
+Subject: Strange problem after shell appears...
+Date: Thu, 22 Mar 2001 10:37:49 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -12,30 +12,56 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In addition to strip you'll probably want to rebuild glibc as well without
-debug info and optimize for size (not that gcc does all that much with
--Os but it'll certainly be better than -g).
+Hello,all:
 
------ Original Message -----
-From: "John F. Davis" <davis@skink.net>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, March 21, 2001 5:57 PM
-Subject: ramdisk size using montevista
+Now I can boot linux on my 8260-based custom board. But I have a strange
+problem:
+
+#############################
+.....................
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 48k init
+Standalone shell (version 1.0)
+> hel^@
+###############################
+
+After shell appears, I cannot run any built-in commands such as  "cp" etc...
+As you can see above, when  I type _EXACTLY_ 3 characters(for example,
+"hel"),
+then it appends "^@" automatically at once(So you see "hel^@" above). Then
+it stops there. It has no any response  when I try to type any more
+characters. But I can ping it from my host computer.
+This means the target board is not crashed...
+
+If I first type "ls", then press "Enter" key, then there are correct output
+for "ls". But after that it has the same result as above: That is to say,
+I have type 3 characters("ls" + "Enter" ), and "^@" also appended
+automatically. I cannot type any character at this time.
+
+I don't know what may cause this happen? I have look for the ASCII table and
+find that "^@" mean "NULL".
+Maybe this is a uart driver problem? What do you have to modify
+arch/ppc/8260_io/uart.c when you port linux on your 8260-based custome
+board?
 
 
->
-> Hello
->
-> I am trying to boot hardhat linux with a small ram disk.  However, libc is
-more
-> than 4 megs by itself.  Is there something obvious I can do/read?  I tried
-using
-> busybox, but that only makes the bin directory small.  I don't really know
-> what I should do about the /lib directory.
->
-> John
->
->
+Of course I am sure the root NFS is OK. I have tried cross-compile sash
+statically or dynamically, but both have the same result as above:
+
+###########################################
+    powerpc-linux-gcc -O2 -c -o sash.o sash.c
+    powerpc-linux-gcc -O2 -c -o cmds.o cmds.c
+    .....................
+then:
+    powerpc-linux-ld -O2 -static -s -o sash sash.o cmds.o ......
+or
+   powerpc-linux-ld  -O2 -Wl,--rpath,/lib -o sash sash.o cmds.o ...
+################################################
+
+Any ideas? I am really much confused :-(((
+Thank you very much.
+
+machael
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
