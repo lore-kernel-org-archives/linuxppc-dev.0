@@ -1,79 +1,63 @@
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: PMC card problem
-Date: Fri, 18 Jul 2003 11:25:12 +0800
-Message-ID: <7A7A7A38134E244784EDAC428C538AE92A5782@mail.ndsc.com.cn>
-From: =?gb2312?B?09rmug==?= <yujing@ndsc.com.cn>
-To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Trouble with 2.6.0-test1 on ibook2
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Ryan Boder <icanoop@bitwiser.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20030718014622.GA5430@bitwiser.org>
+References: <20030718014622.GA5430@bitwiser.org>
+Content-Type: text/plain; charset=iso-8859-1
+Message-Id: <1058517715.23548.71.camel@thor.holligenstrasse29.lan>
+Mime-Version: 1.0
+Date: 18 Jul 2003 10:41:55 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
-  I'm porting mvista linux2.1 on my motorola lopec mpc7410 board with a
-zynx zx212 dual-port ethernet card on it.The problem is that the kernel
-can't start up with the ethernet card on,while without it everything
-is perfect.Since zx212 is compatible with 21143,I build the kernel
-with the "tulip" option on.It should be no problem,but it happened.
-It halts after "now booting the kernel". Zx212 is a PMC network card
-with Intel 21143 and Intel PCI Bridge 21152. Through the bdi2000,
-it seems that there are something wrong with "setup_arch",and maybe
-"pciauto_bus_scan".But I'm not sure. Maybe you can help me.
+On Fri, 2003-07-18 at 03:46, Ryan Boder wrote:
+> I'm trying to boot 2.6.0-test1 on my ibook2. I compiled a kernel and it
+> begins to boot but hangs immediately after the line
+>
+> openpic: exit
+>
+> is printed. Or at least seems to hang as the screen stops showing anything
+> else and just leaves the messages up to that point forever. It also
+> corrupted my file system so I'm reinstalling now.
+>
+> Has anyone been running the devel kernel on an ibook2? Can anyone give me
+> pointers on how to debug or work around this problem when I finish
+> reinstalling?
 
-The booting information outlined below :
-////////
-Copyright Motorola Inc. 1988 - 2001, All Rights Reserved
+What graphics chip does the machine have, and have you built OFfb into
+the kernel? For me, radeonfb hasn't been working with recent 2.5
+kernels, in fact there's been no trace whatsoever of it in the kernel
+output, as if it wasn't there. I wonder if it's related to the PCI code;
+with a 2.4 kernel, I get a lot of PCI related output, like
 
-PPC5 Debugger/Diagnostics Release Version 1.3 - 04/27/2001 RM01 COLD Start
+PCI: Probing PCI hardware
+Scanning bus 00
+Found 00:58 [106b/002d] 000600 00
+Found 00:80 [1002/4c66] 000300 00
+Fixup res 1 (101) of dev 00:10.0: 400 -> 802400
+Fixups for bus 00
+Bus scan for 00 returning with max=00
+Scanning bus 10
 
-Local Memory Found =10000000 (&268435456)
+[ more PCI probing stuff ]
 
-MPU Clock Speed =400Mhz
+PCI:24:0e.0: Resource 0: f5000000-f5000fff (f=200), vd: 11c1, dev: 5811
+Linux NET4.0 for Linux 2.4
 
-BUS Clock Speed =100Mhz
+whereas with a 2.5 kernel just this:
 
-Reset Vector Location  : ROM Bank B
-Mezzanine Configuration: Single-MPU
-Current 60X-Bus Master : MPU0
-Idle MPU(s)            : NONE
+PCI: Probing PCI hardware
+Can't get bus-range for /pci@f2000000/cardbus@1a
+BIO: pool of 256 setup, 14Kb (56 bytes/bio)
 
-L2Cache:       2048KB, 200Mhz
-System Memory: 256MB, ECC Enabled (ECC-Memory Detected)
+But then maybe the code in question has just been made less verbose?
 
 
-SelfTest/Boots about to Begin... Press <BREAK> at anytime to Abort ALL
+--
+Earthling Michel Dänzer   \  Debian (powerpc), XFree86 and DRI developer
+Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=daenzer
 
-NetBoot about to Begin... Press <ESC> to Bypass, <SPC> to Continue
-
-Network Booting from: I82559, Controller 0, Device 0
-Device Name: /pci@fec00000/pci8086,1209@e,0:0,0
-Loading: yujing-bdi
-
-Client IP Address      = 172.168.201.3
-Server IP Address      = 172.168.201.100
-Gateway IP Address     = 172.168.201.100
-Subnet IP Address Mask = 255.255.0.0
-Boot File Name         = yujing-bdi
-Argument File Name     =
-
-Network Boot File load in progress... To abort hit <BREAK>
-
-Bytes Received =&886652, Bytes Loaded =&886652
-Bytes/Second   =&443326, Elapsed Time =2 Second(s)
-
-Residual-Data Located at: $0FED16DC
-loaded at:     00005400 000D1C20
-relocated to:  00800000 008CC820
-zimage at:     00805A00 008C8183
-avail ram:     00400000 00800000
-
-Linux/PPC load: ip=on
-Uncompressing Linux...done.
-Now booting the kernel
-//////
-after that, nothing appears.
-
-Best Regard
-Yu
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
