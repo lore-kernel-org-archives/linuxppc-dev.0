@@ -1,54 +1,61 @@
-From: kbhend <kbhend@business.wm.edu>
-To: "Kevin Buettner" <kev@primenet.com>,
-        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev@lists.linuxppc.org, gdt@linuxppc.org
-Subject: Re: gdb broken under linuxppc r5 tools
-Date: Mon, 2 Aug 1999 11:21:19 -0400
-Content-Type: text/plain
-References: <990801202455.ZM22552@redrock.lan>
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
-Message-Id: <99080211313600.00413@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14245.48042.697347.242992@gargle.gargle.HOWL>
+Date: Mon, 2 Aug 1999 11:39:22 -0400 (EDT)
+To: Mark Abene <phiber@radicalmedia.com>
+Cc: Tom Rini <trini@disparity.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: platinum video makes me cry...
+In-Reply-To: <19990709095001.M822@radicalmedia.com>
+References: <Pine.LNX.3.96L.990708142815.2134H-100000@unix47.andrew.cmu.edu> <Pine.BSF.3.96.990709093050.70746F-100000@silver.teardrop.net> <19990709095001.M822@radicalmedia.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Kevin,
+>> "Mark" == Mark Abene <phiber@radicalmedia.com> writes:
 
-> Kevin, Franz, et.al,
-> 
-> Earlier this year, Metrowerks and I signed the copyright assignments
-> required by the FSF.  Beginning August 9, I will be starting work at
-> Cygnus as a GDB engineer.  One of the things that I'll work on is a
-> merge of my patches into the current gdb mainline.  It'll be my goal
-> to get a solid, usable gdb up and running on Linux/PPC again.
+ Mark> I'll attach the "current" platinumfb.c file in its entirety.  Although
+ Mark> I've just been informed (and I've verified) that 32bpp doesn't work.  I
+ Mark> didn't originally notice because I normally use vmode 20 16, and hadn't
+ Mark> checked 32bpp.  So the changes only fix 16bpp (8 still works as
+ Mark> before).  I'm looking into why 32bpp doesn't work.  I'm still irritated
+ Mark> at how much abstraction was done to make the driver "FBDev-aware".  It
+ Mark> was so much simpler in 2.1.24, when ALL recognized modes worked in ALL
+ Mark> available bit-depths.  Now I'm playing catch-up since I was previously
+ Mark> much too busy to know what was going on with newer kernels and FBDev.
 
-Congrats!  It is good to hear from you again!  We still miss you on the LinuxPPC
-JDK porting team!  Care to rejoin?!? :-)
+I just tried out your revised platinumfb file.  Kudos - I don't have to use
+the OFfb anymore, the video driver works right.  I don't have enough VRAM to
+check out the 32bpp mode.
 
-As for gdb, something changed seriously between Paul's 2.2.1 kernel running on
-a R4.1 build (gdb was very very stable when debugging shared libs) and Paul's
-2.2.10 kernel running LinuxPPC R5 or YDL.
+A couple of things I noticed, but don't know if they are directly due to the
+driver or a more generic part.  First, at the console, the block cursor is
+invisible.  The only way to tell where it is is because it is blinking (also
+different) when over a character.  Second, when I switch VT's, I get a resynch 
+disturbance.  I'm running an Apple 21" fixed-freq monitor, so there shouldn't
+be any attempt to change frequencies.  This resync doesn't happen with 'no
+video driver' checked.
 
-I tried Gary's 4.18 src rpm and it rebuilt fine under R5 but shows exactly the
-same error mode as the 4.17 builds.  I will put a breakpoint at a function in a
-shared lib (such as awt_allocate_colors in libawt.so) and the function address
-returned by gdb when it says it places the breakpoint is typically not a valid
-address (typically something in 0x00XXXXXX or 0x0XXXXXXX range).  
-Sometimes it ends up putting the breakpoint into another routine (often glibc)
-which you can see if luckily your code uses that other shared lib.
+I'm running a stock Linus 2.2.10.
 
-This is so frustrating.  If I can find (by chance) the actual location of the
-shared lib routine (by disassmebling large pieces of memory) and use the exact
-address to place the breakpoint, it will actually stop there.
+As an aside, how do I get XF68_fbdev to work?  It demands a config file.
+I tried running Xconfigurator (vague memory since I haven't been following
+those discussions), but it only detects 1M of VRAM instead of 2.
 
-Some change to the debugging symbols must have been made to cause this I think,
-but I am not sure.
+And more generally, why does Xpmac do the right thing and XF68_fpdev not?
+There seems to be a lot of questions of the form "How do I get X set up
+right?".  I guess the question I have is why it's so seamless on the MacOS
+side but hairy on the Linux side.  What magic is Apple pulling and how do we
+go about wrapping it up so that things work cleanly for Linux too?
 
-Anyway, I hope you can recreate these problems and can find a solution!!!!
+Thanks
+Jerry
 
-Thanks,
+-- 
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
 
-Kevin H.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
