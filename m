@@ -1,36 +1,38 @@
-From: jdweyer@rockwellcollins.com
-Subject: /dev/vme Permissions for users other than root...
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Tue, 22 Jan 2002 16:57:13 -0600
-Message-ID: <OFEA27A9BB.3CE5E820-ON86256B49.007E0567@collins.rockwell.com>
+Message-ID: <B164B53F5BD6D511888D009027732E1A024A20@ntserver.act.domain>
+From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: BDI2000 breakpoints in dynamically loaded modules
+Date: Wed, 23 Jan 2002 12:13:06 +1100
 MIME-Version: 1.0
-Content-type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-(disregard prior email; subject was not included)
+Hi, all
 
-Greetings,
+I am using BDI2000 to debug dynamically loaded module under Linux. When I
+put a breakpoint, it never goes off, but code does execute.
 
-We are using Linux version 2.2.12 with Gabriel Paubert's patches for the
-Motorola MVME2600 platform.   I have
-my application working opening /dev/vme and then doing ioctl calls to set
-the attributes.  It works
-fine only when I am root.  When another user tries to run the application,
-the ioctl (not the open) fails.
-I have changed the permissions of /dev/vme to rw for all (ugo) and have
-even gone as far as
-changing ownership and group to the user's instead of root, but to no
-avail.  The permissions
-of /dev/vme are crwxrwxrwx.  I realize the execute (x) permission is
-ineffective, but I'm trying everything.
+At the moment the only 8260 board we have is used 100% of the time, so I do
+not have much chance to do any investigation.
+I'll describe what I do, may be this will help.
 
-Do you have any ideas of what to try?
+I load the moule under Linux and then use "add-symbol-file" command. This
+allows me to view the source of my module. Then I put a breakpoint either
+through IDE (DDD) or from GDB prompt. Breakpoint appears in DDD, but never
+goes off. All memory translation is working.
 
-Thanks for any help you can provide,
+I can not remember if it worked before, I only briefly tried modules while
+ago. I recently upgraded DDD and BDI2000 firmware to the latest versions.
+May be this caused it?
 
-JoAnna Weyer
+Any ideas are appreciated.,
+
+Thanks,
+
+Rudolf
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
