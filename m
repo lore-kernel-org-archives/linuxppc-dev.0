@@ -1,29 +1,66 @@
-From: ghannon@cspi.com
-To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <85256C8E.0071F917.00@pine.cspi.com>
-Date: Fri, 13 Dec 2002 15:51:57 -0500
-Subject: pcibios_fixup
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+From: acurtis@directvinternet.com
+Reply-To: <acurtis@directvinternet.com>
+To: <joakim.tjernlund@lumentis.se>,
+	"Eugene Surovegin" <ebs@innocent.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <acurtis@directvinternet.com>
+Subject: RE: Is the preemptive kernel patch unsafe for 8xx/PPC?
+Date: Mon, 16 Dec 2002 06:41:50 -0800
+Message-ID: <NCBBIINEHIPFGJPLBEIFAECOEAAA.acurtis@directvinternet.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLMEMJFIAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We are developing a custom 74xx based board with a gt64260b.
-On board is a device we are acessing through pci0 on the gt64260b.
+I ran this patch on 2.4.19 and here were my results.
 
-I've noticed that in the device's configuration header, the cache line
-size parameter is not what I want it to be.   Is pcibios_fixup the
-place in the kernel to make such a change?
-(that is in my specific platform_setup.c file)
-Or, should I do it in the
-driver that uses that device?
+> > 1) arch/ppc/kernel.entry.S
+> >
+> > diff -urN linux-2.4.20/arch/ppc/kernel/entry.S
+> linux/arch/ppc/kernel/entry.S
+> > --- linux-2.4.20/arch/ppc/kernel/entry.S        2002-11-28
+> > 18:53:11.000000000 -0500
+> > +++ linux/arch/ppc/kernel/entry.S       2002-12-11
+> 02:34:47.000000000 -0500
+> > @@ -278,6 +278,41 @@
+> >           */
+> >          cmpi    0,r3,0
+> >          beq     restore
+> > +#ifdef CONFIG_PREEMPT
+> > +       lwz     r3,PREEMPT_COUNT(r2)
+> > +       cmpi    0,r3,1
+> > +       bge     ret_from_except
+> > +       lwz     r5,_MSR(r1)
+> > +       andi.   r5,r5,MSR_PR
+> > +       bne     do_signal_ret
+> >
+> >      <rest of the diff is skipped>
+> >
+> > I had to change the last command to "bne ret_from_except".
+> > I checked MontaVista tree, and they have "ret_from_except" there also.
+>
+> This I can not comment on, but my 8xx runs fine with it.
 
-Thanks for any direction.
+I did not make the above code change and it appears to run. Any comments?
 
-Gary Hannon
-CSPI
-ghannon@cspi.com
+> > 2) include/asm-ppc/pgalloc.h  There are curly brackets missing in
+> > get_pgd_fast()
+>
+> Yes, they are missing in the else part.
 
+I had to fix this too.
+
+> > 3) to support 440GP you have to modify
+> arc/ppc/kernel/irc.c:preempt_intercept:
+> >
+> > #if !defined(CONFIG_4xx) || defined(CONFIG_440)
+> >          case 0x900:
+> > #else
+> >          case 0x1000:
+> > #endif
+
+I could not test these changes either. Any feedback from Robert Love?
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
