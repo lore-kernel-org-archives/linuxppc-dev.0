@@ -1,46 +1,70 @@
-Message-Id: <026501bed2d7$042f4180$232cd8c2@scigen.co.uk>
-From: "Neil Piercy" <npp1@scigen.co.uk>
-To: "Tom Rini" <trini@disparity.net>,
-        "Johnnie Peters" <jpeters@phx.mcd.mot.com>
-Cc: "Matt Porter" <mmporter@home.com>, "VALETTE Eric" <valette@crf.canon.fr>,
-        <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.BSF.3.96.990719184634.50420O-100000@silver.teardrop.net>
-Subject: Re: Is the vger 2.2 kernel branch dead
-Date: Tue, 20 Jul 1999 18:40:53 +0100
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <199907201636.LAA22308@lists.linuxppc.org>
+Date: Tue, 20 Jul 1999 18:41:58 +0100
+Subject: Re : X : caught signal 11 ?
+From: "Yann Bizeul" <yann@tynsoe.com>
+To: Chris Baker <cbaker@adrenalin.com>,
+        Hollis R Blanchard <hollis+@andrew.cmu.edu>
+CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
------ Original Message -----
-From: Tom Rini <trini@disparity.net>
-To: Johnnie Peters <jpeters@phx.mcd.mot.com>
-Cc: Matt Porter <mmporter@home.com>; VALETTE Eric <valette@crf.canon.fr>;
-<linuxppc-dev@lists.linuxppc.org>
-Sent: 19 July 1999 23:47
-Subject: Re: Is the vger 2.2 kernel branch dead
-
-
-> On Mon, 19 Jul 1999, Johnnie Peters wrote:
+>>
+>> I also have problem 1), though I guess I've managed to disable xscreensaver
+so
+>> X does its built-in blanking thing (with no power saving =( ).
 >
-> Try putting 'em vs 2.3.x.  I think right now the push is to fix all the
-> little annoyances/problems that we're stuck w/ in 2.2.x and move forward
-> in 2.3.x.  Then backport things later on.
+> I'm assuming you mean something along the lines of
+>
+> $ xset s off
+>
+> Does X have a built in blanking thing other than that?  Or is it an Apple
+hardware
+> thing?
 
-I thought 2.2.x was meant to be the stable branch and 2.3.x the dev ?  It
-seems strange to back-port fixes to known bugs in the stable branch from a
-dev branch which is frequently broken - or do I misunderstand ? Stable
-doesnt equal frozen in my book.
+Ok, I did xset -s off, and it prevents xscreensaver from launchin...
 
-Neil
-> ---
-> Tom Rini (TR1265)
-> http://gate.crashing.org/~trini/
+Tha good question is about the built-in blanking :
 
+All the time under R4, the screen (under X or console) goes black itself,
+but I notice that under X, with R5, the screen does not fade out, but it
+does in the console ?
 
+hu ?
+
+do ya understand something ?
+>
+>>
+>>
+>> To crash X:
+>> startx
+>> ctrl-cmd-F1
+>>
+>> Poof. All gone. If you have xdm set up, xdm reloads (and takes you to vc 7
+>> from wherever you wanted to go in the first place). I'm using platinumfb. Is
+>> anyone else out there able to use virtual consoles without X crashing?
+>
+> I can switch consoles o.k. I'm on a pb3400c so I guess that makes me
+chips65550fb
+> (?).  If I put the machine to sleep for any significant period of time, X
+dies.
+>
+> Is this just an xfree problem or is it in xpmac also?
+>
+> cheers,
+>
+> cbb
+>
+>
+>
+> [[ This message was sent via the linuxppc-user mailing list. Replies are ]]
+> [[ not forced back to the list, so be sure to  Cc linuxppc-user  if your ]]
+> [[ reply is of general interest. Please check http://lists.linuxppc.org/ ]]
+> [[ and http://www.linuxppc.org/ for useful information before posting.   ]]
+>
+> 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
