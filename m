@@ -1,30 +1,50 @@
-Message-Id: <200004151632.RAA09255@hyperion.valhalla.net>
-Date: Sat, 15 Apr 2000 17:40:01 +0100
-Subject: Re: Preserving memory...
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: "PPC-DEV" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Sat, 15 Apr 2000 22:24:44 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Logan Hall <warrior514@worldnet.att.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.3.99-pre5 compile problems
+In-Reply-To: <38F3F9B9.9DB92F87@worldnet.att.net>
+Message-ID: <Pine.LNX.4.10.10004152223530.876-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Tue, 11 Apr 2000, Josh Huber wrote:
->> First, is there a way to tell powerpc hardware (Macs in particular -- for
->> now) to preserve memory across a system restart?  It looks like it does this
->> by default, partially.
->>
->> Secondly, if I can get the first part to work reliably, does anyone know
->> what regions of memory should be avoided, i.e. are thrashed by OF etc?
+On Tue, 11 Apr 2000, Logan Hall wrote:
+> I just downloaded the 2.3.99-pre5 kernel in hopes of getting my
+> /dev/mixer working.  This is on a G3 beige tower.  It apears to have
+> problems with the dma sound for ppc.  here is the error:
 >
-> At least on the LongTrail, all memory is cleared by OF (at least it looks like
-> that).
+> dmasound_core.c: In function `dmasound_init':
+> dmasound_core.c:1196: `irq_installed' undeclared (first use in this
+> function)
 
-The macs have the OF #MEGS variable - so you should be able to control it -
-it seems to work on the 9500.
+Please let me know whether it works fine or not after this patch:
 
-I think that the trashed area is from the start.
-Iain.
+--- geert-2.3.99-pre5/drivers/sound/dmasound/dmasound_core.c.orig	Sat Apr 15 22:08:03 2000
++++ geert-2.3.99-pre5/drivers/sound/dmasound/dmasound_core.c	Sat Apr 15 22:23:26 2000
+@@ -1193,8 +1193,10 @@
+
+ int __init dmasound_init(void)
+ {
++#ifdef MODULE
+ 	if (irq_installed)
+ 		return -EBUSY;
++#endif
+
+ 	/* Set up sound queue, /dev/audio and /dev/dsp. */
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
