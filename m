@@ -1,43 +1,92 @@
-Date: Sat, 25 Aug 2001 21:36:29 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: glibc 2.1 -> 2.2 gotchas?
-Message-ID: <20010825213629.U14302@cpe-24-221-152-185.az.sprintbbd.net>
-References: <998751333.12597.3.camel@yoda> <01082511424509.15847@localhost.localdomain> <20010826005515.Postino-022357@smtp01.highway.ne.jp> <01082513443402.16172@localhost.localdomain> <3B882749.346A0B39@iiic.ethz.ch> <20010825154233.S14302@cpe-24-221-152-185.az.sprintbbd.net> <20010825155417.A8892@nevyn.them.org>
+From: Keith Clayton <keith@claytons.org>
+To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <01082511314308.15847@localhost.localdomain>
+References: <998751333.12597.3.camel@yoda>
+	<01082511314308.15847@localhost.localdomain>
+Content-Type: text/plain
+Date: 26 Aug 2001 07:52:02 -0700
+Message-Id: <998837522.12597.161.camel@yoda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010825155417.A8892@nevyn.them.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 25, 2001 at 03:54:17PM -0700, Daniel Jacobowitz wrote:
->
-> On Sat, Aug 25, 2001 at 03:42:33PM -0700, Tom Rini wrote:
-> >
-> > On Sun, Aug 26, 2001 at 12:31:37AM +0200, Michel D?nzer wrote:
-> >
-> > > > What I recommend won't hurt and can certainly help flush older shared
-> > > > libraries out of memory.
-> > >
-> > > The point is probably that in the Debian packages, the maintainer scripts take
-> > > care of the necessary steps, so the user doesn't have to.
-> >
-> > This always got me tho...  If a program is already running, how do you
-> > make it stop using the old libraries?  If 'restarting' /sbin/init makes it
-> > reload, I'll take your word at it.  But what about all of the other apps that
-> > happen to be running?  The bash session I happen to be doing this upgrade
-> > from.  Or X (yes, in an ideal world, you goto single user to do this
-> > anyhow.. :))
->
-> They keep running with the old libc.  No big deal, really :)  The RAM
-> will basically not be reclaimed until after you reboot.
+Thanks to all who responded to my query . . you guys are great.
 
-That's sorta what I figured.  So on debian certain services get restarted
-so that new children are sane, yes?
+I was gone all day yesterday and woke up to find my inbox full of great
+info!
 
+Looks like I've got some work cut out for me no matter which route I
+head.  Guess my labor day weekend will live up to its name ;)
+
+Thanks again . . this gives me lots to chew on
+
+Cheers,
+Keith
+
+On 25 Aug 2001 11:31:43 -0400, (null) wrote:
+> Hi Keith,
+>
+> If you are using an RPM based distribution, please be careful.  When I tried
+> to do the upgrade manually awhile back I ran into trouble with many of the
+> new rpms being usable in RPM 4 format only and not working under RPM 3.
+>
+> If I were you I would rebuild glibc 2.2.4 from a source rpm (from Franz) and
+> run make check first just to make sure all is well.  I would then focus on
+> building RPM 4 and then try to convert your rpm database over from RPM 3 to
+> RPM 4.o and then continue upgrading pieces.
+>
+> The other easy way to make this move is to simply upgrade to YDL 2, SuSE 7.1,
+> Debian, Mandrake, etc. They are all glibc 2.2.X based and come with all of
+> the other things that need to be upgraded since they are so old (Perl, etc).
+>
+> Upgrading them from glibc-2.2.1 to glibc 2.2.4 is easily done with rpm a few
+> syncs and a restart.
+>
+> Hope this helps,
+>
+> Kevin
+>
+> On Saturday 25 August 2001 10:55, Keith Clayton wrote:
+> > Hi all,
+> >
+> > I'm considering moving from glibc 2.1.3 to 2.2.4  Any known problems
+> > with the move to 2.2, apps that break, etc.
+> >
+> > I'm hoping to minimize any surprises
+> >
+> >
+> > Thanks
+> > Keith
+> >
+> >
+> > --
+> > <><><><><><><><><><><><>
+> > Keith Clayton
+> > keith@claytons.org
+> >
+> > "If you don't trust me with your source code,
+> >             why should I trust you with my computer?"
+> >
+> > GPG key: http://home.pacbell.net/clay-ton/keith_public_key.html
+> >          http://www.keyserver.net
+> >
+> > GPG fingerprint: 33FF 1D80 4562 1600 4BAB  5018 BCB7 635C B0CC 99EE
+> >
+> >
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+<><><><><><><><><><><><>
+Keith Clayton
+keith@claytons.org
+
+"If you don't trust me with your source code,
+            why should I trust you with my computer?"
+
+GPG key: http://home.pacbell.net/clay-ton/keith_public_key.html
+         http://www.keyserver.net
+
+GPG fingerprint: 33FF 1D80 4562 1600 4BAB  5018 BCB7 635C B0CC 99EE
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
