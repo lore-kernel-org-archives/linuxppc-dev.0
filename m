@@ -1,40 +1,24 @@
-Message-ID: <1072F1A27E99D3119747005004B9A38041575E@MAIL>
-From: Rodney Davies <RodneyD@nulec.com.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Size of GLibc - Looking for smallest Glibc
-Date: Tue, 28 Mar 2000 15:36:27 +1000
+Message-ID: <38E089AD.F415DCB7@freenet.de>
+Date: Tue, 28 Mar 2000 12:30:06 +0200
+From: christof <xfr@freenet.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: kernel executing from flash
+References: <1314024740.953824470340.JavaMail.wwwrun@moe.freenet.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings all!
+My primary aim is not to gain speed or to save money, although this is
+important for my application too.
+By fetching opcodes from flash I expect more stability in temperature- and
+emc-critical environement, for data in "ROM" is saver than in RAM. Of corse,
+there is always run-time critical data in RAM (processor stack), but the
+probability of "irrepairable" errors should decrease by runnig from flash.
 
-Ah, would just like to ask around to find out what has been happening of
-recent with respect to the size of GlibC for embedded applications, and
-where it is currently up to...
-
-Basically, what I'm looking for is, the smallest, most compact GLibC library
-available (or equivalent), as for my applications with the MPC8xx work I'm
-currently doing, size is a major issue. I have to keep the Flash and RAM to
-an absolute minimum, so I'm investigating issues such as -
-
-1. Kernel size
-2. Actual size of the libraries
-3. Size of binaries (depending on whether static/dynamically linked)
-4. Issue of whether to go with Static or Dynamic linking of libraries...
-
-
-So far, I've heard about "newlib" and a *very* compact version of glibc....I
-was wondering if anyone could please ellaborate on these ideas/issues, let
-us all know what is available, and where things stand at the moment...??
-
-Thank-you all in advance...
-
-Cheers,
-Rod
+Thanks for Your quick answers
+Christof
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
