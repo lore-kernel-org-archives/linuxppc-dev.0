@@ -1,38 +1,75 @@
-Date: Fri, 17 Mar 2000 09:13:35 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: jingai <jingai@floatingpenguins.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: shmget failing w/ kernel 2.3.52
-In-Reply-To: <200003170759.CAA08719@shell.faradic.net>
-Message-ID: <Pine.LNX.4.05.10003170912280.17521-100000@callisto.of.borg>
+Message-ID: <38D1F414.78AE4921@ncal.verio.com>
+Date: Fri, 17 Mar 2000 01:00:04 -0800
+From: Henry Worth <haworth@ncal.verio.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: linux on powerbook
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 16 Mar 2000, jingai wrote:
-> Quickie question:  after upgrading to kernel 2.3.52 (paul's tree), suddenly
-> all calls to shmget are failing.. anyone have any idea why?
 
-Add
+> Mike,
+>
+> > Hi,
+> >   I would like to get a new 500mhz power book to do development
+> > for the 403 embedded ppc.  Is there a kernel that will run this?
+> > What is the code name for the new 500 mhz powerbook (firewire)?
+>
+> A number of issues have been fixed on these machines, code named Pismo,
+> but some things remain to be fixed before they're good to go.
+>
+> Regards,
+> Dan
+>
 
-    # shm file system:
-    none            /var/shm        shm     defaults                0       0
+I've been working on this, with a lot of help from Ben H.
 
-to your /etc/fstab and mount /var/shm.
+Interrupt initialization was resolved earlier this week and I've sent
+him
+some code which appears to work for the media-bay init, there are still
+a couple of issues and it'll need cleanup and reconciliation with the
+logic for other PowerBooks, but that's one problem mostly out of the
+way.
 
-Gr{oetje,eeting}s,
+That still leaves for basic capability:
 
+ > OF framebuffer initialization - the color map is garbage.
+   Other ATI chipsets have required fixups for their colormaps, but
+   the dev-tree organization is different enough from previous systems
+   that new init code will be needed even if otherwise fully register
+   compatible. And than there is getting aty128 going.... Ben has been
+   looking into these issues.
 
-						Geert
+ > Boot parm passing from yaboot (0.4 & 0.5) doesn't work completely,
+   append statements appear to suppress the novideo option and the
+console
+   does not come up on the display. Ben suspects the second may be
+getting
+   selected for the console. I can sometimes login in blind and run init
+   to shutdown (I now have neworking going so I can rlogin in the next
+time
+   -- I'll also plug in a monitor when I start seriously debugging
+this).
+   Sometimes though, the system hangs before the video changes.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ > USB keyboard and mouse work on seperate USB ports, but the drivers
+   trap when probing the devices if the mouse is plugged into the
+   keyboard's hub.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ > The GMAC network chip works if an active line is plugged in at boot,
+   but it looks like OF sometimes doesn't enable the PHYS registers
+   if the network is not active at boot (but not always). I haven't
+   tried ifconfig'ing eth0 in that situation yet, but I suspect there
+   may be a problem.
 
+The last two are probably not necessary fixes for a test release, but
+I'll leave that call to Ben. I haven't looked into power management
+yet, but that shouldn't differ much from the iBook's. And then there is
+the new TI PCIMIA bridge (I think someone is already looking at this)...
+Oh, and folding the fixes into the 2.3 tree.
+
+Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
