@@ -1,41 +1,25 @@
-Message-ID: <3AC1825E.E61C485A@mvista.com>
-Date: Wed, 28 Mar 2001 01:19:10 -0500
-From: Dan Malek <dan@mvista.com>
+From: "Stefano Coluccini" <s.coluccini@caen.it>
+To: "Zehetbauer Thomas" <TZ@link.topcall.co.at>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: booting HardHat on IBM 405GP
+Date: Wed, 28 Mar 2001 10:05:24 +0200
+Message-ID: <NDBBIFIMCKPOADMAJOKMOEJIDAAA.s.coluccini@caen.it>
 MIME-Version: 1.0
-To: Jones Madhuri <madhuri_jones@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: What does instruction LA mean?
-References: <20010328053251.30486.qmail@web13605.mail.yahoo.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <41EA756DBC9FD0118CFC0020AFDB5C5A188D96@tcint1ntsrv>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jones Madhuri wrote:
+> It seems that execution stops when calling rfi in
+> arch/ppc/kernel/head_4xx.S. I have put the sample code provided to
+> output a single character on the serial port immediately before the rfi
+> call and after the after the start_here label. Only the first is beeing
+> executed. Any ideas?
 
-> I am novice in Power PC assembly code and I am trying
-> compile in following code (written by someone else)
-> into head_8xx.S.
+Are you sure that the code that print a char on the serial port works also
+with MMU enabled ?
 
-Novice or otherwise, you shouldn't be placing any code in
-head_8xx.S.  It's a guarantee you won't get Linux to boot.
-
-
-> mfspr r3, IC_CST
-> LA r4, IC_CST_LEN
->
-> However the hardhat assembler doesn't understand the
-> mnemonic LA,
-
-Because there is no such instruction.  It looks like a
-macro that will result in the two instruction pair:
-	lis	r4, IC_CST_LEN@h
-	ori	r4, r4, IC_CST_LEN@l
-
-You shouldn't be messing around with those cache
-management registers......
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
