@@ -1,60 +1,49 @@
-Message-ID: <40AB03EB.7040105@fh-landshut.de>
-Date: Wed, 19 May 2004 08:51:23 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-Reply-To: okorpil@fh-landshut.de
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Error calling timer_create
+Date: Wed, 19 May 2004 08:52:58 +0200
+References: <200405190509.PAA20836@sprint.tenix.com>
+In-Reply-To: <200405190509.PAA20836@sprint.tenix.com>
 MIME-Version: 1.0
-To: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Differing PCI layouts trigger porting driver problem [Was: Memory
- layout question]
-References: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
-In-Reply-To: <DB1DE297F535B340AEAE1E51B221C3D0016B3DCB@FTWMLVEM02.e2k.ad.ge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200405190852.58747.g.jaeger@sysgo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, Daniel!
+Hi,
 
-I think I very much erred when trying to identify the error - the
-problem is a memory layout one, but a PCI related one.
+ENOSYS means, that the function is not implemented on your system, probaly
+your glibc is somwhat outdatet. I remember the same thing here some time
+ago before using glibc-2.2.5. Updating your CDK should help.
 
-The driver works on x86 because the PCI bus and the CPU physical
-addresses match - the Universe Master Window Base Register (LSI_BSx) is
-given the start address of the address range to map (the set of
-addresses on the PCI bus the Tundra Universe chip will try to answer
-to). In the driver the Universe is till now given the CPU physical address.
+Ciao,
+  Gerhard
 
-But the Tundra Universe is a PCI device. All the addresses it sees need
-to be bus addresses, not CPU physical ones. This is - if I figured it
-out correctly - because of the host-to-PCI-bridge mapping. All physical
-addresses dereferenced by the CPU will correctly translate to their
-corresponding mapped PCI bus addresses because of the host bridge, but
-if you want the Universe chip to catch those addresses, it needs to have
-the bus address stored in its registers (the address matching the
-original physical address after the host-bridge translation).
+On Wednesday 19 May 2004 07:09, MERRITT Nigel wrote:
+[SNIPSNAP]
+> // Initialise the timer.
+> if (timer_create(CLOCK_REALTIME, &stEvent, &nTimerId))
+> {
+>    printf("Timer could not be created (err=%d).\n", errno);
+>    return -1;
+> }
+> .
+> .
+> .
+>
+> ... with the result:
+>
+>    Timer could not be created (err=38).
+>
+> The code obviously compiles so I can't work out why it would claim the
+> function does not exist.  The code is compiled with static linking so all
+> libraries should be included in the executable.
+>
+> Any help would be appreciated...
+>
+>    NJM
 
-So I hope this can actually resolved by converting the address to a bus
-address and storing that. Doing this will keep the module portable,
-because the mapping would resolve to identity on x86, or at least I
-think so.
-
-I guess the correct new order would be:
-allocate_resource(&iomem_resource, ... ) to obtain a range of physical
-addresses, ioremap_nocache that physical start address to obtain virtual
-addresses for the ->virt pointer in the master window structure (now
-done in vme_master_window_map() I think), and then use virt_to_bus () to
-obtain the address to store in the master window base register. Then the
-driver should work both on (nearly) arbitrary setups for x86 and PPC.
-
-Of course I have to try that out first (I'm still home now), and let you
-know if that produced any results. Did VMIC run into similar problems
-when trying to run the driver module on the VMIVME7050 (750FX/GX IBM
-PowerPC board)? Because it is not yet in the list of supported boards?
-
-Thanks for the reply!
-
-With kind regards,
-Oliver Korpilla
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
