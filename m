@@ -1,38 +1,32 @@
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8xx SCC and SMC uart latency 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 Jan 2003 08:00:28 EST."
-             <5.1.0.14.2.20030115075248.02669e88@falcon.si.com>
-Date: Wed, 15 Jan 2003 14:13:39 +0100
-Message-Id: <20030115131344.CBEF5C608E@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC06082@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: How is eth0 config?
+Date: Wed, 15 Jan 2003 08:41:40 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <5.1.0.14.2.20030115075248.02669e88@falcon.si.com> you wrote:
->
-> The idea is that your processing task waits on a semaphore: when someone
-> has something for it to do, they release (post/signal) the semaphore which
-> unblocks the processing task.  This allows the processing task to (a) not
-> consume processor resources when it doesn't have anything to do and (b)
-> start up immediately when there is something to do (as opposed to having to
-> wait for its slice of processor time).
+Hi,
 
-Since serial and network I/O are involved, the "semaphore"  might  be
-as simple as a select(), of course.
+Could some one explain to me how CONFIG_IP_PNP is used to configure eth0 and
+lo briefly? Ie what config files are used and when ? just basics would be
+perfect (even a URL)...
 
-But that does not fix any scheduling latencies.
+I currently am having problems with my eth0 being configure in one image but
+not the other (with the same kernel which has CONFIG_IP_PNP configured and a
+good bootline (below)).
 
-Best regards,
+Thanks as always,
+Jim
 
-Wolfgang Denk
+Ps
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Work 8 hours, sleep 8 hours; but not the same 8 hours.
+bootargs root=/dev/ram rw
+ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname)::off
+console=ttyS0;bootm 0x2900000 0x2A00000
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
