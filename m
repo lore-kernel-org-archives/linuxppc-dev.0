@@ -1,57 +1,38 @@
-Date: Tue, 30 Mar 1999 08:12:57 -0600 (EST)
-From: Norman R Weathers  <norman@lithe.uark.edu>
-To: Andrew J Benie <ha6380@qmw.ac.uk>
-cc: David Edelsohn <dje@watson.ibm.com>, Dave Weis <djweis@plconline.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Date: Tue, 30 Mar 1999 08:51:22 -0600 (CST)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Dave Weis <djweis@plconline.com>, David Edelsohn <dje@watson.ibm.com>,
+        linuxppc-dev@lists.linuxppc.org
 Subject: Re: modifying boot loader 
-In-Reply-To: <199903300953.KAA17140@alpha.qmw.ac.uk>
-Message-ID: <Pine.LNX.4.04.9903300810130.2841-100000@lithe.uark.edu>
+In-Reply-To: <Pine.HPP.3.96.990330100809.1043E-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.3.96.990330084840.8189B-100000@globegate.utm.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, 30 Mar 1999, Gabriel Paubert wrote:
+
+> On Mon, 29 Mar 1999, Dave Weis wrote:
+> 
+> > On Mon, 29 Mar 1999, David Edelsohn wrote:
+> > >       I doubt LinuxPPC will work on a 601-based machine.  The PPC601 was a
+> > > POWER architecture chip with PowerPC user instructions added. 
+
+I'm not sure about the non-Mac parts of the code, but keep in mind that
+the PowerMac 7500, and I think the 7200 (not sure about the 7300...) use
+a PPC 601.  I haven't studied the LinuxPPC arch to see how that's
+organized or how much overlap there is between the pmac-specific and the
+non-pmac code, so I can't say much more than that. 
 
 
-On Tue, 30 Mar 1999, Andrew J Benie wrote:
+Later,
+David
 
-> 
-> Hi
-> I would have thought that linuxPPC would work on the PowerPC 601 chip as 
-> that is the chip that was in the first generation PCI based powermacs 
-> such as the 7200. LinuxPCC definately works on the 7200 as I am currently 
-> running release 4 on one.
-
-Indeed, we too have used the R4 release(kernel 2.0.30) with our Nobis
-based IBM
-PowerPC's.  The only problem we ever had was with the new kernels, which
-at the time that we had a spare moment to try them, there were problems
-with the BATs if I remember correctly (Cort, remember us from University
-of Arkansas and the ****ed 601 we had?).   We haven't had time to try
-recent releases of the kernel.
-
-Norman Weathers
-Technology Coordinator ETS
-University of Arkansas
-
-> 
-> yours
-> Andy
-> 
-> Laboratory of Structural Biochemistry,
-> Molecular and Cellular Biology,
-> Division of Biomedical Sciences,
-> Queen Mary and Westfield College,
-> Mile End Road
-> London E1 4NS
-> 
-> Tel:(44) 171 982 6976
-> Fax:(44) 181 983 0531
-> Messages&Paging: 04325 397544
-> http://newton.biochem.bms.qmw.ac.uk/wwwfolder/people/ab.html
-> 
-> 
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
