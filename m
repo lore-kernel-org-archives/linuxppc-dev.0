@@ -1,75 +1,38 @@
-Mime-Version: 1.0
-Message-Id: <v04205501b3b3f4be6576@[195.227.39.191]>
-Date: Thu, 15 Jul 1999 22:34:36 +0200
-To: linuxppc-dev@lists.linuxppc.org
-From: "Dr. Matthias Dräger"  <matthias.draeger@telelev.net>
-Subject: LPPC1999, 7500, USB Mouse & ADB Keyboard - Config, XPMac VRAM
- problem
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Date: Thu, 15 Jul 1999 17:34:47 -0400 (EDT)
+From: Peter Handel <phandel@cise.ufl.edu>
+To: Jerry Quinn <jquinn@nortelnetworks.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Broken sound?
+In-Reply-To: <14222.9603.505701.976724@gargle.gargle.HOWL>
+Message-ID: <Pine.GSO.4.05.9907151732230.15873-100000@eclipse.cise.ufl.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry if this is not the right list, but I found nothing about this 
-an the LPPC support is quite clueless about this one and pointed me 
-here...
+On Thu, 15 Jul 1999, Jerry Quinn wrote:
 
-#-------
-I have a Keyspan USB card installed in Pmac 7500 and a three-button 
-Logitech USB mouse attached to the card. I try to install a virgin 
-LPPC 1999 via BootX.
+> Also, if I send a sound to /dev/audio, it plays through both
+> internal and external speakers.
 
-#-------
-When I install LinuxPPC with only an ADB mouse, this one is 
-recognized, also the keyboard works quite nicely, albeit with an US, 
-not german layout.
+Have you tried using aumix to reduce the level of the internal
+speaker?
 
 
-With onyl the USB mouse no other ADB pointing device attached it 
-correctly identifies the USB mouse and all three button work without 
-a flaw.
+Thanks,
+Pete
 
-
-So far so good. Problem: in /etc/sysconfig/keyboard also an USB 
-keyboard and keytable is configured (probably the installer thinks it 
-is installing on an iMac), and typing I get nothing.
-
-If I change /etc/.../keyboard to KB type "adb" and layout "us", the 
-keyboard is recognized, but i only get garbage. At  boot time loading 
-the default keymap succeedes, though
-
-Using layout "asjkhd" (any garbage will do), the keyboard layout is 
-almost OK, but the delete and backspace keys do not work in the login 
-screen or any Gnome / KDE app, but in XTerm. At  boot time loading 
-the default keymap fails (for good reason).
-#----------
-*Question: How do I need to configure the keyboard and mouse to use the
-  three button USB mouse and my ABD Apple extended keyboard with the correct
-  (preferrably german) layout?
-#-----------
-
-
-*------------
-XPmac also does not recognize more than 2MB of VRAM on my CONTROL 
-display adapter yielding only the 1552x...@16bpp resolution at max.
-*------------
-*Question: How do I get use of my whole 4MB VRAM?
-*------------
-For Your help many thanks in advance
-
-Cheers
-
-Matthias Draeger
-------------------------------------------------------------------------
-Dr. Matthias Draeger       Mail: mailto:matthias.draeger@telelev.net
-Am alten Schafstall 3-5          mailto:matthias.draeger.md@bayer-ag.de
-                            Fon:  +49 (0)214 6 75 04
-51373 Leverkusen, FRG      D2:   +49 (0)172 29 89 945
-------------------------------------------------------------------------
-Australia Photo Gallery:         http://www.thch.uni-bonn.de/Oz-Gallery
-DeAN Homepage:                   http://pcgate.thch.uni-bonn.de/DeAN
-------------------------------------------------------------------------
-
+-- 
+Peter F. Handel          "[The anti-Christ] also forced everyone, small and
+phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
+www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
+FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+> > You are perfectly free to believe what you want to, and so am I.
+> Actually, this turns out not to be the case. God does not give us
+> the freedom to believe anything we wish. We are morally obligated to
+> believe the truth. Doing anything else is a sin. You are not free to
+> interpret the Bible anyway you wish. -DFL (Pretty neat, huh?)
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
