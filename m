@@ -1,75 +1,50 @@
-Message-ID: <008901c410bd$93e0c0a0$2002a8c0@gadget>
-From: "Nigel Rudgley" <nrudgley@consultronics.co.uk>
-To: "Jaap-Jan Boor" <jjboor@aimsys.nl>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <935CBD11-6322-11D8-89E5-000A95B15278@aimsys.nl>
-Subject: Re: usb hub problem on 8270
-Date: Tue, 23 Mar 2004 09:59:48 -0000
+Date: Tue, 23 Mar 2004 12:02:31 +0100
+Message-ID: <4057CCD40003780D@mssbzhh-int.msg.bluewin.ch>
+From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
+Subject: IBM 440GX, Ocotea...
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Jaap-Jan
+Hello,
 
+we are currently trying to understand which PPC Linux
+kernel tree is best suited for the IBM 440GX on the
+Ocotea eval board. We would like to support the 405GP
+and 440GP as well.
 
-We're trying to bring up UBS host on the PQFADS board (8280 based) and have
-recently got it running on an Adder-II board (870 based)
+The Ocotea 440GX board seems to be supported in the
+"linuxppc_2_4_devel" tree. Is this board configuration
+up-to-date and still maintained?
 
+A more up-to-date implementation seems to be in the
+"linuxppc-2.4" tree. Are there some open issues or known
+problems? I realized that the L2 cache has been disabled
+recently:
 
-Maybe our experience with 870 can help - your problem looks a lot like what
-we saw with the Adder board, some transmits, detecting a hub, then...
-nothing.
+  $ cat arch/ppc/platforms/ocotea.c
+  ...
+  /* Disable L2-Cache due to hardware issues */
+  ibm440gx_l2c_disable();
 
-The CPM has been altered slightly from the 823/850 and will now effect a
-graceful stop when it receives a nak or stall response, you now have to
-restart it manually after these are detected.
+Does this mean that the L2 cache is unusable on current
+revisions of the chip? [That's why we would like to use
+this chip.]
 
-In original m8xxhci.c, this needs to be done in process_done_txbds()
-around line 2183, inside "if (nak & BD_USB_NAK)"
-around line 2197, inside "if ((nak & BD_USB_STAL))"
-around line 2213, inside "if (nak)"
+Does this tree support the 405GP and 440GP as well? Could
+anybody make some comments on the stability? We currently
+use the "linuxppc_2_4_devel" tree for these processors
+with little problems.
 
-calling restart_endpoint() at these three points should work to wake up the
-cpm :-)
+It would be nice if somebody could shed some light on
+these issues.
 
-I can send a complete patch file but other changes won't be so relevant for
-you, they're for 870.
+TIA.
 
-
-On the other hand you look further on with the 8270 than we are with the
-8280, we're not seeing SOFs :-( Do we need a microcode patch on the 82xx? Do
-the IDMAs need setting up to get DREQs in the right configuration or does it
-just work with the external wire connected?
-
-
-Cheers
-
-Nigel
-nrudgley@consultronics.co.uk
-
-
------ Original Message -----
-From: "Jaap-Jan Boor" <jjboor@aimsys.nl>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Thursday, February 19, 2004 9:28 PM
-Subject: usb hub problem on 8270
-
-
->
-> Hi,
->
-> I found some time to adapt m8xxhci.c (for 823/850) to the 8270 with
-> limited success.
-> We use TOUT3 (from timer3) to DREQ0/1 to enable SOF transmitting which
-> works
-> more or less as one of my hubs is detected but after the host driver
-> received the hub's
-> device description, I get a time-out and, well that's it. Even after
-> resetting the 8270 and cpm
-> I'm unable to communicate to the hub:
+Wolfgang.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
