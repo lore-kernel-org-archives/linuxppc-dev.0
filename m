@@ -1,41 +1,31 @@
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: David Edelsohn <dje@watson.ibm.com>,
-	Kaoru Fukui <k_fukui@highway.ne.jp>, Jean-Jacques.Levy@inria.fr,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: __divdi3 unresolved + X pointer blocks
-References: <Pine.LNX.4.05.10107051012150.10817-100000@callisto.of.borg>
-From: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-Date: 05 Jul 2001 13:48:41 +0200
-In-Reply-To: Geert Uytterhoeven's message of Thu, 5 Jul 2001 10:13:16 +0200 (CEST)
-Message-ID: <8xr8vv61gm.fsf@s62.informatik.uni-bremen.de>
+Message-ID: <20010705115840.93599.qmail@web11003.mail.yahoo.com>
+Date: Thu, 5 Jul 2001 04:58:40 -0700 (PDT)
+From: Dan Bethe <dan_bethe@yahoo.com>
+Subject: Re: Open Firmware info
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <p05100300b767eba042c3@[192.168.1.100]>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+--- Erik van Roode <erik@cthulhu.demon.nl> wrote:
+>
+> At 13:06 -0700 7/3/01, Tim M. Sanders wrote:
+> >Where can I find info on open firmware?  Is there a reference
+> >implementation?  Does Linux have any support for it?
 
->
->
-> On Wed, 4 Jul 2001, David Edelsohn wrote:
-> > 	You do not seem to have understood my reply.  I will repeat the
-> > important sentence:
-> >
-> > 	SHIFT IS NOT THE SAME AS DIVIDE FOR SIGNED INTEGERS.
->
-> Indeed. That's why you have `logical shift right' and
-> `arithmetic shift right'.
-> The former inserts zeroes, the latter inserts a copy of the MSB.
->
-> Don't know from memory whether PPC has them...
->
-Yes, PowerPC has both; but some forms don't have their own opcodes, as they
-are emulated with bitfield instructions.
+http://bananajr6000.apple.com/
 
-And: 'arithmetic shift right' is _not_ the same as signed divide, because the
-rounding of negative operands or results may differ.
+http://www.firmworks.com/
 
-  Holger
+	Firmworks claims to have invented it  :)
+
+=====
+Medium System Administrator and Junior I.T. Manager of 5 yrs
+ -- Now available -- Linux, MacOS, Unix-like systems
+    -- http://mmmgood.net -- dan_bethe@yahoo.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
