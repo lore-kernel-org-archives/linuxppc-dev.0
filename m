@@ -1,33 +1,32 @@
-Date: Sun, 6 Aug 2000 20:25:22 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Henry Worth <haworth@ncal.verio.com>
-cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org,
-        Matthias Pfisterer <Matthias.Pfisterer@gmx.de>
-Subject: Re: CDDA playback on Pismo (and other newer models)
-In-Reply-To: <398DB035.4BFCC4FA@ncal.verio.com>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000806202004.689I-100000@ofey.earthlink.net>
+Message-ID: <398E11CA.A95426B8@phlo.net>
+Date: Sun, 06 Aug 2000 21:32:58 -0400
+From: Bill Jackson <hispeed@phlo.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: quik/kernel interaction
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 6 Aug 2000, Henry Worth wrote:
-
-[...]
-> This won't help in the esd case, it always sets the device to
-> AFMT_S16_BE for 16 bit data on big endian systems (also doesn't deal
-> with
-> unsigned 16 bit data streams). Whereas the XMMS esd output plugin always
-> passes the data through unchanged (little endian in the case of .wav).
-
-Does xmms' esd output plugin work with 16bit .wav at all on x86?  Since
-sox works just fine with 16bit .wav, and it doesn't do any byte swapping
-either as far as I know (which is not much admittedly), I'm very much
-inclined to think xmms+esd is plain broken with respect to 16bit wav.
-
-
-Takashi Oe
+i have tried to upgrade my kernel from 2.2.15 to 2.2.17(test 5 and benh)
+or 2.4.0.  I am able to get the kernels to compile, but they won't
+boot.  I have modified my quik.conf file and reran quik.  with any of
+the new kernels I have made (I also made the existing 2.2.15 kernel), i
+get the quik boot screen and select the kernel I wish to boot and the
+screen goes to the "copying OF device tree....done", then says
+'booting', but then it locks up.  i never get the actual  kernel to
+load....at one point, i was getting a returning from prom_init message,
+but I no longer get that message.  I also at one point got messages
+"Initializing Fake screen" and "Failed to get address", followed by a
+"returning from prom_init" message...but the kernel never actually
+loads...I have /boot on /dev/sda2 and have tried everything I can think
+of to fix this.  I have used multiple kernels as I thought the problem
+was kernel related (first occured when I went to 2.4.0, that didn't
+work, so I tried 2.2.17, that didn't work, so I got 2.2.17-benh, that
+didn't work either).   Since all these kernels are displaying the same
+problem, I think I am doing something wrong, but I don't know
+what....any assistance/offers/ideas are greatly appreciated...
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
