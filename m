@@ -1,49 +1,30 @@
-From: Paul Miller <pmiller9@users.sourceforge.net>
-To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Peripherals  Memory Mapping
-Date: Sun, 14 Dec 2003 09:28:22 -0600
-References: <Pine.GHP.4.58.0311271703390.25225@stud3.tuwien.ac.at> <1070266735.328.5.camel@linpc003.aimsys.nl> <3FCB3969.9010707@catapult.com>
-In-Reply-To: <3FCB3969.9010707@catapult.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200312140928.23106.pmiller9@users.sourceforge.net>
+Subject: Re: PPC4xx enet driver problem (version 2.0)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: DaveyWu <daveywu@transengines.com>
+Cc: Stefan Roese <stefan.roese@esd-electronics.com>,
+	"'Linuxppc-Embedded'" <linuxppc-embedded@lists.linuxppc.org>,
+	akuster@mvista.com
+In-Reply-To: <005201c3c224$135c4090$5100a8c0@davey033ce6193>
+References: <004601c3c09e$8cfea410$0212000a@PCSTEFAN>
+	 <005201c3c224$135c4090$5100a8c0@davey033ce6193>
+Content-Type: text/plain
+Message-Id: <1071446151.12499.394.camel@gaston>
+Mime-Version: 1.0
+Date: Mon, 15 Dec 2003 10:55:52 +1100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Monday 01 December 2003 6:51 am, Kevin A. Sapp wrote:
-> Hello,
+On Sun, 2003-12-14 at 20:24, DaveyWu wrote:
+> Stefan,
 >
-> Maybe this is a simple question, but I have searched the code
-> and played around with no luck.  This is for an 8260 FADS
-> board, later to be used on custom H/W.
+> Thanks for your reply. My bootloader is OpenBios. I think the problem is not caused by the wrong MAC addresses, because when I boot the 2.4.18 kernel the MAC address of eth1 is same 00:00:00:00:00:00 but both EMACs work well.
 >
-> How and where do I add peripherals memory to the memory
-> map?   I have tried adding it in the ads_map_io function but
-> when I try to access the 82xx internal memory space there to
-> add the memory to the base and option registers it dies.
-> io_block_mapping is called successfully for the internal
-> space, but appears to be inaccessable at this time.
->
-> Is there a function that adds memory ranges to both the Linux
-> map and the processor map (Base and Option registers) ?
+> Our engin
 
-I recently jumped into the embedded linux world and I've been playing
-around with a 405EP from Intrinsyc.  In order to get I/O access to
-the peripheral bus, you need to ioremap_nocache() the peripheral
-memory in a kernel module, then mmap() it in user space.  For the DCR
-registers (e.g., the embedded memory controller (EBC) registers),
-you'll need to modify these in kernel space by calling mtdcr() and
-mfdcr().
+Hrm... I doubt a MAC of 00:00:00:00:00:00 works properly
 
-I've been able to communicate with external hardware via peripheral I/
-O.  I noticed that memory addresses should lie on a 16 or 32-bit
-boundary, otherwise the write pulse occurs too late for single
-writes.
+Ben.
 
-Hope this helps,
--Paul
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
