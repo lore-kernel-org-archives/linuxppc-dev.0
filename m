@@ -1,39 +1,43 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <msokolov@ivan.Harhan.ORG>, <linuxppc-dev@lists.linuxppc.org>
+Date: Sun, 7 Apr 2002 10:34:19 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, msokolov@ivan.Harhan.ORG,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: CONFIG_GENERIC_PPC32
-Date: Sun, 7 Apr 2002 00:29:40 +0100
-Message-Id: <20020406232941.774@smtp.wanadoo.fr>
-In-Reply-To: <0204062217.AA17328@ivan.Harhan.ORG>
-References: <0204062217.AA17328@ivan.Harhan.ORG>
+In-Reply-To: <20020406225236.3768@smtp.wanadoo.fr>
+Message-ID: <Pine.GSO.4.21.0204071026160.2567-100000@lisianthus.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->(This doesn't mean that having such wrapper is the RTTD or that the vmlinux
->boot ABI inherently has to change all the time. It is perfectly possible
->technically to fix the vmlinux boot ABI, keep it stable, and eliminate all
->those wrappers. But that would require a revolution to oust the current
->tyrants
->with a strangehold on write access to the mainline tree and let people with
->more progressive minds in.)
-
-heh, well, I for one thinks the PPC tree hasn't a strong enough tyrant ;)
-
->> I don't plan to include Michael boards in it, I want to rework
->> our ground to match what Michael does and then let him drop in his new
->> boards.
+On Sat, 6 Apr 2002, Benjamin Herrenschmidt wrote:
+> I've looked at the patch in the meantime and it makes much sense. I want
+> to do something around those lines:
 >
->I don't have my own boards yet. In my tree I used the Adirondack, EV-64260A,
->and K2 ports to prove the CONFIG_GENERIC_PPC32 implementation. EV-64260A is
->Galileo's reference board for the GT-64260A system controller, and Adirondack
->and K2 are SBS boards already supported in 2_4_devel. I'm not at SBS any more
->and don't have their hardware, but those boards are still fresh in my
-head and
->I needed a few ports to prove my generic PPC32 implementation.
+>  - Completely rip off CONFIG_ALL_PPC in favor of CONFIG_GENERIC_PPC32
+>  - Each board model has it's own CONFIG_xxx entry (like Michael patch),
+>    which means adding "back" CONFIG_PMAC, CONFIG_CHRP, CONFIG_PREP, but
+>    those will only control which set of .c file will get in the makefile
+>    and the toplevel switch/case on platform_init. That is you will be able
+>    to select an arbitrary set of boards.
 
-Ok.
+Good, starts to look like m68k again, where you always were able to compile a
+generic kernel (except for Sun-3 (not 3x) due to the different MMU)!
+Now start moving platform specific files to arch/ppc/$platform/ again. Dan is
+right, we're running in circles :-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
