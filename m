@@ -1,41 +1,96 @@
-Message-ID: <3A9C2733.D5B470F8@arlut.utexas.edu>
-Date: Tue, 27 Feb 2001 16:16:19 -0600
-From: Ken Offer <koffer@arlut.utexas.edu>
+Message-ID: <010701c0a12c$3c84c120$2501000a@sid>
+From: "Sid" <sid@innvo.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+References: <Pine.SOL.4.10.10102261324080.29120-100000@jennifer.informatik.rwth-aachen.de> <021801c0a016$749636a0$2501000a@sid>
+Subject: Re: MBX860 - minicom trouble continues
+Date: Wed, 28 Feb 2001 10:14:47 +0800
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: LinuxPPC Kernel 2.4.2 build (multiple compilations error)
-References: <Pine.A41.3.96LJ1.1b7.1010227104958.75940C-100000@unlserve.unl.edu> <3A9C0793.2AEBE8B0@arlut.utexas.edu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ken Offer wrote:
->
-> Takashi Oe wrote:
-> > It's not a gcc problem.  Maybe, wait a day or two and refetch the archive?
->
-> I guess I'll have to. :)
+Hi all,
 
-A Linux guru here found the problem (thanks Mike D.!!!).
+I managed to construct a temporary power supply and get the board running.
+I also got the (till now missing) original documentation for the board from
+the
+Motorola website. I have found out how essential this was. :)
 
-And now for those searching the archives desperately for an answer:
+Now all the correct lights light up and the CPU light keeps blinking. I
+assume
+this means that the CPU is active. The problem is, instead of getting an
+EPPCBug prompt on minicom, I get a series of outputs on the screen which say
+"ABCDEFGHz". Nothing else happens.
 
-If you run into the "gcc: cannot specify -o with -c or -S and multiple
-compilations" error while building a kernel, the following might help.
-The environment variable TARGET_ARCH might be set to "ppc" from a
-previous build.  Doing an "unset TARGET_ARCH" cleared up the build
-problem for me. :)
+This happens whether I select the ROM or the FLASH as the source of the
+debugger. My board is an MBX860-006C.
 
+Is this normal? Please suggest troubleshooting steps.
+
+Thank you for your time.
+
+regards,
+Sid
 --
-______________________________________________________________
-Kenneth Ray Offer, II
-Sr. Systems Analyst
-Applied Research Laboratories/SDD
-University of Texas at Austin
-Office (512) 835-3859   FAX (512) 835-3259
+sid@siddhartha.8m.com
 
-Any opinions expressed above are mine and not necessarily
-those of my employer.
+"[The knowledge  to reconnect  a brain]  does  not  [exist  yet  in  the
+   galaxy.]
+  -- Spock, "SPOCK'S BRAIN"
+
+----- Original Message -----
+From: "Sid" <sid@innvo.com>
+To: "Karl-Heinz Krempels" <charlie@pool.informatik.rwth-aachen.de>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Sent: Tuesday, February 27, 2001 1:06 AM
+Subject: Re: MBX860 - minicom
+
+
+>
+> > Hi,
+> >
+> > please check your cables. I think its a handshaking problem.
+> >
+> > \Charlie.
+>
+> Hi,
+>
+> I discovered the reason. My 3.3 V input pin was only receiving 1.8V and
+all
+> the lights were not turning on.
+>
+> This is because I couldn't find a standard power supply for this board and
+I
+> had to make a make-shift one and apparently the load on the 3.3V pin is so
+> high that my power supply can't handle it.
+>
+> Could anyone using this board tell me what kind of power supply they are
+> using on this board? Maybe even the expected load resistance at normal
+> operation, so that I have a rough gauge of the Input current required to
+> drive it at 3.3V.
+>
+> Do power pcs have a different lkind of power supply than the i386
+machines?
+> As in the Voltage/Current specs.
+>
+> Thank you once again.
+>
+> regards,
+> Sid
+> --
+> sid@siddhartha.8m.com
+>
+> Kirk: "Oh, by the way, thank you for this."
+> Spock: "I know of your fondness for antiques."
+> Kirk: "'It was the best of times, it was the worst of times.'  Message,
+> Spock?"
+> Spock: "None that I'm conscious of.  Except of course, happy birthday.
+>   Surely, the best of times."
+> --"STII:TWOK", Stardate 8130.3
+>
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
