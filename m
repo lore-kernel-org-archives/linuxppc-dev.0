@@ -1,39 +1,47 @@
+Mime-Version: 1.0
+Message-Id: <v04220800b6ee4b75dab2@[213.132.135.63]>
+Date: Mon, 2 Apr 2001 17:39:31 +0200
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.3 on Lombard
-From: Stefan Berndtsson <stefan@nocrew.org>
-Date: 02 Apr 2001 17:11:03 +0200
-Message-ID: <87r8zbmj5k.fsf@hades.nocrew.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Denis <denis.muquardt@chello.be>
+Subject: 3dfx kernel patch
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I tried compiling 2.4.3 (rsync from penguinppc.org::linux-2.4-benh) on
-my Lombard, with a very similar setup to the 2.4.0 I'm currently running.
-It hung in the early boot stage, so I disabled the early boot text thing,
-and then the firmware prints:
+Hello,
+my computer is a beige G3 with a 3dfx 3 2000 card. I cannot boot
+correctly on my 3dfx. I have recompiled the kernel 2.4.3 but the text
+seems to be mirrored (the top of the character is at the bottom and
+vice-versa) and  the color of the console are not correct.  My kernel
+arguments are video=tdfx:1024x768-8@60, but I have tried a lot of
+configurations.
 
-... ok
-copying OF device tree...done
-Calling quiesce ...
-returning 01400000  from prom_init
+Is there a patch for the kernel 2.4.x ???
 
-At this point it hangs indefinitely.
 
-2.4.0 (older rsync from linuxppc.org::linux-pmac-devel) boots just fine
-on the same hardware.
+Thanks
 
-I have no idea what to try now. .config can be found at:
+Denis Muquardt (Belgium).
 
-http://stefan.nocrew.org/config-2.4.3
 
-...and the older kernel config at:
+     _____  ______       _
+    |  __ \|  ____|     (_)
+    | |  | | |__   _ __  _ ___
+    | |  | |  __| | '_ \| / __|
+    | |__| | |____| | | | \__ \
+    |_____/|______|_| |_|_|___/
 
-http://stefan.nocrew.org/config-2.4.0
 
-Thankful for help,
+/******************************************/
 
-/Stefan
+
+     +-+-+-+-+-+-+ denis.m@skynet.be
+     |e|-|m|a|i|l| denis.muquardt@chello.be
+     +-+-+-+-+-+-+ DenisM@mac.com
+
+
+/******************************************/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
