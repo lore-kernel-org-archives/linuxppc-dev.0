@@ -1,48 +1,38 @@
-Message-Id: <5.1.1.6.2.20030620133837.0131da68@corelis.com>
-Date: Fri, 20 Jun 2003 13:48:40 -0700
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D36@norcom2.norcom.net>
+From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
 To: linuxppc-embedded@lists.linuxppc.org
-From: "Brian S. Park" <brian@corelis.com>
-Subject: kernel modules and symbols
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Booting linux on MPC custom Board 
+Date: Sun, 22 Jun 2003 13:32:17 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I got Linux running on our custom board and am in the process of learning
-how to build the final image to be burned on the flash.
+Hi,
+I have a custom board with a custom bootloader. The board is based on
+MPC855T, with 8MB flash and 32MB RAM.
 
-To support our application I wrote simple device driver which maps the
-physical address space to user space.
-During development (NFS file system), it worked good enough. I could
-install/un-install it without any problem using insmod/rmmod.
-However, when I tried to install the module when using SELF ramdisk image,
-I get bunch of unresolved symbols error.
+I have to boot linux on this board. The issue I have is this - I have to use
+the custom bootloader (to be able to boot older app as well). I think I have
+two ways to go -
 
-What gives? I'm using exactly the same kernel so the symbols should be
-there whether I use NFS root or SELF ram disk as root.
+1. Custom bootloader enhanced to be able to load Linux. I do not think it is
+faster approach given the time required.
 
-Any help will be appreciated.
-
-# insmod FPGA_module
-Using /lib/modules/2.4.20/FPGA_module.o
-insmod: unresolved symbol remap_page_range
-insmod: unresolved symbol create_proc_entry
-insmod: unresolved symbol ioremap
-insmod: unresolved symbol iounmap
-insmod: unresolved symbol proc_mkdir
-insmod: unresolved symbol remove_proc_entry
-insmod: unresolved symbol sprintf
-insmod: unresolved symbol printk
+2. Tell custom bootloader to load another bootloader like PPCBOOT (U-BOOT)
+and then let it load Linux. Now, to go this route, I will have to run
+PPCBOOT from RAM. Reading documentation of PPCBOOT, it says that it runs
+from FLASH and relocates itself to RAM.
+	How can run PPCBOOT from RAM directly and then tell it to load
+Linux?? Any HELP would be appreciated.
 
 
-===============================================================
-Brian S. Park  brian@corelis.com  (562) 926-6727 x143
----------------------------------------------------------------
-Everything we do helps our customers get to market
-FASTER with HIGHER quality and LOWER cost
-===============================================================
+Lokesh Kumar
+Wireless Matrix USA Inc.
+703-262-4032
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
