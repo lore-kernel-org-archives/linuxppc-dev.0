@@ -1,78 +1,59 @@
-Message-ID: <000701c28cfa$e14e1a60$0200a8c0@telia.com>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: csum_partial() and csum_partial_copy_generic() in badly optimized?
-Date: Sat, 16 Nov 2002 00:01:06 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Fri, 15 Nov 2002 18:39:46 -0800
+Subject: Re: csum_partial() and csum_partial_copy_generic() in badly optimized?
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v548)
+Cc: <linuxppc-dev@lists.linuxppc.org>
+To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+From: Tim Seufert <tas@mindspring.com>
+In-Reply-To: <000701c28cfa$e14e1a60$0200a8c0@telia.com>
+Message-Id: <AB9FFDC2-F90C-11D6-A55F-003065F22EAA@mindspring.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi
+On Friday, November 15, 2002, at 03:01  PM, Joakim Tjernlund wrote:
 
-Looking over the different checksums in I came across csum_partial() and csum_partial_copy_generic(), which lives in
-arch/ppc/lib/checksum.S.
+> This comment in csum_partial:
+> /* the bdnz has zero overhead, so it should */
+> /* be unnecessary to unroll this loop */
+>
+> got me wondering(code included last). A instruction can not have zero
+> cost/overhead.
+> This instruction must be eating cycles. I think this function needs
+> unrolling, but  I am pretty
+> useless on assembler so I need help.
+>
+> Can any PPC/assembler guy comment on this and, if needed, do the
+> unrolling? I think  6 or 8 as unroll step will be enough.
 
-This comment in csum_partial:
-/* the bdnz has zero overhead, so it should */
-/* be unnecessary to unroll this loop */
+The comment is probably correct.  The reason the instruction has
+(effectively) zero overhead is that most PowerPCs have a feature which
+"folds" predicted-taken branches out of the instruction stream before
+they are dispatched.  This effectively makes the branch cost 0 cycles,
+as it does not occupy integer execution resources as it would on other
+possible microarchitectures.
 
-got me wondering(code included last). A instruction can not have zero cost/overhead.
-This instruction must be eating cycles. I think this function needs unrolling, but  I am pretty
-useless on assembler so I need help.
+With current hardware trends loop unrolling can often be an
+anti-optimization.  Even without loop overhead reduction features like
+branch folding, it may be a net penalty just because you are chewing up
+more I-cache and causing more memory traffic to fill it.  Consider the
+costs:
 
-Can any PPC/assembler guy comment on this and, if needed, do the
-unrolling? I think  6 or 8 as unroll step will be enough.
+Reading a cache line (8 instructions, 4-beat burst assuming 4-1-1-1
+cycle timing, which is optimistic) from 133 MHz SDRAM:  52.5 ns
 
-The same goes for  csum_partial_copy_generic()
+1 processor core cycle at 1 GHz: 1 ns
 
-These functions are used to checksum every IP/TCP/UDP packet, so it
-would be a good thing if they were properly optimized.
+So every time you do something that causes a cache line miss, you could
+have executed 50+ instructions instead.  This only gets worse when you
+consider more realistic memory timing (I don't know offhand whether you
+can really get 4-1-1-1 burst timing with PC133 under any circumstances,
+and besides it's going to be much worse than 4 cycles for the initial
+beat if you don't get a page hit).
 
-It would be really nice if there were more comments(and use names on jump labels, numbers
-are very uninformative), it's hard enough to understand as is.
+That's not to say that unrolling is useless these days, just that the
+disparity between memory and processor core speed means that you have
+to be careful in deciding when to apply it and to what extent.
 
-          Jocke
-
-
-/ *
- * computes the checksum of a memory block at buff, length len,
- * and adds in "sum" (32-bit)
- *
- * csum_partial(buff, len, sum)
- */
-_GLOBAL(csum_partial)
-        addic   r0,r5,0
-        subi    r3,r3,4
-        srwi.   r6,r4,2
-        beq     3f              /* if we're doing < 4 bytes */
-        andi.   r5,r3,2         /* Align buffer to longword boundary */
-        beq+    1f
-        lhz     r5,4(r3)        /* do 2 bytes to get aligned */
-        addi    r3,r3,2
-        subi    r4,r4,2
-        addc    r0,r0,r5
-        srwi.   r6,r4,2         /* # words to do */
-        beq     3f
-1:      mtctr   r6
-2:      lwzu    r5,4(r3)        /* the bdnz has zero overhead, so it should */
-        adde    r0,r0,r5        /* be unnecessary to unroll this loop */
-        bdnz    2b
-        andi.   r4,r4,3
-3:      cmpi    0,r4,2
-        blt+    4f
-        lhz     r5,4(r3)
-        addi    r3,r3,2
-        subi    r4,r4,2
-        adde    r0,r0,r5
-4:      cmpi    0,r4,1
-        bne+    5f
-        lbz     r5,4(r3)
-        slwi    r5,r5,8         /* Upper byte of word */
-        adde    r0,r0,r5
-5:      addze   r3,r0           /* add in final carry */
-        blr
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
