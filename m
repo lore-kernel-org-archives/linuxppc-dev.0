@@ -1,118 +1,56 @@
-Date: Sat, 22 May 2004 09:40:06 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org, Paul Mackeras <paulus@samba.org>
-Subject: [PATCH] serial console autodetection 
-Message-ID: <20040522074006.GB2893@suse.de>
+Subject: Re: Radeon 7000 dual head issues?
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Stefan Jeglinski <jeglin@4pi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <p06100402bcd3b533403f@[192.168.9.138]>
+References: <p06100402bcd3b533403f@[192.168.9.138]>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1085230739.30582.86.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Date: Sat, 22 May 2004 14:59:00 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We have something like this in our kernel since many months.
-It sets the console device to what OF uses. ppc64 does the same, and it
-works ok. serial is found on CHRP, ch-a is used on all powermacs.
+On Fri, 2004-05-21 at 16:06, Stefan Jeglinski wrote:
+> Can anyone state that they have dual monitors working with a Radeon
+> 7000 card? XFree86.org implies, nay, states outright, that this card
+> is fully supported, including dual head mode.
 
-diff -p -purN linux-2.6.6-bk8/arch/ppc/kernel/setup.c linux-2.6.6-bk8.autoconsole/arch/ppc/kernel/setup.c
---- linux-2.6.6-bk8/arch/ppc/kernel/setup.c	2004-05-22 09:18:42.000000000 +0200
-+++ linux-2.6.6-bk8.autoconsole/arch/ppc/kernel/setup.c	2004-05-22 09:29:18.000000000 +0200
-@@ -16,6 +16,7 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/cpu.h>
-+#include <linux/console.h>
+That's basically right.
 
- #include <asm/residual.h>
- #include <asm/io.h>
-@@ -474,6 +475,60 @@ platform_init(unsigned long r3, unsigned
- 		break;
- 	}
- }
-+
-+#ifdef CONFIG_SERIAL_CORE_CONSOLE
-+extern char *of_stdout_device;
-+
-+static int __init set_preferred_console(void)
-+{
-+	struct device_node *prom_stdout;
-+	char *name;
-+	int offset;
-+
-+	/* The user has requested a console so this is already set up. */
-+	if (strstr(saved_command_line, "console="))
-+		return -EBUSY;
-+
-+	prom_stdout = find_path_device(of_stdout_device);
-+	if (!prom_stdout)
-+		return -ENODEV;
-+
-+	name = (char *)get_property(prom_stdout, "name", NULL);
-+	if (!name)
-+		return -ENODEV;
-+
-+	if (strcmp(name, "serial") == 0) {
-+		int i;
-+		u32 *reg = (u32 *)get_property(prom_stdout, "reg", &i);
-+		if (i > 8) {
-+			switch (reg[1]) {
-+				case 0x3f8:
-+					offset = 0;
-+					break;
-+				case 0x2f8:
-+					offset = 1;
-+					break;
-+				case 0x898:
-+					offset = 2;
-+					break;
-+				case 0x890:
-+					offset = 3;
-+					break;
-+				default:
-+					/* We dont recognise the serial port */
-+					return -ENODEV;
-+			}
-+		}
-+	} else if (strcmp(name, "ch-a") == 0)
-+		offset = 0;
-+	else if (strcmp(name, "ch-b") == 0)
-+		offset = 1;
-+	else
-+		return -ENODEV;
-+	return add_preferred_console("ttyS", offset, NULL);
-+}
-+console_initcall(set_preferred_console);
-+#endif /* CONFIG_SERIAL_CORE_CONSOLE */
- #endif /* CONFIG_PPC_MULTIPLATFORM */
 
- struct bi_record *find_bootinfo(void)
-diff -p -purN linux-2.6.6-bk8/arch/ppc/syslib/prom_init.c linux-2.6.6-bk8.autoconsole/arch/ppc/syslib/prom_init.c
---- linux-2.6.6-bk8/arch/ppc/syslib/prom_init.c	2004-05-22 09:18:42.000000000 +0200
-+++ linux-2.6.6-bk8.autoconsole/arch/ppc/syslib/prom_init.c	2004-05-22 09:26:54.000000000 +0200
-@@ -118,7 +118,7 @@ ihandle prom_stdout __initdata = 0;
- char *prom_display_paths[FB_MAX] __initdata = { 0, };
- phandle prom_display_nodes[FB_MAX] __initdata;
- unsigned int prom_num_displays __initdata = 0;
--static char *of_stdout_device __initdata = 0;
-+char *of_stdout_device __initdata = 0;
- static ihandle prom_disp_node __initdata = 0;
+> 1. Got the semblance of a plain colored desktop background. It
+> actually looks correct in 15 bit mode; 8, 16, and 24 cause lots of
+> the graininess and weird coloring one sees when the bit depth is off.
+>
+> 2. Got a mouse cursor that exactly tracks the cursor on the main
+> (good) monitor.
+>
+> 3. Got a lower resolution than expected (everything is bigger and pixelated).
+>
+> 4. Am seeing 4 replications of what is on the main screen. The
+> replications are 4 across, not 2x2 or anything more complicated.
 
- unsigned int rtas_data;   /* physical pointer */
-@@ -880,6 +880,11 @@ prom_init(int r3, int r4, prom_entry pp)
- 	for (i = 0; i < prom_num_displays; ++i)
- 		prom_display_paths[i] = PTRUNRELOC(prom_display_paths[i]);
+[...]
 
-+#ifdef CONFIG_SERIAL_CORE_CONSOLE
-+	/* Relocate the of stdout for console autodetection */
-+	of_stdout_device = PTRUNRELOC(of_stdout_device);
-+#endif
-+
- 	prom_print("returning 0x");
- 	prom_print_hex(phys);
- 	prom_print("from prom_init\n");
+> 2. If I set Option "UseFBDev" to false, the second monitor goes "out
+> of range" and although the main monitor works in X as always, when I
+> kill X I no longer have console video on the main monitor. So is
+> seems that UseFBDev must be set to true for both heads.
+
+Actually, it needs to be off for both, because the framebuffer device
+doesn't support the second head yet, so its behaviour is undefined with
+UseFBDev. The failure to restore the console is a bug in the XFree86
+radeon driver I think.
+
+Otherwise, I don't see anything obviously wrong with your configuration,
+the X server log would be interesting.
+
 
 --
-USB is for mice, FireWire is for men!
+Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
-sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
