@@ -1,47 +1,69 @@
-To: Amit.Lubovsky@infineon.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MBX860 loading denx kernel image with EPPC-Bug 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 24 Dec 2003 11:36:54 +0100."
-             <AD2F581BD7340A4C908AF1AFB066EA3B0E4977@ntah901e.savan.com>
-Date: Fri, 26 Dec 2003 18:37:51 +0100
-Message-Id: <20031226173756.2F57AC5F5F@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "mallikarjuna raju" <malli_arjuna@hotmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: porting linux on to mpc8250 processor
+Date: Sat, 27 Dec 2003 10:33:13 +0530
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
+Message-ID: <LAW14-F82zWJLdaEgDk0003f90f@hotmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Amit,
+hi,
+can u suggest me how to start with porting linux on to mpc8250
+the host system i am using is i386 processor with redhat 9 linux running on
+it,
+and the porting on to mpc8250 as target system.
+some body has suggested me to first go for developing a toolchain setup.
+can any one suggest me how to proceed for this as this tool chain should be
+a host /target development toolchain, with some cross compilers etc.
 
-in message <AD2F581BD7340A4C908AF1AFB066EA3B0E4977@ntah901e.savan.com> you wrote:
+please help me out in this regards
+
+bye mallikarjuna.
+
+
+>From: Wolfgang Denk <wd@denx.de>
+>To: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+>CC: linuxppc-embedded@lists.linuxppc.org
+>Subject: Re: Boot Loader Date: Mon, 22 Dec 2003 14:08:53 +0100
 >
-> I try to load linux kernel 2.4.20 from denx (vmlinux) to MBX860 board
-> with the on board boot loader (EPPC-Bug) without success and get
-> the following:
-...
-> Any idea what am I doing wrong?
+>
+>Dear Kevin,
+>
+>in message <3FE6DCB3.109@catapult.com> you wrote:
+> >
+> > For my end target I have to boot across a shared memory
+> > interface by placing the executable into RAM.  This is
+> > part of a multi processor system where the Linux board
+> > is a cPCI slave.  The Linux board will not have a flash
+> > or a network connection.  I is held in reset by the master
+> > until the s/w is loaded and then released.  This is an 8275
+>
+>This has been done before. See for example the  "PN62"  configuration
+>in U-Boot.
+>
+> > Any suggestions on how to do this ?
+>
+>Use U-Boot...
+>
+>Best regards,
+>
+>Wolfgang Denk
+>
+>--
+>Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+>Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+>It all seemed, he thought, to be rather a lot of  trouble  to  go  to
+>just sharpen a razor blade.  - Terry Pratchett, _The Light Fantastic_
+>
+>
 
-You are using the wrong boot loader and/or the wrong image.
+_________________________________________________________________
+Murphy's Laws. They are crazy and funny.
+http://server1.msn.co.in/features/murphy/index.asp Buy the complete book
+online now!
 
-vmlinux is just the Linux kernel -  it  expects  to  receive  certain
-parameters  in  registers,  and boot arameters in a command line. The
-EPPCBug boot loader does not know anything about Linux, so the kernel
-crashes because of missing / bad parameters.
-
-Either you will have to use a boot loader that knows about Linux  and
-the  parameters  needed  to boot it (like U-Boot), or you could use a
-wrapper (bootstrap loader) around the Linux kernel like what you  get
-when you use the arch/ppc/boot/images/zImage file.
-
-Best regards, and Happy Hollidays,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"We don't have to protect the environment -- the Second Coming is  at
-hand."                                                   - James Watt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
