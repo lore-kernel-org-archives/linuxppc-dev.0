@@ -1,41 +1,29 @@
-Date: Wed, 22 Dec 1999 20:37:25 +0100 (CET)
+Date: Thu, 23 Dec 1999 22:18:01 +0100 (CET)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: "Jens Ch. Restemeier" <jrestemeier@currantbun.com>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Update - Re: Open Sourced Glide on Linux PPC
-In-Reply-To: <Pine.LNX.4.21.9912181510001.9036-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.05.9912222035500.574-100000@callisto.of.borg>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: vger-now on LongTrail
+Message-ID: <Pine.LNX.4.05.9912232214330.369-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 18 Dec 1999, Kostas Gewrgiou wrote:
-> On Fri, 17 Dec 1999, Jens Ch. Restemeier wrote:
-> > - Glide compiles, after disabling the assembler triangle setup code.
-> > >From the documentation I think that P6FENCE should avoid instruction
-> > reordering between I/O accesses. From the information here I think 
-> > eieio (sp?) it the PPC instruction to use.
-> 
->   Yes if you look at the macos defines you see that they use eieio there
-> they seem to do lots of read/writes without ever doing an eieio but since
-> it is working in macos i am not too worried.
+	Hi Guys,
 
-If you use the *mb() macros instead of eieio(), you don't have to use #ifdefs
-and it'll work automagically on e.g. Alpha as well.
+Now vger is again up-to-date, I gave it a try. Unfortunately the MESH driver
+seems to be broken after the SCSI subsystem changes. The last line it dumps is
 
-> > - Problems: E - N - D - I - A - N. sigh... /dev/3dfx returns several
-> > values through a memory buffer. Guess... That's currently the point
-> > where glide fails.
-> 
->   They do all memory access through the GETxx SETxx defines you can 
-> do the byteswapping there, the linux specific code doesn't use this 
-> though so you'll have to change this too.
+    mesh: target 5 synchronous at 10.0 MB/s
 
-Use read*()/write*() for all accesses to PCI memory space, as per
-linux/Documentation/IO-mapping.txt.
+and then nothing, except cursor flashing, so interrupts are still alive.
+If I set the sync target mask to 0, I don't even get that message.
+
+I'll check in a few small changes at vger soon (haven't heard from Larry about
+the bk license :-(
+
+Note that my current kernel is 2.3.22. I got it working since yesterday, after
+fixing a stupid Sym53c8xx bug (fix showed up in vger thanks to the SPARC guys).
 
 Gr{oetje,eeting}s,
 --
