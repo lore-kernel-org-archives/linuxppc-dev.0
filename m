@@ -1,48 +1,51 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matthias Grimm <joker@cymes.de>,
-	PPC-Dev Mailingliste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: muteing speakers if headphones were plugged in?
-Date: Tue, 16 Apr 2002 18:30:26 +0100
-Message-Id: <20020416173026.16606@smtp.wanadoo.fr>
-In-Reply-To: <3CBC59C0.7000505@cymes.de>
-References: <3CBC59C0.7000505@cymes.de>
+Date: Wed, 17 Apr 2002 00:03:15 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
+To: olh@suse.de
+Cc: ajoshi@shell.unixbox.com, jeglin@4pi.com,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20020416100152.A4692@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E16xb2p-0000Bv-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On  16 Apr, this message from Olaf Hering echoed through cyberspace:
+>> > 1. Is the Radeon 7000 supported in XFree86? Rather, the real question
+>> > is, does anyone know of any gotchas trying to run it in accelerated
+>> > mode?
+>>
+>> ATI tends to make new cards which are really just newer revisions of older
+>> ASICs.  For example, the Radeon 7200 is realy just a regular radeon with
+>> 64meg DDR (and perhaps higher clocks).  So its highly possible that the
+>> 7000 is a radeon VE (considering its dualhead).  If so, then it is
+>> supported.  Even if it isn't, adding support should be very trivial as it
+>> contains the same 1st generation Radeon ASIC.
 >
->Hi,
->
->I was asked to built a new feature into pbbuttons: To mute the speakers
->if headphones are plugged in.
+> It is a VE, but I have one report where it fails on a 9600, after
+> loading vgahw.a or something like that. Maybe it must go into another
+> slot or the guy has to boot without video=ofonly.
 
-It's already implemented at the driver level for some chipsets.
+Loading vgahw.a? Hmmm, that looks suspiciously like problem accessing
+legacy hardcoded VGA ports on the second bus (which as Ben explains
+doesn't support that).
 
->I don't know where to get the information if headphones are plugged in
->or not, so I had a look into the recent kernel and I saw some code (for
->eg. headphone_intr() ) that seems to do what I am asked for. On the
->other hand the code seems very experimental and not really complete as I
->could see at some comments.
->
->What is the status? Should this feature (muting the speakers ...) be
->part of the kernel or was it only a fast shot to get it work?
+Can somebody please teach XFree to leave those VGA ports alone on PPC?
+Are they of _any_ use on any PPC machine?
 
-It works with recent drivers though only if your chipset is Tumbler afaik.
+Cheers
 
->I saw the most headphone code within the Tumbler section so I assume
->that it would only work on new TiBooks and iBooks?
+Michel
 
-Yes.
-
->Nevertheless is there a method to get the information of the line-in
->jack status from user space?
-
-Not that I know of, but I don't know the OSS API that well, it may
-be possible to add this information to what is returned from the driver.
-
-Ben.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
