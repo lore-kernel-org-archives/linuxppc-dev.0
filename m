@@ -1,42 +1,33 @@
-Date: Fri, 17 Nov 2000 15:32:43 -0600 (CST)
+Date: Fri, 17 Nov 2000 16:38:43 -0600 (CST)
 From: Brian Ford <ford@vss.fsi.com>
-To: linuxppc-embeded@lists.linuxppc.org
-Subject: HHL: RMON, SIMM programmer, and flash booting
-Message-ID: <Pine.GSO.4.21.0011171516520.493-100000@eos>
+To: Troy Benjegerdes <hozer@drgw.net>
+Subject: Re: HHL: RMON, SIMM programmer, and flash booting
+In-Reply-To: <Pine.LNX.4.21.0011171629410.11107-100000@altus.drgw.net>
+Message-ID: <Pine.GSO.4.21.0011171634400.493-100000@eos>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I must be blind as I can't find the RMON program for the EST-8260 on
-the mvista ftp site as they describe here in the lsp README:
+On Fri, 17 Nov 2000, Troy Benjegerdes wrote:
 
-The RMON program, srecord loader and SIMM programmer are available on
-  the MontaVista FTP site and are included on the CDK CD.
+> Have you considered getting a support contract with mvista?
+>
+> <disclaimer>they pay my salary, so I'm biased</disclaimer>
+>
+> I don't know the answer for sure, but I'm quite sure you could get it
+> quite quickly from a support engineer, rather than relying on the goodwill
+> of someone on the list who knows.
+>
 
-I found the srecord loader, but I don't know where to find the SIMM
-programmer either.  Can someone give me a hint?  When I find RMON, I
-think I can burn it with my VisionICE-II.
+I am not against a support contract, but truth be told, this is more of a
+pet project than it is official.  The official direction is to use
+vxworks, but we have had so much trouble with the EST supplied
+tools and bsp that I thought I would show others how easy it would be to
+do with linux.
 
-Second question.  Does HHL supply any instructions or code to boot
-directly from flash, or do I have to figure it out myself from the mailing
-list archives and the HOWTO?  What I am looking for is the initial
-code to set things up before calling zImage.  Does anyone have any
-pointers or code to share for this?  I mean without DHCP and an NFS root
-file system.  I know about the initial RAM disk, which brings me to my
-last question (for now).
-
-I also can't find the example initial RAM disk mentioned in the HOWTO
-here:
-
-Example
-An example ramdisk.image.gz is already included in the Hard Hat kit.
-
-Or is this figurative?  Meaning I have to make one on the target from the
-NFS mounted file system?
-
-Thanks for your help.
+Do much for easy.
 
 --
 Brian Ford
