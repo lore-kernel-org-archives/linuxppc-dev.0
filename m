@@ -1,82 +1,104 @@
-Message-ID: <3AF99E78.D7F80BAF@sgi.com>
-Date: Wed, 09 May 2001 14:46:00 -0500
-From: Steven Hein <ssh@sgi.com>
+Message-ID: <001901c0d8ed$43a4daa0$16b260d2@sei.co.kr>
+From: kdlee@sei.co.kr (Lee)
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: hda: lost interrupt
+Date: Thu, 10 May 2001 10:04:46 +0900
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SUCCESS booting off cramfs initrd
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Last week I asked for help in my cramfs adventure, so now that
-I've had some success, I thought I'd share how I got it
-done.
+    I have the custom mpc860 board ported with linux version 2.2.13.
+My custom board looks like a Motorola MBX board because it has a ATA-type
+IDE disk drive interfaced through QSPAN PCI-Bridge and W83C553F.
+Currently, I am trying to upgrade our linux kernel using linux version 2.4.0.
+But I am having trouble with a problem regarding to the IDE disk drive.
+I don't have any ATA-type IDE disk problems with linux version 2.2.13 on the
+same target board.
+Now I can see the following message from my console port.
+-----------------------
+" hda: hda lost interrupt"
+-----------------------
+So I hope anybody can give some fresh ideas to how to solve this problem.
+When I boot our target board, I got the following messages and nothing more.
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+relocated to:  00180000 0018B1E4
+board data at: 01FF4558 01FF4584
+relocated to:  00280100 0028012C
+zimage at:     00296000 0030EE44
+avail ram:     0030F000 02000000
 
-My original goal was to boot from a cramfs filesystem residing
-in flash.  As people explained to me, that would have required
-me to have a small ext2 initrd filesystem to boot from
-and them mount my cramfs filesystem as the root filesystem
-(through the /dev/mtd device, accessed through the MTD drivers).
-I went down this road, but found that the current MTD CFI flash
-drivers didn't support big-endian configurations at all.
-(Actually, I created a MTD map driver for my board that treated the
- flash space as ROM and I was able to access it).  But, I didn;t
-really want to created two separate filesystems (the ext2 initrd,
-and the cramfs root filesystem), so I didn't continue this approach.
-
-It later occurred to me that, due to the way I update my image in
-flash, the filesystem needed to live in RAM.  I still wanted to
-use cramfs to save RAM (my ext2 filesystem was 4.5MB, too expensive
-for a 16MB board).  But, this brought me back to trying to use
-a cramfs initrd as my root filesystem.
-
-So, here's what I did to accomplish this:
-- started with linux-2.4.4 kernel plus linuxppc_2_4 diffs patch
-- incorporated the cramfs patch from Transmeta's Midori Linux
-  1.0.0-beta1 release  (they use a different packaging mechanism,
-  so you'll need to get the whole Midori release and unpack/build
-  it to get access to the patch).  I'm not sure if this step was
-  necessary or not......but the patch makes significant improvements
-  to the cramfs filesystem, so I wanted it  (someone else may be able
-  to answer this better).
-- modified drivers/block/rd.c to make several changes:
-    1) detect the cramfs superblock (at offset 0 or offset 512
-       in the first block of the filesystem)
-    2) when a cramfs filesystem is detected, force the block
-       size of the ramdisks to 4KB, which is cramfs's block size.
-       (this step tripped me up for several days, as I didn't
-        and still don't know much about block devices....but I did
-        learn that the ramdisk that cramfs is on must use 4KB blocks!)
-- modified David Blythe's originalendian-swap patch to mkcramfs to work
-  over the top of Midori's cramfs patch.  Basically, this provided a
-"-r"
-  option to mkcramfs to reverse the endian-ness of the filesystem
-  (my host is an i686 box and my target is a custom MPC860T board).
-
-Basically, when i did all of the above, I was able to boot off
-of a cramfs initrd, and continue to use it as my root filesystem.
-
-I put all of the patches that I used to accomplish this out at:
-(listed in the order in which they should be applied)
-
-    http://www.geocities.com/heinss1/cramfs_midori.patch.txt
-    http://www.geocities.com/heinss1/mkcramfs_endian.patch.txt
-    http://www.geocities.com/heinss1/cramfs_initrd.patch.txt
-
-for whoever may be interested.  Hope it helps someone else get off
-the ground faster!
-
-Steve
-
-
-
---
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Steve Hein (ssh@sgi.com)              Engineering Diagnostics/Software
-Silicon Graphics, Inc.
-1168 Industrial Blvd.                 Phone: (715) 726-8410
-Chippewa Falls, WI 54729              Fax:   (715) 726-6715
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.4.0 (kdlee@imac.sei.co.kr) (gcc version 2.95.2 19991024 (release
+/franzo)) #77 Wed Apr 4 16:37:42 KST 2001
+!!!Start QSpan Init...........................
+ Start W83C553F Initialization...................
+Found (  3:0): vendor 0x10ad, device 0x0565, class 0x060100
+ Start SL82C105 Initialization...................
+Found (  3:1): vendor 0x10ad, device 0x0105, class 0x01018f
+Boot arguments: root=/dev/hda1 nfsaddrs=210.96.178.42:210.96.178.74 hdc=noprobe
+hdf=noprobe hdg=noprobe hdh=noprobe
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/hda1
+ide_setup: hdc=noprobe
+ide_setup: hdf=noprobe -- BAD OPTION
+ide_setup: hdg=noprobe -- BAD OPTION
+ide_setup: hdh=noprobe -- BAD OPTION
+time_init: decrementer frequency = 187500000/60
+Calibrating delay loop... 49.76 BogoMIPS
+Memory: 30844k available (940k kernel code, 328k data, 52k init, 0k highmem)
+Dentry-cache hash table entries: 4096 (order: 3, 32768 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 2048 (order: 2, 16384 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+  got res[1000:100f] for resource 5 of PCI device 10ad:0105
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Starting kswapd v1.8
+CPM UART driver version 0.03
+ttyS00 at 0x0280 is a SMC
+Uniform Multi-Platform E-IDE driver Revision: 6.31
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+W82C105: IDE controller on PCI bus 00 dev 19
+W82C105: chipset revision 5
+W82C105: 100% native mode on irq 14
+    ide0: revision 5, Bus-Master DMA disabled
+    ide0: BM-DMA at 0x1000000-0x1000007, BIOS settings: hda:pio, hdb:pio
+SL82C105 command word: 5
+IDE timing: 00000909, resetting to PIO0 timing
+hda: FUJITSU MHH2048AT, ATA DISK drive
+ide0 at 0x1000020-0x1000027,0x3f6 on irq 14
+hda: 9514260 sectors (4871 MB) w/512KiB Cache, CHS=10068/15/63
+*****************************
+Partition check:
+ hda:hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+hda: lost interrupt
+ unknown partition table
+******************************
+eth0: CPM ENET Version 0.2, 00:20:74:0a:00:79
+Serial driver version 5.02 (2000-08-09) with no serial options enabled
+ttyS00 at 0x03f8 (irq = 4) is a 16450
+ttyS01 at 0x02f8 (irq = 3) is a 16450
+ttyS02 at 0x03e8 (irq = 4) is a 16450
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 2048 bind 2048)
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+EXT2-fs: unable to read superblock
+Kernel panic: VFS: Unable to mount root fs on 03:01
+Rebooting in 180 seconds.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
