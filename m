@@ -1,67 +1,67 @@
-Message-ID: <367A9EC8.2C191581@jlc.net>
-Date: Fri, 18 Dec 1998 13:28:24 -0500
-From: Dan Malek <dmalek@jlc.net>
-MIME-Version: 1.0
-To: Raphael Massin <massin@col.bsf.alcatel.fr>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux with MPC860
-References: <199812161356.OAA01863@c5s144.clb>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v03010d00b2a0a3366e34@[209.96.178.53]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 18 Dec 1998 19:43:54 -0500
+To: mklinux-setup-digest@public.lists.apple.com,
+        linuxppc-user@lists.linuxppc.org,
+        mklinux-development-apps@public.lists.apple.com,
+        linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <kbhend@dogwood.tyler.wm.edu>
+Subject: Help!  Desperately Need Help with JDK 1.2 on ppc
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Raphael Massin wrote:
+The JDK ppc team has dwindled to simply Scott Hutinger and myself.  Sun has
+already released JDK 1.2 and they have provided two engineers that help
+with the Blackdown porting.  Sun has also proivided the JCK to Blackdown.
+(that's the extent of the Sun's  official support for Linux!).  Steve Byrne
+of Blackdown has commercially licensed the JDK 1.2 source and sublicensed
+it to Scott and I.
 
-> 1) in arch/ppc/kernel/time.c (mbx_calibrate_decr)
->         * the OSCM is used instead of the system clock to clock the decrementer
->          => no need to set bit 6 of SCCR
+I have bootstrapped JDK 1.2 now and need some real help tracking down and
+fixing bugs of all sorts.  Also, the JIT compiler interface has changed
+considerably so we really need to fix the Metrowerks JIT compiler so that
+it will work with JDK 1.2.
 
-This is incorrect.  The code should force the setting of TBS
-in the SCCR.  All of the timing in the system assumes
-the TBS is GCLK2/16.  I have since removed the warning
-message and simply force the setting of this bit.  This way,
-all MPC8xx implementations are identical and don't require
-any special configuration between processors or boards.
+If you can spare *alot* of time over the next month or so (maybe some CS
+phd student or someone with a semester break...) are skilled in programming
+C and some C++, know how to use gdb, are familiar with X11 and Xt, etc. and
+are willing to sign the Sun JDK license and the Metrowerks JIT license, I
+really need your help!
 
+I simply can't do everything that needs to be done and do my real job (my
+research output has taken a real beating over the last year or so)
 
-> 2) in arch/ppc/boot/mbxtty.c (serial_init)
->         * a 48MHz source clock is used instead of a 25MHz source clock
->         => modify accordingly BRGC1
+We can't release the Linux JDK 1.2 until it passes Sun's 1.2 and we are
+already behind (Sun has already released their versions).
 
-This is also incorrect.  All of the 8xx ports have a
-board identification structure.  At boot time, whether it
-is done by the board boot prom or the Linux bootloader,
-this should be properly initialized. One of the values
-in that structure is the processor clock speed and bus
-speed.  No code should be changing in the kernel
-to support different clock speeds for 8xx processors.
+Please only respond if you are serious about helping, have the skills, and
+the time to get this thing debugged and out there asap.  The work is very
+rewarding and you get to see and understand how virtual machines work,
+threading (both linux kernel threads and user-based threads.  I have really
+learned a great deal since helping to start the Java PPC team a year ago or
+more.
 
+If interested in helping bring JDK 1.2 and the Metrowerks JIT for 1.2 to
+Linux PPC, please email me directly and I will get in touch with you.
 
-> 3) in arch/ppc/8xx_io/commproc.c (mbx_cpm_setbrg)
->         * idem => modify BRG_INT_CLK macro
+mailto:kbhend@dogwood.tyler.wm.edu
 
-This is also because of above.   This shouldn't change.
-
-
-> 4) in arch/ppc/8xx_io/enet.c
->         * CLK2 and CLK3 are used for ethern emission/reception
->         => modify PAPAR, PADIR and SICR
->         * port D, pin 12 is used to enable ethernet
-
-Correct!  This is now part of the general configuration
-scripts so you shouldn't have to do this in the future.
+Thanks,
 
 
-> These are my modifications, do you think i forgot something ?
-
-What would really help is instead of the "it crashes" statement
-are a System.map and register dump :-).  Otherwise, there
-isn't much help anyone can provide.
+Kevin
 
 
-    -- Dan
 
+
+----------------------------------------------------------
+Kevin B. Hendricks
+Associate Professor, Operations & Information Technology
+School of Business, College of William & Mary
+Williamsburg, VA 23187, kbhend@dogwood.tyler.wm.edu
+http://business.tyler.wm.edu
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
