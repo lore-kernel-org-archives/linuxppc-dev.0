@@ -1,47 +1,48 @@
-Message-ID: <3AF1A818.DE019F5B@mvista.com>
-Date: Thu, 03 May 2001 11:48:56 -0700
+Message-ID: <3AF1A9CC.5966DC8B@mvista.com>
+Date: Thu, 03 May 2001 11:56:12 -0700
 From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-To: David Blythe <blythe@routefree.com>
-Cc: Steve Hein <ssh@sgi.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mkcramfs changes to switch endianness
-References: <3AF07046.3827B997@sgi.com> <3AF09E93.80A5B92B@routefree.com> <3AF0C16C.95A3CE80@sgi.com> <3AF1A44C.75BA4186@routefree.com>
+To: Steven Hein <ssh@sgi.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: booting from cramfs in flash
+References: <3AF1A6C9.9B0F05DF@sgi.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Blythe wrote:
+Steven Hein wrote:
 >
-> Steve Hein wrote:
+> My cramfs adventure continues.....
 >
-> > Just out of curiousity, where do you get the source for the transmeta
-> > changes (their Midora Linux, I assume....).  I went looking at their
-> > web site, and the FTP location they pointed to contained a
-> > midora-1.0.0-beta1*.tar.gz file that was only 36K.....where's the real
-> > thing?
+> Okay, so I have a cramfs filesystem image creaed created.
+> Now, how do I tell the kernel to boot using that filesystem
+> when the filesystem is an image in flash?
+>
+> Maybe I'm on the wrong path, but my previous setup used a compressed
+> kernel and gzip'ed ext2 filesystem as an initial ramdisk, which
+> also served as my permanent filesystem.   So I thought I should
+> be able to just replace my old initrd with my new cramfs image,
+> tell the kernel where it is (in flash), and it would go.
 
-that file is just the build structure/files.  once you install that you
-need to download the rest from the apps dir on the ftp site.  start at
-http://midori.sourceforge.net.
-
->
-> We used this, as a starting point (or one of the other references to
-> this patch, i just did a google search to find it again).
->
-> http://lwn.net/2001/0118/a/cramfs.php3
-
-That is the patch include with midori.  If i remember correctly, it is
-included in the kernel mlz. mlz is the midori packaging method,
-basically a tar gz file.
+It turns out that cramfs is not supported for a root fs or initrd.
+Basically, the kernel checks a hardcoded list of supported filesystems
+and if the MAGIC number doesn't match it bails.  Midori has a patch to
+add cramfs to this list.  I believe it is in thier kernel package.
 
 >
-> I was hoping that it was all on sourceforge, but I guess not.  We should
-> finish integrating the endianness changes against this patch pretty
-> soon.  Maybe if someone else knows if there is a more up to date version
-> around they could let us know.
+> But, that's not the case for me so far. If I pass the address in
+> flash of my cramfs image as the initrd_start
+> and initrd_end (in R3/R4, the kernel craps out because it can't reuse
+> the pages where I told it that the initrd lives).
+>
+> So,how do I make this connection?  Or, do I still need an ext2
+> initrd like I used before?  If so, then how do I mount the CRAMFS
+> filesystem that is an image sitting flash?
+>
 
-
-it is all there on sourceforge, just need to dig a little:)
+You can do that too.  Actually that is how we do it on the iPaq.  You
+need to enable MTD, so your flash looks like a block device. then
+'mount' can mount cramfs images.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
