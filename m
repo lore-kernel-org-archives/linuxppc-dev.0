@@ -1,50 +1,90 @@
-Date: Fri, 21 Jun 2002 10:52:16 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Trivial cleanup in ocp_uart.c
-Message-ID: <20020621005216.GH20689@zax>
-References: <20020620073440.GC20689@zax> <20020620155026.GE16052@opus.bloom.county>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020620155026.GE16052@opus.bloom.county>
+From: "Andy Lowe" <andy_lowe@mvista.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH and RFC] Remove request_8xxirq
+Date: Thu, 20 Jun 2002 21:32:22 -0500
+Message-ID: <DIEAKNAFAEAMABGFAOOKCEIKDIAA.andy_lowe@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jun 20, 2002 at 08:50:26AM -0700, Tom Rini wrote:
->
-> On Thu, Jun 20, 2002 at 05:34:40PM +1000, David Gibson wrote:
->
-> > ocp_uart.c allocates private space with ocp_alloc_dev, but never uses
-> > it.
->
-> Er...  So you pass 0 to ocp_alloc_dev() ?  Which will allocate
-> (sizeof(*ocp_dev) + 0 + 31), so we don't actually break out of this
-> loop which I take it was your intent.
+I guess since my name keeps coming up in this thread I should weigh in.
 
-No that wasn't my intent.  It's just that we never use the private
-space, so there's no point allocating it.  Passing zero is the best we
-can do for now (and it's what every other ocp driver except i2c does
-now).  Actually I'd like drivers to include struct ocp_dev as part of
-their own internal private structures rather than the other way around
-(i.e. I think the ocpdev field should go away entirely).
-I2C needs some rearranging to do this though (rearranging which will
-also let the vaddr field be removed).
+Dan Malek wrote:
+> There is more to these patches than just the interrupt change. Why is
+> the CPM microcode, and so much of commproc.c changed?
 
-> And I think it can be used, once it gets registered to the ocp_list (and
-> something later accesses it).
+As Tom already replied, the CPM microcode stuff was included by mistake.  I
+wouldn't necessarily recommend submitting that stuff as a separate patch
+either.  There are also a few other perfectly good bits and pieces of code
+that found their way into the patch that aren't relevant:  the SPI stuff in
+commproc.h, the PCI and PCMCIA stuff in mbx.h, and the Ethernet stuff in
+rpxclassic.h.
 
-*Nothing* scans the ocp_list (well, except ocp_register() and
-ocp_unregister()).  This is why I think ocp_register() is a pointless
-interface.
+Dan Malek wrote:
+> The PCI on MBX does not work well, and this does nothing to improve it.
+Does
+> anyone have a working MBX anymore?
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+This patch does not fix PCI on the MBX because additional changes are
+necessary to the qspan host bridge code.  However, it does facilitate making
+PCI work on the MBX and other 8xx designs because it allows request_irq() to
+work, which all PCI device drivers use to install their interrupt handlers.
+I have a working MBX, and with these changes to the interrupt handling and a
+few additional changes to the qspan host bridge support, PCI cards seem to
+work in it just fine.  I have successfully tested a Matrox video card,
+several different Ethernet cards, and an MPEG decoder.  I also used these
+same interrupt handling changes on a custom 860 board with a qspan bridge
+that had PCI interrupts pinned out to both SIU IRQs and CPM Port C
+interrupts instead of an 8259, and that worked as well.
+
+Dan Malek wrote:
+> I know Andy is sitting on a ton of 82xx PCI changes that would be nice
+> to see checked in some day. :-)
+
+I did do some work once on a custom 8260 board with an external PCI host
+bridge.  I didn't have to do anything to the 8260 interrupt handling other
+than rename request_8xxirq to request_irq so that PCI device drivers would
+work without modification.  Other than that, it was just a matter of
+implementing the host bridge support and PCI interrupt routing table
+similarly to the way it is done on, say, the 7xx board ports.
+
+Wolfgang Denk wrote:
+> Isn't this more or less the same idea as presented by Wolfgang Grandegger
+more
+> than half a year ago?
+
+Yes, it is more or less the same idea.  There is an important difference
+between our approaches, however.  Wolfgang's approach was to extend
+request_8xxirq() so that it would handle CPM interrupts as well as SIU
+interrupts.  My approach was to make request_irq() work for SIU interrupts,
+CPM interrupts, and any other interrupt controller (like an 8259) you might
+have on a particular board.  I also implemented it in a way that allows you
+to simultaneously continue using request_8xxirq() and cpm_install_handler()
+in the same manner as always without the need for any kernel configuration
+options.  (Tom changed every instance of cpm_install_handler and
+request_8xxirq to request_irq in his version of the patch, but that isn't
+strictly necessary.)  My motivation for doing this in the first place was to
+make request_irq() work for all interrupts on 8xx targets so that standard
+PCI and PCMCIA device drivers will work without having to put #ifdef's in
+each driver to change request_irq to request_8xxirq or cpm_install_handler.
+
+Now as for the argument that this patch is fatally flawed because IRQ
+vectors 0 to 15 aren't reserved for 8259 interrupts, I don't find that to be
+compelling.  PCI cards work just fine on the MBX with no modifications to
+the drivers when using IRQ vectors 48 to 63 for the 8259.  You just stick
+the right IRQ vectors in the PCI interrupt routing table and all PCI device
+drivers will happily use them without prejudice.  PCMCIA and IDE drivers
+also work fine.  The only possible issue I see is with legacy ISA drivers
+with hardcoded IRQ vectors in the range 0 to 15.  I've never had an occasion
+to use such a driver on an 8xx target, but if it came down to it I would
+prefer to stick a #ifdef in an ISA device driver to hardcode a different IRQ
+vector than to stick a #ifdef in every PCI and PCMCIA device driver to make
+them call request_8xxirq or cpm_install_handler instead of request_irq.
+
+Andy
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
