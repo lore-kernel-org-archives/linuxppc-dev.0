@@ -1,48 +1,31 @@
-Message-Id: <19990318044316.Postino-005954@smtp01.highway.ne.jp>
-Date: Thu, 18 Mar 1999 04:43:16 +0900
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: Re: egcs-1.1.2-RPM
+Date: Wed, 17 Mar 1999 14:13:24 -0600 (CST)
+From: /* Vinai */ <vroopcha@post.its.mcw.edu>
+To: Tim Carroll <tim@radcom.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: clock/bogomips in cpuinfo
+In-Reply-To: <Pine.LNX.3.96.990317111511.1153C-100000@radcom.org>
+Message-ID: <Pine.SOL.3.96.990317141011.14032D-100000@post.its.mcw.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-From: Andreas Tobler <a.tobler@schweiz.ch>
-To: linux ppc <linuxppc-user@lists.linuxppc.org>, "linuxppc-dev@lists.linuxppc.org
-" <linuxppc-dev@lists.linuxppc.org>
-Subject: egcs-1.1.2-RPM
-Date: Wed, 17 Mar 1999 10:01:36 +0100
+On Wed, 17 Mar 1999, Tim Carroll wrote:
 
-> 
-> Hi,
-> 
-> maybe a dump question, is anybody working on a RPM for
-> egcs-1.1.2-glibc1.99? And or egcs-1.1.2-glibc-2.1.
-> If not can I try it by adapting a RPM from a earlier release? I never
-> made a RPM from scratch, I only modified them.
-> 
-> Yesterday, I built egcs-1.1.2 under R4.1. It worked out of the box?! Now
-> I have to compare the test results. I can't believe it, before I had so
-> many troubles building an egcs directly from egcs.cygnus.com.
-> 
-> A last question, what are the minimal requirements to build egcs under
-> pre-R5. Means glibc etc.
+}It works great and on the first try with Paul M's stock 2.2.1 kernel, but
+}a peek at /proc/cpuinfo tells me clock : 195MHZ and bogomips : 403.87. 
 
-I have egcs-1.1.2 for glibc-2.1.
-Here is ftp://ppc.linux.or.jp/pub/users/fukui/Drugstore-in-Rawhide/new-egcs-glibc/
-RPMS
+I get almost the same result with my 604e/233 MHz card in my 7500, i.e.
+the /proc/cpuinfo says 195 MHz, but the BogoMips says 466 (IIRC).  In
+MacOS, the CPU and bus speeds are what they are supposed to be.
 
-If you want to use egcs on glibc-1.99 ,You patch  it tranpoline.patch.
-Mr. Gary have  that patch.
+This has not affected anything I am doing, so I did not bother too much
+with it.  But I guess this is not something peculiar to my machine or
+card, as I first thought ...
 
-I use  glibc-2.1 on PM-6100.
+vinai
 
-Thanks.
-
-Kaoru Fukui
-fukui@ppc.linux.or.jp
 
 
 
