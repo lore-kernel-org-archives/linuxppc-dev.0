@@ -1,43 +1,41 @@
-Message-ID: <3A37DC1E.28164741@mvista.com>
-Date: Wed, 13 Dec 2000 15:29:18 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Hao Li <hli@wag.caltech.edu>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: vxhack and mvista kernel
-References: <20001213121231.A26159@onetta.com>
+Date: Wed, 13 Dec 2000 13:41:15 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Torsten Rissel <torsten.rissel@t-online.de>
+Cc: "Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MVME 5100
+Message-ID: <20001213134115.A3059@cx258813-a.chnd1.az.home.com>
+References: <01C06555.A2E02D00@NB2>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <01C06555.A2E02D00@NB2>; from torsten.rissel@t-online.de on Wed, Dec 13, 2000 at 10:39:59PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hao Li wrote:
-
-> % ./vxhack vmlinuz-sbc8260-2.4.0-test2-1.2.2-3
-> Segmentation fault
+On Wed, Dec 13, 2000 at 10:39:59PM +0100, Torsten Rissel wrote:
 >
-> Could someone explain to me what the problem is?
+> Hi Everybody !
+>
+> I am trying to run Linux on an MVME5100 board. I am using PReP-style booting and
+> got the boot process and some of the kernel initialization running. But I am missing any
+> knowledge of other PowerPC boards or machines, so that it is relativly hard to find out
+> what exactly to change. So I have a question: The MVME5100 is missing all ISA stuff.
+> Is the IRQ mapping (first 16 for the 8259 and the other 16 for the MPIC) still valid ?
 
-The vxhack program has hard coded values for known sections in the
-image file.  For some reason, the sections in the file have changed
-since I wrote the program.
+Might as well just use 16-31 and stick with the MPIC convention.  If
+somebody else is using the 5100 with the IPMC761 then they will have
+ISA and will thank you many times for not changing things.
 
-There is a loop:
-	for (i=0; i<nsscns; i++) .......
+> Also I run in a problem: the indirect mechanism for generating PCI config cycles is set
+> up correctly, but the board seems to hang when reading from the CONFIG_DATA address !!!???
 
-in the program.  Add some code to print out the section number and
-section size.  It will be obvious which section is the image, and
-change the 'if (i == 5)' (or whatever the number is in the code you
-have) in that loop to correspond to this number.  You can't use
-objdump because the header numbers it prints do not match what you
-find when you scan the file like vxhack does.
+Make sure you have those Hawk registers covered with a BAT or PTEs.
+Notice the areas covered by BATs in the MACH_prep BAT setup case in
+arch/ppc/mm/init.c.
 
-If you want to update the program to read the string/symbol tables
-and to automatically locate sections by name, it would be useful.
-This was just a quick five minute program to solve an immediate problem,
-not something worth useful time.
-
-
-	-- Dan
+--
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
