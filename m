@@ -1,58 +1,86 @@
-Date: Sat, 13 Mar 2004 10:07:09 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Caching in the MPC107, linux 2.6
-Message-ID: <20040313170708.GA20738@smtp.west.cox.net>
-References: <1079088369.691.43.camel@newt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1079088369.691.43.camel@newt>
+Message-ID: <20040314050122.45623.qmail@web15205.mail.bjs.yahoo.com>
+Date: Sun, 14 Mar 2004 13:01:22 +0800 (CST)
+From: =?gb2312?q?song=20sam?= <samsongshzu@yahoo.com.cn>
+Subject: some LINUX boot-up message loss
+To: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <40530EA4.1070305@iti.fi>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Mar 12, 2004 at 10:46:09AM +0000, Adrian Cox wrote:
+Hi,
 
-> I discovered this problem back in 2002:
->
-> http://lists.linuxppc.org/results.html?words=caching+mpc107&method=and&sort=score&restrict=linuxppc-embedded
->
-> The 2.6 kernel requires a fix to use a MPC745x along with a MPC107
-> bridge. My proposed patch is below - any comments?
+I have a puzzle on booting LINUX under u-boot on my
+custom 8xx board.Some boot-up message didn't come up
+as DEMO board did.What's the problem with between
+linux kernel and u-boot?For the sake of unsuccessful
+behaviors on serveral big applications(some small
+programs worked fine with booted linux kernel),I
+suspect these unexpected results have something to do
+with the loss message.Any hints?
 
-How about:
-> diff -Nru a/arch/ppc/mm/hashtable.S b/arch/ppc/mm/hashtable.S
-> --- a/arch/ppc/mm/hashtable.S	Fri Mar 12 10:43:37 2004
-> +++ b/arch/ppc/mm/hashtable.S	Fri Mar 12 10:43:37 2004
-> @@ -348,6 +348,13 @@
->  	andc	r8,r5,r8		/* PP = user? (rw&dirty? 2: 3): 0 */
->  #ifdef CONFIG_SMP
->  	ori	r8,r8,_PAGE_COHERENT	/* set M (coherence required) */
-> +#elif defined(CONFIG_CACHING_HOSTBRIDGE)
-> +        /* The MPC107 PCI bridge contains a cache, which must remain
-> +           coherent with the CPU cache. This is only necessary for the
-> +           MPC745x family, as they support the shared state. */
-> +BEGIN_FTR_SECTION
-> +	ori	r8,r8,_PAGE_COHERENT
-> +END_FTR_SECTION_IFSET(CPU_FTR_SPEC7450)
->  #endif
+Demo Board boot-up message:
 
-Instead do:
-BEGIN_FTR_SECTION
-	ori	r8,r8,_PAGE_COHERENT
-END_FTR_SECTION_IFSET(CPU_FTR_745X_MPC107)
+u-boot>run flash_nfs
+## Booting image at ff880000 ...
+   Image Name:   Linux-2.4.18_mvl30-rpxlite
+   Image Type:   PowerPC Linux Kernel Image (gzip
+compressed)
+   Data Size:    733665 Bytes = 716.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x03FBE928 => set upper limit
+to 0x00800000
+## cmdline at 0x007FFF00 ... 0x007FFFA2
+bd address  = 0x03FBEFC4
+memstart    = 0x00000000
+memsize     = 0x04000000
+flashstart  = 0xFF000000
+flashsize   = 0x01000000
+flashoffset = 0x0001B400
+sramstart   = 0x00000000
+sramsize    = 0x00000000
+immr_base   = 0xFA200000
+bootflags   = 0x00000001
+intfreq     =     48 MHz
+busfreq     =     24 MHz
+ethaddr     = 00:10:EC:00:37:5B
+IP addr     = 172.16.115.7
+baudrate    =   9600 bps
+No initrd
+## Transferring control to Linux (at address 00000000)
+...
+[kernel booted fine and applications did well]
 
-And have the code that sets SPEC7450 also check for an MPC107.
+My Board boot-up message:
 
-> diff -Nru a/arch/ppc/mm/ppc_mmu.c b/arch/ppc/mm/ppc_mmu.c
-> --- a/arch/ppc/mm/ppc_mmu.c	Fri Mar 12 10:43:37 2004
-> +++ b/arch/ppc/mm/ppc_mmu.c	Fri Mar 12 10:43:37 2004
+u-boot>run net_nfs
+TFTP from server 172.16.115.6; our IP address is
+172.16.115.12
+Filename 'uImage'.
+Load address: 0x200000
+Loading:
+#################################################################
+done
+Bytes transferred = 741868 (b51ec hex)
+## Booting image at 00200000 ...
+   Image Name:   Linux-2.4.18_mvl30-rpxlite
+   Image Type:   PowerPC Linux Kernel Image (gzip
+compressed)
+   Data Size:    741804 Bytes = 724.4 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+...
+[kernel booted fine but some big applications failed]
 
-And make this depend on the new feature as well.
+Thanks in advance!
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
