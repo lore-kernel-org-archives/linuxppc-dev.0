@@ -1,60 +1,69 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Date: Fri, 2 Nov 2001 18:55:47 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: boot methods
-Message-ID: <20011102185547.B29932@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011012111320.B10280@cpe-24-221-152-185.az.sprintbbd.net> <15331.17574.209385.901060@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15331.17574.209385.901060@cargo.ozlabs.ibm.com>
+Date: Fri, 2 Nov 2001 23:11:32 -0500 (EST)
+From: <tahoward@ntrnet.net>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel cannot allocate resource region
+In-Reply-To: <Pine.LNX.4.33.0111020931250.1045-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.33.0111022254260.895-100000@ranger>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Nov 03, 2001 at 12:13:10PM +1100, Paul Mackerras wrote:
-> Tom Rini writes:
+I tried miboot, and it worked, but everything was VERY slow.  After
+thinking about it, I realized my G3 processor was not enabled.  My machine
+has a Sonnet G3 upgrade in its L2 cache slot, and it needs a MacOS
+extension to enable it.
+
+Then, I tried using BootX with the extension disabled, and 2.4 booted.  In
+both cases, I still got the "cannot allocate resource region" message, but
+video and ethernet both work fine.  I'm guessing this may be a red herring.
+
+I'm wondering if it's significant that the last message printed before the
+hang (it's not a panic, no reboot after 180 seconds) is "Macinto"?  When
+I boot without the G3 enabled, the full line is:
+Macintosh CUDA driver v0.5 for Unified ADB.
+
+Tony
+
+On Fri, 2 Nov 2001, Michael Schmitz wrote:
+
 >
-> > On Fri, Oct 12, 2001 at 05:32:34PM +1000, Paul Mackerras wrote:
+> > PCI: Cannot allocate resource region 0 of device 00:11.0
+> > 00:0e.0 VGA compatible controller: ATI Technologies Inc Rage 128 RE
+> > (prog-if 00 [VGA])
+> >         Subsystem: Unknown device b530:0408
+> >         Flags: bus master, stepping, medium devsel, latency 32, IRQ 25
+> >         Memory at 84000000 (32-bit, prefetchable)
+> >         I/O ports at 0400
+> >         Memory at 80804000 (32-bit, non-prefetchable)
+> >         Expansion ROM at 80820000 [disabled]
+> >         Capabilities: [5c] Power Management version 1
 > >
-> > > I would like to make a complete list of the methods people use to boot
-> > > the PPC/Linux kernel on different platforms.  As a start, here is what
-> > > I can think of off the top of my head:
+> > 00:11.0 Ethernet controller: Digital Equipment Corporation DECchip
+> > 21142/43 (rev 30)
+> >         Subsystem: Standard Microsystems Corp [SMC]: Unknown device 2401
+> >         Flags: bus master, medium devsel, latency 32, IRQ 22
+> >         I/O ports at 0400
+> >         Memory at 80800000 (32-bit, non-prefetchable) [disabled]
+> >         Expansion ROM at 80840000 [disabled]
 > >
-> > All of the 7xx/74xx/8240 boards in _devel boot via zImage.<board> from
-> > network/disk/flash, depending.
+> > I'm guessing that there is a conflict between my ethernet and video cards,
 >
-> Would you mind enumerating them for me?  I would like to have a list
-> of the various embedded boards we support in _devel together with the
-> value of <board> in the zImage filename, plus what software is used to
-> load that into memory.
+> Yep, it seems like the MMIO aperture for the video card might overlap the
+> ethernet controller memory resource (depending on the size of that memory
+> resource).
+>
+> It should never hang in that case though. And I thought the initial PCI
+> resource allocation takes care of resolving overlaps?
+>
+> Can you boot some other way (i.e. no BootX)?
+>
+> 	Michael
+>
+>
+>
 
-I this this is mostly correct.  Any of the following, I'm pretty sure,
-can also have it thrown in via a BDI.
-
-Vendor			Extension		How
-IBM Spruce		.spruce			???
-Force PowerCore		.pcore			PowerBoot (Force firmware)
-Force PowerPMC 250	.pcore			PowerBoot
-M.E.N. F1		.menf1			??? (Probably custom fw).
-Motorola LoPEC		.pplus/.bugboot[1]	PPCBUG
-Motorola MCPN765	same			same
-Motorola MVME5100	same			same
-Motorola PrPMC750	same			same
-Motorola PrPMC750	same			same
-Motorola Sandpoint	.sandpoint		DINK32
-SBS Adirondack	- Uses runlnx, no in-kernel booting bits
-SBS K2			.k2			pmon
-Zynx 4500		.zx4500			??
-
-Why is the how important?  With the exception of firmware-deficiencies,
-the current wrapper doesn't really care what it came from.  And they
-usually don't provide much in the way of information about the board
-(along the lines of how OF does).
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
