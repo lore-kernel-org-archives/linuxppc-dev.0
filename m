@@ -1,68 +1,47 @@
-Date: Sat, 4 Nov 2000 10:59:23 -0500
-From: Simon Piette <spiette@generation.net>
+Message-Id: <4.2.0.58.20001104202814.009b7180@pplus.shell9.ba.best.com>
+Date: Sat, 04 Nov 2000 20:50:20 -0800
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Please bang on GNU Parted ;-)
-Message-ID: <20001104105922.B23753@xim.dyndns.org>
-Reply-To: spiette@generation.net
-References: <3A025FFD.EC6CB84A@gnu.org>
+From: Ron Avisa <ravisa@base2software.com>
+Subject: MMU probs in head.S w/821
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A025FFD.EC6CB84A@gnu.org>; from clausen@gnu.org on Fri, Nov 03, 2000 at 05:49:33PM +1100
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hopefully someone's seen this show,
 
-The backend seems to be rock-solid. I've tried to resize a mounted
-partitions and parted refuse. I've also tried to resize a partition
-filled with 96M to 64M and parted refuse. Is there a test suite for
-parted so it could be more systematic?
+Trying to get linux up and running on an 821 on some custom hardware.
+Got ppcboot all set up and happy, and thought linux should happily boot up
+via bootm 2a000000.
 
-I am some concerns about the interface, though. At this stage, parted is
-like a very sharp knife, without handle. It slices, it dices, but watch
-your fingers! :-)
+The bootm code uncompresses and relocates linux nicely to 0x000000000
+and then jumps to 0x0000000c. Board info is good, starts setting up the mmu,
+sets up an entry for IMMR at recommended 0xF0000000, branches to
+:turn_on_mmu, loads up 0xc00021b8 for return address and msr with MMU enabled,
+hits the rfi and disappears only to show up with a machine exception at 0x220.
 
-- parted execute right away each command. IMHO, a "commit" command would
-  be much more safe. At least for 1.4.0 final, parted should print a
-  warning, such as "CAUTION: Commands are executed right away!".
+Strangely I did see it actually run once and was able to watch (via
+vision-ice BDM) the
+pc zip around 0xC000xxxx space values before finally crashing.
 
-- It should have a read-only switch, so the user could be sure to not
-  mess its partition table.
+I've tried cutting out just the head.S section, making it standalone srec
+format and using
+the LOADS feature of ppcboot and then just running it. strangely enough the
+code seems
+to work when loaded at 0x0 (runs, jumps to infinite loop in virtual
+0xc0002000). Though dies
+when started from 0xC generating machine exceptions or just freezing.
 
-- It would be nice to have the "print" command to display sizes of each
-  partitions.
+At this point I'm wondering...
+Vision-ICE BDM might be problematic?
+821 has some strange MMU/cache problems (possibly related to alignment)?
 
-- parted needed to be started with a device. Why not start parted in
-  interactive mode anymway, so then the user will ba able to select a
-  device?
+Any ideas or suggestions?
 
-I really liked the "mkpartfs" and "cp" command, and I expect parted to be
-the disk partitioning tool of choice among the PPC Linux community. Good
-work!
+Thanks,
 
-Simon Piette
+Ron
 
-* Andrew Clausen (clausen@gnu.org) [001103 17:00]:
->
-> Hi all,
->
-> I think GNU Parted is pretty stable now, but I'd be more than
-> happy to be proven wrong ;-)
->
-> 	ftp.gnu.org/gnu/parted/devel/parted-1.4.0-pre8.tar.gz
->
-> (GNU Parted is allows you to manipulate partition tables, and resize
-> ext2 partitions, and other things...)
->
-> Thanks,
-> Andrew Clausen
->
->
->
-
---
-PGP key ID: 1024D/99290743 	Simon Piette <spiette@generation.net>
-PGP Key fingerprint: 9AF9 33F9 A900 E153 9DF3  0625 8928 CB52 9929 0743
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
