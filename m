@@ -1,24 +1,44 @@
-Message-ID: <382B28BD.5A32606F@fadata.bg>
-Date: Thu, 11 Nov 1999 22:36:13 +0200
-From: "Momchil 'Velco' Velikov" <velco@fadata.bg>
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Kernel Gurus please help!!!
+Date: Thu, 11 Nov 1999 23:08:41 -0500
+Content-Type: text/plain
 MIME-Version: 1.0
-To: LinuxPPC list <linuxppc-dev@lists.linuxppc.org>
-Subject: [OT] dual 8500
-Content-Type: text/plain; charset=koi8-r
+Message-Id: <99111123202100.23181@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, folks.
+Hi,
 
-Does anyone of you have any experience (either good or bad)
-with PowerMac 8500 with dual-processor card and Linux ?
+I need a kernel gurus help here.  The native threads jdk code hangs because a
+non-rt signal is pending and never gets delivered to a thread that
+is in sigsuspend waiting for a real time signal (in pthread_mutex_lock) but the
+signal mask atomically swapped in does not block the non-rt signal in any way.
 
-I intend to obtain one, but I definitely want to run
-Linux on it. I don't care much if MacOS doesn't work
-on such a machine.
+The non-rt signal is not blocked (as shown by the /proc info and it is shown as
+being pending in the thread that is waiting in rt_sigsupend).  Since it is
+pending it should eventually be delivered in the do_signal() call right?  
 
-Sorry for the off-topic and best regards,
--velco
+What could keep a non-rt signal that is being pending from being delivered to a
+thread that is in rt_sigsuspend?  Basically something is different about 
+rt_sigsuspend in arch/ppc/kernel/signal.c  and the old sigsuspend syscall but I
+am not sure what.
+
+The only difference between the ppc port and the i386 port in signal.c that I
+could immediately see is that sys_rt_sigreturn has not been implemented yet for
+ppc but does exist for x86 (this is in Paul's 2.2.13 kernel rsynced yesterday),
+sparc, etc.
+
+Could this be the source of my problem?
+
+Does anyone have an implementation for sys_rt_sigreturn I could test with.
+
+Any help here would be greatly appreciated?
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
