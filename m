@@ -1,75 +1,76 @@
-Date: Thu, 13 Jun 2002 15:12:50 +1000
+Date: Thu, 13 Jun 2002 15:27:45 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Dan Malek <dan@embeddededge.com>
-Cc: Paul Mackerras <paulus@au1.ibm.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: First cut at large page support on 40x
-Message-ID: <20020613051250.GE4228@zax>
-References: <15614.63160.272890.683586@argo.ozlabs.ibm.com> <3CFF1624.2070808@embeddededge.com> <20020612035203.GQ25800@zax> <3D06E702.4000709@embeddededge.com> <20020612064344.GT25800@zax> <3D07D80F.9050306@embeddededge.com> <15623.56408.342901.245259@argo.ozlabs.ibm.com> <3D07E743.6090206@embeddededge.com> <15623.61149.22953.9238@argo.ozlabs.ibm.com> <3D081C8D.8070901@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: get_pteptr()
+Message-ID: <20020613052745.GF4228@zax>
+References: <20020613040345.GD4228@zax> <3D08276D.3080502@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D081C8D.8070901@embeddededge.com>
+In-Reply-To: <3D08276D.3080502@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jun 13, 2002 at 12:16:13AM -0400, Dan Malek wrote:
-> Paul Mackerras wrote:
+On Thu, Jun 13, 2002 at 01:02:37AM -0400, Dan Malek wrote:
 >
+> David Gibson wrote:
 >
-> >Not by me, doing a range check in virt_to_* would be perfectly
-> >appropriate.
+> >get_pteptr() is used in exactly three places:
+> >	- in arch/ppc/8xx_io/commproc.c in the #else side of a #if 1,
+> >i.e. not really used at all.
 >
-> OK.  So, why don't we just look up the right address? :-)
+> That was one of my earliest cache management hacks, that predated iopa()
+> and consistent_alloc().  You can get rid of it.
 
-Because any driver that relies on it working (for non-lowmem
-addresses) is very likely broken in other ways, and at best completely
-non-portable.  Not doing it lets us get rid of iopa() (less code +
-same features == good) which has basically no other users (a few 8xx
-drivers, which I'm sure can be fixed not to and that's it).
+Ok, I will.
 
-Besides which virt_to_bus() is clearly ill-defined in general, since
-which bus we're talking about is not specified.  iopa() has the same
-problem.  So drivers really need to use the pci consistent functions
-or (in future) the unified device model consistent allocation /
-mapping functions.
-
-> >Drivers shouldn't be doing virt_to_* on the address they get from a
-> >consistent-alloc function.  Given that doing it the right way is easy
-> >(just remember the physical address that the consistent alloc function
-> >gives you) I don't have any qualms about breaking drivers that do it
-> >the wrong way.
+> >	- in do_page_fault() [arch/ppc/mm/fault.c] for the handling of
+> >page execute faults on 40x.  It's use here is arguably incorrect if
+> >large page pmds are introduced, although we won't ever get execute
+> >faults on large pages, so it doesn't really matter.
 >
-> It isn't the drivers doing it themselves.  I believe the biggest problem
-> was with drivers that wanted to do a scatter/gather list (like SCSI seems
-> to like to do).  They just stuff the virtual address, regardless of where
-> it came from, and expect virt_to_bus() to do the right thing.  I know,
-> you are going to tell me that shouldn't have been a consistent_alloc()
-> space, and perhaps that has been fixed by now.
+> Hmmmm.....I was always hoping we could use "standard" VM functions to
+> find and update PTEs, but I guess that isn't happening.  I would suggest
+> just placing a comment around this about the large pages and leave it.
 
-Huh?  First you say it isn't the drivers, then you say it is the
-drivers.  From what I can see virt_to_bus still appears a hell of a
-lot in drivers/scsi, so they haven't been fixed yet.  But do you have
-any real case where one of the virt_to_bus()es is being called on a
-non-lowmem address?
+I think this is easier said than done, because depending on what's
+being done you often need to do different things at each level of
+walking the page tables.
 
-> >(I should note that I'm not intending to break them in 2.4, not even
-> >in 2_4_devel; virt_to_* can continue to use iopa there.  But in 2.5 we
-> >can be more brutal.)
->
-> Let's be brutal :-)
->
-> >There is the issue of making sure that we don't have DMA buffers and
-> >other variables in the same cache line.  This is being thrashed out on
-> >linux-kernel at the moment. :)
->
-> That's a totally different subject, and it comes up on many mailing lists.
-> There was a discussion about the eepro100 again today on a MIPS list,
-> where David (again :-) pointed out the problems with it on noncoherent
-> systems.
+In some ways it would make more sense to handle these exec faults in
+handle_mm_fault() (which already implements a page table walk), along
+with normal read and write faults.  But that would mean muddying
+generic code with exec fault stuff which is only relevant for a few
+processors.
 
-Err.. not me.  I ain't on any MIPS lists.  Nor do I recall writing
-anything about the eepre100 driver recently.
+> >But given that iopa() is pretty much the only user of this function
+> >(do_page_fault() should be done slightly differently, I think), there
+> >doesn't seem a lot of point.  Why not just eliminate get_pteptr() and
+> >walk the page tables explicitly in iopa().
+>
+> I sometimes use get_pteptr() for debug.  Make sure xmon doesn't use it
+> for printing page table information.
+
+It doesn't.  I know there are only those 3 (really 2) users, because I
+grepped the whole source for it.  Debugging is a legitimate use, I
+guess, though, so I might leave it in for now, even though little will
+use it.
+
+> >[*] Well, apart from removing iopa() entirely, but that's another
+> >flamewar^Wdiscussion.
+>
+> Just remove it for 4xx, or put an #ifdef in iopa() to do the arithmetic
+> conversion.  It's only used on 4xx and 8xx, and I would like to ensure
+> the 8xx still works correctly before we nuke everything.  I would just
+> be a little careful to ensure you have run enough PCI cards to verify
+> everything is OK.
+
+Do you mean get_pteptr() or iopa()?  If iopa() I agree with paulus,
+removing it from 2.4 would be unwise - it could break (already broken
+but kinda working) drivers.  I simply don't have the hardware to test
+really thoroughly.  I do think it should go from 2.5. though.
 
 --
 David Gibson			| For every complex problem there is a
