@@ -1,21 +1,20 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id DC6A567A8E
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.201])
+	by ozlabs.org (Postfix) with ESMTP id F22EF67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 02:43:05 +1100 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: "Bryan O'Donoghue" <typedef@eircom.net>
-Date: Wed, 23 Feb 2005 16:42:55 +0100
-References: <4219EC67.1070602@dgt-lab.com.pl>
-	<200502231554.56860.g.jaeger@sysgo.com>
-	<421CA367.1010604@eircom.net>
-In-Reply-To: <421CA367.1010604@eircom.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200502231642.55758.g.jaeger@sysgo.com>
-Cc: Wojciech Kromer <krom@dgt-lab.com.pl>, linuxppc-embedded@ozlabs.org
-Subject: Re: any hints using gcc 3.4.3 for 2.4.25 kernel?
+	Thu, 24 Feb 2005 05:46:49 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id 1so111826rny
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 23 Feb 2005 10:46:15 -0800 (PST)
+Message-ID: <c3d0340b05022310396240c8ac@mail.gmail.com>
+Date: Wed, 23 Feb 2005 10:39:34 -0800
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_Part_457_21317652.1109183974725"
+Subject: [PATCH] Ebony's UBoot awareness
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,88 +25,129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 23 February 2005 16:38, Bryan O'Donoghue wrote:
-> Gerhard Jaeger wrote:
-> > On Monday 21 February 2005 15:12, Wojciech Kromer wrote:
-> > 
-> >>a)first i have:
-> >>- 2.4.25 kernel (from denx cvs)
-> >>- eldk with 2.95.4 compiler
-> >>this one set works fine :)
-> >>
-> >>b)then, i've tried  to same sources with:
-> >>gcc-3.4.3 , self build from uClibc buildroot
-> >>new hernel hangs just after decompressing :(
-> >>
-> >>any tricks?
-> >>
-> > 
-> > 
-> > you can use the include/linux/init.h and compiler.h from 2.4.29
-> > kernel + patching some header files, where the inlining does not
-> > work any longer. I also suggest comparing with 2.4.29 kernel.
-> > 
-> > ciao,
-> > Gerhard
-> > 
-> 
-> If all you want is a cross compiler to make a kernel why not try this 
-> procedure ?
-> 
-> Tested with :
-> 
-> gcc-3.4.2
-> binutils-2.15.90.0.3
-> dietlibc-0.28 or dietlibc cvs
-> 
-> 1
-> untar all sources
-> 
-> 2
-> binutils:
-> 
-> ./configure --prefix=/usr/local/powerpc-linux --target=powerpc-linux
-> 
-> make
-> make install
-> 
-> 3
-> gcc:
-> 
-> ./configure --prefix=/usr/local/powerpc-linux --target=powerpc-linux 
-> --with-ecos --disable-nls --enable-threads=posix --disable-shared 
-> --enable-languages=c --with-headers=../dietlibc/include
-> 
-> make
-> make install
-> 
-> There might be a little error in gcc/unwind-dw2-fde-glibc.c and 
-> gcc/unwind-dw2-fde.h
-> 
-> I can't remember the exact errors in those two files, but, hopefully 
-> those should be easy enough to fix.
-> 
-> Once you work around the slight inconsistency between dietlibc & gcc in 
-> those two files, and make install, you should have a full toolchain in 
-> /usr/local/powerpc-linux
-> 
-> I had been thinking about making a small script for kernel people such 
-> as yourself, who wanted just a toolchain for kernel cross compiles.
-> Maybe I'll do that.
-> 
-> But, in any case, the above procedure gives me a 3.4.2 which is quite 
-> happy to compile a 2.4.28-rc3 (though I haven't tried out the denx 
-> 2.4.25... but, I can't see why that would fail).
-> 
-> Hope this helps.
+------=_Part_457_21317652.1109183974725
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I'm pretty sure, that it won't help on a 2.4.25 kernel. The 2.4.28-rc3 already
-has the needed patches/changes applied, that's why it works for you ;)
+Hi,
 
-ciao,
-Gerhard
+This adds UBoot support on Ebony board and also sets emac's PHY mode
+explicitly during initialization as Eugene Surovegin provided.
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+Regards,
+-Shawn.
+
+------=_Part_457_21317652.1109183974725
+Content-Type: text/plain; name="ebony-emac.diff"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename="ebony-emac.diff"
+
+diff -Nur orig/linux-2.6.10/arch/ppc/platforms/4xx/ebony.c code/linux-2.6.1=
+0/arch/ppc/platforms/4xx/ebony.c
+--- orig/linux-2.6.10/arch/ppc/platforms/4xx/ebony.c=092004-12-24 13:35:40.=
+000000000 -0800
++++ code/linux-2.6.10/arch/ppc/platforms/4xx/ebony.c=092005-02-23 10:05:32.=
+043954000 -0800
+@@ -49,10 +49,14 @@
+ #include <asm/todc.h>
+ #include <asm/bootinfo.h>
+ #include <asm/ppc4xx_pic.h>
++#include <asm/ppcboot.h>
+=20
+ #include <syslib/gen550.h>
+=20
++#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
++
+ static struct ibm44x_clocks clocks __initdata;
++bd_t __res;
+=20
+ /*
+  * Ebony IRQ triggering/polarity settings
+@@ -182,6 +186,41 @@
+ =09(writel(value, (u32)pcix_reg_base+offset))
+=20
+ /*
++ * Set mac address for each EMAC
++ * If uboot sets MAC addresses for each EMAC, use them.
++ * Otherwise fetch from Ebony VPD.
++ *
++ */
++static void __init
++ebony_set_emacdata(void)
++{
++=09unsigned char * vpd_base;
++=09struct ocp_def *def;
++=09struct ocp_func_emac_data *emacdata;
++
++=09vpd_base =3D ioremap64(EBONY_VPD_BASE, EBONY_VPD_SIZE);
++
++=09def =3D ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
++=09emacdata =3D def->additions;
++=09emacdata->phy_mode =3D PHY_MODE_RMII;
++=09if (!strncmp(__res.bi_enetaddr, "\0xFF\0xFF\0xFF\0xFF\0xFF\0xFF", 6))
++=09  =09memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
++=09else
++=09=09memcpy(emacdata->mac_addr, EBONY_NA0_ADDR(vpd_base), 6);
++
++=09def =3D ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 1);
++=09emacdata =3D def->additions;
++=09emacdata->phy_mode =3D PHY_MODE_RMII;
++=09if (!strncmp(__res.bi_enet1addr, "\0xFF\0xFF\0xFF\0xFF\0xFF\0xFF", 6))
++=09  =09memcpy(emacdata->mac_addr, __res.bi_enet1addr, 6);
++=09else
++=09=09memcpy(emacdata->mac_addr, EBONY_NA1_ADDR(vpd_base), 6);
++
++=09iounmap(vpd_base);
++
++}
++
++/*
+  * FIXME: This is only here to "make it work".  This will move
+  * to a ibm_pcix.c which will contain a generic IBM PCIX bridge
+  * configuration library. -Matt
+@@ -309,19 +348,7 @@
+ static void __init
+ ebony_setup_arch(void)
+ {
+-=09unsigned char * vpd_base;
+-=09struct ocp_def *def;
+-=09struct ocp_func_emac_data *emacdata;
+-
+-=09/* Set mac_addr for each EMAC */
+-=09vpd_base =3D ioremap64(EBONY_VPD_BASE, EBONY_VPD_SIZE);
+-=09def =3D ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
+-=09emacdata =3D def->additions;
+-=09memcpy(emacdata->mac_addr, EBONY_NA0_ADDR(vpd_base), 6);
+-=09def =3D ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 1);
+-=09emacdata =3D def->additions;
+-=09memcpy(emacdata->mac_addr, EBONY_NA1_ADDR(vpd_base), 6);
+-=09iounmap(vpd_base);
++  =09ebony_set_emacdata();
+=20
+ =09/*
+ =09 * Determine various clocks.
+@@ -368,7 +395,20 @@
+ void __init platform_init(unsigned long r3, unsigned long r4,
+ =09=09unsigned long r5, unsigned long r6, unsigned long r7)
+ {
+-=09parse_bootinfo((struct bi_record *) (r3 + KERNELBASE));
++=09parse_bootinfo(find_bootinfo());
++
++=09/*
++=09 * If we were passed in a board information, copy it into the
++=09 * residual data area.
++=09 */
++=09if (r3)
++=09=09__res =3D *(bd_t *)(r3 + KERNELBASE);
++
++=09/* Copy the kernel command line arguments to a safe place. */
++=09if (r6) {
++=09=09*(char *) (r7 + KERNELBASE) =3D 0;
++=09=09strcpy(cmd_line, (char *) (r6 + KERNELBASE));
++=09}
+=20
+ =09ibm44x_platform_init();
+=20
+
+------=_Part_457_21317652.1109183974725--
