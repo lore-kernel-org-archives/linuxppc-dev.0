@@ -1,34 +1,33 @@
-Date: Wed, 30 Jun 2004 11:02:00 -0400 (EDT)
+Date: Wed, 30 Jun 2004 11:12:18 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: duplicate menu entry in 2.5 source tree?
-Message-ID: <Pine.LNX.4.60.0406301057540.18007@localhost.localdomain>
+Subject: looking for .config file for RPXlite board for 2.6 kernel
+Message-ID: <Pine.LNX.4.60.0406301107130.18110@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   does anyone else see a duplicate menu entry in the current 2.5 bk
-pull, under Serial drivers (selecting RPXLite for me):
+   ok, in the interests of my mental health, i've grabbed an rpxlite
+board off the shelf, and am going to see how far i can boot it with
+the current 2.6 kernel.
 
-< > 8250/16550 and compatible serial support
---- Non-8250 serial port support
-< > CPM2 SCC/SMC serial port support
-< > CPM2 SCC/SMC serial port support    ????
+   does someone have a .config file for this that i can use as a
+starting point?  and how that would affect what i should select as the
+console on the boot command line?  (console=???).
 
-   if you select either one, then both submenus pop up.  the Kconfig
-file (drivers/serial/Kconfig) has the menu definition:
+   from memory, when i tried this once upon a time, i got as far as
 
-config SERIAL_CPM
-         tristate "CPM2 SCC/SMC serial port support"
-         depends on CPM2 || 8xx
-         select SERIAL_CORE
-         help
-           This driver supports the SCC and SMC serial ports on Motorola
-           embedded PowerPC that contain a CPM2 (8xxx) or a CPM1 (8xx)
+Now booting the kernel
 
-i haven't looked more closely than that, just thought i'd mention it.
+so i suspect that i misconfigured the console in some way.  thoughts?
+i've been told that this board has
+
+   SMC1 UART
+   SCC2 Ethernet
+
+but i'll make sure of that shortly.
 
 rday
 
