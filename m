@@ -1,27 +1,47 @@
-From: sam@ravnborg.org
+Message-ID: <EFB813091B18D511BD3600508B644F820A617EBC@tx14exm06.ftw.mot.com>
+From: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Question on the fs choice
+Date: Tue, 11 May 2004 18:20:52 -0500
 MIME-Version: 1.0
-To: Matevz Langus <matevy@arhitektova-delavnica.com>
-Subject: Re: Efficient handling of RTP frames?
-Reply-To: sam@ravnborg.org
-Cc: linuxppc-dev@lists.linuxppc.org, Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain; charset=iso-8859-1
-Message-Id: <20040511214243.A2ED715C57@post1.dk>
-Date: Tue, 11 May 2004 23:42:43 +0200 (CEST)
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tir, 11 May 2004 10:28:02 +0200 skrev Matevz Langus <matevy@arhitektova-delavnica.com> :
+Hello,
 
->Hi,
->
->I did the following in advance to all others said before:
->left UDP CRC field empty, so you don't need to calculated CRC. VoIP
->systems do not complain about that.
-Thanks for this tip, unfortunately we already use this 'feature'.
+We've built a custom board based on MPC8540 that runs Linux OS and utilizes
+compact flash card to store the kernel on a raw-data partition (read-only)
+and root file system on an Ext2 partition (read-write). As Ext2 is not a
+journaling FS, in case of any power failure the file system is not cleanly
+unmounted and the fscheck complains upon a system start-up.
+Also, sometimes the file system partition gets corrupted when we power-cycle
+the card instead of shutting the system down gracefully (the card is build
+to be "hot-swappable" so we test it on purpose).
 
-We are operating with 5 ms samples so we need to be very careful about any overhead (present implementation is running in a VxWorks environment).
+I saw Wolfgang Denx's post discouraging any use of the CF cards for an
+embedded platform where write operations are performed under power-failure
+prone environment. Unfortunately, this is the reality we're facing on our
+card.
 
-   Sam
+I'm seeking some help with selecting the file system that would survive
+power failure if the CF card didn't get damaged during a write cycle (we're
+gonna perform a thorough testing to assess the severity of that issue).
+
+I've seen some articles suggesting one of the journaling systems, like Ext3,
+XFS or ReiserFS.
+
+Has anybody successfully implemented any of these FS systems on an embedded
+platform equipped with a compact flash card working as a main storage
+medium?
+
+Any help would be greatly appreciated.
+
+Adam Zajac
+Motorola Inc, Global Telecom Solutions Sector
+5555 N Beach St, Mailstop 8E, Fort Worth, TX 76137-2794
+Phone: (817) 245-7963
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
