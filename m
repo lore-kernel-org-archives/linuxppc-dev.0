@@ -1,31 +1,40 @@
-Date: Wed, 3 May 2000 12:27:52 +0200 (CEST)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Steven Hanley <sjh@wibble.net>
-cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.3.99-pre6 sound hfs
-In-Reply-To: <390FE6E2.1DDB8599@wibble.net>
-Message-ID: <Pine.LNX.4.10.10005031223420.18207-100000@opal.biophys.uni-duesseldorf.de>
+Date: Wed, 3 May 2000 13:54:52 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: tom_gall@vnet.ibm.com
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Display Adapters / i386 interpreter
+In-Reply-To: <390F42CB.11AAF8D@vnet.ibm.com>
+Message-ID: <Pine.LNX.4.10.10005031353550.361-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Your point being?
+On Tue, 2 May 2000 tom_gall@vnet.ibm.com wrote:
+>   On various display adapters alot of them have their own "BIOS" which
+> is executed to init the card. These tend to be written as an i386 kind
+> of thing. Well obviously on IA32 this isn't a big deal but how does
+> PowerPC hardware deal with these kinds of cards? Or doesn't it?
 >
-> I was replying to Scott Knight <scott@re-104-1.read.indiana.edu>
+>   Is there an IA32 interpreter of sorts that can run the small amount of
+> BIOS to bring up the card? Or is the approach different?
 
-Sorry, missed that.
+Yes, there's Gabriel Paubert's vm86 emulator for PPC. It's known to work with
+(at least) various S3 based boards.
 
-> pointing out why hfs is not working, as he obviously was under the
-> assumption it was supposed to work in the latest devel kernels.
+Search the mailing list archives to find it.
 
-So was I until I saw Alan's laundry list. I haven't followed 2.3
-development lately but I recall mention of further changes to the VFS.
-Maybe a diff between 2.3.<last working> and 2.3.<recent> vfat or ext2 code
-shows up something.
+Gr{oetje,eeting}s,
 
-	Michael
+						Geert
+
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
