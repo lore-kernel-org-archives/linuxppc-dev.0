@@ -1,191 +1,126 @@
-Message-Id: <199909121740.TAA00248@piglet.cpu.lu>
-Date: Sun, 12 Sep 1999 19:40:09 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: PowerPC Uniform IDE patches
-To: andre@suse.com, Paul.Mackerras@cs.anu.edu.au
-cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="134392852-1804289383-937158009=:240"
+Date: Sun, 12 Sep 1999 14:10:14 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: controlfb.c bug in VRAM bank2 check if bank1
+Message-ID: <19990912141014.A17732@them.org>
+References: <19990910161322.A1674@them.org> <19990911112323.032168@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=gBBFr7Ir9EOA20Yy
+In-Reply-To: <19990911112323.032168@smtp.calvacom.fr>; from Benjamin Herrenschmidt on Sat, Sep 11, 1999 at 11:23:23AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134392852-1804289383-937158009=:240
-Content-Type: TEXT/plain; CHARSET=US-ASCII
 
-Hi all,
+--gBBFr7Ir9EOA20Yy
+Content-Type: text/plain; charset=us-ascii
 
-Below is a patch against Andre's latest 2.2.12 Uniform IDE driver, in
-order to make it work on the PowerPC.
+OK, this patch should d the trick.
 
-Paul, is this patch OK with you? If yes, Andre, I'd suggest that you
-integrate this into your Uniform IDE stuff.
+On Sat, Sep 11, 1999 at 11:23:23AM +0200, Benjamin Herrenschmidt wrote:
+> >I have a bunch of information on this lying around, and most of my
+> >other kernel problems seem to be resolved now.  I'm in the process of
+> >upgrading to current vger; if it succeeds, I'll try to merge all
+> >pending controlfb stuff tomorrow.
+> 
+> I also have a pair of crazy 8500 who have 2Mb of VRAM but in bank2 (they
+> don't work if the VRAM is moved to bank1, even under MacOS). The current
+> controlfb appears to work well. Send me your merge results, I'll test on
+> one of those weird machines Monday.
+> 
+> 
+> -- 
+>            E-Mail: <mailto:bh40@calva.net>
+> BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+> 
+> 
+> 
+> 
 
-To others using Andre's IDE stuff: please test and see if it breaks
-anything...
 
-Patch below applies to a kernel.org 2.2.12 tree, patched with
-'ide.2.2.12.patch' from Andre's page on ftp.kernel.org.
+Dan
 
-Michel
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--gBBFr7Ir9EOA20Yy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="control.diff"
 
---134392852-1804289383-937158009=:240
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Description: ide.diff
+Index: controlfb.c
+===================================================================
+RCS file: /cvs/linux/linux/drivers/video/controlfb.c,v
+retrieving revision 1.20
+diff -u -r1.20 controlfb.c
+--- controlfb.c	1999/09/10 07:04:03	1.20
++++ controlfb.c	1999/09/12 18:03:57
+@@ -702,26 +702,48 @@
+ 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+ 
+ 	/* Work out which banks of VRAM we have installed. */
+-	/* danj: I guess the card just ignores writes to nonexistant VRAM... */
++	/* According to Andrew Fyfe <bandr@best.com>, the VRAM behaves like so: */
++	/* afyfe: observations from an 8500:
++	 * - with 2M vram in bank 1, it appears at offsets 0, 2M and 4M
++	 * - with 2M vram in bank 2, it appears only at offset 6M
++	 * - with 4M vram, it appears only as a 4M block at offset 0.
++	 */
++
++	/* We know there is something at 2M if there is something at 0M. */
++	out_8(&p->frame_buffer[0x200000], 0xa5);
++	out_8(&p->frame_buffer[0x200001], 0x38);
++	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x200000]) : "memory" );
++
+ 	out_8(&p->frame_buffer[0], 0x5a);
+ 	out_8(&p->frame_buffer[1], 0xc7);
+ 	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0]) : "memory" );
+-	bank1 = (in_8(&p->frame_buffer[0]) == 0x5a) && (in_8(&p->frame_buffer[1]) == 0xc7);
+ 
+-	out_8(&p->frame_buffer[0x600000], 0xa5);
+-	out_8(&p->frame_buffer[0x600001], 0x38);
+-	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x600000]) : "memory" );
+-	bank2 = (in_8(&p->frame_buffer[0x600000]) == 0xa5)
+-		&& (in_8(&p->frame_buffer[0x600001]) == 0x38);
+-	
+-	p->total_vram = (bank1 + bank2) * 0x200000;
+-	/* If we don't have bank 1 installed, we hope we have bank 2 :-) */
+-	p->control_use_bank2 = !bank1;
+-	if (p->control_use_bank2) {
++	bank1 =  (in_8(&p->frame_buffer[0x000000]) == 0x5a)
++		&& (in_8(&p->frame_buffer[0x000001]) == 0xc7);
++	bank2 =  (in_8(&p->frame_buffer[0x200000]) == 0xa5)
++		&& (in_8(&p->frame_buffer[0x200001]) == 0x38);
++
++	if(bank2 && !bank1)
++		printk(KERN_INFO "controlfb: Found memory at 2MB but not at 0!  Please contact dan@debian.org\n");
++
++	if(!bank1) {
++		out_8(&p->frame_buffer[0x600000], 0xa5);
++		out_8(&p->frame_buffer[0x600001], 0x38);
++		asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x600000]) : "memory" );
++		bank2 = (in_8(&p->frame_buffer[0x600000]) == 0xa5)
++			&& (in_8(&p->frame_buffer[0x600001]) == 0x38);
++		/* If we don't have bank 1 installed, we hope we have bank 2 :-) */
++		p->control_use_bank2 = 1;
+ 		p->frame_buffer += 0x600000;
+ 		p->frame_buffer_phys += 0x600000;
+ 	}
+ 	
++	p->total_vram = (bank1 + bank2) * 0x200000;
++	
++	printk(KERN_INFO "controlfb: Memory bank 1 %s, bank 2 %s, total VRAM %dMB\n",
++		bank1 ? "present" : "absent", bank2 ? "present" : "absent",
++		2 * (bank1 + bank2));
++
+ 	init_control(p);
+ }
+ 
 
-diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/chrp_pci.c linux-2.2.12/arch/ppc/kernel/chrp_pci.c
---- linux-2.2.12-pristine/arch/ppc/kernel/chrp_pci.c	Thu Aug 26 21:51:03 1999
-+++ linux-2.2.12/arch/ppc/kernel/chrp_pci.c	Sun Sep 12 16:47:32 1999
-@@ -8,6 +8,7 @@
- #include <linux/string.h>
- #include <linux/init.h>
- #include <linux/openpic.h>
-+#include <linux/ide.h>
- 
- #include <asm/io.h>
- #include <asm/pgtable.h>
-@@ -15,7 +16,6 @@
- #include <asm/hydra.h>
- #include <asm/prom.h>
- #include <asm/gg2.h>
--#include <asm/ide.h>
- #include <asm/machdep.h>
- 
- #include "pci.h"
-diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/chrp_setup.c linux-2.2.12/arch/ppc/kernel/chrp_setup.c
---- linux-2.2.12-pristine/arch/ppc/kernel/chrp_setup.c	Sun Sep 12 16:49:40 1999
-+++ linux-2.2.12/arch/ppc/kernel/chrp_setup.c	Sun Sep 12 16:23:23 1999
-@@ -28,6 +28,7 @@
- #include <linux/reboot.h>
- #include <linux/init.h>
- #include <linux/blk.h>
-+#include <linux/ide.h>
- #include <linux/ioport.h>
- #include <linux/console.h>
- #include <linux/pci.h>
-@@ -38,8 +39,6 @@
- #include <asm/processor.h>
- #include <asm/io.h>
- #include <asm/pgtable.h>
--#include <linux/ide.h>
--#include <asm/ide.h>
- #include <asm/prom.h>
- #include <asm/gg2.h>
- #include <asm/pci-bridge.h>
-diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/mbx_setup.c linux-2.2.12/arch/ppc/kernel/mbx_setup.c
---- linux-2.2.12-pristine/arch/ppc/kernel/mbx_setup.c	Sun Sep 12 16:49:40 1999
-+++ linux-2.2.12/arch/ppc/kernel/mbx_setup.c	Sun Sep 12 16:28:41 1999
-@@ -30,6 +30,7 @@
- #include <linux/reboot.h>
- #include <linux/init.h>
- #include <linux/blk.h>
-+#include <linux/ide.h>
- #include <linux/ioport.h>
- 
- #include <asm/mmu.h>
-@@ -37,7 +38,6 @@
- #include <asm/residual.h>
- #include <asm/io.h>
- #include <asm/pgtable.h>
--#include <asm/ide.h>
- #include <asm/mbx.h>
- #include <asm/machdep.h>
- 
-diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/pmac_setup.c linux-2.2.12/arch/ppc/kernel/pmac_setup.c
---- linux-2.2.12-pristine/arch/ppc/kernel/pmac_setup.c	Sun Sep 12 16:49:40 1999
-+++ linux-2.2.12/arch/ppc/kernel/pmac_setup.c	Sun Sep 12 16:45:38 1999
-@@ -39,6 +39,7 @@
- #include <linux/ioport.h>
- #include <linux/major.h>
- #include <linux/blk.h>
-+#include <linux/ide.h>
- #include <linux/vt_kern.h>
- #include <linux/console.h>
- #include <linux/pci.h>
-@@ -54,7 +55,6 @@
- #include <asm/ohare.h>
- #include <asm/mediabay.h>
- #include <asm/feature.h>
--#include <asm/ide.h>
- #include <asm/machdep.h>
- 
- #include "time.h"
-@@ -584,14 +584,6 @@
- /* This is declared in drivers/block/ide-pmac.c */
- void pmac_ide_init_hwif_ports (hw_regs_t *hw, ide_ioreg_t data_port, ide_ioreg_t ctrl_port, int *irq);
- 
--/*
-- * This registers the standard ports for this architecture with the IDE
-- * driver.
-- */
--void
--ide_init_default_hwifs(void)
--{
--}
- #endif
- 
- __initfunc(void
-diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/prep_setup.c linux-2.2.12/arch/ppc/kernel/prep_setup.c
---- linux-2.2.12-pristine/arch/ppc/kernel/prep_setup.c	Sun Sep 12 16:49:40 1999
-+++ linux-2.2.12/arch/ppc/kernel/prep_setup.c	Sun Sep 12 16:27:07 1999
-@@ -28,6 +28,7 @@
- #include <linux/reboot.h>
- #include <linux/init.h>
- #include <linux/blk.h>
-+#include <linux/ide.h>
- #include <linux/ioport.h>
- #include <linux/console.h>
- #include <linux/timex.h>
-@@ -39,8 +40,6 @@
- #include <asm/residual.h>
- #include <asm/io.h>
- #include <asm/pgtable.h>
--#include <linux/ide.h>
--#include <asm/ide.h>
- #include <asm/cache.h>
- #include <asm/dma.h>
- #include <asm/machdep.h>
-diff -uNr linux-2.2.12-pristine/arch/ppc/kernel/setup.c linux-2.2.12/arch/ppc/kernel/setup.c
---- linux-2.2.12-pristine/arch/ppc/kernel/setup.c	Sun Sep 12 16:49:40 1999
-+++ linux-2.2.12/arch/ppc/kernel/setup.c	Sun Sep 12 16:25:51 1999
-@@ -11,14 +11,13 @@
- #include <linux/reboot.h>
- #include <linux/delay.h>
- #include <linux/blk.h>
-+#include <linux/ide.h>
- 
- #include <asm/adb.h>
- #include <asm/cuda.h>
- #include <asm/pmu.h>
- #include <asm/residual.h>
- #include <asm/io.h>
--#include <linux/ide.h>
--#include <asm/ide.h>
- #include <asm/prom.h>
- #include <asm/processor.h>
- #include <asm/pgtable.h>
-diff -uNr linux-2.2.12-pristine/include/asm-ppc/ide.h linux-2.2.12/include/asm-ppc/ide.h
---- linux-2.2.12-pristine/include/asm-ppc/ide.h	Sun Sep 12 16:49:40 1999
-+++ linux-2.2.12/include/asm-ppc/ide.h	Sun Sep 12 16:49:40 1999
-@@ -59,9 +59,7 @@
- 
- extern struct ide_machdep_calls ppc_ide_md;
- 
--#if 0
- void ide_init_hwif_ports (hw_regs_t *hw, ide_ioreg_t data_port, ide_ioreg_t ctrl_port, int *irq);
--#endif
- 
- void ide_insw(ide_ioreg_t port, void *buf, int ns);
- void ide_outsw(ide_ioreg_t port, void *buf, int ns);
-
---134392852-1804289383-937158009=:240--
+--gBBFr7Ir9EOA20Yy--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
