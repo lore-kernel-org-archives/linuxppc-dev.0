@@ -1,21 +1,16 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0CF3A67A62
+Return-Path: <jdaniel@adventnetworks.com>
+Received: from advcorp-exc01.advent.com (rrcs-24-153-228-72.sw.biz.rr.com
+	[24.153.228.72]) by ozlabs.org (Postfix) with ESMTP id 8FC4C67A2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 05:38:06 +1100 (EST)
-In-Reply-To: <JPEALJAFNGDDLOPNDIEEAEEEDAAA.joakim.tjernlund@lumentis.se>
-References: <JPEALJAFNGDDLOPNDIEEAEEEDAAA.joakim.tjernlund@lumentis.se>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3AACC857-6A49-11D9-9943-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 19 Jan 2005 13:37:53 -0500
-To: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	"Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] Handle I-TLB Error and Miss separately on 8xx
+	Thu, 20 Jan 2005 05:38:27 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Date: Wed, 19 Jan 2005 12:30:44 -0600
+Message-ID: <D10E8F42CD2F1C4B93F482091D0E13320C1C66@advcorp-exc01.advent.com>
+From: "Johns Daniel" <jdaniel@adventnetworks.com>
+To: "linuxppc" <linuxppc-embedded@ozlabs.org>
+Subject: RE: Kernel boot hangs by parallel flood pings
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +21,124 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I have had better luck with the following fcc_enet.c patch (against the =
+ELDK 2.4.4 kernel):
 
-On Jan 19, 2005, at 1:06 PM, Joakim Tjernlund wrote:
+~~~~~~~~~~~~~
+1.) In static void mii_display_status(struct net_device *dev):
+=20
+ 	if (!fep->link && !fep->old_link) {
+ 		/* Link is still down - don't print anything */
+ 		return;
+ 	}
+=20
+	printk("%s: status: ", dev->name);
+=20
+ 	if (!fep->link) {
++        netif_carrier_off(dev);
+		printk("link down");
+ 	} else {
++        netif_carrier_on(dev);
+		printk("link up");
+=20
+ 		switch(s & PHY_STAT_SPMASK) {
+~~~~~~~~~~~~~
 
-> 8MB pages for user space? Isn't that a bit big?
+2.) In fcc_enet_open(struct net_device *dev):
 
-Just for kernel space.  I think eliminating lots of TLB updates for the
-kernel will be one of the easiest ways to get a boost of performance
-in this area.  This way, system calls or interrupts won't pollute the 
-TLB
-for the application, which can then just continue to run without having
-to reload the TLB after such events.
+ 		mii_do_cmd(dev, fep->phy->startup);
+ #ifdef	CONFIG_PM826
+ 		/* Read the autonegotiation results */
+ 		mii_do_cmd(dev, fep->phy->ack_int);
+ 		mii_do_cmd(dev, phy_cmd_relink);
+ #endif	/* CONFIG_PM826 */
++        if (fep->link) {
++            netif_carrier_on(dev);
++        } else {
++            netif_carrier_off(dev);
++        }
+ 		netif_start_queue(dev);
+ 		return 0;		/* Success */
+ 	}
+ 	return -ENODEV;		/* No PHY we understand */
+ #else
+ 	fep->link =3D 1;
+~~~~~~~~~~~~~
 
-Part of my graduate work years ago was MMU overhead with various
-page sizes and replacement algorithms.  Increase page sizes from
-something like 1K to 8M made a difference you could measure, but
-the difference between 1K to 32K made little difference.   Of course,
-you can always write some application that just trashes the TLB and
-proves any improvement incorrect, but that would also trash caches and
-other system resources.  I'll always contend that if you can measure
-the difference between a 4K and 16K page, something else is grossly
-wrong with the system in general and you should be looking for
-performance problems elsewhere.
+This communicates the link status to the kernel TCP/IP stack. Obviously, =
+this assumes that MDIO is working!
+
+-- Johns Daniel, Advent Networks, Inc.
+
+-----Original Message-----
+From:	linuxppc-embedded-bounces@ozlabs.org on behalf of Ho Lee
+Sent:	Wed 1/12/2005 6:14 PM
+To:	'linuxppc'
+Cc:	'Steffen Rumler'
+Subject:	RE: Kernel boot hangs by parallel flood pings
 
 
-	-- Dan
+
+-----Original Message-----
+From:	linuxppc-embedded-bounces@ozlabs.org on behalf of Ho Lee
+Sent:	Wed 1/12/2005 6:14 PM
+To:	'linuxppc'
+Cc:	'Steffen Rumler'
+Subject:	RE: Kernel boot hangs by parallel flood pings
+
+I met the same problem in CPM driver, and there could be many=20
+solutions. I think the right place to fix is the fec driver.=20
+The fec driver registers interrupt handler during the=20
+initialization not when the device is opened, so it may
+receive packets even the device is not up and running (also=20
+before the network subsystem is initialized) My fix was to=20
+ignore the received packets if the driver is not opened.=20
+
+--- linux-2.4.26.orig/arch/ppc/8xx_io/fec.c
++++ linux-2.4.26/arch/ppc/8xx_io/fec.c=20
+@@ -587,6 +587,9 @@
+                goto rx_processing_done;
+        }
+=20
++       if (!netif_running(dev))
++           goto rx_processing_done;
++
+        /* Process the incoming frame.
+         */
+        fep->stats.rx_packets++;
+
+
+Regards,
+Ho
+
+-----Original Message-----
+From: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Rune =
+Torgersen
+Sent: Wednesday, January 12, 2005 7:32 AM
+To: Steffen Rumler; linuxppc
+Subject: RE: Kernel boot hangs by parallel flood pings
+
+--- Kernel.old/net/ipv4/ip_output.c     Thu Jun  5 09:00:39 2003
++++ Kernel/net/ipv4/ip_output.c Thu Jun  5 09:00:28 2003
+@@ -1087,11 +1087,11 @@
+
+ void __init ip_init(void)
+ {
+-       dev_add_pack(&ip_packet_type);
+-
+        ip_rt_init();
+        inet_initpeers();
+
++       dev_add_pack(&ip_packet_type);
++
+ #ifdef CONFIG_IP_MULTICAST
+        proc_net_create("igmp", 0, ip_mc_procinfo);
+ #endif
+>>
+
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
