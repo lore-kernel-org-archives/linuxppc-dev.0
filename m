@@ -1,59 +1,35 @@
-Message-ID: <3D3428FF.5090401@embeddededge.com>
-Date: Tue, 16 Jul 2002 10:09:03 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Date: Tue, 16 Jul 2002 07:58:29 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
 Subject: Re: consistent_alloc() revisited
-References: <20020716021313.GQ22786@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <20020716145829.GH20027@opus.bloom.county>
+References: <20020716021313.GQ22786@zax> <3D3428FF.5090401@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D3428FF.5090401@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+On Tue, Jul 16, 2002 at 10:09:03AM -0400, Dan Malek wrote:
+>
+> David Gibson wrote:
+> >-	if (in_interrupt())
+> >-		BUG();
+> >+	BUG_ON(in_interrupt());
+>
+> We should be able to call these functions from interrupt, let's push
+> the remainder of the changes though get_free_pages() to make this happen.
 
-> In addition, the following seem to me like desirable (to a greater or
-> lesser extent) properties for consistent_alloc():
-> 	a. one of the return values can be used as a single "handle"
-> so that consistent_free() only needs one parameter.
+I think the only reason we should keep that like it is, for now, is that
+fixing that requires other generic changes.  Which Paul was going to ask
+Dave M about doing.  Paul, any word back from him yet?
 
-We want the implementation API to be identical across all architectures.
-Until there is a consistent way of handling devices that are on local
-processor busses, platforms with these types of devices may call these
-functions directly.    This is particularly true of some host USB controllers
-on embedded systems that don't have PCI busses.
-
-> 	b. works on both cache coherent and non cache coherent
-> machines
-
-The original purpose of the consistent_* functions was to provide support
-for processors that aren't cache coherent.  The pci_* (and any other functions)
-can call these if appropriate, but I still believe the decision should  be
-made at a higher level.  Obviously, these consistent_* functions will
-be implemented differently on non- or cache coherent processors, and across
-different architectures.  The PCI functions (or others) should still do their
-thing as they always have, and call these consistent_* functions when
-appropriate.
-
-
-> 	c. be able to use highmem pages
-
-You think there will be non-coherent processors with this much memory? :-)
-
-
-> -	if (in_interrupt())
-> -		BUG();
-> +	BUG_ON(in_interrupt());
-
-We should be able to call these functions from interrupt, let's push
-the remainder of the changes though get_free_pages() to make this happen.
-
-
-Thanks.
-
-
-	-- Dan
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
