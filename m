@@ -1,36 +1,36 @@
-Message-ID: <001601c024b9$9bc061c0$0401a8c0@hoangmobile>
-From: "Nguyen Xuan Hoang" <jerry.nguyen@serialsystem.com.sg>
-To: "Navin Boppuri" <nboppuri@trinetcommunication.com>,
-        <linuxppc-embedded@lists.linuxppc.org>
-References: <009f01bfc3cf$8f21d930$4a1f76d8@washington>
-Subject: Re: USB support for the FADS board with MPC823
-Date: Fri, 22 Sep 2000 10:21:56 -0700
+Message-ID: <39CB9AB8.27CBD412@mvista.com>
+Date: Fri, 22 Sep 2000 10:45:28 -0700
+From: Mark Hatle <fray@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Pawel Zawora <pzawora@fideltronik.com>
+CC: linuxppc <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: illegal intruction
+References: <39CB0FDD.2E5C8DF7@fideltronik.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-There's no support USB for MPC823 in kernel, but you can get some trial code
-at http://www.honeywell.se/inu/usb/ . This code don't reschedule SOF well.
+We need a lot more information to understand what the problem might be.
 
+I see it's Linux PPC, kernel version 2.2.13... but what CPU, what board,
+how much ram, etc.
 
------ Original Message -----
-From: "Navin Boppuri" <nboppuri@trinetcommunication.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Monday, May 22, 2000 2:24 AM
-Subject: USB support for the FADS board with MPC823
+>From not knowing anything about this, it sounds like you are trying to
+run software that is using floating point on a system that doesn't
+have an FPU.  But that is just a guess.
 
+--Mark
 
+Pawel Zawora wrote:
 >
-> Does someone know if USB support exists for the MPC823 on fads? I only see
-> an option in my kernel which says "not for the faint of heart".
+> I'm working with Linux PPC, kernel version 2.2.13 with nfs as a root
+> file  system. When I try to run any software sometimes a exeption
+> undefined instruction code 0xffffffda occurs (kernel try it emulate),
+> sometimes everything works.
+> Does anybody know what can be a reason of  behavior like this?
+> It isn't a problem of limited RAM memory space.
+> What is  the best way to find this error?
 >
-> Navin.
->
->
->
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
