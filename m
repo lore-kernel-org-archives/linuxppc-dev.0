@@ -1,34 +1,27 @@
-Message-ID: <3BEABBDA.6080000@humboldt.co.uk>
-Date: Thu, 08 Nov 2001 17:07:38 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Daniel Berlin <dan@cgsoftware.com>,
-	linuxppc-dev@lists.linuxppc.org, ajoshi@unixbox.com
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: <ajoshi@unixbox.com>, <linuxppc-dev@lists.linuxppc.org>,
+	Daniel Berlin <dan@cgsoftware.com>
 Subject: Re: [PATCH]: Make radeonfb work alot better with new powerbooks
-References: <EDBD773A-D459-11D5-9D29-0030657B5340@cgsoftware.com> <20011108163848.15922@smtp.adsl.oleane.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Thu, 8 Nov 2001 18:11:52 +0100
+Message-Id: <20011108171152.28209@smtp.adsl.oleane.com>
+In-Reply-To: <3BEABBDA.6080000@humboldt.co.uk>
+References: <3BEABBDA.6080000@humboldt.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+>On the other chip I work on (CT69030) I deal with panel issues by
+>assuming that the boot firmware set the correct panel width, height and
+>type. How safe is this approach on the r128?
 
+Doesn't work. Some radeon firmwares will set a device-tree property
+with the panel EDID, but r128's wont afaik, and I think it's bogus
+in some cases. I'd prefer we use the i2c.
 
-> Ok. New coders are always welcome ;) There are a lot of things that would
-> be great on both the M3 (r128) and the new radeon: better support for
-> external CRT, support for S-video output, better panel detect...
-
-
-I've been considering an attempt at the panel scaling on the r128, based
-on the code in the X driver.
-
-On the other chip I work on (CT69030) I deal with panel issues by
-assuming that the boot firmware set the correct panel width, height and
-type. How safe is this approach on the r128?
-
---
-Adrian Cox   http://www.humboldt.co.uk/
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
