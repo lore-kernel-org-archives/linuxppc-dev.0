@@ -1,54 +1,46 @@
-Date: Tue, 18 Sep 2001 10:29:01 +1000
+Date: Tue, 18 Sep 2001 10:35:30 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Errata 67/77 / walnut bugs (was: Re: Erratum 51 bugfix?)
-Message-ID: <20010918102901.A1183@zax>
-References: <20010917152316.O3851@zax> <3BA62583.55E48A97@mvista.com>
+Subject: Re: Board names for 4xx
+Message-ID: <20010918103530.B1183@zax>
+References: <20010914144403.G3851@zax> <20010914072847.R21906@cpe-24-221-152-185.az.sprintbbd.net> <20010917122828.J3851@zax> <20010916211605.D14279@cpe-24-221-152-185.az.sprintbbd.net> <3BA61D1A.3A79E5B9@mvista.com> <3BA620CC.3ACD0547@inn.ericsson.se> <20010917113345.A23163@cpe-24-221-152-185.az.sprintbbd.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3BA62583.55E48A97@mvista.com>
+In-Reply-To: <20010917113345.A23163@cpe-24-221-152-185.az.sprintbbd.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Sep 17, 2001 at 12:32:03PM -0400, Dan Malek wrote:
+On Mon, Sep 17, 2001 at 11:33:45AM -0700, Tom Rini wrote:
 >
-> David Gibson wrote:
-> >
-> > According to the ppc405gp errata, the workaround for erratum 51 is
-> > incorrect.
+> On Mon, Sep 17, 2001 at 06:11:56PM +0200, Kenneth Johansson wrote:
+> > Dan Malek wrote:
+> > >
+> > > Tom Rini wrote:
+> > >
+> > > > I do wish someone else would speak up tho.  Does anyone out there have an
+> > > > opinion?
+> > >
+> > > If the information from /proc is just used for pretty print out of
+> > > information, I really don't care.  If there are applications that read
+> > > this for some internal configuration and flexibility, we better have a
+> > > standard format.
+> > Debian uses /proc/cpuinfo to find out what utility to use for the RTC
+> > (clock,hwclock). This could be fixed if the code from clock was integrated in
+> > hwclock. hwclock tries every method it knows until one works.
 >
-> Got it, thanks.  I actually went to read the 4xx errata this time instead
-> of just blindly accepting the patch as I did last time.  There are some
-> other nasty things we should consider fixing.  The worst is #67, and now
-> they have told us about #77 so we can fix up the ATOMIC_SYNC_FIX....
+> This is no longer true.  Woody anyways assumes that /dev/rtc will work in
+> the 'standard' way.  But,, debian does parse for machien type for doing
+> board/platform specific modules.
 
-> Of all the errata, #77 is the only one we have seen with Linux.  I guess
-> you could force #51 to occur, but whether you call ITLBmiss or DTLBmiss
-> probably doesn't matter because they end up at the same place.  We are
-> somewhat lucky with #67 because I don't think we have mapping situations
-> where this can occur.  Although, some days I read it and think otherwise.....
-
-Yes, #67 is very nasty, and although it doesn't occur under normal
-circumstances, I'm pretty sure it can be triggered by an unprivileged
-process.  Userland doesn't generally have the page at 0x0 mapped, but
-it can be mapped in with mmap(...MAP_FIXED...) (I checked).  Place
-some code at 0x500 or 0x1100 and user programs can execute an
-arbitrary instruction or two in privileged mode.  Nasty.
-
-The sanest fix I can think of is to simply ban MAP_FIXED at address
-0x0 on 4xx.
-
-I suspect #77 is the cause of the problems I'm seeing on the walnut
-now - it mostly works, but every so often a process will freeze up
-immune to signals.  Then, anything that looks too hard at it (ps, cat
-/proc/##/cmdline) will also freeze up.
+Yes, but last I checked the util-linux install script would still die
+if the machine: field wasn't present at all.  IIRC it was checking for
+PReP machines for some reason.
 
 --
 David Gibson			| For every complex problem there is a
 david@gibson.dropbear.id.au	| solution which is simple, neat and
 				| wrong.  -- H.L. Mencken
 http://www.ozlabs.org/people/dgibson
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
