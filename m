@@ -1,85 +1,58 @@
-Date: Thu, 29 Mar 2001 10:04:17 -0500 (EST)
-From: Daniel Berlin <dan@www.cgsoftware.com>
-To: "David S. Miller" <davem@redhat.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ieee1394 fixed soon...
-In-Reply-To: <15042.57778.640138.923390@pizda.ninka.net>
-Message-ID: <Pine.LNX.4.10.10103290950010.11075-100000@www.cgsoftware.com>
+Message-ID: <XFMail.010329173927.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20010329085335.527C32EFCE@apollo.valhalla.net>
+Date: Thu, 29 Mar 2001 17:39:27 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Subject: Re: Sound skips
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Mar 2001, David S. Miller wrote:
+> OK.  So nothing much has changed since I last tried it - note that those
+> patches take scheduling latency below 1ms on x86.
 
->
-> Daniel Berlin writes:
->  > If the patches + removing the bitfields for self-id
->  > (which it sounds like you already did) give you the ability to
->  > at least attempt to send packets (IE it runs the dma programs),
->  > you are in very good shape.  I had to get the byteswapping basically
->  > perfect to even get it to not just laugh at me and do nothing when we told
->  > ia dma context to run.
->
-> What do you mean specifically when you say "removing the bitfields fo
-> self-id"?  I notice in your patches that you don't byte swap
-> q[0] and q[1] when they arrive for a self-id interrupt.  Are these
-> quadlets supposed to be big-endian in memory?  Here is the change I made:
+This means the bad code is in the "small" arch-dependdent part
+of the kernel.
 
-On the powerbook, they are in big-endian in memory (IE self-id always
-worked okay). I tget the feeling this is one of the bugs in the
-implementation, since people with G4's and OHCI chips get the self-ids in
-the reverse order.
+> maybe we do have some IRQ blocking as well (I haven't had time to benchmark
+> that at 2.4.x - it's on the TODO list).
+>
+>>(if it doesn't involve libtool).
+>
+> hmmm.  Have you got any idea what libtool does that is different ?
 
-As for using pci_alloc_consistent more efficiently, I have changes to
-convert to using a kmem_cache for the packets, rather than do a kmalloc
-each time, and to remove the bottom half handlers in ohci1394.c and
-replace it with tasklets.
+Not yet. I'll look for it ASA I have time.
 
-As sopon as the the ieee1394 maintainer gets on the ball, i'll submit
-them again.
-> > For one thing, in your stuff, the comments and code near the comment
-> "Pretty heinous." are totally bogus and wrong:
->
-> 	p->value &= cpu_to_le32(0xfffffff0);
->
-> works _PERFECTLY_ fine.
-Not for me, i tried it before putting the code there. It's of course
-possible that I fixed a different bug and attributed the fix to the wrong
-part of the code. I'm pretty sure, however, that I did that change
-individually, and it made a difference.
+> (does strace work at the moment?)
 
- >
-> It would really be nice if the IEEE1394 developers kept on top of
-> our patches and merged them to Linus soon.
->
+Yes it does. The only uncommon thing I can see is a huge number of
+calls to rt_sigprocmask().
 
-Hey, I agree completely, but it hasn't happened yet.
+> mmap-ing files is "bad news" even with the LL patches (IIRC).
 
->  > I also assumed readl/writel do byteswapping, and thus, there was no need
->  > to swap the register reads/writes since they would be swapped for us.
->
-> Right, readl/writel push little-endian onto little-endian busses like
-> PCI.
->
->  > At the absolute least, it'll give you an idea of what needs to be swapped
->  > for big endian architectures.
->
-> I know what needs to be swapped thats why I did the patches I did :-)
-It's trickier than you may think, because motherboard implementations of
-firewire aren't required to honor the byte swapping setting, making it
-pretty useless.
+I didn't know that.
 
- >
->  > I have
->  > patches to do this somewhere, it didn't matter for powerppc, so it was
->  > only a half hearted attempt.
+>> I tried to lower the fragment size to 9 (512B==0.012s) and it skips
+>> even when the system is completely idle.
 >
-> Please push it to the ieee1394 maintainers, so the work need not
-> be duplicated by others.  Thanks.
-sure, as soon as they start actually maintaining ieee1394.
+> I don't know what UI you are using but...
+
+I wrote a small prog to play aiffs from disk.
+
+> does this occur each second (i.e. related to, for example, updating a clock
+> on screen) ... or
+>
+> every 20/30 seconds or so - perhaps related to sync() ?
+
+I don't know... It seems quite random, but I have some stuff running in
+the taskbar. I'll check better.
+
+
+Bye.
+    Giuliano Pochini ->)|(<- Shiny Network {AS6665} ->)|(<-
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
