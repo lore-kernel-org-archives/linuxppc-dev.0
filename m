@@ -1,59 +1,80 @@
-Date: Mon, 22 Jan 2001 22:23:55 +0100 (MET)
-From: Roman Zippel <zippel@fh-brandenburg.de>
+Message-ID: <3A6CA6A9.7794B603@mvista.com>
+Date: Mon, 22 Jan 2001 16:31:21 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
 To: Jeff Hartmann <jhartmann@valinux.com>
-cc: Dan Malek <dan@mvista.com>, michdaen@iiic.ethz.ch,
+CC: Roman Zippel <zippel@fh-brandenburg.de>, michdaen@iiic.ethz.ch,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Gareth Hughes <gareth@valinux.com>, linuxppc-dev@lists.linuxppc.org,
         dri-devel@lists.sourceforge.net, Paul Mackerras <paulus@linuxcare.com>
 Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-In-Reply-To: <3A6C9852.4090201@valinux.com>
-Message-ID: <Pine.GSO.4.10.10101222206430.24677-100000@zeus.fh-brandenburg.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.GSO.4.10.10101221945230.19978-100000@zeus.fh-brandenburg.de> <3A6C8C6E.3C19F151@mvista.com> <3A6C9852.4090201@valinux.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Jeff Hartmann wrote:
 
-On Mon, 22 Jan 2001, Jeff Hartmann wrote:
+> Okay let me try and explain things a little better.
 
-> Later on this list of pages will be mapped into user space by the DRM's
-> mmap routine.  It uses vma_nopage to accomplish this.  vma_nopage
-> functions should return struct page *, we do this by returning
-> pagelist[page_offset_in_pages_from_start_of_vma].  This should work on
-> fine on any arch's kernel.  We haven't gotten to this point in the code
-> yet, so its not the issue we are addressing.
+Got it.  That is what I was guessing, only surprised you are holding
+page structs, but that makes sense.
 
-Do you make the page private already?
+> ......  Currently there is no kernel function to do
+> this explicitly
+
+I'm working on that.  The PowerPC port cheated by using BATs and
+trivial macros, but this doesn't work on some of the newer processors
+and more complex applications.  Other architectures did the same, and
+I am surprised there aren't generic kernel functions to track down this
+information.  In fact, these functions are already present for 4xx and
+8xx processors, so don't write anything new.
 
 > Another thing that happens later is that we need the bus address of each
 > of these pages to program the card to do scatter gather dma from this
-> region.  We do virt_to_bus(pagelist[i]->virtual) to accomplish this
+> region.
+
+That's where this is going to fall apart on PowerPC.
+
+> .....  We do virt_to_bus(pagelist[i]->virtual) to accomplish this
 > translation.
 
-Better use page_address() to get the virtual address and then use
-pci_map_single() or pci_map_sg() to get a dma address.
+I have to write some code (or actually remove some #ifdefs) before
+this will work for you.
 
 > I know on the ia32 a pgd/pmd can actually point to 4MB pages rather then
-> a real pte.  Does the PowerPC have anything like this?  I would doubt
+> a real pte.  Does the PowerPC have anything like this?
+
+Not yet.  It's on the way....
+
+> ....  I would doubt
 > that I would encounter anything like this from a vmalloc'ed area of
 > memory (since vmalloc is arch independent and it would call alloc_page
 > for each individual pte.)  Am I correct in this assumption?
 
-ppc doesn't have page table, it either uses a hash table or the tlb
-entries have to be filled by software. Anyway, pgd/pmd/pte are used to
-keep the management compatible to Linux and are like ia32 also two levels.
+Yes.
+
+> Just FYI, the code I posted works fine on the ia32 platform (only tested
+> with the i386 classic 2-level page tables.)
+
+What you are doing so far should work too on PowerPC.
 
 > Another thing we might be running into here is that vmalloc does not
-> guarantee a virtually contiguous area of memory (or so I am told.)  I've
-> NEVER seen this in practice on an ia32 platform.  Does this happen only
-> happen on other platforms, or perhaps happen more often on other platforms?
+> guarantee a virtually contiguous area of memory (or so I am told.)
 
-Someone was confused :). vmalloc can't guarantee that it allocates a
-physical contiguous area.
+Ummm...of course it is virtually contiguous.  How could it be
+different?  You request a size, and it returns a base virtual address.
+If there were holes in it, how would you know?
 
-bye, Roman
+> .....  I've
+> NEVER seen this in practice on an ia32 platform.
 
+It can't happen on any platform (or I don't understand something about
+the comment, which could very well be the case today).
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
