@@ -1,36 +1,33 @@
-In-Reply-To: <19990310123639.A292@giordino.point-barre.fr>
-Date: Wed, 10 Mar 1999 13:19:08 +0100
-To: Hubert Figuiere <hub@point-barre.fr>, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: ADB Reset
-Message-Id: <19990310131908.030129@mail.mipsys.com>
+Date: Wed, 10 Mar 1999 15:26:21 +0100
+From: Hubert Figuiere <hub@point-barre.fr>
+To: LinuxPPC Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Sound drops
+Message-ID: <19990310152621.H896@giordino.point-barre.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Mar 10, 1999, Hubert Figuiere <hub@point-barre.fr> wrote:
+I don't like to work in silence, so I usually play back a 
+bunch of mp3 with xaudio under Linux PPC from my PowerBook.
 
->I could reset the adb bus with adb_reset_bus(), but it did
->nothing in my case. Mouse was still SLOW, etc.
->I called adb_scan_bus() instead. But this happen to not work and
->make my mouse no longer be recognized.
->
->Any idea on what to do ?
+The problem is that I get a lot of sound drops like if the machine
+were "mono-tasking". I have never had this with PC hardware under Linux.
 
-After the bus reset, the mouse must be re-initialised to handler 4. In
-fact, the whole device probing and init must be redone (mac_keyb.c). I'm
-working on a simple design that allow ADB peripherial drivers to register
-to the ADB core in order to be notified of bus resets. Stay tuned.
+It appears that those drops occurs when doing intensive graphics like
+a Netscape redrawing or a huge text scroll within an xterm. This happens
+with Xpmac or XFB_Dev.
 
+Kernel is 2.2.1 home compiled (with or without my patches), and machine 
+is PowerBook 3400c with 80 MB of RAM.
+
+My question is: Is it a known bug of the sound drivers or is it a 
+hardware limitation ?
+
+Hub
 -- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
-
+World Wide Wait: the real meaning for WWW.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
