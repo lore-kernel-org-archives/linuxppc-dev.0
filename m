@@ -1,42 +1,50 @@
-Message-ID: <20030220074414.19204.qmail@web9707.mail.yahoo.com>
-Date: Wed, 19 Feb 2003 23:44:14 -0800 (PST)
-From: None Atall <linux_meis@yahoo.com>
-Subject: MPC826x GCI(IOM2) HDLC Controller
-To: linuxppc-embedded@lists.linuxppc.org
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3E54904A.2F303A80@lucent.com>
+Date: Thu, 20 Feb 2003 09:22:34 +0100
+From: Jaap-Jan Boor <jjboor@lucent.com>
 MIME-Version: 1.0
+To: brian.auld@adic.com
+Subject: Re: PowerMac vs. Intel for PowerPC Development Host
+References: <995FF289C9D69747A09E42992644595405B23678@penguin.adic.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hi to all!
-Is there anyone who has written a GCI HDLC
-Controller for the MPC826x processors? If
-not, is there anyone who has written a driver
-that uses both SCCs and SMCs at the same time?
- My alternative choise is to create one via the
-UART driver. But I hope that I will save some
-time....
-              Thanks in advance
-                  Dimitrios Meidanis
+Brian,
 
--------------------------------------------------
-- Dimitrios Meidanis
-- Degree in Mathematics, University of the
-  Aegean, Greece
-- Master in "Computer Architecture and Digital
-  Systems", University of Crete, Greece
-- http://www.csd.uoc.gr/~meidanis
--------------------------------------------------
--  Living with the immediacy of death           -
--  helps you sort out your priorities in life.  -
--  It helps you to live a less trivial life.    -
--                         Sogyal Rinpoche       -
--------------------------------------------------
+I think one advantage of using a mac with linuxppc as host (I use that @ home)
+is that you can use newer compiler/library versions a little bit more
+easy. I wasn't able yet to cross compile gcc-3.x for ppc on Solaris host,
+it worked however on the mac.
 
+Jaap-Jan
 
+brian.auld@adic.com wrote:
+>
+> A while back I wrote an email to this list regarding development kit
+> suggestions. Based mainly on feedback from this email, I am currently moving
+> in the Intel/ELDK direction.
+>
+> Out of all the feedback I received, only one person suggested developing on
+> a PowerMac based Linux box, thus eliminating the need for cross-compiling. I
+> have become more interested in this option as some people in our company
+> have noted that cross-compiling embedded linux presented problems on past
+> projects when it came to building certain 3rd party applications.
+>
+> In the Intel vs. Mac debate for a linux development host for embedded ppc
+> development, if money was not an issue, would I get more PowerMac
+> recommendations??
+>
+> Thanks,
+>
+> -- Brian
+>
 
-Yahoo! Tax Center - forms, calculators, tips, more
-http://taxes.yahoo.com/
+--
+J.G.J. Boor                                          Room:  BE-525
+Lucent Technologies Nederland b.v.                   Phone: +31 35 687 4721
+Optical Networking Group TMS Data                    Fax:   +31 35 687 5976
+P.O. Box 1168, 1200 BD, Hilversum, The Netherlands   mailto:jjboor@lucent.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
