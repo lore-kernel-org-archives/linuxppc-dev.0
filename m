@@ -1,62 +1,34 @@
-Date: Thu, 11 Feb 1999 19:48:31 -0500 (EST)
-From: Fred Dushin <fadushin@blackcat.cat.syr.edu>
-Reply-To: fadushin@blackcat.cat.syr.edu
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Adventures with KDE-1.1
-Message-ID: <Pine.LNX.4.00.9902111928330.4101-100000@blackcat.cat.syr.edu>
+Date: Thu, 11 Feb 1999 19:59:59 -0600 (CST)
+From: Ken Roberts <ken@worldnet.att.net>
+Reply-To: Ken Roberts <ken.r@worldnet.att.net>
+To: Brian Griffith <bagrif@mbay.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Anyone using GGI?
+In-Reply-To: <l03130300b2e8cf05cf76@[206.55.224.120]>
+Message-ID: <Pine.LNX.3.96.990211195852.396D-100000@dancer.at.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>Has anyone used GGI with LinuxPPC? I'm interested in possibly trying to use
+>it on a PowerBase with the built in ATI video. Thanks for any information,
+>
+>Brian Griffith
 
-In case anyone is interested...
+i've used it on mklinux.  works just like any other unix platform.
 
-I downloaded the kde 1.1 tarballs and had a go building.
-But first I updated egcs as much as I could off of linuxppc.org.
+since i'm using a 7100/66, i use c mostly, but have done some perl and other
+shell scripts.
 
-BTW, is this the place to look for bleeding edge stuff?  Doesn't
-look like it, by the dates.
-
-[root@blackcat /downloads]# rpm -qa | grep egcs
-egcs-as-gcc-1.1-0a
-egcs-c++-1.1-0a
-egcs-libstdc++-2.8.0-2b
-egcs-1.1-0a
-egcs-libstdc++-devel-2.8.0-2b
-[root@blackcat /downloads]# rpm -qa | grep glibc
-glibc-devel-0.961212-1l
-glibc-info-0.961212-1h
-glibc-static-0.961212-1l
-glibc-0.961212-1l
-
-qt-1.42 built without a hitch.
-
-I started with kde-base, though, and ran into some problems.
-The first problem was due to g++'s including string.h; apparently
-the definition of strnlen involves an implicit cast to void *,
-which ANSI C++ doesn't like (in an optimized version of strnlen).  
-Got around that with a hack (what else?)
-Turned off HAS_ARGZ in config.h.
-
-Further down, I ran into a mess of problems, mostly around header
-files in /opt/egcs/include/g++.  Haven't tracked them down,
-but I figured I'd give the list a holler for suggestions
-about compilers/libs, etc.
-
-I'm on an ancient installation, going back to pre-DR2, I think,
-though I have kept a lot up to date.  2.1.24 on a 7200/75.
-
-Is our compiler out of date?  Or are KDE config scripts mangled?
-Or should I get a new machine...?
-
-Thanks,
-Fred
-
---
-Fred Dushin                      mailto:fadushin@blackcat.cat.syr.edu
-PGP public key available at      http://blackcat.cat.syr.edu/~fadushin/pgp
+-------------------------------------------------------------------------------
+    Ken Roberts                                      ken.r@worldnet.att.net
+                 Oft-times thou feelest like unto a nut,
+                     And yet, M'lord, anon, feel'st thou not so.
+                 Yon Almond Joy these selfsame nuts doth have,
+                     Whereas contrary Mounds doth have them not.
+                                 -- William Shakespeare, kind of
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
