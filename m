@@ -1,52 +1,65 @@
-Message-ID: <001b01c3e70d$3654e3f0$0100a8c0@pc002>
-From: "Ale ppc" <aleppcrossi@libero.it>
-To: <arunkumar@actinium.org>
-Cc: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <200401300952.AA178585798@actinium.org>
-Subject: Re: Problem in Cross compiling Pwlib for LINUX
-Date: Fri, 30 Jan 2004 09:43:57 +0100
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: "'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: question on PPC performance
+Date: Fri, 30 Jan 2004 18:22:24 +0800
+Message-ID: <000001c3e71a$f4d68010$b702a8c0@newrock2>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <001b01c3e70d$3654e3f0$0100a8c0@pc002>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Arunkumar,
+Dear all,
 
+I have an question on PPC performance:
 
-I have changed ptbuildopts.mak in this way :
+I have linux running based on mpc8250 with 200/166/66 clock configuration. But, I found that every CPU instruction used about 5 ns when accessing SDRAM, otherwise, every CPU instruction used about 15 ns when accessing other devices such as port A/B/C/D, immr, etc, except accessing SDRAM.
 
-    ENDLDLIBS += -lpthread -lcrypto -lresolv
+Thanks any help!
 
-    HAS_OPENSSL =
-    HAS_OPENLDAP =
-    HAS_EXPAT =
-    HAS_SDL =
-    TRY_1394AVC =
-    TRY_1394DC =
+John
+=================================================
+The function I used is:
+void performance_test(void)
+{
+					unsigned long i, d1, d2;
+					static unsigned long kkk;
+					unsigned short time;
+					volatile unsigned long* portC = ( volatile unsigned long*)0xF0010D50;
 
-and in ptbuildopts.h undefine :
+					volatile unsigned long * tmp = &kkk;
+					*(volatile unsigned char*)0xF0010D80 &= ~0xB0;
+					*(volatile unsigned short*)0xF0010D92 = 0x0002;
+					*(volatile unsigned char*)0xF0010D80 |= 0x10;
 
-    #define P_LDAP 1
-    #define P_EXPAT 1
-    #define P_SSL 1
-    #define P_USE_SYSTEM_SWAB 1
+ 					*(volatile unsigned long*)0xF0010D44 &= ~0x00000002;
+					d1 = *(volatile unsigned long*)0xF0010D50;
+					d1 &= ~0x00000003;
+					d2 = d1 | 0x00000002;
+					d1 |= 0x00000001;
 
-I have erased the default library lber, dap, dap_r, ssl, expat, dl because I
-did not need of them.
-In fact then I have well cross-compiled openH323 src file.
-To test my board I have used the callgen323 (v 1.2.6) application program
-that came from openh323 sourceforge site.
-I don't test other application prg.
+					*(volatile unsigned short*)0xF0010D9E = 0;
+					for (i=0; i<1000; i++)
+					{
 
-Because I work fine with Motorola MPC82xx and ARM7TDMI tecnology, and we are
-interested to port H323 on uClinux for ARM7 too. But we have found several
-problems using siap-uClinx-xx cross-compile tool. If you know about related
-problem can give me a search path to solve the question?
+						*portC = d1;
+						*portC = d2;
+					}
+					time = *(volatile unsigned short*)0xF0010D9E;
+					printk ("#test2: 2 access loop 1000 times use %dns\r\n", time*15);
 
-Regards,
-Alessandro
+					*(volatile unsigned short*)0xF0010D9E = 0;
+					for (i=0; i<1000; i++)
+					{
 
+						*tmp = d1;
+						*tmp = d2;
+					}
+					time = *(volatile unsigned short*)0xF0010D9E;
+					printk ("#test3: 2 access loop 1000 times use %dns\r\n", time*15);
+}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
