@@ -1,21 +1,19 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id 404D32BD46
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from www.linux.org.uk (parcelfarce.linux.theplanet.co.uk
+	[195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A455E2BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Oct 2004 00:56:30 +1000 (EST)
-Date: Tue, 19 Oct 2004 07:31:22 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20041019073122.B29957@home.com>
-References: <1098072098.751.32.camel@nighteyes.localdomain>
-	<41738D27.4060007@eircom.net>
-	<BE328096-211A-11D9-8079-003065F9B7DC@embeddededge.com>
+	Wed, 20 Oct 2004 00:59:38 +1000 (EST)
+Date: Mon, 18 Oct 2004 16:15:33 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: mlocke@mvista.com
+Message-ID: <20041018181533.GA3843@logos.cnet>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BE328096-211A-11D9-8079-003065F9B7DC@embeddededge.com>;
-	from dan@embeddededge.com on Mon, Oct 18, 2004 at 11:31:12AM -0400
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Does kmalloc on MPC82xx work correctly with GFP_DMA?
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: m8xx PCMCIA driver for 2.6 kernel
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,12 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 18, 2004 at 11:31:12AM -0400, Dan Malek wrote:
-> No, the kmalloc() space is not covered by BATs (but, that isn't
-> relevant for this discussion).
+Hi,
 
-Dan, I think you forgot that green book PPCs get kernel lowmem
-("kmalloc() space") covered by BATs if possible...unless you
-pass in "nobats".
+It seems you "mlocke@mvista.com" (I dont know your name, sorry)
+done some work and submitted the m8xx pcmcia driver for the v2.4 
+kernel tree.
 
--Matt
+Have you done any work in respect to porting the driver to v2.6 kernel?
+
+TIA
