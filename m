@@ -1,50 +1,44 @@
-Message-ID: <3C0DF1A8.934A3588@folkwang-hochschule.de>
-Date: Wed, 05 Dec 2001 11:06:32 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [PATCH] Permedia2 fb on PPC
+Reply-To: mzyngier@freesurf.fr
+From: Marc ZYNGIER <mzyngier@freesurf.fr>
+Date: 05 Dec 2001 11:29:18 +0100
+Message-ID: <wrpsnaq0xkx.fsf@hina.wild-wind.fr.eu.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.linuxppc.org, DerrikPates <dpates@dsdk12.net>
-Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
-References: <3C0D53A4.E6A2F0DD@folkwang-hochschule.de> <20011204231235.7099@smtp.wanadoo.fr>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
->
-> >
-> >i'm seeing the same, but on 2.4.16-ben0 on a pismo powerbook.
-> >it does not happen every time, but often enough to be almost
-> >unusable.
-> >
-> >i *think* it gets triggered when i hit a button immediately after
-> >the screen has blanked. when i wait a couple of seconds until the
-> >suspend led has started blinking, i get the machine back most of the
-> >time.
-> >
-> >when it dies, the hd comes up, but the screen remains black. i tried
-> >blind-typing "reboot" in a root shell, but nothing happened. i could
-> >not ssh into the box from outside. there are no ping echos.
-> >
->
-> Try the latest rsync and tell me if that still happens.
+[I'm forwarding this from linux-kernel, per Tom Rini request. Could
+anyone with a previously working Permedia2 test this patch and tell me
+if this breaks something. You can also scream if it works ;-)]
 
-so far, it has not died after resume. but it only went through 3
-sleep cycles so far...
-btw, alsa compiles now, the feature.h header is there.
+Hi all,
 
-thanks,
+The following patchlet allows the Permedia2 framebuffer to work
+properly on power-pc (instead of crashing the machine...).
 
+This has been tested with a PCI Formac Promedia3D (aka formacGA8) on a
+PowerMac 7500 (with a G3 card, if that matters...).
 
-jörn
+Patch is against 2.4.16, but should apply to any recent 2.[45] kernel.
+
+        M.
+
+--- drivers/video/pm2fb.c.orig	Fri Sep 14 22:44:49 2001
++++ drivers/video/pm2fb.c	Tue Dec  4 20:44:18 2001
+@@ -48,7 +48,7 @@
+ #error	"The endianness of the target host has not been defined."
+ #endif
+
+-#if defined(__BIG_ENDIAN) && !defined(__sparc__)
++#if defined(__BIG_ENDIAN) && !defined(__sparc__) && (!defined(CONFIG_PPC) || defined(CONFIG_FB_PM2_CVPPC))
+ #define PM2FB_BE_APERTURE
+ #endif
 
 
 --
-Jörn Nettingsmeier
-home://Kurfürstenstr.49.45138.Essen.Germany
-phone://+49.201.491621
-http://spunk.dnsalias.org
-http://www.linuxdj.com/audio/lad/
+Places change, faces change. Life is so very strange.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
