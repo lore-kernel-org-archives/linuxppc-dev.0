@@ -1,21 +1,19 @@
-Return-Path: <andid@gmx.net>
-Received: from mncltd.com (p15112080.pureserver.info [217.160.169.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 783B267A46
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id E6E5367A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Feb 2005 19:37:35 +1100 (EST)
-Message-ID: <420C6EC6.4020800@gmx.net>
-Date: Fri, 11 Feb 2005 09:37:26 +0100
-From: Andre' Draszik <andid@gmx.net>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-References: <4206EFDC.3090904@gmx.net>
-	<20050208223348.GA31592@smtp.west.cox.net>
-In-Reply-To: <20050208223348.GA31592@smtp.west.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] mktree fix
+	Fri, 11 Feb 2005 22:15:58 +1100 (EST)
+To: robin <robin@india.tejasnetworks.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 11 Feb 2005 11:59:04 +0530."
+	<200502111159.04265.robin@india.tejasnetworks.com>
+Date: Fri, 11 Feb 2005 11:53:27 +0100
+Sender: wd@denx.de
+Message-Id: <20050211105332.3AB7FC108D@atlas.denx.de>
+Cc: etux@embeddedtux.org, linuxppc-embedded@ozlabs.org
+Subject: Re: Memory leak problem 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Tom Rini wrote:
-> On Mon, Feb 07, 2005 at 05:34:36AM +0100, Andre' Draszik wrote:
+In message <200502111159.04265.robin@india.tejasnetworks.com> you wrote:
 > 
-> 
->>This one fixes mktree. The image size stored in the header is pretty off 
->>without
->>this patch. (yes, it can make a difference of upto almost 64k)
->>
->>Signed-off-by: Andre' Draszik <andid@gmx.net>
-> 
-> 
-> With this wrong, what breaks?  Thanks.
+> 1. Did somebody encounter any problems(leaks) with the 
+> syncppp module in denx 2.4.20 kernel?? 
 
-I don't think anything breaks but if somebody relies on the image size 
-stored in the header, up to almost 64k bytes of flash could be wasted.
+2.4.20 is pretty old. Is there any specific reason for  not  using  a
+more recent kernel version?
 
 
-a.
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"To IBM, 'open' means there is a modicum  of  interoperability  among
+some of their equipment."                            - Harv Masterson
