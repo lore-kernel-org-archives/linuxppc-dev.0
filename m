@@ -1,59 +1,128 @@
-Date: Thu, 26 Jun 2003 11:33:02 -0600 (MDT)
-From: Terry Greeniaus <tgree@phys.ualberta.ca>
-To: Chris Studholme <cvs@cs.utoronto.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 26 Jun 2003 16:47:28 -0400 (EDT)
+From: Chris Studholme <cvs@cs.utoronto.ca>
+To: Terry Greeniaus <tgree@phys.ualberta.ca>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: how to setup PLL1 on 750FX
-In-Reply-To: <Pine.LNX.4.44.0306261242570.31017-100000@stoa.dhs.org>
-Message-ID: <Pine.LNX.4.10.10306261126040.7619-100000@pneuma.phys.ualberta.ca>
+In-Reply-To: <Pine.LNX.4.10.10306261126040.7619-100000@pneuma.phys.ualberta.ca>
+Message-ID: <Pine.LNX.4.44.0306261631001.9491-100000@stoa.dhs.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 26 Jun 2003, Chris Studholme wrote:
+Ok, I've got PLL1 setup correctly now.  It seems that there is a switch to
+PLL1 in power_save_6xx.  Also, a copy of HID1 is saved in init_idle_6xx
+and restored in power_save_6xx_restore.  Ben mentioned something about
+this earlier with the clue:
 
-> I know HID1 is 0x92000000 after boot and except for my twiddling of a bit
-> to detect the 750FX, it is not changed.  This value is slightly confusing.
-> It indicates that PLL0 is in use, and its config is external.  PLL_CFG is
-> 18 (decimal) which indicates a multiplier of 9x.  That's fine as my cpu
-> speed is 900MHz on a 100MHz bus.  But PLL_RNG appears to be 01 (binary),
-> which is labeled as a reserved value in the IBM docs.  What is the purpose
-> of PLL_RNG (range bits) anyway?
+  If PLL1 isn't set, you should probably not set powersave_lowspeed
+  in arch/ppc/platforms/pmac_feature.c.
 
-In our code we use the following:
+I don't understand how it is that my machine didn't lockup when PLL1 was
+in the off state.
 
-PLL_RNG			CPU freq
-------------------------------------------
-0b10			less than 600 MHz
-0b00			between 600 and 750 MHz
-0b01			above 750 MHz
-------------------------------------------
+Anyway, I decided to set PLL1 in identify_cpu in misc.S.  Actually, I put
+the code to detect the 750fx and set PLL1 in a seperate method.  Here's
+what I have:
 
-I don't recall exactly where I got that last PLL_RNG setting from, it
-may have been from an email from an IBM engineer or something.  Last
-time I checked it indeed wasn't documented anywhere.
+/*
+ * identify_cpu,
+ * called with r3 = data offset and r4 = CPU number
+ * doesn't change r3
+ */
+_GLOBAL(identify_cpu)
+        mfpvr   r7
 
-> I'm trying to set PLL1 to 4x using the code:
->
->   mtspr(HID1,(mfspr(HID1)&~0xFE)|0x44);
->
-> This should set PLL_CFG to a value of 8 (for a multiplier of 4x) and
-> PLL_RNG to 10 (binary) which the IBM docs say should be used when the
-> frequency is below 600MHz.  Note that I've also tried 00 and 01 as values
-> of PLL_RNG and they all fail.  I've tried this both with and without a
-> delay afterwards.  My delay is simply:
+        /* if pvr reports 750, check for 750fx */
+        srwi    r6,r7,16
+        cmpli   0,r6,8
+        bne     2f
+        mflr    r8
+        bl      identify_cpu_750fx
+        mtlr    r8
 
-This code all looks fine to me.  You do need to put in a delay so that
-the PLL can stabilize before using it.  We use a 0.5 second delay, which
-is probably waaaay overkill.
+2:
+        addis   r8,r3,cpu_specs@ha
+        addi    r8,r8,cpu_specs@l
 
-Also, switching between two half-integer ratios is considered a
-programming error, but you don't seem to be doing that and AFAICT this
-code should not cause you to hang, especially if you aren't even
-switching over to PLL1 yet.
+1:
+        lwz     r5,CPU_SPEC_PVR_MASK(r8)
+        and     r5,r5,r7
+        lwz     r6,CPU_SPEC_PVR_VALUE(r8)
+        cmplw   0,r6,r5
+        beq     1f
+        addi    r8,r8,CPU_SPEC_ENTRY_SIZE
+        b       1b
+1:
+        addis   r6,r3,cur_cpu_spec@ha
+        addi    r6,r6,cur_cpu_spec@l
+        slwi    r4,r4,2
+        sub     r8,r8,r3
+        stwx    r8,r4,r6
+        addis   r6,r3,real_pvr@ha
+        stw     r7,real_pvr@l(r6)
+        blr
 
-TG
+/* Check for 750fx cpu strapped on as a 750.  Also, if 750fx and PLL1 is
+ * not in use, set PLL1 to 4x and delay as needed to lock pll.
+ * Called with pvr in r7 (assumed to be 0x0008nnnn).
+ * Returns new pvr in r7.
+ * r5,r6 are changed.
+ */
+identify_cpu_750fx:
+        mfspr   r5,SPRN_HID1
+        andis.  r6,r5,0x0001
+        xori    r6,r5,0x0002
+        beq     1f
+        xori    r6,r5,0x0200
+1:
+        mtspr   SPRN_HID1,r6
+        mfspr   r6,SPRN_HID1
+        cmplw   0,r5,r6
+        beqlr
+
+        /* pvr is actually 0x7000nnnn, not 0x0008nnnn */
+        xoris   r7,r7,0x7008
+        mtspr   SPRN_HID1,r5
+
+        andis.  r6,r5,0x0001
+        bnelr
+
+        li      r6,0x00FE
+        andc    r5,r5,r6
+        ori     r5,r5,0x0044
+        mtspr   SPRN_HID1,r5
+
+        /* delay for at least 0.5sec (on 1GHz or slower cpu) */
+        lis     r6,0x1DCE
+        mtctr   r6
+2:      bdnz    2b
+        blr
+
+I know HID1 is being set correctly as I modified cpuinfo to output a few
+SPR's:
+
+  $ cat /proc/cpuinfo
+  cpu             : 750FX
+  temperature     : 19-21 C (uncalibrated)
+  clock           : 898MHz
+  revision        : 2.2 (pvr 7000 0202)
+  HID0            : 0xC010C0AC
+  HID1            : 0x92000044
+  L2CR            : 0xBB000000
+  bogomips        : 1795.68
+  machine         : PowerBook3,1
+  motherboard     : PowerBook3,1 MacRISC2 MacRISC Power Macintosh
+  detected as     : 70 (PowerBook Pismo)
+  pmac flags      : 0000000f
+  L2 cache        : 512K unified
+  memory          : 256MB
+  pmac-generation : NewWorld
+
+Comments/critique?  I haven't tried cpufreq yet.  That's next.
+Chris.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
