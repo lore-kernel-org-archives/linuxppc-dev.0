@@ -1,59 +1,48 @@
-Message-ID: <39C6D82C.38A7D9D1@mvista.com>
-Date: Mon, 18 Sep 2000 23:06:20 -0400
-From: Dan Malek <dan@mvista.com>
+From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: recent fixes in devel tree
-References: <14786.65401.393966.936283@argo.linuxcare.com.au>
-		<8xk8cch9i7.fsf@s63.informatik.uni-bremen.de>
-		<39C382DF.772F2B99@mvista.com> <8xk8cb57p2.fsf@s63.informatik.uni-bremen.de>
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14790.58502.25252.825448@argo.linuxcare.com.au>
+Date: Tue, 19 Sep 2000 14:59:02 +1100 (EST)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+In-Reply-To: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
+References: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Holger Bettag wrote:
+Geert Uytterhoeven writes:
 
-> I know too little about the kernel to suggest specific tunings.
+[snip]
+> +extern void *__ioremap_at(unsigned long phys, unsigned long size,
+> +			  unsigned long flags);
 
-Suggestions always make people think......
+> and wondered what __ioremap_at() is used for? It's nowhere defined.
 
-> .... I
-> thought along the lines you mention, inserting a 'data stream touch'
-> here and there for improved bus utilization, occasional use of AltiVec
-> code where it tends to speed things up a lot,
+Ah, did that leak into the patch?  It didn't need to go in but it
+doesn't hurt I guess.
 
-The data stream touch is maybe useful in some very specific places.
-I have written user level performance tests to see where it is
-beneficial, and you have to be careful.  Yes, it can speed things
-up when all of the bits line up just right, but you can also screw up
-with it as well :-).  Oh, I use it, but it isn't a quick and generic
-solution.
+What I am intending to do is to map the I/O space of all the PCI host
+bridges in consecutive areas beginning at some address such as
+0xff000000, with some amount of space such as 64kB or 1MB per bridge,
+whatever is appropriate.  Then we adjust the I/O port numbers in the
+pci_dev structures by adding on host_bridge_nr * space_per_bridge.  As
+a side effect, isa_io_base (which is really pci_io_base) becomes a
+constant.
 
-> I mainly wanted to know wether there are efforts underway...
-> .... or wether it will be only for wizards at
-> the bleeding edge.
+To do this we need a version of ioremap which takes a virtual address
+as well as a physical address.  This is what __ioremap_at was intended
+to be.  I got as far as duplicating the __ioremap declaration before
+deciding that I needed to think about it a bit more. :-)
 
-Oh, there are a few.  Bleeding edge is a good description, but
-wizard is more like 'wizzing' (perhaps into the wind :-) in some
-cases....
+Specifically I need some input from people working on 8xx and prep
+systems as to whether this idea will cause any problems.  It may make
+it more difficult to use a BAT to map I/O regions.  I notice that prep
+still uses isa_io_base = 0x80000000 and maps the whole 256MB starting
+at 0x80000000 with a BAT.
 
-I'm working on several user applications (audio, video, MPEG, etc)
-that utilize Altivec, so I'm getting a pretty good idea how to tune
-data streams and caches.  Some of this will probably find it's way
-into the C library (and has already in some of the MPEG libraries)
-for performance enhancement.  The challenge in the kernel is making
-the Altivec context available for the kernel.  The Altivec is faster,
-but it comes at a higher set-up cost that you also have to consider.
-We'll get some in there.  It is definitely hardware that will get
-utilized more and more.
-
-
-	-- Dan
-
---
-
-	I like MMUs because I don't have a real life.
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
