@@ -1,30 +1,52 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15608.22230.504008.818858@argo.ozlabs.ibm.com>
-Date: Sat, 1 Jun 2002 15:08:38 +1000 (EST)
+Message-ID: <20020601053540.73803.qmail@web15005.mail.bjs.yahoo.com>
+Date: Sat, 1 Jun 2002 13:35:40 +0800 (CST)
+From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
+Subject: Can usb and SMC2(uart) work together?
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: pt_regs.dbcr0/1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Is anyone prepared to speak up for the dbcr0 and dbcr1 fields that
-someone added to struct pt_regs for 4xx in the 2_4_devel tree?
+Hello All:
+ I find in uart.c ,
+ static struct serial_state rs_table[] = {
+         /* UART CLK   PORT          IRQ      FLAGS
+ NUM   */
+ #ifndef CONFIG_SCC3_ENET        /* SMC1 not usable
+ with Ethernet on SCC3 */
+         { 0,     0, PROFF_SMC1, CPMVEC_SMC1,   0,
+ 0
+ },    /* SMC1 ttyS0 */
+#endif
+#if !defined(CONFIG_USB_MPC8xx) &&
+ !defined(CONFIG_USB_CLIENT_MPC8xx)
+ #ifdef CONFIG_SMC2_UART
+         { 0,     0, PROFF_SMC2, CPMVEC_SMC2,   0,
+ 1
+ },    /* SMC2 ttyS1 */
+ #endif
+ #endif  /* CONFIG_USB_xxx */
 
-If not, they are going.  If so, we can discuss it.
+ #ifdef CONFIG_SCC1_UART
+         { 0,     0, PROFF_SCC1, CPMVEC_SCC1,   0,
+ (NUM_IS_SCC | 0) },    /* SCC2 ttyS2 */
+ #endif
+ #ifdef CONFIG_SCC2_UART
+         { 0,     0, PROFF_SCC2, CPMVEC_SCC2,   0,
+ (NUM_IS_SCC | 1) },    /* SCC2 ttyS2 */
+ #endif
+ ....
 
-Better still, does anyone have a clearly thought-out vision of how the
-debug facilities on 4xx should be managed?
+ Does this mean usb and smc2 can't work together?Why?
 
-I would much prefer to see these fields put in the thread_struct
-rather than pt_regs.  I am reluctant to change pt_regs without a good
-reason since it is visible to userspace and is therefore part of the
-kernel API.  If the intention is to make the debug facilities
-available to userspace then the thread_struct is a good place to put
-fields relating to the debug facilities.
+ Thx
+ --zhouchang
 
-Paul.
 
+
+2002年世界杯群雄鏖战 雅虎中国聚焦日韩
+http://cn.fifaworldcup.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
