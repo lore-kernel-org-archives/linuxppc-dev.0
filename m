@@ -1,33 +1,42 @@
-Date: Sun, 4 Jun 2000 10:48:44 -0700
-From: Daniel Jacobowitz <drow@false.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] VRAM detection in controlfb
-Message-ID: <20000604104844.A13914@quaketop.them.org>
-References: <00060311160100.00693@enzo.bigblue.local> <200006040709.JAA00760@piglet.grunz.lu> <v04003a00b5602003688d@[24.66.67.194]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <v04003a00b5602003688d@[24.66.67.194]>; from nicoya@apia.dhs.org on Sun, Jun 04, 2000 at 10:08:39AM -0500
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: mesh in 2.4.0-test1
+Date: Sun, 4 Jun 2000 22:03:56 +0200
+Message-Id: <20000604200356.7446@192.168.1.10>
+In-Reply-To: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
+References: <Pine.LNX.4.05.10006041259560.514-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jun 04, 2000 at 10:08:39AM -0500, Tony Mantler wrote:
-> dcbi = data cache block invalidate. If you do this on a dirty cache block,
-> data will be lost.
+On Sun, Jun 4, 2000, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+
+>After 3 days of hacking, I found it. The new Core99 interrupt tree code
+>doesn't
+>take into account that on CHRP boxes with both ISA and OpenPIC, the interrupt
+>numbers have to be fixed up. Below is the patch that made it work for me.
 >
-> dcbf = data cache block flush. If you do this on a block that isn't in a
-> coherent state, data will be lost.
+>Before I check it in into bitkeeper: should I replace the test
 >
-> If you have a block that's both dirty and incoherent... well, don't do that. :)
+>    _machine == _MACH_chrp
+>
+>by
+>
+>    !strncmp(model, "IBM,LongTrail", 13)
+>
+>or are there other CHRP models bitten by this as well?
 
-Ew.  I wonder if that's our problem...
+After reading the code more closely, it appear that I spoke to quickly:
+_machine is initialized before finish_device_tree() in all cases. I
+beleive this problem will happen with all CHRPs since all of them have an
+ISA legacy controller. So I'll keep the test
+as it is, and I'll merge the fix into bk today for both 2.2 and 2.4 along
+with some other prom.c changes I have here.
 
-Dan
+Ben.
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
