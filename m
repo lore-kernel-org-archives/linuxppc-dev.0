@@ -1,19 +1,22 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp4.wanadoo.fr (smtp4.wanadoo.fr [193.252.22.27])
-	by ozlabs.org (Postfix) with ESMTP id 3D80D2BDB5
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 03:50:30 +1100 (EST)
-Date: Sat, 1 Jan 2005 17:57:58 +0100
-To: Ulrich Teichert <krypton@ulrich-teichert.org>
-Message-ID: <20050101165758.GA18559@pegasos>
-References: <20050101150055.GA15400@pegasos>
-	<200501011630.j01GUP1R007603@arbas.nms.ulrich-teichert.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200501011630.j01GUP1R007603@arbas.nms.ulrich-teichert.org>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org, mikemartin@linux.ca,
-	debian-powerpc@lists.debian.org
-Subject: Re: 43p-140 install issues
+Return-Path: <tnt@246tNt.com>
+Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
+	[195.238.3.70]) by ozlabs.org (Postfix) with ESMTP id 8155B2BF1F
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 09:18:52 +1100 (EST)
+Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx012.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j01MIdqT023233
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jan 2005 23:18:41 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <41D721E1.8000007@246tNt.com>
+Date: Sat, 01 Jan 2005 23:19:13 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Benny Liu <benny@cellvision.com.cn>
+References: <008c01c4f005$bc1e94c0$1100a8c0@BENNY>
+In-Reply-To: <008c01c4f005$bc1e94c0$1100a8c0@BENNY>
+Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: isochronous mode of USB audio device on MPC5200
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 01, 2005 at 05:30:25PM +0100, Ulrich Teichert wrote:
-> Hi,
-> 
-> [del]
-> >I would prefer that we fix the debian kernels for them to work correctly
-> >though. More on this on monday.
-> 
-> I failed to configure a stock 2.4.28 kernel to detect the SCSI controler.
-> I think some of Leigh patches for this must be applied, but I haven't
-> gone any further.
+Hi Benny
 
-I had some report on a power3 box, that only the SMP sym53c8xx driver worked.
-When configuring in UP mode, 
 
-> [del]
-> >Do the debian 2.4.27 kernel work on it ? I was unable to boot the 2.4.27 d-i
-> >kernel on my powerstack, but this is a different machine, so the issues may be
-> >a bit different. 
-> 
-> I've only tried the Woody PREP kernel, which failed in a way which I can't
-> remember, but I'll give it a try.
+What version of the kernel ?
 
-Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel too.
-Let' try to get this fixed before the sarge release, which is not so far off
-now.
 
-Friendly,
+In the last 2.4 I built ( quite a while ago ... ) there was a flaw
+in the handling of the hwPSW field in the OHCI driver when on big-endian
+platform. Since this field is only used fot Isochronous the problem
+didn't show up before.
 
-Sven Luther
+The fields were assume by the kernel to be in this order
+
+hwPSW[0]
+hwPSW[1]
+hwPSW[2]
+hwPSW[3]
+...
+
+But in fact since the figure in ohci spec shows this array not as an
+array of 16bits fields but as an array of 32bits integer, each containing
+two hwPSW[] in little endian order, they ended up implemented in the order
+
+hwPSW[1]
+hwPSW[0]
+hwPSW[3]
+hwPSW[2]
+...
+
+(fscked up isn't it ? ;)
+
+
+And that was not taken into account ...
+
+
+I notified W.Denk about the problem a while ago, don't know if any
+action has been taken.
+
+
+
+
+Sylvain Munaut
+
+
+Benny Liu wrote:
+
+> Hi, everyone, happy new year!
+> Did anyone try usb audio device or other isochronous mode usb devices
+> on Icecube board(Motorola MPC5200)?
+> I tried, but it reports the following message:
+> /"host/usb-ohci.c: OHCI Unrecoverable Error, controller usb-0 disabled"/
+> After this message, the host controller is disabled.
+> Thanks a lot.
+>
+>------------------------------------------------------------------------
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
