@@ -1,25 +1,30 @@
-Message-ID: <c=AT%a=_%p=SND%l=S1-990108103639Z-51@s1.schoeller.co.at>
-From: Vogel Michael <vo@schoeller.at>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: WG: X server with stripes...
-Date: Fri, 8 Jan 1999 11:36:39 +0100
+Message-ID: <36960A0E.116F308C@pop.agri.ch>
+Date: Fri, 08 Jan 1999 14:37:22 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: XF86Config for a Apple Vision 750?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Hi!
->
->My X server shows flickering white vertical stripes on my screen connected to
->the Motorola PowerStack.
->/usr/X11R6/bin/X to Xbh is linked, I tried also different screen resolutions
->and -nommap parameter in the startx file, with no change.
->
->Any ideas ?
->
->
+Hello,
+
+I've a 7200 2MB VRAM with a Apple Vision 750. And I successfully installed
+pre-5 running XF68_FBDev.
+Now I'n not shure how much I can play with the settings without touching the
+HW. (destroy)
+Or are there no problems about that?
+Is there a sample screen configuration available?
+I heard about a special fbdev list (Geert?), is this list accessible (means
+old messages to go through)?
+
+Thanks for any hints,
+
+Andreas
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
