@@ -1,45 +1,53 @@
-Date: Thu, 12 Oct 2000 13:28:22 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Xavier Grave <grave@ipno.in2p3.fr>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.4 kernel doesn't allocate resource for my PCI Board 
-In-Reply-To: <Pine.LNX.4.21.0010121107090.10161-100000@ipnpcu5>
-Message-ID: <Pine.LNX.4.10.10010121326370.373-100000@cassiopeia.home>
+Date: Thu, 12 Oct 2000 16:09:47 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Josh Huber <huber@mclx.com>
+cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dual head r128
+In-Reply-To: <20001011145249.B1437@missioncriticallinux.com>
+Message-ID: <Pine.LNX.4.21.0010121542340.18328-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 12 Oct 2000, Xavier Grave wrote:
-> I'm new to this list. I'm working on a VME Board from motorolla
-> (MVME2303) and I have a 2.2.17 kernel running without problem.
+On Wed, 11 Oct 2000, Josh Huber wrote:
+
+> On Wed, Oct 11, 2000 at 08:43:28PM +0200, Michel D?nzer wrote:
+> > I don't think that's the cause, it fails much later.
 >
-> The board have a Pci Mezzanine Card with a NCR 53c895 chip for my SCSI
-> disk. When I try to boot the latest kernel (I'm trying from 2.4.0-test6 up
-> to 2.4.0-test10) I have the following error message during boot :
+> That is true, but I thought that if perhaps int10 wasn't able to init
+> the card fully, that it might cause problems later.  Let's assume
+> that's not a problem for the moment though :)
+
+Since the card is a x86 one int10 is needed to initialize it, don't expect
+the int10 code to work under linux/ppc though, it needs ISA IO and memory
+access which don't work.
+I have code to fix PIO for machines with only one iobase, but it
+doesn't work with Uni-N machines (i have no idea how to handle code like
+inb(0x3C3) in this machines and until someone figures out how to handle it
+don't expect int10 to work....)
+
+> > Have you built X yourself? If yes, you need patches from Ani Joshi. The memory
+> > and clock values it probes are obviously bogus.
 >
-> PCI: Cannot allocate resource region 1 of device 00:11.0
-> PCI: Cannot allocate resource region 2 of device 00:11.0
-> PCI: Failed to allocate resource 2 for Symbios Logic Inc. (formerly
-> NCR) 53c895
+> > Wait a minute, I see you are using debs, which should contain Ani's stuff.
+> > Does aty128fb work on the second card? If yes, try Option "UseFBDev".
+>
+> The secondary card is a PC card, so it's not initialized by OF, but I
+> think the r128 fb driver does a proper initialization of the card, so
+> that shouldn't be the problem.
 
-I assume you are using kernels from ftp.*.kernel.org? These don't have calls
-to pci_read_bridge_bases() in any of the PPC specific files.
+Kevin Hendricks patches from Ani's tree will fix the memory/clock values
+for OF cards only, the patch breaks the calculations for the x86 cards
+(thats the reason why its not in the xfree cvs), so don't expect to get
+sane values for the x86 card. (aty128fb has the same problem as well btw)
+The correct fix will be to check that the ROM is a x86 one and then read
+the values from it and if not use the OF values. Unfortunately i don't
+have access to a machine with a r128 card anymore so i never managed to
+fix this.
 
-This is fixed for at least some machines (G4?) in the BitKeeper tree. For
-MVME, someone with the hardware needs to take a look, I guess.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+  Kostas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
