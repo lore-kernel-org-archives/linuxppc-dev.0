@@ -1,45 +1,46 @@
-Date: Fri, 16 May 2003 14:24:07 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
-Cc: Tom Guilliams <tguilliams@sbs.com>,
-	Linux PPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: linuxppc_2_4_devel: 2.4.20 rc2 - where's pImage build?
-Message-ID: <20030516212406.GB15392@ip68-0-152-218.tc.ph.cox.net>
-References: <1052969438.14900.8.camel@aurora.rr.com> <20030515185953.GC11565@ip68-0-152-218.tc.ph.cox.net> <3EC49817.9080106@elsoft.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3EC49817.9080106@elsoft.ch>
+Message-ID: <FA06AA2C99BCD511951200005A99441001E3F17F@irvexch1.sextantifs.com>
+From: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 16 May 2003 14:48:03 -0700
+Subject: 64260/PCI accesses cached by CPU?
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 16, 2003 at 09:49:43AM +0200, "David M?ller (ELSOFT AG)" wrote:
-> Hello
->
-> Tom Rini wrote:
-> > On Wed, May 14, 2003 at 08:30:38PM -0700, Tom Guilliams wrote:
-> >
-> >
-> >>Anyone know why the BOOT_TARGET define for "pImage" in arch/ppc/Makefile
-> >>was taken out?  Are we not going to support the build rule for
-> >>U-Boot/PPCBoot anymore other than building it manually (gzip vmlinux
-> >>then use "mkimage").
-> >
-> >
-> > Probably a bad merge.  Wasn't there a patch / request a while back to
-> > update things (or just add it for 2.5?  I forget) that never got back to
-> > me.  Anyhow, I'll try and put this back next week (finals week this
-> > week) and see if I can get it up to Marcelo, provided someone else can
-> > verify that it works right.
-> >
->
-> This patch adds support for PPCBoot and U-Boot (PPCBoot's successor).
+I am using the Artesyn PM/PPC750F PMC in conjunction with a Ramix 100BT quad
+Ethernet PMC module. When the system has *low* load, the performance of the
+Ethernet ports on the second module is *very* slow. (will not complete `ttcp
+-t 10.10.1.1 -s`) If the system is heavily loaded, in this case generating
+lots of SCSI disk activity, the same ports have very high performance.
 
-And I again repeat:
-http://www.geocrawler.com/archives/3/8358/2002/11/0/10241415/
+Note:
+1. SCSI is also a PCI peripheral
+2. The Ethernet ports on the processor are fine
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+At first I thought this was a hardware, IRQ line, problem but I see the same
+behavior on Ethernet ports which do not share interrupt lines. (did not see
+anything funny with a scope either)
+
+I have come to the conclusion that the processor is caching either the PCI
+I/O or memory access operations. Originally I thought the problem must have
+been PCI memory access. I can see from gt64260_find_bridges() the I/O space
+is going through ioremap(). However I do not see any such mapping for PCI
+memory operations. (nothing in <platform>_setup.c) However after review of
+mptbase.c, which works, and pcnet32.c, which is slow, it appears the problem
+is reverse.
+
+Linux kernel version:
+linux-pmppc750f-prerelease_1_1  (from linux_2_4_galileo)
+
+same results using:
+linuxppc_2_4_devel - 2.4.21pre5
+
+Ideas? Suggestions?
+
+Thanks
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
