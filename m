@@ -1,54 +1,62 @@
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <v04020a00b333dce82245@[128.32.182.85]>
-In-Reply-To: <199904090459.XAA24735@lists.linuxppc.org>
-Date: Fri, 9 Apr 1999 10:03:15 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Brian C Burke <bcburke@socrates.berkeley.edu>
-Subject: Re: TurboMax PCI host adapter (Ultra-ATA)
+Date: Fri, 9 Apr 1999 10:16:01 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Simone Piccardi <piccardi@fi.infn.it>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC on a Motorola MVME2400
+In-Reply-To: <Pine.HPP.3.96.990409140539.13413a-100000@gra-ux1.iram.es>
+Message-ID: <Pine.LNX.3.96.990409085312.32668A-100000@liberty.chnd1.az.home.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The TurboMax card is not detected at start up with LinuxPPC 2.2.1. With the
-MacOS the card is seen as a scsi card and apple drive setup can partition
-and initialize disks attached to the card, as can FWB Hard Disk ToolKit
-using its generic scsi drivers. I have a pair of 17.2G maxtors attached to
-the card each on its own cable, configured as a master drive. Oddly enough
-on my setup (rev1 G3) pdisk only sees the first, scsi1.0, failing to see
-scsi1.1.
- I wish a I knew enough to attempt setting up a driver as these drives are
-cheap (whole setup including tax and shipping $730) and fast.
+On Fri, 9 Apr 1999, Gabriel Paubert wrote:
 
-Brian
+> On Fri, 9 Apr 1999, Simone Piccardi wrote:
+> 
+> > Hi,
+> > we buy just some day ago a Motorola MVME 2431 VME board, to use it for
+> > data acquisition for a Cosmic Ray Physics experiment. I saw from
+> > previous mail that someone has started LinuxPPC on this board. 
+> > Could you give us some info about it? 
+> > Because I'm new to this board and to LinuxPPC (I always used linux on a
+> > PC machine), there is some place (or any kind of documentation)
+> > describing the boot procedure (we would like to use the net booting by
+> > tftp)? 
+> 
+> I have Linux/PPCeeee running quite well on 2600s. The corresponding
+> patches are at:
+> 
+> 	ftp://vcorr1.iram.es/pub/linux-2.2/
+> 
+> in files mvme2600.generic-patch-2.2.4 and mvme2600.vme-patch-2.2.4.
+> (this last one is a VME driver subsystem which I hope to officialy
+> announce soon, if I can find time to do something else than answering
+> e-mail).
+> 
+> I've not yet upgraded the various zImage (next week). They have serial
+> consoles and I've used root-on-NFS with 2.2.1. 
+> 
+> However, the 2400 has a new chipset (Hawk) which is not yet recognized.
+> If you have the technical information about it, it will be fairly easy to
+> add support in the early boot code. 
 
+Programming is the same as Falcon/Raven since it just integrates them.
+The only thing that is needed is perhaps to detect it in your OpenPIC
+code.  We are using a different OpenPIC patch as well as some stuff to
+detect all the MCG boards and set interrupt routing properly.  Hopefully
+it can get rolled in soon.
 
->Date: 8 Apr 1999 17:38:50 -0000
->From: LinuxPPC-Dev@associate.com
->Subject: TurboMax PCI host adapter (Ultra-ATA)
->
->Hi,
->
->Can anyone verify that this card works with LinuxPPC?  Comparing the price
->of an Ultra ATA drive with SCSI makes this
->method look really attractive at the 17Gb drive size.  They confirm that
->it'll run under MacOS on a 7500, at least.
->
->Noel Suarez found an inexpensive way to add 10GB of high-speed storage to
->his Power Mac G3/233:
->
->   "I saw the ad from ProMax for an Ultra ATA/DMA PCI card for the Mac.
->When I asked the sales guy on the phone a couple of
->   weeks ago if I could boot off the Ultra ATA/DMA drives attached to the
->card, he said no. I ordered it anyway. It just shipped 2
->   days ago and I installed it yesterday when I got my 10.1 GB Ultra
->ATA/DMA drive from PC Warehouse. The drive was $199
->   and the card was $99. I reformatted the drive with Apple Drive Setup -
->and installed MacOS 8.5 on it and it booted just fine."
->
->Thanks,
->
->glen_stewart@associate.com
+This really sucks that some of us are working from official tarballs and
+some are working from vger. :-/  Though I do understand your bandwidth
+constraints to the U.S.
+
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
