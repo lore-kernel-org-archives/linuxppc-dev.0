@@ -1,32 +1,29 @@
-Message-ID: <036801c0d747$128ffcd0$4b00000a@foolio1>
-From: "Eli Chen" <eli@routefree.com>
-To: "Brian Kuschak" <brian.kuschak@skystream.com>,
-	"'Dan Malek'" <dan@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <B25E2E5A003CD311B61E00902778AF2A0204463A@SERVER1>
-Subject: Re: dcache BUG()
-Date: Mon, 7 May 2001 15:43:01 -0700
+Message-ID: <3AF72947.AF40E2C8@mvista.com>
+Date: Mon, 07 May 2001 19:01:27 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Eli Chen <eli@routefree.com>
+Cc: brian.kuschak@skystream.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
+References: <027b01c0d728$9a702b80$4b00000a@foolio1> <3AF710DC.37209810@mvista.com> <032e01c0d73f$58022160$4b00000a@foolio1>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> I looked at the atomic.h code and think I found one bug, however it
-doesn't
-> solve my problem.  See if this patch makes sense to you.  Looks like a
-typo
-> when the atomic_* functions were converted from assembler to inline.  The
-> bne should be 'bne-' for the atomic decrement operation.
+Eli Chen wrote:
 
-The "-" after bne is just a hint for the branch prediction mechanism I
-believe (the 5th bit in the BO operand).  I couldn't figure out why every
-other atomic_* function besides atomic decrement has "bne-", but that
-shouldn't affect the behavior.  I have also tried changing it to "bne-", but
-it has no effect.
+> I have also occasionaly received other messages, which I have yet to receive
+> after changing atomic.h.
 
-Eli
+I dunno..........The code can't be broken because it is used
+everyday on bazillions of processors.....I can't believe these
+instructions are "broken" on the 4xx because that would be too
+obvious as well.  I suspect all you are doing is changing some
+code timing and masking the real problem.  I'm not saying we
+shouldn't fix it, just that it isn't likely the problem is here.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
