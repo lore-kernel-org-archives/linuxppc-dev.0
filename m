@@ -1,34 +1,23 @@
-Subject: Re: SMP kernels on single processor machines
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Lee Braiden <lee_b@member.fsf.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-In-Reply-To: <40AC9B08.7010602@member.fsf.org>
-References: <hhad03tlet.fsf@alsvidh.mathematik.uni-muenchen.de>
-	 <40AC9B08.7010602@member.fsf.org>
-Content-Type: text/plain
-Message-Id: <1085097417.9801.5.camel@gaston>
+Date: Fri, 21 May 2004 00:40:18 -0700
+From: Jamie Heilman <jamie@audible.transient.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: BriQ & Linux 2.6
+Message-ID: <20040521074018.GD8520@audible.transient.net>
 Mime-Version: 1.0
-Date: Fri, 21 May 2004 09:56:58 +1000
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2004-05-20 at 21:48, Lee Braiden wrote:
+I attempted to boot a 2.6.6 kernel on my BriQ today and ran into a
+snag... it appears that the IBM,CPC710 PCI bridge handling stuff
+didn't make it into 2.6.  As such the host won't boot as all the
+goodies hanging off the PCI bus vanish.  Any plans to roll the code
+forward in the near future?
 
-> But I quit doing that at some point, after someone (authoritative, but I
-> can't remember the details) pointed out that it added complexity,
-> debugging issues, etc.  Given that I *already* have problems with PPC
-> kernels -- latency/lockups, (preempting?), alsa sound, video res, etc.,
-> I personally wouldn't go near this until I'm fairly confident that the
-> other stuff is solid in its own right.
->
-> But then, I'm just a luser, not a kernel maintainer ;D
-
-Yah, well... CONFIG_PREEMPT gives you all the problems of SMP without
-any benefit so .... :)
-
-Ben.
-
+--
+Jamie Heilman                     http://audible.transient.net/~jamie/
+"Most people wouldn't know music if it came up and bit them on the ass."
+                                                        -Frank Zappa
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
