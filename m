@@ -1,46 +1,38 @@
-Message-ID: <XFMail.990417214812.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: linuxppc-dev@lists.linuxppc.org,
+        Josh_Hudson@DEWEY.ESD113.WEDNET.EDU (Josh Hudson)
+Subject: Re: Assembler Error
+Date: Sun, 18 Apr 1999 13:11:40 +0200
+Content-Type: text/plain
+References: <fc.000f61e60004dff8000f61e60004dff8.4dffa@DEWEY.ESD113.WEDNET.EDU>
 MIME-Version: 1.0
-In-Reply-To: <fc.000f61e60004dff8000f61e60004dff8.4dffa@DEWEY.ESD113.WEDNET.EDU>
-Date: Sat, 17 Apr 1999 21:48:12 +0100 (BST)
-From: Gary Thomas <gdt@linuxppc.org>
-To: (Josh Hudson) <Josh_Hudson@DEWEY.ESD113.WEDNET.EDU>
-Subject: RE: Assembler Error
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <99041813221000.00903@ns1102.munich.netsurf.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Am Sat, 17 Apr 1999 schrieb Josh Hudson:
+>When I try to compile big codes with lots of lines I get this:
+>
+>/tmp/cca00758.s: Assembler messages:
+>/tmp/cca00758.s:40303: Error: Bad expression
+>/tmp/cca00758.s:40303: Error: Rest of line ignored. First ignored
+>character is `M'.
+>make: *** [act_comm.o] Error 1  
 
-On 17-Apr-99 Josh Hudson wrote:
-> 
-> When I try to compile big codes with lots of lines I get this:
-> 
-> /tmp/cca00758.s: Assembler messages:
-> /tmp/cca00758.s:40303: Error: Bad expression
-> /tmp/cca00758.s:40303: Error: Rest of line ignored. First ignored
-> character is `M'.
-> make: *** [act_comm.o] Error 1  
-> 
-> 
-> Can anyone help me fix this problem???
-> 
+Any chance you are compiling with -ggdb? If so, turn it into a simple -g option
+and it should work.
+Another possibility might be that the sources you are trying to compile contain
+inline assembler for a non-PPC processor.
 
-Which version of the compiler/binutils?  You can get this via:
-  rpm -qif `which cc`
-  rpm -qif `which as`
+If the above isn't true for you, post more information, like the exact options
+used to compile the sourcefile, the preprocessed source file and/or the
+assembler file. You can get the latter 2 if you add -save-temps to the compiler
+options. If you compile a .c/.cc/.C file with -save-temps, you will get
+the intermediate .i/.ii (preprocessed) and .s (assembler) files, which
+are usually not visible.
 
-Can you provide example code with a repeatable failing case?
-
-------------------------------------------------------------------------
-Gary Thomas                              |
-email: gdt@linuxppc.org                  | "Fine wine is a necessity of
-   ... opinions expressed here are mine  |        life for me"
-       and no one else would claim them! |
-                                         |      Thomas Jefferson
-------------------------------------------------------------------------
-
-
+Franz.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
