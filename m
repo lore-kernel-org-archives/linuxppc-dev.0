@@ -1,30 +1,47 @@
-Date: Fri, 11 May 2001 13:01:25 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Cort Dougan <cort@fsmlabs.com>
-Cc: Dan Malek <dan@mvista.com>, frowand@mvista.com,
-	Brian Kuschak <brian.kuschak@skystream.com>,
-	Eli Chen <eli@routefree.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-In-Reply-To: <20010510171431.D1595@ftsoj.fsmlabs.com>
-Message-ID: <Pine.HPX.4.10.10105111258460.29518-100000@gra-ux1.iram.es>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: gdb problems
+Date: Fri, 11 May 2001 17:38:52 +0200
+Message-ID: <IGEFJKJNHJDCBKALBJLLKEEDENAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLGEEBENAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 10 May 2001, Cort Dougan wrote:
+Hi again
 
-> Dan... your arguments aside, the 4xx is a BookE processor and IBM says that
-> "BookE is good".  Aren't IBM assurances enough for you?
+Next small problem:
+
+How do i get gdb to debug assembler files?
+if i do "list _start" in gdb i get a:
+No line number information avaiable for address 0xfc0100 <_start>
+
+I have tried a different gdb debuggers and options to gcc
+
+    Jocke
+
+> -----Original Message-----
+> From: Joakim Tjernlund [mailto:joakim.tjernlund@lumentis.se]
+> Sent: Friday, May 11, 2001 12:24
+> To: Scott Anderson
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: RE: gdb problems
 >
-> I'd claim that BookE isn't PowerPC, myself.  I'm sad that Linux/PPC
-> supports that pile of crap.
-
-I fully agree with both statements. I don't want to touch any BookE
-processor, especially the 64 bit ones.
-
-	Gabriel.
+>
+> Thanks, that did the trick.
+>
+> One small problem though. When I added -ggdb gcc complained about:
+> "Error: relocation can not be done when using -mrelocatable"
+>
+> This is when I compile ppcboot. When I removed -mrelocateable, it
+> compiled.
+>
+> Why is this?
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
