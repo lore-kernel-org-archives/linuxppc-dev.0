@@ -1,38 +1,58 @@
-Message-ID: <3A341F7E.972371F5@mvista.com>
-Date: Sun, 10 Dec 2000 19:27:42 -0500
-From: Dan Malek <dan@mvista.com>
+Date: Mon, 11 Dec 2000 01:57:23 -0500 (EST)
+From: "Peter R. Wood" <pwood@gordon.edu>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: CUDA related crash in 2.4 ?
+Message-ID: <Pine.LNX.4.30.0012110150010.745-100000@dyn-134-168.gordon.edu>
 MIME-Version: 1.0
-To: ddickey@charter.net
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Most current linux source for ppc?
-References: <3A32B971.1E847A99@charter.net>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-"Dan A. Dickey" wrote:
+Hi all,
 
-> .....and would like to be on the leading edge instead.
-> I'm currently working with a compact pci powerpc board with
-> an IBM405GP on it.
+I've been using the linux-pmac-devel kernel for a while, and haven't had
+too many problems. Recently, however, my system has frozen up hard a few
+times, un-pingable, and I've had to do a hard reboot. I haven't been able
+to detect a common thread, but at one point I was in console mode, when
+I suddenly lost control - a message printed out to the console:
 
-I'm trying to merge the 4xx changes into the main 2_5 tree in a
-way that minimizes the effect on everyone.  I also want to take the
-opportunity to restructure some of the horrible code in places
-like mm/init.c in the process.  With the work Tom Rini is doing on
-some of the configuration options, I think I can make this happen
-soon.
+cuda: state=idle, status=28
 
-For now, the best place to get the 405GP is from the stuff Frank
-Rowand posts on the MontaVista web site.  There isn't anything in
-the BitKeeper trees that will work for you right now.
+I tracked this error message down to
+linux-pmac-devel/drivers/macintosh/via-cuda.c line 444, which is within
+the cuda_interrupt method, in this case:
+
+    switch (cuda_state) {
+    case idle:
+        /* CUDA has sent us the first byte of data - unsolicited */
+        if (status != TREQ)
+            printk("cuda: state=idle, status=%x\n", status);
+        x = via[SR]; eieio();
+        via[B] &= ~TIP; eieio();
+        cuda_state = reading;
+        reply_ptr = cuda_rbuf;
+        reading_reply = 0;
+        break;
 
 
-	-- Dan
+After it prints out the error message, it repeats the last character that
+I typed about 30 or 40 times, and then the hard freeze occurs.  I don't
+know if this is the same thing that happened the other three or four
+times, but I suspect it may be related.
 
+Any ideas as to why this might be causing my system to hang?
+
+I am using a SuperMac J700, which is based on the Tsunami logic
+board with CUDA, and I have both an ADB keyboard and trackball attached.
+
+Thanks,
+
+Peter
 --
+Peter R. Wood * pwood@gordon.edu * Watch it... <>< 1 Cor. 10:12
+[ "You left me high and dry and changed me." - VAST ] * * * * *
+[ http://www.cs.gordon.edu/~pwood/ ]  * * * * * * * * * * * * *
 
-	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
