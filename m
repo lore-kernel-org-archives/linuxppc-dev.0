@@ -1,30 +1,33 @@
-Message-ID: <20020611133650.87793.qmail@web15003.mail.bjs.yahoo.com>
-Date: Tue, 11 Jun 2002 21:36:50 +0800 (CST)
-From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
-Subject: About IDE_DIRECT on PCMCIA port in ppcboot and linux
-To: linuxppc-embedded@lists.linuxppc.org
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3D062232.3010003@cray.com>
+Date: Tue, 11 Jun 2002 11:15:46 -0500
+From: David Updegraff <dave@cray.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mem= flag behaviour
+References: <20020611133650.87793.qmail@web15003.mail.bjs.yahoo.com>
+Content-Type: text/plain; charset=GB2312
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all:
-	We have get the schematic from Steven.
-I have some question about the driver in ppcboot and
-linux.
+Hi.
 
-1.Why in ppcboot/include/pcmcia.h , all memory windows
-have defined same in all boards.These values can be
-changed ( if fit with address encode)?
-If we just use PCMCIA as IDE , pcmcia_init() will not
-been called()?
+I'm trying to keep a small trace buffer over re-boots
+of linux from ppcboot, so give a mem=31M flag to linux
+kernel.  Yet by the time linux is up, it has overwritten
+that memory anyway..   PPCBOOT is properly leaving it
+be (with PRAM feature) and correct arg. goes to kernel..
 
-2.IDE just need a hw_regs_t(via PCMCIA's port) to
-access IDE's register and a IRQ , these are enough?
+After 'reboot' from linux, the memory contents of
+the last meg are still valid (in ppcboot) but by the time linux
+is back up, the region has been trashed.  Why?
 
-3.If we use normal harddisk(as same in PC), Can this
-driver do them?
+Help, please.  How to prevent linux from talking to
+that memory region during bootup?
+
+--
+David Updegraff / dave@cray.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
