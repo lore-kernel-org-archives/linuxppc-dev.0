@@ -1,23 +1,34 @@
-Message-ID: <3C420A5E000007E3@charlotte.ccc-dcs.com> (added by charlotte.ccc-dcs.com)
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Jim Duey <jduey@ccc-dcs.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Older versions of the kernel tree
-Date: Thu, 17 Jan 2002 15:45:56 +0000
+Message-ID: <3C46F718.2070305@embeddededge.com>
+Date: Thu, 17 Jan 2002 11:08:56 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
+To: Murray Jensen <Murray.Jensen@cmst.csiro.au>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Tom Rini <trini@kernel.crashing.org>
+Subject: Re: get_irq fix for 8260 platform
+References: <29887.1011251752@msa.cmst.csiro.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Murray Jensen wrote:
 
-I've succeed in getting bitkeeper setup on my machine and retrieved the
-latest '_devel' tree.  But how can I get a tree for kernel version 2.4.17?
-I'm trying to integrate the Tux webserver from RedHat into the kernel for the
-405GP and the latest patch they have is for 2.4.17.
+> Hi All, if you have an 8260 and are wondering why the latest revisions of
+> the devel kernel hang during boot, then this patch might help you.
 
-Thanks,
-Jim
+Heh :-).  Thanks, I just fixed this yesterday, too.  It appears the 8260
+has been neglected for a while, and now that I am doing something with
+it again I'll have more updates as well.
+
+I didn't do the 'end' function, but I'll include this.  I'm also thinking
+about a real  priority interrupt scheme like was done for the 8xx a month
+or so ago.  It's a bit more complicated here, though.
+
+Thanks again.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
