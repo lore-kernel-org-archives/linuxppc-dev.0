@@ -1,34 +1,41 @@
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Linux training 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 04 Apr 2003 11:13:08 CDT."
-             <D73A25AA6E54D511AD74009027B1110F3C07A3@ORION>
-Date: Fri, 04 Apr 2003 22:42:29 +0200
-Message-Id: <20030404204234.5BB35C587C@atlas.denx.de>
+Date: Fri, 4 Apr 2003 14:00:37 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: luca gambazzi <luca.gambazzi@epfl.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux on Force Computers CPCI-3750 eth drivers
+Message-ID: <20030404210037.GD8421@ip68-0-152-218.tc.ph.cox.net>
+References: <1048949739.5125.126.camel@shampoo.epfl.ch> <20030329154326.GE5343@ip68-0-152-218.tc.ph.cox.net> <1049456953.14675.53.camel@shampoo.epfl.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1049456953.14675.53.camel@shampoo.epfl.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <D73A25AA6E54D511AD74009027B1110F3C07A3@ORION> you wrote:
+On Fri, Apr 04, 2003 at 01:49:13PM +0200, luca gambazzi wrote:
+
+> Hi
 >
-> I was wondering if anyone can direct me to training courses on porting
-> embedded Linux to single board computers.  Thank you for any direction and I
-> welcome all comments.
+> i'm still trying to bild a running linux kernel for a Force Computers
+> CPCI-3750.
+>
+> I've got one more error, the ethernet card doesn't work.
+> is a Digital DS21143 Tulip
+>
+> i've installed the kernel drivers (i've tried with 2.4 and 2.5
+> penguinppc kernel tree), and the drivers found in
+> http://sourceforge.net/projects/tulip, but the error is always the same.
+>
+> NETDEV WATCHDOG: eth0: transmit timed out
+>
+> here can you find a bootlog (kernelboot.txt), the tcpdump on my pc, and
+> the .config file I used in this case (config_2_5_66.txt)
 
-DENX offers such courses. Please feel free to ask for details.
-
-
-Best regards,
-
-Wolfgang Denk
+Don't use CONFIG_TULIP, use CONFIG_DE4X5 and poke the upstream authors
+abotu this issue.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A memorandum is written not to inform the reader, but to protect  the
-writer.                                               -- Dean Acheson
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
