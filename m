@@ -1,39 +1,28 @@
-Message-ID: <032e01c0d73f$58022160$4b00000a@foolio1>
-From: "Eli Chen" <eli@routefree.com>
-To: "Dan Malek" <dan@mvista.com>
-Cc: <brian.kuschak@skystream.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <027b01c0d728$9a702b80$4b00000a@foolio1> <3AF710DC.37209810@mvista.com>
-Subject: Re: dcache BUG()
-Date: Mon, 7 May 2001 14:47:42 -0700
+Message-ID: <3AF71B00.E3FCEA37@mvista.com>
+Date: Mon, 07 May 2001 18:00:32 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Freddy Lugo <wilflugo@yahoo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Can not access memory after turning MMU on
+References: <20010507204100.56613.qmail@web9901.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> What version of silicon do you have, and what platform are you using?
+Freddy Lugo wrote:
 
-I am using the 405GP core, rev D.  My tree is based off of the February 26th
-source from MontaVista.
+> This register exists or has its counterpart on the
+> MPC750?  Besides the DER value, there are other
+> methods to work and find the problem?
 
-> Is there some simple test I can use to trigger this problem?
+You are way, way, way lost...........You can't be building MPC8xx
+code and expecting it to run on the 750.  You need to select a
+kernel configuration that enables 6xx/7xx/74xx processors and
+a CHRP reference design.
 
-Besides Brian's one-liner test, you can try flood pinging your 405GP.  I
-have been consistently receiving these error messages after letting it run a
-while:
 
-Freeing alive device (cxxxxxxx), ethx
-
-and
-
-Attempt to release alive inet socket cxxxxxxx
-
-I have also occasionaly received other messages, which I have yet to receive
-after changing atomic.h.
-
-Eli
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
