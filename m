@@ -1,65 +1,59 @@
-Date: Thu, 8 Aug 2002 21:46:47 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Peter Bergner <bergner@borg.umn.edu>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxPPC Dev <linuxppc-dev@lists.linuxppc.org>,
-	Mike Corrigan <mikejc@us.ibm.com>
-Subject: Re: FP save/restore code in ppc32/ppc64 kernels
-Message-ID: <20020808114646.GA23964@krispykreme>
-References: <20020807162302.GA39680@congo.borg.umn.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020807162302.GA39680@congo.borg.umn.edu>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: =?ISO-8859-1?Q?Michel=20D=E4nzer?= <michel@daenzer.net>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Weird interrupt problem
+Date: Thu, 8 Aug 2002 14:07:00 +0200
+Message-Id: <20020808120700.30639@192.168.4.1>
+In-Reply-To: <1028761518.1262.1236.camel@tibook>
+References: <1028761518.1262.1236.camel@tibook>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Peter,
-
-> Can you describe (if you know/remember since a lot of this code has
-> Cort's name on it) how the FP save/restore code is supposed to work?
-> I'm wondering why we're clearing the MSR_FE{0,1} bits along with the
-> MSR_FP bit.  Is there a reason why they must be cleared when we clear
-> the MSR_FP bit?
+>Today this happened to me the second time: All of a sudden, the USB
+>mouse stopped working. At the same time this appeared in the syslog:
 >
-> The reason I ask is that someone was running some userland app that
-> explicitly set the fpscr (using asm) and he got an FP exception even
-> though gdb showed his MSR_FE{0,1} bits to be zero.  This got me
-> looking at the code which seems to be inherited old ppc32 code.  I
-> noticed that you've updated the ppc32, so before I update our ppc64
-> code, I'd like to understand more about how this is all supposed to
-> work.
+>Aug  7 17:19:57 tibook kernel: Unhandled interrupt 1d, disabled
+>
+>Plugging the mouse to the other socket worked, but it wouldn't work
+>again in the original one. As you can see in the attached
+>/proc/interrupts, interrupt 29 (=1d) is unknown. Interestingly,
+>interrupt 28 seems to be for the USB socket which stopped working (I
+>think it was the same one when the first problem first occured, might be
+>coincidence though). Was it somehow rewarded for its 100'000th
+>occurence? ;) Seriously, is it possible that the number changed somehow?
+>
+>
+>This wouldn't be all that bad, if the whole system wasn't very sluggish
+>afterwards. When it occured the first time, I had CONFIG_TAU enabled in
+>the kernel, which Ben said might cause the sluggishness at least. But
+>now it's disabled.
+>
+>
+>This is on a TiBook III/667 running 2.4.18-ben0-lotsanicestuff if it
+>matters. The first occurence was with 2.4.19-presomething-ben0.
+>
+>
+>Has anyone experienced anything similar?
 
-I sat down with Paul today and he explained what is going on.
+Really weird. It looks like the openpic is going south. Seriously, looks
+like a HW problem, that is the interrupt controller starts giving us
+bogus interrupt numbers. Doesn't sound good at all :(
 
-Firstly the kernel at the moment always enables FE0 and FE1 each time we
-take the FP Unavailable trap (due to the lazy restore).  Paul has a
-change in ppc32 2.5 which I have merged into the ppc64 2.5 tree which
-creates a prctl to modify the FE0 and FE1 bits. We store it away in
-the thread struct. No problems so far.
+Ideally, when that happens, you could drop into macsbug and peek at
+the vector/priority & destination registers for this interrupt source
+and tell me what they say. (Hook into the code for the error message
+which is in arch/ppc/kernel/irq.c, and call a function you'll write
+in open_pic.c that will dump these (to access them, look at what
+openpic_enable/disable IRQ does).
 
-The first problem Paul found was that glibc uses an awful hack to try
-and modify FE0 and FE1. Basically it invokes a signal handler which
-modifies the MSR. The sigreturn code allows only FE0 and FE1 to be
-changed. Its of course completely bogus because by the time we context
-switched out of the process (and saved the FP regs), context switched in
-and took the FP Unavailable trap we would set FE0 and FE1 unconditionally.
+It may be some kind of race within the openpic driver when we keep
+enabling/disabling the source in ack() and end(). I'm pretty sure
+we don't really need them, oh well...
 
-The good news is glibc seems to set both bits all the time and this
-is the old default behaviour (and will continue to be). Since we
-have (or will soon) have a prctl to modify FE0 and FE1, there is no
-need to allow the MSR hack and so it is disabled. Besides its always
-been broken, no one could have been using it to disable either of the
-bits.
+Ben.
 
-The final thing to look at is what ptrace returns for the MSR. I
-suggested that we should copy in the FE0/FE1 bits out of the thread
-struct (since the MSR_FP, FE0 and FE1 bits will always be zero as
-ptrace does a giveup_fpu just before reading any FP stuff). Paul
-pointed out for completeness we should always set the MSR_FP bit too.
-
-I hope this makes some sense :)
-
-Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
