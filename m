@@ -1,29 +1,44 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: <khendricks@ivey.uwo.ca>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <billfink@capu.net>
+Date: Sun, 1 Apr 2001 17:08:09 -0400 (EDT)
+From: Bill Fink <billfink@capu.net>
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+	linuxppc-dev@lists.linuxppc.org, billfink@capu.net
 Subject: Re: xine, ppc and illegal instructions
-Date: Sun, 1 Apr 2001 22:12:53 +0200
-Message-Id: <20010401201253.17215@smtp.wanadoo.fr>
-In-Reply-To: <01040116021700.15950@localhost>
-References: <01040116021700.15950@localhost>
+In-Reply-To: <3AC783FC.29377AAF@iiic.ethz.ch>
+Message-ID: <Pine.LNX.4.21.0104011704090.9900-100000@gwiz.nasa.atd.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->- could there be a cache flushing bug?  When run in gdb if you set some
->breakpoints in the shared library, it will flush the icache (to make sure the
->breakpoint gets flushed out of data cache and any preloaded instruction are
->thrown away) this in turn seems to "fix" the cache flush problem if one
->exists.
+> On Sun, 1 Apr 2001, Michel [iso-8859-1] Dänzer wrote:
+>
+> Bill Fink wrote:
+>
+> > I updated to the latest Paulus rsync kernel (2.4.3-pre8) and the
+> > latest gcc (2.95.3-2v) and 2.1 glibc (glibc-2.1.3-15g) from Franz,
+> > but unfortunately none of this helps.  xine 0.4.01 still gets
+> > illegal instructions (sometimes it gets a segmentation fault
+> > instead).
+>
+> Have you tried other kernels? A lot of people including me have experienced
+> sporadic signals, most often with ldconfig, with Paulus' tree. I'm running
+> BenH's tree now and haven't seen it yet.
+>
+> This is not to call Paulus' tree lame or anything. :) It's just that he
+> apparently has rather experimental stuff in it, which can always lead to
+> instabilities.
 
-Franz and I checked glibc for the cache flushing problem reported by
-Samuel Rydth and it's ok. However, the kernel did miss those sync's.
-I can't tell if it's the cause of the problem, however, my rsync kernel
-have those changes. I'll push them to bk soon.
+Hey, Grrrrrrrrrrrrrreattt!!!!!
 
-Ben.
+That did the trick.  I rsync'ed BenH's latest 2.4.3 final kernel,
+and now xine 0.4.01 works fine.  Now I just have to get MOL working
+again with the latest kernels (probably just requires a rebuild).
+
+Many, many thanks for the suggestion!
+
+						-Bill
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
