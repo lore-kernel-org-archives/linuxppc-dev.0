@@ -1,44 +1,28 @@
-Subject: Re: Broadcom BCM94306
+Subject: Re: OF properties access ?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-	linas@austin.ibm.com, valvoline <valvoline@vrlteam.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040116195406.GA25566@iram.es>
-References: <20040114161107.GM2658@adapter.n0skillz.org>
-	 <20040114181350.B40506@forte.austin.ibm.com>
-	 <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
-	 <20040115115023.GA12001@iram.es>
-	 <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org>
-	 <20040116195406.GA25566@iram.es>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040115074439.GB14039@iliana>
+References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston>
+	 <20040115074439.GB14039@iliana>
 Content-Type: text/plain
-Message-Id: <1074309942.8359.24.camel@gaston>
+Message-Id: <1074310140.8360.27.camel@gaston>
 Mime-Version: 1.0
-Date: Sat, 17 Jan 2004 14:25:43 +1100
+Date: Sat, 17 Jan 2004 14:48:11 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Anyway, since you seem to have ties inside IBM ;-), you might
-> know why they do not even give a list of differences of the
-> 970 implementation. I know from another source that the 970 does
-> not have BATs, but supports large pages with a size of 16MB.
+>
+> But this doesn't reply me on why my attempts to read back integer values
+> from OF property only result in the machine hanging, and since it is
+> really early on, i don't even get serial console output to have an idea
+> why :/
+>
+> in particular i cloned the code reading l2cr-value, and changed it to
+> l2cr and instead of reading the value, i got only kernel silently dying.
 
-Yup, it's more/less a POWER4 in this regard (which is probably
-as badly documented :)
-
-I'll check out the status of public specs, I _think_ that there is
-some doc in the process of beeing cleaned up & declassified for this
-chip, but I'm not 100% sure at this point.
-
-> Now the fact that the 970 does not support backwards-endian is a very
-> good thing. From time to time (although it has been less frequent
-> recently) somebody suggest on the list that Linux/PPC switches to the
-> dark side of the endianness. The fact that some processors don't support
-> it will be a killer argument.
-
-Hehe, you know, there isn't much risk that we take such a patch in
-the first place anyway :)
+Show me the code and the relevant device-tree bits.
 
 Ben.
 
