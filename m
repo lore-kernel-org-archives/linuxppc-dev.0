@@ -1,18 +1,27 @@
-Date: Sun, 4 May 2003 17:20:51 -0500 (CDT)
-From: "Milton D. Miller II" <miltonm@realtime.net>
-Message-Id: <200305042220.h44MKpiI034434@sullivan.realtime.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.5 and serial console
+Date: Mon, 5 May 2003 10:25:33 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.5 and serial console
+Message-ID: <20030505172533.GA4762@ip68-0-152-218.tc.ph.cox.net>
+References: <20030504165116.GA22339@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030504165116.GA22339@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I Olaf.
+On Sun, May 04, 2003 at 06:51:16PM +0200, Olaf Hering wrote:
 
-I just ran into this myself.  Either enable 8250 and 8250 console, don't
-build the prep boot loader, or ignore the fact the prep boot loader doesn't
-link (and since its after chrp and pmac, that's the one I chose :)
+> Morning,
+>
+> is there a fix for this? It seems to involve Makefile tweaking, at least.
 
-milton
+What .config file?
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
