@@ -1,29 +1,45 @@
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Message-Id: <199910150842.KAA13710@opal.biophys.uni-duesseldorf.de>
-Subject: Re: serial on lombard
-In-Reply-To: <3806A9A2.EC5A82D6@mondonet.net> from Mario Scarpa at "Oct 14, 1999 09:12:18 pm"
-To: m.scarpa@mondonet.net (Mario Scarpa)
-Date: Fri, 15 Oct 1999 10:42:26 +0200 (CEST)
+From: schinder@pobox.com
+Date: Fri, 15 Oct 1999 08:44:54 -0400
+To: Justin Shore <macdaddy@vinnie.ksu.ksu.edu>
 Cc: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: RC5 client and LPPC R5
+Message-ID: <19991015084454.A4206@pobox.com>
+References: <v04220700b42c89dfdc72@[192.168.1.5]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <v04220700b42c89dfdc72@[192.168.1.5]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Michael Schmitz wrote:
-> >  But if mincom is the only program that is unhappy with the wait, it
-> > sure is sufficient to fix minicom (and make the serial driver return
-> > -ERESTARTSYS or similar if the wait was interrupted by a signal).
-> 
-> What about chat ? Fixing it will give a lot of us the
-> possibility to use PPP via command line (which I prefer
-> btw :)) and, Micheal, chat seems not to work.
+On Fri, Oct 15, 1999 at 02:39:01AM -0500, Justin Shore wrote:
+} 
+} Has anyone gotten the two to mix successfully?  One of the binaries I 
 
-What about it? I've never tried it. I can post a diff if you want to try my
-kernel hack, but maybe it would make more sense to narrow down why chat
-fails. strace -f pppd should also trace chat if pppd is set up to use chat.
+Yes.  I'm using 2.7100.412.
 
-	Michael
+} tried died right off the bat.  The second worked fine for basically 
+} everything except for when it tried to access the key server for a 
+} new set of blocks to hack on (basically it works except for network 
+} access).  I emailed distributed about a month back and never got a 
+} response.  Has anyone gotten it to work with R5?  I can't remember 
+} the specific error.  I think it just bitched about not being able to 
+} resolve the DNS for the key server.  If ya know something please let 
+} me know.  Thanks!
+
+If that's what it bitched about, it sounds like you have something set
+up incorrectly.  Anyway, I don't remember where exactly I got the one
+I'm using, but a quick check shows there's an rpm on the Yellow Dog CS
+1.1 install CD, so it must be on their site.  I don't see it on my
+LinuxPPC Q3 install CD, but it might be on the other one, and I'll bet
+they have it somewhere on linuxppc.com.
+
+} 
+} Justin
+} 
+
+-- 
+Paul Schinder
+schinder@pobox.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
