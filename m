@@ -1,39 +1,32 @@
-Message-Id: <200001100522.XAA07318@congo.borg.umn.edu>
-Subject: Re: My cookbook approach to building a cross compiler for the powerpc on an intel x86 Linux box
-Date: Sun, 9 Jan 2000 21:23:08 -0800
-From: Grant Erickson <grant@borg.umn.edu>
-To: "Dan Dickey" <ddickey@charter.net>
-cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
-        "Linux PPC Dev" <linuxppc-dev@lists.linuxppc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Date: Mon, 10 Jan 2000 01:36:34 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: James Bredijk <jbredijk@nac.net>
+cc: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PPC Boards?
+In-Reply-To: <v03130302b49d06179767@[209.123.117.14]>
+Message-ID: <Pine.LNX.4.10.10001100134120.30097-100000@altus.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Also, consider the documentation at:
+On Sat, 8 Jan 2000, James Bredijk wrote:
 
-     http://www.lcse.umn.edu/~grant/Linux/cross.html
+> 
+> Grant,
+>   I'm looking to do some 'mad scientist' type of experimenting with the
+> PPC. I hope to 'play' with both the 'System' & 'Embedded' PPC platforms,
+> but I'm not looking to spend $2600 on the Motorola SandPoint board just so
+> I can fill up my afternoons.
 
-Regards,
+hrrm, for embedded, how about looking at www.embeddedplanet.com ?
 
-Grant Erickson
-
-On 1/9/2000 6:23 PM, Dan Dickey wrote:
->Ok; I originally wrote this in HTML - but the list doesn't accept
->attachments.  So, here is how it looks as text; sorry for the
->poor formatting.  Consider it a work in progress.  :)
->	-Dan
->
->Other documents referenced:
->
->   * http://members.home.com/mmporter/linux/cross/  (less useful)
->   * http://www.objsw.com/CrossGCC/  (more useful)
-
-
- Grant Erickson                       University of Minnesota Alumni
-  o mail:grant@borg.umn.edu                               1996 BSEE
-  o http://www.tc.umn.edu/~erick205                       1998 MSEE
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
