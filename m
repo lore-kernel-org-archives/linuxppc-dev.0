@@ -1,13 +1,25 @@
-Date: Thu, 12 Aug 2004 14:34:18 -0500
+Date: Thu, 12 Aug 2004 14:38:03 -0500
 From: "Cordes, Aaron M" <aaron.m.cordes@lmco.com>
 Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
-To: wd@denx.de
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAB@emss09m06.us.lmco.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-id: <EE7CAF713952AC4A970DD7CD8B4C12A042DCAC@emss09m06.us.lmco.com>
 MIME-version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I should mention that our SDRAM is connected to the 8540's DDR
+controller, not LocalBus.
+
+Aaron
+
+-----Original Message-----
+From: Cordes, Aaron M
+Sent: Thursday, August 12, 2004 2:34 PM
+To: 'wd@denx.de'
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Linux 2.4.27-pre6-bk hangs on MPC8540 board
 
 
 Is there a way in Linux or the 8540 to prevent burst accesses, in order
@@ -43,7 +55,6 @@ wrote:
 That's it: memory problems.
 
 > I ran memory tests using both Edink and U-boot and they all passed, so
-
 > I'm reluctant to blame hardware for the memory corruption.  Has anyone
 
 > seen similar behavior, or have any suggestions of things I might try?
