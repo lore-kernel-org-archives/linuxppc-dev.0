@@ -1,51 +1,47 @@
-Date: Mon, 2 Jun 2003 10:26:34 +0200
-From: Remco Post <r.post@sara.nl>
-To: Ethan Benson <erbenson@alaska.net>
+Date: Mon, 2 Jun 2003 09:53:03 -0500
+Subject: Re: Kernel Panic in 2.2.x
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [RFC] A stand-alone boot loader for PReP
-Message-Id: <20030602102634.00cdf985.r.post@sara.nl>
-In-Reply-To: <20030601221249.GQ32642@plato.local.lan>
-References: <62639.213.107.143.228.1054413401.squirrel@www.solinno.co.uk>
-	<20030531214950.GP32642@plato.local.lan>
-	<63891.213.107.143.228.1054475827.squirrel@www.solinno.co.uk>
-	<20030601221249.GQ32642@plato.local.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: linas@linas.org (Linas Vepstas)
+From: Hollis Blanchard <hollisb@us.ibm.com>
+In-Reply-To: <20030531005832.GA4272@backlot.linas.org>
+Message-Id: <E985F997-9509-11D7-BBCD-000A95A0560C@us.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 1 Jun 2003 14:12:49 -0800
-Ethan Benson <erbenson@alaska.net> wrote:
+On Friday, May 30, 2003, at 19:58 US/Central, Linas Vepstas wrote:
+>
+> Linux is real strong in the server space, weak in the desktop.  Server
+> 'users' are almost exclusively sysadmins.  They run systems for 5 years
+> or more.  (my www.linas.org is an 9 year old Dell 486.  www.gnucash.org
+> is 3.5 years old)  When a server goes down, hundreds of users are
+> affected.  (each of the www.gnucash.org mailing lists have 500+
+> subscribers, I move 7-10 GBytes a month.).  I think we need to make
+> sure
+> that Linux in the server space benefits the sysadmin, and this means
+> very conservative design principles, and conservative installers
+> (something that really can backout the new version and replace old
+> version).   God help us all if one day Microsoft succeeds in building
+> a system that is easier to install/upgrade/manage than a Linux server.
+> Don't bite the hand that is currently feeding Linux.
 
->
-> On Sun, Jun 01, 2003 at 02:57:07PM +0100, Leigh Brown wrote:
-> > Unfortunately I think a PReP boot loader is largely orthogonal to an
-> > OF based loader. Even PReP boxes that have OF don't support enough
-> > services for yaboot (in any form) to work. Most PReP boxes don't have
-> > OF or even allow any firmware calls from within the boot loader. With
-> > PReP everything you need to bring up the O/S has to be held on the
-> > boot partition and loaded into memory at boot time.
->
-> then why do you have a of1275 interface in your loader?
->
-> basically prep OF is more broken then apple's oldworld? now thats
-> impressive...
->
+There's no problem here. Keep right on installing <distribution from
+1996> until your hardware dies, and it won't bother me one bit.
+Backport security fixes (or find others who have already), and ignore
+reports about the latest wonderful features in the current version.
+Your 500+ subscribers will thank you.
 
-Well, I happen to own a motorola powerstack 2, I don't think there is
-anything to do with OF in there....
+However, don't complain that upgrading your system can make things
+break and ask me for sympathy. :) I for one would rather spend my time
+making things work than making things backwards-compatible back to
+version 0.3. I guess you're trying to convince me of the exact
+opposite, but IMHO there's simply too much stuff left to get working.
+Once it all works then we can talk about backwards-compatibility... ;)
 
 --
-Met vriendelijke groeten,
-
-Remco Post
-
-SARA - Stichting Academisch Rekencentrum Amsterdam    http://www.sara.nl
-High Performance Computing  Tel. +31 20 592 8008    Fax. +31 20 668 3167
-
-"I really didn't foresee the Internet. But then, neither did the computer
-industry. Not that that tells us very much of course - the computer industry
-didn't even foresee that the century was going to end." -- Douglas Adams
+Hollis Blanchard
+IBM Linux Technology Center
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
