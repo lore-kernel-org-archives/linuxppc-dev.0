@@ -1,34 +1,27 @@
-Date: Wed, 7 Apr 2004 10:46:25 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: linux-2.5-ocp, 2.6, 4xx, and others
-Message-ID: <20040407104625.A14212@home.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <407470ED.3030607@buckeye.ece.drexel.edu>
+Date: Wed, 07 Apr 2004 17:21:49 -0400
+From: Sharad Gupta <sharad@buckeye.ece.drexel.edu>
+MIME-Version: 1.0
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: System ACE MPU interface to CF card
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi All,
 
-The linux-2.5-ocp tree (bk://source.mvista.com/linux-2.5-ocp) has
-been updated to 2.6.5 and has a number of enhancements/fixes:
+I would like to know if anyone in the group or otherwise is/was using
+Xilinx's System ACE MPU interface to read/write to Compact Flash card on
+their hardware ? I see that there is a device driver provided by Xilinx
+for system ace mpu bus in the linux kernel tree (2.4.23). But, I dont
+see anyone actually implementing it in their design.
 
-* New OCP infrastructure from 2.4
-* A number of ibm_ocp (4xx) updates (some helpers)
-* 4xx IIC and EMAC drivers no longer using bd_t to pass info
-* All 4xx ports (that were in linux-2.5) build.
-* ash, ebony, evb405ep, ocotea, redwood6, walnut tested.
+It will be nice to follow someone's footsteps if it has already been
+implemented before. Else, please direct me to appropriate resources
+about how to go about using it in my design.
 
-Anybody doing 2.6 4xx work (new ports, forward ports) should be
-using this tree and looking at the working examples. Same thing
-for any other subarches that are starting to use OCP.
-
-BenH is working on the PM support in OCP and at some time in the
-future this should all be going into Linus' tree.
-
-Any questions/suggestions/patches/flames to me.
-
--Matt
+Thanks
+Sharad.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
