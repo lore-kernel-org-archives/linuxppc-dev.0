@@ -1,52 +1,23 @@
+Date: Wed, 20 Oct 1999 22:06:37 -0600
+From: Cort Dougan <cort@ppc.kernel.org>
+To: Graham Stoney <greyham@research.canon.com.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Thu, 21 Oct 1999 13:49:41 +1000 (EST)
-In-Reply-To: <003e01bf1a9e$59f44980$0201a8c0@home> from "Jeff Millar" at Oct 19, 99 09:56:38 pm
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <19991021034941.C067A659@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+Message-ID: <19991020220637.A18258@chimaera.ppc.kernel.org>
+References: <003e01bf1a9e$59f44980$0201a8c0@home> <19991021034941.C067A659@elph.research.canon.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19991021034941.C067A659@elph.research.canon.com.au>; from Graham Stoney on Thu, Oct 21, 1999 at 01:49:41PM +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> From: Dan Malek <dan@netx4.com>
-> To: Graham Stoney <greyham@research.canon.com.au>
-> Cc: Dan Malek <dan@penguin.netx4.com>;
-> <linuxppc-embedded@lists.linuxppc.org>
-> Sent: Tuesday, October 19, 1999 3:51 PM
-> Subject: Re: /dev/watchdog for onchip MPC860 watchdog?
-> 
-> > Graham Stoney wrote:
-> > > .... The watchdog can't
-> > > be disabled/reenabled, and its maximum period is only a couple of
-> seconds;
-> > > there's no guarantee that the kernel will have booted and loaded the
-> > > application by then, so the watchdog is likely to go off during the boot
-> > > process. I think this probably puts my plans to use it on hold for
-> now...
-> >
-> > Maybe not.  I was thinking about this (when I should have been doing
-> > other things :-) earlier today.  What we could do when the internal
-> > watchdog is configured is to service it during the Linux timer
-> > interrupt when an application doesn't have it "enabled".  This
-> > doesn't provide a watchdog service, just ensures it doesn't
-> > unexpectedly expire.  When an application decides it wants the
-> > watchdog, we don't service it in the timer ISR.
-> >
-> > We would have to litter the boot code with some service calls,
-> > like when you wait at the Linux boot prompt, and make sure
-> > you can uncompress and enable timer interrupts before the next
-> > expiration.  Beyond that, we wouldn't have to look for any
-> > watchdog service points in the kernel.
+I've added an arch-specific heartbeat as of 2.3 to the timer handler that
+could easily be setup to handle this.
 
-Our email & file server died big time yesterday, so I only saw this this
-morning, and co-incidentally had exactly the same idea. To the user app,
-/dev/watchdog still looks much like the interface in watchdog.txt.
-
-Sounds pretty good to me!
-
-Thanks,
-Graham
+I don't want the boot code 'littered' with calls to this, though.  It'd be
+nice if the timer handler could take care of this until the user app could
+take it over.  If the time between time_init() and the sti() is too great
+in start_kernel() that may not be possible.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
