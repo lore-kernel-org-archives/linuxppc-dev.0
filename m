@@ -1,42 +1,40 @@
-Date: Sat, 23 Dec 2000 15:35:31 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Wolfgang Haeuptli <whaeuptli@bluewin.ch>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Need testers with MESH SCSI
-In-Reply-To: <19341116104947.29047@192.168.1.2>
-Message-ID: <Pine.LNX.4.05.10012231533220.12626-100000@callisto.of.borg>
+To: Kaoru Fukui <k_fukui@highway.ne.jp>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <gcc@gcc.gnu.org>
+Subject: Re: kerne-2.4.0-test13pre3 with gcc-2.97
+References: <20001223145258.Postino-022361@smtp01.highway.ne.jp>
+From: Alexandre Oliva <aoliva@redhat.com>
+Date: 24 Dec 2000 01:29:32 -0200
+In-Reply-To: Kaoru Fukui's message of "Sat, 23 Dec 2000 14:52:58 +0900"
+Message-ID: <or66kazecj.fsf@guarana.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 22 Dec 2000, Benjamin Herrenschmidt wrote:
-> >Well, would have been a nice christmas present... BUT STILL:
-> >(after applying the new mesh_init() to scsi/mesh.c)
-> >
-> >mesh: target 6 aborted
-> >
-> >which means that my UMAX Astra 1200S Scanner still does not work under
-> >linuxppc...
->
-> Can you try increasing the udelay() calls in mesh_init() to see if it
-> helps ? There maybe something else going on, but it's worth trying.
+On Dec 23, 2000, Kaoru Fukui <k_fukui@highway.ne.jp> wrote:
 
-Note that there can be other problems with the mesh as well: I remember I once
-had some early 2.3.x kernels that could not init the mesh when cold-booted,
-only when warm-booted. So I had to boot an older kernel first each time I had
-powered down my box :-)
+> -		unsigned char b[0];
+> +		unsigned char *b;
 
-Gr{oetje,eeting}s,
+This change (and apparently all other changes you've made) are
+definitely wrong.  Zero-sized arrays as the last element of a
+structure used to be an extension in GCC 2.95.2, that has been adopted
+by C99 with a slightly different syntax, that GCC CVS supports: just
+remove the `0' from between the braces.
 
-						Geert
+With your change, you're changing what is supposed to be a structure
+whose last element is a flexible array with a structure that ends with
+a pointer to such an array, which means the array should be allocated
+separately, and any access to it must de-reference an additional
+pointer.  You'd have to adjust all uses of such a pointer to make this
+change.  Could this be the reason why your modified kernel doesn't
+work?
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Alexandre Oliva   Enjoy Guarana', see http://www.ic.unicamp.br/~oliva/
+Red Hat GCC Developer                  aoliva@{cygnus.com, redhat.com}
+CS PhD student at IC-Unicamp        oliva@{lsd.ic.unicamp.br, gnu.org}
+Free Software Evangelist    *Please* write to mailing lists, not to me
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
