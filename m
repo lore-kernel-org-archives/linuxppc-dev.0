@@ -1,40 +1,24 @@
-Message-Id: <4.2.0.25.19990302191548.03a646a0@mail.lauterbach.com>
-Date: Tue, 02 Mar 1999 19:19:49 +0100
-To: Batmensch <hcaley@loomer.com>
-From: Franz Sirl <Franz.Sirl@munich.netsurf.de>
-Subject: Re: strdup and pre-R5
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <XFMail.990301222929.hcaley@loomer.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Date: Tue, 2 Mar 1999 14:03:37 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: "Philippe C.D. Robert" <Philippe.Robert@uptime.ch>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Blue G3 (was Re: Linux on PowerPC Mailing List Archives)
+In-Reply-To: <9903021451.AA15272@california.uptime.ch>
+Message-ID: <Pine.LNX.3.96L.990302140053.6775B-100000@unix47.andrew.cmu.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 04:29 02.03.99 , Batmensch wrote:
+On Tue, 2 Mar 1999, Philippe C.D. Robert wrote:
+> 
+> May I ask what the current state of Blue G3 (Yosemite) support is?!
+> Please reply to me personally, since I am not subscribed to the list.
 
->I'm having a problem building OpenLdap 1.2 on a pre-R5 installation; the error
->seems to be with strdup(); the make complains :
->
->"In file included from args.c:22:
->../../include/ac/string.h:49 macro `strdup' using without args"
->
->I've been able to build it without error on both LinuxPPC 4 and Linux X86.
->Also the build of 1.0.2 that is included with the R5 distribution seems to 
->work
->properly.
->
->Anything i can do about this?
+Why didn't you check http://www.linuxppc.org/hardware?
 
-This is a common problem with glibc-2.1, the str... functions are macros 
-and so some silly sources break on "extern str...()" declarations.
-
-Possible solutions:
-- correct source
-- compile with -D__NO_STRING_INLINES
-- compile with -Os
-
-Franz.
+-Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
