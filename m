@@ -1,42 +1,30 @@
-Message-ID: <4118282C375DF64EA700135193EEB8CAAFF502@ACUSH02>
-From: "Dixon, Myron @ GNS" <Myron.Dixon@L-3com.com>
-To: MuthuGanesh M <muthuganeshm@myw.ltindia.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: PPC tool chain + uClibc
-Date: Wed, 16 Jun 2004 09:39:08 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: Hardware interrupts routines
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: Garcia =?ISO-8859-1?Q?J=E9r=E9mie?= <GARCIAJ@3il.fr>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <85E6ED5B5EC32F439702305CC417E12D9E2A80@email.3il.fr>
+References: <85E6ED5B5EC32F439702305CC417E12D9E2A80@email.3il.fr>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1087393616.4252.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 16 Jun 2004 09:46:56 -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
------Original Message-----
-From: MuthuGanesh M [mailto:muthuganeshm@myw.ltindia.com]
-Sent: Thursday, 10 June, 2004 12:54 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PPC tool chain + uClibc
+On Wed, 2004-06-16 at 10:28, Garcia Jérémie wrote:
+> <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+>
+> The only hardware interrupts routine I found through my investigations is the
+> request_irq(...). But the problem is that request_irq do not allow me to pass
+> an argument to the handler... So is there a routine that allows it or is there
+> a way to adapt the request_irq() to my case.
 
+Reread the kernel source code.  request_irq() does allow you to pass a
+parameter.  Its the last argument to the function.
 
-
-hello,
-
-Atlast i can succesfully run this combination for PPC8xx
-
-Eldk tool chain + uClibc 0.9.16  + busybox-1.00-pre3 +utelnetd
-
-(telnetd of busybox is not working with thic combi)
-
-with shared library support.
-
-is there any known problem in using this combination.
-Kindly advice me regarding the above
-
-I had the same problem with busybox's telenetd.  However,
-I did find that utelnetd from the following link solved
-my problem.		http://www.pengutronix.de/software/utelnetd_en.html
-
-Muthuganesh.M
+Jeff Angielski
+The PTR Group
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
