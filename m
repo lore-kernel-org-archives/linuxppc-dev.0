@@ -1,63 +1,45 @@
-Message-ID: <4118282C375DF64EA700135193EEB8CAB0020F@ACUSH02>
-From: "Dixon, Myron @ GNS" <Myron.Dixon@L-3com.com>
-To: miguel.valero@axxessit.no, linuxppc-embedded@lists.linuxppc.org
-Subject: RE: DS1340 RTC (i2c device)
-Date: Mon, 19 Jul 2004 10:18:28 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: [PATCH] compile fix for cpm uart driver
+From: Andreas Oberritter <obi@saftware.de>
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Content-Type: multipart/mixed; boundary="=-TMC5Hw1GF5Q13UkMmFaP"
+Message-Id: <1090251356.1417.8.camel@shiva.saftware.de>
+Mime-Version: 1.0
+Date: Mon, 19 Jul 2004 17:35:56 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have done this with a ds1337.  I found the solution on this mailing list.
-I think it was Wolfgang who had implemented the solution.  Essentially,
-the technique is to do as you suggest, replace your unique driver functions
-with the predefined ones being pointed to by the ppc_md structure.
+--=-TMC5Hw1GF5Q13UkMmFaP
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Worked great for me on our 8260 custom board using a 2.4.18 kernel.
+Hi,
 
-Just search the archives for rtc fixes.
+cpm_uart_cpm1.c doesn't compile due to a missing bracket (linuxppc-2.5
+tree). Please apply.
 
-Myron
+Signed-off-by: Andreas Oberritter <obi@saftware.de>
 
------Original Message-----
-From: miguel.valero@axxessit.no [mailto:miguel.valero@axxessit.no]
-Sent: Monday, 19 July, 2004 2:44 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: DS1340 RTC (i2c device)
+--=-TMC5Hw1GF5Q13UkMmFaP
+Content-Disposition: attachment; filename=cpm_uart_cpm1.diff
+Content-Type: text/x-patch; name=cpm_uart_cpm1.diff; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+===== drivers/serial/cpm_uart/cpm_uart_cpm1.c 1.4 vs edited =====
+--- 1.4/drivers/serial/cpm_uart/cpm_uart_cpm1.c	2004-07-16 01:26:09 +02:00
++++ edited/drivers/serial/cpm_uart/cpm_uart_cpm1.c	2004-07-18 20:46:16 +02:00
+@@ -138,7 +138,7 @@
 
+ 	dpmemsz = sizeof(cbd_t) * (pinfo->rx_nrfifos + pinfo->tx_nrfifos);
+ 	dp_offset = cpm_dpalloc(dpmemsz, 8);
+-	if (IS_DPERR(dp_offset))
++	if (IS_DPERR(dp_offset)) {
+ 		printk(KERN_ERR
+ 		       "cpm_uart_cpm1.c: could not allocate buffer descriptors\n");
+ 		return -ENOMEM;
 
-Does anyone have any good suggestions about how to handle an i2c RTC
-device, as f.e. the Maxim ds1340 ?
-
-As far as I can understand, the "todc_time" component only supports memory
-mapped RTC devices.
-
-I believe I have to implement my own, platform dependent, "time_init",
-"set_rtc_time" and "get_rtc_time" functions, and register them in the
-ppc_md structure during platform initialisation.
-
-I also believe that "time_init" and "get_rtc_time" are called by the
-kernel rather early.
-
-The question is whether the i2c driver is already in place by the time
-these functions are called, so that I can register a driver for the
-ds1340.
-Has anyone done something like that ?
-If I am on the wrong track, can someone give me a good hint ?
-
-Regards
-Miguel A. Valero
-R & D Engineer
-----------------------------------------------------------------------------
---------------------------
-AXXESSIT ASA
-PB 219 Økern
-Risløkkveien 2 N-0510 Oslo
-----------------------------------------------------------------------------
---------------------------
+--=-TMC5Hw1GF5Q13UkMmFaP--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
