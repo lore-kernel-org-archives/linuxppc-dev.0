@@ -1,45 +1,36 @@
-Date: Fri, 23 Jul 1999 19:48:31 -0600 (CST)
-From: Kamran Karimi <karimi@cs.uregina.ca>
-To: linuxppc-announce@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: DIPC for PowerPC
-Message-ID: <Pine.SGI.3.91.990723194451.18857P-100000@MERCURY.CS.UREGINA.CA>
+From: bob@kunk.jriver.com
+Message-ID: <19990724054437.8.qmail@kunk.jriver.com>
+Subject: 2.2.10 compile and usb kbd on iMac
+To: linuxppc-dev@linuxppc.org
+Date: Sat, 24 Jul 1999 00:40:22 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I'm trying to get to the point of being able to work on usb printers but
+have run into a problem.
 
- I did a blind port of DIPC (http://wallybox.cei.net/dipc) to PowerPC
-processors. Here blind means that due to the lack of equipment, I have not
-done any tests, not even a kernel compile. I would be grateful if
-someone of this list could test the patch, available by anonymous FTP
-from orion.cs.uregina.ca /pub/dipc. More adventurous people can test the
-whole system (available from the same place). The following is the readme
-file accompanying the new patch.
+I'm compiling the 2.2.10 kernel from sources 
+ftp://sunsite.anu.edu.au/pub/linux/linux-pmac/kernel-source/v2.2.10
 
-The file dipc-patch-1.1d.gz was prepared against a 2.2.10 linux
-kernel. It is based on the DIPC 1.1c kernel patch and has the following
-additions:
- 
- *) The port to MIPS by Ralf Baechle (not tested in a cluster)
- *) The port to SPARC (blind, not compiled on target machine)
- *) The port to PowerPC (blind, not compiled on target machine)
- *) Some memory management modifications as proposed by David Miller (This
-    might have introduced bugs into DIPC's shared memory subsystem)
+I can get it to compile OK, using the dot.config from the binary dir.
 
- The rest of the package, including the user-space dameon dipcd, some tools
-and example programs, and also the documentation of DIPC, can be found in
-the file dipc-1.1c.tgz.
+The problem is that it doesn't matter whether I use my compile or the
+binary from the ftp site, I can't get the iMac usb keyboard to work, the
+keys are in the "wrong" place. Even in just text mode, the keys are
+generated but they are wrong. I found the usb.map file in the source
+tree but I'm not sure where to put it. I can't find this documented, can
+anyone help? Should the usb.map file fix the problem?
 
- Please test the patch, and if possible the whole system in a cluster, and
-report the results to me or to linux-dipc@wallybox.cei.net.
+Thanks,
+Bob
+-- 
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
--Kamran Karimi
-
- 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
