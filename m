@@ -1,70 +1,39 @@
-Date: Mon, 13 Aug 2001 14:10:10 -0500 (CDT)
-Message-Id: <200108131910.f7DJAAd09710@pacific.somerset.sps.mot.com>
-From: Edward Swarthout <swarthou@ibmoto.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: assorted kernel patches
+Message-ID: <3B78294F.63D4945@iiic.ethz.ch>
+Date: Mon, 13 Aug 2001 21:23:59 +0200
+From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+MIME-Version: 1.0
+To: Mike Fedyk <mfedyk@matchmail.com>
+Cc: Michel Lanners <mlan@cpu.lu>, bob@kunk.jriver.com,
+	debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Compiling EIDE patch on PPC
+References: <20010810161714.E28914@mikef-linux.matchmail.com> <200108110647.IAA00781@piglet.grunz.lu> <20010813101939.A21730@mikef-linux.matchmail.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We are switching to Linuxppc to support our early
-processor bringup in the lab.
+Mike Fedyk wrote:
 
-There are a small set of patches that we think would be useful to
-merge back into linuxppc_2_4_devel.  What is the procedure to discuss
-these changes, get them reviewed, and merged (if so desired)?
+> > > Also, there is an include for asm/ide.h in apus_setup.c.  I didn't
+> > > change it because I don't have any prep machines for testing, and for
+> > > some reason it is also including from the m86k arch.
+> >
+> > APUS is not PREP, its some Amiga stuff. Basically, originally 68k-Amigas
+> > upgraded with PPC processors; so no wonder they're a hybrid of m68k and
+> > ppc ;-). I would _guess_ they need the <asm/ide.h> replaced by
+> > <linux/ide.h> too.
+>
+> Oops, brain fart.  Did any of those APUS have PCI?
 
-Here is the list:
+Yes and no. Not for IDE so far.
 
-1. Support for hardware breakpoints for process threads.
+> If not, then the change may not be needed.
 
-   - Add iabr and dabr to the end of the pt_regs structure.
-   - Save and restore IABR and DABR on exception/switch.
-     Since the 603 family does not have DABR, should it
-     be excluded via a CONFIG compile option or with the cputable?
-     In either case, pt_regs should contain spots for both.
-   - add IABR and DABR register numbers for ptrace
-     There is a hole before the FP regs where they can go
-     without disturbing and user applications.
-   - Change InstructionBreakpoint and do_page_fault to not
-     call XMON/KGDB if the trap is from user_mode.
+I don't know offhand, but don't worry, we'll take care of it.
 
-2. Allow superviser (MSR[PR]=0) user threads.
-   Currently MSR[PR] has a second purpose which indicates the thread
-   was in kernel mode on exception.  A different bit needs to
-   indicate this.  A good alternative is MSR[RI].
 
-   - change user_mode() to reference MSR_RI instead of MSR_PR
-   - change copy_thread to use the user_mode macro instead of MSR_PR
-
-3. Additional 7450 support
-   - Use recommended cache flush/initialization routines
-   - add machine check decodes in traps.c
-
-4. 7450 L3 cache control
-   - Use recommended initialization routine
-   - l3cr-value in device-tree (what uses l2cr-value today?)
-   - l3cr=xxxx on commandline
-   - /proc/sys/kernel/l3cr
-
-5. Use L2 Hardware flush routines for 7400, 7410, and 7450
-   - define DSSALL in ppc_asm.h
-
-6. Add support 8245 cpu/bridge, and mpc107 bridge
-
-7. stabs support for kernel asm functions
-
-8. In ProgramCheckException, do not call dubugger_bpt if in user_mode
-
-9. Additional thread state:
-
-   - per thread MSR[FE0,1] bits - allows thread to control
-   - per thread MSR[FP,VA] state -  to know if thread
-     used FPU for Vector unit even if it was subsequently taken from it.
-
-Ed Swarthout
-
-Ed.Swarthout@Motorola.com
-Austin, Tx
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
