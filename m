@@ -1,68 +1,45 @@
-Date: Mon, 17 Jan 2000 16:23:26 -0700
-From: Kevin Buettner <kev@primenet.com>
-Message-Id: <1000117232325.ZM16866@saguaro.lan>
-In-Reply-To: "D.J. Barrow" <barrow_dj@yahoo.com>
-        "regarding gdb stack trace problems in mozilla etc." (Jan 17,  1:35pm)
-References: <20000117213543.25985.qmail@web205.mail.yahoo.com>
-To: "D.J. Barrow" <barrow_dj@yahoo.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: regarding gdb stack trace problems in mozilla etc.
-Cc: Sean Chitwood <darkmane@w-link.net>
+Date: Mon, 17 Jan 2000 16:40:35 -0800 (PST)
+From: Sean Chitwood <darkmane@w-link.net>
+Reply-To: darkmane@w-link.net
+To: Kevin Buettner <kev@primenet.com>
+cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help w/ gdb
+In-Reply-To: <1000117223224.ZM16757@saguaro.lan>
+Message-ID: <Pine.LNX.4.10.10001171637020.3713-100000@darkmane.w-link.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Jan 17,  1:35pm, D.J. Barrow wrote:
+Ok, I'm assuming you mean to change the CFLAGS in the Makefile... correct? I'll do that tonight and hopefully let you know in th emorning....
 
-> Some mozilla developer was asking about gdb not
-> displaying stack traces properly in mozilla. The most
-> common reason for this is compiling -g with
-> optimisation ( -O2 or whatever ), when compiling -O2
-> gcc doesn't copy register parameters to the stack,
-> this means that the stack backtrace will not work & if
-> you view one of the parameters passed into the
-> function it will be incorrect as soon as the register
-> is reused.
+	Just for my edification, what is the difference between -g and -gdwarf-2... I have a bad feeling one produces elf binaries and one produces dwarf binaries.... Not that I would know the difference...
+
+
+On Mon, 17 Jan 2000, Kevin Buettner wrote:
+
+> One of the things you might try is to recompile using DWARF2 debugging
+> symbols.  Replace -g with -gdwarf-2.
 > 
-> To avoid this just compile as much of the code as
-> possible without optimisation, you may not be able to
-> compile it all without optimisation in mozilla as
-> inline functions will not work compile without
-> optimisation
+> I'm not necessarily suggesting that you start use dwarf2 debugging
+> symbols instead of stabs, but this will tell me more about the
+> problem.  (If it works properly with dwarf2, then I have a patch for
+> you which should make it behave properly with stabs.)
+> 
+> Thanks for the feedback.
+> 
+> Kevin
+> 
+> 
 
-D.J.,
+	Sean aka Darkmane
++------------------------------
++ On October 16, 1999 A.D.
++ Sean Chitwood proudly proclaimed
++ his love for Melissa Webb
++ and made her his lifemate
++------------------------------
 
-You give sound advice.  Normally, when gdb is giving me strange
-results for values of parameters and whatnot, I do exactly as you
-suggest.
-
-In the case that you're referring to however, gdb is giving incorrect
-information about the line number being called from.  The person
-reporting the bug (Sean Chitwood) states that the line number refers
-to a closing curly brace and that often times the curly brace being
-referred to doesn't even below to the calling function!
-
-This looks like a bug that I worked on for several weeks last fall. 
-In a nutshell, the linker is creating shared objects with zero-valued
-N_FUN symbols.  gdb had/has a mechanism for resolving the symbols
-under these circumstances, but there were some problems with the code. 
-You can find a detailed analysis of the problem at
-
-    http://sourceware.cygnus.com/ml/gdb/1999-q3/msg00325.html
-
-If you read the above analysis, you'll see a proposed patch at the end
-of the message.  This patch made its way into the current gdb source
-tree with few (if any) changes.  I'm not sure it'll apply cleanly to
-the gdb-4.18 sources though.  If it doesn't, I have another one that
-might work better.  (The fix is the same, but the diff was taken
-relative to something which might be closer to 4.18.)
-
-Kevin
-
--- 
-Kevin Buettner
-kev@primenet.com, kevinb@cygnus.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
