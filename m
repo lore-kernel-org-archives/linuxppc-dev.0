@@ -1,23 +1,28 @@
-Message-ID: <36874928.1285@post.uni-bielefeld.de>
-Date: Mon, 28 Dec 1998 10:02:33 +0100
-From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
-Reply-To: jenschrr@post.uni-bielefeld.de
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: CUDA-grabber like ADB grabber ?
-Content-Type: text/plain; charset=us-ascii
+To: Alan Cox <alan@cymru.net>
+Cc: Geert.Uytterhoeven@cs.kuleuven.ac.be (Geert Uytterhoeven),
+        davem@dm.cobaltmicro.com, Paul.Mackerras@cs.anu.edu.au,
+        linuxppc-dev@lists.linuxppc.org, linux-m68k@lists.linux-m68k.org,
+        VANDROVE@vc.cvut.cz
+Subject: Re: TCPv4 checksum errors
+References: <199812232158.VAA21083@snowcrash.cymru.net>
+From: Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+Date: 28 Dec 1998 10:20:34 +0100
+In-Reply-To: Alan Cox's message of "Wed, 23 Dec 1998 21:58:04 +0000 (GMT)"
+Message-Id: <vyzr9tky659.fsf@issan.cs.uni-dortmund.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+Alan Cox <alan@cymru.net> writes:
 
-Is it possible to snoop CUDA commands in MacOS ? Reason: I found
-datasheets for all Phillips chips used for the AV-card, but the sheet
-for the radio-tuner doesn't show the I2C commands (because it reached
-"end of life"), and I can't identify the video-tuner.
+|> The classic bad packet error is a frame that ends up with
+|> 
+|> checksum =FFFF end around carry left =1
 
-Jens
+There can never be a carry if the sum is FFFF.  A sum of two 16 bit values
+is never be bigger than 1FFFE.
+
+Andreas.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
