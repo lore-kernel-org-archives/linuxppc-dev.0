@@ -1,21 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5EF7367A7D
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 06:01:48 +1100 (EST)
-Date: Tue, 18 Jan 2005 11:01:46 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id 711B967A8C
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 06:05:16 +1100 (EST)
+Date: Tue, 18 Jan 2005 12:05:14 -0700
+From: Tom Rini <trini@kernel.crashing.org>
 To: "Mark A. Greer" <mgreer@mvista.com>
-Message-ID: <20050118190146.GB31308@gate.ebshome.net>
+Message-ID: <20050118190514.GL28724@smtp.west.cox.net>
 References: <41EC29A8.1040703@mvista.com>
-	<Pine.GSO.4.61.0501181017110.20681@waterleaf.sonytel.be>
-	<41ED5832.2040602@mvista.com>
+	<20050118161515.GI28724@smtp.west.cox.net>
+	<41ED5BBA.2090808@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41ED5832.2040602@mvista.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>
+In-Reply-To: <41ED5BBA.2090808@mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,18 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 18, 2005 at 11:40:50AM -0700, Mark A. Greer wrote:
-> However, it does rely on a startup script to do a 'hwclock 
-> --hctosys' which happen after driver initialization.  From what I can 
-> tell sysvinit used to do the hwclock but doesn't anymore so you need a 
-> script.  The mvl userland has a startup script that does this; others 
-> probably do too.  Note that using a startup script to do a hwclock is 
-> pretty standard AFAICT.
+On Tue, Jan 18, 2005 at 11:55:54AM -0700, Mark A. Greer wrote:
+> Tom Rini wrote:
+[snip]
+> >>Is there a better way to do this?
+> >>   
+> >>
+> >
+> >How about we try borrowing the MIPS abstraction and force todc_time,
+> >pmac_time (any others?) to directly define (and EXPORT_SYMBOL)
+> >get_rtc_time / set_rtc_time / etc.
+> >
+> 
+> Yep, MIPS has a solution...and so does ARM...and so does PPC.  This is 
+> sort of my point.
 
-You can always call do_settimeofday from your i2c driver 
-initialization. No scripts will be required and system behavior will 
-be similar to the case when ppc_md.get_rtc_time is called during init 
-to get correct time from RTC.
+And my point was to use someone elses solution, 'cuz that's how we go
+from N to N-1 to 1 :)
 
---
-Eugene
+> If we really want to do it right then someone needs to architect a 
+> generic solution.  What I have done is generic but does not handle the 
+> case that Geert mentioned when you have one kernel binary and several 
+> possible rtc chips.  In the meantime, what I have done works fine for 
+> all but that case.
+
+I guess there's two points:
+- How does your solution differ from what MIPS does, and probably ARM
+  does of saying the backend (todc_time, i2c-foo) provides
+  get_rtc_time/set_rtc_time?
+- I horribly briefly talked with rmk about this a long time ago, and I
+  think he has the generic solution, siting in arch/arm/common/rtctime.c
+  (sure it would need to be moved to drivers/char/something, but..).
+- I lied, #3 how does ARM, which I think lets you select multiple
+  boards, and thus probably end up with multiple rtc chip choices, deal
+  with it.
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
