@@ -1,17 +1,25 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 557772BF17
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jan 2005 13:01:48 +1100 (EST)
-Date: Sun, 16 Jan 2005 03:01:33 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050116020133.GI4274@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: jdike@karaya.com, user-mode-linux-devel@lists.sourceforge.net,
-	Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-	dhowells@redhat.com, linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [2.6 patch] (mostly i386) mm cleanup (fwd)
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 832E567A45
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jan 2005 21:59:36 +1100 (EST)
+Received: from mailman.pit.comms.marconi.com (mailman.pit.comms.marconi.com
+	[169.144.2.12])
+	by mailgate.pit.comms.marconi.com (8.12.10+Sun/8.12.10) with ESMTP id
+	j0GAxVDR022938
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jan 2005 05:59:31 -0500 (EST)
+Received: from uspitsmsgrtr01.pit.comms.marconi.com
+	(uspitsmsgrtr01.pit.comms.marconi.com [169.144.2.221])
+	by mailman.pit.comms.marconi.com (8.9.3/8.9.3) with ESMTP id FAA13890
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jan 2005 05:59:32 -0500 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A6474E7@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'linuxppc-dev@ozlabs.org'" <linuxppc-dev@ozlabs.org>
+Date: Sun, 16 Jan 2005 05:58:53 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Subject: Linux 2.6-10.rc3  8xx kernel booting - how to set baud rate for t
+	he serial driver ?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,149 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch forwarded below (already ACK'ed by David Howells) still 
-applies and compiles against 2.6.11-rc1-mm1.
+Hi,
 
-Please apply.
+My bootloader uses 115200 baud rate for the serial output during boot
+strapping.
 
+Then, during Linux 2.6-10.rc3  8xx kernel booting - how to set certain baud
+rate for the serial driver ?
 
------ Forwarded message from Adrian Bunk <bunk@stusta.de> -----
+When init_consoleI( ) is called - at what baud rate the 8xx serial driver is
+getting set ?
 
-Date:	Sun, 12 Dec 2004 03:10:56 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-	paulus@samba.org, linuxppc-dev@ozlabs.org, jdike@karaya.com,
-	user-mode-linux-devel@lists.sourceforge.net, dhowells@redhat.com
-Subject: [2.6 patch] (mostly i386) mm cleanup
+Currently I am have:
+CONFIG_SERIAL_CPM_CONSOLE
+in my .config 
 
-The patch below contains the following fixes:
-- arch/i386/mm/boot_ioremap.c: make a variable static
-- frv/ppc highmem.c: remove stale kmap_init prototypes
-- arch/um/kernel/mem.c: make kmap_init static
-- arch/i386/mm/init.c: make five functions static
+Is there a way to set (force) the baud rate in the .config (or by other
+means) to be in effect for the kernel booting ?
 
-
-diffstat output:
- arch/i386/mm/boot_ioremap.c |    4 ++--
- arch/i386/mm/init.c         |   10 +++++-----
- arch/um/kernel/mem.c        |    2 +-
- include/asm-frv/highmem.h   |    2 --
- include/asm-i386/highmem.h  |    2 --
- include/asm-ppc/highmem.h   |    2 --
- 6 files changed, 8 insertions(+), 14 deletions(-)
-
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
---- linux-2.6.10-rc2-mm4-full/arch/i386/mm/boot_ioremap.c.old	2004-12-11 23:55:28.000000000 +0100
-+++ linux-2.6.10-rc2-mm4-full/arch/i386/mm/boot_ioremap.c	2004-12-11 23:55:49.000000000 +0100
-@@ -61,8 +61,8 @@
- /* the virtual space we're going to remap comes from this array */
- #define BOOT_IOREMAP_PAGES 4
- #define BOOT_IOREMAP_SIZE (BOOT_IOREMAP_PAGES*PAGE_SIZE)
--__initdata char boot_ioremap_space[BOOT_IOREMAP_SIZE] 
--		__attribute__ ((aligned (PAGE_SIZE)));
-+static __initdata char boot_ioremap_space[BOOT_IOREMAP_SIZE] 
-+		       __attribute__ ((aligned (PAGE_SIZE)));
- 
- /*
-  * This only applies to things which need to ioremap before paging_init()
---- linux-2.6.10-rc2-mm4-full/include/asm-frv/highmem.h.old	2004-12-11 23:57:40.000000000 +0100
-+++ linux-2.6.10-rc2-mm4-full/include/asm-frv/highmem.h	2004-12-11 23:57:51.000000000 +0100
-@@ -44,8 +44,6 @@
- #define kmap_pte ______kmap_pte_in_TLB
- extern pte_t *pkmap_page_table;
- 
--extern void kmap_init(void);
--
- #define flush_cache_kmaps()  do { } while (0)
- 
- /*
---- linux-2.6.10-rc2-mm4-full/include/asm-ppc/highmem.h.old	2004-12-11 23:58:00.000000000 +0100
-+++ linux-2.6.10-rc2-mm4-full/include/asm-ppc/highmem.h	2004-12-11 23:58:03.000000000 +0100
-@@ -35,8 +35,6 @@
- extern pgprot_t kmap_prot;
- extern pte_t *pkmap_page_table;
- 
--extern void kmap_init(void) __init;
--
- /*
-  * Right now we initialize only a single pte table. It can be extended
-  * easily, subsequent pte tables have to be allocated in one physical
---- linux-2.6.10-rc2-mm4-full/arch/um/kernel/mem.c.old	2004-12-11 23:58:14.000000000 +0100
-+++ linux-2.6.10-rc2-mm4-full/arch/um/kernel/mem.c	2004-12-11 23:58:21.000000000 +0100
-@@ -141,7 +141,7 @@
- 	pte_offset_kernel(pmd_offset(pml4_pgd_offset(pml4_offset_k(vaddr), \
- 						     vaddr), (vaddr)), (vaddr))
- 
--void __init kmap_init(void)
-+static void __init kmap_init(void)
- {
- 	unsigned long kmap_vstart;
- 
---- linux-2.6.10-rc2-mm4-full/include/asm-i386/highmem.h.old	2004-12-11 23:58:54.000000000 +0100
-+++ linux-2.6.10-rc2-mm4-full/include/asm-i386/highmem.h	2004-12-11 23:58:57.000000000 +0100
-@@ -33,8 +33,6 @@
- extern pgprot_t kmap_prot;
- extern pte_t *pkmap_page_table;
- 
--extern void kmap_init(void);
--
- /*
-  * Right now we initialize only a single pte table. It can be extended
-  * easily, subsequent pte tables have to be allocated in one physical
---- linux-2.6.10-rc2-mm4-full/arch/i386/mm/init.c.old	2004-12-11 23:58:29.000000000 +0100
-+++ linux-2.6.10-rc2-mm4-full/arch/i386/mm/init.c	2004-12-12 00:15:07.000000000 +0100
-@@ -254,7 +254,7 @@
- #define kmap_get_fixmap_pte(vaddr)					\
- 	pte_offset_kernel(pmd_offset(pml4_pgd_offset(pml4_offset_k(vaddr), vaddr), (vaddr)), (vaddr))
- 
--void __init kmap_init(void)
-+static void __init kmap_init(void)
- {
- 	unsigned long kmap_vstart;
- 
-@@ -265,7 +265,7 @@
- 	kmap_prot = PAGE_KERNEL;
- }
- 
--void __init permanent_kmaps_init(pgd_t *pgd_base)
-+static void __init permanent_kmaps_init(pgd_t *pgd_base)
- {
- 	pgd_t *pgd;
- 	pmd_t *pmd;
-@@ -294,7 +294,7 @@
- }
- 
- #ifndef CONFIG_DISCONTIGMEM
--void __init set_highmem_pages_init(int bad_ppro) 
-+static void __init set_highmem_pages_init(int bad_ppro) 
- {
- 	int pfn;
- 	for (pfn = highstart_pfn; pfn < highend_pfn; pfn++)
-@@ -408,7 +408,7 @@
- }
- 
- #ifndef CONFIG_DISCONTIGMEM
--void __init zone_sizes_init(void)
-+static void __init zone_sizes_init(void)
- {
- 	unsigned long zones_size[MAX_NR_ZONES] = {0, 0, 0};
- 	unsigned int max_dma, high, low;
-@@ -545,7 +545,7 @@
-  * but fortunately the switch to using exceptions got rid of all that.
-  */
- 
--void __init test_wp_bit(void)
-+static void __init test_wp_bit(void)
- {
- 	printk("Checking if this processor honours the WP bit even in supervisor mode... ");
- 
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
------ End forwarded message -----
+Thanks,
+Best Regards
