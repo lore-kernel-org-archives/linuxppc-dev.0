@@ -1,70 +1,45 @@
-Message-ID: <20001106153722.12662.qmail@web219.mail.yahoo.com>
-Date: Mon, 6 Nov 2000 07:37:22 -0800 (PST)
-From: "D.J. Barrow" <barrow_dj@yahoo.com>
-Subject: Re: Airport debug (was Re: airport woes?)
-To: Chris Leishman <masklin@debian.org>, Rod Stewart <stewart@lab43.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Cc: Chris Leishman <masklin@debian.org>, linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Jon Erick Ween" <jween@som.llu.edu>
+To: daenzerm@student.ethz.ch
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: compile problems with header includes
+Date: Mon, 6 Nov 2000 13:53:58 -0800
+Message-ID: <7737441D14ED.AAA1D34@som.llu.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-I don't have an Airport but am familiar with
-programming linux network device drivers.
+Iain Sandoe wrote:
 
-This symtom sounds like a it could be a classic tbusy
-(transmit busy ) getting  stuck on in the driver in
-the network device structure.
+> [root@athena stable-dma-int]# make vmlinux
+> gcc -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o
+> scripts/split-include scripts/split-include.c
+> In file included from /usr/include/errno.h:36,
+>		   from scripts/split-include.c:26:
+> /usr/include/bits/errno.h:25: linux/errno.h: No such file or directory
+>
+> On 2.4.0-test4 (just to see if the build script makes *any* difference):
+>
+> [root@athena linux-2.4.0-t4-wrk]# make vmlinux
+> gcc -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o
+> scripts/split-include scripts/split-include.c
+> In file included from /usr/include/errno.h:36,
+>		   from scripts/split-include.c:26:
+> /usr/include/bits/errno.h:25: linux/errno.h: No such file or directory
 
---- Chris Leishman <masklin@debian.org> wrote:
->
-> On Thu, Nov 02, 2000 at 03:15:58PM -0500, Rod
-> Stewart wrote:
-> <snip>
-> >
-> > Anyone know if this is fixed, or a work around?
-> I've got the same setup,
-> > with the same problem.  My ssh connections over
-> airport freeze.
-> >
-> > Thanks,
-> > -Rms
->
-> No idea yet - but I'm not all the familiar with
-> device drivers, etc, yet.
->
-> I do know that the airport_tx method stops getting
-> called when the lock-up
-> occurs.  Why it doesn't get called I don't know.
->
-> Regards,
->
-> Chris
->
->
-> --
->
-----------------------------------------------------------------------
->        Knuth: premature optimization is the root of
-> all evil.
->
-----------------------------------------------------------------------
-> Reply with subject 'request key' for GPG public key.
->  KeyID 0xB4E24219
->
->
+You are lacking the glibc header files. On my Debian potato system I have:
 
+> dpkg -S linux/errno.h
+libc6-dev: /usr/include/linux/errno.h
 
-=====
-D.J. Barrow Linux for S/390 kernel developer
-eMail: djbarrow@de.ibm.com,barrow_dj@yahoo.com
-Phone: +49-(0)7031-16-2583
-IBM Germany Lab, Schönaicherstr. 220, 71032 Böblingen
+I've been having this same problem too, but DO have the header files
+installed. Any idea of what else might be broken for gcc not to find the
+header? (I use a linuxppc2K/redhat system).
 
-Thousands of Stores.  Millions of Products.  All in one Place.
-http://shopping.yahoo.com/
+Jon
+
+Jon Erik Ween, MD
+Cognitive and Cerebrovascular Neurology
+Loma Linda University
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
