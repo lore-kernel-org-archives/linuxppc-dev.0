@@ -1,39 +1,26 @@
-Message-ID: <3AAFF094.6137F71A@matrox.com>
-Date: Wed, 14 Mar 2001 17:28:36 -0500
-From: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>
+Date: 15 Mar 2001 03:54:40 -0000
+Message-ID: <20010315035440.2143.qmail@mailweb18.rediffmail.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: why XOR ext2_set_bit?
-Content-Type: text/plain; charset=iso-8859-1
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Inode table!!
+From: "shalini  jain" <shalijain@rediffmail.com>
+Content-type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+hi list,
 
-I just had a problem writing to a file on a ext2 filesystem with my port
-of kernel 2.4 on powerpc (G4) running in little-endian.  When the
-function ext2_set_bit was called by ext2_new_block, it returned
-something so I got the warning :
+well, can someone tell where is the inode table located on the disk, i mean on which sector of the linux partition is it located ? also, how are the inode entries stored in this table ?
 
-"ext2_new_block bit already set for block 161"
+another thing which i would like to know is, how do is the name of the file attatched with its corresponding inode entry ???
 
-and I was stuck in an infinite loop.  I found the definition for the
-function in include/asm-ppc/bitops.h as follow:
+thanx in advance,
+shalini
 
-#define ext2_set_bit(nr, addr)		test_and_set_bit((nr) ^ 0x18, addr)
+_____________________________________________________
+Chat with your friends as soon as they come online. Get Rediff Bol at
+http://bol.rediff.com
 
-Now my question:  Why is "nr" XORed with 0x18 ???  I tried to do this
-function on paper and with this XOR, they were always trying to change
-the wrong bit.  Now, since nobody's been reporting this problem before,
-I guess this XOR is ok but I'd really like to understand it's utility to
-correct things on my side (for now, I just removed it and everything
-appears to be fine).
-
-Could someone give me an explanation?
-
-Thanks,
-
-Sébastien Côté
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
