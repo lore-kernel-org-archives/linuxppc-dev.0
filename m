@@ -1,31 +1,28 @@
-Subject: Re: 2.4 versus 2.6 patches
+Subject: Re: page fault
 From: David Woodhouse <dwmw2@infradead.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <Pine.LNX.4.60.0407231055450.5463@localhost.localdomain>
-References: <Pine.LNX.4.60.0407231055450.5463@localhost.localdomain>
+To: bharat <bharat@coraltele.com>
+Cc: PPC_LINUX <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <18345265.1090641072140.JavaMail.administrator@RnDserver>
+References: <1090590567.3939.20.camel@localhost.localdomain>
+	 <20820601.1090640061250.JavaMail.administrator@RnDserver>
+	 <18345265.1090641072140.JavaMail.administrator@RnDserver>
 Content-Type: text/plain
-Date: Sat, 24 Jul 2004 11:20:08 -0400
-Message-Id: <1090682408.4195.3.camel@localhost.localdomain>
+Date: Sat, 24 Jul 2004 13:16:32 -0400
+Message-Id: <1090689392.4213.3.camel@localhost.localdomain>
 Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2004-07-23 at 10:57 -0400, Robert P. J. Day wrote:
-> for most of the folks on this list, i suspect they'd be more
-> interested in patches to a 2.6-style Kconfig file, not a 2.4-style
-> config.in file, correct?
+On Sat, 2004-07-24 at 09:22 +0530, bharat wrote:
+> problem is that it all went ok in kernel space but as soon as it enters
+> in user space it starts giving PAGE_FAULTS.
 
-Yes. The 2.4 kernel is dead.
+You seem to have posted this in reply to Andreas Oberritter's message in
+which he offered a patch to export m8xx_cpm_hostalloc().
 
-There are two classes of people -- those who are shipping 2.4 already or
-at least close to doing so, and those who are bringing Linux up on a new
-board.
-
-The former are hopefully already past the stage of being confused by
-such things in the config files, and the latter should most definitely
-be using 2.6.
+Please could you explain why these are related -- did you only start
+seeing this problem after you applied his patch?
 
 --
 dwmw2
