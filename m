@@ -1,36 +1,64 @@
-From: Jesper Skov <jskov@cygnus.co.uk>
-Message-ID: <14091.17276.886028.400693@lassi.cygnus.co.uk>
-Date: Wed, 7 Apr 1999 12:37:32 +0100 (BST)
-To: bh40@calva.net
-cc: Geert.Uytterhoeven@cs.kuleuven.ac.be, linuxppc-dev@lists.linuxppc.org,
-        asun@saul9.u.washington.edu
-Subject: Re: Resurrecting mkLinux
-In-Reply-To: <Pine.LNX.4.03.9904071324330.27618-100000@mercator.cs.kuleuven.ac.be>
-References: <Pine.LNX.4.03.9904071324330.27618-100000@mercator.cs.kuleuven.ac.be>
+Date: Wed, 7 Apr 1999 13:40:30 +0200 (MET DST)
+From: David De Ridder <s970707@uia.ua.ac.be>
+Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: MVME2306 progress
+Message-ID: <Pine.SO4.4.05.9904071129260.15656-100000@hsins.uia.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi everybody !
 
-[Thanks for forwarding it to me, Geert]
+I am pleased to be able to say that our MVME2306 finally runs 
+full Linux - sort of ;-)
 
-Benjamin> What is the APUS bootloader doing ? (Will it load the kernel
-Benjamin> at a fixed address ?)
+FTR, the main problem after installing the pre-R5 were the several
+'chkconfig --add' commands in the install scripts. I fixed this by
+booting with ``init=/bin/bash'' and then doing all the chkconfigs
+manually from the bash prompt. After this, Linux boots almost
+perfectly smooth. There are still some small problems, though, but
+they seem more RedHat-related to me :
 
-The problem on APUS systems is that the start address of physical
-memory is unknown. So after bootup, when the address has been
-determined, I patch all the virt<->phys constants used throughout the
-kernel.
+* rpm works fine on the NFS host (a Linux/i386 PC), but not on the
+  board itself. I suspect it has to do with the path settings.
+  On the PC, I use ``--root /export'' for the correct path. On the
+  board however, I get always this message :
+  
+  ``failed to open //var/lib/rpm/packages.rpm''
 
-The memory on an APUS system is contiguous though, so the fix used on
-APUS may not be enough for you.
+  Note the double-slash. Using ``--root /'' on the board did not work.
+
+* Syslogd does not run. It exits because it says it cannot create a
+  /dev/log device (which is a FIFO, I believe). Now, running the
+  dev package does not help, although it contains a /dev/log file.
+
+* I have all the network-scripts in /etc/sysconfig/network-scripts,
+  but there is no /etc/sysconfig/networking. In fact, the only file
+  in /etc/sysconfig is ``network-scripts''. Is this normal ?
+
+If anyone could solve this minor glitches, I'd appreciate their help.
+
+Kind regards,
+
++-----------------------------------------------------------------+
+|   David 'Septimus' De Ridder   | "Never underestimate the       |  
+|                                |  power of the soul unleashed." |
+| <david.de.ridder@bitsmart.com> |   - 'Essence Flare', M:TG      |
++-----------------------------------------------------------------+
+
+--
+"I am cold on a bed of ice,
+ but like seasons I know it will pass.
+ It will always return again though.
+ A summer of love is a momentary and transient thing.
+ Winter will always return again."
+ - Anne Clark
 
 
-My code is not in the vger tree yet. If you want to have a look at it,
-get a diff from ftp://sunsite.auc.dk/local/os/linux/apus/kernels (or
-thereabouts).
 
-Jesper
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
