@@ -1,61 +1,31 @@
-Date: Sun, 17 Oct 1999 22:27:42 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "N.G. Temme" <niek@database.rino.nl>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: presentation on linux
-In-Reply-To: <v04205500b42fd739efae@[192.168.1.40]>
-Message-ID: <Pine.LNX.4.05.9910172224180.401-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19991017173229.A9773@elmo.cygnus.com>
+Date: Sun, 17 Oct 1999 17:32:29 -0400
+From: Michael Meissner <meissner@cygnus.com>
+To: David Edelsohn <dje@watson.ibm.com>,
+        ian reinhart geiser <geiseri@msoe.edu>
+Cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: OLD gcc source needed...
+References: <geiseri@msoe.edu> <9910171727.AA10306@marc.watson.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9910171727.AA10306@marc.watson.ibm.com>; from David Edelsohn on Sun, Oct 17, 1999 at 01:27:32PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 17 Oct 1999, N.G. Temme wrote:
-> I am going to give a presentation about linux. I would like to give 
-> this presentation on a  powerbook running linux.
+On Sun, Oct 17, 1999 at 01:27:32PM -0400, David Edelsohn wrote:
 > 
-> I would look a little strange to give a presentation about a 
-> operating system that you are not using you're self. This 
-> presentation is not only about linux as server OS but it also 
-> discusses linux as desktop OS.
-> 
-> 
-> 
-> I need to no if linux is up to this task.
-> 
-> Can you connect a projector to a powerbook G3 running linuxppc?
+> 	gcc-2.6.3 did not support Linux/PPC.  It may not have supported
+> SVR4/ELF PowerPC ABI used by Linux/PPC at all.
 
-I guess so.
+As I recall, there were patches floating around in the LinuxPPC group adding
+support.  True they weren't in the FSF repository, but they were available as
+part of the initial LinuxPPC that Gary put out.  Of course the changes for SVR4
+to LinuxPPC are fairly minimal (change crt files and -D macros if I recall).
 
-> And is there any presentation software for linux?
-
-MagicPoint: http://jiji.mew.org/MagicPoint/
-
-> I am not looking for powerpoint for linux. A sort of flash or 
-> quicktime would be great. I would like to give the presentation in a 
-> web browser because it would be cool to say 'I am not only giving a 
-> presentation on this computer it is also its own webserver'.
-
-Using plain Netscape or any other browser is indeed an option.
-
-If you want anti-aliased text, you can convert your slides to PostScript or PDF
-and use gv for display. If you decide to use an ia32 notebook instead, you can
-use Adobe Acroread for PDF files. Acroread has a full-screen option, which is
-nice for presentations, but unfortunately Adobe still doesn't believe there are
-incarnations of Linux on non-ia32 platforms (I mailed them several times about
-this, to no avail).
-
-If you want full-screen on your PowerBook, you can also convert your slides to
-GIFs, JPEGs or whatever image format and use xv.
-
-Greetings,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+-- 
+Michael Meissner, Cygnus Solutions
+PMB 198, 174 Littleton Road #3, Westford, Massachusetts 01886
+email: meissner@cygnus.com	phone: 978-486-9304	fax: 978-692-4482
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
