@@ -1,50 +1,54 @@
-Message-ID: <37F25597.63CED114@chpc.utah.edu>
-Date: Wed, 29 Sep 1999 12:08:23 -0600
+Message-ID: <37F25E9D.282C83B0@chpc.utah.edu>
+Date: Wed, 29 Sep 1999 12:46:54 -0600
 From: Lou Langholtz <ldl@chpc.utah.edu>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
+To: Takashi Oe <toe@unlserve.unl.edu>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: [Fwd: Bug: 2.2.12 still hangs PPC after some PPP activity]
-References: <19990929190222.023648@mailhost.mipsys.com>
+References: <Pine.LNX.3.96LJ1.1b7.990929021435.16135B-100000@ofey.inetnebr.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+Takashi Oe wrote:
 
-> On Wed, Sep 29, 1999, Lou Langholtz <ldl@chpc.utah.edu> wrote:
+> On Wed, 29 Sep 1999, Lou Langholtz wrote:
 >
-> >This is pretty much the kernel I'm running now. I haven't had the "FB.
-> >overflow" message yet nor system-freeze but I've experienced the TCP slowdown
-> already.
-> >Evidence that we've got other problems as well (IMO). It's only been 20 hours
-> >or so with new kernel so not enough time for me to feel confident though about
+> > What might happen if a driver does:
+> >
+> > save_flags(old_flags);
+> > cli();
+> > restore_flags(old_flags);
+> > save_flags(new_flags);
+> > cli();
+> > restore_flags(new_flags);
+> > /* can't we be interupted here? Assume yes, if so */
+> > restore_flags(old_flags);
+> >. . .
+
+> I'm fairly certain it's a bug.  Good spotting.  The last restore_flags()
+> shouldn't be there.
 >
-> >these results.
+> --- macserial.c.ORIG    Wed Sep 29 02:05:14 1999
+> +++ macserial.c Wed Sep 29 02:05:31 1999
+> @@ -1381,7 +1381,6 @@
+>         if (info->xmit_cnt && !tty->stopped && !info->tx_stopped
+>             && !info->tx_active)
+>                 transmit_chars(info);
+> -       restore_flags(flags);
+>         return ret;
+>  }
 >
-> I've added another fix to the kernel on my test page
-> (http://calvaweb.calvacom.fr/bh40/test.html). It may fix the hang on
-> close. I don't think it will fix anything related to a slowdown however.
+> Takashi Oe
 
-It's interesting to note that you chose to move save_flags(flags) in
-rs_write() to just before the cli()'s. What was your reasoning? I'm asking so
-I can get a better understanding of all the implications of this. Most code that
-I've perused so far now does what you've basically done --- keeps the
-save_flags() right before the cli()'s. When I chose to just to remove that last
-restore_flags() I was basing my descision not to move the originall
-save_flags() on the rs_write() code in drivers/char/serial.c. In the serial.c
-file they call save_flags() outside of the while loop like the original
-rs_write() in macserial.c. This would save time by not being constantly
-re-invoked within the loop of course but then this only works if the flags saved
-stay valid. That's the part I'm having the most trouble with --- what kind of
-calls could invalidate the flags that have been saved.
+If this is true, then what about wherever else transmit_chars() is called. There's
+numerous instances where because transmit_chars() itself goes into a save_flags();
+cli(); ...; restore_flags() where we have these nested cli()... restore_flags().
+For instance in rs_throttle() transmit_chars() is called while cli()'s already in
+effect. If the real problem is the nesting of the locks introduced by
+transmit_chars() then this would also seem to explain the TCP die-off phenomena.
+Opinions?
 
-As to the hang-on-close problem, I've never experienced that before nor heard of
-it. Is it something that you've seen or heard of? Your change makes sense anyway.
-I'm just being curious in case this might be effecting me in ways I didn't even
-realize.
-
-Cheers! :-)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
