@@ -1,34 +1,28 @@
-To: "Mark Schaefer" <junk@markschaefer.org>
-Cc: "'linuxppc-embedded mailing list'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: VxWorks.c ?? 
+To: Mark Hatle <fray@mvista.com>
+Cc: Christophe.LINDHEIMER@fr.thalesgroup.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Running Linux with 2Mo of Ram. 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 12 Jun 2003 10:52:42 EDT."
-             <00d601c330f2$489159d0$0320a8c0@onstardevserv>
-Date: Thu, 12 Jun 2003 23:48:34 +0200
-Message-Id: <20030612214839.0B2F9C5FD7@atlas.denx.de>
+In-reply-to: Your message of "Thu, 12 Jun 2003 11:16:06 CDT."
+             <3EE8A746.7010901@mvista.com>
+Date: Thu, 12 Jun 2003 23:53:05 +0200
+Message-Id: <20030612215310.7D7E6C5FD7@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Mark,
-
-in message <00d601c330f2$489159d0$0320a8c0@onstardevserv> you wrote:
+In message <3EE8A746.7010901@mvista.com> you wrote:
 >
->     I can't find any chip that looks like it drives the USB interface.
-> There are a few buffers, I believe.  I know the USB wasn't used for the
-> pilot.  Only the two RS232's (one console), RS485 and ethernet were used.
-> It was in a plastic box that hid the JTAG port and LED's.  I'm not really
-> concerned about getting the USB working right now.
+> You will need some type of "execute in place", i.e. run the kernel and/or
+> userspace applications out of ROM in order to work with 2MB of RAM.
+>
+> This type of thing is generally very board, processor and application specific.
+>   So I don't believe there is existing (open source) code to do it.
 
-Then it either is no MPC860 CPU, or there is no USB support. Only the
-MPC823 and MPC850 CPUs have a USB controller on-chip.
-
->     Thanks for the BDM4GDB link.  It looks like that's my best option.  I
-
-:-)
-
+It's easy to add, at least for  a  8xx  system  booting  with  U-Boot
+(which supports XIP).
 
 Best regards,
 
@@ -37,7 +31,6 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-All a hacker needs is a tight PUSHJ, a loose pair of UUOs, and a warm
-place to shift.
+Brain fried - Core dumped
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
