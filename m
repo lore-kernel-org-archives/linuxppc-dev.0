@@ -1,83 +1,59 @@
-Date: Wed, 21 Jan 2004 10:08:13 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Amit S. Kale" <amitkale@emsyssoft.com>
-Cc: Powerpc Linux <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PPC KGDB changes and some help?
-Message-ID: <20040121170813.GT13454@stop.crashing.org>
-References: <20040120172708.GN13454@stop.crashing.org> <200401211946.17969.amitkale@emsyssoft.com> <20040121153019.GR13454@stop.crashing.org> <200401212231.45601.amitkale@emsyssoft.com>
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 21 Jan 2004 18:27:25 +0100
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linas@austin.ibm.com, valvoline <valvoline@vrlteam.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Broadcom BCM94306
+Message-ID: <20040121172725.GB3814@iram.es>
+References: <20040114161107.GM2658@adapter.n0skillz.org> <20040114181350.B40506@forte.austin.ibm.com> <70D6BF86-473D-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040115115023.GA12001@iram.es> <C404D01A-475A-11D8-A8C3-000A95A4DC02@kernel.crashing.org> <20040116195406.GA25566@iram.es> <64789114-4A89-11D8-9C4D-000A95A4DC02@kernel.crashing.org> <1074549957.10585.57.camel@gaston> <A3C1C69E-4B72-11D8-BDF1-000A95A4DC02@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200401212231.45601.amitkale@emsyssoft.com>
+In-Reply-To: <A3C1C69E-4B72-11D8-BDF1-000A95A4DC02@kernel.crashing.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 21, 2004 at 10:31:45PM +0530, Amit S. Kale wrote:
-> On Wednesday 21 Jan 2004 9:00 pm, Tom Rini wrote:
-> > On Wed, Jan 21, 2004 at 07:46:17PM +0530, Amit S. Kale wrote:
-> > > Hi Tom,
-> > >
-> > > Yes. Software breakpoints have been tested in the TimeSys ppc kernel
-> > > source. They work quite well!! I'll be releasing that code soon.
+On Tue, Jan 20, 2004 at 07:01:15PM +0100, Segher Boessenkool wrote:
+>
+> On 19-jan-04, at 23:05, Benjamin Herrenschmidt wrote:
+>
 > >
-> > Any chance you can give me what they gave you?  I can try and merge
-> > and test things.
->
-> Done.
->
->
-> > > The breakpoint 0xc0000000 placed by gdb is _evil_ It may clobber data.
-> > > The gdb at kgdb.sourceforge.net places it correctly at module_event.
+> >>The BAT thing at least is documented (and has been documented
+> >>_for ever_ -- see the PEM, the 970 is a 64-bit chip.  Get the
+> >>rev 2.0 PEM from the 970 doc page).
+> >>
+> >>The large page thing is cpu specific afaik (from memory).
 > >
-> > I'm not quite sure what you're getting at.   The gdb binary I'm using is
-> > a good one (It's happy w/ the current kgdb stub, working in tandem w/ a
-> > BDI2000, etc).  If the breakpoints being set aren't right, I suspect
-> > that it's related to the other problems I'm seeing.
+> >POWER3 had BATs
 >
-> Stock gdb places a breakpoint to detect loading of shared libraries. Since
-> kernel doesn't have the symbols that ld-linux-* has, it places that at
-> begining of the kernel (or elsewhere I haven't been able to figure out
-> exactly where it places it). This breakpoint corrupts kernel data many a
-> times.
+> Sure, but BATs are not *required* by the 64-bit architecture.
 >
-> The gdb I maintain at kgdb.sourceforge.net places a breakpoint correctly at
-> module_event and detects loading of modules.
+>
+> Segher
+>
+>
+> p.s.  Well actually, I went to check -- and the PEM 2.0 _does_
+> define BATs for 64-bit.  Let's put this under "POWER4 and
+> derivatives specific" as well then, until the docs get fixed :-)
 
-Ah, ok.
+Indeed, sorry for the late reply, but I was really wondering how you
+could interpret a bit level description of the BATs and the sentences
+describing them as "some implementations may not have them" ;-)
 
-> > > Where is the other breakpoint placed? While you would have certainly done
-> > > that, please confirm that kgdb actually inserts a breakpoint where you
-> > > have asked it to: a simple printk at the address where the breakpoint is
-> > > placed should be sufficient. printing from gdb will not work as gdb
-> > > removes all breakpoints before giving control to a user.
-> >
-> > The thing is the kernel gets into an infinite loop of stopping, as far
-> > as gdb can tell, at the initial breakpoint
->
-> I thought you could place a breakpoint somewhere and the breakpoint was never
-> hit.
->
-> ok. Now I know where it went wrong: nip is instruction pointer, not
-> instruction contents. The change you had done compared nip to breakpoint
-> instruction contents.
->
-> > > +       if (linux_regs->nip == 0x7d821008 )
-> > > +               /* Skip over breakpoint trap insn */
-> > > +               linux_regs->nip += 4;
->
->
-> Checking for kgdb_setting_breakpoint is better. Following code from my patch
-> is correct.
->
-> > > +       extern atomic_t kgdb_setting_breakpoint;
-> > > +       if (atomic_read(&kgdb_setting_breakpoint))
-> > > +               regs->nip += 4;
+There are no mention of big/large/huge pages either[1], nor of
+instructions which may have been added for Power4/970 (I know
+about mfcrf)
 
-I could have sworn I tried a number of combinations of things, including
-that.  But I'm grabbing 2.1.0 now and will get back to you.
+Frankly speaking the current state of the documentation is worrying me,
+I remember that when the PPC750 was announced, a lot of documentation
+was added to IBM and Motorola websites in a matter of days.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+	Regards,
+	Gabriel
+
+[1] well, I found some mentions of the large pages in a redbook about
+Power4. But that's about all.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
