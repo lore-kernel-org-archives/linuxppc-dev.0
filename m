@@ -1,85 +1,76 @@
-Date: Sun, 13 Dec 1998 18:05:59 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Dan Malek <dmalek@jlc.net>
-cc: "Guy G. Sotomayor, Jr." <ggs@shiresoft.com>,
-        Cort Dougan <cort@persephone.cs.nmt.edu>,
-        Troy Benjegerdes <hozer@drgw.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP RTC vs Decrementer accuracy...
-In-Reply-To: <36700A9F.C1C99794@jlc.net>
-Message-ID: <Pine.HPP.3.96.981213172728.17076D-100000@gra-ux1.iram.es>
+Date: Sun, 13 Dec 1998 18:59:59 +0100 (MET)
+From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
+Reply-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Corey Minyard <minyard@acm.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Restructure of arch/ppc/kernel and include/asm-ppc
+In-Reply-To: <m2zp8te2rh.fsf@wf-rch.cirr.com>
+Message-ID: <Pine.LNX.4.02.9812131538310.871-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On 12 Dec 1998, Corey Minyard wrote:
+> This is a patch relative to 2.1.131 that significantly restructures
+> the Linux PPC stuff.  It is the first step in making the code more
+> modular and separating the machine-specific from the
+> machine-independant stuff.  This currently works on my MVME2700
+> board.
+
+I haven't tested it yet on my CHRP box, but it looks fine!
+
+> Significantly, the following have been done:
+>   * Most machine-dependencies have been removed from include/asm-ppc.
+>     However, there is a lot of stuff with CONFIG_APUS that has
+>     dependencies on the include/asm-m68k directory.  I'm not sure
+>     what to do with that.
+
+Ideally these should use an Amiga specific include directory. But that's 2.3
+business. Then we can add separate subdirectories for machine types that span
+multiple architectures (Amiga, Mac, `PC', Sun, ...), just like the current
+asm-* stuff.
 
 
-On Thu, 10 Dec 1998, Dan Malek wrote:
+Another thing I've been thinking about, related to unified kernels. Although we
+can create one common vmlinux image, the real boot image (arch/ppc/*boot/*)
+still differs among the different machine types.
 
-> 
-> Guy G. Sotomayor, Jr. wrote:
-> 
-> > Umm, but why are you keeping track of time with the decrementer?
-> 
-> Because that is the way it was done when I first looked at the kernel
-> a long time ago :-).
-> 
-> 
-> > .....use the timebase to keep track of time and the decrementer
-> > to deliver periodic interrupts?
-> 
-> Excellent idea.  I have started to implement this on an MPC8xx board,
-> so I will let everyone know the results pretty quickly.
-> 
-> It appears the TB is part of every PPC core.  If anyone knows different
-> please let me know.
+Now I also have an AXP box (UDB), I came in contact with MILO, and I like it.
+MILO is a boot loader that gets loaded by the SRM or ARC firmware on AXP. It
+contains drivers for the most important parts of the hardware (including PCI
+fixup code), some filesystem code (ext2/msdos/iso9660), and a command line. All
+driver code is borrowed from the Linux kernel. In fact MILO is a small and
+limited Linux kernel.
 
-Yes, the problem is the good old 601. The TB uses different register
-numbers (it's called the RTC, split into RTCU and RTCL like TBU and TBL).
-Register numbers are 20(RTCU)/21(RTCL), they can also be read from user
-mode as registers 4 and 5. 
+The nice thing is that you can upgrade your kernel without upgrading MILO (my
+MILO is still at the 2.0.34 level, from the Debian boot disks). Just put the
+kernel in /boot, and since MILO knows ext2, it can boot from it.
 
-However, the most troublesome characteritice of the 601 timebase is that
-the RTCL overflows at 1 billion exactly (it virtually counts in
-nanoseconds), in such a way that the RTCU is incremented by 1 every
-second. This is not a straight binary 64 bit counter. It can be
-transformed into one, however:
+For PPC, we would need different MILO images for the different machine types.
+The kernel can be ELF on all machine types, since we put an ELF loader in MILO.
+MILO doesn't need much fancy driver stuff, just SCSI/IDE, floppy, keyboard and
+a simple console (serial, VGA text, offb). And BootX can become some special
+variant of MILO :-)
 
-1:	mfrtcu	r3
-	mfrtcl	r4
-	mfrtcu	r5
-	cmpw	r3,r5
-	bne	1b
-	lis	r5,(1000000000/64)>>16
-	addi	r5,r5,(1000000000/64)&0xffff
-	mullw   r6,r3,r5
-	mulhwu  r3,r3,r5
-	srwi    r4,r4,6
-	addc    r4,r4,r6
-	addze   r3,r3
+Depending on the smartness of the system firmware for a specific machine, MILO
+has to be more or less complex in setting up the machine. If you would design
+your own box, you can put a dumb disk block loader in FlashROM, and all other
+hardware support in MILO. Or put MILO in FlashROM, as can be done on AXP too
+(haven't tried that yet).
 
-returns the equivalent of a 64 bit (not exactly, since the 8 MSB will
-always be zero) timebase with 64nsec resolution, almost equivalent to
-what most processors give with 66MHz buses (60nS resolution).
-If you only need the 32 LSB, you can even simplify it, replace the last
-five instructions with:
+Comments?
 
-	mullw   r3,r3,r5
-	srwi	r4,r4,6
-	add	r3,r3,r4
+Greetings,
 
+						Geert
 
-According to my 601 doc, the RTC input is a 7.8125 MHz clock, which
-increases by one count every 128 nS, the 7 LSB are always zero and you
-can't lose any precision by shifting right the RTCL value by 6 as I
-suggest. High 601 speed grades might have a clock at a higher rate (15.625
-or 31.25 MHz), I don't know but it would be required to fulfill the
-following condition "enough bits are implemented to provide a resolution
-that is finer than the time required to execute 10 Add Immediate (addi)
-instructions".
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
-	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
