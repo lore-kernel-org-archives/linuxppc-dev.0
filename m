@@ -1,58 +1,51 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9E7F@mail.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Ricardo Scop'" <scop@digitel.com.br>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Dan Malek <dan@embeddededge.com>, andy_lowe@mvista.com
-Subject: RE: Kernel oops while routing
-Date: Wed, 5 Dec 2001 13:01:28 -0500 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 5 Dec 2001 15:15:16 -0300
+From: Ricardo Scop <scop@digitel.com.br>
+Reply-To: scop@digitel.com.br
+Message-ID: <3635.011205@digitel.com.br>
+To: "Sally Wang" <swang@otcwireless.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re[2]: Linux on SandPoint with PPC8240
+In-reply-To: <JEEJJBIBHMGFHCANFACIOEEACAAA.swang@otcwireless.com>
+References: <JEEJJBIBHMGFHCANFACIOEEACAAA.swang@otcwireless.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->      - in fcc_enet_start_xmit, after setting up another bd and
->      incrementing bdp, the next bd's tx-ready bit is tested in order
->      to stop the xmit queue if it is set, ok? But, sometimes, the CPM
->      may already have cleared this bit _and_ the corresponding
->      interrupt has not been serviced yet (because we're in a
->      spin_lock_irq); so, netif_stop_queue is not called in this case,
->      nor is tx_full set;
->
->      - next, the interrupt is serviced, but then curr_tx equals
->      dirty_tx _and_ tx_full is not set, so no sk_buffers are freed!
+Sally,
 
-Yes! I totally agree with you, checking the ready bit in the buffer
-descriptor is not guaranteed, even if the interrupts are masked, since the
-CPM doesn't suspend its processing.
+BDI2000 from Abatron (www.abatron.ch) is a nice debugging tool, it's
+completely Linux aware and works well with GNU development tools.
 
-I have done many tests between two of our custom boards, that use an 8260
-and a single FCC. I could effectively see a memory leak.
+You should also look at
+http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
+for further information.
 
-IMHO, I could suggest an easier patch, that would result in modifying only
-one line of code, without changing the 'tx_full' logic. In function
-fcc_enet_start_xmit, instead of checking the ready bit (which is bad), we
-could only check if cur_tx has reached dirty_tx, and then call
-netif_stop_queue. Does it make sense?
+[]'s, Scop                            mailto:scop@digitel.com.br
+
+------------------------------------------------------------------
+"What's money? A man is a success if he gets up in the morning and
+goes to bed at night and in between does what he wants to do."
+~Bob Dylan
+
+Wednesday, December 05, 2001, 12:19:04 AM, you wrote:
 
 
-BTW, I worked hard last week in debugging the fcc_enet driver. It was not
-handling correctly some transmission errors, resulting in the transmitter
-completely stopping, without restarting. This is related to an errata
-(CPM37) from Motorola about the 8260, concerning the way of restarting the
-transmitter. If someone is interested, I can release a patch for that.
+SW> Also I am looking for development tools for our project. It will using linux
+SW> as OS, MPC8241 as CPU, and our own hardware board. What kind of tools you
+SW> advice for debugging kernel and drivers ?
+
+SW> I am looking forward to your helps.
 
 
+SW> Thanks in advance,
 
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+
+SW> Sally Wang
+
+
+SW> ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
