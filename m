@@ -1,33 +1,29 @@
-Message-ID: <3D3FCAFF.1030302@esd-electronics.com>
-Date: Thu, 25 Jul 2002 11:55:11 +0200
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B0B3EF4@mail1.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'well'" <well@zinwell.com.tw>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: can jffs2 on DOC?
+Date: Thu, 25 Jul 2002 11:32:29 -0400
 MIME-Version: 1.0
-To: danieltaylor@acm.org
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [Fwd: Re: How to get rid of unused data in LKM]
-References: <3D3FBFBE.9050607@attbi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
-
-that's a better idea. I think I will do that if there is no way to free
-the firmware data from my module.
-
-I found a little code snippet to do kernel file access. It does not seem to be that complicated.
-
-Thanks
-Matthias
+Since your question is specific to MTD,
+you might prefer to use a more appropriate mailing list.
+Try at
+  http://lists.infradead.org/mailman/listinfo/linux-mtd/
 
 
-> Couldn't you do a kernel file open during module_init, store the
-> PCI device code and close the file?
->
-> Regards,
->
-> Dan
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., System Architect
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Quebec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
