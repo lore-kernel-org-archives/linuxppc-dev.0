@@ -1,24 +1,26 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Bogus interrupt
-Date: Mon, 26 Feb 2001 12:54:19 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMEEEOCPAA.s.coluccini@caen.it>
+Date: Mon, 26 Feb 2001 13:25:13 +0100 (MET)
+From: Karl-Heinz Krempels <charlie@pool.informatik.rwth-aachen.de>
+To: Sid <sid@siddhartha.8m.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: MPC860 - minicom
+In-Reply-To: <004501c09fa4$df5fe2f0$2501000a@sid>
+Message-ID: <Pine.SOL.4.10.10102261324080.29120-100000@jennifer.informatik.rwth-aachen.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi everyone,
-  I'm trying to run kernel 2.5 on Motorola MVME5100 and, after the sti
-istruction in start_kernel, the kernel hangs due to a spurious interrupt.
-(Bogus interrupt -1)
-Is this a well-known problem also in other ports ? or have anyone of you a
-suggestion to solve this ?
+Hi,
 
-Thaks in advance.
-Stefano.
+please check your cables. I think its a handshaking problem.
+
+\Charlie.
+
+Karl-Heinz Krempels, Vereinsstrasse 13-15, 52062 Aachen, +49-241-4093691
+Aachen University of Technology , charlie@pool.informatik.rwth-aachen.de
+- In a world without walls and fences,
+  what should we do with windows and gates?
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
