@@ -1,47 +1,34 @@
-Date: Mon, 22 Jan 2001 05:00:46 +0000
-Subject: bug list, who does things & so on.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Tom Gall <tgall@rochcivictheatre.org>
-Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010122050050.C7E792F0B0@apollo.valhalla.net>
+Date: Mon, 22 Jan 2001 00:15:44 -0600
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Larry McVoy <lm@bitmover.com>
+Cc: Dan Malek <dan@mvista.com>, linuxppc_commit@hq.fsmlabs.com,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: context overflow
+Message-ID: <20010122001544.D22549@altus.drgw.net>
+References: <3A68F7A0.693639F1@mvista.com> <20010121222842.A27103@altus.drgw.net> <20010121205557.A17314@work.bitmover.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010121205557.A17314@work.bitmover.com>; from lm@bitmover.com on Sun, Jan 21, 2001 at 08:55:57PM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> And on that note... what do we have for bug-tracking systems for ppc kernel
->> related stuff? The collective memory of people on these to mailing lists?
->> I know someone mentioned a sourceforge page at one point.. is anyone useing
-that?
+On Sun, Jan 21, 2001 at 08:55:57PM -0800, Larry McVoy wrote:
+> On Sun, Jan 21, 2001 at 10:28:42PM -0600, Troy Benjegerdes wrote:
+> > And on that note... what do we have for bug-tracking systems for ppc kernel
+> > related stuff? The collective memory of people on these to mailing lists?
 >
-> There is a sourceforge page. It hasn't been active which probably isn't a good
-> thing. I know I'm keeping a bug list on paper that I know about. It's not a
-long
-> list.  Happy to put it out on sourceforge...  just don't want it all to be a
-waste
-> of time tho. I'm sure Olaf might have a bug or two to contribute 8-)
+> We have a fairly simple bug system we use for BitKeeper; if there was interest
+> I could polish up a version for the PPC team.
 
-I was thinking about this the other day.
+YES!
 
-I would like to see a bug list for the sound stuff (not necessarily
-separate) but so that:
+I was really annoyed when I tried to use bloatzilla (oh, I meant bugzilla)
+and had to get a stupid password to even report a bug. Not to mention
+it was way more info than I needed.
 
-(a) there is some record of what problems people have
-(b) there is some way of putting app-related problems to the app maintainers
-(see thread on endian-ness)
-
----
-
-also it is not terribly obvious how it is decided if a patch is picked up
-and by whom...
-
-if patches are rejected (for some reason) - then it is useful for the patch
-author to know this.
-
-it sometimes has the appearance of being a sort of black hole for diffs...
-
-ciao,
-Iain.
+I'm assuming it's a relatively small amount of code, and could be extended
+without too much of a learning curve? (Say, to include work with this
+nebulus regression tester I keep talking about?)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
