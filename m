@@ -1,64 +1,66 @@
-Date: Sat, 16 Oct 1999 10:31:55 -0400 (EDT)
-From: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
-To: Dan Bethe <dan_bethe@yahoo.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: can't compile SAINT
-In-Reply-To: <19991016004637.10758.rocketmail@web1004.mail.yahoo.com>
-Message-ID: <Pine.SOL.3.96.991016102956.10625A-100000@mcmail.cis.McMaster.CA>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 16 Oct 1999 19:14:21 +0200
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: need Open PIC infos
+Message-Id: <19991016191421.027499@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I wouldn't bother with saint, try nessus which is very current & actively
-supported.  furthermore there is  a very helpful and small usergroup.
-www.nessus.org
+Hi !
 
---------
-Paul Barrette
-Ph.D. Candidate Classics (Latin Literature)
-System Administrator (Linux/Unix specialist)
-McMaster University
-http://www.humanities.mcmaster.ca/~barrette/
+I'm working on support for new UMA machines (beginning with iBook). I
+have already figured out a lot of things and am now coding a very
+preliminary support (I'm not sure yet the PMU99 will work out of the box
+or not, but it looks similar to the old PMU from an interface point of view).
 
-"Oppositaque ad os manu nescio quid taetrum 
-exsibilavit, quod postea Graecum esse affirmabat."
-                                      --Petronius
+However, the new Apple ASICs contains an Open PIC interrupt controller
+(advertised as beeing a "chrp,open-pic" controller). After looking at the
+various docs I have and a quick search on Altavista, I couldn't find any
+relevant documentation on the chip.
+There's already some OpenPIC support in the kernel, but I'll have to
+change it a little bit since, for example, Apple hardware is not a good
+place to search for a 8259 master ;)
+I'd like some docs in order to have better understanding of the chip.
 
-On Fri, 15 Oct 1999, Dan Bethe wrote:
+Anyone knows if such a doc exist ? Apparently, if the register map is not
+completely bogus, the current code returns an OpenPIC versio 1.2, and the
+timer freq is 0x80000000 (ouch !). 
 
-> 
-> 	Hi guys.  If this issue belongs more on
-> linuxppc-user, just say so.
-> 	I'm trying to compile SAINT, from
-> http://www.wwdsi.com/saint/downloads/saint-1.4.beta4.tar.gz.
-> 	I have a Powerbook G3 series Wallstreet II, with
-> LinuxPPC 1999 (not Q3).  Stock glibc-devel 2.2.1-6c. 
-> "Reading specs from
-> /usr/lib/gcc-lib/ppc-redhat-linux/egcs-2.91.66/specs
-> gcc version egcs-2.91.66 19990314 (egcs-1.1.2
-> release)"
-> 	Can you simply tell me if the problem from the
-> following output, has anything to do with any specific
-> part of LinuxPPC?  This application builds perfectly
-> on Solaris 7 / SPARC.  Thank you very much!
-> 
-> make[2]: Entering directory
-> `/usr/local/src/saint-1.4/src/port_scan'
-> cc -O -I/usr/local/src/saint-1.4/include/glibc21 
-> -I/usr/local/src/saint-1.4/include -D_BSD_SOURCE
-> -DSYS_ERRLIST_DECLARED  -DAUTH_GID_T=int -g   -c
-> tcp_scan.c -o tcp_scan.o
-> tcp_scan.c: In function `receive_icmp':
-> tcp_scan.c:640: structure has no member named `ip_hl'
-> tcp_scan.c:667: structure has no member named `ip_hl'
-> 
-> =====
-> "Don't expect your own messiah; this neverworld which you desire is
-> only in your mind." -- http://www.dreamtheater.net/songb4.htm#IV5
-> 
-> 
+Side note: the Keylargo IC contains the open-pic and the SCC cells at the
+exact same location as Hydra, things don't change so much ;) But the new
+chip contains a lot new things.
+
+The Uni-North is a rather weird beast. It appears in the device tree as 4
+devices on the root level:
+
+ /uni-n (the memory controller part)
+ /pci
+    /agp stuffs
+    /ATI
+ /pci
+    /mac-io (KeyLargo is here)
+    /usb
+    (/slots ?)
+ /pci
+    /ethernet
+    (/firewire on some machines)
+
+All 3 "pci" nodes corresponding apparently to the various internal
+busses: the AGP, the ethernet/firewire, and the mac-io/usb, I beleive the
+external pci is on the mac-io/usb part).
+The annoying thing is that all the 3 pci nodes have the same bus number.
+(devices below those have various non-conflicting device number) but all
+3 has different pairs of registers to access config space. This makes the
+config access code a bit weird since it has to lookup the OF node of the
+device in the device tree, get the parent "pci" node, etc... but It
+should work this way.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
