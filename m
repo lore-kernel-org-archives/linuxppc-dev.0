@@ -1,31 +1,43 @@
-Date: Tue, 28 May 2002 13:19:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Murray Jensen <Murray.Jensen@csiro.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Hymod board support and related changes ...
-Message-ID: <20020528201957.GB5997@opus.bloom.county>
-References: <17991.1022564915@msa.cmst.csiro.au> <20020528201810.GA5997@opus.bloom.county>
+Date: Tue, 28 May 2002 16:56:39 -0500
+From: Stephen Cameron <steve.cameron@hp.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Bitkeeper trouble
+Message-ID: <20020528165639.A28325@zuul.cca.cpqcorp.net>
+Reply-To: steve.cameron@hp.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020528201810.GA5997@opus.bloom.county>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, May 28, 2002 at 01:18:10PM -0700, Tom Rini wrote:
->
-> On Tue, May 28, 2002 at 03:48:35PM +1000, Murray Jensen wrote:
->
-> > - Hymod board support
->
-> For the m8260_gorom() call, try using spin_lock_irqsave() instead of
-> save_flags();cli() ... restore_flags();
+"bk pull" used to work, (1 week ago) but
+now fails for me.
 
-Nevermind, spoke too soon here.  But did you really need to add in what
-you did or is it just a cleanup?
+[scameron@zuul lxppc24d]$ bk pull
+drainErrorMsg: Unexpected response:
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Anybody else seeing that?
+
+[scameron@zuul lxppc24d]$ bk version
+BitKeeper/Free version is bk-2.1.6-pre5 20020330075529 for x86-glibc21-linux
+Built by: lm@redhat62.bitmover.com in /usr/build/bk-2.1.x-lm/src
+Built on: Sat Mar 30 00:29:33 PST 2002
+[scameron@zuul lxppc24d]$ cat BitKeeper/*/parent
+http://ppc.bkserver.net/linuxppc_2_4_devel
+
+Do I need a newer version of bitkeeper?
+I didn't see one around.
+
+I am going through an http proxy server
+http_proxy=http://proxy.compaq.com:8080/
+
+(Hmm, I wonder if they changed something about
+it due to HP-Compaq merger?)
+
+thanks for any hints.
+
+-- steve
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
