@@ -1,18 +1,17 @@
-Return-Path: <cfriesen@nortelnetworks.com>
-Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
-	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id 8F5922BF11
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jan 2005 10:35:14 +1100 (EST)
-Message-ID: <41D9D6A2.2010705@nortelnetworks.com>
-Date: Mon, 03 Jan 2005 17:34:58 -0600
-From: Chris Friesen <cfriesen@nortelnetworks.com>
+Return-Path: <evilninja@gmx.net>
+Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 48B182BF10
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jan 2005 11:54:29 +1100 (EST)
+Message-ID: <41D9E932.80605@gmx.net>
+Date: Tue, 04 Jan 2005 01:54:10 +0100
+From: evilninja <evilninja@gmx.net>
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-References: <41D9CD19.50207@nortelnetworks.com>
-	<20050103225822.GC7335@krispykreme.ozlabs.ibm.com>
-In-Reply-To: <20050103225822.GC7335@krispykreme.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: dcbz not used on ppc64?
+To: linuxppc-dev@ozlabs.org
+References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>	<200412272237.57241.marc.dietrich@ap.physik.uni-giessen.de>	<1104625860.10369.34.camel@weizen.left.earth>
+	<200501031326.34477.marvin24@gmx.de>
+In-Reply-To: <200501031326.34477.marvin24@gmx.de>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Blanchard wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
->>1) Is it in fact true that ppc64 does not use dcbz in the kernel?
->>2) If so, why not?  Presumably it would be a win in some cases, 
->>otherwise they wouldn't be using it in ppc32.  Is there some other 
->>factore in play for ppc64?
+Marc Dietrich schrieb:
+> Hi Christian,
 > 
-> 
-> include/asm-ppc64/page.h:clear_page() uses it:
 
-Hmm.  As of 2.6.9 at least, clear_page() is only ever called by 
-clear_user_page(), which in turn is only ever called by 
-drivers/media/video/video-buf.c.  I'm not using that driver, which 
-explains why the instruction didn't show up when I disassembled the kernel.
+actually, Sebastian is the helping hand here ;)
 
-Still, ppc32 also uses it in cacheable_memzero and __copy_tofrom_user. 
-It's also used in cacheable_memcpy, but that routine doesn't seem to be 
-used anywhere.
+> Yes - a hard disk and a cdrom. Both are working under 2.4 kernels (see the 
+> boot.log of the 2.4.24-pre1 kernel). I don't use net boot. My system (debian 
+> sarge) is installed on sda3. Anyway - also on a netboot system, the kernel 
+> should hang when trying to initialize the scsi controler.
 
-Chris
+i can't help you much at the scsi-issue here. as i said, i don't have a
+disk attached to the machine any more. the last time i booted with disk
+was a 2.4 kernel. and these errors (ABORT operation started / timed-out)
+occured upon heavy load on the scsi bus. i think i've never booted a 2.6
+kernel with a scsi disk attached. but the errors look familiar :-(
+
+> I setup a kernel using your config file and added vga console and offb and 
+> removed the nfs drivers to get an image smaller then 1.44 Mb (I'm using 
+> XFree86-3.3.6 with the cirrus 5664 card). This has the same effect than 
+> before: scsi not working. 
+
+:-(
+
+> It seems, that this config is not for a 2.6.10 kernel. What kernel version are 
+> you using? Maybe some bad things happened in newer kernels.
+
+ironically, now that i am able to netboot the machine, i'm not *using* it
+anymore. but i'm building PReP kernel everyday, results and a config-file
+is here:
+
+http://www.nerdbynature.de/bits/sheep/latest-kernel/
+
+> Can you put a working zImage.prep somewhere on the web (<1.44 MB, so I can 
+> write it to a floppy disk)? 
+
+yes, i'll upload working zImage.prep + .config here:
+
+http://www.nerdbynature.de/bits/sheep/prep/
+
+> How does your boot.log looks like?
+
+i'll upload a boot.log too.
+
+Christian.
+- --
+BOFH excuse #78:
+
+Yes, yes, its called a design limitation
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+
+iD8DBQFB2ekxC/PVm5+NVoYRAs/MAKCGSNylixVnx6W20TIK/h5ALwivxQCfc9pi
+IL8BTtzcpDTJ9KNwhixVqXc=
+=ggNI
+-----END PGP SIGNATURE-----
