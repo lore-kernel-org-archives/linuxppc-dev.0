@@ -1,75 +1,45 @@
-From: "Elan Feingold" <elan@nxnetworks.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 31 Jul 2001 14:28:18 -0400 (EDT)
+From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: A few questions about booting
-Date: Tue, 31 Jul 2001 12:22:11 -0500
-Message-ID: <NDBBLJKOJGKDOFBHNPGECEFJCEAA.elan@nxnetworks.com>
+Subject: Compiling and using hhl's glibc
+Message-ID: <Pine.LNX.4.33.0107311414190.1947-100000@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I am getting ready, at long last, to start using glibc on our 603e based
+embedded board. Hitherto, I have not used and of the HHL tools. It does,
+however, look like their glibc has the best patches, so I'd like to give
+it a try.
 
-EST 8260 board, bus at 50Mhz.
+I have downloaded the rpm and extracted it into a directory:
+~/embedded/glibc$ rpm2cpio hhl-target-glibc-2.2.3-hhl2.0.8.src.rpm | \
+                  cpio -i --make-directories
 
-We're now a bit further in the boot process, but we're still having some
-trouble, probably caused by our imperfect understanding of the complete boot
-process.  Here's what we do:
+This gives me a whole bunch of stuff in that directory, including
+glibc-2.2.3pre1.tar.gz. I assume that I need to untar that (along with the
+linuxthreads archive) and do a make in there.
 
-1. We use limon 1.5.0 to load a zImage into memory at 0x900000.  We had to
-modify limon to get it to do that because it wanted to load the zImage at
-0x000000, which of course led to the decompression failing -- I guess limon
-really wanted to use the decompressed kernel.
+My first big question is whether or not all of the needed patched are
+already applied? There are 10 obvious patch files in the directory created
+from the rpm.
 
-2. The kernel decompresses, and then starts to boot ("Now booting Linux").
-That's the last print out we ever see.  The kernel *appears* to be stuck in
-time_init() which I guess would explain why we don't see printouts, because
-the console doesn't get setup until later, right?  Any ideas why that would
-happen?
+I should be able to handle the actual compile well enough- heaven knows
+I've built glibc enough times (sigh...) But, does anyone have
+recommendations for things to or not to do?
 
-Our confusion also stems from the bootinfo stuff.  Limon builds this
-"enhanced" structure that doesn't really resemble the standard bootinfo
-structure in est8260.h.  I think this residual data gets passed to the Linux
-bootloader (which calls embed_config(), which I think modifies what's passed
-in by limon/ppcboot, etc., right?).  We ignore the limon data and simply
-hardwire the values to be what was displayed by limon (cheezy, I know, but
-easy for now).  I don't understand the huge bd_info structure in est8260.h
-(passed in by ppcboot, I guess).  Who uses the structure?  I couldn't find
-any reference to source that used half of the values.  We use the simpler
-bd_info structure defined at the bottom of the file, and hardwire the values
-in embed_config().  I believe this memory then gets passed to the actual
-linux kernel, correct?
+Once I've built glibc, what is the best way to compile against it? I have
+the cross compiler right now installed in ~/embedded/gnu-tools (the
+compiler &c are ~/embedded/gnu-tools/host/i386-linux/bun/powerpc-linux-*).
+I plan on putting the installed glibc files in that directory as well
+(with --prefix given to configure). What modifications would need be made
+to the specs file to compile against this installed library.
 
-The kernel seems to only use:
-
-bi_busfreq, bi_memsize, bi_baudrate, bi_brgfreq, bi_enetaddr, bi_intfreq
-
-for anything useful.  So why are the only parameters in the structure setup
-at all??????  Like bi_vco, or bi_immr, or all those complicated fields in
-the enhanced ppcboot structure?
-
-Here are our values for you to laugh at, or comment on:
-
-baudrate = 9600  (matches limon)
-busfreq = 50000000
-intfreq = 200000000
-cpmfreq = 100000000
-vco = 2 * cpmfreq
-brgfreq = 50000000
-memsize = 16*1024*1024
-memstart = 0
-immr = IMAP_ADDR
-
-Any help would be much appreciated.  We've been using the Vision ICE system
-for debugging, and it's a bit of a pain, because the Linux ELF symbols
-assume 0x00000000 base, and since the MMU maps this into 0xc0000000, the
-debugger gets confused.
-
-Best regards,
-
--elan
+Thanks in advance,
+--Gus
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
