@@ -1,26 +1,35 @@
-Message-ID: <01C31488.C3099A00@PARRILLA>
-From: Pedro Parrilla <pparrilla@prodys.net>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC065FE@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
 To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problems debugging Linux Kernel with Vision ProbeII from Windriver...
-Date: Wed, 7 May 2003 11:06:50 +0100
+Subject: advice please: virtex pro 2
+Date: Wed, 7 May 2003 06:38:39 -0400 
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	Hi,
+Hi everyone,
 
-	I'm working on a MPC860T target with Linux. I'm having problems getting symbol information from the vmlinux (elf non-compressed) image when I use the Convert utility included with Vision Click, which creates its own symbol file (.ab format) for debugging purposes. When I load a symbol file (.ab format) created from vmlinux image with it, I cannot see some symbols from some modules.
+I am just curious what kind of ETA to get a custom board based on virtex
+2 pro "running" is.
 
-	Does anybody have any experience with that?
+Specifically:
 
-	Thank you very much for your help.
+1.) Is it just as "easy" as an MPC860 or MPC8260 based platform ?
 
-	Bye!
+2.) Is there any big caveats I should now about for debugging bring up?
 
- Pedro Parrilla Jimena
- R&D, Dept. Digital Signal Processing, Prodys S.L. (www.prodys.net)
+3.) Does anybody know about vxworks 'support' for this as well?
 
+4.) Is debugging support with BDI, vision ICE, etc there yet for this
+board? Is it just good old JTAG or something different?
+
+5.) Is this chip even mature yet?
+
+Sorry kind of a wierd question I know ... but your opinions are much
+appreciated.
+
+Jim
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
