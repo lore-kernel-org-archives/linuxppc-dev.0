@@ -1,28 +1,39 @@
-Date: Mon, 15 Apr 02 11:11:48 PDT
-From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
-Message-Id: <0204151811.AA07988@ivan.Harhan.ORG>
+Mime-Version: 1.0
+Message-Id: <a04310105b8e0d35b581e@[199.170.89.81]>
+In-Reply-To: <20020415075754.31208@mailhost.mipsys.com>
+References: <a04310101b8e0b0f04111@[199.170.89.178]>
+ <20020415075754.31208@mailhost.mipsys.com>
+Date: Mon, 15 Apr 2002 14:01:32 -0500
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Incoming to helium.harhan.org:/home/linuxppc/linuxppc_2_4_alt
+From: Jeff Walther <trag@io.com>
+Subject: Re: PPB Bug in PowerSurge:  was: 9600 maturity
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Troy Benjegerdes <hozer@drgw.net> wrote:
+At 08:57 +0100 04/15/2002, benh@kernel.crashing.org wrote:
 
-> Above all, *readable* code, because otherwise someone changes something,
-> and inadvertently breaks machines that they don't have to test on.
+>>Do you have suggestions on where I might begin a hunt for such an OF
+>>patch?  I assume this is something that one could load in NVRAM under
+>>any OS that will take care of the bug until the next time the NVRAM
+>>is reset?
+>
+>Yes. DTS provides one for some machines (for example the 6400) if you
+>ask. Some PCI card vendors with a pci<->pci bridge on their card need
+>it.
 
-We've got this one settled in favor of ELF section magic to add machines, which
-works for both of us.
+I suspect I'm going to feel silly for needing to ask this, but how do
+I contact DTS and what does it stand for?
 
-> If better functionality for the user is your goal, you can't achieve it by
-> designing code around that goal. (Unless, of course, you're Apple computer
-> and have large resources for QA and testing, and design the hardware
-> yourself)
+I was aware that there was a patch for the 6400.   Does that same
+patch solve the multi-level PPB problem in PowerSurge as well?
 
-I do design the hardware myself now. But the company I take example from is
-DEC, not Apple.
+Thank you again.  I'm ecstatic to have received this info from you.
+I wasn't expecting to ever get any info on this issue.  Most people
+don't seem to know about it, or aren't willing to discuss it, maybe.
 
-MS
+Jeff Walther
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
