@@ -1,37 +1,38 @@
-Date: Sun, 2 Jan 2000 23:43:08 +0100 (MET)
-From: "Ingvar Hagelund; UiO" <ingvar@unik.no>
-To: linuxppc-workstation@lists.linuxppc.org
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: ramdisk images
-Message-ID: <Pine.GSO.4.10.10001022334430.6632-100000@embla.unik.no>
+Date: Mon, 3 Jan 2000 12:27:09 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Andreas Tobler <toa@pop.agri.ch>
+cc: Linux-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: asm-m68k/setup.h in setup.h
+In-Reply-To: <386B6101.BDCEC7B3@pop.agri.ch>
+Message-ID: <Pine.LNX.4.10.10001031221310.15311-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> I'm playing with buildkernel from http://www.pobox.com/~wstearns/buildkernel/
+> That is a 'program' which should make it easy to build a kernel. I have
+> to find out......
+> 
+> Now this script removes all other archs from the kernel tree. Especially
+> the asm-m68k in the include directory.
+> When building the kernel it fails because asm-m68k/setup.h is not available.
 
-Just a short question:
+That's what you get for using 'smart' tools. Complain to the buildkernel
+author, please. 
 
-I've got an IBM RS/6000 43P-133, and try to install linuxppc-1999.
-I've downloaded bootdisks and a copy of the ftp-site. The box boots,
-but the installer(s) won't work. I guess ramdisk image is the problem. 
+> I saw that asm-ppc/setup.h includes this file. 
+> In asm-ppc/setup.h m68k_num_memory and m68k_memory are defined. These
+> two are declared extern in asm-m68k. 
+> Are there other things needed from asm-m68k/setup.h?
 
-So the question:
-If the ramdisk.img.gz at ftp://ftp.linuxppc.org/install/ does not work
-properly during install. Is this the same ramdisk image as the one on the
-CD-ROM, as described in the README in the PREP-CHRP-BeBox directory on the
-ftp site? If not, where can I find a proper ramdisk image for my box?
+There will be a lot of other things needed even from arch/m68k if you want
+to build kernels for the APUS PPC upgrades for Amigas. The m68k_num_memory
+and m68k_memory variables should only be included in the PPC build if
+support for APUS is configured though. The APUS people have a separate 
 
-Regards 
-Ingvar
-
-------------------------------------------------------------------------
-Ingvar Hagelund             Phone: (+47) 22740512
-E-mail: ingvar@unik.no      WWW: http://www.ifi.uio.no/~ingvarha
-Adress: Ringshusveien 10,   N-1176  OSLO, NORWAY
-Experience GNU/Linux!
--------------------------------------------------------------------------
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
