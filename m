@@ -1,42 +1,35 @@
-Date: Thu, 13 Jun 2002 17:51:56 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>,
-	Eugene Surovegin <ebs@innocent.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Message-Id: <5.1.0.14.2.20020613180327.02e11f68@pop.prodigy.net>
+Date: Thu, 13 Jun 2002 18:25:11 -0700
+To: David Gibson <david@gibson.dropbear.id.au>
+From: Eugene Surovegin <ebs@innocent.com>
 Subject: Re: [PATCH] pci_alloc_consistent in an interrupt context
-Message-ID: <20020614005156.GE13541@opus.bloom.county>
-References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com> <20020613205824.GX13541@opus.bloom.county> <3D0912F4.4020300@embeddededge.com> <20020613215635.GB13541@opus.bloom.county> <20020614002419.GM4228@zax> <20020614003807.GD13541@opus.bloom.county> <20020614004539.GB26146@zax>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Dan Malek <dan@embeddededge.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20020614002419.GM4228@zax>
+References: <20020613215635.GB13541@opus.bloom.county>
+ <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com>
+ <20020613205824.GX13541@opus.bloom.county>
+ <3D0912F4.4020300@embeddededge.com>
+ <20020613215635.GB13541@opus.bloom.county>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020614004539.GB26146@zax>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jun 14, 2002 at 10:45:39AM +1000, David Gibson wrote:
-> On Thu, Jun 13, 2002 at 05:38:07PM -0700, Tom Rini wrote:
-[snip]
-> > Er, the problem of setting dma_handle twice?
->
-> Well, it fixes that and as a bonus gets rid of the ifdefs in
-> pci_{alloc,free}_consistent() and means that if we ever port a driver
-> using consistent_{alloc,free}() to a processor that *is* cache
-> coherent it will Just Work.
+At 05:24 PM 6/13/2002, David Gibson wrote:
+>That's right.  But I think the patch below is a better fix for the
+>problem.  It makes consistent_alloc()/consistent_free() just do the
+>right thing for both cache coherent and cache non-coherent processors,
+>so we can get rid of the ifdef in pci_alloc_consistent() and
+>pci_free_consistent().
 
-In theory at that point OCP would either have its API fully flushed out
-or be applied nicely on top of the generic driver work in 2.5 and it
-would just work anyhow :)
+So, kmalloc will allocate non-cacheable memory?
 
-> > My only concern is that are things still consistent on non consistent
-> > procs?
->
-> Absolutely - no change to the code path at all on non cache coherent
-> processors.
+I seriously doubt it (actually I've just tested it:).
 
-So kmalloc/kfree are equivilent to __get_free_pages/free_pages ?
+Eugene.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
