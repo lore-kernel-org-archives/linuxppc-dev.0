@@ -1,47 +1,44 @@
-Date: Wed, 28 Feb 2001 17:12:03 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Stefano Coluccini <s.coluccini@caen.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Bogus interrupt
-Message-ID: <20010228171203.A29030@beef.az.mvista.com>
-References: <20010227051445.A32137@cx258813-a.chnd1.az.home.com> <NDBBIFIMCKPOADMAJOKMGEIFCPAA.s.coluccini@caen.it>
+Date: Wed, 28 Feb 2001 20:07:56 -0500
+From: Konstantin Olchanski <olchansk@ux1.phy.bnl.gov>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problem requesting IRQ with 2.4.2 kernel
+Message-ID: <20010228200756.E252@ux1.phy.bnl.gov>
+References: <200102280559.XAA05414@lists.linuxppc.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NDBBIFIMCKPOADMAJOKMGEIFCPAA.s.coluccini@caen.it>; from s.coluccini@caen.it on Wed, Feb 28, 2001 at 09:29:18AM +0100
+In-Reply-To: <200102280559.XAA05414@lists.linuxppc.org>; from owner-linuxppc-dev-digest@lists.linuxppc.org on Tue, Feb 27, 2001 at 11:59:28PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 28, 2001 at 09:29:18AM +0100, Stefano Coluccini wrote:
-> > > Hi everyone,
-> > >   I'm trying to run kernel 2.5 on Motorola MVME5100 and, after the sti
-> > > istruction in start_kernel, the kernel hangs due to a spurious
-> > interrupt.
-> > > (Bogus interrupt -1)
-> > > Is this a well-known problem also in other ports ? or have
-> > anyone of you a
-> > > suggestion to solve this ?
-> >
-> > If you are using the default openpic initsenses in prep_pci.c then you
-> > might see this problem since MPIC input 1 now has the 550 UART.  You'll
-> > need to change the initsenses since the edge triggered ECC interrupt
-> > used to be on input 1 on the older boards.
-> >
-> I've started working on MCPN765 port, since I think MVME5100 is an MCPN765
-> with a VME Bridge and without an ISA bridge, so I think the senses of
-> interrupt are correct because the 5100 and the 765 manual page related to
-> the interrupt senses is exactly the same (or it is a cut&paste error ??? :))
-> However this problem, like many other I've encountered, are all due to a bad
-> cross-compiler :(. I start working today with a good environment after a
-> month of nightmares !
+> Date: Tue, 27 Feb 2001 17:56:53 +0100
+> From: xav <grave@ipno.in2p3.fr>
+> Subject: Problem requesting IRQ with 2.4.2 kernel
+>
+> Hi !
+>
+> I'm using a clone of the bk tree to compile a 2.4.2 kernel.
+> I have also downloaded the code from Gabriel Paubert for the
+> pci2vme chip from TUNDRA.
+>
 
-Ok, I finally got time today to powerup the 5100 that's been laying
-around here.  I just pushed the port to the linuxppc_2_5 tree.
-Hopefully this saves some effort for others.
+
+I see the same problem- on my kernels (older bitkeeper 2.4 tree)
+pdev->irq comes out as zero.
+
+By experimenting, I determined (and hardwired into the driver)
+a working Universe irq on the MVME230x: "11".
+
+I do not know how to kludge the "prep" routing tables- none of the
+numbers in those tables match the board and vxworks BSP documentation.
+
+I guess this will be ultimately fixed by Matt Porter's new MVME support
+in the 2.5 tree.
+
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Konstantin Olchanski
+Physics Department, Brookhaven National Laboratory, Long Island, New York
+olchansk@bnl.gov
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
