@@ -1,44 +1,66 @@
-Message-ID: <3A76D9D1.A530BD6F@inn.ericsson.se>
-Date: Tue, 30 Jan 2001 16:12:17 +0100
-From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
+Message-Id: <4.3.2.20010130095138.00baf2a0@falcon.si.com>
+Date: Tue, 30 Jan 2001 10:27:20 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+From: Jerry Van Baren <vanbaren_gerald@si.com>
+Subject: Re: Initial stack frame 
+In-Reply-To: <200101301446.f0UEkTO10556@denx.local.net>
+References: <Your message of "Tue, 30 Jan 2001 08:26:45 EST." <4.3.2.20010130074919.00bb0a80@falcon.si.com>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-CC: Jerry Van Baren <vanbaren_gerald@si.com>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Initial stack frame
-References: <200101301446.f0UEkTO10556@denx.local.net>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
->
-> In message <4.3.2.20010130074919.00bb0a80@falcon.si.com>
-> Jerry Van Baren wrote:
+At 03:46 PM 1/30/01 +0100, Wolfgang Denk wrote:
+
+>In message <4.3.2.20010130074919.00bb0a80@falcon.si.com>
+>Jerry Van Baren wrote:
 > >
 > > One of the differences between the ABI and EABI is that the EABI
 > > requires 8 byte alignment of the stack and the ABI requires 16 byte
 > > alignment (EABI, p.28).
 >
-> Yes, ok. But what is implemented by GCC and glibc? The SVR4 ABI or
-> the EABI?
+>Yes, ok. But what is implemented by GCC and glibc? The SVR4 ABI or
+>the EABI?
 >
-> In other words: Wolfgang Grandegger wants to know if  we  must  align
-> "private" stack frames on 8 or 16 byte boundaries...
+>In other words: Wolfgang Grandegger wants to know if  we  must  align
+>"private" stack frames on 8 or 16 byte boundaries...
 >
-> Wolfgang Denk
+>Wolfgang Denk
 >
+>--
+>Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+>Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+>Visit us at Embedded Systems: Feb 14-16 2001, Nuremberg, Halle 12/K01
+>(with TQ Components); our presentation "Starke Zwerge: Embedded Linux
+>auf PowerPC-Systemen" on Thursday, Feb 15 2001, 13:30 Forum Halle 11.
 
-linux implements SVR4 with exceptions that we don't return small(8 or less
-bytes) structs in r3,r4 as the standard say we should. Could be more things I
-have not noticed we are anyway closer to SVR4 than EABI.
+The stack frame alignment shouldn't matter as long as it doesn't matter
+to the processor (there may be efficiency reasons to align to 16 bytes,
+but there doesn't appear to be any operational problems aligning to 8
+bytes -- I never knowingly misaligned to 4 bytes so I don't know if
+that works).
 
+The difference between 8 and 16 byte alignment is extra padding words
+inside the stack frame.  Since C doesn't allow you to access a
+function's variables from within a nested function (Pascal is the only
+language I can think of that does this), nobody but the local function
+should need to know where the variables are inside a given stack
+frame.  Since that is the routine that put in the padding, it would
+know where the the registers and variables are.  Well, on second
+thought, the debugger (gdb) needs to know where the padding is in order
+to display variables and parameters of the function, but that is
+getting pretty deep into the system.  Stack back-tracing should use the
+frame back chain, which is independent of the alignment padding.
 
---
-Kenneth Johansson
-Ericsson Business Innovation AB   Tel: +46 8 404 71 83
-Viderögatan 3                     Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@inn.ericsson.se
+The ABI/EABI doesn't specify where the padding should be put in the
+frame, but it would logically go in the "Area for constructing
+parameter lists for callees" portion of the frame.  The simplest thing
+to do would be to compile some example functions and look at the
+disassembled output, and then do the same thing -- my favorite method
+of programming (plagiarism is a Good Thing in programming :-).
+
+gvb
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
