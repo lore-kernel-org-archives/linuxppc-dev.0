@@ -1,51 +1,33 @@
-Message-ID: <3C63EC39.ACEECA08@ardistech.com>
-Date: Fri, 08 Feb 2002 16:18:17 +0100
-From: "bart@ardistech.com" <bart@ardistech.com>
-Reply-To: bart@ardistech.com
+Message-ID: <3C63F5A4.5070608@embeddededge.com>
+Date: Fri, 08 Feb 2002 10:58:28 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>,
-	dmalek@jlc.net
-Subject: MPC823: i2c-algo-8xx read interrupt?
-Content-Type: text/plain; charset=us-ascii
+To: Adrian Cox <adrian@humboldt.co.uk>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC107 I2C
+References: <20020208094057.799c099a.adrian@humboldt.co.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Adrian Cox wrote:
 
-When testing with i2c reading an eeprom on a MPC823e I get the message "IIC
-read; complete but rbuf empty". IMHO this is because the interrupt in the TX
-buffer is enabled intead of the the interrupt of the RX buffer. Is this a bug
-or is there a reason behind this?
+> Does anybody know of an I2C driver for the MPC107?  The only clue I
+> found on Google (searching for "MPC107 linux i2c") was a post by Dan
+> Malek saying "I believe the code is lurking around somewhere".
 
-Best regards,
-		Bart Thissen,	Ardis Technologies bv
+I wrote that :-)?  Must have been one of my more foggy days.  Any time
+a question like that is asked I scan the archives looking for tidbits of
+information.  I must have found someone that posted something about it.
 
-
-i2c-algo-8xx.c: cpm_iic_read
-
-Original (with TX interrupt and warning)
-
-	tbdf->cbd_datlen = count + 1;
-	tbdf->cbd_sc =
-		BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST |
-		BD_SC_WRAP | BD_IIC_START;
-
-	rbdf->cbd_datlen = 0;
-	rbdf->cbd_bufaddr = __pa(buf);
-	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP;
+I believe there is (was, it's harder to find these days without registration)
+software on Motorla's website to do this.  I tend to avoid sites that
+require a) registration and, b) Internet Exploder to work properly, so I
+don't know what is on their website these days.
 
 
+	-- Dan
 
-With RX interrupt (without warning):
-
-	tbdf->cbd_datlen = count + 1;
-	tbdf->cbd_sc =
-		BD_SC_READY | BD_SC_LAST |
-		BD_SC_WRAP | BD_IIC_START;
-
-	rbdf->cbd_datlen = 0;
-	rbdf->cbd_bufaddr = __pa(buf);
-	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP | BD_SC_INTRPT;
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
