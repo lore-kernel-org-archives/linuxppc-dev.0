@@ -1,27 +1,41 @@
-Mime-Version: 1.0
-Message-Id: <p05101000b7ecf63c858e@[10.0.0.42]>
-In-Reply-To: <200110121337.JAA21171@missioncriticallinux.com>
-References: <200110121337.JAA21171@missioncriticallinux.com>
-Date: Fri, 12 Oct 2001 12:40:44 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: "Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: PPC+southbridge designs
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: "Justin T. Gibbs" <gibbs@scsiguy.com>
+Subject: Re: no luck with Adaptec SCSI controller in 2.4.X
+Date: Fri, 12 Oct 2001 15:52:07 -0400
+Cc: linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.yellowdoglinux.com
+References: <200110121858.f9CIwnY14960@aslan.scsiguy.com>
+In-Reply-To: <200110121858.f9CIwnY14960@aslan.scsiguy.com>
+MIME-Version: 1.0
+Message-Id: <20011012194947.SUPU19094.tomts9-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 9:37 AM -0400 10/12/01, mod+linuxppc-dev@mclx.com wrote:
->How many existing PPC-based machines incorporate one
->of those kitchen-sink southbridge chips like the VIA
->VT82C686B that are normally found in x86-based machines?
+Hi Justin,
 
-It may or may not be worth noting (depending on exactly how you meant
-this question) that even PowerMacs contain the functional equivalent
-of chips like the VT82C686B.  They're Apple custom ASICs and provide
-Macintosh style I/O ports, but do generally cover the same area of
-functionality as a PC southbridge.
---
-Tim Seufert
+> >So can you point me to where in your driver code the depth of the
+> > tagged queueing is dynamically determined?  I would like to play
+> > around a bit with the driver code to see if I can tell if the Quantum
+> > Fireball is simply spitting back bogus info or and if so what?
+>
+> I can already tell you what is happening.  We send a bunch of commands
+> to the drive expecting it to respond with QUEUE FULL status should we
+> send too many, but the drive instead accepts them for future completion
+> but never actually responds to the commands.  This is why we time out.
+
+So there is really nothing anyone can do about it?  I will just need to
+keep the tag depth at 8 for that drive.
+
+Earlier you said something about a firmware upgrade for those drives?
+Would a firmware upgrade help solve this issue more cleanly or given that
+it is now working should I just forget about it and leave well enough
+alone.
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
