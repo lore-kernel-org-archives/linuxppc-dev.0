@@ -1,43 +1,53 @@
-Date: Tue, 8 May 2001 17:14:39 +1000
-From: Steven Hanley <sjh@svana.org>
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: cant set port_type in new airport driver
-Message-ID: <20010508171439.A1386@wibble.net>
-Reply-To: Steven Hanley <sjh@wibble.net>
-Mime-Version: 1.0
+Message-ID: <3AF8554D.BF250E0A@arlut.utexas.edu>
+Date: Tue, 08 May 2001 15:21:33 -0500
+From: Ken Offer <koffer@arlut.utexas.edu>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Problem with linuxppc smp.c
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-All
+Hi all,
 
-in ben's old driver for the airport I was able to do
-modprobe airport port_type=3
-to set the Mode to Ad-hoc rather than managed.
+Compiling the latest-greatest linuxppc 2.4.5 from
+www.fsmlabs.com/linuxppcbk.html yields the following compile-time errors
+in arch/ppc/kernel/smp.c:
 
-however if the card is already in Managed mode
-iwconfig airport mode Ad-hoc
-will fail
+gcc -D__KERNEL__ -I/usr/src/linuxppc_2_4_5/include -Wall
+-Wstrict-prototypes -O2 -fomit-frame-pointer -fno-strict-aliasing
+-D__powerpc__ -
+fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple
+-mstring    -c -o smp.o smp.c
+smp.c: In function `smp_gemini_kick_cpu':
+smp.c:670: `i' undeclared (first use in this function)
+smp.c:670: (Each undeclared identifier is reported only once
+smp.c:670: for each function it appears in.)
+smp.c: In function `smp_gemini_setup_cpu':
+smp.c:679: `cpu_nr' undeclared (first use in this function)
+smp.c: At top level:
+smp.c:748: warning: initialization from incompatible pointer type
+make[1]: *** [smp.o] Error 1
+make[1]: Leaving directory `/usr/src/linuxppc_2_4_5/arch/ppc/kernel'
+make: *** [_dir_arch/ppc/kernel] Error 2
 
-now in the new driver I can no longer pass the port_type as a paramater to the
-modprobe (it isnt in the sources for airport.c orinoco.c or hermes.c) and yet
-you still can not change to Ad-hoc mode with iwconfig, the sourced in
-orinoco.c for the ioctl to set the mode still are the same effectively.
+I'm compiling the 2.4.5 kernel on a synergy VSS4 board using gcc-2.95.3
+and binutils-2.11.90.0.7 installed.  The machine-type is configured as
+"gemini", since I'm on the VSS4.
 
-So doe sanyone know how to set the mode to Ad-hoc in the new airport driver? I
-cant use Managed as I dont use a base station, I use another card in another
-computer also in Ad-hoc mode and set up a cipe link over the link.
-
-        See You
-            Steve
+Any thoughts?  I guess I could try to grok the author's meaning and fix
+this... ;-)
 
 --
-sjh@wibble.net http://wibble.net/~sjh/
-Look Up In The Sky
-   Is it a bird?  No
-      Is it a plane?  No
-         Is it a small blue banana?
-YES
+______________________________________________________________
+Kenneth Ray Offer, II
+Sr. Systems Analyst
+Applied Research Laboratories/SDD
+University of Texas at Austin
+Office (512) 835-3859   FAX (512) 835-3259
+
+Any opinions expressed above are mine and not necessarily
+those of my employer.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
