@@ -1,48 +1,50 @@
-Date: Mon, 8 Jan 2001 05:15:34 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: status of ppc support in official 2.4.0 or Alan's 2.4.0-ac1
-Message-ID: <20010108051534.C29805@plato.local.lan>
-References: <200101070559.XAA14527@lists.linuxppc.org> <Pine.SOL.3.95.1010108140927.12092B-100000@juliet>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ne2Pfivg4jz0YhPf"
-In-Reply-To: <Pine.SOL.3.95.1010108140927.12092B-100000@juliet>; from supas100@astrophysik.uni-kiel.de on Mon, Jan 08, 2001 at 02:35:23PM +0100
+Message-ID: <3A59CF72.750A6C1A@pop.agri.ch>
+Date: Mon, 08 Jan 2001 15:32:29 +0100
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Conrad H Ziesler <cziesler@umich.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: ibook, hda power off sequence (for IBM travelstar)
+References: <Pine.SOL.4.10.10101061727190.28634-100000@frogger.gpcc.itd.umich.edu> <19341203045809.13248@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---ne2Pfivg4jz0YhPf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jan 08, 2001 at 02:35:23PM +0100, Derek Homeier wrote:
-
-> I can't get a ppp connection under 2.4.0 either (didn't work with any of
-> the -test kernels). The connection itself seems to be established correct=
-ly,
-> but then pppd or chat have problems with the terminal type:
->=20
-> Jan  7 22:26:35 miranda kernel: CSLIP: code copyright 1989 Regents of the=
- University of California
-> Jan  7 22:26:35 miranda kernel: PPP generic driver version 2.4.1
-> Jan  7 22:26:35 miranda pppd[834]: pppd 2.3.10 started by derek, uid 2300
-                                     ^^^^^^^^^^^^
-
-you need version 2.4.0 of the userspace ppp daemon to work with 2.4 kernels.
-
-see linux/Documentation/Changes
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---ne2Pfivg4jz0YhPf
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Hi all,
 
 
---ne2Pfivg4jz0YhPf--
+Benjamin Herrenschmidt wrote:
+>
+> >
+> >This bit of code replaces pmu_shutdown from via-pmu.c, its the easiest
+> >hack to get the IDE code to issue a sleep command to the disk at shutdown
+> >time.
+>
+> Broadcasting fake sleep requests is definitely not the correct way to
+> acheive what you want. Either add direct call to some ide-pmac sleep
+> function in the arch shutdown function, or use the shutdown notifiers in
+> ide-pmac to force a disk shutdown.
+>
+> I'll have a look at it when I'm really back.
+
+I'm also interested in this fix since I got my travelstar DJSA-220
+finally to work on a WALLSTREET! I remarked the same noisy click and
+since the troubles I had with a dead toshiba I pay very much attention
+to strange noises.
+
+For those who have a wallstreet and a travelstar, here the link which
+made my combination work.
+
+http://www.xlr8yourmac.com/PB_G3/wallstreet_hard_drive/
+
+I first thought I really have to buy a new Powerbook.
+
+Only a notice, it may help some one.....
+
+Cheers
+
+Andreas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
