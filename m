@@ -1,6 +1,6 @@
-Message-Id: <200007292107.WAA04363@hyperion.valhalla.net>
-Date: Sat, 29 Jul 2000 22:06:54 +0100
-Subject: 2.4.0-test5 observations
+Message-Id: <200007292137.WAA05449@hyperion.valhalla.net>
+Date: Sat, 29 Jul 2000 22:38:04 +0100
+Subject: 2.4.0-test5 :-((((
 From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
@@ -9,44 +9,23 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Strange...
 
-1.  My build problem was solved by:
+1/
 
---- bk-devel/drivers/input/adbhid.c Sat Jul 29 08:04:54 2000
-+++ linux-2.4.0-t5-wrk/drivers/input/adbhid.c Sat Jul 29 17:28:42 2000
-@@ -40,9 +40,9 @@
- #include <linux/input.h>
- #include <linux/kbd_ll.h>
+When in "single" lower-case "a" doesn't work.  It's the only key AFAI can
+tell.
 
--#include <asm/adb.h>
--#include <asm/cuda.h>
--#include <asm/pmu.h>
-+#include <linux/adb.h>
-+#include <linux/cuda.h>
-+#include <linux/pmu.h>
- #include <asm/backlight.h>
+Works OK once we get to init 5 and the Xserver is up (Xpmac rev 10).
 
- #define KEYB_KEYREG 0 /* register # for key up/down data */
+2/
 
+Second access of my HFS exchange partition locks the machine up solid - no
+recovery (three finger salute required).
 
-======
+Bad news... makes it not sensible for me (I'm using BootX)... I'll do a diff
+to -test4 (because I don't think this was happening there... not sure).
 
-This may be related to my so-called "broken" distro re. kernel builds - but
-there it is...
-
-========
-2. The sound [AWACS rev 3] (at present) exhibits the following behaviour
-(built as modules).
-
-The first buffer plays and then.... silence...
-
-I don't know if it's related, but the kernel log is filling up with:
-
-Jul 29 22:50:41 athena VFS: Disk change detected on device ide1(22,0)
-Jul 29 22:50:41 athena last message repeated 684 times
-
-messages... IIRC this happened also on 2.4.0-test4
-
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
