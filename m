@@ -1,39 +1,31 @@
-Date: Wed, 24 May 2000 15:11:03 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Tom <tdilling@mac.com>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-users@lists.linuxppc.org
-Subject: Re: yaboot problems (still -- suggestions welcome!)
-In-Reply-To: <392C4F17.61D04687@mac.com>
-Message-ID: <Pine.LNX.3.96.1000524150756.5215K-100000@deepspace.mklinux.org>
+Date: Thu, 25 May 2000 00:22:24 +0200 (MET DST)
+From: Albrecht Dress <adress@mpifr-bonn.mpg.de>
+To: Bernhard Reiter <bernhard@intevation.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Powerbook hard freeze summary (sort of)
+In-Reply-To: <20000524161837.M6396@cheops.usf.Uni-Osnabrueck.DE>
+Message-ID: <Pine.SOL.4.21.0005250015140.1834-100000@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 24 May 2000, Tom wrote:
+> Is there somebody out there having a >=400 Mhz Lombard
+> and Pismo who is _not encountering hard freezes_ under high pressure?
+> (Preferably with more that 64MB. Because I never got the hard freeze
+> when I only used 64MB with the mem=64MB switch.)
 
-> When in OF and I try to boot directly by providing the OF path manually,
->
-> I get this error:
-> method <open> not found ; ihandle=ff9c4980 phandle=ff8a9708 method
-> <close> not found ihandle=ff9c4980 phandle=ff8a9708 can't OPEN:
-> /pci@f2000000/.... {etc}.
-> I don't know what this means or what to do with this information.
-> (Anyone have any idea?)
+Hi Bernhard,
 
-No clue.  I've had similar problems running yaboot on my G4.  Does BootX
-not work for you?
+we have a Lombard, 333 MHz, 320 MB Ram, and two Pismo's, 500 MHz, 384 MB
+Ram each, and all run without any problems with LinuxPPC 2000, but with
+the kernel upgraded to 2.2.15pre20.  I ran the HINT benchmark on all
+machines (which should be some kind of high pressure), and a colleague ran
+data reduction software on one of the PISMO's (high preasure, too).
+Again, no problems/freezes yet (which, as I hope, will last.. ;-)
 
-
-David
-
----------------------------------------------------------------------
-A brief Haiku:
-
-Microsoft is bad.
-It seems secure at first glance.
-Then you read your mail.
+Yours, Albrecht.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
