@@ -1,26 +1,27 @@
-Date: Mon, 13 May 2002 10:05:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Allen Curtis <acurtis@onz.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rsync linuxppc-2.5?
-Message-ID: <20020513170531.GF721@opus.bloom.county>
-References: <NCBBIINEHIPFGJPLBEIFCEPDDGAA.acurtis@onz.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NCBBIINEHIPFGJPLBEIFCEPDDGAA.acurtis@onz.com>
+From: benh@kernel.crashing.org
+To: Ben Collins <bcollins@debian.org>,
+	Bill Fink <billfink@mindspring.com>
+Cc: <linux1394-devel@lists.sourceforge.net>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Firewire Disk Broken in 2.4.19-pre8-ben0 kernel (was working
+ fine with 2.4.18-ben0)
+Date: Mon, 13 May 2002 18:29:30 +0100
+Message-Id: <20020513172930.12877@mailhost.mipsys.com>
+In-Reply-To: <20020513160900.GK494@blimpo.internal.net>
+References: <20020513160900.GK494@blimpo.internal.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, May 13, 2002 at 08:02:00AM -0700, Allen Curtis wrote:
+>460 was the last revision that ohci1394.c changed, so that's normal.
+>BenH may know more about the problem here.
 
-> While trying to rsync linuxppc-2.5, I get an error saying that chroot
-> failed...connection unexpectently closed.
+No idea, sorry. This machine has a normal OHCI (not the pismo bogus one)
+and so far, I had no problem with my boxes and the latest .19pre8 codebase
 
-Whoops, typo in the conf file.  This is fixed now.
+Ben.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
