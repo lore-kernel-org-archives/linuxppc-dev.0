@@ -1,49 +1,27 @@
-Message-ID: <3BD68B50.8090904@elsoft.ch>
-Date: Wed, 24 Oct 2001 11:35:12 +0200
-From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3BD6AA4D.1050502@capflow.com>
+Date: Wed, 24 Oct 2001 13:47:25 +0200
+From: Laurent Pinchart <laurent.pinchart@capflow.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Registering RTC access methods in platform_init()
+Subject: MPC8xx IDE
 Content-Type: text/plain; charset=us-ascii; format=flowed
+Reply-To: laurent.pinchart@capflow.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+Hi
 
-I have a question regarding the registering of the RTC access methods in
-platform_init() in ppc4xx_setup.c.
-The problem is quite similar to the one i stated in
-one of my previous e-mails "Additional IRQ handlers in ppc4xx_init_IRQ()".
+While trying to find an easy way to add non-volatile storage on a
+custion MPC860 board, I noticed that there was some support for IDE on
+the PCMCIA interface in the Linux kernel.
 
-Currently this is done in this way:
+Does anyone know where I can find more information about that ? There
+seems to be a board (IVMS8) with such an IDE interface, but I haven't
+been able to find anything about it on the web.
 
-#ifdef CONFIG_PPC_RTC
-/* new timer stuff */
-	ppc_md.time_init = todc_time_init;
-	ppc_md.set_rtc_time = todc_set_rtc_time;
-	ppc_md.get_rtc_time = todc_get_rtc_time;
-
-#if !defined(CONFIG_PIP405) && !defined(CONFIG_MIP405)
-	ppc_md.nvram_read_val = todc_direct_read_val;
-	ppc_md.nvram_write_val = todc_direct_write_val;
-#else
-	ppc_md.nvram_read_val = todc_mc146818_read_val;
-	ppc_md.nvram_write_val = todc_mc146818_write_val;
-#endif
-#endif
-
-
-All other ports using a MC146818 RTC have their own xxx_setup.c file
-(Sandpoint, Adirondack, ...).
-
-I suppose the preferred way to solve this is to replace this whole init
-code by a call to a board specific init routine?
-
-
-
-
-Dave
+Laurent Pinchart
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
