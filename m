@@ -1,17 +1,19 @@
-Return-Path: <annamaya@yahoo.com>
-Received: from web53806.mail.yahoo.com (web53806.mail.yahoo.com
-	[206.190.36.201]) by ozlabs.org (Postfix) with SMTP id 291F32BF10
+Return-Path: <Alexander.Povolotsky@marconi.com>
+Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
+	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 1072E2BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Dec 2004 02:56:38 +1100 (EST)
-Message-ID: <20041217155637.27997.qmail@web53806.mail.yahoo.com>
-Date: Fri, 17 Dec 2004 07:56:37 -0800 (PST)
-From: annamaya <annamaya@yahoo.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20041215171824.97038.qmail@web53805.mail.yahoo.com>
+	Sat, 18 Dec 2004 03:31:27 +1100 (EST)
+Message-ID: <313680C9A886D511A06000204840E1CF0A6473AF@whq-msgusr-02.pit.comms.marconi.com>
+From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+To: "'Sam Song'" <samlinuxppc@yahoo.com.cn>
+Date: Fri, 17 Dec 2004 11:30:53 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Initialization of Timer Clock on the MPC8260 
+Content-Type: text/plain;
+	charset="gb2312"
+Cc: "'Demke, Torsten'" <Torsten.Demke@fci.com>,
+	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>,
+	'Steven Blakeslee' <BlakesleeS@embeddedplanet.com>
+Subject: 2.6.10-rc3 for 8xx with I2C config enabled  still fails ...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,110 +24,86 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-OK Wolfgang. Noone has posted an answer to this
-question in the U-Boot mailing list. So, I still need
-help with this. :-)
+Hi,
 
-I am looking at the support for one of your own
-boards, the TQM8260. I dont see PC25, PC27 and PC26
-being configured anywhere. And PC29 is configured as
-an SCC1 CLSN signal. Therefore, I think the internal
-BRGCLK is used as an input to the timerclk. Now, if
-this was true, BRGC1 should have been programmed to
-generate either 4MHz or 32KHz clock. But I dont see
-this being done anywhere else in the code. I am
-missing something and I am not sure what that is.
+Even so much "touted" ;-) 2.6.10-rc3 FAILS for 8xx with I2C config enabled 
+... and our custom MPC885 based board is using a single 24C02 type I2C
+EEPROM, connected to the I2C bus ...
 
-Thanks much for your help.
+Does anyone of you has any input/experience about 2.6.10-rc3 functionality
+(this all relates to our card) of:
+SPI, HDLC, Entropia, Legerity, watchdog, NAND flash support,
+MTD with JFFS2 filesystem support and flash compatibility ??? (Any info will
+be much appreciated !)
 
-
---- annamaya <annamaya@yahoo.com> wrote:
-
-> Hello Wolfgang,
-> 
-> I will surely post this in the U-Boot forums. I just
-> did not know where it was but I think I've found it
-> now. I still had the address to the PPCBOOT mailist
-> lists. I miss the good old days. :-)
-> 
-> And to answer you questions, yes, I did look at the
-> GPIO pins for all the 8260 boards and not one of
-> them
-> was configured to be a clock. And I was unable to
-> find
-> the setbrg() routine elsewhere to set brgc1 to be
-> the
-> input for timerclk.
-> 
-> -Navin.
-> 
-> --- Wolfgang Denk <wd@denx.de> wrote:
-> 
-> > In message
-> >
-> <20041214230712.79751.qmail@web53805.mail.yahoo.com>
-> > you wrote:
-> > > I am not sure if this is the right place to ask
-> > this
-> > > question since this may be a U-Boot question. I
-> am
-> > 
-> > Why do you ask here and not on the U-Boot mailing
-> > list then?
-> > 
-> > > trying to understand how the source for the
-> timer
-> > > clock is selected on this processor. Figure 4-3
-> > tries
-> > > to explain this but I am unable to find code in
-> > U-Boot
-> > > that actually sets either BRG1 or one of the
-> GPIO
-> > pins
-> > > to act as inputs for the timer clock generation.
-> > Can
-> > > someone point me to the right place in the code
-> > where
-> > 
-> > Well, did you check the place where all GPIO pins
-> > get initialized, i. e. board/<name>/<name>.c ?
-> > 
-> > Best regards,
-> > 
-> > Wolfgang Denk
-> > 
-> > -- 
-> > Software Engineering:  Embedded and Realtime
-> > Systems,  Embedded Linux
-> > Phone: (+49)-8142-66989-10 Fax:
-> (+49)-8142-66989-80
-> > Email: wd@denx.de
-> > "To take a significant step forward, you must make
-> a
-> > series of finite
-> > improvements." - Donald J. Atwood, General Motors
-> > 
-> 
-> 
-> 
-> 		
-> __________________________________ 
-> Do you Yahoo!? 
-> The all-new My Yahoo! - Get yours free! 
-> http://my.yahoo.com 
->  
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-
-
-
-		
-__________________________________ 
-Do you Yahoo!? 
-All your favorites on one personal page – Try My Yahoo!
-http://my.yahoo.com 
+Thanks,
+Alex
+****************************************************************
+CONFIG_8xx=y
+............
+............
+CONFIG_MTD=y
+............
+CONFIG_HDLC=y
+............
+CONFIG_PPP=y
+............
+CONFIG_I2C=y
+...............
+  CC      drivers/i2c/busses/i2c-rpx.o
+drivers/i2c/busses/i2c-rpx.c:20:32: linux/i2c-algo-8xx.h: No such file or
+directory
+drivers/i2c/busses/i2c-rpx.c:26: warning: "struct i2c_algo_8xx_data"
+declared inside parameter list
+drivers/i2c/busses/i2c-rpx.c:26: warning: its scope is only this definition
+or declaration,
+which is probably not what you want
+drivers/i2c/busses/i2c-rpx.c: In function `rpx_iic_init':
+drivers/i2c/busses/i2c-rpx.c:34: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:38: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:38: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:39: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:39: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:41: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:42: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:53: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c:56: error: dereferencing pointer to incomplete
+type
+drivers/i2c/busses/i2c-rpx.c: At top level:
+drivers/i2c/busses/i2c-rpx.c:67: error: variable `rpx_data' has initializer
+but
+incomplete type
+drivers/i2c/busses/i2c-rpx.c:68: error: unknown field `setisr' specified in
+initializer
+drivers/i2c/busses/i2c-rpx.c:69: warning: excess elements in struct
+initializer
+drivers/i2c/busses/i2c-rpx.c:69: warning: (near initialization for
+`rpx_data')
+drivers/i2c/busses/i2c-rpx.c: In function `i2c_rpx_init':
+drivers/i2c/busses/i2c-rpx.c:83: warning: passing arg 1 of `rpx_iic_init'
+from incompatible pointer type
+drivers/i2c/busses/i2c-rpx.c:85: warning: implicit declaration of function
+`i2c_8xx_add_bus'
+drivers/i2c/busses/i2c-rpx.c: In function `i2c_rpx_exit':
+drivers/i2c/busses/i2c-rpx.c:95: warning: implicit declaration of function
+`i2c_8xx_del_bus'
+drivers/i2c/busses/i2c-rpx.c: At top level:
+drivers/i2c/busses/i2c-rpx.c:67: error: storage size of `rpx_data' isn't
+known
+make[3]: *** [drivers/i2c/busses/i2c-rpx.o] Error 1
+make[2]: *** [drivers/i2c/busses] Error 2
+make[1]: *** [drivers/i2c] Error 2
+make: *** [drivers] Error 2
+-----Original Message-----
+From: Sam Song [mailto:samlinuxppc@yahoo.com.cn]
+Sent: Friday, December 17, 2004 5:32 AM
+To: Povolotsky, Alexander; 'linuxppc-embedded@ozlabs.org'
+Subject: Re: Error cross-building Linux 2.6 for 8xx
