@@ -1,98 +1,101 @@
-Message-Id: <v04003a00b43e690932c6@[216.81.26.227]>
-In-Reply-To: <Pine.HPX.4.10.9910281205380.18743-100000@gra-ux1.iram.es>
-References: <v04003a00b43d2b8b3cd6@[216.81.1.41]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 28 Oct 1999 16:20:38 -0500
-To: Gabriel Paubert <paubert@iram.es>
-From: Tony Mantler <eek@escape.ca>
-Subject: Re: question about altivec registers
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <381912CE.9DB75640@263.net>
+Date: Fri, 29 Oct 1999 11:21:50 +0800
+From: Wang Yong <wung_y@263.net>
+Reply-To: wung_y@263.net
+MIME-Version: 1.0
+To: Dan Malek <dan@netx4.com>
+CC: Andreas Tobler <a.tobler@schweiz.ch>,
+        linux-ce-devel <linuxce-devel@linuxce.org>,
+        linux-ppc <linuxppc-dev@lists.linuxppc.org>,
+        linuxppc embedded mail list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: help, build Cross GCC
+References: <38184905.117429CD@263.net> <38184DC8.6773D84D@schweiz.ch> <381878FB.8916CB9@netx4.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 6:01 AM -0500 10/28/99, Gabriel Paubert wrote:
->On Wed, 27 Oct 1999, Tony Mantler wrote:
->
-[...]
->> It would seem to me that using a bitmap to mark used registers would allow
->> more flexibility on the compiler side to play with register usage without
->> incurring longer context switch times. I wouldn't try to guess the relative
->> tradeoff values though.
->
->Since all 32 registers have exactly the same capabilities, using only a
->consecutive set of registers is not a problem for the compiler. That's how
->it works for integer registers and FP registers 14 to 31 (for integer
->actually register 0 is special).
+hi, Dan:
+i am now building a gcc for powerpc on i686. i have downloaded 
+binutils-2.9.5.0.16 and gcc-2.95.2. i need the latest version of gcc
+for i want to build program for powerpc403 and powerpc401.
+and then, i first built binutils by these step:
+1. decompress the binutils-2.9.5.0.16.tar to a temp directory.
+2. chdir to that directory and run "./configure
+--target=powerpc-linux-gnu"
+3. run "make" and "make install"
 
-I suppose I'm a bit too used to 68k stuff, where sorting register usage
-takes a back seat to efficient register re-use. However, with the size of
-the data in the Altivec registers, I would expect a bit of optimization to
-slant away from cases where the registers can be easily sorted and packed.
+after all these done, i build binutils to /usr/local/bin. 
+next i begin to build gcc:
+1. decompress the gcc-2.95.2 to another temp directory.
+2. chdir to that directory and run "./configure
+--target=powerpc-linux-gnu"
+3. run "make" and "make install"
 
+but this time, i failed. make told me it failed to find stdlib.h and
+uinstd.h
+when build libgcc2.a. then i tried to modify the Makefile and this line:
+CFLAGS = -g -O2 -Dinhibit_libc
 
->Taking into account the comments on the
->ABI, the only strategy which seems implementable is to distinguish 2 cases
->only vrsave=0 and vrsave!=0. Using a bitmap means a lot of conditional
->branches, which can obviously be folded but nevertheless bloat the code.
->(For save+restore: 64 conditional branches + 16 mtcrf= 320 bytes).
+after run make, another error came out :-(
+--------------------
+checking for sys/time.h... yes
+checking for sys/resource.h... yes
+checking for sys/wait.h that is POSIX.1 compatible... no
+checking whether the C compiler (/root/gcc-2.95.2/gcc/xgcc
+-B/root/gcc-2.95.2/gcc/ -B/usr/local/powerpc-linux-gnu/bin/ -g -O2
+-Dinho
+configure: error: installation or configuration problem: C compiler
+cannot create executables.
+make[1]: Entering directory `/root/gcc-2.95.2/powerpc-linux-gnu/libio'
+test x"no" != xyes ||\
+  /root/gcc-2.95.2/gcc/xgcc -B/root/gcc-2.95.2/gcc/
+-B/usr/local/powerpc-linux-gnu/bin/ -c -g -O2 -Dinhibit_libc -I. -I.
+-D_IO_MTSAo
+/root/gcc-2.95.2/gcc/xgcc -B/root/gcc-2.95.2/gcc/
+-B/usr/local/powerpc-linux-gnu/bin/ -c -g -O2 -Dinhibit_libc -I. -I.
+-D_IO_MTSAFEc
+In file included from iogetline.c:26:
+libioP.h:30: errno.h: No such file or directory
+In file included from iolibio.h:1,
+                 from libioP.h:47,
+                 from iogetline.c:26:
+libio.h:30: _G_config.h: No such file or directory
+iogetline.c:27: string.h: No such file or directory
+make[1]: *** [iogetline.o] Error 1
+make[1]: Leaving directory `/root/gcc-2.95.2/powerpc-linux-gnu/libio'
+make: *** [all-target-libio] Error 2
+--------------------
+somebody told me i must install lib and include file for the ppc first. 
+but where to download them. 
+do you think i still miss something.  would you please show me the right
+step to build?
 
-Quite true.
-
-
->There is also a problem of knowing how to update the bitmap in nested
->subroutines: to keep it correct the called subroutine must save the
->current vrsave and then or it with the bitmask of the registers it uses.
->Then on exit it has to restore caller's vrsave. Do we want such a complex
->strategy ? I don't mean that it is impossible to implement, but that it
->looks complex.
-
-I think saving registers in a subroutine is a pain no matter how it's
-implemented. If the VRSAVE is used as a count, the subroutine still has to
-save the old value, save the overwritten registers, calculate what the
-proper new value is (think new < old = oops!) then restore the overwritten
-registers and old VRSAVE value when it exits.
-
-
->OTOH, if the register usage is designed similarly to integer and FP, the
->bitmask might look like 111...1100...0011...11 (i.e. with at most 2
->transitions between 0 and 1 in the bit string). It might be worth
->optimizing the save/restore routine for this case, saving/restoring more
->registers than necessary when vrsave does not have such a canonical form.
-
-Hmm, count bits in from the left and right, mask and check for missed bits,
-then branch to either a full save or a left+right save.
-
-Doing it that way would also somewhat optimize VRSAVE=0, since both the
-leftmost and rightmost bits are 0, it would pass right through the
-left-save and right-save half of the optimized register save.
-
-Perhaps a little longer than "if (VRSAVE==0) return;", but it's quick
-enough for me.
-
-
-[.. enforce proper VRSAVE usage ..]
->
->Indeed, I had not considered this problem. Note that conditional clearing
->of most registers can probably be done without conditional branches. Just
->put a copy of vrsave in one vr and then find a smart way to transform
->these bits in masks to clear the registers (probably you'll have to splat
->it first). It won't work for the the last register(s) because you need
->some workspace, however.
-
-Mmm, the joys of a bitwise AND.
+regards,
+Wang
 
 
->Anyway, having a special fast path for the case vrsave=0 is probably the
->most important optimization IMHO.
 
-Indeed.
-
-
---
-Tony Mantler         Renaissance Nerd Extraordinaire         eek@escape.ca
-Winnipeg, Manitoba, Canada                       http://www.escape.ca/~eek
-
+Dan Malek wrote:
+> 
+> Andreas Tobler wrote:
+> 
+> > Try here:
+> > http://members.home.com/mmporter/linux/cross/
+> 
+> I have binaries for RedHat 5.2 Linux/x86 on ppc.kernel.org in
+> the embedded directory.  It is a tar file called xppctools or
+> something like that.  These load into /opt, so they are easy
+> to remove if you want to do something else.  Just put the bin
+> directory in your search path.
+> 
+> I believe this was the last EGCS version before the GCC merge.
+> You will need to select your favorite libraries and include
+> files, as those are not included.  It will build the kernel
+> just fine.
+> 
+> It is something to get you started....
+> 
+>         -- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
