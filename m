@@ -1,53 +1,48 @@
-Message-ID: <388804D3.DF16EE2F@mpifr-bonn.mpg.de>
-Date: Fri, 21 Jan 2000 08:03:47 +0100
-From: Albrecht Dre_ <ad@mpifr-bonn.mpg.de>
+Date: Fri, 21 Jan 2000 08:58:56 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kevin Hendricks <khendricks@ivey.uwo.ca>
+cc: Gabriel Paubert <paubert@iram.es>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
+In-Reply-To: <00012021232600.07340@localhost.localdomain>
+Message-ID: <Pine.LNX.4.05.10001210858020.980-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>
-CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: gcc 2.95/PPC bug
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-When trying to find the cause for crashes of LAME, I think I found a
-bug in the gcc.  The code below (which is actually a simpilified excerpt
-from LAME) will NOT pass the parameter `buggy' correctly to the
-subroutine.  Changing the number/type/sorting of the parameters will,
-however, produce a working code in some cases.  Some facts about the
-system:
+On Thu, 20 Jan 2000, Kevin Hendricks wrote:
+> > I actually doubt that the eieio are necessary but then I'm not a
+> > specialist on this kind of hardware. Every eieio is a bus broadcast
+> > operation (except on 603, on G3 it is IIRC an option controlled by a bit
+> > in HID0) and actually has a cost comparable to a write posted I/O access
+> > but the other consequences (preventing bursts on the I/O bus) may actually
+> > cause a significant performance hit.  So it should be used only when
+> > necessary...
+> >
+> > > Please let me know how to change the above so that I get it right this time.
+> >
+> > Try to determine first whether the eieio are necessary; for access to the
+> > frame buffer I'm almost sure that they are superfluous and potentially
+> > very costly in terms of performance. For the MMIO I suspect that they may
+> > be necessary at some places, but adding them systematically will have less
+> > impact.
+>
+> Okay, I went and looked at the latest aty128fb.c code and it does not use eieio
+> anywhere.  I looked at ealier verions of this file and it at one time had eieio
+> but they have since been removed.
 
-  Machines: PowerMac 7300 (604e), LinuxPPC 2.2.11
-	    PB "Lombard" (G3), LinuxPPC 2.2.12
-  gcc:      versions 2.95 and 2.95.1
-  options:  gcc -O0 -Wall gcc-2.95-ppc-bug.c -o gcc-2.95-ppc-bug
+Perhaps they were replaced by the platform independent wmb()?
 
-Is this a known (and hopefully already fixed ;-) bug, or should it go
-directly to gcc-bugs@gcc.gnu.org?
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
 
-Thanks, Albrecht.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
----snip here:gcc-2.95-ppc-bug.c-----------------------------------------------
-#include <stdio.h>
-
-void vartest (double xr[2][2][576],
-              int l3_enc[2][2][576],
-              int var1, int var2, int var3, int var4, int var5, int var6,
-              int var7, int var8, int var9, double var10, int buggy)
-{
-  printf ("%d %d %d %d %d %d %d %d %d %g %d\n",
-          var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, buggy);
-}
-
-int main ()
-{
-  double xxx [2][2][576];
-  int eee [2][2][576];
-
-  vartest (xxx, eee, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11);
-
-  return 0;
-}
----end of bug demo code-------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
