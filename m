@@ -1,36 +1,34 @@
-Message-Id: <36CAED45.D35789FD@pop.agri.ch>
-Date: Wed, 17 Feb 1999 17:24:38 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Mime-Version: 1.0
-To: Tom Rini <tmrini@ntplx.net>
-Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: back to gcc under pre-R5
-References: <Pine.LNX.4.05.9902171057310.980-100000@pc.wackyland.com>
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 17 Feb 1999 10:26:37 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Renaud Dreyer <rdreyer@math.berkeley.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CD-R under Linuxppc?
+In-Reply-To: <199902170512.VAA03324@fhloston>
+Message-ID: <Pine.LNX.4.04.9902171025360.432-100000@narn.local.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+On Tue, 16 Feb 1999, Renaud Dreyer wrote:
+
 > 
-> 
-> What bug are you running into?  It's better to get 'em fixed now then try
-> to work around 'em...
+>    I was thinking of buying a CD-R drive, mainly for back-up purposes.
+> Is it possible to burn CD's under any of the current Linuxppc kernels
+> at this point? I'm looking at an external SCSI Sony drive. Thanks,
 > 
 
-When you have a look at page from John Lindal: http://www.cco.caltech.edu/~jafl/jx/jx2.html
-There it explains the bug I ran/run into when I built JX.
-Unfortunately there is no solution in sight from egcs people (as I understand)
+2.1.13x worked for me, and I see no reason why 2.2.1 won't work. (you
+might need to patch include/asm-ppc/shmparam.h to increase the max amount
+of shared mem for cdrecord)
 
-Thanks
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
-Andreas
--- 
-------------------
-| Andreas Tobler								
-| CH-8004 Zuerich	
-| E-mail: toa@pop.agri.ch		
-------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
