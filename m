@@ -1,31 +1,20 @@
-Date: Sat, 10 Mar 2001 17:53:58 +0000
-Subject: UPDATE dmasound to 2.4.3p3
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: paulus@linuxcare.com.au, haworth@ncal.verio.com
-Mime-version: 1.0
-Content-type: text/plain; charset="utf-8"
-Message-Id: <20010310175406.BD7E02EFE3@apollo.valhalla.net>
+Message-Id: <200103110143.UAA38542@mal-ach.watson.ibm.com>
+To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [OT] 7450 
+In-Reply-To: Message from Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
+   of "10 Mar 2001 16:15:00 +0100." <8x4rx1bqq3.fsf@s62.informatik.uni-bremen.de>
+Date: Sat, 10 Mar 2001 20:43:56 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi all,
+	There are a number of performance improvements in the forthcoming
+GCC 3.0 and later releases (including a further improved scheduler and
+software pipelining) which should address some of the performance
+limitations in the current GCC release.
 
-I've updated the dmasound (_all) patch to 2.4.3p3.
-
-The only real change is in the way the Makefile is done (this patch should
-also apply cleanly to Paulus rsync tree - but I didn't test that yet ;-)
-
-I have another 4 changes in the pipeline - but this will keep anyone who's
-using them from having to mess with merging.
-
-against 2.4.3.p3 BK as of 16:00 GMT/UTC today.
-
-ftp://ftp.penguinppc.org/users/iain/kernel/2_4_x/2.4.3p3-dmasound/dmasnd-2.4
-.3p3_all.diff.bz2
-
-ciao,
-Iain.
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
