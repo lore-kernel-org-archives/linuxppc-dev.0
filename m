@@ -1,21 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B79FB67A6C
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id BF8F267A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Apr 2005 07:08:10 +1000 (EST)
-Date: Thu, 31 Mar 2005 13:08:07 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Dale Farnsworth <dale@farnsworth.org>
-Message-ID: <20050331210806.GA5694@gate.ebshome.net>
-References: <20050331204729.GA29785@xyzzy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050331204729.GA29785@xyzzy>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 2.6.10-rc2] ppc32: Add usb support to IBM stb04xxx
-	platforms
+	Fri,  1 Apr 2005 09:10:11 +1000 (EST)
+In-Reply-To: <20050331201548.GK25923@smtp.west.cox.net>
+References: <20050331201548.GK25923@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <6bc789cab290e3a49523c59a4a5f73a4@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 31 Mar 2005 17:10:01 -0600
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: linuxppc-embedded Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: 440EP FPU patch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,38 +23,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 31, 2005 at 01:47:30PM -0700, Dale Farnsworth wrote:
+I'll try to see if I can build a kernel to use on a pegasos box to test=20=
 
-[snip]
+out the avec side tomorrow.
 
-> ===================================================================
-> --- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/redwood5.c
-> +++ linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
-> @@ -52,8 +52,18 @@
->  void __init
->  redwood5_setup_arch(void)
->  {
-> +	u32 mask;
-> +
->  	ppc4xx_setup_arch();
->  
-> +	/*
-> +	 * Set up USB interrupt as positive polarity and level-sensitive.
-> +	 * Firmware should do this, but apparently does not.
-> +	 */
-> +	mask = 1 << (31 - USB0_IRQ);
-> +	mtdcr(DCRN_UIC_PR(UIC0), mfdcr(DCRN_UIC_PR(UIC0)) | mask);
-> +	mtdcr(DCRN_UIC_TR(UIC0), mfdcr(DCRN_UIC_TR(UIC0)) & ~mask);
-> +
->  #ifdef CONFIG_DEBUG_BRINGUP
->  	printk("\n");
->  	printk("machine\t: %s\n", PPC4xx_MACHINE_NAME);
+- kumar
 
-Dale, please, don't mess with UIC registers directly, there is a 
-cleaner way to set this up. 
+On Mar 31, 2005, at 2:15 PM, Tom Rini wrote:
 
-Take a look at how this is done in other 4xx ports
-(ppc4xx_core_uic_cfg & ppc4xx_uic_ext_irq_cfg).
+> On Thu, Mar 31, 2005 at 01:10:44PM -0700, Matt wrote:
+>  > On Thu, Mar 31, 2005 at 09:34:21AM -0700, Tom Rini wrote:
+>  > > On Thu, Mar 31, 2005 at 09:26:18AM -0700, Wade Farnsworth wrote:
+>  > > > On Fri, 2005-03-18 at 12:30, Tom Rini wrote:
+>  > > > > On Fri, Mar 18, 2005 at 01:43:11PM -0500, Jason McMullan=20
+> wrote:
+>  > > > > > On Fri, 2005-03-18 at 10:06 -0600, Kumar Gala wrote:
+>  > > > > > > Can you build your patch for the lopec_defconfig and fix=20=
 
---
-Eugene
+> the errors
+> > > > > > > associated with enabling altivec.
+>  > > > > > >
+> > > > > > > Looks like you need to include asm/offset.h & asm/page.h=20=
+
+> in vector.S,
+> > > > > > > however there is another build error after that.
+>  > > > > >
+> > > > > > Thanks! That also found a linking bug, fixed in this patch..=20=
+
+> Please
+> > > > > > double check the call in 'AltiVecUnavalible' in head.S, and=20=
+
+> the re-load
+>  > > > > > of 'ctr' at the end of load_up_altivec, as I do not have an=20=
+
+> AltiVec
+>  > > > > > machine here.
+>  > > > >
+> > > > > No dice:
+>  > > > > VFS: Mounted root (nfs filesystem) readonly.
+>  > > > > Freeing unused kernel memory: 100k init 4k prep
+>  > > > > floating point used in kernel (task=3Dc03816b0, pc=3Dc000d664)
+> > > > > Doing some objdump'ing, that's the start of load_up_altivec.
+> > > >
+> > > > Hi Jason and Tom,
+>  > > >
+> > > > Has there been any more progress on this patch?
+>  > >
+> > > Sadly no.=A0 We got to the point where it was reliably crashing on =
+my
+> > > LoPEC (7400), but no time to try and fix it.=A0 The problem should=20=
+
+> show up
+>  > > on any classic PPC box..
+>  >
+> > If nobody has time to work on this, then I intend=A0 to put Wade's=20=
+
+> 440EP
+>  > support in as is (actually, he's planning on resubmitting with some
+>  > additional changes).=A0 When somebody has time, they can redo the=20=
+
+> patch
+> > against that.
+>
+> That's a good point to bring up.=A0 Jason, do you want to post your
+>  current version to the list and we can try and see if we can get it
+>  workign right?
+>
+> --=20
+> Tom Rini
+>  http://gate.crashing.org/~trini/
+> _______________________________________________
+> Linuxppc-embedded mailing list
+>  Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
