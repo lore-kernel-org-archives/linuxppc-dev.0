@@ -1,27 +1,52 @@
-Date: Fri, 6 Jun 2003 10:15:20 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Magnus Damm <damm@opensource.se>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: x86(host) --> ppc(tgt) cross-tool-chain
-Message-ID: <20030606101520.A31942@home.com>
-References: <995FF289C9D69747A09E4299264459540C109867@penguin.adic.com> <20030606190535.644a4939.damm@opensource.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030606190535.644a4939.damm@opensource.se>; from damm@opensource.se on Fri, Jun 06, 2003 at 07:05:35PM +0200
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D23@norcom2.norcom.net>
+From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+To: "'karim@opersys.com'" <karim@opersys.com>,
+	Lokesh Kumar <lokesh.kumar@wrx-us.com>
+Cc: brian.auld@adic.com, linuxppc-embedded@lists.linuxppc.org
+Subject: RE: x86(host) --> ppc(tgt) cross-tool-chain
+Date: Fri, 6 Jun 2003 13:40:45 -0400 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jun 06, 2003 at 07:05:35PM +0200, Magnus Damm wrote:
->
-> I don't know about that book and your specific glibc version,
-> but earlier versions of glibc (2.1.3) needed a patch to correctly
-> support powerpc processors with 16-byte cachelines like the 4xx- and
+Yes, it does work. I have a small web server running with glibc-2.2.3.
 
-To be specific, that's only 403 that has a 16-byte cacheline.
+Lokesh
+
+-----Original Message-----
+From: Karim Yaghmour [mailto:karim@opersys.com]
+Sent: Friday, June 06, 2003 11:11 AM
+To: Lokesh Kumar
+Cc: brian.auld@adic.com; linuxppc-embedded@lists.linuxppc.org
+Subject: Re: x86(host) --> ppc(tgt) cross-tool-chain
+
+
+
+Lokesh Kumar wrote:
+> I built the toolchain on x86 host for PPC, and I used
+>
+> GCC-2.95.3
+> GLIBC-2.2.3
+> Binutils-2.11.92
+>
+> I did not use Karim's book. I went with "Embedded Linux Interfacing ...."
+> book.
+
+:)
+
+I have to ask: Did this toolchain actually work for you on the target?
+I mean, did you try using glibc-2.2.3 on the PPC target? From I've
+seen, gcc 2.95.3 with glibc 2.2.3 will successfully generate a glibc,
+but the resulting glibc will core dump on the target.
+
+Karim
 
 --
-Matt Porter
-mporter@kernel.crashing.org
+Author, Speaker, Developer, Consultant
+Pushing Embedded and Real-Time Linux Systems Beyond the Limits
+http://www.opersys.com || karim@opersys.com || 514-812-4145
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
