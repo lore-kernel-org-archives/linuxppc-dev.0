@@ -1,31 +1,40 @@
-Date: Fri, 19 Jan 2001 00:03:10 -0600
+Date: Fri, 19 Jan 2001 00:05:25 -0600
 From: Troy Benjegerdes <hozer@drgw.net>
-To: Alois Fertl <alois_fertl@talknet.de>
-Cc: LinuxppcDev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ncr810 problem on powerstack
-Message-ID: <20010119000309.A17347@altus.drgw.net>
-References: <3A64B297.8B23FDC0@talknet.de>
+To: eraineri@axiom-tx.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: kernel 2.4 SMP on quad PPC
+Message-ID: <20010119000525.B17347@altus.drgw.net>
+References: <3A6748FB.42C51F82@axiom-tx.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A64B297.8B23FDC0@talknet.de>; from alois_fertl@talknet.de on Tue, Jan 16, 2001 at 09:44:07PM +0100
+In-Reply-To: <3A6748FB.42C51F82@axiom-tx.com>; from eraineri@axiom-tx.com on Thu, Jan 18, 2001 at 01:50:19PM -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 16, 2001 at 09:44:07PM +0100, Alois Fertl wrote:
-> I tried the recent 2.4.1-pre1 kernel on a powerstack but the ncr810 based
-> SCSI code does not work. The driver complains about CACHE INCORRECTLY CONFIGURED.
+On Thu, Jan 18, 2001 at 01:50:19PM -0600, eraineri@axiom-tx.com wrote:
 >
-> Anybody knows what this comes from. Attached if the full boot log of the system.
+> Hello,
+> I have searched the arhives and didn't seem to find what I'm looking
+> for.  I currently am in the process of porting linux to a custom PPC
+> Quad board.  I downloaded a 2.5 kernel  from FSMlabs in December and
+> have had success getting 2 processors to come up.  However, I could not
+> get 3 or 4.  I am considering going to the 2.4 latest kernel on the
+> FSMlabs bitkeeper site.  I'm wondering if the version of the 2.5 kernel
+> I downloaded works with more then duals and also if I should instead
+> download the 2.4 kernel and us it?  I know that eventually I am going to
+> have to go to 2.4 but I would like to show some success before
+> abandoning the 2.5 version I've worked so hard to get.  If I in the
+> incorrect mailing list I apologize.  I'm fairly new to the Linux kernel
+> development world!
+>
+> Thanks for all the help
+> Eddy
 
-Arrrgh, the same thing happens on my powerstack.
-I'd track this down, but
+linuxppc_2_5 has been updated to the 2.4.0 kernel version. You should just be
+able to do a pull and merge in all the new stuff. (make another clone or
+otherwise back up your tree just in case this gets messed up)
 
-a) I don't have time
-b) the machine is my mail server and runs the linuxppc_2_2 tree happily.
-
-
---
 --------------------------------------------------------------------------
 Troy Benjegerdes                'da hozer'                hozer@drgw.net
 
