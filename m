@@ -1,44 +1,67 @@
-Message-ID: <3D0AE1EE.201@embeddededge.com>
-Date: Sat, 15 Jun 2002 02:42:54 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded@lists.linuxppc.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 15 Jun 2002 16:57:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: consistent_free()
-References: <20020614042928.GK26146@zax>	<20020614153954.GL13541@opus.bloom.county>	<3D0A1D53.6040205@embeddededge.com> <15626.55930.673731.803194@argo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <20020615065752.GH1124@zax>
+References: <20020614042928.GK26146@zax> <20020614153954.GL13541@opus.bloom.county> <15626.55392.839931.746121@argo.ozlabs.ibm.com> <3D0ADE69.6040905@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3D0ADE69.6040905@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+On Sat, Jun 15, 2002 at 02:27:53AM -0400, Dan Malek wrote:
+>
+> Paul Mackerras wrote:
+>
+> >"Consistent" means "the cpu and the device see the same stuff in
+> >memory".  On a cache-coherent system that is true of all normal
+> >memory.  Surely that is obvious?
+>
+> Not really.  You have seen enough messages about people wanting to
+> get "uncached" memory, even though this isn't necessary.
+>
+> We also don't want to be remapping 'consistent' space on those
+> processors that don't require it, one of the primary functions
+> of consistent_alloc() so it works properly on noncoherent processors.
 
-> Interesting.  Using __get_free_pages guarantees that the pages are
-> physically contiguous.  Does the new ARM version do something clever
-> to get physically contiguous pages?
+We don't.
 
-The  __get_free_pages just does an alloc_pages().  The only difference
-is __get_free_pages returns the page address of the first page.  I
-think there was a previous version that used page structs to return
-unused pages so it was just more convenient to call alloc_pages() directly.
-In fact, I guess this is the current implementation.
+> Basically, David Gibson moved an 'ifdef' from one place to another,
+> and then had to write a consistent_alloc function for processors that
+> didn't need it before, placing more code in an include file no less.
+> How does that add value to the kernel?  It just complicated the
+> maintenance of a function that is similar across multiple architectures.
 
-Oh, I see now........they set the Reserved indicator on pages they allocate.
-This is why they can't just vfree() the space anymore.  Pretty sneaky, this
-way an application can also mmap() the space and driver can do DMA from
-user space.  What a f**king hack when you don't have the features you need
-to do it correctly.
+Oh fer cryin' out loud.  Before any non-PCI driver that wanted DMA
+consistent memory and wanted to work on both cache-coherent and
+non-cache coherent would have to have an ifdef on
+CONFIG_NOT_COHERENT_CACHE.  If it was on, it would have to use
+consistent_alloc(), other wise it could just allocate the memory
+normally (with kmalloc() or get_free_pages()) since consistency comes
+for free on cache coherent processors.
 
- > ....  Or do the callers have to do a
-> scatter/gather type of operation if they are using more than 1 page?
+I just made consistent_alloc() do for cache coherent processors
+exactly what the driver would have to do anyway if
+CONFIG_NOT_COHERENT_CACHE were not set.  The cache coherent
+implementation of consistent_alloc() is utterly trivial, and does not
+remapping.  If we really don't want to be calling consistent_alloc()
+on cache coherent processors it should BUG() or cause a link error,
+rather than just failing.
 
-No, you still get consecutive physical pages based on the order parameter.
+Admittedly pci_alloc_consistent() was (so far) the only place this
+happened, because every other user of consistent_alloc() was basically
+in a driver which would only ever be used on non cache coherent
+processors.
 
-
-
-	-- Dan
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
