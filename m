@@ -1,33 +1,37 @@
-Message-ID: <005d01c2e2a4$a1a7fc50$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: "Tom Rini" <trini@kernel.crashing.org>,
-	"Daniel Jacobowitz" <drow@false.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-References: <IGEFJKJNHJDCBKALBJLLEEMPFKAA.joakim.tjernlund@lumentis.se> <3E652B8C.8080602@embeddededge.com>
-Subject: Re: Improved copy_page() function, about 30% speed up for mpc860!
-Date: Wed, 5 Mar 2003 00:20:23 +0100
+Message-ID: <3E6534FA.9070503@embeddededge.com>
+Date: Tue, 04 Mar 2003 18:21:30 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Dale Farnsworth <dale@farnsworth.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
+References: <20030304191644.GA4524@rover.farnsworth.org> <3E64FD53.3030107@embeddededge.com> <20030304201302.GA4683@rover.farnsworth.org> <3E650AAF.7060804@embeddededge.com> <20030304230849.GB4683@rover.farnsworth.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I'm trying to discourage you guys from wasting time here.  These are
-> all known problems that have been solved.  If we want to use this processor
-> we have to accept some limitations and get on with using it. :-)  People
-> have been successfully deploying products for years using Linux and 8xx.
-> Leave the cache instructions alone.  :-)
+Dale Farnsworth wrote:
 
- Might be useful for copy_tofrom_user() though, but for now I will leave it alone :-)
+> -	nop	/* used by __secondary_hold on prep (mtx) and chrp smp */
+> -	nop	/* used by __secondary_hold on prep (mtx) and chrp smp */
+> +	/*
+> +	 * The first two words are used by __secondary_hold on SMP systems.
+> +	 * The second word may be overwritten before the first cpu runs
+> +	 * here, so we branch around it.
+> +	 */
+> +	b	__start
+> +	nop
+>  	nop
 
-> This discussion has been moved to a very low priority in my mailbox.
-> Don't expect timely or any further replies, and please don't be sending me
-> any dcbz kernel patches! :-)
+I thought of this, but the comment on the first nop bothered me.
+Was it just a cut/paste without updating the comment, or could the nop
+and location zero be used by MP systems just like the one at location 0x04?
 
-OK I won't, I'll just send them to the embedded list instead :-)
+Thanks.
 
- Jocke
+
+	-- Dan
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
