@@ -1,40 +1,38 @@
-Message-ID: <36A4D4CE.9D957BA0@jlc.net>
-Date: Tue, 19 Jan 1999 13:54:06 -0500
-From: Dan Malek <dmalek@jlc.net>
+Date: Tue, 19 Jan 1999 11:51:15 -0800 (PST)
+From: "Ian K. Erickson" <ian@ns0.ipeg.com>
+To: Brad Boyer <flar@cegt201.bradley.edu>
+cc: Keith Jacob <kjacob@wantree.com.au>, linuxppc-user@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: 15 partitions max prob revisited
+In-Reply-To: <199901191033.EAA19277@cegt201.bradley.edu>
+Message-ID: <Pine.LNX.3.96.990119114919.10611D-100000@ns1.ipeg.com>
 MIME-Version: 1.0
-To: Gary Thomas <gdt@linuxppc.org>
-CC: Michael Meissner <meissner@cygnus.com>, linuxppc-dev@lists.linuxppc.org,
-        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
-        Johnnie Peters <jpeters@phx.mcd.mot.com>,
-        Cort Dougan <cort@persephone.cs.nmt.edu>
-Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
-References: <XFMail.990119132838.gdt@linuxppc.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gary Thomas wrote:
+On Tue, 19 Jan 1999, Brad Boyer wrote:
+> No, this is a Linux problem.  You cannot have more than 15 partitions
+> on a drive because there are not device numbers allocated for anything
+> higher than partition number 15.  So even if you create a partion 16,
+> there is no way to access it under Linux.  This is the way that the
+> device numbers were allocated.  As far as I know, there isn't a
+> reasonable way to change this either.  Sorry I have to be the bearer
+> of bad news, but that's the way things currently stand.
 
-> I like this idea.  I'll see what I can do with it tonight.
+Not that know anything about it, but out of curiosity: couldn't you use
+mknod to create >15 [hs]da's? Or could you recompile the kernal to allow
+them?
 
-Just copy the stuff I did for the 8xx/MBX ports in misc.c.
-Add a #define string to the config process and pass it into
-misc.c during compilation.
+Ian K. Erickson                 iPEG, the Internet Productivity Group
+Systems Administator            W 422 Riverside, Suite 628
+ian@ipeg.com                    Spokane, WA 99204
+http://www.ipeg.com             (509)462-iPEG
 
-When a system has some type of environment strings you
-could rummage around in there to find the default information.
-An example can be found in the embedded 2.1.127 kernel tarball.
-There are modifications in there that I have not yet added to
-the real kernel.  It reads serial EEPROM or other NVRAM storage
-commonly found on the 8xx cards.  Using any type of environment
-string would allow system changes without recompiling.
-
-Have fun :-).
-
-
-    -- Dan
-
+4F6E65204F5320746F2072756C65207468656D20616C6C2C204F6E65204F5320746
+F2066696E64207468656D2CDA4F6E65204F5320746F206272696E67207468656D20
+616C6C20616E6420696E20746865206461726B6E6573732062696E64207468656D 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
