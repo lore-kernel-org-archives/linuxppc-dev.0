@@ -1,32 +1,36 @@
-Message-ID: <39522AB6.230ED909@embeddededge.com>
-Date: Thu, 22 Jun 2000 11:03:18 -0400
+Message-ID: <39523796.FF6BFC9F@embeddededge.com>
+Date: Thu, 22 Jun 2000 11:58:14 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: diekema_jon <diekema@bucks.si.com>
-CC: linuxppc-embedded@lists.linuxppc.org, dan_malek@mvista.com, all@cideas.com
-Subject: Re: Missing cpm_install_handler/cpm_free_handler on the MPC8260 port
-References: <m1357B4-001SyaC@bucks>
+To: Patrick Lerda <Lerda@microprocess.com>
+CC: Nguyen Xuan Hoang <hoang_nguyen@op.com.sg>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MMU problems?
+References: <17B78BDF120BD411B70100500422FC63079F9D@IIS000>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-diekema_jon wrote:
+Patrick Lerda wrote:
+>
+> Have you tried to do complex operation on a 8xx board like compiling the
+> kernel.
 
->         It appears that the interrupt controller on the MPC8260 is a bit
->         different from the MPC8xx.
+Yes, and it runs just like any other system that doesn't have any
+swap space and a minimal amount of memory.  Some things just don't
+work well, and applications fail because few test for memory allocation
+failure.
 
+Are there bugs?  Perhaps.  Do I want them fixed?  Yes.
 
-That is why these functions are not needed on the 8260.  On the 8xx,
-the CPM is a second level interrupt controller from the PowerPC core.
-That is, the CPM was one interrupt vector from the SIU core, and the
-CPM further multiplexed all interrupts from its devices.
+Do you want to help this FREE software effort?  If you are so sure
+there is an MMU bug, find it, fix it, and send me the patch.  We would
+all be grateful.  If you want dedicated help to assist your custom
+product development so you can make money, you may have to pay one
+of the very capable embedded Linux companies for this attention.
 
-On the 8260, all CPM devices are unique interrupts from the SIU core,
-so they use the "standard" internal interrupt controller functions.  I
-don't know what a "CPM interrupt" function would do on the 8260, other
-than be a single line of code that calls the SIU interrupt function
-with exactly the same parameters.
+Thanks.
 
 
 	-- Dan
