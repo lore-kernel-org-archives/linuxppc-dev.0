@@ -1,24 +1,29 @@
-Message-Id: <l03130300b3af56970161@[132.227.88.15]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 12 Jul 1999 10:32:25 +0200
-To: linuxppc-dev@lists.linuxppc.org
-From: André Desnoyers <Andre.Desnoyers@ufr-info-p6.jussieu.fr>
-Subject: Xserver on iMac and R5
-Cc: cad@ufr-info-p6.jussieu.fr
+Message-ID: <3789A959.88F0729@pop.agri.ch>
+Date: Mon, 12 Jul 1999 10:37:48 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
+MIME-Version: 1.0
+To: Paul.Mackerras@cs.anu.edu.au
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: media bay problems
+References: <199907112302.JAA20812@tango.anu.edu.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-1)i can not lauch Xserver on iMac,
-  neither with the standard system
-         (ftp.cdrom.com://pub/linux/linuxppc/linuxppc-R5-final/RedHat
-  nor john's patch of XF86Config
-2)are there a french keymap
-3)how simulate the 2nd et 3rd mouse's button
-							Thanks
+Just built and tested, works fine for me on PBG3 Wallstreet 250.
 
+Thanks
+Andreas
 
+Paul Mackerras wrote:
+> 
+> The fix for the media bay problems is to change in_8 to inb in the
+> definition of MB_IDE_READY in mediabay.c.  I am away from home at the
+> moment, that's why I haven't posted a patch. :-)
+> 
+> Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
