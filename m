@@ -1,40 +1,39 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <000b01c0d795$c3e15f80$8021690a@huawei.com>
-From: "machael thailer" <dony.he@huawei.com>
-To: "Michael Habermann" <MHabermann@gmx.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <5.0.2.1.0.20010508085652.00a4aec0@pop.gmx.de> <5.0.2.1.0.20010508155109.00a01ec0@pop.gmx.de>
-Subject: Re: Uncompress Ok, but cannot run linux kernel...
-Date: Tue, 8 May 2001 16:06:19 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "machael thailer" <dony.he@huawei.com>
+Cc: "Michael Habermann" <MHabermann@gmx.de>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Uncompress Ok, but cannot run linux kernel... 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 08 May 2001 16:06:19 +0800."
+             <000b01c0d795$c3e15f80$8021690a@huawei.com>
+Date: Tue, 08 May 2001 10:43:51 +0200
+Message-Id: <20010508084356.615D42814D@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+In message <000b01c0d795$c3e15f80$8021690a@huawei.com> you wrote:
 >
-> At 09:16 PM 5/7/2001 -0400, Dan Malek wrote:
+> > The kernel is loaded with ppcboot and the tftpboot commando. To trace, I
+> > used mpc8bug.
+...
+> > I set a breakpoint at the entry of the __start routine. After passing
+> > the turn_on_mmu label, it returns with an rfi and hangs.
 >
-> > > I have the same problem on an FADS board.
-> >
-> >What "same" problem?  How are you loading and tracing the kernel?
->
-> The same problem is that the kernel doesn't survive until the welcome
-> messge is printed.
-> The kernel is loaded with ppcboot and the tftpboot commando. To trace, I
-> used mpc8bug.
->
-> I use the Montavista linux-2.4.0-test2-1.2.0-1 kernel.
-> I set a breakpoint at the entry of the __start routine. After passing
-> the turn_on_mmu label, it returns with an rfi and hangs.
+> This is exactly what I meet now.
+> If you have good solutions, please let me know.
 
-This is exactly what I meet now.
-If you have good solutions, please let me know.
+Use a debugger that understands the MMU, like the BDI2000 by Abatron.
 
-Thank you very much.
+In any case, make sure the DER does not trap into BDM mode on  normal
+MMU work, i. e. set it to something like 0x2002000F.
 
-machael
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"I didn't know it was impossible when I did it."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
