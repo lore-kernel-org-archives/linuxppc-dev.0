@@ -1,55 +1,28 @@
-Date: Mon, 29 Jan 2001 23:54:02 +0000
-Subject: Re: network stack oops 2.4.1/gcc 2.95.3 
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: David Edelsohn <dje@watson.ibm.com>
-Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010129235359.1B26D2EFD0@apollo.valhalla.net>
+Message-ID: <3A76769B.87242FAA@valinux.com>
+Date: Tue, 30 Jan 2001 19:08:59 +1100
+From: Gareth Hughes <gareth@valinux.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@linuxcare.com.au>,
+        "Michel
+	Ddnzer" <daenzerm@student.ethz.ch>,
+        Bernd Kreimeier
+	<bk@lokigames.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: r128 DRI driver now fully functional on PPC
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi David,
+I've just committed the last of the updates required to get full hardware
+accelerated 3D rendering with the ATI Rage 128 on PowerPC.  Many thanks to Paul
+Mackerras for allowing me to hack away on his machine over the last week!
 
-Mon, Jan 29, 2001, David Edelsohn wrote:
->>> "Iain Sandoe" writes:
-> Iain> It is not a regression test.  It would not be particularly easy, either
-to
-> Iain> put 2.95.2 back up and wind back the system to the build conditions...
-> Iain> but the version used was 2.95.3-test2. and the bk pull was 2.4.1-pre10.
->
->  A regression is different from a regression test.  I never called
-> it a regression test.
+The code is available on the ati-pcigart-0-0-1-branch in the DRI CVS
+repository.  Please feel free to check it out and report any problems you have.
 
-RTFM(ail) properly Iain ;)
+Now all we need is a PPC Linux build of Q3A...
 
->  I do not mean rewinding all of the way to gcc-2.95.2, but to
-> Franz's patched version of GCC prior to the gcc-2.95.3 changes.
-
-OK. It might be possible - I have a build timestamp on the kernel (I keep
-the last four or five builds) and I guess I could somehow track down which
-revs to get from bk.  I still have the previous glibc & gcc rpms.
-
-However, (see below) I will only do this if someone really believes they
-will get useful info... I'm mid-way through a fairly large chunk of work
-ATM.
-
->  I am just trying to narrow down whether this is something new.
-
-I believe so.  Because I really think I'd built that particular pull before
-I upgraded the tool-chain.  BUT because it only happens under fairly unusual
-circumstances (for my set-up) I can't be 100% sure.
-
-Also it involves a depressingly large amount of system context: kernel, X,
-inetd, da-da-da...
-
-If it happens again - I'll see if I really have a genuine Illegal
-Instruction in the code stream (or I'm just trying to execute a format
-string ;)
-
-ciao,
-Iain.
+-- Gareth
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
