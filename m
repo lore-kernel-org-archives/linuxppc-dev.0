@@ -1,46 +1,37 @@
-Date: Thu, 11 Feb 1999 13:43:29 -0500
-From: Daniel Jacobowitz <drow@false.org>
-To: Brad Midgley <brad@pht.com>
-Cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org,
-        geiseri@msoe.edu
-Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
-Message-ID: <19990211134328.A16812@drow.res.cmu.edu>
-References: <Pine.LNX.3.95.990118132148.32489A-100000@pacific.pht.com> <Pine.LNX.3.95.990203174811.1985A-100000@pacific.pht.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.3.95.990203174811.1985A-100000@pacific.pht.com>; from Brad Midgley on Wed, Feb 03, 1999 at 05:54:38PM -0700
+Date: Thu, 11 Feb 1999 11:40:53 -0800 (PST)
+Message-Id: <199902111940.LAA11077@saul9.u.washington.edu>
+From: a sun <asun@saul9.u.washington.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: HFS Plus note
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Feb 03, 1999 at 05:54:38PM -0700, Brad Midgley wrote:
-> i did a successful burn today! woohoo!
-> 
-> cdrecord: fifo was 0 times empty and 13164 times full, min fill was 92%.
-> 
-> the solution was to move the hard drive with the data on it to the
-> internal scsi bus on my 7500. the burner (a ricoh) is still on the
-> 53c94. 
-> 
-> so... the 53c94 driver currently doesn't allow enough access to regular
-> hard drives when you're using the generic device. i don't know how this
-> relates to disconnect/reconnect or the scheduler. 
-> 
-> it isn't going to be an option for everybody to move their source drives
-> to another bus but at least we know burning works in some configurations. 
 
-This is interesting - my failed burns were from internal HD to external
-burner.  They do work now, though, with Paul's evil interrupt-disabling
-patch to sd.c.  I couldn't track down why the interrupts were
-incorrectly enabled...
+hi all,
 
-Dan
+in case you're interested, i've started writing the hfsplus bits. the
+header parsing code is pretty much done, and now i'm starting in on
+the bitmap allocation code. it turns out that it's ending up to be
+pretty unified with the hfs code. i'm just turning all of the
+currently hard-coded limits into passed in parameters. it looks like
+the only complicated thing beyond running around and doing that will
+be the unicode and variable btree key length mods. once that's all
+done, i can start using the uid/gid/permissions parts of hfsplus. in
+addition, i've also registered 'Lnx0' - 'Lnx9' as the potential
+creator types for linux hfsplus volumes.
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|     CMU, CS class of 2002      |
-|   Debian GNU/Linux Developer    __   Part-Time Systems Programmer  |
-|         dan@debian.org         |  |        drow@cs.cmu.edu         |
-\--------------------------------/  \--------------------------------/
+as a result, mount -t hfs will actually auto-handle hfs and hfsplus
+with the option of only seeing the hfs wrapper if you want to do so by
+specifying -o hfswrapper.
+
+anyways, one of the things that would be useful for me is some
+documentation on linux' nls support. if you know of some, let me
+know. otherwise, i'll have to go poking around to see what the other
+filesystems do.
+
+-a
+asun@u.washington.edu
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
