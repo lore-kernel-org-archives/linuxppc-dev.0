@@ -1,15 +1,19 @@
-Return-Path: <shamile@edgewater.ca>
-Received: from edgewater.ca (ottawa-hs-64-26-171-227.s-ip.magma.ca
-	[64.26.171.227]) by ozlabs.org (Postfix) with SMTP id 510B22BC0F
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 993A32BC0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Oct 2004 04:47:04 +1000 (EST)
-From: Shamile Khan <shamile@edgewater.ca>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Message-Id: <1098729620.27044.13.camel@ws054.ecsi.ca>
-Mime-Version: 1.0
-Date: Mon, 25 Oct 2004 14:40:20 -0400
-Subject: Re: uboot and ppc405
+	Tue, 26 Oct 2004 05:20:04 +1000 (EST)
+To: grave <grave@ipno.in2p3.fr>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 25 Oct 2004 10:51:08 -0000."
+	<1098701468l.31592l.0l@ipnnarval>
+Date: Mon, 25 Oct 2004 20:12:31 +0200
+Sender: wd@denx.de
+Message-Id: <20041025181236.4096EC1430@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: uboot and ppc405 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We are running U-boot/Linux on a custom Virtex II Pro board booting out
-of a NOR flash chip. The size of U-boot binary is slightly over the size
-one erase sector (128 KB). We have a 64 MB NOR flash chip so we dont
-care about the size of u-boot:)
- 
-Regards,
+In message <1098701468l.31592l.0l@ipnnarval> you wrote:
+> 
+> We re starting a disign with xilinx chip Virtex II pro and I wonder the =20
+> typical size of an uboot binary. This is for our electronician disigner =20
+> in order to dimension the prom and so on...
+
+Depending on your configuration (selected features) U-Boot  typically
+needs 100...240 kB of flash memory. If you reseve 256 kB in flash you
+should have no problems.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Shamile Khan
-Edgewater Computer Systems, Inc.
-1125 Innovation Drive
-(2nd Floor)
-Kanata, Ontario, K2K 3G6
-Tel: (613) 271-1101 ext. 240
-Fax: (613) 271-1152
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"More software projects have gone awry for lack of calendar time than
+for all other causes combined."
+                         - Fred Brooks, Jr., _The Mythical Man Month_
