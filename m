@@ -1,39 +1,39 @@
-To: Bob Edwards <Robert.Edwards@anu.edu.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Embedded Linux on PPC403GA??
-References: <383CC85B.A7DCB448@anu.edu.au>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 25 Nov 1999 16:05:55 +0100
-In-Reply-To: Bob Edwards's message of "Thu, 25 Nov 1999 16:25:47 +1100"
-Message-ID: <kfy7lj6627g.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+Message-ID: <383D8E81.BF75878@netx4.com>
+Date: Thu, 25 Nov 1999 14:31:13 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Converting zImage to S-records for CLLF/860T
+References: <19991125065849.55731F393@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Bob Edwards <Robert.Edwards@anu.edu.au> writes:
+Graham Stoney wrote:
 
-> I have a (small) number of NCD Explora Pro X-terminals with PPC403GA
-> chips in them that are currently surplus to requirement. They have
-> an early implementation of a PCMCIA slot, as well as all the usual
-> X-terminal features including booting from the network using BOOTP and
-> TFTP. For this reason, they would make great little router boxes etc.
-> or wireless Access Points with an appropriate PCMCIA wireless card
-> (my real application).
-> 
-> As the PPC403GA doesn't have an MMU of any sort, I was wondering if
-> anyone on this list had been able to get one to boot Linux using one
-> of the MMU-less embedded Linux implementations?
+> ......but I can't find zsrec anywhere and I'm equally unsure of
+> the magic incantation to objcopy. The output from the obvious:
+>     powerpc-linux-objcopy -O srec zImage zImage.srec
+> is far too small to be correct.
 
-AFAIK there is no port of Linux running on PPCs without MMU.
-There is uCLinux (www.uclinux.org), but that is for m68k.
 
-//Marcus
--- 
--------------------------------+------------------------------------
-        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
- Royal Institute of Technology |       Phone: +46 707 295404
-       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
+At one time I did find the proper options to objcopy to create
+the proper S-record file, but I found it easier and faster to
+write a simple C program to do it.  I thought I put it on the
+ppc.kernel.org server, but I will do that again.
+
+
+> Could someone please point me in the right direction to find zsrec?
+
+Look on the ppc.kernel.org server in a few minutes.  The program
+just strips the 64K ELF header and converts the rest of the
+file into S-Records.  You can use -h to include the header, in
+case the file isn't ELF and you want the header.  You can use -s
+to specify a different (hex) start address for the S-records.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
