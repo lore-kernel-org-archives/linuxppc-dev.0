@@ -1,57 +1,55 @@
-Message-ID: <36AB7411.F40DFF97@louis.bidmc.harvard.edu>
-Date: Sun, 24 Jan 1999 14:28:22 -0500
-From: Robin Colgrove <robin@louis.bidmc.harvard.edu>
+Date: Sun, 24 Jan 1999 15:30:14 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Ryan Nielsen <ran@krazynet.com>
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+Subject: Re: kswapd and SMP still broke on 2.2.0-pre9
+In-Reply-To: <19990123230227.A625@gondolin>
+Message-ID: <Pine.LNX.4.04.9901241522050.17601-100000@narn.local.drgw.net>
 MIME-Version: 1.0
-To: Samuel Rydh <samuel@ibrium.se>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Linux and Mac together (Was: Re: mac-on-linux project status)
-References: <v03130301b2d040f84476@[192.168.0.1]>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Sat, 23 Jan 1999, Ryan Nielsen wrote:
 
+> 
+> Paul Mackerras wrote:
+> > 
+> > Troy Benjegerdes <hozer@drgw.net> wrote:
+> > 
+> > > Can anyone verify 2.2.0-pre9 works on a SMP Pmac? (or for that matter,
+> > > vger.. if vger works I can figure out what changed)
+> > 
+> > Both 2.2.0-pre9 and vger work fine on my 2-processor powermac.  I do
+> > have some local changes in my tree to do with some extra memory
+> > barriers etc., but I haven't changed kswapd.  You could try rsyncing
+> > my current tree from samba.anu.edu.au::linux-pmac-devel to see my
+> > changes.
+> 
+> do you use scsi on your 2-processor powermac?
+> with the rsync'd tree it stops somewhere after printing the last line of this type:
+> Detected scsi disk sd%d at scsi%d, channel %d, id %d, lun %d
+> all the disks are on the MESH.
 
-Samuel Rydh wrote:
+I haven't tried the rsync'd tree yet, my machine was crashing in the same
+SCSI initialization. I have an on-board ncr53c8xx fast-wide chip, so this
+leads me to believe there is some interaction between the memory
+management code and the SCSI init code.
 
-> Mac-on-linux project status, Jan 23, 1999
-> =================================
->
-> 1. Overview
->
-> The goal of the mac-on-linux project is making linuxppc capable of
-> booting a second operating system. The target is in particular
-> to run MacOS, but also Be OS, Mac OS X Server and a "second linux".
->
+Is this something we should bring up on the regular linux-kernel list?
+Maybe someone there would have an idea what is broken.
 
-This is slightly tangential but I was hoping that OS-mavens can clear this up for
-me.
+I don't know if this is related, but I also get crashes when doing nfs
+access (checking out files from my local CVS archive, in particular).
+I traced it one time and it appears a pointer is getting trashed in
+rpciod.
 
-As someone who runs a mac OS internet server as part of my research
-collaborations (but am employed as a medical doctor, not as a programmer), I have
-been playing around with linux and following the news of OS X server with the
-idea of moving my internet things (smtp, http, ftp, nntp, telnet, chat, etc.)
-onto a "real" server OS.
-
-Maybe I am just not understanding this but if both MkLinux and OS X run on top of
-the Mach microkernel, could they both be running simultaneously? If so, I could
-imagine using OS X (not OS X server) as my desktop OS while on the same machine
-MkLinux was taking care of the internet server things in the background. I do not
-need super high performance stuff since I only "host" a few dozen pretty
-low-intensity users.  Right now I get by on shareware tools (Quid Pro Quo, Rumor
-Mill, OTChat, NCSATelnet, Eudora Internet Mail Server) but I am reaching the
-limits of what I can do with these.
-
-Thanks
-
-robin colgrove
-
-http://louis.bidmc.harvard.edu/labpage.html  (lab)
-http://louis.bidmc.harvard.edu/Rabkin.pages/forums.html  (health forums project)
-http://tparker.Boston.UUA.org (Unitarian Church page -actually running on louis)
-
-
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
