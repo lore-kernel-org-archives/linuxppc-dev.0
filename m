@@ -1,52 +1,46 @@
-Date: Tue, 28 May 2002 06:23:51 -0700
+Date: Tue, 28 May 2002 06:27:18 -0700
 From: Matt Porter <porter@cox.net>
-To: Sangmoon Kim <dogoil@etinsys.com>
+To: Murray Jensen <Murray.Jensen@csiro.au>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: map iomem in linux_2_4_dev
-Message-ID: <20020528062351.A2267@home.com>
-References: <022501c20633$cbeb4f10$1a11efcb@industrialDiv.hanasys.co.kr>
+Subject: Re: [PATCH] enhanced i2c driver for MPC8xx/MPC8260 CPM ...
+Message-ID: <20020528062717.B2267@home.com>
+References: <3CF36385.8020505@embeddededge.com> <27079.1022585971@msa.cmst.csiro.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <022501c20633$cbeb4f10$1a11efcb@industrialDiv.hanasys.co.kr>; from dogoil@etinsys.com on Tue, May 28, 2002 at 07:38:19PM +0900
+In-Reply-To: <27079.1022585971@msa.cmst.csiro.au>; from Murray.Jensen@csiro.au on Tue, May 28, 2002 at 09:39:31PM +1000
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, May 28, 2002 at 07:38:19PM +0900, Sangmoon Kim wrote:
+On Tue, May 28, 2002 at 09:39:31PM +1000, Murray Jensen wrote:
 >
-> Hi,
+> On Tue, 28 May 2002 07:01:25 -0400, Dan Malek <dan@embeddededge.com> writes:
+> >Murray Jensen wrote:
 > >
-> > No, that's rubbish.  Use one or the other. ioremap() takes a physical
-> > address and returns the virtual address at which it mapped it.
+> >> enhanced i2c driver for MPC8xx/MPC8260 CPM ...
 > >
-> Sometimes it is needed to use  io_block_mapping and ioremap.
-> io_block_mapping maps a phiscal address to a virtual address.
-> And ioremap returns the virtual address.
-> When I ported linux on an MPC755 based custom board.
-> My hardware didn't running because it had a serial port at 0x78000000.
-> Linux uses 0 to 0x7fffffff as a virtual memory for applications.
-> And the address of 0x78000000 overlaped the serial port.
-> I had to use io_block_mapping to map it at different location on system initialization,
-> and ioremap to get the mapped address on serial port driver.
-> I'm sorry, if it's another rubbish.
+> >These have to be submitted through the i2c project on sourceforge (or
+> >where ever it is).  The i2c isn't part of the kernel source tree, it is
+> >applied on top from their repository from time to time.
+>
+> Tom said this to me as well, and I agree in principle, but I thought it should
+> first be reviewed by the Linux/PPC Embedded community. It's actually quite a
+> hacky driver, but in my defence, I could claim the original driver was hacky
+> to start with - I really didn't change it a lot, conceptually (what I mean by
+> this is that it could be much improved in the way it does things - more
+> correct, more efficient, etc, but hey it works reliably for me, so there isn't
+> a lot of incentive to fix it - its only i2c after all :-).
+>
+> Also, the i2c people probably wouldn't have any hope of testing this driver,
+> since nothing else is going to have a CPM, and in fact I haven't even tested
+> it myself on the 8xx platform yet. I propose we get it into linuxppc_2_4_devel
+> and have it hammered on by others, and when/if it gets the thumbs up from the
+> Linux/PPC Embedded community, we/I contribute it back to the i2c project -
+> really just for the sake of completeness. Comments? Cheers!
 
-You don't need io_block_mapping.  Follow one of the many examples to
-use early_serial_init with an ioremap call for your UART.
-
-The only reason your method works is that the io_block_mapping is
-actually using a BAT on our classic PPC platform.  ioremap will
-look for an existent BAT mapping and just return the translated
-virtual address in this case.  Relying on this is bad practice
-since it will not work on other PPC systems.
-
-As David correctly pointed out, only use io_block_mapping when
-you absolutely must control the placement of the virtual address.
-There are cases when this is necessary since the hardware engineers
-always send us garbage to support.  Mapping a UART at init time is
-not one of these.
-
-BTW, your UART at physical 0x78000000 has zero bearing on the default
-PPC Linux task size virtual addresses from 0-0x7fffffff.
+FWIW, that's why I pushed the 4xx IIC driver to _devel recently.  It
+certainly allows a wider audience to easily test and submit changes
+to the maintainer, allowing for faster turnaround in improvements.
 
 Regards,
 --
