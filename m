@@ -1,23 +1,26 @@
-Content-Type: text/plain;
-  charset="us-ascii"
-From: Trevor Woerner <ppc339@vtnet.ca>
-Reply-To: ppc339@vtnet.ca
-To: linuxppc-dev@lists.linuxppc.org
-Subject: ide interrupts
-Date: Fri, 23 May 2003 11:36:51 -0400
-MIME-Version: 1.0
-Message-Id: <200305231136.51119.ppc339@vtnet.ca>
+Date: Fri, 23 May 2003 09:03:14 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: linuxppc_2_4_devel patch for gt64260_eth
+Message-ID: <20030523160314.GJ774@ip68-0-152-218.tc.ph.cox.net>
+References: <3ECD5B84.9030807@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3ECD5B84.9030807@mvista.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-There seems to be a lot of code in the IDE subsystem relating to
-interrupts. Is there a way to set a device in polled (i.e.
-non-interrupt) mode? Maybe some way to run the tasklet/bh periodically?
+On Thu, May 22, 2003 at 04:21:40PM -0700, Mark A. Greer wrote:
 
-Does the IDE system want to monitor my ATA device's Ready_NotBusy
-interrupt?
+> Minor patch to move macros that define the embedded ethernet & mpsc IRQ
+> values.
 
-	Trevor
+Applied.
+
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
