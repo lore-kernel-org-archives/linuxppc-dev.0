@@ -1,54 +1,65 @@
-Message-ID: <39AE4562.E40A5400@rochcivictheatre.org>
-Date: Thu, 31 Aug 2000 06:45:38 -0500
-From: Tom Gall <gall@rochcivictheatre.org>
+Date: Thu, 31 Aug 2000 13:53:27 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
+In-Reply-To: <20000831113909.32087@mailhost.mipsys.com>
+Message-ID: <Pine.HPX.4.10.10008311339060.15978-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-To: daenzerm@student.ethz.ch
-CC: Tony Mantler <nicoya@apia.dhs.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Sourceforge.net
-References: <39ADA344.4D6F0916@rochcivictheatre.org>
-		 <39ADABDC.15B5AE0@student.ethz.ch> <v04003a01b5d368e95453@[24.66.67.194]> <39AE296A.552A14C3@relog.ch>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer wrote:
->
-> Tony Mantler wrote:
-> >
-> > At 8:34 PM -0500 8/30/2000, Tom Gall wrote:
-> > [...]
-> > >I just setup a
-> > >procmail script so in theory when bugs are created or updated they will
-> > >be posted here...  stress in theory.
-> > >
-> > >FLAME ME IF THIS IS PURELY STUPID.
-> >
-> > It's not purely stupid, it just might be an idea to put it on a seperate
-> > list. I imagine some people might find automated bug spammy and annoying,
-> > while other people obviously want to see them all delivered straight to
-> > their mailbox as they're submitted.
->
-> Good idea, why not set up a list at SourceForge?
+On Thu, 31 Aug 2000, Benjamin Herrenschmidt wrote:
 
-Hi Michel,
+> Heh, that's interesting since that's close to an idea I had of having the
+> bootloader pre-load some modules and have the kernel automatically link
+> them, so all the platform dependent stuffs could be in modules.
 
-  Only problem with that idea is then the mail archives for PowerPC
-would become disjoint.
+Ok, I see that we agree...
 
-  Dave Wolfe the owner for lists.linuxppc.org did offer to  create a
-seperate list for bug notification and so on. If this list turns into
-nothing but a dumping ground of bug spam then I would certainly advocate
-let's get a new list, however bug reports seem to be filed rather slowly
-so at this point I'd say let's not create a new list for now.
+> The only problem is that some HW probe code must be present in the
+> bootloader itself to decide which modules to load (well, this could be in
+> the bootloader config file, but then, we need a way to load all of them
+> for boot CDs).
 
---
-Regards,
+For PCI devices it's not that complex (if you have a list of device
+identifiers supported by the module in a header of the module, you can
+decide whether you have to link the corresponding module or not).
 
-Tom
+For desktops and large embedded system (16Mb RAM or more), I just don't
+care about the size of the initial image (bootloader+kernel). Anything
+which is potentially useful during boot can be included, as long as it is
+thrown away before the kernel (whose memory footprint has to be minimized
+on the other hand) gets control.
 
------------------------------------------------------------
-Linux Guy          "My heart is human, my blood is boiling,
-tgall@uswest.net    my brain IBM" -- Mr Roboto, Styxx
+> There's already some code for the kernel to get passed a System.map by
+> the bootloader. It's currently only used by xmon (AFAIK). With the
+> dynamic linking stuff, the bootloader could pass the "base" kernel
+> system.map, and would extend it with modules that gets linked in.
+
+Ok...
+
+> Something else Cort and I have in mind for 2.5 is to also remove a huge
+> part of what we currently have in prom.c and head.S and move all that to
+> bootloaders. The idea is that the kernel would always be entered with MMU
+> cleaned and off, and all the firmware dependant things like the OF
+> device-tree would be passed by the bootloader instead of beeing retreived
+> from OF by the kernel.
+
+Well, I had a preliminary version of prepboot which read the device tree
+instead of residual data, but I gave up and never finished when I realized
+that my OF was buggy to the point that the device @1f was actually @0 and
+a few others of the same category (real-mode? could not be reliably read
+for example when booting from a prepboot partition).
+
+I think the code is still on my ftp directory; the only differences
+between a zImage.elf and a zImage.ppcboot were the name of the linker
+script and of the output file in the final link command. The rest was
+identical, byte per byte, with exactly the same files linked together.
+
+	Gabriel
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
