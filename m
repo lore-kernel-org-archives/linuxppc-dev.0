@@ -1,24 +1,26 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3E6C667F.4070304@dgt-lab.com.pl>
-Date: Mon, 10 Mar 2003 11:18:39 +0100
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
+From: "Donald MacArthur" <dmacarth@ufl.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Changing Console Baud Rate
+Date: Mon, 10 Mar 2003 07:29:20 -0500
+Message-ID: <NDBBIHDFKLJKGJJGMFJOOECACHAA.dmacarth@ufl.edu>
 MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: 8250 pci
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello everybody.
-I'm looking for 8250 pci code for 2.4.19 linux (or any other).
+Hello
 
-Is code for 8240 applicable ?
+I am currently working with an embedded planet MPC850 credit card board.  I
+am also using the GPL timesys linux kernel.  I recently tried to change the
+console baud rate in the kernel boot parameter from 9600 to 19200 yet when
+the kernel booted up there was no change.  Any ideas on further
+modifications required to change the console baud rate?
 
---
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
+Thank You
+Don MacArthur
+dmacarth@ufl.edu
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
