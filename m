@@ -1,33 +1,52 @@
-Message-ID: <00a801c381e8$090f4fa0$0700a8c0@eurostudio.local>
-Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
-To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
-Subject: unhandled Intterrupt
-Date: Tue, 23 Sep 2003 17:33:27 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061D5C@exchwenz01.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: 
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: using bdi2000 to debug ppcboot on mpc7455 
+Date: Wed, 1 Oct 2003 10:39:54 +1200 
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I to all,
+Ok so with a bit of tongue and cheek.... To Quote Wolfgang from the 24th of
+May 2001...
 
-We are currently using a deamon to control some activities on a custom
-ppc8260 board running on ELDK 2.0.2 environment. We are also able to start
-and stop its fuctionality at run time by issuing start and stop (or restart)
-command.
-Sometime during a deamon restart We observed the message "unhandled
-Interrupt 0, disabled". This message is issued by the
-ppc_irq_dispath_handler routine located into arch/ppc/kernel/irq.c and
-should be referred to an interrupt request without source (referring to
-MPC8260 Power QuiccII user manual 4.2.4).
+"Everybody listen: I _will_ mention this trick a 9th  time  for  free. The
+10th person asking the same question will owe me a beer."
 
-Anybody knowns why this happens? Who can generate this error?
+Does this mean that Q-ha Park owes Wolfgang a beer? ;-)
 
-Many thanks in advance
+Rod
 
-Gianfranco
-
+> -----Original Message-----
+> From: Wolfgang Denk [mailto:wd@denx.de]
+> Sent: Wednesday, 1 October 2003 9:35 a.m.
+> To: Q-ha Park
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: using bdi2000 to debug ppcboot on mpc7455
+>
+>
+> In message <005e01c383f2$65430080$2a21a8c0@qha> you wrote:
+> >
+> > Thanks a lot for your very informative reply; it helped me greatly and I
+> > can finally play with breakpoints. Although I failed to set the
+> > breakpoint at after_reloc but the point right before boart_init_r.
+>
+> For debugging U-Boot / PPCBoot after relocation see
+> http://www.denx.de/twiki/bin/view/DULG/DebuggingUBoot#Section_9.1.2.
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+> Heavier than air flying machines are impossible.
+>                     -- Lord Kelvin, President, Royal Society, c. 1895
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
