@@ -1,37 +1,30 @@
-Message-ID: <387F50F9.641B80EF@netx4.com>
-Date: Fri, 14 Jan 2000 11:38:17 -0500
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Christer Weinigel <wingel@cendio.se>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 16kb pages on MPC850
-References: <200001140318.EAA16881@dumburk.cendio.se>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200001141713.SAA04129@denx.local.net>
+To: Jim Chapman <jim.chapman@iname.com>
+Cc: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Cross-compile Applications for 860 on x86 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 14 Jan 2000 11:50:25 GMT."
+             <387F0D81.48F7CABE@iname.com>
+Date: Fri, 14 Jan 2000 18:13:11 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Christer Weinigel wrote:
+In message <387F0D81.48F7CABE@iname.com> Jim Chapman wrote:
+> 
+> Do "-ls" at the prompt, not "ls". Prepending "-" runs sash's builtin
+> versions, otherwise it will try to find a ls on your ramdisk like any
+> other shell. See sash's man page about all available builtin commands.
 
-> Or does anybody have better ideas on how to improve the performance of
-> Linux on a MPC850?
+Or just type "help"
 
-There are lots of MMU related performance enhancements on my
-list.  You touched on just a couple, although 16K pages are
-probably not the way to go.
+Wolfgang Denk
 
-The 8M mapping for the kernel is one way to go, although you
-have to be careful about the dynamic VM allocator alignment, and
-it presents a further problem for loadable modules.
-
-Now that the VM changes in the 2.3.xx have settled down, I am
-going to start working on two projects.  One is the larger 8M
-mapping for the kernel, and the second is to further modify the
-Linux generic functions so they don't assume the pgd and pmd are
-pointers.  I can then significantly reduce the amount of code in
-the page fault handlers.
-
-
-	-- Dan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Overdrawn?  But I still have checks left!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
