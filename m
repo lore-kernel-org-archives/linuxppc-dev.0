@@ -1,68 +1,55 @@
-In-Reply-To: <19990614114347.006593>
-Date: Wed, 23 Jun 1999 10:43:45 +0200
-To: linuxppc-dev@lists.linuxppc.org
-CC: kevyn@apple.com, Paul.Mackerras@cs.anu.edu.au, huberj@WPI.EDU
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: PowerBook sleep, first try
-Message-Id: <19990623104345.023685@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <3770AA21.8AB15E21@mpifr-bonn.mpg.de>
+Date: Wed, 23 Jun 1999 11:34:25 +0200
+From: Albrecht =?iso-8859-1?Q?Dre=DF?= <ad@MPIfR-Bonn.MPG.de>
+MIME-Version: 1.0
+To: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>
+CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: Again: 3-Button-Mice
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+Hi all,
 
-I've uploaded a first-try implementation of sleep on PowerBook G3 Series
-(Grackle/mac-io based). It's NOT functional yet, it still hangs when
-waking up. However, it no longer resets the machine, so it looks like the
-ROM code is correctly identifying the wakeup code when the CPU is powered
-back on.
+	please excuse me if I bother again with an old issue---I have a PowerBook
+G3/300 with a 3-button Countou Mouse (adb) attached to it, but I am not able to
+get all three buttons running.  dmesg tells me
 
-I would really appreciate if some people could review it and give me
-their feeling about possible bugs and why it's currently not working. The
-overall layout along with some strange hacks are directly reverse-eng.
-from MacOS nanokernel (MacOS 8.6 version).
+adb devices: [2]: 2 c4 [3]: 3 66 [7]: 7 1f [15]: 3 1
+...
+ADB mouse at 3, handler 1
+ADB mouse at 15, handler set to 4 (trackpad)
+ADB mouse at 3, handler 1
+ADB mouse at 15, handler set to 4 (trackpad)
+ADB keyboard at 2, handler 1
+Macintosh ADB mouse driver installed.
 
-The code is at <http://calvaweb.calvacom.fr/bh40/sleep_test.tar.gz>, the
-patches were made against a 2.2.9 vger kernel but should apply cleanly
-(hum... mostly) on 2.2.10.
+I tried to alter the handler of device #3 using mousemode, but without success:
 
-For those who didn't follow the whole story, when the PowerBook goes to
-sleep, it actually shuts down the CPU (but not Grackle). There is some
-code in the ROM reset vectors that detects that Grackle is not in it's
-initial state. If it is not, it then looks for the magic value 'Lars' at
-address 4 (physical). If found, it looks for a pointer at address 0. at
-this pointer address, there's a pointer to the code to be executed.
+[root@pc128 /root]# /sbin/mousemode 3 4
+handler for addr 3 was 102
+trying to set handler to 4...
+handler is now 102
 
-So basically, just after we have sent the PMU sleep command (we then have
-approx. 1/2 second to backup everything) we need to backup the CPU
-context and store those magic values. The code also must make sure that
-all those datas are properly flushed before the CPU is reset (I disable
-the data cache to be sure). Apparently, we must also switch the CPU to
-sleep mode (which in turn will put Grackle in NAP mode) and wait to be reset.
-For unknown reasons, the MacOS code for that just re-enables the i-cache
-and does some strange things around the sleep code. My code does approx.
-the same. I've heard "rumors" about Grackle bugs that needed to be worked
-around by Apple, I'm wondering if those strange tricks may be related to
-those bugs, and in this case, if my fixes are correct.
+I run the accelerated video driver for the atyfb device (from linux 2.3); might
+this be connected with my problem?
 
-According to an Apple eng. I met at WWDC, there is no need to save the
-pci config registers, PCI devices are not turned off unless explicitely
-done by their respective drivers.
-
-Of course, we still lack a sleep notifier for devices like bmac, and the
-hack I added to atyfb is probably not correct, but I want to get the core
-operation to work first, and then spend time with the various devices.
+Thanks for any help, Albrecht.
 
 
 -- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
++-----------------------------------------------------------------------------+
+| Dr.-Ing. Albrecht Dre\ss                                     ----           |
+| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
+| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
+| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
+| D-53121 Bonn (Germany)          ------------+------+-------------------     |
+|                                             |    / |                        |
+| Phone (+49) 228 525 319                     |  /  /                         |
+| Fax   (+49) 228 525 411                     |/   /                          |
+| Mail  ad@mpifr-bonn.mpg.de                                                  |
++-------------- electrical engineers do it with less resistance --------------+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
