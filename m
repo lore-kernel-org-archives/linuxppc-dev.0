@@ -1,36 +1,42 @@
-Date: Thu, 29 Mar 2001 08:28:46 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: Alex Shnitman <alexsh@hectic.net>
+Message-ID: <3AC36575.ED5A0935@matrox.com>
+Date: Thu, 29 Mar 2001 11:40:21 -0500
+From: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>
+MIME-Version: 1.0
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Stability of MontaVista's 2.4.0-test2-1.2.2-1
-Message-ID: <20010329082846.B12075@opus.bloom.county>
 References: <H00002af04b2e173@MHS> <3AC23B01.A9162C3B@matrox.com> <3AC25348.C33F8692@mvista.com> <20010329163258.C13092@mangodsp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010329163258.C13092@mangodsp.com>; from alexsh@hectic.net on Thu, Mar 29, 2001 at 04:33:04PM +0200
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Mar 29, 2001 at 04:33:04PM +0200, Alex Shnitman wrote:
->
-> Hi, Mark!
->
-> On Wed, Mar 28, 2001 at 02:10:33PM -0700, you wrote the following:
->
-> > That version of the kernel does have problems.  Get the latest linuxppc_2_5
-> > source and try that.  I haven't tested the last couple weeks but before then,
-> > it was very solid.  Sandpoint support is in it.
->
+Alex Shnitman wrote:
 > I've just tried it. I downloaded the tree with bitkeeper, and applied
 > sp_patch_25, but got the following linking errors at the final stage
 > of the compilation:
-[snip]
+
+I just downloaded 2_5 with Bitkeeper and I got the same problem.
 
-That's neat.  Can you privately email me the .config you used?
+Isn't there any daily snapshots located somewhere??  I can't download
+using Bitkeeper from here because of the proxy.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Sébas..
+
+P.S.: Here's the errors I get:
+arch/ppc/kernel/kernel.o: In function `sandpoint_get_irq':
+arch/ppc/kernel/kernel.o(.text+0x99b8): undefined reference to
+`openpic_irq'
+arch/ppc/kernel/kernel.o(.text+0x99b8): relocation truncated to fit:
+R_PPC_REL24 openpic_irq
+arch/ppc/kernel/kernel.o(.text+0x99dc): undefined reference to
+`openpic_eoi'
+arch/ppc/kernel/kernel.o(.text+0x99dc): relocation truncated to fit:
+R_PPC_REL24 openpic_eoi
+arch/ppc/kernel/kernel.o: In function `sandpoint_post_irq':
+arch/ppc/kernel/kernel.o(.text+0x9a2c): undefined reference to
+`openpic_eoi'
+arch/ppc/kernel/kernel.o(.text+0x9a2c): relocation truncated to fit:
+R_PPC_REL24 openpic_eoi
+make: *** [vmlinux] Error 1
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
