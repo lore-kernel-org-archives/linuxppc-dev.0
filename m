@@ -1,29 +1,19 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outfbmx002.isp.belgacom.be (outfbmx002.isp.belgacom.be
-	[195.238.3.102]) by ozlabs.org (Postfix) with ESMTP id 233D22BE83
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id E4F3C2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Nov 2004 07:12:52 +1100 (EST)
-Received: from outmx014.isp.belgacom.be (outmx014.isp.belgacom.be
-	[195.238.2.69]) by outfbmx002.isp.belgacom.be
-	(8.12.11/8.12.11/Skynet-OUT-FALLBACK-2.22) with ESMTP id
-	iALGBLug013916
-	for <linuxppc-embedded@ozlabs.org>; Sun, 21 Nov 2004 17:11:21 +0100
-	(envelope-from <tnt@246tNt.com>)
-Received: from outmx014.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx014.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id iALGB3cn002933
-	for <linuxppc-embedded@ozlabs.org>; Sun, 21 Nov 2004 17:11:03 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <41A0BE13.5000302@246tNt.com>
-Date: Sun, 21 Nov 2004 17:10:59 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Tue, 23 Nov 2004 05:40:53 +1100 (EST)
+Message-ID: <41A232AD.6050802@mvista.com>
+Date: Mon, 22 Nov 2004 11:40:45 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-To: roger blofeld <blofeldus@yahoo.com>
-References: <20041119145354.59388.qmail@web53507.mail.yahoo.com>
-In-Reply-To: <20041119145354.59388.qmail@web53507.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Lite5200 FEC Driver on linux 2.6 broken? (fixed again)
+To: Andrew Morton <akpm@osdl.org>
+References: <419E6900.5070001@mvista.com>
+	<20041119155854.02af2174.akpm@osdl.org>
+In-Reply-To: <20041119155854.02af2174.akpm@osdl.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][PPC32] Marvell host bridge support (mv64x60)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,40 +24,228 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-roger blofeld wrote:
+Andrew Morton wrote:
 
->>What tree are you exactly using ?
->>In mainstream XLB snooping is not configured so if you have the 
->>mainstream + added DMA,
->>the problem may come from this.
+>"Mark A. Greer" <mgreer@mvista.com> wrote:
+>  
+>
+>>This patch adds core support for a line of host bridges from Marvell 
+>>(formerly Galileo).  This code has been tested with a GT64260a, 
+>>GT64260b, MV64360, and MV64460.  Patches for platforms that use these 
+>>bridges will be sent separately.
 >>
->>
->>   Sylvain
 >>    
 >>
 >
->I did a bk clone of the linux-2.5 tree (2.6.10-rc2), then a bk pull of
->your tree. You're probably right about the snooping. Since the driver
->is working at the moment, I'll wait until your tree is updated before
->doing more testing.
->Thanks
->-rb
->  
+>Shouldn't these guys:
 >
-Wow, that must have led to a bunch of conflicts no ?
+>
+>+       u32     cpu2mem_tab[MV64x60_CPU2MEM_WINDOWS][2] = {
+>+                       { MV64x60_CPU2MEM_0_BASE, MV64x60_CPU2MEM_0_SIZE },
+>+                       { MV64x60_CPU2MEM_1_BASE, MV64x60_CPU2MEM_1_SIZE },
+>+                       { MV64x60_CPU2MEM_2_BASE, MV64x60_CPU2MEM_2_SIZE },
+>+                       { MV64x60_CPU2MEM_3_BASE, MV64x60_CPU2MEM_3_SIZE }
+>+       };
+>+       u32     com2mem_tab[MV64x60_CPU2MEM_WINDOWS][2] = {
+>+                       { MV64360_MPSC2MEM_0_BASE, MV64360_MPSC2MEM_0_SIZE },
+>+                       { MV64360_MPSC2MEM_1_BASE, MV64360_MPSC2MEM_1_SIZE },
+>+                       { MV64360_MPSC2MEM_2_BASE, MV64360_MPSC2MEM_2_SIZE },
+>+                       { MV64360_MPSC2MEM_3_BASE, MV64360_MPSC2MEM_3_SIZE }
+>+       };
+>+       u32     dram_selects[MV64x60_CPU2MEM_WINDOWS] = { 0xe, 0xd, 0xb, 0x7 };
+>
+>be static, and maybe __devinitdata?  Right now, the CPU has to populate
+>them by hand at runtime.
+>
 
-Now, it's more up-to-date and cloning mainstream and pulling should be ok.
-Note that my tree is now :
+Yes.  I'll fix that.
 
-bk://bkbits.246tNt.com/linux-2.5-mpc52xx
+>
+>+wait_for_ownership(int chan)
+>+{
+>+	int	i;
+>+
+>+	for (i=0; i<MAX_TX_WAIT; i++) {
+>+		if ((MV64x60_REG_READ(sdma_regs[chan].sdcm) &
+>+				SDMA_SDCM_TXD) == 0)
+>+			break;
+>+
+>+		udelay(1000);
+>
+>ow, big busywait.  Can't use a sleep in here?  I guess not :(
+>
 
-(no -devel, I merged the two in only one)
+This code is in the ppc bootwrapper which is glue code to get the
+hardware (and bd_info, etc.) from whatever state the f/w left it in into
+something the kernel can work with.  IOW, its not in the kernel and
+there is no sleep mechanism...or even a thread/process entity to put to
+sleep.
 
-The flush_dcache_range is not present because if it still fails I'd like 
-to understand why.
-I should not be needed or maybe I'm missing something. If still doesn't 
-work, I'll
-add it with a note.
+>+ * arch/ppc/boot/simple/mv64x60_tty.c
+>
+>hm.  Normally we put arch-specific drivers like this into drivers/serial
+>and do the appropriate Kconfig work.  Is there a reason why this serial
+>driver is buried under arch/ppc?
+>
 
+It isn't a part of the kernel so I don't think it belongs in
+drivers/serial.  This particular serial driver is required for cmd_line
+editing when booting a zImage.
 
-    Sylvain
+>+#include "../../../../drivers/serial/mpsc_defs.h"
+>
+>erk.
+>
+
+Ah, yeah, I'll fix that too :)
+
+>
+>+struct mv64x60_rx_desc {
+>+	volatile u16 bufsize;
+>+	volatile u16 bytecnt;
+>+	volatile u32 cmd_stat;
+>+	volatile u32 next_desc_ptr;
+>+	volatile u32 buffer;
+>+};
+>+
+>+struct mv64x60_tx_desc {
+>+	volatile u16 bytecnt;
+>+	volatile u16 shadow;
+>+	volatile u32 cmd_stat;
+>+	volatile u32 next_desc_ptr;
+>+	volatile u32 buffer;
+>+};
+>
+>Do these need to be volatile?  If so, it indicates that the driver is doing
+>something wrong.
+>
+
+I didn't spend much time looking at this code.  I'll clean it up.
+
+>
+>+gt64260_register_hdlrs(void)
+>+{
+>+	/* Register CPU interface error interrupt handler */
+>+	request_irq(MV64x60_IRQ_CPU_ERR, gt64260_cpu_error_int_handler,
+>+		    SA_INTERRUPT, CPU_INTR_STR, 0);
+>
+>request_irq() can fail.
+>
+
+OK.
+
+>+int
+>+mv64360_get_irq(struct pt_regs *regs)
+>+{
+>+	int irq;
+>+	int irq_gpp;
+>+
+>+#ifdef CONFIG_SMP
+>+	/*
+>+	 * Second CPU gets only doorbell (message) interrupts.
+>+	 * The doorbell interrupt is BIT28 in the main interrupt low cause reg.
+>+	 */
+>+	int cpu_nr = smp_processor_id();
+>
+>This function has no callers, so I am unable to determine whether it is
+>called from non-preemptible code.  If it is called from preemptible code
+>then that smp_processor_id() is buggy, because you can switch CPUs at any
+>time.
+>
+
+Its called via ppc_md.get_irq() (see arch/ppc/kernel/irq.c:do_IRQ()).
+ppc_md.get_irq is set up in the platform files.
+
+>+static struct platform_device mpsc_shared_device = { /* Shared device */
+>+	.name		= MPSC_SHARED_NAME,
+>+	.id		= 0,
+>+	.num_resources	= ARRAY_SIZE(mv64x60_mpsc_shared_resources),
+>+	.resource	= mv64x60_mpsc_shared_resources,
+>+	.dev = {
+>+		.driver_data = (void *)&mv64x60_mpsc_shared_pd_dd,
+>+	},
+>+};
+>
+>The cast to void* is unnecessary.
+>
+
+OK.
+
+>+	(void)mv64x60_setup_for_chip(&bh);
+>
+>how come you always stick that (void) in there?
+>
+
+I did that b/c the routine returns an 'int' but I'm ignoring it.  I
+probably shouldn't be ignoring it...
+
+>
+>+mv64x60_config_cpu2mem_windows(struct mv64x60_handle *bh,
+>+	struct mv64x60_setup_info *si,
+>+	u32 mem_windows[MV64x60_CPU2MEM_WINDOWS][2])
+>+{
+>+	u32	i, win;
+>+	u32	prot_tab[] = {
+>+			MV64x60_CPU_PROT_0_WIN, MV64x60_CPU_PROT_1_WIN,
+>+			MV64x60_CPU_PROT_2_WIN, MV64x60_CPU_PROT_3_WIN
+>+		};
+>+	u32	cpu_snoop_tab[] = {
+>+			MV64x60_CPU_SNOOP_0_WIN, MV64x60_CPU_SNOOP_1_WIN,
+>+			MV64x60_CPU_SNOOP_2_WIN, MV64x60_CPU_SNOOP_3_WIN
+>+		};
+>
+>static initialisation?
+>
+
+Yep.
+
+>
+>+mv64x60_config_cpu2pci_windows(struct mv64x60_handle *bh,
+>+	struct mv64x60_pci_info *pi, u32 bus)
+>+{
+>+	int	i;
+>+	u32	win_tab[2][4] = {
+>+			{ MV64x60_CPU2PCI0_IO_WIN, MV64x60_CPU2PCI0_MEM_0_WIN,
+>+			  MV64x60_CPU2PCI0_MEM_1_WIN,
+>+			  MV64x60_CPU2PCI0_MEM_2_WIN },
+>+			{ MV64x60_CPU2PCI1_IO_WIN, MV64x60_CPU2PCI1_MEM_0_WIN,
+>+			  MV64x60_CPU2PCI1_MEM_1_WIN,
+>+			  MV64x60_CPU2PCI1_MEM_2_WIN },
+>+		};
+>+	u32	remap_tab[2][4] = {
+>+			{ MV64x60_CPU2PCI0_IO_REMAP_WIN,
+>+			  MV64x60_CPU2PCI0_MEM_0_REMAP_WIN,
+>+			  MV64x60_CPU2PCI0_MEM_1_REMAP_WIN,
+>+			  MV64x60_CPU2PCI0_MEM_2_REMAP_WIN },
+>+			{ MV64x60_CPU2PCI1_IO_REMAP_WIN,
+>+			  MV64x60_CPU2PCI1_MEM_0_REMAP_WIN,
+>+			  MV64x60_CPU2PCI1_MEM_1_REMAP_WIN,
+>+			  MV64x60_CPU2PCI1_MEM_2_REMAP_WIN }
+>+		};
+>+
+>
+>ditto
+>
+>
+>+mv64x60_config_pci2mem_windows(struct mv64x60_handle *bh,
+>
+>and here
+>
+>+mv64360_set_pci2mem_window(struct pci_controller *hose, u32 bus, u32 window,
+>
+>and here
+>
+>+mv64360_config_io2mem_windows(struct mv64x60_handle *bh,
+>
+>and here
+
+Yes, several times.  I'll fix it.
+
+>
+>Anyway, I'll stick this as-is in -mm.  Feel free to send an incremental
+>patch, or a replacement.
+>
+
+Thanks for the feedback.  I'll clean it up & resend.
+
+Mark
