@@ -1,10 +1,10 @@
-Date: Tue, 26 Jan 1999 16:26:46 -0800 (PST)
-From: Matt McLean <keys@yikes.com>
+Date: Tue, 26 Jan 1999 21:42:04 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
 To: Ira Joseph Woodhead <ira@wrath.iatlas.com>
 cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: pre-R5 deficiencies
 In-Reply-To: <199901262207.RAA06012@wrath.iatlas.com>
-Message-ID: <Pine.BSF.4.01.9901261618270.18799-100000@brio.yikes.com>
+Message-ID: <Pine.LNX.4.05.9901262141300.964-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -18,14 +18,12 @@ On Tue, 26 Jan 1999, Ira Joseph Woodhead wrote:
 > no updatedb binary. Furthermore, 'rpm -qlp *.rpm' reveals that it is not
 > included in any package.
 
-<snip>
+It's part of the slocate package.  See /etc/cron.daily/slocate.cron on how
+to update the db.
 
-This was a decision made by redhat.  According to a note from Erik Troan
-in the spec file, you're supposed to use Secure Locate (slocate) instead.
-As for why a cron script that uses updatedb is still included, I don't
-know. :-)
-
-m.
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
