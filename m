@@ -1,69 +1,68 @@
-Date: Sun, 3 Jan 1999 16:04:52 +0100 (MET)
-From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
-Reply-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: __init, __openfirmware, etc...
-In-Reply-To: <19990103104228.031876@smtp.calvacom.fr>
-Message-ID: <Pine.LNX.4.02.9901031352460.303-100000@cassiopeia.home>
+Date: Sun, 3 Jan 1999 15:24:49 -0700 (MST)
+From: Brad Midgley <brad@pht.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+cc: Cort Dougan <cort@persephone.cs.nmt.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: real-root-dev patch for vger
+In-Reply-To: <Pine.LNX.4.02.9901022152590.2266-100000@cassiopeia.home>
+Message-ID: <Pine.LNX.3.95.990103152345.22256A-100000@pacific.pht.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 3 Jan 1999, Benjamin Herrenschmidt wrote:
-> On Sat, Jan 2, 1999, Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be> wrote:
-> >__init sections are indeed removed after kernel initialisation. The
-> other ones
-> >are removed depending on the dynamic run type of the machine, e.g. __pmac
-> >sections are removed on PReP, and so on. Saves quite some valuable
-> unswappable
-> >kernel memory.c
+geert,
+
+is the patch i submitted the same as the one you refer to? is the patch
+safe for other architectures? i'll push for it if so.
+
+brad
+
 > 
-> Ok. Do you know what happens to static datas declared within an __init
-> function ? Is it removed to ? I have a function that use a static array
-> for putting permanent "override" values for part of the device tree and
-> this array must not be removed. Should I put the static array out of the
+> On Fri, 1 Jan 1999, Brad Midgley wrote:
+> > a type problem has rendered /proc/sys/kernel/real-root-dev useless in the
+> > vger tree. this problem has been around for quite a while. also attached. 
+> > 
+> > --- init/main.c.orig	Fri Jan  1 13:35:28 1999
+> > +++ init/main.c	Mon Nov 30 16:01:56 1998
+> > @@ -349,7 +349,7 @@
+> >  extern int rd_size;		/* Size of the ramdisk(s) */
+> >  extern int rd_image_start;	/* starting block # of image */
+> >  #ifdef CONFIG_BLK_DEV_INITRD
+> > -kdev_t real_root_dev;
+> > +int real_root_dev;
+> >  #endif
+> >  #endif
+> >  
+> > --- include/linux/fs.h.orig	Fri Jan  1 13:35:12 1999
+> > +++ include/linux/fs.h	Mon Nov 30 20:03:00 1998
+> > @@ -850,7 +850,7 @@
+> >  extern void mount_root(void);
+> >  
+> >  #ifdef CONFIG_BLK_DEV_INITRD
+> > -extern kdev_t real_root_dev;
+> > +extern int real_root_dev;
+> >  extern int change_root(kdev_t new_root_dev,const char *put_old);
+> >  #endif
+> >  
+> > 
+> > 
+> 
+> This is a known problem on big endian machines. Was fixed in the m68k tree a
+> few years ago :-) I don't know why Linus doesn't take the patch Andreas Schwab
+> sent him, also many years ago.
+> 
+> Greetings,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+> Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+> Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+> 
+> 
 
-I think it will be removed. I suggest to use `nm' or `objdump' or just plain
-`make dirhiearchy/file.S' to find out in which section the data end up.
-
-Note that __init isn't perfect: especially tables with strings are difficult to
-put in __init, e.g.
-
-    const char *table __init = {
-	"string 1", "string 2",
-    }
-
-will put the table with pointers in an init section, while the string data
-itself is put in the normal data section, which is usually not what you want.
-You can circumvent that in a tedious way like:
-
-    static const char string1[] = "string 1";
-    static const char string2[] = "string 2";
-    const char *table __init = {
-	string1, string2
-    };
-
-> function too or will this remove mecanism avoid bss sections ?
-
-BSS sections are always empty (zeroed), so you can't store initial data in them
-:-)
-
-To put a BSS variable in an init section, make sure to put at least one
-synthetic initializer in it, like
-
-    const char bssvar[100] __init = { 0, };
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
