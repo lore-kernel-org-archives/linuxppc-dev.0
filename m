@@ -1,36 +1,82 @@
-Date: Thu, 12 Sep 2002 15:08:55 -0700
-From: Matt Porter <porter@cox.net>
-To: Aman <aman@mistralsoftware.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: RamDisk
-Message-ID: <20020912150855.A8861@home.com>
-References: <001801c25a8e$89884420$370da8c0@aman>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <001801c25a8e$89884420$370da8c0@aman>; from aman@mistralsoftware.com on Fri, Sep 13, 2002 at 12:29:35AM +0530
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "Richard Jones" <rjones@nexus-tech.net>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Mounting Compact Flash card under Linux on ppc823
+Date: Thu, 12 Sep 2002 18:48:42 -0400
+Message-ID: <PEEPKCHHHBJOFJKGMMLHOEEDCAAA.rjones@nexus-tech.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Sep 13, 2002 at 12:29:35AM +0530, Aman wrote:
->
-> Hi All
->
-> I am using a PPC 440 evaluation Kit with openbios as the monitor code. I
-> have successfully download kernel image using the NFS. Now I want to create
-> a RAMDISK for the PPC 440. After which I want to download the RAMDISK and
-> the kernel image to the RAM. My question is, using the monitor
-> code(OpenBios), is it possible to download both the image ie RAMDISK and
-> Kernel image to the RAM.
+Hello all,
 
-Put your compressed ramdisk image in arch/ppc/boot/images/ramdisk.image.gz
-and make the zImage.initrd target.  The resulting zImage.initrd.ebony
-has the compressed ramdisk image linked in.
+I need help getting a compact flash card working on my system.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+I am using a custom 823 board running ppcboot 1.1.6.  I have added support
+for FAT file system here and have been able to load the linux kernel from a
+compact flash card (meaning the pcmcia interface is configured and working
+properly).  The problem I have is in getting Linux to recognize the IDE
+interface properly and let me mount the drive.
+
+I am using the Linux kernel from www.denx.de that has the version 2.4.4
+(2002-08-09) with all the support for the 8xx pcmcia/direct etc... code.
+When Linux boots (using NFS remote filesystem) it comes up and prints the
+following:
+
+<misc deleted>
+...
+Kernel command line: root=/dev/nfs rw nfsroot=192.168.0.120:/ppcroot
+nfsaddrs=19
+2.168.0.20:192.168.0.120 init=/bin/bash idebus=25
+ide_setup: idebus=25PCMCIA slot B: phys mem e0000000...ec000000 (size
+0c000000)
+Card ID: SST 48CF032 55LD017-A2 FW17-4C
+ Fixed Disk Card
+ IDE interface
+ [silicon] [unique] [single] [sleep] [standby] [idle] [low power]
+...
+<more stuff deleted>
+...
+Uniform Multi-Platform E-IDE driver Revision: 6.31
+ide: Assuming 25MHz system bus speed for PIO modes
+...
+
+and finally gives me a shell prompt.  In the above, the Kernel seems to
+recognize the card as being an SST-based flash card.  All seems okay but the
+IDE device does not appear in the /proc/devices listing.  Also, I can't
+mount a filesystem (probably because the IDE doesn't seem to have installed
+completely).  The card I am using has a DOS filesystem on it with a few
+files that I added.  My /etc/fstab has the following entry:
+
+/dev/hda1       /mnt/flash      msdos   noauto,owner    0 0
+
+Using make menuconfig, I set the following:
+under IDE, ATA and ATAPI Block Devices:
+   <*> Enhanced IDE/MFM/RLL disk/cdrom/tape/floppy support
+   [*]   MPC8xx IDE support
+   (8xx_PCCARD) Type of MPC8xx IDE interface
+under File systems:
+   <*>  DOS FAT fs support
+   <*>    MSDOS fs support
+   <*>      UMSDOS: Unix-like file system on top of standard MSDOS fs
+   <*>    VFAT (Windows-95) fs support
+
+Questions:
+- should the device really be hda1 ?
+- is there something more that I forgot in my board config header file for
+setting up pcmcia?
+
+
+Thanks & best regards,
+
+Richard Jones
+Nexus Technologies, Inc.
+10 National Avenue
+Fletcher NC 28748
+(828) 681-2844 x22
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
