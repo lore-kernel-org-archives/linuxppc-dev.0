@@ -1,25 +1,40 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3FC4BACC.6000606@jonmasters.org>
-Date: Wed, 26 Nov 2003 14:38:04 +0000
-From: Jon Masters <jonathan@jonmasters.org>
-MIME-Version: 1.0
+From: Aain_Devarenne%ZODIAC@zodiac.com
+Subject: Using MVL with multicast
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: ppc405 floating point emulation
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-ID: <OFAC0A3504.25D3C40C-ONC1256DEA.0050B12A@zodiac-intranet>
+Date: Wed, 26 Nov 2003 15:42:29 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hello there,
 
-Can someone tell me what they think the status of the mathemu on ppc405
-currently is? I am faced with a situation in which we will probably
-require some kind of library or kernel emulation support and all around
-people suggest not to even go there :-).
+my question is related to multicast.
+An application working under RedHat 8.0 on a PC can send UDP packets to a
+multicast group.
+The same application compiled to PPC target (IBM Walnut derived custom
+board) running under MVL control cannot do the same job:
+- sockets are created and packets send with sendto(). At that time I get a
+"Unreachable network" message
+- changing the multicast group address to a more common unicast address
+allows sendto() working fine
+- trying to ping the multicast group address produces a "connect" error
+message
 
-Cheers,
+I saw some fields to enable multicast capabilities in Kernel configuration
+but I'm not sure about my choices. May be some packages are requested too.
 
-Jon.
+Thanks for your help to deal with that goal : what is mandatory requested
+to get this application working on our target the way it works under RH ?
+
+
+MARTZ Gérard / DEVARENNE Alain
+IN-SNEC/Bord
+5 Avenue des Andes
+91943 Les Ulis
+0169827912
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
