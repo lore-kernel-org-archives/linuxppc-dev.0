@@ -1,14 +1,19 @@
-Return-Path: <daren.hayward@4bridgeworks.com>
-Message-ID: <C18BA5DDB58DD511BD0700C0DF0DD450294288@NTSERVER4>
-From: zDL Linux PPC <linuxppc@4bridgeworks.com>
-To: 'Gerhard Jaeger' <g.jaeger@sysgo.com>
-Date: Thu, 24 Feb 2005 13:55:33 -0000
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: zML Linux PPC Dev <linuxppc-dev@ozlabs.org>,
-	zML Linux PPC Embedded <linuxppc-embedded@ozlabs.org>
-Subject: RE: Power PC 440GX Jumbo Packets EMAC2/3
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id A0DAF67A86
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 01:18:11 +1100 (EST)
+Date: Thu, 24 Feb 2005 07:18:09 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: James Chapman <jchapman@katalix.com>
+Message-ID: <20050224141809.GP345@smtp.west.cox.net>
+References: <421CEC19.2010703@katalix.com>
+	<20050223222534.GM345@smtp.west.cox.net>
+	<421D97FE.4080100@katalix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <421D97FE.4080100@katalix.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: PATCH: add ppc PVR register values for 7447A and 7457 CPUs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,40 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gerhard,
-
-> [SNIPSNAP]
-> > > > Any suggestions on how to overcome this problem??? My only 
-> > > idea is to either
-> > > > add data to the packet (don't think this will work) or 
-> > > forceably fragment
-> > > > the packet (if it is 2K in size) to ensure that it never 
-> > > uses the exact size
-> > > > of the tx fifo.....
-> > > 
-> > > Have you applied Matt Porters patch? It has been submitted at 
-> > > the beginning
-> > > of this month?
-> > 
-> > No I haven't seen it on either of these lists, do you know 
-> where I can find
-> > it 
-> > 
-> > Thanks
+On Thu, Feb 24, 2005 at 09:01:50AM +0000, James Chapman wrote:
+> Tom Rini wrote:
 > 
-> Browse the linuxpp-embedded archive list, I think it was 
-> around the 9th
-> of february...
-> or try this one
-> http://ozlabs.org/pipermail/linuxppc-embedded/2005-February/00
-1260.html
+> >On Wed, Feb 23, 2005 at 08:48:25PM +0000, James Chapman wrote:
+> >
+> >>Signed-off-by: James Chapman <jchapman@katalix.com>
+> >>
+> >>Trivial patch to add 7447A and 7457 CPU defs.
+> >
+> >
+> >Why?  Most of the PVR definitions here can be removed (*muttering about
+> >85xx ones being added).
+> >
+> 
+> I'm in the process of submitting a patch for a new board (Radstone
+> PPC7D). Since other boards test CPU type using definitions in this file,
+> I was trying to be consistent.
+> 
+> If the community don't think those definitions are useful, I'll just
+> move the ones I need into my board support stuff.
 
-Thanks for this however it is not the problem I am experiencing at present,
-my problem is with the TX and not the RX side of things, I have added debug
-and the ibm_emac_core prints out that the packet has been transmitted,
-however I see nothing at the other end when you transmit a packet of tx fifo
-size bytes from the PPC 440 GX, packets of <tx fifo size or >tx fifo size
-are transmitted fine from the PPC 440 GX, so long as you do not transmit a
-packet of Tx fifo size.
+Is there something you can't get from cur_cpu_spec[0] ?  That's why all
+of the PVR definitions _should_ be unneeded now.
 
-Thanks
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
