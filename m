@@ -1,37 +1,68 @@
-Message-ID: <3757E499.32339D86@agelectronics.co.uk>
-Date: Fri, 04 Jun 1999 15:37:13 +0100
-From: Adrian Cox <apc@agelectronics.co.uk>
+Message-ID: <3757E59D.B18BCA8C@phx.mcd.mot.com>
+Date: Fri, 04 Jun 1999 07:41:33 -0700
+From: Johnnie Peters <jpeters@phx.mcd.mot.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
+To: "linuxppc-dev-digest@lists.linuxppc.org"
+ <linuxppc-dev-digest@lists.linuxppc.org>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        Abukhdeir Nasser-ana007 <Nasser_Abukhdeir-ANA007@email.mot.com>
 Subject: Re: Support for Motorola Platforms
-References: <3757E59D.B18BCA8C@phx.mcd.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Johnnie Peters wrote:
-> Motorola has a new version of the MVME2400 with the MAX processor and
-> as soon as I can get my hands on one I will do the work to get Linux
-> to run on it.  Plans are also underway for new versions of the MTX
-> series
-> supporting the MAX processor.
+Hello Abukhdeir
 
-Has anybody started work on GNU tools and kernel porting for Altivec
-processors? The issues I see are:
-(1) Altivec intructions in gas, so I don't have to enter the codes by
-hand.
-(2) Linux Kernel patches to load/save Altivec registers. These are large
-enough that a lazy load/save might be useful.
-(3) (Questionable) Patches to EGCS to support the C extensions that
-Motorola specify in the Altivec PIM. I detest C extensions that add the
-keyword "vector", but all Motorola's example code uses them.
+Yes we are making new machines.  The systems I work on are all
+PowerPC based and intended for the embedded systems market.  Here
+is a list of the machines (these are engineering names for the most
+part) this patch will allow LinuxPPC to boot on:
 
-All of these can be done based on documentation from Motorola's website.
-I suspect that (1) has already happened inside some RTOS vendors, but
-will take a long time to filter into the standard releases.
+Older PCI based machines
+    Comet
+    Blackhark
+    Utah
 
-- Adrian Cox
+Newer PCI
+    MTX
+    MTX+
+
+VME
+    MVME1600
+    MVME2300
+    MVME2400
+    MVME2600
+    MVME2700
+    MVME3600
+
+Compact PCI
+    Mesquite (CPX8216 main processor board)
+    Sitka    (CPX8216 slave procesor board)
+
+The dual processor MTX series and MVME4600 will boot but only run
+on one processor.  Work is underway to get the second aprocessor
+going.
+
+Motorola has a new version of the MVME2400 with the MAX processor and
+as soon as I can get my hands on one I will do the work to get Linux
+to run on it.  Plans are also underway for new versions of the MTX
+series
+supporting the MAX processor.
+
+I invite any inquires about our machines you might have.  And please
+call
+me Johnnie.  I'll never become accostimed to the Mr. Peters stuff.
+
+Abukhdeir Nasser-ana007 wrote:
+> 
+> Mr .Peters:
+>         Sorry for the ignorant question, but is Motorola still making new
+> machines?  What Motorola platform are you talking about?  I apologize for
+> the dumb questions...
+> 
+> 
+> Nasser
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
