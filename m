@@ -1,40 +1,33 @@
-From: Steffen Haeuser <SteffenH@hyperion-software.de>
-Reply-To: SteffenH@hyperion-software.de
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-CC: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Date: Wed, 26 Jul 2000 20:29:17 -0500
-Message-ID: <yam8242.883.146573120@mail.lf-online.de>
-In-Reply-To: <Pine.LNX.4.10.10007261949010.28745-100000@zirkon.biophys.uni-duesseldorf.de>
-Subject: Re: sound again [was: Re: xf4 bug report]
+Date: Wed, 26 Jul 2000 23:34:22 -0500 (CDT)
+From: Ramprasad Rao <ramp@oddjob.uchicago.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: current status of kernel devel vs. stable ..
+In-Reply-To: <Pine.LNX.4.21.0007252322590.27022-100000@handel3.apple.com>
+Message-ID: <Pine.GSU.4.05.10007262323400.22202-100000@oddjob.uchicago.edu>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Am 26-Jul-00 schrieb Michael Schmitz:
+Maybe Cort/Paul/Ben or other kernelppc developers can answer this.
 
-Hi!
+What happens to the current stable sources 2.2 when 2.4 comes out.
+Are the changes made to the 2.2 series merged into the 2.4. I've been
+very happy with the current stable tree (vanilla + prepatch + usb
+backport). However in order to get some really cutting edge USB
+stuff I;ve had to get the bk-devel tree (currently 2.4.0-test5). This has
+built fine and even boots OK. There are a couple of small problems:
 
->I'm aware of the connection between APUS and LinuxPPC for Amiga. My
->question was: can you compile a kernel that will load and run on all of
->the major PPC machines, namely CHRP/PREP, PowerMac, VME boards (sorry I
->forgot you guys), and Amiga with PPC boards? Not configure and build a
->single kernel for each of these, but configure and build one kernel for
->all of them?
+1. Occasionally my mouse freezes in X. The only way to get it back
+seems to change to a different VT and back.
 
->All I've got configured so far is a (PowerMac/PReP/CHRP) Machine Type
->combination. Not what I asked for, as you will no doubt notice.
+2. Overall the system feels somewhat sluggish when running gnome. I have
+lots of memory 160 MB and was wondering what was going on.
 
-Hmmm... okay, here you are right. Still I'd prefer (if I'd like to install
-Linux on an
-Amiga, I "only" have Linux on my Mac runninh here though) LinuxPPC on the
-Amiga
-to Linux68k anytimes :)
+Thanks - Ram
 
-Steffen
+PS: I have an iMac 333 MHz with 10 MB RAM and upgraded hard disk.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
