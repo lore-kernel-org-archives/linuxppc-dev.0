@@ -1,50 +1,43 @@
-Subject: add 8280 processor support
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: multipart/mixed; boundary="=-ZgelMw9lYTQw82jYaYBI"
-Message-Id: <1069168993.1045.7.camel@jarjar.hsv.redhat.com>
-Mime-Version: 1.0
-Date: 18 Nov 2003 09:23:13 -0600
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 18 Nov 2003 17:46:03 +0100
+Message-Id: <HOK3WR$C21EDB61D2D1F124670DB50B6D1D2D73@laposte.net>
+Subject: =?iso-8859-1?Q?Cybook_-_MPC823e?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+From: "=?iso-8859-1?Q?Raphael_Ertle?=" <raphael.ertle@laposte.net>
+To: "=?iso-8859-1?Q?linuxppc-embedded?=" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-ZgelMw9lYTQw82jYaYBI
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Hi all.
 
-As far as I can tell, all that's necessary to add support for the 8280
-processor is to include it in the cpu_specs table.
-I'm running on an 8280 board with the attached patch, which I would like
-to see included in the kernel source.
+I hope this won't be off-topic, but here is my problem.
+I've just acquired a Cybook (e-book reader), which is
+MPC823e-based. It comes with a minimalist Windows CE 2.1.12,
+an e-book reader and some web-connection. It has 16MB RAM and
+32MB ROM, an 800x600 color screen, USB, IrDA, serial and sound
+output (USB and IrDA are disabled in this version of Windows
+CE), and 4 keys (Up, Down, Menu, Configuration).
+What I would like to do is get rid of the CE-os, and of course
+install Linux.
+BUT, there does not seem to be any JTAG connector or anything
+else (it's not a development board), and I don't have neither
+the skills nor the material to re-flash anything.
+What I wonder is if it is possible to wire some JTAG connector
+(I guess pins must exist, and if yes how may I find them), or
+if there may be an other way to load something like an other
+system. I have really no access to the underlying OS (no magic
+key combination, no magic reset, ...), so I guess it can only
+be done "hard".
 
---Guy
+Regards,
 
 
---=-ZgelMw9lYTQw82jYaYBI
-Content-Disposition: attachment; filename=8280.patch
-Content-Type: text/plain; name=8280.patch; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Raphael Ertle
 
---- v2.4.22_linuxppc_2_4_devel/arch/ppc/kernel/cputable.c	2003-07-25 14:39:48.000000000 +0000
-+++ sbcPowerQUICCII/arch/ppc/kernel/cputable.c	2003-10-14 18:51:45.000000000 +0000
-@@ -299,6 +299,14 @@ struct cpu_spec	cpu_specs[] = {
- 	32, 32,
- 	__setup_cpu_603
-     },
-+    {	/* 8280 is a G2_LE (603e core, plus some) */
-+	0x7fff0000, 0x00820000, "8280",
-+	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_CAN_DOZE | CPU_FTR_USE_TB |
-+	CPU_FTR_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
-+	COMMON_PPC,
-+	32, 32,
-+	__setup_cpu_603
-+    },
-     {	/* default match, we assume split I/D cache & TB (non-601)... */
-     	0x00000000, 0x00000000, "(generic PPC)",
-     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
-
---=-ZgelMw9lYTQw82jYaYBI--
+Accédez au courrier électronique de La Poste : www.laposte.net ;
+3615 LAPOSTENET (0,34€/mn) ; tél : 08 92 68 13 50 (0,34€/mn)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
