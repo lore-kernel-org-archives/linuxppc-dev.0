@@ -1,60 +1,54 @@
-Date: Tue, 26 Sep 2000 00:48:46 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: Guillaume Laures <guillaume.laures@noos.fr>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
+Date: Tue, 26 Sep 2000 12:13:52 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+cc: R Shapiro <reshapiro@mediaone.net>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        Michel Dänzer <daenzerm@student.ethz.ch>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: MacOS X and yaboot wars.
-Message-ID: <20000926004845.T1928@plato.local.lan>
-References: <20000925145411.G1928@plato.local.lan> <Pine.LNX.4.10.10009261007560.513-100000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yypaS3FvPkEUiGyo"
-In-Reply-To: <Pine.LNX.4.10.10009261007560.513-100000@opal.biophys.uni-duesseldorf.de>; from schmitz@opal.biophys.uni-duesseldorf.de on Tue, Sep 26, 2000 at 10:10:49AM +0200
+Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
+In-Reply-To: <Pine.LNX.4.10.10009251934340.5676-100000@zirkon.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10009261213320.373-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---yypaS3FvPkEUiGyo
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+On Mon, 25 Sep 2000, Michael Schmitz wrote:
+> > On Sun, 24 Sep 2000, Michael Schmitz wrote:
+> > > >  > 	/* hack */
+> > > >  > 	pScrn->videoRam = 2048;
+> > > >  > [...]
+> > > >  > The hack to unconditionally set pScrn->videoRam to 2M should be removed,
+> > > >
+> > > >
+> > > > The rsync of atimach64ppc.c I got earlier today doesn't have this
+> > > > unconditonal assignment hack anymore.  The hardwired vram setting
+> > >
+> > > It was too obvious to go undetected for long :-). Now if the kernel
+> > > framebuffer driver (atyfb, and don't check the 'no video driver' option
+> > > when using BootX) reportds the correct vram size the X server should see
+> > > the correct size as well.
+> >
+> > However, I see a problem. Atyfb reports the video RAM size minus the cursor
+> > area. If you divide that number of bytes by 1024 to get pScrn->videoRam, you
+> > end up with 1 MB too few :-(
+>
+> Rather 1k too few if you mean the truncation error - or is the cursor area
+> really 1 MB?
 
-On Tue, Sep 26, 2000 at 10:10:49AM +0200, Michael Schmitz wrote:
->=20
-> Does ybin rely on the Apple_Bootstrap type? If not, just call it any way
-> you like to make MacOS messing with it even more unlikely.=20
+You're right. I was thinking MB instead of kB...
 
-ybin could not care less, ybin will install onto a regular file
-happily ;-) =20
+Gr{oetje,eeting}s,
 
-what DOES care is OpenFirmware, which insists on it being Apple_Boot*
-Apple_Boot is used by apple so macosx will do whatever it wants
-whenever it wants, Apple_HFS is out since macos old will ruin it as we
-have all seen.  Apple used to use Apple_Booter so i would avoid that too. =
-=20
+						Geert
 
-i think the best solution is just reorder the partitions again after
-installing OSX.  using Apple_Boot would probably just mean your
-partition would be erased instead of moved which is far worse IMO.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> Caution: I've found the reorder option to work in very non-obvious ways
-> (partitions could only be moved one way IIRC). I'll have to investigate
-> that in more detail.=20
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-it can be done, but yes i have not totally figured out the right
-syntax.
-
-ill see if i can get Clausen to add reorder support to parted if its
-not already there.
-
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
-
---yypaS3FvPkEUiGyo
-Content-Type: application/pgp-signature
-
-
---yypaS3FvPkEUiGyo--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
