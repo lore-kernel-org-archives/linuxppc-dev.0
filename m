@@ -1,13 +1,38 @@
-Message-ID: <384E56B1.2FA934D5@ascom.ch>
-Date: Wed, 08 Dec 1999 14:01:37 +0100
-From: Ruedi Hofer <ruedi.hofer@ascom.ch>
+From: kd@flaga.is
+Subject: Re: Re: fadsrom.tgz
+To: Ruedi Hofer <ruedi.hofer@ascom.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OFD602B689.9147373C-ON00256841.0048FC00@flaga.is>
+Date: Wed, 8 Dec 1999 13:19:02 +0000
 MIME-Version: 1.0
-To: kd@flaga.is
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re: fadsrom.tgz 
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+
+Maybe add -I../linux/include/linux to the compile line.
+
+At least I have done that..
+I have the include directories in the order
+
+-I../linux/include -I../linux/include/linux -I../linux/arch/ppc/8xx_io
+
+K.D.
+
+
+
+                                                                                                                                 
+                    Ruedi Hofer                                                                                                  
+                    <ruedi.hofer@        To:     kd@flaga.is                                                                     
+                    ascom.ch>            cc:     linuxppc-embedded@lists.linuxppc.org                                            
+                                         Subject:     Re: Re: fadsrom.tgz                                                        
+                    12/08/99                                                                                                     
+                    01:01 PM                                                                                                     
+                                                                                                                                 
+                                                                                                                                 
+
+
 
 
 
