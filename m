@@ -1,39 +1,53 @@
-From: Joshua Gargus <gargus@cs.ualberta.ca>
-To: LinuxPPC Development Mailing List <linuxppc-dev@lists.linuxppc.org>
-Subject: DMA sound compatability with OSS API
-Date: Mon, 5 Jul 1999 00:44:58 -0600
-Content-Type: text/plain
+Message-ID: <37805F68.9344722D@mpifr-bonn.mpg.de>
+Date: Mon, 05 Jul 1999 09:31:52 +0200
+From: Albrecht =?iso-8859-1?Q?Dre=DF?= <ad@MPIfR-Bonn.MPG.de>
+Reply-To: ad@MPIfR-Bonn.MPG.de
 MIME-Version: 1.0
-Message-Id: <99070500554905.22100@24.65.216.209.ab.wave.home.com>
+To: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>
+CC: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+Subject: BootX extension freezes MacOS
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
+Hi!
 
-Hello,
+	I run LinuxPPC R5 on my 7300/166, MacOS 8.1, BootX 1.1.1 with 2 scsi disks
+which have partitions as follows:
 
-I'm trying to compile an application (the virtual machine for Squeak 
-Smalltalk) that requires several ioctl() calls defined in 'soundcard.h', 
-including 'SNDCTL_DSP_GETCAPS' and 'SNDCTL_DSP_GETOSPACE'.
-These are not defined in 'drivers/sounds/dmasound.c', although the 
-comment at the top of the file declares it to be 'OSS compatable'.
+Disk id #6: MacOS "root" (HFS), Linux root, Linux swap
 
-I don't know too much about this stuff at all.  Is there some reason that
-the Macintosh sound hardware cannot support these calls, or have they
-just not been implemented yet?  Is adding support for these calls in the
-works, or is it an itch I'll have to scratch for myself?
+Disk id #0: MacOS "data" (HFS+), Linux home (marked as HFS for mountx), Linux
+usr
 
-Thanks,
-Josh
------BEGIN PGP SIGNATURE-----
-Version: PGPfreeware 5.0i for non-commercial use
-MessageID: o8pJk7aZZUqYQcdDtvEGZYJUhah7A8qv
+When I disable the BootX extension, everything works fine.  I can start Linux
+from the BootX app, and if I enable mountx, I see my home partition on the MacOS
+desktop (with mountx disabled, MacOS suggests to format the home partition).
 
-iQA/AwUBN4BW+W99D+Gh4jVMEQLwxwCfXzwAw6+QnpyD0tCwKKYB4r3cmtwAoOrY
-/jKA/04Xm9i98WBZ6+QvOgBG
-=rZGz
------END PGP SIGNATURE-----
+With the BootX extension, I was able to boot Linux, but selecting MacOS, the
+system freezes when building the desktop.  This happens with and without mountx
+enabled.
+
+Just as a test, I removed the disk #0 from the scsi chain --- and now everything
+works fine with the extension!  Did I miss something important in the setup, or
+is BootX somewhat broken if there is a HFS+ partition which is not the MacOS
+"root"?
+
+Thanks for your help, Albrecht.
+
+-- 
++-----------------------------------------------------------------------------+
+| Dr.-Ing. Albrecht Dre\ss                                     ----           |
+| Max-Planck-Institut f\"ur Radioastronomie   |\       /      /o  o\          |
+| Abteilung f\"ur Infrarot-Interferometrie    |  \    /      |  /   |         |
+| Auf dem H\"ugel 69                          |    \ |        \ ---/          |
+| D-53121 Bonn (Germany)          ------------+------+-------------------     |
+|                                             |    / |                        |
+| Phone (+49) 228 525 319                     |  /  /                         |
+| Fax   (+49) 228 525 411                     |/   /                          |
+| Mail  ad@mpifr-bonn.mpg.de                                                  |
++-------------- electrical engineers do it with less resistance --------------+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
