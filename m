@@ -1,58 +1,42 @@
-Date: Wed, 6 Jan 1999 19:38:13 +0100
-To: debian-powerpc@lists.debian.org, linuxppc-user@lists.linuxppc.org,
-        linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: [ANN] New test kernel available
-Message-Id: <19990106193813.032518@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 7 Jan 1999 10:22:58 +1100
+Message-Id: <199901062322.KAA00858@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <19990106110256.031920@mail.mipsys.com> (message from Benjamin
+	Herrenschmidt on Wed, 6 Jan 1999 11:02:56 +0100)
+Subject: Re: Strange PMAC IDE performance problem
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <19990106110256.031920@mail.mipsys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello !
+Benjamin Herrenschmidt <bh40@calva.net> wrote:
 
-I've uploaded to my web page (see URL below) a new test kernel along with
-it's modules and diff's.
+> By curiousity, did someone tried to locate the exact instruction in
+> do_IRQ when those bogus interrupt happens ? Looks it's always the same...
 
-This kernel contains some personal patches, some of them experimental,
-other quite robust, plus the IDE improvement suggested by Paul recently
-on the linuxppc-dev mailing list :
+It's usually the instruction that reenables interrupts globally, after
+we have disabled the particular interrupt we are servicing.  I think
+what happens is this: we write to the interrupt controller enable
+register to disable the interrupt.  This write percolates through the
+PCI bridge down into the gc/ohare/heathrow/whatever chip, and some
+time later that chip will negate the interrupt request signal
+(assuming there are no other enabled interrupts).  In the meantime the
+CPU has been proceeding from the write to the instruction where it
+reenables interrupts (by putting a new value in the MSR).  If the CPU
+gets there first, you can get a bogus interrupt.
 
- - Improve support for 3 buttons mice and PowerBook trackpad
+I put in a sync instruction after the write to make the cpu wait at
+least until the pci bridge has acknowledged the write.  That helps on
+many machines but isn't sufficient on some.  Reading a register in the
+interrupt controller should help, especially if there was an eieio
+between the read and the write.  (The eieio goes out onto the system
+bus and should therefore be seen by the PCI host bridge.  Whether the
+bridge honors it by not allowing subsequent reads to bypass previous
+writes is another question. :-)
 
- - Implements L2CR (backside cache) setting via BootX for G3 upgrade cards
-   (needs BootX 1.0.1 minimum)
-
- - Adds support for backlight buttons on PowerBook G3 Series (it also turns
-   off backlight when the console screen saver blanks the display). This
-   used to work only on older PowerBooks. Note: currently the backlight
-buttons
-   won't auto-repeat. The backlight value is stored in nvram in the same
-   location as MacOS and so should be compatible with MacOS setting. 
- 
- - Some cleanups here or there (gatwick interrupt fixing, power control
-of modem
-   in macserial.c, ...)
-
- - Sets the correct value in the IDE controller to enable full speed of IDE
-   transfer on heathrow-based machines.
-
-
-Note: This kernel includes built-in Adaptec and NCR53C8XX drivers and
-DDP. The modules contains smbfs. PCMCIA is not included. 
-
-I tested it on a PowerBook G3 Series and a PowerMac G3/300 without
-problem. Be careful however since some of this stuff is experimental.
-
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
