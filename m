@@ -1,28 +1,41 @@
-Message-Id: <200001201819.NAA25088@mal-ach.watson.ibm.com>
-To: Moritz Thomas <motho@gmx.net>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
-        Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: David Edelsohn <dje@watson.ibm.com>, Moritz Thomas <motho@gmx.net>
 Subject: Re: still no accelerated X ($#!$*)
-In-Reply-To: Message from Moritz Thomas <motho@gmx.net>
-   of "Wed, 19 Jan 2000 11:38:57 +0100." <l03130300b4ab42c57934@[213.6.57.225]>
-Date: Thu, 20 Jan 2000 13:19:48 -0500
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Thu, 20 Jan 2000 13:25:40 -0500
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
+        Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+References: <200001201819.NAA25088@mal-ach.watson.ibm.com>
+In-Reply-To: <200001201819.NAA25088@mal-ach.watson.ibm.com>
+MIME-Version: 1.0
+Message-Id: <00012013281100.00851@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Why does each application/library define its own, incorrect
-definition of byte-reversed instructions?  Doesn't some Linux/PPC header
-file define this once in a awy that could be imported by others?
+Hi,
 
-	One cannot use "r" as a constraint for a base address, that is
-what the GCC PowerPC port defines "b" for.  The load/store instruction
-patterns in the GCC PowerPC machine description file use a different
-constraint letter for the base address, and anyone writing inlined
-assembly -- especially loads and stores -- should browse the GCC machine
-description.
+Thanks for your reply.
 
-David
+> Why does each application/library define its own, incorrect
+> definition of byte-reversed instructions?  Doesn't some Linux/PPC header
+> file define this once in a awy that could be imported by others?
 
+I could not find one.  I will look again.
+
+> 	One cannot use "r" as a constraint for a base address, that is
+> what the GCC PowerPC port defines "b" for.  The load/store instruction
+> patterns in the GCC PowerPC machine description file use a different
+> constraint letter for the base address, and anyone writing inlined
+> assembly -- especially loads and stores -- should browse the GCC machine
+> description.
+
+Thanks I will as soon as I find it ;-).  But the assembler generated was exactly
+the same in my simple test case.  Is this just luck?
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
