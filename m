@@ -1,29 +1,29 @@
-Date: Tue, 10 Feb 2004 21:41:49 +0100
-From: Colin Leroy <colin@colino.net>
-To: debian-powerpc@lists.debian.org
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: mouseemu 0.7
-Message-Id: <20040210214149.673a7819@jack.colino.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Mikael Pettersson <mikpe@user.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16426.14204.974363.611192@alkaid.it.uu.se>
+Date: Wed, 11 Feb 2004 15:09:00 +0100
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 64-bit user-space on G5? Never, soonish, or unknown?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+We're considering buying a G5 for porting a compiler/runtime-system
+project to PPC and eventually PPC64.
 
-Just a note to say that I uploaded mouseemu 0.7 to
-http://www.geekounet.org/powerbook/files/mouseemu.tar.gz
+The question is, will Linux ever support a 64-bit user-space
+on the G5? From my reading of arch/ppc and arch/ppc64, the
+differences seem major so I'm not holding my breath, but perhaps
+there is hope.
 
-This new version grabs the mouse, which allows cleaner wheel emulation,
-and fixes the bug that let left-click through when mod+lclick was used
-for middle or right-click.
-This version also implements a trackpad block while typing (mouse events
-are eaten for N milliseconds (default 300) after a keypress).
-Also, options are better parsed.
+Or should we just treat the G5 as a faster 32-bitter?
 
-HTH,
---
-Colin
+Or should we use some other OS than Linux :-(
+
+TIA,
+
+/Mikael Pettersson
+(please cc: me on replies)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
