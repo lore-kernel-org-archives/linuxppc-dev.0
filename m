@@ -1,40 +1,46 @@
-Date: Mon, 19 Jul 2004 16:01:08 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Linh Dang <linhd@nortelnetworks.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: list of 2.6-related migration issues for embedded programmers?
-In-Reply-To: <wn5ekn7amp7.fsf@linhd-2.ca.nortel.com>
-Message-ID: <Pine.LNX.4.60.0407191558120.24452@dell.enoriver.com>
-References: <Pine.LNX.4.60.0407191350320.23725@dell.enoriver.com>
- <wn5ekn7amp7.fsf@linhd-2.ca.nortel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linh Dang <linhd@nortelnetworks.com>,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: list of 2.6-related migration issues for embedded programmers? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 19 Jul 2004 13:51:57 EDT."
+             <Pine.LNX.4.60.0407191350320.23725@dell.enoriver.com>
+Date: Mon, 19 Jul 2004 22:58:30 +0200
+Message-Id: <20040719205835.AA851C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 19 Jul 2004, Linh Dang wrote:
+In message <Pine.LNX.4.60.0407191350320.23725@dell.enoriver.com> you wrote:
+>
+> > initramfs is convenient. you don't need root access nor special tools
+> > to create the root-fs. it very easy when you want to
+> > version-controlled you root-fs.
+>
+> ah, that would be convenient since, as it is, i'm using a hacked
+> version of "genext2fs" that allows me to create the initial root fs as
+> a regular user.  i *definitely* have to look into initramfs, then.
 
-> Don't use the .initramfs section option (the one that's linked with
-> with vmlinux.) Build your ramdisk.image.gz as a compressed cpio
-> archive. I.e. zvmlinux.initrd's .ramdisk section contains a compressed
-> cpio archive instead of an compressed ext2 image.
+What do you mean with "hacked"? Standard  "genext2fs"  will  do  this
+just fine.
 
-so, just to clarify, i'm looking at arch/ppc/boot/simple/Makefile, the
-excerpt:
+And as usual, there is two sides to initramfs. It may  be  convenient
+for some cases, where you can use the very same root filesystem image
+bundled  with the kernel image, but exactly thsi convenience may hurt
+you in other cases where it's much better  when  you  have  separated
+images which can be updated independently of each other.
 
-$(obj)/zvmlinux.initrd: $(OBJS) $(LIBS) $(srctree)/$(boot)/ld.script \
-                 $(images)/vmlinux.gz $(obj)/dummy.o
-         $(OBJCOPY) $(OBJCOPY_ARGS) \
--->             --add-section=.ramdisk=$(images)/ramdisk.image.gz \
- 		--set-section-flags=.ramdisk=contents,alloc,load,readonly,data \
+Speaking for myself: I don't see advantages in it. None.
 
-and all i need to change is "ramdisk.image.gz" to, say, my "newc"
-format gzipped cpio archive, "initramfs.cpio.gz", and the early kernel
-code should recognize it as such automatically?
+Best regards,
 
-i'll give that a shot later.
+Wolfgang Denk
 
-rday
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I used to be indecisive, now I'm not sure.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
