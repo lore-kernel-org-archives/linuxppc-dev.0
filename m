@@ -1,25 +1,34 @@
-Message-ID: <299848370240D611A24400B0D079FBEB91CFDB@smtcn3>
-From: Zhang Qiang MT-CN <Qiang.Zhang@mt.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: smbclient on my MPC823 board
-Date: Tue, 10 Jun 2003 17:01:56 +0800
+Message-ID: <D96E2AFA0DF3D211B139009027454948037362EA@helios.gnv.tcc.thomson-csf.com>
+From: Christophe.LINDHEIMER@fr.thalesgroup.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux Root Filesystem : ROMFS.
+Date: Tue, 10 Jun 2003 14:02:59 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="koi8-r"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, my friends:
-  I'm trying to get Samba-2.2.1a running on my MPC823 board. I've got
-everything compiled and loaded into my target board successfully, when I
-invoke the following command:" /usr/local/samba/bin/smbclient -L WinHost",
-it print "ERROR: Could not determine network interfaces, you must use a
-interfaces config line" and exit.  I can't find the way to solve this
-problem after some tries, could someone tell me how to overcome it? The
-kernel of my target board is 2.4.4. Thanks very much.
+Hi.
 
-Best Regards
+I need some hints about the root filesystem of Linux.
 
-Frank Zhang
+I worked with booting on a NFS ( nfsroot=/ ... ) it works.
+I worked with a ramdisk ( initrd = ... ) it works.
+
+Now on a new board I would like to use a romfs. In fact my ram is really
+very very little so I would like to keep the filesystem out of the ram. As I
+don"t have any ethernet link on the board, nfs can't work on this board.
+
+So I think I gonna use genromfs to build my filesystem.
+Then I flash this at @ 0x04000000 that is my flash @.
+Then which parameter should I give to Linux ?
+
+BTW : I use u-boot to start Linux.
+
+Thanks.
+
+Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
