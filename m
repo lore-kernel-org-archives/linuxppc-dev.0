@@ -1,44 +1,38 @@
-Date: Wed, 19 May 1999 22:15:35 -0400 (EDT)
-From: Anirudh Joshi <ajoshi@Glue.umd.edu>
-To: Corey Minyard <minyard@acm.org>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC and egcs developer releases
-In-Reply-To: <m2d7zwrfxz.fsf@wf-rch.cirr.com>
-Message-ID: <Pine.GSO.3.95q.990519221354.10496A-100000@y.glue.umd.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <9905209271.AA927182303@smtplink.dscc.dk>
+Date: Thu, 20 May 1999 07:36:45 +0200
+From: "RTHEANDE"<rtheande@dscc.dk>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Stable (compilable) kernel?
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-	this is a bug in binutils, get an early snapshot of binutils and
-you should be fine:
-
-linuxppc.slackers.cx/pub/rawhide/ppc/RedHat/RPMS/binutils-2.9.1.0.990418-1c.ppc.rpm
-
-
-
-ani
-
-
-
-On 19 May 1999, Corey Minyard wrote:
-
-> 
-> Is anyone tracking the egcs developer releases on LinuxPPC?  I'm
-> trying to build the newest developer release (19990517) and I have
-> tried to build earlier ones, but they all get a SEGV compiling
-> SYSCALLS.c with the stage1 compiler.  This is on linux 2.1.127 with
-> the egcs-1.02 prerelease compiler.
-> 
-> Thanks,
-> 
-> -- 
-> Corey Minyard                   Internet:  minyard@acm.org
->   Work: minyard@nortelnetworks.com  UUCP:  minyard@wf-rch.cirr.com
-> 
-> 
+     Hi there,
+     
+     I'm trying to build a kernel for a 860T MBX alike board.
+     
+     I can't do CVS checkout because of a firewall :(
+     So I grabbed the vanilla 2.2.9 kernel but it doesen't compile. It dies 
+     in mbx_setup.c because of
+     1) missing headerfile (asm/8xx_immap.h)
+     2) undefined MBX_IMAP_ADDR
+     
+     Trying to get somewere I grabbed the embedded-2.2.5 tarball from Dan. 
+     It fails in m8xx_setup.c with several syntax(!) errors. Once fixed 
+     there is a number of undef'ed functions...
+     
+     The question: where can I find a stable kernel for my config? Isn't 
+     the 2.2.9 supposed to work for embedded targets (or did Linus miss 
+     some syncs)?
+     
+     I suspect my code base for fixes should be the CVS, right?
+     
+     Robin.
+     
+     PS. I'm compiling on a Intel PC with a cross compiler but that 
+     shouldn't make much of a difference.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
