@@ -1,43 +1,33 @@
-Subject: Re: Which XFree86 version has Flat Panel support in Radeon?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20011020005756.EKCA12483.tomts13-srv.bellnexxia.net@there>
-References: <Pine.BSF.4.32.0110102251240.17602-300000@shell.unixbox.com>
-	<20011020005756.EKCA12483.tomts13-srv.bellnexxia.net@there>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: 20 Oct 2001 13:34:17 +0200
-Message-Id: <1003577657.25062.176.camel@pismo>
-Mime-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Hollis Blanchard <hollis-lists@austin.rr.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: how to list the of device tree in /proc in a Human readable fashion?
+Date: Sat, 20 Oct 2001 08:07:59 -0400
+References: <B7F64F69.12A9%hollis-lists@austin.rr.com>
+In-Reply-To: <B7F64F69.12A9%hollis-lists@austin.rr.com>
+MIME-Version: 1.0
+Message-Id: <20011020120536.EBRT4321.tomts10-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2001-10-20 at 03:00, Kevin B. Hendricks wrote:
+Hi Hollis,
 
-> I just tried to use my Radeon with the FlatPanel with XFree86 4.1.0 but I
-> could not get it to work.  I looked in
-> xc/programs/Xserver/hw/xfree86/drivers/ati at radeon_driver.c and noticed
-> lots of comments saying Flat Panel support was disabled.
+Thanks!  I found the gen-devtree.sh.  Just what I needed.
+
+Kevin
+
+On October 19, 2001 10:45, Hollis Blanchard wrote:
+> on 19/10/01 8:15 PM, Kevin B. Hendricks at khendricks@ivey.uwo.ca wrote:
+> > I seem to remember someone wrote something that dumped the OF
+> > device-tree in /proc into a file that Human beings could actually
+> > read.
 >
-> I did see ifdef ENABLE_FLAT_PANEL in places but it was clear that support
-> was not included completely yet.
+> There's info on that here:
+> http://penguinppc.org/dev/library/dev-trees-html
 >
-> I would very much like to use my flat panel display.  Can anyone tell me
-> which Branch of the XFree86 tree I should go looking for Radeon Flat Panel
-> support
-
-Only the trunk is more current than the 4.1 branch.
-
-> or who (which developer) at Xfree86 I should be e-mailing to get
-> the bleeding edge so that I can start to work on this.
-
-I think Alan Hourihane is the core team developer who has been working
-on the radeon driver the most, but Ani might be a good place to start.
-
-
---
-Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+> -Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
