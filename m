@@ -1,66 +1,50 @@
-Date: Fri, 6 Dec 2002 02:41:10 +0100
-From: Peter Vandenabeele <peter.vandenabeele@mind.be>
-To: Alexander.J@lntinfotech.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Target CPU selection for Real time Embedded Linux
-Message-ID: <20021206024109.S1931@mind.be>
-Reply-To: Peter Vandenabeele <peter.vandenabeele@mind.be>
-References: <OFB8D7A27E.4DFEB42B-ON65256C86.003DE12F@lntinfotech.com>
+Subject: Re: 4xx critical exceptions
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+To: Brian Kuschak <bkuschak@yahoo.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <20021204230047.98430.qmail@web40912.mail.yahoo.com>
+References: <20021204230047.98430.qmail@web40912.mail.yahoo.com>
+Content-Type: text/plain
+Date: 06 Dec 2002 10:22:33 +0100
+Message-Id: <1039166553.24797.44.camel@spawn>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFB8D7A27E.4DFEB42B-ON65256C86.003DE12F@lntinfotech.com>; from Alexander.J@lntinfotech.com on Thu, Dec 05, 2002 at 04:48:32PM +0530
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Dec 05, 2002 at 04:48:32PM +0530, Alexander.J@lntinfotech.com wrote:
+On Thu, 2002-12-05 at 00:00, Brian Kuschak wrote:
 >
-> Hi all,
+> I'm interested in using the watchdog interrupt as a
+> critical exception.  I have somthing that sort-of
+> works, in that I get wdt interrupts and service them
+> appropriately, but I'm getting panics on a regular
+> basis.
+
+I thought this was strange as I had seen a watchdog driver in the kernel
+for 405 but after reading the source of said driver I no longer think
+that:(
+
+I have not tried the driver but from the look of it I would say it's not
+doing anything useful.
+
+> I'm guessing we don't have any unused SPRGx registers
+> to use here.  I was thinking about temporarily
+> disabling CE until saving SPRG0,1, but that can't be
+> done without using at least one register, and none of
+> them are saved at that point.
 >
-> We would like to build a Router software engine using Real Time Embedded
-> linux.
+> Any ideas?
 
-The alternatives that immediately come to Mind are:
+Not really. Do you want to try to set up a c environment or do you plan
+on just doing the thing in asm directly? The code in the exception
+handler do not have to do much something like
 
-- Xilinx Virtex II Pro with Linux (Linux port posted 2 months ago and on ftp.mind.be)
-- Intel IXP425 with Linux (Linux port expected Jan 2003)
+if(wdt_count++ < max_wdt_loops)
+	clear_wdt_ENW();
+return
 
-I believe both those chips where targeted specifically to build
-high-end, modern one-chip routing solutions. They have high speed
-connections on them.
+should do. Then if userspace or whatever it is that kicks the dog has
+not reset the wdt_count we let the hardware just do the reset.
 
-What is the bandwidth and number of interfaces you are targeting ?
-
-> In this process, we need to freeze the target CPU. Could anyone help me in
-> this regard?
-
-In the telecom sector PowerPC is the standard (the optimized power consumption
-of the ARM family is less relevant in switches; and PowerPC is high-performant).
-
-XScale (ARM derived) is also a new performant platform that is available at
-high frequencies in certain chips (80200 e.g.). Typical operation frequencies
-of PowerPC405 and XScale in both chips are 300 MHz I believe.
-
-Please note that the use of the FPGA created some very spectacular possibities,
-such as the idea to build-in a wirespeed firewall in the FPGA logic, where you
-could reprogram the rules through a reconfiguration of the FPGA filters (this
-is not a SW firewall, but it is still reprogrammable).
-
-Peter
-
-> Thanks
-> Alex
->
-
---
-.--------------------------------------------------------.
-|       Mind: Embedded Linux and eCos Development.       |
-| Mind is looking for Embedded Linux and eCos Developers |
-|--------------------------------------------------------|
-| Peter Vandenabeele, CEO          email:  peter@mind.be |
-| Mind (http://mind.be)            tel:  +32-16-30.96.66 |
-| Vaartkom 11                      fax:  +32-16-30.96.44 |
-| B-3000 Leuven, Belgium           gsm: +32-478-27.40.69 |
-'--------------------------------------------------------'
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
