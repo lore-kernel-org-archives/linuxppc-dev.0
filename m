@@ -1,42 +1,38 @@
-Message-ID: <025b01c2c355$199c8600$e600a8c0@udtech.net>
-From: "Shen Rong" <rshen@udtech.com.cn>
-To: "Jason Park" <jason@amadeus.kist.re.kr>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <001701c2c33f$298715f0$5e207aa1@fish>
-Subject: Re: How do you change the program counter (PC)
-Date: Fri, 24 Jan 2003 11:02:58 +0800
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC060FF@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Question: insmod QM_MODULES
+Date: Thu, 23 Jan 2003 22:46:17 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> now, i want to test and check whether the ppcboot loader will work properly
-> before i overwrite the planetcore bootloader code.  how can i change the PC
-> (which states 0xfff0 0100 when i type "info" at the BDI prompt)...
-go 0xffc00100
-or
-ti  0xffc00100
+Hi,
 
+I am having troubles loading a simeple module with my 2.4.20pre8 kernel from
+m-vista on my ppc custom board (similar to fads).
 
-> also, whats the main difference between the 3 files created by ppcboot.
-> (ELF, BIN, SREC)  besides size..  is there an advantage/disadvantage using
-> one over the other?  is it dependant on the debugger?
-ELF: portable binary format, which has program headers/sections and others
-information. You can't excute the ELF file directly. It needs intepreter(or named
-loader) to load it to proper memory address. BDI can do it. But remember not to
-program it to flash for excuting directly.
+I keep getting the message:
+	insmod: QM_MODULES : Function not implemented
 
-BIN: pure binary format, which has nothing but cpu instrctions(and data). If you
-want to program it to flash, it's the proper choise.
+I have done a whole bunch of reading and I think I have all my basis
+covered:
 
-SREC: (I am not much sure) It seems an old format used mostly by motorola.
-It's like BIN format, but has other information used for downloading. It seems
-some bootloaders need SREC format for downloading.
+1.) kernel has module support compiled in ...
+2.) I am using modutils 2.4.20 ...
+3.) after compiling in module support I rebuilt ulibc to be safe ...
 
-Don't trust me. For ELF & SREC, you can download the specification if you do
-have interesting, and for BIN file, you do can disassemble it if you really want
-to know what's in it (of course, ELF format is the best choise for disassembling).
+>From what I have read any kernel newer than 2.1 should have support for
+"query on modules" ...
+
+Any enlightenment would be much appreciated,
+Jim
+
+Ps weird fact despite the fact I have compile in modules in my
+include/config/modules.h file there is a undef CONFIG_MODULES ... which
+seems weird to me ... could this be a hint ... should I do a make clean then
+make dep ... or is make dep then make zImage ok normally?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
