@@ -1,34 +1,31 @@
-Date: Wed, 8 Mar 2000 20:12:10 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Grant Erickson <grant@borg.umn.edu>
-cc: Michel Lanners <mlan@cpu.lu>, Matt Porter <mmporter@home.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
-In-Reply-To: <Pine.SGI.4.21.0003081136360.51665-100000@brule.borg.umn.edu>
-Message-ID: <Pine.LNX.4.05.10003082011320.8208-100000@callisto.of.borg>
+Date: Wed, 8 Mar 2000 12:21:18 -0800 (PST)
+From: Sean Harding <sharding@dogcow.org>
+To: Daniel Jacobowitz <drow@false.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: compiler optimization? something else?
+In-Reply-To: <20000308150957.A12031@drow.res.cmu.edu>
+Message-ID: <Pine.GSO.4.05.10003081219530.17227-100000@ophelia.dogcow.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 8 Mar 2000, Grant Erickson wrote:
-> Also, regarding memory address space resources, is there a routine I can
-> call that says "Assign this card some resource space because it hasn't
-> been assigned one yet"?
+On Wed, 8 Mar 2000, Daniel Jacobowitz wrote:
 
-Yes there is, somewhere in drivers/pci/. I don't know yet whether it works.
+> Lame has massive hand-coded assembly sections, if I am not mistaken.
 
-Gr{oetje,eeting}s,
+Possible, but again. It works extremely well on alpha, sparc and pa-risc
+in addition to x86. This isn't simply a case of an app being heavily
+optimised for x86 and working poorly on ppc. That's obviously something
+the compiler can't help.
 
-						Geert
+sean
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Sean Harding sharding@dogcow.org        |"art may imitate life
+http://www.dogcow.org/sean/             | but life imitates t.v."
+                                        | --ani difranco
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
