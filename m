@@ -1,26 +1,28 @@
-Message-ID: <3901DE24.3094676A@embeddededge.com>
-Date: Sat, 22 Apr 2000 13:15:16 -0400
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: "Gessner, Matt" <mattg@aiinet.com>
-CC: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: CONFIG_6xx and CONFIG_82xx?
-References: <7283DE19D141D111AD0E00A0C95B195502581D11@mail2.aiinet.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200004231142.HAA65437@p2.parker.boston.ma.us>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: CONFIG_ALL_PPC
+Date: Sun, 23 Apr 2000 07:42:25 -0400
+From: Brad Parker <brad@parker.boston.ma.us>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Gessner, Matt" wrote:
+Hi
 
-> ....  I'm really trying to configure for an
-> 8260, but I think it's in the works.
+I tried to build the lastest bk tree (2.3.99-pre6?) last night for embedded
+860 and the link failed missing "feature_init()".
 
-Not quite ready yet.  One of my projects for the weekend.  I have it
-working in an older 2.3 kernel and I am checking it all into 2.3.99
-right now.
+the arch/ppc/kernel/Makefile conditionally builds feature.c based on
+CONFIG_ALL_PPC
 
+Is CONFIG_ALL_PPC really "all ppc" or is it really "all macintosh platforms"?
 
-	-- Dan
+Looking at feature.c it looks like CONFIG_ALL_PPC is specific to the
+platforms which will boot macos.
+
+I can put a #ifndef CONFIG_ALL_PPC around the feature_init call but I
+thought I'd ask the larger question... (and risk a tomato ;_)
+
+-brad
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
