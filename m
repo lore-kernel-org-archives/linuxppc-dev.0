@@ -1,28 +1,49 @@
-Date: Sun, 27 Jun 1999 20:58:50 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Troy Benjegerdes <hozer@drgw.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: sym53c8xx timeouts and aborts... egcs-1.1.2e problem??
-In-Reply-To: <Pine.LNX.4.04.9906271940400.5764-100000@narn.local.drgw.net>
-Message-ID: <Pine.LNX.4.05.9906272057130.20302-100000@opus.bloom.county>
+Date: Sun, 27 Jun 1999 21:05:34 -0500 (CDT)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: sym53c8xx clock being incorrectly set
+Message-ID: <Pine.LNX.4.04.9906272056130.5764-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 27 Jun 1999, Troy Benjegerdes wrote:
+When my MTX machine boots correctly, I get a message when the sym53c
+driver inits something like this:
 
-> Can anyone give me a success or failure report on an ncr/sym53c8xx board
-> on a kernel compiled with egcs-1.1.2-12e?
+ncr53c875-0: NCR clock is 26772KHz, 26772KHz
 
-Er.  I shoulda mentioned this on IRC I guess, but the Apple ncr53c8xx
-cards (Beige G3 UW problem threads) are done with 12e and people haven't
-had problems.  Which narrows it down to sym53c8xx.[ch] and egcs, yes?
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+When I compiled 2.2.10, I got saw somthing like 60xxxKHz, and the symbios
+driver would continually reset the bus on command timeouts.
+(see my previous message)
+
+
+Well, I changed line 9495 of drivers/scsi/sym53c8xx.c from
+
+        OUTB (nc_stime1, gen);  /* set to nominal delay of 1<<gen * 125us */
+        while (!(INW(nc_sist) & GEN) && ms++ < 100000)
+                UDELAY (1000);   /* count ms */
+        OUTB (nc_stime1, 0);    /* disable general purpose timer */    
+
+to
+
+		UDELAY (480);   /* count ms */
+
+
+This is obviously not the right way to fix this, but it has solved my
+immediate problem (my machine didn't boot), and I have a couple of
+deadlines to meet.
+
+If anyone figures this out, or has an idea what why this is messed up, let
+me know. Otherwise, I'll get around to fixing it eventually. (I hope)
+
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
