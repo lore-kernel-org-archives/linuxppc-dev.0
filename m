@@ -1,50 +1,42 @@
-Date: Wed, 3 Mar 2004 17:09:08 +0100 (CET)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: early return set_multicast
-Message-ID: <Pine.LNX.4.44.0403031706440.10579-100000@linpc003.aimsys.nl>
+Message-ID: <40460CEF.4050900@mvista.com>
+Date: Wed, 03 Mar 2004 09:50:55 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Neil Wilson <NWilson@Airspan.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Porting Linux into IBM Spruce
+References: <3506EDCDEC47904CBE6FD2E1DEEA8984020CF952@fs5.airspan.com>
+In-Reply-To: <3506EDCDEC47904CBE6FD2E1DEEA8984020CF952@fs5.airspan.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Neil Wilson wrote:
 
-does somebody know why there is an early return;
-statement in the set_multicast_list() function
-of 8260_io/fcc_enet.c (or cpm2_io/fcc_enet.c)?
+>>>Hi,
+>>>
+>>>I am trying to port linux into the IBM spruce board (PPC750,
+>>>
+>>>
+>CPC700..).
+>
+>
+>>Why?  Did you look at what is already in the linuxppc kernel?
+>>
+>>
+>
+>What about the IBM 2*750FX + MV64360 dev board ?, would this be a port
+>of Spruce + a different PCI bridge, I cannot seem to find an exact match
+>in the platforms but there again maybe I am looking in the wrong
+>tree/directory, thanks.
+>
+That's an Argan board and, as you note, its very different from a spruce
+so it will get its own port.  That port is being worked on but isn't
+ready yet.  If you can hold tight for a bit I will try to get you an
+early version.
 
-----------------
-static void
-set_multicast_list(struct net_device *dev)
-{
-        struct  fcc_enet_private *cep;
-        struct  dev_mc_list *dmi;
-        u_char  *mcptr, *tdptr;
-        volatile fcc_enet_t *ep;
-        int     i, j;
-
-        cep = (struct fcc_enet_private *)dev->priv;
-
-return;
-        /* Get pointer to FCC area in parameter RAM.
-        */
-        ep = (fcc_enet_t *)dev->base_addr;
-
-        if (dev->flags&IFF_PROMISC) {
-        ...
---------------
-
-thanks,
-
-Jaap-Jan
-
---
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
