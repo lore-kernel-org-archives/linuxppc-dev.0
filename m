@@ -1,44 +1,91 @@
-Date: Wed, 27 Oct 1999 13:23:31 -0500 (CDT)
-From: Kumar Gala <kumar@chaos.ph.utexas.edu>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Adrian Cox <apc@agelectronics.co.uk>, Jim Terman <terman@ddi.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: question about altivec registers
-In-Reply-To: <Pine.HPX.4.10.9910271432490.18743-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.4.10.9910271315510.17521-100000@chaos.ph.utexas.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: cim@uk.research.att.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Accel ATI Rage 128 support, the very first step (Help needed)
+In-Reply-To: Your message of "Wed, 27 Oct 1999 11:46:15 +0100 (BST)"
+	<Pine.SO4.4.04.9910271119020.5658-100000@marrow>
+References: <Pine.SO4.4.04.9910271119020.5658-100000@marrow>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <19991028032624B.roikawa@rr.iij4u.or.jp>
+Date: Thu, 28 Oct 1999 03:26:24 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The main purpose of VRSAVE was for apple.  The allocate registers in order
-which makes it efficient to use it to decide which AltiVec registers to
-save and restore since you only need to determine up to which register to
-save.
+From: Charlie McLachlan <cim@uk.research.att.com>
+Subject: Accel ATI Rage 128 support, the very first step (Help needed)
+ 
+> I've taken a look at the the Suse code and the Antony's aty128 fb with a
+> mind to accelerating console scrolling (for a start).
+> 
+> Starting with the fb device. 
+> 
+> I've found the bmove function and guess that's what is used to copy
+> bits of the screen around.
+> 
+> As an experiment, I replace it with a  function that does nothing.
+> 
+> Thus,
+> 
+> (all the following based on  Antony's aty128fb.c)
+> 
+> add a display_switch to fb_info_aty128
+> 
+> struct fb_info_aty128 {
+> 	...
+> 	struct display_switch dispw;
+> 	...
+> 	};
+> 
+> then alter aty128_set_disp so that instead of just
+> 
+> disp->dispw = &fbcon_cfb<whatever>;
+> 
+> we have
+> 
+> disp->dispw= &info->dispw;
+> memcpy(&info->dispw,&fbcon_cfb<whatever>,sizeof(fbcon_cfb<whatever>));
+> info->dispw.bmove=fbcon_aty128_bmove;
+> 
+> where fbcon_aty128_bmove is a function of my own devising that does
+> nothing.
+> 
+> The result was that vertical scolling worked fine (i.e. when you typed
+> to the bottom of the screen the scroll upward was okay) but when scrooling
+> horizontally (like when you back cursor through a line then add more
+> characters) the remains of the line (the bit to the right of the cursor)
+> is not moved.
+> 
+> So on to the questions:
+> 
+> (I realise some of these might be RTFM answers, but I don't know which FM
+> I should be R'ing)
+> 
+> 1) What gives? Why isn't bmove (seemingly) used for vertical console
+> scrolls?
+> 
+> 2) If I recompile aty128fb, how do I replace the currently active version
+> without having to restart? (i.e. how do I change frame buffer modules?)
+> 
+> 3) Have I got this all wrong? Is bmove even what I should be thinking of?
+> 
+> 4) Where can I find more frame buffer documentation? I've worked most of
+> this out from the skellington framebuffer device and Antony's code.
+> 
+> 5) Antony's code references registers through info->regbase (which is a
+> big long hex number with some 8's in it). The Suse code references
+> registers through (PCIDevice->_basel & 0xffffff00), where PCIDevice is a
+> pciconfigPtr found through probing. Is this the same thing?
 
-The ABI for System V, allocates registers similar to GPRs, in that
-vr3,vr4,vr5 are used to pass arguments and so on.  These is documented in
-the Motorola docs on (AltiVec Programmers Environments Manual on there
-website).  The problem then becomes that due to the ABI it is more costly
-to determine which vector registers where used and which were not if
-VRSAVE is used as a bitmap.  
-
-Also, the current ABI does not state the use of VRSAVE at all and therefor
-the non-Apple compilers to not even include it in code generated that uses
-AltiVec.
-
-Also, based on how FP is implemented, if the process currently running
-does not use AltiVec in its current time slice the registers are not saved
-and restored.
-
-As for the cache issues with saving and restoring all the VR registers, I
-am looking into this further.
-
- - kumar
+I have an Xpmac server with Rage128 acceleration support. If you have ADB
+keyboard and mouse, please try:
+ ftp://ppc.linux.or.jp/pub/users/oikawa/Xserver/hw/powermac/Xpmac-3.3.3.1-19991028.gz
 
 
-ignorance is bliss.
+Regards,
 
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
