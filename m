@@ -1,49 +1,44 @@
-Date: Fri, 13 Apr 2001 16:04:00 +1000
-From: Steven Hanley <sjh@svana.org>
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: panic on wakeup in pismo
-Message-ID: <20010413160400.A3535@wibble.net>
-Reply-To: Steven Hanley <sjh@wibble.net>
-Mime-Version: 1.0
+Message-ID: <XFMail.010413103837.pochini@shiny.it>
 Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <20010412162639.K2127@plato.local.lan>
+Date: Fri, 13 Apr 2001 10:38:37 +0200 (CEST)
+From: Giuliano Pochini <pochini@shiny.it>
+To: Ethan Benson <erbenson@alaska.net>
+Subject: Re: boot params
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-All (though moslty aimed at ben I suppose)
+>> I'm trying to make the new aic7xxx driver work on my blue G3 and I
+>> need to pass boot parameters to the kernel. I'm using yaboot. How
+>> can I do ? Am I the only one who has problems with the new driver ?
+>
+> in your image= section:
+>
+>       append="whatever"
 
-I forgot about this when I first saw it two weeks ago, but I just got it
-again today.
+Ok.
 
-I am using the 2.4.3-pre7-benh from about three days after ben announced he
-had gotten sleep working (I rsynced this source on 29/03/2001 AFAIR)
+> and rerun ybin.
 
-Anyway with gmac as a module if I modprobe it in, use cat5 network and then
-when finished modprobe -r gmac and then put the laptop to sleep. I get a
-panic, the laptop does not go to sleep, the glowing apple on the lid stays
-lit and the led on the back does not start flashing. If I open the lid again
-I see a mon prompt, but I cant type anything into (probably because the
-keyboard is already disabled or something)
+Do you rerun ybin ?  I just change yaboot.conf and it works.
 
-If I dont remove the gmac module the laptop will go to sleep fine.
+> which new driver are you referring to?  in 2.4?
 
-I dont have this same problem with the airport module (which is why I dont
-see the problem often as I generally use the airport with a cipe link for
-any network access from the laptop (yes the WEP stuff is insecure and stupid
-when there are better alternatives such as cipe available))
+The new aic7xxx (v6.1.x).
 
-If this has been fixed since just say so and I will try the latest rsync of
-benh's kernel tree.
+> i have never had to
+> do anything special to get this driver working on my blue g3 with a
+> 2930.
 
-	See You
-	    Steve
+I have problem with devices running at different clocks on the same bus.
+v6.1.11 hangs during bus scanning.
 
---
-sjh@wibble.net http://wibble.net/~sjh/
-Look Up In The Sky
-   Is it a bird?  No
-      Is it a plane?  No
-         Is it a small blue banana?
-YES
+
+Bye.
+    Giuliano Pochini ->)|(<- Shiny Network {AS6665} ->)|(<-
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
