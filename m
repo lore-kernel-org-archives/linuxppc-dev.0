@@ -1,30 +1,38 @@
-Message-ID: <385E817A.D2B76318@netx4.com>
-Date: Mon, 20 Dec 1999 14:20:26 -0500
-From: Dan Malek <dan@netx4.com>
+Message-ID: <385EE46B.1D97C2D2@ctam.com.au>
+Date: Tue, 21 Dec 1999 13:22:37 +1100
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-To: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
-CC: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Booting w/out BOOTP and still have IPv4 comeup.
-References: <199912201808.NAA02902@hoover.gilbarco.com>
+To: linux-embedded <linux-embedded@waste.org>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: linux-embedded: which shell, termcap or ncurses ?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wohlgemuth, Jason wrote:
 
-> Just a quick question.  I have linux going on an embedded MPC860.  The
-> application that is running on it uses sockets but when I disable bootp all
-> the socket calls fail since the network has not been configured properly.
+I am trying to get a powerpc embedded system up and running.  I have
+compiled the kernel and can mount a root filesystem using initrd or
+nfs.  I now need to get a shell running so I can call shell scripts to
+setup the IP addresses etc via ifconfig (is there any other way ?).
 
+I got the latest version of bash(2.0.3) and ncurses(5.0).  Bash requires
+termcap but apparently termcap is obsolete and is replaced by ncurses.
 
-I have only been able to do this by using 'ifconfig'.  I don't
-know the details, but simply setting the IP address like this
-doesn't seem to invoke some initialization functions.  Using
-ifconfig after the system boots works just fine.
+I had some trouble getting ncurses to cross-compile but I manged to hack
+around with configure, make and the source code and eventually get it to
+compile and install.  Bash is proving more difficult.
 
+Does anyone have any recommendations for a good shell and termcap that
+cross-compiles without too much effort ?  If so, where can I get them
+and are they maintained ?
 
+Has anyone cross-compiled a recent version of bash and ncurses ?  Are
+they huge ?  Will they fit on a 4MB initrd image ?
 
-	-- Dan
+Thanks,
+Brendan Simon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
