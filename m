@@ -1,20 +1,18 @@
-Return-Path: <marvin24@gmx.de>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DEEC02BF12
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 07:58:29 +1100 (EST)
-From: Marc Dietrich <marvin24@gmx.de>
-To: Sven Luther <sven.luther@wanadoo.fr>
-Date: Wed, 5 Jan 2005 21:57:25 +0100
-References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
-	<200501051733.06350.marvin24@gmx.de>
-	<20050105165551.GA29287@pegasos>
-In-Reply-To: <20050105165551.GA29287@pegasos>
+Return-Path: <krypton@ulrich-teichert.org>
+Received: from arbas.nms.ulrich-teichert.org (i3ED64D51.versanet.de
+	[62.214.77.81]) by ozlabs.org (Postfix) with ESMTP id 5942A2BF12
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jan 2005 09:13:19 +1100 (EST)
+Message-Id: <200501052209.j05M9xAs009904@arbas.nms.ulrich-teichert.org>
+To: krypton@ulrich-teichert.org (Ulrich Teichert)
+Date: Wed, 5 Jan 2005 23:09:58 +0100 (MET)
+In-Reply-To: <200501050807.j0587L5J026680@arbas.nms.ulrich-teichert.org> from
+	"Ulrich Teichert" at Jan 05, 2005 09:07:20 AM
+From: Ulrich Teichert <krypton@ulrich-teichert.org>
 MIME-Version: 1.0
-Message-Id: <200501052157.25302.marvin24@gmx.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, mikemartin@linux.ca,
+	debian-powerpc@lists.debian.org
+Subject: Re: 43p-140 install issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Hi all,
+the only reference number on my board is the IBM FRU number:
 
-I didn't recognise that the kernel from Sebastian - which was working fine 
-here - was build from the debian sources (no hint in the kernel version). 
-So I build everything again from debian source and fixed the irq's in 
-prep_pci.c.
+FRU 93H7143
 
-I can confirm now, that this debian+irq_fix kernel 2.6.8 runs fine and 
-produces no scsi timeouts!
+I would expect that you will have the same marking on your mainboard.
+My box ran all day with various loads from high to low or no load
+at all:
 
-Something happend in kernels >= 2.6.9 which makes the scsi unusable. Also it 
-seems, that even in 2.6.8 kernels and with ide hard disks (Sebastians setup) 
-the scsi controller timeouts, but continues to operate - correct?
+wehrle:~> uptime
+ 22:29:24 up 1 day,  2:39,  2 users,  load average: 0.15, 0.32, 0.61
 
-That's all for now (and this year), because I have to leave this nice machine 
-alone and go home. Thanks to all who helped me - maybe see you next year 
-again...
+with Leigh's 2.4.19 kernel. As I searched for the number, I noticed
+that the CPU fan was *covered* with dirt. Perhaps you should have
+a look at yours too, because the front fan will pick up all dust and
+throw it right on the CPU fan. I still wonder why mine was still
+spinning....
 
-Greetings
-
-Marc
-
-Am Mittwoch, 5. Januar 2005 17:55 schrieben Sie:
->
-> (...)
->
-> Also, apt-get install kernel-patch-debian-2.6.8 should give you the latest
-> debian patch. No idea how it applies to the non-free pruned stuff though.
->
-> > Do you have any idea, why a stock 2.6.8 kernel (with prep_pci.c patch)
-> > doesn't boot a prep image?
->
-> Either a missing patch or a wrong .config.
->
-> I am personally much more interested in having the debian kernel working
-> correctly though.
->
-> Friendly,
->
-> Sven Luther
+HTH,
+Uli
+-- 
+Dipl. Inf. Ulrich Teichert|e-mail: Ulrich.Teichert@gmx.de
+Stormweg 24               |listening to: Suicide Drive (The Deep Eynde)
+24539 Neumuenster, Germany|Public Pervert (Interpol) Clé De Contact (Metal Urbain)
