@@ -1,34 +1,25 @@
-Date: Sat, 13 Jan 2001 16:41:49 +0100
-From: Harald Welte <laforge@gnumonks.org>
-To: Martin Costabel <costabel@wanadoo.fr>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: pdisk weirdness
-Message-ID: <20010113164148.L6055@coruscant.gnumonks.org>
-References: <3A5E21E6.DE26A121@wanadoo.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A5E21E6.DE26A121@wanadoo.fr>; from costabel@wanadoo.fr on Thu, Jan 11, 2001 at 10:13:10PM +0100
+Date: Sat, 13 Jan 2001 21:42:58 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: erik cameron <cameron@dura.spc.uchicago.edu>
+cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: '99 powerbook (lombard)/xfree 4.0.x
+In-Reply-To: <20010111154325.D2651@ccp.uchicago.edu>
+Message-ID: <Pine.LNX.4.30.0101132141370.30881-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 11, 2001 at 10:13:10PM +0100, Martin Costabel wrote:
->
-> This is pdisk version 0.8a2 (16 May 2000) from the pdisk-0.8-1.ppc.rpm
-> as it is contained in LinuxPPC 2000 and LinuxPPC 2000 Q4 aka Halloween.
-> When I downgrade to the pdisk-0.7-2 RPM from LinuxPPC 1999, it works as
-> it is supposed to. Also I think I remember that the new pdisk works when
-> run with a 2.2 kernel. Only the combination of new pdisk and 2.4 kernel
-> doesn't work.
+> '99 (lombard) powerbook g3
+> ati rage 128 3d lt pro
 
-I am experiencing _exaclty_ the same problem and solved it exactly the
-same way. My machine is a 2-month old G4
+I didn't know they made the Lombard with r128. Mine has a Mach64 LT Pro.
 
-> --
-> Martin
+Try the plain 'ati' driver please. And make sure you didn't use BootX to
+boot :-)
 
---
-Live long and prosper
-- Harald Welte / laforge@gnumonks.org                http://www.gnumonks.org
+	Michael
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
