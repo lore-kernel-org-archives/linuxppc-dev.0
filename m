@@ -1,50 +1,31 @@
-Message-ID: <3AA60D9F.FEABC67A@dspace.de>
-Date: Wed, 07 Mar 2001 11:29:51 +0100
-From: Andreas Schreckenberg <ASchreckenberg@dspace.de>
-Reply-To: Andreas Schreckenberg <ASchreckenberg@dspace.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <002e01c0a704$cfea4b00$a66d34c0@oleane.com>
+From: "Lionel TAILLURAT" <Lionel.TAILLURAT@ecrin.com>
+To: "ppc_mailing_list" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Which kernel for an MBX860 ?
+Date: Wed, 7 Mar 2001 13:47:43 +0100
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: how to use fp unit in kernel
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello,
+Hi,
 
-i got a floating point unavialable exception, if i use
-floating point instructions within a module
-in the kernel. why ?
-(kernel 2.4.0 on a PPC750 board)
+I plan to use Linux with an MBX 860, which kernel should I use ?
 
-the kernel is compiled with -msoft-float, and my
-kernel module whithout this option.
+Are the officials 2.2.x or 2.4.x kernels are ok ?
 
-If i compile the kernel without -msoft-float,
-i cannot insert my module because some __xxxx
-symbols cannot be resolved by the module linker.
-(i linked my module static
-again the math library libm.a, so sin(x) should
-be available)
+Should I use a patched  kernel ?
 
-the kernel receives a trap 0x800 (fp unavailable)
-prints a message:
-floating point used in kernel (task=%p, pc=%x)\n
-turns on the fp in the msr and exit.
+Where can I find it ?
 
-what must i do ?
-best thing whould be: everything in kernelmode
-should use the fp unit ?
-is that the best or not (performance) ?
+Is there is an FAQ for this style of question ?
 
-What do the enable_kernel_fp() function ?
-at which moment must this be invoked.
+Thanks in advance.
 
-i would thank you for any help
-Andreas
---
-          Life's not fair. But the root password helps ! :-)
-                   http://schrecky.home.pages.de
-               Open minds. Open sources. Open future.
+Lionel
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
