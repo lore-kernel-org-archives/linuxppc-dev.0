@@ -1,40 +1,38 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-From: "S. Hebbar" <shebbar@india.tejasnetworks.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: denx 2.4.20 kernel memory leak
-Date: Wed, 3 Mar 2004 14:44:15 +0530
+Message-ID: <4045A8FC.1090303@ru.mvista.com>
+Date: Wed, 03 Mar 2004 12:44:28 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Message-Id: <200403031444.15398.shebbar@india.tejasnetworks.com>
+To: Stephen Williams <612dlag102@sneakemail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel hangs in early_init
+References: <20040302085159.1174CC0655@atlas.denx.de> <4522-80798@sneakemail.com>
+In-Reply-To: <4522-80798@sneakemail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Stephen Williams wrote:
+> I'm using ... PPC405GPr ...
+...
+>
+> Humm... The MMU comment makes me think. U-Boot is running with the
+> MMU off. The head_4xx.S entry code sets up a temporary MMU mapping
+> that includes the linked kernel address space, but that is only 32meg.
+> The stack at the time is still where U-Boot left it, near the end of
+> the 128Meg memory. Is this something I should address (pardon the pun)?
+>
 
-I am noticing kernel memory leak when I am getting a file using ftp.
-For each ftp get session, the skbuff_head_cache is increasing.
+Just a suggestion. Check that the whole data cache is invalidated.
+The kernel often relies on the bootloader to initialize dcache properly.
+And there is a chance that the bootloader was written for 405GP, but
+405GPr's data cache is two times bigger. If this is the case
+you can either fix the bootloader, or invalidate dcache in the kernel's
+secondary bootloader (see arch/ppc/boot/simple/embed_config.c,
+embed_config() for Xilinx ML300 as an example).
 
-Original:
-  skbuff_head_cache  17232  17232    160  718  718    1
-After getting a 8 MB file.
-  skbuff_head_cache  18094  18096    160  754  754    1
-
-Finally, system runs out of memory and kernel start killing processes.
-
-I don't think this is driver problem. I can "flud ping" (ping -f) for more
-than 24 hours without loosing any memory. I am generating 4000 packets/second
-to the target using "ping -f"
-
-I am not sure if there is another application which causes memory leak.
-
-I am using denx 2.4.20 kernel. My target processor is MPC8260.
-
-Any help is much appreciated.
-
-Regards,
-Hebbar.
+Best regards,
+Andrei
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
