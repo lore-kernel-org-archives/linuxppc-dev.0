@@ -1,48 +1,50 @@
-Message-Id: <38EF50E4.872D76ED@w-d.org>
-Date: Sat, 08 Apr 2000 11:32:16 -0400
-From: John Doty <jpd@yami.w-d.org>
-Reply-To: jpd@yami.w-d.org
 Mime-Version: 1.0
-Cc: rshaw@linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Blue & White & SCSI & Ultra 2 SCSI & Kernel > 2.2.10 -> No Disks
-Content-Type: text/plain; charset=iso-2022-jp; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <v04011700b515101599d8@[204.210.50.184]>
+In-Reply-To: <l03130302b5145fe8d18f@[209.122.247.115]>
+References: <38EE7EDE.612EB99F@denise.shiny.it>
+ <l03130302b4fd80d3a908@[216.164.130.191]>
+ <l03130304b50c8e1b783f@[216.164.131.253]>
+Date: Sat, 8 Apr 2000 09:08:36 -0800
+To: Giuliano Pochini <pochini@denise.shiny.it>,
+        "DeRobertis" <derobert@erols.com>
+From: Greg Noel <GregNoel@san.rr.com>
+Subject: Re: stty crtscts < /dev/ttyS1
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-My Yosemite G3 (Rev 2) has *two* SCSI cards: an Adaptec 2930CU, and an
-Adaptec 2940U2B (Ultra 2 Wide). Last summer, my son Matt (who
-occasionally posts here on comp.os.linux.powerpc) set it up as a
-LinuxPPC machine with a 2.2.10 kernel from Robert Shaw's site.  As a
-compute/file server, it has been great.
+At 8:35 PM -0400 on 4/7/00, Giuliano Pochini wrote:
 
-However,  attempts to upgrade to a more recent kernel invariably
-encountered SCSI problems. The most common symptom was an inability to
-mount the root  filesystem.
+>I don't know why this happen exactly. It seems that the printer changes
+>continuosly with very high frequency the state of CTS, which cause the
+>serial driver to loop indefinitely.
 
-We have finally gotten partway to the bottom of this. Apparently, if the
-2930 controller is present the kernel cannot find the 2940 controller
-(and the 2940 has the disks on it). With the 2930 pulled (I don't really
-need it the way I'm currently using the system), SCSI works fine with
-the newer kernels.
+At 12:05 AM -0400 4/8/00, DeRobertis replied:
 
-Finding this took quick eyes, as the evidence scrolls off the screen
-before failure is obvious , but you can't do a dmesg until you're up.
+>Ouch! Broken hardware... how can I document this is happening, so that
+>I can demand an answer from Epson?
 
-Matt also speculated that it had to do with the slot order of the
-controllers, so I switched them. That didn't help: the kernel still only
-found the 2930.
+>From your messages, it's not clear to me that it's the printer.  It could
+easily be the cable.  Try replacing the cable with one that only connects
+the signals you're using and properly grounds all the other signals.
 
-I'm now running a Yellow Dog 1.2 system.
+In a previous life, I had this sort of problem with a serial cable that let
+RI (ring) float, so it acted like an antenna.  It picked up an another
+signal in the cable that was running at 9600 baud (which was really fast at
+the time).  It looked to the computer as if the phone was ringing 4800
+times per second and each "ring" caused an interrupt so it could enable the
+modem.  That was more than enough to drive it to its knees.
 
-I think the lesson to be learned here is that if your machine is loaded
-up with optional hardware, it might make sense to strip it down to
-something simpler if you encounter problems.
+>Or maybe I should just hack the serial driver to ignore this. And WTF
+>is the serial driver doing looking at CTS on a port with no data?!
 
---
-John Doty  "You can't confuse me, that's my job."
-Home: jpd@w-d.org
-Work: jpd@space.mit.edu
+If there are multiple ports, it may not be possible to disable a specific
+interrupt for an individual port, so it always has to be enabled in case
+any port needs it.  That was the case with the hardware I had.
 
+Hope this helps,
+-- Greg Noel, retired UNIX guru
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
