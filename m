@@ -1,84 +1,49 @@
-Message-ID: <38A6C19F.92468821@wanadoo.fr>
-Date: Sun, 13 Feb 2000 15:37:19 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-CC: Paul Mackerras <paulus@linuxcare.com>
-Subject: Re: 2.3.43 failed
-References: <00021211003504.00821@linux.eric.fr> <00021318311301.12422@argo.linuxcare.com.au>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v03110700b4cc8fce0321@[209.183.136.12]>
+In-Reply-To: <200002130440.XAA25134@mal-ach.watson.ibm.com>
+References: Message from Kevin Hendricks <khendricks@ivey.uwo.ca>    of
+ "Sat, 12 Feb 2000 23:21:41 EST."
+ <00021223332100.19021@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 13 Feb 2000 11:51:20 -0500
+To: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: Re: Kernel Gurus Help! Possible kernel bug in conversion of
+ jiffees in nanosleep.
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Hi,
 
-> I just updated linuxcare.com.au::linux-pmac-devel to 2.3.44 final.  I
-> fixed a couple of problems where it would hang during boot if you booted
-> from OF (or with quik or yaboot) and it couldn't find the screen.  Try it
-> now.  If it doesn't work, let me know (and tell me how you are booting it).
+>	Maybe submit the question to the glibc-alpha mailinglist as well?
+>
+>David
 
-On my 6400, it compiles and boots OK, but there are some little itches:
+I submitted two bug reports about this via the glibc bug database.
 
-- rsync complains about "send_files failed to open
-Documentation/kernel-docs.txt: Permission denied"
+The second report just adds info about the first.
 
-- rsync copies a spurious file drivers/net/.#ppp_generic.c which is a
-dead symlink
+The bug reports are 1597 and 1598.
 
-- during booting, there is a message
-"/proc/sys/net/ipv4/ip_always_defrag is missing - Cannot control IP
-fragmentation"
+I have previously fixed pthread_cond_timedwait in glibc 2.1.3 to actually
+work recently but a final "cleanup" recently committed patch rewrote things
+so that it no longer worked.
 
-- while using my ethernet card with the de4x5 driver, I get hundreds of
-"kernel: Warning: kfree_skb on hard IRQ c010ded8". Seeing that this
-address is inside the de4x5 driver, I tried to compile it as a module,
-so that I could also compare it to the tulip driver. Didn't work at
-first:
+The funny thing is that their technique *should* work if the remtime value
+from nanosleep would actually decrease and not increase.
 
-- the tulip module loads without problem, but doesn't seem to like my
-ethernet card (DEC 21041 chip). It gives me hundreds of "kernel: eth0:
-21041 transmit timed out, status fc6800". With 2.2.14 kernels, the tulip
-module works OK.
+So I think the whole thing is actually a kernel bug but I am not sure.
 
-- the de4x5 module complains about missing symbols; and this is in fact
-a bug I had mentioned already some days ago. I repeat the patch below.
-It seems to be necessary, and it cures the problem. I am now on the net
-with de4x5 as a module, but I still get the warnings, now with an
-address in the module:
-Feb 13 15:06:14 rennes-231 kernel: Warning: kfree_skb on hard IRQ
-c7159770
-Feb 13 15:07:24 rennes-231 last message repeated 421 times
-Feb 13 15:12:01 rennes-231 last message repeated 97 times
-and so on.
+I know nothing about jiffees and their conversion to and from time values
+and I am not sure how jiffees could ever grow (lost jiffees added back?).
 
-How can I get rid of the warnings (short of disabling the line that
-produces it in net/core/skbuff.c)?
+If anyone who knows something about jiffees and conversions could look at
+nanosleep I would greatly appreciate it.
 
-Here is the patch needed by pci driver modules:
+Thanks,
 
---- arch/ppc/kernel/ppc_ksyms.c.ori     Fri Feb  4 10:18:20 2000
-+++ arch/ppc/kernel/ppc_ksyms.c Fri Feb  4 10:28:10 2000
-@@ -11,6 +11,7 @@
- #include <linux/spinlock.h>
- #include <linux/console.h>
- #include <linux/irq.h>
-+#include <linux/pci.h>
+Kevin
 
- #include <asm/page.h>
- #include <asm/semaphore.h>
-@@ -137,6 +138,9 @@
- EXPORT_SYMBOL(__clear_user);
- EXPORT_SYMBOL(__strncpy_from_user);
- EXPORT_SYMBOL(__strnlen_user);
-+
-+EXPORT_SYMBOL(pci_alloc_consistent);
-+EXPORT_SYMBOL(pci_free_consistent);
-
- /*
- EXPORT_SYMBOL(inb);
-
---
-Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
