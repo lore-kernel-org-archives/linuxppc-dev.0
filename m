@@ -1,41 +1,26 @@
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <debian-powerpc@lists.debian.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: "Cache Profiler" ? (was: No cache control on ppc??)
-References: <877kqmvfmy.fsf@yahoo.com> <20020113193619.14166@smtp.wanadoo.fr>
-From: Elizabeth Barham <soggytrousers@yahoo.com>
-Date: 15 Jan 2002 03:17:32 -0600
-In-Reply-To: Benjamin Herrenschmidt's message of "Sun, 13 Jan 2002 20:36:19 +0100"
-Message-ID: <87vge455xv.fsf@liliwhite.open.oasis>
+Message-ID: <3C441EC6.8E192B49@switchboard.ericsson.se>
+Date: Tue, 15 Jan 2002 13:21:26 +0100
+From: Kenneth Johansson <ken@kieraypc01.p.y.ki.era.ericsson.se>
+MIME-Version: 1.0
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Problems with linuxppc_2_4_devel
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> First boot once with BootX. Once in linux, grab the value of
-> /proc/sys/kernel/l2cr. Then, go back to quik, and in your boot
-> scripts, write back this value. This is the configuration of the
-> backside L2 cache of the 750.
+I have some date problem BK think that we are at feb23 and that dose not look
+right when running revtool. Do anyone else see this or is it my clone?
 
-Just a follow-up:
 
-It turns out that Linux was using the 750 processor with it's
-configuration (1,0,0,1 [NewerTech G3L2]) but it was not using the
-cache at all. In order to grab the parameters of the above-mentioned
-file in the /proc/sys/kernel directory I had to install Mac
-OS. Fortunatly we had an extra drive available to install it upon.
+Also I get alot of "ERROR-cannot cd to linuxppc_2_4_devel" when running bk
+pull
 
-The configuration that I had been using, though, disabled the cache so
-I had to find a better setting that was quicker and stable (0,0,1,0
-[240 MHz, 478.41 bogomips]). However, the gotcha! with this is that
-quik (v2.0) throws a fatal error prior to the start-screen ("Choose
-your kernel").
 
-So, I ended up just keeping MacOS on half of the newly-installed drive
-and will use BootX to boot into Linux now and in the future; it's not
-*that* inconvenient and the increase in speed is easily worth it.
-
-Thank you all for your help.
-
-Kind regards, Elizabeth
+--
+Kenneth Johansson
+Ericsson Telecom AB               Tel: +46 8 404 71 83
+Viderögatan 3                     Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
