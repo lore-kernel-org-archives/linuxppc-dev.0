@@ -1,46 +1,35 @@
-Date: Fri, 11 Jul 2003 08:52:26 -0700
+Date: Fri, 11 Jul 2003 09:31:23 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
+To: Juergen Beisert <jbeisert@eurodsn.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips
-Message-ID: <20030711155226.GV17433@ip68-0-152-218.tc.ph.cox.net>
-References: <20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net> <20030711154323.4B267C6D82@atlas.denx.de>
+Subject: Re: dcbz-instruction on PPC405GP
+Message-ID: <20030711163123.GY17433@ip68-0-152-218.tc.ph.cox.net>
+References: <200307111623.45470.jbeisert@eurodsn.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030711154323.4B267C6D82@atlas.denx.de>
+In-Reply-To: <200307111623.45470.jbeisert@eurodsn.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jul 11, 2003 at 05:43:18PM +0200, Wolfgang Denk wrote:
-> Dear Tom,
->
-> in message <20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net> you wrote:
-> >
-> > > We changed this in our kernel tree some time ago. If no valid PHY  is
-> > > found  we simply do not enable the interface, but we do not panic any
-> > > more.
-> >
-> > Which raises two fun questions:
-> > 1) Do you plan on ever trying to re-sync your 2.4 tree with the
-> > community tree (which should become kernel.org before too long)?
->
-> We do this from time to time. The last  (visible)  re-sync  was  with
-> 2.4.20  (ChangeSet  1.1174  =  20021129181904|49831), which is half a
-> year ago. On the other hand, we don't have the  resources  to  follow
-> each and every change immediately.
->
-> > 2) Do you plan on trying to keep in sync with 2.6 now that it's coming
-> > up on us?
->
-> Of course we will follow 2.6 as well.
->
-> Why are you asking? Did I give any reason to think we might go out of
-> business?
+On Fri, Jul 11, 2003 at 04:23:45PM +0200, Juergen Beisert wrote:
 
-No, but I do wonder if you ever plan on sending anything out again.  It
-does seem to be a once a year event, which is just about due (2002-06-18
-is the last one I see).
+> I want to speed up some data copy in my Linux driver and so I want to use the
+> dcbz-instruction.
+> I get the memory with a kmalloc()-call with GFP_KERNEL argument. After that I
+> call a small assembler routine that uses dcbz to set this memory to zero. I
+> am shure this memory starts at 32 byte boundary and ends at another 32 byte
+> boundary. But if I call the dcbz-instruction I get an alignment exception.
+> I have tried to test the "Write Trough" and "Caching Inhibit" bits for this
+> TLB, but I'm not shure that I have found the right one. I have called
+> get_pteptr() with the kmalloc() returned virtual address. Is this the right
+> way to get informations about this TLB? The returned value seems ok (caching
+> enabled and write back, if Linux uses the same bit positions like the 405GP
+> manual).
+> With caching enabled and write back the dcbz-instruction should work (that's
+> what I have read in the manual). Right?
+
+Why are you not calling memset on this region instead?
 
 --
 Tom Rini
