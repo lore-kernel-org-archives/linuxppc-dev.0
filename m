@@ -1,66 +1,53 @@
-Message-ID: <004501c44c8e$25a824e0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Adisorn Ermongkonchai" <aermongk@yahoo.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <20040606180042.47373.qmail@web50501.mail.yahoo.com>
-Subject: Re: Poor 8260 FCC Ethernet performance 
-Date: Mon, 7 Jun 2004 08:51:23 -0400
+Message-ID: <40C47DBB.3060300@mvista.com>
+Date: Mon, 07 Jun 2004 09:37:47 -0500
+From: Mark Hatle <mhatle@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: bharat <bharat@coraltele.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: regarding ld.so.preloads,ld.so.cache
+References: <28007367.1086432866812.JavaMail.administrator@RnDserver>
+In-Reply-To: <28007367.1086432866812.JavaMail.administrator@RnDserver>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Adisorn,
+Two things.  First ld.so.preloads and ld.so.cache (and ld.conf) are all
+optional, and usually won't exist on an embedded system.  (You might get
+some arguments by some about ld.so.cache.. but the point is it does NOT
+need to exist).
 
-You should probably try monitoring your network with Ethereal or something
-similar to see what the problem really is - in other words make sure that
-the problem really is packets coming out of your board too slowly.
+Second I believe you NFS problems are probably unrelated.  Specifically
+on system without a proper RTC, the timestamps for NFS requests will
+reset to a previous time stamp.  NFS uses time stamps to make sure that
+requests are always moving "forward" in time.  If you reboot your
+embedded system, the time stamp goes back in time.. you can easily get
+lockups with the NFS server not responding.
 
-Mark Chambers
+First thing to try, reboot the NFS server, and see if it works once..
+then stops working for subsequent boots.  If that is the case, then you
+will need to figure out how to seed the kernel (on your embedded system)
+with a reasonable "time/date" combo if you don't have an RTC.
 
------ Original Message -----
-From: "Adisorn Ermongkonchai" <aermongk@yahoo.com>
-To: <acurtis@onz.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Sunday, June 06, 2004 2:00 PM
-Subject: Poor 8260 FCC Ethernet performance
+--Mark
 
-
+bharat wrote:
+> hello everyone
+>                     i am using Hardhat embedded linux for my customerized
+> board everything went fine till th dhell init as soon as the init is called
+> the control starts looking for ld.so.preloads,ld.so.cache and then after
+> loading  some files from NFS mounted  file sytem from server this goes hangs
+> i am looking for an answer since last three days and it is driven me mad
+> please help me
+> bharat
 >
-> Hi Allen and Linuxppc-embedded guru,
 >
-> Referring to your 31 May 2002 post to LinuxPPC about
-> poor 8260 FCC Ether performance.  Did you figure
-> out why is the FCC so slow?  We have encountered this
-> problem as well. We use the newer MPC8270 with 400MHz
-> clock and 200MHz CPM speed with BCM5222 PHY.  It
-> ended up running at only ~5Mbps on 100Mbps Ethernet
-> line.  We just tried 1 FCC.
 >
-> Does anyone on this post see the same problem? We use
-> linux 2.4.18 with PPC pqii driver (somehow the other
-> driver didn't seem to work for all 3 FCC's)  We
-> also tried on Motorola 8260 eval board and the result
-> is the same.  We also tried MEN Micro F6, it gave
-> better result from 11MBps to 30Mbps.  We also tried
-> just uboot to eliminate Linux out of the picture and
-> the result was about the same.
+> !-- Virus-Free Mail Using PostMaster Enterprise AvAc & QuickHeal Engine --!
 >
-> I was about to give up on this MPC8270 then I saw this
-> post so I thought I try.  I cannot believe that
-> Motorola would make a chip that support 3 FCC's
-> but can only run at this ridiculous speed.  I am
-> software engineer, this could be hardware.
+> -----------------------------------
+> Coral Telecom Limited, Noida, India
 >
-> Can anyone help me on this?  I'm about to have to
-> change the processor to PowerPC 4xx.
->
-> Thanks in advance.
->
-> Regards,
-> Adisorn Ermongkonchai
 >
 >
 >
