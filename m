@@ -1,34 +1,37 @@
-Message-ID: <37E0D87F.E8F2087A@usa.net>
-Date: Thu, 16 Sep 1999 07:46:09 -0400
-From: David Riley <happyoscar42@usa.net>
-Reply-To: happyoscar42@usa.net
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: BootX 1.1.3 and Rev 2 B+W G3's ?
+Date: Thu, 16 Sep 1999 10:32:20 -0400
+Content-Type: text/plain
+References: <19990915120329.005173@mailhost.mipsys.com>
 MIME-Version: 1.0
-To: Sean <picasso@madflower.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: New booter-New world
-References: <Pine.LNX.4.10.9909151555260.31363-100000@opus.bloom.county> <37E0A14A.E4217C4@madflower.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <99091610364000.00409@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sean wrote:
-> 
-> Since the New World machines have a flashable ROM, why doesn't Apple
-> just write a new flash ROM for MacOS X by writing a flash with
-> bootloader on it that stores its information in the MBR or PRAM
-> (multiple PRAM settings) or somewhere so they don't have to use the
-> secret partition trick to get MacOS X to boot correctly. In the process,
-> they might as well add an allowance so you can boot Linux or another
-> alternative OS in the extra slots (multiple kernels, etc). And the
-> ability to pick which OS you prefer to boot.
+Hi,
 
-It's quite possible that this is being worked on, because I can't
-imagine that Apple wants to do that thing with an HFS partition if they
-don't have to.  They're not just lazy bums out there, ya know. ;-)  If
-they are working on that, it's probably just undisclosed.
+I am having lots of problems with BootX 1.1.3 on my rev2 B+W G3.  BootX 1.1.1
+app works fine but I have no sound support.
 
--- 
---"Your mouse has been moved.  Windows 95 must be restarted for change
-to take effect."
+I upgraded to BootX 1.1.3 and added the extension and tried to boot.
+
+The extension gives a type 11 error but throws me into linux anyway.  But if I
+generate a couple of sounds (beeps) I get a complete kernel hang.  The kernel
+is also very very unstable with a seg-fault as root causing a kernel panic.
+
+None of this happens with BootX 1.1.1 (although I have no sound either).
+
+This is with Paul's kernel 2.2.10 and on the Mac side, a very stock install.
+
+Is anyone else seeing these problems.
+
+Any help here would be greatly appreciated.
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
