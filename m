@@ -1,34 +1,49 @@
-Date: Thu, 26 Oct 2000 16:19:05 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Paul Mackerras <paulus@linuxcare.com.au>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.18pre17 again
-In-Reply-To: <14839.53124.753011.489351@argo.linuxcare.com.au>
-Message-ID: <Pine.HPX.4.10.10010261615340.15431-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 26 Oct 2000 10:23:58 -0400
+From: Josh Huber <huber@mclx.com>
+To: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: lombard ethernet
+Message-ID: <20001026102358.B12571@missioncriticallinux.com>
+References: <20001026095459.A12571@missioncriticallinux.com> <20001026071006.C4741@opus.davidb.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="ADZbWkCsHQ7r3kzd"
+In-Reply-To: <20001026071006.C4741@opus.davidb.org>; from linux-kernel@davidb.org on Thu, Oct 26, 2000 at 07:10:06AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 26 Oct 2000, Paul Mackerras wrote:
+--ADZbWkCsHQ7r3kzd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> I have updated my rsync trees with some more changes to my current
-> 2.2.18pre17 source, mostly to allow a range of configs to compile
-> successfully.  I have also checked in the changes to the linuxppc_2_2
-> bk tree.  Prep-only configs should compile ok now and as a bonus they
-> no longer include all the pmac and chrp code that they used to.
->
-> If anyone gets compile errors with my 2.2.18pre17 tree, or the current
-> bk tree, please send me your .config.  I'm making a collection. :)
+On Thu, Oct 26, 2000 at 07:10:06AM -0700, David Brown wrote:
+> I began experiencing the same problem on my Lombard as soon as I switched
+> to a 100Base-T hub.  It expecially seems to happen when I transfer a lot =
+of
+> data.  I'm using a fixed IP address, so it doesn't seem to be related to
+> anything like that.  I think the driver itself stops either sending or
+> receiving packets.
 
-Are you truly interested in my configs with VME support for MVME boards, a
-different bootloader and many many other details ? Plus the negative
-patches for the stupid things that are in the official kernel and which
-will never, ever, make it to my own tree.
+Hmm, that's interesting.  I hadn't thought about that.  At home I have
+a 10b-t network and things work fine there.
 
-	Gabriel.
+At work, I'm hooked up to a 100 b-t switch on my desk, and this is
+where things die.
 
+Maybe as a test I could force the bmac driver to use 10bt?
+
+ttyl,
+
+--=20
+Josh Huber                               | huber@nightshade.org |
+1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+
+--ADZbWkCsHQ7r3kzd
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--ADZbWkCsHQ7r3kzd--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
