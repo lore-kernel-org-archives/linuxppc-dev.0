@@ -1,28 +1,40 @@
-Message-Id: <3A026527.6CFFE7C1@fht-esslingen.de>
-Date: Fri, 03 Nov 2000 08:11:35 +0100
-From: Matthias Kienle <Matthias.Kienle@fht-esslingen.de>
-Reply-To: Matthias.Kienle@stz-softwaretechnik.de
-Mime-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Building a AIX Cross Compiler
-References: <39FD8ADF.268A4CE1@fht-esslingen.de>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <00933BFA237CD2119B3400409543582704A280@MEV01>
+From: Ian Abbott <abbotti@mev.co.uk>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: A few bugfixes
+Date: Fri, 3 Nov 2000 10:20:11 -0000 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi *,
+I wrote:
 
-Does a possibility exist to indicate the ld to use a larger
-TOC size?
+> "epicom" wrote:
+>
+> >  I have found several bugs in versions 2.4.0-test*, I don't
+> > know if they
+> > exist
+> > in 2.2.* versions, but it is posible.
+>
+> The first two (of three) do.
+>
+> The first one:
+> > >>  return(((unsigned long)(pte_val(*pte)) & PAGE_MASK) | (address &
+> > ~(PAGE_MASK-1)));
+>
+> is logically wrong but I think it is a harmless bug.
 
-Regards,
-Matthias
+Actually, please ignore the bit about it being a harmless bug. I'll
+leave that for others to decide. (I don't want to delve into the
+virtual memory implementation to work it out for myself, but I'm still
+wondering why the function appears to be mostly preserving the upper
+bits of the virtual address, rather than the lower bits.)
 
-+---------------------------------------------------------+
-| Matthias Kienle                                         |
-|    Fachhochschule fuer Technik Esslingen                |
-|    (mailto:Matthias.Kienle@fht-esslingen.de)            |
-+---------------------------------------------------------+
+--
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>             )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587              )=-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
