@@ -1,29 +1,40 @@
-Message-ID: <39C15A45.3723CCF6@wanadoo.fr>
-Date: Fri, 15 Sep 2000 01:07:49 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
+From: bob@kunk.jriver.com
+Message-ID: <20000915021909.31906.qmail@kunk.jriver.com>
+Subject: Re: New topic (PowerPC Linux PCI HELL)
+To: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 14 Sep 2000 21:19:09 -0500 (CDT)
 MIME-Version: 1.0
-To: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: per-fb mmap for platinumfb and valkyriefb in 2.4 (and 2.2)
-References: <200009140546.HAA00808@piglet.grunz.lu> <39C155BF.1A150162@wanadoo.fr>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel wrote:
+Vojtech Pavlik <vojtech@suse.cz> wrote:
 
-> One funny thing: In X, my Alt keys don't work correctly ("ModeShift")
-> any more, they give "Alt_R" now. In the console, this is still OK. I
-> suppose this cannot come from the mmap stuff, so this must come from
-> some of the other changes in the bitkeeper tree in the last 2 days. I
-> didn't change anything else in my config.
+> The same happens for OHCI on new Macs. The correct function to use is:
 
-Sorry for the false alarm, after restarting X all keys are working
-normally. Out of crash fear, I had unmounted a few partitions before
-starting X and remounted them afterwards. Somehow the keymap got
-perturbed by this.
+> pci_enable_device(dev);
 
+> This function will enable the i/o, mem and irqs, and assign them if they
+> were not assigned for some reason, too.
+
+> And you should use it on any PCI device you want to use before using
+> it, on all architectures. Also check its return value.
+
+> --
+> Vojtech Pavlik
+> SuSE Labs
+
+This comment is from my experience with the Rocketport driver port to PPC.
+
+pci_enable_device() is a do nothing call in 2.2.x kernels. It is defined
+and supposedly working in 2.3.x/2.4.x kernels. On my 7200, hacks to
+enabled verious PCI devices are required with 2.2.x kernels.
+
+Bob
 --
-Martin
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
