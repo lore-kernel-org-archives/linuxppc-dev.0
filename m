@@ -1,42 +1,68 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: How Can The Starting Address Of An Image In ELF File BeChanged
-To: "Stephen Williams" <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF243EF967.6B4324CF-ON65256E4E.00240CC6@lntinfotech.com>
-From: "Thamarai Selvan" <Thamarai.Selvan@lntinfotech.com>
-Date: Fri, 5 Mar 2004 12:03:55 +0530
+Message-ID: <404837D3.3060609@imc-berlin.de>
+Date: Fri, 05 Mar 2004 09:18:27 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: uncached user space mapping with mmap() ???
+References: <40473464.8010203@imc-berlin.de>
+In-Reply-To: <40473464.8010203@imc-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi
+Hi there,
 
-iam still not clear with it
-can u guide me 2 some document/link on it or brief it little bit more
-why it is linked to that address ?
-if it is linked it should be configurable
-bcuz iam using vision ice to download my image.
-Thanks for your immediate reply
+thanks very much for all your help.
+I used the stuff Stéphane suggested. But I have to ask again about
+mapping of huge memory areas:
 
-with regards
-Thamarai Selvan.G
+Let's say the peripheral has 32 MB address range staring at BASE. At
+address GRAM 1MB of external SDRAM is located.
 
-[ "Stephen Williams" <612dlag102@sneakemail.com> writes: ]
+I use a simple test loop
 
-Thamarai Selvan Thamarai.Selvan-at-lntinfotech.com |PPC Linux Embedded| wrote:
->
-> I created the elf file of the kernel using "make vmlinux", when i
-> checked the created system.map i found the the kernel image starting
-> from 0xc0000000. Can any tell where this address is defined or
-> configured? and how can this be changed to 0x0000000 is it possible?
+	p = (unsigned short *)
+		ioremap(base + GRAM, 32MB);
 
-The linux cernel is linked to 0xc0000000, and the entry is really up
-there. In fact, the kernel is loaded starting at 0x0, and there is code
-at the beginning that turns on address translation so that it appears at
-the right place.
+	START ();
+	while (Retries--) {
+		for (i = 0; i < Size; i++) {
+			pData[i] = *p;
+		}
+	}
+	STOP ();
 
-In other words, there is nothing for you to change.
+When I map only the the GRAM I get a throughput of
+
+IoremapTest...        8.0 s      => 2049.4 kW/s
+
+But when I map the whole address range
+
+	p = (unsigned short *)
+		ioremap(BASE, imcdevif_iosize);
+
+and move the pointer
+
+	p += GRAM;
+
+before entering the test loop I only get
+
+IoremapTest...        8.4 s      => 1944.8 kW/s
+
+How is that???
+
+Is it always better to map only the small part I am going to use?
+
+Thanks a million!
+
+--
+Steven Scholz
+
+imc Measurement & Control               imc Meßsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
