@@ -1,122 +1,39 @@
-Date: Sun, 4 Apr 2004 13:27:58 +0200 (CEST)
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Patch Preview for MVME2100
-Message-ID: <Pine.LNX.4.33.0404041321400.21042-200000@lux32.if.fh-landshut.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Sun, 04 Apr 2004 18:37:03 -0400
+From: Jeff Tucker <jeff@jltnet.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Re: Need help booting linux on IBM 405EP eval board
+Message-ID: <72099343.1081103823@[192.168.2.18]>
+In-Reply-To: <200404040435.i344Zm6P006731@ms.usish.com>
+References: <200404040435.i344Zm6P006731@ms.usish.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1346272041-613371647-1081078078=:21042"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+--On Sunday, April 04, 2004 12:35 PM +0800 Jack Liu <Jack_liu@usish.com>
+wrote:
 
----1346272041-613371647-1081078078=:21042
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+>
+> yes, I guess your prolbem is like what Christian said before. Tye using
+> console=ttyS0,9600 to append boot options.
+>
 
-Hello!
+Thanks for the suggestions, guys.
 
-I tried to port the available patch for MVME2100 from linux-2.4.2 HHL2.0
-to vanilla 2.4.25, and I'd like someone to have a look at it, to say if it
-makes sense, because this is a first-timer.
+Actually, I had the statement above in my default command line option
+compiled into the kernel. I also tried adding it to the "bootargs"
+environment variable in U-Boot.
 
-It is not yet verified, because I cannot compile or test it before
-tomorrow, but if someone could comment on it still yet, it'd be very much
-appreciated.
+The exact same kernel boots with the IBM bootloader, including serial
+console and network access. When I boot using U-Boot, I don't get a console
+and there's no apparent network activity from the board.
 
-You can download both the original patches and my tries at new patchs
-here:
+Jeff
 
-http://www.fh-landshut.de/~okorpil/mvme2100-linux-2.4.25.patch.bz2
-http://www.fh-landshut.de/~okorpil/mvme2100-linux-2.4.25.patch.gz
-http://www.fh-landshut.de/~okorpil/mvme2100-linux-2.4.2_hhl20.patch.bz2
-http://www.fh-landshut.de/~okorpil/mvme2100-linux-2.4.2_hhl20.patch.gz
-
-The changes I made in detail are attached to this message.
-
-Thanks in advance,
-Oliver Korpilla
-
----1346272041-613371647-1081078078=:21042
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=CHANGES
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.33.0404041327580.21042@lux32.if.fh-landshut.de>
-Content-Description: 
-Content-Disposition: attachment; filename=CHANGES
-
-SSdsbCB0cnkgdG8gZG9jdW1lbnQgd2hhdCBJIGRpZCBmb3IgZXZlcnkgY29k
-ZSBzbmlwcGV0IGluIHRoZSBvcmlnaW5hbCBwYXRjaA0Kc28gc29tZW9uZSBl
-bHNlIGNhbiB0cnkgdG8gdmVyaWZ5IHRoYXQgbXkgY2hhbmdlcyBzZWVtIHRv
-IG1ha2Ugc2Vuc2UgKG9yIG5vdCEpLg0KDQpFYWNoIG9mIHRoZSBpdGVtcyBi
-ZWxvdyBpcyBvbmUgb2YgdGhlIGRpZmYgY2hhbmdlcyB0byBhIGZpbGUgaW4g
-dGhlIG9yaWdpbmFsDQpwYXRjaCBhbmQgd2hhdCBJIGRpZCB3aXRoIGl0Lg0K
-DQoxKQ0KYXJjaC9wcGMvTWFrZWZpbGU6DQoNCm9yaWdpbmFsbHkgLT4gaW5j
-bHVkZSBtdm1lMjEwMF9kZWZjb25maWcgdGFyZ2V0DQpub3cgLT4gbm8gbG9u
-Z2VyIG5lZWRlZCAoZ2VuZXJpYyBNYWtlZmlsZSB0ZW1wbGF0ZSBpbiBwbGFj
-ZSkNCg0KMikNCmFyY2gvcHBjL2Jvb3QvTWFrZWZpbGU6DQoNCmFkZGVkIGVu
-dHJ5IGZvciB0b29scyBta3ByZXAsIG1rYnVnYm9vdA0KDQozKQ0KYXJjaC9w
-cGMvYm9vdC9pbmNsdWRlL212bWUyMTAwX3NlcmlhbC5oDQoNCmRyb3BwZWQg
-aXQgLSB3aHkgaGF2ZSB0aGF0IGluZm8gdHdpY2U/DQoNCjQpDQphcmNoL3Bw
-Yy9ib290L2luY2x1ZGUvbnMxNjU1MC5oDQoNCnB1dCBpdCBpbnRvIGluY2x1
-ZGUvYXNtLXBwYy9zZXJpYWwuaA0KDQo1KSANCmFyY2gvcHBjL2Jvb3QvbXZt
-ZTIxMDAvTWFrZWZpbGUNCg0KZHJvcHBlZCBpdCAtICBJIGhvcGUgSSBoYXZl
-IGZvdW5kIHRoZSByaWdodCBwbGFjZXMgZm9yIHB1dHRpbmcgdGhhdA0KaW5m
-b3JtYXRpb24gaW5zdGVhZC4gSSBzdHVjayB0byB0aGUgcGxhY2VzIHdoZXJl
-IHRoZSBDT05GSUdfTE9QRUMgYW5kDQpDT05GSUdfU0FORFBPSU5UIGFkZGVk
-IG1vZGlmaWNhdGlvbnMgdG8gdGhlIE1ha2VmaWxlcy4NCg0KNikNCmFyY2gv
-cHBjL2Jvb3QvbXZtZTIxMDAvaGVhZC5TDQoNCmluY2x1ZGVkIGl0LCBwdXQg
-YSByZWZlcmVuY2UgdG8gaXQgd2hlcmUgaGVhZCBvYmplY3RzIGFyZSBtYXBw
-ZWQgaW4gTWFrZWZpbGVzDQoNCjcpDQphcmNoL3BwYy9ib290L212bWUyMTAw
-L2hlYWQuUy5hbmoNCg0KaW5jbHVkZWQgaXQsIGJ1dCB3aWxsIG5vdCBiZSBi
-dWlsdCBieSBub3csIGhlYWQuUyBmcm9tIDYpIGluc3RlYWQNCg0KOCkNCmFy
-Y2gvcHBjL2NvbmZpZy5pbg0KDQppbmNsdWRlZCBpdCwgYW5kIGFkZGVkIGEg
-Y29uZmlndXJhdGlvbiBkZXBlbmRlbmN5IGZvciB0aGUgTVBDMTB4IHN0b3Jl
-IGdhdGhlcmluZw0Kd2hlcmUgU0FORFBPSU5UIGhhcyBvbmUuDQoNCjkpDQph
-cmNoL3BwYy9jb25maWdzL212bWUyMTAwX2RlZmNvbmZpZw0KDQppbmNsdWRl
-ZCB3aXRob3V0IG1vZGlmaWNhdGlvbg0KKG1heSBuZWVkIGEgbWFrZSBvbGRj
-b25maWcgZmlyc3QsIEkgZ3Vlc3MgYW5kIHJlbW92YWwgb2YgdGFyZ2V0cyBu
-b3QgaW4NCnRoZSBtYWluc3RyZWFtIDIuNC54IGtlcm5lbHMpDQoNCjEwKQ0K
-YXJjaC9wcGMva2VybmVsL01ha2VmaWxlDQoNCmFkZGVkIG9iamVjdHMsIHB1
-dCBwbGF0Zm9ybSBvYmplY3QgbXZtZTIxMDAubyBpbiBwbGF0Zm9ybXMgTWFr
-ZWZpbGUNCg0KMTEpDQphcmNoL3BwYy9rZXJuZWwvbXZtZTIxMDAuaA0KDQpw
-dXQgaXQgaW50byBwbGF0Zm9ybXMgaW5zdGVhZA0KDQoxMikNCmFyY2gvcHBj
-L2tlcm5lbC9tdm1lMjEwMF9wY2kuYw0KDQpwdXQgaXQgaW50byBwbGF0Zm9y
-bXMgYXMgbXZtZTIxMDAuYw0KDQoxMykNCmFyY2gvcHBjL2tlcm5lbC9tdm1l
-MjEwMF9zZXR1cC5jDQoNCnB1dCBpdCBpbnRvIHBsYXRmb3JtcyBhcyBtdm1l
-MjEwMC5jDQoNCnVuaWZpZWQgMTIgYW5kIDEzIGludG8gb25lIGZpbGUsIGFk
-YXB0ZWQgDQp0aGUgc2V0X2JhdCBjYWxscyBpbnRvIGNhbGxzIHRvIGlvX2Js
-b2NrX21hcHBpbmcsDQpjb21tZW50ZWQgZGVidWcgc3R1ZmYgb3V0DQoNCjE0
-KQ0KYXJjaC9wcGMva2VybmVsL29wZW5fcGljLmMNCg0KdHJpZWQgdG8gbWF0
-Y2ggZnVuY3Rpb25hbGl0eSBieSBjb25kaXRpb25hbGl6aW5nIHRoZSBjb2Rl
-IGZvciB0aGUgaW50ZXJydXB0IGNhc2NhZGUNCmJ5IGRpc2FibGluZyBpdCB3
-aGVuIENPTkZJR19NVk1FMjEwMCBpcyBwcmVzZW50DQoNCjE1KQ0KYXJjaC9w
-cGMva2VybmVsL3NldHVwLmMNCg0KaW5zdGVhZCBvZiByZWZlcmVuY2luZyBh
-IG12bWUyMTAwX2luaXQgYW5kIGNvbmRpdGlvbmFsbHkgY2FsbGluZyBpdCBv
-biB0aGUgcmlnaHQgbWFjcm8NCkkgcmVuYW1lZCB0aGUgaW5pdCBmdW5jdGlv
-biB0byBwbGF0Zm9ybV9pbml0IChJIGd1ZXNzIHRoaXMgaXMgbm93IHRoZSB3
-YXkgdG8gZG8gdGhpbmdzLA0Kd2l0aCBNYWtlZmlsZSBtYWdpYyBpbnN0ZWFk
-IG9mIG1hY3JvIGNsdXR0ZXIsIG9yIGFtIEkgd3Jvbmc/KQ0KDQoxNikNCmFy
-Y2gvcHBjL21tL2luaXQuYw0KDQpUaGVyZSBhcmUgbm8gbG9uZ2VyIGNvbmRp
-dGlvbmFsIGNhbGxzIGZvciBzZXRfYmF0IGluIGhlcmUgLT4gc2VlIDEzKSBp
-b19ibG9ja19tYXBwaW5nDQoNCkknbSBub3Qgc3VyZSB3aGV0aGVyIHRoZSBj
-aGFuZ2Ugb2YgdGhlIGlvcmVtYXBfYmFzZSBpcyBuZWNlc3NhcnksIHNpbmNl
-IG5vdyBhbGwgcGxhdGZvcm1zIHdpdGgNCm5vIEhJR0hfTUVNIHNlZW0gdG8g
-c2hhcmUgdGhlIHNhbWUgdmFsdWUsIHNvIEkgZHJvcHBlZCB0aGF0IHZhbHVl
-LiBXaGF0IGNvbnNlcXVlbmNlcyBkb2VzDQp0aGlzIGhhdmU/DQoNCjE3KQ0K
-aW5jbHVkZS9hc20tcHBjL212bWUyMTAwX3NlcmlhbC5oDQoNCm9ubHkgdGhh
-dCBvbmUgaW4gcGxhdGZvcm1zIGlzIGxlZnQNCg0KMTgpDQppbmNsdWRlL2Fz
-bS1wcGMvcHJvY2Vzc29yLmgNCg0KQ29tbWVudHMgaW4gdGhpcyBmaWxlIHN1
-Z2dlc3RlZCB0aGlzIGlzIG5vIGxvbmdlciBuZWNlc3NhcnksIHNvIEkgbGVm
-dCBpdCBvdXQuDQoNCjE5KQ0KaW5jbHVkZS9hc20tcHBjL3NlcmlhbC5oDQoN
-CmFscmVhZHkgcG9pbnRzIHRvIHBsYXRmb3Jtcw0KDQoNCk1vc3QgY2hhbmdl
-cyBpbiBteSBwYXRjaCB0aGF0IGRvbid0IGRpcmVjdGx5IG1hdGNoIHdpdGgg
-dGhlc2UgbWVudGlvbmVkIGFyZSBjaGFuZ2VzIGRpc3RyaWJ1dGVkDQphY3Jv
-c3MgYSBzZXQgb2YgTWFrZWZpbGVzIC0gSSBndWVzcyB0aGF0J3MgYmVjYXVz
-ZSBub3cgYSBncmVhdGVyIGRlYWwgb2YgTWFrZWZpbGUgc3R1ZmYgaXMNCmhh
-bmRsZWQgbW9yZSB1bmlmb3JtbHkgYW5kIEkgdHJpZWQgdG8gc3RpY2sgd2l0
-aCB0aGF0IGxvZ2ljLg==
----1346272041-613371647-1081078078=:21042--
+--
+Jeff Tucker
+jeff@jltnet.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
