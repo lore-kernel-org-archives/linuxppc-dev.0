@@ -1,56 +1,40 @@
-Subject: Re: head_8xx.S
-To: "Dan Malek <dan" <dan@embeddededge.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: "Luca Risso" <Luca.Risso@marconi.com>
-Date: Fri, 6 Feb 2004 09:08:37 +0100
-Message-ID: <OFBF7609F1.4667B3D5-ONC1256E32.002AD496@uk.marconicomms.com>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "'Anton Blanchard'" <anton@samba.org>,
+	"'Peter Bergner'" <bergner@vnet.ibm.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: TASK_UNMAPPED_BASE
+Date: Fri, 6 Feb 2004 11:53:32 +0100
+Message-ID: <000901c3ec9f$76acd7e0$0a01a8c0@LUMENTIS02>
 MIME-Version: 1.0
-Content-type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <20040205170657.GA19011@krispykreme>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks a lot for your help Dan.
+> > The problem with a TASK_UNMAPPED_BASE that was "too low"
+> > was referring to the bug where we always loaded ld.so at
+> > TASK_UNMAPPED_BASE even though that adress was in the middle of the
+> > bss. Now that has been fixed, "too low" isn't a concern anymore.
+> >
+> > However, I'm not sure moving the TASK_UNMAPPED_BASE below the text
+> > section will work. It's used for more than just loading shared libs.
+> > Anonymous mmap areas and the heap are all located relative to it.
+>
+> That reminded me of a patch wli did to rearrange how things are
+> allocated. I wonder if doing something radical like this will work on
+> ppc32.
+[SNIP patch]
 
-With some further investigation I bypassed the problem removing the "tophys" instructions as shown below.
-I'm not sure that's the right thing to do, but at least it took me a step forward so to be able to crash as soon as the
-transfer_to_handler is called by the decrementer interrupt.
+Hi Anton
 
-Unfortunately my BDM doesn't support MMU relocation and I can't debug easily.
+I tried your patch on my 2.4 kernel.
+uClibc boots fine with the libs loaded towards lower addresses.
 
-If you feel that my "patch" is the wrong way to solve the problem or if you have any suggestion about my new fault please let me know.
+glibc won't boot, hangs direcly after mount.
 
-Regards
-
-      Luca
-
-
-.
-.
-.
-3:
-        lwz     r21, 0(r20)     /* Get the level 1 entry */
-        rlwinm. r20, r21,0,0,19 /* Extract page descriptor page address */
-        beq     2f              /* If zero, don't try to find a pte */
-
-        /* We have a pte table, so load the MI_TWC with the attributes
-         * for this "segment."
-         */
-
-//      tophys(r21,r21)               <--------------------- COMMENT
-
-        ori     r21,r21,1               /* Set valid bit */
-#ifdef CONFIG_8xx_CPU6
-        li      r3, 0x2b80
-        stw     r3, 12(r0)
-        lwz     r3, 12(r0)
-#endif
-        mtspr   MI_TWC, r21     /* Set segment attributes */
-#ifdef CONFIG_8xx_CPU6
-        li      r3, 0x3b80
-.
-.
-.
-
+ Jocke
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
