@@ -1,25 +1,26 @@
-Message-ID: <3E74DD59.7090804@elitedvb.net>
-Date: Sun, 16 Mar 2003 21:23:53 +0100
-From: Felix Domke <tmbinc@elitedvb.net>
-MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+From: Rakesh Jagota <j.rakesh@gdatech.co.in>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IDE corruption w/ 48 Bit addressing
-References: <3E74C280.3000608@elitedvb.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: ppc_405-nm
+Date: Mon, 17 Mar 2003 13:33:08 +0530
+MIME-Version: 1.0
+Message-ID: <1v5twbd61t8c8b7.170320031325@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Users report harddisk corruption, and a quick test showed, that data
-> written to 0x1800000000+x (LBA sector 0xC000000+x/512) is also written
-> to x. (direct O_LARGEFILE-access to /dev/discs0/disc).
-OK, update, this was a bit misleading:
+Hi all,
+I am working on linux. I am working with custom design board based on
+STBx25xx IBM ppc405 processor. I have downloaded the montavista preview kit
+and install on my system. I am not finding one the option "ppc_405-nm" in my
+cross-compiler bin directory. I want to see the system.map file and
+vmlinux.dis file, which is not possible without this option. Can anyone
+suggest me how can I include this ppc_405-nm option in my bin directory.
 
-when reading from the device, the upper 3 bytes aren't updated in the
-right way, so the "previous content" (as specified in the ATA/6 specs)
-seem to be invalid and contain, well, wrong content.
+Thanks & Regards,
 
-felix
+Rakesh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
