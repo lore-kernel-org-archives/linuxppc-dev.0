@@ -1,52 +1,43 @@
-Message-ID: <3BBDE2E6.B65B3925@aps.anl.gov>
-Date: Fri, 05 Oct 2001 11:42:14 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
+Message-ID: <3BBDE5AF.1A7D5673@mvista.com>
+Date: Fri, 05 Oct 2001 12:54:07 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Kent Borg <kentborg@borg.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: BK to CVS?
-References: <20011003130559.F31866@borg.org>
-	 <20011003113245.B18196@cpe-24-221-152-185.az.sprintbbd.net>
-	 <20011004092511.A3914@borg.org>
-	 <20011004132953.B32269@cpe-24-221-152-185.az.sprintbbd.net>
-	 <20011005111145.C8157@borg.org> <3BBDD64F.97B0057B@aps.anl.gov> <20011005122340.E8157@borg.org>
+To: Steve Rossi <srossi@labs.mot.com>
+Cc: John_McRoberts@mitel.com,
+	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Hard disk and segmentation violation.
+References: <85256ADC.00515614.00@kanmta01.software.mitel.com> <3BBDDF94.9728840D@labs.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kent Borg wrote:
->
-> And so do complete exports?  I didn't start out that way because I am
-> running BK on an underpowered machine and complete exports are slow.
-> Aso, where I work there are stupid security policies that force me to
-> mail between that real internet connection that can do BK and the
-> broken corporate network, and mailing whole kernels seems fraught with
-> problems.
+Steve Rossi wrote:
 
-Can't you persuade your security people to allow you to make an incoming
-ssh connection to your repository machine from your BK machine?  If so
-then you shouldn't need to use mail, but if not then your idea of mailing
-patches might be better if you can get it to work.  On the BK side you
-probably don't have to do a complete export every day, just an update (or
-whatever the BK equivalent is, I only know CVS...) and then you do a cvs
-import of that tree.
+> ..... Still I don't yet have a good
+> grasp on what space can be mapped 1:1 .....
 
-> Your suggestion seesm to imply that complete exports are more reliable
-> than deltas.  True?
 
-If that's a question about BK I can't answer it as I've never used BK, so
-don't make that implication.  I didn't really look at precisely what
-you're doing with the BK stuff (because I don't understand the
-terminology), I just thought about what you're trying to accomplish, which
-is basically what cvs import does.
+You shouldn't be concerned about this mapping.  ALL device drivers
+should perform the ioremap() in their device initialization functions,
+in which case there isn't any mapping problem.  There are some unique
+cases when porting boards or processors that early mapping is necessary,
+but this is not the place for mapping the resources used by device
+drivers that initialize normally.  Please do not add any resource
+mapping in the memory management initialization functions.
 
-Sorry if that was a wild goose chase...
+In summary (which has been written too many times already), the user
+space is first two or three gigabyte virtual address region (zero to
+0x7fffffff or 0xbfffffff).  Anything mapped in this area obviously
+conflicts with user mapping.  The region between 0x80000000 and
+0xbfffffff may be user or kernel space depending upon the kernel
+configuration and board requirements.
+The kernel virtual space is
+always the top gigabyte.  With the exception of some special case
+initialization mapping I mentioned above, the kernel VM allocator
+dynamically allocates in the proper address spaces.
 
-- Andrew
---
-Perfection is reached, not when there is no longer anything to add,
-but when there is no longer anything to take away.
-- Antoine de Saint-Exupery
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
