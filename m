@@ -1,24 +1,20 @@
-Message-Id: <4.3.2.7.2.20010411132655.03baa688@mira-sjcm-2.cisco.com>
-Date: Wed, 11 Apr 2001 13:29:16 -0700
+Date: Wed, 11 Apr 2001 18:50:21 -0400
+From: Paul Bade <paul.bade@jhuapl.edu>
+Subject: 2.5 Kernel Tree
 To: linuxppc-embedded@lists.linuxppc.org
-From: Michael Norton <mnorton@cisco.com>
-Subject: Basic Stamps LinuxPPC2000 on G4
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-id: <3AD4DFAD.52BFFB87@jhuapl.edu>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
+Where can I find the 2_5 kernel tree (that has support for MVME-5100)?
 
-I want to develop robotics software on my G4 using LinuxPPC 2000. Are there
-any sites or people out there who can make recommendations of what type of
-Basic Stamp I should use? Basically looking for some advice. I want my
-robot to be LinuxPPC powered.
+    Thanks,
 
-thanks,
-
-Mike
+    Paul Bade
+    JHU/APL
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
