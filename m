@@ -1,50 +1,54 @@
-Message-ID: <3764E007.E09568FA@switchboard.ericsson.se>
-Date: Mon, 14 Jun 1999 12:57:11 +0200
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-MIME-Version: 1.0
-To: Heinz Blaettner <heinz@bintec.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Help booting MBX through bootd
-References: <XFMail.990611232427.heinz@bintec.de>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199906142121.XAA04254@denx.muc.de>
+To: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Cc: linuxppc-dev@lists.linuxppc.org
+From: Wolfgang Denk <wd@denx.muc.de>
+Subject: Re: cache line size (was Help booting MBX through bootd) 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 14 Jun 1999 15:21:07 +0200."
+             <376501C2.FAF2B207@switchboard.ericsson.se>
+Date: Mon, 14 Jun 1999 23:21:47 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Heinz Blaettner wrote:
+In message <376501C2.FAF2B207@switchboard.ericsson.se> you write:
 > 
-> On 11-Jun-99 Wolfgang Denk wrote:
-> >> The fact that the cache magic in sysdeps/powerpc/memset.S in glibc
-> >> will make the dynamic linker crash in it's early startup phase is
-> >> quite a big problem... ;)
-> >> Also sysdeps/powerpc/dl-machine.c makes an assumption about the cache
-> >> line size, but that seems to be less fatal.
-> >
-> > Grrrghh... I see.
+> > But the cache line size differs even for different models of the  8xx
+> > family!
 > 
-> Maybe a thumb question ?
+> Are you sure?
 
-Not a dumb question at all, what's dumb is the person who hardcoded
-cache line sizes into userland code without even a comment...
+Well, yes. But not exact enough. I silently included the 82x0 in  the
+8xx family.
 
-> How does the wrong cache line size makes that the code corrupts ???
-> I will belive that the execution speed might not be optimal ?
+> I browsed my 821, 823, 850 and 860 manuals and I found out that Motorola
+> seem to have 2 different cpu cores.
+> 
+> budget   core: 850/823 - 8/8 TLBs, 2/1 Kbyte cache.
+> standard core: 860/821 - 32/32 TLBs, 4/4 Kbyte cache.
+> deluxe   core: 860P    - 32/32 TLBs, 16/8 Kbyte cache
+> 
+> All seem to have 4 words a 32 bits in each cache line.
 
-Glibc optimizes memset-to-zero using the dcbz instruction. Now when
-you shrink the cache line size to half (as is the case with MPC860)
-every other cache line will not be cleared, resulting in bad things
-happening.
+You are right.
 
-As for the dl-machine.c the dcbst instruction is used in a loop to
-ensure consistency after relocating (==copying) code. Here however
-the dependency on cache line size == 32 was at least documented...
+> What about the other cpus; 60x, 750/740?
 
-//Marcus
+32 bytes per cache line = 8 32-bit words
+
+> And the other embedded ones; 8240/8260?
+> 
+> 8 words a 32 bits in each cache line? 
+
+Yes, the 82x0 have 8 32-bit words in each line.
+
+Wolfgang Denk
+
 -- 
--------------------------------+------------------------------------
-        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
- Royal Institute of Technology |       Phone: +46 707 295404
-       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If you think the problem is bad now, just wait until we've solved it.
+                                                        Epstein's Law
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
