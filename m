@@ -1,43 +1,42 @@
-Message-ID: <39BEE4B4.4CC86250@mvista.com>
-Date: Tue, 12 Sep 2000 22:21:40 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Julia Elbert <jelbert@enerdyne.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: no scc_hdlc struct in commproc.h
-References: <67505026E29DD311A9AA00508B7315F31956EC@EXCHANGE>
+Date: Wed, 13 Sep 2000 10:16:22 +0200
+From: Erik Kunze <Erik.Kunze@philosys.de>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Access PCMCIA control registers
+Message-ID: <20000913101622.J10108@philos.philosys.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Julia Elbert wrote:
+Hi,
 
-> I did not find a scc_hdlc structure like scc_enet and scc_uart in
-> commproc.h.
+I'm running Linux 2.2.13 on a MPC860L based PPC-board from TQ-Systems
+(http://www.tqc.de/HTM_Files/TQM8xx_Serie.htm).
 
-I don't think anyone has submitted any source patches to provide it.
-There has been some discussion in the past......
+I must access the PCMCIA control space within the internal memorty map.
+The values I read from are not valid according to the docs and it doesn't
+recognise any write access.
 
-> .... Do I just need to make one similar to scc_enet and modify it
-> according to p.24-4 in the 860 book?
+I've put a trace in the m8xx_setup.c and it always shows the following
+values (bits):
 
-That would be great.  If you would like to submit it as a patch someday,
-that would be even greater :-).  What are you connecting at each end
-of the port?  NMSI, TDM, custom software?
+Sep  1 15:16:51 193 kernel: m8xx_pcmcia: PIPR  1111 1111 0000 0000 1111 1111 0000 00000
+Sep  1 15:16:51 193 kernel: m8xx_pcmcia: PSCR  1111 1100 0111 0000 0000 0000 0100 00000
+Sep  1 15:16:51 193 kernel: m8xx_pcmcia: PER   0000 0000 0000 0000 0001 1000 0000 00000
+Sep  1 15:16:51 193 kernel: m8xx_pcmcia: PGCRA 0000 0000 0000 0000 0000 0000 0000 00000
 
-Another part of your project will be writing a driver.  In the past,
-the accepted suggestion was to not modify the uart driver, as that
-is a _uart_ driver, not an SCC driver.  You can use that as a model
-to create, say, hdlc.c......Then just ensure you don't try to configure
-the SCC in both places (and there  may need to be a little knowledge
-about each one in every driver).
+How do I switch power on the PCMCIA-Slot.
 
-> Thank you in advance.
+Can you help please.
 
-Have fun!
+Thanx,
+--
+   Dipl.-Ing. Erik Kunze               Phone: +49 - 89 - 32 14 07 41
+   PHILOSYS Software GmbH              Fax:   +49 - 89 - 32 14 07 12
+   Edisonstr. 6                        Email: Erik.Kunze@philosys.de
+   D-85716 Unterschleissheim           WWW:   www.philosys.de/~kunze
 
-
-	-- Dan
+        PGP-Key: http://www.philosys.de/~kunze/public_key.txt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
