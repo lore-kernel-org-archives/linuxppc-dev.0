@@ -1,48 +1,38 @@
-Date: Thu, 6 Jun 2002 11:42:06 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: benh@kernel.crashing.org
-Cc: Dan Malek <dan@embeddededge.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More details on the telnet with CONFIG_PIN_TLB problems
-Message-ID: <20020606014206.GQ2630@zax>
-References: <20020605032241.GD2630@zax> <20020604193130.2384@mailhost.mipsys.com>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020604193130.2384@mailhost.mipsys.com>
+Message-ID: <15614.49971.298608.61998@argo.ozlabs.ibm.com>
+Date: Thu, 6 Jun 2002 12:04:35 +1000 (EST)
+To: Dan Malek <dan@embeddededge.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Tom Rini <trini@kernel.crashing.org>
+Subject: Re: Do we need tlbsx at finish_tlb_load?
+In-Reply-To: <3CFCFDB0.9010304@embeddededge.com>
+References: <20020530080434.GY16537@zax>
+	<20020603024344.GA6765@zax>
+	<3CFC0794.7020907@embeddededge.com>
+	<15612.47115.300768.766742@argo.ozlabs.ibm.com>
+	<3CFCFDB0.9010304@embeddededge.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jun 04, 2002 at 09:31:30PM +0200, Benjamin Herrenschmidt wrote:
->
-> >I've committed a patch to use 'sync' before changing the PID (to flush
-> >any loads/stores through the MMU before we change the context) and
-> >'isync' afterwards to flush the shadow TLBs.  I'm guessing that isync
-> >flushes both shadow TLBs, not just the ITLB, and that the missing
-> >infomation is a documentation error.  I've sent some email to the IBM
-> >PPC support people to check.
->
-> Sounds good. In my local tree, I also replaced the icbi's in
-> flush_dcache_icache & flush_instruction_cache with iccci's to
-> make sure we don't have stale aliases. I haven't yet checked
-> glibc for this though.
+Dan Malek writes:
 
-I heard back from the PPCSUPP people, and apparently isync (or any
-context sychronising instruction) does the right thing and flushes the
-shadow DTLB.
+> IMHO, a tlb miss handler design should simply emulate a hardware implementation,
+> and fetch the PTE entries into the TLB cache as quickly and efficiently as
+> possible.  You are typically loading valid, ready to use PTEs in a much higher
+> proportion to invalid ones, and I don't like the normal fast path cluttered
+> by the overhead of checking the special cases that require more work.
 
-flush_instruction_cache() is already an iccci on 4xx (iccci flushes
-the entire ICU).  flush_dcache_icache() should be fixed though.  We
-could either replace the entire icache flushing loop with a single
-iccci, or we could replace each icbi with two icbis, on the address
-and the address XORed with 0x00001000 (which is the only possible
-alias with 4kb pages).
+Well, simpler is better with a TLB miss handler, for sure.
 
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+However, in the context of 4xx, if we load an entry into the TLB with
+the valid bit clear, all that will happen is that the cpu will give us
+the same TLB miss exception again immediately.  So that doesn't get us
+anywhere at all.
+
+Paul.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
