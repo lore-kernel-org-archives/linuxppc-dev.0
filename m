@@ -1,44 +1,49 @@
-Date: Wed, 2 Oct 2002 11:03:21 +1000
-From: Erik Christiansen <erik@dd.nec.com.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Is it binutils-2.13.90.0.4 or is it me?
-Message-ID: <20021002010320.GA601@dd.nec.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB3FC@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: 8260 configuration
+Date: Tue, 1 Oct 2002 20:07:39 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   Following the mini-howto on penguinppc.org, I started with compilation
-of binutils.
+I am new to embedded linux but I had good experience in vxWorks.
+Right now I had a custom 8260 board with SMC1 connected to serial
+port and FCC3 for fast ethernet. I would like to try running linux on this
+custom board. I downloaded the latest monta vista preview kit 2.1
+as my base release.
 
-   ./configure --target=powerpc-linux finished in a happy frame of mind,
-but make spat the dummy, flagging errors on some rather elusive
-scripting:
+I had boot code ( with vxWorks and it is based on EST8260 bsp) in my custom
+board
+already. I decide to download the linux object via tftp. But I have the
+following
+questions:
 
-cd .. \
-  && CONFIG_FILES=po/Makefile.in:po/Make-in \
-     CONFIG_HEADERS= /bin/sh ./config.status
-creating po/Makefile.in
-make[3]: Leaving directory `/usr/local/src/binutils-2.13.90.0.4/bfd/po'
-make[3]: Entering directory `/usr/local/src/binutils-2.13.90.0.4/bfd/po'
-file=./`echo sv | sed 's,.*/,,'`.gmo \
-  && rm -f $file && PATH=../src:$PATH no -o $file sv.po
-/bin/sh: no: command not found
-make[3]: *** [sv.gmo] Error 127
-make[3]: Leaving directory `/usr/local/src/binutils-2.13.90.0.4/bfd/po'
-make[2]: *** [all-recursive] Error 1
-make[2]: Leaving directory `/usr/local/src/binutils-2.13.90.0.4/bfd'
-make[1]: *** [all-recursive-am] Error 2
-make[1]: Leaving directory `/usr/local/src/binutils-2.13.90.0.4/bfd'
-make: *** [all-bfd] Error 2
+1. Do I have to configure IMMR as 0xF0000_0000 or higher. The default
+configuration
+    in our boot is 0x0F00_0000 ? Is this a hard requirement or not ? If so,
+why can't linux
+    init code do so by writing to IMMR+0x101a8 ?
 
-   Now, grep -r 'no -o' /usr/local/src/binutils-2.13.90.0.4/bfd/po draws
-a blank, so before looking further for where it could be fixed, I
-thought I'd ask whether going back a version or two might provide
-smoother sailing?
+2. How to specify the start address where linux runs when I build the zImage
+?
 
-Regards,
-Erik
+3. When I make xconfig, what configuration I must have in order to run ? I
+certainly
+   do not need VGA/HARD DISK/PCI (this board does not have pci devices).
+
+4. Is there any good website/paper/documentation about linux for 8260
+platform.
+
+5. Can anyone access ftp.leo.org to get ELDK ? I can ping it but I cannot
+ftp it today.
+
+Thanks.
+
+Bo
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
