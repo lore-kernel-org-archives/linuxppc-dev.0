@@ -1,39 +1,26 @@
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093B11@mail1.mediatrix.com>
-From: Jean-Denis Boyer <jdboyer@mediatrix.com>
-To: "'Dan Malek'" <dan@embeddededge.com>
-Cc: Pavel Bartusek <pba@sysgo.de>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: MDIO clock speed computation
-Date: Tue, 23 Jul 2002 11:47:26 -0400
+Message-ID: <20020723170424.50300.qmail@web11507.mail.yahoo.com>
+Date: Tue, 23 Jul 2002 10:04:24 -0700 (PDT)
+From: Khai Trinh <kqtrinh@yahoo.com>
+Subject: file->private_data
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+Hi folks,
 
-> try this (since the problem is the divisor register truncation):
->
-> (((((bd->bi_intfreq + 500000) / 2500000) + 1) / 2 ) & 0x3F ) << 1;
+I am new to linux. So, my question is:
 
-This is bad :-(
-With a frequency of 46.5MHz, you get a MII clock of 2.58MHz.
+what is file->private_data? Does it set to the device
+structure by the kernel when you register your device
+with devfs_register()?
 
-Why adding 500000 (0.5MHz) to the internal clock in this computation?
-We usually do that to round up (or down) to the nearest integer.
-But we do NOT want to round down, or the divisor (MII_SPEED) will be too
-low.
-We want to round up to the nearest integer when divided by 2*2.5MHz.
+Thanks,
+--Khai
 
---------------------------------------------
- Jean-Denis Boyer, B.Eng., System Architect
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+Yahoo! Health - Feel better, live better
+http://health.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
