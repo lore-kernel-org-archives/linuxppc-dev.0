@@ -1,102 +1,48 @@
-Date: Sun, 3 Jan 1999 20:42:07 -0700 (MST)
+Date: Sun, 3 Jan 1999 22:50:45 -0700 (MST)
 From: Brad Midgley <brad@pht.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.2.0p4 ignores one of my drives
-Message-ID: <Pine.LNX.3.96LJ1.1b7.990103204043.696A-100000@cricket>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: drow@cs.cmu.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
+In-Reply-To: <199901030633.RAA09630@tango.anu.edu.au>
+Message-ID: <Pine.LNX.3.95.990103224624.29306A-100000@pacific.pht.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi...
+i have tried out the current vger kernel and i'd characterize it as "five
+times" as stable. meaning i can copy 125 megabytes from a jaz on the
+external bus to a drive on the internal bus before it crashes--with
+2.1.130 i could only copy about 25 megabytes before it crashed. the error
+when it crashes is always:
 
-after making the 2.1.130 (2 jan vger) -> 2.2.0pre4 (3 jan vger)
-upgrade, linux can't see one of my hard drives any more.
+Kernel panic: Inactive in scsi_request_queueable
+In swapper task - not syncing
+Rebooting in 180 seconds...
 
-this is a drive that mklinux has never been able to see so i always
-thought of linuxppc as being very robust in finding it and being able
-to access it. the drive contains my macos startup volume and macos
-never has trouble with it.
+is there anything i could do to help dig up this problem?
 
-i use a 7500 with a 604 upgrade, two internal hard drives, a slew of
-devices on the external bus.
-
-before:
-
-Jan  3 19:39:22 cricket kernel: mesh: target 1 synchronous at 5.0 MB/s
-Jan  3 19:39:22 cricket kernel:   Vendor: QUANTUM   Model: FIREBALL1280S     Rev: 630G
-Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi disk sdb at scsi0, channel 0, id 1, lun 0
-
-after:
-
-Jan  3 20:14:44 cricket kernel: mesh: target 1 aborted
-
+thanks
 brad
 
-fwiw, here are the full logs:
-
-Jan  3 19:39:22 cricket kernel: scsi0 : MESH
-Jan  3 19:39:22 cricket kernel: scsi1 : 53C94
-Jan  3 19:39:22 cricket kernel: scsi : 2 hosts.
-Jan  3 19:39:22 cricket kernel: mesh: target 0 synchronous at 5.0 MB/s
-Jan  3 19:39:22 cricket kernel:   Vendor: QUANTUM   Model: PD1225S           Rev: 3110
-Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
-Jan  3 19:39:22 cricket kernel: mesh: target 1 synchronous at 5.0 MB/s
-Jan  3 19:39:22 cricket kernel:   Vendor: QUANTUM   Model: FIREBALL1280S     Rev: 630G
-Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi disk sdb at scsi0, channel 0, id 1, lun 0
-Jan  3 19:39:22 cricket kernel: mesh: target 3 synchronous at 4.2 MB/s
-Jan  3 19:39:22 cricket kernel:   Vendor: SONY      Model: CD-ROM CDU-8005   Rev: 1.0j
-Jan  3 19:39:22 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi CD-ROM sr0 at scsi0, channel 0, id 3, lun 0
-Jan  3 19:39:22 cricket kernel:   Vendor: SEAGATE   Model: ST32550N          Rev: 0022
-Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi disk sdc at scsi1, channel 0, id 1, lun 0
-Jan  3 19:39:22 cricket kernel:   Vendor: iomega    Model: jaz 1GB           Rev: H.62
-Jan  3 19:39:22 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi removable disk sdd at scsi1, channel 0, id 2, lun 0
-Jan  3 19:39:22 cricket kernel:   Vendor: NEC       Model: CD-ROM DRIVE:464  Rev: 1.04
-Jan  3 19:39:22 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi CD-ROM sr1 at scsi1, channel 0, id 3, lun 0
-Jan  3 19:39:22 cricket kernel:   Vendor: RICOH     Model: MP6201S           Rev: 2.20
-Jan  3 19:39:22 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi CD-ROM sr2 at scsi1, channel 0, id 4, lun 0
-Jan  3 19:39:22 cricket kernel:   Vendor: UMAX      Model: Astra 1200S       Rev: V1.3
-Jan  3 19:39:22 cricket kernel:   Type:   Scanner                            ANSI SCSI revision: 02
-Jan  3 19:39:22 cricket kernel: Detected scsi generic sgh at scsi1, channel 0, id 5, lun 0
-Jan  3 19:39:22 cricket kernel: scsi : detected 3 SCSI cdroms 4 SCSI disks total.
-
-Jan  3 20:14:44 cricket kernel: scsi0 : MESH
-Jan  3 20:14:44 cricket kernel: scsi1 : 53C94
-Jan  3 20:14:44 cricket kernel: scsi : 2 hosts.
-Jan  3 20:14:44 cricket kernel: mesh: target 0 synchronous at 5.0 MB/s
-Jan  3 20:14:44 cricket kernel:   Vendor: QUANTUM   Model: PD1225S           Rev: 3110
-Jan  3 20:14:44 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 20:14:44 cricket kernel: Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
-Jan  3 20:14:44 cricket kernel: mesh: target 1 aborted
-Jan  3 20:14:44 cricket kernel: mesh: target 3 synchronous at 4.2 MB/s
-Jan  3 20:14:44 cricket kernel:   Vendor: SONY      Model: CD-ROM CDU-8005   Rev: 1.0j
-Jan  3 20:14:44 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
-Jan  3 20:14:44 cricket kernel: Detected scsi CD-ROM sr0 at scsi0, channel 0, id 3, lun 0
-Jan  3 20:14:44 cricket kernel:   Vendor: SEAGATE   Model: ST32550N          Rev: 0022
-Jan  3 20:14:44 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 20:14:44 cricket kernel: Detected scsi disk sdb at scsi1, channel 0, id 1, lun 0
-Jan  3 20:14:44 cricket kernel:   Vendor: iomega    Model: jaz 1GB           Rev: H.62
-Jan  3 20:14:44 cricket kernel:   Type:   Direct-Access                      ANSI SCSI revision: 02
-Jan  3 20:14:44 cricket kernel: Detected scsi removable disk sdc at scsi1, channel 0, id 2, lun 0
-Jan  3 20:14:44 cricket kernel:   Vendor: NEC       Model: CD-ROM DRIVE:464  Rev: 1.04
-Jan  3 20:14:44 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
-Jan  3 20:14:44 cricket kernel: Detected scsi CD-ROM sr1 at scsi1, channel 0, id 3, lun 0
-Jan  3 20:14:44 cricket kernel:   Vendor: RICOH     Model: MP6201S           Rev: 2.20
-Jan  3 20:14:44 cricket kernel:   Type:   CD-ROM                             ANSI SCSI revision: 02
-Jan  3 20:14:44 cricket kernel: Detected scsi CD-ROM sr2 at scsi1, channel 0, id 4, lun 0
-Jan  3 20:14:44 cricket kernel:   Vendor: UMAX      Model: Astra 1200S       Rev: V1.3
-Jan  3 20:14:44 cricket kernel:   Type:   Scanner                            ANSI SCSI revision: 02
-Jan  3 20:14:44 cricket kernel: Detected scsi generic sgg at scsi1, channel 0, id 5, lun 0
-Jan  3 20:14:44 cricket kernel: scsi : detected 3 SCSI cdroms 3 SCSI disks total.
+> 
+> Brad Midgley <brad@pht.com> wrote:
+> 
+> > what was the result of testing this patch? i see it isn't present at vger.
+> > but does it make scsi activity safer? does it need more testing? should i
+> > test it as-is?
+> 
+> [patch to drivers/scsi/sd.c snipped]
+> 
+> It turns out that patch isn't necessary - all that was needed is to do
+> spin_lock_irqsave(&io_request_lock, flags) before calling the scsi
+> done function in the mesh driver (and spin_unlock_irqrestore after).
+> That's done, in different forms, both in vger and Linus' 2.2.0-pre2
+> and later, so it should be OK now.
+> 
+> Paul.
+> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
