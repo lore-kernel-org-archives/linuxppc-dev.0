@@ -1,54 +1,41 @@
-Date: Sat, 18 May 2002 10:53:18 -0700
+Date: Sat, 18 May 2002 17:50:18 -0400 (EDT)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: Karsten Jeppesen <kj-list@jeppesens.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <tech@TOTALIMPACT.COM>
 Subject: Re: 2.4 kernel on briQ - Available
-From: Karsten Jeppesen <kj-list@jeppesens.com>
-To: Christopher Murtagh <christopher.murtagh@MCGILL.CA>,
-	<linuxppc-dev@lists.linuxppc.org>
-Cc: <tech@TOTALIMPACT.COM>
-Message-ID: <B90BE31D.131F6%kj-list@jeppesens.com>
-In-Reply-To: <Pine.LNX.4.33.0204092230310.25004-100000@blues.wcg.mcgill.ca>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+In-Reply-To: <B90BE31D.131F6%kj-list@jeppesens.com>
+Message-ID: <Pine.LNX.4.33.0205181749350.25826-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sorry for the long delay, but the Open Firmware had to be improved to allow
-the BriQ its full potential as a CHRP computer.
-
-Ben and I have been working very hard on this and successfully implemented
-the BriQ into the 2.4 kernel tree.
-
-I have uploaded all necessary software to
-<http://www.tornado.totalimpact.com> also called the tornado site from which
-it can be downloaded.
-
-It includes 3 parts in 2 files.
-
-- A preliminary manual (but they always are)
-- The flash prom updater and the system software builder.
-
-
-
-Sincerely,
-
-Dr. Karsten Jeppesen
-VP of Technology
-Total Impact
-<kj@totalimpact.com>     Phn: (805) 987-8704     Fax: (805) 484-9469
------------------------------------------------------------------------
-Confidence is the feeling you have before you understand the situation.
------------------------------------------------------------------------
-
-
-
-
+On Sat, 18 May 2002, Karsten Jeppesen wrote:
+>Sorry for the long delay, but the Open Firmware had to be improved to
+>allow the BriQ its full potential as a CHRP computer.
 >
-> Just wondering if anyone has gotten a 2.4 kernel to compile and run on a
-> briQ with 1GB of RAM?
->
-> I have 4 of them that I have been playing with and would like to go into
-> production very soon, and I'm just wondering if I should wait a little
-> longer or stick with a 2.2 kernel and only 512 MB for now.
+>Ben and I have been working very hard on this and successfully
+>implemented the BriQ into the 2.4 kernel tree.
+
+ Sweet. Thanks very much!
+
+Cheers,
+
+Chris
+
+
+--
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
