@@ -1,73 +1,66 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Wed, 12 Jan 2000 13:11:03 +0100 (CET)
-Subject: Antwort: Re: Antwort: 8xxrom wierdness, 2nd
-To: damm@kieraypc01.p.y.ki.era.ericsson.se
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-id: <0FO800BEL1WA5U@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_TtHWFpaG2I3U36+L6xzB9g)"
+Message-ID: <387C73BA.4956CF1@apus.co.at>
+Date: Wed, 12 Jan 2000 13:29:46 +0100
+From: "Reni Pachernegg" <rene.pachernegg@apus.co.at>
+MIME-Version: 1.0
+To: kd@flaga.is
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Building Glibc
+References: <OFC4189FBA.BDDFDE4A-ON00256864.003F955A@flaga.is>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+typing 'as -v' writes:
+GNU assembler version 2.9.1, using BFD version 2.9.1.0.25
+If this is what you mean, how can I get the version 2.9.5?
+Do I have to install a new compiler?
 
---Boundary_(ID_TtHWFpaG2I3U36+L6xzB9g)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+Regards
+	Rene
 
-Hi Magnus
-
-I see now why it doesn't crash anymore: 
-
-You've put the line check_fs(); (disk.c; 151) into comments. ;-)
-
-
-Cheers, Ruedi
-
-
-BTW: 
-
-- Do you have experience with the sandisk pc cards?
-
-- I formatted the pc card on a win95 box. That should work, right?
-  (At least the boot device list should mention something)
-
-____________________________________________________________________
-
-
-
-I just tried your 8xxrom. It seems to work a bit better than the Bossek original  ;-)
-
-It generates the following output:
-
-8xxROM 0.3.0
-
-compiletime options:
-board: ADS DRAM_25MHZ
-disk: DISK_ATA PCMCIABUG
-
-cpu: XPC860xxZPnnA3 at 25 MHz: 4Kbyte icache 4Kbyte dcache
-
-<warning: cpu core has silicon bugs, check the errata>
-
-board: ADS rev A - warning, read errata
-flash: 2 Mbytes, delay 90 ns
-dram: EDO, 4 Mbyte, 70 ns, OK
-pcmcia: 5V and 3V
-pcsr = 0x0070fe70
-
-ATA disk: 'SunDisk SDP'.
-
-Boot device list:Card Not Ready 0x0
-
-disk: No disk found.
-
->
-
-Do you have any ideas?
-
-Ruedi
-
---Boundary_(ID_TtHWFpaG2I3U36+L6xzB9g)--
+kd@flaga.is wrote:
+> 
+> And of course what binutils. That was a stumbling block for me, i.e. if it
+> is glibc 2.1.2. Buildin glibc 2.1.2 on ppc requieres binutils later than
+> version (or equal) 2.9.4.
+> I used 2.9.5 with success.
+> 
+> K.D.
+> 
+> 
+>                     Dan Dickey <ddickey@charter.net>
+>                     Sent by:                                To:
+>                     owner-linuxppc-embedded@lists.li        cc:
+>                     nuxppc.org                              Subject:     Re: Building Glibc
+> 
+> 
+>                     01/12/2000 02:54 AM
+> 
+> 
+> 
+> Marcus Sundberg wrote:
+> >
+> > "Rene Pachernegg" <rene.pachernegg@apus.co.at> writes:
+> >
+> > > Hello,
+> > >
+> > > When building the GNU libc on a cross-compiler (i686 --> PowerPc 603e)
+> > > I get the following linker error (current directory: elf):
+> > > ../libc_pic.a(init-first.os): In function '_dl_start':
+> > > init-first.os(.text+0xb8): multiple definition of '_dl_start'
+> > > dl-allobjs.os(.text0x0): first defined here Warning: size of symbol
+> > > '_dl_start' changed from 1576 to 16 in init-first.os collect2: ld
+> > > returned 1 exit status make[1]: *** [librtld.os] Error 1 make: ***
+> > > [elf/subdir_lib] Error2
+> > >
+> > > What can I do? Are there special linker/compiler options?
+> >
+> > What version of glibc are you using?
+> > How did you configure glibc?
+> > What make command line (s) did you use?
+> 
+> I'd also chime in with,
+> What version of the compiler are you using?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
