@@ -1,36 +1,49 @@
-To: Brad Boyer <flar@cegt201.bradley.edu>
-Cc: jpgarcia@execpc.com (Joseph Palani Garcia),
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: EM86 port for LinuxPPC?
-References: <199906102103.QAA15072@cegt201.bradley.edu>
-From: Andreas Bogk <andreas@andreas.org>
-Date: 11 Jun 1999 15:29:19 +0200
-In-Reply-To: Brad Boyer's message of "Thu, 10 Jun 1999 16:03:00 -0500 (CDT)"
-Message-ID: <m3emjivpao.fsf@soma.andreas.org>
+In-Reply-To: <199906110543.HAA00297@piglet.cpu.lu>
+Date: Fri, 11 Jun 1999 18:08:11 +0200
+To: linuxppc-dev@lists.linuxppc.org, mlan@cpu.lu
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Q: control is a C&T 65550?
+Message-Id: <19990611180811.016528@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Boyer <flar@cegt201.bradley.edu> writes:
+On Fri, Jun 11, 1999, Michel Lanners <mlan@cpu.lu> wrote:
 
-> our own x86 emulation library to replace it.  This isn't so much of a
-> problem, because there is already a basic x86 emulator in one of the
-> bootloaders, to be able to run BIOS code from PCI cards with x86 BIOS
-> chips on them.  I started looking at it, but then I went on to
+>Unfortunately, as to the registers that control the appearance of the
+>cursor (visible/not visible; its colors, etc...), I have no iddea where
+>exactly on RaDaCal they are, and how to identify them except by poking
+>at registers from a distance...
 
-And then there is bochs, which is a complete PC emulator, and which
-certainly could be modularized:
+This could probably be found by tracing Apple's control driver. There are
+a few video driver calls used to control the hw cursor, they are
+documented, and I know at least two ways of tracing that: one is the
+mac-on-linux emulator, and the other is Apple's serial-based 2 machines
+debugger using the ROM stub. (It should be downloadable on Apple site
+along with other ETO/MPW stuffs). This debugger can debug HW device
+drivers loaded at very early boot time or hardware interrupts, and so
+should have no problem tracing the control driver.
 
-http://www.bochs.org
+>What a shame! After all, the control hardware can be seen as a legacy
+>device, being surpassed by any and all current video chips... or might
+>Apple be hiding some really cool and powerful feature deep inside
+>control? I doubt it....
 
-It reaches the speed of a 2 MHz 486 on my 300 MHz G3, so it's not
-exactly a viable option for running x86 binaries on PPC.
-
-Andreas
+I don't think so. There is however some kind of "graphic accelerator" for
+control in MacOS, It's quite small, I don't know if it only provides
+better blit routines optimised for non-cachable space, or eventually
+hacks the MMU to make the fb space cahable (for bursts), I don't think
+there's anything like a blitter or a DMA engine in control.
 
 -- 
-Reality is two's complement. See:
-ftp://ftp.netcom.com/pub/hb/hbaker/hakmem/hacks.html#item154
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
