@@ -1,19 +1,15 @@
-Message-Id: <s891a235.023@mail.frequentis.com>
-Date: Fri, 28 Jan 2000 14:04:53 +0100
-From: "Ralf HECKHAUSEN" <RHeckhau@frequentis.com>
-To: <kd@flaga.is>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+From: kd@flaga.is
 Subject: Re: NFS problem
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: "Ralf HECKHAUSEN" <RHeckhau@frequentis.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF72F9218C.C672231C-ON00256874.0047BF75@flaga.is>
+Date: Fri, 28 Jan 2000 13:08:35 +0000
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am typing sync permanently on both sides. It shortens the time for the update, but still it is not direct.
-Ralf
-
->>> <kd@flaga.is> 01/28/00 02:08pm >>>
 
 Type sync on both your board and your nfs host before accessing the files
 on the board.
