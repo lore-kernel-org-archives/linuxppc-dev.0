@@ -1,54 +1,51 @@
-To: Ibon Gotxi Garcia <igotxi@jazzfree.com>
-Cc: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: kgdb and mpc8xx (again) 
-In-Reply-To: Message from Ibon Gotxi Garcia <igotxi@jazzfree.com>
-   of "10 Mar 2003 17:42:01 -0000." <1047318121.29389.44.camel@muse>
-Mime-Version: 1.0
+Message-ID: <3E6D34CB.62007516@att.net>
+Date: Mon, 10 Mar 2003 19:58:51 -0500
+From: Jeff Boyd <jeff.boyd@att.net>
+MIME-Version: 1.0
+To: Matt Porter <porter@cox.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 36 bit DMA address on IBM 440 PPC
+References: <200303101316.HAA25661@lists.linuxppc.org> <20030310071217.A22215@home.com>
 Content-Type: text/plain; charset=us-ascii
-Date: Tue, 11 Mar 2003 11:56:05 +1100
-Message-ID: <11666.1047344165@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 10 Mar 2003 17:42:01 +0000, Ibon Gotxi Garcia <igotxi@jazzfree.com> writes:
->1.- It's something related with some console output (don't know if
->enabling kgdb disables all the console output in SMC1).
+Is it to be 64 bit, or will the ref be more abstract and come from an
+/asm/ architecture specific include? It seems to me that in general it
+would be better to make things that hold or return or take a physical
+address reference it as such (e.g. phys_addr_t) rather than declare it
+to be some data size (e.g. unsigned long [long]), since data bus and
+address bus sizes are not necessarily in sync for size. Thus my vote for
+a separate architecture specific data type for physical address.
 
-It's a long time since I've done this (I've got a bdi2000 now :-) but enabling
-CONFIG_KGDB used to enable a call to breakpoint() in the early setup stuff -
-and your output from ppc-linux-gdb seems to confirm this. I am surprised that
-the board restarts itself - I suspect you are doing something with gdb e.g.
-like quitting it (which will send a command to "kill" the running process -
-which I think the kgdb stubs interpret as a restart).
-
-Run your ppc-linux-gdb, and when you get the gdb prompt after the breakpoint()
-line (I assume you get this), do a "continue" - the kernel should continue from
-where it stopped. This breakpoint() gives you an opportunity to do some things
-before the kernel gets into full swing (maybe set a breakpoint somewhere).
-
->2.- A watchdog timeout happens (Does the kgdb code resets the
->watchdog?).
-
-Nothing can "reset" the watchdog (at least on 8xx and 8260) - it can only be
-"set" or not - usually by the boot rom. Don't enable watchdog if you want
-to use kgdb, unless you patch your kernel appropriately (you have to poke
-the watchdog registers from within the kgdb serial code - I might be able
-to dredge up some old patches that do this, if you want - but if you can
-afford it, its better to buy a bdi2000).
-
->3.- Do I have to do a "set endian xxx" in ppc-linux-gdb ??? (to get that
->output i have done a "set endian big")
-
-You shouldn't need to if your cross gdb is built correctly (and it will be
-since you are using the denx stuff). Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing & Infra. Tech.      Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@csiro.au
-
-Hymod project: http://www.msa.cmst.csiro.au/projects/Hymod/
+Matt Porter wrote:
+>
+> On Mon, Mar 10, 2003 at 01:15:57PM +0000, jeff.boyd@att.net wrote:
+> >
+> > I am having a problem doing PCI/memory DMA on the IBM 440 PPC because it has a
+> > 36 bit DMA address to/from the PCI bus (3_8000_0000), but the resource
+> > structure uses an unsigned long (which is a 32 bit quantity for gcc) to
+> > store 'physical/bus/dma' address. There is a kludge to get proper page table
+> > entries, which is to remap the 32 bit quatities into their 36 bit counterparts
+> > and then sending them on to __ioremap which takes a (36 bit) physical address
+> > input. This of course is no help to DMA, which wants not cpu (virtual) address,
+> > but physical (translated) address. I have done a similar kludge, making the 32
+> > to 36 bit translation into a function which a driver doing DMA can use.
+> > However, it seems to me that the real answer here is to change the resource
+> > definition to use a phys_addr_t rather than an unsigned long, for start/end.
+> > Does anyone know if this change has been made anywhere, or if it is being
+> > planned?
+>
+> Maybe in 2.5/2.6. I was promised that resources would become 64-bit on
+> _all_ platforms in 2.5 but it hasn't happened yet.  I will have to beat
+> on the people that were working on that.  Of course, that's only one
+> piece required to properly handle I/O >4GB on a 32-bit platform.
+>
+> Regards,
+> --
+> Matt Porter
+> porter@cox.net
+> This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
