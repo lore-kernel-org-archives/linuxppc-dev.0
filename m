@@ -1,31 +1,47 @@
-Message-ID: <3BD9D47A.C8B06F10@mvista.com>
-Date: Fri, 26 Oct 2001 14:24:10 -0700
-From: Armin Kuster <akuster@mvista.com>
-MIME-Version: 1.0
-To: Mark Pilon <mpilon@midrivers.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: will the real ppc kernel please stand up
-References: <3BD9B30C.929F4747@midrivers.com>
-Content-Type: text/plain; charset=us-ascii
+To: sruel@oerlikon.ca
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: looking for a nice root filesystem image 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 26 Oct 2001 16:51:15 EDT."
+             <3BD9CCC3.1030704@oerlikon.ca>
+Date: Sat, 27 Oct 2001 00:18:52 +0200
+Message-Id: <20011026221857.DD65110CDB@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Pilon wrote:
+In message <3BD9CCC3.1030704@oerlikon.ca> you wrote:
 >
-> I know we've been over this before, but I was following some
-> advice to get the latest development kernel via pengiunppc.org, via
-> rsync:
->
-  linuxppc_2_4
+> Now i'm looking for a "a bit bigger" root filesystem with typical
+> utilities like: umount, ifconfig, etc. that could fit in around 8 MBytes
+> of Flash. Is there some image available somewhere on the Net?
 
+Have a look at "SELF" (our Simple Embedded  Linux  Framework");  it's
+based  on Busybox, provides a lot of tools including remote access to
+your target using FTP and telnet and fits in <840 kB of flash (kernel
+not included).
 
->                         linuxppc_2_4_devel
+You can get it even smaller when you "optimize" your  libs  (see  the
+running thread).
 
-Pulled this morning and Works fine today on Walnut
+Hope it helps.
 
+Umm, yes, before I forget it: you find SELF in
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
+There is even a short README ;-)
 
+Hope it helps,
 
--- armin
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+You could end up being oddly sad and full of a strange, diffuse  com-
+passion  which would lead you to believe that it might be a good idea
+to wipe out the whole human race and start again with amoebas.
+                                 - Terry Pratchett, _Guards! Guards!_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
