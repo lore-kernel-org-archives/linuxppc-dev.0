@@ -1,64 +1,49 @@
-Date: Fri, 21 Jan 2000 01:05:26 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Kevin Hendricks <khendricks@ivey.uwo.ca>,
-        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Gabriel Paubert <paubert@iram.es>,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-In-Reply-To: <00012023473100.01038@enzo.bigblue.local>
-Message-ID: <Pine.HPX.4.10.10001202357570.18916-100000@gra-ux1.iram.es>
+Date: Thu, 20 Jan 2000 19:35:48 -0500
+Content-Type: text/plain
+Cc: David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+References: <Pine.HPX.4.10.10001202357570.18916-100000@gra-ux1.iram.es>
+In-Reply-To: <Pine.HPX.4.10.10001202357570.18916-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <00012019473900.07177@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
+
+I don't want to be dense here but why two macros (one with eieio and one without
+eieio).  Can two processors in an SMP setting be trying to drive the same
+video card at the same time?   I didn't think that was possible.  I saw the
+eieio usage in the kernel versions and in aty128fb.c but thought that multiple
+processors might use those macros at the same time and multiple processors
+might have different fbdev drivers running in multi-head applications.  But I
+thought only one processor could drive a video hardware card.  Is this a bad
+assumption?
+
+So exactly what is the best way to write these macros for Xpmac?  Using
+the output constraints approach with eieio following it or is all of this
+overkill.
+
+>From the various posts (given the operand ordering done in the original post),
+here is what I have tried to piece together.
+
+asm volatile ("stwbrx %1,%2,%3; eieio" : "=m" (*(volatile unsigned
+*)(base_addr+regindex))       : "r" (regdata), "b" (regindex), "r" (base_addr));
+
+asm volatile ("lwbrx %0,%1,%2; eieio" : "=r"(val) : "b"(regindex),
+"r"(base_addr), "m" (*(volatile unsigned *)(base_addr+regindex)));
 
 
-On Thu, 20 Jan 2000, Franz Sirl wrote:
+Please let me know how to change the above so that I get it right this time.
 
-> It depends a little bit on the usage of the asm's if the memory (either
-> global or local) clobber is needed or not. If you use them for read/writes to HW
-> registers needing ordering (which is very likely here since we talk about
-> graphics HW), the compiler can only decide on the memory usage defined by the
-> clobbers/memory inputs on how to order the inlines (volatile has no effect on
-> this).
+Thanks,
 
-Do you mean that a volatile memory reference can be reordered wit an asm
-volatile statement ? I thought theat this was not possible.
-
->From GCC's documentation:
-
-   "You can prevent an `asm' instruction from being deleted, moved
-significantly, or combined, by writing the keyword `volatile' after the
-`asm'."
-
-You might disagree, but I consider that moving across a volatile memory
-reference is a _significant_ move, a very significant one.
-
-> Actually the load instructions need a memory input too:
->
-> asm volatile ("lwbrx %0,%1,%2" : "=r"(val) : "b"(regindex), "r"(base_addr),
-> "m" (*(volatile unsigned *)(base_addr+regindex)));
-
-Indeed, perhaps even more than the store since asm without output operands
-are actually assumed to have side effects.
-
->
-> And to insure ordering on processor level you still need the eieio (with a
-> memory clobber) as usual.
-
-
-The best thing to do is probably to put the eieio inside the asm
-statement, perhaps with 2 macros, one that includes the eieio and one that
-does not include it.
-
-Memory clobbers should be used extremely sparingly, I view them as the
-last resort when _nothing_ else would work. They are used far too often
-for my taste in the kernel, probably because they don't affect
-significantly machines with very few registers like Intel which have to
-permanently spill registers to memory or stack.
-
-	Gabriel.
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
