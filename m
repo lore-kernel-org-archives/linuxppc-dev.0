@@ -1,47 +1,38 @@
+Message-ID: <20000327024715.28938.qmail@www0l.netaddress.usa.net>
+Date: 26 Mar 00 19:47:15 MST
+From: Robert Shaw <rshawppc@netscape.net>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: PCI address collisions on 2.3.x kernels?
 Mime-Version: 1.0
-Message-Id: <v04220802b504667b9953@[192.168.0.2]>
-Date: Mon, 27 Mar 2000 02:38:10 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: "Michael A. Peters" <mpeters@mac.com>
-Subject: compiling glibc
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm having trouble compiling glibc-2.1.3
+I've been trying for over a week now to compile the 2.3.x series kernel on my
+B&W G3 machine. Everytime I get this annoying "PCI address collision" error
+right at the start (after the penguin graphic appears). It goes past this and
+behaves like it's booting ok, but then it tries to access the IDE buses and
+fails to find anything and I get the infamous "Rebooting in 180 seconds..."
+message.
 
-I grabbed the source from ftp.gnu.org and added the linux-threads and
-crypt add ons. I am building the source from a seperate directory.
+Can someone please help!! I'm stumped as to why this is happening. Has anyone
+else seen this? I don't think its a config problem, as I'm using the same
+settings I always have that work for the latest 2.2.15pre14 kernel in the
+stable tree.
 
-When I give the make command, it chews away for awhile- and the exits
-with parsing errors on line 379 and 382 of C-ctype.c (in
-glibc-2.1.3/locale/)
+I think if I can get rid of the "PCI address collision" errors, that my IDE
+bus will get recognized properly.
 
-Those lines are at the very end of that file, but I didn't see any
-obvious problem with that file.
+Any ideas? Please!
 
-I've looked and looked and looked in the FAQ included with the
-source, and I can't seem to find the problem.
+TIA.
 
-I'm running LinuxPPC 2000 Lite with all the development packages
-added (mostly from fswirl) including
 
-gcc-2.95.2-1i
-glibc-2.1.3-5a/glibc-devel-2.1.3-5a
-binutils-2.9.5.0.19-0a
+-Robert
+ mailto:rshaw@linuxppc.org
+ icq:45688313
+ http://www.linuxppc.org/BlueG3/
 
-My kernel is a 2.2.14 kernel from ftp.kernel.org with the 2.3.50-usb
-backport patch, rage128 patch, and mol patch before building.
-
-I've had no problems compiling other stuff, such as gcc-2.95.2 or
-binutils-2.95.2-29 from source. I just can't seem to get glibc-2.1.3
-to completely build, always giving the parse errors mentioned above
-when it quits.
-
-I would appreciate any tips- I'm trying to apply the Linux From
-Scratch project and, well, this is what I'm stuck on at the moment...
-
-Thanks, Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
