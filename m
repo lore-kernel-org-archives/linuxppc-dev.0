@@ -1,48 +1,42 @@
-Date: Sun, 18 May 2003 00:39:01 -0400
-From: Daniel Jacobowitz <drow@false.org>
-To: Mark Rakes <mrakes@vivato.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: e1000 patch for linuxppc_2_4_devel
-Message-ID: <20030518043901.GA11221@nevyn.them.org>
-References: <3048EFC8-87FB-11D7-B0B0-000393DB7C12@vivato.net>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+From: "XOL" <xol@mail.ru>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: How to change Bus speed for MPC8xx CPU 
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3048EFC8-87FB-11D7-B0B0-000393DB7C12@vivato.net>
+Date: Sun, 18 May 2003 12:47:51 +0400
+Reply-To: "XOL" <xol@mail.ru>
+Content-Type: text/plain; charset=koi8-r
+Message-Id: <E19HJpf-000JCU-00.xol-mail-ru@f25.mail.ru>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 16, 2003 at 05:04:54PM -0700, Mark Rakes wrote:
->
-> this patch fixes e1000 vlan hardware acceleration on ppc.
->
-> vlan tags weren't swapped.
->
-> thanks!
-> -Mark Rakes
->
->
-> diff -Nru a/drivers/net/e1000/e1000_main.c
-> b/drivers/net/e1000/e1000_main.c
-> --- a/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
-> +++ b/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
-> @@ -2062,7 +2062,8 @@
->  		skb->protocol = eth_type_trans(skb, netdev);
->  		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
->  			vlan_hwaccel_rx(skb, adapter->vlgrp,
-> -				le16_to_cpu(rx_desc->special &
-> E1000_RXD_SPC_VLAN_MASK));
-> +				le16_to_cpu(rx_desc->special &
-> +					    E1000_RXD_SPC_VLAN_MASK));
->  		} else {
->  			netif_rx(skb);
->  		}
+Hello.
+ I'm working with single board computer EP862 ( from EP ) with
+ motorola MPC 862 CPU.
+ If I run
+ cat /proc/cpuinfo
+ I get
+ cpu MHz : 100
+ bus MHz : 50
 
-That patch doesn't do anything but move a line break.  Is that really
-what you meant to do?
+ My board is runnig from external clock of 10M and boot monitor
+ has parameter called mulitplier which is equal to 10.
+ Boot monitor is RS232 terminal runnign before kernel boot.
+ It brings kernel image from tftp server.
 
---
-Daniel Jacobowitz
-MontaVista Software                         Debian GNU/Linux Developer
+ I need to slow bus speed to 40MHz and from 862 data sheet I see
+ what this can be done by writing to internal registers of clock
+ engine.
+
+ My question is how kernel deal with it. Where and how clock are configured
+ and how can I change it. Is it done on the boot time by kernel boot loader ?
+ How information present in /proc/cpuinfo is collected by kernel.
+ Maybe you can apoint me to the source in kernel where clock parameters
+ are configured. IMHO it should be somwhere in boot.
+ This can help me to find a way to change bus speed.
+
+ Thank you
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
