@@ -1,51 +1,35 @@
-Message-ID: <39AE8559.A4F12B6D@relog.ch>
-Date: Thu, 31 Aug 2000 18:18:33 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Dan Malek <dan@netx4.com>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Platform configuration (was: Re: CONFIG_PPC != Mac)
+Date: Thu, 31 Aug 2000 18:19:17 +0200
+Message-Id: <20000831161917.24142@mailhost.mipsys.com>
+In-Reply-To: <39AE80BD.D86B34DA@embeddededge.com>
+References: <39AE80BD.D86B34DA@embeddededge.com>
 MIME-Version: 1.0
-To: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm statement in include/asm not ansi conform
-References: <Pine.A41.4.21.0008311751210.17008-100000@c2.hrz.uni-giessen.de>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Marc Dietrich wrote:
+>Yeah, well, I am used to continually losing this battle.  Although
+>embedded PowerPC is likely to have _lots_ more installations than
+>the desktop, we'll just survive on the pieces left behind.  A pretty
+>running desktop gets lots of press coverage while code that acutally
+>runs the infrastructure of the world is unknown (I guess we are doing
+>a great job, then :-).
+>
+>I am just happy that I can finally build a kernel for the MPC8xx that
+>doesn't require I configure an ADB keyboard.  I also like building the
+>same sources for all of my Mac workstations and servers as well.
 
-> after some testing dri works now. On startup X says "dri enabled" and
-> glinfo shows many supported GL functions. But at least when running
-> "gears" for example, I get no accelaration at all. Still 60 frames per
-> second - same as with software rendering.
+In the current bk, I made sure you can compile without ADB (even for
+pmac), without the backlight stuffs, etc...
 
-For me, gears gives even less FPS on startup with DRI than with software
-rendering ;) What happens when you maximize the window?
+>I would also like to see us spend a little more time trying to
+>stabilize 2.4 instead of trying to solve elaborate configuration and
+>boot schemes.  That is what 2.5 is for.
 
-A few possibilities to find out if you are really using direct rendering:
+Agreed.
 
-- set LIBGL_DEBUG=verbose
-- run a program with lots of textured triangles (Quake, fire, ...)
-- test, compare, test, ...
-
-
-> I also have a P-III/500 box with Rage128 (AGP) witch produces 400 frames!
-
-DRI currently only runs in PIO mode as we don't have any GART driver yet.
-
-Anyway, this is a nice preview of what we could expect with AGP GART :)
-
-
-> Glxinfo says something like "RGB error" and breaks.
-
-Hmm, never tried it.
-
-
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
