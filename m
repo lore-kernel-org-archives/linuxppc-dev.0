@@ -1,28 +1,42 @@
-Date: Mon, 24 May 1999 01:11:03 -0600 (MDT)
-From: Brad Midgley <brad@turbolinux.com>
-Reply-To: Brad Midgley <brad@turbolinux.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: CDROM driver flakiness
-Message-ID: <Pine.LNX.3.95.990519114826.18017A-100000@pacific.pht.com>
+Message-Id: <199905240851.KAA03667@wanadoo.fr>
+Date: Mon, 24 May 1999 10:52:04 +0200
+From: Lucas Vergnettes <lucas@promac.org>
+Subject: bttv working for PPC!
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org,
+        linux-pmac@samba.anu.edu.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; Charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hi-
+Hi to all!
 
-i have seen a problem with the cdrom driver in linux. under linux, reading
-a file from a cd dies with an i/o error but under macos the file can be
-retrieved. why? what is linux doing differently? does macos retry the read
-more times? 
+bttv, the driver for Bt848 based TV Cards is now working on linux/ppc!
 
-i've seen this with a 7500's 4x apple cdrom drive and both regular and
-cd-r disks.
+For the version 0.6.4, just apply this to driver/bttv.c
 
-Brad
-brad@pht.com | http://www.pht.com/~brad/
+ 3997c3997
+<   unsigned char command;
+---
+>   unsigned char command; 
+3999c3999,4000
+< 
+---
+>        u_int32_t cmd;
+>        
 
+The problem, now, is that I can't manage to compile and use a tv visualisation
+application...
+If anyone has clues about this, please help!
+
+Thanks 
+Lucas
+
+-- 
+Lucas Vergnettes  -- Osteopathy Student --  mailto:lucas@promac.org
+LinuxPPC, Ostéopathie et astuces telnet sur http://lucas.promac.org
+EMACS : Escape-Meta-Alt-Control-Shift
 
 
 
