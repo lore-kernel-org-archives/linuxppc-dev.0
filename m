@@ -1,51 +1,47 @@
-Date: Tue, 8 May 2001 13:59:00 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Brian Kuschak <brian.kuschak@skystream.com>
-Cc: "'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: dcache BUG()
-In-Reply-To: <B25E2E5A003CD311B61E00902778AF2A02044644@SERVER1>
-Message-ID: <Pine.HPX.4.10.10105081334180.29518-100000@gra-ux1.iram.es>
+Message-ID: <3AF7F4A4.2ADC6059@raleigh.ibm.com>
+Date: Tue, 08 May 2001 09:29:08 -0400
+From: Ralph Blach <rcblach@raleigh.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: null console
+Content-Type: multipart/mixed;
+ boundary="------------D57500100001B07F306D206F"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 7 May 2001, Brian Kuschak wrote:
+This is a multi-part message in MIME format.
+--------------D57500100001B07F306D206F
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-> I've been running with Gabriel's suggested patch for about an hour now, and
-> I still see the problem.  It hasn't generated an Oops in dcache.h yet, but I
-> do still see the 'de_put: entry net already free!' messages.
+Want to create a linux port with a null console.  This is for a box with
+one serial port that will be used
+for a ppp connection.  How is this done?
 
-I think that we agree that my patch fixes a real bug, but that, sadly, it
-is _not_ the bug you are seeing. Given the "prevent interrups in atomic
-operation" patch that apparently fixes the bug, I looked for possibilities
-of stale reservations. Now your bug is even more puzzling...
+Chip
+--------------D57500100001B07F306D206F
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="rcblach.vcf"
+Content-Description: Card for Ralph Blach
+Content-Disposition: attachment;
+ filename="rcblach.vcf"
+Content-Transfer-Encoding: 7bit
 
-BTW, I have finally found a scenario on UP which would fail even if stwcx.
-checked for the address. It is somewhat contrived:
+begin:vcard
+n:Blach;Ralph
+tel;work:919-543-1207
+x-mozilla-html:TRUE
+url:www.ibm.com
+org:IBM MicroElectronics
+adr:;;3039 Cornwallis		;RTP;NC;27709;USA
+version:2.1
+email;internet:rcblach@raleigh.ibm.com
+x-mozilla-cpt:;15936
+fn:Ralph Blach
+end:vcard
 
-1) sem=-1, down(sem) interrrupted betwen lwarx and stwcx.,
-   reservation set, would set sem to -2
-2) interrupt 1 does up(sem), sem=0, another interrupt becomes pending,
-   while this handler is executed
-3) interrupt 2 does down_trylock(sem), fails and returns,
-   dangling reservation.
-4) continues with the stwcx. of step 1) stores -2, missing the up(sem),
-   goes to sleep. Anybody trying down(sem) probably goes zombie...
-
-I'm not sure that such a made-up example might actually happen in the
-kernel. You need a heavily contended semaphore which interrupts or
-bottom-halves also try to lock. But that's not the point, it just shows
-that checking the address in stwcx. does not actually help much.
-
-> I'll let it run overnight to see if the oops occurs.
-
-Can we get an oops trace if you hit it ? For now I'm puzzled.
-
-	Regards,
-	Gabriel.
+--------------D57500100001B07F306D206F--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
