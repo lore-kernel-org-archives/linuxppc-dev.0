@@ -1,29 +1,91 @@
-Message-ID: <3D08E0CD.4040806@pacbell.net>
-Date: Thu, 13 Jun 2002 11:13:33 -0700
-From: Armin <akuster@pacbell.net>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: First cut at large page support on 40x
-References: <20020531042153.GD16537@zax> <3CFC0D3F.9030901@embeddededge.com> <20020604035947.GH2762@zax> <3CFCFC20.80101@embeddededge.com> <15614.37065.549142.218906@argo.ozlabs.ibm.com> <3CFEE9A3.5060300@embeddededge.com> <15614.63160.272890.683586@argo.ozlabs.ibm.com> <3CFF1624.2070808@embeddededge.com> <20020612035203.GQ25800@zax> <3D06E702.4000709@embeddededge.com> <20020612064344.GT25800@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com>
+Date: Thu, 13 Jun 2002 12:28:29 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Eugene Surovegin <ebs@innocent.com>
+Subject: [PATCH] pci_alloc_consistent in an interrupt context
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="=====================_263935140==_"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson
->
-> Heh, so instead we got a half-assed re-implementation (with a whole
-> bunch of extraneous pointless crap) in the form of the OCP layer.
->
+--=====================_263935140==_
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 
-Crap...this pointless crap has made it easier to add driver support to
-new IBM 4xx processors. And the Idea goes beyond PPC :)  Cosmetic
-changes don't help make things not half-assed and mature.  Flushing the
-idea, API's and usage does.
+Hi!
 
-  armin
+This is the patch which allows pci_alloc_consistent (and consistent_alloc)
+to be called from an interrupt context.
+It's the required behavior according to Documentation/DMA-mapping.txt.
+
+Thanks,
+
+  Eugene Surovegin <mailto:ebs@innocent.com>
+--=====================_263935140==_
+Content-Type: application/octet-stream; name="consistent_alloc.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="consistent_alloc.patch"
+
+ZGlmZiAtdXIgYS9hcmNoL3BwYy9rZXJuZWwvcGNpLWRtYS5jIGIvYXJjaC9wcGMva2VybmVsL3Bj
+aS1kbWEuYwotLS0gYS9hcmNoL3BwYy9rZXJuZWwvcGNpLWRtYS5jCVNhdCBKYW4gMTkgMDA6MDc6
+MTQgMjAwMgorKysgYi9hcmNoL3BwYy9rZXJuZWwvcGNpLWRtYS5jCVdlZCBKdW4gMTIgMTk6MDY6
+MTIgMjAwMgpAQCAtMzMsNyArMzMsOSBAQAogCiAJaWYgKHJldCAhPSBOVUxMKSB7CiAJCW1lbXNl
+dChyZXQsIDAsIHNpemUpOworI2lmbmRlZiBDT05GSUdfTk9UX0NPSEVSRU5UX0NBQ0hFCiAJCSpk
+bWFfaGFuZGxlID0gdmlydF90b19idXMocmV0KTsKKyNlbmRpZgogCX0KIAlyZXR1cm4gcmV0Owog
+fQpkaWZmIC11ciBhL2FyY2gvcHBjL21tL2NhY2hlbWFwLmMgYi9hcmNoL3BwYy9tbS9jYWNoZW1h
+cC5jCi0tLSBhL2FyY2gvcHBjL21tL2NhY2hlbWFwLmMJV2VkIEp1biAxMiAyMDo0MDowMyAyMDAy
+CisrKyBiL2FyY2gvcHBjL21tL2NhY2hlbWFwLmMJVGh1IEp1biAxMyAxMTo0Nzo0MSAyMDAyCkBA
+IC02OSwxMCArNjksNyBAQAogCXBoeXNfYWRkcl90IHBhOwogCXN0cnVjdCB2bV9zdHJ1Y3QgKmFy
+ZWE7CiAJdm9pZAkgKnJldDsKLQotCWlmIChpbl9pbnRlcnJ1cHQoKSkKLQkJQlVHKCk7Ci0KKwkK
+IAkvKiBPbmx5IGFsbG9jYXRlIHBhZ2Ugc2l6ZSBhcmVhcy4KIAkqLwogCXNpemUgPSBQQUdFX0FM
+SUdOKHNpemUpOwpAQCAtOTIsNyArODksNyBAQAogCiAJLyogQWxsb2NhdGUgc29tZSBjb21tb24g
+dmlydHVhbCBzcGFjZSB0byBtYXAgdGhlIG5ldyBwYWdlcy4KIAkqLwotCWFyZWEgPSBnZXRfdm1f
+YXJlYShzaXplLCBWTV9BTExPQyk7CisJYXJlYSA9IGdldF92bV9hcmVhKHNpemUsIFZNX0FMTE9D
+LCBHRlBfQVRPTUlDKTsKIAlpZiAoYXJlYSA9PSAwKSB7CiAJCWZyZWVfcGFnZXMocGFnZSwgb3Jk
+ZXIpOwogCQlyZXR1cm4gTlVMTDsKQEAgLTEyMyw4ICsxMTksNiBAQAogICovCiB2b2lkIGNvbnNp
+c3RlbnRfZnJlZSh2b2lkICp2YWRkcikKIHsKLQlpZiAoaW5faW50ZXJydXB0KCkpCi0JCUJVRygp
+OwogCXZmcmVlKHZhZGRyKTsKIH0KIApkaWZmIC11ciBhL2FyY2gvcHBjL21tL3BndGFibGUuYyBi
+L2FyY2gvcHBjL21tL3BndGFibGUuYwotLS0gYS9hcmNoL3BwYy9tbS9wZ3RhYmxlLmMJU2F0IEFw
+ciAgNiAxMzowNjo0OSAyMDAyCisrKyBiL2FyY2gvcHBjL21tL3BndGFibGUuYwlUaHUgSnVuIDEz
+IDExOjQxOjAyIDIwMDIKQEAgLTE3Miw3ICsxNzIsNyBAQAogCQogCWlmIChtZW1faW5pdF9kb25l
+KSB7CiAJCXN0cnVjdCB2bV9zdHJ1Y3QgKmFyZWE7Ci0JCWFyZWEgPSBnZXRfdm1fYXJlYShzaXpl
+LCBWTV9JT1JFTUFQKTsKKwkJYXJlYSA9IGdldF92bV9hcmVhKHNpemUsIFZNX0lPUkVNQVAsIEdG
+UF9LRVJORUwpOwogCQlpZiAoYXJlYSA9PSAwKQogCQkJcmV0dXJuIE5VTEw7CiAJCXYgPSBWTUFM
+TE9DX1ZNQUREUihhcmVhLT5hZGRyKTsKZGlmZiAtdXIgYS9kcml2ZXJzL3BjbWNpYS9oZDY0NDY1
+X3NzLmMgYi9kcml2ZXJzL3BjbWNpYS9oZDY0NDY1X3NzLmMKLS0tIGEvZHJpdmVycy9wY21jaWEv
+aGQ2NDQ2NV9zcy5jCVdlZCBKdWwgMTEgMDc6Mjc6MzQgMjAwMQorKysgYi9kcml2ZXJzL3BjbWNp
+YS9oZDY0NDY1X3NzLmMJVGh1IEp1biAxMyAxMTo0NjowMCAyMDAyCkBAIC05MTgsNyArOTE4LDcg
+QEAKIAlmb3IgKGk9MCA7IGk8TUFYX1dJTiA7IGkrKykKIAkgICAgc3AtPm1lbV9tYXBzW2ldLm1h
+cCA9IGk7CiAJCi0JaWYgKChzcC0+aW9fdm1hID0gZ2V0X3ZtX2FyZWEoSFNfSU9fTUFQX1NJWkUs
+IFZNX0lPUkVNQVApKSA9PSAwKQorCWlmICgoc3AtPmlvX3ZtYSA9IGdldF92bV9hcmVhKEhTX0lP
+X01BUF9TSVpFLCBWTV9JT1JFTUFQLCBHRlBfS0VSTkVMKSkgPT0gMCkKIAkgICAgcmV0dXJuIC1F
+Tk9NRU07CiAKIAloZDY0NDY1X3JlZ2lzdGVyX2lycV9kZW11eChzcC0+aXJxLCBoc19pcnFfZGVt
+dXgsIHNwKTsKZGlmZiAtdXIgYS9pbmNsdWRlL2xpbnV4L3ZtYWxsb2MuaCBiL2luY2x1ZGUvbGlu
+dXgvdm1hbGxvYy5oCi0tLSBhL2luY2x1ZGUvbGludXgvdm1hbGxvYy5oCUZyaSBKYW4gIDUgMjM6
+MjY6MTkgMjAwMQorKysgYi9pbmNsdWRlL2xpbnV4L3ZtYWxsb2MuaAlUaHUgSnVuIDEzIDExOjQx
+OjAyIDIwMDIKQEAgLTE4LDcgKzE4LDggQEAKIAlzdHJ1Y3Qgdm1fc3RydWN0ICogbmV4dDsKIH07
+CiAKLWV4dGVybiBzdHJ1Y3Qgdm1fc3RydWN0ICogZ2V0X3ZtX2FyZWEgKHVuc2lnbmVkIGxvbmcg
+c2l6ZSwgdW5zaWduZWQgbG9uZyBmbGFncyk7CitleHRlcm4gc3RydWN0IHZtX3N0cnVjdCAqIGdl
+dF92bV9hcmVhICh1bnNpZ25lZCBsb25nIHNpemUsIHVuc2lnbmVkIGxvbmcgZmxhZ3MsCisJCQkJ
+ICAgICAgIGludCBnZnBfbWFzayk7CiBleHRlcm4gdm9pZCB2ZnJlZSh2b2lkICogYWRkcik7CiBl
+eHRlcm4gdm9pZCAqIF9fdm1hbGxvYyAodW5zaWduZWQgbG9uZyBzaXplLCBpbnQgZ2ZwX21hc2ss
+IHBncHJvdF90IHByb3QpOwogZXh0ZXJuIGxvbmcgdnJlYWQoY2hhciAqYnVmLCBjaGFyICphZGRy
+LCB1bnNpZ25lZCBsb25nIGNvdW50KTsKZGlmZiAtdXIgYS9tbS92bWFsbG9jLmMgYi9tbS92bWFs
+bG9jLmMKLS0tIGEvbW0vdm1hbGxvYy5jCVRodSBKYW4gMTAgMDU6Mjg6MzUgMjAwMgorKysgYi9t
+bS92bWFsbG9jLmMJVGh1IEp1biAxMyAxMTo0MTowMyAyMDAyCkBAIC0xNjgsMTIgKzE2OCwxMiBA
+QAogCXJldHVybiByZXQ7CiB9CiAKLXN0cnVjdCB2bV9zdHJ1Y3QgKiBnZXRfdm1fYXJlYSh1bnNp
+Z25lZCBsb25nIHNpemUsIHVuc2lnbmVkIGxvbmcgZmxhZ3MpCitzdHJ1Y3Qgdm1fc3RydWN0ICog
+Z2V0X3ZtX2FyZWEodW5zaWduZWQgbG9uZyBzaXplLCB1bnNpZ25lZCBsb25nIGZsYWdzLCBpbnQg
+Z2ZwX21hc2spCiB7CiAJdW5zaWduZWQgbG9uZyBhZGRyOwogCXN0cnVjdCB2bV9zdHJ1Y3QgKipw
+LCAqdG1wLCAqYXJlYTsKIAotCWFyZWEgPSAoc3RydWN0IHZtX3N0cnVjdCAqKSBrbWFsbG9jKHNp
+emVvZigqYXJlYSksIEdGUF9LRVJORUwpOworCWFyZWEgPSAoc3RydWN0IHZtX3N0cnVjdCAqKSBr
+bWFsbG9jKHNpemVvZigqYXJlYSksIGdmcF9tYXNrKTsKIAlpZiAoIWFyZWEpCiAJCXJldHVybiBO
+VUxMOwogCXNpemUgKz0gUEFHRV9TSVpFOwpAQCAtMjM2LDcgKzIzNiw3IEBACiAJCUJVRygpOwog
+CQlyZXR1cm4gTlVMTDsKIAl9Ci0JYXJlYSA9IGdldF92bV9hcmVhKHNpemUsIFZNX0FMTE9DKTsK
+KwlhcmVhID0gZ2V0X3ZtX2FyZWEoc2l6ZSwgVk1fQUxMT0MsIEdGUF9LRVJORUwpOwogCWlmICgh
+YXJlYSkKIAkJcmV0dXJuIE5VTEw7CiAJYWRkciA9IGFyZWEtPmFkZHI7Cg==
+--=====================_263935140==_--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
