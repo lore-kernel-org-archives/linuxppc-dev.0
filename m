@@ -1,48 +1,57 @@
-Message-ID: <3D5BF80A.8296F80@esteem.com>
-Date: Thu, 15 Aug 2002 11:50:50 -0700
-From: Conn Clark <clark@esteem.com>
-MIME-Version: 1.0
-To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8xx Low Power Mode question
+Date: Fri, 16 Aug 2002 11:17:38 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Compile fix for 4xx wih non-cascaded UICs
+Message-ID: <20020816011738.GD8610@zax>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+Tom, can you apply this (unless the bk tree has been fixed).  It looks
+like a recent fix for casceded UIC machines broke compile for
+non-cascaded ones (UIC0_UIC1NC is not defined).
+
+diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_pic.c linux-grinch/arch/ppc/kernel/ppc4xx_pic.c
+--- /home/dgibson/kernel/linuxppc_2_4_devel/arch/ppc/kernel/ppc4xx_pic.c	2002-08-16 10:21:17.000000000 +1000
++++ linux-grinch/arch/ppc/kernel/ppc4xx_pic.c	2002-08-16 10:53:58.000000000 +1000
+@@ -231,12 +231,14 @@
+ 		mtdcr(DCRN_UIC_ER(UIC0), ppc_cached_irq_mask[word]);
+ 		mtdcr(DCRN_UIC_SR(UIC0), (1 << (31 - bit)));
+ 		break;
++#if NR_UICS > 1
+ 	case 1:
+ 		mtdcr(DCRN_UIC_ER(UIC1), ppc_cached_irq_mask[word]);
+ 		mtdcr(DCRN_UIC_SR(UIC1), (1 << (31 - bit)));
+ 		/* ACK cascaded interrupt in UIC0 */
+ 		mtdcr(DCRN_UIC_SR(UIC0), (1 << (31 - UIC0_UIC1NC)));
+ 		break;
++#endif
+ 	}
+ }
+
+@@ -268,11 +270,13 @@
+ 		case 0:
+ 			mtdcr(DCRN_UIC_SR(UIC0), 1 << (31 - bit));
+ 			break;
++#if NR_UICS > 1
+ 		case 1:
+ 			mtdcr(DCRN_UIC_SR(UIC1), 1 << (31 - bit));
+ 			/* ACK cascaded interrupt in UIC0 */
+ 			mtdcr(DCRN_UIC_SR(UIC0), (1 << (31 - UIC0_UIC1NC)));
+ 			break;
++#endif
+ 		}
+ 	}
 
 
-	I have a few questions on Low Power Modes on the MPC850/860/8xx.
-My User Manual states the to switch to Normal Low Mode (the one that just
-reduces core clock speed) the folowing must be true.
 
-1.  The MSR register's POW bit must be set.
-2.  The PLPRCR register's CSRC bit must be set.
-3.  The PLPRCR register's TMIST bit must be cleared.
-
-My User Manual states that when the SCCR register's PRQEN bit is set
-that when an interrupt occurs that the process or will return to Normal
-High Mode ( regualr fast core clock speed ).
-
-	My first question is this, which of the 3 bits listed above
-changes to accomplish this? The User Manual does not state this.
-
-	The first person who answers this question correctly wins a case
-of imaginary beer to drink with their imaginary friends.
-
-Thanks
-
-	Conn
 --
-
-*****************************************************************
-  If you live at home long enough, your parents will move out.
- (Warning they may try to sell their house out from under you.)
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
