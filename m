@@ -1,71 +1,69 @@
-Date: Mon, 10 Jul 2000 22:57:21 -0700
+Date: Mon, 10 Jul 2000 23:12:51 -0700
 From: Matt Porter <mmporter@home.com>
 To: Gabriel Paubert <paubert@iram.es>
 Cc: Michael Lundkvist <ml@epact.se>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Going from 2.2.12 to 2.2.17pre10
-Message-ID: <20000710225720.A23538@cx258813-a.chnd1.az.home.com>
-References: <20000709222943.A19611@cx258813-a.chnd1.az.home.com> <Pine.HPX.4.10.10007101412580.9548-100000@gra-ux1.iram.es>
+Message-ID: <20000710231251.B23538@cx258813-a.chnd1.az.home.com>
+References: <20000708162915.A11060@cx258813-a.chnd1.az.home.com> <Pine.HPX.4.10.10007101358110.9548-100000@gra-ux1.iram.es>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.HPX.4.10.10007101412580.9548-100000@gra-ux1.iram.es>; from paubert@iram.es on Mon, Jul 10, 2000 at 02:25:19PM +0200
+In-Reply-To: <Pine.HPX.4.10.10007101358110.9548-100000@gra-ux1.iram.es>; from paubert@iram.es on Mon, Jul 10, 2000 at 02:12:08PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 10, 2000 at 02:25:19PM +0200, Gabriel Paubert wrote:
+On Mon, Jul 10, 2000 at 02:12:08PM +0200, Gabriel Paubert wrote:
 >
-> On Sun, 9 Jul 2000, Matt Porter wrote:
 >
-> > > Getting those changes into PPCBUG would be great.
+> On Sat, 8 Jul 2000, Matt Porter wrote:
+>
 > >
-> > All you need is a big customer of MCG's to push them to do it.  Money
-> > is a powerful motivator.
->
-> Hopeless for me...
-
-Yeah, it's a tough spot since their aren't really any serious competitors
-for the PPC VMEbus business.  CPCI is another story though.
-
-> > > Would it be possible to make one image for 2300 cards and one for 2400
-> > > cards or does memory size affect the residual data?
+> > On Thu, Jul 06, 2000 at 07:32:49PM +0200, Michael Lundkvist wrote:
+> > >
+> > > Gabriel Paubert <paubert@iram.es> writes:
+> > > > Under 2.2.12 dd if=/dev/hda of=xxx bs=512 count=1 and see what comes out.
+> > > > Can PPCBUG actually boot from these disks ?
 > >
-> > See above, you could make a lowest common denominator version of the
-> > data and lose some memory.  Honestly, I'd just hack the kernel...PPCBUG
-> > and residual data are a horrible burden.  Look through prep_* and
-> > mm/init.c for every place residual data is used and hardcode for your
-> > MCG boards.  In init.c, prep_find_end_of_memory() can detect a Raven
-> > bridge then use the documented board registers to identify memory size
-> > (see online user manual).  A 2400 puts memory size across the I2C bus
-> > in a EEPROM containing all sorts of useful information.  Bug MCG to get
-> > specs on the layout of these VPD records.
+> > PPCBUG expects a little endian partition table, so no.
 >
-> I disagree, the residual data of the device/property tree of OF are great
-> things. I want to boot _exactly_ the same kernel on machines with
-> different amounts of memory... A lot of the initizalization should be
-> moved to early boot or to a first stage bootloader (before uncompressing
-> the kernel) and then the kernel should receive important information in a
-> predigested form.
+> Ok, my queston was rather: does PPCBUG have support for generic IDE
+> interfaces or not ?
 
-That would be fine in a perfect world, but the reality is that MCG
-continually puts out buggy firmware with holes in the residual data.
-Since residual data is a dead standard, they are patching in new packet
-types as new board features are added to make so Frankensteinian
-PReP residual data standard.  Again, the only useful thing being
-garnered from residual data for the PReP port is memory size.  This
-is almost as easily gathered from the board registers on boards
-< MVME2400 and from the VPD on those boards >= MVME2400.
+Do you mean standard PCI IDE interfaces as in the PCI spec addon?  I'm
+pretty sure that the init code doesn't put the onboard controllers in
+native mode so the Ramix controller on the bus will need massaged to
+get into native mode so it can relocated safely in I/O space.  So,
+the answer is no.
 
-Back to original point, I'm not against using a residual data or
-device tree if it doesn't have to have dozens of fixups applied.
-I just don't see that coming out of the proprietary hardware/software
-houses to use their broken data...
+> > I really have to recommend against that.  Once Ramix sees the icky PPCBUG
+> > code they will hate as much as I do.  I gave well documented changes to
+> > the PPCBUG guys so that BUGBOOT wasn't needed to boot a kernel from
+> > FLASH on a PowerPlus board but they haven't incorporated those changes
+> > after a full year now. :)
+>
+> The other change I would like to see in PPCBUG is that it complies with
+> the documentatioon that claims that its services will work when the MMU is
+> enabled. At least on 603e it does not work since it sets the MSR IP bit
+> and then silently crashes in the TLB handlers. I doubt that this would
+> work on a 604 or a 750 either (I did not test it), but if you get an ISI
+> or DSI exception, you are probably screwed too.
 
-> For the VPD records, the information in the MVME2400 programmer's guide
-> (mvme2400apg.pdf) looks sufficient (page 1-27 and appendix B).
+:)
+> If people volunteer to write a new MVME bootrom from scratch (or a working
+> OF), I shall be the first in line to get it and flash it in my boards.
+> ppc*BUG* deserves its name, at least the second part :-(
 
-The PrPMC750 and latter boards have define VPD packets a bit different
-IIRC.  2400 was the first board to define VPD and it _almost_ was
-standardized but not quite. :)
+There's a few different bootrom projects in fairly early stages and
+lots of interest from various embedded Linux parties since many
+board manufacturers don't have anything more than VxWorks BSPs for
+their hardware and now want Linux support.  I'm predicting that you'll
+see some usable GPL bootrom frameworks/code come out of this need in
+the near future.  I swear I saw a free OF project forming somewhere
+too.
+
+I agree on that last part, it is buggy and impossible to maintain due
+to it's poor design.  It's a true testament to the failure of rushed
+proprietary software.
 
 --
 Matt Porter
