@@ -1,24 +1,31 @@
-Message-ID: <3B674930.EAD7ED1C@mvista.com>
-Date: Tue, 31 Jul 2001 20:11:28 -0400
+Message-ID: <3B674D96.5E7C480D@mvista.com>
+Date: Tue, 31 Jul 2001 20:30:14 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Rod Boyce <rod_boyce@DMCWave.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Redirecting printk to a file
-References: <9DCCE20055ACD311BBE200104B08D8340127490D@EXCHWENZ01>
+To: Masahide Tomita <tomita@itl.nyc.co.jp>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Where can I configure the base address?
+References: <a04320401b78cf51b9c51@[192.168.10.144]>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Rod Boyce wrote:
+Masahide Tomita wrote:
+>
+> Hello,
+>
+> I'm struggling to get the kernel (zvmlinux) run on our custom board with
+> 860T, but I think I get it loaded on wrong address.
 
-> We are having a bit of a quandary we are trying to redirect the output of
-> printk
+The zImage is a relocating, "self extracting" file.  Remove the 64K
+ELF header from the beginning of the file, load the resuling bag of
+bits at or above 0x200000, and jump to that location.  The "bootloader"
+will start, request kernel start options, uncompress the kernel to
+address zero, and start it.
 
-Don't assign a system console, or bump the loglevel real high.
-Then just use the syslog daemon to move it from the kernel circular
-buffer to a file.  This is all standard Linux stuff.
+This has all been discussed many times, along with different booting
+options.  Search the mailing list kernel for more information.
 
 
 	-- Dan
