@@ -1,45 +1,35 @@
-To: Junita Ajith <junita_ppc@yahoo.com>
+Message-ID: <20040813082211.34144.qmail@web15610.mail.cnb.yahoo.com>
+Date: Fri, 13 Aug 2004 16:22:11 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: JTAG debug mechanism
+To: Li Yang-r58472 <LeoLi@freescale.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to boot u-boot from RAM 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 12 Aug 2004 18:07:11 PDT."
-             <20040813010711.41665.qmail@web53709.mail.yahoo.com>
-Date: Fri, 13 Aug 2004 10:09:02 +0200
-Message-Id: <20040813080907.44EDEC109F@atlas.denx.de>
+In-Reply-To: <01139FC052A0D411900B00508B9535FC0F0D2864@ZCH07EXM04.corp.mot.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040813010711.41665.qmail@web53709.mail.yahoo.com> you wrote:
->
-> I am trying to have a different version of UBoot
+Li Yang-r58472 <LeoLi@freescale.com> wrote:
 
-Why are you asking the very same question within just  3  hours  with
-different  subjects  on the same mailing list - and on a mailing list
-where your questions is off topic?
+> As we know PowerPC use JTAG to debug CPU, which
 
-Please ask U-boot related stuff on the U-Boot-Users mailing list.
+But 8xx use BDM to debug CPU.So I wonder in which
+situation or chips should we use BDM and JATG and
+WHY??? For a embedded developer,he could more concern
+about this point than JATG implementation process,I
+guess.:-)
 
-But please check the mailing list archive _before_ asking.
+> implements a Boundary-Scan mechanism. It can manipulate any
+> input/output signals of the CPU by a serial shift/scan process. But my
+> question is how it can read/write the core registers and system memory
+> as implemented by most JTAG emulators.
 
-> with some utilities added to it . So I'm trying to
-> figure out a way to check if that upgraded version of
-> UBoot works fine , without copying it to the default
-> location where my original UBoot resides in the flash
-
-This has been discussed many, many times before. Search  the  mailing
-list archive (on gmane).
+Any input is warmly welcome!
 
 Best regards,
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Mirrors should reflect a little before throwing back images.
-- Jean Cocteau
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
