@@ -1,45 +1,41 @@
-Message-ID: <3A19A9EF.C43EACFC@mvista.com>
-Date: Mon, 20 Nov 2000 14:47:11 -0800
-From: Matthew Locke <mlocke@mvista.com>
+From: t.shantha.laxmi@exgate.tek.com
+Message-ID: <21F9768AF088D211BF1C0008C71E578601686C92@ap-bang-m02.india.tek.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: init problems with 2.4.0 kernel
+Date: Tue, 21 Nov 2000 01:52:13 -0800
 MIME-Version: 1.0
-To: "Ruhland, Paul" <pruhland@microwavedata.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [linuxppc-embedded] PCMCIA on MBX860
-References: <DF2142DFD5ECD311BA1900104B943A979321CF@roche-exg1.rochester.adaptivebroadband.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have pcmcia-cs working on the Embedded Planet boards, but I haven't
-tested on a MBX. I assume that the MBX uses the builtin pcmcia
-controller on the 8xx.  if that is the case, then you need the 8xx
-socket driver.  It is included with the card services package starting
-with verison 3.1.23.  Also I have patches on
-ftp://ftp.mvista.com/Area51/ppc_8xx.  If changes are needed for the MBX,
-let me know and I will get them into the 8xx socket driver.
+Hi,
+I am facing a problem in starting the "/sbin/init" process on my proprietary
+board. The init process asks for a runlevel to be entered, even though "3"
+is specified in the /etc/inittab. If I enter the runlevel as 3, it halts
+saying "no more processes in this runlevel". The messages look something
+like this:
 
-"Ruhland, Paul" wrote:
->
-> I've had zero success compiling the pcmcia-cs-3.1.19 card services package
-> for an MBX860 board.
->
-> Using:
->     mVista hardhat kernel 2.2.14
->     mVista hardhat cross compiler
->
-> Its choking in 'modules/i82365.c' with the following error:
->
->      #error "no bus architectures defined!"
->
-> From this, I figured I needed to include either PCI or ISA support in my
-> kernel config.  However, enabling QSpan PCI in kernel configuration yields
-> errors during kernel build.
->
-> Has anyone gotten the card services to work on an MBX board?
->
-> ----------------------
-> Paul Ruhland
->
+
+Looking up port of RPC 100003/2 on 192.158.103.253
+Looking up port of RPC 100005/2 on 192.158.103.253
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 40k init
+INIT: version 2.77 booti
+
+Enter runlevel: 3
+INIT: Entering runlevel:
+INIT: no more processes ft in this runlevel
+
+
+It is a ppc board running linux kernel 2.4.0-test2-1.2.2-1. I have
+downloaded the kernel from the mvista site. I am using CDK1.0(again got from
+mvista) as the root filesystem. With my earlier version of the kernel
+(2.2.13), I was not facing this problem.
+
+Any help will be greatly appreciated,
+- Shantha
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
