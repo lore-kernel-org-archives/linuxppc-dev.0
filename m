@@ -1,33 +1,30 @@
-From: tom_gall@vnet.ibm.com
-Message-ID: <3985BC68.46C8DEC5@vnet.ibm.com>
-Date: Mon, 31 Jul 2000 17:50:32 +0000
-Reply-To: tom_gall@vnet.ibm.com
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Giuliano Pochini <pochini@denise.shiny.it>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Stealth port problems
+Date: Mon, 31 Jul 2000 20:27:15 +0200
+Message-Id: <20000731182715.23487@192.168.1.10>
+In-Reply-To: <3986152C.992C3CE8@denise.shiny.it>
+References: <3986152C.992C3CE8@denise.shiny.it>
 MIME-Version: 1.0
-To: Donald Cowart <dcowart@acld.lib.fl.us>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS/6000 Model 170 Boots Linux
-References: <Pine.LNX.4.20.0007311238420.16971-100000@bookworm.acld.lib.fl.us>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Donald Cowart wrote:
+>> >
+>> > I think the last two addresses correspond to DMA addresses for all
+>> > SCC capable machines so far, so this change should be ok.
+>>
+>> I had the time to try the patch for just a few minutes. It enables the dma
+>> code successfully and it seems to work fine. More testing this night.
+>>
+>> Tnx !
 >
-> What are the 604e PowerPC chips, 32bit or 64bit?
+>I confirm. It works fine.
 
-Hi Donald,
+I'm pushing this fix to my rsync 2.2 tree and bk 2.4
 
-  The 604e is a 32 bit chip.
-
-> --Donald
-
---
-Tom Gall - PowerPC Linux Team    "Where's the ka-boom? There was
-Linux Technology Center           supposed to be an earth
-(w) tom_gall@vnet.ibm.com         shattering ka-boom!"
-(w) 507-253-4558                 -- Marvin Martian
-(h) tgall@uswest.net
-http://oss.software.ibm.com/developerworks/opensource/linux
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
