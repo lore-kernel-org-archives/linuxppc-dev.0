@@ -1,32 +1,31 @@
-Date: Thu, 20 Jun 2002 08:50:26 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: Trivial cleanup in ocp_uart.c
-Message-ID: <20020620155026.GE16052@opus.bloom.county>
-References: <20020620073440.GC20689@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020620073440.GC20689@zax>
+Message-ID: <3D1203B2.6050409@embeddededge.com>
+Date: Thu, 20 Jun 2002 12:32:50 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: board specific defines in commproc.h !?!?
+References: <3D0DA9C2.D78C43E5@imc-berlin.de> <3D106922.7026437A@imc-berlin.de> <20020619150520.GA12762@opus.bloom.county> <3D10A0AC.409EF92B@imc-berlin.de> <20020619152528.GB12762@opus.bloom.county> <3D10F388.5@embeddededge.com> <20020619212246.GA16052@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jun 20, 2002 at 05:34:40PM +1000, David Gibson wrote:
+Tom Rini wrote:
 
-> ocp_uart.c allocates private space with ocp_alloc_dev, but never uses
-> it.
+> And in the (un)fortunate grand linux tradition, new features with some
+> demand from the users behind them get backported too.  For example,
+> 2.2.current (21? 22?) has all sorts of compat glue for 2.4 drivers and a
+> rather current USB stack and all sorts of things like that..
 
-Er...  So you pass 0 to ocp_alloc_dev() ?  Which will allocate
-(sizeof(*ocp_dev) + 0 + 31), so we don't actually break out of this
-loop which I take it was your intent.
+It was probably done in 2.3.xx and backported, but yes, that does happen
+and it is a good thing.  However, it was first done in the newer, development
+tree before it was ported into the current, stable kernel.  I think
+the first half dozen 2.4 releases were really 2.3.xxx, anyway :-)
 
-And I think it can be used, once it gets registered to the ocp_list (and
-something later accesses it).
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
