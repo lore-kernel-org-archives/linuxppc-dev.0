@@ -1,27 +1,21 @@
-Date: Sat, 14 Apr 2001 00:17:37 -0800
-From: Ethan Benson <erbenson@alaska.net>
+Message-ID: <3AD8F1A3.8B3A82E7@mandrakesoft.com>
+Date: Sat, 14 Apr 2001 20:56:03 -0400
+From: Jeff Garzik <jgarzik@mandrakesoft.com>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC test machine?
-Message-ID: <20010414001737.I2127@plato.local.lan>
-References: <3AD7A907.12872ACB@mandrakesoft.com>
-Mime-Version: 1.0
-In-Reply-To: <3AD7A907.12872ACB@mandrakesoft.com>; from jgarzik@mandrakesoft.com on Fri, Apr 13, 2001 at 09:33:59PM -0400
+Subject: RTL8139 PPC testing?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Apr 13, 2001 at 09:33:59PM -0400, Jeff Garzik wrote:
->
-> Can anybody suggestion a source for a good, cheap PPC machine for
-> testing PCI drivers?  I definitely can't afford anything brand new.
+Is anybody here with a PPC and an 8139 card, and willing to test?
 
-there are always a bunch of powermacs on ebay, the beige G3s tend to
-go for around 100-300 USD.
-
-as goes with ebay caveat emptor...
-
+If so, can you try 8139too version, 0.9.16?  Just posted at
+http://sourceforge.net/projects/gkernel/   It requires 2.4.3 kernel.
 --
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Jeff Garzik       | Sam: "Mind if I drive?"
+Building 1024     | Max: "Not if you don't mind me clawing at the dash
+MandrakeSoft      |       and shrieking like a cheerleader."
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
