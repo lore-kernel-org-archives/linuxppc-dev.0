@@ -1,71 +1,28 @@
-From: wolfgang.grandegger@bluewin.ch
-Date: Tue, 11 Feb 2003 09:25:43 +0100
-Message-ID: <3E34EB7F00022F54@mss3n.bluewin.ch>
-In-Reply-To: <20030211064911.50039.qmail@web8007.mail.in.yahoo.com>
-Subject: RE: Combine kernel and ramdisk image.
-To: "rekha gvv" <rekhagvvc@yahoo.co.in>,
+Date: Tue, 11 Feb 2003 09:33:56 +0100
+From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: RE: [PATCH] 8xx_io/uart.c
+In-reply-to: <20030210172530.GA20757@ip68-0-152-218.tc.ph.cox.net>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: "Ruhland, Paul" <PRuhland@microwavedata.com>,
 	linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Reply-To: joakim.tjernlund@lumentis.se
+Message-id: <IGEFJKJNHJDCBKALBJLLIECIFKAA.joakim.tjernlund@lumentis.se>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->-- Original Message --
->Date: Mon, 10 Feb 2003 22:49:11 -0800 (PST)
->From: rekha gvv <rekhagvvc@yahoo.co.in>
->Subject: Combine kernel and ramdisk image.
->To: linuxppc-embedded@lists.linuxppc.org
 >
->
->
->Hi all,
->I want to combine the Linux kernel Image and the
->ramdisk image.I had used the mkimage tool for doing
->this
->./mkimage -A ppc -O Linux -T multi  -C gzip \
->-n 'Linux-2.4.4-2002-03-21 Multiboot-Image' -e 0 -a 0
->\
->-d /SELF/build/linux-2.4.4-2002-03-21/arch/ppc/
->coffboot/vmlinux.gz:/SELF/build/ramdisk_image.gz \
->/SELF/images/pMulti
->
->PMulti is the Combined kernal image ..
->wheni download it to the powerpc board using ppcboot I
->get this .
->
->bootm
->## Booting image at 00100000 ...
->   Image Name:   Linux-2.4.4-2002-03-21 Multiboot
->   Image Type:   PowerPC Linux Multi-File Image (gzip
->compressed)
->   Data Size:    1580442 Bytes = 1543 kB = 1 MB
->   Load Address: 00000000
->   Entry Point:  00000000
->   Contents:
->   Image 0:   530861 Bytes = 518 kB = 0 MB
->   Image 1:  1049566 Bytes = 1024 kB = 1 MB
->   Verifying Checksum ... OK
->   Uncompressing Multi-File Image ... OK
->   Loading Ramdisk to 6fabe000, end 0075a4bc ...
->
->
->
->what could be the error....
->when i downlaod the kernel and  the ramdisk separately
->then the ramdisk gets loaded at this address
->
->Loading Ramdisk to 0065a000, end 0075a3de ... OK
->Linux version 2.4.4 (root@UCLinuxServer.embedded) (gcc
->version 2.95.3 20010315
->.................
+> Bring it up on linux-kernel@vger.kernel.org.  A brief description and
+> this patch should be enough to get people to listen.  Maybe send it to
+> Alan Cox too..
 
-Load the pMulti at 0x200000 to avoid data getting
-overwritten.
+Yep, this needs to be discussed elsewhere. I have received some comments
+and these suggests that opost() can be executed in interrupt context so
+something else (non trivial) needs to be done.
 
-Good luck,
-
-Wolfgang.
+ Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
