@@ -1,30 +1,37 @@
-Date: Wed, 25 Feb 2004 11:01:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kanchana Sethu <kanasethu2002@yahoo.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: rtc access with i2c
-Message-ID: <20040225180156.GV1052@smtp.west.cox.net>
-References: <20040225013324.24285.qmail@web40514.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040225013324.24285.qmail@web40514.mail.yahoo.com>
+Message-ID: <403D179F.7040101@mvista.com>
+Date: Wed, 25 Feb 2004 14:46:07 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Cc: debian-powerpc@lists.debian.org, debian-powerpc@lists.debian.org,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Need testers: G3 @ G4 laptops (powerbooks & ibooks)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Feb 24, 2004 at 05:33:24PM -0800, Kanchana Sethu wrote:
+     >/ Are you sure that you can get away with this, passed on how the
+    manuals/
+     >/ (745x) describe the sequence of flush/invalidating the L2 (and,
+    L3) ?/
 
-> I am developing a driver for an rtc chip on an
-> embedded ppc platform that sits on the i2c bus.  Can I
-> use the generic i2c primitives to access it or is it
-> not available on that point in the boot process?
+    Do they describe disabling the L1 at all ?
 
-Yes, you can.  Take a look at
-http://www.gihyo.co.jp/book/2004/640402/download/linux-2.6.0-test10-obs266.diff
-and the x1226-rtc.c code in there.
+[Somehow I was removed from the -dev & -embedded list.  I was wondering
+why I hadn't seen anything for a while  :)]
+[Also, trini prodded me to send this email and I didn't go back and read
+the whole thread so this may be a little out of context]
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Ben, FYI,
+
+The latest 745x user manual is here:
+ http://e-www.motorola.com/files/32bit/doc/ref_manual/MPC7450UM.pdf
+
+Here are some relevant sections:
+- 3.4.1.1 (p. 3-32) Enabling and Disabling the Data Cache
+- 3.4.1.3 (p. 3-33) Enabling and Disabling the Instruction Cache
+- 3.6.3.1.5 (p. 3-55) Flushing of L1, L2, and L3
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
