@@ -1,51 +1,61 @@
-Date: Sat, 4 Oct 2003 09:07:38 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Jacky Lam <jackylam@astri.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Queston about Walnut
-Message-ID: <20031004090738.A12780@home.com>
-References: <20031002121733.A2E32C59E4@atlas.denx.de> <001101c3894c$38833ab0$2803050a@JackyLam> <3F7D3238.2090400@bluewin.ch> <00df01c38992$6d179b40$2803050a@JackyLam> <20031003080747.A7933@home.com> <001501c389cc$3d1277a0$0202a8c0@homevl9biy3v7e>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <001501c389cc$3d1277a0$0202a8c0@homevl9biy3v7e>; from jackylam@astri.org on Sat, Oct 04, 2003 at 12:34:37AM +0800
+From: Amit.Lubovsky@infineon.com
+Message-ID: <AD2F581BD7340A4C908AF1AFB066EA3B0E4851@ntah901e.savan.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: pci on MBX860
+Date: Sun, 5 Oct 2003 09:43:45 +0200 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="windows-1255"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, Oct 04, 2003 at 12:34:37AM +0800, Jacky Lam wrote:
-> > On Fri, Oct 03, 2003 at 05:40:46PM +0800, Jacky Lam wrote:
-> > >
-> > > > the kernel you use - vanilla+ppc-patch - is based on linuxppc-2.4,
-> which
-> > > > is not appropriate for your system. [At least it was like that some
-> time
-> > > > ago. Tom, could you please comment.] Try using the linuxppc_2_4_devel
-> > > > tree from Bitkeeper or from our FTP server (see http://www.denx.de).
-> > >
-> > >     I just tried. The result is the same. Using the original
-> walnut_config,
-> > > it hangs in mapin_ram().
-> > >     If I use minimal config, it hangs in __sti().
-> > >
-> > >     Does anyone still working on Walnut platform and successfully boot
-> up
-> > > 2.4 kernel on that? If no, could someone remember what is the last known
-> > > working toolchain and kernel on Walnut?
-> >
-> > I noticed this about a week ago.  It is some kind of merge problem
-> > between linux-2.4 and linuxppc-2.4.  linux-2.4 boot fine on walnut
-> > for me.  I didn't have time to investigate but might take a look at
-> > it again soon.
+Hello MBX860 developers,
+I post this question again since haven't got any reply yet...(anyone ?)
+
+> Does anyone have any experience with pci on the MBX860 board ?
 >
->     Really? That's so great! Do you have any idea about this? Maybe I can
-> try to investigate as well. Also, do you remember what is the version just
-> before this merge problem occurs? Thanks.
-
-Well, maybe I should have cleaned my tree from a 440 build, I had
-an old CONFIG_440 hanging around causing the kernel to not be
-happy.  At any rate, I verified that current linuxppc-2.4 boots
-on walnut from stock openbios.
-
--Matt
+> I run kernel 2.4.20 from www.denx.de but encountered compilation problems
+> after trying to configure pci.
+>
+> this is the output of what I got:
+>
+> kernel configuration:
+>
+> I have enabled General setup-> QSpan PCI
+>
+>
+> and then while compiling the kernel got:
+>
+> make uImage
+> ...
+>
+> ppc_8xx-gcc -D__KERNEL__ -I/opt/eldk/usr/src/linuxppc_2_4_devel/include
+> -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing
+> -fno-common -fomit-frame-pointer
+> -I/opt/eldk/usr/src/linuxppc_2_4_devel/arch/ppc -fsigned-char -msoft-float
+> -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -nostdinc -I
+> /opt/eldk/usr/lib/gcc-lib/ppc-linux/2.95.4/include
+> -DKBUILD_BASENAME=m8xx_setup  -c -o m8xx_setup.o m8xx_setup.c
+> m8xx_setup.c: In function `m8xx_show_percpuinfo':
+> m8xx_setup.c:252: warning: int format, long int arg (arg 3)
+> m8xx_setup.c:252: warning: int format, long int arg (arg 4)
+> m8xx_setup.c: In function `m8xx_init_IRQ':
+> m8xx_setup.c:281: structure has no member named `irq_offset'
+> m8xx_setup.c: In function `platform_init':
+> m8xx_setup.c:357: warning: implicit declaration of function
+> `m8xx_setup_pci_ptrs'
+> make[1]: *** [m8xx_setup.o] Error 1
+> make[1]: Leaving directory
+> `/opt/eldk/usr/src/linuxppc_2_4_devel/arch/ppc/kernel'
+> make: *** [_dir_arch/ppc/kernel] Error 2
+> [root@amit_lap linuxppc_2_4_devel]#
+>
+> any info is appreciated,
+> Thanks,
+> Amit.
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
