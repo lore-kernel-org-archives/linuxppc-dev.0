@@ -1,48 +1,29 @@
-MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+From: Amit Shah <amitshah@gmx.net>
+Subject: IBM 750GX SMP on Marvell Discovery II or III?
+Date: Mon, 10 May 2004 12:58:41 +0530
+Message-ID: <c7nb0l$5e3$1@sea.gmane.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16540.24017.544452.693033@cargo.ozlabs.ibm.com>
-Date: Sat, 8 May 2004 14:10:57 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: benh@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] Fix CTS handling in pmac-zilog.c
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This patch fixes a bug in the pmac-zilog driver where if you enable
-CRTSCTS mode, it won't output data when CTS is asserted.  On
-powermacs, the CTS input is inverted.  It also fixes a logic bug in
-testing for CTS and DCD changes.
+Hi all,
 
-diff -urN linux-2.5/drivers/serial/pmac_zilog.c pmac-2.5/drivers/serial/pmac_zilog.c
---- linux-2.5/drivers/serial/pmac_zilog.c	2004-04-01 06:59:37.000000000 +1000
-+++ pmac-2.5/drivers/serial/pmac_zilog.c	2004-05-07 21:06:49.000000000 +1000
-@@ -352,13 +352,14 @@
- 		/* The Zilog just gives us an interrupt when DCD/CTS/etc. change.
- 		 * But it does not tell us which bit has changed, we have to keep
- 		 * track of this ourselves.
-+		 * The CTS input is inverted for some reason.  -- paulus
- 		 */
--		if ((status & DCD) ^ uap->prev_status)
-+		if ((status ^ uap->prev_status) & DCD)
- 			uart_handle_dcd_change(&uap->port,
- 					       (status & DCD));
--		if ((status & CTS) ^ uap->prev_status)
-+		if ((status ^ uap->prev_status) & CTS)
- 			uart_handle_cts_change(&uap->port,
--					       (status & CTS));
-+					       !(status & CTS));
+I was wondering if SMP is supported for the 750 GX processor built on the
+Marvell Discovery boards.
 
- 		wake_up_interruptible(&uap->port.info->delta_msr_wait);
- 	}
-@@ -595,7 +596,7 @@
- 		ret |= TIOCM_CAR;
- 	if (status & SYNC_HUNT)
- 		ret |= TIOCM_DSR;
--	if (status & CTS)
-+	if (!(status & CTS))
- 		ret |= TIOCM_CTS;
+If not, what's the problem in getting it supported? An older mail by Cort
+Dougan said it was because of TLB invalidate information not being
+broadcasted, but it was a really old mail, has anyone come up with any
+workarounds?
 
- 	return ret;
+Thanks,
+Amit.
+--
+Amit Shah
+http://amitshah.nav.to/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
