@@ -1,41 +1,29 @@
-Date: Mon, 9 Jul 2001 09:20:21 -0700 (MST)
-From: Jeff Rugen <jprugen@earthlink.net>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Jeff Rugen <jprugen@earthlink.net>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: RTC and SCSI for PowerStack/2.4.6 Kernel
-In-Reply-To: <20010709075703.G825@opus.bloom.county>
-Message-ID: <Pine.LNX.4.21.0107090842230.1593-100000@raptor.earthlink.net>
+Message-ID: <3B49ECAD.76895397@mvista.com>
+Date: Mon, 09 Jul 2001 13:41:01 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulus@samba.org
+Cc: Gary Byers <gb@gse.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: giving up the FPU, MSR[FE0], MSR[FE1], and the FPSCR
+References: <Pine.GSO.4.21.0106260032030.15923-100000@gse.com> <15174.24815.352088.954640@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 9 Jul 2001, Tom Rini wrote:
+Paul Mackerras wrote:
 
-> Did you do any fixes/cleanups to clgenfb?  I took a stab and trying to
-> re-do your PReP fixes in it a while back, but I don't think it ever got
-> into the main tree.
->
+> I believe that does work and that glibc uses it.  Not that that is the
+> ideal way to handle it...  Albert Cahalan's suggestion of setting
+> FE0/FE1 based on the disposition of the SIGFPE signal is a good one.
 
-No, I don't have any changes from the official 2.4.6 kernel except for
-adding __ in front of a couple functions (change_bit and
-test_and_change_bit, I think) in one or two places, and some code where I
-was experimenting with setting the parallel port in ECP or EPP
-mode.  Everything else appears to be whitespace differences or in drivers
-that I'm not using or don't seem to work (quickcam and 53c7,8xx).
+There was some discussion about how we handle the exception flags
+in FPSCR a long time (a year or more :-) ago.  A search of the
+archives may turn up something (I haven't searched).  I know there
+was a change to the library and the user ability to set this flags
+way back then.......
 
-I did have VGA console be the default, and installed clgenfb as a module.
 
-On a related note, the endianness issue with gpm seems to also show up
-when running the VGA console -- any text that is written to a non-visible
-virtual terminal is not byte-swapped, so it appears to be garbage when you
-switch back to that virtual terminal.  This isn't a problem when running
-clgenfb as the terminal though (I don't know how gpm worked in either
-mode).
-
-Jeff Rugen
-
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
