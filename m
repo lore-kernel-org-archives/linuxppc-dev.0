@@ -1,46 +1,29 @@
-Date: Fri, 24 Jan 2003 10:38:02 -0800
-From: Chris Zimman <chris@cryptoapps.com>
-To: brian.auld@adic.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Status of 440GP support?
-Message-ID: <20030124183802.GA21151@mail.cryptoapps.com>
-Reply-To: Chris Zimman <chris@cryptoapps.com>
-References: <995FF289C9D69747A09E42992644595405B23621@penguin.adic.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <995FF289C9D69747A09E42992644595405B23621@penguin.adic.com>
+Message-ID: <3E3189A3.6030102@tataelxsi.co.in>
+Date: Sat, 25 Jan 2003 00:14:51 +0530
+From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: running bdi2000 (cpu in debug mode)
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Jan 24, 2003 at 10:13:16AM -0800, brian.auld@adic.com wrote:
-> 1) After looking at the source tree for linuxppc_2_4 and linuxppc_2_4_devel,
-> it appears that 440GP support is only in linuxppc_2_4_devel. Does
-> linuxppc2_4_devel mean "unstable", or is it simply the latest and greatest
-> ppc kernel code for the 2.4 series that is stable.
+Hi,
+We connected bdi2000 to the jtag interface of our mpc8260ads board.
+The flash contains ppcboot (we installed it throgh bdi2000). The board
+boots up with ppcboot. But when we try to debug our kernel using
+bdi2000, it enters the debug mode. How to set break points and run till
+that break points?
 
-The latter -- the trees just haven't been merged yet.
+Once bdi2000 is connected, no output comes in the serial console. The
+light showing cpu-run goes off indicating it does not run.
 
-> 2) I'm going through iterations of make menuconfig  (on linuxppc_2_4_devel
-> tree) to try and get a kernel for the 440GP successfully built and am not
-> having much success. Does anyone have a ".config" file that works that I
-> could take a look at? Should it compile out of the box? I set up my
-> cross-compile tools using the following:
->   -> binutils-2.12.90.0.12
->   -> gcc-3.2.1 (with gcc-3.2-crossppc.diff patch applied)
+We are able to download files and examine the memory contents.
+if you have any idea how to proceed, please let me know.
 
-See arch/ppc/configs/ebony_defconfig
+Thank you,
+Om.
 
-One way (there may be better ways) is:
-
-cp arch/ppc/configs/ebony_defconfig .config
-make oldconfig
-
-> 3) I plan to use 'Das U-Boot' as my boot loader. Any other snafus/gotchas
-> anyone would be willing to let me in on ahead of time??
-
-Works fine for me.
-
---Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
