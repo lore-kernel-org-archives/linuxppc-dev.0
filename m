@@ -1,38 +1,28 @@
-Message-ID: <39D3891D.2C82F64E@mvista.com>
-Date: Thu, 28 Sep 2000 11:08:29 -0700
-From: Matthew Locke <mlocke@mvista.com>
+From: Gérard Guével <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Hdlc driver for SCC port
+Date: Fri, 29 Sep 2000 09:49:51 +0200
+Message-ID: <000001c029ea$0682dee0$2901a8c0@none>
 MIME-Version: 1.0
-To: jonb@marel.is
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 823e LCD display - Microwindows
-References: <OFFAB81681.9CA422F8-ON00256968.00595E55@marel.is>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-jonb@marel.is wrote:
->
-> Hi
->
-> I have now successfully gotten Linux running on a custom 823e board,
-> using Monta Vista CDK 1.2, Linux version 2.2.14.  I am using an NFS
-> root file system and I have created a custom lsp for the board.
->
-> Our board uses the 823 LCD controller for a 640x480 TFT display.
->
-> I would like to activate the 823 LCD driver and try out the Microwindows
-> demo from Monta Vista, but I do not know what needs to be done.
->
-> When I configure the kernel with CONFIG_RPXLCD, I get a lot of
-> undefined symbols when linking the kernel, such as fb_display,
-> fb_default_cmap.
->
-> Can anyone point me in the right direction ?
+Hi,
 
-Enable framebuffer support in the kernel configuration.
+Now I have a linux2.2.14 kernel which runs on my MPC860P board.
+I would want to customize an hdlc driver on scc.
 
-Matthew Locke
-Montavista Software
+I saw, few days ago, Julia Elbert discusses about same subject.
+
+Some help about what exists (structure, driver, howto, ...) would be
+welcome.
+
+Thanks
+
+Gérard
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
