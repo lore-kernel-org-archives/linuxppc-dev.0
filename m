@@ -1,44 +1,40 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <F9102D41F595D311ACA7009027DE2C8406AB8214@c3po.heurikon.com>
-From: "Montgomery, Tim" <timm@artesyncp.com>
-To: "'Eugene Surovegin'" <ebs@ebshome.net>,
-	Wolfgang Denk <wd@denx.de>
-Cc: "Johnson, Stephen" <stevebj@artesyncp.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Opps...with ELDK-2.1.0 (ppc_4xx) 
-Date: Wed, 23 Apr 2003 12:18:15 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA Porting 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 23 Apr 2003 17:22:43 +0200."
+             <sea6cbef.014@mail.frequentis.com>
+Date: Wed, 23 Apr 2003 19:18:46 +0200
+Message-Id: <20030423171851.E0EACC5E29@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[Wolfgang]
-> >
-> >This means you have a RTC on the I2C bus, right? Same here. It  works
-> >fine on all baords except those with a I2C based RTC. Which is why we
-> >detected the problem so late.
+In message <sea6cbef.014@mail.frequentis.com> you wrote:
 >
+> So the question is again: do you support every pcmcia card (not only ide) =
+> within the kernel?
 
-[Eugene]
-> It looks like a bug in m41t00_set_rtc_time.
->
-> Generic I2C layer is very high-level subsystem and can not be
-> used from the interrupt context.
->
+I cannot claim to support _every_ PCMCIA card.
 
-If the i2c layer cannot be used in the (e.g. timer) interrupt context, wouldn't that preclude the use of the i2c layer to provide support (i.e. clock updates) to an i2c-based rtc?
+We have tested the code with flash disk cards, CompactFlash adapters,
+ATA harddisk adapters, network cards, WLAN cards, and modem cards.
 
-Any suggestions on how to work around this?
+I am pretty confident that any PCMCIA card that runs on a  MAC  under
+Linux will run with our CS package as well.
 
-Wolfgang:
-I know you had some examples of i2c-based rtc support in your tree.  Assuming the above is the cause behind the oops, does your driver preclude rtc updates from the timer interrupt context?
 
-Some time ago I queried the list on the best way to support an i2c-based RTC; at that time, there was no consensus.
-Any more thoughts along these lines?
+Best regards,
 
-Regards,
-Tim
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+What can it profit a man to gain the whole world and to come  to  his
+property with a gastric ulcer, a blown prostate, and bifocals?
+                                     -- John Steinbeck, _Cannery Row_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
