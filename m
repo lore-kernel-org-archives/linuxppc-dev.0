@@ -1,34 +1,33 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: David Edelsohn <dje@watson.ibm.com>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: rtc again... 
-Date: Fri, 4 Aug 2000 17:50:23 +0200
-Message-Id: <20000804155023.5420@mailhost.mipsys.com>
-In-Reply-To: <200008041525.LAA30014@mal-ach.watson.ibm.com>
-References: <200008041525.LAA30014@mal-ach.watson.ibm.com>
+Message-ID: <398AE7C3.F8936771@erols.com>
+Date: Fri, 04 Aug 2000 11:56:51 -0400
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Henry Worth <haworth@ncal.verio.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CDDA playback on Pismo (and other newer models)
+References: <398A522C.77172439@ncal.verio.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->	On RS/6000 CHRP (RS/6000 Platform Architecture), RTAS provides
->freeze-time-base and thaw-time-base calls which signal all of the
->processors inan SMP complex to stop and start the TB.  I do not know of
->any functionality within the PowerPC architecture which would allow
->processors to coordinate their TBs without some external intervention.
->
->	Normally AIX boot freezes the TB, zeroes the TB on each processor,
->and then starts the timebase synchronized.  Because the functionality is
->part of RTAS, this can be done at any time.  I do not know what PreP SMP
->systems do and I know that Apple discourages use of RTAS because it is not
->intended to work.
+Henry Worth wrote:
 
-On recent Core99 machines, Apple has a HW timer in the KeyLargo ASIC that
-can be used to sync timebases. (It looks like a 64 bits bus-cycle timer,
-but I'm not completely sure yet). There's also, I beleive, the OpenPIC timer.
+> <snip>
+> Using the ATAPI CD drivers there are underruns with significant
+> dropouts every couple of seconds. Various hdparms and cdparanoia
+> parms were tried with no significant change. These include various
 
-Ben.
+<snip>
+
+I had issues using the "cdparanoia 1- - | play - -t WAV" until I realized
+that cdparanaoia was trying to do on the fly error correcting, resulting
+in the pause every few seconds.  By using the "-Z" flag, which turned off
+the error correcting, I got excellent playback with no skips what-so-ever
+on my Pismo.
+
+HTH
+--Nelson Abramson
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
