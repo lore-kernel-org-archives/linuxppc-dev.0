@@ -1,66 +1,97 @@
-Message-Id: <200010152004.WAA22222@denx.local.net>
-To: Konstantin <konstantin.sabodash@fnc.fujitsu.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: mbxboot->head.S 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 15 Oct 2000 14:30:57 EDT."
-             <39E9F7E1.523E3693@fnc.fujitsu.com>
-Date: Sun, 15 Oct 2000 22:04:00 +0200
+From: mac21c@mail.suwon.ac.kr
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Bummer, can't open /dev/tty2
+Message-ID: <971667729.39ea7911988cb@www.suwon.ac.kr>
+Date: Mon, 16 Oct 2000 12:42:09 +0900
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <39E9F7E1.523E3693@fnc.fujitsu.com>
-Konstantin Sabodash wrote:
->
-> I try to port Kernel to custom MPC860 board.
-> BSEIP architecture is close to my board.
+Hello all,
 
-What firmware do you have on your board?
+When i boot, i get this messag.
+I write the initab file and list of /dev/tty?.
 
-> I used  pROBE   to load zvmImage on my board . ELF loader put   .text
-> section straight into 0x180000.
+This problum hard on me for a week.
 
-First, the code in mbxboot/head.S  expects  that  some  configuration
-parameters  are  being  passed  from  the  firmware in a "board info"
-structure. Make sure you feed correct values into the code,  or  this
-won't work.
+please help me...
 
-Also, make sure that you don't just load the  standard  ELF  sections
-(text,  data,  bss),  but  also the Linux specific extensions (image,
-ramdisk).
+Is this problum caused the busybox or kernel ??
 
-> I fixed it  and I pass to Kernel R3 through R7 registers with valid
-> context.
->
-> Still, nothing  happen.  In log_buf I see that kernel  reports 0 K ( and
-> some negative values ) memory allocation for its buffers and pages.
+maybe busybox....??
 
-Seems you have problems with parameter passing.
+==================================================================
+network Booting from: MPC860, Controller 20, Device 0
+Loading: /tftpboot/zImage
 
-> The question is what else, besides R3-R7 wee need to pass to kernel  to
-> make it work?
+Client IP Address      = 192.168.2.200
+Server IP Address      = 192.168.2.86
+Gateway IP Address     = 192.168.2.254
+Subnet IP Address Mask = 255.255.255.0
+Boot File Name         = /tftpboot/zImage
+Argument File Name     =
 
-Simply put, youneed to pass correctly  initialized  hardware,  and  a
-board info structure with correct values.
+Bytes Received =&481980, Bytes Loaded =&481980
+Bytes/Second   =&240990, Elapsed Time =2 Second(s)
+loaded at:     00210000 00203AA4
+relocated to:  00100000 000F3AA4
+board data at: 003F4558 003F4580
+relocated to:  00200100 00200128
+zimage at:     00217000 0027480F
+avail ram:     00275000 00400000
 
-> Any idea are welcome.
+Linux/PPC load: root=/dev/nfs nfsaddrs=192.168.2.200:192.168.2.86 nfsroot=192.16
 
-If you have some firmware on your board, adapt the pre-kernel code in
-mbxboot/ to your needs. If you don't have firmware yet,  or  find  it
-not ideal for use with Linux, have a look at PPCBoot which was speci-
-fically  designed and implemented with Linux in mind (see the project
-page at http://ppcboot.sourceforge.net , or get a tarball with source
-code from ftp://ftp.denx.de/pub/ppcboot/ ).
+8se press Enter to activate this console. error here 01
+error here 01 open /dev/tty2
+error here 01 open /dev/tty2
+.2.86:/tftpboot
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.2.13 (root@localhost.localdomain) (gcc version 2.95.2 19991024 (
+release)) #18 ¤Ô¤¹¤Ô¤º 10¤Ô¤¹¤Ô¤º 16 11:27:52 KST 2000
+Boot arguments: root=/dev/nfs nfsaddrs=192.168.2.200:192.168.2.86 nfsroot=192.16
+8.2.86:/tftpboot
+time_init: decrementer frequency = 150000000/60
+Calibrating delay loop... 39.73 BogoMIPS
+Memory: 3056k available (688k kernel code, 316k data, 36k init) [c0000000,c04000
+00]
+DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
+Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
+Page-cache hash table entries: 1024 (order: 0, 4096 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.2
+Based upon Swansea University Computer Society NET3.039
+NET4: Unix domain sockets 1.0 for Linux NET4.0.
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+TCP: Hash tables configured (ehash 4096 bhash 4096)
+Starting kswapd v 1.5
+CPM UART driver version 0.02
+ttyS00 at 0x0280 is a SMC
+ttyS01 at 0x0100 is a SCC
+ttyS02 at 0x0200 is a SCC
+pty: 256 Unix98 ptys configured
+RAM disk driver initialized:  16 RAM disks of 4096K size
+loop: registered device at major 7
+eth0: CPM ENET Version 0.2, 08:00:3e:26:12:96
+PPP: version 2.3.7 (demand dialling)
+TCP compression code copyright 1989 Regents of the University of California
+PPP line discipline registered.
+IP-Config: Guessing netmask 255.255.255.0
+Looking up port of RPC 100003/2 on 192.168.2.86
+Looking up port of RPC 100005/1 on 192.168.2.86
+VFS: Mounted root (NFS filesystem) readonly.
+Freeing unused kernel memory: 36k init
+init started:  BusyBox v0.42 (20001014-1101) multi-call binary
 
-Wolfgang Denk
+Mounting /proc: done.
+Bummer, can't open /dev/tty2
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Accident: A condition in which presence of mind is good, but  absence
-of body is better.
+Please press Enter to activate this console.
+Bummer, can't open /dev/tty2
+Bummer, can't open /dev/tty2
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
