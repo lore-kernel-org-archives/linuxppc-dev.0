@@ -1,65 +1,37 @@
-Message-ID: <4926614F7A31D411820F00D0B74FF7E0013D1A21@RDC03>
-From: "Gallant, John" <jgallant@vanteon.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Assistance with using /dev/fb0 and No X windows
-Date: Tue, 14 Jan 2003 17:17:22 -0500
+Message-ID: <3E24A7B5.7000500@redswitch.com>
+Date: Tue, 14 Jan 2003 16:13:41 -0800
+From: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: support@abatron.ch,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Debugging the kernel with BDI2000
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I want to thank Claus and Chirag for their responses.  I believe that my
-access problems are more lower level than I originally thought.
+I tried to debug the kernel with BDI2000 and gdb and had some problems.
 
-In our searching's we were only able to find an XFree86 driver for the
-Silicon Motion LynxEM chip and one that was in the PPCBoot tree.  I could
-not use the XFree86 driver, it was too dependent on support from the XFree86
-environment, and even then the "VGA" stuff was from some other file.  As
-"per usual" here, things were in crisis and we needed something ASAP.
+I wanted to set a breakpoint at console_init() and did the following steps.
+(1) BDI>bi 0xc00020f0    # stop at start_here
+(2) BDI>go
+ppcboot was running and loaded the kernel image and stoped at start_here.
+(3) BDI>ci
+(4) ppc_8xx-gdb vmlinux    # start gdb
+(gdb) target remote bdi:2001
+(gdb) b console_init
 
-My original plan was to use the "generic" VGA stuff already in the MVL
-kernel to access the chip.  The first problem had to do with the "canned"
-address that vga16fb.c was using, with the I/O registers being "offset 0 in
-I/O space" and the frame buffer at 0xA0000.  Are these the "In the PC world"
-addresses?  With the chip being accessed via the PCI bus, I did not
-understand how to "map" the chip via it's single BAR0 Register.  After a
-while I realized that the chip has a "default" PCI I/O address of 0, all I
-needed to do was make sure that the COMMAND_IO bit was set as part of the
-PCI config cycles.  I also needed to discover the proper PCI memory address
-by putting in some PCI search code, (only temporary honest!) into the
-vga16fb.c code to find the device and store it's PCI memory address.  I was
-able to access the I/O registers, i.e. read the MISC and ISR0-1 and read
-frame buffer memory.  But still nothing I did with /sbin/getty tty1, fbset
-or /dev/fb0 appeared to work at all!
+The above steps were all successful. But when I wanted to step by 'n' or
+continue the execution by 'cont'. I got the following error.
 
-So all this rambling leads me to these questions to the distribution list:
+(gdb) cont
+warning: Cannot insert breakpoint -1:
+Error accessing memory address 0xc0000000: Unknown error 4294967295.
 
-1) Does the "generic" VGA stuff expect that the VGA device is already
-initialized and setup by the BIOS/LILO/BOOT code?
+What does this mean? My BDI2000 configuration may not right? CPU is 855.
 
-2) Does anyone know of a driver for the LynxEM chip that is not from the
-XFree86 code base?
-
-I am planning to "strategically advance to the rear" and go back to the
-PPCBoot code where I was able to get a few bands of color when the LOGO was
-supposed to be drawn on the screen.  If I can get that to work I am hoping
-that I can form a better understanding of the LynxEM chip to either create a
-limited driver or hack up the vga16fb.c file some more before I work on a
-limited driver.
-
-Thank you for any help or information you can send my way.
-
---------------------------------------------
-John A. Gallant
-Sr. Embedded Software Engineer
-Vanteon Inc.
-2851 Clover Street
-Pittsford, NY 14534
-Phone: 585.248.0510 x279
-Fax  : 585.248.0537
-email: jgallant@vanteon.com
-web: www.vanteon.com
+Thanks.
+- shawn.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
