@@ -1,35 +1,28 @@
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14240.24158.383303.417568@gargle.gargle.HOWL>
-Date: Thu, 29 Jul 1999 09:59:58 -0400 (EDT)
-To: ian geiser <geiseri@msoe.edu>
-Cc: "Timothy A. Seufert" <tas@mindspring.com>,
-        linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: I still cannot get L2cr to activate!
-In-Reply-To: <37A05228.3DFEDF87@msoe.edu>
-References: <XFMail.990728151208.jeremy@goop.org> <v04011707b3c5d8700e76@[199.174.198.69]> <37A05228.3DFEDF87@msoe.edu>
+Subject: Re: Motorola Web Site
+To: hotplug-list@redhat.com
+Date: Thu, 29 Jul 1999 15:03:50 +0100 (BST)
+Cc: linux-ha@muc.de, linuxppc-dev@lists.linuxppc.org,
+        linux-kernel@vger.rutgers.edu
+In-Reply-To: <379E2D20.1DE37F8C@phx.mcd.mot.com> from "Johnnie Peters" at Jul 27, 99 03:05:20 pm
+Content-Type: text
+Message-Id: <E11AHdD-00014b-00@the-village.bc.nu>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> Second, I apologize for previously posting the diffs and
+> howto for the pci services to these lists. I, however, did
+> not have any other means until now.  Since Alan Cox and others
+> were complaining that Motorola had not posted these changes
+> I felt I had no other choice.
 
-ian geiser <geiseri@msoe.edu> wrote:
-> "Timothy A. Seufert" wrote:
-> > At 7:47 PM -0500 7/28/99, ian reinhart geiser (ADMIN) wrote:
-> > >
-> > >b9000000:  enabled,no parity,1M,+2 clock,pipelined burst SRAM,ZZ
+Free software folks are used to 'stick it somewhere for ftp' being a
+viable option. I guess in Motorola you have to do things the official way
 
-> what confused me was the enabled,no.
-
-I think this should be parsed as 1) enabled, 2) no parity, 3) 1M, etc.
-
-
-
--- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
+Im sure your intentions were good and Im glad the code is out. I've been
+looking through it a bit but wont start to hack on it hard till Im back
+from .ca
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
