@@ -1,25 +1,39 @@
-Message-ID: <3844FBA1.6E353B36@switchboard.ericsson.se>
-Date: Wed, 01 Dec 1999 11:42:41 +0100
-From: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
+Message-ID: <38451447.BFB42D44@263.net>
+Date: Wed, 01 Dec 1999 20:27:52 +0800
+From: Wang Yong <wung_y@263.net>
+Reply-To: wung_y@263.net
 MIME-Version: 1.0
-To: wung_y@263.net
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ask for help
-References: <3844A63D.E8BA9488@263.net>
+To: damm@kieraypc01.p.y.ki.era.ericsson.se
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: re:ask for help
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I don't know about minix, but I've made a ramdisk
-with ext2 support on my x86 server and used it on a 8xx.
+really? I made a minix fs on my linux box run on i586 and dd it to a
+image file. i checked this image file and  found the magic number in 
+the struct of the super block is "8F 13". because i386 is little endian,
+so the number is 0x138F. and then, i copied this file to the flash
+memory
+of the eval board and ran linux. this time the magic number read by
+linux
+is 0x8F13.
 
-I've never experienced any endian problems with that.
+the main difference between the environments of yours and mine is that
+you
+put image on disk while i put it on flash. something must do some
+transferring
+work while read image from disk, maybe the disk driver. but i read the
+flash
+by this mean:
+	int a;
+	a = 0xFFFD0400;
+        ret =*(int*)a;
+so, no transfer is done.
 
-That was a while ago though... Maybe things have changed..
+i don't if my words right. does anyone have some idea?
 
-Cheers /
-
-magnus
+Wang
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
