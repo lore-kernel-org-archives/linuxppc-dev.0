@@ -1,16 +1,21 @@
-Return-Path: <annamaya@yahoo.com>
-Received: from web53803.mail.yahoo.com (web53803.mail.yahoo.com
-	[206.190.36.198]) by ozlabs.org (Postfix) with SMTP id 4BAE867A2C
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C89EA67A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 03:49:41 +1100 (EST)
-Message-ID: <20050119164938.72597.qmail@web53803.mail.yahoo.com>
-Date: Wed, 19 Jan 2005 08:49:38 -0800 (PST)
-From: annamaya <annamaya@yahoo.com>
-To: Christian-Hoffmann@siemens.com, linuxppc-embedded@ozlabs.org
-In-Reply-To: <3F294367B36FF842B66CC65102BBA9B236C928@witb202a>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: Re: FW: cpm_spi.c under kernel 2.6
+	Thu, 20 Jan 2005 04:26:03 +1100 (EST)
+In-Reply-To: <BCEFJBPJCGFCNMMMIDBHOECCCKAA.Joakim.Tjernlund@lumentis.se>
+References: <BCEFJBPJCGFCNMMMIDBHOECCCKAA.Joakim.Tjernlund@lumentis.se>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <28C8C10C-6A3F-11D9-9943-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 19 Jan 2005 12:25:48 -0500
+To: Joakim.Tjernlund@lumentis.se
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] Handle I-TLB Error and Miss separately on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,48 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-That reminds me that I need to make the spi driver
-available somewhere all the time. But I am not sure
-when I will be able to do that. Meanwhile, you should
-be able to start of with the old driver for the 8xx
-that should be around somewhere under the rubble. :-)
-Or, you can start off with the sample code in u-boot
-that was derived from the original driver.
 
+On Jan 18, 2005, at 5:02 PM, Joakim Tjernlund wrote:
 
---- Christian-Hoffmann@siemens.com wrote:
+> Then all that is missing is my dcbX patch and support for 16K pages :)
 
-> 
-> 
-> >  -----Original Message-----
-> > From: 	Hoffmann Christian Com ESY HD 652  
-> > Sent:	Dienstag, 18. Januar 2005 11:55
-> > To:	'linuxppc-dev@ozlabs.org'
-> > Subject:	cpm_spi.c under kernel 2.6
-> > 
-> > hi, 
-> > 
-> > has anybody already ported the spi driver
-> available in kernel 2.4.24
-> > (arch/ppc/8260_io/cpm_spi.c) to kernel 2.6
-> (2.6.8.1) ?
-> > if so, where can i get it ?
-> > 
-> > regards
-> > 
-> > christian
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+We'll get to that.  I'd prefer to support 4K and 8M pages, though.  I 
+had
+started on doing that, some code remnants are still there, but I never
+got it to work without adding too much code to the I-tlbmiss hander.
+I want an tlbmiss handler like the example in the manual, about 10
+lines of straight code.  I don't like to be mucking around with PTE 
+entries
+a higher level function could/should have set for us in a less critical 
+path.
 
-
-
-		
-__________________________________ 
-Do you Yahoo!? 
-Meet the all-new My Yahoo! - Try it today! 
-http://my.yahoo.com 
- 
+	-- Dan
