@@ -1,48 +1,38 @@
-Message-Id: <200003072200.XAA00434@piglet.grunz.lu>
-Date: Tue, 7 Mar 2000 23:00:27 +0100 (CET)
+Message-Id: <200003072211.XAA00471@piglet.grunz.lu>
+Date: Tue, 7 Mar 2000 23:11:14 +0100 (CET)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
-To: grant@borg.umn.edu
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.SGI.4.21.0003071435240.45384-100000@brule.borg.umn.edu>
+Subject: Re: nvram access in 2.3.48?
+To: chas@cmf.nrl.navy.mil
+cc: trini@kernel.crashing.org, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <200003072157.QAA95728@borg.cmf.nrl.navy.mil>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi there,
+On   7 Mar, this message from Chas Williams echoed through cyberspace:
+>> Another weiredity I've come across in my 2.3 crusade: /dev/nvram
+>> doesn't seem to work anymore.
+>
+> this problem arises from a different source. the nvram driver in
+> drivers/macintosh needs to be converted to use the new driver initalization
+> scheme (like the driver in drivers/char/nvram.c)
+>
+> there were some posts about this about a month or so ago.
 
-On   7 Mar, this message from Grant Erickson echoed through cyberspace:
-> The device has an interrupt at INTA#. Unfortunately, the device being dumb
-> as it is, doesn't utilize the interrupt pin register to advertise that it
-> does in fact have an interrupt there. So, I assume that once again, the
-> PROM doesn't give it one.
+Here is the essence:
 
-Of course not... how should it know? But....
+http://lists.linuxppc.org/listarcs/linuxppc-dev/200002/msg00079.html
 
-> Is there a way, in Linux, for me to programmatically and manually assign
-> an interrupt to this device as might have been done in the PROM? I'm
-> guessing I have to twiddle some registers in the North Bridge, correct?
+And to say I do read every message on this list...
 
-As far as I know, yes, it depends on the host bridge. However, I don't
-think there's any bridge configuration involved here, as the interrupt
-pin routing would rather be done in hardware.
-
-If this is in a PowerMac (at least those previous to UMA), then there
-is a fixed IRQ per physical slot. All 4 PCI interrupt lines are OR'ed
-together per slot.
-
-However, there are other IRQ routing schemes as well... the above being
-the easiest one, because the IRQ value can be hardcoded based on the
-slot, which you can determine by software.
-
-Plus, there are ways to determine an unknown IRQ by letting the device
-generate an interrupt, and seing what IRQ it comes in on. You might
-find more info in 'Linux Device Drivers' by Alessandro Rubini.
+Thanks
 
 Michel
+
+PS I've not tried this patch yet, if anyone wants to go ahead...
 
 -------------------------------------------------------------------------
 Michel Lanners                 |  " Read Philosophy.  Study Art.
