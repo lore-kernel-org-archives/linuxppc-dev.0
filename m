@@ -1,12 +1,11 @@
-Message-ID: <3CFCF31B.50103@embeddededge.com>
-Date: Tue, 04 Jun 2002 13:04:27 -0400
+Message-ID: <3CFCF745.8090002@embeddededge.com>
+Date: Tue, 04 Jun 2002 13:22:13 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: More details on the telnet with CONFIG_PIN_TLB problems
-References: <20020603075322.GI6765@zax> <15612.47259.378190.93509@argo.ozlabs.ibm.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: pt_regs.dbcr0/1
+References: <15608.22230.504008.818858@argo.ozlabs.ibm.com>	<3CFC16A4.7090902@embeddededge.com> <15612.18916.648386.173632@argo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -14,10 +13,25 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Paul Mackerras wrote:
 
-> Looks like Ben and I have found the problem;
+> So has anyone done a 4xx-aware gdb yet?
 
-Cool.  I know this works OK on 8xx, I just haven't finished a working
-tlb miss handler that will work regardless of the page size.
+Not to my knowledge.  Daniel Jacobowitz (drow) has discussed it a little,
+but I have not heard much about it lately.
+
+> ....  I think we are in violent agreement. :)
+
+Not again......It must be that Aussie English :-)
+
+
+> ..... gdb + xmon/kgdb
+> may be possible but we will have to see how complex it looks once we
+> know what the kernel support for gdb looks like.
+
+I believe we have tied the BDI context switch configuration option to
+allowing external debugging by ensuring the kernel doesn't mess around
+with the debug registers.  We have at least discussed doing it.  As
+long as we properly context switch the debug registers, all of the software
+modes should coexist happily.
 
 Thanks.
 
