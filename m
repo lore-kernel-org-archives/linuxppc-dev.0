@@ -1,36 +1,37 @@
-Date: Sat, 11 Aug 2001 19:43:20 +0200 (CEST)
+Date: Sat, 11 Aug 2001 19:46:06 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Hollis Blanchard <hollis@austin.ibm.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP and generic PCI resource assignment
-In-Reply-To: <20010810143423.B28326@austin.ibm.com>
-Message-ID: <Pine.LNX.4.05.10108111942220.11186-100000@callisto.of.borg>
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Derrik Pates <demon@devrandom.net>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Fix for PPC audio devices that can't reendianize samples
+In-Reply-To: <20010810183346.9F02E2F040@apollo.valhalla.net>
+Message-ID: <Pine.LNX.4.05.10108111944430.11186-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 10 Aug 2001, Hollis Blanchard wrote:
-> On Fri, Aug 10, 2001 at 10:38:04AM +0200, Geert Uytterhoeven wrote:
-> > There are (or were, read as in `were the last time I
-> > tried it, a few months ago) still some problems, though. One of them is that
-> > the hardcoded ISA motherboard resources (i8259 and legacy stuff) are
-> > requested before PCI resources are done, and that the PCI bus parent
-> > resources were not requested and thus don't appear in the full resource
-> > tree.
+On Fri, 10 Aug 2001, Iain Sandoe wrote:
+> > The attached patch adds code to drivers/sound/dmasound/trans_16.c to
+> > byteswap little-endian audio samples for hardware that needs it (like the
+> > DACA audio chip in the iBook and iBook FireWire), and also marks the DACA
+> > in the iBook FireWire as being unable to handle little-endian audio
+> > samples (in dmasound_awacs.c).
 >
-> There is still that problem with VGA console, which does a
-> request_resource(&ioport_resource,...) after the PCI host bridge has been
-> found, but well before the PCI code has reserved all of *its* resources. So
-> reserving 0-ffffffff IO fails because VGA already grabbed a tiny chunk at
-> 0x3d0 or so.
+> we've been round this loop ;-)))
 >
-> Even regardless of order, VGA console is requesting directly from
-> ioport_resource, which probably should be changed (Paul suggested
-> request_region instead)...
+> the reason that the byte-swap code was taken out of trans_16.c is that it
+> will never be allowed into the kernel.
 
-Yes, using request_region() is the correct fix.
+And we'll have to remove the current byteswap code in the kernel (there still
+is some).
+
+> (b) if applications don't work properly with BE-only devs then bang on the
+> app maintainer (or send patches) to fix it.
+
+And since Debian has a nice bug tracking system: try the Debian version of the
+app, if that one doesn't work, file a Debian bug report.
 
 Gr{oetje,eeting}s,
 
