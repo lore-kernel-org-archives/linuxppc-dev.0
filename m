@@ -1,55 +1,40 @@
-Message-ID: <39D68EB8.4CAD5168@mvista.com>
-Date: Sat, 30 Sep 2000 21:09:12 -0400
-From: Dan Malek <dan@mvista.com>
+Subject: HFS+ kernel module
+To: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 30 Sep 2000 19:34:44 -0700 (PDT)
 MIME-Version: 1.0
-To: frowand@mvista.com
-CC: paulus@linuxcare.com.au, Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-References: <19340822040932.8760@mailhost.mipsys.com>
-			<Pine.LNX.4.10.10009281150130.3468-100000@cassiopeia.home>
-			<14803.57550.118150.759977@argo.linuxcare.com.au>
-			<39D41AA2.C586D738@mvista.com>
-			<14804.7238.688771.238444@argo.linuxcare.com.au>
-			<39D4E85F.926CFD5B@mvista.com> <14805.17492.766815.388301@argo.linuxcare.com.au> <39D66E4D.4364FC8B@mvista.com>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20001001023444.804932B54A@marcus.pants.nu>
+From: flar@pants.nu (Brad Boyer)
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Frank Rowand wrote:
+I finally fixed enough bugs in my hfsplus module that it almost
+works. It isn't ready for regular users, tho. It has a tendency
+to crash, although I must admit that I only had it crash once,
+and only on umount. It also does a very bad job of handling
+non-ASCII characters, and it doesn't do anything to / characters,
+so you may get some strange listings and files that show up in
+the listing but aren't accessible. It's still fairly verbose with
+debugging output, although it's drastically trimmed down from
+what was there.
 
-> This raises a question about equivalent mapping though.  Everything above
-> ioremap_base is equivalently mapped by ioremap().  In 2.4.0-test2
-> ioremap_base is initialized in MMU_init():
+I'd appreciate it if some daring people try it out, and if it
+crashes, please give me the function it crashed in if possible.
+If anyone knows unicode fairly well, and is willing to help
+fix the problems with the unicode conversion, I'd really
+appreciate it, because it's currently very broken for anything
+other than ASCII.
 
-This "equivalent" mapping is going to be the greatest challenge.  The
-reason this happens is because we need access through the MMU before
-the kernel has initialized the kernel VM allocator.  Parts of the early
-kernel initialization that have to access control/status registers of
-various types are going to be mapped 1:1.  After some of these proposed
-changes, these mappings are going to be destroyed and remapped (to get
-the "standard" 0xff000000 address).  This is really bad for the
-integrated
-devices since any that used the original mapping, either in the hardware
-registers or in data structures, must be tracked down, changed and
-initialized all over again.  Either the "iobase" variable is going to
-continue to live, or io.h is going to be filled with lots of #ifdefs
-with different constants (again).
+You can find the patch in my directory on devel.linuxppc.org.
 
+http://devel.linuxppc.org/pub/users/flar/
 
-> So to answer your question, I arbitrarilly chose 0xe8000000 as ioremap_base
-> because it seemed within reason, given other existing values.  I can move
-> ioremap_base to lots of other places if I need to.
+It is a patch against 2.2.14, but it applies to 2.2.17 and
+should apply to almost any 2.2.x kernel.
 
-The 0xff000000 simply isn't workable on many of the embedded 8xx
-and cPCI prep/chrp boards for the reason I mentioned above.  If Paul
-wants to do this on the PMacs to assist the problem he is trying to
-solve, that's fine.  I don't see any value, and only lots of time spent
-in both coding and processors cycles, in trying to make this a common
-VM mapping across all PowerPC platforms.
+	Brad Boyer
+	flar@allandria.com
 
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
