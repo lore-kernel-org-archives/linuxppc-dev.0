@@ -1,56 +1,61 @@
-To: Kent Borg <kentborg@borg.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 25 Jul 2003 14:59:23 -0500 (CDT)
+From: Bret Indrelee <Bret.Indrelee@qlogic.com>
+Reply-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: Wolfgang Denk <wd@denx.de>, Kent Borg <kentborg@borg.org>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: IO, ANSI vs GCC structs 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 25 Jul 2003 13:47:34 EDT."
-             <20030725134734.J29161@borg.org>
-Date: Fri, 25 Jul 2003 21:22:47 +0200
-Message-Id: <20030725192252.428EEC602D@atlas.denx.de>
+In-Reply-To: <5.1.0.14.2.20030725123123.03855f58@mail.ebshome.net>
+Message-ID: <Pine.LNX.4.44.0307251454321.22864-100000@spider.ancor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030725134734.J29161@borg.org> you wrote:
+On Fri, 25 Jul 2003, Eugene Surovegin wrote:
+> At 12:22 PM 7/25/2003, Wolfgang Denk wrote:
+> > > accessed through a structure?  Is it acceptable to do:
+> > >
+> > >   #define MYHW  (MY_MBAR+42)
+> > >
+> > >   ...
+> > >
+> > >   out_be32(MYHW, 0xco1df00d);
+> >
+> >...I would not accept such code.
+> >
+> >There is one fundamental difference: a field in a struct has a  type,
+> >i.  e.  the  compiler "knows" how big it is (8, 16, 32, ... bits), if
+> >special attributes apply (volatile), etc.
 >
-> How important is it to the kernel coding style that hardware be
-
-I cannot speak for the powers that be, but...
-
-> accessed through a structure?  Is it acceptable to do:
+> Although functions like out_be32 also *know* the size :).
 >
->   #define MYHW  (MY_MBAR+42)
+> IMHO, it's not a good idea to access IO remmaped registers simply through C
+> struct, it's better and safe to use out_* and in_*.
+
+Wouldn't best practices also include using a base address rather than
+a constant, so that when a new board places the hardware in a different
+location all you have to do is find it?
+
+out_be32(my_bar + offsetof(myregs_t, sna_reg), 0xdeadbeef);
+
+> There are issues that C struct cannot deal with - load/store reodering (of
+> course you can insert wmb() and friends if you know what you are doing :).
 >
->   ...
->
->   out_be32(MYHW, 0xco1df00d);
+> I think the best practice is to use C struct (for readability) and
+> out_*/in_* on structure members for actual access.
 
-...I would not accept such code.
+I've always written low level I/O routines for everything in a driver
+because it is easier to adapt when someone changes how they want to do
+access to the device. The code all calls the low level IO routines.
 
-There is one fundamental difference: a field in a struct has a  type,
-i.  e.  the  compiler "knows" how big it is (8, 16, 32, ... bits), if
-special attributes apply (volatile), etc.
-
-There is no such information with a #define like yours above.
-
-OK, you can write
-
-	#define FOO	((volatile uint32_t *)(FOO_BASE+FOO_OFFSET))
-
-but this isn't really readable, is it?
-
-Just my $0.02
-
-
-Best regards,
-
-Wolfgang Denk
+-Bret
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-They say a little knowledge is a dangerous thing,  but it is not  one
-half so bad as a lot of ignorance.   - Terry Pratchett, _Equal Rites_
+Bret Indrelee                 QLogic Corporation
+Bret.Indrelee@qlogic.com      6321 Bury Drive, St 13, Eden Prairie, MN 55346
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
