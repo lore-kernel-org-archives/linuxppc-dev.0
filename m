@@ -1,33 +1,49 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Hadess <hadess@writeme.com>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <debian-powerpc@lists.debian.org>
+Date: Fri, 24 Nov 2000 15:23:56 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Avery Pennarun <apenwarr@worldvisions.ca>,
+        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+        daenzerm@student.ethz.ch, Hadess <hadess@writeme.com>,
+        debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
 Subject: Re: apmd and other archs
-Date: Fri, 24 Nov 2000 14:51:02 +0100
-Message-Id: <19341019072246.27236@192.168.1.2>
-In-Reply-To: <974986581.3a1d1d55698b0@imp.free.fr>
-References: <974986581.3a1d1d55698b0@imp.free.fr>
+In-Reply-To: <Pine.LNX.4.10.10011231923001.18630-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.HPX.4.10.10011241514240.14737-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hi,
+On Thu, 23 Nov 2000, Michael Schmitz wrote:
+
+> The init scripts of all distributions but SuSE handle this just fine
+> (mount -n). At least SuSE seems to mount the root fs rw from the start,
+> which causes all sorts of pain if you want to boot into a RedHat system
+> using the SuSE rescue disk. No idea how SuSE copes with readonly root fs.
+
+Yes, but read my previous posts. I consider the -n and -f mount options to
+be a kludge. There is a chicken and egg problem and the workaround is a
+kludge. The list of mounted file systems should be maintained by the
+kernel IMHO, since the kernel has to know them in any case.
+
+Mouting root read/write too early is even worse. That's no problem
+since Suse waits for root fs to be checked before remounting rw. But Suse
+has otehr problems when you want to maximize sharing on diskless systems
+(init scripts in /sbin for one).
+
+> > non-clean shutdown which you would have to erase before the first mount is
+> > done (adding another funky option to mount). Unless you make some kind of
+> > ramdisk compulsory, which might not be bad idea after all with current
+> > memory sizes.
 >
->Seems like I missed a good part of the discussion... First reason I
->wanted apmd
->marked as x86 only, is because it is useless _now_ on power-pc. We have
-a PMU,
->not an APM BIOS (ugh!), we have pmud not apmd. What is the point compiling it
->for powerpc if it's not working and will probably never ?
+> Yeah, like Linux will never run on my old 4 MB Mac anyway.
 
-Don't mix PowerPC and PowerMac. PowerMacs rely on pmud. But PReP and CHRP
-machines can be more PC-like that you'd like them to in some cases :)
-They don't really have an apm bios, but who knows... They certainly don't
-have a PMU and don't use pmud.
+BTW: what is the minimum RAM to run Liunx/PPC these days ? My smallest
+(quasi embedded) machines have 16Mb and I hope to keep these running for
+at least 5 to 7 more years.
 
-I've been told there's an IBM PReP thinkpad out there. What does this box
-use for power management ? It's own mecanism ?
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
