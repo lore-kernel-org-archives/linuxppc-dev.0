@@ -1,25 +1,30 @@
-Message-ID: <3BD78E88.90337302@mvista.com>
-Date: Thu, 25 Oct 2001 00:01:12 -0400
+Message-ID: <3BD790A3.D4AF4852@mvista.com>
+Date: Thu, 25 Oct 2001 00:10:11 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Okehee Goh <ogoh@asu.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU in MBX860
-References: <CPEELCODKANPCLBCAGOFKEBKCAAA.ogoh@asu.edu>
+To: Bryan Rittmeyer <bryan@ixiacom.com>
+Cc: linuxppc-embedded@lists.linuxppc.org, akuster@mvista.com
+Subject: Re: http_load causes 405GP kernel panic w/ linux_2_4_devel
+References: <3BD77667.2060406@ixiacom.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Okehee Goh wrote:
+Bryan Rittmeyer wrote:
 
->  My question:
->  In MPC860, is there any way for supervisor mode's kernel to access all
-> memory space
+> Looks like linux_2_4_devel is very unstable under high TCP/IP loads
+> and low amounts of memory on the Walnut.
 
-That's the purpose of the SHARED indicator in the TLB.  It effectively
-disables ASID checking and if you mark pages SHARED but not user access
-the kernel can access all pages while the applications are still protected.
+Yeah, that's why it's called a _development_ tree.  If you want to
+play around here, the purpose is for you to help us fix the bugs.
+
+When you find a solution, post a patch and we'll all take a look
+at it.  If you are willing to help out, that's great, but we all have
+plenty to do so just expecting someone else to look at it and fix
+it for you isn't going to be very satisfying :-).
+
+Thanks.
 
 
 	-- Dan
