@@ -1,38 +1,30 @@
-Message-ID: <40048A4B.1040400@g-house.de>
-Date: Wed, 14 Jan 2004 01:16:11 +0100
-From: Christian <evil@g-house.de>
-MIME-Version: 1.0
-To: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: cpu_setup_6xx.S:19:22: ppc_defs.h: No such file or directory
-References: <1074025766.23751.2.camel@chuck.arlut.utexas.edu>
-In-Reply-To: <1074025766.23751.2.camel@chuck.arlut.utexas.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 14 Jan 2004 09:53:00 +0100
+From: valvoline <valvoline@vrlteam.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: DMA timing issues with promise controllers
+Message-ID: <20040114085300.GL2658@adapter.n0skillz.org>
+Reply-To: valvoline@vrlteam.org
+References: <20040112065447.GD7303@heliosphan.in.cryptobackpack.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040112065447.GD7303@heliosphan.in.cryptobackpack.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Sun, Jan 11, 2004 at 10:54:47PM -0800, mutex wrote:
 
-Matthew S. McClintock wrote:
-| I have a problem with the kernel build. It seems completely random in
-| occurrence, however I'm sure something has to be causing it.The error is
-| as follows:
-|
-| cpu_setup_6xx.S:19:22: ppc_defs.h: No such file or directory
-|
-| And the kernel build can not complete. Sometimes running a make dep and
-| continuing again with a make uImage will correct the problem but not
-| always. Does anyone have any idea why sometimes this file does not get
-| built correctly and other times it does?
+> I'm willing to do some of the debugging myself, just not sure where to
+> start.
+> clues anyone ?
 
-filesystem / memory corruption, even slightly overclocking the cpu, too
-old / too new compiler or binutils.
-when the error occurs, can you actually stat ppc_defs.h ?
+i'm not an ide guru, but your problem sounds like there's some troubles
+in the timers handling/sync
 
-Christian.
-- --
-BOFH excuse #200:
-
-The monitor needs another box of pixels.
+regards
+--
+[ valvoline :: VRL Team :: s0ftpj :: freaknet Medialab :: GPG key available  ]
+[ key fingerprint :: - :: B7E2 48BC 705F AE8F 9ABE  E422 076A 2561 1D67 B4DD ]
+[ GPG key available on keyserver :: pgp.mit.edu :: with keyID :: 1D67B4DD :: ]
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
