@@ -1,70 +1,54 @@
-From: rdiz@alumni.deec.uc.pt
-Message-ID: <3321.62.48.238.11.1085671193.squirrel@alumni.deec.uc.pt>
-Date: Thu, 27 May 2004 16:19:53 +0100 (WEST)
-Subject: Compiling kernel 2.6.7-rc1 for 8xx
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+In-Reply-To: <40B4880B.1000801@intracom.gr>
+References: <40B4880B.1000801@intracom.gr>
+Mime-Version: 1.0 (Apple Message framework v613)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B89F9AE2-AFF4-11D8-89B7-003065F9B7DC@embeddededge.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Kumar Gala <kumar.gala@motorola.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: 8xx-2.6 | Prolog
+Date: Thu, 27 May 2004 11:44:21 -0400
+To: Pantelis Antoniou <panto@intracom.gr>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+On May 26, 2004, at 8:05 AM, Pantelis Antoniou wrote:
 
-I'm trying to compile kernel 2.6.7-rc1 for a Motorola 860T misc board. As
-of now, I've also tried compiling 2.6.6, 2.6.5, the latest BenH 2.6
-Development kernel and the latest Yellow Dog's latest kernel. All came
-down to compile errors, and I'm now focusing on solving the problem for
-2.6.7-rc1.
+> Awaiting comments.
 
-So, I'm getting errors when the compilation reaches file
-arch/ppc/8xx_io/uart.c . Here is some of the output:
+The interrupt stuff in patch 1 was wrong when it was done in 2.4
+and I'm disappointed to see it again in 2.6.  Unfortunately, I
+don't have time to fix it now, but it will get done properly when I
+implement the similar thing for the 8560.
 
---------------------
-arch/ppc/8xx_io/uart.c:86: warning: type defaults to `int' in declaration
-of `DECLARE_TASK_QUEUE'
-arch/ppc/8xx_io/uart.c:86: warning: parameter names (without types) in
-function declaration
-arch/ppc/8xx_io/uart.c: In function `serial_console_device':
-arch/ppc/8xx_io/uart.c:149: storage class specified for parameter `rs_table'
-arch/ppc/8xx_io/uart.c:149: parameter `rs_table' is initialized
-arch/ppc/8xx_io/uart.c:151: warning: braces around scalar initializer
-arch/ppc/8xx_io/uart.c:151: warning: (near initialization for `rs_table')
-arch/ppc/8xx_io/uart.c:151: warning: excess elements in scalar initializer
+In patch 4, get rid of that #if 0 around the machine check exception.
+If the code works, just check it in.  We can't define update_mmu_cache
+as a null function.  It performs a necessary function of cache
+management.  We may just be lucky because the caches on the 8xx
+are small, but this is a subtle bug waiting to happen.
 
-...
+Why did you need to include patch 5 and 6?  These should have
+been done and checked into the trees long ago.
 
-arch/ppc/8xx_io/uart.c:185: field `tqueue' has incomplete type
-arch/ppc/8xx_io/uart.c:186: field `tqueue_hangup' has incomplete type
-arch/ppc/8xx_io/uart.c:202: warning: structure defined inside parms
-arch/ppc/8xx_io/uart.c:202: storage class specified for parameter
-`ser_info_t'
-arch/ppc/8xx_io/uart.c:204: storage class specified for parameter `sercons'
-arch/ppc/8xx_io/uart.c:204: parameter `sercons' is initialized
-arch/ppc/8xx_io/uart.c:213: parse error before `*'
-arch/ppc/8xx_io/uart.c:213: storage class specified for parameter
-`change_speed'
-arch/ppc/8xx_io/uart.c:213: warning: function declaration isn't a prototype
-arch/ppc/8xx_io/uart.c:214: storage class specified for parameter
-`rs_8xx_wait_until_sent'
-arch/ppc/8xx_io/uart.c:216: parse error before `*'
-arch/ppc/8xx_io/uart.c:218: storage class specified for parameter
-`serial_paranoia_check'
---------------------
+In patch 8, why is the 8xx FEC driver dependent upon NETTA and
+NETPHONE?  All 8xx boards should use this driver, and it would have
+been nice if you would have done board specific files for all other
+8xx boards that are supported, even if they couldn't be tested.  The
+price of making such major changes that affect everyone :-)
 
-I subtracted some lines (...) that show warnings in the struct rs_table,
-as there was one already declared (I didn't found it). When I compare the
-uart.c file for 8xx with the one for 8260, I find that this structure is
-the same, and no errors were found when compiling for it.
+I did not check these in.  Tom can you do so and make sure other
+8xx boards will at least compile?  I'll fix up the stuff I don't like
+later :-)
 
-I'm trying to follow the errors, but I didn't found a link between the
-structure rs_table and serial_console_device (where these warnings start).
+Thanks.
 
-Has anyone sucessfully compiled the kernel for 8xx PowerPC yet?
+	-- Dan
 
-Any help would be apreciated,
-Regards,
-Ricardo Diz
+>
+> Pantelis
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
