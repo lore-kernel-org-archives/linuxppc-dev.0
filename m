@@ -1,26 +1,34 @@
-Date: Mon, 20 Mar 2000 17:40:06 -0800 (PST)
+Date: Mon, 20 Mar 2000 17:54:41 -0800 (PST)
 From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: David Edelsohn <dje@watson.ibm.com>
-cc: Florian Lohoff <flo@rfc822.org>, Gabriel Paubert <paubert@iram.es>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC/MCA RS/6000 port ? 
-In-Reply-To: <200003201959.OAA18524@mal-ach.watson.ibm.com>
-Message-ID: <Pine.LNX.3.96.1000320173923.19093E-100000@deepspace.mklinux.org>
+To: Rhys <rhiannon@miranda.inetsolve.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: limited range of data error
+In-Reply-To: <200003202228.RAA22962@miranda.inetsolve.com>
+Message-ID: <Pine.LNX.3.96.1000320175258.19093G-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 20 Mar 2000, David Edelsohn wrote:
+On Mon, 20 Mar 100, Rhys wrote:
 
-> 	I did not think thta PPC601 systems were supported by Linux/PPC,
-> only by MkLinux.
+> When i try to compile i get these errors:
 
-NuBus machines are only supported by MkLinux.  PPC 601s are supported by
-MkLinux and LinuxPPC, but not NetBSD.
+> act_comm.c:2234: warning: comparison is always true due to
+> limited range of data type
+
+>    char BUFF[MAX_STRING_LENGTH];
+>
+>    if ((rpfile = fopen(ASCTITTLE_FILE, "r")) !=NULL) {
+>      while (( BUFF[num]=fgetc(rpfile)) != OEF) // Line 2234
+
+I assume that's EOF, and not OEF.  Anyway, this can be fixed by making
+BUFF[] be an array of signed char instead of just char.  Ran into the same
+issue this past wekend in some code I was writing.
 
 
+Later,
 David
 
 ---------------------------------------------------------------------
