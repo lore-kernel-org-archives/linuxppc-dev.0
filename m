@@ -1,52 +1,59 @@
-Date: Mon, 30 Oct 2000 13:18:11 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Timothy A. Seufert" <tas@mindspring.com>
+Date: Mon, 30 Oct 2000 13:50:17 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Heiko Jakob <buffalo@the7lg.de>
 cc: Neil Russell <caret@c-side.com>, David Riley <oscar@the-rileys.net>,
-        linuxppc-dev@lists.linuxppc.org
+        linuxppc-dev@lists.linuxppc.org,
+        "Timothy A. Seufert" <tas@mindspring.com>
 Subject: Re: PPC byte ordering
-In-Reply-To: <v04220803b622eb4a1108@[10.0.0.42]>
-Message-ID: <Pine.LNX.4.10.10010301315510.413-100000@cassiopeia.home>
+In-Reply-To: <003101bff189$9ac1f800$084da8c0@uranus>
+Message-ID: <Pine.HPX.4.10.10010301329500.15431-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 30 Oct 2000, Timothy A. Seufert wrote:
-> At 5:24 PM -0700 10/28/00, Neil Russell wrote:
-> >It would in theory be possible to have the kernel run big-endian as it is
-> >and have certain user programs run little endian by setting the LE bit in
-> >the MSR register for the process in question.  The real problem here is
-> >that you have to add a *lot* of code to system calls to make this work.
-> >There are a few system calls that this would be real difficult, such
-> >as ioctl().  I once looked into doing this for the MIPS with SVR4 UNIX.
->
-> The other real problem is that Linus Torvalds has already said that
-> he will never ever in a million years accept a patch which attempts
-> to do such a thing, so you'd have to fork the kernel to do it.
-> According to Linus, architectures are either big or little-endian,
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> not both.  A sane position considering the syscall ugliness you
-  ^^^^^^^^^
-> mention...
+On Wed, 19 Jul 2000, Heiko Jakob wrote:
 
-Really? Or did he mean: big-endian kernels must not run little-endian binaries
-and vice versa.
+> How do the linux-mips people handle with big- and  little-endian code ?
+> Maybe they know a good solution, which allows both big- and little-endian
+> code to execute.
 
-Note that there exist 3 flavors of MIPS: 32-bit big-endian, 32-bit
-little-endian and 64-bit. Linux supports them all. Expect to upgrade the hard
-drives on your local Debian mirror soon :-)
+They compiler the kernel and the apps for different endianness AFAICT.
 
-Gr{oetje,eeting}s,
+> The PPC is big-endian by nature, and what for we do need little-endian code
+> to be executed on a PPC ?
 
-						Geert
+We don't need, especially since PPC endian switching is painful enough
+that you don't want to switch endianness on the fly:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+- the 601 uses a completely different, and much more complex method
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+- switching the processor is not sufficient if you want to access I/O due
+to the "address munging" system used to give the impression of
+little-endianness. The bridge also has to be reprogrammed, which is slow
+and causes some problems with SMP when the two processors are runninng
+with different byte orderings. Even a simple memory copy between two areas
+use by different endianness process would have to mung/unmung the data,
+even for simple text (or processes communicating through pipes...).
+
+I have written an x86 emulator for ROM BIOSes, it is much easier to run it
+in big endian and do byte swaps on every memory access (even the registers
+are byte swapped in a memory image actually). Older processors will trap
+on a 16 bit access at an odd address in LE mode, but lhbrx/sthbrx on an
+odd address will work perfectly in BE mode. The BIOS does a lot of 16 bit
+unaligned accesses due to its 8-bit 8088 origins, the emulator just does
+not care, to the point that there is not a single alignment check in the
+code (download it from ftp://vlab1.iram.es/pub/ if you are curious).
+
+In short, the mixed endian capability of PPC is not good enough to be
+effectively used. It would be a nightmare to try to use it. Make your life
+simpler: forget about it.
+
+If you absolutely want to do it, add minimal support to the kernel (wont't
+be easy to support 601 though) and handle the rest as a userspace problem.
+
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
