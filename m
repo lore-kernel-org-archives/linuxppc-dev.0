@@ -1,62 +1,33 @@
-Date: Tue, 9 Dec 2003 17:56:33 +0100 (CET)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: AlessandroPPC <aleppcrossi@libero.it>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: busybox problem
-In-Reply-To: <007b01c3be71$6ec82c20$0400a8c0@eurostudio.local>
-Message-ID: <Pine.LNX.4.44.0312091755210.6152-100000@linpc003.aimsys.nl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 9 Dec 2003 12:52:17 -0700
+From: Jeff Andre <andre@guardian.stortek.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 440GP DMA and dma.h
+Message-ID: <20031209195217.GA28122@guardian.stortek.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,
+I'm trying to get DMA working on a custom board with a 440GP.  I was
+having problem getting a DMA transfer started and traced the problem
+to 'enable_dma' not being called.  After a bit amount of research I
+found that my device driver didn't have an undefined external reference
+to 'enable_dma'.
 
-rc.sh is a script so needs /bin/sh or something
-do you use shared libraries? That might give
-problems
+I traced the problem to the include of <linux/pci.h> that eventually
+included <asm/scatterlist.h> that included <asm/dma.h>.  This header
+has many of the DMA functions defined as inline and static, 'enable_dma'
+being one of them.  If I comment out the include of <asm/dma.h> the
+compiler finds the include in my driver of <asm/ppc4xx_dma.h> and DMA
+transfers work (sort-of).
 
-Jaap-Jan
+Does anyone have a clue as to what I'm doing wrong?  I can't believe
+I'm the first to discover this.
 
-On Tue, 9 Dec 2003, AlessandroPPC wrote:
+Thanks,
 
->
-> Hi to all,
->
-> To solve a problem with ram root filesystem Wolfgang Denk has suggestes to
-> me  to use his
-> SELF ramdisk image.
-> I have successfully used his package.
-> But I have found a problem with BusyBox init, when T have tried to
-> customized the init board
-> configuration.
-> The problem is related to /etc/rc.sh init script, in fact editing rc.sh and
-> rebuilding the ramdisk
-> image the output init is the following:
->
->
->   "Bummer, could not run '/etc/rc.sh': No such device or directory"
->
-> Notice that /etc/rc.sh is present, is an exutable file and has root
-> privileges.
->
-> Any suggestion is appreciated.
-> R.R.C.S.C.
->
-> Thanks to all
-> Regards,
-> Alessandro
->
->
->
-
---
----
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+Jeff Andre
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
