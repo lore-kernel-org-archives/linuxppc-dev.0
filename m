@@ -1,53 +1,54 @@
+Message-ID: <003301c375c4$866c2520$960aa8c0@ksshin>
+From: "???" <ksshin@essetel.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <Pine.LNX.4.21.0308262014240.17370-100000@stimpy.bivio.net> <007301c36c53$079163c0$960aa8c0@ksshin> <3F4CE88B.2050307@mvista.com>
+Subject: Re: interrupt handling in 7410+64260
+Date: Mon, 8 Sep 2003 13:49:01 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16217.57099.255798.871698@cargo.ozlabs.ibm.com>
-Date: Sat, 6 Sep 2003 23:20:11 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Copy prefetch optimizations and non-coherent caches
-In-Reply-To: <5.1.0.14.2.20030905220237.00b084b8@mail.ebshome.net>
-References: <5.1.0.14.2.20030905220237.00b084b8@mail.ebshome.net>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Eugene Surovegin writes:
+Thank you for your response.
 
-> There are read prefetch optimization in several PPC specific functions
-> responsible for copying memory (copy_page, __copy_tofrom_user). Current
-> implementations will try to prefetch up to 4 (MAX_COPY_PREFETCH) cache
-> lines _after_ the end of the source buffer.
+according to your message, I try to find example source in
+my linux kernel(my Linux kernel is 2.4.18 from montavista)
+but I cannot find sources like cpci690.c, hxeb100.c and ev64260.c
+
+I also try to handle an external interrupt from MPP in various way.
+But I Failed until now.
+
+please help me...
+
+----- Original Message -----
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "???" <ksshin@essetel.com>
+Cc: "Paul White" <pwhite@bivio.net>; <linuxppc-embedded@lists.linuxppc.org>
+Sent: Thursday, August 28, 2003 2:21 AM
+Subject: Re: interrupt handling in 7410+64260
+
+
 >
-> Unfortunately, it's not a good idea on non-coherent cache CPUs. This
-> prefetching may establish cache lines for memory ranges that require
-> exactly the opposite (e.g. DMA read buffer).
-
-You are right.
-
-> I think we should disable prefetch if CONFIG_NONCOHERENT_CACHE is defined.
-> Other more complex solutions are possible, e.g. we can still prefetch our
-> own buffer but don't touch anything outside (I'll try to do some
-> performance testing to determine whether it's worth the effort :).
-
-The measurements I did on a ppc64 kernel indicated that most
-copy_tofrom_user calls were either for relatively small buffers
-(i.e. less than 256 bytes) or were page-sized and page-aligned.
-Therefore I did two routines, one optimized for small copies that
-didn't use any prefetching or dcbz's, and one optimized for page-sized
-copies.
-
-We could do something similar on ppc32 - we could do the small copy
-case with no prefetching (or maybe we could just prefetch on the first
-cache line), plus a page-copy case that does prefetching.  If you know
-you are doing exactly one page, it shouldn't be hard to set up the
-prefetching so you don't prefetch past the end of the source buffer.
-In fact it should be possible to code up a relatively simple optimized
-copy loop that avoids prefetching outside the source region if we just
-assume that the source and destination addresses are
-cacheline-aligned, and the size is a multiple of the cacheline size
-and is at least 8 (say) cache lines.
-
-Paul.
+> ksshin@essetel.com wrote:
+>
+> >In Linux kernel, there is a example about handling internal
+> >interrupt(mpsc as serial, ethernet), but I can't find the example for
+> >about handling external interrupt with GPP.
+> >
+> There are plenty of examples including DUART & PCI interrupts in ev64260.c.
+>
+> >Is there anyone who know that how to handle the external interrupt
+> >with GPP in 7410/64260?
+> >
+> >
+> Just look at ev64260.c, cpci690.c, hxeb100.c, ...
+>
+> Mark
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
