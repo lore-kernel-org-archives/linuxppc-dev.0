@@ -1,10 +1,14 @@
-Date: Fri, 19 Feb 1999 11:18:00 -0600 (CST)
-From: Gedanken <gedanken@io.com>
-To: "sean o'malley" <somalley@ed.mde.state.mi.us>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: RedHat ppc dist. [was: IBM providing Linux for RS6000]
-In-Reply-To: <v04011703b2f136b6a58c@[192.168.1.3]>
-Message-ID: <Pine.BSF.4.05.9902191115550.19338-100000@schultz-2.io.com>
+Date: Fri, 19 Feb 1999 10:41:01 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: Hartmut Koptein <koptein@et-inf.fho-emden.de>,
+        zankel@tarantel.rz.fh-muenchen.de, bh40@calva.net,
+        davidsen@prodigy.com, cort@persephone.cs.nmt.edu,
+        marsmail@globegate.utm.edu, dvdoug@tiac.net, paubert@iram.es,
+        jskov@cygnus.co.uk, hozer@drgw.net, linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ppc-dev] Summary: Restructuring Efforts
+In-Reply-To: <19990219142007.B5529@isis>
+Message-ID: <Pine.LNX.3.96.990219103803.23706C-100000@liberty.chnd1.az.home.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -12,19 +16,15 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 
-Sorry to be ignorant, but i didnt know redhat HAD a ppc distribution.  is
-that currently available?  will be soon?  will be included on the same x86
-cds i buy at microcenter??  Until seans email, i thought it was only
-available via ftp.
+> There is some value in having a generic kernel for the desktops (PReP,
+> powermac, CHRP), particularly if they can all boot an ELF image.
 
-gedanken
-----
-Heaven and Earth are impartial;
-They see the ten thousand things as straw dogs.
-The wise are impartial;
-They see the people as straw dogs.
+PReP and CHRP machines are not necessarily desktops/servers.
 
-ICQ:  25437703
+--
+Matt Porter
+mmporter@home.com
+Unix is a Linux-like operating system.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
