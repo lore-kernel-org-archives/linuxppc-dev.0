@@ -1,29 +1,34 @@
-Message-ID: <003501c3b85e$eb138ef0$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: <linuxppc-embedded@lists.linuxppc.org>,
-	"Tom Rini" <trini@kernel.crashing.org>
-Subject: tx_full v.s tx_free race fix in 8xx_io/enet.c?
-Date: Tue, 2 Dec 2003 00:00:27 +0100
+Message-ID: <001001c3b8a4$f8beff80$4844900a@hydingnb1>
+From: "hyding" <nari_dhy@nari-china.com>
+To: "linuxppc-embed" <linuxppc-embedded@lists.linuxppc.org>
+Subject: gcc-3.3.1-glibc-2.3.2-binutils-2.14 cross compile kernel problems
+Date: Tue, 2 Dec 2003 15:21:58 +0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I don't see the race the tx_free patch fixes. So I tried to generate a race by running 3-4 parallel
-ping floods from my Linux PC. Still no race/malfunction. So I removed the spin_lock_irq()/
-spin_unlock_irq() in scc_enet_start_xmit(). Still no race/malfunction. I applied
-the tx_free patch. Got an oops after only a few seconds. Added the spin_lock_irq()/
-spin_unlock_irq() again. Now it worked again.
+hi,
+    I have built cross-toolchain with gcc-3.3.1, binutils-2.14,
+glibc-2.3.2 and linux-2.4.18 header files. I have succeeded in compiling
+a test program with gcc into a static app. This test program runs well
+in the target. But i failed to build kernel with gcc. The info is as
+follow:
 
-It seems to me that the old tx_full stuff is working better that the new tx_free. Which
-race is it supposed to fix and how do I generate it?
+powerpc-ml300-linux-gnu-gcc -D__KERNEL__ -I/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common -I/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/arch/ppc -fsigned-char -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring -Wa,-m405   -DKBUILD_BASENAME=main -c -o init/main.o init/main.c
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h: In function `init':
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h:413: error: asm-specifier for variable `__sc_4' conflicts with asm clobber list
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h:413: error: asm-specifier for variable `__sc_5' conflicts with asm clobber list
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h:412: error: asm-specifier for variable `__sc_4' conflicts with asm clobber list
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h:412: error: asm-specifier for variable `__sc_5'
+...
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h: In function `write':
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h:408: error: asm-specifier for variable `__sc_4' conflicts with asm clobber list
+....
+/home/user/embedded-linux/src/crosstool-0.25/build/powerpc-ml300-linux-gnu/gcc-3.3.1-glibc-2.3.2/linux-2.4.18/include/asm/unistd.h:416: confused by earlier errors, bailing out
+make: *** [init/main.o] Error 1
 
-This is the changeset that introduces tx_free:
-http://ppc.bitkeeper.com:8080/linuxppc_2_4_devel/diffs/arch/ppc/8xx_io/enet.c@1.12.1.8?nav=index.html|src/.|src/arch|src/arch/ppc|src/arch/ppc/8xx_io|hist/arch/ppc/8xx_io/enet.c
-
- Jocke
-
+Thanks.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
