@@ -1,27 +1,42 @@
-Date: Mon, 21 Oct 2002 01:02:04 -0800
-From: Ethan Benson <erbenson@alaska.net>
+Message-Id: <200210211341.PAA17882@ipnmail.in2p3.fr>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Xavier Grave <grave@ipno.in2p3.fr>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: install with Debian CD ok, but can't boot any kernel
-Message-ID: <20021021090203.GE31739@plato.local.lan>
-References: <200210181610.SAA19888@ipnmail.in2p3.fr> <3DB0D2E7.57F51578@koffie.nl> <20021019071551.GW27982@plato.local.lan> <200210210834.KAA05195@ipnmail.in2p3.fr> <20021021084233.GD31739@plato.local.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021021084233.GD31739@plato.local.lan>
+Subject: just compiled a 2.4.19 kernel with smp support...
+Date: Mon, 21 Oct 2002 15:38:22 +0200
+MIME-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Oct 21, 2002 at 12:42:33AM -0800, Ethan Benson wrote:
-> until i get ofpath fixed you can add:
->
-> ofboot=ultra2:
+Hi,
 
-er that should be:
+I've just compiled a 2.4.19 kernel with smp support but when I do a cat
+/proc/cpuinfo I can only see one processor ? Do I need to set something more
+than SMP=y in make config ?
 
-ofboot=ultra2:2
+I'm using a debian kernel source package with the patches for powerpc.
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+xavier
+PS:
+[root@ipnnarval ~]# uname -a
+Linux ipnnarval 2.4.19 #1 SMP Mon Oct 21 11:51:53 CEST 2002 ppc 0 7455,
+altivec supported GNU/Linux
+[root@ipnnarval ~]# cat /proc/cpuinfo
+processor       : 0
+cpu             : 7455, altivec supported
+clock           : 999MHz
+revision        : 2.1 (pvr 8001 0201)
+bogomips        : 999.42
+
+total bogomips  : 999.42
+machine         : PowerMac3,6
+motherboard     : PowerMac3,6 MacRISC2 MacRISC Power Macintosh
+detected as     : 95 (Unknown Keylargo-based)
+pmac flags      : 00000000
+L2 cache        : 256K unified
+memory          : 256MB
+pmac-generation : NewWorld
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
