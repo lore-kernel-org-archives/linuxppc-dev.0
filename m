@@ -1,22 +1,38 @@
-Message-ID: <9004749C4AB4D211877600E0291B3224132FB5@server8.pep-kaufbeuren.de>
-From: Bernhard Nägele <bernna@pep-kaufbeuren.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Description of the differences between compilerswitches
-Date: Wed, 19 Apr 2000 08:12:11 +0200
+From: linuxppc_em@sina.com
+Message-ID: <001501bfaa04$6b5cd3e0$8e21fea9@p2kasvr>
+Reply-To: <linuxppc_em@sina.com>
+To: "kim sook young" <icekim@sec.samsung.co.kr>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <001901bfa9a9$2a7c0040$efc5dba8@sec.samsung.co.kr>
+Subject: Re: Error: Building glibc
+Date: Wed, 19 Apr 2000 21:36:04 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello everybody,
-is there any description, which are the differences between a gcc compiler
-made with the -elf extention or a compiler made with the -eabi extention?
-Is there a document, which describes the possibilities in a "complete" way?
+----- Original Message -----
+From: "kim sook young" <icekim@sec.samsung.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, April 19, 2000 10:44 AM
+Subject: Error: Building glibc
 
-/Bernhard Naegele
-Email: <mailto: bernna@pep-kaufbeuren.de>
+
+>
+> Hi, all
+> While building glibc, I got an error like the following
+.. cut
+> to build glibc. ( Actually  in order to install Binutils, Gcc and LibC, I followed the instructions only
+
+>except for  building linux/ppc kernel )
+    ^^^^^ maybe here is,   you neendn't build kernel, but you must config it,
+to build  glibc,  require some head files in kernel S/T,  especially some types defines. ;)
+
+john zhan.
+b.r.
+hacking time.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
