@@ -1,37 +1,31 @@
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: initrd problems 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 30 Oct 2002 17:28:51 +0100."
-             <ACFC1B4A-EC24-11D6-8213-0003931C2BFA@control.lth.se>
-Date: Wed, 30 Oct 2002 17:47:59 +0100
-Message-Id: <20021030164804.CC8A410154@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: phillip@lougher.demon.co.uk
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: [FYI] Squashfs released (compressed fs for embedded systems)
+Date: Wed, 30 Oct 2002 16:48:42 +0000
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <E186w1K-0002n1-0U@anchor-post-39.mail.demon.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <ACFC1B4A-EC24-11D6-8213-0003931C2BFA@control.lth.se> you wrote:
->
->    RAMDISK: Compressed image found at block 0
->    Freeing initrd memory: 361k freed
->    Kernel panic: VFS: Unable to mount root fs on 01:00
->
-> Anything very obvious that is wrong?
+First release of squashfs.
 
-Are you sure you have support for initial ramdisk (CONFIG_BLK_DEV_RAM
-+ CONFIG_BLK_DEV_INITRD) aneabled in your kernel  configuration?  And
-support for the filesystem type used in your ramdisk image?
+Squashfs is a highly compressed read-only filesystem for Linux (kernel 2.4.x). It uses zlib compression to compress both files, inodes and directories.  Inodes in the system are very small and all blocks are packed to minimise data overhead. Block sizes greater than 4K are supported up to a maximum of 32K.
 
-Best regards,
+Squashfs is intended for embedded systems, and for archival and general read-only filesystem use.
 
-Wolfgang Denk
+The filesystem was originally developed for an embedded PowerPC board (IBM Redwood variant), and so unusually for a Linux filesystem supports big-endian byte order (unlike Cramfs).  It however also supports other architectures, and has been tested on PowerPC, i586 and Sparc.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Nothing is easier than to denounce  the  evildoer;  nothing  is  more
-difficult than to understand him.                 - Fyodor Dostoevski
+Squashfs is available from http://squashfs.sourceforge.net.
+
+The patch file is currently against 2.4.19.  There is further info on the
+filesystem design etc. in the README.
+
+I'l be interested in getting any feedback...
+
+Phillip Lougher
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
