@@ -1,59 +1,70 @@
-Date: Mon, 18 Jan 1999 10:00:01 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Benjamin Herrenschmidt <bh40@calva.net>, Cort Dougan <cort@cs.nmt.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MCLK=100 breaks PowerBook
-In-Reply-To: <19990118021910.020182@smtp.calvacom.fr>
-Message-ID: <Pine.LNX.4.03.9901180953040.339-100000@mercator.cs.kuleuven.ac.be>
+Date: Mon, 18 Jan 1999 10:21:46 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+cc: Dan Malek <dmalek@jlc.net>, Johnnie Peters <jpeters@phx.mcd.mot.com>,
+        Michael Meissner <meissner@cygnus.com>,
+        Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>,
+        linuxppc-dev@lists.linuxppc.org, gdt@cygnus.com
+Subject: Re: Booting 2.2.0-pre6 on a PowerStack-II (Net 4000/200)
+In-Reply-To: <Pine.LNX.3.96.990117115308.15296A-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.HPP.3.96.990118100740.3058A-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 18 Jan 1999, Benjamin Herrenschmidt wrote:
-> The default mclk setting of 100MHz for the Rage LT-G breaks on my
-> PowerBook G3 Series (garbage on screen, accelerated X hangs). I added
-> mclk:83 to my command line and it works fine again (and, progress from
-> pre-4, I have no more snow in X when moving things around).
+
+
+On Sun, 17 Jan 1999, Cort Dougan wrote:
+
 > 
-> >atyfb: 3D RAGE LT PRO [0x4c47 rev 0x80] 4M SGRAM, 230 MHz PLL, 83 Mhz MCLK
+> The prep/mbx boot code is a mess right now and I'm hesitant to touch it
+> at the moment because we're at 2.2 and it works for most machines right
+> now.  I know from the past that touching it breaks at least some machine 
+> somewhere.
 > 
-> the chip ID 0x4c47 should be set to 83 MHz by default, not 100.
+> What I would like to do is keep arch/ppc/boot/ for MBX and prep since
+> they're so similar but setup a different relocation strategy.  Right now
+> it's mostly a result of me trying out things and stopping when everything
+> I could get ahold of worked and patching it as bug reports came in.
 > 
-> Note that I made a typo the first time I tested and I used 88Mhz. it
-> works fine too.
+> The new one should be linked at a safe address (for PReP this could be
+> 10-16M).  After load we relocate ourselves there, use the 10-12M range for
+> free space and decompress the kernel.  This requires 16M but I'm not sure
+> there are many machines out there with <16M.
+> 
+> This would take care of every prep I know of.  They all load at a
+> different address (sometimes depending on how you boot) but that region
+> should be safe.  Does anyone see problems with that?
 
-I'm already aware that the parameters for the LT versions are not really
-correct. On Cort's PowerBook, it's even worse: OF (or MacOS) seem to program it
-to a mclk of only 40 MHz, with a PLL limit of 120 MHz. Unfortunately even with
-these parameters it doesn't work :-(
 
-> MacOS ATI driver creates a strange property in the device tree. It's name
-> is "MCLK,XCLK" and the value is 00001a38 00001a38. Geert, those values
+Why don't you compile with the -m relocatable option for PreP, which
+allows executing at any addres. Have a look at how I've done it in the
+prep loader I've written. Some assembly glue at the beginning performs the
+relocation and calls a C routine which essentially decides where to
+relocate and set the stack and other things. Then it relocates again at
+the highest possible address (everything as a single block like boot).
 
-If you convert these to decimal, you get `6712', i.e. a mclk of 67 MHz.
-Cort: what are the `MCLK,XCLK' properties for your PowerBook?
+You may have problem with preploader for other reasons (multiplying the 
+number of boot methods) but this part is quite clean and does not rely
+on any fixed address.
 
-(my RAGE II+ doesn't have `MCLK,XCLK')
+Nevertheless, since the MBX firmware understands ELF AFAIK, they should be
+handled somewhat differently than PreP. However, this is only a matter
+of linker scripts and compiler option depending on CONFIG_MBX. 
+(There is so much condiftional code on CONFIG_MBX in the source that 
+adding a couple of them should not matter, -mrelocatable increases
+somewhat the code size so it should be PreP specific since the machines
+are much less memory constrained, and I've been careful to write the
+code in a way which minimizes this kind of bloat). 
 
-> have any meaning to you ? If you tell me how to do, I could calc the MCLK
-> used by MacOS by peeking appropriate registers from MacsBug and we could
-> use this value for the kernel with this chipID.
+I'm in the process of improving preploader to handle the no residual data
+case of preploader (I've finally some hints on how to do it). I could not
+do it during the week-end due to serious problems with the computer system
+here requiring major reconfiguration. 
 
-Just enable #define DEBUG in atyfb and feed the PLL values reported during boot
-up to
-
-    http://www.cs.kuleuven.ac.be/~geert/bin/atydebug.c.gz
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+	Gabriel
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
