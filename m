@@ -1,45 +1,37 @@
-Message-Id: <200008100610.IAA01208@piglet.grunz.lu>
-Date: Thu, 10 Aug 2000 08:10:39 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Hidden file in linux-pmac-devel @ linuxcare.com.au
-To: Paul Mackerras <paulus@linuxcare.com>
-cc: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 10 Aug 2000 09:44:28 +0300 (EET DST)
+From: Topi Kanerva <tkanerva@ees2.oulu.fi>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Derek Homeier <supas100@astrophysik.uni-kiel.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Backlight control on Lombard PB
+In-Reply-To: <Pine.LNX.4.10.10008090004530.22030-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.GSO.4.21.0008100940040.28327-100000@stekt6>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul,
+On Wed, 9 Aug 2000, Michael Schmitz wrote:
 
-There's a hidden link somewhere in your devel tree pointing to something
-not existing within that tree:
+>Should be fixed in BenH's current tree, he said he was going to do it this
+>past weekend. The pmu backlight controller didn't get registered on the
+>Lombard (and possibly Wallstreet) because the backlight-control property
+>is missing on these machines.
 
-...
-diff: linux/arch/i386/kernel/.#pci-pc.c: No such file or directory
-...
+Well, the backlight control surely doesn't work on Pismos... I just hate
+it when I have to boot over to MacOS to switch up the backlight level
+(I usually keep it low because it eats so much battery...)
+Now, I realize that the PMU on Pismos is somewhat different, but supposedly
+there is a way (in MacOS) to try to poke what kind of values are being
+written to the registers when you change the backlight in MacOS (fn-F1/F2)
 
-[mlan@piglet /mnt/r4/usr/src]$ ll linux/arch/i386/kernel/.#pci-pc.c
-lrwxrwxrwx   1 mlan     users          44 Aug  9 19:39 linux/arch/i386/kernel/.#pci-pc.c -> paulus@argo.linuxcare.com.au.28496:961157532
-
-If it doesn't serve some specific purpose, you may want to remove it...
-
-Thanks
+actually, to be able to turn off the backlight is perharps the most
+important single power-saving feature. unfortunately, I myself don't have
+any reverse-engineering experience on MacOS (this is my first mac ever...)
 
 
-Michel
-
-PS The problems I reported earlier in fs/ext2 are in fact fixed in rsync
-right now, however although I had the non-fixed versions locally, they
-were not sync'ed to the fixed ones... timestamp problem??
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+-topi
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
