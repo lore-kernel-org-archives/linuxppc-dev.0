@@ -1,38 +1,52 @@
-Message-ID: <20021014140317.93122.qmail@web13401.mail.yahoo.com>
-Date: Mon, 14 Oct 2002 07:03:17 -0700 (PDT)
-From: Norm Legare <normlegare@yahoo.com>
-Subject: Debugging Linux kernel at "start_here"
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
+Date: Mon, 14 Oct 2002 07:37:18 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Anders Blomdell <anders.blomdell@control.lth.se>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with linuxppc_2_4_devel
+Message-ID: <20021014143718.GD695@opus.bloom.county>
+References: <16403444-DC64-11D6-99DE-0003931C2BFA@control.lth.se>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <16403444-DC64-11D6-99DE-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello All,
+On Thu, Oct 10, 2002 at 05:22:28PM +0200, Anders Blomdell wrote:
 
-I am using the SELF package from Denx (Linux version 2.4.4 kernel
-combined with a ramdisk).  I have modified the bd_info struct to be
-the same as ppcboot's.  Also, I have the mpcbdm adaptor and am
-starting it with an mpc_init file tailored for a TQM board even
-though I have an MBX860 board.  After getting the board to stop at
-"start_here" inside the file ./arch/ppc/kernel/head_8xx.S, the
-debugger output displays this:
+> I'm still unsuccessful with running linux on my prpmc800 card (and my 2600
+> card as well)
+>
+> 1. The 2600 does its thing up to the
+>      Uncompressing Linux...done.
+>      Now booting the kernel
+>    point, then it changes the console speed to some (yet) undetermined
+> value, how
+>    do I change that?
 
-0xc0002190 <start_here>: I!I!I!fnmadd. f31,f31,f31,f31
+What are you running it in the firmware?  It defaults to 9600 8n1,
+unless you pass it another speed (console=ttyS0,38400 for example).
 
-I have verified that the uncompressing of the kernel image is OK
-by inspecting the disassembly around address 0x2190 (physical
-address for the "start_here" function).  I load the combined kernel
-and initrd images (pMulti) at RAM address 0x200000 via a serial
-connection and then from ppcboot do the command "bootm 200000".
-The output that is displayed stops after "Transferring control to
-Linux...".
+> 2. The prpmc800 is just quiet (and unresponsive) after
+>      Network Boot File load in progress... To abort hit <BREAK>
+>
+>      Bytes Received =&694852, Bytes Loaded =&694852
+>      Bytes/Second   =&694852, Elapsed Time =1 Second(s)
+>
+>      Residual-Data Located at: $07EBE4FC
+>
+> Anybody that has a clue (or a working .config to share?)
 
-Any suggestions?
+make prpmc800_config
 
-TIA,
-Norm
+And then fixup
+arch/ppc/platforms/prpmc800_setup.c::prpmc800_openpic_initsenses
+(iirc, '1' -> IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE.  But grab the
+prpmc800 manual and update the IRQ table occordingly) and submit a
+patch.
 
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
