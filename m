@@ -1,37 +1,50 @@
+Date: Fri, 14 Jul 2000 12:00:58 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Crusman <Crusman@wanadoo.fr>
+cc: ppc_mailing <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: your mail
+In-Reply-To: <001e01bfed04$b27494a0$29e58aa4@crusman>
+Message-ID: <Pine.HPX.4.10.10007141157010.9548-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Message-Id: <396EE4BF.15401@mta6>
-Date: Fri, 14 Jul 2000 18:00:31 +0800 (CST)
-From: "zzh" <david-1z@263.net>
-To: "Andrew W. Reynolds" <awreynolds@alum.rit.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re:Re: Local sdram in 8260 board
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->This could be the setup of the SDRAM control word. When the cache is enabled it
->begins bursting data from the SDRAM. When the SDRAM control word is not set to
->burst 32 bytes it will cause the memory exception.
->
->Dan Malek wrote:
->
-I guess it maybe error in local sdram memc init.I follow the code provided by motorola. After machine check,i check location in
-IMM related to local sdram error reporting and cannot find some
-hint.And SRR1 does not provide any hint too.Do you think the
-init value i program the memc and register values in machine check
-will help?
->> zzh wrote:
->>
->> > ...it will get machine check exception
->> > at address 0x1000004 which is in the local sdram.When i disable the
->> > cache ,it will work.
->>
->> It sounds like something is wrong with your memory controller
->> configuration.  The cache enable/disable also affect the type of
->> bus cycles that are used to access memory.
->>
->>         -- Dan
->>
+On Thu, 13 Jul 2000, Crusman wrote:
 
+> >The configurations I have are for 2600 with a PMC graphics board, remove
+> >CONFIG_VT from the setup and it will use a serial console.
+> >
+> >BTW use PrePboot for these boards (CONFIG_PREPBOOT) since it gives a nicer
+> >PCI layout to access the VMEbus...
+> >
+> >Please use the patches mvme2600.*.bz2...
+>
+> I have tested the patches but the new kernel don't see the scsi device...so
+> I can't try it anyway !
+
+Did you try the nfsroot (or nfsinstall but it's probably broken now) ? The
+nfsroot does not have any CONFIG_VT set so it should work. At least it
+works on headless 2600 and 2400.
+
+> Yes, I have tested your kernel, but there is a message ( PC keyb error... or
+> something like this) wich lock the kernel during the boot ! It's probably
+> due to the Virtual Terminal support in the kernel !
+> I always use the "console=ttyS0,9600" kernel option.
+
+Then it should not do this, I don't know what happens. AFAIR it works on
+MVME2400 whcih don't have the KB controller either.
+
+> In short :
+>
+> - I can't use your kernel because of the PC_key error !
+> - I can't patch & build a new kernel because this new kernel don't see my
+> SCSI PMC !
+
+Did you ever see the PMC module with some kernel ? Once booted (an nfsrrot
+system is the best for this), see what you have in /proc/bus/pci.
+
+	Gabriel.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
