@@ -1,18 +1,28 @@
-Return-Path: <davem@davemloft.net>
-Received: from cheetah.davemloft.net
-	(adsl-63-197-226-105.dsl.snfc21.pacbell.net [63.197.226.105])
-	by ozlabs.org (Postfix) with ESMTP id DA76F67A7F
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jan 2005 18:09:43 +1100 (EST)
-Date: Tue, 25 Jan 2005 22:42:48 -0800
-From: "David S. Miller" <davem@davemloft.net>
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.srv.it.uu.se",
+	Issuer "Uppsala University CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A74CC67AB1
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jan 2005 21:03:10 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16887.27336.161685.55774@alkaid.it.uu.se>
+Date: Wed, 26 Jan 2005 11:02:48 +0100
+From: Mikael Pettersson <mikpe@csd.uu.se>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <20050125224248.276080b7.davem@davemloft.net>
-In-Reply-To: <1106028614.4533.69.camel@gaston>
-References: <1106028614.4533.69.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com
-Subject: Re: [PATCH] sungem update
+In-Reply-To: <1106696846.6250.20.camel@gaston>
+References: <200501221723.j0MHN6eD000684@harpo.it.uu.se>
+	<1106441036.5387.41.camel@gaston> <1106529935.5587.9.camel@gaston>
+	<16885.13185.849070.479328@alkaid.it.uu.se>
+	<1106623515.6244.11.camel@gaston>
+	<16886.2489.823835.17801@alkaid.it.uu.se>
+	<1106696846.6250.20.camel@gaston>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Mikael Pettersson <mikpe@csd.uu.se>
+Subject: Re: BUG: 2.6.11-rc2 and -rc1 hang during boot on PowerMacs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Jan 2005 17:10:14 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Benjamin Herrenschmidt writes:
+ > On Tue, 2005-01-25 at 09:56 +0100, Mikael Pettersson wrote:
+ > 
+ > > On the eMac:
+ > > /proc/sys/kernel/powersave-nap exists and contains "0".
+ > > /proc/device-tree/cpus/PowerPC,G4/flush-on-lock exists as an empty file.
+ > 
+ > Ok, that is weird... so for some reason, Apple decided not to allow the
+ > eMac to do NAP mode, and thus to power manage the CPU when idle...
 
-> This patch updates the sungem driver. I reworked all of the PM stuff, making it
-> less prone to races, probably simpler to read as well, and I no longer shut the
-> PHY down when the interface is down so that things like laptop-net no longer
-> die (the gain in power consumption was minimal, not worth the pain). I also
-> implemented basic WOL support.
-> 
-> There is still something I'm not totally happy with in the locking
-> (explained in the comment at the beginning), basically too much locking and a
-> couple of places with delays in locks. I will try to improve these later on.
-> 
-> If you are happy with this, please forward to Linus/Andrew asap
+I assumed it was due to the UniNorth issue that pmac_feature.c mentions.
 
-Sorry for taking so long.  I'll try to quick review and sanity
-test this on my sparc sungem chips tomorrow Ben.
+/Mikael
