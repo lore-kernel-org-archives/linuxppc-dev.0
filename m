@@ -1,74 +1,58 @@
-From: "Bill Royal" <bill@spicetech.com>
-To: "Grant Carter" <gcarter@eng.uct.ac.za>, <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: Please help: kernel won't compile
-Date: Tue, 3 Aug 1999 18:58:20 -0400
-Message-ID: <NCBBKCLAOLHFIOJGGGALKEMCCCAA.bill@spicetech.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <37A6EB76.F36F142E@eng.uct.ac.za>
+From: Andrew_Klosterman@3com.com
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <882567C2.008325F6.00@hqoutbound.ops.3com.com>
+Date: Tue, 3 Aug 1999 16:52:47 -0700
+Subject: PPC kernel bootstrapping and relocation
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Currently broken.
-
-Go to ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/, read embedded_notes
-and mbxnotes, and then pull down embedded-2.2.5.tgz and one of the mbxroot
-filesystem images.  This is the standard 2.2.5 kernel with a few hardcoded
-fixes.  You may run into some minor compile-time errors, but you should be
-able to get this up and running on the MBX board without too much hassle.
-
-
-have fun
-
-Bill
-
------Original Message-----
-From: owner-linuxppc-dev@lists.linuxppc.org
-[mailto:owner-linuxppc-dev@lists.linuxppc.org]On Behalf Of Grant Carter
-Sent: Tuesday, August 03, 1999 9:16 AM
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Please help: kernel won't compile
 
 
 
-Hi
+I have inherited a board (developed in-house) and been tasked with porting Linux
+to it.  I have started from the 2.2.10 kernel and have been able to get the boot
+process working up to the branch to identify_machine in /arch/ppc/kernel/head.S.
+Coming to this point, I still have some nagging questions that I hope someone
+with more experience porting operating systems (Linux) to PPC hardware can help
+me with.
 
-I have tried a couple of kernel versions but cannot seem to get any of
-them to compile. I seem to always land up with similar errors namely
-those below from my 2.2.10 kernel attempt:
+1. What is the rationale behind the address at which the kernel should be
+compiled?  There is the KERNELLOAD value defined in /arch/ppc/Makefile that is
+set to 0xc000_0000 as well as a value in /include/asm-ppc/page.h that defines
+PAGE_OFFSET and KERNELBASE to 0xc000_0000.  KERNELLOAD is used as the text
+linkage address for the kernel, but the kernel gets relocated during the boot
+process.
 
-make[1]: Entering directory
-`/usr/home/gcarter/Linux-ppc/src/linux/arch/ppc/kernel'
-powerpc-linux-gcc -D__KERNEL__
--I/usr/home/gcarter/Linux-ppc/src/linux/include -Wall
--Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char
--msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple
--mstring -mcpu=860   -DEXPORT_SYMTAB -c ppc_ksyms.c
-ppc_ksyms.c:73: `isa_io_base' undeclared here (not in a function)
-ppc_ksyms.c:73: initializer element for `__ksymtab_isa_io_base.value' is
-not constant
-ppc_ksyms.c:74: `isa_mem_base' undeclared here (not in a function)
-ppc_ksyms.c:74: initializer element for `__ksymtab_isa_mem_base.value'
-is not constant
-ppc_ksyms.c:75: `pci_dram_offset' undeclared here (not in a function)
-ppc_ksyms.c:75: initializer element for
-`__ksymtab_pci_dram_offset.value' is not constant
-make[1]: *** [ppc_ksyms.o] Error 1
-make[1]: Leaving directory
-`/usr/home/gcarter/Linux-ppc/src/linux/arch/ppc/kernel'
-make: *** [_dir_arch/ppc/kernel] Error 2
+2. Is the kernel supposed to run at 0 or at 0xc000_0000?  Sure it gets compiled
+for 0xc000_0000, but then it gets copied down to zero by relocate_kernel in
+/arch/ppc/kernel/head.S.
 
-Any suggestions??? I am trying to compile this for a Motorola MBX board.
+3. Do the BATs do the necessary translation of addresses while the kernel is
+starting/running (wherever it end up executing at)?  I haven't quite sorted out
+the way that memory ends up for the running kernel because I haven't yet managed
+to get the kernel running yet.  :)
 
-Thanks in advance
-Grant
---
-Grant Carter                              gcarter@eng.uct.ac.za
-Department of Electrical Engineering      University of Cape Town
-Tel: +27 (0)21 650-3467                   Fax: +27 (0)21 650-3465
-                     "Coffee not found - operator halted!"
+4. Ultimately, what is the view of memory that the BATs set up for the kernel?
+(This leads in to point #5.)
+
+5. How can I exclude the kernel from using certain memory regions?  I have some
+special memory areas to worry about that other hardware on this board needs.
+Therefore, I need to be able to exclude some memory ranges from use by the
+kernel.  Any hints?
+
+6. What sort of environment is the kernel expecting to be starting from?  What
+are the default settings for the memory architecture (BATs) that is expected?  I
+still have to deal with the peculiarities of this particular board, but I can
+have my own boot code set things up to a more standard configuration before
+passing jumping to the kernel start.
+
+Thanks for whatever aid you can contribute to yet another Linux port!
+
+--Andy Klosterman
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
