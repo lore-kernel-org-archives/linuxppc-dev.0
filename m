@@ -1,30 +1,41 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC850 USB
-Message-ID: <1023715551.3d04a8dfbc9c4@imp.imms.de>
-Date: Mon, 10 Jun 2002 15:25:51 +0200 (MEST)
-From: Christian Schroeder <christian.schroeder@imms.de>
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "David Updegraff" <dave@cray.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 405GPr
+Date: Mon, 10 Jun 2002 16:23:41 +0200
+Message-ID: <EFEAIMDCOOOHIEPHDNFJIENAEAAA.stefan.roese@esd-electronics.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <3D04A571.4020309@cray.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+David,
 
-does anybody know, if the mpc850 (Mask rev. A, XPC850xxZTA) works
-as a usb hostcontroller or do I need at least mask rev. B ?
+> We got one in I made some "proof of concept" changes to PPCBOOT/LinuxPPC
+> to make it boot ok.. have not played with the extra clocking
+> register strap values though; we just plopped it into our
+> 405GP socket and ran @200 Mhz.  Worked...
 
-Thanks Christian
+Good news :-).
 
-Dr.-Ing. Christian Schroeder
-Institut fuer Mikroelektronik- und Mechatronik-Systeme
-Langewiesener Strasse 22
-98693 Ilmenau
-Telefon: +49 3677 678315
-Telefax: +49 3677 678337
-Mobil:   +49 173 5789172
-e-mail:  christian.schroeder@imms.de
-www:     http://www.imms.de/~christi/cs.html
-pgp:     finger christi@finger.imms.de
+> I noticed that the PVR on the unit we got was a bit different:
+> ibm specs said
+> 	0x50910950
+> ..but I got
+> 	0x50910951
+>
+> Is there a doc. somewhere that tells us what the ranges of PVRs
+> for this chip can legitimately be?
+
+The data sheet only mentions 0x50910950, but the errata refers to pvr
+0x50910951 (Revision B?). What revision is printed on your ppc? Our chips
+are labeled: 405GPr3BB266 (Rev B.).
+
+Ciao,
+Stefan.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
