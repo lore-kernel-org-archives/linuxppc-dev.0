@@ -1,54 +1,38 @@
-Date: Thu, 12 Oct 2000 22:57:24 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Albrecht Dress <adress@mpifr-bonn.mpg.de>
-cc: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>,
-        schmitz@opal.biophys.uni-duesseldorf.de, olh@suse.de
-Subject: Re: 2.2.17pre20-ben3 + pmud-0.7-1: still kernel panic upon wakeup
-In-Reply-To: <Pine.SOL.4.21.0010122241340.21571-100000@mpifr-bonn.mpg.de>
-Message-ID: <Pine.LNX.4.10.10010122251200.6839-100000@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 12 Oct 2000 23:24:58 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pmac_power_off is gone in 2.2.17
+Message-ID: <20001012232458.A31574@suse.de>
+Reply-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+References: <20001012175322.A5273@suse.de> <Pine.GSO.4.10.10010122007360.3519-100000@zeus.fh-brandenburg.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.GSO.4.10.10010122007360.3519-100000@zeus.fh-brandenburg.de>; from zippel@fh-brandenburg.de on Thu, Oct 12, 2000 at 10:08:09PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Can you try Benhs latest?
-> > http://penguinppc.org/~olaf/vmlinux-benh.gz
+On Thu, Oct 12, Roman Zippel wrote:
+
 >
-> Got it, this one does not panic. I'll rsync from Ben's tree asap, thanks a
+> Hi,
+>
+> > the pmac_power_off() call in pmac_halt() disappeared in 2.2.17.
+> > Is there any special reason for that? I affects proably only B&W
+> > machines, /sbin/halt doesnt work anymore.
+>
+> Did you try "halt -p"?
 
-Good.
+That might work, but why can I poweroff any other machine with halt?
+(ibook, wallstreet, 7200?)
 
-> lot for your help! However, I recognised a quite odd behaviour of this
-> kernel: using the trackpad, the x and y coordinates are exchanged (moving
-> the trackpad up and down moves the cursor left and right and vice versa).
 
-Fixed in the pmud-0.7-2 Debian package. All you need to do is patch
-pmud.c:
+Gruss Olaf
 
---- pmud-0.7.orig/pmud.c
-+++ pmud-0.7/pmud.c
-@@ -1502,7 +1502,7 @@
- {
- 	int nr;
- 	int tries = 5;
--	unsigned char buf[9];
-+	unsigned char buf[10];
+--
+ $ man clone
 
- 	if(adb_program(fd, id, 1) < 0)
- 		return 0;
-@@ -1522,7 +1522,8 @@
- 		buf[2] = settings & TPS_DRAG ? 0x94 : 0x14;
- 		buf[4] = settings & TPS_LOCK ? 0xff : 0xb2;
-
--		if(adbwrite(fd, id, 2, ADBlisten, buf, nr) <= 0)
-+		/* buf+1 because the read buffer contains command byte at buf[0] */
-+		if(adbwrite(fd, id, 2, ADBlisten, buf+1, nr) <= 0)
- 		{
- 			syslog(LOG_ERR, "set.set adbwrite: %m");
- 			continue;
-
-	Michael
-
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
