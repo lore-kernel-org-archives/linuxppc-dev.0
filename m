@@ -1,11 +1,11 @@
-Message-ID: <392C039D.D0645FBD@embeddededge.com>
-Date: Wed, 24 May 2000 12:30:21 -0400
+Message-ID: <392C0B5D.A87105C@embeddededge.com>
+Date: Wed, 24 May 2000 13:03:25 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
 To: mporter@mvista.com
 CC: tjroberts@lucent.com, linuxppc-embedded@lists.linuxppc.org
 Subject: Re: QUERY: Embedded PowerPC Linux?
-References: <39243D0C.68406C9D@lucent.com> <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com>
+References: <39243D0C.68406C9D@lucent.com> <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com> <39289187.3AEDEE47@chicago.avenew.com> <slrn8ik4mu.349.mmporter@liberty.chnd1.az.home.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -13,69 +13,70 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Matt Porter wrote:
 
-
-> .....  The assumption is that 6xx/7xx/7xxx are only
-> chrp/pmac/prep desktop systems and 8xx/82xx are embedded systems but that
-> is changing quickly.
-
-Some further information.  The 8240 it really a 603/PCI configuration.
-I followed Cort's Gemini port for most of this.  The 8260 is a 603 along
-the path of the 8xx/CPM configuration.
-
-> I stub out all the chrp/pmac/prep garbage like "prom_init()" to make the
-> linker happy and have a reasonablly slim kernel for 29F040 boot flashes.
-
-We should try to find some common compressed boot image as well, or
-better define why they are different.  I started the 'mbxboot' long
-ago with the 8xx processors, and it has proved useful for the 8260
-as well.  It seems to be the place where all of the highly integrated
-processors boot because of their unique I/O devices.  The 'coffboot'
-directory is where all of the standard I/O (like PCI with 165xx serial
-ports) boards exist.
+> >Good advice, and that's what I was doing. However -- head.S is
+> >incredibly convuoluted and complicated -- it's like someone insisted on
+> >shaving nanoseconds and bytes everywhere possible, which is silly given
+> >the rest of Linux....
+>
+> head.S is the start of everything.
 
 
-> I'm adding a (rather simplistic) PCI autoconfig routine to the pci_init()
-> call since a firmware/monitor is not always available or desired.
+There is nothing that should be modified in kernel/head.S for any
+board/system port.  This file looks convoluted and complicated because
+we are working with limited resources, touching special processor
+registers and changing processor state.  There may be situations where it
+appears we are trying to shave nanoseconds, but this is often due to
+alignment or other processor restrictions.  While the techniques may
+look the same, the reasons are different.
 
-Is this the right place for it, or should it be done prior to calling
-the Linux kernel?  I don't really know.  I have done this in both
-places, each has advantages and disadvantages.  For further discussion
-I am even considering a "PCI emulation" set of functions.  There are
-more and more boards with PCI type I/O devices, but attached to the
-processor busses instead of through a PCI bridge.  It would be nice to
-use the standard PCI drivers, but right now I have to hack up something
-custom because the PCI configuration functions don't make sense.  I
-think it would be useful to have these functions return something useful
-and use the standard driver.  Anyone else see this type of board design?
 
-> .......  The only intrusive thing I add is is a
-> CONFIG_EMBEDDED which arch/ppc/kernel/Makefile keys off of to not link
+> >My other problem is that I do not have any sort of boot ROM, and
 
-Thank you.  That seems like a good thing.
+> Again, we are talking about kernel/head.S, right?  Well, no.  Linux
+> isn't going to be what you want it to be into you add to it.  The
 
-> One sore point is that MACH_<board> is defined as a single bit flag so we
-> will run out of those with the many MACH types that want to be in the
-> kernel in the near future.  That should probably get fixed up to something
-> with more longevity.
+I will continue to point out that the Linux kernel is not a boot rom.
+You first argue that head.S is too complicated, and then want to make
+it initialize your processor???  I don't get it.  This is not the place
+for processor initialization beyond what is necessary for Linux to
+operate.  There is software in arch/ppc/mbxboot that does a little
+more processor initialization for embedded systems, but that still isn't
+a boot rom.
 
-I could never understand why this was a bit flag.  I think it would
-work equally well as a unique number, preferably monotonically increasing.
-These are used in switch statements and tested for their value.  I
-don't remember anything like 'if (_machine & MACH_<board>)'.
+Further, writing processor initilization functions is very tedious. I
+certainly don't want to be downloading a half megabyte or more of kernel
+just to test a few processor initialization instructions.  When the
+kernel doesn't boot, where do you start?
 
-> The other thing that needs to happen is that the directory structure
-> will need a reorg to avoid clutter
+For example, if you write some minimal boot rom to initialize an 8xx
+or 82xx processor, verify that you can read/write memory, you can boot
+a Linux kernel very quickly.  If you have a boot rom, I can have a Linux
+kernel running in a day or two by changing a couple of lines of code
+in arch/ppc/mbxboot/embed_config.c.  Set up an environment for Linux
+to run, and it does so very easily.
 
-Think very carefully about this.  A while back we broke head.S into
-head.S and head_8xx.S to avoid "clutter".  I wish we had not done that
-now.  There have been changes in the memory management and context
-switching that are done in head.S, and not to head_8xx.S (or attempted
-and not completed).  When generic changes are made, you have to visit
-all of the files affected and it is easy to miss them or ignore your
-duty to do so when they are separated.  I am all for avoiding the
-clutter in the files, but if you are in there making changes it should
-serve as a reminder that you are affecting many things you may have
-not considered.
+> I have several ports in which I simply set the MSR to a known value, ...
+> .....  I can simply load/boot vmlinux at this point with
+> no problems.
+
+Absolutely.  The code within the Linux kernel is known to work on
+all of these processors.  The more you change it, the less likely this
+is to happen.  Localize your initialization outside of the kernel,
+make it look like something that exists as much as possible, and you
+are running very quickly.
+
+> >I think we need to separate the CPU from the machine....
+>
+> It's being worked on as far as making a framework for non-chrp/pmac/prep
+> 6xx/7xx/74xx ports.  There just hasn't been a real pressing need until
+> lately.
+
+The CPU and system/board are separate.  Some boards imply a particular
+CPU, or vice versa.  You have to specify both for the configuration,
+and depending upon which you ask first, you can reduce the selection
+set for the latter.  Updating the configuration choices is just part
+of adding a new board or processor.
+
 
 
 	-- Dan
