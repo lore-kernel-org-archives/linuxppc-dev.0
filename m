@@ -1,26 +1,34 @@
-Date: Mon, 25 Sep 2000 10:56:53 +0200 (CEST)
+Date: Mon, 25 Sep 2000 11:03:59 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Michel Lanners <mlan@cpu.lu>
-cc: daenzerm@student.ethz.ch, reshapiro@mediaone.net,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
-In-Reply-To: <200009231708.TAA00731@piglet.grunz.lu>
-Message-ID: <Pine.LNX.4.10.10009251055090.28773-100000@opal.biophys.uni-duesseldorf.de>
+To: R Shapiro <rshapiro@bbn.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
+In-Reply-To: <14798.23332.833379.615321@esb.bbn.com>
+Message-ID: <Pine.LNX.4.10.10009251101410.28773-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Is this the already-known problem of handling an offset for the screen
-> start within the framebuffer memory?
->
-> Because I'm experiencing this as well with fbdev, and the problem is the
-> same for all Apple non-accelerated framebuffers (control, platinum,
+> 3.  On the same machine, the ati driver I built yesterday hoses linux
+> completely and doesn't leave a core file.  I'm happy to help the
+> developers try to debug this, but I'm not sure what information I can
+> provide in this situation (it's also not my machine, so I can't always
+> crash it at will).
 
-Sounds like Apple. It's been a problem on the m68k Apple framebuffers as
-well, and got fixed for those by Geert in 3.3. The fix got lost or
-incorrectly applied in 4.0 ...
+Does the X server complain about PCI resource conflicts when run as X
+--probeonly? Anything about PCI problems in the server log?
+
+If so, send the output of lspci -vv.
+
+BTW: Can you use yaboot for booting?
+
+> 4. On the rev. b beige G3 w/Mach64 Rage Pro, the ati driver seems to
+> be working.  The XF probe still gets the wrong amount of vram, and it
+> still throws away the mode I constructed via fbset -x.  But it finds
+
+Perhaps the video RAM detection typo which should be gone now ...
 
 	Michael
 
