@@ -1,45 +1,37 @@
-Message-ID: <0c8201c1005d$39b5aa50$3877b5d3@dolbae>
-From: "SangTae Ha" <stha@postech.edu>
-To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <000701c1001f$7d475ea0$9696143e@jocke>
-Subject: Re: mpc860 with dual ethernets
-Date: Fri, 29 Jun 2001 14:34:52 +0900
+Date: Fri, 29 Jun 2001 02:58:43 -0400 (EDT)
+From: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: (allocating non-cachable memory) (or More on the i82596)
+In-Reply-To: <3B3C30CD.34B20F02@mvista.com>
+Message-ID: <Pine.LNX.3.95.1010629025613.5292B-100000@november.bhjjh.erols.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-What kind of board are you using? The enet.c and fec.c are enough to handle all possible SCC configurations.
-Do you want to SCC1 and SCC2 or SCC1 and FEC(Fast Ethernet Controller)? It's not difficult to use all SCCs as you intended. I have some patches which can be a good reference to do it. Plase contact to me personally.
-
-Redgards,
-
-SangTae Ha
-
-
-
-
------ Original Message -----
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, June 29, 2001 7:12 AM
-Subject: mpc860 with dual ethernets
-
+On Fri, 29 Jun 2001, Dan Malek wrote:
 
 >
-> Hi all
+> jtm@smoothsmoothie.com wrote:
 >
-> I need 2 Ethernet network i/f's(SCC1 and SCC2). Looking into
-> enet.c is seems that this driver can only support one Ethernet SCC
-> at a time. Is there a version of enet.c that can support both
-> SCC1 and SCC2 simultaneously?
+> > .... The buffer memory will get filled
+> > via DMA, and therefore must not be cached.
 >
->     Joakim
+> Huh????  The 8260 is cache coherent, you don't need to do that.
 >
->
->
+> For processors that are not cache coherent (4xx and 8xx), there
+> are standard 'consistent_alloc()' functions available.
+
+Dan, Wwhere are the consistent_alloc functions? I just did a grep of the
+entire source tree (it's about 2 weeks old 2_4_devel) and was unable to
+find any consistent_* functions except for in the sparc and arm
+architectures. There were pci_consistent_ functions under ppc, but I
+assume that that requires a pci bus, which I do not have.
+
+Thanks,
+--Gus
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
