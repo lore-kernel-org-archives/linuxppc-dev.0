@@ -1,55 +1,46 @@
-Date: Fri, 30 Jul 2004 18:06:18 +0100
-To: trini@kernel.crashing.org
-Cc: paulus@samba.org, linuxppc-dev@lists.linuxppc.org,
-	barbieri@gmail.com
-Subject: [10/9] Support for old IBM PReP boxes
-Message-ID: <20040730170618.GA9009@george.solinno.co.uk>
+Date: Sat, 31 Jul 2004 14:53:03 +0200
+From: Giuliano Pochini <pochini@shiny.it>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH][PPC32] Makefile cleanups and gcc-3.4+binutils-2.14 c
+Message-Id: <20040731145303.26170308.pochini@shiny.it>
+In-Reply-To: <20040730210318.GS16468@smtp.west.cox.net>
+References: <20040728220733.GA16468@smtp.west.cox.net>
+	<XFMail.20040729100549.pochini@shiny.it>
+	<20040729144347.GE16468@smtp.west.cox.net>
+	<20040730205901.4d4181f4.pochini@shiny.it>
+	<20040730190731.GQ16468@smtp.west.cox.net>
+	<20040730224828.0f06e37a.pochini@shiny.it>
+	<20040730210318.GS16468@smtp.west.cox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: leigh@solinno.co.uk (Leigh Brown)
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Will something like this do?  It won't be that helpful for IBM PRePs,
-but it should be an acceptable fallback for Motorolas.  I put the test
-after it's determined whether it's an IBM or Motorola PReP on the off
-chance there is an IBM PReP that doesn't need any residual data to
-function properly.
+On Fri, 30 Jul 2004 14:03:18 -0700
+Tom Rini <trini@kernel.crashing.org> wrote:
+
+>
+> On Fri, Jul 30, 2004 at 10:48:28PM +0200, Giuliano Pochini wrote:
+>
+> [snip]
+> > gcc 3.3.3 + binutils 2.15 fails quite soon here:
+> >
+> >   AS      arch/ppc/kernel/l2cr.o
+> > arch/ppc/kernel/l2cr.S: Assembler messages:
+> > arch/ppc/kernel/l2cr.S:110: Error: Unrecognized opcode: `dssall'
+> > arch/ppc/kernel/l2cr.S:278: Error: Unrecognized opcode: `dssall'
+> > arch/ppc/kernel/l2cr.S:387: Error: Unrecognized opcode: `dssall'
+> > make[1]: *** [arch/ppc/kernel/l2cr.o] Error 1
+>
+> Can you try with the following ?
+> [...]
+
+It doesn't apply to plain 2.6.7. What version I have to use ?
 
 
-diff -urNX /home/leigh/.diffex linux-2.6.8-rc2-bk8.prev/arch/ppc/Kconfig linux-2.6.8-rc2-bk8/arch/ppc/Kconfig
---- linux-2.6.8-rc2-bk8.prev/arch/ppc/Kconfig	2004-07-29 20:38:27.000000000 +0100
-+++ linux-2.6.8-rc2-bk8/arch/ppc/Kconfig	2004-07-30 17:55:42.000000000 +0100
-@@ -853,10 +853,11 @@
- 	  Some PReP systems have residual data passed to the kernel by the
- 	  firmware.  This allows detection of memory size, devices present and
- 	  other useful pieces of information.  Sometimes this information is
--	  not present or incorrect.
-+	  not present or incorrect, in which case it could lead to the machine
-+	  behaving incorrectly.  If this happens, either disable PREP_RESIDUAL
-+	  or pass the 'noresidual' option to the kernel.
-
--	  Unless you expect to boot on a PReP system, there is no need to
--	  select Y.
-+	  If you are running a PReP system, say Y here, otherwise say N.
-
- config PROC_PREPRESIDUAL
- 	bool "Support for reading of PReP Residual Data in /proc"
-Binary files linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/.prep_setup.c.swp and linux-2.6.8-rc2-bk8/arch/ppc/platforms/.prep_setup.c.swp differ
-diff -urNX /home/leigh/.diffex linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_setup.c linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_setup.c
---- linux-2.6.8-rc2-bk8.prev/arch/ppc/platforms/prep_setup.c	2004-07-29 20:55:49.000000000 +0100
-+++ linux-2.6.8-rc2-bk8/arch/ppc/platforms/prep_setup.c	2004-07-30 17:58:51.000000000 +0100
-@@ -1134,6 +1134,10 @@
- 		_prep_type = _PREP_Motorola;
- 	}
-
-+	/* Switch off all residual data processing if the user requests it */
-+	if (strstr(cmd_line, "noresidual") != NULL)
-+			res = NULL;
-+
- 	/* Initialise progress early to get maximum benefit */
- 	prep_set_bat();
- 	ibm_statusled_init();
+--
+Giuliano.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
