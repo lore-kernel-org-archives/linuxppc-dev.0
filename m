@@ -1,60 +1,43 @@
-Date: Tue, 26 Feb 2002 13:05:13 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@gatwood.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Nasty ATI/tulip interaction
-Message-ID: <Pine.LNX.3.96.1020226125122.28711C-100000@gatwood.net>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
+Message-ID: <A3E34B558F5CD211B4980008C7A4A99002424172@sparrow.gso.mcs.marconi.com>
+From: "Banks, Kelly" <kelly.banks@gilbarco.com>
+To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
+Subject: Extended Scheduling Latency on LinuxPPC 2.4.10
+Date: Tue, 26 Feb 2002 16:21:27 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Weird issue.  I finally got the PowerBase 180, and I've attempted to move
-my Linux system from the G4 over to it.  I'm running a heavily patched
-2.2.21-pre2 kernel.  It includes the PCI fixup patches, Promise Ultra
-ATA/66 patches, and a few (possibly ppc-specific) bug fixes to get around
-a problem where it was failing to get the correct drive capacity for my
-Maxtor 80 gig drive for the first several warm boots.  (I think it was a
-firmware bug in the Maxtor from all indications, as the drive wasn't
-jumpered to truncate to 2 gigs, but it was doing it anyway.)
+Running LinuxPPC 2.4.10 in an MPC860 board, I am experiencing an extended
+period of time when the kernel seems to be 'out to lunch'.
 
-Anyway, everything worked fine until I actually tried to add ethernet to
-the system.  When I added a 10/100 Tulip card (Netgear), all manner of
-hell broke loose.
+The system receives a periodic poll request over SCC2 & is designed to
+respond to the poll in a timely fashion.
 
-First, I tried the tulip.o driver.  Driver loaded.  Tried to ifconfig eth0
-up.  My video went black.  Rebooted, video still black.  Power cycled the
-monitor, all better.  Tried oldtulip.o.  Same problem.
+Occasionally, the system appears to 'hang' for a period of time from between
+2 & 8 Seconds.  During this delay, poll requests seem to be queued into
+SCC2's input buffer because, eventually, the system comes back to life &
+responds to each poll request received.
 
-So I thought maybe it was some weird interaction with the netgear card,
-and I tried an old 10-base-T tulip card that worked under MkLinux
-way-back-when.  Big mistake, as it apparently changed some card settings
-in a way that I can't seem to undo.
+I am searching through system & driver interrupt routines looking for a
+potential extended processing loop but so far, it has been to no avail.
 
-Now, I can't even boot into single user mode without the video going black
-half-way through boot.  This is with the "no video driver" checkbox in
-BootX checked, since without doing that, I was getting scrambled video
-half-way through boot even before this whole situation.  If I uncheck the
-no video driver box, the screen goes black at the start of boot.
+The 2.4.10 low-latency patch has been ported into the system (successfully,
+I think), but the problem still exists.
 
-I've tried everything I can think of.  I've removed the ethernet card
-entirely now, switched from a fixed sync 13" Apple monitor on the Apple
-port to a 1024x768 multisync LCD panel on the VGA port.  I've even held
-down the Cuda reset button and power key with the machine unplugged for
-thirty seconds.
+Any guidance which you may be able to provide would be greatly appreciated.
 
-Does anyone know of any patches for the ATI hardware in these beasts?  If
-not, then tonight, I'm going to try to flat-out neuter the entire video
-subsystem to treat this card as a dumb framebuffer, since all I need is a
-text console anyway.  Any suggestions on where to start?
+Kelly
 
-
-Later,
-David
-
----------------------------------------------------------------------
-                    Check out my weekly web comic:
-                     http://www.techmagazine.org
-
+This document contains confidential information of Gilbarco Inc.
+In consideration of receipt of this document, the recipient agrees
+not to reproduce, copy, use or transmit this document and/or the
+information contained herein, in whole or in part, or to suffer
+such actions by others, for any purpose, except with written
+permission, first obtained, of Gilbarco Inc. and further agrees
+to surrender same to Gilbarco Inc. upon demand.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
