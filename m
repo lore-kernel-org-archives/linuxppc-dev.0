@@ -1,37 +1,30 @@
-In-Reply-To: <20040510213336.GA4496@mars.ravnborg.org>
-References: <20040510205808.GA4313@mars.ravnborg.org> <548E72DE-A2C7-11D8-95B9-003065F9B7DC@embeddededge.com> <20040510213336.GA4496@mars.ravnborg.org>
+In-Reply-To: <FD52892BD296D71183B400065BFCB69009982F2E@il02exm12>
+References: <FD52892BD296D71183B400065BFCB69009982F2E@il02exm12>
 Mime-Version: 1.0 (Apple Message framework v613)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <42CE42B9-A2EE-11D8-95B9-003065F9B7DC@embeddededge.com>
+Message-Id: <305CEC2C-A2F0-11D8-93F3-000A95A4DC02@kernel.crashing.org>
 Cc: linuxppc-dev@lists.linuxppc.org
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: Efficient handling of RTP frames?
-Date: Mon, 10 May 2004 21:55:21 -0400
-To: Sam Ravnborg <sam@ravnborg.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Motorola MCP820 Board - 7410 / Harrier ASIC based - System Weirdn ess
+Date: Tue, 11 May 2004 04:09:09 +0200
+To: Hawkins Jeffrey-CJH016 <Jeffrey.F.Hawkins@motorola.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On May 10, 2004, at 5:33 PM, Sam Ravnborg wrote:
+> I am evaluating a Motorola Computer Group MCP820 Board.  It is 7410
+> Based, running at 500 Mhz, 256MB RAM, 2MB L2 Cache.  Testing using
+> 2.4.18 and 2.4.20 Kernels utilizing LMBENCH.  I am seeing some strange
+> behavior with the Local Communications Latency Tests.  Comparing to a
+> similarly configured 750 based System, the UDP and TCP operations have
+> a latency that is 2+ times worse than the lesser performing System
+> (MCP750 @ 366 Mhz).
 
-> But I still do not see how the two drivers can 'communicate',
-> or what other requirements is put on the driver that communicate
-> with the DSP.
-
-Since you are using RTP over UDP, you are going to use the
-network stack, so the drivers aren't going to "communicate"
-directly.  You can use some FCC/TDM interface to format the
-data for the DSP, then use an application to do the rest.
-The driver for the DSP will have to be something custom, then
-you can configure the FCC Ethernet to handle small frames by
-increasing the number of ring buffers (but don't go too high or
-that overhead will get too high) and use the NAPI to reduce the
-interrupt overhead.  Depending upon the performance requirements,
-the custom DSP driver could be implemented to share buffers
-directly with the application.
+Did you use the same kernel on both systems?  If not, check if both
+are either UP or SMP...
 
 
-	-- Dan
+Segher
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
