@@ -1,32 +1,26 @@
-Date: Tue, 21 Dec 1999 15:19:39 -0500
-From: Satadru Pramanik <satadru@umich.edu>
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: TiVo TV recording device using linux on a PPC.
-Message-ID: <896774129.945789579@nic-c17-233.mw.mediaone.net>
+Date: Tue, 21 Dec 1999 15:14:19 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
+Subject: mozilla m11 tarball...
+Message-ID: <Pine.LNX.4.10.9912211509560.8826-100000@shell.unixbox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-wow.   Go Linux on the PPC, but they're only using a 2.1.24 kernel.  I 
-wonder why?...
 
-from:
+for those interested, please try the
+mozilla-m11-3a-glibc2-ppc-linux.tar.bz2 tarball in
+devel.linuxppc.org/suers/ajoshi, you can run it by simply ./mozilla in the
+directory "package".  also, make sure you uninstall any previous mozilla
+rpm you may have installed...
 
-http://www.tivo.com/linux/README
+the previous problems with the rpm's may be due to a bug in binutils strip
+or the spec kludge which is needed for the rpm...
 
-The "kernels" archive contains the source code for the Linux kernel in
-the TiVo Personal Television System software.  The "linuxdist-2.1.24"
-source tree is configured for use on an Intel X86 development
-platform.  The "linux-2.1" source tree is configured for use on the
-PowerPC-based hardware system on which the TiVo software actually runs.
 
--=
-Satadru Pramanik
-Managing Online Editor
-The Michigan Daily
-http://michigandaily.com
-=-
+ani
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
