@@ -1,64 +1,59 @@
-To: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+Message-ID: <3EA6B8AF.8030005@embeddededge.com>
+Date: Wed, 23 Apr 2003 12:00:47 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Frank Haverkamp <f.haverkamp@web.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA Porting 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 23 Apr 2003 15:54:07 +0200."
-             <sea6b726.000@mail.frequentis.com>
-Date: Wed, 23 Apr 2003 17:09:05 +0200
-Message-Id: <20030423150910.A02F4C58B9@atlas.denx.de>
+Subject: Re: Behaviour of consistent_{alloc|free}
+References: <200304231355.h3NDttq00868@mailgate5.cinetic.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Frank Haverkamp wrote:
 
-in message <sea6b726.000@mail.frequentis.com> you wrote:
->
-> The last 2 weeks I worked full time on PCMCIA. We have a custom board with a MPC860T 10/100MBit Ethernet one PCMCIA slot 8MB flash and 32MB RAM.
+> I am working with a PowerPC 405 based asic having PCI_DRAM_OFFSET to be defined not to be zero.
 
-Ummm... may I ask why you re-invented the wheel?
-
-> I linked the pcmcia stuff directly to the kernel (driver/pcmcia), because I think I understand it right Wolfgang, your PCMCIA onyl works if PPCBoot setup the PCMCIA port. But we don't use PPCBoot (shame about that .... ) and it seems to be to complicate
-
-If you use the direct IDE support as implemented in our kernel  tree,
-Linux  reads  the  memory map of the PCMCIA port from the pcmc_pbrX /
-pcmc_porX registers. That's  all.  Initializing  these  registers  in
-Linux  is  trivial.  The  reason  we  avoid it is because this may be
-board-dependend.
-
-> d/more work to add the whole stuff into our boot up sequence. I know that we loose the possibilty to mount root from a flash card, but we could live with that. Maybe Wolfgang has another hint for me ... :-)
-
-We include both the direct IDE interface and  the  full  PCMCIA  card
-services  package  with  our  ELDK. It has been tested and is working
-fine on a couple of differenrt boards. We even  support  both  PCMCIA
-slots on MPC860 systems.
-
-> However, I start of course where everyone startet:
-
-I'm sorry, but this is ancient stuff. Why didn't you use more  recent
-code for your work?
-
-> We portet also the mvista kernel 2.4.2 to the denx kernel 2.4.4
-
-What exactly do you mean with this statement?
-
-> >From now on it works. I used for the first steps the file system from the eldk and copy then the necessary files (cardctl, cardmgr, scripts) to our filesystem.
-
-All of this (and more) is included and ready for  use  in  the  ELDK.
-It's a pity you wasted so much work without asking earlier :-(
+Why?
 
 
-Best regards,
+> consistent_alloc returned a virtual address and the address on my pci bus.
 
-Wolfgang Denk
+I think you don't understand the value of PCI_DRAM_OFFSET.  This value is the
+way system memory is mapped from the PCI bus, it does not represent a processor
+mapping to the PCI bus.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Perfection is reached, not when there is no longer anything  to  add,
-but when there is no longer anything to take away.
-                                           - Antoine de Saint-Exupery
+> ... The address on the bus was
+> returned correctly, but the mapping consistent_alloc was working was not like I expected it.
+
+It did exactly what you asked.  It allocated free memory pages, then adjusted the
+physical address by PCI_DRAM_OFFSET.  This address is what you should be giving
+a device on the PCI bus for mastering buffers in your system memory.
+
+
+> It maps the virtual address to an address on the bus and not to the real address of my DRAM.
+
+Then, you don't have PCI_DRAM_OFFSET assigned a proper value.
+
+
+> A mapping to the real address in DRAM is, what I wanted to have. I tried to do a virt_to_phys
+> on the virtual address, but got, again, the address on the bus. And a bus_to_phys I could not find ;-)
+
+You can't use any of the virt_to_* or bus_to_* functions on the addresses returned
+by consistent_alloc.  This is why consistent_alloc() returns both a virtual address
+for you to use for processor access, and a "bus" address handle to be given to the
+device that will perform the DMA.  You have to stash these values in your driver
+so you can reference them at later times when necessary.
+
+In fact, if this is a PCI device, you should be using the pci_* functions as
+described in Documentation/DMA-mapping.txt, and not using the consistent_alloc()
+functions directly.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
