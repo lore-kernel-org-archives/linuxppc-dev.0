@@ -1,52 +1,144 @@
-From: "Bob Piatek" <bobtek@fishcamp.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Cc: "'Tom Rini'" <trini@kernel.crashing.org>
-Subject: RE: unresolved symbol
-Date: Mon, 31 Dec 2001 16:47:30 -0800
-Message-ID: <000601c1925d$e4bcd940$a2341204@P4>
+Message-ID: <01C1938C.BE523E50.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem w/driver writing to User Space
+Date: Wed, 2 Jan 2002 12:55:22 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20011231230158.GL28513@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-OK. I updated the modutils package and that fixed it!  Thanks so much.
+I have written a test driver which, via ioctl() calls
+from the app, toggles an LED attached to a PLX PCI
+Bridge chip on an mpc860-based board.  The physical addr
+of the PLX chip is 0x2000.0000.  The LED, though,
+does not respond.
 
-Bob
+If I temporarily (just as a test) comment-out the
+set_fs(USER_DS) call in start_thread(), then the LED is
+toggled properly.  So the mechanism for the app controlling
+the LED via the driver is in place.
 
-fishcamp engineering
-105 W. Clark Ave
-Orcutt, CA  93455
-TEL: 805-937-6365
-FAX: 805-937-6252
+I am obviously having some Kernel-to-User Space problem.
+
+I use ioremap(0x2000.0000,0x4000), called in chr_dev_init() just
+prior to calling execve("/sbin/init") to start up the app, to get a
+virtual ptr for the driver to use to access the PLX chip, and thus
+the LED. The virtual ptr returned is 0xc400.0000.  This ioremap()
+call is made long after the kernel VM init.
+
+In response to ioctl() calls from the app, the driver uses put_user()
+and get_user() to write and read from the PLX chip using the
+virtual ptr returned from ioremap(), which is what they were
+designed to do.
+
+I would very much appreciate someone scanning thru the following
+code sequence (modified for readability) to see what is out of place.
 
 
------Original Message-----
-From: Tom Rini [mailto:tmrini@cpe-24-221-152-185.az.sprintbbd.net] On
-Behalf Of Tom Rini
-Sent: Monday, December 31, 2001 3:02 PM
-To: Bob Piatek
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: unresolved symbol
 
-On Mon, Dec 31, 2001 at 02:47:28PM -0800, Bob Piatek wrote:
 
-> Correct me if I'm wrong, but it looks like the problem is caused by
-the
-> kernel not exporting the symbols that are needed by the module and not
-> in the actual module itself.  Is it that I built the kernel wrong
-> somehow, or maybe the libraries in 'simple-ramdisk' image aren't
-> sufficient, or is it something else?
+init()
+  do_basic_setup()
+     device_setup()
+        chr_dev_init()
+           led_init()			//Register the LED driver.
+  (then execve("/sbin/init");)  	//Get app going.
 
-Well, the kernel knows about its symbols at compile time, based on stuff
-from the modutils program.  So, if you have a bad/missing genksyms
-program, you won't get any symbols.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+
+In driver file led.c, located in /drivers/char:
+
+
+UINT_8* plxPtr;	   		//Virtual ptr to PLX chip base addr.
+
+//The LED driver file operations structure.
+static struct file_operations  led_fops =
+  {
+  NULL,                         //lseek
+  NULL,                         //read
+  NULL,                         //write
+  NULL,                         //readdir
+  NULL,                         //poll
+  led_ioctl,                     //ioctl
+  NULL,	                        //mmap
+  led_open,                   //open
+  NULL,	                       //flush
+  NULL,	                       //release
+  };
+
+
+
+
+INT_32  led_init(void)
+{
+  register_chrdev(LED_MAJOR,"led",&led_fops);	//MAJOR = 240.
+  plxPtr = ioremap((UINT_32) 0x20000000,0x4000);
+  return(0);
+}
+
+
+
+
+static int led_open(struct inode* inode,
+                           struct file*     file)
+{
+  //Verify the virtual ptr returned from ioremap().
+  printk("led_open(): plxPtr = %08x\n",(UINT_32) plxPtr);
+  return(0);
+}
+
+
+
+
+static INT_32  led_ioctl(struct inode* inode,
+                                  struct file*     file,
+                                  UINT_32       cmd,
+                                  ULONG_32   arg)
+{
+  switch (cmd)
+    {
+    case LED_ON:
+
+       plxUser0Write(0);           //Turn LED ON.
+       break;
+
+    case LED_OFF:
+
+       plxUser0Write(1);          //Turn LED OFF.
+       break;
+    }
+
+  return(0);
+}
+
+
+
+
+//Turn LED ON or OFF.
+void  plxUser0Write(UINT_8 ledState)
+{
+  UINT_32  regVal;
+
+
+  get_user(regVal,(UINT_32*) (plxPtr + PCI9054_EEPROM_CTRL_STAT));
+
+  if (ledState == 0)
+    put_user(regVal & ~(1 << 16),(UINT_32*) (plxPtr +
+PCI9054_EEPROM_CTRL_STAT));
+  else
+    put_user(regVal | (1 << 16),(UINT_32*) (plxPtr +
+PCI9054_EEPROM_CTRL_STAT));
+}
+
+
+
+Thanks,
+
+Steven
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
