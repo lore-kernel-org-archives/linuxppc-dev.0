@@ -1,45 +1,43 @@
-Message-ID: <00bf01c0c2ac$54b6e650$6c125acf@mrsl.com>
-From: "Tim Moloney" <moloney@mrsl.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Interrupt handling via OpenPIC
-Date: Wed, 11 Apr 2001 13:24:57 -0400
+Message-ID: <3AD4A4D6.811075AD@mvista.com>
+Date: Wed, 11 Apr 2001 11:39:18 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
+To: Dan Malek <dan@mvista.com>
+Cc: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>,
+	LinuxPPC-embedded list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: frequency in sandpoint_calibrate_decr
+References: <3AD4722B.3B22120@matrox.com> <3AD48FE2.3FBE7B65@mvista.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am writing a device driver for a custom PMC card, and I'm having
-trouble with the interrupt service routine.
+Yep, I highly recommend upgrading to the latest fsmlabs version.
 
-Although the PCI configuration block says that the board's interrupt
-is 9, I am receiving interrupt 3.  I know that the OpenPIC is supposed
-to remap the interrupts but I don't quite understand the process.
-I've looked at the board's users manual and skimmed the Linux kernel
-but I can't find a good example of what to do.
+Mark
+--
 
-Can anyone provide pointers to documentation, example code, etc. that
-shows how I can reconcile what the kernel thinks the interrupt is with
-what in actually being generated?
+Dan Malek wrote:
 
-Additional info:
-I am developing on a Synergy Microsystems VSS4 board.  This is a
-quad-G4 VME board that has the following:
-  IBM MPIC-2 interrupt controller
-  Motorola MPC106 Grackle PCI bridge/memory controller
-  Symbios 53c885 Ethernet/SCSI controller
-  Tundra Universe II PCI-VME64 bridge
-  DEC/Intel 21554 PCI-PCI bridge
-
-Thanks for any help.
-
-Tim Moloney
-
-ManTech Real-time Systems Laboratory
-2015 Cattlemen Road
-Sarasota, FL  34232
-(941) 377-6775 x208
+> Sébastien Côté wrote:
+>
+> > In MontaVista's kernel 2.4.0-test2, the frequency in
+> > sandpoint_calibrate_decr() is set to 66 Mhz.  What frequency is this?
+> > The processor, the bus ???
+>
+> That's the speed of the processor bus, usually from which all
+> other core clocks are derived.  You should be using a newer version
+> of the kernel, at least from FSM Labs BitKeeper.  In the source
+> code pipeline is a change of the clock value from MHz to Hz.
+>
+> > Increasing this speed seems to get rid of my stability problems (at
+> > last!), so I'd like to know the real value I should put there.
+>
+> Eh?  On most systems it won't do anything but affect the ability
+> of the kernel to keep time correctly.
+>
+>         -- Dan
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
