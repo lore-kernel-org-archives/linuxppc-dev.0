@@ -1,30 +1,34 @@
-Message-ID: <3E64FD53.3030107@embeddededge.com>
-Date: Tue, 04 Mar 2003 14:24:03 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
-References: <20030304191644.GA4524@rover.farnsworth.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 4 Mar 2003 12:51:01 -0700
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Trivial patch to add PVR_7455
+Message-ID: <20030304195101.GA4635@rover.farnsworth.org>
+References: <20030304190421.GA4490@rover.farnsworth.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030304190421.GA4490@rover.farnsworth.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dale Farnsworth wrote:
+On Tue, Mar 04, 2003 at 07:04:22PM +0000, Dale Farnsworth wrote:
+> ===== include/asm-ppc/processor.h 1.80 vs edited =====
+> --- 1.80/include/asm-ppc/processor.h	Thu Feb 27 13:22:28 2003
+> +++ edited/include/asm-ppc/processor.h	Tue Mar  4 11:02:35 2003
+> @@ -687,6 +687,7 @@
+>  #define	PVR_7400	0x000C0000
+>  #define	PVR_7410	0x800C0000
+>  #define	PVR_7450	0x80000000
+> +#define	PVR_7455	0x80010000
+>  /*
+>   * For the 8xx processors, all of them report the same PVR family for
+>   * the PowerPC core. The various versions of these processors must be
 
-> arch/ppc/boot/common/relocate.S starts the kernel at address 0
-> which fails if you have a second cpu running at secondary_hold.
-> (The code at secondary hold writes the cpu id at address 4.)
+I'm told that using PVR_XXXX is deprecated and that in my case
+I'd be better off using CPU_FTR_L3CR.
 
-Ummm....are you _sure_ this patch works for all possible boards
-that use this bootloader file?  We've been jumping everyone to
-location zero for a long time.
+So, nevermind.
 
-Thanks.
-
-
-	-- Dan
-
+-Dale
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
