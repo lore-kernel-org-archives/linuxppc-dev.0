@@ -1,53 +1,41 @@
-Date: Sun, 19 Sep 1999 10:54:01 +0200
-To: dmalek@jlc.net, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: patches: MacOS-like Wallstreet sound in/out controls
-Message-Id: <19990919105401.015601@smtp.calvacom.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Josh Huber <huberj@WPI.EDU>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14308.62378.599609.90190@cpu.wpi.edu>
+Date: Sun, 19 Sep 1999 10:31:06 -0400 (EDT)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Lombard shuts itself off
+In-Reply-To: <19990917181056.027066@mailhost.mipsys.com>
+References: <14306.21109.970188.33759@cpu.wpi.edu>
+	<19990917181056.027066@mailhost.mipsys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Sep 19, 1999, Dan Malek <dmalek@jlc.net> wrote:
+Benjamin Herrenschmidt writes:
+> 
+> I have a similar problem with my wallstreet. It seems to survive quite
+> well when travelling with in bag, but when working with it on my knees, A
+> brutal move sometimes disconnects the battery. 
+> 
+> There is still a possibility of a problem with PMU communication. This
+> beast is quite sensitive to various timing issues, and when something
+> goes wrong, it shuts the machine down abruptly.
+Well, it happaned again, but this time is was sleeping last night on my desk with the power cord attached!
 
->Since I was the last one to check in changes to the driver, I have kind of
->been nominated to do this again.  I have patches from several people for some
->functional updates on new hardware.  I can add these in/out controls if
->people really want them.
->
->
->While I understand the convenience of these in/out controls, I personally
->don't
->like them.  I run a variety of programs that perform these operations for me.
->Sometimes I want to run both line out and speakers at the same time, or
-select
->the microphone without having to unplug line in.  I guess the in/out doesn't
->prevent
->me from doing this, just that a change (plug in or out) will cause a
->configuration
->change without my mixer knowing.  If people generally want these, I'll put
->them
->in along with the other changes I am making.
+I woke up this morning, and the sleep led was flashing, but when I pressed a key, it didn't wake up, the led went off, and nothing happaned.
 
+My question is this:
+Ben, is it possible that there could be a problem with the wakup code that caused this problem, or do you think that i should call and complain to apple?
 
-A better solution would  be to make the appropriate infos available to
-userland (eventually via a private ioctl of the sound driver). Then, we
-could have an optional damon handling all this automatically that can be
-unplugged for people who like controlling everything manually. If no-one
-have time to write this, then you may include the patches anyway but
-wrapped in a compile option. (I'd like the volume button patch anyway).
+My battery was in the right compartment, and it wasn't moving around at all, but then again it was also still hooked up to wall power...
 
-On a similar way, I'm wondering what is the best way for the eth driver
-to tell userland about it's link status. I'd like to add to Paul's pmud a
-way to have scripts run when the link goes down and up. (basically, this
-would ifdown eth0 completely to remove it from the router, change my
-default route to the one I need for PPP, etc...)
+The suspicious thing is that the led was still flashing, but usually when I have this problem (with I'm carrying it around w/o power) the led stops blinking..although it has happened like this before.
 
+Never while it was hooked up to AC power though.
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+A similar thing happens in MacOS, which is why I'm inclined to call apple on this one...
 
+Josh
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
