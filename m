@@ -1,83 +1,88 @@
-Date: Wed, 12 Jan 2000 19:10:28 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
-To: linuxppc-embedded@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Help Sought: 8390-Ethernet Troubles on PowerPC 4xx Port
-Message-ID: <Pine.SGI.4.10.10001121900080.250408-100000@brule.borg.umn.edu>
+Message-ID: <387D7A4B.FCA07105@huawei.com.cn>
+Date: Thu, 13 Jan 2000 15:10:03 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Brendan.Simon@ctam.com.au,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Cross-compile Applications for 860 on x86
+References: <386C150F.22B1A3D0@huawei.com.cn> <386ABF52.922267E9@ctam.com.au> <38701F3A.FAD6263E@huawei.com.cn> <386ADE53.D3411F6A@ctam.com.au> <38704D0B.94438516@huawei.com.cn> <386AFFC5.E0134DB8@ctam.com.au> <38708C86.2CD58E66@huawei.com.cn> <387142DF.7A3025D0@ctam.com.au> <38715DAE.B6CBC772@huawei.com.cn> <3871572F.FA4E7842@ctam.com.au> <38717C52.ECF1AFFD@huawei.com.cn> <3871953B.345DDA23@ctam.com.au> <38754F28.B6B4CE70@huawei.com.cn> <38754419.20D95C5A@ctam.com.au> <3876A6E5.3488738B@huawei.com.cn> <3876C6FD.794BD1BF@ctam.com.au> <387A87DF.4ED23CA6@huawei.com.cn> <387A81F3.702B29A2@ctam.com.au> <387C4D8D.9C058F1C@huawei.com.cn> <387D3212.A4E9904F@ctam.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The latest road bump I've encountered on the path to a Linux port for the
-PowerPC 403GCX running on IBM's "Oak" evaluation board is getting the
-National Semiconductor DP83902AV chip to behave.
 
-The chip on the board works with both the IBM PROM and with TiVo's
-2.1.24-based kernel, so I know that the hardware is OK.
 
-Thinking that maybe I had a problem with the Linux 2.3.3x sources, I
-overlaid the port onto 2.2.14 and get the same problem. So, it's
-definitely something in the 4xx-code or something in my 'oaknet.c' driver.
+Brendan J Simon wrote:
 
-My driver is pretty much a verbatim copy of all the other 8390-based
-drivers. TiVo's 2.1.24 driver doesn't seem much different either.
+> dony wrote:
+>
+> >       I want to cross-compile a very simple test program which have only one line:
+> >
+> >              printf("jsut a test.");
+>
+> I used puts("Brendan was here") as it is much simpler, but printf should work as well.
+>
+> >  But  the powerpc-linux-gcc seems to complain I lack of "crt1.o".
+> > So what other tools I need to cross-compile my application except the powerpc-linux-*?
+> > Thanks  very much.
+> > dony
+>
+> I have crt1.o, crti.o and crtn.o in $prefix/$target/lib.  Initially they were put there
+> when I unpacked the rpm files from the yellowdog distribution.  I was following some
+> instructions from Kai Ruottu when I was trying to get my cross-compiler built.  I think
+> I built glibc libraries from the source afterwards which should have replaced those ones
+> but I'm not sure.
+> Have you built glibc yet ?
 
-I DO know for a fact that I can probe and see the device and I know for a
-fact that the driver is getting and handling interrupts.
+Yes but failed. I following the following steps:
 
-Anyone out there with any experience with 8390-based controllers or
-drivers have any insight on where I might start looking to tackle the
-below problem? 
+##################################
+Cross Development for Linux/PPC
 
-The "oaknet.c" code is in the latest 2.3.39 sources; otherwise, I can send
-the similar code for 2.2.14 if it'd help. Both rely on the stock 8390.o
-module.
+LibC
+Get
+ftp://sourceware.cygnus.com/pub/glibc/glibc-2.1.tar.gz
+ftp://sourceware.cygnus.com/pub/glibc/glibc-linuxthreads-2.1.tar.gz
+ftp://ftp.funet.fi/pub/gnu/funet/glibc-crypt-2.1.tar.gz
+Build
+ln -sf $CVS_LINUX_TOP/include/asm /usr/local/powerpc-linux/include/asm
+ln -sf $CVS_LINUX_TOP/include/linux /usr/local/powerpc-linux/include/linux
+tar zxf glibc-2.1.tar.gz
+cd glibc-2.1
+tar zxf ../glibc-crypt-2.1.tar.gz
+tar zxf ../glibc-linuxthreads-2.1.tar.gz
+mkdir build
+cd build
+CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib ../configure
+--host=powerpc-linux --with-headers=$CVS_LINUX_TOP/include
+--enable-add-ons=crypt,linuxthreads --prefix=/usr/local/powerpc-linux
+make
+make install
+############################################
 
-I get the following sorts of errors on both 2.2.14 and 2.3.3x:
+All except the last step are right. When I do "make install" , I get the following error:
 
-Linux version 2.2.14 (grant@brule) (gcc version 2.95.2 19991024 (release)) #97 Wed Jan 12 16:52:16 CST 2000
-Calibrating delay loop... 9.73 BogoMIPS
-Memory: 7124k available (660k kernel code, 372k data, 36k init) [c0000000,c0800000]
-Dentry hash table entries: 1024 (order 1, 8k)
-Buffer cache hash table entries: 8192 (order 3, 32k)
-Page cache hash table entries: 2048 (order 1, 8k)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.2
-Based upon Swansea University Computer Society NET3.039
-NET4: Unix domain sockets 1.0 for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-TCP: Hash tables configured (ehash 8192 bhash 8192)
-Starting kswapd v 1.5 
-Shoulda called rs_init...
-RAM disk driver initialized:  16 RAM disks of 4096K size
-loop: registered device at major 7
-eth0: National DP83902AV at 08:00:5a:c8:02:b4, found at 0xf4000000, using IRQ 27.
-Looking up port of RPC 100003/2 on 192.168.68.90
-eth0: timeout waiting for Tx RDC, stat = 0x0
-	start address 0x2000, current address 0x2018, count 42
-Resetting eth0...
-eth0: timeout waiting for Tx RDC, stat = 0x3
-	start address 0x2600, current address 0x2612, count 42
-Resetting eth0...
-eth0: timeout waiting for Tx RDC, stat = 0x3
-	start address 0x2000, current address 0x2014, count 42
-Resetting eth0...
-neighbour table overflow
-eth0: timeout waiting for Tx RDC, stat = 0x3
-	start address 0x2600, current address 0x2613, count 42
-Resetting eth0...
-eth0: timeout waiting for Tx RDC, stat = 0x3
-	start address 0x2000, current address 0x2012, count 42
-Resetting eth0...
-eth0: timeout waiting for Tx RDC, stat = 0x3
-	start address 0x2600, current address 0x2613, count 42
-Resetting eth0...
-neighbour table overflow
+########################################
+../sysdeps/unix/sysv/linux/i386/profil-counter.h: In function `profil_counter':
+In file included from ../sysdeps/unix/sysv/linux/powerpc/profil-counter.h:2,
+                 from ../sysdeps/posix/profil.c:54,
+                 from ../sysdeps/unix/sysv/linux/profil.c:3:
+../sysdeps/unix/sysv/linux/i386/profil-counter.h:26: structure has no member named `regs'
+../sysdeps/posix/profil.c:39: warning: inlining failed in call to `profil_count'
+../sysdeps/unix/sysv/linux/i386/profil-counter.h:26: warning: called from here
+make[2]: *** [/usr/local/powerpc-linux/glibc-2.1/build/gmon/profil.o] Error 1
+make[2]: Leaving directory `/usr/local/powerpc-linux/glibc-2.1/gmon'
+make[1]: *** [gmon/subdir_lib] Error 2
+make[1]: Leaving directory `/usr/local/powerpc-linux/glibc-2.1'
+make: *** [install] Error 2
+################################
 
-Stymied,
+Since the glibc package is very very large, locating the file where errors occur (ie, where
+struct singcontext is defined?) is a bit difficult.
+Do you have any experience?
 
-Grant Erickson
+dony
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
