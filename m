@@ -1,44 +1,56 @@
-From: jtm@smoothsmoothie.com
-Date: Thu, 22 Feb 2001 14:42:53 -0600
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 8260 console problems
-Message-ID: <20010222144252.E21811@shamus.smoothsmoothie.com>
-References: <20010222082318.71ACE281D9@denx.denx.de> <3A9564BC.D8C08CA5@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A9564BC.D8C08CA5@mvista.com>; from dan@mvista.com on Thu, Feb 22, 2001 at 02:13:00PM -0500
+To: Dan Malek <dan@mvista.com>
+Cc: jtm@smoothsmoothie.com, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 console problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 22 Feb 2001 15:36:12 EST."
+             <3A95783C.6618E177@mvista.com>
+Date: Thu, 22 Feb 2001 22:45:56 +0100
+Message-Id: <20010222214601.5A173287E8@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Feb 22, 2001 at 02:13:00PM -0500, Dan Malek wrote:
-> ...and you will have to modify arch/ppc/mbxboot/embed_config.c because
-> the 8260 may not expect a boot rom to hand it a bd_info.  I don't
-> remember how I left it......it may just fill in some hard coded values.
+In message <3A95783C.6618E177@mvista.com> Dan Malek wrote:
+>
+> > PPCBoot does not use _anything_ from the stuff in arch/ppc/mbxboot/
+>
+> I'm not sure that is such a good idea.......I'm assuming code from
 
-I didn't have to do it. If this is the code you were talking about:
-#if 0
-        /* This is actually provided by my boot rom.  I have it
-         * here for those people that may load the kernel with
-         * a JTAG/COP tool and not the rom monitor.
-         */
-        bd->bi_baudrate = 115200;
-        bd->bi_intfreq = 200;
-        bd->bi_busfreq = 66;
-        bd->bi_cpmfreq = 66;
-        bd->bi_brgfreq = 33;
-        bd->bi_memsize = 16 * 1024 * 1024;
-#endif
+IMHO the code in that directory is  things  that  shoud  be  done  by
+firmware  in  the  frist  place.  In my experience, a lot significant
+amount of work to get Linux running on a new board  dealt  with  that
+stuff. This pain is gone since we use PPCBoot on all systems.
 
-It's ifdeffed out, as you can see.
+Why do I have to add another serial driver for a  console  interface,
+when  the  firmware  already  has one? Why add uncompression code (to
+each kernel image!) when we can have this in a central location -  in
+the firmware. Etc. etc.
 
-Once I fixed my problem with the bd_info struct, it worked
-great.
+> that directory is run when I am writing low level kernel code.  You
+> are going to constantly be updating PPCBoot, and finding that older
 
+Ummm... Why don't _you_ switch to PPCBoot  then?  I  would  certainly
+appreciate your halp there...
+
+> versions aren't going to support new kernels.  That code has to be
+> run, makes assumptions about the MMU and cache states upon entry,
+
+Is there a good, urgent reason to _change_ the current state?
+
+> and at most expects a bd_info structure from the boot rom.
+
+Right now the "kernel interface" is pretty well  defined  (starts  at
+address  0,  r3: ptr to bd_info, r4: start of initrd or 0, r5: end of
+initrd, r6: start of command line, r7: end of command line). What are
+you going to change, and why?
+
+Wolfgang Denk
 
 --
-Jay Monkman	    The truth knocks on the door and you say "Go away, I'm
-monkman@jump.net    looking for the truth," and so it goes away. Puzzling.
-		     - from _Zen_and_the_Art_of_Motorcycle_Maintenance_
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The light at the end of the tunnel is usually a "No Exit" sign.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
