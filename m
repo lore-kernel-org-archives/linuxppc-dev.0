@@ -1,28 +1,73 @@
-From: THEDREAM@chollian.net
-Message-Id: <200109110019.JAA20501@ldap.dacom.co.kr>
-Date: Tue, 11 Sep 2001 09:20:51 +0900
-To: cinpet@adaptivemicro.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem during decompressing kernel routine
-Reply-To: THEDREAM@chollian.net
-MIME-Version: 1.0
-Content-Type: text/plain
+Date: Tue, 11 Sep 2001 11:04:06 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Dan Malek <dan@mvista.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Another fix for xmon on non-standard MMU machines
+Message-ID: <20010911110405.N4823@zax>
+References: <20010910194730.J4823@zax> <20010910160600.21153@smtp.adsl.oleane.com> <20010911091748.M4823@zax> <3B9D57E0.4881358E@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3B9D57E0.4881358E@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I donot know exact answer. because I donot know your situation such as which CPU
-you use, how you port Linux and so on.
+On Mon, Sep 10, 2001 at 08:16:32PM -0400, Dan Malek wrote:
+>
+> David Gibson wrote:
+>
+> > ..... Turns out the TLB miss handler
+> > was broken in that:
+> >     a) it set the TLB writable bit based only the _PAGE_DIRTY bit, but
+> > a page can be dirty but still write-protected - in particular this
+> > happens during the COW of the stack, so the two processes were sharing
+> > their stack.
+>
+> What the heck are you looking at????
+>
+> It sets _PAGE_DIRTY | _PAGE_ACCESSED based upon the setting of
+> the _PAGE_RW.
 
-So I just guess the reason.
+No, the Data Store handler sets these - the TLB miss handler sets
+nothing, so a read will never touch _PAGE_ACCESSED.  At least that's
+the case in the linuxppc_2_4_devel tree I'm looking at, pulled some
+time yesterday.
 
-I sometimes saw the same message that you see.
+> If you get a Data Store exception (which would be the case trying
+> to access a page that is write protected), and the page is not
+> marked _PAGE_RW, it will call the heavyweight fault handler to
+> fix this.....which is exactly what happens for copy-on-write.
+> The _PAGE_DIRTY is an alias to the hardware write protect.  Setting
+> this bit will allow a write operation.
 
-In this case, I could port the Kernel when I checked IMMR values in the Kernel.
+*If* we get a Data Store exception.  If the page is dirty, but write
+protected (which happens during a COW), the TLB miss handler will load
+the dirty bit into the hardware write enable bit and we will never get
+the Data Store exception.
 
-It's an assumption.
+> The purpose of the TLB miss handlers are to simply store the Linux
+> PTE (or close approximation) into the hardware TLB.  It is up to
+> the Linux MM to construct this properly, which it appears isn't happening.
 
-Good Luck. Bye ~~~
+Yes, but the TLB WR bit must be the logical and of the PTE dirty and
+RW bits.
+
+> These exception handlers worked perfectly in the 2.4.2 timeframe.
+> Modifications to other areas of the kernel have caused problems, and
+> we need to find them there, not hack around down at this level where
+> we want minimal code.
+
+Changes might have caused problems, but according to paulus having
+pages with _PAGE_DIRTY set, but _PAGE_RW cleared is correct behaviour,
+so the TLB miss handler must deal with it - it's not like it's a lot
+of code.
+
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
