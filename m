@@ -1,24 +1,194 @@
-Message-ID: <3975120E.BF786A90@execpc.com>
-Date: Tue, 18 Jul 2000 21:27:26 -0500
-From: Joseph Garcia <jpgarcia@execpc.com>
+Message-Id: <20000719114756.Postino-007170@smtp01.highway.ne.jp>
+Date: Wed, 19 Jul 2000 11:47:56 +0900
+To: linuxppc-dev@lists.linuxppc.org
+CC: Andre Hedrick <andre@linux-ide.org>
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: ide problem kernel-2.4.0-Test5
 MIME-Version: 1.0
-To: cl.en@gmx.net, Stephan Leemburg <pmud-bugs@jvc.nl>
-CC: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: preliminary 3400 APM support for PMUD - bugfix
-References: <3973D3E6.578C8B5C@execpc.com> <20000719010522.A542@olis.north.de> <3974E8F9.BFC337E6@execpc.com> <20000719030735.A445@olis.north.de>
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: multipart/mixed; boundary="==_Boundary-15831_=="
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-small bug fix.  i checked, and it seems I need to multiply the timeleft on line
-685 by 60.
+--==_Boundary-15831_==
+Content-Type: text/plain; charset=us-ascii
 
-Thanks to Claus Enneper for helping catch that.
+Hi!
 
---
-Joseph P. Garcia      jpgarcia@execpc.com      jpgarcia@lidar.ssec.wisc.edu
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
+I tryed kernel-2.4.0-test5 on my Blue/white/G3 again.
+It's has CMD646 rev7 chip.
+
+I know ide-2.4.0-test3-20000711.patch so
+I patched from linux-ide.org.
+
+1)
+   only  kernel-2.4.0-test5
+    it's dumped code and freeze.
+2)
+  kernel-2.4.0-test5+ ide-2.4.0-test3-20000711.patch
+
+ I had many times lost interrup.
+
+
+I'd like to use the 2.4 kernel, but since I tryed last fall it's didn't work.
+
+3)
+
+For PIO mode ,I try to put #undef CONFIG_BLK_DEV_IDEDMA
+in top of cmd64x.c then It's also fail.
+
+
+Any fix?
+
+Kaoru
+
+
+
+--==_Boundary-15831_==
+Content-Type: multipart/appledouble; boundary="============Nest_Boundary==========="
+Content-Disposition: attachment; filename="report-k2.4.0-T5+ide.patch"
+
+
+--============Nest_Boundary===========
+Content-Type: application/applefile; name="%report-k2.4.0-T5+ide.patch"
+Content-Disposition: attachment; filename="%report-k2.4.0-T5+ide.patch"
+Content-Transfer-Encoding: base64
+
+AAUWBwACAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAADAAAAPgAAABoAAAAJAAAAWAAAABAAAAAC
+AAAAaAAAAa5yZXBvcnQtazIuNC4wLVQ1K2lkZS5wYXRjaFRFWFRDdVRFAQAABQC8AAAAAAEA
+AAABaAAAAGgAAABGcmFpZyBSb2RyaWd1ZXMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAARYnVnLWdsaWJjQGdudS5vcmc6NP////hUbwAAAAAAJFR1
+ZSwgMTEgSnVsIDIwMDAgMDA6MTQ6NDkgLTA0MDAAAAAADERhdGUAYW5k////zFByb2JsZW0g
+d2l0aCBzaGFyZWQgbGlicmFyaWVzIGFuZCBnbGliYyAyLjEuOTEADAAAADRQcm9ibGVtIHdp
+dGggc2hhcmVkIGxpYnJhcmllcyBhbmQgZ2xpYmMgMi4xLjkxAAAAFgABAAAAAAAPAAxAAAAA
+AAwAAAAAAAAAAABKAAAAAgAAAEoAAAAAAAAAAAAzAJwDAALMAAAAAAAADF8AAAxf////////
+7//v/+//QAAAAAAMAAAAAAAAAAIAAABFABgAAAAAAQEAAAEAAAABaAAAAGgAAABGA/yAGDcW
+AAAAHABGAAFzdHlsAAAAEmN1dEUAAAAeAUj//wAAAAAAAAAAAUj//wAAABoEAHH0
+--============Nest_Boundary===========
+Content-Type: application/octet-stream; name="report-k2.4.0-T5+ide.patch"
+ ; x-mac-type="54455854"
+ ; x-mac-creator="43755445"
+Content-Disposition: attachment; filename="report-k2.4.0-T5+ide.patch"
+Content-Transfer-Encoding: base64
+
+LS08c25pcD4NQ01ENjQ2OiBJREUgY29udHJvbGxlciBvbiBQQ0kgYnVzIDAxIGRldiAwOA1D
+TUQ2NDY6IGNoaXBzZXQgcmV2aXNpb24gMHgwNyxVbHRyYURNQSBDYXBhYmxlDUNNRDY0Njog
+MTAwJSBuYXRpdmUgbW9kZSBvbiBpcnEgMjYNICAgICAgICAgaWRlMDogQk0tRE1BIGF0IDB4
+MTA1MC0weDEwNTcsIEJJT1Mgc2V0dGluZ3M6IGhkYTpETUEsIGhkYjpwaW8NICAgICAgICAg
+aWRlMTogQk0tRE1BIGF0IDB4MTA1OC0weDEwNWYsIEJJT1Mgc2V0dGluZ3M6IGhkYzpwaW8s
+IGhkZDpwaW8NcG1hY19pZGU6IGVuYWJsaW5nIElERSBidXMgSUQgMA1oZGE6IElCTS1ESk5B
+LTM3MTM1LEFUQSBESVNLIGRyaXZlDWlkZTogQXNzdW1pbmcgMzNIeiBzeXN0ZW0gYnVzIHNw
+ZWVkIGZvciBQSU8gbW9kZXM7IG92ZXJyaWRlIHdpdGggaWRlYnVzPXh4DWhkZTogTUFUU1VT
+SElUQSBDUi01MDksIEFUQVBJIENEUk9NIGRyaXZlDWlkZTAgYXQgMHgxMDkwLTB4MTA5Nyww
+eDAwMCBvbiBpcnEgMjYNaWRlMiBhdCBveGQwMDBiMDAwLTB4ZDAwMGIwMDcsMHhkMDAwYjE2
+MCBvbiBpcnEgMTMNaGRhOiAyNjUyMDQ4MCBzZWN0b3JzICgxMzU3OCBNQikgdy8xOTY2S2lC
+IENhc2hlLCBDSFM9MjYzMTAvMTYvNjMsVURNQSgzMykNSURFLURNQSBjaGVjayAhDWhkZTog
+QVRBUEkgMzJYIENELVJPTSBkcml2ZSwgMTI4a0IgQ2FzaGUNVW5pZm9ybSBDRC1ST00gZHJp
+dmVyIFJldmlzaW9uOiAzLjExDVBhcnRpdG9uIGNoZWNrOg0gIGhkYTpoZGEgbG9zdCBpbnRl
+cnJ1cHQNaGRhOiBsb3N0IGludGVycnVwdA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogZG1h
+X3RpbWVyX2V4cGlyeTogZG1hIHN0YXR1cyA9PSAweDIwDWhkYTogdGltZW91dCB3YWl0aW5n
+IGZvciBETUENaWRlX2RtYXJvYzogY2hpcHNldCBzdXBwb3J0ZWQgaWRlX2RtYV90aW1lb3V0
+IGZ1bmMgb25seToxNA1oZGE6IGlycSB0aW1lb3V0OiBzdGF0dXM9MHg1MCB7IERyaXZlUmVh
+ZHkgU2Vla0NvbXBlbGUgfQ1oZGE6IGRtYV90aW1lcl9leHBpcnk6IGRtYSBzdGF0dXMgPT0g
+MHgyMA1oZGE6IHRpbWVvdXQgd2FpdGluZyBmb3IgRE1BDWlkZV9kbWFyb2M6IGNoaXBzZXQg
+c3VwcG9ydGVkIGlkZV9kbWFfdGltZW91dCBmdW5jIG9ubHk6MTQNaGRhOiBpcnEgdGltZW91
+dDogc3RhdHVzPTB4NTAgeyBEcml2ZVJlYWR5IFNlZWtDb21wZWxlIH0NaGRhOiBkbWFfdGlt
+ZXJfZXhwaXJ5OiBkbWEgc3RhdHVzID09IDB4MjANaGRhOiB0aW1lb3V0IHdhaXRpbmcgZm9y
+IERNQQ1pZGVfZG1hcm9jOiBjaGlwc2V0IHN1cHBvcnRlZCBpZGVfZG1hX3RpbWVvdXQgZnVu
+YyBvbmx5OjE0DWhkYTogaXJxIHRpbWVvdXQ6IHN0YXR1cz0weDUwIHsgRHJpdmVSZWFkeSBT
+ZWVrQ29tcGVsZSB9DWhkYTogZG1hX3RpbWVyX2V4cGlyeTogZG1hIHN0YXR1cyA9PSAweDIw
+DWhkYTogdGltZW91dCB3YWl0aW5nIGZvciBETUENaWRlX2RtYXJvYzogY2hpcHNldCBzdXBw
+b3J0ZWQgaWRlX2RtYV90aW1lb3V0IGZ1bmMgb25seToxNA1oZGE6IGlycSB0aW1lb3V0OiBz
+dGF0dXM9MHg1MCB7IERyaXZlUmVhZHkgU2Vla0NvbXBlbGUgfQ1oZGE6IERNQSBkaXNhYmxl
+ZA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGlu
+dGVycnVwdA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNIGhkYTFo
+ZGE6IGxvc3QgaW50ZXJydXB0DSBoZGEyIGhkYTNoZGE6IGxvc3QgaW50ZXJydXB0DSBoZGE0
+IGhkYTVoZGE6IGxvc3QgaW50ZXJydXB0DSBoZGE2IGhkYTdoZGE6IGxvc3QgaW50ZXJydXB0
+DSBoZGE4IGhkYTloZGE6IGxvc3QgaW50ZXJydXB0DSBoZGExMCBoZGExMQ1QQ0k6IERldmlj
+ZSAwMTowNC4wIG5vdCBhdmFpbGFibGUgYmVjYXVzZSBvZiByZXNvdXJjZSBjb2xsaXNpb25z
+DXNjc2kwOiBNRVNIDXNjc2kgOiAxIGhvc3QuDXNjc2kgOiBkZWxldGUgdG90YWwNTWFjaGlu
+dG9zaCBBREIgbW91c2UgZHJpdmVyIGluc3RhbGxlZC5dZXRoMDogQk1BQysgYXQgMDA6NTA6
+ZTQ6OTY6YzA6MzkNRE1BIHNvdW5kIGRyaXZlciBpbnN0YWxsZWQsdXNpbmcgNCBidWZmZXJz
+IG9mIDMyay4NYWRiOiBDVURBIGRyaXZlciB2MC41IGZvciBVbmlmaWVkIEFEQi4NQURCIGtl
+eWJvYWQgYXQgMixoYW5kbGVyIHNldCB0byAzDUFEQiBtb3VzZSBhdCAzLGhhbmRsZXIgc2V0
+IHRvIDINTWFjaGludG9zaCBub24gdm9sYXRpbGUgbWVtb3J5IGRyaXZlciB2MS4wDXVzYi5j
+IHJlZ2lzdGVyZWQgbmV3IGRyaXZlciBoaWQNbWljZTogUFMvMiBtb3VzZSBkZXZpY2UgY29t
+bW9uIGZvciBhbGwgbWljZQ1rbWVtX2NyZWF0ZTogRm9yY2luZyBzaXplIHdvcmQgYWxpZ21l
+bnQgLSBuZnNfZmgNaGRhOiBsb3N0IGludGVycnVwdA1oZGE6IGxvc3QgaW50ZXJydXB0DWhk
+YTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGludGVycnVwdA1oZGE6IGxvc3QgaW50ZXJy
+dXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGludGVycnVwdA1oZGE6IGxvc3Qg
+aW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGludGVycnVwdA1oZGE6
+IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGludGVycnVw
+dA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGlu
+dGVycnVwdA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNVkZTOiBN
+b3VudCByb290IChleHQyIGZpbGVzeXN0ZW0pIHJlYWRvbmx5Lg1GcmVlaW5nIHVudXNlZCBr
+ZXJuZWwgbWVtb3J5OiAyOTZrIGluaXQgMzZrIHByZXAgOGsgY2hycA1oZGE6IGxvc3QgaW50
+ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGludGVycnVwdA1oZGE6IGxv
+c3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGludGVycnVwdA1o
+ZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0IGludGVy
+cnVwdA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRhOiBsb3N0
+IGludGVycnVwdA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1cHQNaGRh
+OiBsb3N0IGludGVycnVwdA1oZGE6IGxvc3QgaW50ZXJydXB0DWhkYTogbG9zdCBpbnRlcnJ1
+cHQNaGRhOiBsb3N0IGludGVycnVwdA0qKioqY29udGludWUqKioqDQ0NDQ0NDQ0NDQ0NDQ0N
+DQ0=
+--============Nest_Boundary===========--
+
+--==_Boundary-15831_==
+Content-Type: multipart/appledouble; boundary="============Nest_Boundary==========="
+Content-Disposition: attachment; filename="report-k2.4.0T5-noidepatch"
+
+
+--============Nest_Boundary===========
+Content-Type: application/applefile; name="%report-k2.4.0T5-noidepatch"
+Content-Disposition: attachment; filename="%report-k2.4.0T5-noidepatch"
+Content-Transfer-Encoding: base64
+
+AAUWBwACAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAADAAAAPgAAABoAAAAJAAAAWAAAABAAAAAC
+AAAAaAAAAa5yZXBvcnQtazIuNC4wVDUtbm9pZGVwYXRjaFRFWFRDdVRFAQAAvgAyAAAAAAEA
+AAABaAAAAGgAAABGZ2xpYmMgaXMgAAAHIHYAAPoJtZDI7QAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAADJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAJYxWAAAIZwAABZkAAAAAAAAAAAAAAAAAAAAAkAC1j+Rp
+AAMTIkRhdmlkIFcuIEhhbGxpZGF5IgAAAAAAAAAAAAAAAAAAAAAAFgABAAAAAAAPAAxAAAAA
+AAwAAAAAAAAAAABKAAAAAgAAAEoAAAAAAAAAAABgAIUDFAK1AAAAAAAABVQAAAVU////////
+7//v/+//QAAAAAAMAAAAAAAAAAIAAAAAABgAAAAAAQEAAAEAAAABaAAAAGgAAABGA/yAGDjs
+AAAAHABGAAFzdHlsAAAAEmN1dEUAAAAeAUj//wAAAAAAAAAAAUj//wAAABoEAG/A
+--============Nest_Boundary===========
+Content-Type: application/octet-stream; name="report-k2.4.0T5-noidepatch"
+ ; x-mac-type="54455854"
+ ; x-mac-creator="43755445"
+Content-Disposition: attachment; filename="report-k2.4.0T5-noidepatch"
+Content-Transfer-Encoding: base64
+
+LS08c25pcD4NQ01ENjQ2OiBJREUgY29udHJvbGxlciBvbiBQQ0kgYnVzIDAxIGRldiAwOA1D
+TUQ2NDY6IGNoaXBzZXQgNw1DTUQ2NDY6IGNoaXBzZXQgcmV2aXNpb24gMHgwNyxVbHRyYURN
+QSBDYXBhYmxlDUNNRDY0NjogMTAwJSBuYXRpdmUgbW9kZSBvbiBpcnEgMjYNICAgICAgICAg
+aWRlMDogQk0tRE1BIGF0IDB4MTA1MC0weDEwNTcsIEJJT1Mgc2V0dGluZ3M6IGhkYTpETUEs
+IGhkYjpwaW8NICAgICAgICAgaWRlMTogQk0tRE1BIGF0IDB4MTA1OC0weDEwNWYsIEJJT1Mg
+c2V0dGluZ3M6IGhkYzpwaW8sIGhkZDpwaW8NcG1hY19pZGU6IGVuYWJsaW5nIElERSBidXMg
+SUQgMA1oZGE6IElCTS1ESk5BLTM3MTM1MCxBVEEgRElTSyBkcml2ZQ1pZGU6IEFzc3VtaW5n
+IDMzSHogc3lzdGVtIGJ1cyBzcGVlZCBmb3IgUElPIG1vZGVzOyBvdmVycmlkZSB3aXRoIGlk
+ZWJ1cz14eA1oZGU6IE1BVFNVU0hJVEEgQ1ItNTA5LCBBVEFQSSBDRFJPTSBkcml2ZQ1pZGUw
+IGF0IDB4MTA5MC0weDEwOTcsMHgwMDAgb24gaXJxIDI2DWlkZTIgYXQgb3hkMDAwYjAwMC0w
+eGQwMDBiMDA3LDB4ZDAwMGIxNjAgb24gaXJxIDEzDWhkYTogMjY1MjA0ODAgc2VjdG9ycyAo
+MTM1NzggTUIpIHcvMTk2NktpQiBDYXNoZSwgQ0hTPTI2MzEwLzE2LzYzLFVETUEoMzMpDUlE
+RS1ETUEgY2hlY2sgIQ1oZGU6IEFUQVBJIDMyWCBDRC1ST00gZHJpdmUsIDEyOGtCIENhc2hl
+DVVuaWZvcm0gQ0QtUk9NIGRyaXZlciBSZXZpc2lvbjogMy4xMQ1QYXJ0aXRvbiBjaGVjazoN
+IGhkYTpNYWNoaW5lIGNoZWNrIGluIGtlcm5lbCBtb2RlLg1DYXVzZWQgYnkgKGZyb20gU1JS
+MT00MTAzMCk6IFRyYW5zZmVyIGVycm9yIGFjayBzaWduYWwNTklQIEMwMEQyM0IwIFhFUjog
+MDAwMDAwMDAgTFI6IEMwMEQyMzU4IFJFR1M6IGMwMjFmZDAwIFRSQVA6IDAyMDANTVNSOiAw
+MDA0MTAzMCBFRTogMCBQUjogMCBGUDogMCBNRTogMSBJUi9EUjogMTENVEFTSyA9IGMwMjFk
+ZmYwWzBdICdzd2FwcGVyJyBMYXN0IHN5c2NhbGw6IDEyMA1sYXN0IG1hdGggMDAwMDAwMDAg
+bGFzdCBhbHRpdmVjIDAwMDAwMDAwDUdQUjAwOiAwMDAwMDBGRiBDMDIxRkRCMCBDMDIxREZG
+MCAwMDAwMDAwMCAwMDAwMTAzMiBDMjIwNUI4IDA0MDAwMDAwIEMwMkJBQkIwDUdQUjA4OiAw
+MDAwMDAwMCBGRTAwMDAwMCBDMDI0MDAwMCBDMDJDOUUyQyAyNDgyODAyOCAwMDAwMDAwMCAw
+MDAwMDAwMCAwMDAwMDAwMA1HUFIxNjogMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAw
+MDAwMDAgMDAwMDEwMzIgQzAxQkNDNzQgQzAyQUE2QjggQzAyQjAwMDAgDUdQUjI0OiBDMDIy
+MDAwMCBDMDJBMDAwMCBDMDJCRDI2MCBDMDM3MzI3OCBDMDJDOUUyQyBDMDJDOUU5NCBDMDM3
+MzI2MCBDMDBFMDFDNA0qKioqKioqKiBGcmVlemUgYXQgaGVyZSoqKioNDQ==
+--============Nest_Boundary===========--
+
+--==_Boundary-15831_==--
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
