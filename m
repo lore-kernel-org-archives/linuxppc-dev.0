@@ -1,38 +1,40 @@
-Subject: spurious serial console hangup in 2.4.23-pre2 and later
-From: "Guy M. Streeter" <streeter@redhat.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain
-Message-Id: <1065122778.1035.20.camel@jarjar.hsv.redhat.com>
+Date: Thu, 2 Oct 2003 12:33:56 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>,
+	Stuart Vivian <stuartvivian@domo.co.uk>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux 2_4_devel kernel hangs after control transferred from u-boot
+Message-ID: <20031002123356.C29772@home.com>
+References: <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local> <20031002081201.A2929@home.com> <3F7C59AA.8090707@embeddededge.com>
 Mime-Version: 1.0
-Date: 02 Oct 2003 14:26:18 -0500
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3F7C59AA.8090707@embeddededge.com>; from dan@embeddededge.com on Thu, Oct 02, 2003 at 01:00:26PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm using a board with a GT-64260 implementing the serial console. In
-kernels later than 2.4.23-pre1, the console hangs in the middle of the
-login procedure.
-I have placed debug printks in the driver's open, close and hangup
-routines, and I find two differences in the newer kernels:
+On Thu, Oct 02, 2003 at 01:00:26PM -0400, Dan Malek wrote:
+>
+> Matt Porter wrote:
+>
+> > Hrm, it used to be that everybody said their board was "just like
+> > a Sandpoint".  I guess walnut is like that in the 4xx world. :)
+>
+> I did the port for this board over a year ago and gave it to a
+> few people that were going to "finish it and check it in"....I
+> guess that didn't happen.  Lemme see what I can do about getting
+> ftp running on my server again and I'll point you to the tarball....
 
-1. Early in init (possibly after exec of the init app) there is one more
-call to the driver's close routine than I see with the older kernel.
-This difference may be OK, since it doesn't bring the use count down to
-zero.
+That should save him some time. Any other ports to standard boards
+you have laying around? :)
 
-2. During login, after agetty has read the username but before login has
-prompted for the password, there occurs a call to the driver's hangup
-routine. This doesn't happen with the earlier kernel, and it results in
-the driver returning -EIO for all subsequent requests.
+> The only thing similar to a Walnut is it uses a 405GP, there is
+> nothing else similar to a Walnut......
 
-I can't find any differences between pre1 and pre2 that obviously affect
-this. I have noticed that adding the ac4 patch set to a 2.4.22 kernel
-causes the same scenario.
-Could someone clue me about changes that could make this happen, and
-what to do to fix it?
+Yup, that makes it just like a Walnut similar to the way that every
+MPC750/MPC107 board is just like a Sandpoint.
 
-thanks,
---Guy
-
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
