@@ -1,38 +1,36 @@
-Message-ID: <3C18CC34.5CF24CDA@seranoa.com>
-Date: Thu, 13 Dec 2001 10:41:40 -0500
-From: Andrew Dixon <andrew.dixon@seranoa.com>
+Message-ID: <01C183C6.E97D49B0.svacca@valcom.com>
+From: Steven Vacca <svacca@valcom.com>
+Reply-To: "svacca@valcom.com" <svacca@valcom.com>
+To: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Proper syntax to open() device driver from app.
+Date: Thu, 13 Dec 2001 11:11:27 -0500
 MIME-Version: 1.0
-To: ppclist <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: root=/dev/nfs on sbc8260
-References: <3C17E07F.7144B7BF@seranoa.com> <3C18445A.80505@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Here is something very strange.  In PPCBoot I set the ethernet address
-to 00:a0:1e:90:15:55.
+I have a test driver, which turns an onboard LED ON or OFF,
+resident and directly linked to the kernel image.
 
-=> printenv
-<snip>
-ethaddr=00:a0:1e:90:15:55
-<snip>
+In chr_dev_init(), the driver's init func is called and the
+device registers itself with a specified MAJOR number.
+When my app runs, I'm not exactly sure of
+what the proper syntax is to open() the driver (call the driver's
+open() func in the file_operations struct) and then execute
+ioctl() to send an LED ON or OFF cmd to the driver.
 
-And PPCBoot uses bootp to get lots of good information about who the
-board is.
+Does anyone have some examples of this?
+Most info regards modules rather than resident drivers.
 
-Now, as I watch Linux try to come up I see the following:
+Am I correct in assuming that I should do something similar
+to the following:
 
-eth0: FCC ENET Version 0.2, 00:a0:1e:d0:15:55
-fec: Phy @ 0x1, type 0x000fd04b
-
-Notice that the ethernet address has changed.  Very odd.  I assume that
-this info should be passed from PPCBoot to Linux via the board info data
-structure bd_t.
-
-Has anyone else seen this before?
+	hndl = open("/dev/led",O_WRONLY,0);
+	ioctl(hndl,LED_ON,0);
 
 Thanks,
-Andy
+
+ShutEye Thinkin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
