@@ -1,58 +1,118 @@
-Date: Tue, 8 Aug 2000 18:19:47 -0400 (EDT)
-From: Henry Worth <haworth@ncal.verio.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CDDA playback on Pismo (and other newer models)
-Message-ID: <Pine.SOL.4.10.10008081713340.9223-100000@ncal.verio.com>
+Date: Wed, 9 Aug 2000 00:44:34 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: rtc again...
+In-Reply-To: <20000808174157.21374@mailhost.mipsys.com>
+Message-ID: <Pine.HPX.4.10.10008081952360.22126-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well, my Pismo which was increasingly unstable this weekend
-is now refusing to boot even from the MacOS CD's. So I probably
-won't be able to work on this for at least a few days. I'm
-hoping it will boot after having the battery out a few hours
-(it worked a couple times this weekend) and that
-reinitalizing the firmware and MacOS partitions will help,
-if that or a full disk initialization doesn't help it will
-probably be off to the shop.
+On Tue, 8 Aug 2000, Benjamin Herrenschmidt wrote:
 
-But, just before it powered itself off last night, I found
-the likely cause of the abends from the xmms_CdRead plugin.
-It's actually in the xmms package code in ~/xmms/input.c. I
-don't have the sources available, but can describe the
-problem for anyone who's interested in trying to fix it.
+> The kernel keeps two things:
+>
+>  - xtime is the current time and should be UTC.
+                                   ^^^^^^
+				   must
 
-There is a routine near the top of the file that uses GTK
-byte swapping macros to perform the LE to NE conversion.
-The problem is the classic macro mistake of passing
-complex expressions with side effects as macro parms. In
-this case it's of the form something like (this is from
-memory):
+>  - sys_tz is the current timezone (usually set from userland)
 
-  left[i] = GINT16_FROM_LE( (*ptr++) );
-  right[i] = GINT16_FROM_LE( (*ptr++) );
+Indeed, and it is used mostly (only?) by some filesystems which keep time
+in local time.
 
-The macro expands to use the argument several times
-(see the *SWAP* macros in glib.h), so the pointer is
-incremented too many times causing a seg fault. The
-non-optimized case just happened to have enough readable
-memory following the buffer to not fault (and optimizations
-on the loop probably had impacts as well), similarly the
-.wav player plugin uses a different buffering scheme that
-just accidentally avoids faults (likewise the x86 was probably
-lucky due to different run-time conditions, provided the
-MACRO doesn't simply end up a NOP).
+> When the kernel boots, it reads the time from the RTC. On pmac (or any
+> other machine that has a local time), that means that the kernel boots
+> with a wrong notion of time until that gets fixed from userland.
+>
+> That's why I added that code that calculates the real UTC from the xpram.
+> It also initialize properly the sys_tz structure, since it's easy,
+> doesn't cost much, and I think it's always better to have a correct value
+> when we can ;) This would also allow some tools and/or installers to
+> "read" the timezone at boot in order to propose a default choice or such
+> things.
+>
+> Now there are several problems:
+>
+>  - The first one, well hidden in kernel/time.c (generic code) is the call
+> to warp_time(). This is an awful hack that seem to be done because PCs
+> apparently also set the RTC to local time.
 
-The fix is to find all such occurences and do the incrementing
-outside the macro call. I think I've seen similar code in other
-parts of the package, so a general inspection is in order. This
-should also fix the visualization displays and make the xmms_CdRead
-plugin usable for the analog CD challenged Macs.
+This is necessary for people who dual boot some M$ stuff (my PC is UTC and
+it just works fine).
 
-Good Luck,
-Henry
+> This hack will cause the
+> kernel to "bump" the xtime the first time the syscall settimeofday() is
+> called is it is called with a valid timezone and a NULL timevalue.
+
+
+> With old broken behaviour, this code has the effect of causing the kernel
+> to "adjust" it's internal time that was wrongly set to local time to be
+> real UTC as soon as it is notified by userland of the real time zone.
+> Obviously, this code breaks us. We should probably change it so that a
+> global variables tells this code we have already inited sys_tz properly
+> and there's no need to warp.
+
+You could also call do_sys_settimeofday with correct tz from pram and a
+null tv to adjust xtime and prevent userland from messing with it again
+(faking the first call used to set timezone). do_sys_settimeofday is a
+public symbol since it's used by sparc and alpha code (at least) for some
+OSF and SunOS emulation.
+
+Pushing this timezone setting policy to architecture dependant code is
+another possibility, but the changes are bigger.
+
+>  - The second one is that ppc_md.get/set_rtc_time are passed (or return)
+> a time value independently of the timezone. That mean that they either do
+> no conversion and so it's the responsibility of the caller to "know" if
+> the RTC is in local time or UTC, or they do the conversion and so return
+> (and get passed) an UTC time. That's what I decided to do, so on
+> PowerMac, they do the adjustement from UTC to localtime and the opposite
+> inside those functions. Paul recently added code to also save the
+> timezone to the xpram. There's a small semantic problem with this code,
+> since it takes the time to set to the RTC as a parameter but uses the
+> global sys_tz. It should either use no parameter (and use only xtime/
+> sys_tz), or be passed both parameters. In this case, we can probably move
+> the init code that reads the initial time zone to the pmac_get_rtc_time() too.
+
+I'm slightly lost :-(. But whether the clock is in UTC or not is a
+parameter (defined in /etc/sysconfig/clock or another system configuration
+file), so I think that translating to/from UTC when setting the clock is a
+purely userland job and set/get_rtc_time should never have to handle this.
+
+>
+>  - There's apparently a problem with the definition of the DST field of
+> sys_tz. The best way to handle this correctly is probably to see how
+> userland tools like hwclock use it. What is responsible for managing DST
+> on linux ? Is there a deamon for that ? A tool called from cron ?
+
+No, AFAICT nothing bothers with it, only the clock program at boot.
+
+First it is 99% a userland problem: just set export TZ=UTC or any path in
+/usr/share/zoneinfo and all dates will appear as if you were in this
+timezone (try date or ls -l).
+
+The translation between UTC and localtime is performed in the C library,
+using the TZ environment variable or /etc/localtime, and it will know when
+to switch between DST and non DST.
+
+The last problem is updating the clock through NTP when the RTC is running
+in local time. Since these are generally small corrections, there are
+solutions (but the comments of the i386 version say that it is buggy :-().
+
+Until now I've found a single place where sys_tz.dsttime is used in the
+kernel: fs/fat/misc.c when converting between Unix and FAT timestamps.
+Interestingly it's used only in one direction, so it definitely looks like
+a bug. Some other filesystems (affs/hfs/ncpfs/ufs) use the timezone
+information but not the dst field, making FAT time handling look even
+buggier.
+
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
