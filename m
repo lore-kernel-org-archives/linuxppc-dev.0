@@ -1,17 +1,25 @@
-Message-Id: <200211180058.SAA07964@lists.linuxppc.org>
-From: "=?GB2312?Q?=D3=DA=E6=BA?=" <yuj@mail.ndsc.com.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: motorola lopec mpc7410
-Mime-Version: 1.0
-Content-Type: text/plain
-Date: Mon, 18 Nov 2002 9:1:14 +0800
+Message-ID: <3DD83DB8.5090600@gmx.de>
+Date: Mon, 18 Nov 2002 09:09:12 +0800
+From: Michael Habermann <mhabermann@gmx.de>
+MIME-Version: 1.0
+To: John Traill <john.traill@motorola.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linuxppc-2.5 / Sandpoint X2
+References: <3DD4E4D3.4030805@motorola.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi!
-  Does anybody know that there are different versions of motorola lopec mpc7410 board?
-　　　　　　　　yuj@mail.ndsc.com.cn
-　　　　　　　　　　2002-11-14
+John Traill wrote:
+
+> However I'm not sure if this is indicative of an error in the changes
+> above or just the fact that the kernel isn't doing
+> anything else but service irq's.
+
+Check the switch S5, which changes the IRQ polarity. Maybe the interrupt
+line is always asserted.
+On a 8240 CPU, it needs reversed polarity.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
