@@ -1,35 +1,26 @@
-Message-ID: <40049EAA.6030709@embeddededge.com>
-Date: Tue, 13 Jan 2004 20:43:06 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: "Matthew S. McClintock" <mattsm@arlut.utexas.edu>
-Cc: fabidi@ultsol.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: TLB and CSSBAR problems with MPC8540 and BDI2000
-References: <704F2B356FCC3E49A909C625BD9E5C4002143D@ultsol01.tewks.ultsol.local>	 <3FFEEAD9.80308@embeddededge.com>	 <1073677509.10794.14.camel@chuck.arlut.utexas.edu>	 <3FFF276C.4060003@embeddededge.com>	 <1073686698.3275.10.camel@chuck.arlut.utexas.edu>	 <3FFF2B00.6@embeddededge.com>  <4002C3BB.8060805@embeddededge.com> <1073938758.5575.140.camel@chuck.arlut.utexas.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Mime-Version: 1.0 (Apple Message framework v609)
+Message-Id: <0C9650E4-464C-11D8-BD5A-000393DBC2E8@motorola.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linuxppc-embedded@lists.linuxppc.org
+From: Kumar Gala <kumar.gala@motorola.com>
+Subject: Job at Motorola SPS
+Date: Tue, 13 Jan 2004 22:42:25 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matthew S. McClintock wrote:
+I hate posting to the list with a job listing, but I figured it better
+to try an employ an open source hacker than not.
 
-> So that leaves us back at the original question. Why does configuring
-> the cpu via bdi2000 prevent me from using my u-boot image? Any other
-> ideas?
+Anyways, we are looking for an engineer to work on u-boot and linux
+kernel support for current and future PowerPC products.  The individual
+would have to be willing to relocate to Austin.
 
-Yep.  I have one now.  Make sure your u-boot image also has a TLB1
-entry for your "default" CCSRBAR.  Further, make sure your BDI init
-section doesn't move the CCSRBAR from the default value assumed by
-your u-boot image.  I had the latter correct, just didn't realize
-that a "TLB1 flash invalidate" command to the MMUCSR0 doesn't seem
-to honor the 'invalidate protect' in the TLB entry.  Everything
-works fine when you get all of the ducks in a row :-)
+If your interested please send a resume to kumar.gala@motorola.com
 
-Of course, we should be discussing this on the u-boot list,
-not on this one........
+Thanks
 
-
-	-- Dan
+- Kumar
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
