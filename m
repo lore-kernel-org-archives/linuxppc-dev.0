@@ -1,45 +1,44 @@
-Date: Fri, 13 Aug 1999 10:43:58 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Michel Lanners <mlan@cpu.lu>
-cc: drow@false.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Trying a Promise Ultra/66 on powerpc
-In-Reply-To: <199908122005.WAA00317@piglet.cpu.lu>
-Message-ID: <Pine.LNX.4.10.9908131043270.19651-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Michel Lanners <mlan@mcp.cpu.lu>
+Message-Id: <199908131531.RAA12476@mcp.cpu.lu>
+Subject: Re: Printing via lpr from Mac to LinuxPPC
+To: somalley@cdp.mde.state.mi.us
+Date: Fri, 13 Aug 1999 17:31:48 METDST
+Cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <v04003a01b3da00b8cde8@[204.22.210.180]>; from "sean o'malley" at Aug 13, 99 11:15 am
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 12 Aug 1999, Michel Lanners wrote:
-> On   8 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
-> > On Sun, Aug 08, 1999 at 09:54:12PM +0200, Michel Lanners wrote:
-> >> >> > /dev/hdc:
-> >> >> >   Timing buffered disk reads:  32 MB in  5.83 seconds = 5.49 MB/sec
-> >> ;-)) How about this:
-> >> 
-> >> /dev/hde:
-> >>  Timing buffered disk reads:  64 MB in  6.60 seconds = 9.70 MB/sec
-> >> Maxtor 91024D4; 10G 7200 RPM, UDMA-2 ie 33 MB/s.
-> > 
-> > Eek.  I want that :)
-> 
-> No, you'd rather want _this_:
-> 
-> /dev/hda:
->  Timing buffered disk reads:  64 MB in  4.67 seconds =13.70 MB/sec
+Hi Sean,
 
-Stop whining and buy an UW-SCSI disk :-) My Viking II flies at 17 MB/s.
+> Has anyone gotten LinuxPPC to be a print server for the lpr print queue
+> using the apple laserwriter software to the linuxpcc box than to a printer?
 
-Greetings,
+No....
 
-						Geert
+> I tried once a while back with Linux x86 but I gave up when after a couple
+> of weeks of not getting it to work.
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+I tried hard as well, but it seems the Apple LPR driver creates bad control
+files. The data gets transfered to the LPR spool area, but then lpd cannot
+run the print job. Sadly, lpd doesn't give many error messages neither, just
+something along the lines 'Job could not be printed'....
 
+Even worse, Laserwriter on a 68k Mac wouldn't even get the queue name right:
+it dropped a character from the configured queue name, so lpd refused the job
+:-((
+
+> I would be more than willing to write up some docs on how to do this if I
+> can get it to work...
+
+You might want to stop lpd from actually printing (use lpc, and then some 'stop'
+or similar command), and check the files Apple's LPR creates. The data file
+should be OK, but there is some issue with the control file.
+
+I didn't have time (nor leasure...) to go on debugging; I was going to install
+netatalk on the Linux box instead ;-)
+
+Michel
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
