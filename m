@@ -1,6 +1,6 @@
-Message-ID: <3892004B.3BF8859A@wanadoo.fr>
-Date: Fri, 28 Jan 2000 21:47:07 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
+Message-ID: <38920E19.4976699E@erols.com>
+Date: Fri, 28 Jan 2000 16:46:01 -0500
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
 To: Kevin Puetz <puetzk@iastate.edu>
 CC: linuxppc-dev@lists.linuxppc.org
@@ -21,13 +21,12 @@ Kevin Puetz wrote:
 > LinuxPPC system (+libstdc++-2.10) without any other messing around. Can anyone
 > give me a yes/no?
 
-Yes.
+Okay, after your whining about the libelf.so library ;-) I redownloaded the new
+version and it seems to work atleast as well as the other one.  It starts and
+runs anways.
 
-Well, I don't know about vanilla since I am always messing around, but I
-didn't have to do anything to make this run. Just tar zxf and then
-mozilla. As others found, it is almost usable.
+HTH
+--Nelson Abramson
 
---
-Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
