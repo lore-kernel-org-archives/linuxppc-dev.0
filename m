@@ -1,7 +1,7 @@
-Message-ID: <20010918172732.56517.qmail@web11002.mail.yahoo.com>
-Date: Tue, 18 Sep 2001 10:27:32 -0700 (PDT)
+Message-ID: <20010918212029.5151.qmail@web11006.mail.yahoo.com>
+Date: Tue, 18 Sep 2001 14:20:29 -0700 (PDT)
 From: Dan Bethe <dan_bethe@yahoo.com>
-Subject: PowerMac 8500 2.4 kernel with ext3+ACL, PlanB, raid1
+Subject: planb errors
 To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -9,52 +9,38 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi all.  I am sending this in the hope that someone else already has this
-configuration or can give any pointers at all because I've been mostly
-unsuccessful at compiling any ppc Linux kernels at all.  I have a fully
-functional 2.2.19 from the standard Linus tree, and a partially functional
-2.4.10-pre6-ben0.  2.4.10-pre2-bk won't compile for me.
+	This is what I meant when I said I can't record any frames or video on my
+Power Mac 8500 via the planb AV driver via the Video4Linux API.  'streamer' is
+the basic recorder app in the xawtv distro, and these commands are based on
+examples from its man page.  I downloaded the xawtv 3.61 .tar.gz file and did
+'rpm -ta' on it for the resulting apps.
+	I started up v4l and planb like so:
 
-	Here are my current kernel configs.
+sudo /sbin/modprobe videodev
+sudo /sbin/insmod planb def_norm=1
 
-	http://mmmgood.net/doc/2.2.19_config.text
-	http://mmmgood.net/doc/2.4.10-pre6-ben0_config.text
+	The "def_norm=1" ensures that it's in NTSC mode.  Passive viewing with 'fbtv'
+works just fine.
+	This is what happens when I try to get a frame, wait a while, and finally hit
+ctrl-c.
 
-	I'd like any version of a Linux 2.4 kernel source tree for my 8500 with the
-following features in order of preference.  Thank you very much for any
-direction you can contribute.
+[dtm@Lucas dtm]$ streamer -o zelda.jpeg
+files / video: JPEG (JFIF) / audio: none
+ioctl: VIDIOCSCHAN(0,Composite,flags=0x0,type=2,norm=3): Invalid argument
+mmap: No buffer space available
+^C - one moment please
+^C - one moment please
+^C - one moment please
+[dtm@Lucas dtm]$ dio 0/0, video 0/16, convert 0/0
 
-* software raid1
+	This is an attempt to record a movie.
 
-	* module or static, with autodetection.  Mine works fine statically but not
-modularly, and it works just fine.
+[dtm@Lucas dtm]$ streamer -o quicktime.mov -f yuv2 -F stereo -r 12 -t 120
+neither audio nor video format specified/found
+[dtm@Lucas dtm]$
 
-	* canonical dist _seems_ to be at http://people.redhat.com/mingo/raid-patches/
-and http://people.redhat.com/mingo/raidtools/ and might be newer than the code
-in the canonical kernel distribution
+	Any input?  Hehehe, that's a pun.
 
-* PlanB AV driver
-
-	* The canonical dist is definately at http://mcp.cpu.lu/~mlan/planb.html and
-Michel just made a recent update, which he propagates to BenH and AlanC.  He's
-been in communication with me but he doesn't fully test recording features, nor
-are they all completely mapped to the Video4Linux API.  I'm not sure if all
-PlanB features are implemented at all.  My current setup supports pass-through
-viewing but no recording of snapshots or movies for some unknown reason, using
-v4l's utilities.  I await a response from Michel regarding whether the
-canonical kernel's planb driver or the patches on his site, are the best to
-use.
-
-	* I would like fully stable, sustained (30-120 mins per file a time), full
-quality audio/video recording if possible.  I have the disk space and disk
-speed.  It'll have to be uncompressed because my 180 MHz 604 isn't fast enough
-for realtime compression.
-
-* ext3 and ACL
-
-	* After I scoured mailing list entries via google.com, the canonical dist
-seems to be at http://www.moldybread.net/patch/kernel-2.4/ but consists only of
-patches applied to an AlanC tree and I don't know if it's IA32 oriented or what.
 
 =====
 Medium System Administrator and Junior I.T. Manager of 5 yrs
