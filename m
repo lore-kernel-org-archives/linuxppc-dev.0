@@ -1,65 +1,90 @@
+Message-ID: <000d01c484fe$83f556f0$30c8a8c0@zorans>
+From: "Zoran Stojsavljevic" <zoransto@dkts.co.yu>
+To: "Gilad Rom" <gilad@romat.com>
+Cc: "Alex Zeffertt" <ajz@cambridgebroadband.com>,
+	<linux-atm-general@lists.sourceforge.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <000f01c484f5$6c7298c0$30c8a8c0@zorans> <1092815125.28273.24.camel@gilad.lan>
 Subject: Re: [Linux-ATM-General] Fw: MPHY supported in mpc8260sar
-From: Gilad Rom <gilad@romat.com>
-To: Zoran Stojsavljevic <zoransto@dkts.co.yu>
-Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
-	linux-atm-general@lists.sourceforge.net,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <000f01c484f5$6c7298c0$30c8a8c0@zorans>
-References: <000f01c484f5$6c7298c0$30c8a8c0@zorans>
-Content-Type: text/plain
-Message-Id: <1092815125.28273.24.camel@gilad.lan>
-Mime-Version: 1.0
-Date: Wed, 18 Aug 2004 10:45:25 +0300
+Date: Wed, 18 Aug 2004 10:36:54 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-And exactly how many PHY's is that?
+I guess, lower 16 PHYs. With some enhancement to the driver it
+could reach 32 (additions for the upper 16 PHY lookup table).
 
-Gilad.
+The limitation is that there is still only one VP (0) and 64 VCs
+available without any change to the driver's code.
 
-On Wed, 2004-08-18 at 10:31, Zoran Stojsavljevic wrote:
-> I enhanced 8260 ATM driver... now I am able to support maximum number
-> of PHYs by mpc8260. With up to eight priorities per each PHY.
+I guess, if used for aDSL, 16 PHYs will be the maximum
+number of supported PHYs, because of BW limitations. Do not
+forget that UTOPIA can support 155 Mbps... but this is in the
+ideal case, where there is single PHY0 with single priority 0
+used.
+
+I guess (not sure yet) if you would like to support 16 aDSL
+PHYs, there will be theoretically no more than 1.5 Mbps per
+PHY BW achievement (PHYs 0, 1, 2 and 3 excluded from
+this, they have HW 0 cell insertion mechanismus, so they are
+able to achieve much faster output). Just assumption.
+
+Regards,
+Zoran
+
+----- Original Message -----
+From: "Gilad Rom" <gilad@romat.com>
+Sent: Wednesday, August 18, 2004 9:45 AM
+Subject: Re: MPHY supported in mpc8260sar
+
+> And exactly how many PHY's is that?
 >
-> Just an additional info... :)
->
-> ----- Original Message -----
-> From: "Zoran Stojsavljevic" <zoransto@dkts.co.yu>
-> Sent: Thursday, August 05, 2004 11:09 AM
-> Subject: MPHY supported in mpc8260sar
->
-> > I finally achieved multiphy mpc8260sar (with some limitations). The
-> > driver is able to support 8 PHYs (one PHY per unique priority). The
-> > driver is developed out of Peter's McCormick single PHY version.
+> On Wed, 2004-08-18 at 10:31, Zoran Stojsavljevic wrote:
+> > I enhanced 8260 ATM driver... now I am able to support maximum
+> > number of PHYs by mpc8260. With up to eight priorities per each PHY.
 > >
-> > For some unknow reason I could NOT achieve MPHY support with only
-> > one priority (for example highest PRIority 0). In order to make MPHY
-> > to work correctly I assigned a unique priority per PHY. With 8 PHYs
-> > the mapping looks like: PHY0/PRIO0, PHY1/PRIO1... PHY7/PRIO7, eg.
-> > PHYx/PRIOx, where x is in range [0..7]!
-> >
-> > The another limitation is that I did NOT fix the VP range, eg. I am
-> > using only VP0 (one VP) with different VCs, where least three (3)
-> > significant bits of each VC assume the selected PHY. In other words,
-> > I am using 8 nas interfaces, and VCs (decimal radix) from 40 (0x28)
-> > to 47 (0x2F), where VC 40 is attached to PHY0, VC 41 to PHY1... VC47
-> > to PHY7. While issuing ATM xmit command I am deriving least three
-> > significant bits of currently processed VC and I'm putting them to
-> > the COMM_INFO words (offset 0x86, field PHY#), described in section
-> > 30.14 of MPC8260 PowerQUICC II Family Reference Manual (Revision 1,
-> > date 05/2003).
-> >
-> > If you all find this info of (some) interest, I can do the patch
-> > (against latest version in CVS) so we can store this limited edition
-> > of the MPHY version under the mpc8260sar driver project.
+> > Just an additional info... :)
 > >
 > > ----- Original Message -----
-> > From: "Alex Zeffertt" <ajz@cambridgebroadband.com>
-> > Sent: Monday, January 26, 2004 1:41 PM
-> > Subject: Announcement: MPHY now supported in mpc860sar
+> > From: "Zoran Stojsavljevic" <zoransto@dkts.co.yu>
+> > Sent: Thursday, August 05, 2004 11:09 AM
+> > Subject: MPHY supported in mpc8260sar
 > >
-> > > Just a quick note to say that multi-phy is now supported by the
-> > > mpc860sar ATM driver, thanks to a patch by Rodolfo Giometti.
+> > > I finally achieved multiphy mpc8260sar (with some limitations).
+> > > The driver is able to support 8 PHYs (one PHY per unique
+> > > priority). The driver is developed out of Peter's McCormick single
+> > > PHY version.
+> > >
+> > > For some unknow reason I could NOT achieve MPHY support with only
+> > > one priority (for example highest PRIority 0). In order to make
+> > > MPHY to work correctly I assigned a unique priority per PHY.
+> > > With 8 PHYs the mapping looks like: PHY0/PRIO0, PHY1/PRIO1...
+> > > PHY7/PRIO7, eg. PHYx/PRIOx, where x is in range [0..7]!
+> > >
+> > > The another limitation is that I did NOT fix the VP range, eg. I
+> > > am using only VP0 (one VP) with different VCs, where least three
+> > > (3) significant bits of each VC assume the selected PHY. In other
+> > > words, I am using 8 nas interfaces, and VCs (decimal radix) from
+> > > 40 (0x28) to 47 (0x2F), where VC 40 is attached to PHY0, VC 41
+> > > to PHY1... VC47 to PHY7. While issuing ATM xmit command I am
+> > > deriving least three significant bits of currently processed VC
+> > > and I'm putting them to the COMM_INFO words (offset 0x86, field
+> > > PHY#), described in section 30.14 of MPC8260 PowerQUICC II Family
+> > > Reference Manual (Revision 1, date 05/2003).
+> > >
+> > > If you all find this info of (some) interest, I can do the patch
+> > > (against latest version in CVS) so we can store this limited
+> > > edition of the MPHY version under the mpc8260sar driver project.
+> > >
+> > > ----- Original Message -----
+> > > From: "Alex Zeffertt" <ajz@cambridgebroadband.com>
+> > > Sent: Monday, January 26, 2004 1:41 PM
+> > > Subject: Announcement: MPHY now supported in mpc860sar
+> > >
+> > > > Just a quick note to say that multi-phy is now supported by the
+> > > > mpc860sar ATM driver, thanks to a patch by Rodolfo Giometti.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
