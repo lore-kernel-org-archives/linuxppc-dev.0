@@ -1,36 +1,82 @@
-Date: Tue, 18 Jul 2000 20:15:22 -0400 (EDT)
-From: Pavel Roskin <proski@gnu.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux-2.4.0-test4 - problems in memory management?
-In-Reply-To: <Pine.LNX.4.21.0007172015350.356-100000@sunapee.transcept.com>
-Message-ID: <Pine.LNX.4.21.0007182007220.6653-100000@sunapee.transcept.com>
+Message-ID: <3974F963.81CF77E9@mvista.com>
+Date: Tue, 18 Jul 2000 17:42:11 -0700
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: matthias.fuchs@esd-electronics.com
+CC: frowand@mvista.com, linuxppc-embedded@lists.linuxppc.org
+Subject: [Re: making kernel for ppc405gp from montavista sources]
+References: <3974ED19.FCD99008@mvista.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+> Matthias Fuchs wrote:
+>
+>
+> Subject: making kernel for ppc405gp from montavista sources
+> Date: Sat, 05 Aug 2000 18:01:56 +0200
+> From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+> Organization: esd gmbh
+> To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+>
+> Hello,
+>
+> I downloaded the linux_tar.gz file from montavista and unpacked it ! I
+> copied the .config file from the same location to the kernel tree's
+> root. Before I did a "make mrproper".
+>
+> When I run a "make dep" I got an error ! Well, I could start to check
+> out if there is an error in the tree, but I think that there is a
+> general mistake I made !
+>
+> Does anybody know where the error comes from ? Here is the output of my
+> "make dep":
+>
+> ----------------------
+> mfuchs@pc-matthias:~/mvista_405_linux_new/linux > make dep
+> make -C arch/ppc/boot fastdep
+> make[1]: Entering directory
 
-> If I boot Linux-2.4.0-test4 on RPX/Lite and try to "cat" a file I'm
-> getting a "Bad address" error for some files. Writing, executing and
-> low-level reading are Ok. In fact, I have to use "init=/bin/sh" to boot
-> the kernel, since init from Busybox cannot even read /etc/inittab
+< stuff deleted >
 
-After going all the way down from fread() to __copy_tofrom_user() it
-appears that the later is at fault. It fails to copy large amounts of data
-(216 bytes is enough to be a problem) to the pages that have just been
-mmap'ed.
+> make[2]: *** No rule to make target
+> `/home/mfuchs/mvista_405_linux_new/linux/include/linux/autoconf.h',
+> needed
 
-Replacing arch/ppc/lib/string.S with the version from 2.2.13-7 fixes the
-problem. Linux-2.4.0-test4 appears to be functional after that!!! Feel
-free to test.
+< stuff deleted >
 
-Of course, it would be nice to know what exactly is broken in
-__copy_tofrom_user(). Maybe next evening :-)
+>
+> thanks for advise
+> Matthias
+>
+> --
+> -------------------------------------------------
+> \ Matthias Fuchs                                 \
+>  \ esd electronic system design Gmbh              \
+>   \ Vahrenwalder Straße 205                        \
+>    \ D-30165 Hannover                               \
+>     \ email: matthias.fuchs@esd-electronics.com      \
+>      \ phone: +49-511-37298-0                         \
+>       \ fax:   +49-511-37298-68                        \
+>        --------------------------------------------------
+>
 
-Regards,
-Pavel Roskin
+Matthias,
 
+You need to get the .config file from the MontaVista ftp site, then do a
+
+  make oldconfig
+  make dep
+  then make your kernel
+
+Let me know if that doesn't work for you.
+
+
+-Frank
+--
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
