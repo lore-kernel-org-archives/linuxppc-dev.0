@@ -1,38 +1,50 @@
-Date: Sun, 24 Sep 2000 00:25:17 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: R Shapiro <reshapiro@mediaone.net>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Michel Dänzer <daenzerm@student.ethz.ch>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.0/1 with rage II/rage pro -- should the ati driver work?
-In-Reply-To: <14797.11370.609130.657303@ipa.ne.mediaone.net>
-Message-ID: <Pine.LNX.4.10.10009240021310.17347-100000@zirkon.biophys.uni-duesseldorf.de>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <linuxppc-dev@lists.linuxppc.org>,
+        Geert Uytterhoeven
+ <geert@linux-m68k.org>,
+        Paul Mackerras <paulus@linuxcare.com.au>, <cort@hq.fsmlabs.com>
+Subject: PCI rework & CHRP question
+Date: Sun, 24 Sep 2000 00:57:30 +0200
+Message-Id: <19340818162914.6020@192.168.1.10>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->  > 	/* hack */
->  > 	pScrn->videoRam = 2048;
->  > [...]
->  > The hack to unconditionally set pScrn->videoRam to 2M should be removed,
->
->
-> The rsync of atimach64ppc.c I got earlier today doesn't have this
-> unconditonal assignment hack anymore.  The hardwired vram setting
+I'm working on a rework of our arch/pci.c (to properly handle multiple
+host bridges, and various other cleanups).
 
-It was too obvious to go undetected for long :-). Now if the kernel
-framebuffer driver (atyfb, and don't check the 'no video driver' option
-when using BootX) reportds the correct vram size the X server should see
-the correct size as well.
+In the chrp_pci.c code, I found this code:
 
-If you have trouble with the predefined modes, just use the ones returned
-by fbset -x.
+        if ( !strncmp("MOT",
+                      get_property(find_path_device("/"), "model", NULL),3) )
+        {
+                pci_dram_offset = 0;
+                isa_mem_base = 0xf7000000;
+                isa_io_base = 0xfe000000;
+                set_config_access_method(grackle);
+        }
 
-I'll rsync again to see what else may have changed.
+However, I found no way in the Grackle documentation to have isa_mem_base
+at 0xf7000000. AFAIK, it's at 0xfd000000
 
-	Michael
+Also, the grackle access method expect a PCI bridge structure configured
+with the ioremap'ed config space registers, which is not the case on
+chrp. (They are defined only in pmac_pci.c).
 
+I'm fixing those along with my changes. I suppose Grackle on CHRP uses
+memory map B ?
+
+Note (tell me if it's a problem), that I'm removing the various
+xxx_setup_pci_ptrs(). Each host bridge has a pci_controler structure (the
+old bridge_data) that contains also the function pointers to the access
+methods. Archs now call whatever xxx_find_bridges from their
+xxx_setup_arch() function and all host-bridge dependent setup is done there.
+
+I will push those changes in the new linuxppc_2_5 bk tree as soon as I'm
+happy with them.
+
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
