@@ -1,54 +1,29 @@
-Date: Fri, 25 Oct 2002 09:00:01 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PrPMC800 interrupt problem
-Message-ID: <20021025160001.GB30713@opus.bloom.county>
-References: <A347A662-E82C-11D6-A4F1-0003931C2BFA@control.lth.se> <A4463702-E830-11D6-A4F1-0003931C2BFA@control.lth.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A4463702-E830-11D6-A4F1-0003931C2BFA@control.lth.se>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: dc* (Data Cache)  instructions in mem*() and *_page() functions not used on 8xx
+Date: Fri, 25 Oct 2002 18:02:12 +0200
+Message-ID: <IGEFJKJNHJDCBKALBJLLMEGFFHAA.joakim.tjernlund@lumentis.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <02102313444201.01073@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Oct 25, 2002 at 05:44:26PM +0200, Anders Blomdell wrote:
-> >A very hacky solution to this is to modify 'prpmc800_init_IRQ' to:
-> ><snip>
->
-> A better solution is perhaps to change openpic_init from
->
-> 	if (NumSources == 0)
-> 		openpic_set_sources(0,
-> 				    ((t & OPENPIC_FEATURE_LAST_SOURCE_MASK)
-> 				    >>
-> 				     OPENPIC_FEATURE_LAST_SOURCE_SHIFT) + 1,
-> 				    NULL);
->
-> to
->
-> 	if (NumSources == 0) {
->   		int irqs;
-> 	    irqs = ((t & OPENPIC_FEATURE_LAST_SOURCE_MASK) >>
-> 				     OPENPIC_FEATURE_LAST_SOURCE_SHIFT) + 1;
-> 	    if (irqs < OpenPIC_NumInitSenses) {
-> 	      // Some internal interrupt is defined, init it's vector as well
-> 		  irqs = OpenPIC_NumInitSenses;
->        }
-> 		openpic_set_sources(0, irqs, NULL);
->     }
->
-> Any insight is welcome! As far as I can see, open_pic.c does not handle
-> timer, ipi, uart or any other internal interrupt sources (as they are not
-> reported in the feature register).
+Hi again
 
-What you're suggesting brings back the old hacking behavior.  Again I
-say, look at what lopec_setup.c does for handling interrupts, look at
-the manual for the prpmc800 (and the MPC107 (OpenPIC/EPIC related bits)
-or MPC8240 (again, OpenPIC/EPIC)) manuals.
+I trying to understand how the different mem*() and *_page() functions in arch/ppc/kernel/misc.S
+and arch/ppc/lib/string.S works wrt data cache.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I found that on 8xx these are not used. Why? Are there 8xx variants that can't handle them?
+Do 860 work with these?
+
+Also, why is not dcbtst(write a cache line) used
+in the different copy functions, copy_page()for example, instead of the COPY_16_BYTES macro?
+
+  Jocke
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
