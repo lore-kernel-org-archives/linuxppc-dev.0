@@ -1,33 +1,24 @@
-Date: Mon, 24 Mar 2003 10:19:09 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: ppc: Makefile tidy-up round 2
-Message-ID: <20030324171909.GA13300@ip68-0-152-218.tc.ph.cox.net>
-References: <20030320222759.GA12267@mars.ravnborg.org> <20030322215403.GA15911@mars.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030322215403.GA15911@mars.ravnborg.org>
+From: miles.lane@attbi.com
+Message-Id: <200303241737.LAA16808@lists.linuxppc.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linuxppc-2.5 from mvista.com -- drivers/char/agp/agp.h:31: asm/agp.h: No such file or directory
+Date: Mon, 24 Mar 2003 17:37:10 +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Mar 22, 2003 at 10:54:03PM +0100, Sam Ravnborg wrote:
-> More Makefile tidy-up - made on top of previous patches.
->
-> 1) fixed a few bugs introduced when cleaning up boot/prep/Makefile
-> 2) cleaned up boot/openfirmware/makefile
-> 3) Got rid of boot/common/dummy.c
-> 	It is now located in three copies but thats OK for a three line file
-> See cset comments below.
->
-> I have skipped "simple" clean up for now. Is it worth the effort?
-
-Well, it's the most used, and has some other bits which need to be
-cleaned up.  So, yes please.
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
+  gcc -Wp,-MD,drivers/char/agp/.backend.o.d -D__KERNEL__ -Iinclude -Wall
+-Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
+-Iarch/ppc -msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple
+-mstring -fomit-frame-pointer -nostdinc -iwithprefix include
+-DKBUILD_BASENAME=backend -DKBUILD_MODNAME=agpgart -c -o
+drivers/char/agp/backend.o drivers/char/agp/backend.c
+In file included from drivers/char/agp/backend.c:39:
+drivers/char/agp/agp.h:31: asm/agp.h: No such file or directory
+In file included from drivers/char/agp/backend.c:39:
+drivers/char/agp/agp.h: In function `global_cache_flush':
+drivers/char/agp/agp.h:51: warning: implicit declaration of function
+`flush_agp_cache'
+make[3]: *** [drivers/char/agp/backend.o] Error 1
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
