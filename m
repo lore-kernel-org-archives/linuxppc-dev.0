@@ -1,22 +1,43 @@
-Mime-Version: 1.0
-Message-Id: <v04220800b456a8c8a3e1@[192.168.1.5]>
-In-Reply-To: <19991116023913.27149.rocketmail@web1004.mail.yahoo.com>
-References: <19991116023913.27149.rocketmail@web1004.mail.yahoo.com>
-Date: Tue, 16 Nov 1999 00:24:32 -0600
-To: Dan Bethe <dan_bethe@yahoo.com>
-From: Justin Shore <macdaddy@vinnie.ksu.ksu.edu>
-Subject: Re: LinuxPPC information compilation (general)
-Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-ID: <383130B3.FB987AD8@wanadoo.fr>
+Date: Tue, 16 Nov 1999 11:23:47 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
+MIME-Version: 1.0
+To: Geoff Hutchison <ghutchis@wso.williams.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Building Question
+References: <v04220800b4568b66a977@[129.105.9.226]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey Dan!  Long time no see!  You've got my vote.  We definetly need 
-some central place to find every possible piece of info.  If it can't 
-be hosted on LPPC's server I wouldn't mind hosting it on my LPPC 
-mirror server here at K-State.  Let me know if you need any help!
+Geoff Hutchison wrote:
 
-Justin
+> Increasingly, I get compilation failures like this:
+> 
+> ../htlib/.libs/libht.a(conf.l.o): In function `yyinput(void)':
+> /home/ghutchis/htdig-cvs/build/htlib/conf.l.cc:1312: undefined
+> reference to `yywrap'
+> /home/ghutchis/htdig-cvs/build/htlib/conf.l.cc:1312: relocation
+> truncated to fit: R_PPC_REL24 yywrap
+> collect2: ld returned 1 exit status
+> 
+> I've seen the "R_PPC_REL24" failure before and it seems to happen
+> frequently. 
+
+It happens after "undefined reference" errors.
+ 
+>            I can't seem to find any reference on what the code means
+> or how I can fix it. 
+
+Fix the "undefined reference" error.
+
+>                      Generally, these failures don't happen for
+> people running Linux/x86.
+
+You mean "undefined reference" isn't an error on x86? 
+
+--:)
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
