@@ -1,30 +1,29 @@
-Message-Id: <200110111642.f9BGgCf14757@ashley.ivey.uwo.ca>
-Date: Thu, 11 Oct 2001 12:38:39 -0400
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Content-Type: text/plain;
-	format=flowed;
-	charset=us-ascii
-Subject: Re: bug in XFree86 4.1.0 with Rage 128 driver?
-Cc: Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org,
-	Herbert Duerr <duerr@sun.com>
-To: =?iso-8859-1?Q?Michel_D=E4nzer?= <michdaen@iiic.ethz.ch>
-In-Reply-To: <1002818006.12609.941.camel@pismo>
-Mime-Version: 1.0 (Apple Message framework v388)
+Date: Thu, 11 Oct 01 12:51:18 PDT
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0110111951.AA28062@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Proposed solution for interrupt mapping on CPCI and PPMC CPU ports
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Paul Mackerras <paulus@samba.org> wrote:
 
-> The fix is only in the trunk, not the 4.1 branch?
+> Sounds OK, but I wonder why you want a binary format rather than
+> something more easily human-readable?
 
-I did not see it but perhaps cvsweb is not yet up to date.
+Well, people can store this information wherever they want in whatever format
+they want, but I would much prefer it being passed to the kernel in this simple
+binary format rather than implement a parser for some human-oriented text
+format in the board support files under arch/ppc/kernel.
 
-I looked under xf-4_1-branch using cvsweb and it still needs to be
-patched (with my patch).
-
-Hope this helps,
-
-Kevin
+--
+Michael Sokolov				5791 VAN ALLEN WAY
+Software Engineer			CARLSBAD CA 92008-7321 USA
+SBS Technologies, Inc.			Phone: +1-760-438-6900 x2347
+Communications Products			    or  1-888-SBS-COMM x2347
+					Fax:   +1-760-438-6985
+					E-mail: msokolov@sbs.com
+					     or msokolov@ivan.Harhan.ORG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
