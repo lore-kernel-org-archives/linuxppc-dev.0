@@ -1,11 +1,11 @@
-Date: Wed, 30 Jun 1999 09:46:26 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
+Date: Wed, 30 Jun 1999 11:54:27 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
 To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: "Charles A. Jolley" <charles.jolley@zeratec.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC R5 on PowerBook Series 1999
-In-Reply-To: <19990630181150.008408@mail.mipsys.com>
-Message-ID: <Pine.LNX.3.96.990630094414.968F-100000@mvista.com>
+cc: linuxppc-dev@lists.linuxppc.org, Geert.Uytterhoeven@cs.kuleuven.ac.be,
+        Christian.Bauer@uni-mainz.de
+Subject: Re: DGA applications not working
+In-Reply-To: <19990630151455.027635@mail.mipsys.com>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.990630114404.2471A-100000@selq119.unl.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -14,31 +14,30 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 On Wed, 30 Jun 1999, Benjamin Herrenschmidt wrote:
 
-> >2.  I thought I might try to get things working, or at least figure out why
-> >the kernel doesn't boot.  The only issue is I can't get any feedback from
-> >the kernel on why it dies.  It prints a short message when it first starts
-> >but then the screen goes dead before I can read it.  Is there another way to
-> >get that information out?   In fact, since there are no serial ports on this
-> >machine (just USB...like the iMac), how do I get any feedback from the
-> >kernel without functioning video? (or an OF interface to help me along,
-> >which is what I do in my other kernel development...)
+> HI !
 > 
-> Did you try with the "no video driver" option ?
+> I'm having a problem with the XFBDev server that comes bundled with
+> linuxppc R5, and I really don't know what's going on and how I can fix
+> that. Basically, when I try to use a DGA-based application, I get an
+> error message in the console saying:
 > 
-> This may also be a backlight problem, Apple love changing the way the
-> backlight is controlled from one model to the other. You can try
-> commenting out the backlight control functions in drivers/macintosh/via-pmu.c.
+> "XF86DGAGetVideo: failed to mmap /dev/kmem (Device not configured)"
+> 
+> I'm using a 2.2.10 kernel with controlfb.
+> 
+> If someone what to test this, a DGA application that fails is Basilic II
+> (Mac 68k emulator) that can be found at <http://www.uni-mainz.de/~bauec002/>
+> 
+> Any clues ?
 
-The new PowerBooks are strange....  Under MkLinux, they freeze whenever
-you try to write to any location within IO space.  We're getting the data
-from OF, so the addresses are right, and we're doing the whole memory
-mapping thing.  It acts just like what happens when you try to access a
-hardware address where no hardware is present.  I'm beginning to wonder if
-the OF tree isn't broken.  If you guys have any luck, let me know what you
-figure out.  :-)
+I think it's simply that XF68_FBDev does not have enough codes to support
+your DGA-based application.  For R5 rpms, I asked Tom Rini to include a
+small patch which enables one or two DGA related calls so that xawtv can
+get frame buffer addresses from X server.  To have a more or less complete
+DGA support, somebody needs to hack on XF68_FBDev.
 
 
-David
+Takashi Oe
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
