@@ -1,27 +1,71 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3BD6AA4D.1050502@capflow.com>
-Date: Wed, 24 Oct 2001 13:47:25 +0200
-From: Laurent Pinchart <laurent.pinchart@capflow.com>
+Message-ID: <3BD6AB69.5010704@elsoft.ch>
+Date: Wed, 24 Oct 2001 13:52:09 +0200
+From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: MPC8xx IDE
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] Various patches against linuxppc_dev-2.4.13-pre6
+References: <3BD50D4E.6060401@elsoft.ch> <20011023073258.B30012@cpe-24-221-152-185.az.sprintbbd.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Reply-To: laurent.pinchart@capflow.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Tom Rini wrote:
 
-While trying to find an easy way to add non-volatile storage on a
-custion MPC860 board, I noticed that there was some support for IDE on
-the PCMCIA interface in the Linux kernel.
+> On Tue, Oct 23, 2001 at 08:25:18AM +0200, David M?ller (ELSOFT AG) wrote:
+>
+>
+>>Hello again
+>>
+>>The attached patch fixes the following issues:
+>>
+>>  - arch/ppc/mm/fault.c
+>>     missing get_pteptr() prototype
+>>
+>
+> Applied.
+>
+>
+>>  - arch/ppc/kernel/i8259.c
+>>     consistent nameing (rather cosmetic change)
+>>
+>
+> Not sure about.  Why either of those changes?
+>
 
-Does anyone know where I can find more information about that ? There
-seems to be a board (IVMS8) with such an IDE interface, but I haven't
-been able to find anything about it on the web.
 
-Laurent Pinchart
+The first patch is just a prettyprint fix. At least on my system
+it looks better this way ;-)
+
+Everywhere in the i8259.[ch] files the chip is called "i8259" with the
+exception of one place which is fixed by the second patch. But as
+i said, it's more of a cosmetic change.
+
+
+>
+>>  - arch/ppc/ppc_ksyms.c
+>>     missing flush_dcache_all() export
+>>
+>
+> This only exists on CONFIG_NOT_CACHE_COHERENT, fixed and applied.
+>
+>
+>>  - arch/ppc/kernel/ppc4xx_setup.c
+>>     added "l" format flag to sprintf() to make compiler happy
+>>     (cosmetic)
+>>
+>>  - arch/ppc/kernel/ppc405_pci.c
+>>     adjust include file name
+>>
+>
+> Applied.
+>
+> Thanks!
+>
+>
+
+Dave
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
