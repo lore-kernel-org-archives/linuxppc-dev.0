@@ -1,55 +1,59 @@
-Message-Id: <m11tDzU-0000WVC@tri-yann.crf.canon.fr>
-Date: Wed, 1 Dec 1999 18:56:32 +0100 (CET)
-From: "VALETTE Eric" <valette@crf.canon.fr>
-To: gdt@linuxppc.org
-CC: linuxppc-dev@lists.linuxppc.org, alois_fertl@muenchen.europe.mcd.mot.com
-In-reply-to: <XFMail.991201105013.gdt@linuxppc.org> (message from Gary Thomas
-	on Wed, 01 Dec 1999 10:50:13 -0700 (MST))
-Subject: Re: PPC Compiler Problem?
-References: <XFMail.991201105013.gdt@linuxppc.org>
+Message-ID: <384574A2.A003F5F6@eecs.lehigh.edu>
+Date: Wed, 01 Dec 1999 14:18:58 -0500
+From: Jason Kim <jwk2@eecs.lehigh.edu>
+MIME-Version: 1.0
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>
+Subject: Re: patch for problem with va-ppc.h included with egcs and
+	  gcc-2.95.2
+References: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com> <4.2.2.19991201162019.03c111b0@mail.lauterbach.com>
+Content-Type: text/plain; charset=iso-2022-kr
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Gary" == Gary Thomas <gdt@linuxppc.org> writes:
-
-Gary> On 01-Dec-99 VALETTE Eric wrote:
->> 
->>>>>>> "Alois" == Alois Fertl <alois_fertl@muenchen.europe.mcd.mot.com> writes:
->> 
-Alois> Given the following lines of C, I'd expect that the 4th argument
-Alois> is placed into register 6 and 7. As the assembler listing tells,
-Alois> register 6 is omitted and the argument goes into r7/r8.
->> 
->> I indeed checked the "PowerPC Processor ABI Supplement" dated September 95
->> (SVR4 PowerPC ABI) and on 3-18 I see :
->> 
->> For PowerPC, up to eight words are passed in general purpose registers, loaded
->> sequentially into general purpose registers r3 through r10.
->> 
->> It is clear that this breaks the SVR4 ABI... So you can probably open a bug
->> report...
->> 
-
-Gary> If you read carefully, on page 3-18 of the SYSV ABI report, for a long long
-Gary> argument being placed in register 'gr':
-Gary>   " if gr is even, set gr to gr+1.  Load the lower addressed word into gr and
-Gary>     the higher addressed word into gr+1."
-
-Gary> Thus, the implementation _is_ correct.  long long arguments always occupy
-Gary> an odd/even pair of registers.
+Franz Sirl wrote:
+> 
+> At 00:28 01.12.99 , Jason Kim wrote:
+> >Also, in the ANSI C (9x) documentation (``n843''), taking the address of a
+> >va_list is NOT listed as one of the things that will produce an undefined
+> >result. Actually, on page 7.15 (pg246 as seen by acroread), footnote item 198
+> >specifically states ``It is permitted to create a pointer to a va_list and
+> >pass that pointer to another function,.. in which case the original list may
+> >make further use of the original list after the other function returns.''
+> 
+> Well, I see this is also in ISO C9x, but unless the standard restricts the
+> possible types for va_list (I can't find anything about that), you have
+> still to be aware that any callee gets a reference to the va_list if
+> va_list is an array and so the usual array handling rules apply, or?
+> 
 
 
-Where do you see long long in the example???
+This is getting rather silly. So for a coder to use a set of macros
+which were standardized for encapsulating portability issues, he has
+to develop another set of macros to get past this
+C-array-passed-as-pointer ``feature'' to even pretend to have portable
+code?
 
--- 
-   __                 
-  /  `                   	Eric Valette
- /--   __  o _.          	Canon CRF - Communication Dept
-(___, / (_(_(__         	Rue de la touche lambert
-				35517 Cesson-Sevigne  Cedex
-				FRANCE
-Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
-E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
+What about double indirection? or triple, for that matter?
+
+Not to mention implementing va_list this way explicitly breaks compatibility
+between gcc on ppc and gcc on SPARC, x86, clipper, alpha... etc.. You name it.
+Its broken.
+
+Does this make any sense?
+
+Having a fixed size array as a user accessible item (which is TYPEDEF'ed to
+resemble a structure, no less) which could be passed around is just a BAD idea
+in C/C++. I have yet to hear any concrete reasons (besides just plain
+obstinacy) why va_list HAS to be implemented this way.
+
+
+-jason.
+
+
+
+> Franz.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
