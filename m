@@ -1,60 +1,76 @@
+Message-ID: <3F9FF9AB.6000406@esteem.com>
+Date: Wed, 29 Oct 2003 09:32:27 -0800
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Problems bring up NFS mount on MPC8270 board
-Date: Wed, 29 Oct 2003 12:26:28 -0500
-Message-ID: <8529B5552D4EAA4DAEDF49650C64B2B41673E2@tarpon.mangrovesystems.com>
-From: "Joe Birch" <jbirch@mangrovesystems.com>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+To: Paul Miller <pmiller9@users.sourceforge.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405EP peripheral memory access
+References: <200310290808.00654.pmiller9@users.sourceforge.net>
+In-Reply-To: <200310290808.00654.pmiller9@users.sourceforge.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the tip. That was the problem.
-A couple of follow up questions for 82xx Hip7 users:
-
-- How to best take advantage of the additional BATs
-- Does PCI behave any differently from MPC8265/66
-- Any other Hip7 oddities
-
-Joe
-
------Original Message-----
-From: Guy M. Streeter [mailto:streeter@redhat.com]
-Sent: Tuesday, October 28, 2003 10:26 AM
-To: Jean-Denis Boyer
-Cc: Joe Birch; linuxppc-embedded
-Subject: RE: Problems bring up NFS mount on MPC8270 board
-
-
-I haven't looked at the others, but I think the 8280 (G2_LE core, pvr version 0x8082) should have CAN_NAP and HAS_HIGH_BATS, also. This is what I'm using on my board.
-
---Guy
-
-On Tue, 2003-10-28 at 07:49, Jean-Denis Boyer wrote:
-> The 8270 has a new core revision (Hip7) which have a new PVR:
+Paul Miller wrote:
+> Hi,
 >
->   Hip3: 0x0081xxxx
->   Hip4: 0x8081xxxx
->   Hip7: 0x8082xxxx
+> I am new to Linux embedded programming.  I have experience programming
+> microcontrollers and DSPs without an operating system, so I have some
+> idea what I'm doing.  Anyhow, I'm trying to use the peripheral memory
+> bus on my 405EP CerfCube from Intrinsyc.  Does anyone have an example
+> that I can work from?
+
+If I remember correctly the Cerf Cube uses PPCboot/U-Boot and ships with
+the source on a CD.
+
 >
-> It is probably not recognized has a 603e core, but a generic PPC
-> (which will not work).
+> To setup the memory's timings, I need access to the DCR register.  In
+> the PowerPC datasheet it says to use assembly instructions mtdcr and
+> mfdcr.  I don't know much about assembly, but I found a kernel patch
+> that uses these functions.  So, working off this patch, I tried making
+> a simple program to read these registers.  When I run it, Linux reports
+> an "Illegal instruction" and doesn't let me access the register.
+
+Did you make calls to the patched kernel or paste this function into
+your user mode program? Some registers are priviledged and only the
+kernel is allowed to touch them. If you had this function in a user
+program it won't work.
 >
-> May I suggest the patch in attachement (for
-> 'arch/ppc/kernel/cputable.c'). It will correctly recognize the three
-> cpu revisions, and report the chosen one in '/proc/cpuinfo'.
+> Does access to this bus need to be done in "kernel mode"?  If so, where
+> can I find more information about writing a kernel driver?  Ideally,
+> I'd like to just open a device file and read/write to the bus.
 >
-> Regards,
+
+I wrote my first kernel driver based on an example found at
+http://www.denx.de . Though It was for kernel version 2.2.x and the
+Motorla 8xx processor, the example was quite helpful and could still be
+for you. Its at the botom of the page here
+http://www.denx.de/e/index1.php?head=solution-se-head&main=solution-se&subnav=solution-se-subnav&logo=logo-se&mainnav=softwarenav&bottom=bottom-se
+
+One aproach you might take is modifying the PPCBoot source and mapping
+your device to a memory address and access it using the memory map
+functions in the kernel.
+> Thanks!
+> -Paul
 >
-> --------------------------------------------
->  Jean-Denis Boyer, Eng.
->  M5T Centre d'Excellence en Télécom Inc.
->  4283 Garlock Street
->  Sherbrooke (Québec)
->  J1L 2C8  CANADA
->  (819)829-3972 x241
-> --------------------------------------------
+>
+
+Its going to be ruff in the begining, but it gets easier. Have fun.
+
+Conn Clark
+
+
+--
+
+*****************************************************************
+   If you live at home long enough, your parents will move out.
+  (Warning they may try to sell their house out from under you.)
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
