@@ -1,28 +1,23 @@
-Subject: Re: OF properties access ?
+Subject: Re: Ibook G4 modem
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sven Luther <sven.luther@wanadoo.fr>
+To: Colin Leroy <colin@colino.net>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040115074439.GB14039@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston>
-	 <20040115074439.GB14039@iliana>
+In-Reply-To: <122201c3db3e$fa7c95f0$3cc8a8c0@ANOSP>
+References: <115601c3dabc$06d9cdf0$3cc8a8c0@ANOSP>
+	 <1074126209.5123.22.camel@gaston>  <122201c3db3e$fa7c95f0$3cc8a8c0@ANOSP>
 Content-Type: text/plain
-Message-Id: <1074310140.8360.27.camel@gaston>
+Message-Id: <1074310167.8362.29.camel@gaston>
 Mime-Version: 1.0
-Date: Sat, 17 Jan 2004 14:48:11 +1100
+Date: Sat, 17 Jan 2004 14:48:21 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 >
-> But this doesn't reply me on why my attempts to read back integer values
-> from OF property only result in the machine hanging, and since it is
-> really early on, i don't even get serial console output to have an idea
-> why :/
->
-> in particular i cloned the code reading l2cr-value, and changed it to
-> l2cr and instead of reading the value, i got only kernel silently dying.
+> Do you mean the ohci-hcd, or something else ? USB, i2c and modem related
+> modules I have are:
 
-Show me the code and the relevant device-tree bits.
+No, when the linuxant USB driver is loaded, it powers the modem up
 
 Ben.
 
