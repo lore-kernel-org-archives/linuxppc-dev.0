@@ -1,44 +1,38 @@
-Message-Id: <199907210849.DAA25155@lists.linuxppc.org>
-Date: Wed, 21 Jul 1999 10:55:01 +0100
-Subject: Re : X : caught signal 11 ?
-From: "Yann Bizeul" <yann@tynsoe.com>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>, puetzk6715@uni.edu
-CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
+Message-ID: <3795BF97.C20C7A54@generation.net>
+Date: Wed, 21 Jul 1999 08:39:51 -0400
+From: Simon Piette <spiette@generation.net>
+MIME-Version: 1.0
+To: Brian C Burke <bcburke@socrates.berkeley.edu>,
+        LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SANE
+References: <199907200502.AAA26510@lists.linuxppc.org> <v04210100b3ba5a637b89@[128.32.182.85]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-How to see which is my driver ?
+Brian C Burke wrote:
 
-----------
->De : Hollis R Blanchard <hollis+@andrew.cmu.edu>
->À : puetzk6715@uni.edu
->Cc : Yann Bizeul <yann@tynsoe.COM>, linuxppc-dev@lists.linuxppc.ORG,
-linuxppc-user@lists.linuxppc.ORG
->Objet : Re: X : caught signal 11 ?
->Date : Mar 20 juil 1999 15:31
->
+> >For what its worth, I have SANE 1.0.1 working without problems with
+> >R5 and kernel 2.2.10 which I compiled with the sg drivers. The
+> >machine is a rev1 G3 233 with a UMAX 610s on the internal scsi bus.
 
-> On Tue, 20 Jul 1999 puetzk6715@uni.edu wrote:
->
->> Well, I switch on and off all the time (I have 6 console VT's and 2 X
->> VT's). I used to get palette problems, but not since I applied anthony
->> tong's patch and rebuilt X. It never died (well, it did in my cobbled
->> pre-R5, but not in the released LinuxPPC 1999).
->
-> I see. What video driver are you using? Yann, you too? As I mentioned, I'm
-> using platinumfb on a PowerCenter 132. I'm wondering if it's the driver. I
-> just got Mark Abene's updated driver but haven't had a chance to try it yet
-> (and won't for the rest of the week). For those of you who want to see if it
-> fixes anything, I've put it up at
-> http://www.andrew.cmu.edu/~hollis/platinumfb.c
->
-> -Hollis
->
->
-> 
+Great! I got a few questions for you!
+
+Where did you take your kernel sources (vger, pmac, kernel.org)?
+
+Did you take the stock sg drivers, or you compiled them from
+http://www.torque.net/sg/?
+
+Which scsi bus your scanner is using ( 53C94, mesh, Adaptec XXXX)? By
+'internal', you mean built-in?
+
+How many devices do you have on your scsi bus?
+
+Thanks,
+
+Simon
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
