@@ -1,96 +1,36 @@
-Date: Sun, 18 Jan 2004 23:33:19 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: multiple separate pci bridges ...
-Message-ID: <20040118223319.GA11956@iliana>
-References: <20040118144412.GA6897@iliana> <1074503490.4547.52.camel@gaston>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Rob Baxter <robb@synergymicro.com>
+In-Reply-To: <20040118222710.GE11651@iliana>
+References: <20040105214239.GA20252@iliana>
+	 <1073340725.9497.105.camel@gaston> <20040106073955.GF735@iliana>
+	 <1073376024.26508.220.camel@gaston> <20040106081143.GA1644@iliana>
+	 <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be>
+	 <20040118121507.GB4603@iliana>
+	 <1074430817.9700.157.camel@thor.asgaard.local>
+	 <20040118131402.GB5729@iliana> <1074503545.812.54.camel@gaston>
+	 <20040118222710.GE11651@iliana>
+Content-Type: text/plain
+Message-Id: <1074466760.4903.58.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1074503490.4547.52.camel@gaston>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Date: Mon, 19 Jan 2004 09:59:20 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 19, 2004 at 08:11:31PM +1100, Benjamin Herrenschmidt wrote:
->
-> > .../...
->
-> The code you posted is awfully ugly...
+> It is a PCI bus (well actually, PCI-X could be supported), but it is
+> not. The connector is an AGP one, and there is some magic chip or
+> something which you need to access to do AGP-like config accessing. I
+> have no idea of the details of it though, only that you need to write
+> the f118/f11c address before/after each agp config space address.
 
-Comes from multiple testing and such, once it find the final one, i will
-do some cleanup or something. That said, it is not all that more ugly as
-the stuff in indirect_pci.c i used as example.
+WTF ? There is no such thing like AGP-like config access... there is
+real AGP cycles but from what you say, it doesn't seem to work.
 
-> I'll look at it in detail later.
->
-> > I am returning 0 for all of function 0. I dropped the whole struct
-> > pci_dev ressource thingy, and they are well nullified. My limited
-> > understanding of those pci issues let me make a guess though. I think
-> > that either the stuff in the struct pci_dev is set later on (the BARs
-> > are modifiable i think), or those values are read from the struct
-> > pci_dev before i nullify them.
->
-> pci_dev resources are read from the BARs and the sizing mecanism
-> uses the BARs too (you should filter out writes too btw). If you
-> properly filter things out, there should be no problem.
+Ben.
 
-The BARs are the ones at address 0x10 to 0x27 of the pci config space,
-right ? Only 0 is read back when looking at them.
-
-> > > > Finally, X works, altough DRI freezes after a second or two with my
-> > > > radeon 9200SE, while it works for a Radeon 7500, but this is probably a
-> > > > DRI issue.
-> > >
-> > > Which version of DRI ? Do you have the interrupt routing working
-> > > properly ?
-> >
-> > Mmm, maybe i should also allow to read (and write ?) the config 32-bit
-> > word at 0x3c, those include the Interrupt Line and Pin, as well as the
-> > Max_lat and Min_Gnt.
->
-> Interrupt pin is mostly useless. You may want to fill interrupt line
-> of the PCI cards with the value assigned by OF (or in any case, at
-> least make sure pci_dev->irq is properly filled).
-
-Ok.
-
-> > Maybe some of the first 16 bytes would also need to be modifiable, and
-> > there should be no harm in allowing read of the subsytem id and vendor
-> > id ?
->
-> Of what ? the bridge ? You surely need to let the system access the AGP
-> portion of it btw...
-
-There is no AGP portion of it, it is a plain pci bus with some config
-space reading magic i don't know the details, and a AGP (3.3V)
-connector.
-
-> > As for the DRI version, i use the drm module from the linuxppc-2.4 tree,
-> > using the v2.4.24 TAG to checkout, and the rest of the XFree86 stuff,
-> > including the mesa libraries, from the 4.3.0-0pre1v5 experimental
-> > package, rebuild with the Radeon 9200SE patch from Michel Daenzer.
->
-> Use the DRM module from Michel snapshot, might help...
-
-Will try tomorrow. But then, it seems that the default for debian will
-be to use the kernel included DRM.
-
-> > The freeze happens when i first launch glxinfo, or when i first start
-> > moving a window around (using a debian/unstable default gnome desktop).
-> > I don't remember well, but i think it would also freeze when let running
-> > for a time, but i am not sure. The box is still available trough ssh,
-> > but killing the X server doesn't restore the fbdev console, and freeze
-> > the box.
->
-> Could be irq not working...
-
-Which would make sense with the above remarq of the interrupt line.
-
-Friendly,
-
-Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
