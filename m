@@ -1,26 +1,25 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <40B295BD.9040500@yahoo.co.kr>
+Date: Tue, 25 May 2004 09:39:25 +0900
+From: HoJin <jhfami@yahoo.co.kr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: ELDK mirror(s)?
-Date: Mon, 24 May 2004 13:20:56 -0700
-Message-ID: <E8E581FE5C58614B85A22AF2A495C64909E379@uschd00mx11usr.AVNET.COM>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: HDLC driver for MPC8xx SCC 
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+Hi,
+I'm working on my custom mpc860 board, and kernel 2.4. I want to
+implement sync. HDLC driver. I have found old HDLC driver for mpc860 but
+it is not sync and doesn't works well.
 
-I am currently downloading ELDK 3.0 from ftp.leo.org.
-Given the fact that I am doing this from halfway around
-the planet, the data rate isn't half bad (a few dozen KB/s).
-However it will be running for several more hours, assuming
-there is no hiccup in the line.
+Are there any nice driver for mpc860 HDLC driver?
+Any helps and advices are welcome. :)
 
-Does anyone have a more local copy (I am in the western U.S.)?
+--
+HoJin, Yu
 
-Thanks.
+jhfami@yahoo.co.kr
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
