@@ -1,34 +1,34 @@
-From: "Q-ha Park" <qha@infoeq.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: can't find "init" when using 1GB ram on 7455.
-Date: Wed, 1 Oct 2003 00:44:59 +0900
-Message-ID: <007601c38769$ceb77030$2a21a8c0@qha>
+Message-ID: <3F79A750.8090707@embeddededge.com>
+Date: Tue, 30 Sep 2003 11:54:56 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Steven Blakeslee <BlakesleeS@embeddedplanet.com>,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC823 and LCD?
+References: <D73A25AA6E54D511AD74009027B1110F3C0A59@ORION> <3F796663.5050809@imc-berlin.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well, actually not just init but all "start" programs such as modprobe,
-bash, etc. Linux uses NFS as its filesystem, and kernel thinks NFS is
-mounted correctly, but it doesn't successfully find and execute "start"
-programs like sh, init, etc. The system that works well with 512MB ram.
+Steven Scholz wrote:
 
-This is what I attempted to support two 512 MB DIMM rams:
-1. use 2 more BATs to translate up to 0x40000000 (1GB) in ppcboot,
-changed CFG_INIT_RAM to 0x40000000 accordingly.
-2. enable high_mem support in the kernel.
+> Is this driver in any way special to RPX boards?
+> Or could we make it available to other MPC823 boards as well?
 
-When I made the system load the kernel w/o high_mem support
-intentionally, UART doens't work anymore; it doesn't generate interrups.
-Any clues on what might be wrong and what idiotic things I might have
-done?
+Hmmmm.....interesting how the driver I wrote becomes MV copyrighted...
+Oh well.
 
-Thanks in advance!
+There isn't anything uniqe to the RPX boards in the driver, only
+the LCD type.  The original one had some backlight/touchscreen
+stuff in it, but I see that is gone now.
 
-:::::::::::::::::::::::::::::::::::::::::::::::::
-Q-ha Park
+The lcd driver is for an LCD screen, the video driver is for YUV
+mode composite/S-Video output.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
