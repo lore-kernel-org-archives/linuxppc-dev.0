@@ -1,39 +1,20 @@
-Message-ID: <3CC9BD30.7050002@pacbell.net>
-Date: Fri, 26 Apr 2002 13:48:48 -0700
-From: Armin <akuster@pacbell.net>
+Date: Fri, 26 Apr 2002 14:22:33 -0700 (PDT)
+From: John Tyner <jtyner@cs.ucr.edu>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: oops in arch/ppc/kernel/ocp.c
+Message-ID: <Pine.LNX.4.30.0204261416440.16519-100000@hill.cs.ucr.edu>
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] IBM ocp I2C
-References: <20020423200127.G20394@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-andrew may wrote:
-> Would anyone be heartbroken if "struct i2c_algo_iic_data" went
-> away completely?
-It might with the us of ocp_driver struct.  still working on it
+Our 405's are oops'ing in arch/ppc/kernel/ocp.c:
 
->
-> In this patch I dump getown and getclock because they aren't
-> used and I am sure there is a better way to do things.
+max is unitialized if EMAC_NUMS is defined to be less than or equal to 1.
 
-this does not work on Walnut since "procfreq" is not part of openbios
-and the PLLMR does not exsist on the stb03 or 03  so this changes wont
-go in.
-
->
-> Also calculate the I2C div value from the clock rate. I am
-> not sure if that will work on all 4xx types but it does the
-> right thing for my 405's.
->
-> I also fixed a few C++ style comments.
-  thanks
-
-
-armin
+ocp_register is returning 2 when it should be registering eth0 (and
+returning 0).
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
