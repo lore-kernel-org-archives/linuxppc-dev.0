@@ -1,45 +1,43 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3BD5E62D.8000807@oerlikon.ca>
-Date: Tue, 23 Oct 2001 17:50:37 -0400
-From: Sebastien Ruel <sruel@oerlikon.ca>
-Reply-To: sruel@oerlikon.ca
+Message-ID: <3BD5E8B4.ED0BD911@mvista.com>
+Date: Tue, 23 Oct 2001 18:01:24 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Scott Anderson <scott_anderson@mvista.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: RPX-CLLF & Flash root filesystem
-References: <3BD5C0B1.2060601@oerlikon.ca> <3BD5D6F6.1C103CBE@mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Mark Pilon <mpilon@midrivers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: debugging, kernel port status update
+References: <3BD5DE9F.17679D05@midrivers.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Scott,
-initrd.txt is only part of the answer. I'm missing info on how to tell
-Linux where to fetch the root filesystem.
-Once a minimal/functional root filesystem has been created (and
-compressed), you have to put it somewhere in the Flash memory (just like
-the Linux image).
-When the system boots, it needs to "see" this root filesystem that is
-inside the flash.
+Mark Pilon wrote:
 
-I will continue to experiment different things.
+> 0) I built a generic binutils/gcc/glibc for the PPC -- notes
+> available.
+
+It's probably easier just to download this from someplace like mvista.com.
+
+> I may have to tweak this compiler if I get FPU support along w/
+> instructions which aren't a part of this uP's instruction set.
+
+There should be sufficient options to the compiler that wouldn't
+require rebuilding.  I suspect telling it to use a 603 core with 405
+instruction scheduling will make it work.  Actually, just a 603
+will make it work, the additional scheduling hints may improve
+performance.
+
+The bigger challenge is the kernel mofication necessary to properly
+context switch the FPU on this part.
+
+> -- the #if 0 portion was what was already in head_4xx.S (w/o the if 0)
+> but didn't work. the #else case was taken from head.S and seemed to
+> work.
+
+You are working with a really old kernel.  Find a newer one.  I would
+recommend the 2_4_devel tree for what you are doing.
 
 
-Scott Anderson wrote:
-
->Sebastien Ruel wrote:
->
->>Is there a procedure out there that could help me do this?
->>
->
->Is the description in linux/Documentation/initrd.txt what you are
->looking for?
->
->    Scott Anderson
->    scott_anderson@mvista.com   MontaVista Software Inc.
->    (408)328-9214               1237 East Arques Ave.
->    http://www.mvista.com       Sunnyvale, CA  94085
->
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
