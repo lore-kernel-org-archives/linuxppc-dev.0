@@ -1,87 +1,38 @@
-From: "Geiser, Ian" <geiseri@msoe.edu>
-To: Alex Vallens <Vallens@Colorado.EDU>
-Cc: linuxppc mail list <linuxppc-dev@lists.linuxppc.org>
-Date: Sun, 24 Sep 2000 21:55:06 -0500 (CDT)
-Subject: Re: installing on a new PowerBook
-In-Reply-To: <39CEAB4D.C07E39A7@Colorado.EDU>
-Message-ID: <Pine.LNX.4.10.10009242152320.3052-100000@sleepchamber.geekcentral.msoe.edu>
+Message-ID: <39CEF070.1A60BE5B@wanadoo.fr>
+Date: Mon, 25 Sep 2000 08:28:00 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux keycodes and left cursor on Pismo
+References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com> <39CE9B1F.84530732@student.ethz.ch>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 24 Sep 2000, Alex Vallens wrote:
-Dut to the fact that the new Pismo came out after LinuxPPC 2000
-there were some updates.
+Michel Dänzer wrote:
+>
+> Henry Worth wrote:
+>
+> > >After switching to Linux keycodes (and Debian's i386 us keymap), the left
+> > >cursor key doesn't generate a keycode anymore. Interestingly, it works in
+> > >X with Xkb, but not without.
+> > >
+> > >Anyone else sees this?
+> >
+> > Check the dev and user archives, I think this has been discussed a
+> > few times since the new input layer backport went in.
+>
+> I've searched the archives now with no luck.
 
-There were in fact some significant changes, so check out
-http://www.linuxppc.com/support/updates/product/?catagory=2000&subject=firewire_G3_portable
+I haven't seen this discussed, but I'll try a wild guess: What's
+suspicious is that the linux keycode for KEY_LEFT is 105=0x69, the same
+as the old mac keycode for SYSRQ_KEY. You could easily verify this by
+pressing LEFT plus s or t or something and see whether it does some
+emergency sync or whatever. Just a guess.
 
-also instead of there Boot image use mine at:
-ftp://ftp.linuxppc.org/users/geiseri/LinuxPPC_Boot.smi.hqx
-
--ian reinhart geiser
->
-> I just got one of the brand new Pismo PowerBooks (supposedly identical
-> to the previous generation, but with larger HDs, 20 GB in my case). I
-> haven't been able to boot it at all. Everytime I boot, I get the
-> following kernel output regarding my drive:
->
-> hda: IBM-DJSA-220, ATA DISK drive
-> ide0 at 0x8x01f000-0x8e01f007, 0x8e01f160 on irq 19
-> hda: Enabling Ultra DMA 4
-> hda: IBM-DJSA-220, 19077MB w/1874kB Cache, CHS=38760/16/63, (U)DMA
-> Partition check:
->     hda:<7>ohci-control thread code for 0xc06370e0 code at 0xc0167d18
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
->  hda1hda: lost interrupt
->  hda2 hda3hda: lost interrupt
->  hda4 hda5hda: lost interrupt
->  hda6 hda7hda: lost interrupt
->  hda8 hda9hda: lost interrupt
->  hda10 hda11
-> RAMDISK: Compressed image found at block 0
-> EXZT-fs warning: maximal count reached, runing e2fsck is recommended
-> VFS: Mounted root (ext2 filesystem)
->
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
-> hda: lost interrupt
-> <repeats indefinitely>
->
->
-> It finds the bus and the drive, but hangs trying to mount. So, I tried
-> to reinitialize the device map using pdisk. Unfortunately, pdisk run
-> under the MacOS is unable to recognize the device (I type "e
-> /dev/ata2.0" at the command prompt, but it says "pdisk: can't open file
-> '/dev/ata2.0'"). From the get info in MacOS, I know that the hard drive
-> is id 0 on bus 2 of the ata, so that command should be correct. pdisk,
-> however, only recognizes '/dev/ata0.0', which is the internal DVD-ROM
-> drive.
->
-> How can I get Linux to recognize the drive? Will downloading the newest
-> dev. kernel from Paul M's site help, or am I stuck? Why doesn't pdisk
-> recongnize my drive?
->
-> Alex
->
->
->
-
-.---------------------------------------------------.
-| Ian Reinhart Geiser - Computer Engineering Student|
-| HOME: <geiseri@msoe.edu>                          |
-| WORK: <geiseri@linuxppc.com>                      |
-| WEB:  http://www.msoe.edu/~geiseri                |
-`---------------------------------------------------'
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
