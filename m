@@ -1,87 +1,99 @@
-Date: Thu, 13 Dec 2001 11:58:05 -0300
-From: Ricardo Scop <scop@vanet.com.br>
-Reply-To: scop@vanet.com.br
-Message-ID: <8498.011213@vanet.com.br>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Linux performance on a 8255 custom board
-Mime-Version: 1.0
+Message-ID: <3C18C309.9D234D7F@labs.mot.com>
+Date: Thu, 13 Dec 2001 09:02:34 -0600
+From: Steve Rossi <srossi@labs.mot.com>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddededge.com>
+Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: high priority interrupts disabled - problem found
+References: <3C112297.6DE37608@labs.mot.com> <3C114C63.3050102@embeddededge.com> <3C14F91F.F382ABE3@labs.mot.com> <3C177748.1A1342C2@labs.mot.com> <3C17E3B4.9E73B22E@labs.mot.com> <3C18336D.7030706@embeddededge.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
+Dan Malek wrote:
 
-We've run LmBench in our MPC8255 custom board running a recent
-linuxppc_2_4 revision (2.4.16). CPU frequency is 132 MHz, bus @ 33 MHz
-and we don't have L2 cache.
+> We should mask all lower priority interrupts, and the challenge is keeping
+> the proper nesting of the masks so the nested interrupts can be "unwound"
+> properly ...
 
-The results are presented bellow, for comparison. We are particularly
-interesting in knowing how our memory latencies and related figures
-(context switching, for example) are compared to other board's.
+Thanks for your followup Dan. I've got a rather straightforward "dumb" approach
+to fixing this problem - see the patch below. The disclaimer - I'm a hardware
+guy
+trying to do software, so there might be a much more elegant solution. The idea
+here is that the ppc_cached_irq_mask is maintained as is, but in addition to
+masking
+the interrupt being serviced, all lower priority interrupts are also masked.
+This is un-done
+in the unmask function, where ppc_cached_irq_mask is also used to ensure we're
+not
+un-masking interrupts that were masked prior to the call to mask_and_ack. This
+doesn't
+affect the nesting of interrupts.  I might be completely missing something here,
+so any comments?
 
-Thanks in advance,
+I've tested this and it seems to work fine - and it even fixes my problem!
 
-Ricardo Scop                          mailto:scop@vanet.com.br
-R SCOP Consult.
-
--------------------------------------------------------------
-"Don't hate, it's too big a burden to bear."
-~Martin Luther King Jr.
--------------------------------------------------------------
-
-                 L M B E N C H  2 . 0   S U M M A R Y
-                 ------------------------------------
+Steve
 
 
-Basic system parameters
-----------------------------------------------------
-Host                 OS Description              Mhz
+--- ppc8xx_pic.c.orig   Thu Dec 13 08:35:02 2001
++++ ppc8xx_pic.c        Thu Dec 13 08:39:45 2001
+@@ -20,6 +20,24 @@
+  * but they are overkill for us.
+  */
 
---------- ------------- ----------------------- ----
-nr2g       Linux 2.4.16                     ppc  132
++static unsigned int ppc_irq_priority_mask[NR_IRQS] = { 0x0,
++                                           0x80000000,
++                                           0xC0000000,
++                                           0xE0000000,
++                                           0xF0000000,
++                                           0xF8000000,
++                                           0xFC000000,
++                                           0xFE000000,
++                                           0xFF000000,
++                                           0xFF800000,
++                                           0xFFC00000,
++                                           0xFFE00000,
++                                           0xFFF00000,
++                                           0xFFF80000,
++                                           0xFFFC0000,
++                                           0xFFFE0000
++                                          };
++
+ static void m8xx_mask_irq(unsigned int irq_nr)
+ {
+        int     bit, word;
+@@ -41,7 +59,8 @@
 
-Processor, Processes - times in microseconds - smaller is better
-----------------------------------------------------------------
-Host                 OS  Mhz null null      open selct sig  sig  fork exec sh
-                             call  I/O stat clos TCP   inst hndl proc proc proc
---------- ------------- ---- ---- ---- ---- ---- ----- ---- ---- ---- ---- ----
-nr2g       Linux 2.4.16  132 1.70 3.51 16.5 23.7 212.8 6.94 23.8 3888 28.K 65.K
+        ppc_cached_irq_mask[word] |= (1 << (31-bit));
+        ((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask =
+-                                               ppc_cached_irq_mask[word];
++                                               ppc_cached_irq_mask[word] |
++                                                (~ppc_irq_priority_mask[bit] &
+ppc_cached_irq_mask[word]);
+ }
 
-Context switching - times in microseconds - smaller is better
--------------------------------------------------------------
-Host                 OS 2p/0K 2p/16K 2p/64K 8p/16K 8p/64K 16p/16K 16p/64K
-                        ctxsw  ctxsw  ctxsw ctxsw  ctxsw   ctxsw   ctxsw
---------- ------------- ----- ------ ------ ------ ------ ------- -------
-nr2g       Linux 2.4.16 1.310  259.1  893.1  272.0  902.5   275.9   907.7
+ static void m8xx_mask_and_ack(unsigned int irq_nr)
+@@ -53,7 +72,7 @@
 
-*Local* Communication latencies in microseconds - smaller is better
--------------------------------------------------------------------
-Host                 OS 2p/0K  Pipe AF     UDP  RPC/   TCP  RPC/ TCP
-                        ctxsw       UNIX         UDP         TCP conn
---------- ------------- ----- ----- ---- ----- ----- ----- ----- ----
-nr2g       Linux 2.4.16 1.310  45.0 89.3 600.5       873.6       2706
+        ppc_cached_irq_mask[word] &= ~(1 << (31-bit));
+        ((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask =
+-                                               ppc_cached_irq_mask[word];
++                                               ppc_cached_irq_mask[word] &
+ppc_irq_priority_mask[bit];
+        ((immap_t *)IMAP_ADDR)->im_siu_conf.sc_sipend = 1 << (31-bit);
+ }
 
-File & VM system latencies in microseconds - smaller is better
---------------------------------------------------------------
-Host                 OS   0K File      10K File      Mmap    Prot    Page
-                        Create Delete Create Delete  Latency Fault   Fault
---------- ------------- ------ ------ ------ ------  ------- -----   -----
-nr2g       Linux 2.4.16 3484.3 2325.6  18.2K 3571.4          1.334  1211.0
 
-*Local* Communication bandwidths in MB/s - bigger is better
------------------------------------------------------------
-Host                OS  Pipe AF    TCP  File   Mmap  Bcopy  Bcopy  Mem   Mem
-                             UNIX      reread reread (libc) (hand) read write
---------- ------------- ---- ---- ---- ------ ------ ------ ------ ---- -----
-nr2g       Linux 2.4.16 28.2 16.1 8.72   24.7   65.2   33.4   33.4 65.2  57.7
 
-Memory latencies in nanoseconds - smaller is better
-    (WARNING - may not be correct, check graphs)
----------------------------------------------------
-Host                 OS   Mhz  L1 $   L2 $    Main mem    Guesses
---------- -------------  ---- ----- ------    --------    -------
-nr2g       Linux 2.4.16   132  15.2  397.1  409.8    No L2 cache?
+--
+-------------------------------------------------------
+Steven K. Rossi                     srossi@labs.mot.com
+Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
