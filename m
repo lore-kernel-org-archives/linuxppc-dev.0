@@ -1,124 +1,32 @@
-Date: Thu, 10 May 2001 14:44:42 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Albert D. Cahalan" <acahalan@cs.uml.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org, Murray.Jensen@cmst.csiro.au
-Subject: Re: linuxppc_2_5 source tree (and others)
-Message-ID: <20010510144442.A29513@opus.bloom.county>
-References: <20010510114909.B28206@opus.bloom.county> <200105101946.f4AJks3441196@saturn.cs.uml.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200105101946.f4AJks3441196@saturn.cs.uml.edu>; from acahalan@cs.uml.edu on Thu, May 10, 2001 at 03:46:54PM -0400
+To: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: gdb problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 10 May 2001 23:50:19 +0200."
+             <000701c0d99b$357cbf20$3196143e@jocke>
+Date: Fri, 11 May 2001 00:09:09 +0200
+Message-Id: <20010510220914.7A6522814D@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 10, 2001 at 03:46:54PM -0400, Albert D. Cahalan wrote:
-> Tom Rini writes:
-> > On Thu, May 10, 2001 at 02:40:05PM -0400, Albert D. Cahalan wrote:
+In message <000701c0d99b$357cbf20$3196143e@jocke> you wrote:
 >
-> >> I'm very glad to have ignored this BitKeeper nonsense for
-> >> the most part then. I knew there was a good reason to rely
-> >> on the one true source tree from Linus. I'm not screwed like
-> >> all the people working from linuxppc_2_5 are.
-> >
-> > Right.  But the "one true source tree from Linus" doesn't always
-> > work for other arches.  Why?  Keeping stuff in 100% never works.
-> > There almost always has been a slightly more up-to-date tree than
-> > Linus' for ages (when did the first -ac patch come out, anyone
->
-> The 2.2.14 kernel is over 15 months old. I'm expected to run
-> Montevista's obsolete and severely hacked up 2.2.14 kernel if
-> I want to use a PowerCore 6750. So "slightly more up-to-date"
-> could mean over 15 months I guess.
+> > Which version of GDB are you using, and which firmware version of the
+...
+> >From the MontaVista CDK 1.2, ppc_8xx-gdb-5.0-1 and ppc_8xx-gcc-2.95.2-13
 
-No, but '2_5' is rather up to date, and should work fine.  MontaVista's
-tree is what gets released with the official release.  There have been other
-intermediate trees which haven't had the same quality testing the release
-tree has.  But this really isn't about MVs trees, is it?  If so, this is a
-rather odd way of going about it.  That said, I for for MV...
+Ummm... I tried this once, and it barfed on all my macro definitions.
+Something must be seriously broken with this version of GDB. I  would
+not trust it a signle step :-(
 
-> > know?).  And, who exactly is screwed that's working from the old 2_5
-> > tree?  There hasn't been any new activity in it for ages.
->
-> I nearly fell into the trap. Just recently, 2_5 was listed as
-> being where the latest development happens. It certainly looked
-> that way too, with support for more boards than 2_4 had.
-> Until just this morning, I was thinking I ought to use 2_5!
-
-Well, you quite probably should for the moment since it should require little
-work to get things working again in 2_4_devel.  In fact, if the board you're
-working on doesn't have a 10x bridge on it, all the common files should be
-there that you need.
-
-> >   Shortly
-> > (mainly once I'm done w/ finals) it'll be little more than exporting
-> > your local changes from '2_5' and applying them in 2_4_devel.  Yes,
-> > history bits will be lost, but such is life. :)
->
-> That defeats the purpose of revision control. You might as
-> well use "diff" and "patch" if you will be throwing away your
-> version history.
-
-Well, this wasn't my decision to make.
-
-> >> On the other hand, I had to do my own PowerCore 6750 VME port for
-> >> the 2.4 kernel. That sucked. It would be nice if everyone had the
-> >> decency to submit stuff to Linus in a way that he finds acceptable,
-> >> rather than hoarding source code in obscure places that are only
-> >> accessible via non-standard non-free software.
-> >
-> > So use rsync and import into your own CVS tree.  I think it sucks
-> > too that bk isn't gpl'ed, but hey.  I don't really care that much.
->
-> The 2_2 and 2_4 trees were available via rsync, while 2_5 was not.
-
-Oh, right.  I thought somneone else was going to put it up, but
-oh well.
-
-> > I'd wager your port would have sucked much less if you were working
-> > off the 2_5 tree too (mvme5100 support is currently 4 mvme-specific
-> > files, and some new common ones other boards use too.  Some pcore
-> > boards are about as simple too).
->
-> So now you are saying I should have used the 2_5 tree?????
-> Wasn't I supposed to know (by psychic methods) that the 2_5
-> tree is 'dead' now?
-
-Not at all.  In fact, unless you did the port w/in the last month or so
-2_5 was rather much alive.  And I could have sworn people have mentioned
-the 2_5 tree on this list numerous times...  Also, hust because
-the tree is dead doesn't mean that the inforemation in it
-is dead too.  It'd just be a matter of exporting your changes and then
-re-importing them.
-
-> >> So, how did _you_ know that 2_5 has been 'dead' for a while?
-> >
-> > Well, it was on the linuxppc-commit list, which Cort has mentioned a
-> > few time (hence it's majordomo now and not a sendmail alias like it
-> > used to be).  It's even mentioned on the page that talks about the
-> > bk trees: http://www.fsmlabs.com/linuxppcbk.html
->
-> I figured that would be a list for automated check-in reports
-> generated by the BitKeeper software.
-
-It is.  It also functions as an as-hoc list to distribute BK info over.
-
-> So anyway, we now have a 2_4_devel tree to wonder about.
-> Might somebody suddenly decide to delete this tree too?
-> Will changes get back to Linus, or is this a dead-end too?
->
-
-Hopefully not, hopefully so.  Out of my area anyways.
-
-> Having separate trees also defeats the purpose of revision control.
-> One is supposed to use branches (or whatever BitKeeper calls them)
-> for stable, release, development, etc.
-
-BK does this by letting you use seperate trees.  You can import from the
-parent into the child (ie pull main into dev).
+Wolfgang Denk
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Another megabytes the dust.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
