@@ -1,54 +1,43 @@
-Message-ID: <397C7361.3E97D93D@raleigh.ibm.com>
-Date: Mon, 24 Jul 2000 12:48:33 -0400
-From: Ralph Blach <rcblach@raleigh.ibm.com>
+Message-ID: <397C7D9C.77735326@embeddededge.com>
+Date: Mon, 24 Jul 2000 13:32:12 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: 405gp pci mapping registers 
+To: Ralph Blach <rcblach@raleigh.ibm.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 405gp pci mapping registers
+References: <397C7361.3E97D93D@raleigh.ibm.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The IBM405gp has 3 sets of PMM registers.  These allow extreme
-flexibility in mapping
-the where and how the PCI memory is configured into processor memory.
+Ralph Blach wrote:
 
-Each set of registers consist of 4 32 bit registers.
+> This is interesting because since the 405gp has three sets of these
+> register leading to split mappings.
 
-register offset 0 is the local address register
-		4 is the mask/attribute register
-		8 is the PCI low address register
-		c is the PCI high address register.
+It isn't conceptually any different than the enormous flexibility of
+the MPC8xx memory controller, and is very similar to PCI bridges
+on the MPC8xx boards.
 
-Heres how is works.
-The local address in the local address register are translated to the
-address PCI address
-specified in the PCI high/low address registers.
-The mask register specifies the size of the area to be translated with
-the least significant bit being an enable bit.
+> My question is this.  How should we manage this kind of address
+> flexability?
+
+You stamp a "Linux" memory map and leave it alone.  Just because
+you have the flexibility doesn't imply it should be exposed as
+configuration options.  When I did the MPC8xx port, I chose to utilize
+all of the flexibility so I could make the memory map look as much
+like Prep as possible.  All of the assumptions or knowledge about the
+PowerPC workstation memory maps are mostly valid for the 8xx as well.
+I used the flexibility to emulate something that already existed.
+
+I learned a valuable lesson, and hope others will do the same.  Use
+that flexibility so make all of the systems look similar.  Otherwise,
+you will end up on a technology island, frustrated that the rest of
+the world is moving forward with new features and you are unable to
+keep up with your own little custom hacks.
 
 
-
-So if the local address register is specified at 0x80000000  and the PCI
-low address registers 0x80000000, and the mask register is 0xffff0001,
-then the bridge will translate
-all address from the PLB bus 0x80000000 to pci address 0x80000000 with a
-size of 64k.
-
-This is interesting because since the 405gp has three sets of these
-register leading to split mappings.  A good example if this is when a
-video card is placed into on of the pci slots along with a card that
-needs a memory BAR are placed in a IBM walnut board.
-
-The open bios will map the memory bar to 405 memory 0x80000000 to PCI
-memory 0x80000000, and the video card will get the mapping 405 memory
-0xa0000000 to  pci memory 0x0.
-
-This leads to a slit address map.
-
-My question is this.  How should we manage this kind of address
-flexability?
-
-Chip
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
