@@ -1,11 +1,43 @@
-Return-Path: <jvan_1@students.concordia.ca>
-Message-ID: <1108746180.42161fc4a86f6@webmail.cam.org>
-Date: Fri, 18 Feb 2005 12:03:00 -0500
-From: Philip Van-Houtte <jvan_1@students.concordia.ca>
-To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: oops in process_backlog : kernel 2.6.9
+Return-Path: <segher@kernel.crashing.org>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4DE6167A7A
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Feb 2005 05:10:08 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.12.10/8.12.10) with ESMTP id j1IIA4n1043100
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Feb 2005 18:10:04 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j1IIA4DS166954
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Feb 2005 19:10:04 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11/8.12.11) with ESMTP id
+	j1IIA3sL010917
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Feb 2005 19:10:04 +0100
+In-Reply-To: <20050218175822.GA30616@pants.nu>
+References: <20050127163606.GN14866@Redstar.dorchain.net>
+	<20050118094216.GB25470@Redstar.dorchain.net>
+	<20050126113554.GD19633@schottelius.org>
+	<1106746946.6250.56.camel@gaston>
+	<20050208075421.GB21154@schottelius.org>
+	<8f293b6dbedd2ae1a825608a48a0604b@kernel.crashing.org>
+	<20050218111304.GH5801@schottelius.org>
+	<f585c9c6e4bdfbba6dcaafc96b7c0607@kernel.crashing.org>
+	<20050218122009.GK5801@schottelius.org>
+	<629f63c4608b762de8bf6f962b6180ef@kernel.crashing.org>
+	<20050218175822.GA30616@pants.nu>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Message-Id: <06fb81c4f23d0b47f8205b433fa6eb21@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Fri, 18 Feb 2005 19:10:42 +0100
+To: Brad Boyer <flar@allandria.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: Nico Schottelius <nico-linux-ppc@schottelius.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] Heartbeat LED for iBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,38 +47,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> There is some minimal documentation available. Some Apple docs:
+>
+> ADB-The Untold Story: Space Aliens Ate My Mouse
+> http://developer.apple.com/technotes/hw/hw_01.html
+>
+> Inside Macintosh: Devices / Chapter 5 - ADB Manager
+> http://developer.apple.com/documentation/mac/Devices/Devices-203.html
+>
+> These will tell you the basic design of ADB as well as the packet
+> formats and information about keyboards and mice.
+>
+> Note that these document ADB in a generic sense, so nothing PMU
+> specific is in them. Apple has been very reluctant to document
+> the PMU and it's functions.
 
-I have an embedded application, running a stock kernel 2.6.9, on an 8240 
-receiving UDP. Occasionaly after a (re)boot the system will oops after 
-opening (socket/bind) its first connection just as the traffic comes in.
+ADB has nothing to do with the PMU (well, the PMU emulates an ADB
+device, sort of).
 
-It always occurs after the call to netif_receive_skb has competed.
-
-
-Oops: kernel access of bad area, sig: 11 [#1]
-PREEMPT
-NIP: C021FD14 LR: C021FCB4 SP: C3049C70 REGS: c3049bc0 TRAP: 0300    Tainted: P
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00003CAE, DSISR: 20000000
-TASK = c309d050[162] 'rtp_daemon' THREAD: c3048000Last syscall: 102
-GPR00: 00001032 C3049C70 C309D050 00000000 C3049B50 00000000 00000000 C5023E04
-GPR08: 00000002 0000000D 00000000 C036496C 2010C002 00000000 037FB000 038D0000
-GPR16: 00002020 00000000 10000000 7FFFF960 00000001 00000000 C0300000 C3049CB8
-GPR24: FFFBDE37 C0364960 C0364988 00000040 00000000 C0429800 00000001 C036496C
-NIP [c021fd14] process_backlog+0x108/0x188
-LR [c021fcb4] process_backlog+0xa8/0x188
-Call trace:
- [c021fe2c] net_rx_action+0x98/0x178
- [c011fdd0] __do_softirq+0xdc/0xec
- [c011fe38] do_softirq+0x58/0x5c
- [c0106188] do_IRQ+0xdc/0xe0
- [c01048ec] ret_from_except+0x0/0x14
- [c0217f68] lock_sock+0x6c/0x84
- [c02152ac] sys_bind+0x70/0x94
- [c0215f58] sys_socketcall+0xc8/0x1d8
- [c0104240] ret_from_syscall+0x0/0x44
-Kernel panic - not syncing: Aiee, killing interrupt handler!
- <0>Rebooting in 180 seconds..
+The Linux kernel multiplexes the /dev/adb device to also serve as
+a channel to the PMU, though.  This ugliness should be fixed, some
+day...
 
 
-Any insights/work-arounds/ would be appreciated.
+Segher
