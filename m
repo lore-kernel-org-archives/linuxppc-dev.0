@@ -1,36 +1,39 @@
-Message-Id: <200008301941.UAA13718@hyperion.valhalla.net>
-Date: Wed, 30 Aug 2000 20:42:02 +0100
-Subject: Re: [PATCH] via-cuda (CUDA_COMBINED_FORMAT_IIC)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, mlan@cpu.lu
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-Id: <200008302045.PAA01483@jen.americas.sgi.com>
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+cc: flar@allandria.com, Andi Kleen <ak@suse.de>, Steve Lord <lord@sgi.com>,
+        Matthew Wilcox <matthew@wil.cx>, Halfmann Klaus <khalfmann@libra.de>,
+        Roman Zippel <roman@augan.com>, linuxppc-dev@lists.linuxppc.org,
+        linux-fsdevel@vger.kernel.org
+Subject: Re: Btree directories (Re: Status of HFS+ support) 
+In-Reply-To: Message from "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+   of "Wed, 30 Aug 2000 13:49:49 PDT." <Pine.LNX.3.96.1000830133511.10035C-100000@deepspace.mklinux.org>
+Date: Wed, 30 Aug 2000 15:45:07 -0500
+From: Steve Lord <lord@sgi.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Aug 30, 2000, Geert Uytterhoeven
-> The generic i2c subsystem works (at least `used to work') on PPC as well. I
-> once wrote an i2c `driver' (something that can read from and write to 2 signal
-> lines, very very complex :-)
+> In my mind, this really screams the need for a pure vnode API in addition
+> to keeping the current API for more traditional filesystems.  You could
+> then keep track of these complex keys with either a table or hashing
+> method into slots/buckets with 32 bit identifiers, then provide these to
+> the vnode layer.  Sounds much easier than trying to make this look like a
+> more traditional fs.
+>
+> Maybe someone could create a filesystem of type vnodefs that simply
+> provides, through the current VFS, a pure vnode API that could be used by
+> sub-filesystems (which would then absolutely be required to definitively
+> probe for fs type automatically...).  Thoughts?
+>
 
-Well, today I wish I could get at SDA/SCL - because I think I would have a
-working solution to my need (to read the TDA7433).
+It is not that clean at the moment, but we already have a vnode based system
+hiding inside XFS, the linux inode has a vnode in the fs specific portion,
+the linux inode ops call the VOPs. We still have as a work item to go back and
+clean up this layer - it knows too much about XFS right now.
 
-Maybe it's complex - or at least tedious - because of working within the OS
-- but it is also specified by the i2c spec - so a solvable problem.
+Not really sure if it maps onto what you are suggesting, but it is out there.
 
-All the time on this patch has been spent second-guessing what the CUDA does
-with its command packets... and at the end I still can't read the chip (lots
-of info from the SPDs & other devices ;-)
+Steve
 
-CUDA is also on m68k? (I see some conditionals in the 2.4.0 stuff for
-CONFIG_MAC)
-
-I really would be very grateful if anyone has any more sources of info on
-the command packets contents for it (CUDA)...
-
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
