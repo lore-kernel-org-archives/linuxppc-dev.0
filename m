@@ -1,81 +1,98 @@
-Message-ID: <3E2FEEB0.8010809@tataelxsi.co.in>
-Date: Thu, 23 Jan 2003 19:01:28 +0530
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Leonardo Pereira Santos <lsantos@pd3.com.br>
+To: Steven Scholz <steven.scholz@imc-berlin.de>,
+	Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+Subject: Re: PCMCIA on TQM8xxL
+Date: Thu, 23 Jan 2003 11:55:20 -0200
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
+	Wolfgang Denk <wd@denx.de>
+References: <3E2FBB5E.E16D577E@imc-berlin.de> <3E2FBF48.6040200@bluewin.ch> <3E2FC0F1.41C65F18@imc-berlin.de>
+In-Reply-To: <3E2FC0F1.41C65F18@imc-berlin.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: uncompressing linux... (it hangs after this message)
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <200301231155.20895.lsantos@pd3.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I am a embedded linux newbie and I am using ppcboot to load my kernel.
-I use `mkimage` of ramdisk supplied in SELF.
-I made a linux kernel for ppc with bare minimum options, no loadable
-modules.
 
-The steps I followed.
+1) Define _IO_BASE and _IO_BASE_SIZE in arch/ppc/platforms/tqm8xxl.h
+2) just copy and paste the line of code for the RPX to TQM8xxL section in
+arch/ppc/kernel/m8xx_setup.c m8xx_map_io(), as you pointed. If there's no
+#ifdef CONFIG_TQM8XXL (or something like that), just create one near the ones
+already defined for FADS, RPX, MBX. For example, for my FADS board, its
+section looks like this:
 
-<reset>
-PPCBoot 2.0.0 (Jan 22 2003 - 12:00:07)
+#ifdef CONFIG_FADS
+	io_block_mapping(BCSR_ADDR, BCSR_ADDR, BCSR_SIZE, _PAGE_IO);
+	io_block_mapping(_IO_BASE,_IO_BASE,_IO_BASE_SIZE, _PAGE_IO);
+#endif
 
-MPC8260 Reset Status: External Soft, External Hard
+the first call to io_block_mapping() maps the EPLD's registers, the second the
+PCMCIA address space. And that's it.
 
-MPC8260 Clock Configuration
-  - Bus-to-Core Mult 2x, VCO Div 2, 60x Bus Freq  50-150, Core Freq 100-300
-  - dfbrg 0, corecnf 0x04, busdf 3, cpmdf 1, plldf 0, pllmf 1
-  - vco_out  266666664, scc_clk   66666666, brg_clk   66666666
-  - cpu_clk  133333332, cpm_clk  133333332, bus_clk   66666666
+On Thursday 23 January 2003 08:16, Steven Scholz wrote:
+> Wolfgang Grandegger wrote:
+> > On 01/23/2003 10:52 AM Steven Scholz wrote:
+> > > Hi there,
+> > >
+> > > this is about PCMCIA on TQM8xxL using DENX ELDK 2.0 with DENX
+> > > linuxppc_2_4_devel CVS tree:
+> > >
+> > > I am confused:
+> > >
+> > > In order to get pcmcia working on mpc8xx one have to define a proper
+> > > _IO_BASE and then ioremap it early enough so the physical address
+> > > equals the virtual adress.
+> > >
+> > > That fair enough, but I just can't find the place where _IO_BASE is
+> > > remapped for TQM8xxL.
+> > >
+> > > It should be done in arch/ppc/kernel/m8xx_setup.c:m8xx_map_io(), but
+> > > there's no "#ifdef TQM8xxL" or something !?
+> > >
+> > > Any ideas, why it should work at all?
+> >
+> > Check "arch/ppc/platforms/tqm8xx.h", which is somehow include by
+> > "include/asm-ppc/io.h".
+>
+> Thanks for your reply.
+>
+> I know _IO_BASE is defined in arch/ppc/platforms/tqm8xx.h.
+> But IMHO it's never ioremapped like it is done for  RPC Boards in
+> arch/ppc/kernel/m8xx_setup.c:m8xx_map_io():
+>
+> #if defined(CONFIG_RPXLITE) || defined(CONFIG_RPXCLASSIC)
+>         io_block_mapping(RPX_CSR_ADDR, RPX_CSR_ADDR, RPX_CSR_SIZE,
+> _PAGE_IO); #if !defined(CONFIG_PCI)
+>         io_block_mapping(_IO_BASE,_IO_BASE,_IO_BASE_SIZE, _PAGE_IO);
+> #endif
+> #endif
+>
+> That's what I don't understand!
+>
+> My HW is similar to TQM8xx and I have to add something like
+> #if defined(CONFIG_MYBOARD)
+>         io_block_mapping(_IO_BASE,_IO_BASE,_IO_BASE_SIZE, _PAGE_IO);
+> #endif
+> to get PCMCIA working...
+>
+> Steven
+>
 
-CPU:   MPC8260 (Rev 14, Mask A.0(A) 2K25A) at 133.333 MHz
-Board: Motorola MPC8260ADS
-I2C:   ready
-DRAM:  16 MB
-FLASH:  8 MB
-In:    serial
-Out:   serial
-Err:   serial
-Hit any key to stop autoboot:  0
+- --
+This is Linux country.
+On a quiet night, you can hear Windows reboot.
 
-=> tftpboot 0x100000 image
-ARP broadcast 1
-TFTP from server 10.1.40.7; our IP address is 10.1.40.58
-Filename 'image'.
-Load address: 0x100000
-Loading: #################################################################
-done
-Bytes transferred = 546674 (85772 hex)
-=> tftpboot 0x200000 ramdisk
-ARP broadcast 1
-TFTP from server 10.1.40.7; our IP address is 10.1.40.58
-Filename 'ramdisk'.
-Load address: 0x200000
-Loading: #################################################################
-done
-Bytes transferred = 1400262 (155dc6 hex)
+Leonardo Pereira Santos
+Engenheiro de Projetos
+PD3 Tecnologia
+av. Pará 330/202
+(51) 3337 1237
 
-=> bootm 0x100000 0x200000
-## Booting image at 00100000 ...
-    Image Name:   Tata Elxsi
-    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-    Data Size:    546610 Bytes = 533.8 kB
-    Load Address: 00000000
-    Entry Point:  00000000
-    Verifying Checksum ... OK
-    Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at 00200000 ...
-    Image Name:   Tata Elxsi
-    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-    Data Size:    1400198 Bytes =  1.3 MB
-    Load Address: 00000000
-    Entry Point:  00000000
-    Verifying Checksum ... OK
-    Loading Ramdisk to 00e09000, end 00f5ed86 ... OK
-
- From this point onwards there is no messages. and no cpu activity.
-I have absolutely no idea of what is happening.
-Any clue?
+Today Fortune tells us:
+Of ______course it's the murder weapon.  Who would frame someone with a
+fake?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
