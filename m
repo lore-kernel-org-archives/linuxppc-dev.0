@@ -1,23 +1,31 @@
-Message-ID: <B162270C965FD511AB9600B0D0B0AB42064380@NAPA>
-From: Hua Ji <hji@netscreen.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ppc 750 and Hardhat
-Date: Mon, 9 Jul 2001 09:23:21 -0700 
+Message-ID: <3B49F097.DABAF972@mvista.com>
+Date: Mon, 09 Jul 2001 13:57:43 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: James F Dougherty <jfd@GigabitNetworks.COM>
+Cc: linuxppc-embedded@lists.linuxppc.org, cort@cs.nmt.edu
+Subject: Re: ppc-linux EPIC (OpenPIC) and Interrupts on MPC8240
+References: <200107062139.OAA14875@krakatoa.gigabitnetworks.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+James F Dougherty wrote:
 
-I am wondering if Hardhat 2.0 supports ppc 750(cx) boards. If yes, which way
-I can get/purchase one?
+> The board is essentially a Motorola Sandpoint design variant, so
+> I have started with the MontaVista Sandpoint port of linux-2.3.1
 
-Thanks,
+What is linux-2.3.1?  Which version of the Sandpoint?
 
-Mike
+If it is the old Sandpoint X2, and you are using the EPIC with
+discrete interrups (IRQ0 - IRQ4) the latest MontaVista HHL 2.0
+should be used (it should be used in any case).  The code in
+the public BK trees should also match this release.  If you are
+using a Sandpoint X3 with the serial mode interrupt EPIC, there
+are some patches I'll have to send you.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
