@@ -1,53 +1,31 @@
-Message-ID: <A109131318C4D1119AC20060088DECE330F452@amwmail.adaptivemicro.com>
-From: Lucinda Schafer <lucsch@adaptivemicro.com>
-To: Michael Coy <mac12@po.cwru.edu>, linuxppc-embedded@lists.linuxppc.org
+Message-Id: <4.3.2.7.0.20000620203521.00acd470@10.0.0.2>
+Date: Tue, 20 Jun 2000 20:43:21 -0400
+To: Lucinda Schafer <lucsch@adaptivemicro.com>,
+        linuxppc-embedded@lists.linuxppc.org
+From: Mike Coy <coym@embeddedplanet.com>
 Subject: RE: PCMCIA ATA flash support?
-Date: Tue, 20 Jun 2000 10:44:12 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+In-Reply-To: <A109131318C4D1119AC20060088DECE330F446@amwmail.adaptivemic
+ ro.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I assume the patches you are using are for the problems described in
+>Emulation routine where the panic is called. Use your System.map file to see
+>if you can find the last functions called, for example:
+>                 show_regs(regs);
+>                         print_backtrace( (unsigned long *)regs->gpr[1] );
+>                         instruction_dump((unsigned long *)regs->nip);
+>                         panic("Kernel Mode Software FPU Emulation");
 
-http://lists.linuxppc.org/listarcs/linuxppc-embedded/199912/msg00018.html
+OK, i added the  backtrace, but hardly any of the calls are IN my system.map!
+Odd!
 
-If not, you might read that one..
+And I tried looking at the SIUMCR register as suggested in the list message
+you posted, and it is 0x800, which would seem to be the correct value.
 
-Lucinda Schafer
-Staff Software Engineer
-Adaptive Micro-Ware, Inc.
-
------Original Message-----
-From: Michael Coy [mailto:mac12@po.cwru.edu]
-Sent: Tuesday, June 20, 2000 8:29 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PCMCIA ATA flash support?
-
-
-
-I'm trying to get PCMCIA support working on Montavista's Hardhat linux and
-an RPX lite (MPC 823).  The PC card I'm using is a SanDisk ATA flashdisk,
-if that makes a difference.
-
-I've got the patches from absoval.com and followed all the instructions in
-their doc.  I also have read the PCMCIA howto.
-
-I can insmod the pcmcia drivers, and a cardctl ident does identify the
-card to be a SunDisk fixed disk.
-
-But as soon as I start cardmgr to attach the IDE device, I get:
-kernel panic: Kernel Mode Software FPU Emulation
-
-I've tried compiling the kernel both with and without FPU emulation, and
-I've also tried changing the memory addresses, as suggested by the PCMCIA
-howto.  I even tried replacing the card.  Nothing seems to make a
-difference.
-
-Any suggestions would be greatly appreciated.
-Thanks,
+thanks,
 mike
 
 
