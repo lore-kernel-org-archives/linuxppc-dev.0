@@ -1,36 +1,34 @@
-From: jlquinn@us.ibm.com
-To: Gabriel Paubert <paubert@iram.es>
-cc: linuxppc-dev@lists.linuxppc.org
-Message-ID: <8525686D.0070361D.00@D51MTA03.pok.ibm.com>
-Date: Fri, 21 Jan 2000 15:25:55 -0500
-Subject: Re: Fwd: Re: still no accelerated X ($#!$*)
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Date: Fri, 21 Jan 2000 16:10:35 -0500
+From: brad allison <jackal@aol.net>
+To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>
+Subject: USB problems in 2.2.14pre9
+Message-ID: <Pine.SGI.4.00.10001211606390.21990-100000@osiris.office.aol.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Can you list some of these efficiency issues?  In case anybody wants to
-tackle them.
 
-In fact, it would be interesting to have a page of potential ppc-related
-kernel projects (others as well) that people could refer to if they're
-looking for something to do.  Is there such a page already?  If not, I'd be
-willing to assemble one.  However I don't have a place to host it.
+I'm seeing the strange problem when I type cd really fast that it comes
+out as cdcd or cdc .
 
-Thanks,
-Jerry Quinn
-jlquinn@us.ibm.com
+Other people who's used my keyboard see the same thing, but you have to
+type it really fast.  It seems almost random.
 
+I didn't see the problem until I switch to 2.2.14pre9 and
+Xpmac.rage128.usb.rev6 .  I backed out of Xpmac.rage128.usb.rev6 to
+XF68_FBDev because of cut-and-paste problems with Xpmac.rage128.usb.rev6
+and I'm still seeing this weird "cdcd" problem.
 
-Gabriel Paubert <paubert@iram.es>@lists.linuxppc.org on 01/21/2000 02:08:30
-PM
-[snip]
-I remember, but my goal is a memory-clobber-free kernel, although there
-are many other efficiency issues right now in Linux/PPC...
+Anyone else seeing this?
 
-     Gabriel
-     (desperately trying to build gcc_latest_snapshot)
+-b
+
+--
+AOL SAPI    jackal@aol.net    jackal@kmfms.com    703.265.0908   AIM:jackal242
+http://jackal.fudge.org        `I was never more certain of how far away I was
+from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
