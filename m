@@ -1,152 +1,83 @@
-In-Reply-To: <20040331150741.D17284@home.com>
-References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com> <20040331164423.GA417@gate.ebshome.net> <20040331100318.B17284@home.com> <9B139B02-834D-11D8-9FF0-000A95A07384@sands-edge.com> <20040331150741.D17284@home.com>
+Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
 Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4E8812C7-8362-11D8-9FF0-000A95A07384@sands-edge.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-From: John Whitney <johnw@sands-edge.com>
-Subject: Re: Proposed changes to io.h
-Date: Wed, 31 Mar 2004 17:25:25 -0500
-To: Matt Porter <mporter@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org
+Message-Id: <B755A2F6-8364-11D8-9FF0-000A95A07384@sands-edge.com>
+Content-Type: multipart/mixed; boundary=Apple-Mail-18--613454731
+From: John Whitney <jwhitney-linuxppc@sands-edge.com>
+Subject: Proposed Kconfig update patch for help text
+Date: Wed, 31 Mar 2004 17:42:40 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Looks good for me.  The help for the 6xx choice indicated the 8xx
-series (no FPU) is included in it, but I see it is actually in a
-separate choice.  I'll post a Kconfig patch to clear that up on a
-separate thread.
+--Apple-Mail-18--613454731
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed
+
+A couple of trivial changes for the processor choice help text to make
+it a bit clearer.
 
 John
 
-On Mar 31, 2004, at 5:07 PM, Matt Porter wrote:
+--- Kconfig.orig    2004-03-31 17:25:53.000000000 -0500
++++ Kconfig 2004-03-31 17:38:57.000000000 -0500
+@@ -44,13 +44,14 @@
+     default 6xx
 
-> On Wed, Mar 31, 2004 at 02:57:14PM -0500, John Whitney wrote:
->> I don't see this in arch/ppc/Kconfig (or anywhere else) in the 2.6.5
->> kernel which I am using (or in arch/ppc/config.in, for 2.4.25).  I can
->> certainly create a patch to Kconfig that does this, or I could check
->> for PPC_FEATURE_HAS_FPU in cur_cpu_spec[0]->cpu_user_features  in
->> __raw_readq/writeq():
->>
->> unsigned long long __raw_readq (int addr)
->> {
->>    if (cur_cpu_spec[0]->cpu_user_features & PPC_FEATURE_HAS_FPU) {
->>      ...
->>    } else {
->>      return *((volatile unsigned long long *) addr);
->> }
->>
->> or somesuch.  This would work as long as the compiler doesn't have a
->> snitfit with FP instructions, even if the processor can't use them...
->>
->> Which would the maintainers prefer?
->
-> Here's my preference, hopefully Paul reads this. I personally don't
-> see why we need to use a runtime flag when we pretty much have the
-> info available at build time anyway.  If e500 wanted a version they
-> can use the SPE option to add some code. It might be better to warn
-> at build time for !fpu in addition to BUGging at runtime.
->
-> -Matt
->
-> ===== arch/ppc/Kconfig 1.56 vs edited =====
-> --- 1.56/arch/ppc/Kconfig	Thu Mar 18 23:04:54 2004
-> +++ edited/arch/ppc/Kconfig	Wed Mar 31 14:06:56 2004
-> @@ -79,6 +79,11 @@
->  	depends on 44x
->  	default y
->
-> +config PPC_FPU
-> +	bool
-> +	depends on 6xx || POWER3 || POWER4
-> +	default y
-> +
->  config ALTIVEC
->  	bool "AltiVec Support"
->  	depends on 6xx || POWER4
-> ===== include/asm-ppc/io.h 1.19 vs edited =====
-> --- 1.19/include/asm-ppc/io.h	Fri Mar 12 14:17:57 2004
-> +++ edited/include/asm-ppc/io.h	Wed Mar 31 14:57:41 2004
-> @@ -69,6 +69,77 @@
->  #define __raw_writew(v, addr)	(*(volatile unsigned short *)(addr) =
-> (v))
->  #define __raw_writel(v, addr)	(*(volatile unsigned int *)(addr) = (v))
->
-> +#ifdef CONFIG_PPC_FPU
-> +/*
-> + * For reading and writing 64-bit values, we need to use the floating
-> + * point registers.  The code will enable MSR_FP in the MSR register,
-> + * use FPR1 to read from and write to memory, and then restore
-> + * everything to the previous values.
-> + */
-> +static inline unsigned long long ___raw_readq(int addr)
-> +{
-> +	unsigned long flags;
-> +	unsigned long msr;
-> +	unsigned long msr_save;
-> +	unsigned long long result;
-> +	unsigned long long fp_save;
-> +
-> +	local_irq_save (flags);
-> +	asm volatile ("sync\n"
-> +			"mfmsr    %0\n"
-> +			"ori      %1,%0,0x2000\n"
-> +			"mtmsr    %1\n"
-> +			"isync\n"
-> +			"stfdx    1,0,%2\n"
-> +			"lfdx     1,0,%4\n"
-> +			"stfdx    1,0,%3\n"
-> +			"sync\n"
-> +			"lfdx     1,0,%2\n"
-> +			"mtmsr    %0\n"
-> +			"sync\n"
-> +			"isync\n"
-> +			: "=&r" (msr_save), "=&r" (msr)
-> +			: "r" (&fp_save), "r" (&result), "r" (addr)
-> +			: "memory" );
-> +	local_irq_restore (flags);
-> +
-> +	return result;
-> +}
-> +
-> +static inline void ___raw_writeq(unsigned long long value, int addr)
-> +{
-> +	unsigned long flags;
-> +	unsigned long msr;
-> +	unsigned long msr_save;
-> +	unsigned long long fp_save;
-> +
-> +	local_irq_save (flags);
-> +	asm volatile ("sync\n"
-> +			"mfmsr    %0\n"
-> +			"ori      %1,%0,0x2000\n"
-> +			"mtmsr    %1\n"
-> +			"isync\n"
-> +			"stfdx    1,0,%2\n"
-> +			"lfdx     1,0,%3\n"
-> +			"stfdx    1,0,%4\n"
-> +			"sync\n"
-> +			"lfdx     1,0,%2\n"
-> +			"mtmsr    %0\n"
-> +			"sync\n"
-> +			"isync\n"
-> +			: "=&r" (msr_save), "=&r" (msr)
-> +			: "r" (&fp_save), "r" (&value), "r" (addr)
-> +			: "memory" );
-> +	local_irq_restore (flags);
-> +	return;
-> +}
-> +#define __raw_readq		___raw_readq
-> +#define __raw_writeq		___raw_writeq
-> +#else /* !CONFIG_PPC_FPU */
-> +#define __raw_readq(addr)		({ BUG(); })
-> +#define __raw_writeq(addr)		({ BUG(); })
-> +#endif /* CONFIG_PPC_FPU */
-> +
->  /*
->   * The insw/outsw/insl/outsl macros don't do byte-swapping.
->   * They are only used in practice for transferring buffers which
->
+  config 6xx
+-   bool "6xx/7xx/74xx/8260"
++   bool "6xx/7xx/74xx/82xx"
+     help
+-     There are four types of PowerPC chips supported.  The more common
++     There are four types of PowerPC chips supported: the more common
+       types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+-     versions (821, 823, 850, 855, 860, 8260), the IBM embedded
+versions
++     versions (821, 823, 850, 855, 860, 82xx), the IBM embedded
+versions
+       (403 and 405) and the high end 64 bit Power processors (POWER 3,
+-     POWER4, and IBM 970 also known as G5)
++     POWER4, and IBM 970 also known as G5).
++
+       Unless you are building a kernel for one of the embedded processor
+       systems, 64 bit IBM RS/6000 or an Apple G5, choose 6xx.
+       Note that the kernel runs in 32-bit mode even on 64-bit chips.
+
+
+
+--Apple-Mail-18--613454731
+Content-Transfer-Encoding: 7bit
+Content-Type: application/octet-stream;
+	x-unix-mode=0600;
+	name="Kconfig.patch"
+Content-Disposition: attachment;
+	filename=Kconfig.patch
+
+--- Kconfig.orig	2004-03-31 17:25:53.000000000 -0500
++++ Kconfig	2004-03-31 17:38:57.000000000 -0500
+@@ -44,13 +44,14 @@
+ 	default 6xx
+
+ config 6xx
+-	bool "6xx/7xx/74xx/8260"
++	bool "6xx/7xx/74xx/82xx"
+ 	help
+-	  There are four types of PowerPC chips supported.  The more common
++	  There are four types of PowerPC chips supported: the more common
+ 	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+-	  versions (821, 823, 850, 855, 860, 8260), the IBM embedded versions
++	  versions (821, 823, 850, 855, 860, 82xx), the IBM embedded versions
+ 	  (403 and 405) and the high end 64 bit Power processors (POWER 3,
+-	  POWER4, and IBM 970 also known as G5)
++	  POWER4, and IBM 970 also known as G5).
++
+ 	  Unless you are building a kernel for one of the embedded processor
+ 	  systems, 64 bit IBM RS/6000 or an Apple G5, choose 6xx.
+ 	  Note that the kernel runs in 32-bit mode even on 64-bit chips.
+
+--Apple-Mail-18--613454731--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
