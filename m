@@ -1,20 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id DD6F567A6E
+Return-Path: <takeharu1219@ybb.ne.jp>
+Received: from ybbsmtp15.mail.mci.yahoo.co.jp (ybbsmtp15.mail.mci.yahoo.co.jp
+	[210.80.241.189]) by ozlabs.org (Postfix) with SMTP id 3721E67A71
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 09:40:34 +1100 (EST)
-Message-ID: <421D065E.7060902@mvista.com>
-Date: Wed, 23 Feb 2005 15:40:30 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Thu, 24 Feb 2005 10:23:51 +1100 (EST)
+Message-ID: <421D1085.5080602@ybb.ne.jp>
+Date: Thu, 24 Feb 2005 08:23:49 +0900
+From: Takeharu KATO <takeharu1219@ybb.ne.jp>
 MIME-Version: 1.0
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-References: <421679DA.60005@mvista.com>
-In-Reply-To: <421679DA.60005@mvista.com>
+To: Matt Porter <mporter@kernel.crashing.org>
+References: <421CD2B3.4020805@ybb.ne.jp> <421CD669.1040002@ybb.ne.jp>
+	<20050223142720.C13087@cox.net>
+In-Reply-To: <20050223142720.C13087@cox.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Brian Waite <waite@skycomputers.com>,
-	"Steven J. Hill" <sjhill@realitydiluted.com>,
-	David Woodhouse <dwmw2@infradead.org>
-Subject: Re: linux-2.5-marvell tree deletion
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: PowerPC4xx Watchdog
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mark A. Greer wrote:
+Hi
 
-> Dale Farnsworth has moved the mv64[34]60 enet driver to 
-> bk://dfarnsworth.bkbits.net/linux-2.5-mv643xx-enet and all of the code 
-> that I've worked on is either in linux-2.5 or on a queue to go in so 
-> this tree should evaporate.
->
-> If you have an issue with this please let me know before the morning 
-> of Wednesday, Feb 23, 2005; otherwise, I will delete it on Wednesday.
+> 
+> Are you looking for the old "ppc405 watchdog" driver that simply
+> hooked into the generic PPC heartbeat facility? Or are you looking
+> for a driver that utilizes the 4xx/booke hardware watchdog facility?
+> 
+I am looking for a driver that utilizes the 4xx/booke hardware watchdog 
+facility.
 
 
-This tree is now gone.
-
-Mark
+-- 
+Takeharu KATO
