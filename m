@@ -1,87 +1,55 @@
-Message-Id: <200209060357.WAA15082@lists.linuxppc.org>
-From: "" <slowforce@zju.edu.cn>
-To: ajz@cambridgebroadband.com
-Date: Fri, 06 Sep 2002 11:53:28 +0800
-Cc: linuxppc-embedded@lists.linuxppc.org
-Reply-To: "" <slowforce@zju.edu.cn>
-Subject: Re: ATM issue: one Host Four Nodes
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Lauri Ojantakanen <lauri.ojantakanen@solidtech.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Booting sandpoint from ide disk
+Date: Fri, 6 Sep 2002 11:02:58 +0300
+References: <200209051316.19309.lauri.ojantakanen@solidtech.com> <3D777C99.97AF4D14@mvista.com>
+In-Reply-To: <3D777C99.97AF4D14@mvista.com>
+MIME-Version: 1.0
+Message-Id: <200209061102.58480.lauri.ojantakanen@solidtech.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Alex，
-you mean that maybe i need an ATM switch to creat the ring topology
-how can i implement it? can you give more detail info on it?
-Regards
-Li
-在您的来信中曾经提到:
->From:Alex Zeffertt <ajz@cambridgebroadband.com>
->Reply-To:
->To: <slowforce@zju.edu.cn>
->Subject: Re: ATM issue: one Host Four Nodes
+Instant need for booting from ide disk seem to have gone away :( Dink32 does
+not start anymore at all. When I restart the machine nothing comes through
+the serial cable (settings are correct). I have not touched to any board
+switches. Red leds on the altimus board are as follows:
+
+RAM: not active
+ROM: not active
+stat: not active
+
+Others are active.
+
+On sandpoint main power and standby power -leds are active.
+
+Actually when I recycle the power I get just one totally random character to
+minicom (does not happen everytime).
+
+Any ideas?
+
+//lauri
+
+On Thursday 05 September 2002 18:47, Mark A. Greer wrote:
+> Lauri Ojantakanen wrote:
+> > Hi,
+> >
+> > does anyone have a good solution for booting sandpoint X3 (cpu 7410,
+> > altivec supported) from ide hard disk? Dink32 does not seem to support
+> > anything like that and ppcboot does not seem to support that CPU.
 >
->On Thu, 5 Sep 2002,  wrote:
+> If you want to stay with DINK, you can put the zImage in flash and set DINK
+> up to automatically (or not) jump to where you put it.  The zImage will
+> relocate itself, uncompress the kernel (in the proper location) and then
+> boot.  With the correct cmdline, you can use an IDE disk partition for your
+> root filesystem. Unless you hack DINK, you won't be able to boot a kernel
+> actually sitting on the IDE disk, you have to put it in flash or get it
+> into memory some other way first.  As others have already said, you can
+> always use PPCBoot.
 >
->
->In each NODE set up 1 terminated VC, and 3 switched VCs (using the
->atm-860.o specific /proc/net/atm/switch interface).
->
->here's an example of how to set up a switched VC from 0.0.32 to 0.0.32
->using the atm-860.o driver:
->
->echo add 0.0.32 0.0.32 1000 cbr > /proc/net/atm/switch
->
->           ^      ^     ^    ^
->         from-VC to-VC  PCR  TT
->
->See http://mpc860sar.sourceforge.net for the source code.
->
->Alex
->
->BTW:  If you're board only has one PHY then you need an ATM switch in the
->middle to create the ring topology.  If it's multi PHY then you will need
->to modify the atm-860.o driver because it doesn't support this yet.  (I
->think that multi-PHY is only available on MPC862s anyway....)
->
->>
->> Hi all,
->> We just have such a system to build.
->>                                 ________
->>                                 |      |
->>                             RX  | ATM  |_TX____________________________
->>   |---------------------------->| HOST |                              |
->>   |                             |      |                              |
->>   |                             |______|                              |
->>   |                                                                   |
->>   |      ________       ________        ________       ________       |
->>   |      |      |       |      |        |      |       |      |       |
->>   |   TX | ATM  | RX  TX| ATM  | RX   TX| ATM  | RX  TX| ATM  |  RX   |
->>   |------| NODE |<------| NODE |<-------| NODE |<------| NODE |<------|
->>          |      |       |      |        |      |       |      |
->>          |______|       |______|        |______|       |______|
->>              A              B               C              D
->> It's used to perform high speed data acqusition.
->> ATM HOST -- a pc with an ATM card
->> ATM NODE -- MPC860 with linux-2.4.4
->>
->> The ATM HOST is responisble for sending controlling information to ATM NODEs
->> and receiving data from each NODEs.
->> The ATM NODE is responsible for performing data acqusition.
->>
->> As the diagram show,ATM NODEs are connected one after another.
->> we use one VPI/VCI to identify one ATM NODE, so if the ATM HOST send the
->> control message to ATM NODE D, the message will touch  ATM NODE A、B、C first,
->> then ATM NODE D. In order to improve the system capacity and efficiency,
->> the ATM NODE A、B、C should ignore this message(not parse it) and send it
->> to the next node, in another words, this message should be bypassed in low
->> level(e.g. PHY level) by ATM NODE A、B、C. How can i get this point?
->> Any advice will be greatly appreciated!
->> Best Regards!
->> Li
->>
->>
->>
+> Mark
 >
 >
 
