@@ -1,34 +1,33 @@
-To: Jesse McCrosky <mccrosky@ualberta.ca>
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Tue, 9 Apr 2002 23:13:36 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: xfs working in benh kernel
+Message-ID: <20020409231336.B20630@plato.local.lan>
 References: <64EAEAA6-4C1F-11D6-841B-003065ABC1E2@ualberta.ca>
-Reply-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
-Date: 10 Apr 2002 08:29:53 +0200
-In-Reply-To: <64EAEAA6-4C1F-11D6-841B-003065ABC1E2@ualberta.ca>
-Message-ID: <hh1ydorrq6.fsf@theorie.physik.uni-muenchen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Mime-Version: 1.0
+In-Reply-To: <64EAEAA6-4C1F-11D6-841B-003065ABC1E2@ualberta.ca>; from mccrosky@ualberta.ca on Tue, Apr 09, 2002 at 07:07:57PM -0600
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-Jesse McCrosky writes:
-
+On Tue, Apr 09, 2002 at 07:07:57PM -0600, Jesse McCrosky wrote:
+>
 > I have managed to get xfs (the filesystem, not the font server) working
 > in benh's 2.4.19-pre6 kernel.  I'm new to this list, so I'll just ask:
 > is this the sort of thing that is worth putting together a patch for?
+> And if so, to whom should I send the patch?
 
-When I upgrade the kernel on my Pismo, I just apply the XFS patch to
-Ben's tree without modifications.  This has worked for me for such a
-long time that I don't remember when I started.
+have you run all the XFS regression tests?  just getting the patches
+merged and making it compile does not necessarily mean that it will
+work properly, XFS works closly with the VM so if the VM changes XFS
+may need to be adapted.
 
-Regards, Jens.
+most people do not need to run the benh tree any longer, 2.4.18 is in
+good shape.
 
 --
-J'qbpbe, le m'en fquz pe j'qbpbe!
-Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
