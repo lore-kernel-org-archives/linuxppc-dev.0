@@ -1,261 +1,209 @@
 From: Allen Curtis <acurtis@onz.com>
 Reply-To: acurtis@onz.com
 To: dan@embeddededge.com
-Subject: Misc 8260 fixes/options
-Date: Tue, 27 Aug 2002 17:10:10 -0700
-Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: 8260/8xx IRQ patch
+Date: Tue, 27 Aug 2002 17:11:52 -0700
+Cc: linuxppc-embedded@lists.linuxppc.org, paulus@samba.org
 MIME-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="------------Boundary-00=_YS1JDUPFK9SG2GTD0OZE"
-Message-Id: <200208271710.10344.acurtis@onz.com>
+  boundary="------------Boundary-00=_SV1JP7B8VQWK7EHKP4PZ"
+Message-Id: <200208271711.52796.acurtis@onz.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---------------Boundary-00=_YS1JDUPFK9SG2GTD0OZE
+--------------Boundary-00=_SV1JP7B8VQWK7EHKP4PZ
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 8bit
 
-Added support for:
-Custom reset vector
-Local RAM allocation
-fix in pgtable.c
-etc..
+Here is a patch for request_8xxirq()
+
 --
 All things come to those who wait. Some of us just have to wait a little
 longer...
---------------Boundary-00=_YS1JDUPFK9SG2GTD0OZE
+--------------Boundary-00=_SV1JP7B8VQWK7EHKP4PZ
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="8260misc.patch"
+  name="irq.patch"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="8260misc.patch"
+Content-Disposition: attachment; filename="irq.patch"
 
 # This is a BitKeeper generated patch for the following project:
 # Project Name: Linux 2.4 for PowerPC development tree
 # This patch format is intended for GNU patch command version 2.5 or higher.
 # This patch includes the following deltas:
-#	           ChangeSet	1.1114.1.2 -> 1.1114.1.3
-#	  arch/ppc/config.in	1.151   -> 1.152
-#	arch/ppc/kernel/ppc_ksyms.c	1.98    -> 1.99
-#	include/asm-ppc/commproc.h	1.4     -> 1.5
-#	arch/ppc/kernel/m8260_setup.c	1.38    -> 1.39
-#	arch/ppc/mm/pgtable.c	1.21    -> 1.22
-#	arch/ppc/8260_io/commproc.c	1.12    -> 1.13
+#	           ChangeSet	1.1114  -> 1.1114.1.1
+#	include/asm-ppc/mpc8xx.h	1.22    -> 1.23
+#	arch/ppc/kernel/irq.c	1.53    -> 1.54
+#	arch/ppc/kernel/ppc_ksyms.c	1.97    -> 1.98
+#	arch/ppc/kernel/m8260_setup.c	1.37    -> 1.38
+#	include/asm-ppc/irq.h	1.20    -> 1.21
+#	include/asm-ppc/mpc8260.h	1.14    -> 1.15
 #
 # The following is the BitKeeper ChangeSet Log
 # --------------------------------------------
-# 02/08/26	acurtis@ws01.onz.com	1.1114.1.3
-# Misc 8260 related enhancements and fixes.
+# 02/08/26	acurtis@ws01.onz.com	1.1115
+# Make update for cross development.
+# --------------------------------------------
+# 02/08/26	acurtis@ws01.onz.com	1.1116
+# Added ability to configure the 8260 clocks used by FCC ethernet.
+# --------------------------------------------
+# 02/08/26	acurtis@ws01.onz.com	1.1114.1.1
+# Removed request_irq() remapping for 8xx and 8260 architectures.
 # --------------------------------------------
 #
-diff -Nru a/arch/ppc/8260_io/commproc.c b/arch/ppc/8260_io/commproc.c
---- a/arch/ppc/8260_io/commproc.c	Tue Aug 27 16:33:49 2002
-+++ b/arch/ppc/8260_io/commproc.c	Tue Aug 27 16:33:49 2002
-@@ -37,6 +37,10 @@
- static	uint	dp_alloc_top;	/* Max offset + 1 */
- static	uint	host_buffer;	/* One page of host buffer */
- static	uint	host_end;	/* end + 1 */
-+#ifdef CONFIG_8260_LRAM
-+static	uint	ldram_buffer;	/* Starting address for LDRAM */
-+static	uint	ldram_end;	/* end + 1 */
-+#endif
- cpm8260_t	*cpmp;		/* Pointer to comm processor space */
-
- /* We allocate this here because it is used almost exclusively for
-@@ -67,6 +71,13 @@
-
- 	vpgaddr = host_buffer;
-
-+#ifdef CONFIG_8260_LRAM
-+	/* Local DRAM for CPM communication buffers
-+	*/
-+	ldram_buffer = ioremap(CONFIG_8260_LRAM_BASE, CONFIG_8260_LRAM_SIZE);
-+	ldram_end	 = ldram_buffer + CONFIG_8260_LRAM_BASE;
-+#endif
-+
- 	/* Tell everyone where the comm processor resides.
- 	*/
- 	cpmp = (cpm8260_t *)commproc;
-@@ -126,6 +137,35 @@
-
- 	return(retloc);
+diff -Nru a/arch/ppc/kernel/irq.c b/arch/ppc/kernel/irq.c
+--- a/arch/ppc/kernel/irq.c	Tue Aug 27 16:26:08 2002
++++ b/arch/ppc/kernel/irq.c	Tue Aug 27 16:26:08 2002
+@@ -177,15 +177,6 @@
+ 	return 0;
  }
-+
-+#ifdef CONFIG_8260_LRAM
-+/* Due to CPM lockup problems, communication buffers should
-+ * be allocated with this routine.
-+ */
-+uint
-+m8260_cpm_lramalloc(uint size, uint align)
-+{
-+	uint	retloc;
-+	uint	align_mask, off;
-+	uint	savebase;
-+
-+	align_mask = align - 1;
-+	savebase = ldram_buffer;
-+
-+	if ((off = (ldram_buffer & align_mask)) != 0)
-+		ldram_buffer += (align - off);
-+
-+	if ((ldram_buffer + size) >= ldram_end) {
-+		ldram_buffer = savebase;
-+		return(0);
-+	}
-+
-+	retloc = ldram_buffer;
-+	ldram_buffer += size;
-+
-+	return(retloc);
-+}
-+#endif
 
- /* Set a baud rate generator.  This needs lots of work.  There are
-  * eight BRGs, which can be connected to the CPM channels or output
-diff -Nru a/arch/ppc/config.in b/arch/ppc/config.in
---- a/arch/ppc/config.in	Tue Aug 27 16:33:49 2002
-+++ b/arch/ppc/config.in	Tue Aug 27 16:33:49 2002
-@@ -74,6 +74,10 @@
- 	if [ "$CONFIG_EST8260" = "y" -o "$CONFIG_RPX6" = "y" ]; then
- 	  define_bool CONFIG_EMBEDDEDBOOT y
- 	fi
-+
-+	if [ "$CONFIG_TQM8260" = "y" ]; then
-+	  define_bool CONFIG_8260_RTC_TMCNT
-+	fi
- fi
-
- if [ "$CONFIG_40x" = "y" ]; then
-@@ -379,6 +383,10 @@
-     fi
-   fi
-
-+  bool "Set custom reset vector address" CONFIG_RESET_VECTOR
-+  if [ "$CONFIG_RESET_VECTOR" = "y" ]; then
-+    hex "  Physical address of reset vector" CONFIG_RESET_VECTOR_ADDR 0xfff00100
-+  fi
-   bool "Set custom kernel base address" CONFIG_KERNEL_START_BOOL
-   if [ "$CONFIG_KERNEL_START_BOOL" = "y" ]; then
-     hex "  Virtual address of kernel base" CONFIG_KERNEL_START 0xc0000000
+-#if (defined(CONFIG_8xx) || defined(CONFIG_8260))
+-/* Name change so we can catch standard drivers that potentially mess up
+- * the internal interrupt controller on 8xx and 8260.  Just bear with me,
+- * I don't like this either and I am searching a better solution.  For
+- * now, this is what I need. -- Dan
+- */
+-#define request_irq	request_8xxirq
+-#endif
+-
+ void free_irq(unsigned int irq, void* dev_id)
+ {
+ 	irq_desc_t *desc;
 diff -Nru a/arch/ppc/kernel/m8260_setup.c b/arch/ppc/kernel/m8260_setup.c
---- a/arch/ppc/kernel/m8260_setup.c	Tue Aug 27 16:33:49 2002
-+++ b/arch/ppc/kernel/m8260_setup.c	Tue Aug 27 16:33:49 2002
-@@ -99,7 +99,7 @@
- static static int
- m8260_set_rtc_time(unsigned long time)
- {
--#ifdef CONFIG_TQM8260
-+#ifdef CONFIG_8260_RTC_TMCNT
- 	((immap_t *)IMAP_ADDR)->im_sit.sit_tmcnt = time;
- 	((immap_t *)IMAP_ADDR)->im_sit.sit_tmcntsc = 0x3;
- #else
-@@ -111,7 +111,7 @@
- static unsigned long
- m8260_get_rtc_time(void)
- {
--#ifdef CONFIG_TQM8260
-+#ifdef CONFIG_8260_RTC_TMCNT
- 	return ((immap_t *)IMAP_ADDR)->im_sit.sit_tmcnt;
- #else
- 	/* Get time from the RTC.
-@@ -132,6 +132,8 @@
- 	 */
- #ifdef CONFIG_TQM8260
- 	startaddr = 0x40000104;
-+#elif  CONFIG_RESET_VECTOR
-+	startaddr = CONFIG_RESET_VECTOR_ADDR;
- #else
- 	startaddr = 0xff000104;
- #endif
-@@ -146,13 +148,14 @@
- static void
- m8260_power_off(void)
- {
--   m8260_restart(NULL);
-+   __cli();
-+   while (1);
+--- a/arch/ppc/kernel/m8260_setup.c	Tue Aug 27 16:26:08 2002
++++ b/arch/ppc/kernel/m8260_setup.c	Tue Aug 27 16:26:08 2002
+@@ -275,12 +275,3 @@
+ 	ppc_md.kbd_init_hw		= NULL;
+ 	ppc_md.ppc_kbd_sysrq_xlate	= NULL;
  }
-
- static void
- m8260_halt(void)
- {
--   m8260_restart(NULL);
-+   m8260_power_off();
- }
-
-
+-
+-/* Mainly for ksyms.
+-*/
+-int
+-request_irq(unsigned int irq, void (*handler)(int, void *, struct pt_regs *),
+-		       unsigned long flag, const char *naem, void *dev)
+-{
+-	panic("request IRQ\n");
+-}
 diff -Nru a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
---- a/arch/ppc/kernel/ppc_ksyms.c	Tue Aug 27 16:33:49 2002
-+++ b/arch/ppc/kernel/ppc_ksyms.c	Tue Aug 27 16:33:49 2002
-@@ -353,6 +353,21 @@
+--- a/arch/ppc/kernel/ppc_ksyms.c	Tue Aug 27 16:26:08 2002
++++ b/arch/ppc/kernel/ppc_ksyms.c	Tue Aug 27 16:26:08 2002
+@@ -352,9 +352,6 @@
+ EXPORT_SYMBOL(cpm_install_handler);
  EXPORT_SYMBOL(cpm_free_handler);
  #endif /* CONFIG_8xx */
+-#if defined(CONFIG_8xx) || defined(CONFIG_8260)
+-EXPORT_SYMBOL(request_8xxirq);
+-#endif
 
-+#if defined(CONFIG_8260)
-+extern uint m8260_cpm_dpalloc(uint size, uint align);
-+extern uint m8260_cpm_hostalloc(uint size, uint align);
-+extern void m8260_cpm_setbrg(uint brg, uint rate);
-+extern void m8260_cpm_fastbrg(uint brg, uint rate, int div16);
-+EXPORT_SYMBOL(m8260_cpm_dpalloc);
-+EXPORT_SYMBOL(m8260_cpm_hostalloc);
-+EXPORT_SYMBOL(m8260_cpm_setbrg);
-+EXPORT_SYMBOL(m8260_cpm_fastbrg);
-+#ifdef CONFIG_8260_LRAM
-+extern uint m8260_cpm_lramalloc(uint size, uint align);
-+EXPORT_SYMBOL(m8260_cpm_lramalloc);
-+#endif
-+#endif
-+
  EXPORT_SYMBOL(ret_to_user_hook);
  EXPORT_SYMBOL(next_mmu_context);
- EXPORT_SYMBOL(set_context);
-diff -Nru a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
---- a/arch/ppc/mm/pgtable.c	Tue Aug 27 16:33:49 2002
-+++ b/arch/ppc/mm/pgtable.c	Tue Aug 27 16:33:49 2002
-@@ -356,6 +356,10 @@
- /* is x a power of 2? */
- #define is_power_of_2(x)	((x) != 0 && (((x) & ((x) - 1)) == 0))
-
-+#define _128KB			(128*1024U)
-+#define _256MB			(256*1024*1024U)
-+#define is_size_ok(x)		(!((x) < _128KB || (x) > _256MB))
-+
- /*
-  * Set up a mapping for a block of I/O.
-  * virt, phys, size must all be page-aligned.
-@@ -373,7 +377,7 @@
- 	/*
- 	 * Use a BAT for this if possible...
- 	 */
--	if (io_bat_index < 2 && is_power_of_2(size)
-+	if (io_bat_index < 2 && is_power_of_2(size) && is_size_ok(size)
- 	    && (virt & (size - 1)) == 0 && (phys & (size - 1)) == 0) {
- 		setbat(io_bat_index, virt, phys, size, flags);
- 		++io_bat_index;
-diff -Nru a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
---- a/include/asm-ppc/commproc.h	Tue Aug 27 16:33:49 2002
-+++ b/include/asm-ppc/commproc.h	Tue Aug 27 16:33:49 2002
-@@ -67,9 +67,13 @@
-  * and dual port ram.
-  */
- extern	cpm8xx_t	*cpmp;		/* Pointer to comm processor */
--uint		m8xx_cpm_dpalloc(uint size);
--uint		m8xx_cpm_hostalloc(uint size);
--void		m8xx_cpm_setbrg(uint brg, uint rate);
-+uint m8260_cpm_dpalloc(uint size, uint align);
-+uint m8260_cpm_hostalloc(uint size, uint align);
-+#ifdef CONFIG_8260_LRAM
-+extern uint m8260_cpm_lramalloc(uint size, uint align);
+diff -Nru a/include/asm-ppc/irq.h b/include/asm-ppc/irq.h
+--- a/include/asm-ppc/irq.h	Tue Aug 27 16:26:08 2002
++++ b/include/asm-ppc/irq.h	Tue Aug 27 16:26:08 2002
+@@ -12,6 +12,9 @@
+ extern void disable_irq(unsigned int);
+ extern void disable_irq_nosync(unsigned int);
+ extern void enable_irq(unsigned int);
++#if defined(CONFIG_8xx) || defined(CONFIG_8260)
++#  define request_8xxirq	request_irq
 +#endif
-+void m8260_cpm_setbrg(uint brg, uint rate);
-+void m8260_cpm_fastbrg(uint brg, uint rate, int div16);
 
- /* Buffer descriptors used by many of the CPM protocols.
+ #if defined(CONFIG_40x)
+ #include <asm/ibm4xx.h>
+@@ -169,15 +172,55 @@
+
+ /* There are many more than these, we will add them as we need them.
  */
++#define	SIU_INT_ERROR		((uint)0x00)
++#define	SIU_INT_I2C		((uint)0x01)
++#define	SIU_INT_SPI		((uint)0x02)
++#define	SIU_INT_RISC		((uint)0x03)
+ #define	SIU_INT_SMC1		((uint)0x04)
+ #define	SIU_INT_SMC2		((uint)0x05)
++#define	SIU_INT_IDMA1		((uint)0x06)
++#define	SIU_INT_IDMA2		((uint)0x07)
++#define	SIU_INT_IDMA3		((uint)0x08)
++#define	SIU_INT_IDMA4		((uint)0x09)
++#define	SIU_INT_SDMA		((uint)0x0a)
++#define	SIU_INT_TIMER1		((uint)0x0c)
++#define	SIU_INT_TIMER2		((uint)0x0d)
++#define	SIU_INT_TIMER3		((uint)0x0e)
++#define	SIU_INT_TIMER4		((uint)0x0f)
++#define	SIU_INT_TMCNT		((uint)0x10)
++#define	SIU_INT_PIT		((uint)0x11)
++#define	SIU_INT_IRQ1		((uint)0x13)
++#define	SIU_INT_IRQ2		((uint)0x14)
++#define	SIU_INT_IRQ3		((uint)0x15)
++#define	SIU_INT_IRQ4		((uint)0x16)
++#define	SIU_INT_IRQ5		((uint)0x17)
++#define	SIU_INT_IRQ6		((uint)0x18)
++#define	SIU_INT_IRQ7		((uint)0x19)
+ #define	SIU_INT_FCC1		((uint)0x20)
+ #define	SIU_INT_FCC2		((uint)0x21)
+ #define	SIU_INT_FCC3		((uint)0x22)
++#define	SIU_INT_MCC1		((uint)0x24)
++#define	SIU_INT_MCC2		((uint)0x25)
+ #define	SIU_INT_SCC1		((uint)0x28)
+ #define	SIU_INT_SCC2		((uint)0x29)
+ #define	SIU_INT_SCC3		((uint)0x2a)
+ #define	SIU_INT_SCC4		((uint)0x2b)
++#define	SIU_INT_PC15		((uint)0x30)
++#define	SIU_INT_PC14		((uint)0x31)
++#define	SIU_INT_PC13		((uint)0x32)
++#define	SIU_INT_PC12		((uint)0x33)
++#define	SIU_INT_PC11		((uint)0x34)
++#define	SIU_INT_PC10		((uint)0x35)
++#define	SIU_INT_PC9		((uint)0x36)
++#define	SIU_INT_PC8		((uint)0x37)
++#define	SIU_INT_PC7		((uint)0x38)
++#define	SIU_INT_PC6		((uint)0x39)
++#define	SIU_INT_PC5		((uint)0x3a)
++#define	SIU_INT_PC4		((uint)0x3b)
++#define	SIU_INT_PC3		((uint)0x3c)
++#define	SIU_INT_PC2		((uint)0x3d)
++#define	SIU_INT_PC1		((uint)0x3e)
++#define	SIU_INT_PC0		((uint)0x3f)
 
---------------Boundary-00=_YS1JDUPFK9SG2GTD0OZE--
+ #endif /* CONFIG_8260 */
+
+diff -Nru a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
+--- a/include/asm-ppc/mpc8260.h	Tue Aug 27 16:26:08 2002
++++ b/include/asm-ppc/mpc8260.h	Tue Aug 27 16:26:08 2002
+@@ -52,12 +52,6 @@
+ */
+ #include <asm/ptrace.h>
+
+-extern int request_8xxirq(unsigned int irq,
+-		       void (*handler)(int, void *, struct pt_regs *),
+-		       unsigned long flags,
+-		       const char *device,
+-		       void *dev_id);
+-
+ #endif /* CONFIG_8260 */
+ #endif /* !__CONFIG_8260_DEFS */
+ #endif /* __KERNEL__ */
+diff -Nru a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
+--- a/include/asm-ppc/mpc8xx.h	Tue Aug 27 16:26:08 2002
++++ b/include/asm-ppc/mpc8xx.h	Tue Aug 27 16:26:08 2002
+@@ -99,12 +99,6 @@
+  */
+ extern unsigned char __res[];
+
+-struct pt_regs;
+-extern int request_8xxirq(unsigned int irq,
+-		       void (*handler)(int, void *, struct pt_regs *),
+-		       unsigned long flags,
+-		       const char *device,
+-		       void *dev_id);
+ #endif /* !__ASSEMBLY__ */
+ #endif /* CONFIG_8xx */
+ #endif /* __CONFIG_8xx_DEFS */
+
+--------------Boundary-00=_SV1JP7B8VQWK7EHKP4PZ--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
