@@ -1,56 +1,37 @@
-Date: Fri, 03 Oct 2003 15:51:00 +0200
-From: ARIBAUD Albert <a.aribaud@giat-industries.fr>
-Subject: RE: Queston about Walnut
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <F886A68DA978614991E47D82EA26B542131C78@csy-exchange1.giat.intra>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Date: Fri, 3 Oct 2003 08:07:47 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Jacky Lam <jackylam@astri.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Queston about Walnut
+Message-ID: <20031003080747.A7933@home.com>
+References: <20031002121733.A2E32C59E4@atlas.denx.de> <001101c3894c$38833ab0$2803050a@JackyLam> <3F7D3238.2090400@bluewin.ch> <00df01c38992$6d179b40$2803050a@JackyLam>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <00df01c38992$6d179b40$2803050a@JackyLam>; from jackylam@astri.org on Fri, Oct 03, 2003 at 05:40:46PM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+On Fri, Oct 03, 2003 at 05:40:46PM +0800, Jacky Lam wrote:
 >
-> > I would suggest inspecting the timings for memory access.
-> > If this is SDRAM, you must have had to program the UPM for
-> > it, I suppose. Might be that VxWorks has it right, and you
-> > have set it up differently.
-> >
-> > Also, writing to address 0 might be a Bad Ideam (tm), if you
-> > have set this area to hold interrupt vectors.
-> >
-> > Did you try single write (say, "mw 100000 0") ?
+> > the kernel you use - vanilla+ppc-patch - is based on linuxppc-2.4, which
+> > is not appropriate for your system. [At least it was like that some time
+> > ago. Tom, could you please comment.] Try using the linuxppc_2_4_devel
+> > tree from Bitkeeper or from our FTP server (see http://www.denx.de).
 >
->     Thanks for you suggestion. Not only single write, I can
-> now write to anywhere except the first 1MB of SDRAM. I think
-> it is occupied by u-boot?
+>     I just tried. The result is the same. Using the original walnut_config,
+> it hangs in mapin_ram().
+>     If I use minimal config, it hangs in __sti().
+>
+>     Does anyone still working on Walnut platform and successfully boot up
+> 2.4 kernel on that? If no, could someone remember what is the last known
+> working toolchain and kernel on Walnut?
 
-Possibly, but you should check that for yourself. There is
-documentation on what u-boot does to RAM upon power-on.
+I noticed this about a week ago.  It is some kind of merge problem
+between linux-2.4 and linuxppc-2.4.  linux-2.4 boot fine on walnut
+for me.  I didn't have time to investigate but might take a look at
+it again soon.
 
-> So, I think memory is ok now.
-
-Seems right.
-
->     Do you have any idea it hangs at __sti()?
-
-As I said, I know next to nothing about the Walnut. My own
-embedded uboot/Linux experience is as follows:
-
-I had a 855T-based custom board, so I took u-boot, duplicated
-the TQM855L-specific files into a custom directory *and checked
-every single setting* against my own hardware. Once u-boot
-started OK on my board, Linux followed almost without trouble.
-
-Only problems were with a weird bootup IMMR address setting
-(settled by modifying u-boot's startup code) and FEC MII
-interrupt mishandling (settled by careful option setting in
-the kernel).
-
-You should ensure that you have access to both software (u-boot
-and Linux) *and* hardware (both PPC and your board) resources.
-
-HTH,
-
-Albert.
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
