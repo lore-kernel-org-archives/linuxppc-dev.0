@@ -1,55 +1,73 @@
-From: linas@austin.ibm.com
-Date: Mon, 19 May 2003 11:07:46 -0500
-To: guo_zhenglin <guo_zl9@hotmail.com>
-Cc: linuxppc-embedded <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: help: why show "Oops: kernel access of bad area, sig: 11"
-Message-ID: <20030519110746.B33270@forte.austin.ibm.com>
-References: <Law14-OE57bZ2ntWEqp00015e5b@hotmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Law14-OE57bZ2ntWEqp00015e5b@hotmail.com>; from guo_zl9@hotmail.com on Mon, May 19, 2003 at 04:33:49PM +0800
+Date: Mon, 19 May 2003 09:25:37 -0700
+Subject: Re: e1000 patch for linuxppc_2_4_devel
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v552)
+Cc: linuxppc-dev@lists.linuxppc.org
+To: Daniel Jacobowitz <drow@false.org>
+From: Mark Rakes <mrakes@vivato.net>
+In-Reply-To: <20030518043901.GA11221@nevyn.them.org>
+Message-Id: <86252EA3-8A16-11D7-B7C7-000393DB7C12@vivato.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+whoops. the le16_to_cpu() isn't there at all in the code.
+trying to learn bk and keep the width under 80 was a bad combo.
 
-On Mon, May 19, 2003 at 04:33:49PM +0800, guo_zhenglin wrote:
->       Serial driver version 5.05c (2001-07-08) with no serial options
-> enabled
->     Oops: kernel access of bad area, sig: 11
->     NIP: C0076F0C XER: 80009E6C LR: C007B620 SP: C017DE80 REGS: c017ddd0
-> TRAP: 0300d
-> MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> DAR: 000003F9, DSISR: 00018469
-> TASK = c017c000[1] 'swapper' Last syscall: 120
-> last math 00000000 last altivec 00000000
-> GPR00: 00000000 C017DE80 C017C000 C017DE88 00000001 00000000 C0D203B8
-> 000003F8
-> GPR08: 00000000 000003F8 00000000 00000000 0000000D FFFFFFFF C007AC70
-> C007A4C4
-> GPR16: C0079010 C0079CDC C007A5E0 C00770A8 C007701C C007A154 C00790E0
-> C0079058
-> GPR24: C0079D64 C0078F90 C0078F78 C00F28F8 C00F28F8 C011A76C C011A830
-> C017DE88
-> Call backtrace:
-> C0011AE4 C0101028 C00FA5FC C00FA644 C00022CC C0006BE4
-> Kernel panic: Attempted to kill init!
->  <0>Rebooting in 180 seconds..
+real patch should look like:
+
+diff -Nru a/drivers/net/e1000/e1000_main.c
+b/drivers/net/e1000/e1000_main.c
+--- a/drivers/net/e1000/e1000_main.c	Mon May 19 09:24:11 2003
++++ b/drivers/net/e1000/e1000_main.c	Mon May 19 09:24:11 2003
+@@ -2062,7 +2062,8 @@
+  		skb->protocol = eth_type_trans(skb, netdev);
+  		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
+  			vlan_hwaccel_rx(skb, adapter->vlgrp,
+-				(rx_desc->special & E1000_RXD_SPC_VLAN_MASK));
++				le16_to_cpu(rx_desc->special &
++					    E1000_RXD_SPC_VLAN_MASK));
+  		} else {
+  			netif_rx(skb);
+  		}
 
 
-You need to use System.map to figure out what routine this crashed in.
-You need a backtrace/stack dump
 
-Then you need to create assembly for the file in question:
-gcc -Wa,ah, -Wa,al
 
-and figure out what the assembly was doing when it crashed.  And then
-read the source code to see why.
+On Saturday, May 17, 2003, at 09:39  PM, Daniel Jacobowitz wrote:
 
-KDB makes this a *lot* easier.
-
---linas
+> On Fri, May 16, 2003 at 05:04:54PM -0700, Mark Rakes wrote:
+>>
+>> this patch fixes e1000 vlan hardware acceleration on ppc.
+>>
+>> vlan tags weren't swapped.
+>>
+>> thanks!
+>> -Mark Rakes
+>>
+>>
+>> diff -Nru a/drivers/net/e1000/e1000_main.c
+>> b/drivers/net/e1000/e1000_main.c
+>> --- a/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
+>> +++ b/drivers/net/e1000/e1000_main.c	Fri May 16 17:00:24 2003
+>> @@ -2062,7 +2062,8 @@
+>>  		skb->protocol = eth_type_trans(skb, netdev);
+>>  		if(adapter->vlgrp && (rx_desc->status & E1000_RXD_STAT_VP)) {
+>>  			vlan_hwaccel_rx(skb, adapter->vlgrp,
+>> -				le16_to_cpu(rx_desc->special &
+>> E1000_RXD_SPC_VLAN_MASK));
+>> +				le16_to_cpu(rx_desc->special &
+>> +					    E1000_RXD_SPC_VLAN_MASK));
+>>  		} else {
+>>  			netif_rx(skb);
+>>  		}
+>
+> That patch doesn't do anything but move a line break.  Is that really
+> what you meant to do?
+>
+> --
+> Daniel Jacobowitz
+> MontaVista Software                         Debian GNU/Linux Developer
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
