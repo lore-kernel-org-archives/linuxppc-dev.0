@@ -1,34 +1,42 @@
-Message-ID: <3C06B4E3.8000203@humboldt.co.uk>
-Date: Thu, 29 Nov 2001 22:21:23 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
-MIME-Version: 1.0
-To: mod+linuxppc-dev@MissionCriticalLinux.com
-Cc: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 29 Nov 01 14:24:17 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0111292224.AA01126@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: ide_init_hwif_ports
-References: <200111292142.QAA30752@missioncriticallinux.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-mod+linuxppc-dev@MissionCriticalLinux.com wrote:
+Paul Mackerras <paulus@samba.org> wrote:
 
+> Thanks for the explanation.  I'll ask Vojtech Pavlik and Andre Hedrick
+> if they can suggest a better way (drivers/ide/via82cxxx.c has
+                                    ^^^^^^^^^^^^^^^^^^^^^^^
+> Vojtech's name on it).
 
-> Not to quibble with your painfully accurate
-> description of the VT82C686B, but might it be
-> possible (using the IDE Interrupt Routing register
-> at offset 0x4a in function 1) to arrange for both
-> channels to use the same interrupt routing?
-> Like force both to IRQ14?  Just a thought...
+That VIA82CXXX fast mode code makes the Adirondack *hang* on the partition
+check if enabled... I'm keeping it out of the picture for now.
 
+> Actually, I have just noticed this code in drivers/ide/ide-pci.c:
+>
+>                 if (IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8886A) ||
+>                     IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8886BF) ||
+>                     IDE_PCI_DEVID_EQ(d->devid, DEVID_UM8673F)) {
+>                         hwif->irq = hwif->channel ? 15 : 14;
+>                         goto bypass_umc_dma;
+>                 }
+>
+> We may be able to get something similar added for our case(s).
 
-Tried that on my 686A board. As far as I can tell that register does
-nothing at all, and the physical wiring on the board is the only thing
-that influences the interrupts. I think that register may  be useful on
-an i386 with IO-APIC, but I'm not sure.
+Keep in mind that, as I just said, from what I could tell the IDE interrupt
+routing is fixed by the board circuitry *outside* the chip, although I doubt
+that anyone out there has routed the IDE interrupts anywhere other than IRQ14
+and IRQ15... But never say never, we have some new boards coming up with a
+GT64260 and a VT82C686B, and it seems like they want to avoid using the PeeCee
+dual 8259 PIC as much as possible, so who knows, maybe they'll route the IDE
+interrupts upstairs bypassing the VT82C686B altogether... Didn't I just hear
+someone on this list talk about their IDE interrupts going to an EPIC?
 
---
-Adrian Cox   http://www.humboldt.co.uk/
-
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
