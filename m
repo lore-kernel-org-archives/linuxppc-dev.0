@@ -1,34 +1,45 @@
-Date: Sun, 17 Dec 2000 05:21:55 +0900
-Subject: Re: problem compiling test12
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Giuliano Pochini <pochini@denise.shiny.it>,
-        <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B661FD7C.362B%toe@unlserve.unl.edu>
-In-Reply-To: <3A3C0420.ADEF0E3C@denise.shiny.it>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Sat, 16 Dec 2000 16:00:04 -0500
+From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: SMP stall on process creation
+Message-ID: <20001216160004.A18814@drow.them.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 12/17/00 9:09 AM, Giuliano Pochini wrote:
+I've been using a dual G4/500 with the linuxppc_2_5 tree for a couple weeks
+now, and having all sorts of strange problems.  While trying to debug one
+(console corruption on select, and sometimes on boot), I discovered
+something very interesting.
 
->
-> I can't compile 2.4.0-test12:
->
-> arch/ppc/mm/mm.o: In function `map_page':
-> arch/ppc/mm/mm.o(.text+0xd90): undefined reference to `set_pgdir'
->
-> Patch ?
+I ran, in zsh, this command:
+% time (for i in {1..100}; do /bin/echo -n; done)
 
-Just remove two lines in arch/ppc/mm/init.c::map_page() that look something
-like:
+on several machines.  On an old 604e/200:
+  0.52s user 1.25s system 100% cpu 1.759 total
 
-    if (....)
-        set_pgdir(....);
+On a dual-450 celeron system:
+  0.15s user 0.18s system 62% cpu 0.530 system
 
+But on the G4:
+  0.07s user 6.24s system 100% cpu 6.302 total
 
-Takashi Oe
+This obviously slows shell scripts to a crawl - forking or execing is being
+severely penalized.  I'm also a little startled by the 100% cpu - this is a
+multiprocessor system, that loop should NOT have been throttling both
+processors.
 
+Does anyone have any ideas?  I'm going to go play with 2.2 SMP and 2.4 UP
+for comparison.
+
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
