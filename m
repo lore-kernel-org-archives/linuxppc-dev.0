@@ -1,50 +1,40 @@
-Subject: Re: Trivial cleanup in ocp_uart.c
-From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-To: Scott Anderson <scott_anderson@mvista.com>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Armin Kuster <akuster@mvista.com>,
-	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>
-In-Reply-To: <3D1B3C0D.9B36EB42@mvista.com>
-References: <20020620073440.GC20689@zax>
-	<20020620155026.GE16052@opus.bloom.county> <20020621005216.GH20689@zax>
-	<20020621143903.GO16052@opus.bloom.county> <20020624074019.GA9087@zax>
-	<3D19F965.86668872@mvista.com> <20020627004144.GR9087@zax>
-	<3D1B3C0D.9B36EB42@mvista.com>
-Content-Type: text/plain
-Date: 27 Jun 2002 18:52:37 +0200
-Message-Id: <1025196757.27926.98.camel@spawn>
-Mime-Version: 1.0
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: Marius Groeger <mag@sysgo.de>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SELF and JFFS2???? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 Jun 2002 10:34:30 +0200."
+             <3D1ACE16.130836D0@imc-berlin.de>
+Date: Thu, 27 Jun 2002 21:59:45 +0200
+Message-Id: <20020627195950.3869410340@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2002-06-27 at 18:23, Scott Anderson wrote:
+Dear Steven,
+
+in message <3D1ACE16.130836D0@imc-berlin.de> you wrote:
 >
-> David Gibson wrote:
-> > Eek, wibble.  It still seems somewhat unlikely to me that you'd be
-> > changing the peripherals "on the fly" in a real life embedded
-> > application.  Especially considering that reboots are likely to be
-> > much less of an issue on an embedded system than on a big server.
+> No. The topic here was "creating a flash disk (JFFS2) instead of a initrd"...
+>
+> I don't know about elinos. I wanted to use DENX ELDK to create a minimal root
+> fs. Do you know the ELDK?
 
-> I guess I wouldn't be quite so quick to dismiss this as unlikely, but
-> I must admit, my crystal ball is in the shop this week.  It sure would
-> be nice to keep such things in mind as OCP is evolving, though.
+Have a look at our  Simple  Embedded  Linux  Framework  (SELF  -  see
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/  ). Wih a minor adaption
+of the library list file it builts  fine  under  ELDK,  abd  contains
+everything  you need to setup a small root filesystem on any device -
+ramdisk as well as cramfs or JFFS2 or harddisk or DOC or ...
 
-As someone who actually work with FPGA chips I can assure everyone that
-those are always to small even when you pick one that seems insanely
-large when you start. I have many times been in a situation when is
-could work quite well to have mutually exclusive subsystem but what has
-stopped that before is that the chips/software usually do not support
-partial reconfiguration and you usually can't reconfigure the whole part
-without disturbing normal functions.
+
+Wolfgang Denk
 
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I have been over into the future, and it works.
+                - Lincoln Steffens in _Letters_ (1938) vol. 1, p. 463
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
