@@ -1,76 +1,41 @@
-Message-Id: <37447E78.56C232F9@bcstec.ca.boeing.com>
-Date: Thu, 20 May 1999 14:28:24 -0700
-From: Ray Allis <ray@bcstec.ca.boeing.com>
+Date: Thu, 20 May 1999 18:48:19 -0500 (CDT)
+From: Derek Moeller <moeller@networksplus.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Diald Compilation problems
+Message-ID: <Pine.LNX.3.96.990520183808.529A-100000@ns1.networksplus.net>
 MIME-Version: 1.0
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Umax S900 CD Rom problems...
-References: <BFC0587634C3D111AACB00805FA766FA0123B864@exchny12.ny.smb.com>
-Content-Type: multipart/mixed;
- boundary="------------1CB4C8AF2D62486695CF283E"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------1CB4C8AF2D62486695CF283E
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	I've been having problems compiling the Diald package for
+LinuxPPC/4.1/iMac. Make gives up after complaining about many different
+errors.  Unfortunately, there is no precompiled rpm avaible that I have
+seen. Has anyone had success compiling this package, or is there a
+different one that accomplishes similar? 
+	BTW, during make depend it gives me a few warnings.
 
-"Velasquez, Carlos" wrote:
+cc -E -M *.c > .depend
+firewall.c:51: warning: `#ifdef' argument starts with a digit
+firewall.c:58: warning: `#ifdef' argument starts with a digit
+firewall.c:547: warning: `#ifdef' argument starts with a digit
+firewall.c:579: warning: `#ifdef' argument starts with a digit
+firewall.c:598: warning: `#ifdef' argument starts with a digit
+ppp.c:11: warning: `#ifdef' argument starts with a digit
+	
+	The #ifdef's mentioned to have a digit (0) right after the
+argument. I don't know why it's choking on this, though.
+	Thanks...
 
-> Hello,
->
-> Has anyone successfully installed  Linux on a Umax S900 Mac clone? If so,
-> can you share your stories with me? I am having problems installing Linux on
-> my Umax S900 (225 Mhz ppc with 162Meg ram, ixMicro Twin Turbo 8Meg video
-> card.) Apparently, when I try to do a CD install, the installer doesn't
-> recognize the CD Rom device. I believe I have a Matshita CD rom drive
-> installed as an internal SCSI device (bus 0, Id 4).
+--
 
-I gave up. ;)  First attempt, the installer did not recognize the Twin Turbo.
-Someone
-on this list offered a fixed installer.  Then, the machine lost track of the
-CD, so the
-installer displayed o.k. but could not see anything to install. ;)  Then the
-whole
-SCSI went invisible - no CD, no floppy, no Zip.  Soooo, sent it to the shop,
-where
-they replaced the motherboard (where the SCSI chip was mounted).  Now the
-installer
-won't write (correctly) to the internal hard drives.  Seems the E100 chip sorta
-refuses
-to let the two 2-gig disks be anything but RAID, no matter how I initialize
-them.
-And then too, it's a twin processor SMP, and THAT won't run anything but the
-Umax-supplied demos (MacOS 7.6) and then for a maximum of 30 minutes.
-
-I'm parting it out ;).
-
-Ray Allis
-
-
---------------1CB4C8AF2D62486695CF283E
-Content-Type: text/x-vcard; charset=us-ascii;
- name="ray.vcf"
-Content-Description: Card for Ray Allis
-Content-Disposition: attachment;
- filename="ray.vcf"
-Content-Transfer-Encoding: 7bit
-
-begin:vcard 
-n:Allis;Ray
-tel;work:+1 206 655 8870
-x-mozilla-html:TRUE
-org:The Boeing Company
-adr:;;2-25.5 E5;Seattle;WA;;
-version:2.1
-email;internet:ray@bcstec.ca.boeing.com
-title:Don' NEED no steenkin' ...
-x-mozilla-cpt:;30304
-fn:Ray Allis
-end:vcard
-
---------------1CB4C8AF2D62486695CF283E--
++--------------------------------------+
+ Derek Moeller moeller@networksplus.net 
+     Linux for PowerPC User, Student    
+   http://www.networksplus.net/moeller	 
+    "aut inveniam viam aut faciam"	 
++--------------------------------------+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
