@@ -1,58 +1,41 @@
-Date: Mon, 3 May 1999 11:52:32 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Mike Ladwig <mike@twinpeaks.prc.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: atyfb and 8500+ATI RagePro
-In-Reply-To: <372B4B1A.1B496127@twinpeaks.prc.com>
-Message-ID: <Pine.LNX.4.10.9905031145560.3092-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.2.0.37.19990503143536.036c9a30@mail.lauterbach.com>
+Date: Mon, 03 May 1999 14:44:13 +0200
+To: Richard Henderson <rth@cygnus.com>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: PATCH: Fix 2 PPC/SYSV varargs problems
+Cc: egcs-patches@egcs.cygnus.com, meissner@cygnus.com,
+        David Edelsohn <dje@watson.ibm.com>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19990430150834.G30433@cygnus.com>
+References: <4.2.0.37.19990430153444.048303a0@mail.lauterbach.com>
+ <4.2.0.37.19990430013458.0489a950@mail.lauterbach.com>
+ <4.2.0.37.19990430013458.0489a950@mail.lauterbach.com>
+ <19990429194817.B20300@cygnus.com>
+ <4.2.0.37.19990430153444.048303a0@mail.lauterbach.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi Mike,
+At 00:08 01.05.99 , Richard Henderson wrote:
+> > Can you check in this stuff in that shape?
+>
+>Done.
 
-> I've been having major problems using the atyfb driver with my 8500, and
-> finally have a clue or two to report.
-> 
-> If I try booting the 2.2.6 kernel from the new beta R5 with an unchecked
-> "No video driver" and "video=atyfb:vmode:19,cmode:16", I get a frozen
-> machine and a colored static rectangle on my display.  If I use the same
-> command line, but specify a lower mclk value (most all lower ones work),
-> the system will boot, but I will get the same types of colored static rectangles.
-> 
-> Recently, I came across a post my Hugy Caley about a "hacked" atyfb
-> driver from Abe White.  I thought I'd give it a try.  Using the
-> parameter line, "video=atyfb:vmode:19,cmode:16", I actually get a
-> somewhat reasonable display, although the text of the console lines are
-> repeated several times on each  line; every ~25 characters, the line
-> starts over.  Also, the kernel Hugh sent me didn't boot all the way, not
+Thanks.
 
-Usually such repeats are caused by incorrect DSP values for the display FIFO.
+> > And maybe the second part (the
+> > gnuplot fix) of my patch if it is OK and the testcase?
+>
+>I'll look at this again later tonight or tomorrow -- despite
+>the subject line, I'd missed the fact that you were trying to
+>fix two separate problems.
 
-> finding my boot device - probably unrelated to the video issue. The
-> atyfb driver prints out (a close reconstruction from the garbled video):
-> 
-> /bandit, ATY,XCLAIMVRPro atyfb: 3D RagePro(BGA, PCI) 0x479 rev 0x7c 12M
-> SGRAM 230 MhzPLL, 100 Mhz MCLK
-> 
-> Anyway, I'm not sure where to go from here.  I'm a programmer and
-> willing to jump in, but not knowledgable about device driver debugging.
-> 
-> Any help or advice would be greatly appreciated!
+I did look at the argument handling again yesterday, and I now think there 
+might be additional bugs in the handling of CUMULATIVE_ARGS->words for the 
+SYSV ABI case. I'll try to construct testcases for the suspect cases.
 
-Sorry, no more clues :-(
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+Franz.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
