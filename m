@@ -1,57 +1,57 @@
-To: "Joao Vicente" <joao.vicente@spectel.com>
+Date: Thu, 9 Oct 2003 06:38:12 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Jacky Lam <jackylam@astri.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 09 Oct 2003 10:52:17 BST."
-             <DEF39A0710293E489D45B10E06645CBD0243B1A7@dub-msx1.spectelcorp.com>
-Date: Thu, 09 Oct 2003 14:38:07 +0200
-Message-Id: <20031009123812.E439CC59E4@atlas.denx.de>
+Subject: Re: General porting question
+Message-ID: <20031009063812.A11979@home.com>
+References: <006e01c38e1b$5f72b500$2803050a@JackyLam> <20031008223518.A10052@home.com> <008c01c38e2d$27feac20$2803050a@JackyLam>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <008c01c38e2d$27feac20$2803050a@JackyLam>; from jackylam@astri.org on Thu, Oct 09, 2003 at 02:18:28PM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Joao,
-
-in message <DEF39A0710293E489D45B10E06645CBD0243B1A7@dub-msx1.spectelcorp.com> you wrote:
+On Thu, Oct 09, 2003 at 02:18:28PM +0800, Jacky Lam wrote:
 >
-> I am trying to boot the ppc kernel on a MPC8260 based custom board.
-...
-> One of the doubts that I have is that when I look into the system.map file, it shows that the start address is at 0xc0000000 (as shown below)
+> > A quick inspection shows that es1371 does some things that won't work on
+> > a 405.  It takes a pci_alloc_consistent buffer and does a virt_to_page.
+> > That will be bogus since the buffer's virtual address is in vmalloc
+> > space on 4xx.  In addition, it performs a virt_to_phys and then uses
+> > remap_page_range on that...that will be bogus as well.  A bus_to_virt
+> > on the pci_alloc_consistent buffer's dma_addr will work and then
+> > virt_to_page() can be used on that virtual address.  In the same
+> > fashion one could do a virt_to_phys(bus_to_virt(dma_addr) to get
+> > the correct physical address to be passed to remap_page_range.
+> >
 >
-> c0000000 T _start
-
-Yes, this is the correct kernel virtual address.
-
-> To the best of my knowledge the kernel image is not relocatable, so I am wondering if this could be my problem or just one of them ...
-> Should the map file be showing
+>     That means in short:
 >
-> 00000000 T _start
+>     pci_alloc_consistent() ->virt_to_page() should be replaced by
+> pci_alloc_consistent()->bus_to_virt()->virt_to_page().
+>
+>     Similarly, for any PCI related memory space. Before using
+> virt_to_*/*_to_virt(), I should use bus_to_*/*_to_bus() on the argument
+> first.
 
-No!!!
+Almost.
 
-> If so, where should I change the .text address so that that happens ?
+You can not use virt_to_* on the address returned by
+pci_alloc_consistent().
 
-Don't change anything!
+You need to hold on to the dma_addr_t returned, perform
+a bus_to_virt(dma_addr_t) and then a virt_to_* will work
+on that address.
 
-> I am also trying to debug the code from that address with gdb/BDI2000, but I am not getting very far.
-> Basically I can see the program counter incrementing when I single step, but I cannot see the source even though I am trying to load the symbol table at 0x00000000 with the  'add-symbol-file vmlinux 0x00000000' gdb command, after invoking gdb from the k
-> ernel base directory (where vmlinux is)
+However, I'm not sure of the "PCI related memory space" you
+are referring to.  "PCI memory space" has a distinct meaning
+and the virt_to_*/*_to_bus APIs don't work there.  Those APIs
+are only valid for system memory that is accessible through
+inbound transactions by a PCI bus master.
 
-Just use the vmlinux file _without_ relocating  any  addresses.  Make
-sure  to  enable  "MMU  XLAT"  and define "PTBASE" in your BDI config
-file.
+You can use virt_to_* on an address returned from kmalloc
+or __get_free_pages.
 
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"If people are good only because they fear punishment, and  hope  for
-reward, then we are a sorry lot indeed."            - Albert Einstein
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
