@@ -1,36 +1,51 @@
-To: "Walser, Martin" <mwalser@harris.com>
+Message-ID: <3CC42CB6.20007@allot.com>
+Date: Mon, 22 Apr 2002 18:31:02 +0300
+From: Felix Radensky <felix@allot.com>
+MIME-Version: 1.0
+To: Felix Radensky <felix@allot.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: segmentation fault when using "signal" 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 22 Apr 2002 01:04:58 EDT."
-             <8D4C69676E66D511A1CB00508BBBB1921BCF21@ranmx1.ran.harris.com>
-Date: Mon, 22 Apr 2002 16:55:55 +0200
-Message-Id: <20020422145600.4C32EFF61@denx.denx.de>
+Subject: Re: Cross compiling gdb-5.1.1 for ppc405
+References: <3CC40B91.90601@allot.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <8D4C69676E66D511A1CB00508BBBB1921BCF21@ranmx1.ran.harris.com> you wrote:
->
-> I've a probelm using the signal function.
-> I'm using Kernel 2.4.4 from Denx. When I install a signalhandler for SIGCHLD, I
-> get an segmentation fault, when the child process is finished.
->
-> I've found out that this happens, when the function installed by signal returns.
->
-> Any ideas?
+Hi,
 
-You probably have a problem with  your  cross  tools  /  libraries  /
-header files.
+I've found the problem: I was running configure like this:
+   configure --prefix=/usr --host=i386-unknown-linux
+--target=powerpc-unknown-linux
 
-Wolfgang Denk
+It should really be:
+   configure --prefix=/usr powerpc-unknown-linux
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Knowledge, sir, should be free to all!
-	-- Harry Mudd, "I, Mudd", stardate 4513.3
+Felix.
+
+Felix Radensky wrote:
+
+>
+> Hi,
+>
+> I've managed to cross-compile gdb-5.1.1 for 405GP using
+> Monta Vista HHL 2.0 toolchain.  Gdb runs, I can load the executable
+> and set breakpoints. However, when i try to run the  program from gdb,
+> I get the following message:
+>
+> Starting program: /tmp/hello
+> Don't know how to run.  Try "help target".
+>
+> The same program runs fine  in gdb-5.0 from Monta Vista
+> HHL 2.0.
+>
+> Any ideas ?
+>
+> Thanks a lot.
+>
+> Felix.
+>
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
