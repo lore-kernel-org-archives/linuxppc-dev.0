@@ -1,33 +1,40 @@
-Message-ID: <37C1B1CD.B61A915C@motorola.com>
-Date: Mon, 23 Aug 1999 13:40:45 -0700
-From: Robert Shaw <robert.shaw@motorola.com>
-Reply-To: rshaw@inficad.com
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14273.46467.61746.180371@gargle.gargle.HOWL>
+Date: Mon, 23 Aug 1999 16:56:35 -0400 (EDT)
 To: Tom Rini <trini@disparity.net>
-CC: brad allison <jackal@aol.net>, Benjamin Herrenschmidt <bh40@calva.net>,
+Cc: brad allison <jackal@aol.net>, rshaw@inficad.com,
+        Benjamin Herrenschmidt <bh40@calva.net>,
         linuxppc-dev@lists.linuxppc.org, puetzk@iastate.edu
 Subject: Re: BootX enhancement request
-References: <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>
+References: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com> <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> This, BETA, driver. :)
+>> "Tom" == Tom Rini <trini@disparity.net> writes:
 
-Yeah, but it works, and it's much faster than the plain frame buffer device. :)
+ Tom> So you want BootX to be able to do what Monitors & Sound can do.  Either
+ Tom> pick a mode there and use BootX from MacOS, or once 2.4.0 rolls around,
+ Tom> specify video=aty128fb:1024x768@75 (or so).  There is no need for BootX
+ Tom> to do this.
 
-> What, aty128fb?  It's beta and not done.  You're prolly better off using
-> No Video Driver, unles you're gonna play w/ the source (Anthony, speak up
-> if i'm wrong). :)
+Probably more to the point, we should strive to provide some easy way of doing
+it.  How do MacOS and Windows deal with the problem of different monitors and
+resolutions?  I know on the Mac so far, I automatically get the available
+resolutions, although Apple-style monitors have extra sense pins to provide
+the info.
 
-It may be beta, but it works just fine. I've had several users indicate it works
-without any problems.
+Ideally, I shouldn't have to ever think about my monitor or have to add
+command line args to the kernel.  Such twiddling should be as rare as
+possible. 
 
---
--Robert
-mailto:rshaw@inficad.com
-http://www.inficad.com/~rshaw/
+-- 
+Jerry Quinn                             Tel: (514) 761-8737
+jquinn@nortelnetworks.com               Fax: (514) 761-8505
+Speech Recognition Research
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
