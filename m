@@ -1,40 +1,24 @@
-Message-ID: <3A6C50E2.109775C4@snmc.com>
-Date: Mon, 22 Jan 2001 09:25:23 -0600
-From: Daris Nevil <dnevil@snmc.com>
+Message-ID: <3A6C5F69.8020909@galileo.co.il>
+Date: Mon, 22 Jan 2001 18:27:21 +0200
+From: Rabeeh Khoury <rabeeh@galileo.co.il>
 MIME-Version: 1.0
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-CC: Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8260 hdlc driver
-References: <3A6C3BDF.4D6142F2@raleigh.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PowerPC RPMs
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ralph,
+Hi All,
 
-If you don't mind porting from the MPC850 to the PowerQuicc there is an
-HDLC driver in QSLinux.  You can download it from ftp://qslinux.org.
-Once you expand the filesystem you go to snmc/qslinux/drivers/net.  BTW,
-if you do undertake to port the driver I would be interested in getting a
-copy, as we are in the process of building a PowerQuicc eval board.
+
+Is there a ftp site where I can download a whole RPM repository for PPC ?
+
+Is there any way that is used to get these RPMs ?
+
 
 Regards,
-Daris Nevil
-SNMC
-www.snmc.com
-
-
-Ralph Blach wrote:
-
-> Is there an HDLC driver for the motorola power quick module anyplace?
-> This would be the HDLC thats in the
-> CPM.
->
-> Thanks
->
-> Chip
-> rcblach@raleigh.ibm.com
+Rabeeh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
