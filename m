@@ -1,28 +1,40 @@
+Date: Mon, 13 Dec 1999 10:28:05 +0100
 To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.9912112013490.14591-100000@newhope.terraplex.com>
-Subject: Re: DriveSetup 1.8.1?
-From: stk@snafu.de (Stefan Haller)
-Date: Sun, 12 Dec 1999 10:11:46 +0100
-Message-ID: <1e2p1ve.17cx38836ltasM%stk@snafu.de>
+CC: paulus@linuxcare.com
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Weird IDE block devices problem
+Message-Id: <19991213102805.001474@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Burcaw <dburcaw@terraplex.com> wrote:
+Hi !
 
-> The current Drive Setup, while having various Linux options, does not do
-> the right thing.
+Samuel Rydth (the author of Mac-On-Linux) sent me the following message.
+This sound weird since it looks like order is not enforced by the IDE
+block driver. Is this normal or is this a kernel bug ? I beleive it
+happened with  2.2.10-2.2.13 kernels (I have to confirm this).
 
-What's the problem?  I just used Drive Setup 1.8.1 to partition my IDE
-disk (1 Mac HFS, 1 Swap, 1 Root), and it seems to work fine so far.  (No
-pdisk involved, which is nice.)
+On Sun, Dec 12, 1999, Samuel Rydh <samuel@ibrium.se> wrote:
 
-Might I get problems because of this?
+---------------- Begin Forwarded Message ----------------
+Btw. I found an oddity with the IDE block device interface
+(causes problems with DropStuffit in MacOS 9). In a sequence like
+
+	write	A to sector N
+	write	B to sector N
+	read	     sector N
+
+then the read might not return the information "B" (but something
+else). I've always assumed that the block device drivers were 
+supposed to enforce this consistency but I might be wrong. Everything 
+work as it should if an extra "fsync" is inserted after each
+write. This might impact driver performance though.
 
 
--- 
-Stefan Haller
-Berlin, Germany
-http://www.snafu.de/~stk/
+----------------- End Forwarded Message -----------------
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
