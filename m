@@ -1,41 +1,43 @@
-Message-ID: <3CD7F08C.3050906@pacbell.net>
-Date: Tue, 07 May 2002 08:19:40 -0700
+Message-ID: <3CD7F783.8070704@pacbell.net>
+Date: Tue, 07 May 2002 08:49:23 -0700
 From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
 To: acurtis@onz.com
-Cc: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>,
-	linuxppc-embedded@lists.linuxppc.org, kuster@pacbell.net,
-	acmay@acmay.homeip.ne
-Subject: Re: IBM ocp I2C circular dependency
-References: <NCBBIINEHIPFGJPLBEIFMEJMDGAA.acurtis@onz.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ibm_ocp_enet.c - PHY implementation requirements?
+References: <NCBBIINEHIPFGJPLBEIFEEJNDGAA.acurtis@onz.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Allen Curtis wrote:
-> I can not speak toward the modularization issue but if the i2c is anything
-> like the old 8260 version, change the interruptible_sleep_on() to
-> interruptible_sleep_on_timeout(). IMHO this is the easiest fix.
+> We have an 405GP design, very similar to the Walnut LSP. One of the major
+> differences is that we have a BroadCom 9-port switch instead of a dedicated
+> PHY for Ethernet. Supporting the switch is much easier than a dedicated PHY
+> because you can always assume:  100Mb, Full-Duplex and you do not have to
+> handle disconnect and mode change interrupts. The problem is that the OCP
+> Ethernet implementation has become much more complex and it is not obvious
+> what must be supported when adding a new interface and what could be a stub.
+> (and its expected result)
 >
+> Another issue is that the switch supports both the MII and SPI interfaces.
+> These are mutually exclusive, determined by first access to the device. Our
+> design requires the use of the SPI interface. All currently supported PHY
+> are MII, which is expected. Do you forsee any problems using SPI within
+> ibm_ocp_phy.c?
 >
-> i2c-adap-ibm_ocp.c uses
-> 	i2c_iic_add_bus and i2c_iic_del_bus from i2c-algo-ibm_ocp.c
->
-> i2c-algo-ibm_ocp.c uses
-> 	iic_ibmocp_waitforpin from i2c-adap-ibm_ocp.c
->
-> This makes it impossible to build as a module. I'am not shure how you want
-> to
-> solv this.
->
-> Also I found a problem with the code when I access a i2c memory from
-> userspace and no chip is present at that address. After that it's not
-> possible to access anything else on the I2C bus. Works OK as long as I use
-> addresses that have a device that answers (I think).
->
+> TIA
 
-Thanks,  I like easy
+There are a few stubs for the zmii bridge
+
+The MII functions can most likly be placed into it's own file and you
+might want to think about creating  a spi.c file for its implimentation.
+  This would allow us to have them be complied in depending on what mode
+is configured. The questions is can we come up with a common api to mii
+& spi?
+
+
 
 armin
 
