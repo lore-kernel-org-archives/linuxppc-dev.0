@@ -1,53 +1,53 @@
-Subject: Re: CLLF with Hard Hat Lunix "Sending BOOTP requests" problem
-To: dan@mvista.com (Dan Malek)
-Date: Tue, 19 Sep 2000 13:21:39 +1100 (EST)
-Cc: greyham@research.canon.com.au (Graham Stoney), rshaw@graftononline.net,
-        linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <39C6C2EF.4606D448@mvista.com> from "Dan Malek" at Sep 18, 2000 09:35:43 PM
+Message-ID: <39C6D21D.60A8D525@mvista.com>
+Date: Mon, 18 Sep 2000 22:40:29 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: rshaw@graftononline.net, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CLLF with Hard Hat Lunix "Sending BOOTP requests" problem
+References: <20000919022139.ACA8D219@elph.research.canon.com.au>
 Content-Type: text/plain; charset=us-ascii
-Message-Id: <20000919022139.ACA8D219@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Dan,
+Graham Stoney wrote:
 
-Dan Malek writes:
-> The "old" one could download over the 10/100 port.  It was an option
-> through the test menu.
+> Sure, the option is there, but I couldn't ever get it to actually work.
 
-Sure, the option is there, but I couldn't ever get it to actually work.
-Tried real hard too; even with help from EP's tech support I couldn't get it
-to go.  Eventually gave up and connected both ports.
+Hmm...I guess I was just lucky.
 
-> The new one won't download over the 10/100 port, this was in response to
-> customers asking for the smallest possible boot rom image.
+> ... Eventually gave up and connected both ports.
 
-Sounds like my protestations about 100 Mbps download being broken didn't get
-through their tech support firewall at all.  I may have stopped hassling
-their tech support about it constantly once our workaround was going, but I
-certainly did ask them to fix it.
+I did too, because the 10 Mbit had the "autostart" option.  Just
+one menu key and you are off and running.
 
-> > Note that there is a hack in the fec driver which munges the ethernet MAC
-> > address for the FEC port by adding 80:00:00 to the number
->
-> This will probably remain as the method for finding a MAC address
-> for the second port on the CLLF.  Embedded Planet has said they will
-> sequentially update the single MAC address in the on-board EEPROM, and
-> we can safely do this.
+> Sounds like my protestations about 100 Mbps download being broken didn't get
+> through their tech support firewall at all.
 
-This works fine, so long as the user realises that the MAC address that the
-ROM monitor reports isn't exactly the one that the FEC port will use, and
-configures their DHCP server correctly.
+Well, to be a little fair, that was kind of an engineering hack that
+was never intended to be "supported".  I am not trying to justify
+their responses they may have given to you, but considering it was
+never documented as a feature......
 
-Regards,
-Graham
+The hardware worked, there was a documented method for downloading
+over the Ethernet (although it was the 10 Mbit port), and connecting
+two cables solved the "problem" for Linux.
+
+> This works fine, so long as the user realises that the MAC address that the
+> ROM monitor reports isn't exactly the one that the FEC port will use, and
+> configures their DHCP server correctly.
+
+Again, this is something unique to the Linux driver, so it is probably
+up to us (me :-) to ensure it is documented somewhere more clearly.
+At least it is printed during boot up, which is usually the way I
+find the MAC addresses on most systems anyway.
+
+
+	-- Dan
+
 --
-Graham Stoney
-Principal Hardware/Software Engineer
-Canon Information Systems Research Australia
-Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
+
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
