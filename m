@@ -1,38 +1,26 @@
-Message-ID: <3D6EA039.8000107@lvl7.com>
-Date: Thu, 29 Aug 2002 18:29:13 -0400
-From: Neil Horman <nhorman@lvl7.com>
+Message-ID: <001501c2500d$f209f150$faffa8c0@VISHWANATH>
+From: "Vishwanath" <vishwanath@mistralsoftware.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: IBM 440GP IIC driver
+Date: Fri, 30 Aug 2002 15:43:54 +0530
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: m8xx_ide_default_irq
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hey all!
-	I'm running the M.V. 2.4.17 kernel and I had a question about the 8xx ide over
-pcmcia code.  Specifically in m8xx_ide_default_irq there is a check to ensure
-that the passed in base value is greater than or equal to MAX_HWIFS.  If its
-true, we return zero.  Can anyone tell me why that check is there?  Since base
-appears by all rights to be the address of an ide interface (or in this case a
-ioremapped pcmcia interface, with a comapct flash attached running in ide mode),
-this check will never fail, and If i wanted to return, say the interrupt for the
-pcmcia subsystem, I never would.  Any thoughts?
-Thanks!
-Neil :)
+Hi All,
 
---
-/******************************************************************
-*Neil Horman
-*Software Engineer
-*LVL7 Systems
-*13000 Weston Pkwy.
-*Cary, NC 27513
-*(919)-865-2915
-*nhorman@lvl7.com
-*PGP keyID 0xB5E1020A
-*http://www.keyserver.net/en
-*******************************************************************/
+I am working on 440 GP board. I2C controller of 440 GP supports both 7-bit
+and 10-bit addressing. But Linux supports only 7-bit addressing as of now. I
+have a device which has i2c sub-addresses more than 128. So I need 10-bit
+addressing of I2C controller. Apart from loading the higher bits of address
+in High Address Register, is there any special thing to be taken care of,
+while modifying the driver for 10-bit addressing ?
+
+Thanks and regards,
+Vishwanath
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
