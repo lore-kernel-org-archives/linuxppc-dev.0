@@ -1,35 +1,48 @@
-Message-Id: <v04003a00b31599a44c21@[204.22.210.180]>
-In-Reply-To: <19990317162518.010351@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 17 Mar 1999 17:50:32 +0000
-To: Benjamin Herrenschmidt <bh40@calva.net>
-From: "sean o'malley" <somalley@ed.mde.state.mi.us>
-Subject: Re: Apple Open Source: the drivers
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <19990318044316.Postino-005954@smtp01.highway.ne.jp>
+Date: Thu, 18 Mar 1999 04:43:16 +0900
+To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: egcs-1.1.2-RPM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+From: Andreas Tobler <a.tobler@schweiz.ch>
+To: linux ppc <linuxppc-user@lists.linuxppc.org>, "linuxppc-dev@lists.linuxppc.org
+" <linuxppc-dev@lists.linuxppc.org>
+Subject: egcs-1.1.2-RPM
+Date: Wed, 17 Mar 1999 10:01:36 +0100
 
->There's a PMU driver with apparently up-to-date command length tables and
->lots of comments about the commands ;-) An interesting thing that I've
->not seen in the LinuxPPC driver: When sending read commands to
->non-existing devices, the PMU may never answer, and so there's need for
->some kind of timeout. I didn't find infos about putting the PowerBook to
->sleep, maybe MacOS X Server cannot sleep...
+> 
+> Hi,
+> 
+> maybe a dump question, is anybody working on a RPM for
+> egcs-1.1.2-glibc1.99? And or egcs-1.1.2-glibc-2.1.
+> If not can I try it by adapting a RPM from a earlier release? I never
+> made a RPM from scratch, I only modified them.
+> 
+> Yesterday, I built egcs-1.1.2 under R4.1. It worked out of the box?! Now
+> I have to compare the test results. I can't believe it, before I had so
+> many troubles building an egcs directly from egcs.cygnus.com.
+> 
+> A last question, what are the minimal requirements to build egcs under
+> pre-R5. Means glibc etc.
 
-Hey maybe we will get the b/w g-3's (yMacs) running yet..
+I have egcs-1.1.2 for glibc-2.1.
+Here is ftp://ppc.linux.or.jp/pub/users/fukui/Drugstore-in-Rawhide/new-egcs-glibc/
+RPMS
 
-Macos X Server doesnt have any sleep code.. it wasnt written for that..
-you also wont see _much_ USB (keyboard and mouse) support and it is still
-lacking Firewire support from everything i have read.
+If you want to use egcs on glibc-1.99 ,You patch  it tranpoline.patch.
+Mr. Gary have  that patch.
 
-Powerbooks arent supported at all..
-Which makes me wonder why... Apple was giving major discounts to developers
-on those things. unless they just wanted to give out information and
-support linuxppc..
+I use  glibc-2.1 on PM-6100.
 
+Thanks.
+
+Kaoru Fukui
+fukui@ppc.linux.or.jp
 
 
 
