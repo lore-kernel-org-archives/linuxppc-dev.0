@@ -1,54 +1,34 @@
-Date: Wed, 29 Sep 1999 11:52:27 -0500 (CDT)
-From: Kumar Gala <kumar@chaos.ph.utexas.edu>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: can someone explain this?
-Message-ID: <Pine.LNX.4.10.9909291150140.12336-100000@chaos.ph.utexas.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <37F241DB.94C9BF00@chpc.utah.edu>
+Date: Wed, 29 Sep 1999 19:02:22 +0200
+To: Lou Langholtz <ldl@chpc.utah.edu>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: [Fwd: Bug: 2.2.12 still hangs PPC after some PPP activity]
+Message-Id: <19990929190222.023648@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I was looking around the ppc kernel source in arch/ppc/kernel/process.c
-and was looking at how copy_thread() works.
+On Wed, Sep 29, 1999, Lou Langholtz <ldl@chpc.utah.edu> wrote:
 
-I was wondering why so much space is stored off for copies of pt_regs
+>This is pretty much the kernel I'm running now. I haven't had the "FB.
+>overflow"
+>message yet nor system-freeze but I've experienced the TCP slowdown already.
+>Evidence that we've got other problems as well (IMO). It's only been 20 hours
+>or
+>so with new kernel so not enough time for me to feel confident though about
+>these
+>results.
 
-I can understand needing one copy for the process in user space, and 2nd
-for the process in kernel space, but why a third?
+I've added another fix to the kernel on my test page
+(http://calvaweb.calvacom.fr/bh40/test.html). It may fix the hang on
+close. I don't think it will fix anything related to a slowdown however.
 
-copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
-            struct task_struct * p, struct pt_regs * regs)
-{
-        struct pt_regs * childregs, *kregs;
-#ifdef __SMP__
-        extern void ret_from_smpfork(void);
-#else
-        extern void ret_from_syscall(void);
-#endif
-        /* Copy registers */
-        childregs = ((struct pt_regs *)
-                     ((unsigned long)p + sizeof(union task_union)
-                      - STACK_FRAME_OVERHEAD)) - 2;
-        *childregs = *regs;
-        if ((childregs->msr & MSR_PR) == 0)
-                childregs->gpr[2] = (unsigned long) p;  /* `current' in
-new task */
-        childregs->gpr[3] = 0;  /* Result from fork() */
-        p->tss.regs = childregs;
-        p->tss.ksp = (unsigned long) childregs - STACK_FRAME_OVERHEAD;
-        p->tss.ksp -= sizeof(struct pt_regs ) + STACK_FRAME_OVERHEAD;
-        kregs = (struct pt_regs *)(p->tss.ksp + STACK_FRAME_OVERHEAD);
-
-and what is going on with STACK_FRAME_OVERHEAD all over the place
-
-thanks
-
- - kumar
-
-
-
-ignorance is bliss.
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
