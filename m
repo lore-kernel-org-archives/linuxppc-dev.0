@@ -1,16 +1,19 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id 3F9B42BD6A
-	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 09:29:33 +1000 (EST)
-Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
-	1.3.167) for linuxppc-dev@ozlabs.org; 17 Sep 2004 19:29:29 -0400
-Date: Fri, 17 Sep 2004 19:23:18 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Linuxppc-dev mailing list <linuxppc-dev@ozlabs.org>
-Message-ID: <Pine.LNX.4.60.0409171917180.6511@dell.enoriver.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Subject: apparent error in micropatch.c
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D77EA2BD6A
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Sep 2004 10:35:02 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ken Moffat <ken@kenmoffat.uklinux.net>
+In-Reply-To: <Pine.LNX.4.58.0409172249520.23520@ppg_penguin.kenmoffat.uklinux.net>
+References: <Pine.LNX.4.58.0409172249520.23520@ppg_penguin.kenmoffat.uklinux.net>
+Content-Type: text/plain
+Message-Id: <1095465662.3660.3.camel@gaston>
+Mime-Version: 1.0
+Date: Sat, 18 Sep 2004 10:01:02 +1000
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Problem with 745x errata in 2.6.8
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,46 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2004-09-18 at 08:03, Ken Moffat wrote:
+> Hi,
+> 
+>  I'm trying to get the port to the AmigaOne/Teron into a fit state to
+> attempt to submit it.  I've got it working adequately in 2.6.7 (no ide
+> dma, obviously, and no floppy disk, plus other minor issues) but
+> obviously I need to get it up to the current version before asking for
+> your comments on what needs to be changed to make it acceptable.
+> 
+>  Unfortunately, the following changes in 2.6.8-rc3 stop my 7455 from
+> booting (with a vga console, it stops after the console: colour VGA+
+> 80x25 message, and also the top of the screen is blank).  If I revert
+> these, it runs.  I'm totally out of my depth here, I don't even know how
+> to work out which sort of 7455 I've got, much less what this is all
+> doing.  Can anybody offer me some pointers, please ?
 
-   i *believe* there's an error in arch/ppc/8xx_io/micropatch.c 
-regarding how the SMC patch is applied.
-
-   in the latest bk pull of that file, line 186:
-
-#ifdef USE_SMC_PATCH
-#define PATCH_DEFINED
-/* SMC2/IIC/SPI Patch */
-/* This is the area from 0x2000 to 0x23ff.
-*/
-uint patch_2000[] = {
-         0x3fff0000,
-         0x3ffd0000,
-         0x3ffb0000,
-         ... etc ...
-
-actually, that patch is not 1024 bytes long, but 1280 bytes, which 
-means it goes to 0x24ff, not 0x23ff.  this certainly seems like it's 
-going to cause problems further down, when that same file defines a 
-relocation base for a couple structures starting at 0x2400:
-
-
-#if defined(USE_SMC_PATCH) || defined(USE_IIC_PATCH)
-
-         iip = (iic_t *)&commproc->cp_dparam[PROFF_IIC];
-#define RPBASE 0x0400    <--  ???????
-         iip->iic_rpbase = RPBASE;
-
-         /* Put SPI above the IIC, also 32-byte aligned.
-         */
-         i = (RPBASE + sizeof(iic_t) + 31) & ~31;
-         spp = (spi_t *)&commproc->cp_dparam[PROFF_SPI];
-         spp->spi_rpbase = i;
-
-
-i'm pretty sure that trying to relocate the iic_t struct to that 
-offset is going to clash badly with the tail end of the patch, no?
-perhaps RPBASE could be set to 0x0500 to avoid this?
-
-or am i misreading something?
-
-rday
+What exact PVR do you have ? It could be your nortbridge not beeing
+properly setup for the kind of snoop cycles issued when the M bit
+is set on all pages ? In this case, it has to be fixed at that level
+(contact AmigaOne/Teron) as I will not revert that fix.
