@@ -1,38 +1,31 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adam Wozniak <adam.wozniak@comdev.cc>
-Cc: linuxppcdev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: crash in fault.c
-Date: Mon, 1 Oct 2001 21:37:53 +0200
-Message-Id: <20011001193753.838@smtp.adsl.oleane.com>
-In-Reply-To: <3BB8B3AC.3A97D7D@comdev.cc>
-References: <3BB8B3AC.3A97D7D@comdev.cc>
+Message-ID: <3BB8C658.38832E91@mvista.com>
+Date: Mon, 01 Oct 2001 15:39:04 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Adam Wozniak <adam.wozniak@comdev.cc>,
+	linuxppcdev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: crash in fault.c
+References: <3BB8B3AC.3A97D7D@comdev.cc> <20011001193753.838@smtp.adsl.oleane.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->(apologies for the previous blank message)
->
->I get this randomly and frequently, usually when booting, attempting to
->ftp
->to the box, or occasionally when starting a new process.
->
->Any hints or clues are appreciated.
->
->I'm using kernel 2.4.4 running on a custom 8260 based board.
+Benjamin Herrenschmidt wrote:
 
-Does the 8260 have BATs ?
+> Does the 8260 have BATs ?
 
-If not, can you check if the code for ret_from_except is entirely
-contained in a single page or spans over 2 pages ?
-(objdump should help here).
+Yes.  It's a standard 603e core with BATs and no HPTE.
 
-If it is the case, then you need some of my fixes to make the exception
-return path safe against TLB misses (or hash misses, dunno if you have
-a hash table on this CPU).
+I suspect this is a hardware configuration problem in the
+memory controller or memory interface.  As I have always said,
+random problems that occur when the network is used usually
+point to that.  The reason is you can get back to back burst
+mode transfers to the memory, something you aren't likely
+to see with just normal CPU usage.
 
-Ben.
 
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
