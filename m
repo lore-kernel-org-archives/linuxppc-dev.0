@@ -1,29 +1,37 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <paulus@linuxcare.com.au>, <linuxppc-dev@lists.linuxppc.org>
+Date: Sun, 27 Aug 2000 18:28:29 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org,
+        paulus@linuxcare.com.au
 Subject: Re: Patches for 2.4.0-test7
-Date: Sun, 27 Aug 2000 14:02:02 +0200
-Message-Id: <20000827120202.24878@192.168.1.10>
-In-Reply-To: <14760.58981.931858.747899@argo.linuxcare.com.au>
-References: <14760.58981.931858.747899@argo.linuxcare.com.au>
+In-Reply-To: <39A8379C.E4EBB33A@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.10008271823320.3745-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Found this one. :-)  Thanks for alerting me to it.  This was because I
->have some mods in my tree to add extra aux table entries for the ppc
->cache line size.  I was using the numbers assigned in the Sys V ABI
->but these conflict with numbers assigned to other things by linux.
->The end result was that ld.so always thought it was loading a setuid
->program and therefore disabled LD_LIBRARY_PATH.  It's now fixed in my
->rsync tree.
+> > AFAIK, CONFIG_ADBMOUSE cannot be selected without CONFIG_ADB_KEYBOARD in
+> > the current bk tree. I'm also doing additional config fixes, so that ADB-
+> > less pmacs can remove all the ADB stuffs and keep the PMU for example.
+> > CONFIG_ADB_KEYBOARD is not displayed when CONFIG_INPUT_ADBHID is, etc...
+>
+> Someone recently wrote that one could have both /dev/adbmouse and
+> /dev/input/mice working at the same time, so I tried this, too. And I
+> *could* select CONFIG_ADBMOUSE without CONFIG_ADB_KEYBOARD, only it
+> didn't compile due to undefined variables. My patch fixes these, but
+> indeed it is probably better to change the config.in files to forbid
+> this choice.
 
-BTW. The cset I sent you contains code from Dan Malek that implements an
-elegant solution to the CPU detection stuff by emulating the "mfspr"
-instruction when issued from userland. We can also (not done yet)
-masquerade the CPU (by letting it think it's a G3 and not a G4 when
-altivec is not enabled in the kernel for example).
+That would have been me - I still claim that keeping adbmouse working for
+backwards compatibility would be a good thing, but my word doesn't carry
+much weight.
 
+The adbmouse driver only relies on the keyboard driver for mouse button
+emulation. At least in 2.2.17, it won't interfere with the new input code,
+I haven't tried 2.4.0 yet.
+
+	Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
