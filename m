@@ -1,42 +1,42 @@
-Date: Fri, 20 Aug 1999 15:30:31 -0700 (MST)
-From: Matt Porter <mporter@phx.mcd.mot.com>
-To: Daniel Jacobowitz <drow@false.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: string.h conflicting types warnings
-In-Reply-To: <19990820010445.A7322@them.org>
-Message-Id: <Pine.LNX.4.10.9908201527560.22988-100000@fwrsl-11.phx.mcd.mot.com>
+From: Dave_Lee@3com.com
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <882567D4.00758D7D.00@hqoutbound.ops.3com.com>
+Date: Sat, 21 Aug 1999 14:24:11 -0700
+Subject: Scheduler problem
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 20 Aug 1999, Daniel Jacobowitz wrote:
-> On Thu, Aug 19, 1999 at 02:12:33PM -0700, Matt Porter wrote:
-> > I'm working on a standalone driver and have been running into these
-> > warnings lately.  Whilst compiling Mac-on-Linux I also got these
-> > warnings as well.  Searching around I only found some netbsd folks
-> > gettings these same warnings.  Anyone have an idea where this comes from? 
-> 
-> > /usr/include/linux/string.h:31: warning: conflicting types for built-in
-> > function `memset'
-> 
-> Easy.  Anything that is including linux/string.h should be a module -
-> otherwise it needs to rearrange its choice of include files.  Any
-> module should use the settings from the kernel makefiles, which
-> include:
->  -mmultiple -mstring -ffixed-r2 -fno-builtins
-> 
-> It's that last one you really want.
 
-That's it.   Only difference is that it is actually "-fno-builtin" for
-anybody else reading this...  
- 
+
+Hello,
+
+We're trying to port Linux 2.2.10 to a diskless PPC 603e-based platform and
+we've gotten the kernel to boot; however, during the device setup code, an
+alignment exception occurs in the scheduler.  At the time, the initrd code
+(rd.c:rd_load_image () ) is running and copying out a disk image to a RAM disk
+(block_dev.c:block_write).  During the write, it eventually calls the scheduler
+and we've tracked it to the code below.
+
+        while (p != &init_task) {
+                if (can_schedule(p)) {
+                        int weight = goodness(prev, p, this_cpu);
+                        if (weight > c)
+                                c = weight, next = p;
+                }
+                p = p->next_run; // next_run is NULL
+        }
+
+Putting in some test code before going to the next list element, p is PID 0
+(swapper?  which I assume is init_task ?).  All it's next/prev pointers are
+NULL.
+
+Any ideas on what the problem is and/or suggestions on how to tackle this?
+
 Thanks,
-
---
-Matt Porter                                       Motorola Computer Group
-matt_porter@mcg.mot.com                           CIBU Linux Support
+Dave
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
