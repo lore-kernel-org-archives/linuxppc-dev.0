@@ -1,72 +1,72 @@
-Date: Sat, 02 Sep 2000 13:18:46 +1100
-Message-ID: <8893.967861126@ocs3.ocs-net>
-From: Keith Owens <kaos@ocs3.ocs-net>
-Subject: 2.4.0 do_fork() change, all architectures - take 2
+Message-Id: <v04003a00b5d629d4bebd@[24.66.67.194]>
+In-Reply-To: <200009010352.UAA22371@marcus.allandria.com>
+References: <Pine.GSO.4.10.10008311902200.4074-100000@weyl.math.psu.edu>
+ from "Alexander Viro" at Aug 31, 2000 10:40:30 PM
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 1 Sep 2000 23:04:26 -0500
+To: flar@allandria.com, viro@math.psu.edu (Alexander Viro)
+From: Tony Mantler <nicoya@apia.dhs.org>
+Subject: Re: Btree directories (Re: Status of HFS+ support)
+Cc: dgatwood@deepspace.mklinux.org (David A. Gatwood), ak@suse.de (Andi Kleen),
+        lord@sgi.com (Steve Lord), matthew@wil.cx (Matthew Wilcox),
+        khalfmann@libra.de (Halfmann Klaus), roman@augan.com (Roman Zippel),
+        linuxppc-dev@lists.linuxppc.org, linux-fsdevel@vger.kernel.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-------- Blind-Carbon-Copy
+At 10:52 PM -0500 8/31/2000, flar@allandria.com wrote:
+>Alexander Viro wrote:
+>> On Thu, 31 Aug 2000 flar@allandria.com wrote:
+>>
+>> > Yes, HFS and HFS+ both have a CNID for each file or directory. It just
+>>isn't
+>> > entirely straightforward to search the catalog by this value, since
+>>the key
+>> > is a combination of parentCNID and name. The CNID is guaranteed to be
+>>unique
+>> > across a filesystem and there are a handful that are reserved for system
+>> > files/directories such as the root (2) and the "parent of root" (1).
+>>
+>> OK. Are they preserved by rename()?
+>
+>There isn't anything preventing it. A rename() is messy enough because of the
+>headache of moving around entries in the btree and updating all the implicit
+>usage of the catalog key which depends on the filename. I don't think the
+>MacOS actually preserves the CNID on a rename, tho. It's something that I
+>think would be about the same complexity either way. The only thing you
+>save by keeping the same CNID is changes to the extents overflow tree,
+>which is usually empty anyway. (My code doesn't do rename() yet...)
+[...]
 
-X-Mailer: exmh version 2.1.1 10/15/1999
-From: Keith Owens <kaos@ocs.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: 2.4.0 do_fork() change, all architectures - take 2
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Sat, 02 Sep 2000 13:18:46 +1100
-Message-ID: <8893.967861126@ocs3.ocs-net>
+I think the point of the CNIDs is that they are preserved on rename
+(atleast, MacOS preserves them) so you can do things like open a file, do
+some stuff, close it for a bit, then refind it by it's fine number and do
+some more stuff with it, completely immune to the user shuffling files
+around.
 
-DaveM pointed out that my 2.4.0-test8-pre1 do_fork patch would generate
-better sparc assembler if the extra parameter to do_fork was added at
-the end instead of in the middle.  So change all do_fork(flags,sp,0,&regs)
-to do_fork(flags,sp,&regs,0);
-
-I'm not going to mail the complete patch again, you can get it from
-ftp://ftp.ocs.com.au/pub/do_fork-2.4.0-test8-take2.gz.  The only
-significant difference is this bit to IA64, untested.
-
-Index: 0-test8-pre1.1/arch/ia64/kernel/entry.S
-- --- 0-test8-pre1.1/arch/ia64/kernel/entry.S Tue, 15 Aug 2000 17:50:48 +1000 kaos (linux-2.4/c/c/16_entry.S 1.3.1.1.1.2 644)
-+++ 0-test8-pre1.2(w)/arch/ia64/kernel/entry.S Sat, 02 Sep 2000 12:49:16 +1100 kaos (linux-2.4/c/c/16_entry.S 1.3.1.1.1.2 644)
-@@ -68,8 +68,8 @@
- 	mov loc1=r16				// save ar.pfs across do_fork
- 	UNW(.body)
- 	mov out1=in1
-- -	mov out2=in2
-- -	adds out3=IA64_SWITCH_STACK_SIZE+16,sp	// out3 = &regs
-+	mov out3=in2
-+	adds out2=IA64_SWITCH_STACK_SIZE+16,sp	// out2 = &regs
- 	mov out0=in0				// out0 = clone_flags
- 	br.call.sptk.few rp=do_fork
- .ret1:	UNW(.restore sp)
-@@ -87,8 +87,8 @@
- 	mov loc1=r16				// save ar.pfs across do_fork
- 	UNW(.body)
- 	mov out1=in1
-- -	mov out2=0
-- -	adds out3=IA64_SWITCH_STACK_SIZE+16,sp	// out3 = &regs
-+	mov out3=0
-+	adds out2=IA64_SWITCH_STACK_SIZE+16,sp	// out2 = &regs
- 	mov out0=in0				// out0 = clone_flags
- 	br.call.sptk.few rp=do_fork
- .ret2:	UNW(.restore sp)
-Index: 0-test8-pre1.1/arch/ia64/ia32/ia32_entry.S
-- --- 0-test8-pre1.1/arch/ia64/ia32/ia32_entry.S Tue, 15 Aug 2000 17:50:48 +1000 kaos (linux-2.4/c/c/25_ia32_entry 1.3.1.1 644)
-+++ 0-test8-pre1.2(w)/arch/ia64/ia32/ia32_entry.S Sat, 02 Sep 2000 12:49:58 +1100 kaos (linux-2.4/c/c/25_ia32_entry 1.3.1.1 644)
-@@ -91,8 +91,8 @@
- 	UNW(.body)
-
- 	mov out1=0
-- -	mov out2=0
-- -	adds out3=IA64_SWITCH_STACK_SIZE+16,sp
-+	mov out3=0
-+	adds out2=IA64_SWITCH_STACK_SIZE+16,sp	// out2 = &regs
- 	br.call.sptk.few rp=do_fork
- .ret3:	mov ar.pfs=loc1
- 	UNW(.restore sp)
+An example of this is the MacOS itself, which uses the CNID extensivley to
+aid in resolving alias files. With aliases (iirc), MacOS stores the Parent
+name and CNID, and the file name and CNID (and appleshare server info and a
+bunch of other stuff), then when it resolves the alias, it looks up each
+combination of these attributes, in whatever order apple figured would be
+most reliable and least surprising to the user, in order to find the
+original file. This makes alias files much more durable than a symlink
+(pointing to a specific file/folder rather that just a pathname), and more
+portable than a hard link (can point to any file or folder across any
+volumes). Of course, it has neither the anonimity of a symlink nor the
+absolute transparency of a hard link, but that's life.
 
 
-------- End of Blind-Carbon-Copy
+(btw, my email is currently down for a bit pending some dns updates)
+
+Cheers - Tony 'Nicoya' Mantler :)
+
+
+--
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
