@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
-	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id AE68867A8D
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id BBCEE67A8E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Mar 2005 08:18:51 +1100 (EST)
-To: Jason McMullan <jason.mcmullan@timesys.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 22 Mar 2005 15:27:49 EST."
-	<1111523269.2987.58.camel@ad.doubleclick.net>
-Date: Tue, 22 Mar 2005 22:18:34 +0100
-Sender: wd@denx.de
-Message-Id: <20050322211839.6A3DCC1510@atlas.denx.de>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] CPM2 cleanups 
+	Wed, 23 Mar 2005 08:36:28 +1100 (EST)
+In-Reply-To: <000601c52e9e$3b9de080$870da8c0@anaveen>
+References: <000601c52e9e$3b9de080$870da8c0@anaveen>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <f99fdf9a800fa3c250cc7171b7d36c85@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Tue, 22 Mar 2005 15:36:27 -0600
+To: "Naveen Kumar Atmakuri" <anaveen@mistralsoftware.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Need help.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,27 +23,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1111523269.2987.58.camel@ad.doubleclick.net> you wrote:
-> 
-...
-> +static unsigned int cpm2_startup_irq(unsigned int irq)
-> +{  
-> +       cpm2_unmask_irq(irq);
-> +       return 0;
-> +}
-> +
-> +static void cpm2_shutdown_irq(unsigned int irq)
-> +{
-> +       cpm2_mask_irq(irq);
-> +}
+While I can specify a place for you to get precompiled binaries for=20
+MPC7448, I can suggest grabbing crosstool from:
+    http://www.kegel.com/crosstool/
 
-Why is cpm2_startup_irq() not void like cpm2_shutdown_irq() ?
+There is a 7450 config which will work for MPC7448.
 
-Best regards,
+- kumar
 
-Wolfgang Denk
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Overflow on /dev/null, please empty the bit bucket.
+On Mar 21, 2005, at 11:15 PM, Naveen Kumar Atmakuri wrote:
+
+> Hi everybody,
+> =A0
+> Could any one suggest the toolchain and kernel versions that are=20
+> compatible with the MPC7448 processor ( It's a motorola processor=20
+> based on power PC architecture ). Is there any site from where we can=20=
+
+> download the precompiled binaries for the same processor.
+> =A0
+> With Regards& Thanks,
+> A.Naveen Kumar,
+> Design Engineer,
+> Mistral Software Pvt Ltd.
+> <ATT92461.txt>=
