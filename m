@@ -1,30 +1,25 @@
-Date: Tue, 11 May 1999 17:12:33 -0500 (CDT)
+Date: Tue, 11 May 1999 17:15:58 -0500 (CDT)
 From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Darron Froese <darron@calgary.westworld.ca>
-cc: Nathan Ingersoll <ningerso@d.umn.edu>,
-        "Kevin B. Hendricks" <kbhend@business.wm.edu>,
-        linuxppc-dev@lists.linuxppc.org
+To: Roger Ivie <rivie@teraglobal.com>
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Anyone playing with Darwin 0.2 binary yet?
-In-Reply-To: <199905112039.OAA01269@moses.odi.ca>
-Message-ID: <Pine.LNX.3.96.990511170537.19687C-100000@globegate.utm.edu>
+In-Reply-To: <v04204e02b35e49f978d1@[192.168.5.22]>
+Message-ID: <Pine.LNX.3.96.990511171408.19687D-100000@globegate.utm.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 May 1999, Darron Froese wrote:
+On Tue, 11 May 1999, Roger Ivie wrote:
 
-> > I think that it only works with G3 or newer machines.
+> >I think that it only works with G3 or newer machines.
 > 
-> Not quite correct - some people have reported success (on the Darwin
-> Development Mailing List) installing it on other machines - machines that
-> were initially supposed to run "Rhapsody" but ended up not being officially
-> supported by Mac OS X Server - PCI based Power Macs that aren't G3's: the
-> 7500, 7600, 8500, 8600, 9500 and 9600 all come to mind.
+> I've had it running on a 9600, but this machine _does_ have a G3 upgrade.
+> Interestingly, MacOS X Server refuses to install on this machine.
 
-It's officially unsupported, but I'm under the impression that it will
-probably work at least partially on most PCI machines.
+You might try installing with another machine, then hooking the drive up
+to it and see if that works.  It'd be an interesting experiment.  :-)
 
 
 David
