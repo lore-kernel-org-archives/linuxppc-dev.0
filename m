@@ -1,27 +1,33 @@
-Date: Sun, 18 Jan 2004 21:47:51 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Jacky Lam <jackylam@astri.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Small UDP packet performance
-Message-ID: <20040119054751.GB26841@gate.ebshome.net>
-References: <00b101c3de3e$9c34f200$9104050a@JACKYLAM> <20040119052806.GA26841@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040119052806.GA26841@gate.ebshome.net>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: "S. Hebbar" <shebbar@india.tejasnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Stable File System for embedded product
+Date: Mon, 19 Jan 2004 11:53:49 +0530
+MIME-Version: 1.0
+Message-Id: <200401191153.50014.shebbar@india.tejasnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sun, Jan 18, 2004 at 09:28:06PM -0800, Eugene Surovegin wrote:
-> Let's say you box is fast enough to send 10K packets per second. As
-> you see it's more than enough to saturate 100Mb Ethernet with big
-> packets (UDP payload > ~1120 bytes).
->
-> But with 200-sized UDP payload you can only fill ~2.7% of 100Mb link.
->
+Hello,
 
-grr, it's 21% of 100Mb link (16% effective (without overhead)).
+I am trying to find which file system is the best for
+/etc partition on an embedded linux platform.
 
-Eugene.
+I am using the following file systems for linux & rootfs:-
+Linux: CramFS (linux 2.4.20 denx) (read-only)
+RootFS: CramFS  (read-only)
+
+At the moment, I am using ext2 partition for /etc (read-write)
+But, 1 out of  4 power-cycles of the board corrupts the
+/etc partition.
+
+Any information related to the above topic is
+grately appreciated.
+
+Regards,
+S. Hebbar.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
