@@ -1,38 +1,36 @@
-Message-ID: <20000327024715.28938.qmail@www0l.netaddress.usa.net>
-Date: 26 Mar 00 19:47:15 MST
-From: Robert Shaw <rshawppc@netscape.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: PCI address collisions on 2.3.x kernels?
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <200003270627.IAA00302@piglet.grunz.lu>
+Date: Mon, 27 Mar 2000 08:27:39 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Colors in X in 2.3.99-pre3?
+To: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been trying for over a week now to compile the 2.3.x series kernel on my
-B&W G3 machine. Everytime I get this annoying "PCI address collision" error
-right at the start (after the penguin graphic appears). It goes past this and
-behaves like it's booting ok, but then it tries to access the IDE buses and
-fails to find anything and I get the infamous "Rebooting in 180 seconds..."
-message.
+Hi list,
 
-Can someone please help!! I'm stumped as to why this is happening. Has anyone
-else seen this? I don't think its a config problem, as I'm using the same
-settings I always have that work for the latest 2.2.15pre14 kernel in the
-stable tree.
+Anybody seen this? With Paul's latest kernel (2.3.99-pre3), I'm having
+colormap problems in X (actually, Xpmac). I'm on a 7600 using controlfb.
 
-I think if I can get rid of the "PCI address collision" errors, that my IDE
-bus will get recognized properly.
+Console is ok, but X has weired colours. Switching back and forth
+doesn't help, nor restarting X. No messages on startup neither...
 
-Any ideas? Please!
+I've looked around a bit, but found no obvious difference between
+2.3.52 (working ok) and 2.3.99 that could be causing this.
 
-TIA.
+Thanks for any help or idea
 
+Michel
 
--Robert
- mailto:rshaw@linuxppc.org
- icq:45688313
- http://www.linuxppc.org/BlueG3/
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
