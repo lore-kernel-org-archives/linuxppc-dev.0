@@ -1,48 +1,45 @@
-Date: Wed, 6 Sep 2000 09:44:47 -0400
-From: Josh Huber <huber@mclinux.com>
-To: ian reinhart geiser <geiseri@msoe.edu>
-Cc: daenzerm@student.ethz.ch,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: galeon
-Message-ID: <20000906094447.C2303@mclinux.com>
-References: <39B64777.5E71D9CE@relog.ch> <Pine.LNX.4.10.10009060848540.9430-100000@sleepchamber.geekcentral.msoe.edu>
+From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
+To: ian reinhart geiser <geiseri@msoe.edu>, daenzerm@student.ethz.ch
+Cc: Josh Huber <huber@mclinux.com>,
+        Linux/PowerPC Devel List
+	 <linuxppc-dev@lists.linuxppc.org>
+Message-Id: <v03110706b5dbfb1b0046@[129.100.29.243]>
+In-Reply-To: 
+ <Pine.LNX.4.10.10009060848540.9430-100000@sleepchamber.geekcentral.msoe.ed
+ u>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-md5;
-	protocol="application/pgp-signature"; boundary="B4IIlcmfBL/1gGOG"
-In-Reply-To: <Pine.LNX.4.10.10009060848540.9430-100000@sleepchamber.geekcentral.msoe.edu>; from geiseri@msoe.edu on Wed, Sep 06, 2000 at 08:50:36AM -0500
+Content-Type: text/plain; charset="us-ascii"
+Date: Wed, 6 Sep 2000 09:49:28 -0400
+Subject: Re: galeon
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---B4IIlcmfBL/1gGOG
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Wed, Sep 06, 2000 at 08:50:36AM -0500, ian reinhart geiser wrote:
->=20
-> On Wed, 6 Sep 2000, Michel [iso-8859-1] D=E4nzer wrote:
-> FYI:
-> 	I can get Konquor from KDE2 to render almost
-> 	everything i throw at it.  It will support
-> 	yahoo mail and it about half of the size of
-> 	mozzila.
+I too have built the latest KDE packages and Konqueror is greatly improved
+in stability over previous versions and able to render just about
+everything well.
 
-Ok, but this doesn't help me.  Mozilla is actually working great for
-me, apart from not supporting SSL.  I'd like to try galeon, because of
-the much smaller and faster UI.  Mozilla's UI is a little bloated, to
-say the least.
+It is supposed to handle Netscape plugins, so I threw in the RealAudio
+plugin and it recognized it but seg-faulted when used (this could be Real
+Audio's fault too).
 
---=20
-Josh
-| huber@mclx.com |
-1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+It even supports Java quite well.  It will interface with the Blackdown JDK
+1.3 (just add the proper jdk path before lausnching Konqueror) and works on
+everything except applets with the "archive=" tag (and yes I filed a bug
+report with the KDE team but never heard a thing).
 
---B4IIlcmfBL/1gGOG
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+It is really quite impressive!
 
+Kevin
 
---B4IIlcmfBL/1gGOG--
+--
+Kevin B. Hendricks, Associate Professor of Operations and Information
+Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
