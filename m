@@ -1,59 +1,35 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: =?iso-8859-1?q?I=F1igo=20Lopez=20Barranco?= <ilopez@albatros-sl.es>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Lite5200 PCI not working
-Date: Mon, 21 Jun 2004 13:48:35 +0200
-References: <42A622EB18325843894BB8E1040E3DF5022754@sinaexchf>
-In-Reply-To: <42A622EB18325843894BB8E1040E3DF5022754@sinaexchf>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20040621121347.17608.qmail@web13607.mail.yahoo.com>
+Date: Mon, 21 Jun 2004 05:13:47 -0700 (PDT)
+From: m madhuker <mythri_madhuker@yahoo.com>
+Subject: about Denx
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Message-Id: <200406211348.35398.g.jaeger@sysgo.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hello all,
+         Im working on MPC8245. and im new to it.
+now im using Timesys GPL-linux for my board.
+but, it does not has support. Timesys RTlinux has
+support but, it is not free...
 
-On Monday 21 June 2004 13:12, Iñigo Lopez Barranco wrote:
-> >I don't understand, what do you mean "with both power LEDs off",
-> > the LEDs on the Lite5200? If yes, then I guess you have a problem!
->
-> Yes, I mean that. If the PCI card is plugged in the slot, when I connect
-> the power, the LEDs in the Lite5200 board for 5V and 3.3V stay off.
+I listened that Denx RTOS is free and good..
+i want ot know about it..
+how is it??????
+whether it provides BSP's and good support????
 
---> short-circuit, I'm really surprised, that the board survived, sometimes,
-ground connections from the PCI card tend to go up in smoke :-(
+So please if anybody worked on it, give suggestion...
 
-> Without the PCI card, the Lite5200 works fine.
->
-> > And of course it should be inserted correctly - sorry if this is too
-> > obvious!
->
-> I think it is, but just to be sure: when I plug the card the RJ45 connector
-> is in the side of the IDE connector of the Lite5200, in the opposite side
-> of the "short part" of the PCI connector. Right?
+                                    Regards
+                                    Madhukar
 
-NO NO!!! See Wolfgangs mail:
->>"You may have plugged it in incorrectly.  Make  sure  that  the  front
->>bezel  is on the side where the serial and USB connectors are - i. e.
->>NOT where the ATA connector is."
 
-accoding to this, the part with the RJ45 connector should be on
-the USB & serial connector side and NOT the way you did it now.
-If in doubt, check the schematics and compare with the PCI specification...
 
->
-> > One card, that is known to work in this slot is the Intel eepro100 NIC.
->
-> I'll try to get ont of those, though I'm not sure if the timing problems in
-> the PCI bus may cause the problem I'm seeing with this board. Thanks.
 
-Probably not, but it is a hint, in case you encounter more PCI problems, when
-the LEDs are on again ;-)
-
-Ciao,
-  Gerhard
-
+New and Improved Yahoo! Mail - 100MB free storage!
+http://promotions.yahoo.com/new_mail
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
