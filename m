@@ -1,76 +1,62 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <5.1.0.14.0.20011017155249.03548ec0@pop.gmx.de>
-Date: Wed, 17 Oct 2001 16:03:38 +0800
+Message-ID: <3BCD5B30.5396ADEC@disca.upv.es>
+Date: Wed, 17 Oct 2001 12:19:28 +0200
+From: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: Reducing glibc with mklibs.sh
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Access to registers of MPC823E
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I tried to reduce the size of my self-compiled glibc 2.2.2, with the debian
-script mklibs.sh, but it terminates with the following output:
+Hello,
 
----
-++ echo :/usr/local/powerpc-linux/glibc-2.2.2
-++ sed -e 's/::*/:/g' -e 's/^://' -e 's/:$//' -e 's/:/ -L/g'
-++ cat /tmp/,mklibs.21079/lib-dependencies
-++ sed 's/^/-l/'
-+ powerpc-linux-gcc -nostdlib -nostartfiles -shared -Wl,-soname=libc.so
--uabort -ualarm -uatoi -uatol -ubcopy -ubindtextdomain -ubzero -uchdir
--uclearerr -uclose -uclosedir -uconfstr -u__ctype_b -u__ctype_tolower
--udcgettext -udup -udup2 -uendpwent -uenviron -u_environ -u__environ
--u__errno_location -uexecve -uexit -ufclose@GLIBC_2.0 -ufclose@@GLIBC_2.1
--ufcntl -ufdopen@GLIBC_2.0 -ufdopen@@GLIBC_2.1 -uferror -ufflush -ufileno
--ufnmatch -ufork -ufprintf -ufputs -ufree -ufwrite -u__fxstat64@GLIBC_2.1
--u__fxstat64@@GLIBC_2.2 -ugetcwd -ugetdtablesize -ugetegid -ugetenv
--ugeteuid -ugetgid -ugetgroups -ugethostname -ugetpeername -ugetpid
--ugetppid -ugetpwnam -ugetpwuid -ugetrlimit64@GLIBC_2.1
--ugetrlimit64@@GLIBC_2.2 -ugetrusage -ugetuid -uglob_pattern_p
--ugroup_member -u_init -u_IO_putc -uisalpha -uisatty -uisdigit -ukill
--u__libc_start_main -ulongjmp -ulseek64 -u__lxstat64@GLIBC_2.1
--u__lxstat64@@GLIBC_2.2 -umalloc -umemcpy -uopen64 -uopendir -upathconf
--upipe -uprintf -uputchar -uputs -uqsort -uread -ureaddir64@GLIBC_2.1
--ureaddir64@@GLIBC_2.2 -ureadlink -urealloc -usbrk -usetgid -u_setjmp
--usetlocale -usetrlimit64 -usetuid -usetvbuf -usigaction -usigaddset
--usigdelset -usigemptyset -usiginterrupt -usigprocmask -usprintf -ustderr
--ustdin -ustdout -ustrcasecmp -ustrcat -ustrchr -ustrcmp -ustrcpy
--ustrerror -ustrlen -ustrncmp -ustrncpy -ustrrchr -ustrsignal -ustrtod
--ustrtol -ustrtoul -usysconf -utcgetattr -utcsetattr -utextdomain -utime
--uttyname -uumask -uunlink -uvfprintf -uwaitpid -uwrite
--u__xstat64@GLIBC_2.1 -u__xstat64@@GLIBC_2.2 -o /tmp/,mklibs.21079/lib-so
-/usr/local/powerpc-linux/glibc-2.2.2/libc_pic.a -L/ppcroot/smalllib
--L/usr/local/powerpc-linux/glibc-2.2.2
-/usr/local/powerpc-linux/bin/ld: /tmp/,mklibs.21079/lib-so: undefined
-versioned symbol name sys_siglist@@GLIBC_2.1
-/usr/local/powerpc-linux/bin/ld: failed to set dynamic section sizes: Bad value
-collect2: ld returned 1 exit status
-+ echo ./mklibs.sh: install-small-lib: powerpc-linux-gcc or
-powerpc-linux-objcopy failed.
-./mklibs.sh: install-small-lib: powerpc-linux-gcc or powerpc-linux-objcopy
-failed.
-+ exit 1
-+ rm -fr /tmp/,mklibs.21079
----
+I'm trying to write a program to run in Linux 2.4.4 (booting from
+PPCBoot) on a TQM823L (MPC823E), but I'm having some problems.
 
-The program call was:
-----
-#!/bin/sh
-GCC=powerpc-linux-gcc \
-OBJDUMP=powerpc-linux-objdump \
-OBJCOPY=powerpc-linux-objcopy \
-./mklibs.sh --verbose -L /usr/local/powerpc-linux/glibc-2.2.2 \
---dest-dir /ppcroot/smalllib \
-/ppcroot/bin/bash
----
+I have the following definitions in the headers:
+----------------
+#define TCGR IMR_USHORT(0x0980)
+#define IMR_USHORT(addr) V_USHORT(CFG_IMMR + addr)
+#define IMR_USHORT(addr) (addr)
+#define V_USHORT(a) (*(volatile unsigned short *)(a))
+#define CFG_IMMR 0xFFF00000
+----------------
 
-By default, only the libc_pic.a file is created. How can I create the other
-PICs?
+When my main program tries to access to TCGR to read or write it simply
+exits out of the program without a warning into the shell.
+----------
+> ./main
+> START....
+>
+----------
 
-If you know any other tools to do this task, please let me know. Seems that
-LIPO (Lineo) and LOT(HardHat) are not free.
+Just to check if something is wrong, I have tested this code:
+-----------------
+ unsigned long immr;
 
+ asm( "mfspr %0,638": "=r"(immr) : );
+ printf("IMMR = %li\n", immr);
+----------------
+
+But it didn't printf anything, just gets out of the program as before.
+
+Got any idea of what can be going on?
+
+--
+----------------------------------------------------------------------
+| David de Andrés Martínez   | Fault Tolerant Systems research Group |
+|                            |                                       |
+| Computer Science Engineer  | Email: ddandres@disca.upv.es          |
+| Doctorate Student          | Phone: +34 96 387.75.74 Ext 75774     |
+|                            | Fax: +34 96 387.75.79                 |
+-------Address--------------------------------------------------------
+|                 DISCA-EUI                                          |
+|                 Universidad Politécnica de Valencia                |
+|                 Campus de Vera #14                                 |
+|                 Valencia E-46021                                   |
+|                 Spain                                              |
+----------------------------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
