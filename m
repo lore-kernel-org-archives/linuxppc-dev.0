@@ -1,30 +1,48 @@
-Message-ID: <3BE657EB.6030006@waitaki.otago.ac.nz>
-Date: Mon, 05 Nov 2001 22:12:11 +1300
-From: Bryce McKinlay <bryce@waitaki.otago.ac.nz>
+Date: Mon, 5 Nov 2001 10:27:35 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH] Fixups for Longtrail (2.4.14-pre7)
+In-Reply-To: <15333.58608.870439.900641@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.GSO.4.21.0111051027000.4975-100000@mullein.sonytel.be>
 MIME-Version: 1.0
-To: Matt Brubeck <mbrubeck@hmc.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: dmasound_pmac in 2_4_devel
-References: <Pine.GSO.4.32.0111041903030.26186-100000@turing.cs.hmc.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matt Brubeck wrote:
-
->I found a very audible clicking and popping during audio playback.  This
->is noticeable e.g. when playing normal MP3 files with xmms.  The clicking
->does not occur with the driver in the (non-devel) 2_4 tree.
+On Mon, 5 Nov 2001, Paul Mackerras wrote:
+> Tom Rini writes:
+> > Hey all.  I pulled out my Longtrail to play again, and I found some
+> > wierd problems.  If I keep the 'default' type cards in it (What I
+> > _think_ are the original video & ethernet, or at least known-OF-happy
+> > ones), the box actually works.  But If I throw in a PC video card
+> > (Matrox Millennium 1 in this case) I get oopses all over the place.  I
+> > think the problem is that the firmware doesn't go and set all of the
+> > properties, so lots of strcmp's blow up.  The followig gets me both
 >
-Likewise on my PowerBook G4. Have you looked at the ALSA drivers?
-Unfortunatly they (as of 0.9.0beta8a) don't compile against 2.4.14-pre
-when I last checked, but I've heard reports of success on earlier
-kernels and with earlier ALSA releases.
+> Instead of checking node->name everywhere, I would prefer that the
+> prom.c code makes sure that node->name is never NULL.  That is a
+> change in one place rather than N, and it will fix the places that you
+> didn't find as well as the ones you did. :)
+>
+> The OF standard says that each node should have a name property, so I
+> think it's reasonable for users of the device tree to assume that
+> node->name is non-NULL.
 
-regards
+So just make node->name point to one global "<NULL>" string.
 
-Bryce.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
