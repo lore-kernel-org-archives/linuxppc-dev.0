@@ -1,21 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
-	by ozlabs.org (Postfix) with ESMTP id E0F0C2BF0E
+Return-Path: <saso@activetools.si>
+Received: from netgate.activetools.si (router.activetools.si [213.250.28.33])
+	by ozlabs.org (Postfix) with ESMTP id 7FB532BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 01:22:24 +1100 (EST)
-Date: Wed, 12 Jan 2005 07:22:22 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050112142222.GR3391@smtp.west.cox.net>
-References: <1102585377.41b81e218d6df@webmail.televes.com:443>
-	<20050105174838.GF4213@smtp.west.cox.net>
-	<71A72D18-5F4C-11D9-A045-003065F9B7DC@embeddededge.com>
-	<20050112141902.GQ3391@smtp.west.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050112141902.GQ3391@smtp.west.cox.net>
-Cc: alebas@televes.com, linuxppc-embedded@ozlabs.org
-Subject: [PATCH 2.6.10] ppc32: Fix mpc8272ads
+	Thu, 13 Jan 2005 01:25:35 +1100 (EST)
+Message-ID: <41E533CB.6060208@activetools.si>
+Date: Wed, 12 Jan 2005 15:27:23 +0100
+From: Saso Kavcic <saso@activetools.si>
+MIME-Version: 1.0
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+References: <1628E43D99629C46988BE46087A3FBB912F207@ep-01.EmbeddedPlanet.local>
+In-Reply-To: <1628E43D99629C46988BE46087A3FBB912F207@ep-01.EmbeddedPlanet.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Some issues with kernel 2.6 for MPC8260 target
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,59 +23,102 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-When I reworked the m82xx init functions, I inadvertantly broke the
-callout we had from ppc_md.setup_arch() that boards can use to poke &
-prod things, once mappings are set.  The following adds in a callback
-and updates the one m82xx board that needs it.
+Hi Steven,
 
-Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+Have you noticed any improvements in 2.6.10. over 2.6.9? We were porting 
+2.6.9 to a custom mpc8275vr
+board and we were able to get everything working except ethernet (fcc 
+enet). We did manage to get
+a few packets over it but it was all very slow, unstable and 
+unpredictable and it seemed that fcc enet
+driver doesn't work well in 2.6. Were you able to use fcc under 2.6.9?
 
---- 1.28/arch/ppc/syslib/m8260_setup.c	2004-11-24 23:42:43 -07:00
-+++ edited/arch/ppc/syslib/m8260_setup.c	2005-01-12 07:18:14 -07:00
-@@ -37,6 +37,12 @@
- extern void m8260_find_bridges(void);
- extern void idma_pci9_init(void);
- 
-+/* Place-holder for board-specific init */
-+void __attribute__ ((weak)) __init
-+m82xx_board_setup(void)
-+{
-+}
-+
- static void __init
- m8260_setup_arch(void)
- {
-@@ -56,6 +62,7 @@
- 	if (initrd_start)
- 		ROOT_DEV = Root_RAM0;
- #endif
-+	m82xx_board_setup();
- }
- 
- /* The decrementer counts at the system (internal) clock frequency
-@@ -203,7 +210,7 @@
- 	io_block_mapping(IO_VIRT_ADDR, IO_PHYS_ADDR, 0x10000000, _PAGE_IO);
- }
- 
--/* Place-holder for board-specific init */
-+/* Place-holder for board-specific ppc_md hooking */
- void __attribute__ ((weak)) __init
- m82xx_board_init(void)
- {
---- 1.6/arch/ppc/platforms/pq2ads.c	2004-08-13 16:33:54 -07:00
-+++ edited/arch/ppc/platforms/pq2ads.c	2005-01-10 16:32:52 -07:00
-@@ -19,8 +19,8 @@
- #include <asm/mpc8260.h>
- 
- void __init
--m82xx_board_init(void)
-+m82xx_board_setup(void)
- {
- 	/* Enable the 2nd UART port */
--        *(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
-+	*(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
- }
+Best Regards, Saso
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Steven Blakeslee wrote:
+
+>I would suggest going to the latest 2.6.10 kernel.  I have it running
+>with several ethernets running on all the 82xx processors. 
+>
+>  
+>
+>>-----Original Message-----
+>>From: linuxppc-embedded-bounces@ozlabs.org 
+>>[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of 
+>>Vijay Padiyar
+>>Sent: Wednesday, January 12, 2005 5:37 AM
+>>To: LinuxPPC Support
+>>Subject: Some issues with kernel 2.6 for MPC8260 target
+>>
+>>Hi all
+>>
+>>I wish to discuss some strange issues that I faced with 
+>>respect to the Linux
+>>2.6.8 kernel (downloaded from kernel.org). Firstly, I wish to 
+>>know whether this has been known to work on an MPC8260 PowerPC target.
+>>
+>>Secondly, when I tried to compile the Linux kernel with my 
+>>toolchain (built with Dan Kegel's crosstool for the PowerPC 
+>>603e core, which is what my processor has), I got some errors 
+>>which I found to rather queer after investigation. Firstly, 
+>>let me state the errors that I got:
+>>
+>>------------------------------------------------------
+>>
+>>  LD      init/built-in.o
+>>  LD      .tmp_vmlinux1
+>>arch/ppc/8260_io/built-in.o(.text+0x103c): In function 
+>>`mii_queue_relink':
+>>arch/ppc/8260_io/fcc_enet.c:1254: undefined reference to 
+>>`schedule_task'
+>>arch/ppc/8260_io/built-in.o(.text+0x1074): In function 
+>>`mii_queue_config':
+>>arch/ppc/8260_io/fcc_enet.c:1263: undefined reference to 
+>>`schedule_task'
+>>
+>>------------------------------------------------------
+>>
+>>On further investigation, I find that 'schedule_task()' is 
+>>simply not defined anywhere in the 2.6.8 kernel sources. This 
+>>is quite wierd! However, it is defined in a file 'context.c' 
+>>(linux-src/kernel) in the 2.4.27 kernel sources, which we 
+>>were using earlier. How is it that a function is being called 
+>>but its definition has been removed from the sources?
+>>
+>>Another such example is with the structure 'tq_struct'. It is 
+>>referred to in the file 'fcc_enet.c' 
+>>(linux-src/arch/ppc/8260_io) but it's not defined anywhere! 
+>>Again, after checking in the 2.4.27 sources, I find that it's 
+>>defined in the file 'tqueue.h' (linux-src/include/linux)!
+>>
+>>A third thing is that the 2.4.27 kernel source file 'uart.c'
+>>(linux-src/arch/ppc/cpm2_io) is not present in the 
+>>corresponding folder in the 2.6.8 source 
+>>(linux-src/arch/ppc/8260_io). There is one 'uart.c' in the 
+>>folder '8xx_io', but it doesn't get compiled during the 
+>>kernel build process. Will my UART work correctly with this build?
+>>
+>>Can someone please tell me if there's some explanation for 
+>>this that I'm unaware of? Which would be the proper forum to 
+>>report this? Again I would like to ask: Has the 2.6.8 kernel 
+>>been tested successfully on the MPC8260 PowerPC platform?
+>>
+>>Lastly, where can I get the latest stable Linux kernel source 
+>>for the PowerPC platform?
+>>
+>>Regards
+>>
+>>Vijay Padiyar
+>>_______________________________________________
+>>Linuxppc-embedded mailing list
+>>Linuxppc-embedded@ozlabs.org
+>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>>    
+>>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>  
+>
