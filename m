@@ -1,45 +1,86 @@
-Message-Id: <199901161111.GAA00502@smtp-gw.vma.verio.net>
-Date: Sat, 16 Jan 1999 06:11:03 -0500 (EST)
-From: baccala@freesoft.org
-Subject: RS/6000 860 portable - who wrote the display code?
-To: linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Date: Sat, 16 Jan 1999 10:02:49 -0600 (CST)
+From: puetzk6715@uni.edu
+Subject: Re: kernel 2.2.0-pre4
+In-reply-to: <199901152332.RAA07320@www.cedarnet.org>
+To: Kevin Puetz <kp11901@cedarnet.ORG>
+Cc: linuxPPC-dev@lists.linuxppc.org
+Message-id: <Pine.PMDF.3.96.990116095844.538987978A-100000@uni.edu>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi -
+I futzed around with this some more this morning. It haoppens also in a
+pre6 I built off the rsynced code (samba).
 
-I've got an IBM RS/6000 860 portable running Linux/ppc.  I've having
-strange problems with the display - characters that show up in the
-wrong places; garbled scanlines; it's rather hard to describe in words.
-I've checked the video memory with KGDB - it's contents are correct.
+Adding an argument of my own (such as a runlevel) seems to fix it (ie, I
+can boot
 
-I'm becoming more and more convinced that my display problems are
-either in hardware or in the VGA controller programming.  I've found
-that the problem exists in the boot loader as well as the Linux kernel
-proper.  Even more suspicious is a section of code in
-arch/ppc/boot/vreset.c that's just for my Aurora64V+ display
-controller chip (the section labeled "IBM Portable 860" - but it's keyed
-off the chip's ID code).  I've determined that the code does run during
-my boot cycle, and that commenting it out gives me a blank screen.
+linux: 2.2.0
 
-I've got the databook on the chip, but right now I feel like I'm just
-flailing at something I don't understand.  Does anyone know who wrote the
-Aurora64V+ code in vreset.c?  Does anyone else on this list have an 860
-laptop?  Any help is appreciated.
--- 
-					-bwb
+will die on Copying OF device tre... done. (And it is dead).
 
-					Brent Baccala
-					baccala@freesoft.org
+linux: 2.2.0 5
+will boot up.
 
--------------------------------------------------------------------------
-To receive periodic news about what's happening at freesoft.org, send
-email to "announce@freesoft.org", with "SUBSCRIBE" as the message, i.e:
-		echo SUBSCRIBE | mail announce@freesoft.org
--------------------------------------------------------------------------
+I can try BootXing if anyone wants, but I'd like to keep my OF-boot
+working?!
+
+On Fri, 15 Jan 1999, Kevin Puetz wrote:
+
+> 
+> This happened to me too, though only when using a quik name for it (as 
+> opposed to typing the full path/command. I'm going to try some more to debug
+> this, but...
+> 
+> Typing this same command at the quik prompt did not have the problem. Any
+> ideas? G3/233 DT (rev 1), quik 1.3.1,
+> 
+> My command is
+> 
+> image=/boot/vmlinux_010799
+>     label=benh
+>     root=/dev/hda7
+>     append=" video=atyfb:vmode:17,cmode:16"
+> 
+> --
+> +--------------------------------------------------------------------+
+> |            .-'''''-.       Kevin Puetz                             |
+> |          .'   _/|   `.                                             |
+> |         :   =/_/      :    kp11901@cedarnet.org -preferred         |
+> |        :   _/ |        :   Kevin.Puetz@039-server.pls.uni.edu      |
+> |       (\  /  ,|        :   webmaster@039-server.pls.uni.edu        |
+> |        \\/^\/||__     :                                            |
+> |     _/~`~`""~`"` \_ .'  "Could you please continue the petty       |
+> |  __/  -'/  `-._ `\_\__   bickering?  I find it - most intriguing." |
+> |/     /-'`  `\   \  \-.\    --Data, STTNG, "Haven"                  |
+> +--------------------------------------------------------------------+
+> 
+> ----------
+> >From: fritzwe.linux@tamedia.ch
+> >To: linuxppc-user@lists.linuxppc.ORG
+> >Subject: kernel 2.2.0-pre4
+> >Date: Fri, Jan 15, 1999, 3:29 AM
+> >
+> > Hi,
+> >
+> > I'm trying this kernel I've found at http://calvaweb.calvacom.fr/bh40
+> > because of the support for my AHA2940UW and the 3-button mouse I've
+> > missed so badly in 2.1.25.
+> >
+> > The line "Welcome to Linux, kernel 2.2.0-pre4 booting..." appears and
+> > that's it.
+> >
+> > I've put vmlinux into the System Folder.
+> >
+> > BootX 1.0.1 is configured as follows:
+> >   boot device: sdc4 (thats the UW-scsi drive where the System
+> >                      Folder is located)
+> >   More kernel arguments: root=/dev/sda4 swap=/dev/sda5 vmode=14 cmode=8
+> >                          (/dev/sda is attached to the internal scsi).
+> >
+> > The Mac is a 7200/90
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
