@@ -1,41 +1,51 @@
-Message-ID: <3C0668DF.9000100@embeddededge.com>
-Date: Thu, 29 Nov 2001 11:57:03 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3C066AE1.1B37CD0C@vnet.ibm.com>
+Date: Thu, 29 Nov 2001 17:05:37 +0000
+From: Tom Gall <tom_gall@vnet.ibm.com>
+Reply-To: tom_gall@vnet.ibm.com
 MIME-Version: 1.0
-To: paulus@samba.org
-Cc: Adrian Cox <adrian@humboldt.co.uk>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: ide_init_hwif_ports
-References: <15365.51839.327359.844495@gargle.gargle.HOWL>	<3C05F807.9090806@humboldt.co.uk> <15366.8953.429603.173303@gargle.gargle.HOWL>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: CONFIG_ALL_PPC
+References: <Pine.GSO.4.21.0111290925100.6747-100000@mullein.sonytel.be>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
+Geert Uytterhoeven wrote:
+>
+> On Wed, 28 Nov 2001, Tom Gall wrote:
+> > Paul Mackerras wrote:
+> > > I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
+> > > linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
+> > > use that).
+> > >
+> > > Does anyone object to this?
+> >
+> > Hmmm well not that I object because I don't... but I am working on this POP
+> > board here and technically speaking it's the next in the great PREP / PMAC /
+> > CHRP chain...
+>
+> Is this a revive of the POP-boards or a we-still-have-a-few-prototypes-lying-
+> around-so-let-us-port-Linux-to-it event?
 
+Real product in this case. It has a GA (general availability) date and
+everything.
 
-> Ah, OK.  Is this the 82c105?  Are the two channels separate PCI
-> functions in the device, or are they the same function?
+> Gr{oetje,eeting}s,
 
-It's part of the 83c553 bridge.  IIRC, the interrupts from the IDE
-can be routed in a couple of different ways, including directly into
-the EPIC.  You can kind of pretend it is a PCI-IDE controller, but there
-isn't any PCI config register to read that will tell you the interrupt
-number, so we need a way to tell the generic IDE code what to use (and
-of course this number is suitably "faked" so it generates the proper
-EPIC interrupt).  The reason you want to use this configuration mode
-on the Sandpoint is because it eliminates some other interrupt
-multiplexing problems and board resource conflicts.
+Regards,
 
-Custom boards that don't have a regular appearance in the source tree
-have copied a similar design.  I would like to vote for leaving this
-interrupt mapping function in place as well.
+Tom
 
-Thanks.
-
-
-	-- Dan
-
+--
+Tom Gall - [embedded] [PPC64 | PPC32] Code Monkey
+Peace, Love &                  "Where's the ka-boom? There was
+Linux Technology Center         supposed to be an earth
+http://www.ibm.com/linux/ltc/   shattering ka-boom!"
+(w) tom_gall@vnet.ibm.com       -- Marvin Martian
+(w) 507-253-4558
+(h) tgall@rochcivictheatre.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
