@@ -1,18 +1,19 @@
-Return-Path: <Stefan.Nickl@kontron.com>
-Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
-	by ozlabs.org (Postfix) with ESMTP id 62ACB67A6E
+Return-Path: <mgberry@ellipticity.com>
+Received: from waffle.digitalsmiths.com (waffle.digitalsmiths.com
+	[66.194.119.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "plesk", Issuer "plesk" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 274F467A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  5 Mar 2005 01:17:57 +1100 (EST)
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: emre kara <emrekara2002@yahoo.co.uk>
-In-Reply-To: <20050304123923.78560.qmail@web25701.mail.ukl.yahoo.com>
-References: <20050304123923.78560.qmail@web25701.mail.ukl.yahoo.com>
-Content-Type: text/plain
-Date: Fri, 04 Mar 2005 15:17:54 +0100
-Message-Id: <1109945875.13682.56.camel@lucy.pep-kaufbeuren.de>
-Mime-Version: 1.0
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Looking for prebuilt PPC board with miniPCI slot
+	Sat,  5 Mar 2005 01:22:00 +1100 (EST)
+Message-ID: <003b01c520c5$6c44edf0$84be1942@Osiris>
+From: "Matt Berry" <mgberry@ellipticity.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 4 Mar 2005 08:13:07 -0600
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0032_01C52091.FF42C5C0"
+Subject: Tool Chain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,33 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-03-04 at 12:39 +0000, emre kara wrote:
-> Hi Andriy;
-> I dont know what you should buy but I know what you
-> should not.
-> I ordered a Kontron's MPC8540 e2brain board, it took 3
-> months to get the board, or how to say, only the
-> hardware of the board, but there was nothing important
-> (linux source etc) on the cd, then we asked for linux
-> source to Kontron, but they said us, it did'nt
-> released yet and it!ll not be avaible at least 3
-> months.
+This is a multi-part message in MIME format.
 
-I am sorry for your bad experience with Kontron.
+------=_NextPart_000_0032_01C52091.FF42C5C0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I also understand it doesn't help you now if I tell you I'm sitting at
-the source here and would have happily provided you with a preliminary
-version of either a 2.4 or a 2.6 kernel for this board.
+I am trying to get the 2.6 running on my lite5200 eval board.  Is there =
+a tool chain allready availble or will I need to build my own?
 
-About the delay of the hardware, the eb8540 is a recent product, and
-from a engineering point of view, you'll understand that marketing
-people tend to hype products even when they're not quite ready for
-large-scale production (which has changed as of this writing).
+Thanks,
 
-I am advocating a stronger orientation towards the linux community for
-quite some time now, and it slowly seems to catch on, so please don't
-give up on us yet!
+Matt
+------=_NextPart_000_0032_01C52091.FF42C5C0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Stefan Nickl
-Kontron Modular Computers
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2604" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>I am trying to get the 2.6 running on =
+my lite5200=20
+eval board.&nbsp; Is there a tool chain allready availble or will I need =
+to=20
+build my own?</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Thanks,</FONT></DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Matt</FONT></DIV></BODY></HTML>
+
+------=_NextPart_000_0032_01C52091.FF42C5C0--
