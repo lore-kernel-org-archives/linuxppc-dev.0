@@ -1,32 +1,47 @@
-From: hollis@austin.ibm.com
-Date: Thu, 24 Jan 2002 16:17:36 -0600
-To: Michel Lanners <mlan@cpu.lu>
+Message-ID: <3C50C615.7090503@embeddededge.com>
+Date: Thu, 24 Jan 2002 21:42:29 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: paulus@samba.org
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RFC: vesafb
-Message-ID: <20020124221736.GZ510@austin.ibm.com>
-References: <20020123192010.GP510@austin.ibm.com> <E16Tbiw-00008o-00@piglet.grunz.lu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E16Tbiw-00008o-00@piglet.grunz.lu>
+Subject: Re: OpenPIC_NumInitSenses
+References: <15439.64102.68217.293733@argo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jan 24, 2002 at 05:42:46AM +0100, Michel Lanners wrote:
-> On  23 Jan, this message from hollis@austin.ibm.com echoed through cyberspace:
-> > The attached patch allows vesafb to work on PPC. vesafb does surprisingly
-> > little with the BIOS (which I thought was the whole point of VESA). With
-> > some ifdef's I'm able to use it as sort of a VGA offb -- the firmware
-> > initializes the card, and the driver just uses it and never mucks with it.
->
-> Wouldn't this be a good start to use generic PC-type grafic cards on PPC
-> machines in general? Or do you lack initialization if nobody (neither
-> firmware nor OS) can talk to the card 'natively'?
+Paul Mackerras wrote:
 
-Yes, we would lack initialization on Power Mac (for example). PReP firmware
-does proper setup for a very limited range of chips, which is why this is
-useful at all.
+> Who was it that wanted this horrible hack in open_pic.c?
 
--Hollis
+RTFA (archives :-).  We have discussed this enough in the past.
+
+Just like the comment states, we need it because of the way the
+107/EPIC maps on the "standard" OpenPIC structure.  The simple
+answer is the interrupts are offset by 16 on the EPIC, so the
+interrupt numbers don't match the offset value.  The EPIC may
+say there are only 24 vectors, but for the code to work we need
+to tell the OpenPIC code there are up to 16 more than that.
+
+
+> I am about to add an openpic_set_sources function which will let us
+> handle the distributed openpic in IBM pSeries machines more cleanly
+> and also allow us to remove this hack.
+
+There have been posts about better OpenPIC updates, but I guess they
+have been ignored?
+
+> Thus if you want to say how many interrupt sources there are, ....
+
+I can't discuss much right now because I'm travelling with basically only
+e-mail access.  I'll look at some code, but I guess you should just
+make the changes and we'll try again to make EPIC fit :-).
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
