@@ -1,38 +1,70 @@
-Date: Fri, 28 May 2004 08:16:38 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
+Message-ID: <40B72F90.1000004@intracom.gr>
+Date: Fri, 28 May 2004 15:24:48 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
 To: rdiz@alumni.deec.uc.pt
 Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: 2.6-7-rc1 8xx - No go
+References: <40B6FAFB.8020803@intracom.gr> <40B711A6.1080603@intracom.gr> <4517.62.48.238.11.1085744283.squirrel@alumni.deec.uc.pt>
 In-Reply-To: <4517.62.48.238.11.1085744283.squirrel@alumni.deec.uc.pt>
-Message-ID: <Pine.LNX.4.58.0405280812580.14722@localhost.localdomain>
-References: <40B6FAFB.8020803@intracom.gr> <40B711A6.1080603@intracom.gr>
- <4517.62.48.238.11.1085744283.squirrel@alumni.deec.uc.pt>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 28 May 2004 rdiz@alumni.deec.uc.pt wrote:
+rdiz@alumni.deec.uc.pt wrote:
 
-> Did you actually manage to compile standard (no tweak), 2.6.7-rc1 for 8xx?
-> If so, what '8xx Machine Type' did you chose?
+>Did you actually manage to compile standard (no tweak), 2.6.7-rc1 for 8xx?
+>If so, what '8xx Machine Type' did you chose?
+>
+>
+>Regards,
+>Ricardo Diz
+>
+>
+>>Pantelis Antoniou wrote:
+>>
+>>
+>>>Hi there.
+>>>
+>>>I'm reporting that my tree, after updating from 2.6.6 -> 2.6.7-rc1
+>>>does not work any more.
+>>>
+>>>Currently investigating why.
+>>>
+>>>Regards
+>>>
+>>>Pantelis
+>>>
+>>>
+>>>
+>>Update; for some reason the problem seems to be that page faults
+>>are incredibly slow.
+>>
+>>Starting a dummy init after a minute it manages to start and operate
+>>correctly.
+>>
+>>I suspect a terribly slow page fault.
+>>
+>>Regards
+>>
+>>Pantelis
+>>
+>>
+>>
+>>
+>>
+>
+>
+>
+>
+>
+>
+It's the linuxppc-2.5 tree. Plus my own modifications.
 
-and here's another almost assuredly dumb question on my part -- can
-someone clarify the different kernel source trees that are under
-discussion here?
+Regards
 
-the one i'm playing with is ppc.bkbits.net:8080/linuxppc-2.5, while the
-posting above suggests a recent version straight from the stock kernel.org
-repository.
+Pantelis
 
-what's the protocol for patches and updates?  do first attempts at patches
-go into the 2.5 tree and, from there, get pushed up to the stock tree?
-just curious about the proper way i should be updating my source tree and
-testing.
-
-thanks.
-
-rday
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
