@@ -1,42 +1,33 @@
-Message-ID: <19990522020440.49547@ibrium.se>
-Date: Sat, 22 May 1999 02:04:40 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Date: Fri, 21 May 1999 21:35:21 -0500 (CDT)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Samuel Rydh <samuel@ibrium.se>
+cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
 Subject: Re: Mac-on-Linux
-References: <19990519235050.60265@ibrium.se> <Pine.LNX.3.96.990519210752.5706A-100000@EdMcMan.Dyn.Ez-Ip.Net> <19990520192459.17170@ibrium.se> <19990520171823.A409@jasons.dyn.kpn.cx> <87zp2ysaku.fsf@hades.nocrew.net> <19990521203719.44590@ibrium.se> <87so8qp44p.fsf@hades.nocrew.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87so8qp44p.fsf@hades.nocrew.net>; from Stefan Berndtsson on Fri, May 21, 1999 at 10:19:34PM +0200
+In-Reply-To: <19990522020440.49547@ibrium.se>
+Message-ID: <Pine.LNX.3.96.990521213127.19285C-100000@globegate.utm.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, May 21, 1999 at 10:19:34PM +0200, Stefan Berndtsson wrote:
-> > Ok.. this seems to help a lot. It no longer panics, and I've
-> got a rom-image for my performa 6400, but when I tell it to
-> start with Meta-G, it just sits there.
-> 
-> This machine has a valkyrie graphics card, and since 
-> platinum seems to be more or less the only thing supported,
-> I can guess that's why I don't see anything.
-> 
-> Is that why? :)
 
-No. There is a hardware independent video driver which uses
-the framebuffer device. Does singlestepping (Meta-S) work? 
-Also, remeber to specify 'processor: 4' in the molrc file.
-
-Btw. I've uploaded a new release of Mac-on-Linux (with
-binaries) which works properly on G3 machines. It is possible 
-that the G3 fix also solves the 603 problem.
-
-/Samuel
+Quick question: what is the nature of the kernel support for mac-on-linux? 
+Some folks in the MkLinux camp have been discussing writing equivalent
+2.0.xx kernel code that works through mach.  I know that it will likely
+need to be able to map the ROMs into user space.  I also suspect that
+handling code (which could be very messy, but we'll cross that bridge when
+we get to it) and possibly the memory management code.  Beyond that, what
+other hurdles are there?
 
 
-----------------------------------------------------------
- E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-  Phone/fax: (home) +46 8 4418431, (work) +46 8 7908470   
-----------------------------------------------------------
+Later,
+David
+
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
