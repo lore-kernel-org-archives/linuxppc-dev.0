@@ -1,38 +1,23 @@
-Message-ID: <3843F20B.2C1616E@netx4.com>
-Date: Tue, 30 Nov 1999 10:49:31 -0500
-From: Dan Malek <dan@netx4.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: paulus@linuxcare.com, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <3843F20B.2C1616E@netx4.com>
+Date: Tue, 30 Nov 1999 18:34:08 +0100
+To: Dan Malek <dan@netx4.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: dmasound problems
-References: <19991130164439.032538@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <19991130183408.005713@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Tue, Nov 30, 1999, Dan Malek <dan@netx4.com> wrote:
 
+>If you unload the module, I suspect console beep will go away
+>as well???
 
-> I still have one problem with the console beep not coming back after
-> sleep (if I launch mpg123, it plays fine and my beep is back. Also,
-> sleeping while mpg123 is playing correctly resume the play). This chip
-> seems to be very sensitive to timings in general.
+Obiously, the beep goes away when the module is not here. However, I
+managed to have the beep back as soon as the module is insmod'ed. (by
+adding a 1ms delay after the awacs_write(0x6000)).
 
-As I recall, the beep is a shortcut path through the driver and
-makes assumptions about the sound interface configuration (i.e.
-powered up, initialized, etc.).  Running some application that
-follows the entire path to open and initialize the interface
-will then make the beep happy.
-
-
-> now correctly powered off when the machine goes to sleep (or when
-> dmasound module is removed).
-
-If you unload the module, I suspect console beep will go away
-as well???
-
-
-	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
