@@ -1,29 +1,34 @@
-Message-ID: <3B7AE763.610E4001@mvista.com>
-Date: Wed, 15 Aug 2001 17:19:31 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Cc: linuxppc-commit@source.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: page_to_phys and page_to_bus missing from asm-ppc/io.h
-References: <200108152040.PAA21390@lists.linuxppc.org>
+Date: Wed, 15 Aug 2001 15:01:15 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Scott Carroll <scottcar@us.ibm.com>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Power3 problem?
+Message-ID: <20010815150115.A25310@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010815145449.A16297@entropy.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010815145449.A16297@entropy.crashing.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
+On Wed, Aug 15, 2001 Scott Carroll wrote:
 
-> Could please one of the memory managers look after it?
+> While building for Power3 (p640), ChangeSet@1.263, 2001-08-15:
 
-OK, I checked them in as my best guess :-).  I'm not able to
-test them.  Let me know what happens.
+Arg!  I just fixed this, but the problem is this.  I took
+arch/ppc/kernel/l2cr.o out of the always-compiled list, and made it
+compile only for CONFIG_6xx (which is 6xx/7xx/74xx/82xx) since only
+740/750 and 74xx (more or less) can make use of this.  The problem is
+that Power3 and Power4 pretend to be CONFIG_ALL_PPC, so that they can
+be a chrp machine easily.  The best way to fix this, I think would be to
+make the arch/ppc/kernel/chrp_* files compile without needed pmac_*,
+so that these machines could just work.  Paul, does this sound like
+a sane plan to you?
 
-Oh, yeah, it's in 2_4_devel.
-
-Thanks.
-
-
-	-- Dan
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
