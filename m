@@ -1,33 +1,30 @@
-Message-ID: <32778.80.225.186.67.1030625626.squirrel@www.solinno.co.uk>
-Date: Thu, 29 Aug 2002 13:53:46 +0100 (BST)
-Subject: Re: Keyboard in PReP boot loader - desparate for help
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <46961.193.133.92.239.1030620615.squirrel@www.solinno.co.uk>
-References: <46961.193.133.92.239.1030620615.squirrel@www.solinno.co.uk>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15726.62313.723964.671359@argo.ozlabs.ibm.com>
+Date: Fri, 30 Aug 2002 14:24:09 +1000 (EST)
+To: Matt Porter <porter@cox.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: set_cfg_type
+In-Reply-To: <20020822170422.A2053@home.com>
+References: <15716.30526.816418.995714@argo.ozlabs.ibm.com>
+	<20020822170422.A2053@home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Leigh Brown said:
-> I'm using Hollis Blanchard's patches to get a framebuffer working in
-> the PReP boot loader, and this is working really well.  In order to be
-> able to type the command line in, the keyboard needs to work.  However,
-> the keyboard code in the PReP boot loader does not work on my 7043-140,
-> nor on a 7024-E30 that I have access to.  The same code works
-> absolutely fine on a Carolina machine.  In addition to this, the
-> keyboard works fine once the kernel has booted.
->
-> I've been trying to get this working for the last three days and I am
-> totally stuck.
+Matt Porter writes:
 
-My cunning ploy worked!  Shortly after I sent the email I got it working!
+> I made it an option since we may get undesirable results fiddling
+> with that bit on other host bridges.  We *could* leave it that
+> way for safety sake on 2.4 and do it all the time on 2.5 and see
+> what we break.  Recall that the PCI spec does not define host
+> bridge operation, so the CFGA could do just about anything by
+> twiddling that bit.
 
-Cheers,
+OK, then let's put the `set_cfg_type' field in the hose structure.  It
+doesn't really belong in the ppc_md structure.
 
-Leigh.
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
