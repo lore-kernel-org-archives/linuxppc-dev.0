@@ -1,45 +1,52 @@
-Subject: [PATCH] compile fix for cpm uart driver
+Subject: [PATCH] add weak embed_config()
 From: Andreas Oberritter <obi@saftware.de>
-To: Pantelis Antoniou <panto@intracom.gr>
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Content-Type: multipart/mixed; boundary="=-TMC5Hw1GF5Q13UkMmFaP"
-Message-Id: <1090251356.1417.8.camel@shiva.saftware.de>
+Content-Type: multipart/mixed; boundary="=-4Y5SKZdS42fJ3mqS8COc"
+Message-Id: <1090251755.4369.15.camel@shiva.saftware.de>
 Mime-Version: 1.0
-Date: Mon, 19 Jul 2004 17:35:56 +0200
+Date: Mon, 19 Jul 2004 17:42:36 +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---=-TMC5Hw1GF5Q13UkMmFaP
+--=-4Y5SKZdS42fJ3mqS8COc
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi Tom,
 
-cpm_uart_cpm1.c doesn't compile due to a missing bracket (linuxppc-2.5
-tree). Please apply.
+in 2.4 there is a weak embed_config function for boards which don't need
+to fill the bd_t struct because they are using u-boot. This patch adds
+the function to linuxppc-2.5. Please apply.
 
 Signed-off-by: Andreas Oberritter <obi@saftware.de>
 
---=-TMC5Hw1GF5Q13UkMmFaP
-Content-Disposition: attachment; filename=cpm_uart_cpm1.diff
-Content-Type: text/x-patch; name=cpm_uart_cpm1.diff; charset=UTF-8
+--=-4Y5SKZdS42fJ3mqS8COc
+Content-Disposition: attachment; filename=embed_config.diff
+Content-Type: text/x-patch; name=embed_config.diff; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-===== drivers/serial/cpm_uart/cpm_uart_cpm1.c 1.4 vs edited =====
---- 1.4/drivers/serial/cpm_uart/cpm_uart_cpm1.c	2004-07-16 01:26:09 +02:00
-+++ edited/drivers/serial/cpm_uart/cpm_uart_cpm1.c	2004-07-18 20:46:16 +02:00
-@@ -138,7 +138,7 @@
+===== arch/ppc/boot/simple/misc-embedded.c 1.14 vs edited =====
+--- 1.14/arch/ppc/boot/simple/misc-embedded.c	2004-04-01 17:35:14 +02:00
++++ edited/arch/ppc/boot/simple/misc-embedded.c	2004-07-18 20:09:05 +02:00
+@@ -72,6 +72,14 @@
+ extern void gunzip(void *, int, unsigned char *, int *);
+ extern void embed_config(bd_t **bp);
 
- 	dpmemsz = sizeof(cbd_t) * (pinfo->rx_nrfifos + pinfo->tx_nrfifos);
- 	dp_offset = cpm_dpalloc(dpmemsz, 8);
--	if (IS_DPERR(dp_offset))
-+	if (IS_DPERR(dp_offset)) {
- 		printk(KERN_ERR
- 		       "cpm_uart_cpm1.c: could not allocate buffer descriptors\n");
- 		return -ENOMEM;
++/* Weak function for boards which don't need to build the
++ * board info struct because they are using PPCBoot/U-Boot.
++ */
++void __attribute__ ((weak))
++embed_config(bd_t **bdp)
++{
++}
++
+ unsigned long
+ load_kernel(unsigned long load_addr, int num_words, unsigned long cksum, bd_t *bp)
+ {
 
---=-TMC5Hw1GF5Q13UkMmFaP--
+--=-4Y5SKZdS42fJ3mqS8COc--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
