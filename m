@@ -1,33 +1,29 @@
-Date: Wed, 24 Apr 2002 20:43:50 +0200
-Message-Id: <200204241843.g3OIhov01876@mailgate5.cinetic.de>
+Message-ID: <3CC6FD33.1060108@pacbell.net>
+Date: Wed, 24 Apr 2002 11:45:07 -0700
+From: Armin <akuster@pacbell.net>
 MIME-Version: 1.0
-From: Stefan Nunninger <nunninger@web.de>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Documentation of a port attempt of Linux
-Content-Type: text/plain; charset="iso-8859-1"
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: [PATCH] IBM ocp I2C
+References: <20020423200127.G20394@ecam.san.rr.com> <20020423200151.H20394@ecam.san.rr.com> <20020424112626.A22212@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+andrew may wrote:
+> This patch is also needed to get it to compile. I forgot
+> to check things after I removed the stuff from the headers.
 
-During the last year I was working on a project which aimed to port embedded Linux to a custom PowerPC based platform. The help of some people in this mailinglist helped me a lot to finish the project succesfully.
+>
 
-During the time I was joining this mailing list I saw several questions of people who probably just started a similar project. I assume some of those might be interested in getting a documentation of a port example. Therefore I'll publish my project report on my homepage which can be found at: http://www.snunninger.de/spif/spif_report.pdf.gz
 
-Topics of the documentation are:
-Port of embedded Linux, MBXBoot, PPCBoot, BDM4GDB, Montavista CDK, LCD for PPC860, embedded Java, Performance and Stability measurements of Linux running on the custom device. A network performance comparison between a Java and a native application.
+Andrew,
 
-Please note I'm not a professional in the field of embedded system development. Therefore I assume the report will not be very interesting for the professionals of you. However I invite everybody who is interested to
-read the report. In any case I'd appreaciate very much to get comments, feedback or correction.
+Thanks,  the clock changes are on hold until I can validate on the other
+40x boards I have that support i2c.
 
-  Stefan
-
-P.S.
-I've crossposted this mail to three mailinglist which I've used during my work. I appologize to all those who got the mail several times.
-____________________________________________________
-Berufsunfähigskeitversicherung von Mamax bei WEB.DE.
-Jetzt informieren! http://bu.web.de
+armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
