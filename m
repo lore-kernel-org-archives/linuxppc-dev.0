@@ -1,41 +1,37 @@
-Message-ID: <40F5E435.60503@cyberone.com.au>
-Date: Thu, 15 Jul 2004 11:56:05 +1000
-From: Nick Piggin <piggin@cyberone.com.au>
+Date: Thu, 15 Jul 2004 09:54:07 +0200 (MEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Olaf Hering <olh@suse.de>, Andrew Morton <akpm@osdl.org>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [PATCH] fix missing option in binutils version check
+In-Reply-To: <20040714232336.GO21856@smtp.west.cox.net>
+Message-ID: <Pine.GSO.4.58.0407150953090.8912@waterleaf.sonytel.be>
+References: <20040712090618.GB32413@suse.de> <20040712151119.GL28002@smtp.west.cox.net>
+ <20040712180321.GB16877@smtp.west.cox.net> <20040713134945.GA5104@suse.de>
+ <20040713140127.GJ16877@smtp.west.cox.net> <20040713140220.GA20213@suse.de>
+ <20040713142015.GK16877@smtp.west.cox.net> <20040713151854.GA7858@suse.de>
+ <20040713152633.GL16877@smtp.west.cox.net> <20040713152950.GB7858@suse.de>
+ <20040714232336.GO21856@smtp.west.cox.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Cc: linuxppc-dev@lists.linuxppc.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fw: 2.6.8-rc1-mm1 "Badness in schedule" on ppc32
-References: <20040714161503.2b0ce4d9.akpm@osdl.org>
-In-Reply-To: <20040714161503.2b0ce4d9.akpm@osdl.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andrew Morton wrote:
+On Wed, 14 Jul 2004, Tom Rini wrote:
+> +	@echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no lonber build '
+                                                          ^^^^^^
+							  longer
 
->Nick , Ingo: could you please appropriately berate the ppc developers
->over this?  They're ignoring me ;)
->
->Or, if we don't really think the risk is very high, maybe I should just drop
->the debug patch?
->
->
+Gr{oetje,eeting}s,
 
-sched-clean-init-idle has the following hunk to schedule() which
-should catch all unsafe calls to it, I think.
+						Geert
 
-+	/*
-+	 * The idle thread is not allowed to schedule!
-+	 * Remove this check after it has been exercised a bit.
-+	 */
-+	if (unlikely(current == rq->idle) && current->state != TASK_RUNNING) {
-+		printk(KERN_ERR "bad: scheduling from the idle thread!\n");
-+		dump_stack();
-+	}
-+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Probably the patch can go.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
