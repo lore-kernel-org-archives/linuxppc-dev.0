@@ -1,28 +1,25 @@
-Return-Path: <olof@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.131])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 777C067A75
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Feb 2005 07:37:07 +1100 (EST)
-Received: from westrelay01.boulder.ibm.com (westrelay01.boulder.ibm.com
-	[9.17.195.10])
-	by e33.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j1GKaw0D648158
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2005 15:36:59 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by westrelay01.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
-	j1GKawMx141062
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2005 13:36:58 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
-	j1GKawA3027366
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Feb 2005 13:36:58 -0700
-Date: Wed, 16 Feb 2005 12:14:30 -0600
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20050216181430.GA27031@austin.ibm.com>
+Return-Path: <nico-linux-ppc@schottelius.org>
+Received: from scice.schottelius.org (ns.schottelius.org [213.146.113.242])
+	by ozlabs.org (Postfix) with SMTP id A72F267A7A
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Feb 2005 22:11:58 +1100 (EST)
+Date: Fri, 18 Feb 2005 12:13:04 +0100
+From: Nico Schottelius <nico-linux-ppc@schottelius.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Message-ID: <20050218111304.GH5801@schottelius.org>
+References: <20050118094216.GB25470@Redstar.dorchain.net>
+	<20050126113554.GD19633@schottelius.org>
+	<20050127163606.GN14866@Redstar.dorchain.net>
+	<20050118094216.GB25470@Redstar.dorchain.net>
+	<20050126113554.GD19633@schottelius.org>
+	<1106746946.6250.56.camel@gaston>
+	<20050208075421.GB21154@schottelius.org>
+	<8f293b6dbedd2ae1a825608a48a0604b@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: olof@austin.ibm.com (Olof Johansson)
-Subject: iBook G4: first wakeup has black screen
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HkMjoL2LAeBLhbFV"
+In-Reply-To: <8f293b6dbedd2ae1a825608a48a0604b@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] Heartbeat LED for iBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,21 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-With 2.6.11-rc4, sleep seems to work pretty well. There's still problems
-with disconnecting USB devices while the machine is asleep, but that's
-nothing new.
+--HkMjoL2LAeBLhbFV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've noticed one thing though: The very first time I wake the machine up
-after sleeping the screen is dark (backlight off?). If I put it to sleep
-and wake it up again everything goes back to normal.
+Segher Boessenkool [Mon, Feb 14, 2005 at 02:14:40PM +0100]:
+> >Btw, howto control it via /dev/adb? Can you point me to a document
+> >which explains that?
+>=20
+> Write a byte 0x06 followed by the PMU packet (all in one write());
+> read back the PMU reply (all in one read()).
 
-The machine is an iBook G4 1.2GHz:
-0000:00:10.0 VGA compatible controller: ATI Technologies Inc RV250 5c63
-[Radeon Mobility 9200 M9+] (rev 01)
+What exactly does 0x06 mean? Flash led? Isn't there some kind of
+"bright-led" "5V,12V,24V" settings available? I mean I want to be able
+to change the brightness.
 
-Has anyone else seen this before?
+And what is the PMU packet? One Byte, two byte, value 0x2342?
 
+Please point me to a FM about adb.
 
--Olof
+Nico
+
+--=20
+Keep it simple & stupid, use what's available.
+Please use pgp encryption: 8D0E 27A4 is my id.
+http://nico.schotteli.us | http://linux.schottelius.org
+
+--HkMjoL2LAeBLhbFV
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iQIVAwUBQhXNvrOTBMvCUbrlAQK4ZxAAns1BPcb9rgZPNXBNQXiKZQVUldgSo73d
+Mqvsw3Q6rdViOV83SuTOxGtlLyVDjDfb4IgYG37q/aJ9E5ZZCPwIF6XgXClVtiJD
+awxnVD4Aos3C4astWuN2plgvxasmmRBFrLobehDLZWH80hkkM8ofnQa+Le8qJhIR
+9hVhGbDouydI31a03PKUQvL+NQSMx0TQxR0f2PDAnBN/ofUVnemCBGIF9gZ32483
+Z1ekCDyKQl3tWIaIqY383HpasqM2jHVXnE7q+vI7ihdM+C+iBLQ30VAPs+7saAtF
+dXh22WSUxbv7Z8wyufaeAFcOR/cSi9oXtbv9xBbUE2L/edeOTCHakOs07/CDc0Na
+t9PSayXPJKfL4Wp/U7F0h1gmh/aLA6iOeFX3/UgyCb7399otO55JcVKcmx62NyjO
+0RgYcHDrXIl5CiEJYY8ouEJaUl28YoXYFfRR+SjWGu+/FVS7FzyAkTLckHx0CTXj
+DqYejnypuUgPisr7PHG9gAUyhh7zmxEX1+Pak5yFLUX5em5IjV2pPCgHsg8IfLjp
+SaawGWq5P7yHTZq9KmvbbuCEVUJVENfbZnZ8957bEzZDmSBKJU+f2BYg3cJ3ANwa
+lLpwTa3L2eaF67EPpN3uprGqzR2fWGw63fwLdP8dA75Srm0uVY6Y+g99xuIj+GTd
+QpiO+7m1EXY=
+=Cm60
+-----END PGP SIGNATURE-----
+
+--HkMjoL2LAeBLhbFV--
