@@ -1,35 +1,24 @@
-Date: Sat, 15 May 1999 10:04:56 -0400 (EDT)
+Date: Sat, 15 May 1999 10:13:34 -0400 (EDT)
 From: Tom Rini <tmrini@ntplx.net>
-To: blokos <blokos@worldnet.fr>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: maccoach and linux ppc
-In-Reply-To: <373CD376.7B669411@worldnet.fr>
-Message-ID: <Pine.LNX.4.05.9905151002430.651-100000@pc.wackyland.com>
+To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: VGER kernels
+Message-ID: <Pine.LNX.4.05.9905151011150.651-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-(Didn't see the orig email, sorry).
+I've noticed a few mails recently about problems compiling 2.3.x from
+vger.  I think it should be pointed out that you most likely (Unless Cort
+or Paul wishes to contradict me) don't want to be running 2.3.x on your
+machine for day to day use.  It's the devel branch, and it subject to
+crashing and other problems.  You will most likekly want (and I hope Cort
+and/or Paul will keep up w/ the 2.2.x branch as well..) to run your cvs
+updates as:
+cvs update -dP -rlinux_2_2
 
-On Sat, 15 May 1999, blokos wrote:
-
-> Support wrote:
-> 
-> > Maccoach is a great product that permit your server to reboot
-> > automatically when it crashes... but it works only with Mac os. So i
-> > ve sent an email to Maccoach support and that is the answer
-
-This sounds exactly like the software watchdog config option:
-CONFIG_SOFT_WATCHDOG:
-
-  A software monitoring watchdog. This will fail to reboot your system
-  from some situations that the hardware watchdog will recover
-  from. Equally it's a lot cheaper to install. 
-
-This should work on ppcs.  If you need a HW solution, the watchdog PCI
-cards should work (the ones w/ drivers that is), but you never know.
+So that you get the current stable version.
 
 ---
 Tom Rini (TR1265)
