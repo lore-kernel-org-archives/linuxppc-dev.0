@@ -1,7 +1,7 @@
-Message-ID: <20010119032114.15637.qmail@web11805.mail.yahoo.com>
-Date: Thu, 18 Jan 2001 19:21:14 -0800 (PST)
+Message-ID: <20010119080217.1791.qmail@web11802.mail.yahoo.com>
+Date: Fri, 19 Jan 2001 00:02:17 -0800 (PST)
 From: xuelong wang <wang_xuelong@yahoo.com>
-Subject: embedded questions
+Subject: Questions about compliing ppcboot-0.6.2
 To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -9,33 +9,70 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Sir or Madam,
+Dear sir,
+I have a target board with a flash on it, and I¡¯d
+like to put ppcboot-0.6.2 into it by a writer. But
+when I compile ppcboot-0.6.2 under the environment of
+RedHat Linux 6.2 and with the help of ppc_8xx-gcc
+which is a compiling utility included by CDK1.2, the
+following problems appeared.
 
-I have 2 questions to ask you.
+1. A file can not be complied, the error message is:
 
-1. Do you have any experiences in compiling ppcboot
-packages(i.e. ppcboot-0.4.4-pre1 or ppcboot-0.6.2)? If
-you have, please tell me what compiling environment
-(such as CDK and cygwin) you used to do the right
-thing. Of course, other corresponding advice is
-welcome too. If you don¡¯t, please tell me your
-opinion of compiling ppcboot packages.
+>/usr/local/src/ppcboot/ppcboot->0.6.2/include/ppc_asm.tmpl:232:
+Error:Rest of line >ignored. First >ignored character
+is ¡®\¡¯.
+>¡­
+>¡­
+>/usr/local/src/ppcboot/ppcboot->0.6.2/include/ppc_asm.tmpl:242:
+Error:Rest of line >ignored. First >ignored character
+is ¡®\¡¯.
+>/usr/local/src/ppcboot/ppcboot->0.6.2/include/ppc_asm.tmpl:243:
+Error:Rest of line >ignored. First >ignored character
+is ¡®\¡¯.
 
-2. Now my board have already had a ppcboot.srec on its
-flash, and I can download a kernel with Srec format
-into my board. In a word, everything is OK, since
-mounting NFS is no problem, debugging simple
-applications on the board is also no problem. But, I
-think, when we make this board become a product, we
-should not let the board work through mounting a NFS
-located in a Host machine. Because the board should
-run independent of a Host machine. So my question is
-how to make a file system on my board? I appreciate
-a-sentence-advice and detailed descriptions about this
-question.
+These lines located in ppcboot-0.6.2/include/ppc_asm.
+tmpl can be writed as follows:
 
-    Thanks in advance!
-                                Xuelong Wang
+>#define STD_EXCEPTION(n, label, hdlr)	\
+>	. = n;				\
+>label:					\
+>	EXCEPTION_PROLOG;			\
+>	lwz	r3,GOT(transfer_to_handler);\
+>	mtlr	r3;		          \
+>	addi	r3,r1,STACK_FRAME_OVERHEAD; \
+>	li	r20,MSR_KERNEL;		 \
+>	rlwimi	r20,r23,0,25,25;		 \
+>	blrl	; 			 \
+.>L_ ## label :				 \
+>  .long	  hdlr - _start + EXC_OFF_SYS_RESET;\
+>  .long	int_return - _start + EXC_OFF_SYS_RESET
+
+Can you give me a hint to explain what happened.
+
+2. When I read the Makefile of ppcboot-0.6.2/ (i.e.
+ppcboot-0.6.2/Makefile), I find 4 lines like this:
+
+> subdirs:
+>  @for dir in $(SUBDIRS) ; do $(MAKE) -C $$dir ||
+>exit 1 ; done
+>depend dep:
+> @for dir in $(SUBDIRS) ; do $(MAKE) -C >$$dir
+.depend ; done
+
+but I can not find the definition of ¡°MAKE¡± in this
+file or the other files included by this package. Can
+you tell me what ¡°MAKE ¡± is and where the definition
+locates?
+
+    3. If you think that I use the wrong versions of
+RedHat Linux, or that I use the wrong CDK , or that
+the way I compile ppcboot-0.6.2 is absolutely stupid,
+please don't hesitate giving me a message.
+
+   Thanks in advance.
+          Best Regards
+                 Yours sincerely  Xuelong Wang
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
