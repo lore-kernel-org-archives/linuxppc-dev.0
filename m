@@ -1,44 +1,27 @@
-Message-Id: <l03130301b2e804cd8aed@[209.251.79.61]>
-In-Reply-To: <19990210124919.012660@mail.mipsys.com>
-References: <l03130301b2e69f7f1da5@[209.251.79.177]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 10 Feb 1999 22:57:04 -0500
-To: BenH <bh40@calva.net>
-From: "Michael R. Zucca" <mrz5149@acm.org>
-Subject: Re: NuBus PowerMacs and PDM video
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-Id: <9902110429.AA10400@marc.watson.ibm.com>
+To: Ken Roberts <ken.r@worldnet.att.net>
+Cc: Rick Kwan <kenobi@coruscant.lightsaber.com>,
+        linuxppc-dev@lists.linuxppc.org, rick.kwan@lightsaber.com
+Subject: Re: PReP spec 
+In-Reply-To: Message from Ken Roberts <ken@worldnet.att.net>
+   of "Wed, 10 Feb 1999 21:17:09 CST." <Pine.LNX.3.96.990210210841.388C-100000@dancer.at.home>
+Date: Wed, 10 Feb 1999 23:29:38 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 6:49 AM -0500 2/10/99, BenH wrote:
+>>>>> Ken Roberts writes:
 
->Anyway, I now have some code
->to mess with the video controller, so I will be able to work around this
->problem.
+Ken> everything ibm made that's powerpc, i think, was prep or
+Ken> chrp.  all the current rs/6000's, as/400's, and system 390's are powerpc and
+Ken> chrp.  the older powerpc machines of these lines are, as far as i know, prep.
 
-What does the code reveal about the controller? Is it the MkLinux code?
+	S/390 is neither PowerPC nor CHRP.  Recent AS/400 systems are
+PowerPC based.  I am not sure if any AS/400 systems are CHRP and not all
+RS/6000 systems are CHRP.
 
->There is a MacOS call for logical->physical mappings. The base address
->sent by BootX to the kernel is already a physical address (actually both
->are sent with BootX >= 1.0.2b1)
-
-I could see why you're confused, then. The booter sends you an address of
-zero and it looks like a bug. :) However, the fact that the frame
-buffer starts at 0 physical is weird but shouldn't be an impediment.
-
-The last time I heard of Apple doing this was on the IIsi/IIci. We've been
-avoiding the subject in NetBSD-mac68k for some time now :)
-
-
-_______________________________________________________________________
- Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
- "I will choose a path that's clear. I will choose Freewill. "
-  --Rush, Freewill
-_______________________________________________________________________
-
-
+David
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
