@@ -1,25 +1,21 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 3E6142BDEB
+Return-Path: <joakim.tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BB6DD2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Oct 2004 00:27:51 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id i9TESueh007923
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Oct 2004 17:28:57 +0300 (EEST)
-Message-ID: <4182524A.3010806@intracom.gr>
-Date: Fri, 29 Oct 2004 17:23:06 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Sat, 30 Oct 2004 00:35:52 +1000 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Tom Rini" <trini@kernel.crashing.org>,
+	"Pantelis Antoniou" <panto@intracom.gr>
+Date: Fri, 29 Oct 2004 16:35:21 +0200
+Message-ID: <JPEALJAFNGDDLOPNDIEEIENCCNAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-References: <JPEALJAFNGDDLOPNDIEEEEMOCNAA.joakim.tjernlund@lumentis.se>
-	<41823D68.1090100@intracom.gr>
-	<20041029142209.GN2097@smtp.west.cox.net>
+Content-Type: text/plain;
+	charset="us-ascii"
 In-Reply-To: <20041029142209.GN2097@smtp.west.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: Merge 8xx to Linus tree?
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Merge 8xx to Linus tree?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,21 +26,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Tom Rini wrote:
+> > >The www I/F for both Linus tree(http://linux.bitkeeper.com/) and the ppc 
+> > >tree(http://ppc.bitkeeper.com/)
+> > >are offline alot. Anyone who knows whats going on?
+> 
+> BitMover has been moving and upgrading the machines of late, I think
+> this is done now.
 
-[snip]
+I see. Doesn't seem like it is ready yet, the above URL:s are still dead.
 
->In 2.6.10-rc1 release? No.  In linuxppc-2.5? Now, yes.  The changes came
->from Randy Vinson, to make request_irq() / openpic_hookup_cascade()
->calls become arch_initcalls() which fixed at least some platforms.  I
->would guess 8xx will need something similar.
->
->  
->
-In linuxppc-2.5 yes.
-
-Just trying to catch up after my small period of absence...
-
-Regards
-
-Pantelis
+ Jocke 
