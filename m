@@ -1,42 +1,35 @@
-To: "Aman" <aman@mistralsoftware.com>
-Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: NFS Mount 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 09 Sep 2002 22:03:52 +0530."
-             <007001c2581e$af4a9900$370da8c0@aman>
-Date: Mon, 09 Sep 2002 18:50:09 +0200
-Message-Id: <20020909165014.E517EFA8B@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: "gguevel" <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to receive IP and RAW frames on the same ethernet device ?
+Date: Mon, 9 Sep 2002 19:23:42 +0200
+Message-ID: <000001c25825$a572e5c0$3101a8c0@DOMAIN>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: 
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Aman,
+Hi,
 
-in message <007001c2581e$af4a9900$370da8c0@aman> you wrote:
->
-> My root path in the dhcpd.conf  is /hdb/mydir/mykernel , this where I have
-> un tar the linux kernel source for PPC.
+I work on a custom 860 board with Linux 2.2.14.
 
-This is wrong. You have use a directory which contains  a  filesystem
-with native tools, dev entries, libraries, etc.
+I want to receive and send IP and RAW frames simultaneously on the same
+ethernet device.
 
-> My doubt is , will there be a filesystem already in the linux source at the
-> location /hdb/mydir/mykernel or I have to create it. If I have create it,
+I don't know if I can use ethertap driver or something else.
 
-The linux kernel source is just that: kernbel source. It does not contain a root filesystem.
+I don't understand why I must "ifconfig" the ethertap with an ip address if
+I just want raw
+frames like LLC frames.
 
-> how should I go about.
+Has anybody a good idea ?
 
-Get and install our ELDK. It's free. See
-http://www.denx.de/re/ELDK.html
+Thanks
 
-Wolfgang Denk
+Gérard Guével
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"I didn't know it was impossible when I did it."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
