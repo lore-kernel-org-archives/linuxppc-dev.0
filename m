@@ -1,53 +1,56 @@
-From: "James Bates" <jbates@paradise.co.uk>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Executable delay
-Date: Wed, 17 Dec 2003 17:11:07 -0000
-Message-ID: <OJEPIMKHOKJAJIDJLJBNIEJPCAAA.jbates@paradise.co.uk>
+Subject: gcc version 2.95.3 20010315 (release/MontaVista) cross compiler
+Date: Wed, 17 Dec 2003 15:02:37 -0800
 MIME-Version: 1.0
+Message-ID: <8A098FDFC6EED94B872CA2033711F86F775A6F@orion.ariodata.com>
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <20031217093448.A18081@lists.linuxppc.org>
-Reply-To: jbates@paradise.co.uk
+From: "David C. Chiu" <dchiu@ariodata.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+We're experiencing some unexpected behavior with binary generated with
+the said version of gcc; namely that variables declared to char appear
+to be defaulting to unsigned char.
 
-I'm getting some funny behaviour on my MPC8260ADS based system.
+#include <stdio.h>
+#include <stdlib.h>
 
-I am mounting my DiskOnChip 2000 on /mnt/doc. It all seems fine until I try
-executing something from it. Trying to execute anything from the doc takes
-ages, execution will not occur until a good 2 minutes after you have typed
-the command. I have tried this with the most basic of programs and it still
-does the same. Everthing runs fine when executed from the nfs mounted root
-filesystem.
+int main( int argc, char** args, char** envs )
+{
+        char sc;
+        unsigned char uc;
 
-I know that this is not a hardware problem because I can boot into Bluecat
-linux and access the filesystem without problems.
+        sc = uc = -3;
 
-I have tried setting Use short timeouts but it makes no difference.
+        printf( "signed char: %d unsigned char: %d\n", sc, uc );
+        if ( sc > (char)0 )
+                printf( "sc is greater than zero\n" );
+        else
+                printf( "sc is less or equal to zero\n" );
 
-I have the latest eldk and 2.4.23 kernel from linuxppc_2_4_devel.
+        return 0;
+}
 
+The preceeding code would produce the following unexpected result --
 
-Looking into this problem a little deeper we put a logic analyser on the
-DiskOnChip and discovered.
+signed char: 253 unsigned char: 253
+sc is greater than zero
 
-1) All large reads ( > ~10K get stuck)
+Making the following change --
 
-2) Looking at the "top" output. Any process that accesses the DOC quickly
-gets put into the D state (Task Uninterruptable).
+        signed char sc;
+        unsigned char uc;
+	.
+	.
 
-3) Kicking off a new process brings the accessing process to life for a
-short while it then goes back into the task uninterruptable state.
+Would produce the expected result --
 
-It smells like an mtd driver problem but I havn't the foggiest where to
-start looking for the solution. Any ideas greatly received.
+signed char: -3 unsigned char: 253
+sc is less or equal to zero
 
-Kind Regards,
-
-James Bates
-
+Can someone shed some light on this? (As in, is this "normal" and we do
+not know only because we've been living under a rock ;-)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
