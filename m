@@ -1,13 +1,12 @@
-Message-ID: <3CFC0794.7020907@embeddededge.com>
-Date: Mon, 03 Jun 2002 20:19:32 -0400
+Message-ID: <3CFC0D3F.9030901@embeddededge.com>
+Date: Mon, 03 Jun 2002 20:43:43 -0400
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-embedded@lists.linuxppc.org,
-	Tom Rini <trini@kernel.crashing.org>,
 	Paul Mackerras <paulus@samba.org>
-Subject: Re: Do we need tlbsx at finish_tlb_load?
-References: <20020530080434.GY16537@zax> <20020603024344.GA6765@zax>
+Subject: Re: First cut at large page support on 40x
+References: <20020531042153.GD16537@zax>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -15,19 +14,20 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 David Gibson wrote:
 
-> Ok, not seeing any replies here.  If no-one speaks up for this tlbsx
-> in the next couple of days, I'll remove it from 2_4_devel.
+> The only large-page PTEs used are created in mapin_ram() for the
+> kernel mapping of system RAM.
 
-Some of us (fortunately) have a life outside of kernel hacking, so
-it takes time to reply.
+I did a similar thing for 8xx, except I didn't change any of the existing
+mapping code.  At the end of the kernel initialization, I added a function
+to scan the page tables looking for areas we could coalesce into larger
+pages.  I would then update the PMD entry to indicate the size of the pages
+(4M or 8M in the case of 8xx) it could use to cover this space.  This way
+I could also get any I/O mapping that was done and I didn't have to complicate
+any of the existing mapin_ram() or other code with processor specific changes.
+Also, iopa() and any page lookup functions should work since the only change
+was to add control bits to the least significant part of pmd entry.
 
-An instuction TLB miss will load the TLB with a PTE that indicates it isn't
-valid.  A subsequent TLB instruction fault to load the page will cause a
-data tlb miss to copy the page, and when you fix up this entry to allow a
-write, you don't want to create an alias in the TLB.
-
-If you remove the tlbsx, you can see this happen when init starts and you
-dump the TLB after every type of TLB fault while it is starting.
+Thanks.
 
 
 	-- Dan
