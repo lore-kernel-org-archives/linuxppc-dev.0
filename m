@@ -1,17 +1,21 @@
-Return-Path: <jeff@theptrgroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [209.183.211.17])
-	by ozlabs.org (Postfix) with ESMTP id C99B52BDA6
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 23:55:19 +1000 (EST)
-Received: from [192.168.180.211] ([132.250.144.104])
-	by mail.theptrgroup.com (8.11.6/linuxconf) with ESMTP id i8ODtFP21361
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Sep 2004 09:55:19 -0400
-From: Jeff Angielski <jeff@theptrgroup.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1096034125.8121.15.camel@nighteyes.localdomain>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 0859B2BDA2
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Sep 2004 02:41:50 +1000 (EST)
+Date: Fri, 24 Sep 2004 09:41:46 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20040924164146.GG2107@smtp.west.cox.net>
+References: <20040923164655.0472a8b9.sfr@ozlabs.org>
+	<20040923233035.GH27238@smtp.west.cox.net>
+	<36b714c80409231731257ca5d0@mail.gmail.com>
+	<29D00F8B-0DC8-11D9-A0FB-000A95A0560C@penguinppc.org>
+	<DA7E9084-0DED-11D9-A74B-003065F9B7DC@embeddededge.com>
 Mime-Version: 1.0
-Date: Fri, 24 Sep 2004 09:55:25 -0400
-Subject: MPC8260 SCC2 UART hang
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DA7E9084-0DED-11D9-A74B-003065F9B7DC@embeddededge.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: New mailing list specifically for embedded PowerPC development
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Sep 24, 2004 at 01:52:00AM -0400, Dan Malek wrote:
 
-I am having a problem with the SCC2 uart whereby the system hangs
-whenever I try to use that device.  It happens using both the Denx
-kernel and the kernel.org 2.4.27 kernel.
+> 
+> On Sep 23, 2004, at 9:22 PM, Hollis Blanchard wrote:
+> 
+> >I think ultimately the problem is that the embedded list ends up 
+> >generating a *lot* of traffic, and that traffic ends up drowning out 
+> >non-embedded topics.
+> 
+> This was the reason the list was created years ago.  People got tired
+> of reading my comments and few people were involved in embedded
+> development at that time :-)  People with no interest in embedded didn't
+> want to hear about it.
 
-I was hoping that somebody can tell me if SCC2 works as expected on
-their MPC8260 hardware so that I can reduce the scope of my debug
-effort.
+I would dare say that a few years ago the embedded side was a bit
+smaller than today :)
 
-Here is the relevant info from the 2.4.27 kenel:
+> I don't know why anyone would care if they have to subscribe to
+> multiple lists to get the information they need.  There isn't any need
+> to cross post and I don't think this is done very much or at all.  There
+> have been a few times early in the -embedded days that I have taken
+> topics from the embedded list to the -dev list, but this isn't necessary
+> any more because the interested parties are on both.
 
-<snip>
-CPM UART driver version 0.01
-ttyS0 on SMC1 at 0x0000, BRG1
-ttyS1 on SMC2 at 0x0040, BRG2
-ttyS2 on SCC1 at 0x8000, BRG3
-ttyS3 on SCC2 at 0x8100, BRG4
-<snip>
+Well, it's not exactly obvious to new people why exactly the 'dev' list
+isn't for embedded development.  It also helps foster the notion that
+'those embedded folks just go off and do their own thing'.
 
-Here is the simple test that causes the problem.  Once I try to access
-/dev/tts/3 the system hangs.
-
-bash-2.05b# echo "something" > /dev/tts/0
-something
-bash-2.05b# echo "something" > /dev/tts/1
-bash-2.05b# echo "something" > /dev/tts/2
-bash-2.05b# echo "something" > /dev/tts/3
-[system is dead, no console, cannot ping, no nothing...]
-
-FWIW, my hardware is the Embedded Planet EP8260 H2 1.3.
-
-Jeff Angielski
-The PTR Group
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
