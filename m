@@ -1,35 +1,33 @@
-Date: Fri, 16 Mar 2001 08:18:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Stefano Coluccini <s.coluccini@caen.it>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Sym53c875 problem with last 2_5 updates
-Message-ID: <20010316081831.D872@opus.bloom.county>
-References: <NDBBIFIMCKPOADMAJOKMIECEDAAA.s.coluccini@caen.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <NDBBIFIMCKPOADMAJOKMIECEDAAA.s.coluccini@caen.it>; from s.coluccini@caen.it on Fri, Mar 16, 2001 at 09:38:47AM +0100
+From: Subodh Nijsure <subodh@best.com>
+Message-Id: <200103161525.HAA26938@shell9.ba.best.com>
+Subject: Re: flash writing with Linux
+In-Reply-To: <3AB1E380.7E88EC47@esd-electronics.com> from Matthias Fuchs at "Mar 16, 1 10:57:20 am"
+To: matthias.fuchs@esd-electronics.com (Matthias Fuchs)
+Date: Fri, 16 Mar 2001 07:25:38 -0800 (PST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Mar 16, 2001 at 09:38:47AM +0100, Stefano Coluccini wrote:
+>
+> Hi,
+>
+> does anybody know if a flash writing tool for Linux is available ?
+> I want to update a flash image from a running Linux. The Linux is
+> running from a ramdisk, so the flash can be erased and rewritten.
+>
+> I think what I need are two thing: A device driver for accessing the
+> flash and a command line tool for erasing and writing to the flash.
 
->   few days ago (I don't remember the exact date) I have resynced my local
-> repository of 2_5 and today I have recompiled a kernel. While before the
-> updates my sym53c875 based board had always worked fine, now the driver
-> unsuccesfully try to download script on the chip continually. I have seen
-> that the sym53c8xx.c file is changed, in fact I have correct the problem
-> replacing the new file with the old.
-> I have not found any mention of sym53c8xx.c change in the changesets at
-> http://www.bitmover.com:8888//home/ppc/linuxppc_2_5 so I have thinked it can
-> be an erroneous update ... it is possible ?
+Perhaps you can take a look at mtd and use that to manage your flash.
+With mtd you can partition your flash to different devices and erase them
+selectively.
 
-It got updated when I updated 2_5 with some of the changes from 2_4.  What
-machine is this?  Search the linuxppc-dev list, as Geert had this same problem
-on his LongTrail.
+Once you have your flash partitioned you can simply cat a file to /dev/mtd#
+to copy new content to the flash.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+/Subodh Nijsure
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
