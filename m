@@ -1,74 +1,39 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F2C852E@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Magnus Damm'" <damm@opensource.se>, John.Fisher@nec.com.au
+Date: Wed, 21 Aug 2002 17:54:42 +0200 (CEST)
+From: Marius Groeger <mag@sysgo.de>
+To: John Fisher <John.Fisher@nec.com.au>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: cygwin and embedded linux
-Date: Wed, 21 Aug 2002 11:07:49 -0400
+Subject: Re: cygwin and embedded linux
+In-Reply-To: <000301c248e8$9a2ce040$37d34c93@neca.nec.com.au>
+Message-ID: <Pine.LNX.4.40.0208211747420.7745-100000@mag.devdep.sysgo.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-viosoft has done it
-
------Original Message-----
-From: Magnus Damm [mailto:damm@opensource.se]
-Sent: Wednesday, August 21, 2002 10:54 AM
-To: John.Fisher@nec.com.au
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cygwin and embedded linux
-
-
+On Wed, 21 Aug 2002, John Fisher wrote:
 
 > Is anyone seriously trying to do embedded Linux development for power PC
 > using Cygwin as the host?
 
-I've designed a build-system for a customer, and I tried (just to see
-how
-much that worked ok) to build under Cygwin. Everything worked out ok
-until
-the system cross compiled glibc-2.1.3. Building glibc generated a error
-message that meant something like you-have-bad-memory-on-your-system.
-I tried to find the source of the problem with rebuilding and running
-memtest86. But no success. But this was maybe a year ago.
+We will do it for Elinos 3.0. There aren't any release dates fixed,
+unfortunately.
 
-The same system works great on Linux boxes.
+Actually, my personal opinion on that matter is that I'm not very fond
+of using Windows for a Linux kernel development platform. Doing --
+ideally pure ANSI-C/C++ -- application development is a different
+story. Thus, I feel it is much more sane to split it right there, if
+you must:  develop application code whereever you like, but compile
+your kernel and integrate your project on Linux.
 
-That's my only experience.
+Just my $.02,
+Marius
 
-But I have a box from Lynuxworks somewhere here (someone gave it to me)
-and that box says that the build system is hosted on windows...
-
-/ Magnus
-
-John Fisher wrote:
->
-> Is anyone seriously trying to do embedded Linux development for power PC
-> using Cygwin as the host?
->
-> I'm trying to get linux running on proprietary MPC850/860/8260 boards.
-I'll
-> start with either the 850 or the 860 board as I'm more familiar with these
-> processors than with the 8260.
->
-> I have the Macraigor blackbird BDM interface for the MPC850/860. I have
-both
-> an Agilent ethernet based probe and the Wind River Vision Probe II for the
-> 8260.
->
-> All boards will be running with plenty of flash and RAM: 16MB and 32MB
-> respectively for both the 850 and 860 boards. They will be running with no
-> disk drive, no monitor and a serial port on SCC3.
->
-> I may have real time requirements, but this is yet to be determined.
->
-> This is a learning exercise at this stage.
->
-> John Fisher
-> NEC Australia Pty Ltd
->
+-----------------------------------------------------------------------------
+Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
+Software Engineering     Embedded and Real-Time Software    www.sysgo.de
+Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
+FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
