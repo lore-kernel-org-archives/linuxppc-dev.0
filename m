@@ -1,50 +1,41 @@
-Message-ID: <3D48403F.B761E1D3@broadcom.com>
-Date: Wed, 31 Jul 2002 12:53:35 -0700
-From: "James Dougherty" <jfd@broadcom.com>
+Message-ID: <3D486350.8070700@embeddededge.com>
+Date: Wed, 31 Jul 2002 18:23:12 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: "bhupinder sahran" <bhup_sah@yahoo.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problems with mount system call -- cannot mount procfs!
-References: <20020731194907.0224D1087A@denx.denx.de>
-Content-Type: text/plain;
- charset=us-ascii
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Matt Porter <porter@cox.net>,
+	Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: [RFC/PATCH] idle loop changes
+References: <20020731193200.GD17472@opus.bloom.county> <3D4847D5.9030404@embeddededge.com> <20020731143357.C5793@home.com> <3D48569D.30201@embeddededge.com> <3D485B2F.84829A96@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
->
-> In message <3D483468.CB6DAE54@broadcom.com> you wrote:
-> >
-> > I checked out my ppcboot early_init.S and the ppcboot startup files.
-> > In ppcboot-1.1.4/cpu/mpc824x/start.S
-> ...
-> > I remove this code with an ifdef:
-> >
-> > #if !defined(CONFIG_MUSENKI) && !defined(CONFIG_BMW)
-> >
-> > And then rebuilt and boot linux-2.4.19-rc3 (latest rsync from mvista.com yesterday)!
->
-> Well, and what was the result?
->
+Mark A. Greer wrote:
 
-Life is good :-) Everything is working perfectly.
+> Why not use keep the ppc6xx_pm_idle, etc. as fallbacks (e.g., nothing
+> special about  your board so use generic 6xx one)
 
+That's fine, except we aren't using machdep calls.  The interaction between
+the external devices and the processor control may not allow (or we may
+not desire) using a "standard" processor function.  For example, the MPC8xx
+has four powersave modes and four sleep modes.  Only one of the modes
+is generic and isn't suitable to use if I use one of the other modes that
+may require external device management.
 
-> > Does the setup code above work on Sandpoint, or another MPC824x system?
->
-> Sure. It works here on SP8240, and on CU824 boards (both with 8240 CPUs).
+My comment was truly simple :-)  Just don't assume the processor powersave
+modes are suitable for all boards.  A board may wish to do something
+different, so I suggest keeping the power save function initialization local
+to a board rather than processor architecture.  Many of them are likely to
+be generic and can use the same function, just allow the provision for them
+to be different at the board level, that's all.
 
-It would appear that the memory/cache architecture is different on those boards.
-Do you have an external cache? I believe the Sandpoint modules have an option
-for L2 cache...
-
---
-James F. Dougherty, III
-Broadcom Corporation
-jfd@broadcom.com
-(408) 501-8273
+Thanks.
 
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+	-- Dan
+
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
