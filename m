@@ -1,39 +1,38 @@
-To: Mike Hill <mhill@bustech.com>
-Subject: Re: Kernel panic: No init found.
-Message-ID: <976723256.3a379d38783d0@mail.serialsystem.com.sg>
-Date: Thu, 14 Dec 2000 00:00:56 +0800 (SGT)
-From: Jari Nguyen Trung Thanh <jari.nguyen@serialsystem.com.sg>
-Cc: Nils Hagge <Nils.Hagge@stud.uni-hannover.de>,
-        linuxppc-embedded@lists.linuxppc.org
-References: <006c01c0650f$73b65d60$1e894b82@pc30> <004801c0651d$3a7d96e0$e3e8b2c6@hawk>
-In-Reply-To: <004801c0651d$3a7d96e0$e3e8b2c6@hawk>
+Message-ID: <3A37A048.46E692A0@mvista.com>
+Date: Wed, 13 Dec 2000 11:14:00 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Graham Stoney <greyham@research.canon.com.au>
+CC: Brian Ford <ford@vss.fsi.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.5 or 2.4 kernel profiling
+References: <20001212182856.A8336@brixi.research.canon.com.au> <Pine.GSO.4.21.0012120933330.24199-100000@eos> <20001213121554.B17129@brixi.research.canon.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Mike Hill and Nils Hagge,
+Graham Stoney wrote:
 
-Quoting Mike Hill <mhill@bustech.com>:
+> This does indeed sound better; the only sticky part I can think of is setting
+> the FCC/FEC to keep giving you Rx interrupts even when there are no buffer
+> descriptors to put the incoming packets in,
 
->
-> I believe I have seen the same problem.  As I recall, we first started
-> seeing this problem when we removed a symlink (/opt/hardhat/devkit to /)
-> that was included in the MontaVista target directory.  We were told that
-> we
-> had it add it back because some of the MontaVista libraries were built
-> incorrectly.
 
-Oh, I forgot it, it happened to me in the past, too.
-However, this just supports for building another application which can use the
-library in the root/lib directory, when it run in the embedded systems...
+Although I have not yet proven this, I am leaning toward the following.
+Allocate a small fixed set of receive buffers (like we used to do)
+in the driver and mark them copy-back cached.  The received BDs will
+always point to thesed buffers.  Then, copy-and-sum these into IP
+aligned skbuffs.  The advantage of Graham's DMA into skbufs isn't that
+the driver doesn't copy/sum, it is that later when the IP stack does it
+we get burst transfers into cache.  So, we get this advantage plus
+the IP packet aligned properly for the remainder of the stack.  Of
+course, the downside of this is the receive buffers are one-time
+cached.  We blow the cache away to make the TCP benchmark look good,
+and the remaining applications suffer.  I still have a problem with
+this.....making single focused benchmarks look good isn't necessarily
+the best for the overall system application.
 
- You may want to check to see if you have that symlink in
-> your
-> target directory.
->
-Hope this help,
-Jari
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
