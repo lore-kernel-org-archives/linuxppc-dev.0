@@ -1,34 +1,40 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Quad SMP on G4
-Date: Tue, 17 Apr 2001 15:16:11 +0200
-Message-Id: <20010417131611.2955@mailhost.mipsys.com>
-In-Reply-To: <Pine.HPX.4.10.10104171421420.11443-100000@gra-ux1.iram.es>
-References: <Pine.HPX.4.10.10104171421420.11443-100000@gra-ux1.iram.es>
+Message-Id: <200104171403.QAA00755@piglet.grunz.lu>
+Date: Tue, 17 Apr 2001 16:03:45 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: boot params
+To: iain@sandoe.co.uk
+Cc: erbenson@alaska.net, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20010417093736.4BEC72F001@apollo.valhalla.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On  17 Apr, this message from Iain Sandoe echoed through cyberspace:
 >
->How do you lock something in the _TLB_ ?
+>> everyone i know running quik doesn't have any problems.
 >
->Avoiding the removal/overwrite of some critical hashtable entries is fine,
->but you can't prevent any TLB entry from being purged by replacement HW.
+> That may be true with quik itself - but console usage of OF is a PITA for
+> most of the older (OF 1.0.5-ish) machines - I can't get my 9600 to retain
+> the re-mapping of kbd/screen for more than one reboot - i.e. set the OF vars
+> (using BootVars) reboot - OF is OK to screen & kbd.   Next reboot they are
+> reset back to point to 38400 serial :-((( ...
 
-Right, you can't lock on 6xx/7xx (well, maybe on 603 ?), I was thinking
-about the hash table in fact.
+You sure your backup battery is OK? It's not completely dead, I think
+otherwise the box wouldn't boot; but you may test it anyhow.
 
->From an earlier discussion with Paul, I think the problem is in
-flush_hash_segments, which must not flush anything used by the
-flush_hash_segments routine itself
-(so the kernel code and datas used by flash_hash_segments must be sticky).
+Also, you could add an nvsetenv script on shutdown as a workaround.
 
-This problem can't happen when using BATs for kernel memory obviously.
+Michel
 
-Ben.
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
