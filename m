@@ -1,46 +1,33 @@
-Date: Wed, 5 Sep 2001 11:04:51 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 4xx - a question and a patch
-Message-ID: <20010905110451.A599@zax>
-References: <20010830175217.H858@zax> <3B95307D.1BE64A98@mvista.com>
+Date: Tue, 4 Sep 2001 19:39:22 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: andrew may <acmay@acmay.homeip.net>
+Cc: Dan Malek <dan@mvista.com>, John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-commit@source.mvista.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: ppc405 enet changes (fwd)
+Message-ID: <20010904193922.O11530@cpe-24-221-152-185.az.sprintbbd.net>
+References: <Pine.LNX.4.30.0109031513110.21186-200000@hill.cs.ucr.edu> <3B9557CA.D76C70E2@mvista.com> <20010904152608.B14548@ecam.san.rr.com> <3B956C82.D2D7E9C6@mvista.com> <20010904180915.E14548@ecam.san.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3B95307D.1BE64A98@mvista.com>
+In-Reply-To: <20010904180915.E14548@ecam.san.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Sep 04, 2001 at 03:50:21PM -0400, Dan Malek wrote:
+On Tue, Sep 04, 2001 at 06:09:15PM -0700, andrew may wrote:
+> > Yeah, all of the linux version stuff.  It is nice to get patches against
+> > the current 2_4 or 2_4_devel that are known to be tested and working.
 >
-> David Gibson wrote:
-> >
-> > First the question: is there a good reason that set_dec() is a no-op
-> > on 4xx, rather than setting the PIT?
->
-> Yes.  The PIT is far from a perfect approximation of the decrementer.
-> When you "set the PIT" you actually set the reload register, not the
-> value that is decrementing.
+> Well the linux version stuff was our compromise for not being able to test
+> with the new 2_4_devel kernel since we can't build it. I will be happy to
+> see the ifdef's go away. I have to deal with them my other kenerl modules.
 
-The 405gp manual implies that an mtspr to the PIT writes both the
-decrementing value and the reload register.  Is this a hardware /
-documentation bug?  Could the PIT be used this way if auto-reload was
-disabled?
-
-> > Second a patch - the below adds floating point emulation to the 4xx.
->
-> Got it.  Thanks.  Since we now have libraries built specially for
-> processors without floating point, emulation isn't necessary.  Try
-> them out.
-
-Sure, but it's still useful to be able to run binaries copied from
-"normal" PPC machines.
+Well, I've heard rumors about it booting, and even to some degree working,
+depending on HW.  When'd did you last try? :)  Do you get to the
+Linux/PPC load: prompt still?
 
 --
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
