@@ -1,11 +1,12 @@
-Message-Id: <200003272102.XAA00353@piglet.grunz.lu>
-Date: Mon, 27 Mar 2000 23:02:34 +0200 (CEST)
+Message-Id: <200003272103.XAA00356@piglet.grunz.lu>
+Date: Mon, 27 Mar 2000 23:03:49 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: pci-resources feedback
+Subject: Re: LongTrail PCI resource assignment
 To: schmitz@opal.biophys.uni-duesseldorf.de
-cc: toa@pop.agri.ch, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.10003272157250.2447-100000@opal.biophys.uni-duesseldorf.de>
+cc: geert@linux-m68k.org, paubert@iram.es, bh40@calva.net,
+        linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.10003272201540.2447-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,28 +14,20 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 On  27 Mar, this message from Michael Schmitz echoed through cyberspace:
+>> > pci_assign_resource() is duplicated (sort of) in drivers/pci/setup-res.c
+>> > where the correct PCIBIOS_MIN_* limits are applied. That function calls
+>> > pcibios_update_resource() to do the actual bit twiddling. Is 2.3.48 too
+>> > dated for your patch to apply?
 >>
->> Here the resource code notices the conflict on the ATI.
->>
->> > PCI: Resource 81803000-81803fff (f=200, d=0, p=0)
->> > PCI: Resource 81802000-81802fff (f=200, d=0, p=0)
->> >   for root[0:ffffffff] min[80000000] size[1000]
->> >   got res[80000000:80000fff] for resource 2
->>
->> This is the message as the conflicting (second) region of the ATI gets
->> remapped. It did work... as can be seen ba the lspci outtput.
+>> Yeah; you might consider moving to 2.3.99.... pci_assign_resource() is
+>> gone from arch/ppc/kernel/pci.c.
 >
-> And it even used the right function (the one in drivers/pci/ to do it. Now
-> what kernel version was that with?
+> Wasn't 2.3.99 the one with broken IDE interface as someone reported here?
+> I can do without that sort of fun, thank you :-) I'll move back to 2.2.15
+> now.
 
-If I am not mistaken, 2.3.99 with the following patch applied:
-
-http://www.cpu.lu/~mlan/linux/dev/2.3.99-pre3-pci.diff
-
-> Seems the wallstreet was another one of the 'broken mapping for atyfb'
-> boxes. XFree86 4.0 should work fine now.
-
-;-)
+IDE is working fine in my 2.3.99... but it's a Promise, not PowerMac
+integrated IDE.
 
 Michel
 
