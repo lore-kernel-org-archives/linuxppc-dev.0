@@ -1,40 +1,27 @@
-Message-ID: <3A2E3C99.C9B6CC2C@rd.francetelecom.fr>
-Date: Wed, 06 Dec 2000 14:18:17 +0100
-From: FASSINO Jean-Philippe <jeanphilippe.fassino@rd.francetelecom.fr>
+Message-ID: <3A2E643E.6EBA2012@drea.dnd.ca>
+Date: Wed, 06 Dec 2000 12:08:37 -0400
+From: Gavin Hemphill <hemphill@drea.dnd.ca>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Promiscuous mode & Link change
-References: <3A2E1430.84036697@rd.francetelecom.fr> <19341031051139.14747@192.168.1.2>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: mprotect and SMP
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
-
-> >When using network card in promiscious mode and when link
-> >change (down or speed),  the promiscious mode is reset and
-> >card not stay in promiscious mode.
-> >
-> >Is it normal, or is it a feature not managed by Linux ?
->
-> This depends on the network chip driver. Which card have you
-> seen this with ?
-
-This occur on a DEC 21143 chip with Tulip drivers.
-But this seem to not occure on  internal GMAC card.
-May be i'm not posting problem on goot list ?
-
-JP
-
-
---
---------------------------------------------------------------------------
- Jean-Philippe FASSINO              France Telecom R&D : DTL/ASR
- Tel : 04 76 76 45 52
- mailto:jeanphilippe.fassino@rd.francetelecom.fr
---------------------------------------------------------------------------
+Hi all:
+I'm running a multi-threaded application on an SMP Gemini board
+(2.2.18-pre11) which uses the mprotect call to lock pages between the
+threads.  If I run the test program on this machine in SMP mode, it
+fails (threads tromp on their shared memory locations).  If I run in
+uni-processor mode however it works fine.  It also works fine on a dual
+processor pentium using a similar version of the kernel.  The question
+is... Has anyone seen this sort of behavior and are there any suggested
+places to start looking to fix it?  I took a look at the gemini specific
+files to see if there were any obvious missing eieio or sync
+instructions and so far haven't seen any, but I don't have the
+experience to know where else I should be looking.
+	Gavin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
