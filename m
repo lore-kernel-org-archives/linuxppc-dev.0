@@ -1,27 +1,31 @@
-Date: Wed, 20 Nov 2002 13:03:12 -0800
-Mime-Version: 1.0 (Apple Message framework v548)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Subject: pmac_halt() bug
-From: Tim Seufert <tas@mindspring.com>
-To: linuxppc-dev@lists.linuxppc.org
-Message-Id: <7AFDCF4E-FCCB-11D6-8F24-003065F22EAA@mindspring.com>
+Message-ID: <3DDC7AFC.6A8B4A0C@koffie.nl>
+Date: Thu, 21 Nov 2002 07:19:40 +0100
+From: Segher Boessenkool <segher@koffie.nl>
+MIME-Version: 1.0
+To: Ethan Blanton <eblanton@cs.ohiou.edu>
+Cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+	"Halfmann, Klaus" <Klaus.Halfmann@bauer-partner.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Unexpected sleep on old iBook
+References: <2C5637A6A7CE844EA3C0A94565479F5275A2E2@dest-as20-002.int.bauer-partner.com> <Pine.LNX.4.33.0211191743560.11419-100000@opal.biophys.uni-duesseldorf.de> <20021119203347.GK8575@paco.resnet.purdue.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In platforms/pmac_setup.c, pmac_halt() is defined as follows:
+Ethan Blanton wrote:
+> (Does it irritate anyone else that there seems to be no *good* way to
+>  differentiate iBook versions?  I'm sure there's some motherboard
+>  resource version that's unambiguous, but come on...)
 
-pmac_halt(void)
-{
-     pmac_power_off();
-}
+Just read the device tree:
 
-Arguably, this is a bug because there should be a distinction between
-halt and poweroff.  I've seen posts on user mailing lists from at least
-two different people who want to halt without actually powering off,
-but cannot do so because of this bug.  (I think the reasons have
-something to do with attempting to get their machines to turn back on
-automatically when power is restored after a UPS-initiated shutdown.)
+/proc/device-tree/model  gives you the model name.
+/proc/device-tree/scb#  gives you the revision number.
+
+
+Segher
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
