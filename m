@@ -1,34 +1,38 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Chas Williams <chas@cmf.nrl.navy.mil>,
-        Chas Williams
- <chas@cmf.nrl.navy.mil>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [ANN] New kernels, gmac, airport, usb... 
-Date: Tue, 4 Jul 2000 00:17:29 +0200
-Message-Id: <20000703221729.18421@192.168.1.10>
-In-Reply-To: <200007031226.e63CQDw25562@ginger.cmf.nrl.navy.mil>
-References: <200007031226.e63CQDw25562@ginger.cmf.nrl.navy.mil>
+Message-Id: <20000704081806.Postino-015237@smtp01.highway.ne.jp>
+Date: Tue, 4 Jul 2000 08:18:06 +0900
+To: linuxppc-dev@lists.linuxppc.org
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: still CMD646 IDE problem in kernel-2.4.0-test3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->actually, if i understand the problem, the 'standard' driver wants to know
->the 56-bit key in hex and apple generates this key using the text string
->you supply (after passing it through using some hashing routine)
->
->if you have an airport basestation (with 1.1 s/w or later) you can
->see the hex string that is being used by choosing 'Network Equivalent
->Password...' under the 'Base Station' menu in the airport admin utility.
+Hi!
 
-I got it to work. There was an endian problem in the driver preventing
-using of the WEP mode. It's fixed in version 0.9.2. I also added a module
-param for the key so you don't need iwconfig to set it
+I have the problem in kernel-2.4.0-test3.
+My machine is BWG3Version2.
+it has fast ide drive which is CDD646.
+It doesnot work still on develop kernel.
 
-see ppclinux.apple.com/~benh for updates
+Any help!
 
-Ben.
+Kaoru
+
+Partition check:
+ hda:Machine check in kernel mode.
+Caused by (from SRR1=41030): Transfer erre ack signal
+NIP: C00D5AF4 XER: 00000000 LR:C00D5A94 REGS: c022fd60 TRAP: 0200
+MSR: 00041030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c022e030[0] 'swapper' Last syscall: 120
+last math 00000000 last altivec 00000000
+GPR00: 000000FF C022FE10 C022E030 00000000 00001032 00000000 00000000 00000000
+GPR08: C02DB1AC FE000000 FE000000 C0250000 00000001 003030AC 00000000 00000000
+GPR16: 00000000 C02B0000 C02B0000 C02C0000 C0230000 C02BA694 C02BA690 C00050EB
+GPR24: C0006644 C022D3E0 C022D3E0 C022D3E0 C02DB1AC C03E5260 C00E0CC4 C02DB214
+
+Here is stop
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
