@@ -1,18 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 2ED3667A6C
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id A32D167A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Mar 2005 06:09:24 +1100 (EST)
-Message-ID: <423732E1.2090906@mvista.com>
-Date: Tue, 15 Mar 2005 12:09:21 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Greg Weeks <greg.weeks@timesys.com>
-References: <4237320D.9040200@timesys.com>
-In-Reply-To: <4237320D.9040200@timesys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 16 Mar 2005 06:18:27 +1100 (EST)
+To: David Ho <DavidHo@nanometrics.ca>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 15 Mar 2005 10:19:18 EST."
+	<OF53FB4D54.F4DBA8F0-ON85256FC5.0053C4E5-85256FC5.00542475@nanometrics.ca>
+Date: Tue, 15 Mar 2005 20:17:59 +0100
+Sender: wd@denx.de
+Message-Id: <20050315191804.3C12BC1510@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [patch] mpc8560ads mtd map
+Subject: Re: modem control for 8xx serial 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greg Weeks wrote:
+In message <OF53FB4D54.F4DBA8F0-ON85256FC5.0053C4E5-85256FC5.00542475@nanometrics.ca> you wrote:
+> 
+> Has anyone implemented modem control in arch/ppc/8xx_io/serial.c.  I don't
 
->
-> Add an MTD map for the flash on the mpc8560ads board.
->
-> Signed-off-by: Greg Weeks <greg.weeks@timesys.com> 
+Sure. See the Linux trees on our CVS server.
 
+And read the FAQ section in the DULG, too.
 
-<snip>
+Best regards,
 
-Most of the code in this patch can be eliminated if you set up the table 
-in your platform file and use the proper CONFIG_MTD_xxx options.
+Wolfgang Denk
 
-Mark
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+As in certain cults it is possible to kill a process if you know  its
+true name.                      -- Ken Thompson and Dennis M. Ritchie
