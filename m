@@ -1,28 +1,44 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>, <linuxppc-commit@fsmlabs.com>
-Subject: Re: bi_records and cmd_line
-Date: Sun, 11 Mar 2001 21:12:00 +0100
-Message-Id: <20010311201200.25426@smtp.wanadoo.fr>
-In-Reply-To: <20010311121049.A24589@opus.bloom.county>
-References: <20010311121049.A24589@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20010311231726.8369.qmail@dag.newtech.fi>
+To: <linuxppc-dev@lists.linuxppc.org>
+Cc: dag@newtech.fi
+Subject: rtc-driver
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Mon, 12 Mar 2001 01:17:26 +0200
+From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hey all.  I'm working on getting all of the in-kernel "bootloaders" to use
->the bi_records struct for cmd_line.  I've got a question tho about xcoff
->(oldworld and newworld or no?).  Right now arch/ppc/kernel/setup.c has a
->comment in identify_machine about if we're xcoff, grab the cmd line from
->/chosen/bootargs.  Shouldn't this belong in coffboot.c instead? (Or,
-chrmain.c
->as well?).
+Hi,
 
-Tup. I beleive it's here for historical reasons.
+just ran into a problem with my PPC port
+to a VME PreP -like board:
 
-Ben.
+The RTC driver for the 146818 will use a "strange"
+setup variable that was wrong for my board:
+RTC_ALWAYS_BCD
+This was set to one, which effectively made the
+driver disregard the real setting in the clock
+chip.
+
+Can anyone explain to me why this #define
+is there at all ?
+The actual value read from the chip should
+IMHO be the only thing to consider when reading/
+writing the chip... Otherwise you will do as my board did:
+read binary data and handle it as BCD, which of course
+did the wrong thing...
+
+BRGDS
+
+
+--
+Dag Nygren                               email: dag@newtech.fi
+Oy NewTech Ab                            phone: +358 9 8024910
+Trasktorpet 3                              fax: +358 9 8024916
+02360 ESBO                                 GSM: 0400-426312
+FINLAND
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
