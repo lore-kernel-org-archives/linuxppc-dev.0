@@ -1,55 +1,61 @@
-Date: Fri, 5 Jan 2001 21:06:28 +0100
-From: Michael Holzt <kju@fqdn.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Bugs in 2.4.0-ac2 in ppc
-Message-ID: <20010105210627.D1095@fqdn.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Date: Fri, 5 Jan 2001 15:25:00 -0500 (EST)
+From: alex avriette <alex@macachu.yi.org>
+Reply-To: <alex@cosmo.allay.net>
+To: <linuxppc-dev@lists.linuxppc.org>
+cc: <drscholl@users.sourceforge.net>
+Subject: Endianness and comparing IP's
+Message-ID: <Pine.LNX.4.31.0101051513430.1016-100000@macachu.ex-pressnet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-While trying to compile LinuxPPC 2.4.0-ac2 for an embedded PPC i found
-three problems:
+I am still working with the opennap software (available at
+opennap.sourceforge.net) to resolve a strange issue whereby two IP's are
+reported as equal, but fail a conditional for equality. the code in
+question is here:
 
- - function set_pgdir disappeared somewhere late in the 2.4.0test
-   series. I had to copy the source from an older kernel to get the
-   kernel to compile.
-
-
- - In ac2 the following source in asm-ppc/mmu_context.h is removed:
-
-   #ifdef CONFIG_8xx
-   extern inline void mmu_context_overflow(void)
-   {
-       atomic_set(&next_mmu_context, -1);
+  if (BSWAP32(ip) != con->ip)
+  {
+    log ("server_login: ip=%u con->ip=%u", BSWAP32(ip), con->ip);
+    log ("server_login: %s does not match %s (%s)",
+         con->host, fields[0], my_ntoa (ip));
+    con->destroy;
+    return;
    }
-   #endif
 
-   When compiling on for a 8xx this leads to errors due to nonexisting
-   function mmu_context_overflow.
+the output of this is here:
 
+server_login: ip=523706576 con->ip=523706576
+server_login: 208.32.55.31 does not match cygnus.theblackmoor.net
+(208.32.55.31)
 
- - And third the worst problem: Since one of the latest test series
-   kernels i'm unable to use modules:
+so what I see happening is that BSWAP32(ip) doesnt equal con->ip which is
+reported by the log (as seen earlier on the list, it uses a v*printf
+followed by a fputs) as indeed being equal. I dont have host entries for
+this host nor any of the other hosts I am trying to connect to.
 
-   For all modules i try i get unresolved symbols - for trivial functions:
+Apparently this software is developed on x86 machines and tested in
+Solaris on Suns for big endian compatibility. The code works fine on PC's
+in this configuration:
 
-   bash-2.03# insmod ./loop.o
-   ./loop.o: unresolved symbol memset
-   ./loop.o: unresolved symbol int_control_R58a1efa3
-   ./loop.o: unresolved symbol __copy_tofrom_user_Re410a3dd
-   ./loop.o: unresolved symbol memcpy
-   ./loop.o: unresolved symbol strncpy_R328a05f1
+    if (ip != BSWAP32 (con->ip))
+    {
+      log ("server_login: %s does not match %s (%s)",
+           con->host, fields[0], my_ntoa (ip));
+      con->destroy;
+      return;
+    }
 
+I am not familiar with the concept of endianness and it hasnt quite been
+explained sufficiently to me. I have Cc'ed the primary developer of
+opennap on this message, though I am pretty familiar with the concepts and
+workings of the code.
 
-As i'm no kernel-developer, i'm not subscribed to this list. So if
-replying, please make a courtesy-copy to me privately. I really would like
-to see these problems fixed. Thanks.
+Thanks in advance.
 
+alex
 
---
-Greetings
-Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
