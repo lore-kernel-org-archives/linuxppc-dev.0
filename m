@@ -1,34 +1,25 @@
-Message-ID: <8088727.1061649011686.JavaMail.ernstp@mac.com>
-Date: Sat, 23 Aug 2003 16:30:11 +0200
-From: Ernst Persson <ernstp@mac.com>
+Subject: HZ in 2.6 on PPC32
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linuxppc-2.5 fixlets
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <1061654591.1251.34.camel@thor.holligenstrasse29.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Date: 23 Aug 2003 18:03:11 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Alsa does not seem to produce any sound, whatever I try to do
->> (including messing around with mute), and dmasound doesn't compile at
->> all.
->>
->> Used kernel is 2.6.0-test3, via rsync from
->> source.mvista.com::linuxppc-2.5, as of around 10AM CET (8AM UTC).
->
->Typically enough, I was just pointed to a fix for this problem (for
->alsa) a few minutes after sending this mail.
->
->According to
->http://www.ussg.iu.edu/hypermail/linux/kernel/0308.2/0288.html
->reloading i2c-keywest after loading the alsa-modules initialised things
->so that demuting works. There's also a patch included.
+Why is this still defined to 100? I'm running at 1000 now, and it makes
+a huge difference for interactivity. Moreover, CONFIG_PREEMPT now makes
+things even better instead of worse. :)
 
-I have something that sounds (no pun intended...) like exactly the same
-problem with sound on my iMac, using the burgundy sound driver. Could it
-be the same thing? I'll have to try to modify the patch for the burgundy
-driver when I get home on friday.
+If the reason is the slow PPC32 CPUs still around, maybe make it a
+config option?
 
-//ernie
+
+--
+Earthling Michel Dänzer   \  Debian (powerpc), XFree86 and DRI developer
+Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=daenzer
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
