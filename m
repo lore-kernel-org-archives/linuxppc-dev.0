@@ -1,30 +1,27 @@
-Message-ID: <384EB788.6DE47EA4@currantbun.com>
-Date: Wed, 08 Dec 1999 19:54:48 +0000
-From: "Jens Ch. Restemeier" <jrestemeier@currantbun.com>
-Reply-To: jrestemeier@currantbun.com
+Date: Wed, 8 Dec 1999 16:12:08 -0600 (CST)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Need developer to help move JDK ppc port forward
+In-Reply-To: <199912081427.IAA30654@lists.linuxppc.org>
+Message-ID: <Pine.LNX.3.96LJ1.1b7.991208154524.1742A-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Link, was Re: Open Sourced Glide on Linux PPD
-References: <384D993C.46D0D76F@currantbun.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Okay, anybody looking for the link:
+On Wed, 8 Dec 1999, Kevin_Hendricks wrote:
+[...I'm sorry to hear about JDK port...]
+> Also, if anyone needs a 40 something year old former PDP-8 and PDP-11 programmer 
+> with time on his hands to help out a *true* Open Source project, let me know... 
 
-http://linux.3dfx.com
+Do you still have 8100 with you?  If so, porting Linux/PPC to your machine
+may be a project for you.  Now that BootX can boot MkLinux, everything
+there is open source (finally).
 
-Has PDF files with the register docs, examples, and the glide sourcecode.
-For the lazy people (like me), a direct link to the relevant page:
 
-http://linux.3dfx.com/open_source/glide_kit.htm
+Takashi Oe
 
-Idea: maybe we should drop the pci-interface, and just port the
-/dev/3dfx driver and interface. I got the 3dfx driver to compile some
-time ago, but that was with an older kernal. But if I remeber correctly
-it detected the Glide card already.
-
-Jens
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
