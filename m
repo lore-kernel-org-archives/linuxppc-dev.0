@@ -1,15 +1,15 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15603.mail.cnb.yahoo.com (web15603.mail.cnb.yahoo.com
-	[202.165.102.57]) by ozlabs.org (Postfix) with SMTP id A81B92BDB5
+Return-Path: <morten.banzon@axxessit.no>
+Received: from pt20-qms-02.ptn.no (pt20-qms-02.ptn.no [64.28.25.139])
+	by ozlabs.org (Postfix) with SMTP id C3BCC2BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 14 Nov 2004 20:28:13 +1100 (EST)
-Message-ID: <20041114092806.76018.qmail@web15603.mail.cnb.yahoo.com>
-Date: Sun, 14 Nov 2004 17:28:06 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
+	Tue, 16 Nov 2004 03:18:08 +1100 (EST)
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: Any possibility of common mini test kernel for 8xx/82xx/85xx?
+Message-ID: <OFF3BFC73F.53C5A7DE-ONC1256F4D.00564648-C1256F4D.0058DF9F@axxessit.no>
+From: morten.banzon@axxessit.no
+Date: Mon, 15 Nov 2004 17:10:42 +0100
+Content-Type: text/plain; charset="us-ascii"
+Subject: MPC82xx -- DPRAM1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,78 +20,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, all
+Hi,
 
-I got a very encouraging hint from the conversation
-among anonya and Dan and kumar.
+I am using 2.6.9 for a mpc8280 project, and am having trouble using dpram1 
+from offset zero, which I need for a mcc hdlc driver.
 
-Dan wrote:
-> Depending upon your software
-> requirements and implementation, you are likely
-> able to run many of the same binaries across all
-> of the PowerPC cores.
+ In the file include/asm-ppc/cpm2.h there is a constant CPM_DATAONLY_BASE
+In the same file the code comment say that the first 128 bytes are used 
+for SMC1 and SMC2. 
 
-I have had a silly idea for some time. Could we have
-the same mini test kerenl for demo board and custom
-board? I made a 2.4 8xx kernel which only supported
-monitor port/RAMDISK/EXT2 in size of 250KB. And the
-mini test kernel can run right on my custom board and
-demo board at the same time. From the Dan's words,
-could I deduce a possibility that we can make a common
-mini test kerenl which only support
-Monitor/RAMDISK/EXT2 for 8xx/82xx/85xx? Or even better
-work on all PowerPC boards?
+When I examine the smc (cpm_uart) driver i do not find any reference to 
+this region of the dpram1.
+I have replaced the calls to cpm_dpalloc with cpm_dpalloc_fixed and an 
+adress way up in the dpram1 region.
 
-There are two advantages of common mini test kernel. 
-1) We can use it to test ported boards whether they
-are in a workable state once they are in an unexpected
-situation. 
-2) We could use the mini kernel to make monitor port
-work at first. Anyway, monitor port is a vary
-important and first port we need most time. Also we
-can test a custom board whether there is any hardware
-or configuration default in boot loader like SDRAM
-init, which would help a newbie and port process a
-lot.
+My question is; do you know which code is using the dpram1 addresses below 
+CPM_DATAONLY_BASE ?
 
-Following is my downsized result of a 2.4.18 kernel on
-a PPC 8xx board. Just support Monitor Port, RAMDISK
-and EXT2. No Ethernet/NFS/ etc. 13 items only. I
-cannot trim down it anymore. :-)
+This region must be used by something (smc ?), because when I clear from 
+offset 0x00 to 0x80 the serial port stop responding.
+I can ssh to the device and things seems to be normal util I try to reboot 
+the system, whereupon everything hangs.
 
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_PPC=y
-CONFIG_PPC32=y
-CONFIG_8xx=y
-CONFIG_SERIAL_CONSOLE=y
-CONFIG_NOT_COHERENT_CACHE=y
-CONFIG_RPXLITE=y
-CONFIG_BINFMT_ELF=y
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_SIZE=4096
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_EXT2_FS=y
-CONFIG_MSDOS_PARTITION=y
+I am stuck, so if you have any suggestions, please advice.
 
-The final size is 258660 Bytes = 252.60 kB = 0.25 MB
-in compressed format. It worked fine on demo board and
-custom board. Could this one work for other 8xx boards
-or even 82xx/85xx boards? Or at least this mini
-configuration could work commonly for PowerPC board?
-I'd like to know how far my silly idea would go.
 
-Suggestion and comment, pls.
-
-=====
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150ÕÚ«˙MP3∑ËøÒÀ—£¨¥¯ƒ˙¥≥»Î“Ù¿÷µÓÃ√
-http://music.yisou.com/
-√¿≈Æ√˜–«”¶”–æ°”–£¨À—±È√¿Õº°¢—ﬁÕº∫Õø·Õº
-http://image.yisou.com
-1GæÕ «1000’◊£¨—≈ª¢µÁ” ◊‘÷˙¿©»›£°
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+Regards,
+Morten
