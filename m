@@ -1,37 +1,37 @@
-Message-Id: <200109200828.QAA15692@isdn.iscas.ac.cn>
-Date: Thu, 20 Sep 2001 16:29:30 +0800
-From: weiwu <weiwu@isdn.iscas.ac.cn>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Prblem of wirting with char module in mtd
-Mime-Version: 1.0
-Content-Type: text/plain; charset="GB2312"
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-ID: <UY989079829689.04572@webmail1.inner-21cn.com>
+Date: Thu, 20 Sep 2001 17:03:10 +0800 (CST)
+From: "yah" <hay8888@21cn.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: 
+Subject: GNIC problem
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello:
-    I am trying to get flash board with mtd.
-At the beginning I use it as a char module,but
-I found there are some stranges in writing.
+Hi,all.
+  I have a giga-NIC.I want it can work under powerpc.When I install its driver and run 'insmod e1000.o', it said:
 
-   1 It print "waiting for chip to be ready
-timed out in bufwrite and so on" once in a while.
-I found the scripts of it is notnecessary,
-so I cancel  it.
-   I wanna know the function of it.
+sh-2.03# insmod e1000.o
+e1000.o: unresolved symbol create_proc_entry
+e1000.o: unresolved symbol __delay_R850239f9
+e1000.o: unresolved symbol loops_per_jiffy
+e1000.o: unresolved symbol strlen_R97255bdf
+e1000.o: unresolved symbol remove_proc_entry_R5d7ec1de
+e1000.o: unresolved symbol printk_Rdd132261
 
-   2 During writing ,I print the message of writing
-and the value of writing address,it is OK!But when
-I read the flash,I found the wrting is failed.
-   I don not know why?
+Somebody told me this indicates a problem with my installation of the linux kernel. So I compiled the kernel many times, but all fault. What's wrong?
+  I use linuxppc_2_4 from penguinppc. And the giga-NIC can work well under Intel board.
+  Any suggestion? Thanks in advance.
 
-   3  I don not know how to erase the flash,and I wang to
-use jffson into mtd.who can tell me the  step and the notice.
+------------------------------------------------
+想免受广告信的骚扰，请马上升级为21cn经济邮用户。
+http://member.21cn.com/economy/upgrade.php
+还有更便宜的吗？
+http://adinfo.21cn.com/price/001.html
+加入龙腾计划，与21cn齐飞。
+http://www.21cn.com/21cnhtm/qy/index.html
 
-I work with an custom board MPC823 kernel 2.2.14.
-The flash is Intel 28f320j5
-
-            weiwu
-            weiwu@isdn.iscas.ac.cn
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
