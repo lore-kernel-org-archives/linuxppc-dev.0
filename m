@@ -1,23 +1,30 @@
-Date: Wed, 31 Mar 2004 18:02:55 +0200
-From: Marc Leeman <marc.leeman@barco.com>
-To: Jeff Angielski <jeff@theptrgroup.com>
+Date: Wed, 31 Mar 2004 08:44:23 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: John Whitney <johnw@sands-edge.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PCI Memory mapping
-Message-ID: <20040331160255.GB5997@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
-References: <1080086640.23208.164.camel@gaston> <20040324122652.GA22171@smtp.barco.com> <20040324142524.GA22701@smtp.barco.com> <20040324110814.E50148@forte.austin.ibm.com> <20040325154845.GF3696@smtp.barco.com> <20040325103414.C64292@forte.austin.ibm.com> <20040325104529.D64292@forte.austin.ibm.com> <20040326080012.GA7238@smtp.barco.com> <1080676178.7581.30.camel@localhost.localdomain> <20040331155625.GB28919@smtp.barco.com>
+Subject: Re: Proposed changes to io.h
+Message-ID: <20040331164423.GA417@gate.ebshome.net>
+References: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com>
 Mime-Version: 1.0
-In-Reply-To: <20040331155625.GB28919@smtp.barco.com>
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <49B568CB-832A-11D8-9FF0-000A95A07384@sands-edge.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> which should be 0x8000000 I'll masking PICR2 with this tomorrow...
+On Wed, Mar 31, 2004 at 10:44:25AM -0500, John Whitney wrote:
+> 2. I'd like to add 64-bit __raw_readll and __raw_writell routines to
+> io.h, done using floating-point registers.  Currently, modules such as
+> MTD (when writing to 64-bit buses) perform two 32-bit, non-atomic
+> writes, which can cause problems.  Using a floating-point register to
+> guarantee a 64-bit write is ugly, but it works.  Code for these inlined
+> routines is as follows:
 
-Of course, I should't enable this bit, but at least I'll be able to see
-if the situation gets worse by enabling it...
+[snip]
 
-I need more coffee...
+I wonder will it work on 4xx CPUs which don't have floating point unit?
+
+Eugene.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
