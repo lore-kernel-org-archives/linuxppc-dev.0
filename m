@@ -1,37 +1,54 @@
-Date: Thu, 26 Apr 2001 23:28:51 -0700
-From: John Cagle <jcagle@kernel.org>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel driver debugging
-Message-ID: <20010426232851.A3674@kernel.org>
-References: <20010427001350.760232792B@denx.denx.de> <3AE8BFD6.54EE57C3@ixiacom.com>
-Mime-Version: 1.0
+Message-ID: <3AE919BA.950AACA@motorola.com>
+Date: Fri, 27 Apr 2001 08:03:22 +0100
+From: "John Traill" <john.traill@motorola.com>
+MIME-Version: 1.0
+To: Dan Malek <dan@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 SCC as Console
+References: <3AE859E4.8CF5063A@mvista.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3AE8BFD6.54EE57C3@ixiacom.com>; from bryan@ixiacom.com on Thu, Apr 26, 2001 at 05:39:50PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-What about IBM's tools: RiscWatch and RiscTrace?  Does anyone have
-any experience with these, and how do they differ from the BDI2000?
+Dan,
 
-Thanks,
-John
+I should have been more specific - Do you have a patch for the ADS8260 ?
 
-------------------------------
-John Cagle <jcagle@kernel.org>
 
-On Thu, Apr 26, 2001 at 05:39:50PM -0700, Bryan Rittmeyer wrote:
+Dan Malek wrote:
 >
-> Wolfgang Denk wrote:
+> John Traill wrote:
+> >
+> > Does anyone have a patch ( Or is working on one ) to use an SCC as a console ?
 >
-> > And yes, the BDI2000 is worth every single dollar you pay for it.
+> Yes.  The linuxppc_2_5 kernel has all of the right pieces.  I have
+> since made some changes that allow this to be selected as a configuration
+> option, and the patches are in the pipeline back to the FSM Labs trees.
 >
-> Yep, and then some. We are having great luck with this unit here,
-> and I highly recommend it to anyone doing low-level stuff with
-> the PowerPC and Linux...
+> When using the SCC Console, the driver doesn't support SMC serial
+> ports due to some configuration conflicts I haven't yet resolved.
+> So far, I haven't seen hardware that uses an SCC console and SMC serial
+> ports, which places fixing this rather low on my list.
 >
-> Regards,
+> What board are you working on?  I have a Linux port for the ADS8260.....
 >
-> Bryan
+>         -- Dan
+>
+
+--
+
+Regards, John
+___________________________________________________________________________
+
+John Traill                                   Motorola
+Ph.   : +44 (0)1355 355494                    Colvilles Road
+Fax.  : +44 (0)1355 261790                    East Kilbride G75 OTG
+email : johnt@burton.sps.mot.com              Scotland
+      : R17296@email.sps.mot.com
+
+[x] General Business Use
+[ ] Motorola Internal Use Only
+[ ] Motorola Confidential Proprietary
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
