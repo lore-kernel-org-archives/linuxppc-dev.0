@@ -1,32 +1,45 @@
-Date: Thu, 28 Mar 2002 14:31:17 -0900
-From: Ethan Benson <erbenson@alaska.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
 To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: DST flag in NVRAM revisited (was: Re: NVRAM stuck in DST?)
-Message-ID: <20020328143117.X26309@plato.local.lan>
-References: <20020328040442.V26309@plato.local.lan> <Pine.GSO.4.21.0203281718540.4979-100000@vervain.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.21.0203281718540.4979-100000@vervain.sonytel.be>; from geert@linux-m68k.org on Thu, Mar 28, 2002 at 05:19:56PM +0100
+Subject: bug: kernel timer added twice at e3259abc.
+Date: Thu, 28 Mar 2002 19:47:16 -0500
+References: <20020328040442.V26309@plato.local.lan> <Pine.GSO.4.21.0203281718540.4979-100000@vervain.sonytel.be> <20020328143117.X26309@plato.local.lan>
+In-Reply-To: <20020328143117.X26309@plato.local.lan>
+MIME-Version: 1.0
+Message-Id: <20020329005501.GCSO11832.tomts24-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 28, 2002 at 05:19:56PM +0100, Geert Uytterhoeven wrote:
->
-> Perhaps someone can writes a utility to `patch' MacOS to treat the hardware
-> clock being in GMT/UTC/Zulu time? I did a similar thing for AmigaOS many many
-> years ago.
+Hi,
 
-or if you want a macos only use OSX, it has no problems with the
-hardware clock set to UTC, at least the beta did not.
+The following has showed up in my dmesg log (running Ben's latest) on a
+dual SMP G4 machine:
 
-(i tinkered with the beta, at the time my machine had no trace of
-MacOS 8/9 and my nvram contains no macos cruft, that is the timezones
-and DST fields are null, OSX showed the proper time, and it never
-reset the hardware clock to localtime.)
+bug: kernel timer added twice at e3259abc.
+bug: kernel timer added twice at e3259abc.
 
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+And using sun gem driver I see the following on occaision:
+
+invalidate: busy buffer
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+sending pkt_too_big to self
+Saw underflow (9728 of 61440 bytes). Treated as error
+Saw underflow (3584 of 53248 bytes). Treated as error
+sending pkt_too_big to self
+
+Ideas welcome about either.
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
