@@ -1,46 +1,73 @@
-Date: Tue, 9 Mar 1999 11:19:35 -0500 (EST)
-From: "P. Barrette" <barretp@mcmail.cis.McMaster.CA>
-To: LinuxPPC-Dev@associate.com
-cc: linuxppc-dev@lists.linuxppc.org, root@associate.com
-Subject: Re: Sounds & screen on 7200/90 w/kernel 2.2.2
-In-Reply-To: <19990309024322.15026.qmail@associate.com>
-Message-ID: <Pine.SOL.3.96.990309111851.12061A-100000@mcmail.cis.McMaster.CA>
+Date: Tue, 9 Mar 1999 17:33:20 +0100 (MET)
+From: David De Ridder <s970707@uia.ua.ac.be>
+Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: On the BOOTP ``root path'' option
+Message-ID: <Pine.SO4.4.05.9903091703410.10681-100000@hsins.uia.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-the only message regarding "platinum" I have is fb0: platinum frame buffer
-device.
+[A few days ago, there was some confusion on how the root path option
+ provided by BOOTP was supposed to be interpreted by the BOOTP sequence
+ of a kernel. I promised to do some research in the RFCs. This is the
+ result.]
 
---------
-Paul Barrette
-Ph.D. Candidate Classics (Latin Literature)
-System Administrator
-McMaster University
+The main question was : should the BOOTP ``rp'' (root path) option be
+NFS-style, e.g. nfsserver:/export/path, or does the kernel have to
+expect /export/path, and contact its TFTP server as NFS server ?
 
-On 8 Mar 1999 LinuxPPC-Dev@associate.com wrote:
+(Note : this discussion was unrelated to the ``nfsaddrs'' kernel boot
+        argument ; so we'll disregard it here. Only BOOTP, TFTP and
+        NFS are involved).
 
-> 
-> Hi,
-> 
-> I just booted Linux kernel 2.2.2 on a 7200/90 and it's looking fairly good
-> except for two problems.  First, I have a line across most of the screen
-> about 2/3 down.  It's 1-2 pixels high.  This was in the (once-blue) boot screen
-> as well as in the Xpmac display - it never goes away.
-> 
-> In dmesg, I see: platinum_set_var: Not activating.
-> 
-> Secondly, some of the sounds I have are very scratchy now.  Volume seems to
-> be messed up.  I was hoping KDE 1.1pre sounds would work under this kernel,
-> but no luck.  I'm using the RPMS someone made for R4.
-> 
-> Thanks much,
-> 
-> glen_stewart@associate.com
-> 
-> 
+1) RFC 1395, which defines the root path option, didn't prove very 
+   useful on defining its correct syntax. This is stated :
+
+   "A string to specify a pathname to mount as a root disk."
+   
+   Not much, heh ?
+
+2) RFC 1533, isn't very conclusive either :
+
+   "This option specifies the path-name that contains the client's root
+    disk.  The path is formatted as a character string consisting of
+    characters from the NVT ASCII character set."
+
+    BTW, ``NVT ASCII'' seems to be (Network Virtual Terminal) 7-bit ASCII. 
+
+3) RFC 2132 has the same info (or lack of) as RFC 1533.
+
+So, still searching for a conclusive answer. However, I also looked for
+a positive statement that root path should be resident on the TFTP
+server. This was stated in no RFC, at least not in the ones I scanned
+through. ==> Yes, it makes sense to use the TFTP as NFS server, since
+the syntax of Root Path seems to be undefined. But no, it isn't an
+obligation -- Root Path may be interpreted as you want (I think).
+
+My personal opinion : if a BOOTP client sees a normal path, it should
+contact its TFTP server as NFS server ; however, if it sees and NFS-style
+path, it should extract the NFS server from the path. (This would require
+an "intelligent" client - seems like the right job for Linux ! ;-)
+
+If anyone can shed some light on this whole syntax matter, please do.
+
+Remarks, suggestions, ... fire away !
+
+Regards,
+
++-----------------------------------------------------------------+
+|   David 'Septimus' De Ridder   | "Never underestimate the       |  
+|                                |  power of the soul unleashed." |
+| <david.de.ridder@bitsmart.com> |   - 'Essence Flare', M:TG      |
++-----------------------------------------------------------------+
+
+--
+"Every dog has its day, and today's mine."
+ Terry Borer after winning the Masters finals at the New York M:TG Pro Tour 
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
