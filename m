@@ -1,65 +1,44 @@
-Message-ID: <638AA0336D7ED411928700D0B7B0D75BB323AC@mail2.aiinet.com>
-From: "Gessner, Matt" <mattg@aiinet.com>
-To: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Question about zvmlinux.embedded org.
-Date: Mon, 3 Dec 2001 08:16:25 -0500 
+Message-ID: <3C0B8C8F.FE0A85F1@lvl7.com>
+Date: Mon, 03 Dec 2001 09:30:39 -0500
+From: "John W. Linville" <linville@lvl7.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Gessner, Matt" <mattg@aiinet.com>
+Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Question about zvmlinux.embedded org.
+References: <638AA0336D7ED411928700D0B7B0D75BB323AC@mail2.aiinet.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi, all,
+Matt,
 
-After running a plain old build on 2.4.15 with the ppc32 patches from
-kernel.org,
-this is how my zvmlinux.embedded image looks:
+I've seen this problem myself.  The easiest "solution" is to find a way
+to force your boot code to load the zImage to a different (i.e. higher)
+address, say 0x00200000.  When the mini boot loader relocates itself, it
+leaves the contents of the image section in place, so then the .bss and
+the image sections don't overlap.
 
-mattg@mattg-linux /home/mattg/wan-router/linux/arch/ppc/boot/images
+At one time I experimented with some makefile changes that 1) determined
+the size of the .bss segment; 2) generated an "all zeroes" file of the
+same size; and 3) added that file as a "pad" segment to the zImage file
+BEFORE the image section was added.  Then, you could load the zImage
+directly to it's execution address (i.e. 0x00180000).  As I recall, that
+worked fairly well.  But, that was at a different employer so I don't
+have any patches to offer you today...sorry. :-)
 
-Mon Dec 03 2001 8:13:14am {6} powerpc-linux-objdump -h zvmlinux.embedded
+Good luck!
 
-zvmlinux.embedded:     file format elf32-powerpc
+John
 
-Sections:
-Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00004e84  00180000  00180000  00010000  2**2
-                  CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .rodata       000005f0  00184e90  00184e90  00014e90  2**4
-                  CONTENTS, ALLOC, LOAD, READONLY, DATA
-  2 .data         00000358  00186000  00186000  00016000  2**2
-                  CONTENTS, ALLOC, LOAD, DATA
-  3 .data.init    00000000  00187000  00187000  00017000  2**0
-                  CONTENTS
-  4 .bss          000031f0  00187000  00187000  00017000  2**2
-                  ALLOC
-  5 image         000828f5  00000000  00000000  00017000  2**0
-                  CONTENTS, READONLY
+"Gessner, Matt" wrote:
 
-Apologies if this isn't formatted nicely... I'm using (gasp) Outlook :(
+> Anyway, If you'll notice where .bss is being loaded, at 0x187000
+> and the location where image will be loaded (0x180000 - 0x10000 + 0x170000)
+> you'll notice that .bss overlaps image.
 
-Anyway, If you'll notice where .bss is being loaded, at 0x187000
-and the location where image will be loaded (0x180000 - 0x10000 + 0x170000)
-you'll notice that .bss overlaps image.
-
-I did some searching on the archive, but couldn't find anything
-definitive.  I'm surprised by this, and by the fact that this comes up
-by default to be this way.
-
-Can anyone shed light on what I need to do to make it so that clearing
-.bss doesn't overwrite the top part of the vmlinux.gz embedded in the
-file????
-
-Also, can anyone explain why the default alignment isn't something
-greater than 2**0 for the image?  I suppose it's not really, really
-important,
-but I expected it to be at least 2**2.
-
-Thanks in advance.
-
-Regards,
-
-Matt Gessner
+--
+John W. Linville
+LVL7 Systems, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
