@@ -1,37 +1,40 @@
-Message-ID: <398734FC.24FEBF9D@erols.com>
-Date: Tue, 01 Aug 2000 16:37:17 -0400
-From: Nelson Abramson <pogtal@erols.com>
+Message-ID: <39873902.D091D4D8@ludusdesign.com>
+Date: Tue, 01 Aug 2000 16:54:26 -0400
+From: Pierre Phaneuf <pp@ludusdesign.com>
 MIME-Version: 1.0
-To: Thomas Graichen <graichen@innominate.de>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: keyboard problems
-References: <news2mail-8m5oaq$6tj$3@mate.bln.innominate.de>
+To: SteffenH@hyperion-software.de
+CC: linuxppc-dev@lists.linuxppc.org, howarth@nitro.med.uc.edu,
+        xpert@XFree86.Org, daenzerm@student.ethz.ch
+Subject: Re: [Xpert] LinuxPPC X Server
+References: <yam8245.2994.151871328@mail.lf-online.de>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thomas Graichen wrote:
+Steffen Haeuser wrote:
 
-> i have a little keyboard problem on my blueberry imac with the
-> standard usb keyboard: whenever i type something very quickly
-> followed by space the typed in will be repeated before the
-> space (best example: i want to type "cd " and get "cdcd ")
-> - this gets a bit annoying - does anybody have the same
-> problem (or even a fix for it) ? - is it more a soft-
-> wareproblem (i hope :-) or maybe a hardwareproblem ?
-> (i had it on all kernels from 2.2.x to 2.4.0-testx)
+> It might still happen... but what would really help me in my
+> argumentation in the company to put the LinuxPPC executable "on"
+> would be:
+>
+> - A bugfix so that Fullscreen 640x480
+>   works
+> - A likely timeframe for first 3D Drivers
+>   to be released, which optimally should
+>   not be more than 3 months from now
+>
+> When is the next Beta for the X Server likely to happen, BTW ?
 
-This is a well known issue with the usb keyboard driver.  It was a a
-relatively lengthy thread a few months ago with no (AFAIK) solution,
-other than "will be fixed in the future".
+Why do you wait for those bugfix? These are in the server, so if your
+code is correct, you could just put it up and make it available, so that
+when the X server is fixed, Sin will just work.
 
-It has to do with depressing three keys at a time.  It takes a little
-getting used to, but now, except for the occasional moment of serious
-energy, I no longer strike three simultaneous keys on my Sawtooth.
+In any case, you could make a binary available on your web site later
+on, no (a "patch" if you will)?
 
-HTH
---Nelson Abramson
-
+--
+"We aim to make simple things simple and complex things possible."
+ -- Alan Kay (on Smalltalk)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
