@@ -1,36 +1,32 @@
-Message-ID: <3ADF3D42.483EF273@wanadoo.fr>
-Date: Thu, 19 Apr 2001 21:32:18 +0200
+Message-ID: <3ADF422F.CBC1EC7@wanadoo.fr>
+Date: Thu, 19 Apr 2001 21:53:19 +0200
 From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
-References: <20010419143631.8A7F72EFC2@apollo.valhalla.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Benh-2.4.4-pre3 kills linuxconf
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
-[]
-> OK.  What's happened is that the VT combination has shifted from
-> <CMD>-<CNTL>-Fx to <ALT>-<CNTL>-Fx ... all OK now.  (the config was correct)
-[]
-> Additionally, like VT-switching, the modifier key appears to have changed to
-> <ALT> from <CMD>...
-[]
-> I guess that I must have missed a place to look for the changes that
-> occurred to the modifier keys etc.... perhaps Kaoru should add this
-> information to his ftp directory.  If people who monitor the -dev list don't
-> know, what chance have Users got ;-?
+For a long time, I have been using linuxconf to switch between home and
+office configurations on my iBook. This worked up to kernel version
+2.4.4-pre1 (rsynced from the benh tree on April 12). With 2.4.4-pre3,
+rsynced yesterday, linuxconf doesn't work any more. When I type
+"linuxconf", it just sits there and waits, doing nothing. When I stop it
+with ^C, then subsequent calls of linuxconf come back immediately saying
+"Broken pipe." The kernel config is the same in both cases.
 
-The inversion of Alt and Cmd is actually mentioned in one if the
-LinuxPPC2000Q4 Readme files.
-And it is one of the first things I am always changing back in the
-keymaps. There is really no sane reason for it, and you *have* to undo
-it if you want a modifier key to get non-US characters on a US keyboard
-or an Apple-like keyboard layout on a non-US keyboard.
+Has anyone seen this?
+
+I am trying newer kernels mainly because of the recent improvements in
+the pmud and the firewire subsystems. I am still hoping that one day my
+iBook will be able to sleep *and* wake up correctly. Until now it
+sleeps, but usually crashes after wakeup, or at least the network
+system, ethernet and airport, is dead until the next reboot. My firewire
+disk (the old 10GB IBM travelstar, free after I upgraded the iBook to
+20GB, put into a firewire+USB enclosure) doesn't work either, even with
+all the recent ieee1394 patches applied :-(
 
 --
 Martin
