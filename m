@@ -1,24 +1,26 @@
-Date: Tue, 29 Oct 2002 11:21:01 -0600 (CST)
-From: vinai <vroopcha@mcw.edu>
-To: Debian PowerPC List <debian-powerpc@lists.debian.org>
-Cc: "LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
-Subject: Sonnet G4 800 in 1st gen PCI mac + linux ...
-Message-ID: <Pine.LNX.4.44.0210291117140.311-100000@kaiso.biophysics.mcw.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 29 Oct 2002 11:47:12 -0700
+From: "Tim M. Sanders" <tsanders@synergymicro.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linuxppc_2_4_devel tree and 2.4.19
+Message-ID: <20021029114712.J25527@evilcat.ioinc.tucson.az.us>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey Folks,
+I have the latest linuxppc_2_4_devel tree from
+bk://source.mvista.com/linuxppc_2_4_devel.  I wanted to get the 2.4.19 "release"
+out of the tree.  I do bk clone -rv2.4.19 linuxppc_2_4_devel linuxppc_2419.  I
+know that the directory arch/ppc/platforms is suppose to be part of the 2.4.19
+tree, but it is not in the cloned tree.  What am I doing wrong?
 
-I posted a note to one of the mac sites with this question and I thought
-I'd ask here as well.  Is anyone using (or has tried to use) one of the
-new Sonnet G4 CPU's in a 1st generation PCI mac (7300 to 9600) with any
-degree of success ?  I'm considering trying this in my 8500 ...
 
-Thanks
-vinai
-
+--
+--
+===========================
+Tim M. Sanders
+Synergy Microsystems
+520.690.1709 x323
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
