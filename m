@@ -1,17 +1,20 @@
-Return-Path: <annamaya@yahoo.com>
-Received: from web53807.mail.yahoo.com (web53807.mail.yahoo.com
-	[206.190.36.202]) by ozlabs.org (Postfix) with SMTP id 285DE2BDA3
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3D7742BDA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 05:21:37 +1000 (EST)
-Message-ID: <20041013192135.72162.qmail@web53807.mail.yahoo.com>
-Date: Wed, 13 Oct 2004 12:21:35 -0700 (PDT)
-From: annamaya <annamaya@yahoo.com>
-To: annamaya <annamaya@yahoo.com>, Dan Malek <dan@embeddededge.com>
-In-Reply-To: <20041013180651.62847.qmail@web53804.mail.yahoo.com>
-MIME-Version: 1.0
+	Thu, 14 Oct 2004 05:34:27 +1000 (EST)
+Date: Wed, 13 Oct 2004 12:34:23 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Message-ID: <20041013193423.GA28349@gate.ebshome.net>
+References: <Pine.LNX.4.60.0410131423540.12426@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Sam Song <samlinuxppc@yahoo.com.cn>, linuxppc-embedded@ozlabs.org
-Subject: Re: Booting Linux using a PlanetCore BootLoader 
+In-Reply-To: <Pine.LNX.4.60.0410131423540.12426@localhost.localdomain>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: "I2C" versus "IIC"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,58 +25,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I looked at the driver again and it looks like the TX
-and RX clock signals are board specific. I will also
-have to program the CMXFCR clock route register with
-the appropriate clocks. Am I on the right track here?
+On Wed, Oct 13, 2004 at 02:26:23PM -0400, Robert P. J. Day wrote:
+> 
+>   i was just about to rename some of my variables and macros to be
+> consistent with what i *thought* was the standard nomenclature of
+> "IIC" as opposed to "I2C".  just checked include/asm-ppc, and grepped
+> for case-insensitive instances of both strings ... oh, god.  there's
+> really no preferred usage, is there?
 
---- annamaya <annamaya@yahoo.com> wrote:
+Philips' documentation uses I2C, not IIC, so I guess this is 
+_official_ name of the _bus_.
 
-> I was able to use the same driver on a PQ2-FADS
-> board
-> with an MPC8275 processor. Are you telling me that
-> some of these pins are board specific? Thanks for
-> your
-> help.
-> 
-> --- Dan Malek <dan@embeddededge.com> wrote:
-> 
-> > 
-> > On Oct 13, 2004, at 10:49 AM, annamaya wrote:
-> > 
-> > > ..... But my driver doesn't work and complains
-> > > about a TX timeout. I am sure I am missing
-> > something.
-> > > Can you suggest something that I could try?
-> > 
-> > You are going to have to track down the clock and
-> > control signals for the FCC and make sure they are
-> > still connected the same way as the 8260.  Sounds
-> > like they aren't.  There are #defines at the top
-> of
-> > the
-> > driver file that map the GPIO pins to the FCC
-> > signals.
-> > 
-> > 
-> > 	-- Dan
-> > 
-> > 
-> 
-> 
-> 
-> 		
-> _______________________________
-> Do you Yahoo!?
-> Declare Yourself - Register online to vote today!
-> http://vote.yahoo.com
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+Some vendors (like IBM in their 4xx parts) use IIC to name I2C 
+_interface_ to distinguish it from I2C _bus_ (they specifically 
+mention this in the chip manual).
 
+For example, in the corresponding 4xx driver I used "iic" because it 
+was written for IBM IIC _interface_.
 
-
-		
+--
+Eugene.
