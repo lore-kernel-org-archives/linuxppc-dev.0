@@ -1,60 +1,43 @@
-Message-Id: <200007251952.UAA21889@hyperion.valhalla.net>
-Date: Tue, 25 Jul 2000 20:53:10 +0100
-Subject: Re: sound again [was: Re: xf4 bug report]
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: SteffenH@hyperion-software.de, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+From: Steffen Haeuser <SteffenH@hyperion-software.de>
+Reply-To: SteffenH@hyperion-software.de
+To: Iain Sandoe <iain@sandoe.co.uk>, daenzerm@student.ethz.ch,
+        linuxppc-dev@lists.linuxppc.org
+Date: Tue, 25 Jul 2000 16:14:21 -0500
+Message-ID: <yam8241.1088.147753120@mail.lf-online.de>
+In-Reply-To: <200007251356.OAA14220@hyperion.valhalla.net>
+Subject: Re: xf4 bug report
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hmmm...
-[...]
->>Glad to hear it boots OK (I wasn't sure that the AppleSCSI driver wouldn't
->>panic on boot - it used to on my Lombard)...
->
-> Appearently the problem was a wrong entry in /etc/conf.modules... it had
->
-> alias sound dmasound
->
-> there while correct would be
->
-> alias sound dmasound_awacs
->
-> After I fixed this the sound modules can be correctly loaded during bootup,
-> but there is still no sound. Maybe I should go back to the old kernel and try
-> if it works with that, or don't you think this will make a difference ?
+Am 25-Jul-00 schrieb Iain Sandoe:
 
-No, I'm afraid it won't make any difference.
+Hi!
 
-The dmasound_awacs entry only arrives with the back-port.  As Franz said,
-the error you were getting before was probably due to the conf.modules entry
-- when Ben had built the dmasound in.
+>>> Another problem BTW with this Kernel is that I do not get the sound
+working
+>>> with it (but could be a configuration problem... I had not yet the time to
+>>> look after it).
+>>
+>> Don't bother, that's a known problem as well. Blame Apple for not releasing
+>> specs for the latest sound chips...
 
-So the long & short of it is that you don't get sound out with the "current"
-set of code.  == there *should* be no difference in the implementation
-between 2.2.17pre10 and the back-port (I checked that fairly carefully)...
-and this seems to bear that out.
+>which machine, which kernel (and, if possible, which sound chip - can be
+>found from the MacOS side if not the Linux) ?
 
-So.. the next thing to do is to find out why you get no sound.
+A "blue/white" G3 Mac first Revision. Kernel is: 2.2.17pre10-ben2 (with the
+older
+kernel Sound worked - at least I cannot remember that an error message during
+OS-booting happened, I never tried out the sound then.
+But the new Kernel is needed for the X Server V4)
 
-1. what does dmesg now show?
-2. have you tried headphones/versus built-in speaker?  (others have reported
-a problem here - which is why the finger of blame is currently pointing at
-the mixer abstraction)...
+>I'm trying to build a pattern to help track down the different issues & fix
 
-3. what does cat /dev/sndstat say?
+Sounds nice :)
 
-4. what are you using to try and get sound out (e.g. some of the kde
-implementations had broken sound anyway) - I never got *any* beeps &
-whistles until I upgraded.
+Steffen
 
-I can send or post a prog. that sets the snd output to 16bit LE - so that
-you can just cat <some_file.wav> >/dev/dsp  if that's any use.
-
-xmms usually works for me (although I've been using the cvs version)...
-
-Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
