@@ -1,59 +1,63 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Wed, 18 Apr 2001 15:45:46 -0300
-From: Marcio Koch <koch@inf.pucrs.br>
-To: LinuxPPC-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Intel Flash
-Message-ID: <20010418154546.C6248@sirrah.inf.pucrs.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Wed, 18 Apr 2001 15:20:22 -0500 (CDT)
+From: Grant Erickson <erick205@umn.edu>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Linux/PPC Embedded Mailing List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Kernel Real Time Clock (RTC) Support for I2C Devices
+In-Reply-To: <Pine.HPX.4.10.10104182129390.11443-100000@gra-ux1.iram.es>
+Message-Id: <Pine.SOL.4.20.0104181513250.10793-100000@garnet.tc.umn.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Intel
-TE28F320
-B3BA110
-U9490626A
-(c)1998
+On Wed, 18 Apr 2001, Gabriel Paubert wrote:
+> On Wed, 18 Apr 2001, Grant Erickson wrote:
+> > >From the looks of drivers/char/rtc.c it would appear that this kernel
+> > driver only supports bus-attached RTCs such as the mentioned MC146818. Is
+> > this correct?
+>
+> I think so.
+>
+> > What is the correct access method / kernel tie-in for supporting such an
+> > I2C-based RTC device using the "standard" interfaces?
+>
+> Adding a new kind of clock to the kernel and setting the correct pointers
+> in ppc_md seems the right (if not necessarily simple) solution to your
+> problem.
 
-Does anybody know if this flash is supported by linux ? If so what kernel
-and mtd code should I use ?
+As per Wolfgang's follow-on comments, it looks like there are actually two
+places I need to connect things. First, /dev/rtc such that 'hwclock' can
+get into the game. Second, the ppc_md interfaces, presumably so when
+either ntpd is running or the user does 'date MMDD...' both the Linux
+notion of time and the RTC get updated.
 
-For MPC8xx.
+> I wonder how you calibrate the decrementer frequency on this machine...
 
-I'm using kernel 2.4.3-pre4 and it fails when I try to load the physmap
-module.
+As far as I can see, the decrementer frequency is set based on the 405GPs
+64-bit decrementer.
 
-Here is what I did and the error I got:
+> ...I2C is too slow to get any precision, unless you accept to wait for
+> one minute or so at boot. I still have problems of reproducibility of
+> clock frequency measurements with bus attached RTC (on machines on
+> which the RTC is the only moderately precise timing source and its
+> interrupt line is unfortunately not connected).
 
-sh-2.03# modprobe -a mtdchar mtdblock cfi_cmdset_0001  map_rom cfi_probe
-sh-2.03# lsmod
-Module                  Size  Used by
-cfi_probe               7920   0  (unused)
-map_rom                 1072   0  (unused)
-cfi_cmdset_0001         8000   0  (unused)
-mtdblock                6528   0  (unused)
-mtdchar                 5408   0  (unused)
-mtdcore                 2976   2  [mtdblock mtdchar]
-sh-2.03# modprobe -a physmap
-physmap flash device: 3fffff at fe000000
-Physically mapped flash: Found no CFI device at location zero
-/lib/modules/2.4.3-pre4/kernel/drivers/mtd/physmap.o: init_module: Device
-not configured
-Hint: insmod errors can be caused by incorrect module parameters, including
-invalid IO or IRQ parameters
-/lib/modules/2.4.3-pre4/kernel/drivers/mtd/physmap.o: insmod
-/lib/modules/2.4.3-pre4/kernel/drivers/mtd/physmap.o failed
-/lib/modules/2.4.3-pre4/kernel/drivers/mtd/physmap.o: insmod physmap failed
+In light of this, after looking at the PPC kernel code again, it looks
+like I might NOT want to set get_rtc_time but just set_rtc_time to get the
+ntpd/date functionality.
+
+Thanks for the feedback.
+
+Regards,
+
+Grant Erickson
 
 
-Any help would be appreciated.
-
-Thanks,
-
-Marcio Koch
-koch@inf.pucrs.br
-PUCRS/ELinux
+--
+ Grant Erickson                       University of Minnesota Alumni
+  o mail:erick205@umn.edu                                 1996 BSEE
+  o http://www.umn.edu/~erick205                          1998 MSEE
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
