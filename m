@@ -1,71 +1,90 @@
-Date: Mon, 1 Dec 2003 11:09:09 +0100
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Kernel oops when inserting a pcmcia card (2.6.0-test11)
-Message-ID: <20031201100909.GA26654@router.mmk-hagen.de>
+Date: Mon, 1 Dec 2003 12:11:19 +0100
+From: Remco Post <r.post@sara.nl>
+To: Christian Kujau <evil@g-house.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.6 PReP issues, still freezing
+Message-Id: <20031201121119.768fb4c1.r.post@sara.nl>
+In-Reply-To: <3FC9EEC6.8040507@g-house.de>
+References: <3FC9EEC6.8040507@g-house.de>
 Mime-Version: 1.0
-From: uwe.steinmann@mmk-hagen.de (Uwe Steinmann)
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sun, 30 Nov 2003 14:21:10 +0100
+Christian Kujau <evil@g-house.de> wrote:
 
-I find myself in xmon as soon as I insert a pcmcia card into
-my Pismo PowerBook. I suspect the memory range which is
-working for 2.4.21.
-Here is what I found in syslog.
+>
+> hi,
+>
+> after more days of compiling (at least now i know my ppc has good RAM
+> :-) ) and testing serveral kernels, i think now it's not a
+> network-related but a ppc-specific problem.
+>
+> Andrew Morton gave me the hint to just copy drivers/net/tulip/ from the
+> working 2.5.30 kernel to a recent one. i've done so; i've copied all
+> tulip stuff to a fresh 2.6.0-test11 kernel, after booting i was able to
+> load the module, but a following "ifconfig eth1 192.168.2.1" freezed the
+> machine -- as every kernel after 2.5.30 i was able to compile.
+>
+> a fix from Jeff Garzik went to linuxppc-dev (i saw it on lkml too),
+> subject was "2.6 PReP fix? (Was: [jgarzik@pobox.com: [PATCH/CFT] de2104x
+> fixes])". i found out, that i can load 3 different modules for my card:
+>
+> 00:0e.0 Ethernet controller: Digital Equipment Corporation DECchip 21140
+> [FasterNet] (rev 22)
+>          Flags: bus master, medium devsel, latency 0, IRQ 11
+>          I/O ports at 1800 [size=128]
+>          Memory at c300a000 (32-bit, non-prefetchable) [size=128]
+>          Expansion ROM at c1040000 [disabled] [size=256K]
+>
+>
+> /lib/modules/2.6.0-test11/kernel/drivers/net/tulip:
+> de2104x.ko  de4x5.ko  tulip.ko
+>
+> /lib/modules/2.5.30/kernel/drivers/net/tulip:
+> de2104x.o  de4x5.o  tulip.o
+>
+> and every module gave me a freeze with 2.6.0-test11 (oh, i forgot to
+> test, if de2104x.o and de4x5.o are working correctly with 2.5.30 since
+> i've used always "tulip")
+>
+> and so, this makes me think it's a ppc-specific problem. no, i don't say
+> it's easier now to fix, perhaps it's even harder, because a lot has
+> changed in the ppc port too. if we could blame the device-driver, the
+> codesize to play with would be a lot smaller...
+>
+> but since really no other PReP people complain, i think i'll stay with
+> 2.4. a while. the machine is not that fast and i need a faster one
+> anyway...
+>
 
-   Uwe
+I stopped complaining a while back (2.5.60 something) since I got absolutely
+no response. I'm one of the lucky (?) few who have a motorola powerstack
+(II) mobo.
 
-Nov 30 08:32:40 pb kernel: Oops: machine check, sig: 7 [#1]
-Nov 30 08:32:40 pb kernel: NIP: D9BF531C LR: D9BF52F0 SP: D7237630 REGS:
-d7237580 TRAP: 0200    Not tainted
-Nov 30 08:32:40 pb kernel: MSR: 00049030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR:
-11
-Nov 30 08:32:40 pb kernel: TASK = c0ae7120[400] 'cardmgr' Last syscall:
-54
-Nov 30 08:32:40 pb kernel: GPR00: 000000FF D7237630 C0AE7120 D9806000
-00000000 00000021 00000002 D72376AA
-Nov 30 08:32:40 pb kernel: GPR08: D7FEF238 D9807000 00009032 00001000
-22002482 10022860 00000001 00000001
-Nov 30 08:32:40 pb kernel: GPR16: 10020000 10020000 00000003 00000001
-7FFFFD78 7FFFF548 11000000 00000000
-Nov 30 08:32:40 pb kernel: GPR24: D72376AA 00000021 00000002 C194F42C
-00000000 00000000 00000002 D72376AA
-Nov 30 08:32:40 pb kernel: Call trace:
-Nov 30 08:32:40 pb kernel:  [d9bf5628] read_cis_cache+0x144/0x168
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf5c74] pcmcia_get_next_tuple+0x9c/0x2c0
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf598c] pcmcia_get_first_tuple+0xb4/0x148
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf7584] pcmcia_validate_cis+0x6c/0x1fc
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf7b58] readable+0x90/0xb0 [pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf7d58] cis_readable+0xec/0xf4
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf8014] do_mem_probe+0x1d0/0x1e8
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf80d0] validate_mem+0xa4/0xe4
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf5134] set_cis_map+0xa4/0x10c
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf52f0] read_cis_mem+0x154/0x1b8
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf5628] read_cis_cache+0x144/0x168
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf5c74] pcmcia_get_next_tuple+0x9c/0x2c0
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf598c] pcmcia_get_first_tuple+0xb4/0x148
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bf7584] pcmcia_validate_cis+0x6c/0x1fc
-[pcmcia_core]
-Nov 30 08:32:40 pb kernel:  [d9bed090] ds_ioctl+0x344/0x5d0 [ds]
+> Thank you for your time,
+> Christian.
+> --
+> BOFH excuse #389:
+>
+> /dev/clue was linked to /dev/null
+>
+>
+>
+
 
 --
-  MMK GmbH, Universitaetsstr. 11, 58097 Hagen
-  Uwe.Steinmann@mmk-hagen.de
-  Tel: +2331 840446    Fax: +2331 843920
+Met vriendelijke groeten,
+
+Remco Post
+
+SARA - Reken- en Netwerkdiensten                      http://www.sara.nl
+High Performance Computing  Tel. +31 20 592 8008    Fax. +31 20 668 3167
+
+"I really didn't foresee the Internet. But then, neither did the computer
+industry. Not that that tells us very much of course - the computer industry
+didn't even foresee that the century was going to end." -- Douglas Adams
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
