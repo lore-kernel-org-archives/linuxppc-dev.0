@@ -1,36 +1,28 @@
-Message-ID: <390DB320.DC787D62@ssh.com>
-Date: Mon, 01 May 2000 19:38:56 +0300
-From: Arto Vuori <avuori@ssh.com>
+Message-ID: <390DB80E.79946272@embeddededge.com>
+Date: Mon, 01 May 2000 12:59:58 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 8260 io and caches
+To: Arto Vuori <avuori@ssh.com>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 8260 io and caches
+References: <390DB320.DC787D62@ssh.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Arto Vuori wrote:
 
-I'm currently trying to get linux running on EST SBC8260 board. I had
-some problems with serial ports. Initially it just sent some garbage. I
-found that serial port driver doesn't initialize BRG division factor in
-SCCR register even though it assumes that it should be set to 0. I
-modified my bootloader to initialize it and output looks now much
-better.
+> I'm currently trying to get linux running on EST SBC8260 board. I had
+> some problems with serial ports.
 
-There still seems to be some problems with caches. Everything is just
-fine with caches disabled, but if i enable caches output doesn't look
-correct. Adding some flush_dcache_range() calls to uart.c seems to fix
-that problem, but shouldn't rx & tx buffers be allocated from some non
-cacheable region??
+OK.....
 
-Thanks
+> There still seems to be some problems with caches.
 
-Arto
+What version of processor silicon do you have?
 
---
-Arto Vuori
-a-mail: avuori@ssh.com
-mobile:	+358 40 754 5223
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
