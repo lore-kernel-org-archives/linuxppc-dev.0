@@ -1,118 +1,27 @@
-In-Reply-To: <002901c40705$65697ee0$5e1312ac@yang>
-References: <002901c40705$65697ee0$5e1312ac@yang>
-Mime-Version: 1.0 (Apple Message framework v612)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2176F658-7353-11D8-B73C-000A95B15278@aimsys.nl>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-Subject: Re: Can't set the schedual parameter of threads in linux
-Date: Thu, 11 Mar 2004 12:56:28 +0100
-To: "yang" <wchyang_hn@sina.com>
+Message-ID: <20040311121507.89487.qmail@web15211.mail.bjs.yahoo.com>
+Date: Thu, 11 Mar 2004 20:15:07 +0800 (CST)
+From: =?gb2312?q?song=20sam?= <samsongshzu@yahoo.com.cn>
+Subject: Re: u-boot debug with BDI2000
+To: li <slowforce@21cn.com>, linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <t7959688854481.25900@webmail2.inner-21cn.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-yang,
+li <slowforce@21cn.com> wrote:
+> I want to debug u-boot under BDI2000 with our own MPC8260 based board.
+> Do i need modify the u-boot source code?
 
-Are you running your application as root? Also, try to get/set
-the pthread schedule parameters in the pthread context itself.
+You need to port U-BOOT on your board,don't you?Pls
+find a board with similar configuration in U-BOOT as
+yours for your start.Then try to make some necessary
+changes.Read README and doc/README.RPXlite is helpful
+for your port work.
 
-Jaap-Jan
+Good luck!
 
-On Mar 11, 2004, at 2:06, yang wrote:
-
->
-> Hello,
->     I encounter a problem when I transplant application.
->     There is no effect to the pthread when I call
-> pthread_setschedparam() function in test program,  and it's policy and
-> priority are stilll zero, not what I expected, after call
-> pthread_getschedparam(). The codes  is as the follow:
->
-> #include <sched.h>
-> #include <pthread.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <sys/types.h>
-> #include <linux/ipc.h>
-> #include <linux/msg.h>
-> #include <errno.h>
-> #include <stddef.h>
-> #include <string.h>
->
-> void * func()
-> {
->         while (1);
->     return;
-> }
->
-> int main()
-> {
->     pthread_attr_t tattr;
->     pthread_t tid;
->     int policy;
->     int ret;
->     int newprio = 20;
->     struct sched_param param;
->
->     ret = pthread_attr_init (&tattr);
->     if (ret != 0)
->     {
->         printf("Error in init: %s\n", strerror(errno));
->     }
->
->     ret = pthread_attr_getschedparam (&tattr, &param);
->     if (ret != 0)
->     {
->         printf("Error in get after init: %s\n", strerror(errno));
->     }
->     ret = pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
->    if (ret != 0)
->     {
->         printf("Error in setdea: %s\n", strerror(errno));
->     }
->     ret = pthread_attr_setschedpolicy(&tattr, SCHED_RR);
->     if (ret != 0)
->     {
->         printf("Error in setpolicy: %s\n", strerror(errno));
->     }
->
->     param.sched_priority = newprio;
->     ret = pthread_attr_setschedparam (&tattr, &param);
->     if (ret != 0)
->     {
->         printf("Error in set: %s\n", strerror(errno));
->     }
->
->     ret = pthread_create (&tid, &tattr, (int*) func, NULL);
->     if (ret != 0)
->     {
->         printf("Error in create: %s\n", strerror(errno));
->     }
->
->     param.sched_priority = -1;
->     ret = pthread_getschedparam (tid, &policy, &param);
->     if (ret != 0)
->     {
->         printf("Error in get after create: %d %s\n", ret,
-> strerror(errno));
->     }
->
->     printf("policy: %d\tpriority: %d\n", policy, param.sched_priority);
->
->     return 0;
->
-> }
->
->     The output is :
->     policy: 0    priority: 0
->
->     Would you like to tell me how to set the policy and priority to
-> pthreads in Red Hat.? Thank you very much!
->     Best regards,
->                                      yang
->
->
-
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
