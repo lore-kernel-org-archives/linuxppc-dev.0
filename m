@@ -1,65 +1,43 @@
-Date: Wed, 24 Jan 2001 11:11:12 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: linuxppc-users@lists.linuxppc.org
-cc: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Matrox and XFree86 4.0.2 update
-Message-ID: <Pine.BSF.4.21.0101241035480.289-200000@shell.unixbox.com>
+Message-ID: <3A6FC1EB.1CC0B893@mvista.com>
+Date: Thu, 25 Jan 2001 01:04:27 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-970582926-980361434=:289"
+To: mgreer@mvista.com
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: CONFIG_HIGHMEM on PPC
+References: <3A6E224E.C0305107@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+"Mark A. Greer" wrote:
 
---0-970582926-980361434=:289
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <Pine.BSF.4.21.0101241037271.289@shell.unixbox.com>
+> Has anyone tried CONFIG_HIGHMEM on PPC lately?
 
+I think it is broken and I have also stumbled into a fix for it.
 
-I recently ran into an issue with the matroxfb driver and XFree86 4.0.2's
-matrox driver.  Sometime in the past someone decided to use BE
-register access in matroxfb for BE machines, while this is probably The
-Right Way, it produces problems in X.  I can use BE register access
-macro's in X but it was causing problems with the engine, perhaps some DMA
-issue although the dma BE bits are on.
+When HIGHMEM is used, memory pages are mapped to virtual addresses
+that are not 1:1 mapped.  Our simple virt_to_phys macros won't work
+with HIGHMEM pages.  The 4xx and 8xx processor (and in my test
+kernel all processors) map the virt_to_phys to the 'iopa' function
+in arch/ppc/mm/init.c.  This way the actual page table entry is
+tracked down for a virtual address.
 
-Anyhow, the small attatched patch is necessary along with my XFree86 4.0.2
-rsync tree located at linuxppc.org::xfree86-pmac.
+Change your virt_to_phys, virt_to_bus macros in include/asm-ppc/io.h
+to call 'iopa' (and do the PCI_DRAM_OFFSET adjustment as necessary)
+and let me know what happens.  I'm working on the reverse, using
+the mm_ptov() but I don't have it done yet.  If you are using the
+reverse (bus_to_virt, etc.) functions, let me know and I'll try to
+find a quick hack.
 
-The patch removes the turning on of the BE PCI option register, and lets
-matroxfb use LE register access for powerpc.
+I would like to know who works on APUS as well.  In making these
+VM changes, I certainly broke the APUS code (because I stole from
+there and made it all common :-).  I would like to work with someone
+to straighten this out as I have no way to test it.
 
+Thanks.
 
-ani
-
---0-970582926-980361434=:289
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME="matroxfb-x.patch"
-Content-ID: <Pine.BSF.4.21.0101241037140.289@shell.unixbox.com>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME="matroxfb-x.patch"
-Content-Transfer-Encoding: BASE64
-
-LS0tIG1hdHJveGZiLmMub3JpZwlXZWQgSmFuIDI0IDExOjUwOjQxIDIwMDEN
-CisrKyBtYXRyb3hmYi5jCVdlZCBKYW4gMjQgMTE6NTU6MzQgMjAwMQ0KQEAg
-LTE4MSw3ICsxODEsNyBAQA0KICNlbmRpZiANCiAjZW5kaWYNCiANCi0jaWYg
-ZGVmaW5lZChfX2FscGhhX18pIHx8IGRlZmluZWQoX19tNjhrX18pDQorI2lm
-IGRlZmluZWQoX19hbHBoYV9fKSB8fCBkZWZpbmVkKF9fbTY4a19fKSB8fCBk
-ZWZpbmVkKF9fcG93ZXJwY19fKQ0KICNkZWZpbmUgUkVBRHhfV09SS1MNCiAj
-ZGVmaW5lIE1FTUNQWVRPSU9fV09SS1MNCiAjZWxzZQ0KQEAgLTEwNDIsNyAr
-MTA0MiwxMSBAQA0KICNkZWZpbmUgTV9PUE1PREVfMzJCUFAJKE1fT1BNT0RF
-X0RNQV9MRSB8IE1fT1BNT0RFX0RJUl9MRSB8IE1fT1BNT0RFX0RNQV9CTElU
-KQ0KICNlbHNlDQogI2lmZGVmIF9fQklHX0VORElBTg0KKyNpZiBkZWZpbmVk
-IChfX3Bvd2VycGNfXykNCisjZGVmaW5lIE1YX09QVElPTl9CU1dBUAkJMHgw
-MDAwMDAwMA0KKyNlbHNlDQogI2RlZmluZSBNWF9PUFRJT05fQlNXQVAJCTB4
-ODAwMDAwMDANCisjZW5kaWYNCiANCiAjZGVmaW5lIE1fT1BNT0RFXzRCUFAJ
-KE1fT1BNT0RFX0RNQV9MRSB8IE1fT1BNT0RFX0RJUl9MRSB8IE1fT1BNT0RF
-X0RNQV9CTElUKQkvKiBUT0RPICovDQogI2RlZmluZSBNX09QTU9ERV84QlBQ
-CShNX09QTU9ERV9ETUFfQkVfOEJQUCAgfCBNX09QTU9ERV9ESVJfQkVfOEJQ
-UCAgfCBNX09QTU9ERV9ETUFfQkxJVCkNCg==
---0-970582926-980361434=:289--
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
