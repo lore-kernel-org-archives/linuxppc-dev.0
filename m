@@ -1,74 +1,44 @@
-Subject: RE: Real time clock seems stuck
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 31 Oct 2002 11:02:05 -0500
-Message-ID: <3D296C067098F149B11A8F4FC37C054603EFEA@EXVS1.ops.infiniswitch.com>
-From: "Wright, David" <dwright@infiniswitch.com>
-To: "Kurt Wall" <kurt.wall@timesys.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MTD Driver (denx Linux 2.4.4)
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: Flavio Pereira <fpereira@azisa.com>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1E354700654661418593A0D6B5A9D410089481@mail.azisa.co.za>
+References: <1E354700654661418593A0D6B5A9D410089481@mail.azisa.co.za>
+Date: 31 Oct 2002 10:25:01 -0600
+Message-Id: <1036081502.1013.1299.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: Kurt Wall [mailto:kurt.wall@timesys.com]
-> Sent: Thursday, October 31, 2002 9:28 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Real time clock seems stuck
+On Thu, 2002-10-31 at 08:37, Flavio Pereira wrote:
 >
+> I'm having difficulty in getting the MTD driver working. I'm using a
+> non-CFI complaint Sharp chip so I have defined CONFIG_MTD_SHARP. However
+> I cannot locate anywhere in the code where the kernel will call
+> sharp_probe_init. In any case I forced init_mtd (mtdcore.c) to call
+> sharp_probe_init and it seems to load the driver okay as I see the
+> following on my serial console
 >
+> JFFS version 1.0, (C) 1999, 2000  Axis Communications AB
+> JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis
+> Communications AB.
+> MTD Sharp chip driver <ds@lineo.com>
+> MTD Sharp chip driver <ds@lineo.com>
 >
-> Speaking on condition of anonymity, Dr. Craig Hollabaugh told us:
-> >
-> > Folks,
-> >
-> > I'm trying to get a walnut board booted. I'm using
-> linuxppc_2_4_devel pulled from denx yesterday. I'm getting
-> the "Real time clock seems stuck" message then nothing, no
-> messages after that. I found a brief thread about this.
-> >
->
-> I've seen this on boards that don't have an RTC...
+> Now my question is, do I need to force this driver to load or am I
+> missing some compile flag? How do I go about partitioning the flash, ie
+> how does this driver link to a flash map?
 
-He said he's working on a Walnut, guys, and a Walnut has a DS1743
-RTC chip on board, or at least mine does.
+Those "MTD" lines above, does that mean your driver is being initialized
+twice?
 
-The problem here is arising because the kernel is attempting to
-probe the RTC continuously, waiting for it to tick over.  You
-can't do that to a DS1743; you have to leave it idle for 500 usec
-between probes or the indicators won't advance.
+Linux uses ELF tricks for initialization: addresses of all the functions
+marked __init are put into their own ELF section, and common code
+somewhere (I forget where) just loops over this section, calling each
+init function in turn. So you should *not* add an explicit call to your
+init routine.
 
-This isn't a production-quality patch, but here's the change I
-made to arch/ppc/kernel/time.c:time_init() to handle the problem
-(my changes tagged with "INFINISWITCH"):
-
-	if (ppc_md.get_rtc_time) {
-		int read_delta = 0;	/* INFINISWITCH */
-
-		stamp = get_native_tbl();
-		sec = ppc_md.get_rtc_time();
-		elapsed = 0;
-		do {
-			old_stamp = stamp;
-			old_sec = sec;
-			stamp = get_native_tbl();
-			if (__USE_RTC() && stamp < old_stamp) old_stamp -= 1000000000;
-			elapsed += stamp - old_stamp;
-			read_delta += stamp - old_stamp;  /* INFINISWITCH */
-
-			/* some real-time clocks, like the DS1743, can't be
-			 * read repeatedly at very high speed.  Only try to
-			 * read the RTC once per jiffy (INFINISWITCH)
-			 */
-			if (read_delta > tb_ticks_per_jiffy) {
-				sec = ppc_md.get_rtc_time();
-				read_delta = 0;
-			}
-		} while ( sec == old_sec && elapsed < 2*HZ*tb_ticks_per_jiffy);
-
-
-
-  -- David Wright, Infiniswitch Corp., Westborough, MA
+-Hollis
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
