@@ -1,77 +1,70 @@
-Date: Thu, 27 Sep 2001 00:55:41 +0200
-From: Stefan Pfetzing <dreamind@dreamind.de>
+Date: Thu, 27 Sep 2001 16:33:20 +0900 (JST)
+Message-Id: <20010927.163320.846962931.t-matsuu@protein.osaka-u.ac.jp>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Dmasound for iBook2
-Message-ID: <20010927005541.A10663@server>
+Subject: broken symlinks
+From: MATSUURA Takanori <t-matsuu@protein.osaka-u.ac.jp>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="LQksG6bCIzRHxTLp"
+Content-Type: Text/Plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---LQksG6bCIzRHxTLp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi.
 
-Hi,
+Recentry I updated my kernel from 2.4.10-pre12 to 2.4.10.
+Kernel sources are get from linuxppc_2_4_devel.
 
-i recently tested the Dmasound patch for the ibook2, which is now in benh's
-tree. I noticed that the volume got really loud even if at approx 10%...
-Hope this little patch solves that, for me it does.
+Since updated to 2.4.10, it is sometimes occurd that broken symlinks
+are made. It seems to be occured only when making symlinks via NFS.
+(The kernel version of NFS server is 2.4.10 from linuxppc_2_4_devel.)
 
-bye
 
-dreamind
 
---LQksG6bCIzRHxTLp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="dmasound_for_ibook2_volume_fix.patch"
+Here is an expamle of broken symlink.
 
-diff -urN linux-benh.orig/drivers/sound/dmasound/tas3001c.c linux-benh/drivers/sound/dmasound/tas3001c.c
---- linux-benh.orig/drivers/sound/dmasound/tas3001c.c	Mon Sep 24 22:24:31 2001
-+++ linux-benh/drivers/sound/dmasound/tas3001c.c	Tue Sep 25 02:09:10 2001
-@@ -52,11 +52,13 @@
- #define VOL_MAX ((1<<20) - 1)
 
- void tumbler_get_volume(uint * left_vol, uint  *right_vol) {
--  *left_vol = cur_left_vol>>4;
--  *right_vol = cur_right_vol>>4;
-+  *left_vol = cur_left_vol;
-+  *right_vol = cur_right_vol;
- }
+$ df /work
+Filesystem           1k-blocks      Used Available Use% Mounted on
+foo:/work            5910464   1883320   3726912  34% /work
+$ pwd
+/work/redhar/BUILD/qt-2.3.1/include
+$ ls -l qdatetm.h
+lrwxrwxrwx    1 t-matsuu kagaku        343 Sep 27 15:43 qdatetm.h -> /work/redhat/BUILD/qt-2.3.1/src/compat/qdatetm.hP4Bj 3CLS)
+	-rm -f *~ core
+	-rm -f allmoc.cpp
 
- int tumbler_set_volume(uint left_vol, uint right_vol) {
-+  uint left_vol_pers = left_vol;
-+  uint right_vol_pers = right_vol;
-   unsigned char block[6];
+####### Extension Modules
 
-   if (! tumbler_client) {
-@@ -64,8 +66,11 @@
-     return -1;
-   }
+listpromodules:
+	@echo
 
--  left_vol<<=4;
--  right_vol<<=4;
-+  left_vol>>=6;
-+  right_vol>>=6;
-+
-+  left_vol*=left_vol;
-+  right_vol*=right_vol;
+listallmodules:
+	@echo
 
-   if (left_vol > VOL_MAX)
-     left_vol = VOL_MAX;
-@@ -85,8 +90,8 @@
-     printk("tumbler: failed to set volume \n");
-     return -1;
-   } else {
--    cur_left_vol = left_vol;
--    cur_right_vol = right_vol;
-+    cur_left_vol = left_vol_pers;
-+    cur_right_vol = right_vol_pers;
-   }
+listaddonpromodules:
+	@echo
 
-   return 0;
+listaddonentmodules:
+	@echo
 
---LQksG6bCIzRHxTLp--
+
+REQUIRES=large-config
+
+####### Sub-libraries
+
+
+###### Combined headers
+
+
+
+####### Compile
+
+main.o: main.cpp
+
+
+MATSUURA Takanori @ Division of Protein Chemistry,
+                     Institute for Protein Research, Osaka University, Japan
+E-Mail: t-matsuu@protein.osaka-u.ac.jp
+Web Page: http://chux1.protein.osaka-u.ac.jp/~t-matsuu/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
