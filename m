@@ -1,67 +1,43 @@
-Date: Wed, 26 May 1999 15:07:55 +0200 (MET DST)
-From: David De Ridder <s970707@uia.ua.ac.be>
-Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Simone Piccardi <Simone.Piccardi@fi.infn.it>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: MVME2431: how to use vme?
-In-Reply-To: <Pine.HPP.3.96.990525101402.6041D-100000@gra-ux1.iram.es>
-Message-ID: <Pine.SO4.4.05.9905261456310.2110-100000@hsins.uia.ac.be>
+Date: Wed, 26 May 1999 11:09:20 -0400 (EDT)
+From: Elliot Lee <sopwith@redhat.com>
+To: jpgarcia@execpc.com
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: endian patches to esound, audiofile, x11amp_beta for pbG3
+In-Reply-To: <199905260525.AAA06870@pop02.execpc.com>
+Message-ID: <Pine.LNX.4.10.9905261102420.9719-100000@lacrosse.corp.redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi everyone,
+On Wed, 26 May 1999 jpgarcia@execpc.com wrote:
 
-we now have Gabriel's Universe driver working with a "LeCroy ADC1182"
-VME board, which is simply an ADC board with 8 channels. We generate
-the sample-pulses internally on the board, with the Universe driver.
-In short, there is no problem using this board to measure (different)
-charges (in parallel). Operation is in A24/D16 mode.
-
-I just thought scientific-minded people might be interested in hearing
-real-world applications of the Universe driver (and Linux).
-
-In the meantime, Simone wrote : 
-
-> > A second question is about the BLT flag, as I understand is used to
-> > enable block tranfer. Now we don't need it because the board that we use
-> > has only a readout address that take values stored inside internal FIFO;
-> > this lead to about 700ns to read one word, but our hardware people are
-> > thinking about to make a new board, putting everything inside a buffer,
-> > so if I'll had to use this how I have to read? For what I undertand
-> > block tranfer tranfer on read a whole block of data but how can I
-> > specify the size? 
+> attached are a set of patches for audiofile, esound (in PPC DR1.0),
+> and x11amp-0.9_beta1.1-1 to fix the endian problems in sound.  I am
+> running kernel 2.2.9 on a pbG3 300.  If you try to play mp3s and only
+> get static, these should fix that.  they can be added into the .spec
+> file to build an RPM no problem.  If anyone hasn't had this problem, i
+> don't know why mine it acting odd.
 > 
-> Block transfer is mostly interesting for DMA and burst writes. Actually on
-> VME block transfers are signaled by a different addres modifier (AM) code
-> on the bus. You don't tell the length: it is the number of data strobes
-> cycles while the address strobe is active which determines the length. The
-> universe will only perform block transfers exceptionally on reads: when
-> you perform a read which is wider than the programmed VME bus width
-> (reading 32 bit on VME_A32_BLT(16) for example). It will perform block
-> transfers on writes, especially if you enable write posting which will use
-> the internal FIFOs and your processor performs store gathering (PPC750 for
-> example). 
+> Some of the patches are brute force, so there are better solutions out
+> there.  Mostly quick late nite fixes so i can play mp3s.  But they
+> work for me, so enjoy.  Any feedback would be cool.
 
- We too would like to use block transfers. It does not work however.
- ``Device not configured'' it seems. I just changed (in the VME_window
- struct) VME_AM_A24(16) to VME_AM_A24_BLT(16).
- Unfortunately, I'm no VME expert. So, are BLTs something a VME board
- itself must support ? Or do I need to set another parameter ?
+The audiofile in GNOME CVS is supposed to have a lot of endianness fixes
+already - you may want to try it. (Not sure how binary compatible it is
+with 0.1.6 though).
 
- Any input is highly appreciated,
- 
-+-----------------------------------------------------------------+
-   David 'Septimus' De Ridder     <david.de.ridder@bitsmart.com>
+Anyways, my main point is that you really need to get these patches to the
+original authors of the respective packages so that they can be
+integrated. The audiofile author is michael@68k.org. The esound author is
+ericmit@ix.netcom.com (that e-mail address reportedly no longer works
+though - perhaps try getting things through raster@redhat.com instead).
 
-"Fortunately, Hill Giants have large blind  spots in
- which a human can easily hide. Unfortunately, these
- blind spots are beneath the bottoms of their feet."
- - 'Hill Giant' (M:TG)
-+-----------------------------------------------------------------+
+-- Elliot
+"We're sorry, we didn't know it was supposed to be invisible."
+	- Sign carried outside US embassy.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
