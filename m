@@ -1,54 +1,46 @@
-Date: Tue, 27 Jul 2004 13:29:29 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
+Date: Tue, 27 Jul 2004 14:01:32 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andreas Oberritter <obi@saftware.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 440GX: mapping PCI address
-Message-ID: <20040727132929.A12403@home.com>
-References: <45ABD2373C33C4459D42B40EC4F346F2026215B0@FTWMLVEM03.e2k.ad.ge.com>
+Subject: Re: [PATCH] add board_init() (was [PATCH] make platform_init() weak for 8xx)
+Message-ID: <20040727210132.GF10891@smtp.west.cox.net>
+References: <1090253615.1415.24.camel@shiva.saftware.de> <20040719163203.GA6813@smtp.west.cox.net> <1090258468.1419.58.camel@shiva.saftware.de> <20040719182047.GC6813@smtp.west.cox.net> <1090591193.3939.27.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45ABD2373C33C4459D42B40EC4F346F2026215B0@FTWMLVEM03.e2k.ad.ge.com>; from Renaud.Barbier@ge.com on Tue, Jul 27, 2004 at 01:20:27PM -0500
+In-Reply-To: <1090591193.3939.27.camel@localhost.localdomain>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jul 27, 2004 at 01:20:27PM -0500, Barbier, Renaud (GE Infrastructure) wrote:
+On Fri, Jul 23, 2004 at 03:59:53PM +0200, Andreas Oberritter wrote:
+> Am Mo, den 19.07.2004 schrieb Tom Rini um 20:20:
+> > On Mon, Jul 19, 2004 at 07:34:28PM +0200, Andreas Oberritter wrote:
+> >
+> > > On Mon, 2004-07-19 at 18:32, Tom Rini wrote:
+> > > > Second, this takes us in the direction of 82xx.  Until the 82xx
+> > > > abstractions get flushed out a bit more, I remain unconvinced that
+> > > > they're really the right way to go (perhaps hooking the other direction
+> > > > would work better, e.g. platform_init() calls board_init(), with a weak
+> > > > version provided, and some functions forced to be provided by board.c,
+> > > > such as m8xx_map_io).
+> > >
+> > > I chose this way because it seemed to be a simple way to port the dbox2
+> > > board to 2.6 using the new device API. Is there another 8xx board which
+> > > uses the device API for its onboard peripherials and can be used as a
+> > > reference? Can I get my devices registered without modifying
+> > > platform_init, or shall I send a patch with the board_init() you
+> > > mentioned? See my board.c attached.
+> >
+> > There currently isn't a reference platform for what you speak of.  My
+> > preference would be to see what I described given a shot to see if it
+> > looks better or worse (and it better, or worse, in the flow of things).
 >
-> ok. I am lost here.
-> I have checked the linux source code and can see
-> comments regarding fix for the 36-bit address.
-> So I would think the current BSP I have can support what I need.
+> How about this patch?
 
-Did you get the patch I mentioned? It hacks remap_page_range() to
-call the 36-bit fixups and handle a u64 phys addr. What "BSP"
-are you talking about?  Are you running a stock kernel tree?
+Yes, I think that's about it.
 
-> Still even though I am getting an address from mmap access, to the location freezes my machine.
-> Here is the code.
-> fd=open("/dev/mem", O_RDWR);
->
-> /* test fd for error */
-> ptr=(unsigned int *)mmap(0, 4096, PROT_READ | PROT_WRITE,
->                              MAP_SHARED, fd, 0xec00000); or /* 0x80002000 */
-> printf("ptr = 0x%x\n", (unsigned int)ptr);
->
-> the returned address is 0x30019000.
->
-> If I understand correctly 0x0ec00000 should be translated by the kernel
-> to 0x20ec00000 to map the PCI configuration register.
-
-Only if the patch is applied.
-
-> I can see the remapping being done when using ioremap in the drivers but not
-> when doing mmap at user level. So could be wrong in my system?
->
->
-> Actually, what do you do if you have 512MB of memory? I guess change the "trap" area.
-
-I don't follow, how does 512MB of memory change things in your
-case? The hack does make some assumptions but it works for most
-peoples needs.
-
--Matt
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
