@@ -1,35 +1,39 @@
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Message-Id: <199910141610.SAA10877@opal.biophys.uni-duesseldorf.de>
+In-Reply-To: <199910141600.SAA10832@opal.biophys.uni-duesseldorf.de>
+Date: Thu, 14 Oct 1999 18:10:31 +0200
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: serial on lombard
-In-Reply-To: <3805EE77.DFC69FCA@fadata.bg> from Momchil Velikov at "Oct 14, 1999 05:53:43 pm"
-To: velco@fadata.bg (Momchil Velikov)
-Date: Thu, 14 Oct 1999 18:10:12 +0200 (CEST)
-Cc: bh40@calva.net, linuxppc-dev@lists.linuxppc.org
-MIME-Version: 1.0
+Message-Id: <19991014181031.019116@mailhost.mipsys.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I think the code should be as follows:
->    signal( SIGALRM, a_signal_handler_which_just_returns );
->    alarm(4);
->    portfd = open( dial_tty, O_RDWR|O_NONBLOCK);
->    alarm(0);
->    if( portfd >= 0 ) {
->       ...
-> 
-> In old code (and in the patched one too) there is a race condition
-> between clearing the alarm and signal delivery. A sequence similar
-> to the above one relies only on the return value of open().
-> Regards,
+On Thu, Oct 14, 1999, Michael Schmitz
+<schmitz@opal.biophys.uni-duesseldorf.de> wrote:
 
-alarm(0) only clears the timer and won't change the return value of open. 
-Watching the strace output closely you will see that the return value of 
-open is filled in only after the alarm fired. The macserial open fails to 
-check for pending signals after completing the modem powerup wait, and 
-can't detect the timeout. 
+>And I fixed it by modifying the serial port startup() code. Seems to work as
+>well - do we really need to wait that long for the modem to power up, or
+>will the modem just refuse to handshake while initializing?
 
-	Michael
+What did you change in the startup() code ?
+
+On the wallstreet, at least, (and possibly on the Lombard, if Paul could
+check that the FCR bits are actually the same), without this delay, the
+modem will not answer to AT commands. This causes almost all PPP dialers
+out there to fail with their default scripts. It's possible to work
+around this on some dialers (kppp has a tempo setting) but not all of
+them. That's the main reason why we added this code. (I think Paul added
+the clean sleep code, I originally throwed an horrible mdelay() which
+locked the entire kernel waiting for the modem).
+
+
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
