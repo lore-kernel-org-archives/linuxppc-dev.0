@@ -1,59 +1,54 @@
-Date: Sat, 6 Jan 2001 13:11:55 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: diekema_jon <diekema@bucks.si.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Root keys on bk://bitkeeper.fsmlabs.com:5000 have changed
-Message-ID: <20010106131155.E556@opus.bloom.county>
-References: <20010106104711.D1400@opus.bloom.county> <200101061940.f06Jdx904796@denx.local.net>
-Mime-Version: 1.0
+Message-ID: <3A578631.5335A560@mvista.com>
+Date: Sat, 06 Jan 2001 15:55:13 -0500
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Dan Winkler <dwinkler@virtual-ink.com>
+CC: "'linuxppc-embedded@lists.linuxppc.org '"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: driver memory management
+References: <64AFC0D37B2ED411BAB300508B6D90A019AB09@mail.virtual-ink.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200101061940.f06Jdx904796@denx.local.net>; from wd@denx.de on Sat, Jan 06, 2001 at 08:39:59PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, Jan 06, 2001 at 08:39:59PM +0100, Wolfgang Denk wrote:
-> In message <20010106104711.D1400@opus.bloom.county> you wrote:
-> >
-> > > It appears that the BitKeeper repository at bk://bitkeeper.fsmlabs.com:5000
-> > > has changed.  What happened to the previous BK tree?  Was it replaced with the
-> > > 2.4.0 baseline?
-> >
-> > The former 2_3 tree has been replaced with a new 2_4 tree which currently does
-> > _not_ have all of the fixes needed for PPC.
+Dan Winkler wrote:
 >
-> Is there some place where such decisions are discussed or at least announced?
+> I am having some difficulties allocating memory larger than the memory
+> available in cpm_host_alloc, cpm_host_alloc seems to use part of a
+> predesignated 4K buffer of memory.
 
-Formally? Nope.  You just got the announcement. :)
 
-> Things like that hit my with surprise again and again (and  obviously
-> not only me).
+I don't quite understand this collection of words, but I will try
+to explain some of this.  The cpm_host_alloc() is intended to be
+used only by those devices that require small amounts of memory,
+significantly less a page size or so.  Like the UART FIFOs and
+things like that.  If you notice other drivers (Ethernet for example)
+it allocates its own memory and associates it with the BDs.
 
-Hey, it supprised me this morning to find out it had changed.  But it was also
-expected.  2.3 is dead, it's now 2.4.
+> pBuff = kmalloc(TRANSMIT_SIZE, GFP_KERNEL|GFP_DMA);
+>
+> the only problem with this is when I go to copy data to this location it
+> fails i.e.
 
-> A few days ago Steven Hanley <sjh@wibble.net> asked for the currently
-> active devel tree. The question has not been answered yet.
+Yeah, you probably get a big time kernel crash due to a bus fault.
 
-Active devel for what?  The 2_5 tree (I'm sure if you search the -dev archives
-there's a few pointers to it, bk://bk.fsmlabs.com:5005 is where the unstable
-stuff happens, before moving to a stable tree.
+> memcpy(__va(pBuff), pSrc, size)
+>
+> Any Suggestions as to what might be going on.
 
-> I really would appreciate a summary about the current  state  of  the
-> different source trees.
+Yeah, pBuff is a kernel virtual address from kmalloc.  You don't
+use the __va() operation on this type of address.  I don't know why
+you need to copy this, but you should simply use:
 
-Sure:
-linuxppc_2_3 - "Dead", it still exists on the server, but it's going away.
-linuxppc_2_4 - Where 2_3 used to be.  It doesn't compile at the moment, but it
-will later today / tomorrow (I'm testing it right now).
-linuxppc_2_5 - Same old unstable dev tree, still port 5005
+	memcpy(pBuff, pSrc, size)
 
-> Any comment from the Powers That Be?
+and then put __pa(pBuff) in the BD.  Of course, the "right" thing
+to do is simply track down the physical pages to pSrc and stuff those
+into the BDs without allocating or copying any memory (or preallocate
+the buffer using kmalloc and tell the data provider to use that).
 
-I don't know if I count, I just commit stuff :)
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
