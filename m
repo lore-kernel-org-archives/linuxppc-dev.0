@@ -1,126 +1,39 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Thu, 19 Dec 2002 15:52:06 +0100
-From: BREUVART Jean-Charles <jean-charles.breuvart@airbus.com>
-Subject: pb compiling cross gcc, binutils, glibc and so on ...
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <36EB27C27D93D4119DE500508BDF85B30B2D710A@TOCOMEXC03>
-MIME-version: 1.0
-Content-type: text/plain
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+Cc: "'Embedded Linux PPC List'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 823 Video Controller Driver - where ? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 19 Dec 2002 09:01:53 EST."
+             <D73A25AA6E54D511AD74009027B1110F3C04F5@ORION>
+Date: Thu, 19 Dec 2002 15:55:16 +0100
+Message-Id: <20021219145521.755EFC6289@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello world !
+In message <D73A25AA6E54D511AD74009027B1110F3C04F5@ORION> you wrote:
+> Actually I found lcd823.c and lcdvideo.h in arch/ppc/8xx_io of your
+> linux-2.4.4-2002-03-21 :)
 
-I'm trying to create a cdk, the host is a PIII runnning RedHat 8.0 (kernel
-2.4.18), and the target is GNU kernel 2.4.20 running on a PPC755B
-proprietary board. I've read lots of HOWTOs but I haven't succeeded yet !!!
+But lcd823.c / lcdvideo.h is - as the  name  "lcd..."  suggests  -  a
+driver  for the LCD controller of the MPC823 CPU; it does not support
+the video controller - and this was what the OP asked for:  a  driver
+for the _video_ controller.
 
-RedHat 8.0 comes with gcc 3.2, binutils 2.13.90.0.2, make 3.79.1, I don't
-know how to get the libc version ...
+I think there once was such a beast, probably in
+ftp://ftp.mvista.com/pub/Area51/embedded-planet/video.tgz
 
-One told me that gcc 3.2 wasn't a nice version to create a cross-compiler
-(actually, I've tried and this seems to be true), so I've downloaded from
-www.gnu.org the following :
+Maybe you happen to know if this is still available somewhere?
 
- - gcc-2.95.3.tar.gz and gcc-core-2.95.3.tar.gz
- - binutils-2.13.90.0.4.tar.gz and binutils-2.12.90.0.7.tar.gz
- - glibc-2.3.tar.gz and glibc-linuxthreads-2.3.tar.gz
- - make-3.80.tar.gz
- - linux-src-2.4.20.tar.gz
+Best regards,
 
-I' succeeded in building a native gcc 2.95.3 and make 3.8, and used them to
-create the famous Hello world C program, actually all that stuff works. But
-I still remain to encounter pb while creating the cdk !!!
+Wolfgang Denk
 
-here is what I did :
-
- 1. restrict $PATH to /sbin:/bin:/usr/sbin:/usr/bin
- 2. build a native gcc core 2.95.3 from scratch in /usr/src/gcc-2.95.3/ dir,
-and install it in /usr/local/ (the default) :
-      - cd /usr/src/gcc-2.95.3/
-      - make clean
-      - make distclean
-      - ./configure --enable-languages=c,c++ ; this uses my RedHat
-distribution's cc, which link to gcc
-      - make bootstrap
-      - make install
- 3 build make 3.80 in /usr/src/make-3.80/ dir, and install it in /usr/local/
-(the default) :
-      - cd /usr/src/make-3.80/
-      - make clean
-      - make distclean
-      - CC=/usr/local/bin/gcc ./configure (I don't know if it's better to
-use gcc 2.95.3 or gcc 3.2, however, this uses RedHat distribution's binutils
-!)
-      - make
-      - make install
- 4. build binutils 2.12.90.0.7 for powerpc cross compile, and install it in
-/opt/powerpc-linux/ :
-      - cd /usr/src/binutils
-      - make clean
-      - make distclean
-      - CC=/usr/local/bin/gcc ./configure --target=powerpc-linux
---enable-shared --with-newlib --prefix=/opt/powerpc-linux (I still don't
-know if it's better to use gcc 2.95.3 or gcc 3.2)
-      - make
-      - make install
-5. build gcc core 2.95.3 for powerpc cross compile, and install it in
-/opt/powerpc-linux/ :
-      - cd /usr/src/gcc-2.95.3/
-      - make clean
-      - make distclean
-      - CC=/usr/local/bin/gcc ./configure --target=powerpc-linux
---enable-shared --enable-languages=c --with-newlib
---prefix=/opt/powerpc-linux
-      - add /opt/powerpc-linux at the end of $PATH, otherwise make doesn't
-find powerpc-linux-as, powerpc-linux-ld and so on
-      - make
-
-Here is the trouble :
-
-choose-temp.c:29: stdio.h: Aucun fichier ou r?pertoire de ce type
-choose-temp.c:30: sys/types.h: Aucun fichier ou r?pertoire de ce type
-choose-temp.c:32: unistd.h: Aucun fichier ou r?pertoire de ce type
-choose-temp.c:35: stdlib.h: Aucun fichier ou r?pertoire de ce type
-choose-temp.c:38: sys/file.h: Aucun fichier ou r?pertoire de ce type
-
-there aren't any of those in /opt/powerpc-linux/ or its subdirs
-
-this the same trouble I had when I tried to build directly a cross gcc
-2.95.2 for powerpc-linux with my RedHat distribution's gcc and binutils ...
-
-So here are my questions :
-
- - did anyone do that before ?
- - does a pre-compiled version of such a cross dev toolsets already exists
-for x86-pc-linux or sparc-sun ? I heard about "ELDK"
-by Wolfgang Denk
- - is what I did wrong ?
- - where should the cross gcc build process search for those headers ? How
-to indicate it ?
- - must I use native binutils or cross binutils to build a cross gcc ?
- - to build the bin utilities, including binutils, for the embedded linux
-kernel's filesystem that will run on the PPC755B, I think I'll use the cross
-gcc to build them from their source code ? I think that the one build in 4.
-won't run, they only run on my host ?
-
-if needed, I can change my host and use a Sun Workstation runnning SunOS
-5.5.1 ...
-
-So thanks in advance.
-
-Regards,
-
-Jean-Charles Breuvart
-
-This e-mail is intended only for the above addressee. It may contain
-privileged information. If you are not the addressee you must not copy,
-distribute, disclose or use any of the information in it. If you have
-received it in error please delete it and immediately notify the sender.
-Security Notice: all e-mail, sent to or from this address, may be
-accessed by someone other than the recipient, for system management and
-security reasons. This access is controlled under Regulation of
-Investigatory Powers Act 2000, Lawful Business Practises.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If A equals success, then the formula is A = X + Y + Z. X is work.  Y
+is play. Z is keep your mouth shut.                 - Albert Einstein
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
