@@ -1,39 +1,36 @@
-Date: Mon, 25 Aug 2003 16:53:13 +0200
-Message-ID: <3F39F74300020C96@mssbzhh-int.msg.bluewin.ch>
-In-Reply-To: <20030825134011.93874.qmail@web103.bizmail.yahoo.com>
-From: "Wolfgang Grandegger" <wolfgang.grandegger@bluewin.ch>
-Subject: RE: how to make cramfs and jffs file systems based on eldk environment?
-To: "ZhongJun Zhou" <zjzhou@newrocktech.com>,
-	linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Date: Mon, 25 Aug 2003 09:41:13 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Obsolete and unmaintained 4xx boards in 2.5
+Message-ID: <20030825094113.A28149@home.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->-- Original Message --
->Date: Mon, 25 Aug 2003 21:40:11 +0800 (CST)
->From: ZhongJun Zhou <zjzhou@newrocktech.com>
->Subject: how to make cramfs and jffs file systems based on eldk environment?
->To: linuxppc-embedded@lists.linuxppc.org
->
->
->
->Dear all,
->
->would you like to tell me how to make a cramfs and JFF
->file systems under eldk environment?
+Hi all,
 
-Have a look to:
+At OLS, Paul and I had a discussion about the overwhelming
+number of 4xx boards in the tree.  Recently, I decided to
+do a bit of research on which ones are obsolete and/or
+unmaintained.  The goal is to remove some of these board ports
+since they are in a constant state of brokenness due to the
+lack of a maintainer.
 
-  http://www.denx.de/doc/TQM8xxL/advanced-topics.html#FLASH-FILESYSTEMS
+If anyone has objections about any of the following boards being
+removed, then please volunteer to maintain them.  Several were
+maintained long ago by mvista folks but that is no longer the
+case.
 
-Hope it helps.
+cedar (np405l)- obsolete (replaced by ash) and unmaintained
+redwood4 (stb3) - obsolete (replaced by redwood 5-6) and unmaintained
+np4gs3 (np4gs) - unmaintained
+oak (403gcx) - unmaintained.  Last devel discussion on this one
+	       was Sept. 2001, last query in Nov. 2001.  It would
+	       be nice if someone (with hardware) would volunteer
+	       to maintain this since the old Tivo is based on 403.
 
-Wolfgang.
-
-
-Wolfgang
-
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
