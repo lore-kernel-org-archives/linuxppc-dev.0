@@ -1,48 +1,63 @@
-Date: Mon, 13 Mar 2000 14:05:19 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: Michel Dänzer <michdaen@iiic.ethz.ch>,
-        "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work
- onppcwithr128
-In-Reply-To: <Pine.LNX.4.21.0003131341340.748-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.10.10003131401510.32105-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <38CCE7A2.6027@cygnus.com>
+Date: Mon, 13 Mar 2000 05:05:38 -0800
+From: Michael Snyder <msnyder@cygnus.com>
+Reply-To: msnyder@cygnus.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kevin Buettner <kev@primenet.com>
+CC: jjs <Jerry.Sexton@insignia.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: gdb and multi-threaded applications.
+References: <017c01bf8a91$0e74f460$571170c1@honda.isltd.insignia.com> <1000310213225.ZM27738@saguaro.lan>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->   Without the BusID line the XServer will disable the pci memory/io
-> for the card, it doesn't matter if fbdev_open_pci is used or not.
-> What probably happens is that even with the BusID defined the xserver
-> still disables your card.
+Kevin Buettner wrote:
+>
+> On Mar 10,  1:03pm, jjs wrote:
+>
+> > Sorry I have not been back to you sooner, I have been distracted by other
+> > things. I tried getting a test application to exhibit the same behaviour
+> > with no luck. However, I did notice that before the call to pthread_create
+> > to start up the new thread we have the line:
+> >
+> >     pthread_sigmask(SIG_BLOCK, &fullSigMask, &sigMask);
+> >
+> > All the bits in fullSigMask are set, so this call blocks all signals to the
+> > calling thread. Commenting this line out makes everything work under gdb,
+> > the new thread gets created and doing 'info threads' after this gives me a
+> > list of all the threads running in the process. This implies that gdb
+> > requires a signal to be unblocked at the point the thread is created.
 
-We'll see if that's a problem; right now it hangs earlier.
+Your analysis is correct.  The linuxthreads library uses certain
+signals to communicate and synchronize between threads.  GDB
+listens in on these signals.  Most commonly they are SIGUSR32,
+SIGUSR33 and SIGUSR34, but this is not always the case.  I would
+think that blocking these signals might affect more than just
+GDB debugging (ie. it might affect the program's behavior directly).
 
-> The PCI warnings that you get most likely will tell us where the problem
-> is, can you send the logfile over ?
+> > If
+> > this is fact the case, which signal must we not block in order for correct
+> > operation under gdb?
+>
+> SIGCHLD.
+>
+> (I think.)
 
-Relevant log excerpt:
+SIGCHLD does come into play as well, although I have never
+fully understood its role.  Try unblocking SIGCHLD, but also
+be prepared to try unblocking the ones I mentioned above.
 
-(II) Loading /usr/X11R6/lib/modules/linux/libfbdevhw.a
-(II) Module fbdevhw: vendor="The XFree86 Project"
-	compiled for 4.0, module version = 0.0.1
-(II) FBDev(1): using default device
-(**) FBDev(1): claimed PCI slot 0:17:0
-(WW) ****INVALID MEM ALLOCATION**** b: 0x81000000 e: 0x81ffffff correcting
-own
-        [0] -1  0x81fff000 - 0x81ffffff (0x1000) MXB
-	[1] -1  0x00000c00 - 0x00000cff (0x100) IXB
-(WW) ****INVALID IO ALLOCATION**** b: 0xc00 e: 0xcff correcting
-(**) FBDev(0): Depth 16, (--) framebuffer bpp 16
-(==) FBDev(0): RGB weight 565
-(==) FBDev(0): Default visual is TrueColor
-(==) FBDev(0): Using gamma correction (1.0, 1.0, 1.0)
-(II) FBDev(0): Hardware: ATY Mach64 (vidmem: 8184k)
-
-	Michael
-
+> Background for Michael: Jerry reported a problem in which gdb (on
+> linux/ppc) hangs on a pthread_create().   Jerry has verified that
+> the thread tests in the test suite work properly on his platform,
+> so we know that gdb does work (some of the time) when creating
+> new threads.  Jerry's application is proprietary and I've asked him
+> to try to distill the problem into a small example that we can test.
+>
+> Note to Jerry: I'd still like a small example, preferably one that
+> we could eventually put into the testsuite.
+>
+> Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
