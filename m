@@ -1,84 +1,78 @@
-From: Alan Mimms <alan@packetengines.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: WARNING OFF TOPIC SLIGHTLY: 8xx MMU w/8MB pages
-Date: Mon, 17 Jan 2000 14:59:35 -0800
-Content-Type: text/plain
+Message-ID: <3883F17B.C67896FA@cns.canon.co.jp>
+Date: Tue, 18 Jan 2000 13:52:12 +0900
+From: Ouchi Masatomo <oouchi@cns.canon.co.jp>
+Reply-To: oouchi@cns.canon.co.jp
 MIME-Version: 1.0
-Message-Id: <00011715164502.03037@alan.corp.packetengines.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Question on booting FADS by NFS and /bin/sh (Re: LinuxPPC Embedded: root
+ nfs boot problems.)
+References: <382BC9B2.FDF9AD50@ctam.com.au> <382BE502.4CFC93BD@enib.fr> <382F4582.4F6882F2@ctam.com.au> <387D7DD5.DA4B1A68@cns.canon.co.jp>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+May I ask you some basic question(s) 
+booting MOTOROLA's FADS board by NFS
+related to my last posting  
+ 
+http://lists.linuxppc.org/listarcs/linuxppc-embedded/200001/msg00086.html
 
-If you are only interested in Linux on 8xx PPC, please ignore this message.  I
-am having a problem building up MMU tables for 8MB pages on a NON-Linux system
-running on an 850.  I hope someone on this list can help (PLEASE!).
+<Question>
+Q.1
+  At first, mbxroot.min.tgz can be used for FADS ?
 
-The system works fine but is "slow".  I look into this and find that my DTLB
-miss exception handler is running a LOT (50k exceptions/sec!).  Seems the TLB
-is never matching.  I have the MMU set up for all mappings to be 8MB pages to
-map 32MB of RAM and a few I/O devices.  There are slightly more than 8 PTEs
-that are in use in the system so I can't statically load up the TLB and get on
-with life - I have to handle the DTLB misses.  But I don't use the 8xx
-documentation's specified page table structure since I have a very flat
-logical==physical mapping.  I'm simply using the MMU to flag cacheable vs
-noncacheable spaces, really.
+Q.2 
+  Why these messages is out?
+    (1)repeat of "NFS not responding" and "OK"
+    (2)"error in loading shared libraries" and
+        "libc.so.6: Out of memory"
 
-The MD_CTR is set to 0.  I don't have TWAM or PPCS on.  This is a wide-open no
-protection kind of system, so I can get away with very little actual MMU bells
-and whistles.
+[source]
+  mpc8xx-2.2.13
+ 
+[NFS Server]
+  Linux  2.2.5-15 for i686 by Redhat ver 6.0
+  IP=192.168.0.254
+  defines client's name, MAC, IP, ... in /etc/bootbtab
 
-I tried using the MD_CAM and MD_RAMn registers to debug this.  These seem to
-read back the values I have stored via the MD_RPN, MD_TWC and MD_RPN register
-EXCEPT that when I read back I get a value for the MD_CAM.PS field of 110
-rather than the 111 which is the documented 8MB page size value.  The doc even
-says that values other than those listed (000, 001, 011, 111) are "reserved". 
-The value I am setting in the MD_TWC.PS field (which is oddly a two bit
-encoding for page size) is 11, which is documented as the 8MB page size value.
+  Files in Root_Path are from mbxroot.min.tgz.
+  Those are sh and ls in /bin, /dev ,
+  ld.so.1, libc-1.99.so, libc.so.6 -> libc-1.99.so, 
+  libtermcap.so.2 -> libtermcap.so.2.0.8,
+  libtermcap.so.2.0.8 in /lib.
 
-The TLB entries are all being written with ASID of zero, which is the value in
-CASID so these can't be the reason for the mismatch.
+[console]
+ When booting, cosole messages are:
 
-Here's a sample of what I am doing:
+  ..........................
+  eth0: CPM ENET Version 0.2, 00:00:85:30:30:31
+  Sending BOOTP and RARP requests.... OK
+  IP-Config: Got BOOTP answer from 192.168.0.254,
+       my address is 192.168.0.100
+  Looking up port of RPC 100003/2 on 192.168.0.254
+  Looking up port of RPC 100005/1 on 192.168.0.254
+  VFS: Mounted root (NFS filesystem) readonly.
+  Freeing unused kernel memory: 40k init
+  nfs: server 192.168.0.254 not responding, still trying
+  nfs: server 192.168.0.254 OK
+       ...... (*)
+  nfs: server 192.168.0.254 not responding, still trying
+  nfs: server 192.168.0.254 OK
+  init: error in loading shared libraries
+  libc.so.6: failed to map segment from shared object:
+    Out of memory
 
-M$reg md_ctr=700
-!!! look at TLB entry #7
-
-M$reg md_epn=00200 md_twc=0d md_rpn=009f5
-!!! write entry with
-!!!  MD_EPN: EPN=0 EV=1 ASID=0
-!!!  MD_TWC: APG=0 G=0 PS=11 (8MB) V=1
-!!!  MD_RPN: RPN=0 PP={supvR/W, PowerPC, Change, all subpages valid},
-!!!          SPS=0 (wrong?) SH=1 CI=0 V=1
-
-M$reg md_ctr=700
-!!! Reset to look at TLB entry #7
-
-$cam
-  reg md_ctr=00000700
-  reg md_dbcam=00000fd0
-  reg md_dbram0=00000de0
-  reg md_dbram1=00007fff
-
-!!! This shows I am looking at entry #7,
-!!! and the MD_CAM: EPN=0 SPVF=1111 PS=110 (!) SH=1 ASID=0
-!!! (MD_CAM is called MD_DBCAM for some reason on the HP debugging box I use).
-
-Note that the above MD_CAM shows a PS of 110 which is RESERVED according to the
-MPC850 documentation.
-
-What am I doing wrong?  Is there more info one would need to be able to answer
-this question?
-
-PLEASE HELP.
-
-Thanks very much.
-a
- -- 
-Alan Mimms     Packet Engines, Inc.     Spokane, Washington [99214-0497]
-  USA, Earth, Sol, Milky Way, The Local Group, Virgo Supercluster, U0
-Despite the cost of living, have you noticed how popular it remains?
-  -- Steven Wright?
+*: repeats about 20 times.
+   I tryed some times. About 20 is average value.
+   Meanwhile there are many transmissions 
+      FADS's udp-port 800 ------> NFS server's udp-port 2049
+                                    128 bytes
+      FADS's udp-port 800 <------ NFS server's udp-port 2049
+                                    1132 bytes
+   I don't know NFS protocol in detail.
+   So I can't understand meaning of datagram.
+--
+  oouchi@cns.canon.co.jp
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
