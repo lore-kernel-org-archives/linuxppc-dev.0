@@ -1,38 +1,73 @@
-From: <andres@tcc.com.pe>
-To: linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Hardware References for MPC823e
-Message-ID: <Pine.LNX.4.10.10011301728150.8202-100000@maestro.tcc.com>
+Subject: RE: Ramdisk image
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Date: Thu, 30 Nov 2000 18:46:21 -0500
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Fri, 1 Dec 2000 10:24:51 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E310A90D5@kolkrabbi.flaga.is>
+From: Kári Davíðsson <kd@flaga.is>
+To: "Daniel Furse" <daniel.furse@iptest.com>,
+        "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Fellows.
-We are working development a custom board for a networking applications
-using a MPC823e, we are developing our hardware and our software at the
-same time.
-We are facing little problems in the hardware stage, as you probably know
-since  Motorola's documentations are not clearly and in consecuence useful
-enough, for instance we have already figured it out how to connect the
-microproccesor and the others modules we use in our board desing but we
-don't know what to do with some MPC823e pins that we are not  connect. I will
-really appreciate your help directing me to more useful resources. In
-short, what we need are Hardware Desing Guides for PPC Embedded
-Applicacions based on MPC823e, Have somebody heard such a that document
-exist?.
-I know that your main area is software development but I think that you
-have to consider some hardware issues when write programs, specially for
-embedded systems, that is why I am writing you for advice.
+Hi,
 
-Thanks a lot, in advance.
+The ppc embedded faq at http://members.nbci.com/greyhams/linux points
+you
+to http://linuxdoc.org/HOWTO/Bootdisk-HOWTO-4.html for instructions on
+making
+ramdisks. Actually this link is broken (I just found out). You might try
 
-Andres Pulache.
-Software & Hardware Junior Engineer.
-a.pulache@tcc.com.pe
-(511) 851-6409.
-TELECOMUNICACIONES COMPUTACION Y CONTROL S.A.
+http://www.linux.org/docs/ldp/howto/Bootdisk-HOWTO/index.html which
+works for me.
+
+If all fails,
+
+dd if=/dev/zero of=myimage bs=1k count=<size in kb>
+mke2fs myimage
+mount myimage <mountpoint in your directory structure>
+copy the files you want on your ramdisk to <mountpoint in your directory
+structure>
+umount <mountpoint in your directory structure>
+gzip myimage
+
+And you should have a valid ramdisk.
+
+The steps above are from memory. If some of the command do not work
+properly it might because of missing options. In all cases check the
+manpage for these commands.
+
+Hope this helps,
+
+K.D.
+
+
+Example
+
+-----Original Message-----
+From: Daniel Furse [mailto:daniel.furse@iptest.com]
+Sent: 30. nóvember 2000 17:09
+To: Linux Embedded List (E-mail)
+Subject: Ramdisk image
+
+
+
+Hi everyone,
+
+How do I go about creating a ramdisk image for an embedded PPC system? I
+downloaded a pre-built image, which is now giving me problems, and I
+would
+like to create a new one. I have downloaded fileutils, but I have been
+unable to cross-compile them (we use RedHat x86 host, with gcc). Is
+there a
+patch or something? Is there a method/HOWTO/documentation somewhere
+about
+how to do this?
+
+Many thanks is advance,
+
+Dan Furse
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
