@@ -1,89 +1,44 @@
-Message-ID: <E1836A7F3557D311A14000805F9F36FC0141C85D@usdfo011.usac.danfoss.net>
-From: Hihn Jason <JasonHihn@DANFOSS.com>
-To: "'Linuxppc-Embedded@Lists. Linuxppc. Org (E-mail) '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: 4 bit LCD interface on 823e not working
-Date: Tue, 27 Aug 2002 00:28:35 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: "Xiaogeng (Shawn) Jin" <xjin@redswitch.com>
+Subject: Re: LXT972 FEC problem on MPC855
+Date: Mon, 26 Aug 2002 19:34:24 -0300
+Cc: linuxppc-embedded@lists.linuxppc.org
+References: <20020826182707.BA14B11829@denx.denx.de> <3D6A9E57.1060308@redswitch.com>
+In-Reply-To: <3D6A9E57.1060308@redswitch.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <02082619342400.01116@scop.digitel.com.br>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ya know, I was just barinstorming trying to figure out why I'd have to do
-this 16 entry cmap for a 1bpp, then it dawned on me. The 823e is just
-treating a nibble as a 16 color pixel. It'll let the display work it out
-that it's actually 4 pixels. So it'll just do a pallette lookup as it would
-for 16 color. This is probably why there's no rhyme or reason to my random
-bit mappings. So once I set the 4 bits in the GLC to the index that they are
-(so everything corresponds directly, therefore becoming a transparent
-pass-through; i ut 0101 on the screen, it gets looked up at index 0101, find
-0101 there and sends that out) everything will line up and I'll get the
-pixels I want. Still, I'd expect a more random pattern every time I reset
-the CPU and re-ran the same test (floating bits float)
+Shawn:
 
-Does this make sense to anyone other than myself? Anyone know if I'm right?
-Thanks
--Jason
+Maybe I have a contribution...
 
+On Monday 26 August 2002 18:32, Xiaogeng (Shawn) Jin wrote:
+> > You are passing bad/insufficient boot arguments to the Linux  kernel;
+> > unfortunaltely you don;t show us this part of the boot messages, so I
+> > cannot even guess what you're doing wrong.
+>
+> Finally I figured out the problem and solved it. The problem is that the
+> kernel didn't get the LINK status correctly. The 'fep->link' was always
+> 0 which means the link is down or autonegotiation is in progress.
+>
+> In the code which defines 'phy_info_lxt971', it says that somehow LXT971
+> tells me that the link is down when the first read after power-up. So
+> you have to read MII_REG_SR to set 'fep->phy_status' accordingly. But in
+> my case, the read action occurred too early to wait till the link is up.
+> So what I did is to delay 5s before reading MII_REG_SR during opening
+> FEC device. I guess it takes the link a while to autonegotiate the speed.
 
------Original Message-----
-From: Hihn Jason
-To: 'Dr. Craig Hollabaugh'; Linuxppc-Embedded@Lists. Linuxppc. Org (E-mail)
-Sent: 8/26/02 11:16 PM
-Subject: RE: 4 bit LCD interface on 823e not working
+Hmm. I suppose PHY should interrupt when link status change, and therefore
+phy_status would be updated accordingly. So, maybe you have a problem with
+your board's PHY interrupt signal.
 
+Hope this helps.
 
-I'm using port D[0-3] (PD12-15) for data. FLM, CP and LP are coming from
-PD[5,4,3]
-It's a passive monochrome display. I've configured it as such. It should
-be
-working.
-(See Fig 18-4 in the book) It came with an 8 bit color NEC display that
-worked, so I'm assuming there's a valid config already. I've checked
-PD_DIR
-and _PAR and they all seem to be correct.
-
-My problems may or may not be related to the driver. It makes a horrible
-assumption that the color map is as deep as the display depth. This is
-normally true, but not for the 823e. 16 values must be programmed into
-the
-cmap. Maybe this is why my bits aren't coming out right. I'm attempting
-to
-adjust the driver to match*, but now my display doesn't even work
-incorrectly. :-(
-
-* I went into fbcmap.c and made a 3 new arrays and a new structure.
-red[16]={0}, green[16]={0}, blue[16]={0..15}. (See 18-3 in the manual)
-Blue's bits line up with 'GLC' when in not-color modes. (Transp is for
-displays that have RGBA) Then I packed it into a fb_cmap struct called
-default_mono and made the necessary changes where I thought they were
-needed
-(fb_default_cmap()).
-
-Adding to my confusion is 'int con' is passed into numerous functions in
-lcd832e.c but is never explained and I can't tell where it's coming
-from.
-
-Why or how a 1 bpp connection needs a 16 entry palette is beyond me.
-Any help on this issue is greatly appreciated!
-
--Jason
-
------Original Message-----
-From: Dr. Craig Hollabaugh [mailto:craig@hollabaugh.com]
-Sent: Monday, August 26, 2002 3:34 PM
-To: Hihn Jason; Linuxppc-Embedded@Lists. Linuxppc. Org (E-mail)
-Subject: Re: 4 bit LCD interface on 823e not working
-
-
->I'm digging in the 823e book for any registers that may need to be
-changed.
->-Jason
-
-
-Which port are you using?
-How are you configuring it?
-Do you have the all the peripherals turned off?
-
+-Scop.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
