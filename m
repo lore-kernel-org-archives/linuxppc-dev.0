@@ -1,19 +1,32 @@
-From: Darin.Johnson@nokia.com
+Message-ID: <20030417014956.91452.qmail@web11004.mail.yahoo.com>
+Date: Wed, 16 Apr 2003 18:49:56 -0700 (PDT)
+From: Xupei Liang <tliang@yahoo.com>
+Subject: ppc4xx_setup.c for PPC440
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Interdependence of gcc to glibc/linuxheaders?
-Date: Wed, 16 Apr 2003 16:39:27 -0700
-Message-ID: <F0B628F30F48064289D8CCC1EE21B7A80C486C@mvebe001.americas.nokia.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I notice that during the builds of GCC it requires linux headers and actually copies headers and libraries from glibc.  Does this make GCC dependent later upon glibc and the particular linux headers?
+Hi,
 
-In other words, after GCC is built, how difficult is it to replace everything with a different glibc, or uclibc, without having to recompile GCC?  If it's possible, which directories are safe to clobber and replace, and which need to be kept?
+I am working on porting Linux 2.4.19 to support a
+PPC440-based board. I noticed that there is a file
+called ppc4xx_setup.c for PPC405-based boards.
+However, there isn't an equivalent file for PPC440.
+Is ppc4xx_setup.c intended to support all ppc4xx
+product?
 
-Darin Johnson
+Thank you.
+
+Regards,
+
+Terry
+
+
+
+The New Yahoo! Search - Faster. Easier. Bingo
+http://search.yahoo.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
