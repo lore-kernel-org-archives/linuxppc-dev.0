@@ -1,31 +1,34 @@
-Message-Id: <v03110709b5056af5e158@[129.100.29.243]>
-In-Reply-To: <Pine.LNX.4.10.10003271120040.10719-100000@shell.unixbox.com>
-References: <200003271913.OAA28080@mal-ach.watson.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 27 Mar 2000 14:48:17 -0500
-To: Ani Joshi <ajoshi@shell.unixbox.com>, David Edelsohn <dje@watson.ibm.com>
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Re: Some issues to resolve with XFree 4.0 yet
-Cc: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>, linuxppc-dev@lists.linuxppc.org
+Date: Mon, 27 Mar 2000 21:59:45 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Michel Lanners <mlan@cpu.lu>
+cc: toa@pop.agri.ch, linuxppc-dev@lists.linuxppc.org
+Subject: Re: pci-resources feedback
+In-Reply-To: <200003271909.VAA01187@piglet.grunz.lu>
+Message-ID: <Pine.LNX.4.10.10003272157250.2447-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ani,
+>
+> Here the resource code notices the conflict on the ATI.
+>
+> > PCI: Resource 81803000-81803fff (f=200, d=0, p=0)
+> > PCI: Resource 81802000-81802fff (f=200, d=0, p=0)
+> >   for root[0:ffffffff] min[80000000] size[1000]
+> >   got res[80000000:80000fff] for resource 2
+>
+> This is the message as the conflicting (second) region of the ATI gets
+> remapped. It did work... as can be seen ba the lspci outtput.
 
-I asked the same things a few weeks back.  David is the epxert, I am not.
-I think the key is what David just wrote:
+And it even used the right function (the one in drivers/pci/ to do it. Now
+what kernel version was that with?
 
->All of the inlined functions
->should have constraints which reference the actual memory address read or
->written to ensure proper dependencies in optimized code.
+Seems the wallstreet was another one of the 'broken mapping for atyfb'
+boxes. XFree86 4.0 should work fine now.
 
-I think the memory constraint on the exact address prevents the compiler
-from moving this inline code to someplace inappropriate, but David and
-Gabriel could answer better.
-
-Kevin
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
