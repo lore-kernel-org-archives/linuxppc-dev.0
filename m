@@ -1,40 +1,25 @@
-To: "XOL" <xol@mail.ru>
-Cc: "linuxppc-embedded@lists.linuxppc" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: u-boot on EmbeddedPlanet MPC862 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 10 Jun 2003 22:45:03 +0400."
-             <E19Po7D-0001Pr-00.xol-mail-ru@f20.mail.ru>
-Date: Tue, 10 Jun 2003 22:04:25 +0200
-Message-Id: <20030610200430.224B7C5FD7@atlas.denx.de>
+Message-ID: <20030611061733.15626.qmail@sina.com>
+From: mpclinux <mpclinux@sina.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: LinuxPPC porting guide and Init sequence
+MIME-Version: 1.0
+Date: Wed, 11 Jun 2003 14:17:33 +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <E19Po7D-0001Pr-00.xol-mail-ru@f20.mail.ru> you wrote:
->
-> Can you please suggest if u-boot 0-3-0
+Dear all,
+    I am a newbie in LinuxPPC. I search the lists but can not get these infomation, so would you like to tell me in details?
+    1. The LinuxPPC porting guide, which instrct greenhand to do LinuxPPC porting to his own PowerPC platform. I get the Linux Mips porting guide and Linux ARM guide, but still don't find the guide for PowerPC.
+    2. The LinuxPPC initialization sequence. Most guides are based on X86.
+    3. What is the difference between Linux2.4.4 and Linux2.4.20 in respect of PowerPC, I find a new dirctory named platforms under arch/ppc in Linux2.4.20, so why Linux made this change.
 
-The u-boot-users mailing list is a much  better  place  to  ask  this
-question. It is off topic here.
+    Thank you and best regards,
+                  Tao Walliams
+                 11/6/03
+______________________________________
 
-> has predefined board type for EmbeddedPlanet MPC862 or 860.
-
-You are not specific enough. The MPC860 and MPC862 are just processor
-types, while you are asking for board support. There is  support  for
-the  RPXClassic  and RPXlite boards in U-Boot (and RPXsuper, but this
-is a 82xx CPU).
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Where people stand is not as important as which way they face.
-        - Terry Pratchett & Stephen Briggs, _The Discworld Companion_
+===================================================================
+订非常笑话抽大奖 彩屏手机一天一部! (http://sms.sina.com.cn/act/fcxhhd.html)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
