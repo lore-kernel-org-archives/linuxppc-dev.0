@@ -1,77 +1,59 @@
-Message-ID: <3CF4ED71.4040706@embeddededge.com>
-Date: Wed, 29 May 2002 11:02:09 -0400
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <3CF4F06E.3080800@eccincorp.com>
+Date: Wed, 29 May 2002 11:14:54 -0400
+From: Jon Baker <jon@eccincorp.com>
+Reply-To: jon@eccincorp.com
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Another OCP enet patch
-References: <20020527040330.GH16537@zax> <20020527162323.GB32718@opus.bloom.county> <20020528005728.GO16537@zax> <3CF35E49.60203@embeddededge.com> <20020529041626.GD16537@zax>
+To: Embedded Linux Forum <linuxppc-embedded@lists.linuxppc.org>
+Subject: How do you link resolve kernel references
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+I am new to embedded Linux and am trying to develop code on Hard Hat 1.2 with an
+Embedded Planet RPX Classic MPC860T / CLLF_BW31 with Red Hat 7.2.
 
+We currently build a "kernel" image which we program to flash.  This flash image
+is the linux kernel and some of our code.  We then load more application code
+either via (1) FTP or (2) NFS.  The application code is compiled separately from
+the flash image.  We compile many small utility programs to executeables then
+FTP them in (say to /app dir) then run them from the Bash prompt on the target.
 
-> I agree it must not depend on PCI functions, but I don't see the
-> problem with PCI headers (well, I do, but it seems less important than
-> other considerations).
+My question is this:  If my separately compiled program references (ie extern) a
+a function that is in the flashed image, how do I link it to resolve that extern?
 
-OK.
+I want to do some debugging.  I have added some logging code and structures in
+several functions in the flash image.  All structures and functions ("get" and
+"set") are in dbg_fns.c.  I make many "set" calls to log data from various
+functions in the flash image.  Everything links fine since all objects are
+present upon linking (dbg_fns.o is linked with all caller objects to build the
+flash image).  I want to add a utility (dbg_pr.c) that I can FTP to /app that I
+can call from the Bash prompt to display the logged info.  dbg_pr.c simply calls
+the "get" function in dbg_fns.c to dump the logged data.  When I compile the
+display function  I get errors on the externs to the "get" functions in the
+flash image.
 
-> ...  consistent_sync() relies on the PCI direction
-> constants defined in linux/pci.h *now* - it checks them explicitly in
-> its switch statement (so does the ARM version).  That works fine,
-> because pci.h defines the direction constants even if CONFIG_PCI=n.
+The only example I have to go from is that the only references I see in our
+application code to flashed functions is done via a driver.  Is this the only
+way/recommended way to access "kernel" functions?  Conceptually a driver does
+not make sense to me since I just want to print a structure not access a device.
 
-OK.
+I know our applications also access shared library functions (ie libc-2.1.3.so).
+  These are in std dirs that the compiler and loader search.  How were the
+library functions compiled?  Do the library functions reference kernel
+functions?  Or do they only use driver calls?
 
-> The constants don't really have anything to do with PCI, and are
-> already used for SBUS DMA directions on Sparc and IIRC for ISA DMA in
-> some places.  We're talking about whether the *callers* of
-> consistent_sync() should need pci.h.
+Thanks
 
-I thought so, too.
+Jon Baker
 
-
-> Well, it looks like I'm not going to win this argument,
-
-What argument are you trying to win?  I thought you were arguing
-for changing the flags to consistent_sync(), but didn't like any
-of the solutions?
-
-> .... but calling
-> with one name for a constant and checking for another in the
-> implementation, relying on them to have the same value bothers me
-> much, much more that a few irrelevant PCI_ on the front of constant
-> names (which is not to say that the latter doesn't bother me at all).
-
-I was just proposing a solution that addressed one of your other
-concerns.  Requiring some flag values to be the same, but with
-different names, isn't something unique here :-)
-
-
-> Ok, well if we have to have the two sets of constants, please lets put
-> them in io.h and not in ocp-dma.h.  They have nothing to do with OCP
-> (just as they have nothing to do with PCI).
-
-We can't change the PCI names, so I just suggested we change the names to
-consistent_sync(), define those in io.h (so non-PCI systems don't have to
-include pci header files just to get a flag name), and put a big comment
-around the flag definitions that they have to match the PCI_ names.
-
-I'm constantly reminded that Linux is full of hacks to meet its major design
-goal of high performance.  This seems to fit nicely :-)
-
-Or, as you said, just not use consistent_sync() in our PowerPC specific
-software and call the dma_cache_* functions directly.
-
-
-	-- Dan
+===================================
+Jon Baker
+Software Engineer
+Efficient Channel Coding, Inc.
+216-635-1610
+www.eccincorp.com
+===================================
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
