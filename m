@@ -1,63 +1,45 @@
-Date: Fri, 26 Mar 2004 09:57:48 +0100 (CET)
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
-	<kernel@plumlocosoft.com>
-Subject: Re: O(1) scheduler for PPC?
-In-Reply-To: <4063ED30.2020807@imc-berlin.de>
-Message-ID: <Pine.LNX.4.44.0403260955170.7016-100000@linpc003.aimsys.nl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dan Malek <dan@embeddededge.com>
+Cc: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Kernel Mode Software Emulation NIP: 00001FFC - cache coherency problem on m8xx processors 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 26 Mar 2004 01:51:44 EST."
+             <4063D300.2060006@embeddededge.com>
+Date: Fri, 26 Mar 2004 10:04:16 +0100
+Message-Id: <20040326090421.B103EC118A@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 26 Mar 2004, Steven Scholz wrote:
+In message <4063D300.2060006@embeddededge.com> Dan Malek wrote:
+>
+> Let's put a big comment around this. Indicate it was a problem for one
+> person with an 855T. I don't have any 855T parts, if anyone else has
+> some and can do some heavy network testing, I'd appreciate knowing the
 
->
-> Jaap-Jan Boor wrote:
->
-> > On Thu, 25 Mar 2004, Steven Scholz wrote:
-> >>
-> >>is the backport of Ingo Molnar's O(1) scheduler in the official linux-2.4.2x
-> >>tree and is it available for the PPC?
-> >
-> > an up-to-date patch together with the preemptible kernel and low-latency
-> > patches for 2.4.25 are available here:
-> >
-> > http://www.plumlocosoft.com/kernel
->
-> Thanks a lot.
->
-> But it looks like the recent "full patch against 2.4.25" found at
->
-> http://www.plumlocosoft.com/kernel/patches/2.4/2.4.25/2.4.25-lck1/patch-2.4.25-lck1.bz2
->
-> still got the problems mentioned ages ago in
->
-> http://lists.linuxppc.org/linuxppc-dev/200212/msg00032.html
->
-> Maybe Eric Hustvedt could merge these trivials into his patch set.
->
-> Thanks a million,
+Can you define which sort of network load is suitable to  sfficiently
+stress  the  system? We ave many kinds of systems of all types in the
+lab, and I can easily run such a test.
 
-Yes, you too, I just (last night) had the build problem with _sched_find_first_bit
-and didn't check the changes you mentioned above. I also have not run it yet
-on my system.
+But I actually doubt that we would see any  problem,  as  we  perform
+such  testing  on  a regular base, and never had any such problems on
+8xx systems.
 
-Jaap-Jan
+> results. Like I keep saying, I've seen similar problems on the 860T
+> parts, but it was clearly my fault programming the UPM. Once that was
+> fixed, problem solved.
 
->
-> Steven
->
->
->
+I agree 100%.
+
+Best regards,
+
+Wolfgang Denk
 
 --
-J.G.J. Boor			  Anton Philipsweg 1
-Software Engineer		  1223 KZ Hilversum
-AimSys bv              		  tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Quantum Mechanics is God's version of "Trust me."
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
