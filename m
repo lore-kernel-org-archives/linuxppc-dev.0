@@ -1,53 +1,42 @@
-Message-ID: <37D9E4FB.2ED188A6@loomer.com>
-Date: Fri, 10 Sep 1999 22:13:35 -0700
+Message-ID: <37D9E860.B1B5ED41@loomer.com>
+Date: Fri, 10 Sep 1999 22:28:01 -0700
 From: Hugh Caley <hcaley@loomer.com>
 MIME-Version: 1.0
-To: khendricks@ivey.uwo.ca
-CC: linuxppc-dev@lists.linuxppc.org, Franz.Sirl@munich.netsurf.de
-Subject: Re: More with Mozilla and glibc
-References: <37D9C729.6BED554E@loomer.com> <99091023185500.02403@localhost.localdomain>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Problems with atyfb, 32 bit color, Lombard
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wow.  Well, I'm still thinking that my Mozilla problem is glibc related, even if
-the gdb output is bogus  ; ).  I know that Mozilla isn't even alpha yet, but other
-people have better luck than I do, and they are using older libraries than I am.
-I just don't want do deal with downgrading glibc just to test that (although I
-have tried downgrading gcc, but I got the same problems).
+Hello, Geert.  If you are not the correct person to contact about this, please
+let me know.
 
-Thanks for the info!
+Those of use using atyfb on Apple "Lombard" laptops are having an odd problem
+with X.  Small lines are not being drawn at the correct angles, so things like
+arrows in menus and checkboxes are not being drawn correctly.  For example,
+the little arrows in the menus in WindowMaker end up looking like squares.
+
+This doesn't seem to be related to window managers, I get the same problems
+with window managers and programs that use completely different libraries.
+
+It only seems to happen with 32-bit color, and happens both with XF68_FBDev
+and Xpmac.  It only happens when using atyfb.
+
+I'm using kernel args (in bootx):
+
+video=atyfb:vmode:16,cmode:32,mclk:67; I've also tried vmode 14, cmode 16 and
+mclk 100.
+
+The latest version of atyfb.c I'm using:
+
+[root@hugh video]# more atyfb.c
+/*  $Id: atyfb.c,v 1.106.2.4 1999/09/02 06:34:46 paulus Exp $
+ *  linux/drivers/video/atyfb.c -- Frame buffer device for ATI Mach64
+
 
 Hugh
-
-Kevin Hendricks wrote:
-
-> Hi,
->
-> I get this same error trying to debug the native threads version of the jdk.  I
-> don't think the problem is in glibc at all.
->
-> The problem is in 4.17 versions of gdb under glibc 2.1.  In fact gdb can't
-> handle the realtime signals yet and so it stops when it receives one.
-> Therefore the error message in no way indicates the actual seg-fault or bug you
-> are trying to find and fix.
->
-> I think gdb simply has no maintainer yet (Kevin Buettner will be keeping it
-> up, if he hasn't started already) and no one has updated it to reflect all of
-> the new realtime signals now available in glibc 2.1.  The error message you get
-> just prevents me from using gdb 4.17 when debugging any native threads
-> (libpthread code).    Once the new thread signals numbers are included, you
-> should be able to use the handle nostop command in gdb to prevent the
-> libpthread signals from disrupting your debugging.
->
-> The only workaround I know of is to rebuild linuxthreads (part of glibc) and
-> manually turn off the use of the new realtime signals and instead use the old
-> SIGUSR1 and SIGUSR2 signals for libpthreads until gdb gets fixed.
->
-> I hope this helps.
->
-> Kevin
 
 --
 Hugh Caley, Unix Administrator
