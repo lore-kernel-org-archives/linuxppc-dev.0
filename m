@@ -1,41 +1,33 @@
-Message-Id: <200003281140.NAA05466@denx.local.net>
-To: christof <xfr@freenet.de>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel executing from flash 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 28 Mar 2000 12:30:06 +0200."
-             <38E089AD.F415DCB7@freenet.de>
-Date: Tue, 28 Mar 2000 13:40:14 +0200
+Message-ID: <D53137D1F3DDD211A3750800060DA3130170238B@viee122a.erd.siemens.at>
+From: Eisenzopf Thomas <thomas.eisenzopf@siemens.at>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Booting Linux on MPC860ADS with BOOTP and TFTP?
+Date: Tue, 28 Mar 2000 16:05:09 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <38E089AD.F415DCB7@freenet.de> you wrote:
->
-> My primary aim is not to gain speed or to save money, although this is
-> important for my application too.
-> By fetching opcodes from flash I expect more stability in temperature- and
-> emc-critical environement, for data in "ROM" is saver than in RAM. Of corse,
-> there is always run-time critical data in RAM (processor stack), but the
-> probability of "irrepairable" errors should decrease by runnig from flash.
+Hello!
 
-A crash is a crash is a crash...
+Does anyone know a bootloader for the MPC860ADS board, which supports
+booting Linux using BOOTP and TFTP to get the kernel and using NFS for the
+root file system?
 
-If you have memory errors, your system is bound to  crash  sooner  or
-later, no matter if it hits the program code, or the stack, or data.
+Currently I´m trying to get the board running using 8xxROM from Raphael
+Bossek, but unfortunately my ADS board has only 2MB flash (not enough for a
+ROM_DISK option) and I have no PCMCIA flash card.
 
-What's the difference between a crash because of a bad opcode or  one
-because of a division by zero because of faulty data?
+BTW: Wherefrom can I get a root filesystem if I buy a ATA flash card? How
+big should this flash card be? Is a Sandisk compact flash with a PCMCIA
+adapter ok?
 
-Black magic...
+Is there any alternative for my limited flash memory? (Put the kernel in the
+flash, but mount the root filesystem with NFS?).
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Work 8 hours, sleep 8 hours; but not the same 8 hours.
+Best regards,
+Thomas.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
