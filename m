@@ -1,53 +1,49 @@
-Message-ID: <3ECA7096.9060607@mvista.com>
-Date: Tue, 20 May 2003 11:14:46 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: dong in kang <dkang@east.isi.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel parameters (Sandpoint X3 with Altimus MPC755)
-References: <001401c31ef9$329f8170$45a97241@Minjoo>
-In-Reply-To: <001401c31ef9$329f8170$45a97241@Minjoo>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "XOL" <xol@mail.ru>
+Cc: "Mark Hatle" <fray@mvista.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Re[2]: perl under eldk for ppc8xx 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 20 May 2003 20:23:34 +0400."
+             <E19I9tm-000Cq6-00.xol-mail-ru@f16.mail.ru>
+Date: Tue, 20 May 2003 21:23:13 +0200
+Message-Id: <20030520192318.0131CC6162@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-dong in kang wrote:
+Hi,
 
-> As a debugging tool, I'm using Metrowerks Codewarrior v.6.0 running on
->Windows 2000 platform.
->The BDI2000 for Codewarrior is connected to the JTAG port of the Sandpoint
->X3.
->I used the Codewarrior to load the linux kernel to the SDRAM of the
->Sandpoint X3.
->Of course, I used GCC to compile Montavista Linux kernel.
->(I heard that BDIgdb is the best tool for Linux kernel debugging.
->I'm considering purchasing BDIgdb.
+in message <E19I9tm-000Cq6-00.xol-mail-ru@f16.mail.ru> you wrote:
 >
-Okay, that helps...I think.  I still don't know what "BDI2000 for
-codewarrior" means/is but anyway...
+> I just made my first attempt to build perl 5_005_03.
+> I'm runnig linux 2.4.18 on MPC862 at 100MHz with 64M ram.
+> My filesystem is nfs mounted.
+> While running ./Configure I got nice core dump
+> saying something about lack of the memory.
 
-For right now, I recommend just using the telnet interface to the bdi.
-Its simple and works.  You can download the zImage thru that interface
-(and tftp).  The bdi manual has a page with all the cmds on it.  Also,
-while using the telnet interface, use only hard breakpoints (which means
-you can only have one set at a time).
+:-(
 
-> Currently, I have a problem of enabling
->mmu.
->After the initial boot part of the Linux finishes setting up BATs and
->enables the mmu,
->the address translation is not done properly. So, when the kernel jumps to
->0xC0000000, it jumps to physical address 0xC0000000.
->It crashes there. I suspect BDI2000 with Codewarrior does not support mmu.
->
->
-You shouldn't be having problems like that.  Are you sure you used a
-valid .config when you built the kernel?  What address did you download
-the zImage to?  Did you try building/running the non-initrd image
-(zImage.sandpoint)?
+> So my next quiestion is
+> 1. Does anyone has binaries or rpm?
 
-Mark
+Not yet...
 
+> 2. Did someone build perl before on same system?
+
+Not yet...
+
+...but wait a moment. I just started a native build  on  a  8xx  box.
+Let's see what happens...
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Another megabytes the dust.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
