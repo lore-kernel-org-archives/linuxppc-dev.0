@@ -1,37 +1,35 @@
-From: linas@austin.ibm.com
-Date: Thu, 25 Mar 2004 10:45:29 -0600
-To: Marc Leeman <marc.leeman@barco.com>
+Subject: Re: Zilog driver - auto-detect for no oopsen
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Eger <eger@theboonies.us>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PCI Memory mapping
-Message-ID: <20040325104529.D64292@forte.austin.ibm.com>
-References: <20040316114030.GB7133@smtp.barco.com> <1079455175.4184.25.camel@localhost.localdomain> <20040322074833.GY7133@smtp.barco.com> <20040323111736.GJ1446@smtp.barco.com> <1080086640.23208.164.camel@gaston> <20040324122652.GA22171@smtp.barco.com> <20040324142524.GA22701@smtp.barco.com> <20040324110814.E50148@forte.austin.ibm.com> <20040325154845.GF3696@smtp.barco.com> <20040325103414.C64292@forte.austin.ibm.com>
+In-Reply-To: <Pine.LNX.4.58.0403251503060.7074@rosencrantz.theboonies.us>
+References: <Pine.LNX.4.58.0403251503060.7074@rosencrantz.theboonies.us>
+Content-Type: text/plain
+Message-Id: <1080253175.1218.14.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040325103414.C64292@forte.austin.ibm.com>; from linas@austin.ibm.com on Thu, Mar 25, 2004 at 10:34:14AM -0600
+Date: Fri, 26 Mar 2004 09:19:35 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Mar 25, 2004 at 10:34:14AM -0600, linas@austin.ibm.com wrote:
+On Fri, 2004-03-26 at 01:12, David Eger wrote:
+> I recently compiled  Linux Kernel v2.6.5-rc2-ben0 and...
 >
-> On Thu, Mar 25, 2004 at 04:48:46PM +0100, Marc Leeman wrote:
-> > As ever, insights are welcome :-/
+> Is there any auto-detection code we can add to the Zilog driver?
 >
-> OK, another wild guess: are the cache lines properly invalidated?
-> I think you said that the corrpution was a copy of earlier data ...
-> well, where could 'earlier data' be hiding?  The offsets you're
-> reporting sound all wrong, but hey ...
+> I accidentally enabled the  CONFIG_SERIAL_PMACZILOG option for my kernel,
+> and it crashes my powerbook all to hell when i try to put it to sleep...
+> I know the option is irrelevant for my hardware, but is Oops'ing really
+> what we want as a bad .config reminder?
 
-actually, if you have 32-byte cache lines on your cpu, and you
-have, umm, something maybe 4-way set associative (I've forgotten
-how it works) that might explain it.   I don't know what cpu's
-have what cache sizes.
+Hrm... that was supposed to be fixed. It definitely doesn't crash here
+(the crash I fixed recently is on wakeup btw, not sleep).
 
-> Don't know how hard it would be for you to run the test with cachine disabled,
-> but it might be worth a try.
->
-> --linas
->
->
+I'd appreciate some debugging to figure out what exactly is going
+on. It seems it accessing a wrong pointer but I fail to see what
+precisely
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
