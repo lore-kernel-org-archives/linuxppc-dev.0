@@ -1,81 +1,55 @@
-Message-ID: <7283DE19D141D111AD0E00A0C95B195502581F18@mail2.aiinet.com>
-From: "Gessner, Matt" <mattg@aiinet.com>
-To: "'Srinivas Rao.M'" <msrao@vxl.co.in>
-Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: PowerPC assembly
-Date: Thu, 29 Mar 2001 08:36:37 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Thu, 29 Mar 2001 16:33:04 +0200
+From: Alex Shnitman <alexsh@hectic.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Stability of MontaVista's 2.4.0-test2-1.2.2-1
+Message-ID: <20010329163258.C13092@mangodsp.com>
+References: <H00002af04b2e173@MHS> <3AC23B01.A9162C3B@matrox.com> <3AC25348.C33F8692@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3AC25348.C33F8692@mvista.com>; from mgreer@mvista.com on Wed, Mar 28, 2001 at 02:10:33PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Check out the objdump utility that goes along with your compiler.
-I'm assuming you're using a gcc-like compiler suite (cygwin maybe).
+Hi, Mark!
 
-HTH
+On Wed, Mar 28, 2001 at 02:10:33PM -0700, you wrote the following:
 
-Matt
+> That version of the kernel does have problems.  Get the latest linuxppc_2_5
+> source and try that.  I haven't tested the last couple weeks but before then,
+> it was very solid.  Sandpoint support is in it.
 
-> -----Original Message-----
-> From: Srinivas Rao.M [mailto:msrao@vxl.co.in]
-> Sent: Wednesday, March 28, 2001 11:17 PM
-> To: Madhuri Jones
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: PowerPC assembly
->
->
->
-> Hi,
->  Is there any utility to dis assemble the .o file (something like dis
-> available in sco) that can run on WindowsNT. I have a cross
-> development
-> platform WinNT. I am compiling code form MPC860. I just want
-> to know if i
-> can dis assemble a .o file.
->
-> -srini...
->
-> On Wed, 28 Mar 2001, Madhuri Jones wrote:
->
-> >
-> > Hello,
-> >
-> > I am novice in Power PC assembly code and I am trying
-> > compile in following code (written by someone else)  into
-> head_8xx.S.
-> >
-> > This function has instruction like
-> >
-> > mfspr r3, IC_CST
-> > LA r4, IC_CST_LEN
-> >
-> > However the hardhat assembler doesn't understand the
-> mnemonic LA, is LA same
-> > as add immediate instruction?
-> > addi r4, r4, IC_CST_LEN
-> >
-> > Please help!!
-> >
-> > Thanks.
-> >
-> > M.J.
-> >
-> >
->
-> --
->
-> We are responsible for what we are, and whatever we wish
-> ourselves to be, we
-> have the power to make ourselves. If what we are now has been
-> the result of
-> our own past actions, it certainly follows that whatever we
-> wish to be in
-> future can be produced by our present actions; so we have to
-> know how to act.
-> -Swami Vivekananda
->
->
+I've just tried it. I downloaded the tree with bitkeeper, and applied
+sp_patch_25, but got the following linking errors at the final stage
+of the compilation:
+
+arch/ppc/kernel/kernel.o: In function `lookup_partitions':
+arch/ppc/kernel/kernel.o(.text+0x9046): undefined reference to `pmac_newworld'
+arch/ppc/kernel/kernel.o(.text+0x904a): undefined reference to `pmac_newworld'
+arch/ppc/kernel/kernel.o: In function `sandpoint_get_irq':
+arch/ppc/kernel/kernel.o(.text+0x95fc): undefined reference to `openpic_irq'
+arch/ppc/kernel/kernel.o(.text+0x95fc): relocation truncated to fit: R_PPC_REL24 openpic_irq
+arch/ppc/kernel/kernel.o(.text+0x9620): undefined reference to `openpic_eoi'
+arch/ppc/kernel/kernel.o(.text+0x9620): relocation truncated to fit: R_PPC_REL24 openpic_eoi
+arch/ppc/kernel/kernel.o: In function `sandpoint_post_irq':
+arch/ppc/kernel/kernel.o(.text+0x9670): undefined reference to `openpic_eoi'
+arch/ppc/kernel/kernel.o(.text+0x9670): relocation truncated to fit: R_PPC_REL24 openpic_eoi
+arch/ppc/kernel/kernel.o: In function `pmac_nvram_init':
+arch/ppc/kernel/kernel.o(.text.init+0xd20): undefined reference to `find_devices'
+arch/ppc/kernel/kernel.o(.text.init+0xd20): relocation truncated to fit: R_PPC_REL24 find_devices
+arch/ppc/kernel/kernel.o(.text.init+0xd54): undefined reference to `device_is_compatible'
+arch/ppc/kernel/kernel.o(.text.init+0xd54): relocation truncated to fit: R_PPC_REL24 device_is_compatible
+arch/ppc/kernel/kernel.o(.text.init+0xe82): undefined reference to `sys_ctrler'
+arch/ppc/kernel/kernel.o(.text.init+0xe86): undefined reference to `sys_ctrler'
+drivers/video/video.o: In function `chips_init':
+drivers/video/video.o(.text.init+0x2e48): undefined reference to `find_devices'
+drivers/video/video.o(.text.init+0x2e48): relocation truncated to fit: R_PPC_REL24 find_devices
+make: *** [vmlinux] Error 1
+
+
+--
+Alex Shnitman <alexsh@hectic.net>
+http://alexsh.hectic.net/   UIN 188956
+PGP 0xEC5D619D / E1 F2 7B 6C A0 31 80 28  63 B8 02 BA 65 C7 8B BA
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
