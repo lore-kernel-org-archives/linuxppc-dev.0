@@ -1,38 +1,38 @@
-Date: Mon, 11 Aug 2003 10:31:02 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Gary Thomas <gary@mlbassoc.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BK problems with linuxppc-2.5
-Message-ID: <20030811173102.GD807@ip68-0-152-218.tc.ph.cox.net>
-References: <E19lS18-0003Ng-00@source.mvista.com> <1060436322.16233.52.camel@hermes> <20030811171247.GC807@ip68-0-152-218.tc.ph.cox.net> <1060622253.31273.271.camel@hermes>
+Date: Wed, 13 Aug 2003 09:51:08 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: linuxppc-2.5 CONFIG_BOOT_LOAD undefined
+Message-ID: <20030813075108.GA25714@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1060622253.31273.271.camel@hermes>
+Content-Type: text/plain; charset=utf-8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Aug 11, 2003 at 11:17:33AM -0600, Gary Thomas wrote:
-> On Mon, 2003-08-11 at 11:12, Tom Rini wrote:
-> > On Sat, Aug 09, 2003 at 07:38:43AM -0600, Gary Thomas wrote:
-> >
-> > >
-> > > I've been unable to access this repository [for days].
-> > >
-> > >  [gthomas@hermes tmp]$ bk clone bk://source.mvista.com/linuxppc-2.5 linuxppc-2.5
-> > >   ERROR-Can't get read lock on the repository.
-> > >
-> > > Any ideas/help?
-> >
-> > This should be fixed now.
->
-> Yes, thanks.  Any feedback what was stuck?  (I tried it just a few
-> hours ago and it was still broken, so you obviously did something)
+/usr/bin/time make oldconfig zImage modules modules_install INSTALL_MOD_PATH=`pwd` &>log
 
-It was a local permissions issue.
+olaf@mango:~/linux-2.6.0-test3-lxppc25> tail log
+        --set-section-flags=.image=contents,alloc,load,readonly,data \
+        arch/ppc/boot/simple/dummy.o arch/ppc/boot/simple/image.o
+ld -T arch/ppc/boot/ld.script -Ttext  -Bstatic -o arch/ppc/boot/simple/zvmlinux arch/ppc/boot/simple/head.o arch/ppc/boot/simple/relocate.o arch/ppc/boot/simple/misc.o arch/ppc/boot/simple/image.o arch/ppc/boot/common/lib.a arch/ppc/boot/lib/lib.a
+ld: invalid hex number `-Bstatic'
+make[2]: *** [arch/ppc/boot/simple/zvmlinux] Error 1
+make[1]: *** [simple] Error 2
+make: *** [zImage] Error 2
+Command exited with non-zero status 2
+1375.30user 103.63system 24:56.21elapsed 98%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (1591311major+1490305minor)pagefaults 0swaps
+olaf@mango:~/linux-2.6.0-test3-lxppc25> grep -wr CONFIG_BOOT_LOAD .config
+CONFIG_BOOT_LOAD=0x00800000
+
+
+-Ttext wants an address, arch/ppc/boot/simple/Makefile does not include
+the .config for some reasons.
+
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+USB is for mice, FireWire is for men!
+
+sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
