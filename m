@@ -1,57 +1,28 @@
-Message-ID: <B895EFF5AF34724880036BDB5B5B81481355C0@amer22.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Kent Borg'" <kentborg@borg.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: boot/simple in ROM?
-Date: Thu, 24 Apr 2003 11:06:32 -0700
+Message-ID: <3EA828B8.1040604@catapult.com>
+Date: Thu, 24 Apr 2003 14:11:04 -0400
+From: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Basic Config file
+References: <5.1.0.14.2.20030424134156.036e1e80@falcon.si.com> <3EA826C0.8050509@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I based mine off boot/simple.  It runs fine from ROM.
+Hello all,
 
-Suppose for example I have 32MB SDRAM from 0x00000000
-to 0x01ffffff, and 16MB flash from 0xff000000 to 0xffffffff.
-The key is that arch/ppc/boot/ld.script, and
-arch/ppc/boot/simple/Makefile with -Ttext (say) 0x00400000,
-make zImage.initrd an ELF file which should go at 0x00400000.
-I build zImage.initrd and store it in flash at 0xff000000,
-not at 0x00400000.
+I recently downloaded and installed the ELDK under RedHat
+8 targeting a 74xx.  Everything went pretty smooth (Thanks
+Wolfgang!).  I am utterly inexperienced at building the
+kernel.  This is the first one.  I have everything compiling,
+but getting various linker unresolves.
 
-There is firmware on the board which initializes the memory
-controller, etc.  This firmware then jumps into the image
-in flash -- jumps directly to 0xff010000, with the extra
-0x00010000 to get around the ELF header -- and zImage.initrd
-does start executing there.  It immediately checks its PC and
-sees that it's not at 0x00400000 where it belongs, so it copies
-itself there (to RAM) and keeps running from there.  Then its
-BSS, data and stack are in RAM as they should be.
+Can someone point me to or send a simple config file as an
+example?  As few components as possible would be great.
 
-You can see that zImage.initrd copies itself from *anywhere*
-to where it should belong.  This is why, as Dan pointed out,
-you can use a single zImage.initrd.  If I am developing,
-I TFTP it to the board, say to 0x01000000.  Then I jump to
-0x01010000.  If I am happy with it, I store it in flash
-at 0xff000000.  Then I jump to 0xff010000.  Wherever I put
-it, it will copy itself to where it belongs.
+Thank you
+Kevin
 
-
------Original Message-----
-From: Kent Borg [mailto:kentborg@borg.org]
-Sent: Thursday, April 24, 2003 10:39 AM
-To: Kerl, John
-Subject: Re: boot/simple in ROM?
-
-
-On Thu, Apr 24, 2003 at 10:35:21AM -0700, Kerl, John wrote:
-> Why won't it run from ROM?
-
-It puts the stack and bss in ROM.  Am I doing something wrong or using
-a bad version??
-
--kb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
