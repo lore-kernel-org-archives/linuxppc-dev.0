@@ -1,27 +1,37 @@
-Date: Thu, 25 Sep 2003 16:40:44 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Guy M. Streeter" <streeter@redhat.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: /proc/sys/kernel/l2cr and the 750FX
-Message-ID: <20030925234044.GA904@ip68-0-152-218.tc.ph.cox.net>
-References: <1064506838.1037.11.camel@jarjar.hsv.redhat.com> <20030925182151.GB7337@ip68-0-152-218.tc.ph.cox.net> <1064518676.1037.13.camel@jarjar.hsv.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1064518676.1037.13.camel@jarjar.hsv.redhat.com>
+Message-ID: <3F738F27.8000200@mvista.com>
+Date: Thu, 25 Sep 2003 17:58:15 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: =?x-windows-949?B?vcWw5rz2?= <ksshin@essetel.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCI DMA in GT64260
+References: <009501c37dba$0f462470$c50aa8c0@ksshin> <3F723C33.9030003@mvista.com> <003b01c38321$81114d20$c50aa8c0@ksshin>
+In-Reply-To: <003b01c38321$81114d20$c50aa8c0@ksshin>
+Content-Type: text/plain; charset=x-windows-949
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 25, 2003 at 02:37:56PM -0500, Guy M. Streeter wrote:
+½Å°æ¼ö wrote:
 
-> I don't see any difference in this section of code, in v2.4.23-pre5
-> Was a change made someplace else to support the 750FX?
+>Thank you for your response.
+>
+>Well, Instead of giving my all code, I give the register lists and the value
+>related to address decoding. please check the register and the value.
+>
+Well, there are several working examples that you can look at so I'm not
+going to spend much time groping through registers. However, from what
+you describe, I would guess that you have either a PCI arbitration
+problem or your PCI slave window is horked. I did a very quick look at
+the PCI slave windows & related regs and I didn't notice anything
+wrong--that doesn't mean there isn't--so it may be an arbitration problem.
 
-Support was added for a number of newer CPUs, iirc.  I don't recall of
-the 750FX was one of them.
+Are you using the 64260's PCI arbiter or do you have an external one? If
+64260, then make sure that its configured correctly and that you have
+the appropriate GPP pins configured correctly. Again, several working
+examples so don't be shy about looking at them.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Mark
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
