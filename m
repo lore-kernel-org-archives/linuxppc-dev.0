@@ -1,9 +1,9 @@
 Reply-To: <acurtis@onz.com>
 From: "Allen Curtis" <acurtis@onz.com>
 To: <linuxppc-dev@lists.linuxppc.org>
-Subject: ibm_ocp_enet.c - PHY implementation requirements?
-Date: Tue, 7 May 2002 07:16:17 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFEEJODGAA.acurtis@onz.com>
+Subject: 8260 and skb implementation
+Date: Tue, 7 May 2002 07:34:07 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEJPDGAA.acurtis@onz.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,22 +11,16 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-We have an 405GP design, very similar to the Walnut LSP. One of the major
-differences is that we have a BroadCom 9-port switch instead of a dedicated
-PHY for Ethernet. Supporting the switch is much easier than a dedicated PHY
-because you can always assume:  100Mb, Full-Duplex and you do not have to
-handle disconnect and mode change interrupts. The problem is that the OCP
-Ethernet implementation has become much more complex and it is not obvious
-what must be supported when adding a new interface and what could be a stub.
-(and its expected result)
+We have an 8260 based product and have many production boards with pre-B.3
+rev processors. As mentioned on this list, we had to modify all CP related
+communications to operate from local RAM to avoid lock-up problems.
+Unfortunately this also means that all communication bufferss, especially
+Ethernet, must be copied between the two memory spaces. Has anyone
+considered moving the SKB memory into local RAM as well? On our hardware, we
+have 8MB of local RAM. Is this a reasonable amount of memory for SKB or is
+typical usage much higher?
 
-Another issue is that the switch supports both the MII and SPI interfaces.
-These are mutually exclusive, determined by first access to the device. Our
-design requires the use of the SPI interface. All currently supported PHY
-are MII, which is expected. Do you forsee any problems using SPI within
-ibm_ocp_phy.c?
-
-TIA
+TIA for the sanity check.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
