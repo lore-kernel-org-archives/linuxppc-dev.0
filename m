@@ -1,92 +1,129 @@
-From: "Beena" <beena@gdatech.com>
-To: "Silverton Aron-C1710C" <Aron.J.Silverton@motorola.com>,
-	"'Ashwin Bihari'" <raz0redge@hotmail.com>, <listmember@orkun.us>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Cc: <dank@kegel.com>
-Subject: RE: Cross-compile package combinations
-Date: Thu, 11 Dec 2003 15:15:48 -0800
-Message-ID: <FFELLIHDBBOAPGLCBDIPEEADCDAA.beena@gdatech.com>
+Message-ID: <01b001c3c059$35107840$5100a8c0@davey033ce6193>
+From: "DaveyWu" <daveywu@transengines.com>
+To: "Stefan Roese" <stefan.roese@esd-electronics.com>,
+	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>,
+	<benh@kernel.crashing.org>, <akuster@mvista.com>
+References: <004901c3b990$b84d2ac0$0212000a@PCSTEFAN>
+Subject: Re: PPC4xx enet driver problem (version 2.0)
+Date: Fri, 12 Dec 2003 10:39:44 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <6F8DFFA2C996D711945800065BFC9E4A038ECB22@il02exm11>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have observed the same errors when trying to build the bootstrap gcc
-3.2.3. I understand that
-this is because gcc 3.2.3 build (in case of powerpc) looks for some glibc
-files. So I first built gcc 2.95.3,
-then glibc 2.2.1 and then built bootstrap gcc 3.2.2(you could try with
-3.2.3) and it compiled fine.
+Hi Stefan,
+    I have suffered the same problem when I am trying swtich to 2.4.22 from 2.4.18 on IBM405ep board. Following is the output on my board:
 
-Hope this helps.
-Beena
+# ifconfig eth0 down
+# ifconfig eth1 down
+# ifconfig eth0 192.168.1.1
+eth0: adjust to link, speed: 100, duplex: 1, opened: 1
+eth0: Speed: 100, Full duplex.
+# ping 192.168.1.123
+PING 192.168.1.123 (192.168.1.123): 56 data bytes
+64 bytes from 192.168.1.123: icmp_seq=0 ttl=128 time=5.2 ms
+64 bytes from 192.168.1.123: icmp_seq=1 ttl=128 time=2.8 ms
+64 bytes from 192.168.1.123: icmp_seq=2 ttl=128 time=2.7 ms
+64 bytes from 192.168.1.123: icmp_seq=3 ttl=128 time=2.6 ms
+64 bytes from 192.168.1.123: icmp_seq=4 ttl=128 time=2.7 ms
+64 bytes from 192.168.1.123: icmp_seq=5 ttl=128 time=2.7 ms
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-Silverton Aron-C1710C
-Sent: Thursday, December 11, 2003 1:57 PM
-To: 'Ashwin Bihari'; 'listmember@orkun.us';
-'linuxppc-embedded@lists.linuxppc.org'
-Cc: 'dank@kegel.com'
-Subject: RE: Cross-compile package combinations
+--- 192.168.1.123 ping statistics ---
+6 packets transmitted, 6 packets received, 0% packet loss
+round-trip min/avg/max = 2.6/3.1/5.2 ms
+# ifconfig eth1 192.168.2.1
+eth1: adjust to link, speed: 100, duplex: 1, opened: 1
+eth1: Speed: 100, Full duplex.
+SIOCSIFFLAGS: Device or resource busy
+# ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
+          inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:104 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:7 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:100
+          RX bytes:10027 (9.7 kiB)  TX bytes:630 (630.0 iB)
+          Interrupt:15
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
+
+# ping 192.168.1.123
+PING 192.168.1.123 (192.168.1.123): 56 data bytes
+
+--- 192.168.1.123 ping statistics ---
+25 packets transmitted, 0 packets received, 100% packet loss
+# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 00:04:AC:E3:15:5E
+          inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:104 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:15 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:100
+          RX bytes:10027 (9.7 kiB)  TX bytes:966 (966.0 iB)
+          Interrupt:15
+
+eth1      Link encap:Ethernet  HWaddr 00:00:00:00:00:00
+          inet addr:192.168.2.1  Bcast:192.168.2.255  Mask:255.255.255.0
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:100
+          RX bytes:0 (0.0 iB)  TX bytes:0 (0.0 iB)
+          Interrupt:17
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:25 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:25 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:2800 (2.7 kiB)  TX bytes:2800 (2.7 kiB)
+
+#
+Have you already solved the problem?
+
+----- Original Message -----
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>; <benh@kernel.crashing.org>; <akuster@mvista.com>
+Sent: Wednesday, December 03, 2003 7:29 PM
+Subject: PPC4xx enet driver problem (version 2.0)
 
 
-
-Continuing this top-posting madness:
-
-I am trying to build gcc 3.2.3 for powerpc-linux on i386.  I have binutils
-2.14 built already.  I have not done anything with glibc as of yet.  Here is
-where I die:
-
-[lots of stuff omitted]
-mkdir libgcc
-mkdir nof
-mkdir libgcc/nof
-if [ -f stmp-dirs ]; then true; else touch stmp-dirs; fi
-/usr/proj/ssr/linux_bsp/mcip805/build-tools/build-boot-gcc/gcc/xgcc
--B/usr/proj/ssr/linux_bsp/mcip805/build-tools/build-boot-gcc/gcc/
--B/usr/proj/ssr/linux_bsp/mcip805/tools/powerpc-linux/bin/
--B/usr/proj/ssr/linux_bsp/mcip805/tools/powerpc-linux/lib/ -isystem
-/usr/proj/ssr/linux_bsp/mcip805/tools/powerpc-linux/include -O2  -DIN_GCC
--DCROSS_COMPILE   -W -Wall -Wwrite-strings -Wstrict-prototypes
--Wmissing-prototypes -isystem ./include  -fPIC -g -DHAVE_GTHR_DEFAULT
--DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED -Dinhibit_libc -I. -I.
--I../../gcc-3.2.3/gcc -I../../gcc-3.2.3/gcc/. -I../../gcc-3.2.3/gcc/config
--I../../gcc-3.2.3/gcc/../include  -fPIC -mstrict-align -DL_muldi3 -c
-../../gcc-3.2.3/gcc/libgcc2.c -o libgcc/./_muldi3.o
-In file included from tconfig.h:21,
-                 from ../../gcc-3.2.3/gcc/libgcc2.c:36:
-../../gcc-3.2.3/gcc/config/rs6000/linux.h:81:20: signal.h: No such file or
-directory
-../../gcc-3.2.3/gcc/config/rs6000/linux.h:82:26: sys/ucontext.h: No such
-file or directory
-make[2]: *** [libgcc/./_muldi3.o] Error 1
-make[2]: Leaving directory
-`/usr/proj/ssr/linux_bsp/mcip805/build-tools/build-boot-gcc/gcc'
-make[1]: *** [stmp-multilib] Error 2
-make[1]: Leaving directory
-`/usr/proj/ssr/linux_bsp/mcip805/build-tools/build-boot-gcc/gcc'
-make: *** [all-gcc] Error 2
-
-I issued the commands:
-
-$ ../gcc-3.2.3/configure --target=$TARGET --prefix=${PREFIX}
---without-headers --with-newlib --enable-langauges=c
-
-$ make all-gcc
-
-I am not using crosstools.  I may trie it if I can figure out how to specify
-the paths to put everything where I want it.
-
-Any suggestions?
-
-Thanks,
-
-Aron
-
+>
+> Hello!
+>
+> We are trying to switch to the 2.4.23 linuxppc_2_4_devel kernel (from
+> 2.4.21) and experience a problem with the "new" ethernet driver for the
+> ibm ppc4xx (version 2.0 from Benjamin Herrenschmidt). On our boards with
+> only one active enet interface we have no problems. But our PPC405EP
+> boards with 2 active enet devices, the traffic stops completely upon
+> initializing the 2nd devices (emac_reset_configure).
+>
+> Has anybody experienced similar problems? Has anybody seen this driver
+> working properly with more than one ppc4xx enet devices (especially
+> ppc405ep)?
+>
+> With the previous driver (from linuxppc_2_4_devel 2.4.21 maintained by
+> mvista) we had no problems with 2 enet interfaces on the ppc405ep so
+> far!
+>
+> By the way: What is the future of the ppc4xx enet driver. I found that
+> the 2.5 kernel  has a newer mvista driver included (modifications for
+> 440gx, etc.). Is the driver from 2.4.23 a dead end?
+>
+> Thanks and best regards,
+> Stefan.
+>
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
