@@ -1,21 +1,26 @@
-Return-Path: <olh@suse.de>
-Received: from Cantor.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E6F5C67A80
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2005 06:05:43 +1100 (EST)
-Date: Wed, 26 Jan 2005 20:05:37 +0100
-From: Olaf Hering <olh@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Akinobu Mita <amgta@yacht.ocn.ne.jp>
-Message-ID: <20050126190537.GA26349@suse.de>
-References: <200501260512.j0Q5CAhd016730@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200501260512.j0Q5CAhd016730@hera.kernel.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] oprofile: falling back on timer interrupt mode
+Return-Path: <tnt@246tNt.com>
+Received: from outmx001.isp.belgacom.be (outmx001.isp.belgacom.be
+	[195.238.3.51]) by ozlabs.org (Postfix) with ESMTP id 0616567A88
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Jan 2005 08:33:24 +1100 (EST)
+Received: from outmx001.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx001.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j0QLXDwx007945
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Jan 2005 22:33:13 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <41F80CA2.2080603@246tNt.com>
+Date: Wed, 26 Jan 2005 22:33:22 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200501221723.j0MHN6eD000684@harpo.it.uu.se>	<1106441036.5387.41.camel@gaston>
+	<1106529935.5587.9.camel@gaston>
+In-Reply-To: <1106529935.5587.9.camel@gaston>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Mikael Pettersson <mikpe@csd.uu.se>
+Subject: Re: BUG: 2.6.11-rc2 and -rc1 hang during boot on PowerMacs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Wed, Jan 26, Linux Kernel Mailing List wrote:
+Benjamin Herrenschmidt wrote:
 
-> ChangeSet 1.2038, 2005/01/25 20:31:01-08:00, amgta@yacht.ocn.ne.jp
-> 
-> 	[PATCH] oprofile: falling back on timer interrupt mode
+>On Sun, 2005-01-23 at 11:43 +1100, Benjamin Herrenschmidt wrote:
+>
+>  
+>
+>>I know about this problem, I'm working on a proper fix. Thanks for your
+>>report.
+>>    
+>>
+>
+>Can you send me the PVR value for both of these CPUs
+>(cat /proc/cpuinfo) ? I can't find right now why they would lock up
+>unless the default idle loop is _not_ run properly, that is for some
+>reason, NAP or DOZE mode end up not beeing enabled. Can you send me
+>your .config as well ?
+>  
+>
+Note that when CONFIG_BDI_SWITCH is set, they both end up disabled
+because nap & doze seems to perturb the BDI on some cores.
 
-> 
->  arch/alpha/oprofile/common.c     |    6 ++++--
->  arch/arm/oprofile/common.c       |    7 +++++--
->  arch/arm/oprofile/init.c         |    8 ++++++--
->  arch/i386/oprofile/init.c        |    4 +++-
->  arch/ia64/oprofile/init.c        |    8 ++++++--
->  arch/m32r/oprofile/init.c        |    3 ++-
->  arch/parisc/oprofile/init.c      |    3 ++-
->  arch/ppc64/oprofile/common.c     |    6 ++++--
->  arch/s390/oprofile/init.c        |    3 ++-
->  arch/sh/oprofile/op_model_null.c |    3 ++-
->  arch/sparc64/oprofile/init.c     |    3 ++-
->  drivers/oprofile/oprof.c         |    6 +++---
->  include/linux/oprofile.h         |    2 +-
->  13 files changed, 42 insertions(+), 20 deletions(-)
+So there is a problem in that case ....
 
-This misses arch/ppc
+>Finally, try that patch and tell me if it makes a difference. 
+>
+Yup
+ - Without it hangs (not really, it's still half running but serial 
+output is stuck
+due to no interrupts)
+ - With it it works
+
+
+    Sylvain
