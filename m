@@ -1,30 +1,17 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8F06C67A7E
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 2BDEA67A6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Mar 2005 08:11:32 +1100 (EST)
-Date: Wed, 23 Mar 2005 13:05:44 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050323160544.GB5305@logos.cnet>
-References: <c5f8c158f9254cbb0a8e085cf0fda8de@embeddededge.com>
-	<20050210170658.GA20153@logos.cnet>
-	<20050210170859.GB20153@logos.cnet> <423F4071.1000001@mrv.com>
-	<20050322130426.GE2498@logos.cnet>
-	<f4f476b5e54e9f005dd28082bd5f16fe@embeddededge.com>
-	<20050322175815.GB7846@logos.cnet>
-	<ab78e7b7625e4293bf29fded17f589c2@embeddededge.com>
-	<20050323102501.GF7846@logos.cnet>
-	<f8d4fefc4fc282e699ee279e92c3c2ef@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f8d4fefc4fc282e699ee279e92c3c2ef@embeddededge.com>
-Cc: "Smith, Craig" <craig.d.smith@siemens.com>, paulus@samba.org,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Linux 2.6.x on 8xx status
+	Thu, 24 Mar 2005 08:18:05 +1100 (EST)
+Message-ID: <4241DD04.4040401@mvista.com>
+Date: Wed, 23 Mar 2005 14:17:56 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: akpm <akpm@osdl.org>
+Content-Type: multipart/mixed; boundary="------------050806050701030405050508"
+Cc: rvinson@az.mvista.com,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH 2.6.12] ppc32: Fix Sandpoint Soft Reboot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,32 +22,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 23, 2005 at 11:12:11AM -0500, Dan Malek wrote:
-> 
-> On Mar 23, 2005, at 5:25 AM, Marcelo Tosatti wrote:
-> 
-> >You misunderstood: get_mmu_context() _wont_ be called if the mm 
-> >structures
-> >are the same.
-> 
-> I understood.  At most, get_mmu_context() will only do a 'tlbia'
-> instruction, I didn't see your reason for thinking this would have
-> an effect on the tlbie usage.
 
-OK. That is not a good reason, indeed.
+This is a multi-part message in MIME format.
+--------------050806050701030405050508
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> >>Well, that's interesting.  It's likely to only happen on an 860 
-> >>variant
-> >>that
-> >>has the large TLB.
-> >
-> >For what reasoning?
-> 
-> My initial debugging seemed to indicate a stale TLB entry.  With
-> the larger TLB this is more likely to happen.  The bug was never
-> seen on the 823/850 with smaller TLBs.
-> 
-> I have a new 8xx board now, so I'll have to start working on these
-> issues as well.
+ppc32: Fix Sandpoint Soft Reboot
 
-OK!
+This patch allows the Freescale Sandpoint to perform soft reboots. A 
+write of 0x00 to the Winbond's Chip Select Control Register was clearing 
+the Upper BIOS Chip Select Enable bit which unmaps the boot flash. The 
+comment associated with the write noted that it was enabling the RTC and 
+Keyboard address locations, but the bits in question (1 and 0) are 
+reserved when the Winbond chip is in PowerPC mode. Also, the bits are 1 
+for enable, 0 for disable, therefore the original code was actually 
+disabling the address locations. The patch also corrects errors in the 
+definitions of 2 configuration bits in the Tundra Tsi107 bridge's MAPB 
+Options register.
+
+Signed-off-by Randy Vinson <rvinson@mvista.com>
+Signed-off-by Mark A. Greer <mgreer@mvista.com>
+-- 
+
+--------------050806050701030405050508
+Content-Type: text/plain;
+ name="sandpoint.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sandpoint.patch"
+
+===== arch/ppc/platforms/sandpoint.c 1.26 vs edited =====
+--- 1.26/arch/ppc/platforms/sandpoint.c	2005-03-04 23:41:15 -07:00
++++ edited/arch/ppc/platforms/sandpoint.c	2005-03-17 14:06:15 -07:00
+@@ -202,13 +202,6 @@
+ 				0x48, /* ISA-to-PCI Addr Decoder Control */
+ 				0xf0);
+ 
+-	/* Enable RTC and Keyboard address locations.  */
+-	early_write_config_byte(hose,
+-				0,
+-				devfn,
+-				0x4d,	/* Chip Select Control Register */
+-				0x00);
+-
+ 	/* Enable Port 92.  */
+ 	early_write_config_byte(hose,
+ 				0,
+===== include/asm-ppc/mpc10x.h 1.10 vs edited =====
+--- 1.10/include/asm-ppc/mpc10x.h	2005-01-30 23:22:39 -07:00
++++ edited/include/asm-ppc/mpc10x.h	2005-03-16 16:52:34 -07:00
+@@ -115,8 +115,8 @@
+ #define	MPC10X_CFG_MAPB_OPTIONS_CFAE	0x80	/* CPU_FD_ALIAS_EN */
+ #define	MPC10X_CFG_MAPB_OPTIONS_PFAE	0x40	/* PCI_FD_ALIAS_EN */
+ #define	MPC10X_CFG_MAPB_OPTIONS_DR	0x20	/* DLL_RESET */
+-#define	MPC10X_CFG_MAPB_OPTIONS_PCICH	0x80	/* PCI_COMPATIBILITY_HOLE */
+-#define	MPC10X_CFG_MAPB_OPTIONS_PROCCH	0x40	/* PROC_COMPATIBILITY_HOLE */
++#define	MPC10X_CFG_MAPB_OPTIONS_PCICH	0x08	/* PCI_COMPATIBILITY_HOLE */
++#define	MPC10X_CFG_MAPB_OPTIONS_PROCCH	0x04	/* PROC_COMPATIBILITY_HOLE */
+ 
+ /* Define offsets for the memory controller registers in the config space */
+ #define MPC10X_MCTLR_MEM_START_1	0x80	/* Banks 0-3 */
+
+--------------050806050701030405050508--
