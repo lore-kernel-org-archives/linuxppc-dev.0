@@ -1,33 +1,38 @@
-Date: Mon, 6 Aug 2001 13:05:39 +0200
-From: Olaf Hering <olh@suse.de>
-To: R Shapiro <reshapiro@mediaone.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15214.33465.500189.767261@mediaone.net>
+Date: Mon, 6 Aug 2001 07:42:49 -0400
+From: R Shapiro <reshapiro@mediaone.net>
+To: Olaf Hering <olh@suse.de>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
 	linuxppc-dev@lists.linuxppc.org
 Subject: Re: lcd17 kernel patches?
-Message-ID: <20010806130539.A29125@suse.de>
-References: <20010805200639.A14938@suse.de> <Pine.LNX.4.05.10108060933320.4858-100000@callisto.of.borg> <20010806100644.A6859@suse.de> <15214.30891.857319.377917@mediaone.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15214.30891.857319.377917@mediaone.net>; from reshapiro@mediaone.net on Mon, Aug 06, 2001 at 06:59:55AM -0400
+In-Reply-To: <20010806100644.A6859@suse.de>
+References: <20010805200639.A14938@suse.de>
+	<Pine.LNX.4.05.10108060933320.4858-100000@callisto.of.borg>
+	<20010806100644.A6859@suse.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Aug 06, R Shapiro wrote:
+Olaf Hering writes:
+ > The correct fix is either "video=1280x1024-8@60" as kernel arg (that may
+ > work)
 
-> Is '-8' the depth?  I.e., should I replace this with '-24' if I want
-> 24-bit color?
-
-It is 8bit, but no need to have more than 8 bit on the console, it will
-only make it slow. X can switch the color depth if needed.
+OK, I just had time to rebuild 2.4.8-pre3-ben0 with the patch undone.
+This video arg with that kernel doesn't solve the problem.  I still
+get no video on boot.
 
 
-Gruss Olaf
+
+ > or the aty128fb driver must check the panel size.
+
+Sounds like this proper patch is going to be necessary.  In the
+meantime I'll use the workaround of clobbering the values in one of
+the existing modes.
 
 --
- $ man clone
+reshapiro@mediaone.net
 
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
