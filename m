@@ -1,32 +1,35 @@
-In-Reply-To: <199901080206.NAA01553@tango.anu.edu.au>
-Date: Fri, 8 Jan 1999 04:30:05 +0100
-To: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Great IDE perf (WAS: Strange PMAC IDE performance)
-Message-Id: <19990108043005.022500@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 8 Jan 1999 09:49:54 +0100 (MET)
+From: Della Bianca Francesco <fdellabi@dsi.unive.it>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Installer pre-R5 in G3 233 
+Message-ID: <Pine.OSF.4.03.9901080945290.6120-100000@squit.dsi.unive.it>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 8, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+Hello
+	I cannot install the RedHat-pre-R5 in my G3
+when I configured the path root (/) in my disck hda7 and run installer
+packages, the installer show a error: " fatal error can open RPM database"
 
->I have an ide zip drive on my desktop G3, which appears as an ATAPI
->floppy drive.  It works fine.  So it's going to take some digging to
->find out why the expansion bay ZIP doesn't work. :-(
+how can I resolve this ?
 
-Apparenlty, his ZIP is beeing recognized as a CDROM device, which is
-obviously wrong. I'll dig around in the code and looks if I see something
-obvious.
+Please wrtite me
 
-
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
-
-
+	>>--------------------------------<<
+	<< Mister: Francesco Della Bianca >>
+	<< ______________________________ <<
+	>>  Riferimento per il Gulliver   >>
+	<<       sezione Macintosh        <<
+        !!         GURU LinuxPPC          !!
+  	>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<
+	||    Universita' di Ca'Foscari   ||
+	||   Dipartimento di Informatica  ||
+	=>          Tel. 042173216        <=
+	{         30026  Portogruaro       }
+	>>--------------------------------<< 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
