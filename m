@@ -1,27 +1,32 @@
-From: Brad Boyer <flar@cegt201.bradley.edu>
-Message-Id: <199904170150.UAA29787@cegt201.bradley.edu>
-Subject: Snooping serial ports in MacOS
-To: linuxppc-dev@lists.linuxppc.org
-Date: Fri, 16 Apr 1999 20:50:22 -0500 (CDT)
+Date: Fri, 16 Apr 1999 21:08:02 -0700 (PDT)
+From: Peter Abrahamsen <peidran@valinor.lly.org>
+To: Niels Roest <N.P.Roest@ITS.TUDelft.NL>
+cc: satadru pramanik <satadru@umich.edu>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: ggi and frame buffer
+In-Reply-To: <Pine.HPP.3.95.990413182812.17396A-100000@elektron.et.tudelft.nl>
+Message-ID: <Pine.LNX.4.10.9904162104430.5370-100000@valinor.ssd.k12.wa.us>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Greetings,
 
-Does anyone know of a good way to watch the settings and/or the data
-being passed through a serial port while in the MacOS?  I have a
-Personal Laserwriter 300 which I am attempting to use under Linux, but
-I don't really have much to start from, other than the fact that it is
-a "Quickdraw Printer" like the Stylewriter line.  However, I tried to
-use lpstyl to talk to it, and it can't talk to the printer at all.
-Thanks for any help you can give.  Also, if anyone else has one of
-these things and would like to help in any way, it would be
-appreciated.
+On Tue, 13 Apr 1999, Niels Roest wrote:
+> On Mon, 12 Apr 1999, satadru pramanik wrote:
+> > Any clues to what this is?  Has anybody gotten libgii and libggi to work
+> > successfully on LinuxPPC, especially pre-rel5?
+> I didn't try it in console. so ggi on X works.
 
-	     Brad Boyer
-	     flar@cegt201.bradley.edu
+Yes, indeed, ggi works in X. However, GGI is apparently having troubles
+with framebuffers on all platforms (not just pmac/ppc). I guess we just
+wait...
+
+Peter
+--
+peter@common.cx | peter@valinor.ssd.k12.wa.us
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
