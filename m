@@ -1,37 +1,46 @@
-Message-ID: <39CE9B1F.84530732@student.ethz.ch>
-Date: Mon, 25 Sep 2000 02:23:59 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
-To: Henry Worth <haworth@ncal.verio.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux keycodes and left cursor on Pismo
-References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Misc problems with Lombard (serial, ethernet, SCSI)
+Reply-To: minyard@acm.org
+From: Corey Minyard <minyard@acm.org>
+Date: 24 Sep 2000 19:57:41 -0500
+Message-ID: <m2vgvlthiy.fsf@c469597-a.grlnd1.tx.home.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Henry Worth wrote:
+I have a Powerboot 1999 and I'm having a few annoyances with it.  I'm
+currently using the stable rsync kernel from linuxcare.  The following is
+happening:
 
-> >After switching to Linux keycodes (and Debian's i386 us keymap), the left
-> >cursor key doesn't generate a keycode anymore. Interestingly, it works in
-> >X with Xkb, but not without.
-> >
-> >Anyone else sees this?
->
-> Check the dev and user archives, I think this has been discussed a
-> few times since the new input layer backport went in.
+* Serial drivers - At least when talking to the modem, it will occasionally
+  cease to work.  I use pppd to connect, and when it disconnects I cannot
+  reconnect.  Once this happens, anything that tries to open the port get
+  an I/O error.  If I unload the serial module and then reload it, the
+  problem goes away for a while.  This started happening around 2.2.15.
 
-I've searched the archives now with no luck.
+* MESH Driver - It won't work with my scanner.  The scanner works fine
+  under MacOS and used to work under Linux x86.  It has problems with
+  disconnects.  Also, once I use it then sleeping and awaking will locks up
+  the machine.  Also, unloading the MESH module and reloading it locks up
+  the machine.
 
-So, can anyone please solve my problem, even if it has been solved before? :)
+* Ethernet driver (BMAC) - The driver will occasionally lock up under heavy
+  load (I haven't seen this yet with 2.2.17, though).  If I define an alias
+  address, bringing down the alias address will also bring down the main
+  address (this is still happening under 2.2.17).  Unloading the ethernet
+  driver and loading it again causes a lockup.
 
+I'm also seeing random lockups after long periods of running under
+heavy load, but this is new and I'm thinking it may be a heat problem.
+But just in case, I'll say it.
 
-Michel
+I'm posting this to see if anyone is aware of these problems.  I'm
+willing to work on them, but I don't want to duplicate work.  But I
+would like to hear from the responsible parties for each driver to
+know what to do.
 
+Thanks,
 
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+Corey
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
