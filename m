@@ -1,41 +1,58 @@
-Message-ID: <36D7BD44.8904739@wanadoo.fr>
-Date: Sat, 27 Feb 1999 10:39:16 +0100
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: satadru pramanik <satadru@umich.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.2 compilation errors
-References: <Pine.LNX.4.10.9902261014540.1439-100000@beer.pub.umich.edu>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <v03010d00b2fdb9273872@[209.96.179.170]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 27 Feb 1999 10:09:39 -0500
+To: linuxppc-dev@lists.linuxppc.org, egcs@egcs.cygnus.com
+From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+Subject: PowerPC and egcs gurus: Help! egcs PPC Float Min != JCK Float Min
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I wasn't able to get this kind of error with a stock Linus-2.2.2 kernel.
-Could this be either the -ac4 extensions or the USB stuff that you have
-enabled (where is this from, anyway?).
+PowerPC and egcs Gurus,
 
---
-Martin
+I could really use some help here.  I am part of the Blackdown porting team
+that is porting JDK 1.2 to linux for powerpc.  In order to do an offical
+"release", our port must pass *all* of the Java Compatitiblity Kit (JCK)
+tests.
 
-satadru pramanik wrote:
-> 
-> Thanks again for all of the useful suggestions.  Further along the
-> compilation chain, i came across this fatal error with the pmac_ide stuff.
-> Luckily, since I have a 7600, w/o ide, i could just disable this, but it
-> would be nice to get this working in Linus' tree, since his tree is
-> mirrored everywhere.
-> -sat.
-> ---compilation output---
-> t/net.a drivers/scsi/scsi.a drivers/cdrom/cdrom.a drivers/sound/sound.a
-> drivers/pci/pci.a drivers/macintosh/macintosh.a drivers/video/video.a \
->         /mnt/ibm/sin/src/kernel/linux/lib/lib.a \
->         --end-group \
->         -o vmlinux
-> arch/ppc/kernel/kernel.o: In function `find_ide_boot':
-> arch/ppc/kernel/kernel.o(.text.init+0x18e2): undefined reference to
-> `pmac_ide_count'
-[etc]
+One of the JCK tests tries to pass what it thinks Float_Min is back and forth.
+The JCK says we *must* support a min Floating point value of
+1.40239846e-45F but according to <float.h> in egcs our FLT_MIN on powerpc
+is 1.17549435e-38F.  The Float max values are the same.
+
+So we end up failing this test (and then can never offically release).
+
+I don't know enough about the float modes (normalized vs de-normalized, vs
+?) on the PPC chip to know if or how we can support such a min float value.
+
+I could use some help here.  Do you know anything (or could you point me to
+something or someone) that might explain, how the PPC processor can/will
+support a min Float value of 1.40239846e-45F?
+
+Is the FLT_MIN valkue in float.h of egcs, an egcs constraint or a real PPC
+constraint?
+
+Any ideas of how to get around this issue without have to write a floating
+point emulation software library (and kill what little floating point
+performance the JDK has)?
+
+
+Any help would be greatly appreciated.
+
+Thanks,
+
+Kevin
+
+Please cc in any replies, I am not on the egcs list.
+
+
+p.s. Other that this issue, the JDK 1.2 is running very nicely on LinuxPPC
+under green threads under Gary's glibc 1.99 clone and should now compile
+cleanly under glibc 2.1 (when I finally get an R5 disk).
+
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
