@@ -1,31 +1,27 @@
-Date: Wed, 8 Nov 2000 22:48:41 +0100 (CET)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        linuxppc-dev@lists.linuxppc.org, paulus@linuxcare.com.au
-Subject: Re: Lombard Sleep Crash (Was: 2.2.18pre17 again)
-In-Reply-To: <19341003142642.9550@192.168.1.10>
-Message-ID: <Pine.LNX.4.10.10011082158290.25279-100000@zirkon.biophys.uni-duesseldorf.de>
+From: jlhagen@collins.rockwell.com
+Subject: RTLinux and mvme26xx cards? :)
+To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 8 Nov 2000 16:42:13 -0600
+Message-ID: <OF774F72D8.4D5354AC-ON86256991.007B9E46@collins.rockwell.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >It does freeze, however, when I snooze the machine while using software
-> >cursor. Seems the software cursor interrupt needs to be stopped before
-> >turning off the display :-) Question: is software cursor support worth the
-> >hassle?
->
-> well, it's probably not difficult to fix. I'll give it a look.
+Hello,
 
-Right now, there's no hook in the fbcon code for this AFAIK. On second
-thought, all it should take is to clear cursor_on in fbcon.c before sleep
-(i.e. by fbcon_cursor(CM_ERASE), but that won't tell you if the cursor was
-already erased). Adding new hooks to the consw struct is a no-no, perhaps.
-Adding a CM_PAUSE / CM_RESUME feature to fbcon_cursor might be sufficient.
+what is the possibility of using FSMLabs RTLinux on mvme26xx boards? IIRC
+RTLinux supports uniprocessor powerpc in the V3 beta series, correct me if
+I'm wrong. Using Gabriel's patches I have been able to bring up 2.2.12
+series kernels on our mvme2604 boards. I'm having problems on with the
+2.4-test series kernels and Gabriel's patches, issue with NFS, but I'm
+starting to wonder about using RTLinux on these boards.
 
-	Michael
+Any thoughts, been there tried that, been there done that, or just info
+would be appreciated.
+
+Thanks, John
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
