@@ -1,67 +1,54 @@
-Subject: Re: very minor 405GP and 405GPr PCI difference
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF2774A711.2E120BD4-ON87256C5B.0047F3BA@boulder.ibm.com>
-From: "Ralph Blach" <rcblach@us.ibm.com>
-Date: Wed, 23 Oct 2002 09:10:12 -0400
+Message-ID: <3DB6A051.7A526641@corelatus.com>
+Date: Wed, 23 Oct 2002 15:12:49 +0200
+From: Thomas Lange <thomas@corelatus.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 8xx enet collision counter
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The MontVista Linux disables disable PMM1, which is correct.  It then
-writes a 0 PMM0 enable bit,
-which on the 405gp is OK because the enable bit is hardwired to a 1.  ON
-the 405gpr, the bit is writeable and
-this then disables PMM0.  The correct action is to write a 1 to the PMM0
-enable bit on both the 405 and the 405gpr
-and the problem is solved.
+Collisions in 8xx scc ethernet are not reported
+correctly IMHO.
+
+>From enet.c :
+		/* Deferred means some collisions occurred during transmit,
+		 * but we eventually sent the packet OK.
+		 */
+		if (bdp->cbd_sc & BD_ENET_TX_DEF)
+			cep->stats.collisions++;
+
+>From Table 28-8 in 860 UM:
+------
+6 DEF Defer indication. The frame was deferred before being sent
+successfully,
+that is, the transmitter had to wait for carrier sense before sending
+because the line was busy.
+This is not a collision indication; collisions are indicated in RC.
+------
+10-13 RC Retry count. Indicates the number of retries required before
+the frame was sent successfully. If RC = 0, the frame was sent correctly
+the first time. If RC = 15 and RET_LIM = 15 in the parameter RAM, 15
+retries were required. Because the counter saturates at 15, if RC = 15
+and RET_LIM > 15, then 15 or more retries were required. The controller
+writes this field after it successfully sends the buffer.
+------
 
 
-Chip
+The correct way to do it would be to use the RC value,
+something like this:
 
-David Gibson <david@gibson.dropbear.id.au>@lists.linuxppc.org on 10/23/2002
-12:08:50 AM
+		/* Check retry counter, i.e. collision counter */
+		if (bdp->cbd_sc & BD_ENET_TX_RCMASK){
+		  /* Note that counter cannot go higher than 15 */
+		  cep->stats.collisions+=(bdp->cbd_sc & BD_ENET_TX_RCMASK)>>2;
+		}
 
-Sent by:    owner-linuxppc-embedded@lists.linuxppc.org
+I have tried this and it looks much better. That is, when
+tranceiver led signals collision, the collision counter actually
+moves ;-)
 
-
-To:    Todd Poynor <tpoynor@mvista.com>
-cc:    linuxppc-embedded@lists.linuxppc.org
-Subject:    Re: very minor 405GP and 405GPr PCI difference
-
-
-
-
-On Tue, Oct 22, 2002 at 02:55:47PM -0700, Todd Poynor wrote:
->
-> David Gibson wrote (regarding Rainier PMM1 bios_fixup in MVL):
->
-> >Well, it may be in a different place, but it looks like it has the
-> >same problem.  It is still establishing a PCI window at PLB address
-> >0x80000000, which is the same address used for the PMM0 window - or is
-> >that also different in the MV kernel?
-> >
-> >I'd be trying to work out what that mapping's actually for, first.  I
-> >still can't see how it can possibly work - if there are overlapping
-> >PMM windows, what actually happens to accesses in that (PLB) range?
->
-> Yes, it looks like MVL only sets up the one window using PMM1... we've
-> started an effort to have the Rainier-knowedgeable folks get the code
-> sync'ed up with the community and this should happen soon.
-
-Hang on, so just to clarify - MVL sets up PMM1 with the code you
-posted, but doesn't set up PMM0 anywhere?  From my reading of that
-code, it sets up a window at the same address as the "standard"
-(Walnut) mapping, except that it is only 128kB instead of 1GB.  Is
-there a reason that Rainier must have such a small window?
-
---
-David Gibson                  | For every complex problem there is a
-david@gibson.dropbear.id.au   | solution which is simple, neat and
-    | wrong.
-http://www.ozlabs.org/people/dgibson
-
+/Thomas
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
