@@ -1,40 +1,40 @@
-To: Greg Watson <gwatson@lanl.gov>
-Cc: "Jack Liu" <Jack_liu@usish.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Sandpoint problems 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 16 Feb 2004 09:42:35 MST."
-             <1FF3FFE3-609F-11D8-A367-000393A47A5C@lanl.gov>
-Date: Mon, 16 Feb 2004 18:12:35 +0100
-Message-Id: <20040216171240.9276EC108D@atlas.denx.de>
+Message-ID: <77FE4A1FA59FF947845A42194AD667627730BD@uswaumsx07medge.med.ge.com>
+From: "Eisenhut, Daniel (MED)" <Daniel.Eisenhut@med.ge.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Check stop failure on 8270 i2c
+Date: Mon, 16 Feb 2004 16:30:30 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1FF3FFE3-609F-11D8-A367-000393A47A5C@lanl.gov> you wrote:
->
-> The sandpoint has at least two (sometimes three) flash parts. The one
-> containing DINK is on the PCI bus on the motherboard. One or two other
-> flash parts are on the PrMC card connected to the local memory bus. It
-> is normal to leave DINK alone and program one of the other flash parts
-> with an alternate boot loader. There are a series of dip switches that
-> switch between programming and booting from the various flash parts.
-> Unfortunately the documentation for the switch positions is very
-> confusing and unless you get it exactly right the board will not boot.
+I've ran into a strange problem that I'm not sure even how to
+troubleshoot.
+Hopefully, someone can lead me in the right direction...  I working on a
+custom board with an 8270 processor running linuxppc_2_4_devel (2.4.23)
 
-U-Boot comes with a file doc/README.Sandpoint8240 which explains  all
-the required details.
+I've converted the 8260 i2c driver from U-Boot to a Linux module to talk
+with our rtc.  Everything works great as I can read and write to the
+rtc.
+But occasionally the system resets due to a check stop state in the
+processor.  I've determine that this occurs sometime during or between
+setting the STR bit in the i2com register and going to sleep waiting for
+an interrupt (which was added since it just busy waits in U-Boot).
 
-Best regards,
+If I have debug output turned on, this checkstop reset occurs after
+about
+15-30 calls to "hwclock".  (Each clock read makes about 13 i2c
+transfers)
+But if I turn off debugging, it fails after about 1-5 calls.  Obviously
+there is some kind of race condition going on here.
 
-Wolfgang Denk
+Has anyone seen this problem before?  Any suggestions on how to proceed
+to
+troubleshoot this problem?  (And yes I do have a BDI2000)
 
---
-See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Beware of the Turing Tar-pit in  which  everything  is  possible  but
-nothing of interest is easy.
+Thanks for your help...
+Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
