@@ -1,38 +1,51 @@
-From: Paul Mackerras <paulus@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15362.65400.567302.796449@cargo.ozlabs.ibm.com>
-Date: Tue, 27 Nov 2001 13:50:32 +1100 (EST)
-To: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Date: Mon, 26 Nov 2001 22:24:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: VT82C686B IDE and Linux/PPC woes
-In-Reply-To: <0111262205.AA22280@ivan.Harhan.ORG>
-References: <0111262205.AA22280@ivan.Harhan.ORG>
-Reply-To: paulus@samba.org
+Subject: Re: Please make K2 Linux bootable without PeeMON again
+Message-ID: <20011126222449.E13091@cpe-24-221-152-185.az.sprintbbd.net>
+References: <0111262101.AA22136@ivan.Harhan.ORG>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0111262101.AA22136@ivan.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Sokolov writes:
+On Mon, Nov 26, 2001 at 01:01:49PM -0800, Michael Sokolov wrote:
 
-> Yet when I boot Linux/PPC, it sees the IDE ports, but doesn't see the drive
-> attached to the IDE0 port (see the session log below). My port in
-> arch/ppc/platforms does absolutely nothing IDE-related, in .config I have IDE
-> and VT82C686B support enabled. Is there something that my Linux/PPC port has to
-> do explicitly with IDE in order for it to work?
+> ChangeSet@1.666, 2001-11-19 09:10:26-07:00, trini@bill-the-cat.bloom.county
+>   Remove register magic from platforms which use 'simple'.  A few
+>   new platforms forgot parse_bootinfo(find_bootinfo()) as well.
+>
+>   arch/ppc/platforms/k2_setup.c
+>     1.17 01/11/19 09:10:26 trini@bill-the-cat.bloom.county +0 -15
+>     Remove cmd_line and initrd register magic.
+>
+> is a problem for me. On the K2 I do not use zImage or the braindead PeeMON
+> firmware that it assumes, instead I load vmlinux directly by occult. I need to
+> continue to able to do this, and I need to keep the interface to vmlinux
+> register-based so that I can load vmlinux into memory by occult, put the right
+> values in the right registers, and jump to it. A pointer to bi_recs in a
+> register is fine, but looking for bi_recs in the magic location isn't. (The
+> kernel has already been loaded into memory by occult when I get to it, and
+> without the original ELF header or System.map I cannot determine where will it
+> look for bi_recs in find_bootinfo.)
 
-Hmmm, there shouldn't be any problem.  You do have CONFIG_BLK_DEV_IDEPCI
-enabled I assume?  Your k2_ide_init_hwif_ports looks OK to me.  I
-would scatter some printks through drivers/ide/ide-pci.c to try to get
-an idea what it is doing and where it is going wrong.
+Er, why can't you find the magic location for the bi_recs and set that
+as well as the other registers you need to?
 
-BTW, I can't see any reason why we still need to have
-ide_init_hwif_ports be platform-specific.  It is only used for
-PC-style IDE interfaces and for PCI IDE interfaces.  For other types
-of interface we should be adding a probe call in ide.c rather than
-trying to do it with ide_default_io_base and ide_init_hwif_ports.
-Not that this applies to the k2.
+> The patch below makes the K2 vmlinux expect a pointer to bi_recs in R3 like I
+> do on the Adirondack and makes the "simple" zImage goo pass a pointer to its
+> magic bi_recs in R3.
 
-Paul.
+And breaks all of the other ports which use 'simple' and expect bi_recs
+in the 'normal' place.  For now I'd much rather add back in the register
+checks.  For 2.5 we can agree on a less magical and more predictable
+location.  Would somewhere around the end of memory work for you?
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
