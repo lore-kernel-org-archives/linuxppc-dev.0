@@ -1,12 +1,27 @@
-Message-ID: <397C9915.74D84EA1@cyclades.com>
-Date: Mon, 24 Jul 2000 12:29:25 -0700
-From: "Edson Ap. Seabra" <seabra@cyclades.com>
+Message-ID: <A109131318C4D1119AC20060088DECE30B9832@amwmail.adaptivemicro.com>
+From: Lucinda Schafer <lucsch@adaptivemicro.com>
+To: "'Edson Ap. Seabra'" <seabra@cyclades.com>,
+        Linux List
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Ramdisk using libc5
+Date: Mon, 24 Jul 2000 14:42:21 -0500
 MIME-Version: 1.0
-To: Linux List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Ramdisk using libc5
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Try stripping all the debug info out--libc-2.1.2.so will be about 370k.
+
+Lucinda
+
+-----Original Message-----
+From: Edson Ap. Seabra [mailto:seabra@cyclades.com]
+Sent: Monday, July 24, 2000 2:29 PM
+To: Linux List
+Subject: Ramdisk using libc5
+
 
 
         I want to make a ramdisk image for a PPC board that provides
