@@ -1,21 +1,26 @@
-Subject: Announcement: MPHY now supported in mpc860sar
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: "linux-atm-general@lists.sourceforge.net" <linux-atm-general@lists.sourceforge.net>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain
-Message-Id: <1075117282.1504.17.camel@zambia.cambridgebroadband.com>
-Mime-Version: 1.0
-Date: 26 Jan 2004 11:41:22 +0000
+Message-ID: <903E17B6FF22A24C96B4E28C2C0214D7012BB438@sr-bng-exc01.int.tsbu.net>
+From: "Karoliya, Abhishek" <Abhishek.Karoliya@fci.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: IBM750GX support 
+Date: Mon, 26 Jan 2004 18:00:21 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Just a quick note to say that multi-phy is now supported by the
-mpc860sar ATM driver, thanks to a patch by Rodolfo Giometti.
+Hi All,
 
-Page: http://sourceforge.net/projects/mpc860sar/
+   Is there anywhere support for the new IBM750GX processor?
+Any pointer to it will greatly help.
 
-Alex
+   For the time being I have used entries {in arch/ppc/kernel/cputables.c}
+for IBM750FX {one that applies to all except for Rev 2.0 of the Processor}
+as provided in MontaVista PE3.0 based on 2.4.18. Is this enough to get the
+max out of GX?
 
+Thanks
+Abhi
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
