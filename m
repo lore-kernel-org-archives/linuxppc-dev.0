@@ -1,33 +1,57 @@
-From: Wulf Hofbauer <wh@echo.chem.tu-berlin.de>
-Subject: Re: IDE problems with 2.3.49?
-To: linuxppc-dev@lists.linuxppc.org
-Date: Thu, 9 Mar 2000 21:32:25 MEZ
-Message-Id: <E12T9bd-0004vk-00@mail.zrz.tu-berlin.de>
+Date: Fri, 10 Mar 2000 09:31:18 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Patrick Lerda <Lerda@microprocess.com>
+cc: David Monro <davidm@amberdata.demon.co.uk>,
+        "'Gabriel Paubert'" <paubert@iram.es>,
+        Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: IBM 850 - Open Firmware or not? and more on the ide byteswapg
+ ame...
+In-Reply-To: <902CA06399F5D311AAAC00500422FC63094031@iis000.microdata.fr>
+Message-ID: <Pine.LNX.4.05.10003100925530.13249-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I've been experiencing IDE interrupt problems with anything more
-recent than 2.1.24. On my 7220, the IDE controller doesn't seem to
-be properly initialized and raises an interrupt when none is expected.
-The kernel then gets stuck in an infinite interrupt loop. This occured
-however only when booting from OF. When using a MacOS-based loader,
-MacOS would have initialized the IDE controller before the kernel was
-running.
+On Thu, 9 Mar 2000, Patrick Lerda wrote:
+> I think porting Linux PPC to little endian could be a great idea. Now, all
+> systems
+> use PCI, and little endian is the native mode of this bus. Trying
+> to get all PCI hardware well supported on Linux i386 working on a PowerPC
+> box
+> is an headache, and a lot of drivers and programs don't work proberly for
+> only one
+> reason: endianess... Using PowerPC in big endian mode is only understandable
 
-The workaround for me has been to reset the IDE controller. The kernel
-bootflags are something like ide0=reset, ide1=reset. After that, the
-unexpected interrupt is discarded, though it still generates a warning.
+Endianness is definitely not the only reason for drivers and programs that
+don't work. We also have problems with mb(), char (un)signedness and I/O
+mappings, just to name a few.
 
-Maybe the current problems are related to this.
+While having a little endian Linux/PPC may seem to solve this issue, it would
+introduce a lot of other CPU-related problems (cvfr. Gabriel Paubert's mails).
+Furthermore it would remove one more reason for people not trying to write
+portable and clean code. And there are other big endian platforms as well.
 
-- Wulf
+Also having a little endian Linux/PPC would drop us to the same level as a
+well-known company from Redmond that doesn't seem to be able to write portable
+OSses. Even their embedded gimmick is available for little endian (or
+bi-endian) CPUs only.
+
+> in closed
+> computers like iMac.
+
+There are lots of technical reasons running big endian OSses on PPC.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
- ________________________________________________________
-! Dipl. Phys. Wulf Hofbauer  (wh@echo.chem.tu-berlin.de) !
-! Max-Volmer-Institut     Technische Universitaet Berlin !
-! Strasse des 17. Juni 135     10623 Berlin      Germany !
-!________________________________________________________!
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
