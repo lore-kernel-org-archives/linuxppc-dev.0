@@ -1,28 +1,47 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Dan Malek" <dan@embeddededge.com>, <panto133@otenet.gr>
-Cc: "Pantelis Antoniou" <panto@intracom.gr>,
-	"LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>,
-	"Paul Mackerras" <paulus@samba.org>,
-	"Tom Rini" <trini@kernel.crashing.org>
-Subject: RE: [2.5] Hang on 8xx in head_8xx.S
-Date: Sun, 16 Feb 2003 11:38:36 -0800
-Message-ID: <NCBBIINEHIPFGJPLBEIFIEEFECAA.acurtis@onz.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-7"
-In-reply-to: <3E4FC683.60403@embeddededge.com>
+To: ADharankar@ATTBI.Com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Relocating PPCBoot into SRAM 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 16 Feb 2003 14:15:19 EST."
+             <200302161415.19790.ADharankar@ATTBI.Com>
+Date: Sun, 16 Feb 2003 20:48:03 +0100
+Message-Id: <20030216194808.33949C5E20@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Well, in the case of multiple SCC ethernets, I have provided my old
-> patch to probably a half a dozen people, all who promised to
-> bring it up to date and apply some suggested improvements.  None
-> of them have provided anything up to date in return, so I guess
-> I'll have to take time to do that, too :-)  The 8260 FCC driver
-> supports any combination of FCC Ethernet devices.
+In message <200302161415.19790.ADharankar@ATTBI.Com> you wrote:
+> Hello!  Thanks for the nice reply!
 
-Could you make your patch available to the mail list?
+You're welcome.
+
+> To test the region of SDRAM where PPCBoot/U-Boot resides, how could
+> a non-destructive test be implemented? Perhaps, would one way would be
+> to do these test for that region of PPCBoot/U-Boot before it is
+> relocated to SDRAM?
+
+This is a good idea, especially since you also have to deal with  the
+exception vectors...
+
+> Some of the x86 PC BIOSs/Bootloaders/Monitors seem to be able to do
+> a full/destructive memory test without a reboot. That is what seems
+> to be appealing to for PPCBoot/U-Boot.
+
+Did you check how U-Boot's POST routines  (especially  post/memory.c)
+work?
+
+Don't re-invent the wheel.
+
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+See us @ Embedded World, Nuremberg, Feb 18-20, Hall 12.0 Booth 12-442
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
