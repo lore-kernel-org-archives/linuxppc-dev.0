@@ -1,47 +1,26 @@
-Message-ID: <20040122011300.66373.qmail@web21408.mail.yahoo.com>
-Date: Wed, 21 Jan 2004 17:13:00 -0800 (PST)
-From: Huailin Chen <chen_huailin@yahoo.com>
-Subject: FYI: Free Online Book: Inside Linux Kernel and PowerPC 
-To: Powerpc Linux <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <200401211946.17969.amitkale@emsyssoft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Ashwin Bihari" <raz0redge@hotmail.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Motorola PrPMC880 support.
+Date: Thu, 22 Jan 2004 10:02:40 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
+Message-ID: <BAY9-F15bGU1s4RmUBd000259ee@hotmail.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, team,
-
-I tried to collect some documents related to linux and
-ppc. And did some document(I'm not yet confident
-enough to say: kernel analysis) about linux ppc
-machine dependent part.
-
-It's far away being good. But wish helpful and
-meantime get some feedback so that I could make a
-better job.
-
-The ToC is:
--------------
-Chapter 1 Embedded PowerPC Family
-Chapter 2: Programming Model
-Chapter 3: PowerPC EABI
-Chapter 4: PowerPC Interrupt/Exception
-Chapter 5: PowerPC 4xx Reset and Initialization
-Chapter 6: Synchronization Requirements
-Chapter 7: Linux Kernel Bootup and Initialization
-Chapter 8: Kernel Initialization
-Chapter 9: Kernel Setup---start_kernel
-Chapter 10: Kernel Exception Handler
-Chapter 11 Kernel Memory Management
-Chapter 12: Kernel Process Management
-Chapter 13 Interrupt Handling routines
-Chapter 14 System Call handling
-Chapter 15: PowerPC EABI Cross Compiler
+Are there any plans to integrate support for the PrPMC880 in the LinuxPPC
+2.4 trees? There is a patch for the Linux 2.4.20 tree located at Motorola's
+website at
+(http://mcg.motorola.com/cfm/templates/swDetails.cfm?PageID=704&SoftwareID=6&ProductID=202).
 
 Regards,
 
-Huailin, Chen
-www.xtrj.org
+~Ashwin
+
+_________________________________________________________________
+Let the new MSN Premium Internet Software make the most of your high-speed
+experience. http://join.msn.com/?pgmarket=en-us&page=byoa/prem&ST=1
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
