@@ -1,78 +1,104 @@
-Message-ID: <369F68F7.F983C816@mucmot.muenchen.europe.mcd.mot.com>
-Date: Fri, 15 Jan 1999 17:12:39 +0100
-From: Alois Fertl <alois_fertl@mucmot.muenchen.europe.mcd.mot.com>
+Message-ID: <369F72E8.3C25AC87@jlc.net>
+Date: Fri, 15 Jan 1999 11:55:04 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: Alexander Gustav Deucher <agd5f@unix.mail.virginia.edu>
-CC: Gabriel Paubert <paubert@iram.es>, Troy Benjegerdes <hozer@drgw.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Porting to Nubus PowerMacs
-References: <Pine.HPP.3.96.990115120015.2338T-100000@gra-ux1.iram.es>
+To: Helmut Buchsbaum <helmut.buchsbaum@siemens.at>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: FADS823 - the neverending story
+References: <369F2600.4525430D@siemens.at>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
-> 
-> On Fri, 15 Jan 1999, Troy Benjegerdes wrote:
-> 
-> > On Thu, 14 Jan 1999, Gabriel Paubert wrote:
-> > > On Thu, 14 Jan 1999, Alexander Gustav Deucher wrote:
-> > >
-> > > >
-> > > > While we are on the subject of porting, How hard would it be to
-> > > > get linux ppc to boot on machines with NT firmware?  Does
-> > > > anyone know why this firmware is so problematic? Is there
-> > > > anywhere one could find documentation on it, etc.
-> >
-> > Is this Open Firmware or some derivative of PPCbug?? I though NT required
-> > Open Firmware (which would mean the preploader wouldn't work too well)
-> >
-It is something called "Motorola PowerPC firmware.
-During the "PPC NT period" there where three different kinds of firmware
-on Motorola products:
-   PPCBug
-   Motorola PowerPC firmware 	- Used on boxes shipped with NT
-   PowerPC Open Firmware
+Helmut Buchsbaum wrote:
 
-Alexander can you please give me the version of the firmware (something
-like 3.0x.0x.
-I hasitate to make to much noise about my findings because
-1) I'm struggeling a problem with different versions of this Firmware;
-   one boots the floppy but the other one refuses this.
-2) I'm not shure how many potential systems there are.
-3) To get the kernel running with the standard IDE equipment I had to add
-   some changes which according to Cort will break IDE on IBM.
+> I tried using initrd (with Dan's root file system mbxroot.tar.gz) and
+> rootnfs, but none of these configurations started up an initial shell.
 
-Please also cc responses to alois_fertl@TalkNet.de
-   Alois
-> 
-> This is a message I got from Alois Fertl:
-> 
-> AF> I tried the preploader on a Motorola Pro2000/200. This is a system
-> AF> originally developed to run Windows NT. It has a 603ev, IBM660 PCI
-> AF> bridge and a WINBOND chip (no SCSI, E-Net and VGA on the mainboard).
-> AF> This system by default was shipped with the Motorola PowerPC firmware
-> AF> (not PPCBug) which claims to be able to boot PReP operating Systems
-> AF> but I never got this Firmware to boot ppclinux.
-> AF>
-> AF> With some small changes to misc.c of the normal boot code I got it
-> AF> to successfully load, uncompress but "Now booting the Kernel"
-> AF> was the last message I ever got from this system. After many hours
-> AF> of poking around I found the reason why this happens. The Firmware
-> AF> uses one IBAT and all DBAT registers but does not deinitialize them
-> AF> before it calles the loaded core. I think the kernel code than
-> AF> initializes those BAT entries it wants to use and enables the MMU.
-> AF> This will also reactivate the remainding BAT entries which are
-> AF> never invalidated. This and residual related items also keep the
-> AF> preploader from working correctly.
-> 
-> I have added code to invalidate BATs early in my latest preploader,
-> so yes I think it's still worth testing on more machines. There are
-> other issues on which I'm still waiting for patches from Alois
-> (residual data and PCI configuration related) but he got it to boot.
-> 
->         Gabriel.
+What sort of errors do you get?  Anything printed on the console?
+If not, dump the memory associated with 'log_buf'.
+
+
+> The kernel itself is idle and obviously reschedules process 1 again and
+> again, but this seems kind of stuck after executing SET_PAGE_DIR :-(
+
+How do you know this?  If you are trying to use mpc8bug or something over
+the BDM, you better stop it.  The kernel changes all of the processor
+state mpc8bug thinks isn't changing.  You go back in with mpc8bug and
+it can't find anything.  You could be doing more damage with it than finding
+useful information.
+
+
+> Since there is an increasing number of success stories for embedded 8xx
+> boards, I more and more suspect the FADS itself....
+
+The FADS has always been a disaster for me.  The only way I have ever
+booted it is with my own flash rom code and a kernel from a PCMCIA flash card.
+
+
+> Now I wonder which CPU revision Dan used in his successful port for the
+> 823-based Bright Star Engineering ip-Engine board.
+
+The silicon mask is 5F98S.  I don't know how this maps to "Rev" numbers.
+I'll print out the revision register next time I have a chance.
+
+
+> BTW, one of the major problems I had, is adapting the CPU's internal
+> register structure...
+
+The biggest problem should have been the "uart" driver.  Several people have
+complained about this.  Of the few (or one :-) that actually suggested a change,
+it just moved configuration complexity from one place to another.
+
+
+> ........ So why don't we use seperate typdefs
+> (e.g. immap860_t, immap823_t,..) and #define'ing them properly (#define
+> immap_t immap860_t)?
+
+I am currently working on both USB and video for the 823.  I am changing
+the immap to accomodate this.  There are more similarities than differences
+among the processors and my programming preference is unions of structures
+in this case rather than separate data types.
+
+
+> Another question is, why can't we use mpc860.h,
+> mpc823.h by Motorola? Are there any copyright problems?
+
+Because I did the original Linux port before Motorola posted any of that
+to the public.  I tried to keep the names consistent with programming
+manuals.  When there are inconsistencies, remember that the names
+came from NDA copies of manuals that have subsequently changed
+in official released documents.
+
+
+> What I liked in Dan' tarball, is distinguishing the 8xx CPUs..
+
+Thanks.  It's always nice to hear when someone actually likes something :-).
+
+There are many more of these configuration changes coming.  When I
+started the original port almost two years ago, there was only CONFIG_MBX860.
+I now have seven different MPC8xx and board combinations sitting around me.
+It is now more evident what is different among the boards and processor
+types.
+
+As I have posted many times, the flexibility of the 8xx family and the variety
+of embedded board configurations are a real challenge.  It is now trivial to
+make a few hacks here and there to support a new board.  I would prefer
+not to make a career out of writing the configuration scripts :-).
+
+One of my original goals, and one I would like to maintain, is minimal kernel
+size.  Oh, it would be so nice to add all of the run time board and processor
+configuration detection so we could have one 8xx kernel.  However, in this
+embedded environment every processor cycle and memory byte is precious.
+For LinuxPPC to be successful in this environment we must keep this goal,
+and none of us want the alternative to LinuxPPC in this environment :-).
+
+
+
+    -- Dan
+
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
