@@ -1,32 +1,36 @@
-Date: Sun, 3 Jan 1999 17:33:49 +1100
-Message-Id: <199901030633.RAA09630@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: brad@pht.com
-CC: drow@cs.cmu.edu, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <Pine.LNX.3.96LJ1.1b7.990102121137.439B-100000@cricket> (message
-	from Brad Midgley on Sat, 2 Jan 1999 12:14:49 -0700 (MST))
-Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.3.96LJ1.1b7.990102121137.439B-100000@cricket>
+In-Reply-To: <Pine.LNX.4.02.9901022154330.2266-100000@cassiopeia.home>
+Date: Sun, 3 Jan 1999 10:42:28 +0100
+To: linuxppc-dev@lists.linuxppc.org,
+        Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: __init, __openfirmware, etc...
+Message-Id: <19990103104228.031876@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Brad Midgley <brad@pht.com> wrote:
+On Sat, Jan 2, 1999, Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be> wrote:
 
-> what was the result of testing this patch? i see it isn't present at vger.
-> but does it make scsi activity safer? does it need more testing? should i
-> test it as-is?
+>__init sections are indeed removed after kernel initialisation. The
+other ones
+>are removed depending on the dynamic run type of the machine, e.g. __pmac
+>sections are removed on PReP, and so on. Saves quite some valuable
+unswappable
+>kernel memory.c
 
-[patch to drivers/scsi/sd.c snipped]
+Ok. Do you know what happens to static datas declared within an __init
+function ? Is it removed to ? I have a function that use a static array
+for putting permanent "override" values for part of the device tree and
+this array must not be removed. Should I put the static array out of the
+function too or will this remove mecanism avoid bss sections ?
 
-It turns out that patch isn't necessary - all that was needed is to do
-spin_lock_irqsave(&io_request_lock, flags) before calling the scsi
-done function in the mesh driver (and spin_unlock_irqrestore after).
-That's done, in different forms, both in vger and Linus' 2.2.0-pre2
-and later, so it should be OK now.
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-Paul.
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
