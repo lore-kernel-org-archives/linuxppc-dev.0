@@ -1,24 +1,22 @@
-Subject: Re: GLIBC wont compile for MPC860
-To: scott@broadlink.com (Scott Wood)
-Date: Tue, 31 Aug 1999 10:39:53 +1000 (EST)
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <37CACCD3.91581C81@broadlink.com> from "Scott Wood" at Aug 30, 99 11:26:27 am
+Message-ID: <37CB2F84.8374412C@acuson.com>
+Date: Mon, 30 Aug 1999 18:27:32 -0700
+From: Ira Weiny <iweiny@acuson.com>
+Reply-To: iweiny@falcon.csc.calpoly.edu
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <19990831003953.707A564E@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.10 will not boot on PowerMac 8500
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Scott Wood writes:
-> The MPC8xx have no floating point, so it should be compiled with -msoft-float,
-> (I think)...  ./configure --without-fp  will do it.
+OK I am an idiot.   0xC000000 == -1073741824 (2's compliment)
 
-Is this implied when gcc has been configured --with-cpu=860?
+But I still don't know what the problem is.
 
-Thanks,
-Graham
+Sorry for my ignorance.
+Ira
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
