@@ -1,22 +1,20 @@
-Return-Path: <jan.damborsky@devcom.cz>
-Received: from swip.net (mailfe05.swip.net [212.247.154.129])
-	by ozlabs.org (Postfix) with ESMTP id 3842C67A72
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id 9EAD367A72
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Feb 2005 02:59:04 +1100 (EST)
-Message-ID: <4214BF42.8050809@devcom.cz>
-Date: Thu, 17 Feb 2005 16:58:58 +0100
-From: Jan Damborsky <jan.damborsky@devcom.cz>
-MIME-Version: 1.0
-To: Markus Westergren <markus.westergren@biologigrand.ac>
-References: <Pine.LNX.4.50.0502131246140.3196-100000@220a.licentiaten.umea.hsb.se>
-	<42109B82.9070604@devcom.cz>
-	<Pine.LNX.4.50.0502142045070.28518-100000@220a.licentiaten.umea.hsb.se>
-	<421324EC.5000104@devcom.cz>
-	<Pine.LNX.4.50.0502162229140.14065-100000@220a.licentiaten.umea.hsb.se>
-In-Reply-To: <Pine.LNX.4.50.0502162229140.14065-100000@220a.licentiaten.umea.hsb.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 18 Feb 2005 04:35:31 +1100 (EST)
+Date: Thu, 17 Feb 2005 10:35:27 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "Andre' Draszik" <andid@gmx.net>
+Message-ID: <20050217103527.A5230@cox.net>
+References: <4206ED97.2060506@gmx.net> <20050216161432.B31885@cox.net>
+	<4213F112.2060606@gmx.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4213F112.2060606@gmx.net>;
+	from andid@gmx.net on Thu, Feb 17, 2005 at 02:19:14AM +0100
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Support for Adder875 in Linux 2.4
+Subject: Re: [PATCH][PPC32] PPC4xx ocp ide rewrite/cleanup
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,37 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Markus Westergren wrote:
+On Thu, Feb 17, 2005 at 02:19:14AM +0100, Andre' Draszik wrote:
+> Hi,
+> 
+> Matt Porter wrote:
+> > On Mon, Feb 07, 2005 at 05:24:55AM +0100, Andre' Draszik wrote:
+> > 
+> >>Hi,
+> >>
+> >>this is a rewrite of the ibm4xx ocp ide driver. In its current state it
+> >>[...]
+> > 
+> > I tried applying this to current linuxppc-2.5. All hunks are rejected.
+> > Can you double check this patch and resend?
+> 
+> my kernel tree is
+> rsync -avz --delete source.mvista.com::linuxppc-2.5 linuxppc-2.5
+> and as of 16.02.05 23:44GMT the patch still applies. so did i really
+> send a wrong patch or has the rsync mirror just not yet been
+> updated? or is it a whitespace issue?
+> 
+> just checked - it's the last, so here's the patch, rediffed to
+> 2.6.11-rc4, as attachment, not inline this time.
+> 
+> hope it works...
 
->On Wed, 16 Feb 2005, Jan Damborsky wrote:
->
->  
->
->>Markus Westergren wrote:
->>
->>    
->>
->>>I got my board working with both ethernet ports today. I'm interested in your
->>>patch so that I can see if we made the same ugly hack and if I have overlocked
->>>something :)
->>>
->>>/Markus
->>>
->>>
->>>      
->>>
->>The patch is here. I am sorry it has not been done against current denk
->>source tree,
->>I used  the one from 19th January. But I hope it might satisfy for
->>understanding the way
->>the hack is done.
->>
->>
->>    
->>
->Thank you.
->  
->
-You're welcome :)
-Please, let me now, if you made the FEC modification in the similar way.
-If not, please let me see your patch for later inspiration.
+Ok, this one looks good save a few minor things that need done:
+
+1) Rename from ibm_ocp_ide.[c|h] to ibm_stb_ide.[c|h] We want
+   rid of "ocp" in the file names since eventually 4xx will
+   convert to platform devices.
+
+2) Remove the #if 0'ed code...if it's not used it doesn't belong
+   in there.
+
+3) Run Lindent on the driver.
+
+What systems have you tested on?
+
+-Matt
