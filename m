@@ -1,43 +1,28 @@
-Message-Id: <v03130301b3f246350c70@[192.168.1.1]>
-In-Reply-To: <199908310616.IAA00299@piglet.cpu.lu>
-References: <v03130301b3f116a864e2@[192.168.1.1]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 31 Aug 1999 21:59:31 -0500
-To: mlan@cpu.lu
-From: "David D. Kilzer" <ddkilzer@computer.org>
-Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card
-Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <37CCB993.233D5A51@cable.a2000.nl>
+Date: Wed, 01 Sep 1999 07:28:51 +0200
+From: Otto Moerbeek <otto@cable.a2000.nl>
+MIME-Version: 1.0
+To: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>,
+        Linux PPC User List <linuxppc-user@lists.linuxppc.org>
+Subject: New serial driver including PCI support
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Lanners wrote:
+Hi,
 
->> Serial driver version 4.27 with no serial options enabled
->  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->> Machine check in kernel mode.
->
->This might be a shot in the dark, but I never heard of anyone
->successfully compiling in standard serial support on the PowerMacs. I
->tried it myself; I would get a panic upon initializing the serial
->driver (exactly like above..).
->
->So you might want to disable standard serial suport, and recompile...
+Yesterday Ted Ts'o (the serial driver maintainer) posted patches to the
+serial driver to the linux-kernel list. These patches include generic
+PCI serial card support. The patches are for the 2.3 tree, but for
+anybody interested I have a version of the driver usable as a
+stand-alone module on 2.2.10 on LinuxPPC.
 
-Yes!  Thanks for all the help!  This was the problem.  I removed
-CONFIG_SERIAL and it booted!
+Regards, Otto
 
-Unfortunately, I still get a "Processor 1 stuck." message on boot, which
-apparently makes it absent from /proc/cpuinfo as well.  This is booting
-from the BootX application in Mac OS (with or without extensions loaded).
-
-I haven't tried booting from OF or with the BootX extension yet.
-
-Thanks again for all the help!!  (Anyone get 2.3.x to boot with SMP? :^)
-
-Dave
-
+-- 
+Otto Moerbeek
+otto@cable.a2000.nl
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
