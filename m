@@ -1,40 +1,27 @@
+Message-ID: <3E67C2A5.6060300@ecubics.com>
+Date: Thu, 06 Mar 2003 14:50:29 -0700
+From: emanuel stiebler <emu@ecubics.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Problem of concurrency in arch/ppc/8260_io/uart.c
-Date: Thu, 6 Mar 2003 16:39:10 -0500
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093BCD@mail1.mediatrix.com>
-From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-To: "Linux PPC embedded" <linuxppc-embedded@lists.linuxppc.org>
+To: linux-emb <linuxppc-embedded@lists.linuxppc.org>
+Subject: Kernel Sources, was Re: EPIC_SERIAL_MODE, openpic_initsenses
+References: <3E67A891.4010909@ecubics.com> <20030306202356.GC24584@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have a problem of concurrency on my 8250 based custom board.
-I'm using kernel 2.4.19, and the output on the serial port goes crappy.
+Tom Rini wrote:
 
-It seems to appear when printk is called from interrupt context,
-while a user mode process is writing to stdout.
 
-I wrote a user mode program + a kernel module to reproduce the problem.
-The kernel module starts a timer that calls printk (34 chars) each 100ms.
-The user mode program performs a while(1) printf(...);
-That combination almost immediatly mess the serial driver,
-that begins to output characters in an unpredictable order, until we reboot.
-It never crashes, however, but it is annoying.
+> If you're using kernel.org sources, the LoPEC support has made it into
+> 2.4.21-pre4.  Otherwise use the linuxppc_2_4_devel tree
+> (http://penguinppc.org/dev/kernel.shtml)
 
-Has anyone encoutered that problem?
-or has any suggestion before I go further?
-or wish to have the test program to give it a try?
+Is there a difference between this two ?
+(I just noticed, that BitKeeper doesn't have the ppc/platform files)
 
-Thanks,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
+
+cheers & thanks
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
