@@ -1,30 +1,40 @@
-Date: Tue, 11 Jan 2000 14:37:39 -0600
-From: Grant Erickson <grant@lcse.umn.edu>
-To: Jason Adams <fastback_1@email.msn.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: port to PPC 403
-In-Reply-To: <003901bf5c6f$dad23e00$0300a8c0@lissa>
-Message-ID: <Pine.SGI.4.10.10001111436150.243622-100000@brule.borg.umn.edu>
+Message-ID: <387BC7FD.5AACAFD0@jlc.net>
+Date: Tue, 11 Jan 2000 19:17:01 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
+CC: Dan Malek <dan@netx4.com>, Cort Dougan <cort@fsmlabs.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linux-2.3.37 / 2.3.18 / 2.2.13
+References: <20000107213528.A29581@mail.ro.nu> <387A38DB.8C51AB1D@netx4.com> <20000110211045.F8416@mail.ro.nu> <387A5FD5.33A21291@netx4.com> <kfyn1qc770o.fsf@kieraypc07.p.y.ki.era.ericsson.se>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 11 Jan 2000, Jason Adams wrote:
-> Is there a kernel out there that i can use to boot my IBM netstation
-> (model 8361-110 with a PPC 403 chip)
+Marcus Sundberg wrote:
 
-Jason,
+> Speaking of updating and 2.2, 8xx support were broken in 2.2.14 because
+> of changes in kernel/head.S.
 
-The Linux port to the PowerPC 4xx family isn't quite* that far along yet.
-The latest status on the 4xx port is available at:
 
-	http://www.lcse.umn.edu/~grant/Linux/index.html
+The 8xx support in the 2.2.xx tree is very, very old, and I would
+be surprised if it ran on anything.  Once I get 2.3.xx up to date,
+I will attempt to update 2.2.xx.
 
-Regards,
+The only 2.2.xx software for the 8xx is the tarball on ppc.kernel.org.
 
-Grant Erickson
 
+> Also, is there any reason why not at least the 8xx-only code in 2.2.15
+> could be updated to working versions?
+
+
+My time to make it happen, and to be able to do make substantial
+changes to the code......In the past my timing was such that the
+tree was in the process of syncing with Linus, so the updates were
+put "on hold".
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
