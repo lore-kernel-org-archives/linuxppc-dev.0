@@ -1,23 +1,77 @@
-Message-Id: <sc18aaa4.013@mail.frequentis.com>
-Date: Thu, 13 Dec 2001 13:18:02 +0100
-From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
-To: <linuxppc-embedded@lists.linuxppc.org>,
-	<Frederic.Goddeeris@siemens.atea.be>
-Subject: Re: RE: Password for embedded Linux
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <6B546A602AD2D211BFF00008C7A4288905843F7B@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'Gerhard TAEUBL '" <Gerhard.TAEUBL@frequentis.com>,
+	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>,
+	Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+Subject: RE: RE: Password for embedded Linux
+Date: Thu, 13 Dec 2001 13:57:02 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I load the tinylogin and compile it (wow it works without any modification expect the path for corss compile), I could still login! But when I try passwd and enter for example root I get the error message to short. It didn't ask me for any old or new password, only it is to shoort. Also if I do telnet, it won't ask for any password only login I enter root, thats it! So what do I need?
+I suppose you now have a /etc/passwd that does not specify any password for
+root. So it is normal it does not ask for one when logging in, telnet to it
+or change the pw.
 
-jffs2: I didn't make tests with heavy load, I only copy some files to the disk and start it there. This I will do in January.
+"root" as pw is too small, take something different but when you insist and
+enter it a second time it should accept it...
+
+telnet otncllf
+Trying 193.210.198.203...
+Connected to otncllf.atea.be.
+Escape character is '^]'.
+
+target login: root
+Password:
+Linux target 2.4.2_hhl20 #44 Wed Dec 12 14:21:21 CET 2001 ppc unknown
+
+Welcome to MontaVista Software's Hard Hat Linux.
+
+
+
+BusyBox v0.60.2 (2001.11.28-10:02+0000) Built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+# passwd
+Changing password for root
+Enter the new password (minimum of 5, maximum of 8 characters)
+
+                         Please use a combination of upper and lower case
+letters and numbers.
+Enter new password:
+Bad password: too short.
+
+Warning: weak password (continuing).
+Re-enter new password:
+Password changed.
+#
+
+-----Original Message-----
+From: Gerhard TAEUBL
+To: linuxppc-embedded@lists.linuxppc.org; Frederic.Goddeeris@siemens.atea.be
+Sent: 12/13/01 1:18 PM
+Subject: Re: RE: Password for embedded Linux
+
+
+I load the tinylogin and compile it (wow it works without any
+modification expect the path for corss compile), I could still login!
+But when I try passwd and enter for example root I get the error message
+to short. It didn't ask me for any old or new password, only it is to
+shoort. Also if I do telnet, it won't ask for any password only login I
+enter root, thats it! So what do I need?
+
+jffs2: I didn't make tests with heavy load, I only copy some files to
+the disk and start it there. This I will do in January.
 
 Gerhard
 
->>> Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be> 12/13/01 11:07 AM >>>
- My experience is that you need to include a lot of things for the login.
+>>> Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be> 12/13/01
+11:07 AM >>>
+ My experience is that you need to include a lot of things for the
+login.
 I used TinyLogin. This will provide everything you need (I also used
 Busybox)
 In /etc/inittab I added
