@@ -1,31 +1,30 @@
-Message-Id: <200103062328.SAA01824@p2.parker.boston.ma.us>
-To: Gabriel Paubert <paubert@iram.es>
+Message-ID: <3AA57307.E6AA26FF@mandrakesoft.com>
+Date: Tue, 06 Mar 2001 18:30:15 -0500
+From: Jeff Garzik <jgarzik@mandrakesoft.com>
+MIME-Version: 1.0
+To: Brad Parker <brad@parker.boston.ma.us>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm/io.h; why does writel() write an le32 on ppc? 
-In-reply-to: Your message of "Wed, 07 Mar 2001 00:23:13 +0100."
-             <Pine.HPX.4.10.10103070022380.3942-100000@gra-ux1.iram.es>
-Date: Tue, 06 Mar 2001 18:28:55 -0500
-From: Brad Parker <brad@parker.boston.ma.us>
+Subject: Re: asm/io.h; why does writel() write an le32 on ppc?
+References: <200103062315.SAA01659@p2.parker.boston.ma.us>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
->On Tue, 6 Mar 2001, Brad Parker wrote:
-...
->> in asm/io.h it uses out_le32, unless the machine is an APUS, in which
->> case it just writes big endian...
->>
->> (is PCI defined as little endian?)
->
->Sadly, yes.
+Brad Parker wrote:
+> Sorry to be daft, but why does writel() write an le32 on the ppc?
+> (is PCI defined as little endian?)
 
-Ok, so the APUS pci bridge must be doing byte swapping.  I assume the
-ppc macintosh pci bridges do not byte swap...
+Yes.  But there is always __raw_{read,write}[bwl].  That is part of the
+API too.
 
-I see it now.  Thanks!
+Caveat programmer, though: IIRC there are other differences besides
+endian when using __raw_xxx.  I think there might be a lack of flushing,
+etc., too.
 
--brad
-
+--
+Jeff Garzik       | "You see, in this world there's two kinds of
+Building 1024     |  people, my friend: Those with loaded guns
+MandrakeSoft      |  and those who dig. You dig."  --Blondie
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
