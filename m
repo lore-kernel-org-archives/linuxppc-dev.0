@@ -1,36 +1,61 @@
-Message-Id: <200010191621.LAA28113@lists.linuxppc.org>
-Date: Thu, 19 Oct 2000 12:21:22 -0400
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: Re: openoffice on ppc anyone?
-Cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Graichen <graichen@innominate.de>,
-        linuxppc-dev@lists.linuxppc.org
-To: Tom Rini <trini@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v337)
+Message-ID: <39EF2BC1.E464D72F@rational.com>
+Date: Thu, 19 Oct 2000 13:13:37 -0400
+From: Scott Hankin <shankin@rational.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.0-test10 boot failure on Powerbook G3
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Howdy -
 
-> Well I've run almost every glibc since gary thomas started releasing 'em
-> way back when (thanks gary!) and I've been lucky so far. :)
+I've been successfully running 2.4 from Paulus' Linux Kernel Page until
+2.4.0-test10 came out.  Now I can't boot at all.  I get the initial
+brief
+message page and see the messages:
 
-Me too!  The only real issue for *robust* native threads use are to stay with at least with glibc-2.1.3 (glibc-2.1.2 has some problems with the jdk).
+           .
+           .
+           .
+setup_arch: bootmem
+arch: exit
 
-When choosing a glibc-2.1.3 version, stick with either the glibc-2.1.3-5a-rpm which shipped with YDL and LinuxPPC I think) from Franz or his very latest glibc-2.1.3-15f rpm because the intermediate versions had native threads bugs introduced after the glibc-2.1.3 branch was completed (bug fixes which made new bugs!).
+then the screen goes black, and I see
 
-The jdk 1.2.2 FCS should be fine for the open office release since it is basically bug for bug compatible with the x86 jdk 1.2.2 (and Sun's jdk 1.2.2 for that matter).
+vector: 300 at pc = c016d060, lr = c016c8f4, msr = 9032, sp = c07b1cc0
+[c07b1c10]
+dar = 7ac, dsisr = 40000000
+current = c07b0000, pid = 1, comm = swapper
+mon>
 
-If the jdk 1.2.2 runs into any trouble, let me know and I will fix it and make a special binary for anyone working on the openoffice port (or anyone for that matter).
+and everything is dead.  My only option is to cycle power.
 
-Just let me know.
+I'm running a PowerBook G3 Series (Wallstreet) with 160MB RAM and a 2 GB
 
-Kevin
+partition on a 6 GB disk.  As always, I initially build with the .config
+file
+that comes over from Paulus' site before making local option changes.
+
+What changed in 2.4.0-test10 (vs. test9) that would explain this?  Since
+I am
+so early in the boot process (no keyboard control even) I'm at a loss as
+to
+how to proceed.  Is anyone else successfully running Paulus'
+2.4.0-test10 from
+a PowerBook?
+
+- Scott
+
+-----------------------------
+Scott Hankin (shankin@rational.com)  In the beginning, there was
+nothing, then
+Rational Software                    God said, "Let there be light."
+And there
+20 Maguire Road                      was light.  There was still
+nothing, but
+Lexington, MA 02421                  you could see it a lot better.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
