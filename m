@@ -1,43 +1,47 @@
-To: byf <byfmail@yeah.net>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Can I use RiscWatch to load ppcboot? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 19 Apr 2001 09:51:18 +0800."
-             <20010419015349.90F841CA867CB@smtp.yeah.net>
-Date: Thu, 19 Apr 2001 08:37:31 +0200
-Message-Id: <20010419063736.B20172792B@denx.denx.de>
+From: "Stefan Roese" <stefan.roese@esd-electronics.com>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: AW: PPC405GPWalnutPciBusMaster
+Date: Thu, 19 Apr 2001 10:07:55 +0200
+Message-ID: <EFEAIMDCOOOHIEPHDNFJOEFGCMAA.stefan.roese@esd-electronics.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20010418193652.B19053@ecam.san.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010419015349.90F841CA867CB@smtp.yeah.net> you wrote:
+> On Thu, Apr 19, 2001 at 10:44:08AM +0900, Hideo Noda wrote:
+> > Has anyone tried PCI cards with BUS MASTER operations for Walnut
+> > PPC405GP?
 >
-> I am working for walnut 405GP, it has a ROM Monitor and RiscWatch.
-> now I want to use PPCBoot to overwrite ROM Monitor,
+> I have tried and failed. I have other things to work on right now
+> so I have just delayed looking into it anymore until the 2.0 CDK
+> comes out. I think that should be by the end of the month.
+>
+> I think there is a problem with the virt_to_phys matching the
+> PTM1/BAR1. In the preliminary 405gp docs that I have Fig 17-59
+> on page 17-62 give a good overview on how things need to be
+> setup on the chip, but I am not sure on what the values
+> need to be.
 
-You better ask such questions on the PPCBoot mailing list!
+Which bootloader/firmware are you using? The pci configuration should be
+done within the bootloader. If you are using PPCBoot, I am not shure if the
+configuration is correct regarding the busmaster setup (although I did the
+port based on the IBM OpenBios). The bus master functionality was never
+tested - sorry for that.
 
-> Can I use RiscWatch to load PPCBoot to flash or to ram and run it?
+Stefan.
 
-I have no idea.
+*******************************************
+esd gmbh
+Vahrenwalder Str. 205
+D-30165 Hannover
+Phone: +49-511-37298-0
+Fax:   +49-511-37298-198
+email: stefan.roese@esd-electronics.com
+www:   http://www.esd-electronics.de
+*******************************************
 
-> or can I use a kernel with mtd support to finish this?
-
-You _can_ do it, but I don't recommend it.
-
-> I have no BDI2000.
-
-In this situation  any  minor  error  will  render  your  board  non-
-functioning without any other way of recovery but getting cccess to a
-BDM/JTAG debugger.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Backed up the system lately?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
