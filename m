@@ -1,38 +1,34 @@
-Date: Thu, 1 Jul 1999 13:26:59 -0400 (EDT)
-From: Tom Rini <trini@disparity.net>
-To: "Velasquez, Carlos" <carlos.velasquez@ssmb.com>
-cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: kernel args for video mode..
-In-Reply-To: <BFC0587634C3D111AACB00805FA766FA02C1C5FC@exchny12.ny.smb.com>
-Message-ID: <Pine.LNX.4.05.9907011324440.4462-100000@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130305b3a1622350d2@[10.1.1.46]>
+In-Reply-To: <19990626193335.003543@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 1 Jul 1999 11:22:12 -0700
+To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+From: Deirdre Saoirse <dsaoirse@linuxcare.com>
+Subject: Re: Is there a free impl. of Open Firmware
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 1 Jul 1999, Velasquez, Carlos wrote:
+At 7:33 PM +0200 6/26/99, Benjamin Herrenschmidt wrote:
+>Does someone knows is there is a free implementation of OF, or at least
+>work on one ? if there's no, this would be an interesting project to do ;-)
 
-> So how do I specify it as kernel arguments? should I say:
-> video=tt128mb8 , vmode = XX , cmode =YY  (where XX and YY are the resolution
-> and bit depth respectively) or instead of commas, do I use semi-colons or
-> colons or what?
+Open Firmware was ALWAYS an open project: www.openfirmware.org
 
-video=imsttfb:vmode:XX,cmode:XX where vmode is one of the ones defined in
-/usr/src/linux/include/video/macmodes.h, and cmode is 8/16/32.
+>I was mostly thinking about putting a thin OF layer in mac-on-linux in
+>order to truely support any OF-based OS and load the new MacOS ROM (so
+>MacOS would work on any PPC based machines using the ROM provided by
+>Apple) but I'm working on BIOSes for custom design embedded boards with
+>various CPUs and in this field, it would be very useful too.
 
-> Also, do I uncheck the "Don't use Video driver" choice box? What happens if
-> I keep it checked ? Finally, how (if possible) do I change video and color
-> modes once I am already booted up? Can I do this on the fly?
+See the URL above.
 
-You uncheck it once you have a video= line to give the kernel.  No Video
-Driver over rides any video args you tell it.  You can change things on
-the fly in the console with fbset (fbset -h) and in X you can change from
-known resolutions with control-keypad- +/- (i think, been a while..)
+Deirdre Saoirse, Systems Analyst, Linuxcare, Inc.
+415.354.4878 x252 tel, 415.701.7457 fax
+dsaoirse@linuxcare.com, http://www.linuxcare.com/
+Linuxcare. At the center of Linux.
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
