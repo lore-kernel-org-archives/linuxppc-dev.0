@@ -1,42 +1,54 @@
-To: t.vanremortel@ha.be
+To: "Stuart Vivian" <stuartvivian@domo.co.uk>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cross compiling : problem linking 
+Subject: Re: Linux 2_4_devel kernel hangs after control transferred from u-boot 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Oct 2003 15:26:36 +0200."
-             <1065101196.10206.7.camel@toni>
-Date: Thu, 02 Oct 2003 15:37:34 +0200
-Message-Id: <20031002133739.497EEC59E4@atlas.denx.de>
+In-reply-to: Your message of "Thu, 02 Oct 2003 14:29:18 BST."
+             <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local>
+Date: Thu, 02 Oct 2003 15:43:40 +0200
+Message-Id: <20031002134345.71B61C59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <1065101196.10206.7.camel@toni> you wrote:
+In message <A4EB77D93A60F347A518AC05291647D9032E5E@domosvr1.domo.local> you wrote:
 >
-> Reduced the error to:
->
-> toni rt_mod # make
-> ppc_4xx-gcc -g -O -Werror   -c -o rt_mod.o rt_mod.c
-> ppc_4xx-gcc -nostartfiles -fno-exceptions -fno-builtin  -o rt_mod
-> rt_mod.o
-> /opt/eldk/usr/ppc-linux/bin/ld: warning: cannot find entry symbol
-> _start; defaulting to 10000184
-> rt_mod.o: In function `block_wave':
-> /ppc/rt_mod/rt_mod.c:14: undefined reference to `outb'
-> /ppc/rt_mod/rt_mod.c:14: relocation truncated to fit: R_PPC_REL24 outb
-> rt_mod.o: In function `main':
-> /ppc/rt_mod/rt_mod.c:21: undefined reference to `iopl'
-> /ppc/rt_mod/rt_mod.c:21: relocation truncated to fit: R_PPC_REL24 iopl
-> collect2: ld returned 1 exit status
-> make: *** [rt_mod] Fout 1
+> I am trying to get a linux kernel to build and run on a Cogent CSB272
+> (IBM PPC 405GP processor) running a U-boot 0.4.0 bootloader. I can tftp
+> a uImage into ram and it passes check, but when I run bootm it
+> uncompresses the kernel and hangs after it starts executing the kernel
+> at address 0x00000000.
 
-The header files and/or compiler and linker options you are using are
-not correct for the target environment you have.
+This is a FAQ. See
+http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
 
-Without more information (i. e. what sort of code this is and how you
-intend it to run - stdandalone, in kernel or in user context)  nobody
-can help you.
+> I was given a hardhat vmlinux elf file that I can package to a uImage
+> and run (although it stops at the Calibrating Delay loop... Stage, but
+
+Probably the same problem - bad parameters (clock frequencies) passed
+to the kernel.
+
+> that's another issue). I need to be able to recompile a kernel for the
+> board and downloaded linuxppc_2_4_devel from mvista. This compiles fine
+> and produces a new vmlinux. I've started off by using the walnut 405
+> config file to build the kernel, since they're pretty similar.
+
+Ummm... you better make sure it really matches your board. Similar is
+not enough.
+
+> Any ideas where to start debugging this? I'm relatively new in embedded
+> stuff and linux in general, so it might be something simple, but don't
+> know where to start. Have a BDI2000 but no gdb driver yet, so can't put
+> in breakpoints etc.
+
+??? Can't parse that.
+
+You can use the BDI's telnet interface to set breakpoints,  too.  And
+you  don;t know any special "gdb driver", as any plain GDB will allow
+you to connect to the BDI which "speaks" GDB remote protocol over the
+network.
+
 
 Best regards,
 
@@ -45,6 +57,6 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Sorry, but my karma just ran over your dogma.
+"Why should we subsidize intellectual curiosity?" - Ronald Reagan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
