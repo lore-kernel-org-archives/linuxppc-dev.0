@@ -1,52 +1,32 @@
-Date: Sun, 8 Aug 1999 22:38:24 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: mlan@cpu.lu, hedrick@Astro.Dyer.Vanderbilt.Edu, drow@false.org, mj@ucw.cz,
-        linuxppc-dev@lists.linuxppc.org
+Date: Mon, 9 Aug 1999 16:02:28 +1000
+Message-Id: <199908090602.QAA13922@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: trini@disparity.net
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <Pine.BSF.3.96.990808165209.16262c-100000@silver.teardrop.net>
+	(message from Tom Rini on Sun, 8 Aug 1999 16:55:01 -0400 (EDT))
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-In-Reply-To: <199908090533.PAA13699@tango.anu.edu.au>
-Message-ID: <Pine.LNX.3.96.990808223612.17464J-100000@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.BSF.3.96.990808165209.16262c-100000@silver.teardrop.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 9 Aug 1999, Paul Mackerras wrote:
+Tom Rini <trini@disparity.net> wrote:
 
-> David A. Gatwood <dgatwood@mvista.com> wrote:
-> 
-> > You mean for IDE?  Check the MkLinux driver.  One of Apple's folks ported
-> > some OS X (server?) code in for IDE DMA timings a couple months back.
-> 
-> I saw some code in the macosx driver that looks in the driveid and
-> figures it all out - is that what you mean?
+> Would this be one of the things solved/cleaned up by seperating ide-pmac.c
+> and the CONFIG option for it into generic enable IDE stuff and a driver
+> for the builtin IDE on some machines?  Last I tried, I needed to enable
+> both cmd646 and ide-pmac on myy blue&white (trying to do this is on my
+> todo list, someplace.. :))
 
-I have _no_ idea where in the code the guy found this stuff.  :-)
+There's no problem about enabling both cmd646 and ide-pmac with the
+current vger sources, is there?  You do need to select experimental
+drivers as well as "Generic PCI IDE chipset support"
+(CONFIG_BLK_DEV_IDEPCI) and "Generic PCI bus-master DMA support"
+(CONFIG_BLK_DEV_IDEDMA) before you get asked about the CMD646, though.
 
-
-> I guess I was asking whether there was already some nifty function in
-> the Linux kernel that did for DMA modes what ide_get_best_pio_mode
-> does for PIO modes.
-> 
-> Also, do you have a cvsweb server for your cvs repository?  I don't
-> want to have to checkout 10s of MB of source just to look at a couple
-> of files. :-)  (See http://samba.org/cvs.html if you haven't come
-> across cvsweb before.)
-
-I haven't set up CVSweb, but you can just check out a couple of files.
-The relevant ones are
-
-osfmk/src/mach_kernel/ppc/POWERMAC/wd.c
-osfmk/src/mach_kernel/ppc/POWERMAC/wdreg.h
-osfmk/src/mach_kernel/ppc/POWERMAC/wd_entries.h
-
-And you're right, I should set that up....  :-)
-
-
-Later,
-David
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
