@@ -1,32 +1,43 @@
-Date: Tue, 14 Sep 1999 15:11:30 +0200
-To: linuxppc-dev@lists.linuxppc.org, Paul.Mackerras@cs.anu.edu.au,
-        eek@escape.ca
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: New booter (d2)
-Message-Id: <19990914151130.001641@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <19990914142953.21439.rocketmail@web601.yahoomail.com>
+Date: Tue, 14 Sep 1999 16:29:53 +0200 (CEST)
+From: sébastien tadéoni <sebastien_tadeoni@yahoo.fr>
+Subject: Problem for compiling linux-2.2.5-embedded
+To: Simon Brendan <brendan@dgs.monash.edu.au>,
+        linux linuxppc dev <linuxppc-dev@lists.linuxppc.org>,
+        linux linuxppc user <linuxppc-user@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I updated the online archive. The source code is basically the same, but
-I added a couple of missing resources which prevented it from booting at
-all (I inadvertently removed them while making the previous archive). I
-also fixed the enclosed disk image, you should be able to use it with
-Apple's DiskCopy program to make a bootable floppy. Just add the
-vmlinux.gz file. (Don't forget to use -vf9 when compressing the file).
 
-http://calvaweb.calvacom.fr/bh40/test.html
+Hi All,
 
-If you want to test with something else than a floppy, you have to copy
-the content of resource 'boot' ID 1 to block 0 and 1 of the HFS volume
-(boot blocks). 
+I've some problems with the cross-compilation of the 2.2.5-embedded
+kernel for MPC860 (configure for a MBX card).
 
--- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+I followed the www.members.home.com/mmporter/cross.html instructions
+for building my own environment and when I want to create the zImage I
+have this current errors:
+
+ppc_ksyms.c:77:'isa_io_base' undeclared here (not in a fonction)
+
+ppc_ksyms.c:77:'initializer element for '--ksymtab_isa_io_base.value'
+is not constant
+
+In the ppc_ksyms.c I see EXPORT_SYMBOL(isa_io_base) and I don't no what
+it minds.
+
+For installing the binutils and the egcs-1.1.2 compiler I had to change
+$PATH and add the /usr/local/bin address.
+Was it wrong?
+
+I will appreciate any suggestions and help on this subject.
+
+Have a good day.
+
+Sébastien.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
