@@ -1,18 +1,20 @@
-Return-Path: <jeff@theptrgroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [209.183.211.17])
-	by ozlabs.org (Postfix) with ESMTP id E1A1C67A2C
+Return-Path: <pevnev@juno.com>
+Received: from outbound-mail.lax.untd.com (outbound-mail.lax.untd.com
+	[64.136.28.164]) by ozlabs.org (Postfix) with SMTP id D52C167A30
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Feb 2005 23:33:30 +1100 (EST)
-From: Jeff Angielski <jeff@theptrgroup.com>
-To: ning <ningmin@yahoo.co.jp>
-In-Reply-To: <20050128100238.27631.qmail@web606.mail.yahoo.co.jp>
-References: <20050128100238.27631.qmail@web606.mail.yahoo.co.jp>
-Content-Type: text/plain
-Message-Id: <1107347293.9091.13.camel@nighteyes.localdomain>
+	Wed,  2 Feb 2005 23:50:44 +1100 (EST)
+Received: from outbound29-sr.lax.untd.com (webmail17.lax.untd.com
+	[10.131.27.157])
+	by smtpout03.lax.untd.com with SMTP id AABBABUX7AUVL2A2
+	for <linuxppc-embedded@ozlabs.org> (sender <pevnev@juno.com>);
+	Wed,  2 Feb 2005 04:42:37 -0800 (PST)
 Mime-Version: 1.0
-Date: Wed, 02 Feb 2005 07:28:13 -0500
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Serial console problem on MPC8272ADS board
+From: "Alex" <pevnev@juno.com>
+Date: Wed, 2 Feb 2005 12:42:05 GMT
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Message-Id: <20050202.044222.25841.77117@webmail17.lax.untd.com>
+Subject: 2.6.10-rc3 8xx (MPC 880) i2c driver - "about to sleep" 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +25,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-01-28 at 05:02, ning wrote:
 
-> I added SCC4 to rs_table as following:
-> static struct serial_state rs_table[] = {
-> 	/* UART CLK   PORT          IRQ      FLAGS  NUM */
-> 	{ 0,     0, PROFF_SCC1, SIU_INT_SCC1,   0,   (0 |
-> NUM_IS_SCC) }, /* SCC1 ttyS0 */
-> 	{ 0,     0, PROFF_SCC4, SIU_INT_SCC4,   0,   (3 |
-> NUM_IS_SCC) }, /* SCC4 ttyS1 */
-> };
+Hi,
 
-Did you configure the SCC4 I/O pins correctly?
+Sorry for bothering you  again - I will appreciate your opinion/advise/guidance !
 
-Have you programmed the BRGs correctly?  Does it match what is routed to
-SCC4 in the CMX registers?
+What is your interpretation of entries I found in the log buf with regards to I2C driver ? 
+.....
+<6>i2c /dev entries driver.
+<7>device class 'i2c-dev': registering.
+<7>bus i2c:add driver dev_driver.
+<7>i2c-core: driver dev_driver registered
+<6>i2c-rpx: i2c MPC8xx driver.
+<7>DEV: registering device: ID ='i2c-0'.
+<7>CLASS: registering class device: ID= 'i2c-0'.
+<7>i2c_adapter i2c-0:Registered as minor 0.
+<7>CLASS:registering class device: ID = 'i2c-0'
+<7>i2c_adapter i2c-0: registered as adapter #0.
+<4>cpm_iic_init() - iip=fa203c80.
+<4>cpm_iic_init[132] Install ISR for IRQ 16.
+<6>CPM interrupt c0105d90 replacing c01f7a8c.
+<3>request_irq() returned -22  for CPM vector 32.
+<6> i2c-algo-8xx.o: scanning bus m8xx........
+<4>cpm_iic_tryaddress(cpm=c019b9f8,addr=0).
+<4>iip fa203c80, dp_addr 0x800.
+<4>iic_tbase 2048, r_tbase 2048
+<4>about to sleep
+........
+BOOTING HANGS FROM HERE !!!!
 
-When booting using SCC1 as the console, can you read and write data
-using SCC4?  If not, you should get this working and then worry about
-configuring it as the console.
+The board is equipped with M24Cxx-x Serial I2C bus EEPROM 
+- does above means that the EEPROM device was not detected on the I2C bus ?
+Do I need to supply in the code the addresses to be scanned ?
+
+Thanks,
+Alex
 
 
-Jeff Angielski
-The PTR Group
+___________________________________________________________________
+Speed up your surfing with Juno SpeedBand.
+Now includes pop-up blocker!
+Only $14.95/month -visit http://www.juno.com/surf to sign up today!
+
+
+
+___________________________________________________________________
+Speed up your surfing with Juno SpeedBand.
+Now includes pop-up blocker!
+Only $14.95/month -visit http://www.juno.com/surf to sign up today!
