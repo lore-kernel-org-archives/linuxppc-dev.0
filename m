@@ -1,24 +1,28 @@
-Date: Thu, 12 Oct 2000 22:08:09 +0200 (MET DST)
-From: Roman Zippel <zippel@fh-brandenburg.de>
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pmac_power_off is gone in 2.2.17
-In-Reply-To: <20001012175322.A5273@suse.de>
-Message-ID: <Pine.GSO.4.10.10010122007360.3519-100000@zeus.fh-brandenburg.de>
+Date: Thu, 12 Oct 2000 22:49:38 +0200 (MET DST)
+From: Albrecht Dress <adress@mpifr-bonn.mpg.de>
+To: LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
+cc: schmitz@opal.biophys.uni-duesseldorf.de, olh@suse.de
+Subject: Re: 2.2.17pre20-ben3 + pmud-0.7-1: still kernel panic upon wakeup
+In-Reply-To: <20001012213014.A29007@suse.de>
+Message-ID: <Pine.SOL.4.21.0010122241340.21571-100000@mpifr-bonn.mpg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, 12 Oct 2000, Olaf Hering wrote:
+> Can you try Benhs latest?
+> http://penguinppc.org/~olaf/vmlinux-benh.gz
 
-> the pmac_power_off() call in pmac_halt() disappeared in 2.2.17.
-> Is there any special reason for that? I affects proably only B&W
-> machines, /sbin/halt doesnt work anymore.
+Got it, this one does not panic. I'll rsync from Ben's tree asap, thanks a
+lot for your help! However, I recognised a quite odd behaviour of this
+kernel: using the trackpad, the x and y coordinates are exchanged (moving
+the trackpad up and down moves the cursor left and right and vice versa).
+Not sure if this was caused by sleeping the machine (I reverted to my old
+kernel as I doid not want to download the modules, too).
 
-Did you try "halt -p"?
-
-bye, Roman
+Thanks again, Albrecht.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
