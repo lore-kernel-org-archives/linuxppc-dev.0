@@ -1,9 +1,10 @@
-Message-ID: <638AA0336D7ED411928700D0B7B0D75BB32416@mail2.aiinet.com>
+Message-ID: <638AA0336D7ED411928700D0B7B0D75BB32417@mail2.aiinet.com>
 From: "Gessner, Matt" <mattg@aiinet.com>
-To: "'Dan Malek'" <dan@embeddededge.com>
+To: "'Dan Malek'" <dan@embeddededge.com>,
+	"Gessner, Matt" <mattg@aiinet.com>
 Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: RE: BDI2000 and failed MMU translations
-Date: Wed, 23 Jan 2002 17:55:13 -0500
+Date: Wed, 23 Jan 2002 17:57:40 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -11,43 +12,8 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ok,
+Ah... breaking at "start_here" works much better...
 
-This still doesn't solve my problem.
-
-In the Makefile:
-	CONFIG_KERNEL = -g -ggdb
-
-In mpc860.cnf for the bdi:
-	MMU XLAT 0xc0000000 (this is the default BTW)
-	PTBASE	0xf0
-	BREAK SOFT
-
-On the BDI:
-	bi 0xc0157640 (start_kernel)
-	go
-	<breakpoint>
-
-Now, start gdb w/ vmlinux
-(gdb) target remote bdi:2001
-(gdb) br scc_enet_init
-
-On the BDI it says:
-*** MMU: address translation for 0xC015ECB8 failed
-(gdb) c
-Continuing.
-warning: Cannot insert breakpoint 1:
-Error accessing memory address 0xc015ecb8: Operation not permitted
-
-I'm using gdb 5.0.
-
-Does this shed any more light?
-
-TIA Dan and all,
-
-Regards,
-
-Matt
 
 > -----Original Message-----
 > From: Dan Malek [mailto:dan@embeddededge.com]
