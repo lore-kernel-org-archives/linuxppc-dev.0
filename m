@@ -1,15 +1,25 @@
-Return-Path: <annamaya@yahoo.com>
-Received: from web53809.mail.yahoo.com (web53809.mail.yahoo.com
-	[206.190.36.204]) by ozlabs.org (Postfix) with SMTP id 236332BF07
+Return-Path: <tim.bird@am.sony.com>
+Received: from mail1.fw-sj.sony.com (mail1.fw-sj.sony.com [160.33.82.68])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 701362BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jan 2005 09:51:24 +1100 (EST)
-Message-ID: <20050104225123.214.qmail@web53809.mail.yahoo.com>
-Date: Tue, 4 Jan 2005 14:51:22 -0800 (PST)
-From: annamaya <annamaya@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
+	Wed,  5 Jan 2005 10:11:06 +1100 (EST)
+Received: from mail3.sjc.in.sel.sony.com (mail3.sjc.in.sel.sony.com
+	[43.134.1.211])
+	by mail1.fw-sj.sony.com (8.12.11/8.12.11) with ESMTP id j04LQsuX029449
+	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Jan 2005 21:26:54 GMT
+Received: from [43.134.85.135] ([43.134.85.135])
+	by mail3.sjc.in.sel.sony.com (8.12.11/8.12.11) with ESMTP id
+	j04LQsEU012221
+	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Jan 2005 21:26:54 GMT
+Message-ID: <41DB0A1E.5070506@am.sony.com>
+Date: Tue, 04 Jan 2005 13:26:54 -0800
+From: Tim Bird <tim.bird@am.sony.com>
 MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
 Content-Type: text/plain; charset=us-ascii
-Subject: Cross-compiling for MPC82xx on an Apple G5
+Subject: realtime preemption patch on PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,23 +30,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I was wondering if code cross-compiled on a G5 host
-machine for the MPC82xx would actually run on the G5?
-I see that the G5 is a 64-bit processor. Is that going
-to be a problem?
+Hello all,
 
-The only reason I am asking about this is because some
-packages create intermediate executables that are
-executed during the latter stages of the build
-process. I would like to cross-compile some readily
-available packages that are not designed to be
-cross-compiled easily. I remember doing something
-similar to this on a Apple G4 a long time ago. 
+I sent the message below to LKML, but someone suggested to send it
+to this list as well.
 
+I'm planning on doing some work with Ingo's realtime preemption patch
+ on a PowerPC platform.  I did some preliminary investigation of the
+ patch before Christmas, and am ready to do some serious work in the
+ next few weeks.
 
-		
-__________________________________ 
-Do you Yahoo!? 
-Meet the all-new My Yahoo! - Try it today! 
-http://my.yahoo.com 
- 
+Has anyone else worked on this patch on PPC?  Is anyone else interested
+ in working with me on it?
+
+Thanks,
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Electronics
+=============================
