@@ -1,44 +1,31 @@
-Date: Thu, 13 Feb 2003 15:40:40 -0700
-From: Matt Porter <porter@cox.net>
-To: vinai <vroopcha@mcw.edu>
-Cc: "LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: vmalloc limits in PPC kernels ?
-Message-ID: <20030213154040.A1738@home.com>
-References: <Pine.LNX.4.44.0302131412270.278-100000@kaiso.biophysics.mcw.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.44.0302131412270.278-100000@kaiso.biophysics.mcw.edu>; from vroopcha@mcw.edu on Thu, Feb 13, 2003 at 02:19:41PM -0600
+Date: Thu, 13 Feb 2003 15:52:47 -0700 (MST)
+From: daRonin <daronin@digimerc.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: DVI External Monitor on TiBook IV
+In-Reply-To: <1044898053.10697.27.camel@thor>
+Message-ID: <Pine.LNX.4.53.0302131535570.1429@daronin.digimerc.com>
+References: <Pine.LNX.4.44.0302101721560.23854-100000@zirkon.biophys.uni-duesseldorf.de>
+ <1044898053.10697.27.camel@thor>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Feb 13, 2003 at 02:19:41PM -0600, vinai wrote:
-> I've been doing a little work trying to update an in-house custom driver
-> for x86.  We acquired fairly large chunks of data, and we can't afford
-> to lose any of it. To do this, we reserve a fairly large chunk of memory
-> in which the data can be stored, as we can't afford system latencies
-> when writing to disk.  We were able to this in 2.2 without any problems,
-> but in 2.4, a new "feature" was introduced to x86 that limited how much
-> memory one can "vmalloc".  I did a quick check, but didn't find anything
-> in the ppc asm directory.  Do we have such a limit ?
+I am running with external Cinema 23" display on my TiBook IV (Radeon
+Mobility 9000).
 
-All architectures have a limit.  Its size is defined by
-VMALLOC_END-VMALLOC_START and further limited by the size of each
-preceding allocation (+ a PAGE_SIZE pad) before the allocation in
-question.  Allocations also include ioremaps and on some architectures
-consistent memory allocations absorb vmalloc space.
+The combination works great with earily 2.4.20 kernels, however with
+2.4.20-ben5 my LCD stays on and goes white.
 
-You can see the constraints in asm-ppc/pgtable.h.  On PPC, it is
-possible to change the default parameters in order to expand the
-amount of vmalloc space available.  This is accomplished via
-config options under the advanced kernel options menu.  With
-PAGE_OFFSET at 0x40000000 and highmem, I've run a system with
-nearly 3GB of vmalloc space.
+I managed to determine that LCD is not turned on by radeonfb, it turns own
+earlier in the boot process. So even with video=ofonly the LCD stays on.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+My knowledge of kernel workings is not sufficent to determine where
+exactely the problem occurs. I would appreciate any lead into the right
+direction...
+
+Andrew
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
