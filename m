@@ -1,38 +1,49 @@
-From: Paul Mackerras <paulus@linuxcare.com>
-To: linuxppc-dev@lists.linuxppc.org, Kevin Hendricks <khendricks@ivey.uwo.ca>
-Subject: Re: Kernel debugging??
-Date: Fri, 19 Nov 1999 10:29:20 +1100
-Content-Type: text/plain
-References: <99111813382301.00618@localhost.localdomain>
-MIME-Version: 1.0
-Message-Id: <99111912073001.09736@argo.linuxcare.com.au>
+Mime-Version: 1.0
+Message-Id: <v04220805b45a473d1794@[129.105.9.179]>
+In-Reply-To: <Pine.HPX.4.10.9911161657160.5120-100000@gra-ux1.iram.es>
+References: <Pine.HPX.4.10.9911161657160.5120-100000@gra-ux1.iram.es>
+Date: Thu, 18 Nov 1999 18:20:41 -0600
+To: Gabriel Paubert <paubert@iram.es>
+From: Geoff Hutchison <ghutchis@wso.williams.edu>
+Subject: Re: Building Question
+Cc: Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 19 Nov 1999, Kevin Hendricks wrote:
+At 5:15 PM +0100 11/16/99, Gabriel Paubert wrote:
+>Note that actually the so called 24 bit is a signed 26 bit value branch
+>relative offset. This means that you try to jump more than +/-32 Mb away
+>from the code which is quite strange, unless you are generating megatons
+>of template based code... (You truly need several millions line of code
+>or your code is spread across a lot of sections which happen
+>not to be located together). Check also the linker script if there is
+>one just in case...
 
-> By the way, I updated from the samba site after the linuxcare site went up (I
-> didn't know about the linuxcare site).  To get a good source tree I had to do
-> the following:
-> 
-> -arv --delete
-> 
-> The -u update kept thinking my samba version was newer than the linuxcare
-> version and wouldn't get the new version and there were lots of files that
-> needed to be deleted.
+After several days of investigation, I'm guessing it may be the "lot 
+of sections which happen not to be located together." The linker 
+script is the latest GNU libtool.
 
-If you have done a compilation in the tree, it may have touched some of
-the header files.  The way the kernel Makefiles take care of header
-dependencies is that if a.h includes b.h, and b.h is newer than a.h, it
-will touch a.h.
+The code itself:
+a) doesn't use templates
+b) isn't "megatons" since individual C++ files weigh in at a few K.
 
-I usually keep separate trees and only compile in one of them.  I use
-dirdiff to keep track of the differences between the trees.  Dirdiff is a
-tool I wrote for seeing the differences between directory trees.  It can
-handle up to 5 directory trees.  It's a tcl/tk script and it's available
-at ftp://ftp.linuxcare.com.au/pub/ppclinux/dirdiff.
+Granted, I'm using bison and flex to generate some C++ code, but 
+these are still fairly small in the scheme of things. On an 
+individual basis, the object files are at most 50-100K.
 
-Paul.
+So that would lead me to believe that the problem comes when linking 
+a few several MB shared or static libraries together. Does this sound 
+reasonable? Would these normally be in different sections as far as 
+the linker is concerned? (I'm not an expert on object file formats.)
+
+>You might also want to use the longcall attribute (I never tested it),
+>from info gcc:
+
+I'd obviously prefer to stay away from this if possible.
+
+-Geoff
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
