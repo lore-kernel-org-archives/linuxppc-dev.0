@@ -1,33 +1,65 @@
-Message-Id: <4.2.2.19991201162019.03c111b0@mail.lauterbach.com>
-Date: Wed, 01 Dec 1999 16:33:30 +0100
-To: Jason Kim <jwk2@EECS.Lehigh.EDU>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: patch for problem with va-ppc.h included with egcs and
-  gcc-2.95.2
-Cc: "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <38445DB4.8E8E86CB@eecs.lehigh.edu>
-References: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <384548C4.1E9ADDAF@muenchen.europe.mcd.mot.com>
+Date: Wed, 01 Dec 1999 17:11:48 +0100
+From: Alois Fertl <alois_fertl@muenchen.europe.mcd.mot.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PPC Compiler Problem?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 00:28 01.12.99 , Jason Kim wrote:
->Also, in the ANSI C (9x) documentation (``n843''), taking the address of a
->va_list is NOT listed as one of the things that will produce an undefined
->result. Actually, on page 7.15 (pg246 as seen by acroread), footnote item 198
->specifically states ``It is permitted to create a pointer to a va_list and
->pass that pointer to another function,.. in which case the original list may
->make further use of the original list after the other function returns.''
+Given the following lines of C, I'd expect that the 4th argument
+is placed into register 6 and 7. As the assembler listing tells,
+register 6 is omitted and the argument goes into r7/r8.
 
-Well, I see this is also in ISO C9x, but unless the standard restricts the 
-possible types for va_list (I can't find anything about that), you have 
-still to be aware that any callee gets a reference to the va_list if 
-va_list is an array and so the usual array handling rules apply, or?
+I have seen this with egcs-2.91.66 and with a version conmpiled
+from gcc-2.95.2-2a.
 
-Franz.
+----------------------------------------------------
+extern int foo(long, long, long, long long, long);
 
+doo()
+{
+   int result; 
+
+   result = foo( 11, 12, 13, 14, 15 );
+}
+----------------------------------------------------
+        .file   "z.c"
+gcc2_compiled.:
+        .section        ".text"
+        .align 2
+        .globl doo
+        .type    doo,@function
+doo:
+        stwu 1,-32(1)
+        mflr 0
+        stw 31,28(1)
+        stw 0,36(1)
+        mr 31,1
+        li 3,11
+        li 4,12
+        li 5,13
+        li 7,0
+        li 8,14
+        li 9,15
+        bl foo
+        mr 0,3
+        stw 0,8(31)
+.L1:
+        lwz 11,0(1)
+        lwz 0,4(11)
+        mtlr 0
+        lwz 31,-4(11)
+        mr 1,11
+        blr
+.Lfe1:
+        .size    doo,.Lfe1-doo
+        .ident  "GCC: (GNU) egcs-2.91.66 19990314 (egcs-1.1.2 release)"
+
+-- 
+Regards,
+   Alois
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
