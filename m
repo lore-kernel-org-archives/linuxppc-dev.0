@@ -1,48 +1,47 @@
-Message-ID: <3AFD9868.29C558@folkwang-hochschule.de>
-Date: Sat, 12 May 2001 22:09:12 +0200
-From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: =?ISO-8859-1?Q?J=F6rn=20Nettingsmeier?= <nettings@folkwang-hochschule.de>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pismo sleep behaviour w/ 2.4.4-benh
+Date: Sat, 12 May 2001 22:34:22 +0200
+Message-Id: <20010512203422.23549@smtp.wanadoo.fr>
+In-Reply-To: <3AFD9868.29C558@folkwang-hochschule.de>
+References: <3AFD9868.29C558@folkwang-hochschule.de>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: pismo sleep behaviour w/ 2.4.4-benh
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-hello linuxppc-dev people !
+>
+>* the box usually falls asleep again after waking up. when woken
+>again, it stays up like it should.
 
-i have been running the mentioned system for about 10 days now,
-using the latest pmud daemon, and it works fine for me, except:
+Never seen that. How do you trigger sleep ?
 
-* the box usually falls asleep again after waking up. when woken
-again, it stays up like it should.
-* every 10 or so sleep cycles, the machine locks up. blank screen,
-no standby-led, and i can only power off with ctrl-alt-apple-power.
-sysrq fails, too.
-* the box falls asleep sometimes even when i'm busy typing or moving
-the mouse. this happens at least once every half hour.
+>* every 10 or so sleep cycles, the machine locks up. blank screen,
+>no standby-led, and i can only power off with ctrl-alt-apple-power.
+>sysrq fails, too.
 
-some minor glitches that might be unrelated to power management:
-* the first console cannot issue ctrl commands like break or
-suspend, while the others still do. resetting doesn't help.
-* there seems to be a problem under KDE with keyboard/trackpad
-focus: sometimes they are attached to different windows.
+It locks up on wakeup or on sleep ?
 
-i'd like to help tracking this down, but i'm rather new to the ppc
-platform, so please tell me what to do.
-is there a place where i can monitor power management events ? (more
-detailed than in the syslog)
+>* the box falls asleep sometimes even when i'm busy typing or moving
+>the mouse. this happens at least once every half hour.
 
-regards,
+What do you mean by "fall asleep" ? it stops working ? how do you
+get it back ?
 
-jörn
+>some minor glitches that might be unrelated to power management:
+>* the first console cannot issue ctrl commands like break or
+>suspend, while the others still do. resetting doesn't help.
+>* there seems to be a problem under KDE with keyboard/trackpad
+>focus: sometimes they are attached to different windows.
+>
+>i'd like to help tracking this down, but i'm rather new to the ppc
+>platform, so please tell me what to do.
+>is there a place where i can monitor power management events ? (more
+>detailed than in the syslog)
+>
+>regards,
 
-
---
-Jörn Nettingsmeier
-home://Kurfürstenstr.49.45138.Essen.Germany
-phone://+49.201.491621
-http://icem-www.folkwang-hochschule.de/~nettings/
-http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
