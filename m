@@ -1,44 +1,52 @@
-Date: Wed, 14 Apr 1999 19:13:02 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: linuxppc-dev@lists.linuxppc.org, bug-gnuplot@dartmouth.edu
-Subject: Re: [Patch] linuxppc gnuplot segfaults in save
-In-Reply-To: <3715166A.FD1AF78F@wanadoo.fr>
-Message-ID: <Pine.LNX.4.05.9904141910410.487-100000@pc.wackyland.com>
+Message-ID: <37156C34.C1DEE82F@dgs.monash.edu.au>
+Date: Thu, 15 Apr 1999 04:33:57 +0000
+From: Brendan Simon <brendan@dgs.monash.edu.au>
+Reply-To: brendan@dgs.monash.edu.au
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "john.vanloon@oregonchain.com" <john.vanloon@oregonchain.com>
+CC: "linux-embedded-digest@waste.org" <linux-embedded-digest@waste.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>,
+        linuxppc-user <linuxppc-user@lists.linuxppc.org>
+Subject: Re: Booting Linux from Flash
+References: <01BE8665.A0E7B070.john.vanloon@oregonchain.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 15 Apr 1999, Martin Costabel wrote:
+I would certainly like to get a flash filesystem driver.  I'm not sure if it
+is the same thing you are talking about.
 
-> I think I sent this already to the LinuxPPC developers some time ago,
-> but I had a look into the latest gnuplot-3.7-2.ppc.rpm, and the bug is
-> still there:
+I want to boot linux on an powerpc embedded system which has no hard disk.  I
+do not want to use lilo.  I imagine that I would have write a simple
+bootloader to get the kernel booting.  I want to store the kernel at a known
+location in Flash and store a boot image at a known location in Flash.  I then
+want to execute the kernel somehow (jump to appropriate address) and pass to
+it any parameters required to let it place the boot image in a ram disk.  I
+think the kernel lives in the file system so it's a bit of a chicken and egg
+problem as far as I can see.  Is the kernel that is booting stored in the boot
+image.  If so I guess the boot image has to be uncompressed.  The root
+filesystem can be a compressed image though.
 
-Whoops.  Lost along the line.  Checked into CVS now, and may or may not
-make it into the upcoming beta. (might be another full build in time,
-might not).
+Anyone know where I should start with regards to bootloaders or how to get the
+kernel booting if I have the kernel and bootimage in Flash somewhere.  Note
+the Flash is just memory mapped on a SIMM.  There is no IDE driver or
+filesystem on it.  Do I need a Flash device driver ??
 
-> In principle, it would be nice if this were included in the gnuplot
-> sources, but since it seems to be a ppc specific problem, it would be
-> sufficient to include the patch in the gnuplot-3.7-x.src.rpm for
-> LinuxPPC (Tom?). 
+Thanks,
+Brendan Simon.
 
-Hmm.  I don't use gnuplot (and thus didn't see the bug and don't have the
-source handy), so if any x86/Linux users with glibc 2.1.x installed could
-see if they run into the bug..
 
-> Or could someone find out what's wrong with the fprintf function in
-> LinuPPC? Note that this is not specific for one version of glibc. I
-> tried it on several from glibc-961212 to glibc-2.1.1-3a. Same result.
+John VanLoon wrote:
 
-It failed under the old libs?
-
----
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
+> I have a driver for a card from advantech. I do not believe that much would
+> have to be done to have it usable on a FLASH BOOT BLOCK device. You would
+> just need to fill in the details and perhaps add support for multiple
+> partitions if you need it (an offset to the beginning is already supported
+> allowing booting from compressed image ...) and modify lilo. Let me know if
+> you would like such a thing.
+> John van Loon
+> john.vanloon@oregonchain.com
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
