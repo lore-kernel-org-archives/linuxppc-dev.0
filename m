@@ -1,31 +1,34 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chris Emerson <cemerson@chiark.greenend.org.uk>,
-        <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
-Date: Sat, 20 Jan 2001 02:38:32 +0100
-Message-Id: <19341214191016.27444@mailhost.mipsys.com>
-In-Reply-To: <14952.53532.864761.156822@chiark.greenend.org.uk>
-References: <14952.53532.864761.156822@chiark.greenend.org.uk>
+Message-ID: <3A68F69B.45AE3A88@iiic.ethz.ch>
+Date: Sat, 20 Jan 2001 03:23:23 +0100
+From: Michel Dänzer <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Bogus interrupt -1
+References: <3A6775B0.2108F1DE@relog.ch> <19341214032230.10260@mailhost.mipsys.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Ok.  Is there a fundamental reason which prevents it being possible to
->use the USB keyboard, or just hard work?
+Benjamin Herrenschmidt wrote:
 >
->> >I'm currently running 2.4.1pre7 rsynced from the bk tree.
->>
->> pre8 is already there ;)
+> >I have tons of messages like this in my logs:
+> >
+> >Jan 18 23:06:54 pismo kernel: Bogus interrupt -1 from PC = c00065d0
+> >
+> >Anyone knows where these (may) come from?
 >
->Well, unless there are any vital fixes, I'll hold off for a few days.
->:-)
+> Which kernel ?
 
-Very hard work indeed :) You'd have to write a mecanism to let most of
-the OHCI controller code to run in a polled way from within the
-debugger... quite nasty.
+Paulus' 2.4.0 from the 11th.
 
-Ben.
+
+Michel, rsyncing
+
+
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
