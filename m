@@ -1,52 +1,37 @@
-Date: Thu, 28 Oct 1999 01:25:52 -0500
+Date: Thu, 28 Oct 1999 02:40:08 -0500
 From: anthony tong <atong@uiuc.edu>
-To: Charlie McLachlan <cim@uk.research.att.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Accel ATI Rage 128 support, the very first step (Help needed)
-Message-ID: <19991028012551.A16581@mango.genunix.net>
-References: <Pine.LNX.4.10.9910201724400.366-100000@newhope.terraplex.com> <Pine.SO4.4.04.9910271119020.5658-100000@marrow>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Accel ATI Rage 128 support, (another test Xserver)
+Message-ID: <19991028024007.B16581@mango.genunix.net>
+References: <Pine.SO4.4.04.9910271119020.5658-100000@marrow> <19991028032624B.roikawa@rr.iij4u.or.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.SO4.4.04.9910271119020.5658-100000@marrow>
+In-Reply-To: <19991028032624B.roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Charlie McLachlan (Wed, Oct 27, 1999 at 11:46:15AM +0100):
-> The result was that vertical scolling worked fine (i.e. when you typed
-> to the bottom of the screen the scroll upward was okay) but when scrooling
-> horizontally (like when you back cursor through a line then add more
-> characters) the remains of the line (the bit to the right of the cursor)
-> is not moved.
+Ryuichi Oikawa (Thu, Oct 28, 1999 at 03:26:24AM +0900):
+> I have an Xpmac server with Rage128 acceleration support. If you have ADB
+> keyboard and mouse, please try:
+>  ftp://ppc.linux.or.jp/pub/users/oikawa/Xserver/hw/powermac/Xpmac-3.3.3.1-19991028.gz
+> 
 
-this might be a shell vs. termcap/terminfo problem.
+I'm not as far as Ryuichi is, but I finally had some time tonight
+to port most of Precision Insight's (slightly buggy) code. It's not
+fully accelerated yet and still no 15/16 bpp (haven't had time to
+look at it).
 
-> 1) What gives? Why isn't bmove (seemingly) used for vertical console
-> scrolls?
+You'll need a newer aty128fb patch if you're using a 2.2.x kernel.
 
-Because it's slow. If you want to try it set display->scrollmode to 0.
-Be warned though it's not really ready for prime time use (you need
-to make sure that the engine isn't busy).. simple stuff but I simply
-didn't have the time to sit down and test it.
+ftp://devel.linuxppc.org/users/atong/aty128
+	XF86FB_Dev-r128.gz
+	aty128fb-oct_28.diff.gz
 
-> 2) If I recompile aty128fb, how do I replace the currently active version
-> without having to restart? (i.e. how do I change frame buffer modules?)
+Because there is unreleased xfree code the server will expire in ~3
+weeks. :( Also, do keep in mind that this is an experimental Xserver.
 
-You don't; at least, I've never been able to unregister a fbdev driver
-and re-registering a new one. I'm not sure if this has been fixed recently
-though.
-
-> 3) Have I got this all wrong? Is bmove even what I should be thinking of?
-
-I'd look into panning + getting a rectfill. I'll try and do it this
-weekend if I have the time.
-
-> 5) Antony's code references registers through info->regbase (which is a
-> big long hex number with some 8's in it). The Suse code references
-> registers through (PCIDevice->_basel & 0xffffff00), where PCIDevice is a
-> pciconfigPtr found through probing. Is this the same thing?
-
-Pretty much.
-
+Please test,
+-at
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
