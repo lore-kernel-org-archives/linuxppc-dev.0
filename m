@@ -1,14 +1,39 @@
 From: Philip.Lougher@zarlink.com
 Subject: Re: EXT2-f error
-To: "Aman" <aman@mistralsoftware.com>
-Cc: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>,
-	owner-linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF88B9DD11.7EBA6D08-ON80256C68.004CF847@zarlink.com>
-Date: Tue, 5 Nov 2002 15:32:11 +0000
+To: Philip.Lougher@zarlink.com
+Cc: "Aman" <aman@mistralsoftware.com>,
+	"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <OF5CD96247.B9F50CE5-ON80256C68.005A1B43@zarlink.com>
+Date: Tue, 5 Nov 2002 16:33:16 +0000
 MIME-Version: 1.0
 Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Having thought a bit further, you could be getting stack or general
+variable corruption.  This would show up as an error in the ext2 fs.  If
+so, it could indicate hardware problems.
+
+Last year, I experiend a similar problem where the kernel would randomly
+crash.  I traced this to incorrectly loaded globals, due to h/w TLB
+problems on the core version.
+
+
+
+
+                      Philip.Lougher@zarlink.com
+                      Sent by:                               To:       "Aman" <aman@mistralsoftware.com>
+                      owner-linuxppc-embedded@lists.l        cc:       "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>,
+                      inuxppc.org                             owner-linuxppc-embedded@lists.linuxppc.org
+                                                             Subject:  Re: EXT2-f error
+
+                      05-Nov-2002 03:32 PM
+
+
+
+
+
 
 
 >Hi All
@@ -60,9 +85,11 @@ Phillip
 
 
                       "Aman"
-                      <aman@mistralsoftware.com>             To:       "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+                      <aman@mistralsoftware.com>             To:
+"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
                       Sent by:                               cc:
-                      owner-linuxppc-embedded@lists.l        Subject:  EXT2-f error
+                      owner-linuxppc-embedded@lists.l        Subject:
+EXT2-f error
                       inuxppc.org
 
 
