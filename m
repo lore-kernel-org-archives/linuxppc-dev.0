@@ -1,98 +1,66 @@
-Date: Wed, 21 Jan 2004 21:15:35 -0800
-From: Xiaoshan Zuo <xzuo@vinesystech.com>
-To: Huailin Chen <chen_huailin@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: any one use 750fx/MV64360
-Message-ID: <20040122051535.GA15242@vinesystech.com>
-References: <400F1270.7000107@vinesystech.com> <20040122034730.55118.qmail@web21409.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040122034730.55118.qmail@web21409.mail.yahoo.com>
+Message-ID: <007e01c3e0c9$cefe81a0$9104050a@JACKYLAM>
+From: "Jacky Lam" <jackylam@astri.org>
+To: "Andrew May" <acmay@acmay.homeip.net>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <00b101c3de3e$9c34f200$9104050a@JACKYLAM> <20040119052806.GA26841@gate.ebshome.net> <015501c3deef$27263030$9104050a@JACKYLAM> <20040120010227.GA32018@gate.ebshome.net> <20040120232342.GA20399@acmay.homeip.net> <20040121011650.GA3905@gate.ebshome.net> <20040121020501.GA22956@acmay.homeip.net>
+Subject: Re: Small UDP packet performance
+Date: Thu, 22 Jan 2004 17:26:22 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for the comments. Those are certainly good points. What
-OS did you use? Any suggestions on the Linux kernel to use?
-BTW, your website is just interesting.
+Hi,
 
-Xiaoshan
+        Thanks for you patch. I tried your patch and see the throughput is
+really improved a lot. For packet size of 512, the throughput jumps from 2%
+to 55%. For packet size of 1024, the throughput jumps from 50% to 66%.
+Although the improvement for packet size of 256 and 188 doesn't change much
+(0%->4% and 0%->2% respectively), it helps a lot already.
 
-**** Huailin Chen wrote ****
-> My 2 cents:
+Regards,
+Jacky
+----- Original Message -----
+From: "Andrew May" <acmay@acmay.homeip.net>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Wednesday, January 21, 2004 10:05 AM
+Subject: Re: Small UDP packet performance
+
+
 >
-> I happened to use all your options these years:--(.
->
-> 750fx + 64260
-> it should be good enough if you don't have
-> MP(Multi-CPU) demand for running smp-os on top of it.
-> The reason is obivous: 750fx is G3. The MEI protocol
-> may not be prefered if your system happens to be a
-> high-end applicances.
->
-> 750fx + 64360
->
-> if you do want to stay 750 and need SMP, you may have
-> to use 64360. Check out Marvell FAE people to
-> understand their Arbiter part, which have some fixes
-> for SMP support. If you have legacy issue, note that
-> some tiny porting work needed for 64360 part.
->
-> 7447 + 64260
-> No one would go for this option
->
-> 7447 + 64360
->
-> Well, G4+ MES(R)I is born to support SMP system. So,
-> if you concern this part, do go for it. One thing you
-> need talk to your hardware board group is: Powerp
-> Consumption. If you guys are able to live with it, go
-> for it:-).
->
-> Also, if you have legacy codes under IBM 750-based
-> system, please pay high alert on driver part. For
-> example, Out of Order issue when under Non-Cachable
-> and Guard......One missing will make your driver all
-> srew up. For more detail, you are welcome to talk to
-> me.
->
-> Good luck,
-> Huailin Chen
-> www.xtrj.org
->
->
->
->
-> --- Xiaoshan Zuo <xzuo@vinesystech.com> wrote:
+> On Tue, Jan 20, 2004 at 05:16:50PM -0800, Eugene Surovegin wrote:
+> > On Tue, Jan 20, 2004 at 03:23:42PM -0800, Andrew May wrote:
+> > > Here is what I have done for a NAPI version of the driver. I don't
+have time
+> > > either to do a patch or merge this up to the latest kernel. I have
+frozen down
+> > > at 2.4.21-pre4 somewhere and I won't be merging anytime soon. It is
+stable for
+> > > me.
 > >
-> > Hello,
-> >
-> > We are planning design a custom board. The preferred
-> > cpu is IBM 750FX,
-> > the bridge is going to be Marvell 64360. Depending
-> > on the software
-> > support, we may alter our plan to use either
-> > 750FX/64260 or Motorola
-> > 7447/64360/64260. It seems that 64360 is not
-> > supported in stock kernel,
-> > there is galieo tree for that, but I am not sure the
-> > code is really
-> > stable. Anyone has experience using 750fx/64360?
-> > Which version of
-> > gcc/kernel/u-boot should I use? If that is not a
-> > good option, then how
-> > about 750FX/64260 or Motorola 7447/64360/64260? Any
-> > suggestions/comments
-> > will be appreciated.
-> >
-> > Thanks,
-> >
-> > Xiaoshan
-> >
-> >
+> > Looks OK, although I chose another way to disable RX IRQs :)
 >
+> Do tell.
 >
-> Yahoo! SiteBuilder - Free web site building tool. Try it!
-> http://webhosting.yahoo.com/ps/sb/
+> > Sad thing is because of bad MAL design NAPI will be limited to one
+> > EMAC per MAL (there is no way to disable IRQ generation on channel
+> > basis), it's not an issue for 405, but for 440 I haven't figured
+> > out how to overcome this limitation yet.
+>
+> Yep it is a problem and even for the 405's with more than one ethernet.
+>
+> > Andrew, I'm just curious, you probably did some measurements with
+> > your NAPI driver, care to share them :) ?
+>
+> It may be hard to compare them. I am adding some data to each packet
+> and routing them to another PCI device. I think things max out around
+> 18kpps one way. Going full-duplex things even out pretty good both
+> ways with the total pps being slightly higher. The most important
+> thing is that when the input rate goes higher the output stays at
+> the max instead of going down.
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
