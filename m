@@ -1,43 +1,52 @@
-Message-ID: <003801c20543$b90a4180$e1a8459b@ntu.edu.sg>
-From: "shaowei dai" <dshaowei@rfnetech.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: map iomem in linux_2_4_dev
-Date: Mon, 27 May 2002 13:59:54 +0800
+Message-ID: <3CF1CEC4.1020205@mvista.com>
+Date: Sun, 26 May 2002 23:14:28 -0700
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Another OCP enet patch
+References: <20020527040330.GH16537@zax>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello, every one:
+David Gibson wrote:
+> Armin, please consider the patch below.  It removes your recently
+> added ocp-dma.h and instead makes the ocp enet driver uses the DMA
+> direction constants from pci.h.
 
-I've searched through the achieve, but failed to find stuff about mapping
-io-memmory in this linux_2_4_dev version.
-After check the source code, it seems from 2_4_dev onwards, no need to use
-ioremap to map io memory. We
-should use io_block_mapping() instead.
+Go ahead and push it.  FYI - I will update the ocp ide driver since I am
+making changes in it any ways.
 
-What confused me is that after i add the following statement in
-m8xx_setup.c. My pcmcia_cs package still can't get access to this address.
-The mesage from pcmcia is : GetNextTuple: No more items.
+>
+> I realise that logically the OCP enet driver, and the
+> consistent_sync() has nothing to do with PCI.  However using the pci.h
+> constants seems a better approach than defining new constants with the
+> same values, when the switch in consistent_sync() explicitly checks
+> against the PCI constants.
+>
+> In the longer term consistent_sync() itself should be changed not to
+> reference the PCI constants - in fact the PCI constants should
+> probably be moved and renamed since they have no inherent connection
+> with PCI at all.
 
-What i add in m8xx_setup.c is:
+I have already had to make that break with the ocp usb driver.  If a 4xx
+core shows up with PCI and ocp ide or ocp USB then we will need to
+address this issue.  thus those dma APIs I sent you are a result of my
+concern.
+>
+> Oh, I also change the consistent_sync() in the Tx routine to be
+> PCI_DMA_TODEVICE rather than BIDIRECTIONAL, since there is no need to
+> invalidate the cache here, a writeback is all that's necessary.
+>
+>
 
-#ifdef CONFIG_FADS
 
-io_block_mapping(PCMCIA_MEM_ADDR,PCMCIA_MEM_ADDR,PCMCIA_MEM_SIZE,_PAGE_IO);
-#endif
+Thanks
 
-But after i insert my PCMCIA card to my FADS board, i check the
-/var/log/debug information. I found that:
-...
-m8xx_pcmcia: SetMemMap(0,0,0x21,300 ns, 0xff020000-0xff020000, 0x0000)
-----
-Does anyone know why this SetMemMap size is 0 instead of PCMCIA_MEM_SIZE? Is
-this the reason of pcmcia module fail?
-
-Appreciate your help!
+armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
