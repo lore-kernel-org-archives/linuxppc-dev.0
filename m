@@ -1,36 +1,31 @@
-Date: Sun, 10 Aug 2003 14:07:21 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: linux-2.4-benh -- rsync: failed to connect to rsync.penguinppc.org: Connection refused
-Message-ID: <20030810220721.GA19894@plato.local.lan>
-References: <200308100818.53106.miles.lane@comcast.net>
+Date: Mon, 11 Aug 2003 10:12:47 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: BK problems with linuxppc-2.5
+Message-ID: <20030811171247.GC807@ip68-0-152-218.tc.ph.cox.net>
+References: <E19lS18-0003Ng-00@source.mvista.com> <1060436322.16233.52.camel@hermes>
 Mime-Version: 1.0
-In-Reply-To: <200308100818.53106.miles.lane@comcast.net>
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1060436322.16233.52.camel@hermes>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Aug 10, 2003 at 08:18:53AM -0700, Miles Lane wrote:
+On Sat, Aug 09, 2003 at 07:38:43AM -0600, Gary Thomas wrote:
+
 >
-> rsync -avz rsync.penguinppc.org::linux-2.4-benh .
-> rsync: failed to connect to rsync.penguinppc.org: Connection refused
-> rsync error: error in socket IO (code 10) at clientserver.c(83)
+> I've been unable to access this repository [for days].
+>
+>  [gthomas@hermes tmp]$ bk clone bk://source.mvista.com/linuxppc-2.5 linuxppc-2.5
+>   ERROR-Can't get read lock on the repository.
+>
+> Any ideas/help?
 
-its back up now.
-
-I had to move everything over to a new disk, and didn't want anyone
-pushing updates into thier rsync trees only to have the updates
-mysteriously disappaer because they occured after that part of the
-filesystem was dumped.
-
-reason it took so long was /dev/hda was only getting about 97K per sec
-transfer rates anymore.
-
-everything is back up and much much faster.
+This should be fixed now.
 
 --
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
