@@ -1,44 +1,52 @@
-Date: Sun, 4 Feb 2001 15:12:18 -0900
-From: Ethan Benson <erbenson@alaska.net>
-To: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: incomplete asm-ppc/errno.h in 2.4.1 kernel.
-Message-ID: <20010204151218.N6907@plato.local.lan>
-References: <3A7DE3C0.53F6D938@chello.nl>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FJOUHINv8uyEJFmS"
-In-Reply-To: <3A7DE3C0.53F6D938@chello.nl>; from b.stolk@chello.nl on Mon, Feb 05, 2001 at 12:20:32AM +0100
+Message-ID: <20010205023918.21795.qmail@kunk.jriver.com>
+Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R in
+To: linuxppc-dev@lists.linuxppc.org
+Date: Sun, 4 Feb 2001 20:39:18 -0600 (CST)
+From: Robert E Brose II <bob@kunk.jriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---FJOUHINv8uyEJFmS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+User Michael Schmitz said:
 
-On Mon, Feb 05, 2001 at 12:20:32AM +0100, b.stolk wrote:
-> >don't bother, reiserfs does not work on either 64 bit or big endian
-> >archechures.  (basically anything but x86)
->=20
-> >From the FAQ at namesys I understand that ReiserFS works on alpha.
-> Alpha is as 64bit as it gets....
-> Not only has is sizeof(void *)=3D=3D8, but even sizeof(bool) is 8 :-)
-> (imagine that: using 64 bits to store a single one!)
+> Disconnect and reselect are implemented in the ESP driver which was used
+> as template for the 68k Mac 53C9x driver at one time. Maybe take a
+> page or two from these drivers to implement disconnect. That driver uses a
+> trick that might help avoiding the data direction lockup with MESH as
+> well: the chip is programmed for the whole arbitration/selection/command
+> phases but will interrupt right before data phase, at which point you
+> could check the data direction before setting up the DMA (assuming the
+> target asserts the data direction after seeing the command byte). One
+> additional interrupt taken. No additional overhead if you skip this step
+> for some well known commands like WRITE_* and READ_* :-)
 
-ok maybe they fixed the 64 bit issues, it used to not even be 64bit
-clean.  but it most certainly not endian clean, it only works on little
-endian archetectures which rules out sparc and powerpc. =20
+This data direction table thing rings a bell. I helped implement a
+scsi driver on SVR4 for the DPT (EATA) and it had the tables.
+By SVR4.2 they were gone.
 
---=20
-Ethan Benson
-http://www.alaska.net/~erbenson/
+I noticed the same problems as Daniel writing dao CD's on my 7500.
+I have the hard drive on the mesh and the tape drive and cdrw on
+the 53c94.
 
---FJOUHINv8uyEJFmS
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+In a post about 6 months ago I noted that the 53c94 didn't appear to
+do disconnect because I couldn't write a CD even at 1x on a 7200.
 
+As expected though, the cdrw will write on the 7500 on the 53c94
+(not in dao) because the hard drive being on the mesh doesn't have to
+wait for the 53c94 cd data transfer to finish before doing another read.
 
---FJOUHINv8uyEJFmS--
+The tape drive was another clue. It did endless start/stops on the
+7200 53c94 but on the 7500 53c94 by itself, streams nicely.
+
+Thanks Daniel for digging this stuff out. A fix for the 53c94
+disconnect problem would sure make the 7200 a  better platform.
+
+Bob
+--
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
