@@ -1,83 +1,62 @@
-Subject: Re: Final question: best wasy to move /, /usr, /home, etc?
-From: Bastien Nocera <hadess@hadess.net>
-To: Tom Rini <trini@kernel.crashing.org>
+Date: Mon, 18 Feb 2002 09:31:21 -0800 (PST)
+From: "David A. Gatwood" <dgatwood@gatwood.net>
+To: Giuliano Pochini <pochini@shiny.it>
 Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	yellowdog-devel@lists.yellowdoglinux.com,
-	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20020218161603.GB25078@opus.bloom.county>
-References: <453D45A8-2339-11D6-B84B-0003938E434C@ivey.uwo.ca>
-	<p05101401b895b9cbee49@[10.0.0.42]>
-	<20020217203742.VCID12383.tomts9-srv.bellnexxia.net@there>
-	<20020218021717.EDHQ21433.tomts12-srv.bellnexxia.net@there>
-	<1013999761.436.2.camel@dozo>  <20020218161603.GB25078@opus.bloom.county>
-Date: 18 Feb 2002 16:20:18 +0000
-Message-Id: <1014049219.24786.12.camel@dozo>
-Mime-Version: 1.0
-Content-Type: text/plain
+	linuxppc-dev@lists.linuxppc.org
+Subject: RE: Final question: best wasy to move /, /usr, /home, etc?
+In-Reply-To: <XFMail.20020218094253.pochini@shiny.it>
+Message-ID: <Pine.LNX.3.96.1020218092106.6585B-100000@gatwood.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 2002-02-18 at 16:16, Tom Rini wrote:
-> On Mon, Feb 18, 2002 at 02:36:01AM +0000, Bastien Nocera wrote:
+On Mon, 18 Feb 2002, Giuliano Pochini wrote:
+
+> > I am finally at the point I want to give up my old external scsi hard
+> > drives.  Unfrotunately, my current /, /usr, /home, etc all exist on scsi
+> > drives.
 > >
-> > On Mon, 2002-02-18 at 02:17, Kevin B. Hendricks wrote:
-> > >
-> > > I am finally at the point I want to give up my old external scsi hard
-> > > drives.  Unfrotunately, my current /, /usr, /home, etc all exist on scsi
-> > > drives.
-> > >
-> > > I recently purchased a 60 gig hard drive (ide) and have now installed it.
-> > >
-> > > What is the best way to move all of the files and directories, and special
-> > > device files, and etc from the scsi drive to new partitions on the IDE
-> > > drives?
-> > >
-> > > Can I simply use a recursive "cp" with -a?  Should I use "tar"?  What
-> > > about "parted" and its partition copies?
-> > >
-> > > Or is there some way I can run an linux distribution installer from within
-> > > linux and make it install to the ide drive instead of the scsi?
-> > >
-> > > Or is there some way to make "rpm" nicely redirect where it installs
-> > > things?
-> > >
-> > >
-> > > In fact, with som much space, I would love to have Debian, SuSE, and
-> > > YellowDog distribution sets so I can run and test OpenOffice.org against
-> > > those distributions easily (shared build drives) with different
-> > > distribution installations.
-> > >
-> > > This is my last step to get a working system so any hints on the best way
-> > > to move so much data (and special device files) from one partition to
-> > > another preserving the owner,group,word, permissions, file ownership,
-> > > setuid root bits, etc. would be greatly appreciated.
-> >
-> > I've done this several times, to install xfs support on live machines
-> > (ie. on my desktop and laptop that were already full of crap junk and
-> > other kind of files).
-> >
-> > rsync -av --exclude /proc --exclude /home/ / /newroot/
-> >
-> > Exclude every mount point from the rsync and do this for every
-> > partition. Best is to do this from a separate root, or a rescue/boot
-> > disk, in which case rsync -av /oldroot/ /newroot/ is easy enough without
-> > having to care.
-> >
+> > I recently purchased a 60 gig hard drive (ide) and have now installed it.
 >
-> I _think:
-> rsync -av -x / /newroot/
-> will get just the / partition (-x means one fs, cp and a few others take
-> this arg).
+> IDE ?!?  Bleah !!
 
-the man page has it indeed. The good thing is that you can run it
-multiple times, or stop it in the middle and restart where you left off,
-which you can't with the other solutions.
+Yeah.  Be forewarned.  Some IDE drives over 34 gigs, particularly when
+attached to ATA cards, behave badly under Linux, causing horrible file
+system corruption caused by high block numbers being stupidly remapped
+over the top of lower block numbers.
 
-Cheers
+After adding an hdg=x,y,z line, it worked until I shut the machine off, at
+which point it said that the file systems that were above the 34 gig limit
+weren't there.  So it had failed again.  Several reboots later, it
+magically started working.
 
---
-/Bastien Nocera
-http://hadess.net
+Long story short, in its power-on state, the Maxtor drive gave incorrect
+fictitious geometry, indicating that it was a 2 gig drive.  The Linux
+kernel code was ignoring the boot arguments and was proceeding to
+overwrite them with data from an inquiry on the drive.  The problem was
+that since the drive reported itself as having 4092 cylinders instead of
+the 16,653 cylinders that large drives are -supposed- to report as their
+fictitious BIOS geometry, the Linux kernel didn't realize that the
+geometry was fictitious, and refused to allow the LBA size information to
+override the drive-returned geometry.
+
+It took me a couple of days to debug the IDE code in the kernel to create
+a workaround.  This is probably the result of a firmware bug in my Maxtor
+drive, but if people run into problems where partitions above the 34 gig
+limit will fail to work correctly for the first several boots but then
+magically start working, I have a possible patch against the 2.2.21
+prepatch kernels (should work against any of them, as the code hasn't
+changed much).
+
+
+Later,
+David
+
+---------------------------------------------------------------------
+                    Check out my weekly web comic:
+                     http://www.techmagazine.org
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
