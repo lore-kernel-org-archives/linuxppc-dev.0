@@ -1,42 +1,31 @@
-Message-ID: <39D4C5CE.8A9E48F2@student.ethz.ch>
-Date: Fri, 29 Sep 2000 18:39:42 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-CC: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+Date: Fri, 29 Sep 2000 19:55:38 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
         R Shapiro <rshapiro@bbn.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
-References: <Pine.LNX.4.21.0009291917490.1084-100000@idd-01.imbc.gr>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <39D45ACA.9E151BCC@student.ethz.ch>
+Message-ID: <Pine.LNX.4.21.0009291925410.1084-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Kostas Gewrgiou wrote:
+On Fri, 29 Sep 2000, Michel [iso-8859-1] Dänzer wrote:
+
+> However, I think the "fbdev" option should also be available, it might be more
+> straightforward for some users than the bus ID. Would it also be possible to
+> go the opposite way fbdev -> pcidev and then claim the PCI device?
 >
-> On Fri, 29 Sep 2000, Michael Schmitz wrote:
->
-> > That's not fixable at the X level (well, technically it is but I can't
-> > figure out how and the X people refuse to consider that method). You will
-> > need to boot via OF and yaboot (or equivalent oldworld) directly, not via
-> > BootX to avoid the PCI resource conflict. Alternative: fix the resource
-> > conflict at the kernel level, new patch by me in the works.
->
-> Hmm if you think that its fixable in the X level then we should give it
-> a try, i can't see how though unless we get X to accept this allocations
-> (are they legal ?).
 
-I don't know, but I'm pretty sure that Egbert or whoever made the code disable
-it has done so for a reason.
+It should be possible to do it, i'll give it a try once i have some free
+time. We could get away from the busID requirement in the fbdev driver then
+(its very easy to missmatch busID/fbdev and nothing can detect this error)
 
+  Kostas
 
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
