@@ -1,26 +1,43 @@
-Message-ID: <3885ED44.190DED39@email.sps.mot.com>
-Date: Wed, 19 Jan 2000 10:58:44 -0600
-From: "Richard Hendricks" <ra6353@email.sps.mot.com>
+Message-ID: <20000120131307.13948.qmail@web3003.mail.yahoo.com>
+Date: Thu, 20 Jan 2000 05:13:07 -0800 (PST)
+From: Wang Yong <wung_y@yahoo.com>
+Subject: Re: unknown protocol icmp
+To: szg98@mail.zte.com.cn, linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: New MPC823 manual revision
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
-  We're working on a new version of the MPC823 manual, as well as
-creating an MPC823E manual, and are soliciting suggestions.  The new
-version of the MPC823 manual, in preliminary form, is at
+you must forget /etc/protocols so that
+getprotobynamereturns fail
 
-http://www.mot.com/SPS/ADC/pps/subpgs/prodocs/823/823BUM.html
+w.y.
 
-The new manual for the MPC823E is at
-
-http://www.mot.com/SPS/ADC/pps/subpgs/prodocs/823e/823eRM.html
-
-Back by popular demand in the MPC823E and Revision B of the
-MPC823 is a second SCC, SCC3, and a second TDM, TDMb.
+--- szg98@mail.zte.com.cn wrote:
+>
+>
+>
+>
+>
+> Hi,all
+>      I modified mpc8xx-2.2.13 for my custom
+> XPC860ENZP50C1 board.
+> Now it can boot to prompt "init-2.0#" from nfs
+> server.
+> Every thing seems okey but network.
+>
+>      init-2.0# ping <my nfs server ip>
+>      ping: unknown protocol icmp
+>      init-2.0# telnet <my nfs server ip>
+>      telnet:unknown services ...
+>
+> What's the problem?
+> Thanks for your time.
+>
+> szg98@mail.zhongxing.com
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
