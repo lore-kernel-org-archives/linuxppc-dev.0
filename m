@@ -1,31 +1,27 @@
-Message-Id: <200110121858.f9CIwnY14960@aslan.scsiguy.com>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	yellowdog-devel@lists.yellowdoglinux.com
-Subject: Re: no luck with Adaptec SCSI controller in 2.4.X 
-In-Reply-To: Your message of "Fri, 12 Oct 2001 14:13:58 EDT."
-             <20011012181138.FUFA17332.tomts11-srv.bellnexxia.net@there>
-Date: Fri, 12 Oct 2001 12:58:49 -0600
-From: "Justin T. Gibbs" <gibbs@scsiguy.com>
+Mime-Version: 1.0
+Message-Id: <p05101000b7ecf63c858e@[10.0.0.42]>
+In-Reply-To: <200110121337.JAA21171@missioncriticallinux.com>
+References: <200110121337.JAA21171@missioncriticallinux.com>
+Date: Fri, 12 Oct 2001 12:40:44 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: PPC+southbridge designs
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Okay I used tag_info as you directed and set the Quantum Fireball drive to
->use a maximum tag depth of 8 (like the old driver used) and everything
->seems to work fine.
->
->So can you point me to where in your driver code the depth of the tagged
->queueing is dynamically determined?  I would like to play around a bit
->with the driver code to see if I can tell if the Quantum Fireball is
->simply spitting back bogus info or and if so what?
+At 9:37 AM -0400 10/12/01, mod+linuxppc-dev@mclx.com wrote:
+>How many existing PPC-based machines incorporate one
+>of those kitchen-sink southbridge chips like the VIA
+>VT82C686B that are normally found in x86-based machines?
 
-I can already tell you what is happening.  We send a bunch of commands
-to the drive expecting it to respond with QUEUE FULL status should we
-send too many, but the drive instead accepts them for future completion
-but never actually responds to the commands.  This is why we time out.
-
+It may or may not be worth noting (depending on exactly how you meant
+this question) that even PowerMacs contain the functional equivalent
+of chips like the VT82C686B.  They're Apple custom ASICs and provide
+Macintosh style I/O ports, but do generally cover the same area of
+functionality as a PC southbridge.
 --
-Justin
+Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
