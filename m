@@ -1,20 +1,20 @@
-Return-Path: <korbekk@start.no>
-Received: from mail47.e.nsc.no (mail47.e.nsc.no [193.213.115.47])
-	by ozlabs.org (Postfix) with ESMTP id 56A872BDB5
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Dec 2004 05:14:30 +1100 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1101877409.5672.2.camel@gaston>
-From: korbekk@start.no (=?iso-8859-1?q?Kjetil_=D8rbekk?=)
-Date: Fri, 03 Dec 2004 17:41:48 +0100
-In-Reply-To: <1101877409.5672.2.camel@gaston> (Benjamin Herrenschmidt's
-	message of "Wed, 01 Dec 2004 16:03:28 +1100")
-Message-ID: <877jnzs59v.fsf@start.no>
+Return-Path: <minyard@acm.org>
+Received: from sccrmhc13.comcast.net (sccrmhc13.comcast.net [204.127.202.64])
+	by ozlabs.org (Postfix) with ESMTP id 8DF1F2BDB5
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Dec 2004 09:07:55 +1100 (EST)
+Message-ID: <41B0E3B4.8050006@acm.org>
+Date: Fri, 03 Dec 2004 16:07:48 -0600
+From: Corey Minyard <minyard@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: fedora-ppc@lists.infradead.org, gentoo-ppc-user@gentoo.org,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: TEST: Sleep patch #6
+To: Tom Rini <trini@kernel.crashing.org>
+References: <41AF7DFC.9040009@acm.org>
+	<20041202222349.GE14005@smtp.west.cox.net>
+	<20041202154901.B20211@home.com> <41AF9E25.2080109@acm.org>
+	<20041202231621.GF14005@smtp.west.cox.net>
+In-Reply-To: <20041202231621.GF14005@smtp.west.cox.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: PPC debug setcontext  syscall implementation
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,11 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Tom Rini wrote:
 
-> http://gate.crashing.org/~benh/albook-ibookg4-sleep-6.diff
+>On Thu, Dec 02, 2004 at 04:58:45PM -0600, Corey Minyard wrote:
+>
+>  
+>
+>>I'll test gdb on classic and an ebony that I have.  I assume that gdb 
+>>has a built-in test suite?
+>>    
+>>
+>
+>The GDB sources, yes.  You do need to build GDB first, have dejagnu
+>installed and then run a 'make check'.  Ping me off-list if you want
+>some help getting it all done.
+>
+>  
+>
+It checks out on 440gp and 7xx.  There were no differences in failures 
+on the 7xx.  There was one difference on the 440gp, but that appeared to 
+be a thread race condition and not related to this.
 
-Worked like a charm.
+Thanks,
 
--- 
-Kjetil Orbekk
+-Corey
