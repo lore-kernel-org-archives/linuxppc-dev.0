@@ -1,29 +1,23 @@
-From: "Sanjay Kumar" <skumar@giga-stream.de>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux device driver book
-Date: Fri, 25 Apr 2003 15:01:46 +0200
+From: nbasker@india.tejasnetworks.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: regarding MCC driver for MPC8260
+Message-ID: <1051276505.3ea934d90bdb6@pop-mail.india.tejasnetworks.com>
+Date: Fri, 25 Apr 2003 18:45:05 +0500 (IST)
 MIME-Version: 1.0
-Message-ID: <FKEJLMJFECLAHOKCGJFPGEGLCAAA.skumar@giga-stream.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi !
+Hi:
 
-I am looking for device driver book for beginners.I am already reading
-Linux device driver book by Rubini and Corbet,but I need a book which
-expalins with better examples.
+I am working on developing a HDLC driver using MCC channels in MPC8260.
+While browsing through linuxppc_embedded mailing list, I found that
+a sample driver was posted, but I could not find the mail that contains
+the sample driver. Can somebody give me a pointer to where I can find
+the sample code?.
 
-Any idea ?
-
-regards,
-sanjay
-
- ==============================================================
- Sanjay Kumar                        skumar@giga-stream.de
- GIGA-STREAM UMTS Technologies GmbH  Tel: +49 (07243) 94976-119
- Im Ermlisgrund 8                    Fax: +49 (07243) 94976-100
- 76337 Waldbronn
- ==============================================================
+Thanks for your time,
+Nicholas.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
