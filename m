@@ -1,37 +1,44 @@
-Date: Wed, 19 Sep 2001 14:58:36 -0700
-From: Mike Fedyk <mfedyk@matchmail.com>
+From: THEDREAM@chollian.net
+Message-Id: <200109201107.UAA15781@ldap.dacom.co.kr>
+Date: Thu, 20 Sep 2001 20:08:53 +0900
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.10-pre12 sysrq.c compile error
-Message-ID: <20010919145836.A25452@mikef-linux.matchmail.com>
-References: <p0433010bb7cebf4c3df9@[63.220.231.138]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <p0433010bb7cebf4c3df9@[63.220.231.138]>
+Subject: [Question] I want to use CSCOPE to port Linux kernel.
+Reply-To: THEDREAM@chollian.net
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Sep 19, 2001 at 05:34:26PM -0400, Stefan Jeglinski wrote:
->
-> rsynced mvista today, linuxppc_2_4:
->
-> sysrq.c:35: conflicting types for `wakeup_bdflush'
-> /usr/src/linuxppc_2_4/include/linux/fs.h:1347: previous declaration
-> of `wakeup_bdflush'
-> make[3]: *** [sysrq.o] Error 1
-> make[3]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
-> make[2]: *** [first_rule] Error 2
-> make[2]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
-> make[1]: *** [_subdir_char] Error 2
-> make[1]: Leaving directory `/usr/src/linuxppc_2_4/drivers'
-> make: *** [_dir_drivers] Error 2
->
->
-> Help?
+HI.
 
-If you look at sysrq.c you'll probably find wakeup_bdflush defined twice
-with different types.
+I want to use CSCOPE.
 
-Please port compiler version, etc.
+I use Redhat 7.1 in my PC.
+
+I tried to install cscope but I had the message as below.
+
+------------------------------------------------------
+# rpm -ivh cscope-15.3-1.i386.rpm
+error: failed dependencies:
+        libncurses.so.4 is needed by cscope-15.3-1
+------------------------------------------------------
+
+I have already libncurses.so.5.2
+
+So I tried as below, but I had the same result.
+---------------------------------------------------
+# ln -s libncurses.so.5.2 libncurses.so.4
+# rpm -ivh cscope-15.3-1.i386.rpm
+error: failed dependencies:
+        libncurses.so.4 is needed by cscope-15.3-1
+----------------------------------------------------
+
+What do I do to use CSCOPE ?
+
+Any help could greatly appreciated.
+
+Have a nice day.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
