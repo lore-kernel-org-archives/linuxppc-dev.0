@@ -1,19 +1,28 @@
-Return-Path: <kato.takeharu@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
-	by ozlabs.org (Postfix) with ESMTP id 7DDFC67A6B
+Return-Path: <srinivas.surabhi@wipro.com>
+Received: from wip-ectls-mx1.wipro.com (wip-ectls-mx1.wipro.com
+	[203.101.113.37])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wip-ectls-mx1.wipro.com",
+	Issuer "VeriSign Trust Network" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 98CBD67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Mar 2005 11:36:52 +1100 (EST)
-Message-ID: <4238D118.1000608@jp.fujitsu.com>
-Date: Thu, 17 Mar 2005 09:36:40 +0900
-From: Takeharu KATO <kato.takeharu@jp.fujitsu.com>
+	Thu, 17 Mar 2005 16:11:48 +1100 (EST)
+Received: from wip-ectls-mx1.wipro.com (localhost.localdomain [127.0.0.1])
+	by localhost (Postfix) with ESMTP id 4739722007C
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Mar 2005 10:42:13 +0530 (IST)
+Received: from blr-ec-bh1.wipro.com (blr-ec-bh1.wipro.com [10.200.50.91])
+	by wip-ectls-mx1.wipro.com (Postfix) with ESMTP id 3AE0A220034
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Mar 2005 10:42:13 +0530 (IST)
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-References: <42331CA8.3030400@ybb.ne.jp>
-	<20050316222215.GC8345@smtp.west.cox.net>
-In-Reply-To: <20050316222215.GC8345@smtp.west.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: galak@freescale.com, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] compilation failure due to confliction of time_offset
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 17 Mar 2005 10:45:48 +0530
+Message-ID: <EF9B29C78F41FA488927FCBC7750AF0E011DA945@hyd-mdp-msg.wipro.com>
+From: <srinivas.surabhi@wipro.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: FW: LED driver 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +33,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Tom:
 
-Sorry, I did misunderstand about it.
-I'll fix this if nobody is working on this problem.
 
-Tom Rini wrote:
-> 
-> 
-> Are you certain that the 'time_offset' referenced in <linux/timex.h> is
-> what wants to be used in arch/ppc/kernel/time.c ?  Thanks.
-> 
 
--- 
-Takeharu KATO
-Fujitsu Limited
-Email:kato.takeharu at jp.fujitsu.com
+-----Original Message-----
+From: Srinivas Surabhi (WT01 - TELECOM SOLUTIONS)=0D
+Sent: Thursday, March 17, 2005 7:53 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: LED driver=0D
+
+Hi,
+
+I am working on the MPC8270 board having connected GPIO 3 lines
+connected to 3 LEDs. So can any one help me in finding out the best
+solution of controlling the LEDs from MVlinux (kernel and user space) or
+any pointers who has done it before.=0D
+
+Thanks & Rgds
+SS=0D
+
+
+
+
+Confidentiality Notice=0D
+
+The information contained in this electronic message and any attachments to=
+ this message are intended
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately
+and destroy all copies of this message and any attachments.
