@@ -1,38 +1,42 @@
-Date: Wed, 3 May 2000 11:14:25 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Holger Bettag <hobold@Informatik.Uni-Bremen.DE>
+Message-Id: <200005031931.VAA17447@piglet.grunz.lu>
+Date: Wed, 3 May 2000 21:31:04 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: hfs
+To: scott@re-104-1.read.indiana.edu
 cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Does a Cinema Display work under Linux?
-In-Reply-To: <8xwvlb1pzl.fsf@s63.informatik.uni-bremen.de>
-Message-ID: <Pine.LNX.3.96.1000503111322.24757M-100000@deepspace.mklinux.org>
+In-Reply-To: <Pine.LNX.4.10.10005031339350.32242-100000@fletch.read.indiana.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 3 May 2000, Holger Bettag wrote:
+Hi there,
 
-> > I've been doing it w/ the no video drivers setting and Xpmac.
-Obviously,
-> > you're limited with whatever res you were in with MacOS, but that's not
-> > _that_ big a problem, since at least the studio displays only offer one
-> > resolution. I would expect the Cinema displays to be similar, but I'm not
-> > sure.
-> >
-> And are you or aren't you booting with BootX? (Just to make sure.)
+On   3 May, this message from Scott Knight echoed through cyberspace:
+> 	Alright, so hfs isnt working. Is anyone out there working on it?
+> Does anyone have any ideas as to why it stopped working in the first
+> place? I know its not a showstopper but it would sure be nice. Ill
+> probally try to look over stuff, but I dont know If ill be able to fix it,
+> any and all help and info, or directions to discussions about the topic
+> would be greatly apprecaited. Thanks.
 
-Yes.  No problem whatsoever.  Running either 9.0, 9.0.1, or 9.0.2, I
-forget.
+I remember discussion on some mailing list about this stuff some time
+ago, but when I looked recently, I didn't find anything.
 
+Anyway, it seems the changes in the VFS code (the layer that unifies the
+various filesystems towards the rest of the kernel) broke hfs. So that's
+where you need to look...
 
-David
+Michel
 
----------------------------------------------------------------------
-A logician trying to explain logic to a programmer is like a cat
-trying to explain to a fish what it's like to be wet.
-
-	-- unknown, possibly Franklin Veaux
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
