@@ -1,38 +1,50 @@
-Message-Id: <199908092006.WAA00321@piglet.cpu.lu>
-Date: Mon, 9 Aug 1999 22:06:15 +0200 (CEST)
+Message-Id: <199908092015.WAA00324@piglet.cpu.lu>
+Date: Mon, 9 Aug 1999 22:15:19 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
 Subject: Re: Trying a Promise Ultra/66 on powerpc
-To: trini@disparity.net
+To: bh40@calva.net
 cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.BSF.3.96.990809145017.16262j-100000@silver.teardrop.net>
+In-Reply-To: <19990809085029.001336@smtp.calvacom.fr>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+Hi gentlemen (any ladies around?),
 
-On   9 Aug, this message from Tom Rini echoed through cyberspace:
-> On Mon, 9 Aug 1999, Paul Mackerras wrote:
->> There's no problem about enabling both cmd646 and ide-pmac with the
->> current vger sources, is there?  You do need to select experimental
->> drivers as well as "Generic PCI IDE chipset support"
->> (CONFIG_BLK_DEV_IDEPCI) and "Generic PCI bus-master DMA support"
->> (CONFIG_BLK_DEV_IDEDMA) before you get asked about the CMD646, though.
+On   9 Aug, this message from Benjamin Herrenschmidt echoed through cyberspace:
+> On Mon, Aug 9, 1999, Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+>>Basically the problem is that the IDE driver assumes that you access
+>>all IDE controllers via I/O ports.  When you have a controller that
+>>has memory-mapped registers, there is a problem.  When you have a
+>>system where one IDE controller has I/O ports and another has memory-
+>>mapped registers, you have a bigger problem.  The current approach to
+>>solving this problem is to map the addresses of the memory-mapped
+>>registers into pseudo I/O port numbers (by subtracting _IO_BASE).  If
+>>there is a better way, somebody let me know. :-)
 > 
-> Right, the problem comes from enabling CMD646 but not ide-pmac.  Right now
-> to use any IDE chipset on a pmac, you need to say yes to "Builtin PowerMac
-> IDE support" and whichever chipset you have (to boot at least, I'll check
-> being able to use it once I can boot off something else, but it sounds
-> like there might be a problem there as well).
+> Looks like the best way would be to store the port base or pointers to
+> the in/out functions in the HWIF structure.
 
-On my box, the kernel panics on IDE initialization if I don't enable
-builtin PowerMac IDE. There's no problem compiling the kernel, though...
-and I haven't had time to trace the problems. Might be a missing
-function definition (although linker should catch that?) or an
-undefined constant? Or the uninitialized ppc_ide_md array?
+How about fixing this in the kernel's PCI bus structures, by adding any
+required offsets in the pci_fixup() routines? This would make for clean
+inb()/outb() definitions (no offset), and also accomodates multiple I/O
+spaces behind more than one bridge. For instance, on the 7x00, both
+bandit and chaos have I/O space; the one for the PCI cards, the other
+for control (yes, control has an I/O port range! Not sure it serves,
+though...).
+
+Any fixed-offset approach would break with multiple I/O ranges.... Not
+to mention the 9x00 machines (two separate host bridges, each three
+slots), where you can't work around the problem by using hardcoded
+addresses for the known motherboard chips.
+
+I guess this approach could be made to work across the PPC
+architecture, not only on the PMac, as the PPC in general lacks anything
+special about I/O space... after all, those are just small memory
+spaces ;-)
 
 Michel
 
