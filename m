@@ -1,59 +1,50 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Till Adam <till@adam-lilienthal.de>
-Subject: Re: [Linux-fbdev-devel] atyfb and the Mach64 LT PRO
-Date: Sun, 18 Nov 2001 10:25:01 -0500
-Cc: Linux Frame Buffer Device Development <Linux-fbdev-devel@lists.sourceforge.net>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.GSO.4.21.0111181540180.2305-100000@mullein.sonytel.be>
-In-Reply-To: <Pine.GSO.4.21.0111181540180.2305-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Message-Id: <20011118152214.LLAO13234.tomts8-srv.bellnexxia.net@there>
+Subject: Re: xfree86/fbdevhw not sending right mode to radeonfb.c
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20011118140926.MNTJ9849.tomts10-srv.bellnexxia.net@there>
+References: <20011118140926.MNTJ9849.tomts10-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 18 Nov 2001 18:31:18 +0100
+Message-Id: <1006104678.9556.7.camel@pismo>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-BTW: if you are adventerous and if the Mach64 stretch registers are
-anything like those iin Rage128 or Radeon, you can check out the latest
-patches to either to see how this is done for those ATI cards and try to
-implement it yourself if you want to.
-
-A recent post to this mailing list (see the archive for a post whose
-subject is "Scaling registers on r128" from Adrian Cox) supplied a patch
-to the Rage128 that did exactly this.  You may be able to modify it easily.
-
-Just a thought.
-
-Kevin
-
-On November 18, 2001 09:41, Geert Uytterhoeven wrote:
-> On Sun, 18 Nov 2001, Till Adam wrote:
-> > # Thus spake Geert Uytterhoeven (geert@linux-m68k.org):
-> > > On Sat, 17 Nov 2001, Till Adam wrote:
-> > > > So does the atyfb driver need to be extended to set the stretching
-> > > > registers to a sane state to work properly with this card? If so,
-> > > > is
-> > >
-> > > Yes.
-> > >
-> > > > there someone on this list for whom this would be a three minute
-> > > > job and who'd be willing to hack this in? I'm willing to help and
-> > > > test, but I'd appreciate the guidance of someone with more
-> > > > experience in this.
-> > >
-> > > Some PPC people already started working on this.
-> >
-> > Any details on who to hook up with or where to find these folks? A
-> > mailing list perhaps?
+On Sun, 2001-11-18 at 15:12, Kevin B. Hendricks wrote:
 >
-> linuxppc-dev@lists.linuxppc.org (CC'ed in this message)
+> I am still working on the radeon driver for XFree86 and trying to get the
+> useFBDev options to work properly.
 >
-> Gr{oetje,eeting}s,
+> I have a properly constructued mode line in my XF86Config-4 which I
+> specifiy.
 >
-> 						Geert
+> However when the XFree86 radeon_driver passes this initial mode to the
+> radeonfb.c kernel framebuffer driver, most of the mode information is
+> missing (no detailed timing info, just xres and yres, etc.
+>
+> The radeonfb.c messes up when this incomplete mode information is passed
+> to it (from fbdevHWModeInit ?).
+>
+> So where should I look to see where this is messing up.  It does not
+> appear to be an issue with the framebuffer kernel driver since it is the
+> victim of the receiving end of the bad data.
+>
+> It is almost like the the xfree86 code that parses the XF86Config-4 config
+> file is not properly grabbing the specific mode information (or somehow
+> later it is being mangled).
+>
+> Any hints or guidance of where to look in xfree86, would be greatly
+> appreciated.
+
+fbdevHW and fbdevHWModeInit in particular are probably good places to
+start. If you enable debugging in fbdevHW, it will print detailed mode
+information.
+
+
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
