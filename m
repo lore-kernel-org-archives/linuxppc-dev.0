@@ -1,114 +1,68 @@
-Message-ID: <398E9829.714A608@pop.agri.ch>
-Date: Mon, 07 Aug 2000 13:06:17 +0200
+Message-ID: <398EA0CE.5439F930@pop.agri.ch>
+Date: Mon, 07 Aug 2000 13:43:12 +0200
 From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-To: Linuxppc-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: status note: 2.4.0-test6 paulus on 7200
-Content-Type: multipart/mixed;
- boundary="------------00D9CC46D0F1F3BA6EA07FCF"
+To: Tom Rini <trini@kernel.crashing.org>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PCI resource collisions (2.4.0-test1-ac5+)
+References: <20000806133523.D2891@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------00D9CC46D0F1F3BA6EA07FCF
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Tom Rini wrote:
+>
+> I've recently been playing with 2.4.0 on my machine (Yikes! G4, all PCI slots
+> full) and I've run into a problem with the new PCI resource checks.  First,
 
-hi all,
+My box: 7200 with pci slots full too.
 
-a short status note, the 7200 boots again with the latest linux-pmac-devel. It
-took a long time, but finally it works again. Thanks to all who helped.
-One thing I have, although. My 7200 doesn't use the internal SCSI bus nor the
-external. I use a 2940UW to boot from. But this device gets only recognized when
-I apply the attached patch. From Geert.
-So, I don't know who to contact to comment this patch. (Well, I actually know
-who, but I get few to no responses)
+here my lspci -v on a patched 2.4.0-test6 (linux-pmac-devel from Paul):
 
-Thanks
+00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+	Flags: bus master, medium devsel, latency 32
+
+00:0d.0 Ethernet controller: 3Com Corporation 3c590 10BaseT [Vortex]
+	Flags: bus master, medium devsel, latency 32, IRQ 23
+	I/O ports at 0400 [disabled]
+
+00:0e.0 SCSI storage controller: Adaptec AIC-7881U
+	Flags: bus master, medium devsel, latency 32, IRQ 24
+	I/O ports at 1000
+	Memory at 80800000 (32-bit, non-prefetchable)
+
+00:0f.0 USB Controller: OPTi Inc. 82C861 (rev 10) (prog-if 10)
+	Subsystem: Unknown device 1045:c861
+	Flags: bus master, medium devsel, latency 32, IRQ 25
+	Memory at 80801000 (32-bit, non-prefetchable)
+
+00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
+	Flags: bus master, medium devsel, latency 32
+	Memory at f3000000 (32-bit, non-prefetchable)
+
+Without any pci-hack I get the following msg on boot:
+
+PCI: Device 00:0e.0 not available because of resource collisions.
+
+The same as on your box, the AIC-7881U.
+
+
+> Which causes the aic7xxx.c driver to say there's a PCI resource collision, and
+> not use the card (which works fine in 2.2.x and 2.4.0-testX with the check
+> removed).  Has anyone else seen errors like this on 2.4.0-testX (the test1-acX
+> series added in a good deal of these checks..)
+
+In my case it's even worse, the boot hd's (and all others) are hanging
+on the 2940UW.
+
+The 'solution' I have, is the patch sent a few minutes ago to
+linuxppc-dev. (status pm7200)
+
+So far my experiences.
+
 Andreas
---------------00D9CC46D0F1F3BA6EA07FCF
-Content-Type: application/x-gzip;
- name="ppc-pci240.patch.gz"
-Content-Disposition: inline;
- filename="ppc-pci240.patch.gz"
-Content-Transfer-Encoding: base64
-
-H4sICJWWjjkAA3BwYy1wY2kyNDAucGF0Y2gAtRprc9NI8nPyKxq2CHb8iBOyHBCcxRDD+khi
-Kg57bO3teWVpZOsiS0aPOLkj+9uvu2f0lmwn7LkoE0sz3T397p5utVpgW054s6d5+mxvsdD3
-roTnCHtvoVttve161nTrchbC30Mb9p/hv1eHL14dvoSDTqez3Wg0Vu3Ob3z56pna+OYNtA4O
-ms+hgd/7P8KbN9vwg+XodmgIeK35873JbSBczxBee3acf2d5X0ueTqcH9LTxQ+gYwoST/tvP
-H7Yb+NsyU79/wL8tR8DJ2w+1m3a7XYeFZznBVe2mji+F7YuSNfTGMSyTwOXRhpquC99nglLv
-HhMHZo/5pH/bb778ERovOs2Dl4d81q2pcIRn6WNcNbFcf7z0rECMjSUeeRvujhBU69q1DBiP
-LccKIFpGP2r0or7d+u92a0vR/vjTu8Er+OS5E8uZAv6AmeYZS80T/3Qe149ooW6NfV1zxpPQ
-r3WasJMiYOwu/Cacfz495aWWCTWU5HhutCO0pnUTLhDl1lbZi1qEgR/ptmbNx57w3dBDxtR2
-CIPnugGhFj6tvcsdb7uVgTde4MqxpzlT3O4HXqgzA2g/7AJ+NyF6Sgt9EajFY0MLNFwif6HU
-GEcEO1zgaxFTloZsiGvYxa8YcLQIdony5nYDVnyKewSSiIKJH9W3gaQl6WodW+7YDzQvgFaX
-jtM6jtb91vm9dcyvjrLLUfs2XDwX8yrg+1XrS6GnV9/FDAifHYAjlk3QZ0K/Ooqfy9NOWXFD
-x7emjjDAdlEbI4BKV/Jch3K2059NUrgtiTYDkslq5h9a/xHKKjwRhJ4DReqRcugSaHU0+AY1
-/mXa2tSHHTKd8UX/w2B4Pn5/2vswPuuNPtZTpzR5vaTxNTyvo1jzqoFcQBwE6G1v1B/3Tk4u
-+qPRuAMNONyNNicg74B8ThZyV+6/GJ4hMaPh54t3/XJMMeXfkh0Rwv557+1p/6iCPuQ6ytqd
-jyeaTzYxLVBUxLe3CyN3LiaucQtzazoL0MtcC9D8K5SBZtuurgWW64BrggaO67SQx46Bjigl
-170SekhYKfTkZNXfpCXSM+quY1pT6SBrrDJIc5MEmhIPexqhGVWrd1hpc/KskVL8S+pzHVVA
-PtgpSnD0qfeuPx4M6/BT8eVgyLoCr4qvzvpnUo/KZKgc+Mf+xfm4f3EB0pP3Pc/1YDmzbAHs
-tiw2pClx93GVM3r8xN97YkDtSefFDTzqAv1fR//flML2bXTBjjYXzVgclX4tsfB6RjAsm71d
-fLQL/xC4DAUfuKCxn9Vd27Z8JNGHpRXM4I+5RccQxlP45UMPFq4X+LwTlQLcYCY8MntyQzAY
-9eKIhc7AhSWqlb3UbhGUhp4FF8udhoG0YxQhrBMRKR1SYTm0CDo3mF208Ns0Fb9439w1QtvF
-t4edTpueyBPMbn+Ct0LXMC4h0jl+WbZ9C+ImwCRGs2EwBB2p8sF18LEhdNeQdBAq213Cfgcm
-VuCTxtMjXK8obMOlogaJydJi+cR/4V0j1SZKec6smLhkJygoS6fTzbRA4aMzwv5z3kq4mD1W
-8BSRXjHvFQtAQ4/oa7dNxHrwgvEevDDNptwYBsRSyUsXAu82EVtkuKhhiBR3vZSbJ6bJe1EL
-9Vna3pHvkWTljs6+5Pkz02wzd/dk5N1uRKFXs9FRJ5GX8e5SsC4LuBQ8S1w7bDcS8ymJ3eTU
-EOJRyn0op5q498Ew8qdsx0VzLIkzmYCRhg4pLEQhHCMvkBVlcFeb+2BvCBfSuqUNB64LtuZN
-RaWxx0aP9m4bQNmyX2rs6wDIQBBxv8VxVzK8GDruqk7PfNrB4z9bffyIoWpHg3aYJnndP/mv
-Isrok4rZ3Siwl5CX/MW0xs4Kfkang840TkvJZClPVhbXBhhIG8aQgfxcCk/AQnim0NGs0HR0
-N7QNCerfoR+kzA7Nk/bFLJSm7rOXM1yMg8GMbGuO9kJYAnQAztOgLWENpduS3nCGWyQyzcFt
-EpEnWhlciuAmhl10A0huTJcnvoYWkh2yd7xy0D+hFvBJZy5CmniWgb4WFZC9G515JD1tEIj5
-gjyDBHQlxILAz0M0fOXaqA60yCfK0Bp6MtTjqoXr+9bERr9NXiZYCu0KCZOQljPhSGdluliV
-Ka+99NC4EjcMH5FUB94OhiO0DxdBzX0ii50N7kCJXIHmEYBXcgN+Wmw05D4FcvY25jrxLSJR
-GKnl0YLkpSSYNghHQ6xxENHd+ZykR1t8ZFYKysSdInsJdRKKtImLhD4//Iicz6AUNwvNoYAI
-mJf5YAszQVVDrUAOa7fozokzGP3mNsKTRE2ta+HEkICpMjWdAyGrrb8Quk8IbEu3AgxOpCPL
-iCgVOjwVJlOAfMSD2CcC5YSiyVGYBOa8NjdZiilA6PhtoaFWGRTAUThUbkUCHYYY2l07JBVJ
-RFbbr0MvUuXEECkGkmJzdYiUobUYdMZW4LboqFJt/XYKOWB0Re4Rl3xSd6ws6FCa51l0aDwO
-Kh5agjSl2FYTELWDlaREQso7BwRp+Rk6tCTraUp7nWuorRmHgDYSOnGm0kbEvpsBYlg+4ctL
-wwg9chysKKiGixT5z+pwqWJ4+SkUyOIRMoiTPezvNF8FP931PHR8NiYT4lp4t9KDTV1eaNvN
-DBCL4d4yCHRsTfXLxb+JDEzuJ7nigFWsnJDUGQ9RREwQV22ZzC9FNycnTL2wCmCzzoB0lqRL
-TsPyk+eSN4kt5Sj7GgqfMszJLYsVtdRrJlCzQovIzOqI5JrKjLA+xvAVWDqU9XfyzROV56CG
-BeMZVjawSx0P+onmtgJOpBZj7qRsBI47FMUFNir2rkH1WelLLPi38i0a/Mo9jnI0ekydAsu4
-wbo8AZnK/hDbwiNsWG2eiEUwa723PLSrkaAWI9k24Qg8wcUkbJG212ynGx2kdexg/n4EtkM1
-UPSUfndtR76kDAW2tghON6J6PEEg3MeSEA2G2DqO7EcCNRjoTvoNPewaKcjUs5DpqDo5gjYU
-aAkbT49vO0fEBnjNBeP556TUH/GLRoP7bVsSYAmjEMROJnn7DXf9flSxXPKUe3s1SR0fwhe2
-ma9L00RyMXsxOPnQz5G3iu6yBLCSXCByiaxHnkrw6vLZFtoYViWhUGsWnmKpiQFivMA45gRJ
-SSGL/HoaHm749i0y4GTlwqOFSH9HMjji8FZ5bt5TIdVfaLpIvD0poirIMV9HpybVAfN3TsLx
-bCoTpyRcCX+LdBrLZkpy0Dtj6J9R9hb7fxk1phxL5CvyoUvxU1nbpOpTfop3MqMsRIvsGVSG
-WDhDXE2U1ATR567wpvhkjXeSdqXPLBtZ7pR0HjZxeAk4cjQLjGn1NYVjtokpT63CZ/Iq3H8e
-5YVHeWAl3ivTkkJ7GgtNnxFGUtTSPlCudZV0rsjM3g3PznrnJ9TBkjSUCAKx5D3L81UWqT6V
-hlm1gYvq1rE0wHryHHW7Z9MRblNtmQ0UNzHzVRgT75DFqKyTlTtKX1Sc/8twI2rqkHeRszem
-+qxiaYq+U6x0Lj3NsmH4Hqg8u3pFyWBE6QYk0h2UtOGLSM2edF7YNy3+hqXMLhVAttuIU/yX
-KNWV/EedsNWNN2+0J6rHO+tXr+d0WXMh+igplLdx1uKOk+EuPKpFxd1O2rAITDVl8lLw+5Gc
-9c+GF7+uQMQ3byhLUrUI3iaKtkZHamb3iU1erfsEi94FfnOnaKOQklcm/p/lkHjJpnSz65Vg
-wxC+DsyG0X0DxiWEPTxoVgX+TYJm/sP5wVP0XdKg6RolqX3ARiK8++QCDzHr1N6UeXNWdcf/
-8fcd3wVX3fgW4niUkZGaFMVSEoLy11/FeJRzCeW3X5U6gIy+pCtCSrmobnNNs0kNjWtR1syT
-TRlui2HKETpRY4hqxypx0EVp5lot80ksdrS0Ap3ra6RB0RIp02Z6lHChC39uegvInxX3ZYX7
-Qcw98LuKhlUXdSWg6A5yp4rY8sZz6m8gHczPEEB2hIDGHErq0jVVM1tdSpPlpAUXdaRvUDb9
-wLArZyOYEEJcyBpXpqCrcsyHpJcEFs2UQouUh/xxfAwvyq40qPbmBk7gUg+YF9uysSgvqCi4
-pZrKfpkZsMlLPOipFXZZUr477aG4VWH583B0WR3EU4lDVcrblQnv6+9Ldyu38BVCxWcXMowa
-nPSZYA/LROpEEpuoWcx3n2TY15YhXHmp+GgF1GoXzwV8CS9Hl8OLHjKTKNjZUfn/YR05v9Lj
-l4E6GYw+nfZ+HdOlLYKqTrzq61OvVdKLPmv4iwWzP9OqYiLdZs7klaq80lZ9QJjIe92VoMnV
-87UDKtLU5atRw6X7VTfeH19EGEJH2RnyMoSvXKrhRsTJ5DyU1T11VfiSGT2u7zrtB4s/LoVI
-OirFX596oaPIuTfpnVFT7nHTR1kVeQeDlV5JhLvVK4h+UHxPdt8jidmsJklquu/gW2FAZ5P7
-SG5JqPAgLxmKzdl0XMi0LrgFMcdsG9VvjH98V9DYqNcwT9eOCiuyNoP7Hj5441ZDlZbf+2L9
-JMrNZYPgGgtxtsXIuF0z4VEyvnKP3Aui+SVo9Qfnv/ROV+cuyfHuX80S79WYV1K1lvOuHDiW
-n/eCLsvVTBcuhWONPbdVKzePbwM8BJ2WPepGOrdicErNS5EtUQ4dF2M0BnV4A61joP/Lx6AU
-9CZkFT3GkM9pK+wkuzvhklIMqp44WdVnmhdlnLuRF/Bx0aLGr3bRautyamHN6C9khhy91ADc
-ZuPAaUew0VBwWjTlo8EF5lXMCadQr2wFF4aGKzcmmzqbLdsvW5bP/OuR1PbktBfd7kCwdAGZ
-iDx3beGAiUUNv9TsxUzjJK/d5ooQSoebv2cAuVV6B1ScM24s/i+T1KRxkWizM1J80y4nho5S
-a/LV771Gn0s2rRuAzm/ZbAy6bNe6YegGq0V0UDloUDHvm0z07mIunmIPj4upuTLGlxkxi5et
-qM8V21VNHu+Qw701WV/LsblvWDDUUB71WmqGChGiWkUtdR7AUjNfGeRVJb3CrhoCf92898ps
-bOMZ8FTOlJ0ELzQNCrZpeV/LzZJTLO9rvdw3r+k5sL8u8JNm9pJwMji/xLzl86fL8engvN9k
-ZHRtiP7ny5cv8H7w5ayPYpN00m2CCnV8E+7QoCgPdnnhIqALxoXwgtt0Ur6uf7GJA081M5iV
-jQ1DWok8vKN4mjjxr65DAzYPda9/xZBp4j83VohUbvIgEUebv1fQLBEoqTDk/vLy4n9YSxHY
-/zUAAA==
---------------00D9CC46D0F1F3BA6EA07FCF--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
