@@ -1,58 +1,40 @@
-Date: Mon, 9 Aug 2004 12:03:19 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Wolfgang Denk <wd@denx.de>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 2.4 versus 2.6 patches
-Message-ID: <20040809150319.GD5733@logos.cnet>
-References: <Pine.LNX.4.58.0407261021120.6190@localhost.localdomain> <20040726171608.12880C109F@atlas.denx.de>
+Subject: Re: Large TLBs on 40x
+From: Josh Boyer <jwboyer@charter.net>
+To: Dan Malek <dan@embeddededge.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <285BFD4E-E638-11D8-852B-003065F9B7DC@embeddededge.com>
+References: <20040804093937.B12758@home.com>
+	 <285BFD4E-E638-11D8-852B-003065F9B7DC@embeddededge.com>
+Content-Type: text/plain
+Message-Id: <1092104488.2974.2.camel@c68.115.86.108.roc.mn.charter.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040726171608.12880C109F@atlas.denx.de>
+Date: Mon, 09 Aug 2004 21:21:28 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Wolfgang!
-
-On Mon, Jul 26, 2004 at 07:16:03PM +0200, Wolfgang Denk wrote:
+On Wed, 2004-08-04 at 12:03, Dan Malek wrote:
+> On Aug 4, 2004, at 12:39 PM, Matt Porter wrote:
 >
-> In message <Pine.LNX.4.58.0407261021120.6190@localhost.localdomain> you wrote:
-> >
-> > Deployment if you're already almost ready to ship is sane enough, I
-> > suppose -- but to actually put more effort into 2.4 wouldn't make much
-> > sense.
+> > We eagerly await your patch. ;)
 >
-> It depends on your requirements.
 >
-> If you need a kernel that is
-> 	(1) stable and working [2.6 is still pretty much useless for  example
-> 	    on  8xx  systems],
-> 	(2) small [2.6 is usually >= 20% bigger than 2.4],
-> and/or
+> HAHAHAHA!   Fortunately, long ago IBM asked me to return
+> all of the development boards I had that belonged to them........
+> and I had some cool ones, too :-)
 
-Even with CONFIG_EMBEDDED or Matt Mackall's -tiny tree?
+(Sorry for the delay)...
 
-> 	(3) fast [2.6 is usually >= 10% slower than 2.4],
-> then 2.4 may be the better choice.
+I have some boards I could test such a patch on.  Or is it a case of
+"this isn't trivial to do"?  In either case, if someone could give me
+some pointers, I'll try and figure it out myself.
 
-Where are you you seeing this slowdown?
+And if not, I guess I'll still figure it out myself, but it'll take a
+lot longer :).
 
-v2.6 is faster in almost all workloads (it often consumes less memory, VM/FS/core API's
-are faster, etc).
-
-rkload, and we are talking about embedded setups/workloads here.
-
-So, I'm sure we should go hunt the slowdowns... At least make the kernel development
-community known about them. For sure we should make efforts to fix any performance
-regressions in v2.6.
-
-> > Because nobody's really that interested in it. For what it's worth, I've
-> > abandoned all pretence of continuing to support 2.4 in the MTD/JFFS2 CVS
->
-> David, you can do what you want. But it is not up to  you  to  decide
-> what  other people are doing. I declare that there ARE people who are
-> interested in 2.4 kernel - both for maintenance and development work.
+thx,
+josh
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
