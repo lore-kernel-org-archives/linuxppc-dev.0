@@ -1,32 +1,50 @@
-Message-ID: <3D406586.9070305@embeddededge.com>
-Date: Thu, 25 Jul 2002 16:54:30 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: "John W. Linville" <linville@lvl7.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: abatron and kernel modules.
-References: <200207251713.MAA00232@mint.mw.cray.com> <3D40556C.4040108@embeddededge.com> <3D405B7F.5020200@lvl7.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "Rick Hunnicutt" <rhunnicu@getntds.com>
+To: <ghannon@cspi.com>, <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: VME driver (Universe II)
+Date: Thu, 25 Jul 2002 13:58:14 -0700
+Message-ID: <001601c2341d$ff0e0500$cdf859c7@get.com>
+In-Reply-To: <85256C01.006330D5.00@pine.cspi.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-John W. Linville wrote:
+The vme driver I have is from the 5100 lsp MVista provided. It's running
+under the 2.4.2 kernel and been exercised pretty extensively. I'm not doing
+any DMA transfer though.
 
+Did you have any special setup files (arch/ppc/kernel) for the 5100?
 
-> I recall having to add the BDI support to the linux-2.4.2_hhl20 kernel
-> source here.
-
-There are a couple of different versions of that kernel :-)  The first
-one was all PPC except 4xx.  There was one for 4xx, where I managed to
-break some of the other PPCs (sorry).  There may be later ones that
-include other processor architectures.  There are minor version numbers
-contained in the packages, take a look at them as they are important.
-Of course, the processor specific CD packages were all correct, just
-be careful when mixing from one to another (which isn't recommend).
-
-
-	-- Dan
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
+> ghannon@cspi.com
+> Sent: Thursday, July 25, 2002 11:17 AM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: VME driver (Universe II)
+>
+>
+>
+> Greetings,
+>
+> Has the universe II driver been updated against the 2_4_devel tree?
+>
+> I have found the patches from Gabriel Paubert, against 2_2.
+> Should I attempt to merge that into the 2.4.11 area to get a
+> driver for VME?   It would be a learning experience for me, but
+> one that I'd rather avoid if possible.
+>
+> The board is MVME-5100 using 2.4.11 from the devel tree.
+>
+> Any pointers would be appreciated.
+>
+> Thanks,
+> Gary
+>
+> Gary Hannon
+> CSPI
+> (978)663-7598 x1509
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
