@@ -1,48 +1,54 @@
-Date: Mon, 6 Mar 2000 07:54:16 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        Michel Dänzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp
- cwith  r128
-In-Reply-To: <Pine.LNX.4.21.0003060013070.30614-100000@idd-01.imbc.gr>
-Message-ID: <Pine.LNX.4.05.10003060753180.19293-100000@callisto.of.borg>
+Message-ID: <38C3564E.4A46F577@amberdata.demon.co.uk>
+Date: Mon, 06 Mar 2000 06:55:10 +0000
+From: David Monro <davidm@amberdata.demon.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: userland port io - how do we do it on PReP?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 6 Mar 2000, Kostas Gewrgiou wrote:
-> On Sun, 5 Mar 2000, Geert Uytterhoeven wrote:
-> > On Sun, 5 Mar 2000, Kostas Gewrgiou wrote:
-> > >   Yeap its the same in the x86 side as well, atyfb doesn't support 565
-> > > either i imagine you remember the jdk problems that we had in xf68_fbdev
-> > > because of this.
-> >
-> > But since Mach64 CT/VT/GT do support RGB 565, adding support for it isn't that
-> > difficult. Patches?
->
->  Unfortunately i don't have a mach64 card anymore, i'll take a look in the
-> xserver side though, right now it looks only in var.bits_per_pixel but this
+Hi,
 
-The X server should be OK, it's atyfb that needs to be patched.
+Hope this isn't an FAQ.
 
-> is set to 16 even in the 555 case so we need to check green.length as well
-> right ?
+I've struck a problem in the X server world - I can't seem to get port
+IO (ie inb()) to work.
 
-Yes. RGB555 and RGB565 all use 16 bit pixels.
+There are two problems - one is that there doesn't seem to be an
+equivalent to ioperm() or iopl() to enable access to the IO ports.
+Second is that for MBX and APUS machines the offset to the io port space
+appear to be constants, but for other systems we seem to have an
+external variables isa_io_base, isa_mem_base and pci_dram_offset. Does
+that really mean that programs which do port IO on these systems must
+declare and initialize these varibles before doing port IO? And that
+MBX, APUS and other systems need different binaries as a result? And
+that if /usr/include/linux/autoconfig.h doesn't match the target system
+bad things will happen?
 
-Gr{oetje,eeting}s,
+The following program doesn't work on my IBM 850:
 
-						Geert
+#include <stdio.h>
+#include <asm/io.h>
 
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+unsigned long isa_io_base = PREP_ISA_IO_BASE;
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+main()
+{
+        int x;
 
+        x = inb(0x3CC);
+
+        printf("x = 0x%02x\n");
+}
+
+It just dumps core.
+
+Help?
+
+Cheers,
+
+        David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
