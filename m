@@ -1,34 +1,39 @@
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Cc: libc-alpha@sources.redhat.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [RFC] IPC64 with glibc-2.2 and linux-2.4
-References: <00092421504403.01070@enzo.bigblue.local>
-Reply-To: drepper@cygnus.com (Ulrich Drepper)
-From: Ulrich Drepper <drepper@redhat.com>
-Date: 24 Sep 2000 23:51:26 -0700
-In-Reply-To: Franz Sirl's message of "Sun, 24 Sep 2000 21:50:44 +0200"
-Message-ID: <m3u2b5nevl.fsf@otr.mynet.cygnus.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Cort Dougan <cort@fsmlabs.com>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PCI rework & CHRP question
+Date: Mon, 25 Sep 2000 09:16:14 +0200
+Message-Id: <19340820004758.23364@192.168.1.10>
+In-Reply-To: <20000924200005.E20496@hq.fsmlabs.com>
+References: <20000924200005.E20496@hq.fsmlabs.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl <Franz.Sirl-kernel@lauterbach.com> writes:
+>Good!  Thanks, those bastards have needed to die for a while.
+>
+>I still do want to be able to mix-and-match PCI controllers and not have
+>any board<->chipset association except in the direction board->chipset but
+>not chipset implies board.   This helps people with custom hardware get
+>their boards going and helps us with new ports.
 
-> I'm especially interested in:
-> - did I get the alignment and data types right everywhere? also right for
-> PPC64?
-> - I would like to bump ipc64_perm.seq to 32bit as it is internally in
-> linux-2.4. Is this safe for userspace? Why didn't the other archs bump it to
-> the kernels size?
-> - other comments?
+There should be no problem. You can have your board code create a
+controller for any chipset, the chipset code is not dependant on the
+board. We already have both PReP and CHRP boards use indirect PCI, we
+have some CHRP and pmac use Grackle, etc...
 
-The patch looks reasonable to me but I cannot decide about using it
-since the kernel would have to be changed first.
+The PCI config access methods are stuffed in the PCI controller structure
+(removes a bit from ppc_md. which can't be a bad thing, and makes the
+overall thing more readable). But the board specific stuffs are still
+there and it's the board support code who decide which chipset to
+"instanciate".
 
---
----------------.                          ,-.   1325 Chesapeake Terrace
-Ulrich Drepper  \    ,-------------------'   \  Sunnyvale, CA 94089 USA
-Red Hat          `--' drepper at redhat.com   `------------------------
+On Pmac, I even have a cases where you have 3 hosts bridges with
+different access methods (2xbandits and 1xchaos, chaos beeing buggy, it
+has special access methods, currently empty, but soon to be filled with
+code that returns a fake config space built from OF tree).
+
+Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
