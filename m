@@ -1,19 +1,19 @@
-Return-Path: <jpl@xiphos.ca>
-Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
-	by ozlabs.org (Postfix) with ESMTP id 7D59567A2C
+Return-Path: <Steffen.Rumler@siemens.com>
+Received: from goliath.siemens.de (goliath.siemens.de [192.35.17.28])
+	by ozlabs.org (Postfix) with ESMTP id 0035867A6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Feb 2005 13:47:39 +1100 (EST)
-Received: from [216.95.199.150] (account jpl@xiphos.ca HELO [192.168.1.169])
-	by mail.net (CommuniGate Pro SMTP 4.2.8)
-	with ESMTP id 41990560 for linuxppc-embedded@ozlabs.org;
-	Thu, 03 Feb 2005 21:47:37 -0500
-Message-ID: <4202E286.1010206@xiphos.ca>
-Date: Fri, 04 Feb 2005 02:48:38 +0000
-From: Joshua Lamorie <jpl@xiphos.ca>
+	Fri,  4 Feb 2005 19:55:48 +1100 (EST)
+Message-ID: <42033888.4090706@siemens.com>
+Date: Fri, 04 Feb 2005 09:55:36 +0100
+From: Steffen Rumler <Steffen.Rumler@siemens.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Edge Interrupts (Virtex-II Pro)
+To: Dan Malek <dan@embeddededge.com>
+References: <4202408A.7050200@siemens.com>
+	<754ecc31c2497b32a0c3f6df5ce21881@embeddededge.com>
+In-Reply-To: <754ecc31c2497b32a0c3f6df5ce21881@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc <linuxppc-embedded@ozlabs.org>
+Subject: Re: uart.c: avoid changing parameter RAM on-the-fly for the console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gidday there,
+> would you please read Documentation/CodingStyle and
+> try sending the patch again?
 
-Is there a cleaner way to specify that an interrupt is edge triggered 
-other than directly accessing irq_desc_t irq_desc []?
+What in detail is wrong concerning the coding style ?
+Note, this is a serious problem for us.
 
-In my module, when I request_irq, if it succeeds I do the following.
+> Although it doesn't make too much difference in this case,
+> 2.4.20 is pretty old and it helps to get patches against
+> the latest kernels.
 
-      irq_desc[iIRQ].status &= ~(IRQ_LEVEL);
+2.4.20 is the kernel we are actually using.
 
-Is there a better way?
+> I suspect there is something else amiss, but I'll take a
+> look at it.  What is the speed of the processor and the
+> baud rate?
 
-Thanks in advance
+CPU:       MPC859T
+CPU clock: 133Mhz
+Baud Rate: 19200
 
-Joshua
+
+Steffen
 
 -- 
 
-Xiphos Technologies
-(514) 848-9640 x227
-(514) 848-9644 fax
 
-www.xiplink.com
-_______________________________________________
-The information transmitted is intended only for the
-person or entity to which it is addressed and may contain
-confidential and/or privileged material.  If you have
-received this in error, please contact the sender and delete
-this communication and any copy immediately. Thank you.
+--------------------------------------------------------------
+
+Steffen Rumler
+ICN CP D NT SW 3
+Siemens AG
+Hofmannstr. 51                 Email: Steffen.Rumler@siemens.com
+D-81359 Munich                 Phone: +49 89 722-44061
+Germany                        Fax  : +49 89 722-36703
+
+--------------------------------------------------------------
