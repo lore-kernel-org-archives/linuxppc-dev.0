@@ -1,8 +1,8 @@
-Message-ID: <004901c2e83f$e9643f40$6649a8c0@LEIYINGDU>
-From: "Leiying Du" <ldu@solectek.com>
-To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: BDI2000 debug zImage
-Date: Tue, 11 Mar 2003 18:34:31 -0800
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: question on howto use invalidate_dcache_range
+Date: Wed, 12 Mar 2003 12:20:06 +0100
+Message-ID: <FCEAKDJJAPHPLJFINDAJCELACOAA.Stephan.Linke@epygi.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,28 +10,20 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm using the BDI2000 with firmware version 1.12 to debug the zImage file
-that I made. The zImage file can be flashed into the ROM and boot up
-properly. From the BDI2000 telnet interface, I type in load
+Hi,
 
-Loading zImage , please wait ....
-- File offset 0x00010000 to address 0x00500000 size 25380
-- File offset 0x0001C570 to address 0x0050C570 size 3160272
-Loading program file passed
+in November there was the discussion about Joakims patch to 8xx_io/enet.c.
+(http://lists.linuxppc.org/linuxppc-embedded/200211/msg00122.html)
 
-Then I can single step from the 0x500000. But the board will get into the
-check stop state if I type in go command.
+Since the result of the discussion didn't seam that clear to me I still have a question related to this.
 
-The host section in the BDI2000 configuration file are flollow:
-FILE    zImage
-FORMAT  IMAGE
-LOAD      MANUAL
+After all is it realy neccessary to use invalidate_dcache range before giving the transmit buffer to the DMA?
+  That's one of Joakims last modifications but what exactly is the reason? It's obvious for the flush command but I couldn't figure
+out the reason for invalidate.
+Beside the cache line alignment problem (causing nearby data to be flushed or invalidated) are there any other problems to be taken
+care of?
 
-Is this the correct way to debug kernel with initrd? Thanks.
-
-
-
-Ly
+Thanks, Stephan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
