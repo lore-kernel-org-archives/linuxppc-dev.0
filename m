@@ -1,105 +1,51 @@
-Message-ID: <3A2E8B0F.1B13601F@mvista.com>
-Date: Wed, 06 Dec 2000 10:53:03 -0800
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
+Message-ID: <3A2EB9A5.65311F2E@mvista.com>
+Date: Wed, 06 Dec 2000 17:11:49 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-CC: frowand@mvista.com,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mount via nfs using MontaVista's Linux for IBM405
-References: <3A2CC1A9.8A0E8DC2@esd-electronics.com> <3A2D4B81.F0238326@mvista.com> <3A2E0EC6.A1239E1A@esd-electronics.com>
-Content-Type: text/plain; charset=iso-8859-1
+To: Wolfgang Denk <wd@denx.de>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 2.4.0-test11 - MPC860T FEC question.
+References: <200012040859.eB48wj301431@denx.local.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matthias Fuchs wrote:
->
-> Hello Frank,
->
-> I tried the nolock option for the mount command. It does not really
-> work, only sometimes, not very
-> frequently.
->
-> Here is exactly how I do the mount:
->
-> mount -t nfs -o nolock -v 192.168.2.190:/home/matthias/canbtgw
-> /home/matthias
->
-> (All directories exist, mounting from other computers is working.)
->
-> Here is the output:
->
->   nfs warning: mount version older than kernel
->   192.168.2.190:/home/matthias/canbtgw on /home/matthias type nfs
-> (rw,nolock,addr=192.168.2.190)
-> ... long time later ...
->   VFS: Close: file count is 0
->   VFS: Close: file count is 0
-> ... long time later ...
->   VFS: Close: file count is 0
->
-> ... mount never returns ...
->
-> Any further idea ?
+Wolfgang Denk wrote:
 
-Sorry, I didn't go back to the old target root file system to test
-the "-o nolock".  You need to use a newer version of mount to solve this
-problem (and continue to specify -o nolock).  When your Walnut CDK arrives
-your problem will be resolved because it contains the newer mount.
+> I was wrong here. The _interrupt_ comes  just  when  it  should.  The
+> problem is that the function which actually sets the "fep->link" flag
+> (mii_relink)  is  not  run  immediately,  but  from a queue_task(...,
 
--Frank
+I don't like the queue_task stuff (this wasn't my doing).  The MII/link
+interrupt should be handled as part of the interrupt handler like it
+used to be (until the late 2.3.99 code when this was changed).
 
-> Matthias
->
-> Frank Rowand wrote:
-> >
-> > Matthias Fuchs wrote:
-> > >
-> > > Hello,
-> > >
-> > > I am trying to mount a directory from a nfs server to my IBM405GP board.
-> > >
-> > > Here are the facts:
-> > >
-> > >         Kernel on our 405 board: 2.4.0-test2_mvista_001126
-> > >         Root filesystem: target_ftest4 from MontaVista
-> > >
-> > > When I do a: mount -t nfs <nfs-servers-ip>:/home/matthias /test on the
-> > > 405 board, I get this output (after some delay):
-> > >
-> > >         nfs warning: mount version older than kernel
-> > >         portmap: server localhost not responding, timed out
-> > >         portmap: server localhost not responding, timed out
-> > >         lockd_up: makesock failed, error=-5
-> > >
-> > > But I can still telnet to the board (it does not crash) but I cannot
-> > > interrupt the mount call.
-> > >
-> > > The nfs server is working properly, because I get the root filesystem
-> > > from the same server (with no problems).
-> > >
-> > > Has anybody a solution for this problem ?
-> > >
-> > > Matthias
-> > > --
-> >
-> > Add the "-o nolock" option to the mount command.
-> >
-> > -Frank
-> > --
-> > Frank Rowand <frank_rowand@mvista.com>
-> > MontaVista Software, Inc
->
-> --
-> -------------------------------------------------
-> \ Matthias Fuchs                                 \
->  \ esd electronic system design Gmbh              \
->   \ Vahrenwalder Straße 205                        \
->    \ D-30165 Hannover                               \
->     \ email: matthias.fuchs@esd-electronics.com      \
->      \ phone: +49-511-37298-0                         \
->       \ fax:   +49-511-37298-68                        \
->        --------------------------------------------------
+> &tq_scheduler) call - and it's scheduled much too late for  BOOTP  to
+> work.
+
+Well, BOOTP in the kernel is going away soon, so it won't matter
+much longer.
+
+
+> How should we handle this? I've tried to  compare  against  the  82xx
+> code  in "fcc_enet.c", but this seems to be kind of incomplete; there
+> is no mii_link code at all, and the mii_relink()  function  is  never
+> used.
+
+The 8260 is very incomplete.  The problem is the MII control/status
+is disconnected from the ethernet controller.  The 860T FEC would
+generate an interrupt when the bit shifting was done, but the 8260
+requires software to do this.  The 8260 is going to get one of two
+equally ugly solutions, either a tasklet that runs for the purpose of
+managing the MII, or to simply to software shift and poll the MII in
+line with other functions.  I stared with the FEC driver on the 8260,
+hoping I could find a way to utilize the better multiple PHY support,
+but I ended up just hacking it out and leaving a few functions around
+as a reminder to try and find some common MII functions with the FEC.
+It's not happening very fast.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
