@@ -1,36 +1,44 @@
-Date: Mon, 22 Feb 1999 16:42:41 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Cort Dougan <cort@persephone.cs.nmt.edu>
-cc: Paul.Mackerras@cs.anu.edu.au,
-        Hartmut Koptein <koptein@et-inf.fho-emden.de>,
-        zankel@tarantel.rz.fh-muenchen.de, bh40@calva.net,
-        davidsen@prodigy.com, marsmail@globegate.utm.edu, dvdoug@tiac.net,
-        paubert@iram.es, jskov@cygnus.co.uk, hozer@drgw.net,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [ppc-dev] Summary: Restructuring Efforts
-In-Reply-To: <Pine.LNX.3.96.990222112522.4988B-100000@persephone.cs.nmt.edu>
-Message-ID: <Pine.LNX.3.96.990222164134.2394B-100000@liberty.chnd1.az.home.com>
+Date: Mon, 22 Feb 1999 22:14:48 -0800 (PST)
+From: "Robert G. Werner" <rwerner@lx1.microbsys.com>
+To: "Campbell, Marc" <CAMPBMA1@mail.northgrum.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PowerPC Beowulf Who?
+In-Reply-To: <36D19553.A41AD20A@mail.northgrum.com>
+Message-ID: <Pine.LNX.3.96.990222221152.1258A-100000@lx1.microbsys.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 22 Feb 1999, Cort Dougan wrote:
+Are the issues that different for PPC than for the other architectures that you
+need to special attention on this matter?  My understanding was that the
+clustering techniques used for Beowulf were based on standard libs (PVM,
+IIRC).  Thus the issues seem like they should be pretty much the same as on any
+other HW baring Networking HW questions.
+Am I way off base here?
 
-How about miscboot?  I know, I know, it's not that big of deal...
+Robert G. Werner
+rwerner@lx1.microbsys.com
+Impeach Conggress!!
 
-> Thus the name arch/ppc/mbxboot rather than emb_boot or some such thing.
-> They're all not mbx, but that makes it more clear that it's for mbx-type
-> boards (rather than prep/mtx).
+To believe your own thought, to believe that what is true for
+you in your private heart is true for all men -- that is genius.
+		-- Ralph Waldo Emerson
+
+On Mon, 22 Feb 1999, Campbell, Marc wrote:
+
 > 
-> }I was concerned that people might think that ALL embedded boards would
-> }fall into the "embedded" bootloader and it could cause confusion down the
-
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+> Any suggestions on who to contact for PowerPC & PowerPC/AltiVec Beowulf development, integration, sales, and/or support?
+> 
+> Marc Campbell
+> Northrop Grumman
+> Technology Development
+> High Performance Computing, Group Lead
+> Melbourne, FL
+> 
+> campbma1@mail.northgrum.com
+> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
