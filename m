@@ -1,37 +1,31 @@
-Date: Tue, 6 Feb 2001 11:21:48 -0600
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Olaf Hering <olh@suse.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MESH not found with 2.4.1 on 7500
-Message-Id: <20010206112148.0c9b60d3.toe@unlserve.unl.edu>
-In-Reply-To: <20010206173709.A17234@suse.de>
-References: <20010206173709.A17234@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 6 Feb 2001 18:41:52 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: Takashi Oe <toe@unlserve.unl.edu>, <bob@kunk.jriver.com>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SOLVED: mesh SCSI bus locks hard on 7500 when burning a CD-R
+ in
+In-Reply-To: <20010206073853.6DE76DBA0E@atlas.valhalla.net>
+Message-ID: <Pine.LNX.4.30.0102061347320.14864-100000@opal.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 6 Feb 2001 17:37:09 +0100, Olaf Hering <olh@suse.de> wrote:
+> > 7100.  G3 desktop comes with mesh.
 
+Too bad. I don't think I have space for yet another kernel tree on my
+Lombard, or the stomach to get involved with the Nubus kernel.
+
+> I have 9600 with both MESH & 53C94 - both have devices - and my CD-RW is on
+> that machine (not tried under linux yet).
 >
-> Hi,
->
-> the current 2.4.1 can not found the mesh scsi controller on my 7500/100.
-> It doesnt work with bootx and boot fd:vmlinux.coff.
->
-> Any ideas how to fix it?
+> So, time willing, I'm happy to test things.
 
-As far as I can tell, your kernel is not getting that far.  Before MESH
-message output, you should have something like:
+I'll try to cook up someting reasonably safe...
 
-SCSI subsystem driver Revision: 1.00
+	Michael
 
-which is missing.  On my system, there is IDE related messages immediately
-following the loop device message, and it's followed by (old) adb mouse
-driver and PPP device message.  SCSI is after all of those.
-
-
-Takashi Oe
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
