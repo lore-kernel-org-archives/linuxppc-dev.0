@@ -1,14 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 5 Feb 2005 12:34:26 +1100
+From: Anton Blanchard <anton@samba.org>
 To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200502050122.27254.arnd@arndb.de>
+Message-ID: <20050205013426.GC11318@krispykreme.ozlabs.ibm.com>
 References: <20050204072254.GA17565@austin.ibm.com>
-	<200502041336.59892.arnd@arndb.de> <1107560989.2189.119.camel@gaston>
+	<200502041336.59892.arnd@arndb.de>
+	<1107560989.2189.119.camel@gaston>
 	<200502050122.27254.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sat, 05 Feb 2005 12:47:05 +1100
-Message-Id: <1107568025.2189.136.camel@gaston>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200502050122.27254.arnd@arndb.de>
 Cc: Andrew Morton <akpm@osdl.org>, Tom Rini <trini@kernel.crashing.org>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
@@ -25,6 +26,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+Hi,
+
 > This is the patch to evaluate CPU_HAS_FEATURE() at compile time whenever
 > possible. Testing showed that vmlinux shrinks around 4000 bytes with
 > g5_defconfig. I also checked that pSeries code is completely unaltered
@@ -35,8 +38,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > name of a feature bit while the CPU_HAS_FEATURE() macro still behaves
 > the same way as in Olofs original patch for now.
 
-Note that this doesn't the asm part of it, where feature "sections"
-are nop'ed out... it may be interesting to get rid of the nops too
-here, oh well, that's too complicated for now.
+Interesting :) However we already get bug reports with the current
+CONFIG_POWER4_ONLY option. I worry about adding more options that users
+could get wrong unless there is a noticeable improvement in performance.
 
-Ben.
+Anton
