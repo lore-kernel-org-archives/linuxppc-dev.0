@@ -1,13 +1,27 @@
-Message-ID: <DBF73ACB70D3D711A358000BDBACF5CE09D250@SSMAIL1>
-From: Kiran Mandava <kiran.mandava@skystream.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ep8260 board linux port serial port problem
-Date: Tue, 30 Dec 2003 09:10:53 -0800
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BAFCB@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Kiran Mandava'" <kiran.mandava@skystream.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: ep8260 board linux port serial port problem
+Date: Tue, 30 Dec 2003 12:26:27 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+You may need to turn the pipelining on.  Some 8260 processor's CPM loses
+communication with the SDRAM when Linux runs, enabling pipelining will solve
+this.  Also, make sure Linux is properly getting the information for the
+SDRAM size.
+
+-----Original Message-----
+From: Kiran Mandava [mailto:kiran.mandava@skystream.com]
+Sent: Tuesday, December 30, 2003 12:11 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ep8260 board linux port serial port problem
+
 
 
 Hello All,
@@ -85,5 +99,6 @@ kiran
 >
 >
 >
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
