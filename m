@@ -1,95 +1,56 @@
-Message-ID: <36795B47.12AFC358@jlc.net>
-Date: Thu, 17 Dec 1998 14:28:07 -0500
-From: Dan Malek <dmalek@jlc.net>
+Message-Id: <199812172146.WAA00356@piglet.cpu.lu>
+Date: Thu, 17 Dec 1998 22:46:30 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: matroxfb, anybody?
+To: O.Waller@ee.qub.ac.uk
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.SGI.4.02A.9812151054230.11112-100000@myst.ee.qub.ac.uk>
 MIME-Version: 1.0
-To: Helmut Buchsbaum <helmut.buchsbaum@siemens.at>
-CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problems starting up system on a MPC823FADS
-References: <H0000b360900f795@MHS> <3678D608.D37B7D6E@siemens.at>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Helmut Buchsbaum wrote:
+On  15 Dec, this message from Owen Waller echoed through cyberspace:
+> On Sun, 13 Dec 1998, Michel Lanners wrote:
+> 
+>> Anybody successfull in running matroxfb with recent vger kernels?
+> 
+> I've got it running on version 2.1.127 - I haven't tried on anything more
+> recent. What kernel version are you running.
 
-> I've done some configuration changes, too.....
-> ......... So I'd be interested in your
-> configurational changes!
+2.1.130. What I hate most is it doesn't complete the PCI scan
+routine.... maybe a simple bug very early in the init code?
 
-Almost all of CONFIG_MBX has become a generic
-CONFIG_8xx #define.  Instead of having files include
-board specific information (like asm/mbx.h or asm/fads.h)
-they now just include asm/mpc8xx.h and this file has
-the board specific CONFIG_xxx stuff in them.
+....
+>> aborts (slightly older matroxfb.c (1.6c)) or hangs the system (most
+>> recent matroxfb.c (1.8)).
+> 
+> Pass, have you asked Petr (Petr Vandrovec <VANDROVE@vc.cvut.cz>) about
+> this. I've been testing Petr's driver on a Mystique and haven't seen
+> anything like this.
 
-I am also going to reconfigure the processors so their
-IMMRs are all the same at boot time.  Then all that
-remains are board specific I/O addresses.  This should
-allow any 8xx board to be quickly ported, then you can
-add the unique I/O in the warm and fuzzy feeling that
-you can at least boot a kernel.
+Not yet...
 
+>> I've also tried to compile-in matroxfb without controlfb, but that
+>> failed because offb.c wasn't in (undefined ref to console_getmode et
+> 
+> Generally I've compiled in matroxfb, controlfb and offb into the kernel
+> which compile and run without any problems. I haven't tried leaving
+> controlfb out.
 
-> ...discovered erratic behaviour when using the data cache of my MPC823.
+This is exactly what I need... I'd like to use matrox alongside control
+(have my TV on a second monitor ;-)
 
-Damn....there are lots of weird silicon bug surrounding the data cache.
-I have the code that will work around most of them, but I have not
-yet seen anything that runs differently whether or not I include
-these changes.  The 860 is affected the worst, and at _exactly_
-50 MHz and _exactly_ 3.3 volts.  If you move away from that
-the problems disappear more than exponentially.  Try running 40 MHz
-if you can.
+Michel
 
-
-> .........I turned off any cache and - wow - my
-> data were consistent again!
-
-Good idea.  That is usually the first thing I do.  I don't know
-what the default cache mode is in the code right now.
-Cort and I keep playing with it.  I have some running with
-full copyback enabled.....really nice :-).
-
-
-> Nevertheless my MPC823FADS refuses to
-> execute /sbin/init, but since my confidence in MPC823 Rev.0 (!!!)
-> vanished completely, ....
-
-I hope the processor upgrade helps, but I have the same
-problem on the 860T/FADS sometimes as well.
-
-
-> ........ My
-> MPC8BUG refuses to download that section, it just silently ignores it. I
-> circumvented this problem by compiling in the image via 'od' and 'sed'
-> magic....
-
-That is the only way.  This is why I dislike the FADS boards.
-I spend way too much time developing tools and no time developing
-the project software.  I used my FADS board to do some simple
-testing, primarily for developing the UPM programming for
-the 100 MHz SDRAMs.  I was using the ADI connection to
-a WinBlows machine that crashed more often than the code
-I was writing on the 860.  I got pissed, reprogrammed the
-Mach part to provide an 8-bit boot interface, soldered a
-Flash prom socket on the board and bought a ROM simulator
-to plug into it.  This is why my fadsrom file on the server
-has programs to build S-records and funky format binaries
-for downloading into it.  I then wrote the rom code to load
-bits from the PCMCIA flash card, and the development
-path was compile on the PowerBook and blast the ELF
-image to the PCMCIA card.  So, weeks later I was
-finally able to write the FEC driver I needed for the 860T.
-Once I got a different 860T board, that FADS thing nearly
-went to the trash bin.....if it wouldn't have cost so much.....
-
-It is just easier and less expensive to use other types
-of boards these days.......something that can actually
-load software minutes after you plug it in.......
-
-
-    -- Dan
-
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+9, Montee St. Crepin           |    Ask Questions.  Make Mistakes.
+L-1365 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
