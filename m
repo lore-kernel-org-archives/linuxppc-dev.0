@@ -1,29 +1,19 @@
-Message-ID: <369D7A76.1FF003@cs.adelaide.edu.au>
-Date: Thu, 14 Jan 1999 15:32:46 +1030
-From: Duncan Grove <duncan@cs.adelaide.edu.au>
-MIME-Version: 1.0
+Message-Id: <199901140836.AAA01359@fhloston>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: modify /usr/include/signum.h
-Content-Type: text/plain; charset=us-ascii
+Subject: Accelerated XF68 on PowerMac 7300?
+Date: Thu, 14 Jan 1999 00:36:30 -0800
+From: Renaud Dreyer <rdreyer@math.berkeley.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-someone needs to add #define SIGCLD    SIGCHLD to /usr/include/signum.h
+   Does the accelerated XF68 X-server support acceleration on the PowerMac
+7300? I've been trying to set-up XF68 with little success. All I can
+get is 8bpp and no acceleration. If someone has managed to make
+acceleration work on a 7300 (with stock video), I'd appreciate a copy
+of your XF68Config file. Thanks,
 
-btw, why are so many of the /include/*.h files (esp. tcp code) so
-screwed? -- Why/how were they messed up for the PPC release from the
-original Redhat 5.2 distribution?
-
---
-Duncan Grove
-+61 8 8303 6166
-duncan@cs.adelaide.edu.au
-You broke the bonds
-You loosed the chains
-You carried the cross <><
-
-
+           Renaud Dreyer
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
