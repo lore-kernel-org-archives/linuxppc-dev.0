@@ -1,41 +1,44 @@
-Message-ID: <7283DE19D141D111AD0E00A0C95B195502D96923@mail2.aiinet.com>
-From: "Dayton, Dean" <dean@aiinet.com>
-To: "<\"'linuxppc-embedded@lists.linuxppc.org'\""
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: fec on 8260
-Date: Tue, 6 Jun 2000 09:10:40 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Tue, 6 Jun 2000 09:39:47 -0400
+Message-Id: <200006061339.JAA30741@rome.wavemark.com>
+From: Kent Borg <kentborg@wavemark.com>
+To: jgreen@mvista.com
+CC: fray@mvista.com, linuxppc-embedded@lists.linuxppc.org
+In-reply-to: <00060516034300.24189@minotaur.mvista.com> (message from Joe
+	Green on Mon, 5 Jun 2000 15:21:14 -0700)
+Subject: Re: Running from ROM
+References: <200006052137.RAA29282@rome.wavemark.com> <393C23CC.3289DD1F@mvista.com> <00060516034300.24189@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ralf,
+Joe Green <jgreen@mvista.com> wrote:
+>The project Mark mentioned is specifically for running the kernel
+>from ROM.
 
-Are you saying that you used the 860 fec driver on a 8260 based system with
-no changes?
+That doesn't sound horribly complicated.  Groady details to be sure,
+but ~conceptually~ easy.
 
-===================================
-Dean Dayton - dean@aiinet.com
+>Are you also asking about running application code from ROM?
+
+Yes.  I realize that it can frequently make sense to compress and load
+into RAM, but there is a significant chance that running directly from
+ROM could be sensible for us.  Interestingly, part of the reason might
+be a "real space" approach, that is, wanting to be deterministic about
+whether a given operation can successfully run.  In a system where
+sometimes every byte of RAM is needed, I can imagine circumstances
+where, depending on the order of operations, some RAM-hungry
+operations could sometimes fail and sometimes succeed.  Getting one
+more "it's virtual, it does the right thing"-aspect out of the system
+could help.  Or maybe not.
+
+So back to the question, it appears there are not scads of people
+already doing this.  Suggestions on approaches?  As I let my
+imagination run only ugly solution fragments come out on this.
 
 
+Thanks,
 
------Original Message-----
-From: Ralf HECKHAUSEN [mailto:RHeckhau@frequentis.com]
-Sent: Tuesday, June 06, 2000 2:33 AM
-To: dan@netx4.com
-Cc: <"'linuxppc-embedded@lists.linuxppc.org'"
-Subject: Re: fec on 8260
-
-
-
->....  What PHYs are people using?
-
-We are using the National DP83843. It worked with no changes in the fec
-driver.
-
-Ralf
-
+-kb, the Kent who needs to keep reading Rubini's book to learn more
+about how the normal case works.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
