@@ -1,54 +1,42 @@
-Date: Tue, 15 Jul 2003 17:49:45 -0400
-From: Kent Borg <kentborg@borg.org>
-To: Jean-Denis Boyer <jdboyer@m5t.com>
+Message-ID: <3F147CEF.3030803@embeddededge.com>
+Date: Tue, 15 Jul 2003 18:15:11 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: David Blythe <blythe@broadon.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ptrace Problem
-Message-ID: <20030715174945.G12505@borg.org>
-References: <AB5AF73EAF23304EA1B932174137CED70303AE@m5tmail.m5t.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AB5AF73EAF23304EA1B932174137CED70303AE@m5tmail.m5t.com>; from jdboyer@m5t.com on Tue, Jul 15, 2003 at 12:30:26PM -0400
+Subject: Re: [RFC] consistent_sync and non L1 cache line aligned buffers
+References: <5.1.0.14.2.20030715133146.030d2e60@mail.ebshome.net> <3F14719F.7080105@broadon.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Jul 15, 2003 at 12:30:26PM -0400, Jean-Denis Boyer wrote:
+David Blythe wrote:
 
-> Which chip is it?
+> 2) change the definition to allow non-aligned addresses and handle them
+> gracefully
 
-An unreleased 603-ish core with other stuff added.
+What's your implementation proposal?  I contend you can't guarantee
+a perfectly working solution due to the race conditions surrounding
+the software managment of a cache line, the processor potentially
+accessing that cache line, and the DMA that is in progress.  In any
+case, you are going to require the programmer has knowledge of something
+associated with the cache line, either the alignment or other processor
+accessed data that will reside there.  Although the DMA buffers on
+the stack are a very poor programming practice, the main problem for
+us is that it immediately shows the programmer requires proper buffer
+alignment or assignment of other objects to the cache line that won't
+cause problems.  If you aligned those stack DMA buffers, you wouldn't
+see this problem.
 
-> Is it correctly recognized by the kernel
-> (arch/ppc/kernel/cputable.c)?
+A design constraint of non-coherent cache is the operations on the
+cache lines are whole and atomic.  IMHO, the easiest solution is
+alignment of buffers.....plus it's likely to be a performance improvement.
 
-I long ago added an entry to cputable.c, and am using it.  I'll look
-at those specifics again though.  Good tip.  ...and I just made a
-change that might help...  and that didn't help
-
-> This is a silly question, but, did you try to unplug the BDI-2000
-> before running gdbserver? Just in case it stops on some exceptions...
-
-If I understood correctly: use Abatron to download my code, make sure
-things are running, them pull that power, and things still run.
-Attempt to do gdb/gdbserver and it malfunctions in the same way--or at
-least I think so, I don't have an Abatron hooked up.
-
-> Do you use a somewhat recent version of glibc, and was it built
-> against a somewhat recent version of kernel? Can you also tell us
-> the version of binutils and gcc ? Not all the combinations are
-> reliable ;-)
-
-Looking at likely source tarballs we have sitting around it seems very
-likely that binutils were built from 2.13.2.1, and glibc 2.3.2.  (How
-can I be sure?)
-
-gcc reports 3.2.2.
-
-Are those a compatible set?
+Thanks.
 
 
-Thanks,
+	-- Dan
 
--kb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
