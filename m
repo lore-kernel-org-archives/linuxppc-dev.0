@@ -1,44 +1,48 @@
-Date: Tue, 31 Aug 1999 17:21:31 +1000
-Message-Id: <199908310721.RAA17352@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: ddkilzer@computer.org
-CC: Jes.Sorensen@cern.ch, schmitz@opal.biophys.uni-duesseldorf.de,
-        linux-mac68k@mac.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
-In-reply-to: <v03130302b3f1013159dd@[192.168.1.1]> (ddkilzer@computer.org)
-Subject: Re: mac-2.3.14.diff: adb
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <199908301552.RAA23128@lxp03.cern.ch> (message from Jes
- Sorensen	on Mon, 30 Aug 1999 17:52:45 +0200)
- <v03130327b3ebecbebbd3@[192.168.1.1]>
- <199908270917.LAA04250@lxp03.cern.ch>
- <v03130308b3ec440550d3@[192.168.1.1]>
- <199908271414.QAA24261@lxp03.cern.ch>
- <37CAA6F5.D93A168B@biophys.uni-duesseldorf.de>
- <199908301552.RAA23128@lxp03.cern.ch> <v03130302b3f1013159dd@[192.168.1.1]>
+Message-Id: <199908310731.DAA25842@nerd-xing.mit.edu>
+To: "David D. Kilzer" <ddkilzer@computer.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: SMP support for Daystar 604e 200MHz dual-processor card 
+In-Reply-To: Your message of "Tue, 31 Aug 1999 00:26:35 CDT."
+             <v03130301b3f116a864e2@[192.168.1.1]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 31 Aug 1999 03:31:49 -0400
+From: "Charles E. Leiserson Jr." <locutus@MIT.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-David D. Kilzer <ddkilzer@computer.org> wrote:
+> >Is anyone running LinuxPPC with a Daystart 604e 200MHz dual-processor 
+> >card?
+> 
+> Hmmm...must have been half-asleep when typing that.  Yes, it's a 
+> Daystar nPower processor card with dual 200 MHz 604e PowerPC CPUs.
+> 
+> Here's what's left of the boot messages on the screen in 2.2.12 from 
+> CVS that I compiled on Aug 29, 1999:
+> 
+> 
+> POSIX conformance testing by UNIFIX
+> Entering SMP Mode...
+> Processor 1 is stuck.
 
-> The issue at hand is that Jes believes drivers/macintosh should not exist
+The "processor stuck" message should be fixed if you do a cold boot (ie. shut 
+the machine down completely).  You shouldn't have any more problems like this 
+after the first successful boot.
 
-I still haven't heard why.  I personally would like something more
-compelling than "Jes doesn't like it" before changing an arrangement
-that is working just fine AFAICS.
+> Kernel panic: machine check
+> Rebooting in 180 seconds..
+> 
+> 
+> The part about "Processor 1 is stuck." doesn't look good, then we get 
+> the big OOPS.
 
-> I would appreciate it if Jes and Paul would come to an agreement on where
-> the code belongs so we can get on with the ADB merger.  :^)
+Sounds like you have compiled something in that your computer doesn't like...
+Have you tried my kernel (R5)?
 
-Jes is more of a "theoretician" than I am, I tend to be more
-pragmatic, so this could be a problem. :-)  I will accept patches for
-drivers/macintosh from the m68k mac folks.  I have some reservations
-about the current adb merge patches, though, which I'll mention once
-I've had a closer look at the patches.  In general I'm happy with a
-drivers/adb directory but I don't think drivers/macintosh should go
-away.
 
-Paul.
+					- Ricky
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
