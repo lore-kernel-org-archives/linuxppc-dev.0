@@ -1,10 +1,13 @@
-Date: Thu, 8 Feb 2001 20:43:01 +0100 (MET)
+Date: Thu, 8 Feb 2001 21:53:13 +0100 (MET)
 From: Roman Zippel <zippel@fh-brandenburg.de>
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: DMA mapping and loadable modules
-In-Reply-To: <3A82EED9.59E1519D@mvista.com>
-Message-ID: <Pine.GSO.4.10.10102082040390.19423-100000@zeus.fh-brandenburg.de>
+To: David Edelsohn <dje@watson.ibm.com>
+Cc: paulus@linuxcare.com.au, Dan Malek <dan@mvista.com>,
+	Gabriel Paubert <paubert@iram.es>, tom_gall@vnet.ibm.com,
+	linuxppc-commit@hq.fsmlabs.com,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: context overflow 
+In-Reply-To: <200102081900.OAA25574@mal-ach.watson.ibm.com>
+Message-ID: <Pine.GSO.4.10.10102082150290.21215-100000@zeus.fh-brandenburg.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -13,18 +16,14 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 Hi,
 
-On Thu, 8 Feb 2001, Dan Malek wrote:
+On Thu, 8 Feb 2001, David Edelsohn wrote:
 
-> There is a problem when loadable drivers with "static" data stuctures
-> try to determine the physical address for DMA.  The "virt_to_bus"
-> macro doesn't work for these (or for any dynamically allocated memory).
+> 	We really need to get more IBM PowerPC and kernel VMM experts
+> involved to explore the best design given the Linux kernel's abstractions
+> and limitations in the VMM space.
 
-Sure, they can use get_free_page/kmalloc and it will work.
-
-> These drivers will work fine when compiled in, and break when loaded
-> as modules.
-
-The same problem exists on any architecture.
+There is certainly room for improvement, but slowly I'd really like to
+know why the Linux vmm should be/is the limiting part?
 
 bye, Roman
 
