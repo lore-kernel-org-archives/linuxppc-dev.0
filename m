@@ -1,87 +1,85 @@
-From: shuaiye1999@sohu.com
-Message-ID: <933899.1058237235238.JavaMail.postfix@mx49.mail.sohu.com>
-Date: Tue, 15 Jul 2003 10:47:15 +0800 (CST)
-To: "hi" <linuxppc-embedded@lists.linuxppc.org>
-Subject: booting succeed,using program fail.
+Message-Id: <5.1.0.14.2.20030714210220.0308a070@mail.zultys.com>
+Date: Mon, 14 Jul 2003 21:32:07 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Eugene Surovegin <ebs@ebshome.net>
+Subject: [RFC] consistent_sync and non L1 cache line aligned buffers
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,all:
+Hi!
 
-	I use the ELDK and the kernel source linux-2.4.4 it take,
-taking the TQM8260_config as model of our board. the FCC1
-as ethernet.use IMMR 0xf0000000.NFS as root file system.
+I think this is a known problem.
 
-	the linux boot succeed.and  simple program "ls" works well.
-but when use some program,it crashed.Can somebody give me some
-infomation about it? thx a lot.
+There are drivers or even subsystems which use stack allocated DMA buffers.
+To make things worse, those buffers usually non L1 cache line aligned
+(start and/or end).
 
-ps: first use "find",and "ls", and login
-I have a bdi2000 in hand,but not familiar with it.
+When they use pci_map_* with PCI_DMA_FROMDEVICE, consistent_sync calls
+invalidate_dcache_range for the buffer.
 
-the output is below:
+invalidate_dcache_range works in L1_CACHE_LINE chunks, so if start and/or
+end of the buffer are not aligned we may corrupt data located in the same
+cache line (usually stack variable(s) declared before or after buffer
+declaration).
 
-bash-2.05# find / -name ttt
-find / -name ttt
-Oops: kernel access of bad area, sig: 11
-NIP: C0069488 XER: 20000000 LR: C0065EDC SP: C1959C80 REGS: c1959bd0 TRAP: 0300
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 30E152AC, DSISR: 20000000
-TASK = c1958000[226] 'find' Last syscall: 202
-last math c1958000 last altivec 00000000
-GPR00: 6F616B60 C1959C80 C1958000 C17FE74C C1959CE8 00000000 00000000 00000000
-GPR08: 00000001 6F616B5F 0000000D 00000001 64656663 1002EB8C 00000000 100B9210
-GPR16: 100D34D0 7FFFFD88 10020000 0000002F 00009032 C1959E38 C00469C4 C1C1DF20
-GPR24: C1959E38 C00469C4 C17FE000 00000000 00000072 C1959CE8 C17FE740 C1959CB8
-Call backtrace:
-C0065F60 C0066488 C00463FC C0046BF8 C0003B7C 1002E728 0FF567D8
-10009280 1000229C 10002198 100024F0 10002198 100024F0 10002198
-100024F0 10002198 100024F0 10002198 100024F0 10002198 100024F0
-10002198 10001E54 10001B38 0FECFF70 00000000
-Segmentation fault
+According to MV kernel, there are USB devices that use such buffers.
 
-bash-2.05# ls
-ls
-go to the bad_area field....../nOops: kernel access of bad area, sig: 11
-NIP: 00000000 XER: 00000000 LR: 00000000 SP: C1959C70 REGS: c1959bc0 TRAP: 0400
-MSR: 20009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c1958000[227] 'ls' Last syscall: 90
-last math c1958000 last altivec 00000000
-GPR00: 00000000 C1959C70 C1958000 00000001 000000BE 00017C05 206C6973 74206465
-GPR08: 6C696D69 00000008 C020F060 0000005F 44222082 100B0734 7FFFF5D4 7FFFF5D0
-GPR16: 7FFFF5D8 00000000 00000001 0FE8A13C 00009032 01959C80 00000000 C0003DE4
-GPR24: C000432C C02D8120 00000000 C1C1DF80 C19F9520 C0192DEC 00000129 C1959C90
-Call backtrace:
-C0004344 C0003DE4 C00264A0 C002214C C00222CC C000C8F8 C0003DE4
-3000996C 30003674 3000DE98 30002364 30002290 300100E8
-Segmentation fault
+After spending last weekend with RISCWatch :) I can say that SCSI subsystem
+is also guilty of this behavior (drivers/scsi/scsi_scan.c::scan_scsis,
+scsi_result0).
 
-bash-2.05# ls
-ls
-go to the bad_area field....../nOops: kernel access of bad area, sig: 11
-NIP: 00000000 XER: 00000000 LR: 00000000 SP: C19FBCA0 REGS: c19fbbf0 TRAP: 0400
-MSR: 20009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c19fa000[198] 'bash' Last syscall: 174
-last math 00000000 last altivec 00000000
-GPR00: 00000000 C19FBCA0 C19FA000 00000001 000000BE 00017C05 6B6C6F6E 652B7367
-GPR08: 727C6174 00000008 000017FC 0000005F 24422080 100B0734 7FFFED88 00000002
-GPR16: 7FFFFD90 7FFFFD88 7FFFDD90 10010000 00009032 019FBCB0 00000000 C0003DE4
-GPR24: C000432C C19EF2DC 00000000 C19F9F60 0191E183 02000000 C01ECEF0 C19FBCC0
-Call backtrace:
-C0004344 C0003DE4 C00218C8 C0022328 C000C8F8 C0003DE4 1002CEFC
-1001F350 1001EB88 10013564 100111E8 0FE88F70 00000000
+Unfortunately, I don't know how many similar places of code are still
+waiting to be found :(.
+To be safe I think it's better to modify consistent_sync to handle such
+"bad" buffers.
 
-scm3 login:
+If start and/or end of the buffer are not properly aligned I use "dcbf" to
+flush corresponding cache line(s) and then call invalidate_dcache_range.
 
-scm3 login: root
-rootLast login: Wed Dec 31 19:01:14 on console
-go to the bad_area field....../n
-scm3 login: root
-rootLast login: Wed Dec 31 19:04:31 on console
-go to the bad_area field....../n
-scm3 login:
+This change doesn't affect performance of consistent_sync noticeably (like
+in the variant I found in MV kernel, where invalidate_dcache_range was
+changed to flush_dcache_range if USB was enabled)
+
+I don't know whether we should "ifdef" this for CONFIG_4xx and I know this
+fix is ugly :)
+I'm not even sure that such hacks should be included in the kernel :)))
+(but I will definitely use it in my tree)
+
+Comments/suggestions are welcome!
+
+Thanks,
+
+Eugene
+
+
+===== arch/ppc/mm/cachemap.c 1.13 vs edited =====
+--- 1.13/arch/ppc/mm/cachemap.c	Thu Feb 27 11:40:16 2003
++++ edited/arch/ppc/mm/cachemap.c	Mon Jul 14 20:49:28 2003
+@@ -150,6 +150,21 @@
+  	case PCI_DMA_NONE:
+  		BUG();
+  	case PCI_DMA_FROMDEVICE:	/* invalidate only */
++
++		/* Handle cases when the buffer start and/or end
++		   are not L1 cache line aligned.
++		   Some drivers/subsystems (e.g. USB, SCSI) do DMA
++		   from the stack allocated buffers, to prevent
++		   corruption of the other stack variables located
++		   near the buffer, we flush (instead of invalidate)
++		   these "dangerous" areas                     --ebs
++		*/
++		if (unlikely(start & (L1_CACHE_LINE_SIZE - 1)))
++			__asm__ __volatile__("dcbf 0,%0" : : "r" (start));
++
++		if (unlikely(end & (L1_CACHE_LINE_SIZE - 1)))
++			__asm__ __volatile__("dcbf 0,%0" : : "r" (end));
++
+  		invalidate_dcache_range(start, end);
+  		break;
+  	case PCI_DMA_TODEVICE:		/* writeback only */
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
