@@ -1,32 +1,20 @@
-To: Sebastien Articlaux <sebastien_articlaux@yahoo.com>
-Cc: embedded linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: nm command
-References: <20000216155509.19793.qmail@web217.mail.yahoo.com>
-From: Jesper Skov <jskov@redhat.com>
-Date: 16 Feb 2000 17:55:19 +0100
-In-Reply-To: Sebastien Articlaux's message of "Wed, 16 Feb 2000 07:55:09 -0800 (PST)"
-Message-ID: <otg0utnl3c.fsf@thinktwice.zoftcorp.dk>
+Message-Id: <200002161901.OAA80387@p2.parker.boston.ma.us>
+To: linux-usb@suse.de, linuxppc-embedded@lists.linuxppc.org
+Subject: anyone programmed the MPC850/823 USB in host mode?
+Date: Wed, 16 Feb 2000 14:01:38 -0500
+From: Brad Parker <brad@parker.boston.ma.us>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "Sebastien" == Sebastien Articlaux <sebastien_articlaux@yahoo.com> writes:
 
-Sebastien> Hello,
+Hi
 
-Sebastien> I've tried this command (and a lot of others like this...)
-Sebastien> to get symbol table but without success...
+If anyone has programmed the MPC850/823 USB in host mode, I'd be
+interested in talking to you.  I've got a couple of questions about
+the use of the CNF bit in the transmit bd's...
 
-It's automatically generated. See System.map
+-brad
 
-Sebastien>    nm vmlinux | sort | less
-
--> file format not recognize
-
-Sebastien> what is the format of vmlinux?  Thanks.
-
-Try powerpc-unknown-linux-gnu-nm.
-
-Jesper
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
