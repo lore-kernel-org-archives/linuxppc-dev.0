@@ -1,23 +1,24 @@
-Message-Id: <200309180127.UAA09566@lists.linuxppc.org>
-From: "Yuxiao Xi" <xiyuxiao@harbournetworks.com>
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: question about UART ST16C2552 
-Mime-Version: 1.0
-Content-Type: text/plain
-Date: Thu, 18 Sep 2003 9:37:45 +0800
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Problem on unresolved symbol
+Date: Thu, 18 Sep 2003 12:00:20 +0800
+Message-ID: <000501c37d99$618e9b70$9702a8c0@newrock2>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="big5"
+In-reply-to: <001601c37d51$019c2860$6401a8c0@sazabimobile>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,all,
-    Does Linux support UART ST16C2552 ?
-    There is a UART ST16C2552 on my board with CPU ppc8240.
-While the linux system booting,sometimes function autoconfig(struct
-serial_state * state) in ./drivers/char/serial.c detected ST16C2552 as
-16450,sometimes as 8250,can anyone tell me why?
+Dear all,
 
-　　　　　　　　Yuxiao Xi
-　　　　　　　　xiyuxiao@harbournetworks.com
-　　　　　　　　　　2003-09-18
+In my driver, I use the request_8xxirq() to connect my ISR function to IRQ. Building is OK, but, when I use insmod to load this module into kernel, it report " unresolved symbol request_8xxirq ". I found that in fcc_enet.c, it also use request_8xxirq() to do. Why does my action unsuccessed ?
+
+Could you help me?
+
+Thanks in advance!
+John
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
