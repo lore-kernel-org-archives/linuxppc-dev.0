@@ -1,88 +1,48 @@
-Message-Id: <5.1.0.14.2.20021204174346.0243ead8@falcon.si.com>
-Date: Wed, 04 Dec 2002 17:47:09 -0500
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
+To: Brian Waite <waite@skycomputers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: NFS root woes: No init found
+References: <200212041635.31861.waite@skycomputers.com>
+	<200212041711.04032.waite@skycomputers.com>
+	<3DEE7FA8.7000908@bluewin.ch>
+	<200212041730.00480.waite@skycomputers.com>
+From: Roland Dreier <roland@topspin.com>
+Date: 04 Dec 2002 14:49:30 -0800
 In-Reply-To: <200212041730.00480.waite@skycomputers.com>
-References: <3DEE7FA8.7000908@bluewin.ch>
- <200212041635.31861.waite@skycomputers.com>
- <200212041711.04032.waite@skycomputers.com>
- <3DEE7FA8.7000908@bluewin.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <523cpdbds5.fsf@topspin.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thoughts...
+>>>>> "Brian" == Brian Waite <waite@skycomputers.com> writes:
 
-Does your mount command
-* use the defaults options (-o defaults) or equivalent?
-   - includes read/write and execute privileges
+    Brian> I tried loading the ash shell statically linked., along
+    Brian> with a dynamically linked bash. No executables seem to
+    Brian> load. I have traced the execve call and it progresses as
+    Brian> far as walking the format list to determine what format the
+    Brian> file is in. After walking all the available formats, it
+    Brian> can't find one and fails.
 
-Does your host
-* have "no_root_squash" (may not be necessary)?
-* allow write access to the remote host?
+    Brian> Any thoughts? I see the packets getting revieved by the
+    Brian> gt64260_eth driver and passed up to the higher layers. I
+    Brian> also look at the various MIB counters and see no errant
+    Brian> packets so I can't why NFS is so cranky.
 
-gvb
+This is just a wild guess, but maybe there is a data corruption
+problem somewhere.  (Maybe cache-coherency?  I know the 74xx/gt64260
+is a cache-coherent platform but maybe the snooping isn't wired up or
+set up correctly??)
 
+You could try printing out the data the kernel thinks it read for init
+and compare it with what's actually on the disk.  (It seems likely it
+will be different, since the kernel can't tell that it's an ELF file)
 
-At 05:30 PM 12/4/2002 -0500, Brian Waite wrote:
+Just as a data point, we have had good success running Linux with NFS
+root on both the Galileo Discovery eval board and our own custom board
+(both used the Galileo internal ethernet).
 
->I tried loading the ash shell statically linked., along with a dynamically
->linked bash. No executables seem to load. I have traced the execve call and
->it progresses as far as walking the format list to determine what format the
->file is in. After walking all the available formats, it can't find one and
->fails. I have the floowing formats in my kernel:
->CONFIG_KCORE_ELF=y
->CONFIG_BINFMT_ELF=y
->CONFIG_KERNEL_ELF=y
->
->and the ash executale is an elf:
->ash.static: ELF 32-bit MSB executable, PowerPC or cisco 4500, version 1,
->statically linked, stripped
->
->Any thoughts? I see the packets getting revieved by the gt64260_eth driver and
->passed up to the higher layers. I also look at the various MIB counters and
->see no errant packets so I can't why NFS is so cranky.
->
->Thanks
->Brian
->
->On Wednesday 04 December 2002 5:20 pm, you wrote:
-> > Hello,
-> >
-> > if you get to the bash prompt you could try to start the init program
-> > manually. This should result in more useful error messages.
-> >
-> > Hope it helps,
-> >
-> > Wolfgang.
-> >
-> > On 12/04/2002 11:11 PM Brian Waite wrote:
-> > > I did this. I tried to start a staticly linked ash shell to no avail. No
-> > > libs are better than any libs :)
-> > > Thanks
-> > > Brian
-> > >
-> > > On Wednesday 04 December 2002 4:48 pm, Dan Malek wrote:
-> > >> Brian Waite wrote:
-> > >> > ...Then I get the message No init found.
-> > >>
-> > >> First, try using something simple like /bin/bash as your init program.
-> > >> Trying to start up the init program relies on lots of things being
-> > >> present in the file system.  If the program starts, and then exits,
-> > >> you still get this message.
-> > >>
-> > >> Just use a trivial, simple file system to get started.  A shell,
-> > >> couple of commands and minimal libraries are easier to debug.
-> > >>
-> > >> Good luck :-)
-> > >>
-> > >>    -- Dan
-> > >
->
->
-
+Best,
+  Roland
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
