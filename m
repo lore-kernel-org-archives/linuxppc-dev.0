@@ -1,40 +1,38 @@
-Subject: RE: Doing floating point calculations in kernel space
-From: Toni Van Remortel <t.vanremortel@ha.be>
-Reply-To: t.vanremortel@ha.be
-To: ARIBAUD Albert <a.aribaud@giat-industries.fr>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <F886A68DA978614991E47D82EA26B54210E987@csy-exchange1.giat.intra>
-References: 
-	 <F886A68DA978614991E47D82EA26B54210E987@csy-exchange1.giat.intra>
-Content-Type: text/plain
-Message-Id: <1066394252.1390.13.camel@toni>
-Mime-Version: 1.0
-Date: Fri, 17 Oct 2003 14:37:32 +0200
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3F8FFB74.2030609@catapult.com>
+Date: Fri, 17 Oct 2003 10:23:48 -0400
+From: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: PQ2FADS Support
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > The CPU (405GP) has no FPU, but I need to calculate sin and cos in a
-> > kernel module.
->
-> Hmm... Bit off-topic, but why not use tables tailored to the
-> precision you need (if you want to compute any sin or cas any time)
-> or the equivalent of the Bresenham algorithm (if you only want to
-> draw arcs or ellipes) ?
+Hello,
 
-Currently, the floating point problem is solved. I'm not going to use
-default sin and cos, because they are darn too slow.
-Lookuptables are way to inaccurate for the application (the formula used
-can be viewed at http://www.geniaal.be/), but I'll use other faster
-formula's (found a PDF from a Playstation programmer :)
+I am working with a Motorola PQ2FADS board.  I currently
+have a "free" teaser distribution from a vendor that works for
+the board.  The FADS board is not the ultimate target.
 
-Tnx for the comment.
---
-                           Toni Van Remortel
-              Wetenschappelijk Medewerker - D-science lab
-  Real time Linux for embedded systems: http://linemb.d-sciencelab.com
-              Tel: +32 3 205 61 72 - Fax: +32 3 205 61 95
-                      E-mail: t.vanremortel@ha.be
+I tried to use the latest ATM driver for the PQ2, but have
+lots of unresolves due to the vendor mods in the low level
+stuff.
+
+I would like to use the eldk, but, when I pulled down the
+latest CVS version this morning and try to configure there
+is not an option for PQ2FADS.
+
+I would rather go with the ELDK since it is has a larger
+tool set and support is through the community.
+
+So, does anyone have a .config and associated support
+for PQ2FADS-VR ?  (8275-VR 266/166/66)
+Suggestions?
+
+Thanks
+Kevin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
