@@ -1,6 +1,6 @@
-Message-ID: <3BA801A9.B6311C93@mvista.com>
-Date: Tue, 18 Sep 2001 21:23:37 -0500
-From: Mark Hatle <fray@mvista.com>
+Message-ID: <3BA83D9D.87F9B1E1@mvista.com>
+Date: Wed, 19 Sep 2001 02:39:25 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-embedded@lists.linuxppc.org
@@ -12,24 +12,22 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 David Gibson wrote:
->
-> Ah, yes, I discovered ATOMIC_SYNC_FIX after I sent that, and have now
-> turned it on.  That should certainly fix the atomic ops, however there
+
+> Ah, yes, I discovered ATOMIC_SYNC_FIX after I sent that,....
+
+I thought it was automatically enabled on the 405GP.....I guess not.
+
+> .....  That should certainly fix the atomic ops, however there
 > are quite a number of other places where the kernel uses stwcx., which
-> ATOMIX_SYNC_FIX doesn't fix - notably arch/ppc/kernel/bitops.c and
-> include/asm-ppc/bitops.h.  As well as activating ATOMIX_SYNC_FIX I
-> tried inserting a sync before every other stwcx. that I could find,
-> and I haven't managed to get a process to lock up yet.
+> ATOMIX_SYNC_FIX doesn't fix
 
-Just as an FYI, we also do this in glibc to be safe.  We have never been
-able to pin down a problem in userspace due to this bug, but we thought
-it would be better safe then sorry until we can get definative proof
-that the bug will not happen in userspace.
+I took a quick look at the original patch and saw that too, I just never
+got around to fixing the rest of it.  It solved the problem at the time,
+so it didn't seem urgent.  If you would like to finish it up, that would
+be great.
 
-The following two files in glibc should be patched:
-linuxthreads/sysdeps/powerpc/pt-machine.h
-sysdeps/powerpc/atomicity.h
+Thanks.
 
---Mark
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
