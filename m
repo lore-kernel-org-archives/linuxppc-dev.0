@@ -1,26 +1,38 @@
-From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-Date: Tue, 13 Apr 1999 22:43:58 +0200
-Message-Id: <199904132043.WAA01310@macintoy.masq.in-berlin.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ggi and frame buffer
-In-Reply-To: <Pine.LNX.4.10.9904122007520.23848-100000@beer.pub.umich.edu>
+Date: Tue, 13 Apr 1999 15:57:32 -0500 (CDT)
+From: Dave Weis <djweis@plconline.com>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Jim Somerville <somer@nortelnetworks.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: quik vs. bootx
+In-Reply-To: <19990413212835.023110@mail.mipsys.com>
+Message-ID: <Pine.LNX.3.95.990413155539.25330I-100000@catbert.desm.plconline.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In lists.linuxppc.dev, you wrote:
-> 
-> Since linuxppc defaults to using a FB-device, ggi should work, right?  So
-> I compiled the latest snapshit, and when I tried to run a demo, ie
-> "cube3d" I got this:
-> cube3d: error in loading shared libraries: /usr/local/lib/libgg.so.0:
-> R_PPC_REL2
-> 4 relocation out of range
 
-Turning off the usage of mmap() for malloc with mallopt(M_MMAP_MAX,0)
-might fix this.
+> BootX is not meant to _replace_ quik. Since OF is not working well enough
+> on a lot of Macs, BootX may be your only choice, but if quik works for
+> you and you like it, then use it, it's hopefully still working. OF
+> booting is better from a "theorical" point of view ;-)
 
-  Gerd
+I installed the most current version of linuxppc a few weeks ago on a
+7300/200. BootX 1.0b6 would just freeze with macos on the screen when I
+would try to boot from a scsi device. I did install quik during the
+install. it does work if i have the floppy in and pass root= and noinitrd.
+
+dave
+
+
+-- 
+David Weis                | 10520 New York Ave, Des Moines, IA 50322
+djweis@plconline.com      | Voice 515-278-0133 Ext 231
+
+When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
+When they took the Sixth Amendment, I was quiet because I was innocent.
+When they took the Second Amendment, I was quiet because I didn't own a gun.
+Now they've taken the First Amendment and I can't say anything.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
