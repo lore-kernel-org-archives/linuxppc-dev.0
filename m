@@ -1,65 +1,69 @@
-Date: Sat, 9 Mar 2002 12:25:56 -0600
-From: "Joseph P. Garcia" <jpgarcia@execpc.com>
-To: joker@cymes.de
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Tuomas Kuosmanen <tigert@ximian.com>
-Subject: Re: pbbuttons, need some help
-Message-Id: <20020309122556.62a281a6.jpgarcia@execpc.com>
-In-Reply-To: <1015685023.2150.86.camel@quicksilver>
-References: <3C852E12.3030300@cymes.de>
-	<20020306090814.15511@mailhost.mipsys.com>
-	<3C87B6C8.9070905@cymes.de>
-	<20020307134140.56d70400.jpgarcia@execpc.com>
-	<1015685023.2150.86.camel@quicksilver>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20020310173636.42443.qmail@web11102.mail.yahoo.com>
+Date: Sun, 10 Mar 2002 09:36:36 -0800 (PST)
+From: roger blofeld <blofeldus@yahoo.com>
+Subject: Re: 2.4.18-ben0 on G4 SMP: do_IRQ waiting for irq lock
+To: laforge@gnumonks.org
+Cc: linuxppc-dev@lists.linuxppc.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Greetings.
+Harald,
+I've seen the same problem with cups on my G4 dual
+450.
 
-On 09 Mar 2002 16:43:42 +0200
-Tuomas Kuosmanen <tigert@ximian.com> wrote:
-> Now, I dont know if this is a problem or not but please note that the
-....
-> if one monitors for X keyboard stuff. Which is rather annoying.
+In addition, my machine hangs whenever the macserial
+driver is closed (e.g., open /dev/ttyS0 with minicom,
+the exit).
 
-The way I'm suggesting it work is similar to how it does currently, with
-one exception.  It would still have a system service (not run as a user) to
-listen to the key events and control the hardware.  This maintains that
-they keys would work under any environment.  The proposal would also
-maintain that the GUI part does nothing but display what happened to tell
-the user and nothing more.  That lets the user know what happening or not
-on their own choice, and with their own process.
+Does your machine do this as well?
 
-The difference is that rather than the GUI feedback screen using the daemon
-to find the event (which thus requires the daemon), it can be triggered off
-of the X keyboard events, like Bastien's Acme.  As the button device is
-just an additional set of the keyboard keys, the kernel sends an event just
-as such.  All keyboard events manifest in the event interface, and, if
-linux keycodes are enabled, whereever the system gets its keys as well.
-(since all keyboards are also events, this is why /dev/input/event* should
-not be world-readable)  This also includes that X gets the key event, and
-normally does nothing with it.  X has provisions to associate those keys to
-a particular process (or something.  i don't really know) and more or less
-have that process sit idle until such an key is pressed.
+-roger
 
-The point?  Having X handle the event is just like using /proc/pmu/.  It
-should work on any system that supports it, regardless of actual hardware.
-(i'd like the volume handled generically by the gui too, as it could be...
-but people seem against that.  There's always Acme for us types)
+On Sat, 9 Mar 2002 10:43:28 +0100,
+laforge@gnumonks.org wrote:
+>On Fri, Mar 08, 2002 at 07:34:09PM +0100,
+benh@kernel.crashing.org wrote:
+>> Could be a driver bug showing up, difficult to say.
+The problem definitely
+>> doesn't happen here (dual G4 450Mhz, 2x7400 CPU
+with highmem). The fact that
+>> the IRQ lock can be held by the other CPU is normal
+though, both CPUs don't
+>> take external IRQs but decrementer ones for example
+happen on both.
+>>
+>> That said, I don't know what is causing your
+problem.
+>
+>I've now managed to get the kernel running - so far
+without any crashes for
+>one day.
+>
+>The problem seemed connected with the cups daemon. If
+I don't start (or use)
+>any part of the cups (common unix printing system),
+it runs fine.
+>
+>I don't know what cups is trying to do, since there
+are no local printers
+>configured. Everything it is supposed to do is to
+submit remote printjobs
+>to my printer server.
+>
+>As of drivers, the only hardware driver (apart from
+standard pmu, aty128fb,
+>sungem) I'm using is tulip for a 21x4x network board.
+>
+>But the problems are not related with this network
+interface, since I'm
+>heavily using it for NFS, etc. I've also tried to
+pingflood the machine
+>on both network interfaces - no problem.
+>
+>> Ben.
 
-However, as Ben pointed out, O'Hare doesn't generate these events yet.  But
-I suppose those should go into userspace as well, if possible.  I can help
-with that.  (is that an adb mess or a pmu mess?)
-
-Sorry about the lecture.  there just seems to be some misconception of what
-I'm proposing.
-
---
-Joseph P. Garcia    http://www.lycestra.com/    http://lidar.ssec.wisc.edu/
-CS Undergraduate                      Student Employee - Systems Programmer
-University of Wisconsin - Madison                            UW Lidar Group
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
