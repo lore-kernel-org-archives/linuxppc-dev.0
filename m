@@ -1,70 +1,46 @@
-Date: Wed, 12 May 1999 14:03:07 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Hugh Caley <hcaley@loomer.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Does Linux PPC support the new 'Lombard/101' Powerbook G3s?
-In-Reply-To: <373926B4.6BFD7CE7@loomer.com>
-Message-ID: <Pine.LNX.3.96.990512140237.31765G-100000@newhope.terraplex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <19990512221242.30065@ibrium.se>
+Date: Wed, 12 May 1999 22:12:42 +0200
+From: Samuel Rydh <samuel@ibrium.se>
+To: puetzk6715@uni.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: mac-on-linux (g3/r5 problems)
+References: <Pine.PMDF.3.96.990512134259.539075676A-100000@uni.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.PMDF.3.96.990512134259.539075676A-100000@uni.edu>; from puetzk6715@uni.edu on Wed, May 12, 1999 at 01:52:39PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Wed, May 12, 1999 at 01:52:39PM -0500, puetzk6715@uni.edu wrote:
+> 
+> Everything compiled, but the link failed, because
+> arch/ppc/macos/macos_ksyms.c and kernel/ksyms.c both tried to define
+> __ksymtab_find_vma and .kstrtab_find_vma. At this point I munged it
+> (commented out EXPORT_SYMBOL(find_vma) in arch/ppc/macos/macos_ksyms.c)
+> and it built (I was curious how much farther I'd get). How am I supposed
+> to get past this / what did I do wrong that caused it?
+> 
+> The kenel boots, seems to work, but any attempt to insert macos_mod fails
+> because clear_tlb_table is not defined - this symbol is in my vmlinux
+> file, but does not appear in /proc/ksyms. Is this the 603 bug (since the
+> 750 is like a 603 in many ways, and I know the problem is related to
+> memory mapping...)?
+>
+The problem is that the clear_tlb_table symbol is not exported.
+I think it should be sufficient to add EXPORT_SYMBOL(clear_tlb_table)
+to macos_ksyms.c. Even better, compile the kernel with the module
+config option set to no (module support is probably going
+to disappear since it is only a relatively small part of the 
+code which actually can be put in a module).
 
-The Lombard uses New World ROM. (like iMac and B&W)
+/Samuel
 
+-- 
 
-On Tue, 11 May 1999, Hugh Caley wrote:
-
-> 
-> Why do you think it would work, Tom?  You can't OF boot the "Wallstreet"
-> G3 laptops, can you?
-> 
-> Hugh
-> 
-> Date: Tue, 11 May 1999 19:56:16 -0400 (EDT)
-> From: Tom Rini <tmrini@ntplx.net>
-> Subject: Re: Does Linux PPC support the new 'Lombard/101' Powerbook G3s?
-> 
-> On Wed, 12 May 1999, Duraid Madina wrote:
-> 
-> >       ... and furthermore, is it possible to install Linux PPC on
-> these in a
-> > dedicated configuration? (i.e. no MacOS on the hard drive) and if not,
-> 
-> > what is the minimum amount of disk space that must be assigned to the
-> > MacOS to be able to boot LinuxPPC?
-> 
-> The 2 lbs lighter PBs?  If they're just a bit lighter/faster (nothing
-> too
-> new, right?) it should.  Again, if they haven't changed much then yes,
-> you
-> can OF boot it I think.  Otherwise a small (100mb or less?) MacOS
-> install
-> is needed for BootX.
-> 
-> - ---
-> Tom Rini (TR1265)
-> http://dobbstown.yeti.edu/
-> 
-> 
-> 
-> --
-> "Brain-eating mutants are bad for business..." - Battle Angel
-> Hugh "Batmensch" Caley
-> 
-> 
-> 
-
-
-Dan
-
-Terra Soft Solutions, Inc.
- email: dburcaw@yellowdoglinux.com
- website: http://www.yellowdoglinux.com/
-
-
+----------------------------------------------------------
+  E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
+    Phone/fax: (home) +46 4418431, (work) +46 7908470   
+----------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
