@@ -1,38 +1,104 @@
-Message-ID: <3DD4DFEA.7070700@uab.ericsson.se>
-Date: Fri, 15 Nov 2002 12:52:10 +0100
-From: Hans Feldt <Hans.Feldt@uab.ericsson.se>
+Message-ID: <3DD4E271.16FA374A@opensource.se>
+Date: Fri, 15 Nov 2002 13:02:57 +0100
+From: Magnus Damm <damm@opensource.se>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>,
-	linuxppc-embedded@lists.linuxppc.org, scop@digitel.com.br,
-	thomas@corelatus.com
-Subject: Re: [PATCH] arch/ppc/8xx_io/enet.c, version 2
-References: <IGEFJKJNHJDCBKALBJLLAEPLFHAA.joakim.tjernlund@lumentis.se> <001c01c28b4b$28665b80$4f158a86@default> <002901c28b5a$55f60820$0200a8c0@telia.com> <3DD2CE30.6090708@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: bi_record and initrd
+References: <3DD3C747.8B7EE5CD@opensource.se> <20021114174807.GC605@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 11/13/02 11:12 PM, Dan Malek wrote:
+> Can you give more information about where everything is loaded up at?  I
+> thought this was a non-issue, but it's been a while since I tested
+> initrds.
 
-> This isn't something new that hasn't been tried before.  The problem
-> in the past with non-coherent processors, incoming DMA, and skbufs is
-> the buffers would share cache lines with other data which would get
-> corrupted as the result of the invalidate for the DMA.  Typically,
-> data that was corrupted were flags and control information for the IP
+Sure.
+The first example below does not trigger the bug.
+The second one shows the bug.
 
-The problem I was describing related to this patch was due to the L1
-cache replacement algorithm. The L1 cache flushes a line to main memory
-when it's full with some LRU algo. Thus if you have no snooping
-(860/405), this can interfere with the DMA into the same piece of memory.
+First example:
 
-Invalidating the whole buffer before giving it to DMA solves this and
-the cost of doing it on the whole buffer is not much. You have already
-done the big optimisation in removing the memcpy and changing flush to
-invalidate.
+loaded at:     00180000 0023C1D0
+board data at: 00239124 00239140
+relocated to:  001852FC 00185318
+zimage at:     00185880 00214ADE
+initrd at:     00215000 002388D9
+avail ram:     0023D000 04000000
 
-Cheers,
-Hans
+gunzip() unzips the zimage to address 0 and sets zimage_size to 0x00148A6C.
+I'm not sure about the _ALIGN() macro and how it's used, but in this case
+rec gets calculated to 0x00300000.
+I thought the idea was to get a address that is aligned to the nearest
+1-megabyte boundary.
+(2 megabyte in this case - but that would overwrite the zimage...)
 
+anyhow, the rec at 3 megabytes is inside of the available ram - good.
+
+this mail says something about typos or misuse of _ALIGN().
+http://www.geocrawler.com/archives/3/8358/2002/9/0/9715261/
+
+If _ALIGN() now is used correctly, then the align definition
+maybe chould be changed from
+#define _ALIGN(addr,size)        (((addr)+size-1)&(~(size-1)))
+to
+#define _ALIGN(addr,size)        (((addr)+(size)-1)&(~((size)-1)))
+to make sure that size is treated correctly. Or maybe it's a feature. =)
+
+Second example:
+
+loaded at:     FE2226F0 FE3098C0
+relocated to:  00180000 002671D0
+board data at: 00264124 00264140
+relocated to:  001852E8 00185304
+zimage at:     00185840 001CCEAB
+initrd at:     001CD000 00263A21
+avail ram:     00268000 04000000
+
+I have not been able to output the value of zimage_size for this case, but I'm
+sure that my initrd gets overwritten with the bi_record at 0x00200000.
+We read out the initrd memory area with a BDM debugger and compared with the
+original compressed filesystem image. So rec gets set to 2 megabytes.
+This results in a initrd with bad crc. If it would help you I could get the value
+of zimage_size, but it's on another machine and I don't have the time today.
+
+Another thing - why is the second argument (dstlen) to gunzip() always 4 megabytes?
+Maybe it could be set to the address that the image is loaded at / relocated to?
+(0x180000 above) That way the gunzip function wouldn't overwrite the running code,
+if I understand the dstlen argument correctly that is.
+
+I'm using a 2.4.18 kernel patched up to 2.4.19-pre9 with more patches to match
+linuxppc_2_4 (downloaded from ppckernel.org). So if you've made any changes
+recently then I don't have them. But I compared my bi_record code with the
+latest code available via rsync and they look identical.
+
+thanks /
+
+magnus
+
+Tom Rini wrote:
+>
+> On Thu, Nov 14, 2002 at 04:54:47PM +0100, Magnus Damm wrote:
+>
+> > The bi_record setup code in linux/arch/ppc/boot/simple/misc-embedded.c
+> > doesn't care about the initrd size. So, if you are using a initrd that
+> > crosses a megabyte-boundary you will have your initrd overwritten with
+> > the bi_record. This results in crc error when unpacking the initrd.
+> >
+> > The quick fix is to add a offset to the boot-code and to
+> > arch/ppc/kernel/setup.c.
+> >
+> > So, what's the long term solution?
+> > Passing a pointer to the kernel?
+>
+> Can you give more information about where everything is loaded up at?  I
+> thought this was a non-issue, but it's been a while since I tested
+> initrds.
+>
+> --
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
