@@ -1,34 +1,83 @@
-To: daenzerm@student.ethz.ch
-Cc: Joseph Garcia <jpgarcia@execpc.com>,
-        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-        Stephan Leemburg <stephan@jvc.nl>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Debian pmud package available
-References: <Pine.LNX.4.10.10006062043470.29453-100000@zirkon.biophys.uni-duesseldorf.de>
-	<393D4D15.7CF12E4E@execpc.com> <393D5429.32BEFB20@relog.ch>
-From: Francois Felix Ingrand <felix@ingrand.net>
-Date: 07 Jun 2000 15:50:07 +0200
-In-Reply-To: Michel Dänzer's message of "Tue, 06 Jun 2000 21:42:33 +0200"
-Message-ID: <x8qhfb51tyo.fsf@alf.laas.fr>
+Date: Wed, 7 Jun 2000 17:10:39 +0200 (MET DST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
+cc: mlan@cpu.lu, schmitz@opal.biophys.uni-duesseldorf.de,
+        daenzerm@student.ethz.ch, toe@unlserve.unl.edu,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [patch] VRAM detection in controlfb
+In-Reply-To: <20000607233456Z.roikawa@rr.iij4u.or.jp>
+Message-ID: <Pine.GSO.4.10.10006071705280.652-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer <daenzer@relog.ch> writes:
-
-> > Does Batmon display for Pismo systems?  I could update it to support Pismo
-> > ASAP if I get some input.
+On Wed, 7 Jun 2000, Ryuichi Oikawa wrote:
+> Geert did explain the problem. It is due to incorrect offset estimation.
+> Let me explain your case in detail. The authur of fbdev module seems to
+> assume frame buffer size as a multiple of page size:
 >
-> Francois told me it does; haven't tested it myself.
+> fbdevhw.c
+> void* fbdevHWMapVidmem(ScrnInfoPtr pScrn)
+> {
+> 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+>
+> 	TRACE_ENTER("MapVidmem");
+> 	if (NULL == fPtr->fbmem) {
+> 		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
+> 			    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 		fPtr->fbmem = mmap(NULL, fPtr->fix.smem_len, PROT_READ | PROT_WRITE,
+> 				   MAP_SHARED, fPtr->fd, 0);
+>
+> but the fact is different from his assumption.  As you know very well,
+> controlfb adjusts fb memory size by subtracting display offset(in your
+> case 80 = 0x50 bytes) so that
+>     fboff = (4M - 0x50) & 0xfff = 0xfb0
+>     fbmem = smem_start & 0xfffff000 = smem_start - 0x50.
+>
+> Thus your Xserver's video memory starts at offset
+>     (fbmem + fboff) - smem_start = 0xfb0 - 0x50 = 0xf60 = 3936 bytes.
+>
+> Now you understand the fix is very simple:
+> -		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
+> +		fPtr->fboff = fPtr->fix.smem_start & (PAGE_SIZE-1);
 
-I confirm it does display... and the information displayed seem to be
-"meaningful".
+That's not sufficient (perhaps it is in this case, though): both fix.smem_start
+and fix.smem_len may be not page aligned. To catch all cases, you have to use
+the formula from my previous posting.
+
+> But looking through the XF4 fbdev support code I saw two more mistakes
+> causing potential problem. One is a confusion of virtual screen width
+> with screen pitch:
+>
+> fbdev.c
+> 	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+>
+> Yes, this is wrong as the authur noted, but interestingly this code spreads
+> over the all drivers supporting fbdev, though I can't distinguish which is
+> the original :^)  Maybe polite solution is to fix each driver, but quick
+> fix will be
+>
+> +	pScrn->displayWidth = fPtr->fix.line_width /
+> +				(fPtr->var.bits_per_pixel >> 3)
+
+Typo: the field is called `line_length', not `line_width'.
+
+And that formula is valid for chunky displays only, not for interleaved
+bitplanes (I suppose pScrn->displayWidth is the width of one line in memory,
+counted in pixel units?).
+
+If line_length is 0, you must fallback to xres_virtual / bytes_per_pixel.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-"20% de la population mondiale consomme 86% des ressources." Rapport ONU, 1998.
-Professional: http://www.laas.fr/~felix               mailto:felix@laas.fr
-Personal: http://www.ingrand.net/felix                mailto:felix@ingrand.net
+Geert Uytterhoeven ------------- Sony Software Development Center Europe (SDCE)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Voice +32-2-7248638 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
