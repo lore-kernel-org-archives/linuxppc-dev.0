@@ -1,74 +1,68 @@
-To: t.vanremortel@ha.be
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: fstream on PPC? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 17 Nov 2003 16:09:18 +0100."
-             <1069081757.25853.5.camel@toni>
-Date: Mon, 17 Nov 2003 16:53:45 +0100
-Message-Id: <20031117155350.D76B7C5F59@atlas.denx.de>
+Subject: Re: bash: Segmentation fault on 8280
+From: "Guy M. Streeter" <streeter@redhat.com>
+To: Srinivasa Hebbar <sshebbar@yahoo.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <000f01c3ad19$16bc9070$3d40000a@wisdom>
+References: <000f01c3ad19$16bc9070$3d40000a@wisdom>
+Content-Type: multipart/mixed; boundary="=-EazrijlpldVTXedA3wiK"
+Message-Id: <1069084615.1046.2.camel@jarjar.hsv.redhat.com>
+Mime-Version: 1.0
+Date: 17 Nov 2003 09:56:56 -0600
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Toni,
+--=-EazrijlpldVTXedA3wiK
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-in message <1069081757.25853.5.camel@toni> you wrote:
+On Mon, 2003-11-17 at 08:42, Srinivasa Hebbar wrote:
+> Dear All,
 >
-> But when I allow the functions that use fstream (for saving and loading
-> small files over NFS), I get the following error:
+> We have 2 identical custom board with MPC-8260 and MPC-8280 CPUs.
+> The bash (Came with denx CD) works fine on MPC-8260 board.
+> But the same bash program encounters a "Segmentation Fault"
+> on 8280 based custom board.
 >
-> Linking test...
-> /opt/eldk/usr/ppc-linux/bin/ld: warning: libstdc++-libc6.2-2.so.3,
-> needed by /opt/PPC_X/usr/X11R6/lib/libGLU.so, not found (try using
-> -rpath or -rpath-link)
-...
-> and more than a dozen of these errors. It's a linking problem, that's
-> what I know. But I don't know how to get to the problem-core. Can I
+> We are using ppc_82xx-gcc compiler to build the linux.
+> The linux version is denx-2.4.20
 
-Why not? The error message is pretty plain english:
+Your kernel might not have 8280 support. See if something like the
+attached patch has been applied.
 
-Your  link  step  included   the   /opt/PPC_X/usr/X11R6/lib/libGLU.so
-library,    which    in    turn    tried    to   link   against   the
-libstdc++-libc6.2-2.so.3 library, which was not found by the linker.
+--Guy
 
-This is not a big surprise, as the current version of the ELDK  ships
-with libstdc++-libc6.1-2.a.3
+>
+> Any help is highly appreciated.
+>
+> Regards,
+> S. Hebbar.
+>
 
+--=-EazrijlpldVTXedA3wiK
+Content-Disposition: attachment; filename=8280.patch
+Content-Type: text/plain; name=8280.patch; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> solve this by a quick hack? Or is it hopeless to start messing with
-> fstream on PPC?
+--- v2.4.22_linuxppc_2_4_devel/arch/ppc/kernel/cputable.c	2003-07-25 14:39:48.000000000 +0000
++++ sbcPowerQUICCII/arch/ppc/kernel/cputable.c	2003-10-14 18:51:45.000000000 +0000
+@@ -299,6 +299,14 @@ struct cpu_spec	cpu_specs[] = {
+ 	32, 32,
+ 	__setup_cpu_603
+     },
++    {	/* 8280 is a G2_LE (603e core, plus some) */
++	0x7fff0000, 0x00820000, "8280",
++	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_CAN_DOZE | CPU_FTR_USE_TB |
++	CPU_FTR_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
++	COMMON_PPC,
++	32, 32,
++	__setup_cpu_603
++    },
+     {	/* default match, we assume split I/D cache & TB (non-601)... */
+     	0x00000000, 0x00000000, "(generic PPC)",
+     	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
 
-I don't know where  you  got  the  /opt/PPC_X/usr/X11R6/lib/libGLU.so
-library  from. I guess you copied if from a standard PowerPC release.
-This is very risky in itself, as it may have been built in a way wich
-is incompatible to the ELDK libraries (or  are  you  absolutely  sure
-that  they  use  the  same  settings  for  FPU support and cache line
-sizes?).
+--=-EazrijlpldVTXedA3wiK--
 
-You should probably rebuild libGLU using the ELDK tools, and link  it
-against the ELDK provided C/C++ libs.
-
-
-> PS: don't mind the warning about libstdc++-libc6.2-2.so.3, it's in place
-> on the embedded system.
-
-You must be joking. Of course you have to mind this.  It's  the  root
-cause  of your problems. And other problems are lurking to hit you as
-libstdc++-libc6.2-2.so.3 is most probably incompatible to  the  ELDK,
-too.
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Ninety-Ninety Rule of Project Schedules:
-        The first ninety percent of the task takes ninety percent of
-the time, and the last ten percent takes the other ninety percent.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
