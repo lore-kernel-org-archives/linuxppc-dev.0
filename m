@@ -1,35 +1,44 @@
-From: "Jerry Quinn" <jquinn@nortelnetworks.com>
-MIME-Version: 1.0
+Date: Wed, 8 Sep 1999 15:02:20 -0500
+From: Shaw Terwilliger <sterwill@io.nu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Paul's devel branch on Lombard?
+Message-ID: <19990908150220.A21029@io.nu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14294.44729.267053.556833@gargle.gargle.HOWL>
-Date: Wed, 8 Sep 1999 14:45:13 -0400 (EDT)
-To: Paul.Mackerras@cs.anu.edu.au
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Communicator Crashes X II
-In-Reply-To: <199908310148.LAA14647@tango.anu.edu.au>
-References: <Pine.LNX.4.10.9908301823010.27650-100000@mercator.cs.kuleuven.ac.be> <199908310148.LAA14647@tango.anu.edu.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> "Paul" == Paul Mackerras <paulus@cs.anu.edu.au> writes:
+I'm using Pauls' stable branch (2.2.12) from his rsync archives
+on my Lombard PowerBook.  I've wanted to use the power management
+features in the new kernels, but I have yet to build a kernel that
+fully boots.  
 
- Paul> Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
+As of today's kernel sources, it boots but pulls a Machine Check in 
+one of my init scripts.  Each time I boot it, it does in a different place.
+The attached dump is failing on the "exim" script ("S20exim").
 
- Paul> I don't see the FB. overflow messages, but then I don't run the serial
- Paul> port at 115200, only at 57600.  Is it a common feature that people who
- Paul> see the FB. overflow message are running the serial port at 115200 or
- Paul> 230400 baud?
+I'm using the same kernel configuration I'm using for 2.2.12 (which
+works great from the SCSI to the modem to the framebuffer to USB),
+but 2.2.12 doesn't offer sleep mode.  :)
 
-I see a lot of these messages at 115200 when downloading big files over ppp.
-This is on a powercenter on vanilla 2.2.10.
+A hand-typed dump appears below.  I'll send my .config if it would
+help.
 
-Jerry
+Machine check in kernel mode.
+Caused by (From msr): regs c75dbd10 Unknown values in msr
+NIP: C000BDCC XER: 00000000 LR: C0011DD0 REGS: c75dbd10 TRAP: 0200
+MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c75da000[111] 'S20exim' Last syscall: 90
+last math c75da000
+GPR00: B6337806 C75DBDC0 C75DA000 BB04D805 01743000 0007FFC0 C037BCC0 C037BCE0
+GPR08: 00000008 00000001 00000000 00000001 24842224 018CF840 00000000 01808294
+GPR16: 00000000 30056500 7FFFE408 30056530 00009032 075DBE80 00000000 C7D4CB00
+GPR24: 01745000 01742000 01745000 00003000 01745000 C02CD220 FE8BCFFF 01743000
+vector: 200 at pc = c000bdcc, msr = 9030, sp = c75dbdc0 [c75dbd10]
+current = c75da000, pid = 111, comm = S20exim
 
 -- 
-Jerry Quinn                             Tel: (514) 761-8737
-jquinn@nortelnetworks.com               Fax: (514) 761-8505
-Speech Recognition Research
-
+Shaw Terwilliger (sterwill@io.nu)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
