@@ -1,28 +1,58 @@
-Message-ID: <3C0E5FB1.4020108@embeddededge.com>
-Date: Wed, 05 Dec 2001 12:56:01 -0500
-From: Dan Malek <dan@embeddededge.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <F1BED55F35F4D3118C0F00E0295CFF4DFF9E7F@mail.mediatrix.com>
+From: Jean-Denis Boyer <jdboyer@mediatrix.com>
+To: "'Ricardo Scop'" <scop@digitel.com.br>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Dan Malek <dan@embeddededge.com>, andy_lowe@mvista.com
+Subject: RE: Kernel oops while routing
+Date: Wed, 5 Dec 2001 13:01:28 -0500 
 MIME-Version: 1.0
-To: scop@digitel.com.br
-Cc: linuxppc-embedded@lists.linuxppc.org, andy_lowe@mvista.com
-Subject: Re: Kernel oops while routing
-References: <3C06B9D0.7020804@embeddededge.com> <917.011205@digitel.com.br>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ricardo Scop wrote:
+>      - in fcc_enet_start_xmit, after setting up another bd and
+>      incrementing bdp, the next bd's tx-ready bit is tested in order
+>      to stop the xmit queue if it is set, ok? But, sometimes, the CPM
+>      may already have cleared this bit _and_ the corresponding
+>      interrupt has not been serviced yet (because we're in a
+>      spin_lock_irq); so, netif_stop_queue is not called in this case,
+>      nor is tx_full set;
+>
+>      - next, the interrupt is serviced, but then curr_tx equals
+>      dirty_tx _and_ tx_full is not set, so no sk_buffers are freed!
+
+Yes! I totally agree with you, checking the ready bit in the buffer
+descriptor is not guaranteed, even if the interrupts are masked, since the
+CPM doesn't suspend its processing.
+
+I have done many tests between two of our custom boards, that use an 8260
+and a single FCC. I could effectively see a memory leak.
+
+IMHO, I could suggest an easier patch, that would result in modifying only
+one line of code, without changing the 'tx_full' logic. In function
+fcc_enet_start_xmit, instead of checking the ready bit (which is bad), we
+could only check if cur_tx has reached dirty_tx, and then call
+netif_stop_queue. Does it make sense?
 
 
-> So, we're offering this patch to the public list (with Andy's
-> blessing :-). I can provide any other details about our tests, if
-> required.
+BTW, I worked hard last week in debugging the fcc_enet driver. It was not
+handling correctly some transmission errors, resulting in the transmitter
+completely stopping, without restarting. This is related to an errata
+(CPM37) from Motorola about the 8260, concerning the way of restarting the
+transmitter. If someone is interested, I can release a patch for that.
 
-Cool.  Thanks.  This could also be a problem with all Ethernet drivers
-(SCC, FCC, and FEC) on both 8xx and 8260.  I'll look at the others.
 
 
-	-- Dan
-
+--------------------------------------------
+ Jean-Denis Boyer, B.Eng., Technical Leader
+ Mediatrix Telecom Inc.
+ 4229 Garlock Street
+ Sherbrooke (Québec)
+ J1L 2C8  CANADA
+ (819)829-8749 x241
+--------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
