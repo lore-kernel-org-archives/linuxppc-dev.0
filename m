@@ -1,37 +1,36 @@
-Date: Sun, 16 Jan 2000 18:03:39 -0500 (EST)
-From: satadru pramanik <satadru@umich.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: aic7xxx config errors in 2.2.14, but not in 2.2.7
-Message-ID: <Pine.SOL.4.10.10001161756390.16172-100000@galaga.gpcc.itd.umich.edu>
+Date: Mon, 17 Jan 2000 14:02:19 -0800 (PST)
+From: Sean Chitwood <darkmane@w-link.net>
+Reply-To: darkmane@w-link.net
+To: Kevin Buettner <kev@primenet.com>
+cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help w/ gdb
+In-Reply-To: <1000116164658.ZM13760@saguaro.lan>
+Message-ID: <Pine.LNX.4.10.10001171358500.1248-100000@darkmane.w-link.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am using the stock vmlinux.2.2.7-vger kernel to enable support for my
-Adaptec 2940 and 2940u2w scsi cards in a powermac 7600 using OF booting.
+On Sun, 16 Jan 2000, Kevin Buettner wrote:
 
+> #define SOFUN_ADDRESS_MAYBE_MISSING
+> 
+> Is it there?  (I'm guessing not.) Try adding the above line to
+> tm-linux.h and then rebuild gdb.
+> 
 
-When I do a cvs sync with the current 2.2 linux ppc tree i heard about on
-the mailing list, and then did an update ( cvs update -rlinux_2_2), and
-recompiled and tried a kernel with the aic7xxx option selected, only one
-of the adaptec cards is recognized.
+	It was not there, but that did not fix my problem. I guess this might be the problem w/ optimization. 
 
-Have there been significant changes to the aic7xxx driver in the past
-several months?   How would I get an old version of the aic7xxx driver as
-in the 2.2.7 vger kernel?
+	Damn.....
 
-Any reconfiguration info would be appreciated.
-
-thanks.
-
-
-----
-satadru pramanik www.umich.edu/~satadru
-Do, or do not.  There is no try.
--Yoda
----
+	Sean aka Darkmane
++------------------------------
++ On October 16, 1999 A.D.
++ Sean Chitwood proudly proclaimed
++ his love for Melissa Webb
++ and made her his lifemate
++------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
