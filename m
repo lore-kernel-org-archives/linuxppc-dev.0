@@ -1,107 +1,50 @@
-Message-Id: <200008302138.XAA00750@piglet.grunz.lu>
-Date: Wed, 30 Aug 2000 23:38:24 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: asm in OF? YES!
-To: paubert@iram.es
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.HPX.4.10.10008301549190.15978-100000@gra-ux1.iram.es>
+Date: Wed, 30 Aug 2000 17:49:30 -0400 (EDT)
+From: Alexander Viro <viro@math.psu.edu>
+To: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+cc: flar@allandria.com, Andi Kleen <ak@suse.de>, Steve Lord <lord@sgi.com>,
+        Matthew Wilcox <matthew@wil.cx>, Halfmann Klaus <khalfmann@libra.de>,
+        Roman Zippel <roman@augan.com>, linuxppc-dev@lists.linuxppc.org,
+        linux-fsdevel@vger.kernel.org
+Subject: Re: Btree directories (Re: Status of HFS+ support)
+In-Reply-To: <Pine.LNX.3.96.1000830142224.10035F-100000@deepspace.mklinux.org>
+Message-ID: <Pine.GSO.4.10.10008301742190.28976-100000@weyl.math.psu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+On Wed, 30 Aug 2000, David A. Gatwood wrote:
 
-Yep, it works! I can boot off mesh again ;-)
+> Also, race protection in the VFS layer doesn't make sense either, because
+> how can the VFS possibly assume anything about the structure to know what
+> it can and can't allow to happen concurrently?  And the sticky directory
+> thing... that's the filesystem's responsibility to implement that, not the
+> VFS layer.
 
-On  30 Aug, this message from Gabriel Paubert echoed through cyberspace:
->> Apple's OF seems to have that capability as well (I think, guess and hope ;-).
->> However, it does _not_ seem to have an assembler built-in. The 'code' word
->> is defined all right.
+Oh, really? How about rename()/rename() ones? I mean, those that were
+_totally_ fucked up in 4.4BSD all over the friggin' place. How about
+rename()/rmdir()? (ditto) Why should _that_ be duplicated into every fs,
+with its own set of bugs in each of them?
+
+> The VFS layer shouldn't even care if the underlying filesystem supports
+> ownership, much less sticky directories.  It should simply pass
+> information about the operation and who wants to do it to the filesystem
+> and the filesystem should decide if that's a legal operation or not.
+> Anything more depends on an inode-structured filesystem, or at least
+> faking an inode structure for the VFS layer, which is a waste of system
+> overhead with little or no obvious benefit.
+
+Again, BS. You have ->permission() for that.
+
+> > VFS does not rely on inode numbers and it does not pass them around. Even
 >
-> You don't have any ppc-assembler vocabulary or similar, then ?
+> But it does, at least in 2.2.14.  I'm looking at the code right now.  The
+> word inode appears 40 times in the dcache.c file alone.  The inode
+> number is stored in the dentry as dentry->d_inode, and is used for several
 
-Nope. Definitely not. We have hexdump and l, , isn't that enough? No
-real hacker would use an assembler; thats for lamers ;-)
-
-> Ok, how can something this close to the machine be delivered without an
-> assembler ?
-
-See above ;-))
-
-> Well, sincee you can type in hex, there is still some hope...
-
-Hex worked.
-
->> I will try this tonight, but I doubt I will be able to enter this as asm
->> words. Do you know the alternate syntax? Would something lime this work:
->>
->> code 60000000 l, 6000000 l,
->
-> I think so, let me try:
->
-> ok code ictc@ ok 979ffffc l, 7f99faa6 l, 4e800420 l, ;code
-> ok see ictc@
-> code ictc@
-> edcc5c     stwu    r28,-4(r31)
-> edcc60     mfspr   r28,spr1017
-
-1017 is actually l2cr, but never mind...
-
-> edcc64     bcctr   always
-> ok ictc@ .
-> 264d2
-> ok
-
->> How do you terminate a 'code' sequence?
->
-> Oops, forgot about it, my bad. With ';code', isn't it obvious ?
-
-Hm, doesn't work in Apple's OF 1.0.5. end-code is the answer ;-). Here
-is my ictc! implementation, if anyone's interested:
-
-code ictc!
-        7e9bfba6 l, 829f0000 l, 3bff0004 l, 4e800020 l,
-end-code
-
-That is roughly this in asm:
-
-	mtictc	r20	(or mtspr 1019,r20)
-	lwz	r20,0(r31)
-	addi	r31,r31,4
-	blr
-
-Verifyed to slow the system on a busy loop:
-
-: loop
-	begin
-	1- dup 0<
-	until
-	drop
-;
-
-11 ictc! slows this loop by a factor of 4.
-
-Now, go figure why this helps the MESH driver... It seems to use some
-busy loop timing somewhere; however there is the ms word available which
-uses the timebase and is accurate even on my upgraded box.... That would
-have been the better choice, unless the driver uses sub-1ms loops. Which
-would explain...
-
-Anyway, thanks for your help, Gabriel!
-
-Cheers
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Number? Look into dcache.h and fs.h. BTW, fs-independent part of struct
+inode in Linux _is_ vnode. Normal, sane BSD/SunOS vnode.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
