@@ -1,31 +1,36 @@
-Date: Tue, 30 May 2000 09:51:34 +0200 (CEST)
+Date: Tue, 30 May 2000 10:03:15 +0200 (CEST)
 From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
-To: Mark Morrill <mmorrill@powersurfr.com>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: IBM PowerPC - Linux Connections?
-In-Reply-To: <B558204F.6F93%mmorrill@powersurfr.com>
-Message-ID: <Pine.BSF.4.21.0005300940410.44658-100000@invalid.ed.ntnu.no>
+To: Neil Russell <caret@c-side.com>
+cc: zzh <david-1z@263.net>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Floating point in 8260
+In-Reply-To: <20000529234501.A10933@lx.c-side.com>
+Message-ID: <Pine.BSF.4.21.0005300954100.44658-100000@invalid.ed.ntnu.no>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 29 May 2000, Mark Morrill wrote:
+On Mon, 29 May 2000, Neil Russell wrote:
 
-> http://www.chips.ibm.com/products/powerpc/linux/
->
-> I've been looking for a means to build a Linux appliance and this IBM url
-> seems to have the answer - except for a real product I can play with.
->
-> Anybody know where I could get my hands on one of these boards?
+> As I understand it, there is no production 8260 without an FPU.  Current
+> production chips are rev A.1 which have an FPU, and new production are rev B
+> which will also have an FPU.  You probably have no choice for production, so
+> you should upgrade your test board if it has old an CPU.
 
-Which one - the IBM 405GP Evaluation Kit [hint] or the
-PC-in-disguise; PowerPC Open Platform reference design?
+I suppose I can tell since currently shipping 8260 come with FPU.
+Early 8260 are just like the early 486SX - it does contain a FPU,
+but it is disabled. But unlike the 486SX the 8260 FPU can be
+reenabeled by some microcode patch - wich I do not have myself.
+This is as much I know of this. If you are really nice to
+Motorola then perhaps they will let you have this patch.
 
-To have the latter I suppose you could just as well lay
-your hands on one of the demised PReP/CHRP machines.
-Small wonder Apple Just Said No.
+> > Should i recompile the bash and c lib.How should i treat
+> > float point.BTW,i have a apple G3,should i compile
+> > these stuff on this machine?
+
+configure & make xgcc -nfp?
+Then recompile GLibC (with soft float) I suppose.
 
 --
   ******************************************************
