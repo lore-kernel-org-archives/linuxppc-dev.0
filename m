@@ -1,86 +1,49 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Subject: Autoboot in U-boot
-From: "Mike G." <gohas@actinium.org>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Content-Type: text/plain
-Date: 18 Jul 2003 10:33:02 +0800
-Message-Id: <1058495583.1183.8.camel@localhost.localdomain>
-Mime-Version: 1.0
+Message-ID: <3F17931A.4000405@dgt-lab.com.pl>
+Date: Fri, 18 Jul 2003 08:26:34 +0200
+From: Wojciech Kromer <krom@dgt-lab.com.pl>
+MIME-Version: 1.0
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: need a fast byteorder changing routine
+References: <Xx969281867387.18796@webmail1.inner-21cn.com>
+In-Reply-To: <Xx969281867387.18796@webmail1.inner-21cn.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi there,
+U¿ytkownik li napisa³:
 
-Can someone help me on this autoboot? I successfully configured the
-u-boot-0.4.0 for mpc857 custom board but somehow the bootcommand and
-boot arg would not run, it just skip the autoboot and goes to prompt. so
-help!!!
-
-this is part of the configuration
-
-....................................................................
-#if 0
-#define CONFIG_BOOTDELAY	-1	/* autoboot disabled*/
-#else
-#define CONFIG_BOOTDELAY	3	/* autoboot after 5 sec	*/
-#endif
-
-#define CONFIG_BOOTCOMMAND	"bootm 02800000 02880000"
-#define CONFIG_BOOTARGS		"root=/dev/ram rw"
-
-
-#undef	CONFIG_WATCHDOG			/* watchdog disabled*/
-
-#define	CONFIG_SCC2_ENET	1	/* use SCC2 ethernet */
-#undef	CONFIG_FEC_ENET			/* disable FEC ethernet  */
-
-/* this must be included AFTER the definition of CONFIG_COMMANDS (if
-any) */
-#include <cmd_confdefs.h>
-
-/*
- * Miscellaneous configurable options
- */
-#undef	CFG_LONGHELP		/* undef to save memory*/
-#define	CFG_PROMPT	":>"	/* Monitor CommandPrompt	*/
-..................................................................
-
-and this is the output displayed:-
-
-......................................................................
-U-Boot 0.4.0 (Jul 18 2003 - 10:17:35)
-
-CPU:   unknown MPC850 (0x07000003) at 48 MHz: 4 kB I-Cache 4 kB D-Cache
-FEC pret
-         *** Warning: CPU Core has Silicon Bugs -- Check the Errata ***
-SDRAM:  16 MB
-Top of RAM usable for U-Boot at: 01000000
-Reserving 512k for U-Boot at: 00f80000
-Reserving 256k for malloc() at: 00f40000
-Reserving 60 Bytes for Board Info at: 00f3ffc4
-Reserving 52 Bytes for Global Data at: 00f3ff90
-Stack Pointer at: 00f3ff78
-New Stack Pointer is: 00f3ff78
-Now running in RAM - U-Boot at: 00f80000
-FLASH:  8 MB
-In:    serial
-Out:   serial
-Err:   serial
-U-Boot relocated to 00f80000
-Net:   SCC ETHERNET
-:>
-:>
-
-...................................................................
-
-So i don't understand... where did the autoboot go??
-
-hmm.... thanks guys
+>Hi all,
+>i need do a lot of byteorder changing operation from big-endian to little-endian. cpu_to_le32 is not fast enough for me, does anyone have such a routine written in asm.?
+>PS: here is an ugly asm function do such thing:
+>void swapbyte(unsigned long *val, unsigned long offset,
+>              unsigned long value)
+>{
+>
+>        asm ("lis 3 %0@ha" : "=r" (val));
+>        asm ("lwz 3,%0@l(3)" : "=r" (val));
+>        asm ("stw %1, 0(4)" : "=r" (offset));
+>        asm ("stw %2, 0(5)" : "=r" (value));
+>        asm ("stwbrx 5, 3, 4");
+>}val is the address of value. i used to set this function as inline, but kernel said:
+>Oops: kernel access of bad area, sig: 11
+>Any comments
+>Best Regards!
+>Li
+>
+>
+>
+>
+>
+try DIRECT using out_le16/32 in_le16/32 from <asm/io.h>,
+this takes same time as one  big endian write/read
 
 
-regards,
-Mike G.
+
+--
+* * * * * * * * * * * *
+* per pedes ad astra! *
+* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
