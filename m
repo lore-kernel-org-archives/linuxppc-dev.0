@@ -1,48 +1,54 @@
-Message-ID: <37F241DB.94C9BF00@chpc.utah.edu>
-Date: Wed, 29 Sep 1999 10:44:11 -0600
-From: Lou Langholtz <ldl@chpc.utah.edu>
+Date: Wed, 29 Sep 1999 11:52:27 -0500 (CDT)
+From: Kumar Gala <kumar@chaos.ph.utexas.edu>
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: can someone explain this?
+Message-ID: <Pine.LNX.4.10.9909291150140.12336-100000@chaos.ph.utexas.edu>
 MIME-Version: 1.0
-To: Takashi Oe <toe@unlserve.unl.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Fwd: Bug: 2.2.12 still hangs PPC after some PPP activity]
-References: <Pine.LNX.3.96LJ1.1b7.990929021435.16135B-100000@ofey.inetnebr.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Takashi Oe wrote:
+I was looking around the ppc kernel source in arch/ppc/kernel/process.c
+and was looking at how copy_thread() works.
 
-> > . . . .seems like this might introduce a bug if we could get interrupted after
-> the
-> > restore of the new_flags but before the second restore of old flags in such a
-> > way such that the proper state of old_flags could change. I'm not comfortable
-> > enough though with my understanding of interrupts and driver routines to be
-> > certain one way or another. To be more specific, consider the case on just a
-> > single processor system. If this strikes anyone else as a possible race
-> > condition that could introduce a bug, then this is what we need to fix in
-> > macserial.c's rs_write routine since this code can potentially happen.
->
-> I'm fairly certain it's a bug.  Good spotting.  The last restore_flags()
-> shouldn't be there.
->
-> --- macserial.c.ORIG    Wed Sep 29 02:05:14 1999
-> +++ macserial.c Wed Sep 29 02:05:31 1999
-> @@ -1381,7 +1381,6 @@
->         if (info->xmit_cnt && !tty->stopped && !info->tx_stopped
->             && !info->tx_active)
->                 transmit_chars(info);
-> -       restore_flags(flags);
->         return ret;
->  }
->
-> Takashi Oe
+I was wondering why so much space is stored off for copies of pt_regs
 
-This is pretty much the kernel I'm running now. I haven't had the "FB. overflow"
-message yet nor system-freeze but I've experienced the TCP slowdown already.
-Evidence that we've got other problems as well (IMO). It's only been 20 hours or
-so with new kernel so not enough time for me to feel confident though about these
-results.
+I can understand needing one copy for the process in user space, and 2nd
+for the process in kernel space, but why a third?
+
+copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
+            struct task_struct * p, struct pt_regs * regs)
+{
+        struct pt_regs * childregs, *kregs;
+#ifdef __SMP__
+        extern void ret_from_smpfork(void);
+#else
+        extern void ret_from_syscall(void);
+#endif
+        /* Copy registers */
+        childregs = ((struct pt_regs *)
+                     ((unsigned long)p + sizeof(union task_union)
+                      - STACK_FRAME_OVERHEAD)) - 2;
+        *childregs = *regs;
+        if ((childregs->msr & MSR_PR) == 0)
+                childregs->gpr[2] = (unsigned long) p;  /* `current' in
+new task */
+        childregs->gpr[3] = 0;  /* Result from fork() */
+        p->tss.regs = childregs;
+        p->tss.ksp = (unsigned long) childregs - STACK_FRAME_OVERHEAD;
+        p->tss.ksp -= sizeof(struct pt_regs ) + STACK_FRAME_OVERHEAD;
+        kregs = (struct pt_regs *)(p->tss.ksp + STACK_FRAME_OVERHEAD);
+
+and what is going on with STACK_FRAME_OVERHEAD all over the place
+
+thanks
+
+ - kumar
+
+
+
+ignorance is bliss.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
