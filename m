@@ -1,54 +1,62 @@
-Date: Fri, 13 Jun 2003 10:48:01 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
-To: Rakesh jagota <j.rakesh@gdatech.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem with kernel loading in PPC IBM405 based board
-In-Reply-To: <agl575xzx4jdocg.120620030900@gda-server>
-Message-ID: <Pine.LNX.4.56.0306131039260.16768@mag.devdep.sysgo.de>
-References: <f4sdizk28w071ij.110620032000@gda-server>
- <20030611151322.GA9573@dingdong.cryptoapps.com> <agl575xzx4jdocg.120620030900@gda-server>
+From: "Stephan Linke" <Stephan.Linke@epygi.de>
+To: "Sanjay Kumar" <skumar@giga-stream.de>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Registering ATM devices.
+Date: Fri, 13 Jun 2003 16:41:41 +0200
+Message-ID: <FCEAKDJJAPHPLJFINDAJAEIODCAA.Stephan.Linke@epygi.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <FKEJLMJFECLAHOKCGJFPMEOACAAA.skumar@giga-stream.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 7 Nov 2003, Rakesh jagota wrote:
-        ^^^^^^^^^^
-You really should fix your date settings or apply for a role on Star
-Trek. :-)
+Hi Sanjay,
 
-> I am using openBios code, but i m not able to load the zImage.treeboot using
-> tftp or serial port. I am directly loading the zImage.treeboot using JTAG
-> (RISCWATCH). But I am not able to find out the exact loaction where we should
-> load the image and then from where should be start running the kernel. I have
-> seen the stext loaction (0xc0000000). Can you guide me exactly where should I
-> load this image.
+I think it would be best to register one driver for each PHY otherwise you whount have any information what interface a new
+connection is assigned to.
+On the oher hand I am not shure if there is enough protection against parallel access of different device drivers running at the
+same hardware...
 
-0xc0000000 is the virtual address where the _kernel_ is linked and supposed
-to run after the MMU has been turned on.
+Regards, Stephan
 
-The image you are trying to load is a preloader with a compressed kernel
-image attached to it. The preloader is an ELF file that runs at an entirely
-different address. It will uncompress and run the kernel (@ address 0x0).
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Sanjay
+> Kumar
+> Sent: Freitag, 13. Juni 2003 08:39
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: Registering ATM devices.
+>
+>
+>
+> Dear all,
+>
+> I have MPC8266 having connected two UTOPIA II interface on FCC1 and FCC2.
+> UTOPIA II interface connected to FCC1 has 16 PHY devices connected to it
+> and UTOPIA II interface connected to FCC2 has 2 PHY devices connected to
+> it.
+>                     while registering the atm devices via
+> atm_device_register() function should I register two atm devices, one for
+> each UTOPIA II interface conncetd to FCC1 and FCC2 or 18 atm devices for
+> each PHY devices connected on both UTOPIA II interface.Total number of PHY
+> devices on both UTOPIA II interface is 18.
+>
+> Any suggestion will be helpfull to me.
+>
+> with regards,
+> sanjay
+>
+>  ==============================================================
+>  Sanjay Kumar                        skumar@giga-stream.de
+>  GIGA-STREAM UMTS Technologies GmbH  Tel: +49 (07243) 94976-119
+>  Im Ermlisgrund 8                    Fax: +49 (07243) 94976-100
+>  76337 Waldbronn
+>  ==============================================================
+>
+>
+>
 
-To answer your question: the zImage is linked to 0x00400000 (check
-arch/ppc/boot/simple/Makefile, LD_ARGS). The OpenBIOS can load ELF images,
-so just use it. I don't recommend direct downloading with RISCWATCH,
-although this may work.
-
-Regards,
-Marius
-
---
-Marius Groeger <mgroeger@sysgo.de>
-Software Engineering
-
-SYSGO Real-Time Solutions AG | Embedded and Real-Time Software
-Am Pfaffenstein 14
-55270 Klein-Winternheim, Germany
-
-Voice: +49-6136-9948-0 | FAX: +49-6136-9948-10
-www.sysgo.de | www.elinos.com | www.osek.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
