@@ -1,27 +1,37 @@
-Message-ID: <BE1C564723B3D21191FD0000F840E39801D814EC@rfcmx2.rfc.comm.harris.com>
-From: "Brown, David (dbrown03)" <DBrown03@harris.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Interference between SCC serial and ethernet
-Date: Tue, 2 May 2000 17:48:18 -0400 
+Message-ID: <390F51FC.EC11B8B9@embeddededge.com>
+Date: Tue, 02 May 2000 18:09:00 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "Brown, David (dbrown03)" <DBrown03@harris.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Interference between SCC serial and ethernet
+References: <BE1C564723B3D21191FD0000F840E39801D814EC@rfcmx2.rfc.comm.harris.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have the MontaVista 2.2.13 kernel running on my board.
-SCC1 for Ethernet; SMC1, SMC2, SCC2 & SCC3 as serial ports.
+"Brown, David (dbrown03)" wrote:
+>
+> I have the MontaVista 2.2.13 kernel running on my board.
 
-The SCC serial ports work fine for me, until I use Ethernet. Then, the SCC
-serial ports don't work anymore but Ethernet does. The SMC serial ports
-continue to work.
+I need a little help here :-).....I assume it is a 860 class processor,
+but what about the board?  There are implementation specific considerations
+for the I/O port configurations.  You didn't happen to use some of
+the I/O ports for Ethernet control that multiplex to the others?
 
-I'll be debugging this tomorrow in detail, but I first want to know whether
-I should be looking for uart.c/enet.c bugs or limit myself to configuration
-issues.  Has anyone used SCC serial ports and SCC Ethernet simultaneously?
-If so, I'll concentrate on the config issues.
+> The SCC serial ports work fine for me, until I use Ethernet.
 
-Thanks, all!
+How do you boot the system not using Ethernet, then enable it?  Do
+you mean running to different kernel configurations?
+
+
+> ... Has anyone used SCC serial ports and SCC Ethernet simultaneously?
+
+Yes, even multiple Ethernet and multiple SCCs.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
