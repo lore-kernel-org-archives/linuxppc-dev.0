@@ -1,47 +1,30 @@
-Date: Wed, 7 Jan 2004 15:47:44 +0100
-To: debian-powerpc@lists.debian.org,
+Date: Wed, 7 Jan 2004 11:34:41 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>,
+	Lee Braiden <jel@ntlworld.com>, debian-powerpc@lists.debian.org,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Volunteer needed : Re: Would setting the CONFIG_RTC option break the powerpc kernel on your machine ?
-Message-ID: <20040107144744.GA29449@iliana>
-References: <20031219162800.GE29266@stop.crashing.org> <20031222134504.GA5964@iliana> <20031222161042.GB10841@stop.crashing.org> <20031222162601.GA9021@iliana> <20031222163315.GC10841@stop.crashing.org> <20040107065458.GA20228@iliana> <1073460144.784.79.camel@gaston> <20040107075151.GH14918@plato.local.lan> <20040107112726.GA26193@iliana> <20040107122828.GJ14918@plato.local.lan>
+Subject: Re: Would setting the CONFIG_RTC option break the powerpc kernel on your machine ?
+Message-ID: <20040107183441.GA12082@stop.crashing.org>
+References: <20031219114050.GA5650@iliana> <20031219162800.GE29266@stop.crashing.org> <20031222134504.GA5964@iliana> <20031222161042.GB10841@stop.crashing.org> <20031222162601.GA9021@iliana> <20031222163315.GC10841@stop.crashing.org> <20040107065458.GA20228@iliana> <1073460144.784.79.camel@gaston> <20040107074740.GB22544@iliana> <1073464206.4416.81.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20040107122828.GJ14918@plato.local.lan>
-From: Sven Luther <sven.luther@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1073464206.4416.81.camel@gaston>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 07, 2004 at 03:28:28AM -0900, Ethan Benson wrote:
+On Wed, Jan 07, 2004 at 07:30:06PM +1100, Benjamin Herrenschmidt wrote:
 >
-> On Wed, Jan 07, 2004 at 12:27:26PM +0100, Sven Luther wrote:
-> >
-> > Mmm, notice that this is the rtc_init code, not the rtc ioctl's
-> > themself. In my understanding this is launched when the kernel is
-> > loaded, and is used to setup the rtc clock. If it fails, then no harm
-> > should be done, since the generic rtc driver should take over, not sure
-> > though.
+> >  1) could a #ifdef __powerpc__ not be enough ?
 >
-> sounds iffy to me.  especially if both are compiled as modules, in
-> which case the rtc module will be loaded, fail and im betting the
-> whole thing stops right there.
+> No. _machine is only defined for the "multiarch" config (PREP/CHRP/PMAC)
 
-Yeah, not sure also, need a volunteer to test it.
+Technically it's '0' on !CONFIG_ALL_PPC, but (for the sake of fullness)
+I don't know if ppc64 defines __powerpc__ :)
 
-> debian used to ship kernels with both PPC_RTC and RTC as modules,
-> hoping the right one would magically load and work on the right
-> hardware, of couse this was not the case, RTC was always loaded, and
-> broke powermacs.
-
-Yeah, but this was because the RTC driver does some rtc register probing
-the pmac hardware does not like. If the RTC clock detects it is a pmac,
-it will fail to initialize before causing damage.
-
-The worse that can happen is the GENERIC_RTC driver not being
-initialized because linux believes the RTC driver should be ok.
-
-Friendly,
-
-Sven Luther
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
