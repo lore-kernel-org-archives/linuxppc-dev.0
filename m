@@ -1,42 +1,38 @@
-Date: Wed, 13 Jan 1999 20:12:35 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: a sun <asun@saul9.u.washington.edu>
-cc: "David A. Gatwood" <marsmail@globegate.utm.edu>,
-        linuxppc-dev@lists.linuxppc.org, bh40@calva.net
+Date: Wed, 13 Jan 1999 20:09:07 -0800 (PST)
+Message-Id: <199901140409.UAA08871@saul7.u.washington.edu>
+From: a sun <asun@saul7.u.washington.edu>
+To: marsmail@globegate.utm.edu
+CC: linuxppc-dev@lists.linuxppc.org, bh40@calva.net
+In-reply-to: <Pine.LNX.3.96.990113132556.9506A-100000@globegate.utm.edu>
+	(marsmail@globegate.utm.edu)
 Subject: Re: Porting to NuBus PowerMacs
-In-Reply-To: <199901131910.LAA28570@saul9.u.washington.edu>
-Message-ID: <Pine.LNX.4.04.9901132008180.926-100000@narn.local.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.3.96.990113132556.9506A-100000@globegate.utm.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> well, my "oh so clever plan" is actually to use the gestalt
-> information to mock up something that i pass to the m68k interrupt
-> routines. presto! no more uglification of irq.c. given the
-> similarities between the apus stuff and the nubus powermac stuff, i'm
-> actually turning the nubus powermacs into a variant of apus for now. a
-> lot of my fiddling actually ends up making some minor changes to the
-> m68k code and calling that instead. 
+   Actually, on looking at it, there is the use of memory barriers.  The real
+   change is in the code for the memory barriers (and possibly in other
+   places, too... not certain).  See 
 
-Cort is in the process of rewriting irq.c, and I have a (somewhat large)
-patch based on Corey Minyard's work which redid irq.c and most all the
-machine dependant functions. You might want to take a look at this, since
-I suspect it might make help reduce the 'uglification'.
+   .../osfmk/src/mach_kernel/ppc/proc_reg.h:440
 
-it's at 
+   in the MkLinux sources.  :-)
 
-ftp://ftp.microux.com/pub/linux/linuxppc-rework-troy-2.patch.gz
+oh my. i hadn't noticed that. thanks for pointing it out to me. i
+guess a plain eieio() is sometimes not good enough... no doubt, the
+designers of certain unmentionable devices were being directed by some
+cosmic purpose that we, the uninitiated, can only vaguely envision and
+hope to understand.
 
-Btw, I have a 7100/80 I'd like to try this on if you ever get it working
-;)
+luckily, my trusty g3 upgrade card handily curtails my pursuit into
+the ineffable nature of such visionaries. i guess i'll have to add a
+CONFIG_601 to deal with certain "third-party" devices though. that
+way, we can have just as much fun as the other architectures with
+processor-specific tweaks.
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+-a
+asun@u.washington.edu
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
