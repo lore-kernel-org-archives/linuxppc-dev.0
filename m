@@ -1,68 +1,54 @@
-Message-ID: <001501c357e6$2f641a90$212d4cdc@smkim>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: "Richard Danter" <richard.danter@windriver.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-References: <3F2949D3.8020106@windriver.com>
-Subject: Re: 750/107 CHRP question
-Date: Fri, 1 Aug 2003 13:34:24 +0900
+Message-ID: <3F2A21D5.2040204@windriver.com>
+Date: Fri, 01 Aug 2003 09:16:21 +0100
+From: Richard Danter <richard.danter@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 750/107 CHRP question
+References: <20030731233230.59FBCC602D@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi Wolfgang,
 
-Some serial port driver doesn't ioremap and directly use the physical address for accessing device.
-This doesn't causes any problem when the base address is above 0x80000000.
+I am CC'ing the list as there may be some useful info in here...
 
-There are two solutions for this
-Solution 1. Change the serial port base address above 0x80000000, such as 0xff000000.
+Wolfgang Denk wrote:
+> In message <3F298CED.8010701@windriver.com> you wrote:
+>>Yes, I work for WRS, but this is a little personal project just for the
+>>hell of it. I just happen to be using a WRS board and vICE to do the
+>>debugging.
+>
+> Did you try what happens when you disconnect the visionIce?
+> Are you 100% sure it understands virtual addresses correctly?
 
-Solution 2. Ioremap to get the base address of the serial port and use the address.
-ie. base = ioremap(0x7c000000,0x1000);
+Yes, in fact besides my personal interest in Linux, my job is supporting
+visionXXX customers (I worked for EST before it was bought by WR).
 
-I think the solution 2 is more appropriate because changing hardware requires a lot of money.
+There is a command in the vICE-II called "CF MMU LINUX" which turns on
+MMU handling (doesn't have to be Linux running) and then you use the
+MMUA command to set up the mapping (eg MMUA C0000000 0 F0000000) and hey
+presto!
 
-Regards,
-Sangmoon Kim
+I have been stepping through the kernel source code quite happily. I
+tracked the problem down the the point where the 1st write occurs to the
+serial port. If I let it run on from there I end up in an inf. loop
+which just jumps to itself. When I reach that point I can stop the
+target and use the memory window to dump the "log_buf" which is where
+all the kprintf messages are going and I can get the back trace from
+that and it points to the same offending instruction in serial setup.
 
------ Original Message -----
-From: "Richard Danter" <richard.danter@windriver.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Friday, August 01, 2003 1:54 AM
-Subject: 750/107 CHRP question
+I also tried not having a serial port compiled in and everything works
+perfectly.
+
+It is fixed now tho as I decided to add a ioremap() call. The other
+suggestions I got ware probably more flexible but this was so simple -
+just editing 1 line.
 
 
->
-> Hi All,
->
-> Sorry if this is a bit of a newbie question....
->
-> I am trying to port a 2.4.x kernel to a PPC750 board with a 107
-> controller. The board has a serial port connected to one of the ROM
-> select lines (at 0x7C000000) and I would like to use this as my console
-> port.
->
-> So far I can boot the board and see (via the serial port) the kernel
-> load addresses etc, and the kernel gets decompressed and starts to run.
-> This is all fine as the MMU is off at this point. However, when the
-> serial_console_setup() code starts trying to configure the serial port
-> again, I get a kernel panic as I am accessing an invalid mem space (MMU
-> now on!).
->
-> How do I map this correctly???
->
-> My build is based on the sandpoint but with all the init stuff for
-> devices, such as the RTC, removed. So I have the "standard" mapping in
-> the MMU_init code.
->
-> Many thanks
-> Rich
->
->
->
->
+Rich
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
