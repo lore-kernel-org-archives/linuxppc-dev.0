@@ -1,67 +1,38 @@
-Date: Wed, 1 Sep 1999 17:16:38 +0200 (MET DST)
-From: Geert Uytterhoeven <geert@sonycom.com>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Sym53c8xx in 2.3.now
-Message-ID: <Pine.GSO.4.10.9909011709520.5612-100000@oleander.sonytel.be>
+Message-Id: <199909011730.TAA00285@piglet.cpu.lu>
+Date: Wed, 1 Sep 1999 19:30:07 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: vger-2.3.16 on pmac
+To: costabel@wanadoo.fr
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <199909011613.SAA02982@mcp.cpu.lu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi all,
 
-Anybody who has the sym53c8xx or ncr53c8xx driver working with the latest 2.3.x kernels?
+On   1 Sep, this message from Michel Lanners echoed through cyberspace:
+> That means that the patch I made for the PCI fixup code isn't in those
+> versions. I'm not at my machine right now; once at home, I'll see if I
+> get a chance to put it on my web page.
 
-I get:
+Ooppsss... spoke too fast: the interupt fixup code is not mine at all;
+I did hack a bit on it, but it was already well in place and working
+before me...
 
-| sym53c8xx: at PCI bus 0, device 6, function 0
-| sym53c8xx: setting PCI_COMMAND_IO PCI_COMMAND_MEMORY...
-| sym53c8xx: setting PCI_COMMAND_MASTER PCI_COMMAND_PARITY...(fix-up)
-| sym53c8xx: 53c875 detected 
-| sym53c875-0: rev=0x04, base=0xc3000000, io_port=0x1400, irq=31
-| sym53c875-0: NCR clock is 40218KHz, 40218KHz
-| sym53c875-0: ID 7, Fast-20, Parity Checking
-| sym53c875-0: on-chip RAM at 0xc3001000
-| sym53c875-0: restart (scsi reset).
-| sym53c875-0: Downloading SCSI SCRIPTS.
-| ncr53c8xx: at PCI bus 0, device 6, function 0
-| ncr53c8xx: IO region 0x1400 to 0x147f is in use
-| mesh: assuming 50MHz clock frequency
-| scsi0 : sym53c8xx - version 1.3c
-| scsi1 : MESH
-| scsi : 2 hosts.
-| scsi : aborting command due to timeout : pid 0, scsi0, channel 0, id 0, lun 0 Test Unit Ready 00 00 00 00 00 
-| sym53c8xx_abort: pid=0 serial_number=1 serial_number_at_timeout=1
+So your best bet is to look at a diff betweem 2.3.15 and 2.3.16.
 
-And then the system hangs in a wait loop...
+Michel
 
-My devices (from 2.3.6 dmesg):
-
-|   Vendor: QUANTUM   Model: VIKING II 4.5WLS  Rev: 3506
-|   Type:   Direct-Access                      ANSI SCSI revision: 02
-| Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
-|   Vendor: PLEXTOR   Model: CD-ROM PX-12TS    Rev: 1.02
-|   Type:   CD-ROM                             ANSI SCSI revision: 02
-|   Vendor: HP        Model: HP35480A          Rev: T503
-|   Type:   Sequential-Access                  ANSI SCSI revision: 02
-| sym53c875-0-<0,0>: tagged command queue depth set to 8
-|   Vendor: QUANTUM   Model: FIREBALL_TM3200S  Rev: 300X
-|   Type:   Direct-Access                      ANSI SCSI revision: 02
-| Detected scsi disk sdb at scsi1, channel 0, id 5, lun 0
-| scsi : detected 2 SCSI disks total.
-| sym53c875-0-<0,*>: FAST-20 WIDE SCSI 40.0 MB/s (50 ns, offset 16)
-| SCSI device sda: hdwr sector= 512 bytes. Sectors= 8910423 [4350 MB] [4.4 GB]
-| SCSI device sdb: hdwr sector= 512 bytes. Sectors= 6281856 [3067 MB] [3.1 GB]
-
-Disabling sym53c8xx and using ncr53c8xx instead doesn't fix the problem.
-
-Greetings,
-
-						Geert
-
---
-Geert Uytterhoeven                   Geert.Uytterhoeven@sonycom.com
-Sony Suprastructure Center Europe (SUPC-E) --- Brussels --- Belgium
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
