@@ -1,21 +1,39 @@
-From: amyyah@china.com
-Content-Type: text/plain
+From: "gguevel" <gguevel@interfaceconcept.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to use 802.2/LLC on MPC860 board ?
+Date: Fri, 22 Jun 2001 18:57:04 +0200
+Message-ID: <000001c0fb3c$5dd19640$3101a8c0@DOMAIN>
 MIME-Version: 1.0
-Message-ID: <EH989377818989.03519@mail3.china.com>
-Date: Fri, 22 Jun 2001 18:10:10 +0800 (CST)
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: 
-Subject: pins sequence
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello.I use MCPN750 CPU-Board.And there's serial port(COM1,8 pin) on its front panel. How can I turn it into normal RS232 connector (9 pin)? What's the pins sequence?
-************************************
-留学移民,免费评估.
-http://www.mercan.com.cn/mercan2000/china.htm
+Hello,
 
-定制中华网短信息（http://sms.china.com），天气、新闻、股市行情手触可得。
+I work on a MPC860 board with a FEC device. I use Montavista Linux 2.2.14
+kernel on this board.
+
+I want to use simultaneously IP and LLC layers on the same FEC device.
+
+For LLC, I just have to send some unumbered frames and answer to TEST and
+XID requests.
+
+I looked at the code in net/802 directory and I found what I wanted.
+
+But I don't known how a user application can talk to this LLC layer.
+
+Do I use a socket ? What family, address and so on must I specify ?
+Do I use send , sento, recv or recvfrom functions ?
+
+
+Some help or any example will be welcome.
+
+Thank you
+Best regards
+
+G閞ard Guevel
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
