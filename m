@@ -1,51 +1,39 @@
-Message-ID: <3CFE5750.1010209@linuxfoundary.com>
-Date: Wed, 05 Jun 2002 14:24:16 -0400
-From: Dave Strout <dstrout@linuxfoundary.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Basics -- what tools for Walnut?
-References: <3CFE4C3A.4070604@linuxfoundary.com> <3CFE4F42.DDB1D5CE@mvista.com> <3CFE54F6.1060605@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dave Strout <dstrout@linuxfoundary.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Basics -- what tools for Walnut? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 05 Jun 2002 13:36:58 EDT."
+             <3CFE4C3A.4070604@linuxfoundary.com>
+Date: Wed, 05 Jun 2002 21:16:33 +0200
+Message-Id: <20020605191638.298B0102F2@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It's all good -- I didn't realize there was a newer binutils.  2.12
-seems to do the trick
+In message <3CFE4C3A.4070604@linuxfoundary.com> you wrote:
+>
+> I think I'm missing a basic concept here -- I'm about to do some work on
+> a Walnut system, so  I started by loading up the HardHat Linux that came
+> with the Walnut onto my intel desktop, then grabbing the
+> linuxppc_2_4_devel kernel via rsync.  When I try to compile, gas startes
+> to complain about "unknown option '-m405'".
+...
+> So, is there a patch I should be applying before building the
+> cross-compile environment, or a specific set of tools somewhere, or what
+> am I missing?
 
-thanks,
-dave.
+Have a look at our ELDK, see http://www.denx.de/ELDK/
 
-Dan Malek wrote:
+We support a couple of 405 boards (although the walnut is not one  of
+those).
 
->
-> Frank Rowand wrote:
->
->> I suspect that is a fairly old tool chain that you are using.
->
->
-> In the past, the practice was to inform people when changes were made
-> that required a minimum revision of tools to operate properly.
-> Simply telling people "your toolchain is too old" isn't helpful.....
-> What version of tools is required to build this properly?  Why
-> doesn't the check in comment indicate this information when the
-> change was made?
->
->> Try modifying arch/ppc/Makefile to use
->>
->>   -mcpu=403
->
->
-> Or, just remove it since it doesn't perform any useful function.  On
-> the newer tools, it's required to allow the assembler to not bitch about
-> 4xx unique instructions, another non-useful function, IMHO.
->
-> Thanks.
->
->     -- Dan
->
->
->
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"Faith: not *wanting* to know what is true."    - Friedrich Nietzsche
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
