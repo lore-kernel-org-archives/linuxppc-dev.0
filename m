@@ -1,37 +1,49 @@
-Message-ID: <3A2C1D38.F710DCC@nexus-tech.net>
-Date: Mon, 04 Dec 2000 17:39:52 -0500
-From: Kyle Harris <kharris@nexus-tech.net>
+Message-ID: <3A2CC1A9.8A0E8DC2@esd-electronics.com>
+Date: Tue, 05 Dec 2000 11:21:29 +0100
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 MIME-Version: 1.0
-To: Joe Green <jgreen@mvista.com>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: lcd823.c color macros
-References: <3A2BEAB0.3056A043@nexus-tech.net> <00120414244202.00900@minotaur.mvista.com>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: mount via nfs using MontaVista's Linux for IBM405
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joe Green wrote:
->
-> On Mon, 04 Dec 2000, Kyle Harris wrote:
-> > I don't think the following 2 macros (defined in lcd823.c) work for 8
-> > bit color (bit_code = 3).
-> >
-> > #define NBITS(bit_code)     (1 << (bit_code))
-> > #define NCOLORS(bit_code)   (1 << NBITS(bit_code))
->
-> Maybe I'm being thick here, but doesn't NBITS(3) = 8 and
-> NCOLORS(3) = 256?  What's the problem?
+Hello,
 
-Nope, I'm the one being thick. For some reason I looked at this and
-thought it was doing
+I am trying to mount a directory from a nfs server to my IBM405GP board.
 
-((bit_code) << 1)
+Here are the facts:
 
-and as usual, all I have to do is send an email for me to discover how
-something really works. I apologize for the errant email. I'll try to
-limit future ones for real issues.
+	Kernel on our 405 board: 2.4.0-test2_mvista_001126
+	Root filesystem: target_ftest4 from MontaVista
 
-GIFLI (Gee I Feel Like an Idiot), Kyle.
+When I do a: mount -t nfs <nfs-servers-ip>:/home/matthias /test on the
+405 board, I get this output (after some delay):
+
+	nfs warning: mount version older than kernel
+	portmap: server localhost not responding, timed out
+	portmap: server localhost not responding, timed out
+	lockd_up: makesock failed, error=-5
+
+But I can still telnet to the board (it does not crash) but I cannot
+interrupt the mount call.
+
+The nfs server is working properly, because I get the root filesystem
+from the same server (with no problems).
+
+Has anybody a solution for this problem ?
+
+Matthias
+--
+-------------------------------------------------
+\ Matthias Fuchs                                 \
+ \ esd electronic system design Gmbh              \
+  \ Vahrenwalder Straﬂe 205                        \
+   \ D-30165 Hannover                               \
+    \ email: matthias.fuchs@esd-electronics.com      \
+     \ phone: +49-511-37298-0                         \
+      \ fax:   +49-511-37298-68                        \
+       --------------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
