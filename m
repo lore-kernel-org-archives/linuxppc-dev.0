@@ -1,46 +1,35 @@
-Message-Id: <v03110700b3b1a7635364@[209.183.132.89]>
-In-Reply-To: <Pine.LNX.4.10.9907111326260.392-100000@cassiopeia.home>
-References: <14214.22225.201034.85545@cpu.wpi.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 13 Jul 1999 22:41:55 -0400
-To: linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <kbhend@business.wm.edu>
-Subject: Frame buffer on B+W G3 macs reports wrong display depth
+Date: Tue, 13 Jul 1999 22:09:16 -0500 (CDT)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: "Kevin B. Hendricks" <kbhend@business.wm.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Frame buffer on B+W G3 macs reports wrong display depth
+In-Reply-To: <v03110700b3b1a7635364@[209.183.132.89]>
+Message-ID: <Pine.A41.3.96LJ1.1b7.990713220013.49756A-100000@unlserve.unl.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Tue, 13 Jul 1999, Kevin B. Hendricks wrote:
 
-I really could use some help tracking down a problem.  From looking at
-XF86Config and from running xdpyinfo, it seems the XF86 frame buffer server
-reports incorrect bit depths which in turn are driving the JDK 1.2 swing
-color model crazy!!!
+> Hi,
+> 
+> I really could use some help tracking down a problem.  From looking at
+> XF86Config and from running xdpyinfo, it seems the XF86 frame buffer server
+> reports incorrect bit depths which in turn are driving the JDK 1.2 swing
+> color model crazy!!!
+> 
+> For example, when I put my B+W into millions of color mode, xdpyinfo claims
+> 32 bits for the depth (wrong it is 24, 8 bits for red, green, and blue),
+> and correctly claims 32 bits per pixel.
 
-For example, when I put my B+W into millions of color mode, xdpyinfo claims
-32 bits for the depth (wrong it is 24, 8 bits for red, green, and blue),
-and correctly claims 32 bits per pixel.
-
-It has the same problem under 16 bit color, it claims a depth of 16 when in
-reality the depth should be 15, 5 bits each for red, green, and blue
-(although still using 16 bits per pixel).
-
-I need to track this down and get it fixed asap to resolve the JDK 1.2
-problems.  Note, that the Xpmac server correctly reports the bit depths and
-it works fine with JDK 1.2 although it doesn't support the usb keyboard or
-mouse correctly.
-
-Does anyone have any ideas of where in all of the Xfree source code I
-should begin looking?
-
-Any guidance here would be greatly appreciated.
-
-Thanks,
-
-Kevin
+Can you re-code JDK swing to look at red/green/blue mask infos instead of 
+just blindingly using "depth" info?  For both servers, masks are 8 bit
+each for 24/32 and 5 bit each for 15/16 with many display cards on Macs.
 
 
+Takashi Oe
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
