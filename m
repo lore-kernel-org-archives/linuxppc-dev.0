@@ -1,45 +1,61 @@
-Date: Thu, 19 Aug 1999 09:56:30 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Brad Boyer <flar@marcus.pants.nu>
-cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Fwd: Latest version of CPU emulator] (fwd)
-In-Reply-To: <199908181746.KAA03079@marcus.pants.nu>
-Message-ID: <Pine.HPX.4.10.9908190921590.27955-100000@gra-ux1.iram.es>
+Date: Thu, 19 Aug 1999 10:03:50 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Hank De Gregorio <hcd1@acpub.duke.edu>
+cc: Don Holmgren <djholm@fnal.gov>, paubert@iram.es,
+        linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Re: SCSI problem on PPC1Bug FW system
+In-Reply-To: <Pine.SOL.3.91.990818164559.517B-100000@godzilla6.acpub.duke.edu>
+Message-ID: <Pine.LNX.4.10.9908191001590.8446-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-
-On Wed, 18 Aug 1999, Brad Boyer wrote:
-
+On Wed, 18 Aug 1999, Hank De Gregorio wrote:
+> when booting one of gabriel's installation kernels (zImage.initrd-2.2.4),
+> i got the following error.  my scsi drive was recognized, but there is a
+> "parity error" when it is being initialized.  is this just a matter of
+> needing a wide active terminator for my scsi? 
 > 
-> Geert Uytterhoeven wrote:
-> > Perhaps Gabriel's 486SX emulator can be included as an optimization?
+> hank (thanks, don, for helping get me past the last problem; i needed to 
+> disable VME3PCI Master Master)
 > 
-> I doubt it, from what I know of both emulators.  The one that was submitted
-> for Wine is protected mode only, and Gabriel's is real mode only.  I
-> imagine the ideas and some of the code from Gabriel's emulator could
-> be adapted to this use, but it definitely couldn't be used without
-> some major changes.  It might be a good place to start, tho.
+> --snip
+> ncr53c825a-0: Downloading SCSI SCRIPTS.
+> scsi0 : ncr53c8xx - version 3.2
+> scsi : 1 host.
+>   Vendor: SEAGATE   Model: ST39175LW         Rev: 0001
+>   Type:   Direct-Access                      ANSI SCSI revision: 02
+> Detected scsi disk sda at scsi0, channel 0, id 0, lun 0
+> ncr53c825a-0-<0,0>: tagged command queue depth set to 8
+> scsi : detected 1 SCSI disk total.
+> ncr53c825a-0-<0,*>: FAST-10 WIDE SCSI 20.0 MB/s (100 ns, offset 8)
+> ncr53c825a-0: SCSI parity error detected: SCR1=3 DBC=19000000 SSTAT1=9
+> ncr53c825a-0:0: ERROR (81:0) (6-a3-2) (8/1b) @ (scripth ba0:48000000).
+> ncr53c825a-0: script cmd = 785d8700
+> ncr53c825a-0: regdump: da 10 00 1b 47 08 00 0f 06 06 80 a3 80 00 0b 00.
+> ncr53c825a-0: have to clear fifos.
+> ncr53c825a-0: restart (scsi reset).
+> ncr53c825a-0: Downloading SCSI SCRIPTS.
+> ncr53c825a-0: SCSI parity error detected: SCR1=1 DBC=19000000 SSTAT1=1
+> ncr53c825a-0-<0,*>: FAST-10 WIDE SCSI 20.0 MB/s (100 ns, offset 8)
 
-Actually adding protected mode (segmentation) is not that complex,
-but adding paging (like Bochs) would be an enormous task I'm not ready to 
-undertake. Adding the FPU is feasible but not a simple job (MMX is easy).
+It's probably a cable/termination problem.
 
-My goal was the smallest possible emulator to interpret BIOS ROM and
-that's how it has stayed until now. It is reasonably fast (around 6 MIPS
-on a 200 MHz 603e) only because it entirely fits into L1 cache (except
-plain 603). I could improve the speed slightly (20-30%), at some cost in
-size, at least I believe so.
+Or have you connected your wide devices to the narrow connector on the adapter
+using a wide-narrow convertor? I once did that when I didn't have a wide cable,
+and it caused the same problems (driver negotiates wide transfers since it
+recognizes a wide device).
 
-Still the best thing in my code is how the flags are emulated IMHO.
+Greetings,
 
-	Regards,
-	Gabriel.
+						Geert
+
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
