@@ -1,42 +1,30 @@
-Date: Tue, 16 Mar 2004 12:40:30 +0100
-From: Marc Leeman <marc.leeman@barco.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: PCI Memory mapping
-Message-ID: <20040316114030.GB7133@smtp.barco.com>
-Reply-To: Marc Leeman <marc.leeman@barco.com>
+Subject: Re: PCI Memory mapping
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: Marc Leeman <marc.leeman@barco.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20040316114030.GB7133@smtp.barco.com>
+References: <20040316114030.GB7133@smtp.barco.com>
+Content-Type: text/plain
+Message-Id: <1079455175.4184.25.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Date: 16 Mar 2004 11:39:35 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am currently trying the following
+On Tue, 2004-03-16 at 06:40, Marc Leeman wrote:
+> Any pointers about making cpu memory visible on the pci bus would greatly
+> be appreciated.
 
- +-----+        +-----+
- | mem |        | mem |
- +-----+        +-----+
-    |              |
- +-----+        +-----+
- | ppc |        | dsp |
- +-----+        +-----+
-    |     pci      |
-    +--------------+
+Check your PPC documentation for the configuration of the PITARx,
+PIBARx, and PICMRx.  Once you read about these it should all make sense.
 
-For a number of reasons (load on ppc, dsp silicon bug), we are trying to
-transform the ppc dma transfers (ppc master write) to transfers
-initiated by the dsp; where the memory block that is the result of
-processing by the ppc is fetched by the dsp (ppc slave read).
+Then look at your bootloader source code (hopefully you are using
+u-boot) to see how these registers are being configured.
 
-Mapping pci devices registers and memory  into ppc kernel memory is well
-documented, but I seem to be missing information about the other way
-around: I (ppc) want to signal the dsp that data is ready at address
-0xXXXXXXXX, come and get it (virt_to_bus(0xXXXXXXXX)?).
+HTH,
+Jeff Angielski
+The PTR Group
 
-Most likely I have been searching archives with the wrong keywords since
-I haven't found a good reference next to some notes in IO-mapping.txt
-which seem to indicate that this is possible.
-
-Any pointers about making cpu memory visible on the pci bus would greatly
-be appreciated.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
