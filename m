@@ -1,27 +1,25 @@
-Message-ID: <3CBDD3DF.6040003@embeddededge.com>
-Date: Wed, 17 Apr 2002 15:58:23 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: "Pergola, Michael" <MichaelPergola@Danfoss.com>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: LCD Framebuffer for MPC8xx
-References: <E1836A7F3557D311A14000805F9F36FC015189FA@usdfo011.usac.danfoss.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <scbda4cd.072@mx.amx.com>
+Date: Wed, 17 Apr 2002 16:37:23 -0500
+From: "Chuck Partridge" <Chuck_Partridge@amx.com>
+To: "<" <linuxppc-embedded@lists.linuxppc.org>
+Subject: SB Interrupt problem (OT)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Pergola, Michael wrote:
+This may be off topic, but I am having problem with my custom 8245 board.  We migrated an x86 design to a MPC8245 and kept the ALI M1535 Southbridge.  the problem is that the 8259 interrupt controllers output always seems to be masked after a warm reset, but everything works fine from a cold boot.
 
-> Is there a reason, in Linux kernel 2.2.14, why the fb2(2 bits/pixel)
-> was left out of the LCD framebuffer driver for MPC823(lcd823.c)?
+When poking at the 8259 registers, they show that interrupts are ready but the INTR pin is never asserted to the  8245s EPIC, hence no interrupt.
 
-Probably because no one could test it.  If you add it, let us
-know.
+After a cold boot, it will run fine until it resets.  Once it resets, there are no interrutps reported by the INTR line to the EPIC (but internal EPIC interrupts like the internal DUART work fine).
 
-Thanks.
+Any ideas?
 
-	-- Dan
+Thanks for indulging me on the OT message but I'm stumped..
+
+CHuck
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
