@@ -1,31 +1,41 @@
-Date: Wed, 31 Dec 2003 12:21:27 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Colin Leroy <colin@colino.net>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	<debian-powerpc@lists.debian.org>
-Subject: Re: Userland tool for mouse buttons emulation
-In-Reply-To: <014f01c3cf82$81fc4e80$3cc8a8c0@ANOSP>
-Message-ID: <Pine.LNX.4.44.0312311218290.21107-100000@opal.biophys.uni-duesseldorf.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.6.0-ben3: Badness in redraw_screen
+From: Andreas Schwab <schwab@suse.de>
+Date: Wed, 31 Dec 2003 12:36:31 +0100
+Message-ID: <m3wu8dp6bk.fsf@whitebox.m5r.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I once submitted a patch about mouse button emulation, and BenH
-> told me that this emulation shouldn't be done in the kernel but
-> rather by a userland tool.
->
-> I wrote a little mouseemu program to do that. It replaces the
-> kernel emulation (be sure to
-> echo 0 > /proc/sys/dev/mac_hid/mouse_button_emulation
-> before testing it ;-)).
+I'm getting this badness in redraw_screen when my iBook wakes up with
+2.6.0-ben3:
 
-I'll give it a try. Any plans to package this yourself? I'd make it a
-separate package otherwise - this should be useful for other archs as
-well.
+Badness in redraw_screen at drivers/char/vt.c:596
+Call trace:
+ [c000bd50] dump_stack+0x18/0x28
+ [c0008c44] check_bug_trap+0x84/0xac
+ [c0008d34] ProgramCheckException+0xc8/0x180
+ [c00082cc] ret_from_except_full+0x0/0x4c
+ [c015a94c] redraw_screen+0x2c/0x1e0
+ [c00376b4] pm_restore_console+0x38/0x48
+ [c039ef14] 0xc039ef14
+ [c039f468] 0xc039f468
+ [c039fdc8] 0xc039fdc8
+ [c00701d0] sys_ioctl+0x278/0x2f4
+ [c0007d0c] ret_from_syscall+0x0/0x4c
 
-	Michael
+(The three unnamed frames are inside pmac_wakeup_devices,
+powerbook_sleep_Core99 and pmu_ioctl).  Does pm_restore_console need
+to acquire the console lock, or is that the duty of the callers?
 
+Andreas.
+
+--
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux AG, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
