@@ -1,63 +1,40 @@
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: daenzerm@student.ethz.ch, Josh Huber <huber@mclinux.com>
+Date: Wed, 6 Sep 2000 09:42:15 -0400
+From: Josh Huber <huber@mclinux.com>
+To: daenzerm@student.ethz.ch
 Cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
-Message-Id: <v03110705b5dbf84a56dd@[129.100.29.243]>
-In-Reply-To: <39B64777.5E71D9CE@relog.ch>
-References: <20000906091501.A2303@mclinux.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 6 Sep 2000 09:37:06 -0400
 Subject: Re: galeon
+Message-ID: <20000906094214.B2303@mclinux.com>
+References: <20000906091501.A2303@mclinux.com> <39B64777.5E71D9CE@relog.ch>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="p4qYPpj5QlsIQJ0K"
+In-Reply-To: <39B64777.5E71D9CE@relog.ch>; from daenzer@relog.ch on Wed, Sep 06, 2000 at 03:32:39PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+--p4qYPpj5QlsIQJ0K
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I do nightly mozilla builds once or twice a month and have had no problems
-with seg-faults.
+On Wed, Sep 06, 2000 at 03:32:39PM +0200, Michel D?nzer wrote:
+>=20
+> Do you get Mozilla running in the first place? It always segfaults on me.
 
-I have also build galeon awhile back and it seemed to work (but I did not
-test it much).
+Yeah, mozilla is working great for me.  What version are you trying?
+The package version i'm using is M17-3.
 
-I think there are pre-compiled version of galeon on the linuxppc inc site
-in their contributed archive.
+--=20
+Josh
+| huber@mclx.com |
+1024D/6B21489A 61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
-As for mozilla, try the nightly source trees and not M17.  There were two
-patches I submitted to fix problems with netscape threads and passing
-non-promoted types via va_arg that have recently been included (finally!)
-into the mozilla source tree and are now in nightly builds.
-
-Kevin
-
-
-
-At 09:32 -0400 9/6/00, Michel Dänzer wrote:
->Josh Huber wrote:
->>
->> Anyone get glaeon to run properly?  I get segfaults when it tries to
->> initialize the mozilla rendering engine.
->>
->> I'm using the mozilla debian package from woody, version M17.
->
->Do you get Mozilla running in the first place? It always segfaults on me.
->
->
->Michel
->
->
->--
->Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
->Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
->
+--p4qYPpj5QlsIQJ0K
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
---
-Kevin B. Hendricks, Associate Professor of Operations and Information
-Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
-
+--p4qYPpj5QlsIQJ0K--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
