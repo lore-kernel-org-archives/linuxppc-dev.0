@@ -1,50 +1,40 @@
-Date: Sun, 24 Jan 1999 17:03:58 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: alpha MTX/MVME SMP patches available
-Message-ID: <Pine.LNX.4.04.9901241656530.17601-100000@narn.local.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Tom Harrington <tph@rmi.net>
+Message-Id: <199901250055.RAA20183@shell.rmi.net>
+Subject: Re: Linux and Mac together (Was: Re: mac-on-linux project status)
+To: robin@louis.bidmc.harvard.edu (Robin Colgrove)
+Date: Sun, 24 Jan 1999 17:55:16 -0700 (MST)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <36AB7411.F40DFF97@louis.bidmc.harvard.edu> from "Robin Colgrove" at Jan 24, 99 02:28:22 pm
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-see ftp://ftp.microux.com/pub/linux/rework+SMP-pre9.patch.gz
+ 
+> Maybe I am just not understanding this but if both MkLinux and OS X run on 
+> top of the Mach microkernel, could they both be running simultaneously? If 
+> so, I could imagine using OS X (not OS X server) as my desktop OS while 
+> on the same machine MkLinux was taking care of the internet server things 
+> in the background. I do not need super high performance stuff since I 
+> only "host" a few dozen pretty low-intensity users.  Right now I get by on 
+> shareware tools (Quid Pro Quo, Rumor Mill, OTChat, NCSATelnet, Eudora 
+> Internet Mail Server) but I am reaching the limits of what I can do with 
+> these.
 
-from the README.rework+SMP file:
+In principle, yes,  Mach is capable of running multiple server operating 
+systems at the same time.  I have no idea what's involved in making this
+happen, but supposedly one of the advantges of a microkernel-based Linux
+(like MkLinux or L4Linux) is that you can run one Linux kernel while
+debugging another one simultaneously.  You may have trouble, though, if
+Apple is using a different version of Mach than MkLinux does, or if Apple
+has stuck some MacOS X Server-specific things into their Mach code.
 
-This set of patches is the earlier rework patches, updated to
-linux-2.2.0-pre9, with the addition of MTX/MVME SMP support
+I really can't help you beyond suggesting that the MkLinux mailing lists
+might be a better place to ask.  If you succeed, though, I'd be very
+interested in hearing about it.  Good luck.  :-)
 
-Components:
-
- * Initial ALPHA support for SMP on Motorola MTX and MVME46xx dual CPU boards.
-   Both processors run on my MTX. The changes shouldn't affect anyone running
-   a pmac or non-SMP prep. If you can try this, please report success or
-   failure to me. If you expect to be making lots of changes to this, get
-   ahold of me (troy@microux.com) about getting access to the CVS archive
-   I'm using.
-
-   Only one proc is receiving interupts currently, and IPI is not supported.
-   the kswapd portion of mm/vmscan.c had to be backported to pre4, otherwise
-   kswapd would crash when SCSI was being initialized.
-
- * Corey Minyard's machdep rework
-
- * Gabriel Paubert's OpenPIC support
-
- * Gabriel Paubert's Preploader (in the arch/ppc/prepboot dir)
-   This is required for MTX SMP. (starting the second CPU depends on residual
-   data currently) 
-
-
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
-
-
+Depending on how urgent your needs are and how much MacOS you need vs. 
+server stuff, you might be better off waiting for SheepShaver on Linux.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
