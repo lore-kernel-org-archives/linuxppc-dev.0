@@ -1,66 +1,42 @@
-Date: Thu, 29 Nov 2001 09:36:02 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_ALL_PPC
-In-Reply-To: <20011128164306.D29541@cpe-24-221-152-185.az.sprintbbd.net>
-Message-ID: <Pine.LNX.4.33.0111290927170.15554-100000@gra-lx1.iram.es>
+Message-ID: <3C05F807.9090806@humboldt.co.uk>
+Date: Thu, 29 Nov 2001 08:55:35 +0000
+From: Adrian Cox <adrian@humboldt.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: paulus@samba.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ide_init_hwif_ports
+References: <15365.51839.327359.844495@gargle.gargle.HOWL>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 28 Nov 2001, Tom Rini wrote:
+Paul Mackerras wrote:
 
+
+> Platforms with a PCI IDE controller should use the pci-ide driver
+> instead of trying to use ide_default_io_base and ide_init_hwif_ports
+> to point the IDE code at the IDE registers.  In other words, only
+> those platforms with an ISA IDE controller (prep, any others?) should
+> ever need to have their ide_default_io_base return anything other than
+> 0.
 >
-> On Thu, Nov 29, 2001 at 09:07:12AM +1100, Paul Mackerras wrote:
-> >
-> > I want to rename CONFIG_ALL_PPC to CONFIG_PREP_PMAC_CHRP in the
-> > linuxppc_2_4_devel tree (or if anyone can suggest a better name I'll
-> > use that).
-> >
-> > Does anyone object to this?
->
-> Yes.  For historical note, the old 2_5 tree had CONFIG_WORKSTATION_PPC,
-> which suited most people.  But there's the fact that most of the
-> 7xx/74xx boards in _devel now can take a video card and be a
-> 'workstation' too. :)
+> So I am proposing to drop ppc_md.ide_init_hwif_ports and change the
+> definition of ide_init_hwif_ports in include/asm-ppc/ide.h to the one
+> above.
 
-Right. But even older ones, for example I have MVME boards with PMC video
-modules (that's _the_ reason for which I wrote a x86 BIOS ROM emulator,
-which will hopefully end up one day in the source tree) which are almost
-5 years old.
 
-MVME boards for example are not workstation and yet are PreP or OF-less
-CHRP. Why not doing it the other way around, or at least not presenting
-the option in the configuration: if you don't select a specific machine,
-set CONFIG_{ALL,COMMON,VULGAR,GENERIC}_PPC (pick te one you prefer, I'm
-not a native english speaker).
+The one important thing that the ide_init_hwif function handles for one
+of my boards (and for the sandpoint) is the knowledge that the irqs are
+14 and 15. If left to its own devices the pci-ide code  will assume that
+both channels are on the same irq, which leaves the second channel
+running without interrupts.
 
-Of course you could also invert the "polarity" of the definition, although
-having to select the CONFIG_ELITIST_PPC to specify a non Pmac/PreP/CHRP
-machine might not sound politically correct to some people :-)
-CONFIG_SPECIFIC_PPC does not sound that bad, however.
+But I'd be happy with any simpler way of communicating "just use 14 and
+15" to the pci-ide driver.
 
-[The following is a message from Tom on July 5th, I had started to answer
-and then it got lost in a long list of postponed-msgs: it's the day my
-second son was born :-)]
-
-> > Which leads me to ask what are the advantages of making gemini part of
-> > CONFIG_ALL_PPC?  Is it that gemini is sufficiently close to a prep
-> > that we might as well treat it as a prep?
->
-> I'm definatly not an expert on the boards, but, iirc, they're as 'PReP' as
-> many of the ports in 2_4_devel.  They're not 100% compliant, but they
-> could work, but sub-optimally.
-
-It's hard to tell which boards are 100% PreP compliant, given the
-fuzzyness of the specification.
-
-	Regards,
-	Gabriel.
+--
+Adrian Cox   http://www.humboldt.co.uk/
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
