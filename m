@@ -1,51 +1,29 @@
-Message-ID: <000601c14a6d$d9b4a5b0$020aa8c0@dimbar>
-From: "Nils Krueger" <nilz@hoschi.de>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>,
-	"Tom Rini" <trini@kernel.crashing.org>
-Cc: "Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.GSO.4.21.0110011006580.706-100000@mullein.sonytel.be>
-Subject: Re: PowerStack interrupt?problem
-Date: Mon, 1 Oct 2001 13:40:19 +0200
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.10-ben0 doesn't see ide1
+Date: Mon, 1 Oct 2001 14:28:36 +0200
+Message-Id: <20011001122836.13315@smtp.adsl.oleane.com>
+In-Reply-To: <20010930143946.24ad0a6b.jpgarcia@execpc.com>
+References: <20010930143946.24ad0a6b.jpgarcia@execpc.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Goody, which? :)  I've got a 604/100 right here.
->
-> The one that looks like a HiFi, with 133 MHz 604.
+>Keyboard and trackpad no longer respond.  No logged error message.
+>System doesn't seem to notice anything happened.  If I try to sleep the
+>system (close the lid), it sets up, almost gets there, and aborts.
+>Either something rejected the sleep request, or it did sleep but didn't
+>really.  Not sure which.  rejection seems more plausable.  And if I shut
+>down after an attempted sleep, the kernel panics at the last moment.  I
+>had brute forced ability to ADB_RESET the bus, but that just oopsed the
+>system like a sleep would.
 
-It's called PowerStack Series E.
+Can you tell me more about the oops ?
 
-> > Hmm.  I sort-of wonder if the PS/2 changes a while back goofed something
-up.
-> > My kbd is fine too, and I'll try and throw a mouse on later this week.
-> > Can you grab the bk version and go back to 2.4.8, .7, et al and see if
-> > it works?  I think some PS/2 stuff was done in maybe .5 or .6..
-
-I had the same problem with 2.4.5, .7-pre3 and .8-pre3. I haven't watched
-the interrupts then, but it showed the same symptoms. (keyboard, mouse,
-network, scsi are stalled but graphic card is still working)
-
-This night I compiled 2.4.10-pre12 (from MontaVista rsync) and still the
-same. (Thank you, Geert, the video-mode kernel parameter works fine; fbcon
-gives me 1024x768 directly after bootup now)
-
-One keypress or release of a mouse button causes about 20 interrupts and
-sometimes one or two BAD interrupts. (BTW, it's the same on my so far most
-stable 2.2.17) Should be normally 4 interrupts (and of course no BAD one)?
-
-> but the owner promised to join
-> the mailing list, so I hope he'll do.
-
-ACK
-
-Nilz.
-
---
-http://www.hoschi.de/nilz   (Nilz' Homepage)
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
