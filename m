@@ -1,28 +1,38 @@
-Content-Type: text/plain;
-  charset="us-ascii"
-From: Brian Waite <waite@skycomputers.com>
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Embedded Planet 405Gp booting
-Date: Fri, 16 Aug 2002 10:23:18 -0400
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC860 reorder and invalidate dcache
+Date: Fri, 16 Aug 2002 17:50:42 +0200
+Message-ID: <IGEFJKJNHJDCBKALBJLLEELOFFAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
-Message-Id: <200208161023.18576.waite@skycomputers.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <45B36A38D959B44CB032DA427A6E10640167D022@cceexc18.americas.cpqcorp.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-Sorry if this is stupid question, but I am trying to revive and Embedded
-planet 405 GP board with Linux. Someone else got it booting and has since
-lost the .config.I am trying to re-create this with little work. I am using
-PPCBoot 1.1.4 and have been working with the linuxppc_2_4_devel tree (kernel
-version 2.4.19-rc3. PPCboot is fine, but once it jumps into the kernel I get
-nothing. Looking at the log_buf in memory it looks like it is taking a kernel
-stack overflow exception. Am I just doing sometinhg  stupid? It feels like I
-have a bad option or lack thereof in my .config? I am attaching it just for
-fun. If anyone has a working .config for this board that would be great.
+Hi
 
-Thanks in advance.
-Brian
+I wonder if the MPC860 really can reorder I/O memory accesses?
+
+I am using JFFS2 FS on Intel Strata flash. I remap the flash with
+ioremap_nocache(flash_start, flash_size) and use the resulting address
+to access the flash. Whenever a write is performed to the flash I do a
+wmb() to enforce ordered writes and that affects performance somewhat.
+Is the wmb() required or can I skip it?
+
+
+Invalidate Data Cache
+------------------------
+I have noticed that invalidate_dcache_range() performs a 'sync' just before it returns. Why?
+Is it not enough to execute 'dcbi' on the affected address space?
+
+Is there a faster way to invalidate the dcache for a big(256KB) area than using invalidate_dcache_range().
+The area is PAGE aligned.
+
+ Regards
+           Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
