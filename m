@@ -1,45 +1,31 @@
-Date: Wed, 19 Sep 2001 16:46:10 -0400
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Accessing PCI IORESOURCE_IO
-Message-ID: <20010919164610.A346@kybl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Tomas Jura <tjura@binghamton.edu>
+Message-Id: <p0433010bb7cebf4c3df9@[63.220.231.138]>
+Date: Wed, 19 Sep 2001 17:34:26 -0400
+To: linuxppc-dev@lists.linuxppc.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: 2.4.10-pre12 sysrq.c compile error
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Can anybody explain me how to access PCI card resource
-of type IORESOURCE_IO on PPC ?
+rsynced mvista today, linuxppc_2_4:
 
-My video card can work only with 4MB memory instead 6MB (
-vram:6144 not helps ) and I think that solution is in the
-non memory maped register on ATY chip.
+sysrq.c:35: conflicting types for `wakeup_bdflush'
+/usr/src/linuxppc_2_4/include/linux/fs.h:1347: previous declaration
+of `wakeup_bdflush'
+make[3]: *** [sysrq.o] Error 1
+make[3]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
+make[2]: *** [first_rule] Error 2
+make[2]: Leaving directory `/usr/src/linuxppc_2_4/drivers/char'
+make[1]: *** [_subdir_char] Error 2
+make[1]: Leaving directory `/usr/src/linuxppc_2_4/drivers'
+make: *** [_dir_drivers] Error 2
 
-thanks
-Tomas
 
-P.S. I tried following way (which failed):
+Help?
 
-rp=&pdev->resource[1];
-addr = rp->start;
-if( request_region( addr, 32, "atyfb" ) == 0 ){
-  for( i = 0 ; i < 32; i++)
-    printk( " %X",( unsigned ) inb( addr+i ) );
-  printk( "\n" );
-  release_region( addr, 32 );
-} else
-  printk("cannot request region 0x%lX\n", addr );
 
-Resource 0, Flags 0x200, start 0x81000000, size 0x1000000
-Resource 1, Flags 0x101, start 0xC00, size 0x100
-Resource 2, Flags 0x200, start 0x80800000, size 0x1000
-atyfb: using auxiliary register aperture
-atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 6M SGRAM,
-14.31818 MHz XTAL, 23
-0 MHz PLL, 100 Mhz MCLK
-BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL DSP_CONFIG DSP_ON_OFF
-6b2ea040 87010182 08651a79 e0000c01     03000600      001807ee   03c007cf
-
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
