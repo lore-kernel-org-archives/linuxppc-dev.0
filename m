@@ -1,60 +1,122 @@
-Date: Fri, 15 Feb 2002 21:40:44 -0500
-Subject: Weird bug problems with timing of NIC driver loading?
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v480)
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org,
-	yellowdog-devel@lists.yellowdoglinux.com
-In-Reply-To: <416D9C76-201E-11D6-BE69-0003938E434C@ivey.uwo.ca>
-Message-Id: <9382917A-2286-11D6-9EE3-0003938E434C@ivey.uwo.ca>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+To: yellowdog-devel@lists.yellowdoglinux.com,
+	Ani Joshi <ajoshi@shell.unixbox.com>
+Subject: Re: new G4 dual 1 gig is here - how to install?
+Date: Sat, 16 Feb 2002 04:30:29 -0500
+Cc: linuxppc-dev@lists.linuxppc.org
+References: <Pine.BSF.4.44.0202131947110.42574-100000@shell.unixbox.com> <20020215110330.PVOP20323.tomts20-srv.bellnexxia.net@there>
+In-Reply-To: <20020215110330.PVOP20323.tomts20-srv.bellnexxia.net@there>
+MIME-Version: 1.0
+Message-Id: <20020216043145.GJVX19277.tomts22-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hi,
 
-I have a weird bug report I need some help tracking down:
+BTW I just finished building XF4.2.0 in under 45 min from scratch with
+just one CPU on my new box and fired it up and it works just fine out of
+the box.
 
-With both the G3 using either tulip or  bmac NICs and the new G4 using
-Sungmem I can reliably and repeatedly show funky net behavior when those
-drivers are compiled in or loaded early in the boot process as modules.
+We really need to write a USB daemon to allow the "Brightness" button to
+work on the DFP monitors from Apple.
 
-This behavior is funny in that ifconfig shows no errors and that packets
-are being sent and received (and the lights on the cards seem to support
-that) but none of the received info ever seems to make it back upstream
-from the card (a receive buffer alignment issue?)
+The only way I could seem to reduce the brightness was to use the Gamma
+0.50 setting in the XF86Config-4 file to reduce the gamma
 
-This is repeatable with both machines and with BMAC, TULIP, and SUNGEM
-when compiled in or loaded as a module during the normal eth0
-initialization during bootup
+Ani/Ben I will try to send you whatever patches are needed for radeonfb.c
+for the 7500 (once I clean up my hacks) so that you can see what I had to
+do.
 
-If I simply compile them as modules and wait until the machine is up and
-simply do an insmod and configure the network, they ALL work absolutely
-perfectly.
+Now on to SMP kernel testing!
 
-So whatever the issue is, it seems to be related to when in the boot
-process the NIC code is invoked.
-
-Is this due to some change in memory mapping?
-Is this due to some  change in IRQ assignment?
-Is this due to some alignment issue with DMA buffers and memory / caches?
-
-So what is different when a module is loaded by modprobe during the eth0
-initialization during bootup versus waiting until the end and then
-running insmod to load the module and configure the network.
-
-Just to check I made sure there were no firewall modules loaded at all
-and that the network routing tables and things were set properly
-(identical to the hand done case at the end of boot-up).
-
-This problem seems to exist in every 2.4.X kernel I have tried.
-
-This problem does not exist in 2.2.X kernels.
-
-Ideas anyone?
+Thanks for everyone's HELP!
 
 Thanks,
 
 Kevin
+
+On February 15, 2002 06:08, Kevin B. Hendricks wrote:
+> Hi Ani,
+>
+> A couple of problems.
+>
+> 1. Checking the BIOS scratch register
+>
+>  tmp = INREG(RADEON_BIOS_4_SCRATCH);
+>
+>         if (rinfo->hasCRTC2) {
+>                 /* primary DVI port */
+>                 if (tmp & 0x08)
+>                         rinfo->dviDisp_type = MT_DFP;
+>
+> To determine which port on a 7500 is actualy being used does not work on
+> PPC, so we have to use the OF names and look in the tree to dtermine
+> which port is working somehow.  Question is how?
+>
+> 2. For some reason I keep getting the following failure message:
+>
+>                          default:
+>                                 printk("radeonfb: Failed to detect DFP
+> panel size\n");
+>                                 return 0;
+>
+> which means:
+>
+>         if (radeon_dfp_parse_EDID(rinfo))
+>                 radeon_update_default_var(rinfo);
+>
+>         if (!rinfo->got_dfpinfo) {
+>
+> Somehow rinfo->got_dfpinfo is not being set (yet a received no warning
+> messages about EDID not being detected).
+>
+> The OF device tree does have the "EDID" block but for some reason it is
+> not being found properly (the dual head issue of the 7500 leading to two
+> different device tree nodes?) or not being parsed properly.
+>
+> But I never received the following message:
+>
+>         if (!radeon_get_EDID_OF(rinfo))
+>                 RTRACE("radeonfb: could not retrieve EDID from OF\n");
+>
+>
+> And I never received this message either:
+>
+>         printk("radeonfb: detected DFP panel size from EDID: %dx%d\n",
+>                 rinfo->panel_xres, rinfo->panel_yres);
+>
+>         rinfo->got_dfpinfo = 1;
+>
+>
+> And instead I always get just The "Failed to detect DFP panel size"
+>
+> I can't figure it out.
+>
+> I will add some more debug print statements so that I can actually see
+> what is messing up.
+>
+> Thanks,
+>
+> Kevin
+>
+> On February 13, 2002 10:53, Ani Joshi wrote:
+> > On Wed, 13 Feb 2002, Kevin B. Hendricks wrote:
+> > > 2.  The bad news is that my ATI 7500 with my flat panel display
+> > > simply goes black so I can't tell exactly what is detected or not.
+> >
+> > You will need to check if the OpenFirmware pll probing code I use in
+> > radeonfb works on 7500.  Look in the device-tree node and see what the
+> > reference clock is.  If you look in radeon_get_pllinfo() you can see
+> > the OF probe code there.  IIRC on x86 7500 boards, the xclk is ~
+> > 22000, the ref div is 12 and reference clock is 2700 i belive.  The
+> > 7500 is supported on x86 btw.
+> >
+> > If you can log in and get a bootlog that would be helpful.
+> >
+> >
+> > ani
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
