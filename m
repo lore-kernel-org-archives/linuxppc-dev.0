@@ -1,39 +1,45 @@
-Message-ID: <3CEC6019.8060700@embeddededge.com>
-Date: Wed, 22 May 2002 23:20:57 -0400
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <B164B53F5BD6D511888D009027732E1A4D11D2@ntserver.act.domain>
+From: Rudolf Ladyzhenskii <rudolf.ladyzhenskii@act-aus.net>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: OT: BDI2000 does not work after firmware upgrade
+Date: Thu, 23 May 2002 13:26:41 +1000
 MIME-Version: 1.0
-To: Nate Pletcher <pletch@po.cwru.edu>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: using cpm interrupts on 8xx
-References: <1022079528.1226.15.camel@soundgarden>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Nate Pletcher wrote:
+Hi, all
 
+This is a bit off-topic, but many of you have experience with BDI2000, so
+someone might help.
+I also sent an e-mail to Abatron, but time difference prevents quick
+reponse.
 
-> ...  Do I need to register a handler for the SIU
-> interrupt for the CPM and then another handler for the individual IDMA
-> interrupt from the CPM?
+Anyway, I tried to upgrade firmware to the 1.12.
+Succesfully loaded it and that was the end for my BDI2000.
+Now it just sits there and blinks MODE LED at me. No telnet, no serial.
 
-All you need to do is use cpm_install_handler() for the IDMA interrupt.
+I wanted to upload software again, but can not connect to it anymore. Tried
+Windows and Linux machines, different cables -- nothing works.
+As a last resourt, I opened BDI2000 (As per manual) and performed reset --
+no luck. RED LED blinks and this is all I can get out of the thing.
+It is disconnected from everything, except serial port and power supply.
 
-> The interrupt hardware on the 8xx is multilevel (CPM interrupts
-> multiplexed into SIU) so it seems that both functions would be
-> necessary.
+Any ideas will be appreciated -- I miss my BDI.
 
-The cpm initialization installs the SIU interrupt handler, so don't
-worry about that one.
-
-> ....  What do I need to do myself and what is
-> provided by the request_/free_irq interface?
-
-For your IDMA device all you need to do is cpm_install_handler()/cpm_free_handler().
-
-
-	-- Dan
+Thanks,
+/************************/
+Rudolf Ladyzhenskii
+DSP Engineer
+Advanced Communication Technologies
+ph.  +61 3 8080 8215
+fax. +61 3 9672 8800
+Level 9, 341 Queen Street,
+Melbourne, 3000
+Australia
+/***********************/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
