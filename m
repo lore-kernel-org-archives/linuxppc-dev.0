@@ -1,34 +1,57 @@
-Date: Wed, 18 Jul 2001 21:28:08 -0500 (CDT)
-From: Grant Erickson <erick205@umn.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PCI-to-PCMCIA/CardBus, Hardhat Linux 2.4.2, and the 405GP
-Message-Id: <Pine.SOL.4.20.0107182123580.21428-100000@garnet.tc.umn.edu>
+Message-ID: <3B5708DD.E0788B8B@comdev.cc>
+Date: Thu, 19 Jul 2001 09:20:45 -0700
+From: Adam Wozniak <adam.wozniak@comdev.cc>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: fcc_enet Phy detection
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am attempting to get a SanDisk or IBM MicroDrive CardFlash interface
-device working with a Walnut (IBM 405GP Rev. D) platforms and am using
-MontaVista's 2.4.2-mvista_010329 Linux kernel to do so. The PCI-to-CardBus
-adapter is a TI1420.
+(solved previous problem, Dan Malek was right; it was an incorrect DRAM
+refresh parameter)
 
-Are there any tricks or pitfalls to get this working? I haven't been too
-wildly successful yet using either compiled in or module-based drivers.
+Is this normal?
 
-Also, the PCMCIA-HOWTO seems fairly explicit that a PCMCIA IDE/ATA drive
-such as the IBM MicroDrive or SanDisk cannot be used as a boot device (but
-can be used as a root device w/ initrd). Has anyone out there done
-otherwise (i.e. built-in drivers, no initrd, w/ a simple root=/dev/hda)?
-
-ANY insight would be greatly appreciated.
-
+eth0: FCC ENET Version 0.2, 08:00:22:70:70:63
+fec: Phy @ 0x0, type 0x00000000
+fec: Phy @ 0x1, type 0x00000000
+fec: Phy @ 0x2, type 0x00000000
+fec: Phy @ 0x3, type 0x00000000
+fec: Phy @ 0x4, type 0x00000000
+fec: Phy @ 0x5, type 0x00000000
+fec: Phy @ 0x6, type 0x00000000
+fec: Phy @ 0x7, type 0x00000000
+fec: Phy @ 0x8, type 0x00000000
+fec: Phy @ 0x9, type 0x00000000
+fec: Phy @ 0xa, type 0x00000000
+fec: Phy @ 0xb, type 0x00000000
+fec: Phy @ 0xc, type 0x00000000
+fec: Phy @ 0xd, type 0x00000000
+fec: Phy @ 0xe, type 0x00000000
+fec: Phy @ 0xf, type 0x00000000
+fec: Phy @ 0x10, type 0x00000000
+fec: Phy @ 0x11, type 0x00000000
+fec: Phy @ 0x12, type 0x00000000
+fec: Phy @ 0x13, type 0x00000000
+fec: Phy @ 0x14, type 0x00000000
+fec: Phy @ 0x15, type 0x00000000
+fec: Phy @ 0x16, type 0x00000000
+fec: Phy @ 0x17, type 0x00000000
+fec: Phy @ 0x18, type 0x00000000
+fec: Phy @ 0x19, type 0x00000000
+fec: Phy @ 0x1a, type 0x00000000
+fec: Phy @ 0x1b, type 0x00000000
+fec: Phy @ 0x1c, type 0x00000000
+fec: Phy @ 0x1d, type 0x00000000
+fec: Phy @ 0x1e, type 0x00000000
+fec: Phy @ 0x1f, type 0x00000000
 
 --
- Grant Erickson                       University of Minnesota Alumni
-  o mail:erick205@umn.edu                                 1996 BSEE
-  o http://www.umn.edu/~erick205                          1998 MSEE
-
+Adam Wozniak (KG6GZR)   COM DEV Wireless - Digital and Software Systems
+awozniak@comdev.cc      3450 Broad St. 107, San Luis Obispo, CA 93401
+                        http://www.comdev.cc
+                        Voice: (805) 544-1089       Fax: (805) 544-2055
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
