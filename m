@@ -1,44 +1,40 @@
-Subject: Re: MTD Driver (denx Linux 2.4.4)
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: Flavio Pereira <fpereira@azisa.com>
-Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <1E354700654661418593A0D6B5A9D410089481@mail.azisa.co.za>
-References: <1E354700654661418593A0D6B5A9D410089481@mail.azisa.co.za>
-Date: 31 Oct 2002 10:25:01 -0600
-Message-Id: <1036081502.1013.1299.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
+To: "OTAVIO ISAMU SUGENO" <otavio.sugeno@siemens.com.br>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: D-Cache and I-Cache in PPC 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 31 Oct 2002 12:21:42 -0300."
+             <B7AC573479F05C438F232539B961A1686C4D99@CUR1006V.br002.siemens.net.br>
+Date: Thu, 31 Oct 2002 23:03:37 +0100
+Message-Id: <20021031220342.B11B510158@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2002-10-31 at 08:37, Flavio Pereira wrote:
+In message <B7AC573479F05C438F232539B961A1686C4D99@CUR1006V.br002.siemens.net.br> you wrote:
 >
-> I'm having difficulty in getting the MTD driver working. I'm using a
-> non-CFI complaint Sharp chip so I have defined CONFIG_MTD_SHARP. However
-> I cannot locate anywhere in the code where the kernel will call
-> sharp_probe_init. In any case I forced init_mtd (mtdcore.c) to call
-> sharp_probe_init and it seems to load the driver okay as I see the
-> following on my serial console
 >
-> JFFS version 1.0, (C) 1999, 2000  Axis Communications AB
-> JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis
-> Communications AB.
-> MTD Sharp chip driver <ds@lineo.com>
-> MTD Sharp chip driver <ds@lineo.com>
->
-> Now my question is, do I need to force this driver to load or am I
-> missing some compile flag? How do I go about partitioning the flash, ie
-> how does this driver link to a flash map?
+> Can anyone tell me how D-Cache and I-Cache using PowerPC MPC860T is set
+> in Linux?
 
-Those "MTD" lines above, does that mean your driver is being initialized
-twice?
+Boith are switched on (usually).
 
-Linux uses ELF tricks for initialization: addresses of all the functions
-marked __init are put into their own ELF section, and common code
-somewhere (I forget where) just loops over this section, calling each
-init function in turn. So you should *not* add an explicit call to your
-init routine.
+> I am using ppcboot and when it is initializing I can see D-Cache and
+> I-Cache infos.
+> This configuration is enough to Linux recognize this settings?
 
--Hollis
+Linux does not really care about the setting used in the firmware; it
+turns on the caches itself.
+
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"355/113 -- Not the famous irrational number PI,  but  an  incredible
+simulation!"
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
