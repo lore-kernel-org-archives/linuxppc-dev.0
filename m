@@ -1,36 +1,46 @@
-Message-ID: <3911A489.F4A255F6@embeddededge.com>
-Date: Thu, 04 May 2000 12:25:45 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <3911C380.27BFAB85@motorola.com>
+Date: Thu, 04 May 2000 13:37:52 -0500
+From: "Richard Hendricks" <richard.hendricks@motorola.com>
 MIME-Version: 1.0
-To: Kim Jørgensen <KIJ@infocom.dk>
-CC: "'linuxppc-embedded@lists.linuxppc.org'"
- <linuxppc-embedded@lists.linuxppc.org>
+To: Dan Malek <dan@netx4.com>
+CC: Kim Jørgensen <KIJ@infocom.dk>
 Subject: Re: Problem with MPC823 LCD driver
-References: <819E3E914E0AD11194DE00805F0D100B0138B852@fbi.infocom.dk>
+References: <819E3E914E0AD11194DE00805F0D100B0138B852@fbi.infocom.dk> <3911A489.F4A255F6@embeddededge.com>
 Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kim Jørgensen wrote:
+That could be it.  One obvious indicator is that without LCD and
+the caches disabled, everything works fine.  If it breaks with the
+caches turned on, check your UPM burst tables.  This is where most
+mistakes occur.  Also, be sure to bring all the UPM signals back
+high at the end of your transactions.
 
-> I got a custom MPC823E board, and I want to use a LCD display with Linux.
+Dan Malek wrote:
+>
+> Kim Jørgensen wrote:
+>
+> > I got a custom MPC823E board, and I want to use a LCD display with Linux.
+>
+> Get the logic analyzer on the bus.......
+>
+> > Can anyone tell me what is wrong, and how to solve this?
+>
+> I can make a few guesses.  This has nothing to do with Math Emulation,
+> and everything to do with fetching the proper instructions into the
+> core.  The LCD controller is a heavy-duty DMA controller that has
+> priority over everything to ensure it can keep the display updated
+> from system memory.  Since the controller performs large burst mode
+> operations, this is a classic example of memory controller or memory
+> interface problems.  I suspect the memory timing isn't correct and the
+> instructions are just bad memory cycles that can't be properly
+> decoded.
+>
+>         -- Dan
+>
 
-Get the logic analyzer on the bus.......
-
-> Can anyone tell me what is wrong, and how to solve this?
-
-I can make a few guesses.  This has nothing to do with Math Emulation,
-and everything to do with fetching the proper instructions into the
-core.  The LCD controller is a heavy-duty DMA controller that has
-priority over everything to ensure it can keep the display updated
-from system memory.  Since the controller performs large burst mode
-operations, this is a classic example of memory controller or memory
-interface problems.  I suspect the memory timing isn't correct and the
-instructions are just bad memory cycles that can't be properly
-decoded.
-
-
-	-- Dan
+--
+MPC823 Applications Engineering Development
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
