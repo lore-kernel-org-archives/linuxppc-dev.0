@@ -1,67 +1,34 @@
-Date: Fri, 28 Mar 2003 22:25:13 +0100
+Date: Sat, 29 Mar 2003 09:58:40 +0100
 From: Boris Bezlaj <boris@gajba.net>
-To: Mikael Pettersson <mikpe@user.it.uu.se>
+To: Remco Treffkorn <remco@rvt.com>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.4.x swim3 performance problem on PM4400 identified
-Message-ID: <20030328212513.GA456@gajba.net>
-References: <16004.27866.270601.561756@gargle.gargle.HOWL>
+Message-ID: <20030329085840.GA529@gajba.net>
+References: <16004.27866.270601.561756@gargle.gargle.HOWL> <20030328212513.GA456@gajba.net> <200303281813.31378.remco@rvt.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16004.27866.270601.561756@gargle.gargle.HOWL>
+In-Reply-To: <200303281813.31378.remco@rvt.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Mar 28, 2003 at 04:40:10PM +0100, Mikael Pettersson wrote:
+On Fri, Mar 28, 2003 at 06:13:31PM -0800, Remco Treffkorn wrote:
+> On Friday 28 March 2003 13:25, Boris Bezlaj wrote:
+> > There seem to be some old problems when reading
+> >
+> > (also in 2.2 / 2.4 w/o your patch):
+> > | swim3: expected cyl 3, got 4
+> > | swim3: expected cyl 4, got 5
+> > | swim3: expected cyl 5, got 6
+> > | ....and so on until everything is loaded
+> >
+> > most notable when loading commpressed filesystem image at boot.
+> >
 >
-> With 2.4 kernels, writes to floppy are about a factor of 10 slower
-> on my PowerMac 4400 than they are with 2.2 kernels.
+> I do not believe it is related to bad floppies.
 
-The code changed somewhere in 2.3.x (i looked at it some time ago,
-facing the same problem). I wonder how does this work on newer machines?
-
-> The cause for this is a poll-loop in swim3.c which doesn't exist
-> in the 2.2 version. The patch below reverts that change, and
-> restores floppy write performance to 2.2 levels. I've built many
-> boot floppies with this modified driver w/o any problems.
-
-I tested your patch extensively..seems to work fine :)
-|swim3: expected cyl 5, got 133
-|swim3: expected cyl 75, got 144  <-- this could be due to bad floppy
-|swim3: expected cyl 75, got 6        as i always get the same cyl
-|2880+0 records in                    with the same floppy
-|2880+0 records out
-|1474560 bytes transferred in 41.599343 seconds (35447 bytes/sec)
-
-There seem to be some old problems when reading
-(also in 2.2 / 2.4 w/o your patch):
-| swim3: expected cyl 3, got 4
-| swim3: expected cyl 4, got 5
-| swim3: expected cyl 5, got 6
-| ....and so on until everything is loaded
-most notable when loading commpressed filesystem image at boot.
-
-There is one thing i haven't encountered before (probably
-not related to your patch):
-reading ...
-|swim3_interrupt, state=1, cmd=0, intr=30, err=4
-|swim3_interrupt, state=1, cmd=0, intr=34, err=4
-|swim3: error reading block 2826 (err=4)
-|end_request: I/O error, dev 02:00 (floppy), sector 2826
-|swim3: error reading block 2827 (err=4)
-|end_request: I/O error, dev 02:00 (floppy), sector 2827
-|swim3: error reading block 2828 (err=4)
-|end_request: I/O error, dev 02:00 (floppy), sector 2828
-|swim3: error reading block 2829 (err=4)
-|end_request: I/O error, dev 02:00 (floppy), sector 2829
-|swim3: error reading block 2830 (err=4)
-|end_request: I/O error, dev 02:00 (floppy), sector 2830
-|swim3: error reading block 2831 (err=4)
-|end_request: I/O error, dev 02:00 (floppy), sector 2831
-|dd: reading `/dev/fd0': Input/output error
-..end of story. After this the swim3 seems to remain in "headless
-chicken mode" until reboot. Reading/writing fails miserably. Again this
-could be due to bad floppy..
+No, this is clearly a driver problem. I don't know much about floppy
+operation but i think the driver should handle this better..
 
 --
 
