@@ -1,104 +1,63 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F5BAFCB@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Kiran Mandava'" <kiran.mandava@skystream.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: ep8260 board linux port serial port problem
-Date: Tue, 30 Dec 2003 12:26:27 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Tue, 30 Dec 2003 20:02:28 -0600
+From: Chris Zimman <chris@cryptoapps.com>
+To: ?????? <jazz0719@dreamwiz.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: DMA problem in Sil0680A - detail setting in my system
+Message-ID: <20031231020228.GA5679@dingdong.cryptoapps.com>
+Reply-To: Chris Zimman <chris@cryptoapps.com>
+References: <200312300128.hBU1Sh3g057052@mail0.dreamwiz.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200312300128.hBU1Sh3g057052@mail0.dreamwiz.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You may need to turn the pipelining on.  Some 8260 processor's CPM loses
-communication with the SDRAM when Linux runs, enabling pipelining will solve
-this.  Also, make sure Linux is properly getting the information for the
-SDRAM size.
+On Tue, Dec 30, 2003 at 10:28:43AM +0900, ?????? wrote:
 
------Original Message-----
-From: Kiran Mandava [mailto:kiran.mandava@skystream.com]
-Sent: Tuesday, December 30, 2003 12:11 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ep8260 board linux port serial port problem
+> - modified irq setting of PCI device. as you see, Sil0680 got a irq 25...
+>  (sorry for the misprint in the mail before. QLogic ISP1020 SCSI got a irq 27)
+>                 /* modified by hwjang : see PPC405GP User's manual Table 10-1. UIC Interrupt Assignments */
+>                 {-1, -1, -1, -1},       /* PCI slot 1 : PCI device 10ea:5252 (INTERG VGA) */
+>                 {25, 25, 25, 25},       /* PCI slot 2 : PCI device 1095:0680 (CMD SII680) */
+>                 {-1, -1, -1, -1},       /* PCI slot 3 : PCI device 104c:a106 (TI 6205 Decoder)*/
+>                 {27, 27, 27, 27},       /* PCI slot 4 : PCI device 1077:1020 (QLogic ISP1020 SCSI) */
 
+Without seeing the schematics, I can't be sure -- but did you
+double check that you have the right INT# pin going to the right IRQ?
 
+> - modified Timing setting for PIO, DMA, UDMA as my system works now...
+>   and set IDE clock freq to 100Mhz
+> drivers/ide/pci/siimage.c
 
-Hello All,
+I'm not intimately familar with the Silicon Image IDE controllers, so
+I'll just take it for granted that you everything that you've done to
+the driver is OK.  I'd always suggest starting with the reference driver
+though and modifying after you know it's working.  For all I know, the
+reason that you may not be getting the DMA interrupt back is because
+something you've done to the driver is hosing the transfers.  I'm not
+saying that for certain, but since it's not really possible for me to
+know one way or the other, it has to be left to possibility.
 
-	I am trying to bringup linux 2.4.22 on ep8260 board. i have the
-U-boot running fine. while booting the linux kernel the execution path is
-looping in serial_console_write(verified it thr'u JTAG).SMC1 is configured
-as the console.
+Unfortunately, since I don't have any of the SI documentation, the dumps
+are not really too useful.  Since PIO seems to be working, things must
+be at least somewhat OK.  There can be a lot of reasons that the DMA
+transfers aren't working right though.  Could be driver problems, could
+be a setup problem, could be a routing problem on the board, etc.
+First, I would just confirm that the interrupt is working as expected.
+You can quickly write hack a driver to report when an interrupt comes
+in on IRQ 25 and then put a change wire to the pin and bounce it low to
+see what happens.  If the interrupt is working, then you should probably
+try lowering the transfer speed and see if that improves things any.  If
+that does, then you know you have some signal integrity problems that
+you need to look at.  If not, it's probably something busted in the
+driver.
 
-      For the SMC port the code is setting up the proper Rx/Tx descriptors
-in the on chip DPRAM and it tries to use the actual buffers from the RAM (on
-the 6xx bus in this case) the code loops in the serial_console_write, but if
-i change the actual buffers to be from the on chip DPRAM itself the serial
-port works fine.(I guess this is how it is done in the U-boot too)..did
-someone face the similar probelm, any sugestions would be greately
-appreciated.
+> please, give me any advice or suggestion.
+> I will try to recognize SCSI device from now.... thanks.
 
-      RAM seems to be working fine, as the code gets relocated properly to
-RAM and executes from there.
+Did you have any luck with the SCSI controller?
 
-
-
-
-thanks
-kiran
-
-
-
->-----Original Message-----
->From: Kiran Mandava [mailto:kiran.mandava@skystream.com]
->Sent: Thursday, December 18, 2003 11:44 AM
->To: linuxppc-embedded@lists.linuxppc.org
->Subject: ep8260 board linux port
->
->
->
->Hello All,
->
->  I am trying to port linux 2.4.22 onto ep8260 board. (256 MB
->RAM on 6xx
->bus/ 32 MB Flash) using tools and source code from denx webisite.
->  I was able to port u-boot and trying to boot linux now.
->  i couldn't find any specific files to this board in the
->platform directory
->although est8260.h file has the basic bd structure. the
->problem i am facing
->is the processor loops in serial_console_write/ timer
->interrupt handler. i
->made sure that i am passing the baudrate proeprly by looking at the bd
->structure while passing teh control to start_kernel function.
->  My console does display everything properly running u-boot
->but once the
->control goes to linux don't see anything on the console.
->
->i made only the following changes for th elinux boot.
->	1. in uart.c made sure that the console port is defines as SMC1.
->	2. defines the SMC2 to be serial port too
->      3. FCC3 is configured as the ethernet.
->
->and compiled and tried to boot the image, but i couldn't. i do
->have a BDI
->JTAG device and i was able to see the RAM properly.
->
-> could some one throw light on what i could be doing wrong,
->any sugestions
->are greatley appreciated. I bet some one would have done this
->sucessfully
->years before..
->
->
->
->
->thanks,
->kiran
->
->
->
-
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
