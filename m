@@ -1,40 +1,36 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp cwith r128
-Date: Mon, 13 Mar 2000 20:12:33 -0500
-Content-Type: text/plain
-Cc: Michel Danzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
-References: <Pine.LNX.4.21.0003060013070.30614-100000@idd-01.imbc.gr>
-In-Reply-To: <Pine.LNX.4.21.0003060013070.30614-100000@idd-01.imbc.gr>
+Message-ID: <38CD9A7C.2DC395E4@erols.com>
+Date: Mon, 13 Mar 2000 20:48:44 -0500
+From: Nelson Abramson <pogtal@erols.com>
 MIME-Version: 1.0
-Message-Id: <00031320161501.00531@localhost.localdomain>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 1 line kernel patch and new Xpmac now works on newsawtoothG4s !
+References: <200003131630.KAA28738@lists.linuxppc.org>
+	 <v03110703b4f2f052a0bc@[129.100.29.243]> <v03110707b4f309918f61@[129.100.29.243]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Kostas,
+"Kevin B. Hendricks" wrote:
 
-Now that simply changing the xclk value lets both XFree 4.0 r128 and Xpmac work
-with the new Rage128Pro cards, it would seem to be a good time to me to try to
-figure out how to probe to either calulate or detect the correct timing values
-so that aty128fb.c and r128 work for both my Rage128RE card and my Rage128ProPF
-card at the same time (call me greedy).
+> Huh, I can't recreate this on my machine.  Perhaps I do not understand
+> exactly what I should be doing to get the problem to appear.
+>
+> Please, can you give me detailed step by step instructions of how to make
+> the problem appear.  Sorry to be dense here but if I can't recreate it I
+> can't fix it!!!
 
-I am going to dive into this next so any ideas or models to follow or hints on
-how to do this correctly would be greatly appreciated.
+Well most of the weirdness seems to have gone away (I suppose playing w/ the
+different X servers seems to have created it), but still, when I fire up Xpmac,
+anything that is in a console vt gets blacked out. (eg. if you fire up Xpmac, and
+switch to vt 3, the login text is gone)
 
-Thanks,
-
-Kevin
-
-
+--Nelson Abramson
 
 --
-Kevin B. Hendricks Associate Professor of Operations and Information
-Technology Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Shouldn't people be arrested and persecuted for engaging in their
+constitutional rights?  http://www.opendvd.org
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
