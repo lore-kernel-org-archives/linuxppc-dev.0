@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
-	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id 0E34667ACD
+Return-Path: <ncaruso@irobot.com>
+Received: from irobot.com (brick.irobot.com [66.238.211.199])
+	by ozlabs.org (Postfix) with ESMTP id 1300967ADF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Feb 2005 07:33:32 +1100 (EST)
-To: "Eric N. Johnson (ACD)" <ejohnson@acdstar.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 09 Feb 2005 13:31:35 CST."
-	<6.2.1.2.1.20050209131409.02b2b718@mail.int.acdstar.com>
-Date: Wed, 09 Feb 2005 21:33:09 +0100
-Sender: wd@denx.de
-Message-Id: <20050209203314.78351C108D@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 JTAG/BDM Flash Burning 
+	Thu, 10 Feb 2005 07:34:39 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C50EE5.D94B2F35"
+Date: Wed, 9 Feb 2005 15:23:03 -0500
+Message-ID: <712A2DEC228C7448978CBD7A7AD5B090592CB5@fever.wardrobe.irobot.com>
+From: "Caruso, Nick" <ncaruso@irobot.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Question for all the folks who are ALSO building custom MPC5200
+	boards
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,46 +22,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <6.2.1.2.1.20050209131409.02b2b718@mail.int.acdstar.com> you wrote:
-> I'm working on a custom MPC5200 board based heavily on the IceCube design 
-> from Motorola/Freescale.  We plan to use the u-boot bootloader.
-> 
-> I'm looking for a tool to allow us to burn u-boot into the flash memory on 
-> new board (with all flash devices unprogrammed).  Ideally, I'd like 
+This is a multi-part message in MIME format.
 
-If you consider the fact that besides fash burning you may also  want
-to  have  a  working hardware debugger, you should go for a BDI2000 -
-especially for Linux, when MMU support is needed.
+------_=_NextPart_001_01C50EE5.D94B2F35
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> Both the "MPCBDM" and "bdm4gdb" projects haven't been updated for 
-> years.  The BDM-Tools project is more active, but only seems to support 
 
-Tha't mostly because they are just working  fine  for  the  class  of
-devices  they  have  been  designed  for.  The  MPC5200  has  no  BDM
-interface,  but  a  JTAG  based  debug  interface  for  which  it  is
-impossible  to  get  the necessary specifications without an NDA - an
-NDA which  prevents  any  implementation  under  GPL.  Complain  with
-Freescale.
+I spoze this is slightly off topic, but... since a number of people have =
+recently mentioned they're building custom MPC5200 boards:
 
-> The 5200lite "IceCube" demo board came with a Metrowerks "Wiretap" BDM 
-> interface, and a Green Hills "Slingshot" BDM module, but these seems to 
-> require a large (and expensive) windows based "Development environment" 
+Have any of you had trouble with the 32kHz oscillator, when trying to =
+use the crystal-and-passive-network approach instead of the =
+big-ugly-reliable-metal-can-oscillator technique?  Anyone actually get =
+the crystal to oscillate properly?
 
-And they have no idea how do deal with virtual addresses.
+Replies off list would be fine if this is too off-topic...
 
-> We may have to write our own JTAG based pin-wiggler, but this solution 
-> tends to be extremely slow.
+  best regards,
+     Nick Caruso
 
-It may be difficult to get the required documentation from Freescale,
-and then you will probably spend more money (in terms of  your  time)
-than you have to pay for a working tool (BDI2000).
+------_=_NextPart_001_01C50EE5.D94B2F35
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Best regards,
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7226.0">
+<TITLE>Question for all the folks who are ALSO building custom MPC5200 =
+boards</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
 
-Wolfgang Denk
+<P><FONT SIZE=3D2>I spoze this is slightly off topic, but... since a =
+number of people have recently mentioned they're building custom MPC5200 =
+boards:<BR>
+<BR>
+Have any of you had trouble with the 32kHz oscillator, when trying to =
+use the crystal-and-passive-network approach instead of the =
+big-ugly-reliable-metal-can-oscillator technique?&nbsp; Anyone actually =
+get the crystal to oscillate properly?<BR>
+<BR>
+Replies off list would be fine if this is too off-topic...<BR>
+<BR>
+&nbsp; best regards,<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; Nick Caruso</FONT>
+</P>
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Clothes make the man. Naked people have little  or  no  influence  on
-society.                                                 - Mark Twain
+</BODY>
+</HTML>
+------_=_NextPart_001_01C50EE5.D94B2F35--
