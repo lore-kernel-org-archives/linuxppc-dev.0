@@ -1,23 +1,26 @@
-Date: Mon, 2 Jul 2001 16:31:55 -0400
-Message-Id: <200107022031.QAA01037@macaron.inria.fr>
-From: Jean-Jacques Levy <Jean-Jacques.Levy@inria.fr>
+Message-ID: <3B41BA6A.726EF9EC@geneura.ugr.es>
+Date: Tue, 03 Jul 2001 14:28:26 +0200
+From: Louis <louis@geneura.ugr.es>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: __divdi3 unresolved + X pointer blocks
-Reply-To: Jean-Jacques.Levy@inria.fr
+Subject: problems with kernel 2.46-pre6
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-When compiling linux.2.4.6-pre6 (benh kernel), I get undefinded symbol
-__divdi3 in the fat.o module.  When I suppress module fat.o, kernel
-doesn't boot.  Please help! (My c-compiler is gcc-3.0-20010427pre_0a,
-libc is glibc-2.1.3-15f.)
+Hi,
 
-Second (disconnected) problem: when running X11 4.0.99.3
-on my tibook with 2.4.5-pre3g4, the pointer is blocked when kde
-starts. After snooze+wakeup, the pointer get unblocked and the
-system works? Big thanks for any idea.
+I tried kernel 2.4.6-pre3 and kernel-2.4.6-pre6 and works for few boots.
+Then I have an error before starting X (and freeze here) about kernel
+mode something like this.
+Another stange thing is when it boots (kernel 2.4.4, 2.4.6) it told me
+it didn't find System.map-2.xx which is of course in the boot directory.
+So I specified a sysmap parameter in yaboot but it doesn't change
+anything.
 
--JJ-
+Thanks for your attention,
+
+Louis.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
