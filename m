@@ -1,30 +1,41 @@
-Date: Mon, 10 Feb 2003 10:24:45 -0700
-From: Matt Porter <porter@cox.net>
-To: Aman <aman@mistralsoftware.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Patch
-Message-ID: <20030210102445.C25044@home.com>
-References: <OE58jbP3SIGYF2rEF6f00001796@hotmail.com> <00ea01c2d11e$d7d611f0$370da8c0@aman>
+Date: Mon, 10 Feb 2003 10:25:30 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Cc: "Ruhland, Paul" <PRuhland@microwavedata.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] 8xx_io/uart.c
+Message-ID: <20030210172530.GA20757@ip68-0-152-218.tc.ph.cox.net>
+References: <A60FFE6CA339C742BE11C311EA8BFF540164DD@mdsms2.inside.mdsroc.com> <IGEFJKJNHJDCBKALBJLLCECBFKAA.joakim.tjernlund@lumentis.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00ea01c2d11e$d7d611f0$370da8c0@aman>; from aman@mistralsoftware.com on Mon, Feb 10, 2003 at 09:39:51PM +0530
+In-Reply-To: <IGEFJKJNHJDCBKALBJLLCECBFKAA.joakim.tjernlund@lumentis.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Feb 10, 2003 at 09:39:51PM +0530, Aman wrote:
-> Can anybody tell me , the website, from where I can download the patches for
-> ppc440 bitkeeper kernel.
+On Mon, Feb 10, 2003 at 03:45:41PM +0100, Joakim Tjernlund wrote:
+>
+> > The pasting into the console bug is actually caused in
+> > 'drivers/char/n_tty.c' (standard tty line discipline) by not handling a
+> > failed call to 'opost(...)' (if returns -1 if tx buffer is full and char
+> > must be retried) in 'echo_char()'.  The pasted data is received fine....just
+> > the echo fails.
+> >
+>
+> Hi again
+>
+> Thanks to Paul Ruhland I was able to fix my problem with chars getting
+> lost.
+>
+> This little patch of mine works really fine for me, I just want to known
+> if it's a good solution or if something else is to prefer.
 
-What sort of patches are you looking for?   The PPC440 support in the
-linuxppc_2_4_devel tree is 99% complete and should work.  Some changesets
-mention an ftp site where you can obtain a 36-bit mmap patch that couldn't
-be added to the tree.
+Bring it up on linux-kernel@vger.kernel.org.  A brief description and
+this patch should be enough to get people to listen.  Maybe send it to
+Alan Cox too..
 
-Regards,
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
