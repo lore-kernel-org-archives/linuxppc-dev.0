@@ -1,21 +1,27 @@
-Return-Path: <jchapman@katalix.com>
-Received: from ptb-relay01.plus.net (ptb-relay01.plus.net [212.159.14.212])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <srivatsan@deccanetworld.com>
+Received: from gatekeeper.deccanetworld.com (unknown [61.95.203.221])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D5A9D67A8B
+	by ozlabs.org (Postfix) with ESMTP id 25A9067A8D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 22:18:31 +1100 (EST)
-Message-ID: <421DB801.9090705@katalix.com>
-Date: Thu, 24 Feb 2005 11:18:25 +0000
-From: James Chapman <jchapman@katalix.com>
+	Thu, 24 Feb 2005 23:44:12 +1100 (EST)
+Received: from gatekeeper.deccanetworld.com (localhost [127.0.0.1])
+	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
+	ESMTP id j1OB1q2Q015990
+	for <linuxppc-embedded@ozlabs.org>; Thu, 24 Feb 2005 16:31:52 +0530
+Received: from mail.deccanetworld.com (server.deccanetworld.com [192.168.1.32])
+	by gatekeeper.deccanetworld.com (8.12.2/8.12.2/SuSE Linux 0.6) with
+	ESMTP id j1OB1pkG015933
+	for <linuxppc-embedded@ozlabs.org>; Thu, 24 Feb 2005 16:31:52 +0530
+From: "Srivatsan" <srivatsan@deccanetworld.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 24 Feb 2005 18:07:25 +0530
+Message-ID: <000801c51a6d$984fef20$1269cb0a@bgcw301>
 MIME-Version: 1.0
-To: Wim Van Sebroeck <wim@iguana.be>
-References: <421CF6B8.3090104@katalix.com>
-	<20050224074816.GB6650@infomag.infomag.iguana.be>
-In-Reply-To: <20050224074816.GB6650@infomag.infomag.iguana.be>
-Content-Type: multipart/mixed; boundary="------------070806050204030105020306"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: PATCH: mv64x60: add watchdog support
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0009_01C51A9B.B2082B20"
+In-Reply-To: 
+Subject: Conole problem on MPC8280 based Rattler board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,368 +33,448 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------070806050204030105020306
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Wim,
-
-Please review this patch that adds mv64x60 watchdog support.
-
-Signed-off-by: James Chapman <jchapman@katalix.com>
-
-I'm cc'ing linuxppc-embedded to get critical review from developers
-who are more likely to know this chip. The Marvell mv64x60 chips are
-found on ppc and mips boards.
-
-/james
-
-Wim Van Sebroeck wrote:
-
-> Hi James,
-> 
->>Are you the Linux watchdog driver maintainer? I have a patch for a new 
->>watchdog driver for Marvell Discovery (mv64x60) boards and I'm trying to 
->>find the best place to post it...
->>
->>My patch is against the latest 2.6 bk tree. Should I create the patch 
->>against a different tree? Is there a mailing list?
-> 
-> 
-> You can sent it to me and I'll review it and include it in the linux-watchdog bitkeeper tree.
-> We actually work first with the -mm tree for testing, after that it goes to linus.
-> 
-> Hope this helps,
-> Greetings,
-> wim.
-
---------------070806050204030105020306
+------=_NextPart_000_0009_01C51A9B.B2082B20
 Content-Type: text/plain;
- name="mv64x60_wdt.patch"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mv64x60_wdt.patch"
 
-# This is a BitKeeper generated diff -Nru style patch.
-#
-# ChangeSet
-#   2005/02/24 10:40:40+00:00 jchapman@katalix.com 
-#   Add mv64x60 (Marvell Discovery) watchdog support.
-# 
-# drivers/char/watchdog/mv64x60_wdt.c
-#   2005/02/24 10:40:31+00:00 jchapman@katalix.com +252 -0
-# 
-# include/asm-ppc/mv64x60.h
-#   2005/02/24 10:40:31+00:00 jchapman@katalix.com +8 -0
-#   Add mv64x60 (Marvell Discovery) watchdog support.
-# 
-# drivers/char/watchdog/mv64x60_wdt.c
-#   2005/02/24 10:40:31+00:00 jchapman@katalix.com +0 -0
-#   BitKeeper file /home/james/bk/linux-2.6.wdt/drivers/char/watchdog/mv64x60_wdt.c
-# 
-# drivers/char/watchdog/Makefile
-#   2005/02/24 10:40:31+00:00 jchapman@katalix.com +1 -0
-#   Add mv64x60 (Marvell Discovery) watchdog support.
-# 
-# drivers/char/watchdog/Kconfig
-#   2005/02/24 10:40:31+00:00 jchapman@katalix.com +4 -0
-#   Add mv64x60 (Marvell Discovery) watchdog support.
-# 
-diff -Nru a/drivers/char/watchdog/Kconfig b/drivers/char/watchdog/Kconfig
---- a/drivers/char/watchdog/Kconfig	2005-02-24 10:45:36 +00:00
-+++ b/drivers/char/watchdog/Kconfig	2005-02-24 10:45:36 +00:00
-@@ -346,6 +346,10 @@
- 	tristate "MPC8xx Watchdog Timer"
- 	depends on WATCHDOG && 8xx
+Hi,
  
-+config MV64X60_WDT
-+	tristate "MV64X60 (Marvell Discovery) Watchdog Timer"
-+	depends on WATCHDOG && MV64X60
-+
- # MIPS Architecture
+Excuse me for posting this message again. I forgot to change the
+subject.
  
- config INDYDOG
-diff -Nru a/drivers/char/watchdog/Makefile b/drivers/char/watchdog/Makefile
---- a/drivers/char/watchdog/Makefile	2005-02-24 10:45:36 +00:00
-+++ b/drivers/char/watchdog/Makefile	2005-02-24 10:45:36 +00:00
-@@ -39,3 +39,4 @@
- obj-$(CONFIG_IXP4XX_WATCHDOG) += ixp4xx_wdt.o
- obj-$(CONFIG_IXP2000_WATCHDOG) += ixp2000_wdt.o
- obj-$(CONFIG_8xx_WDT) += mpc8xx_wdt.o
-+obj-$(CONFIG_MV64X60_WDT) += mv64x60_wdt.o
-diff -Nru a/drivers/char/watchdog/mv64x60_wdt.c b/drivers/char/watchdog/mv64x60_wdt.c
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/drivers/char/watchdog/mv64x60_wdt.c	2005-02-24 10:45:36 +00:00
-@@ -0,0 +1,252 @@
-+/*
-+ * mv64x60_wdt.c - MV64X60 (Marvell Discovery) watchdog userspace interface
-+ *
-+ * Author: James Chapman <jchapman@katalix.com>
-+ *
-+ * Platform-specific setup code should configure the dog to generate
-+ * interrupt or reset as required.  This code only enables/disables
-+ * and services the watchdog.
-+ *
-+ * Derived from mpc8xx_wdt.c, with the following copyright.
-+ * 
-+ * 2002 (c) Florian Schirmer <jolt@tuxbox.org> This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/fs.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/miscdevice.h>
-+#include <linux/module.h>
-+#include <linux/watchdog.h>
-+#include <asm/mv64x60.h>
-+#include <asm/uaccess.h>
-+#include <asm/io.h>
-+
-+/* MV64x60 WDC (config) register access definitions */
-+#define MV64x60_WDC_CTL1_MASK	(3 << 24)
-+#define MV64x60_WDC_CTL1(val)	((val & 3) << 24)
-+#define MV64x60_WDC_CTL2_MASK	(3 << 26)
-+#define MV64x60_WDC_CTL2(val)	((val & 3) << 26)
-+
-+/* Flags bits */
-+#define MV64x60_WDOG_FLAG_OPENED	0
-+#define MV64x60_WDOG_FLAG_ENABLED	1
-+
-+static unsigned long wdt_flags;
-+static int wdt_status;
-+static void __iomem *mv64x60_regs;
-+static int mv64x60_wdt_timeout;
-+
-+static void mv64x60_wdt_reg_write(u32 val)
-+{
-+	/* Allow write only to CTL1 / CTL2 fields, retaining values in
-+	 * other fields.
-+	 */
-+	u32 data = readl(mv64x60_regs + MV64x60_WDT_WDC);
-+	data &= ~(MV64x60_WDC_CTL1_MASK | MV64x60_WDC_CTL2_MASK);
-+	data |= val;
-+	writel(data, mv64x60_regs + MV64x60_WDT_WDC);
-+}
-+
-+static void mv64x60_wdt_service(void)
-+{
-+	/* Write 01 followed by 10 to CTL2 */
-+	mv64x60_wdt_reg_write(MV64x60_WDC_CTL2(0x01));
-+	mv64x60_wdt_reg_write(MV64x60_WDC_CTL2(0x02));
-+}
-+
-+static void mv64x60_wdt_handler_disable(void)
-+{
-+	if (test_and_clear_bit(MV64x60_WDOG_FLAG_ENABLED, &wdt_flags)) {
-+		/* Write 01 followed by 10 to CTL1 */
-+		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x01));
-+		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x02));
-+		printk(KERN_NOTICE "mv64x60_wdt: watchdog deactivated\n");
-+	}
-+}
-+
-+static void mv64x60_wdt_handler_enable(void)
-+{
-+	if (!test_and_set_bit(MV64x60_WDOG_FLAG_ENABLED, &wdt_flags)) {
-+		/* Write 01 followed by 10 to CTL1 */
-+		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x01));
-+		mv64x60_wdt_reg_write(MV64x60_WDC_CTL1(0x02));
-+		printk(KERN_NOTICE "mv64x60_wdt: watchdog activated\n");
-+	}
-+}
-+
-+static int mv64x60_wdt_open(struct inode *inode, struct file *file)
-+{
-+	if (test_and_set_bit(MV64x60_WDOG_FLAG_OPENED, &wdt_flags))
-+		return -EBUSY;
-+
-+	mv64x60_wdt_service();
-+	mv64x60_wdt_handler_enable();
-+
-+	return 0;
-+}
-+
-+static int mv64x60_wdt_release(struct inode *inode, struct file *file)
-+{
-+	mv64x60_wdt_service();
-+
-+#if !defined(CONFIG_WATCHDOG_NOWAYOUT)
-+	mv64x60_wdt_handler_disable();
-+#endif
-+
-+	clear_bit(MV64x60_WDOG_FLAG_OPENED, &wdt_flags);
-+
-+	return 0;
-+}
-+
-+static ssize_t mv64x60_wdt_write(struct file *file, const char *data,
-+				 size_t len, loff_t * ppos)
-+{
-+	if (*ppos != file->f_pos)
-+		return -ESPIPE;
-+
-+	if (len)
-+		mv64x60_wdt_service();
-+
-+	return len;
-+}
-+
-+static int mv64x60_wdt_ioctl(struct inode *inode, struct file *file,
-+			     unsigned int cmd, unsigned long arg)
-+{
-+	int timeout;
-+	static struct watchdog_info info = {
-+		.options = WDIOF_KEEPALIVEPING,
-+		.firmware_version = 0,
-+		.identity = "MV64x60 watchdog",
-+	};
-+
-+	switch (cmd) {
-+	case WDIOC_GETSUPPORT:
-+		if (copy_to_user((void *)arg, &info, sizeof(info)))
-+			return -EFAULT;
-+		break;
-+
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		if (put_user(wdt_status, (int *)arg))
-+			return -EFAULT;
-+		wdt_status &= ~WDIOF_KEEPALIVEPING;
-+		break;
-+
-+	case WDIOC_GETTEMP:
-+		return -EOPNOTSUPP;
-+
-+	case WDIOC_SETOPTIONS:
-+		return -EOPNOTSUPP;
-+
-+	case WDIOC_KEEPALIVE:
-+		mv64x60_wdt_service();
-+		wdt_status |= WDIOF_KEEPALIVEPING;
-+		break;
-+
-+	case WDIOC_SETTIMEOUT:
-+		return -EOPNOTSUPP;
-+
-+	case WDIOC_GETTIMEOUT:
-+		timeout = mv64x60_wdt_timeout * HZ;
-+		if (put_user(timeout, (int *)arg))
-+			return -EFAULT;
-+		break;
-+
-+	default:
-+		return -ENOIOCTLCMD;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct file_operations mv64x60_wdt_fops = {
-+	.owner = THIS_MODULE,
-+	.llseek = no_llseek,
-+	.write = mv64x60_wdt_write,
-+	.ioctl = mv64x60_wdt_ioctl,
-+	.open = mv64x60_wdt_open,
-+	.release = mv64x60_wdt_release,
-+};
-+
-+static struct miscdevice mv64x60_wdt_miscdev = {
-+	.minor = WATCHDOG_MINOR,
-+	.name = "watchdog",
-+	.fops = &mv64x60_wdt_fops,
-+};
-+
-+static int __devinit mv64x60_wdt_probe(struct device *dev)
-+{
-+	struct platform_device *pd = to_platform_device(dev);
-+	struct mv64x60_wdt_pdata *pdata = pd->dev.platform_data;
-+	int bus_clk = 133;
-+
-+	mv64x60_wdt_timeout = 10;
-+	if (pdata) {
-+		mv64x60_wdt_timeout = pdata->timeout;
-+		bus_clk = pdata->bus_clk;
-+	}
-+
-+	mv64x60_regs = mv64x60_get_bridge_vbase();
-+
-+	writel((mv64x60_wdt_timeout * (bus_clk * 1000000)) >> 8,
-+	       mv64x60_regs + MV64x60_WDT_WDC);
-+
-+	return misc_register(&mv64x60_wdt_miscdev);
-+}
-+
-+static int __devexit mv64x60_wdt_remove(struct device *dev)
-+{
-+	misc_deregister(&mv64x60_wdt_miscdev);
-+
-+	mv64x60_wdt_service();
-+	mv64x60_wdt_handler_disable();
-+
-+	return 0;
-+}
-+
-+static struct device_driver mv64x60_wdt_driver = {
-+	.name = MV64x60_WDT_NAME,
-+	.bus = &platform_bus_type,
-+	.probe = mv64x60_wdt_probe,
-+	.remove = __devexit_p(mv64x60_wdt_remove),
-+};
-+
-+static struct platform_device *mv64x60_wdt_dev;
-+
-+static int __init mv64x60_wdt_init(void)
-+{
-+	int ret;
-+
-+	printk(KERN_INFO "MV64x60 watchdog driver\n");
-+
-+	mv64x60_wdt_dev = platform_device_register_simple(MV64x60_WDT_NAME,
-+							  -1, NULL, 0);
-+	if (IS_ERR(mv64x60_wdt_dev)) {
-+		ret = PTR_ERR(mv64x60_wdt_dev);
-+		goto out;
-+	}
-+
-+	ret = driver_register(&mv64x60_wdt_driver);
-+      out:
-+	return ret;
-+}
-+
-+static void __exit mv64x60_wdt_exit(void)
-+{
-+	driver_unregister(&mv64x60_wdt_driver);
-+	platform_device_unregister(mv64x60_wdt_dev);
-+}
-+
-+module_init(mv64x60_wdt_init);
-+module_exit(mv64x60_wdt_exit);
-+
-+MODULE_AUTHOR("James Chapman <jchapman@katalix.com>");
-+MODULE_DESCRIPTION("MV64x60 watchdog driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
-diff -Nru a/include/asm-ppc/mv64x60.h b/include/asm-ppc/mv64x60.h
---- a/include/asm-ppc/mv64x60.h	2005-02-24 10:45:36 +00:00
-+++ b/include/asm-ppc/mv64x60.h	2005-02-24 10:45:36 +00:00
-@@ -119,6 +119,14 @@
+As I am not sure of the cause of the below mentioned error, I have
+mailed this to both uboot and LinuxPPC group. 
  
- #define	MV64x60_64BIT_WIN_COUNT			24
+We are trying to port linux 2.4.20 for the mpc8280 Rattler board. Kernel
+boot seems to stop after printing "Now booting the kernel".
  
-+/* Watchdog Platform Device, Driver Data */
-+#define	MV64x60_WDT_NAME			"wdt"
-+
-+struct mv64x60_wdt_pdata {
-+	int	timeout;	/* watchdog expiry in seconds, default 10 */
-+	int	bus_clk;	/* bus clock in MHz, default 133 */
-+};
-+
- /*
-  * Define a structure that's used to pass in config information to the
-  * core routines.
+But from the log buffer(Starting at 0x194654) dump it looks like it is
+well crossing this stage.
+ 
+The last message that was dumped in the log buffer is:
+ 
+00194EB4: 3C 34 3E 65 74 68 30 3A  20 63 6F 6E 66 69 67 3A  |<4>eth0:
+config:|
+00194EC4: 20 61 75 74 6F 2D 6E 65  67 6F 74 69 61 74 69 6F  | auto-
+negotiatio|
+00194ED4: 6E 20 6F 6E 2C 20 31 30  30 48 44 58 2C 20 31 30  |n on,
+100HDX, 10|
+00194EE4: 48 44 58 2E 0A 00 00 00  00 00 00 00 00 00 00 00  |
+HDX.............|
+00194EF4: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+|................|
+ 
+The boot loader used is u-boot.
+ 
+Any pointers to why messages after "Now booting the kernel" are not
+getting on to the console ?.Is it that I am missing some patch? 
+Thanks everybody for your time.
+ 
+ 
+regards,
+C.R.Srivatsan
+ 
 
---------------070806050204030105020306--
+------=_NextPart_000_0009_01C51A9B.B2082B20
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+
+
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 10">
+<meta name=3DOriginator content=3D"Microsoft Word 10">
+<link rel=3DFile-List href=3D"cid:filelist.xml@01C51A9B.B1234960">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PersonName" downloadurl=3D"http://www.microsoft.com"/>
+<!--[if gte mso 9]><xml>
+ <o:OfficeDocumentSettings>
+  <o:DoNotRelyOnCSS/>
+ </o:OfficeDocumentSettings>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:DocumentKind>DocumentEmail</w:DocumentKind>
+  <w:EnvelopeVis/>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	mso-style-noshow:yes;
+	mso-ansi-font-size:10.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 77.95pt 1.0in 77.95pt;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */=20
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
+style=3D'tab-interval:.5in'>
+
+<div class=3DSection1>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>Hi,<o:p></o:p></span></font=
+></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 color=3Dnavy face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+color:navy;font-weight:normal;mso-bidi-font-weight:bold'>Excuse me for =
+posting
+this message again. I forgot to change the =
+subject.</span></font></b><span
+style=3D'font-weight:normal;mso-bidi-font-weight:bold'><o:p></o:p></span>=
+</p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial;
+color:navy;font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p=
+></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>As I am not sure of the =
+cause of
+the below mentioned error, I have mailed this to both uboot and LinuxPPC =
+group.
+<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 color=3Dnavy face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+color:navy;font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p=
+></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>We are trying to port =
+linux 2.4.20
+for the mpc8280 Rattler board. Kernel boot seems to stop after printing
+&quot;Now booting the kernel&quot;.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>But from the log =
+buffer(Starting
+at 0x194654) dump it looks like it is<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>well crossing this =
+stage.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>The last message that was =
+dumped
+in the log buffer is:<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>00194EB4: 3C 34 3E 65 74 =
+68 30
+3A<span style=3D'mso-spacerun:yes'>&nbsp; </span>20 63 6F 6E 66 69 67 =
+3A<span
+style=3D'mso-spacerun:yes'>&nbsp; =
+</span>|&lt;4&gt;eth0:<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>config:|<o:p></o:p></span><=
+/font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>00194EC4: 20 61 75 74 6F =
+2D 6E
+65<span style=3D'mso-spacerun:yes'>&nbsp; </span>67 6F 74 69 61 74 69 =
+6F<span
+style=3D'mso-spacerun:yes'>&nbsp; </span>| =
+auto-<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>negotiatio|<o:p></o:p></spa=
+n></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>00194ED4: 6E 20 6F 6E 2C =
+20 31
+30<span style=3D'mso-spacerun:yes'>&nbsp; </span>30 48 44 58 2C 20 31 =
+30<span
+style=3D'mso-spacerun:yes'>&nbsp; </span>|n =
+on,<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>100HDX, =
+10|<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>00194EE4: 48 44 58 2E 0A =
+00 00
+00<span style=3D'mso-spacerun:yes'>&nbsp; </span>00 00 00 00 00 00 00 =
+00<span
+style=3D'mso-spacerun:yes'>&nbsp; =
+</span>|<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>HDX.............|<o:p></o:p=
+></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>00194EF4: 00 00 00 00 00 =
+00 00
+00<span style=3D'mso-spacerun:yes'>&nbsp; </span>00 00 00 00 00 00 00 =
+00<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>|................|<o:p></o:=
+p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>The boot loader used is =
+u-boot.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>Any pointers to why =
+messages
+after &quot;Now booting the kernel&quot; are =
+not<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>getting on to the console =
+?.Is it
+that I am missing some patch? <o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>Thanks everybody for your =
+time.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>regards,<o:p></o:p></span><=
+/font></b></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'>C.R.</span></font></b><st1:=
+PersonName
+style=3D"BACKGROUND-POSITION: left bottom; BACKGROUND-IMAGE: =
+url(res://ietag.dll/#34/#1001); BACKGROUND-REPEAT: repeat-x"><span
+ =
+style=3D'font-weight:normal;mso-bidi-font-weight:bold'>Srivatsan</span></=
+st1:PersonName><span
+style=3D'font-weight:normal;mso-bidi-font-weight:bold'><o:p></o:p></span>=
+</p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><b =
+style=3D'mso-ansi-font-weight:
+normal'><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;
+font-weight:normal;mso-bidi-font-weight:bold'><o:p>&nbsp;</o:p></span></f=
+ont></b></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0009_01C51A9B.B2082B20--
