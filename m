@@ -1,17 +1,19 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id AAC6B67A2F
+Return-Path: <markus.westergren@biologigrand.ac>
+Received: from www.biologigrand.ac (biologigrand.ac [212.32.155.2])
+	by ozlabs.org (Postfix) with ESMTP id F2A5567A77
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Feb 2005 02:37:38 +1100 (EST)
-Message-ID: <4210C801.2000204@ru.mvista.com>
-Date: Mon, 14 Feb 2005 18:47:13 +0300
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Tue, 15 Feb 2005 06:44:31 +1100 (EST)
+Date: Mon, 14 Feb 2005 20:44:28 +0100 (CET)
+From: Markus Westergren <markus.westergren@biologigrand.ac>
+To: Yuli Barcohen <yuli@arabellasw.com>
+In-Reply-To: <16912.18711.885679.679568@astp0002.localdomain>
+Message-ID: <Pine.LNX.4.50.0502142031110.28518-100000@220a.licentiaten.umea.hsb.se>
+References: <Pine.LNX.4.50.0502131246140.3196-100000@220a.licentiaten.umea.hsb.se>
+	<16912.18711.885679.679568@astp0002.localdomain>
 MIME-Version: 1.0
-To: mporter@kernel.crashing.org
-Content-Type: multipart/mixed; boundary="------------030809020300080903070107"
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH][PPC32] Move irq_desc[].status,
-	IRQ_LEVEL bit setup to xilinx_pic.c
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Support for Adder875 in Linux 2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,86 +24,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030809020300080903070107
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, 14 Feb 2005, Yuli Barcohen wrote:
 
-This patch applies to the kernel 2.6.11-rc3.
-It moves the code that informs the kernel if the particular interrupt is edge triggered
-or level sensitive from the board specific file to a "CONFIG_VIRTEX_II_PRO-specific" file.
-Using old IRQ numbering in that code is also fixed.
+> >>>>> Markus Westergren writes:
+>
+>     Markus> Hi, I'm working on a project which will use hardware based
+>     Markus> on Analogue & Micro Adder875 module together with Linux 2.4.
+>
+>     Markus> I use RedBoot as bootloader and kernel 2.4.27-pre1, both
+>     Markus> came with the Adder module.
+>
+>     Markus> The project require:
+>
+>     Markus> - dual ethernet support with AM79C874 PHY
+>     Markus>    The driver I've found (fec.c) only supports one
+>     Markus>    ethernet. I'v started
+>     Markus> 	modifying a newer version of this driver which have
+>     Markus> 	support for my PHY. I have made some progress but it's
+>     Markus> 	not working yet. Found out that the first FEC is used to
+>     Markus> 	communicate with both PHY's. Both devices are detected
+>     Markus> 	correctly and the first seems to work but the second
+>     Markus> 	hangs the kernel when the first packet is sent or
+>     Markus> 	received.
+>     Markus> - SPI support
+>     Markus>    Have found a simple driver (cpm_spi.c), which I have not
+>     Markus>    tested yet.
+>     Markus> - PCMCIA support
+>     Markus>    Will try to modify the m8xx_pcmcia driver.
+>
+>     Markus> Not required but would be good to have:
+>     Markus> - USB host support
+>     Markus>    Have no clue where to start looking.
+>
+>     Markus> Have anyone used this module together with Linux and are
+>     Markus> there working drivers for it? Any tips/ideas?
+>
+> Arabella Linux supports all these. Not sure how you are going to use
+> PCMCIA on this specific board - it's not connected.
+>
+The board in my project is almost like a Adder875 but unlike the Adder it has a
+PCMCIA slot connected.
 
-Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
+I have tested a version of Arabella (FREE v2.1, kernel 2.4.25). It looks like
+that the fec driver only supports general PHY and no link interrupts.
 
-
---------------030809020300080903070107
-Content-Type: text/plain;
- name="xilinx_pic.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="xilinx_pic.diff"
-
-diff -uprN linux-2.5.base/arch/ppc/platforms/4xx/xilinx_ml300.c linux-2.5.cur/arch/ppc/platforms/4xx/xilinx_ml300.c
---- linux-2.5.base/arch/ppc/platforms/4xx/xilinx_ml300.c	2005-02-11 17:19:08.000000000 +0300
-+++ linux-2.5.cur/arch/ppc/platforms/4xx/xilinx_ml300.c	2005-02-14 18:37:26.000000000 +0300
-@@ -122,25 +122,7 @@ ml300_setup_arch(void)
- void __init
- ml300_init_irq(void)
- {
--	unsigned int i;
--
- 	ppc4xx_init_IRQ();
--
--	/*
--	 * For PowerPC 405 cores the default value for NR_IRQS is 32.
--	 * See include/asm-ppc/irq.h for details.
--	 * This is just fine for ML300.
--	 */
--#if (NR_IRQS != 32)
--#error NR_IRQS must be 32 for ML300
--#endif
--
--	for (i = 0; i < NR_IRQS; i++) {
--		if (XPAR_INTC_0_KIND_OF_INTR & (0x80000000 >> i))
--			irq_desc[i].status &= ~IRQ_LEVEL;
--		else
--			irq_desc[i].status |= IRQ_LEVEL;
--	}
- }
- 
- void __init
-diff -uprN linux-2.5.base/arch/ppc/syslib/xilinx_pic.c linux-2.5.cur/arch/ppc/syslib/xilinx_pic.c
---- linux-2.5.base/arch/ppc/syslib/xilinx_pic.c	2005-02-11 17:20:49.000000000 +0300
-+++ linux-2.5.cur/arch/ppc/syslib/xilinx_pic.c	2005-02-14 16:57:40.000000000 +0300
-@@ -114,6 +114,14 @@ ppc4xx_pic_init(void)
- {
- 	int i;
- 
-+	/*
-+	 * NOTE: The assumption here is that NR_IRQS is 32 or less
-+	 * (NR_IRQS is 32 for PowerPC 405 cores by default).
-+	 */
-+#if (NR_IRQS > 32)
-+#error NR_IRQS > 32 not supported
-+#endif
-+
- #if XPAR_XINTC_USE_DCR == 0
- 	intc = ioremap(XPAR_INTC_0_BASEADDR, 32);
- 
-@@ -138,6 +146,12 @@ ppc4xx_pic_init(void)
- 
- 	ppc_md.get_irq = xilinx_pic_get_irq;
- 
--	for (i = 0; i < NR_IRQS; ++i)
-+	for (i = 0; i < NR_IRQS; ++i) {
- 		irq_desc[i].handler = &xilinx_intc;
-+
-+		if (XPAR_INTC_0_KIND_OF_INTR & (0x00000001 << i))
-+			irq_desc[i].status &= ~IRQ_LEVEL;
-+		else
-+			irq_desc[i].status |= IRQ_LEVEL;
-+	}
- }
-
---------------030809020300080903070107--
+/Markus
