@@ -1,38 +1,36 @@
-Message-Id: <200104180551.HAA00793@piglet.grunz.lu>
-Date: Wed, 18 Apr 2001 07:50:56 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: TiBook trackpad in benh's kernel?
-To: gtgj@pacbell.net
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <m366g3c5od.fsf@adsl-63-196-7-48.dsl.snfc21.pacbell.net>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Mime-Version: 1.0
+Message-Id: <v04220800b702dfb9aa0b@[10.0.0.42]>
+In-Reply-To: <20010416135458.L2127@plato.local.lan>
+References: <20010416115854.9A1722F09A@apollo.valhalla.net>
+ <20010416040553.J2127@plato.local.lan>
+ <3ADB35C9.9113AC3A@denise.shiny.it> <20010416135458.L2127@plato.local.lan>
+Date: Tue, 17 Apr 2001 23:15:16 -0700
+To: linuxppc-dev@lists.linuxppc.org
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: Re: boot params
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  17 Apr, this message from Gregorio Gervasio Jr. echoed through cyberspace:
-> m> Anyone else seen this? I can't get the trackpad on my TiBook working
-> m> with benh's latest tres (rsync'ed a few days ago).
+At 1:54 PM -0800 4/16/01, Ethan Benson wrote:
+>On Mon, Apr 16, 2001 at 08:11:21PM +0200, Giuliano Pochini wrote:
+>>
+>>  Not a good choice. Often it happens you can't type anything in the
+>>  OF boot menu script, so you can't choose what OS start up (or at
+>>  least my 7300 with OF v1.0.5 had this problem). It also happens on
+>>  a 2nd-half-2000-series G4 where the ofboot script refuse to accept
+>>  keyboard input 80% of the times.
 >
-> g>         Seems to work for me.  I'm using his 2.4.4-pre1 tree rsync'ed
-> g> on April 12.  I am using cmode:32, too.
->
->         Oops, sorry, I lied.  I boot in cmode:8 (but run X in 32bpp).
+>everyone i know running quik doesn't have any problems.
 
-Yeah, so do I now.
+It's not a good choice for all machines though.  It can be *very*
+difficult to get working in some of Apple's more broken OF
+implementations.  (beige G3 for example)
 
-Thanks
+Or at least that's how it was last I tried.  I've not tried to use
+quik for over a year, for just that reason.
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
-
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
