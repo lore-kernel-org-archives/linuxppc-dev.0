@@ -1,18 +1,17 @@
-Return-Path: <hxie@centecnetworks.com>
-Received: from mail.centecnetworks.com (unknown [222.92.63.19])
-	by ozlabs.org (Postfix) with ESMTP id 1C11967A70
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from imagateway.smiths-aerospace.com (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 451DC67A82
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Mar 2005 00:55:34 +1000 (EST)
-Received: from [10.10.25.198] ([222.92.63.20]) (authenticated)
-	by mail.centecnetworks.com (8.10.2/8.10.2) with ESMTP id j2SEsoM01080
-	for <linuxppc-embedded@ozlabs.org>; Mon, 28 Mar 2005 22:54:52 +0800
-Message-ID: <42496C68.60603@centecnetworks.com>
-Date: Tue, 29 Mar 2005 22:55:36 +0800
-From: Anchor <hxie@centecnetworks.com>
+	Wed, 30 Mar 2005 01:14:30 +1000 (EST)
+Message-ID: <424970CD.3030006@smiths-aerospace.com>
+Date: Tue, 29 Mar 2005 10:14:21 -0500
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
 To: inuxppc-embedded <linuxppc-embedded@ozlabs.org>
+References: <42496C68.60603@centecnetworks.com>
+In-Reply-To: <42496C68.60603@centecnetworks.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: how to get a embbed linux for MPC8240 which core is 603e
+Subject: Re: how to get a embbed linux for MPC8240 which core is 603e
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,13 +22,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everbody:
+Anchor wrote:
+> Hi everbody:
+> 
+>    I am a new guy, I want get a ready embedded linux for Motorala 
+> ppc8245, give me a hand.
+> 
+> Thank you very much!
+> 
+> anchor xie
 
-    I am a new guy, I want get a ready embedded linux for Motorala 
-ppc8245, give me a hand.
+CLAP CLap Clap clap
 
-Thank you very much!
+Wolfgang Denk has a very good turn-key system "Embedded Linux 
+Development Kit" (ELDK).  Download it and install it -- it is a very 
+painless way to get started with a cross (or native) development system.
+   <http://denx.de/e/index1.php>
 
-anchor xie
+Read the documentation on his site! 
+<http://denx.de/e/index1.php?head=docs-head&main=docs&subnav=docs-subnav&logo=logo-se&mainnav=docsnav&bottom=bottom-se>
 
-03-29-2005
+...especially the very useful " DENX Guide to U-Boot and Embedded Linux"
+   <http://www.denx.de/twiki/bin/view/DULG/Manual>
+
+READ the FAQ!  Re-read the FAQ!
+   <http://www.denx.de/twiki/bin/view/DULG/Faq>
+
+If you need a boot loader, u-boot is a very good way to go.
+   <http://sourceforge.net/projects/u-boot>
+(Wolfgang is the maintainer).
+
+gvb
