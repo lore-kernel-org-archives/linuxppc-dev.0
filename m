@@ -1,64 +1,70 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0A1B@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Jan Dominik Baranski'" <jdb2@ece.msstate.edu>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Kernel hangs on EP862-1.1 during boot
-Date: Thu, 4 Sep 2003 08:31:33 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: bhavin <bhavinp@einfochips.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with PM826 card 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 04 Sep 2003 10:25:47 +0530."
+             <3F56C5D3.9080202@einfochips.com>
+Date: Thu, 04 Sep 2003 14:40:06 +0200
+Message-Id: <20030904124011.4A3ADC59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I got the linuxppc_2_4_devel tree at http://ppc.bkbits.net/ to boot with no
-problem.  The compiler I used was ELDK.  The config file was
-arch/ppc/configs/rpxcllf_defconfig.
+Dear Bhavin,
 
------Original Message-----
-From: Jan Dominik Baranski [mailto:jdb2@ece.msstate.edu]
-Sent: Wednesday, September 03, 2003 6:02 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Kernel hangs on EP862-1.1 during boot
+in message <3F56C5D3.9080202@einfochips.com> you wrote:
+>
+>     I am using a PM826 card with our own developed carrier extension
+> board. I have build the ppcboot image. I am booting the image from flash
 
+Please upgrade. PPCBoot is pretty old, and  a  lot  of  modifications
+have been added lately. Please use a recent version of U-Boot instead
+(0.4.7).
 
+> and through serial communication SCC and I have configured the correct
+> serial channel number from our card's schematics. Now, the ppcboot works
+> but, when I try to write something in flash through ppcboot (either
+> 'loadb' command or 'nm' command) the flash contents are not getting
 
-Hello all,
-I'm having trouble getting a 2.4.22 kernel to boot on an Embedded Planet
-EP862-1.1 board (based on an MPC860). I get this:
----
-Loaded addresses 00400000 through 0049FFFF.
- >go
-[Go 00400000]
+Neither the "loadb" nor "nm" commands can operate directly  on  flash
+memory.  please  download to RAM (or modify the RAM contents) and use
+the "cp" command to write to flash.
 
-loaded at:     00400000 004A31F4
-relocated to:  00180000 002231F4
-board data at: 00220128 00220144
-relocated to:  001862E0 001862FC
-zimage at:     001868A0 0021F3EC
-avail ram:     00224000 01000000
+> changed. All other functionality of ppcboot works like erase, read, etc.
+> but all the functionality related to 'write to flash' is not working.
 
-Linux/PPC load: console=ttyS0,9600
-Uncompressing Linux...done.
-Now booting the kernel
+I think all these things are working fine, you are  just  using  them
+wrong.
 
-<just hangs here>
+> Can any one please suggest me what could be the possible reason??
 
----
-I've searched the archives, but no one seems to have this board/problem
-combination. I've made sure the watchdog timer is disabled and that the
-IMMR (0xfa200000) is set correctly. Being pretty new to this, I don't
-really know where else to look. Maybe something related to m8xx_board_info?
+Read the documentation; see
+http://www.denx.de/twiki/bin/view/DULG/Manual
 
-The thing is, I've been able to get an old kernel (2.4.7) from Timesys
-that's configured for an RPX Classic board to boot correctly. I just
-can't figure out what they may have done that I haven't.
+> Also, I have one separate program which, I downloaded from somewhere
+> which does some read/write operation to the PM826 card's flash. Through
+> that program the writing is working perfect.
 
-Any suggestions??
+It's working perfectly in PPCBoot and U-Boot, too. Just remember that
+the  command  to  write  to  flash  is  "cp"   (and   it's   variants
+"cp.{l|w|b}").
 
-Thanks
+> Has it something to do with ppcboot configuration or the addressing mode?
 
--Jan
+No, it is a user error.
 
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Software suppliers are trying to make their  software  packages  more
+``user-friendly''.  .  .  .  Their best approach, so far, has been to
+take all the old brochures, and stamp the words, ``user-friendly'' on
+the cover.                                               - Bill Gates
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
