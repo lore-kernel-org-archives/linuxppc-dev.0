@@ -1,49 +1,36 @@
-Subject: Re: 405 I2C
+Subject: Re: [PATCH] ibm ocp gpio
 From: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
 To: andrew may <acmay@acmay.homeip.net>
-Cc: Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
+Cc: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>,
+	Linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>,
 	Armin Kuster <akuster@mvista.com>
-In-Reply-To: <20020521085924.F9190@ecam.san.rr.com>
-References: <1021995053.7265.22.camel@swb11>
-	<20020521085924.F9190@ecam.san.rr.com>
+In-Reply-To: <20020521090819.G9190@ecam.san.rr.com>
+References: <20020520182657.B17318@ecam.san.rr.com>
+	<3CEA0F45.BDBBA25@etx.ericsson.se>  <20020521090819.G9190@ecam.san.rr.com>
 Content-Type: text/plain
-Date: 21 May 2002 18:16:33 +0200
-Message-Id: <1021997793.7265.36.camel@swb11>
+Date: 21 May 2002 18:28:41 +0200
+Message-Id: <1021998521.7266.46.camel@swb11>
 Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 2002-05-21 at 17:59, andrew may wrote:
-> > Also I have a problem when accessing a device that is not present. The
-> > bus ends up in busy state an no other action can be taken. I solved the
-> > problem for me here by simply removing the test in iix_xfer but a proper
-> > solution has to be discussed. I have not tried Andrew's new iic_xfer is
-> > it going to be merged ??
->
-> Does the scan bus work for you? It should go through and read from all
-> possible locations and report if a device is there. It works with my
-> iic_xfer but I don't rember if I tried the old one. It should have the
-> same effect as "accessing a device that is not present".
+On Tue, 2002-05-21 at 18:08, andrew may wrote:
 
-No it's not the same the scan work ok. I have not looked into exactly
-why it works but my test program that reads 1 byte from userspace with
-i2c_smbus_read_byte_data() dose not. I hoped I did not have to dig thru
-too much into this as I don't know much about it.
+> Well no it doesn't need to be in the driver, but you then are forced with
+> having every other driver doing there own timer to turn off the bit rather
+> than having one timer take care of them all. And do you really want to
 
+Well I don't think that would be a problem and if we are talking led's
+its not going to happen more than a few time a second you have to see
+the thing flash. I don't want more code in the kernel than absolutely
+necessary all it takes is one bug.
 
->
-> Which test in iix_xffer that?
+If you really want to make something that can't be done other than in
+the driver it's some type of streaming mode and then you have to have
+timers to control the speed. Think any card that needs to program sram
+based FPGA it would probably go many times faster than todays interface.
 
-Good question I get a bit unsure of what is going on when I read it
-again but here is the test I removed. Everything works as I want when I
-remove it.
-
-/* When the bus is free, the BCS bits in the EXTSTS register are 0b100
-*/
-	if (ret != 0x40){
-		return IIC_ERR_LOST_ARB;
-	}
 
 
 --
