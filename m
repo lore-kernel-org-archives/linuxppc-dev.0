@@ -1,37 +1,35 @@
-To: Marc Leeman <marc.leeman@barco.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc-82xx_objcopy hangs 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 13 May 2004 13:07:25 +0200."
-             <20040513110725.GU4043@smtp.barco.com>
-Date: Thu, 13 May 2004 18:16:33 +0200
-Message-Id: <20040513161638.C3444C108D@atlas.denx.de>
+Message-Id: <4.2.2.20040513093702.05b0bc40@bhawley.mailhost.luminex.com>
+Date: Thu, 13 May 2004 09:39:03 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Brian Hawley <bhawley@luminex.com>
+Subject: baud rate question
+In-Reply-To: <20040513161638.C3444C108D@atlas.denx.de>
+References: <Your message of "Thu, 13 May 2004 13:07:25 +0200." <20040513110725.GU4043@smtp.barco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20040513110725.GU4043@smtp.barco.com> you wrote:
->
-> 2. when compiling the ppcboot-2.0.0-custom sources (with support for our
-> system), the compilation succeeds, but
-> ppc_82xx-objcopy --gap-fill=0xff -O srec ppcboot ppcboot.srec
-> gets stuck.
->
-> Idem for a system where I only brought in a couple of changes from the
-> old sources. Any ideas as to what code might cause this problem?
+Forgive the obvious newbie question, but we've tried everything, reviewed
+the readme's, etc.
 
-Seems you version of objcopy is broken. Try using the native objcopy,
-or the cross objcopy from the ELDK.
+We are using the linux-2.5-ocp tree from bk.
 
-Best regards,
+We are using u-boot 1.0.0.
 
-Wolfgang Denk
+We set u-boot to 38400 in the config.  linux wants to be 9600 by
+default.  So, we realize
+that we can't see the kernel boot up.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Tell the truth and run."                          - Yugoslav proverb
+We've tried changing u-boot back to 9600, but haven't been able to.
+
+Is there a way to tell linux to come up at a different baud rate?  We've
+tried the earlyserialpk option, and the console options...but no luck.
+
+Thanks for any assistance.
+
+-- Brian
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
