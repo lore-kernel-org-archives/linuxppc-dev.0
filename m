@@ -1,296 +1,46 @@
-Message-ID: <3A686FF2.8000204@valinux.com>
-Date: Fri, 19 Jan 2001 09:48:50 -0700
-From: Jeff Hartmann <jhartmann@valinux.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Hartmann <jhartmann@valinux.com>, Gareth Hughes <gareth@valinux.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>, <dri-devel@lists.sourceforge.net>
+Subject: Re: [Dri-devel] PPC Lockup (ati-pcigart-branch)
+Date: Fri, 19 Jan 2001 18:11:14 +0100
+Message-Id: <19341214104258.22601@mailhost.mipsys.com>
+In-Reply-To: <3A686DFE.9030308@valinux.com>
+References: <3A686DFE.9030308@valinux.com>
 MIME-Version: 1.0
-To: Gareth Hughes <gareth@valinux.com>
-CC: Dan Malek <dan@mvista.com>, michdaen@iiic.ethz.ch,
-        dri-devel@lists.sourceforge.net, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: PPC Lockup (ati-pcigart-branch)
-References: <3A67B401.8282A00F@relog.ch> <3A67BAC3.94EFEA3A@mvista.com> <3A67E467.74544C4C@valinux.com>
-Content-Type: multipart/mixed;
- boundary="------------000904030705060108090101"
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------000904030705060108090101
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Gareth Hughes wrote:
-
-> Dan Malek wrote:
 >
->> Michel Dänzer wrote:
->>
->>> [CC'ing linuxppc-dev, hopefully someone there knows what might be up...]
->>>
->>> This is where it dies:
->>>
->>>         /* FIXME: We should really have a kernel call for this...
->>>          */
->>>         entry->virtual = __vmalloc( (pages << PAGE_SHIFT),
->>>                                     GFP_KERNEL,
->>>                                     PAGE_KERNEL);
->>
->> This isn't very much information, but only one thing can really
->> be wrong........
->>
->> What is the value of 'pages'?  I suspect it is huge (and perhaps
->> wrong).  The GFP_KERNEL flag will cause vmalloc() to wait for pages
->> to become available (i.e. it will swap other things out).  If this
->> value in incorrect, this call will wait forever for pages that are
->> never going to arrive.  Worse, it is going to keep sucking up pages
->> and holding them, so nothing else is going to run either.  Is "pages"
->> really the number of pages, or a size that was never converted to pages?
->
->
-> Pages is definitely the number of pages (at least when I wrote the
-> code...).
+>Since your running through klogd, this might not be 'exactly' where you
+>die.  I would be TERRIBLY surprised if you died here.  One thing you
+>have to remember about kernel debugging is that you can't always trust
+>what is in the log.  Here is a technique that works for me when I'm
+>unsure of a piece of code:
 
-It is definitely the number of pages.  Also this function works
-correctly on an ia32, I'll post the file where this code is executed in
-case there is a simple error which the PPC people would see.
+Additionally, on PPCs, you have another technique, which is to use
+prom_print or xmon_printf() (the latest one support full printf semantics
+while the first one only supports a simple string).
 
->
->
->> ...and for the 'FIXME' comment, you want a function that does
->> what? vmalloc?  Why don't you just call it (or one of the more
->> appropriate variants if necessary)?
->
->
-> This was originally when I was passing a flag to make the memory
-> uncached.  This wasn't needed, and we really should be using
-> vmalloc_32(...) instead (which will result in exactly the same code, but
-> it is cleaner).
+If you have compiled the kernel with early boot text support, then those
+function will go to a small text rendering engine that blasts things
+directly to the screen. For that to work, you must have:
 
-I agree, I haven't gotten around to code cleanup on this branch yet though.
+ - The framebuffer reachable (depends on the state of the card)
+ - The same video mode/depth current than the one you had when it booted.
+If you are using an fbdev, the recent aty128fb should properly "update"
+the screen informations of the early boot text engine on a mode switch.
 
--Jeff
-(The function in question is drm_sg_alloc starting on line 64.)
+When debugging kernel code on a G4 mac, the best thing to do is to have a
+stealth serial port. This is a small device that replace the internal
+modem and provides a real "Apple-SCC" serial port. With that, you can
+then enable xmon to use it (arch/ppc/xmon/start.c) and benefit from the
+in-kernel low level debugger and xmon_printf. Those can be used at any
+time, interrupt level, etc... and rely on so few kernel resources that
+they can usually still be used when the rest of the kernel is dead.
 
-
---------------000904030705060108090101
-Content-Type: text/plain;
- name="scatter.c"
-Content-Disposition: inline;
- filename="scatter.c"
-Content-Transfer-Encoding: 7bit
-
-/* scatter.c -- IOCTLs to manage scatter/gather memory -*- linux-c -*-
- * Created: Mon Dec 18 23:20:54 2000 by gareth@valinux.com
- *
- * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
- * All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
- * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- * Authors:
- *	Gareth Hughes <gareth@valinux.com>
- *
- */
-
-#define __NO_VERSION__
-#include <linux/config.h>
-#include "drmP.h"
-#include <linux/wrapper.h>
-
-#define DEBUG_SCATTER 1
-
-static void drm_sg_cleanup( drm_sg_mem_t *entry )
-{
-	int i;
-
-	for ( i = 0 ; i < entry->pages ; i++ ) {
-		ClearPageReserved( entry->pagelist[i] );
-	}
-
-	vfree( entry->virtual );
-
-	drm_free( entry->pagelist,
-		  entry->pages * sizeof(*entry->pagelist),
-		  DRM_MEM_PAGES );
-	drm_free( entry,
-		  sizeof(*entry),
-		  DRM_MEM_SGLISTS );
-}
-
-static inline long usec( void )
-{
-   struct timeval tv;
-
-   do_gettimeofday( &tv );
-
-   return (tv.tv_sec & 0x7ff) * 1000000 + tv.tv_usec;
-}
-
-int drm_sg_alloc( struct inode *inode, struct file *filp,
-		  unsigned int cmd, unsigned long arg )
-{
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
-	drm_scatter_gather_t request;
-	drm_sg_mem_t *entry;
-	unsigned long pages;
-	pgd_t *pgd;
-	pmd_t *pmd;
-	pte_t *pte;
-	int i, j;
-	DRM_INFO( "%s\n", __FUNCTION__ );
-
-	if ( dev->sg ) return -EINVAL;
-
-	if ( copy_from_user( &request,
-			     (drm_scatter_gather_t *)arg,
-			     sizeof(request) ) )
-		return -EFAULT;
-
-	entry = drm_alloc( sizeof(*entry), DRM_MEM_SGLISTS );
-	if ( !entry ) return -ENOMEM;
-
-   	memset( entry, 0, sizeof(*entry) );
-
-	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
-	DRM_DEBUG( "sg size=%ld pages=%ld\n", request.size, pages );
-
-	entry->pages = pages;
-	entry->pagelist = drm_alloc( pages * sizeof(*entry->pagelist),
-				     DRM_MEM_PAGES );
-	if ( !entry->pagelist ) {
-		drm_free( entry, sizeof(*entry), DRM_MEM_SGLISTS );
-		return -ENOMEM;
-	}
-
-	/* FIXME: We should really have a kernel call for this...
-	 */
-	entry->virtual = __vmalloc( (pages << PAGE_SHIFT),
-				    GFP_KERNEL,
-				    PAGE_KERNEL);
-	if ( !entry->virtual ) {
-		drm_free( entry->pagelist,
-			  entry->pages * sizeof(*entry->pagelist),
-			  DRM_MEM_PAGES );
-		drm_free( entry,
-			  sizeof(*entry),
-			  DRM_MEM_SGLISTS );
-		return -ENOMEM;
-	}
-
-	/* This also forces the mapping of COW pages, so our page list
-	 * will be valid.  Please don't remove it...
-	 */
-	memset( entry->virtual, 0, pages << PAGE_SHIFT );
-
-	entry->handle = (unsigned long)entry->virtual;
-
-	DRM_DEBUG( "sg alloc handle  = %08lx\n", entry->handle );
-	DRM_DEBUG( "sg alloc virtual = %p\n", entry->virtual );
-
-	for ( i = entry->handle, j = 0 ; j < pages ; i += PAGE_SIZE, j++ ) {
-		pgd = pgd_offset_k( i );
-		pmd = pmd_offset( pgd, i );
-		pte = pte_offset( pmd, i );
-
-		entry->pagelist[j]= pte_page( *pte );
-		SetPageReserved( entry->pagelist[j] );
-
-		if ( j < 16 ) {
-			DRM_DEBUG("0x%08lx (page %lu) => 0x%08lx\n",
-				  i, j,
-				  (unsigned long)entry->pagelist[j]->virtual);
-		}
-	}
-
-	request.handle = entry->handle;
-
-	if ( copy_to_user( (drm_scatter_gather_t *)arg,
-			   &request,
-			   sizeof(request) ) ) {
-		drm_sg_cleanup( entry );
-		return -EFAULT;
-	}
-
-	dev->sg = entry;
-
-#ifdef DEBUG_SCATTER
-	/* Verify that each page points to its virtual address, and vice
-	 * versa.
-	 */
-	{
-	int error = 0;
-
-	for(i = 0; i < pages; i++) {
-		unsigned long *tmp;
-
-		tmp = (unsigned long *)entry->pagelist[i]->virtual;
-		for(j = 0; j < PAGE_SIZE / sizeof(unsigned long); j++, tmp++) {
-			*tmp = 0xcafebabe;
-		}
-		tmp = (unsigned long *)((u8 *)entry->virtual +
-					(PAGE_SIZE * i));
-		for(j = 0; j < PAGE_SIZE / sizeof(unsigned long); j++, tmp++) {
-			if(*tmp != 0xcafebabe && error == 0) {
-				error = 1;
-				printk("Scatter allocation error, pagelist"
-				       " does not match virtual mapping\n");
-			}
-		}
-		tmp = (unsigned long *)entry->pagelist[i]->virtual;
-		for(j = 0; j < PAGE_SIZE / sizeof(unsigned long); j++, tmp++) {
-			*tmp = 0;
-		}
-	}
-	if(error == 0) printk("Scatter allocation matches pagelist\n");
-	}
-#endif
-
-	return 0;
-}
-
-int drm_sg_free( struct inode *inode, struct file *filp,
-		 unsigned int cmd, unsigned long arg )
-{
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
-	drm_scatter_gather_t request;
-	drm_sg_mem_t *entry;
-
-	if ( copy_from_user( &request,
-			     (drm_scatter_gather_t *)arg,
-			     sizeof(request) ) )
-		return -EFAULT;
-
-	entry = dev->sg;
-	dev->sg = NULL;
-
-	if ( !entry || entry->handle != request.handle ) return -EINVAL;
-
-	DRM_INFO( "sg free virtual  = %p\n", entry->virtual );
-
-	drm_sg_cleanup( entry );
-
-	return 0;
-}
-
---------------000904030705060108090101--
+Ben.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
