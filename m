@@ -1,84 +1,52 @@
-Date: Sat, 22 Jan 2000 11:01:55 -0500 (EST)
-From: Robert Neugebauer <rneugeba@undergrad.math.uwaterloo.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: RS6000 to G4 assembly changes
-In-Reply-To: <Pine.HPX.4.10.10001221230260.18916-100000@gra-ux1.iram.es>
-Message-ID: <Pine.SOL.3.96.1000122110042.17750A-100000@fitch.math.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <l03130300b4afbdf43e5f@[24.218.140.90]>
+In-Reply-To: <3889ABF5.CB8BD5AA@erols.com>
+References: <l03130300b4aef8bd7dd2@[24.218.140.90]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 22 Jan 2000 15:11:38 -0500
+To: Nelson Abramson <pogtal@erols.com>
+From: "Michael R. Zucca" <mrz5149@acm.org>
+Subject: Re: Stock 2.2.14 won't boot
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thank you for the information. Most likely I won't be able to get it
-working then.
+At 8:09 AM -0500 1/22/00, Nelson Abramson wrote:
+>"Michael R. Zucca" wrote:
+>
+>> I've compiled a stock (ftp.us.kernel.org) 2.2.14 with different stuff in
+>> and out. While it seems to compile just fine I can't seem to get it to boot.
+>>
+>
+>Do you get any make errors?
 
-Bob
+No errors during make, otherwise I wouldn't have a kernel to boot :-)
 
+>What fails during boot..?
 
-On Sat, 22 Jan 2000, Gabriel Paubert wrote:
+BootX switches to the black screen where it informs me of the kernel
+version and a few address offsets (like video address, etc.) All of this is
+normal. It just hangs there and doesn't progress.
 
->
->
-> On Sat, 22 Jan 2000, Robert Neugebauer wrote:
->
-> >
-> > I am not trying to build a cross compiler, I am not trying to build GCC.
-> > My course at university uses its own compiler called uC++ (Micro C++).
-> >
-> > The compiler thus far only has the following targets that work:
-> >         dmake sun-sparc-sunos
-> >         dmake sun-sparc-svr4
-> >         dmake sun-m68k-sunos
-> >         dmake dec-ultrix-mips
-> >         dmake dec-alpha
-> >         dmake sgi-mips-r4000
-> >         dmake sgi-mips-r3000
-> >         dmake ibm-rs6000
-> >         dmake hp-hppa
-> >         dmake pc-i386-linux
-> >         dmake gizmo
-> >
-> > By my knowledge rs6000 is a RISC based architecture, thus I tried to build
-> > uC++ using the target ibm-rs6000. This resulted in an unrecognized opcode
-> > movl during compilation.
->
-> Then your compiler is seriously buggy since there is no such instruction
-> in the RS6000 or PPC assembly. There significant differences between
-> the architectures (for application level code) are:
->
-> a) multiply and divides are different (not even the same opcode for most
-> of them), the RS6000 has an MQ register for remainders and widening
-> multiplies. The PPC does not have this register.
->
-> b) all the extended shifts in the RS6000 which use the MQ register do not
-> exist in the PPC architecture, so you have to synthesize multiword shifts
-> (how to do this is documented in an appendix of the programmer's
-> environment manual, see below).
->
-> c) a few other oddball RS6000 instructions do not exist in the PPC:
-> lscbx (that one was indeed very odd), doz, dozi, abs, nabs, rlmi, maskir,
-> maskg, and I certainly forget a few more...
->
-> d) the PPC has a full complement of single precision floating point
-> operations, the RS6000 does not
->
-> For a C compiler, a) is very important, b) affects only compilers which
-> support 64 bit operations, c) the only critical instruction is abs which
-> can be replaced with a simple sequence and d) can safely be ignored by
-> performing all FP operations in double precision.
->
-> For more information you can download the programming environments
-> manuals from IBM or Motorola website:
->
-> http://www.chips.ibm.com/techlib/products/powerpc/manuals/
-> http://www.motorola.com/SPS/PowerPC/teksupport/teklibrary/index.html
->
-> and if you are interested in improving your compiler, you might find the
-> compiler writer's guide (link on IBM's website) interesting.
->
-> 	Gabriel.
->
+>What are you
+>configuring into the kernel that is causing it to fail...?
+
+Nothing especially spectacular. 604, PowerMac, ati framebuffer, bootX
+console support, pmac serial support, pmac floppy support, vga console,
+mace ethernet, adaptec PCI scsi support, internal SCSI support (53C support
+not the other kind), DMA sound for awacs, some file systems, PPP, etc.
+
+I'm not compiling in anything I haven't in past versions.
+
+I am booting off of a drive attached to the PCI scsi card but that
+shouldn't matter as this works fine from older kernels.
+
+____________________________________________________________________
+ Michael Zucca - mrz5149@acm.org - http://www.mdc.net/~mrz5149/
+ "I will choose a path that's clear. I will choose Freewill. "
+  --Rush, Freewill
+____________________________________________________________________
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
