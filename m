@@ -1,50 +1,26 @@
-Message-ID: <19990126184501.B8495@belltower.dartmouth.edu>
-Date: Tue, 26 Jan 1999 18:45:01 -0500
-From: Jeff Dubrule <igor@pobox.com>
-To: Ira Joseph Woodhead <ira@wrath.iatlas.com>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: pre-R5 deficiencies
-References: <199901262207.RAA06012@wrath.iatlas.com>
-Mime-Version: 1.0
+Message-ID: <36AE55DB.96CC94ED@jps.net>
+Date: Tue, 26 Jan 1999 15:55:07 -0800
+From: Keith Clayton <kclayton@jps.net>
+Reply-To: kclayton@jps.net
+MIME-Version: 1.0
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: glibc 2.1?
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199901262207.RAA06012@wrath.iatlas.com>; from Ira Joseph Woodhead on Tue, Jan 26, 1999 at 05:07:22PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 26, 1999 at 05:07:22PM -0500, Ira Joseph Woodhead wrote:
-> 
-> 
-> Hi all,
-> 
-> Perhaps I'm rehashing something but I couldn't find it searching the
-> archives, so:
-> 
-> What is the reasoning behind including a findutils in pre-R5 that has no
-> updatedb binary?? It even has scripts that use updatedb (cron jobs) but
-> no updatedb binary. Furthermore, 'rpm -qlp *.rpm' reveals that it is not
-> included in any package.
-> 
-> After quite a lot of effort installing pre-R5 a couple of weeks ago I
-> reverted back to my creaky barely-R4 from ages ago because I was so
-> shocked that the most useful tool for feeling your way in a new
-> installation was simply not there. It gives the impression of a very
-> not-ready product, which is counter to the impression I get from you
-> folks. 
-> 
-> I just checked back today after a couple of weeks to find a few packages
-> updated on 15 Jan, but not findutils.
+My understanding is that one of the holdups for r5 is glibc2.1  Anyone
+privy to glibc2 development?  I've been putting on hold any non-critical
+upgrades/compilations b/c I'd like to link against glibc2 and not have
+to visit the whole libc5, glibc2, fix0961212 adventure.  I haven't seen
+anything  mentioned on the lists but I've seen a glibc2.0.1xx rpm on
+ftp.linuxppc.org.
 
-Yeah, I found & fixed this bug on my system, but still have a problem with
-that package: /usr/bin/updatedb refers to /var/tmp/findutils-root/... 
-instead of simply /..., which is clearly broken.  I had to fix that file by
-hand, although I'm sure there is a 'correct' way of doing this.
 
-The original problem stems from the fact that 'strdup' is reimplemented by the
-package, but in a way that is uncompatible with the glibc2 header files.  I
-made a non-optimal-but-working fix to this, just to get it working.
-
--igor
+TIA,
+Keith Clayton
+kclayton@jps.net
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
