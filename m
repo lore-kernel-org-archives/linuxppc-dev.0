@@ -1,53 +1,41 @@
-Message-ID: <20000106122119.A2174@work.bitmover.com>
-Date: Thu, 6 Jan 2000 12:21:19 -0800
-From: Larry McVoy <lm@bitmover.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Benjamin Herrenschmidt <bh40@calva.net>
-Cc: jlquinn@us.ibm.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Building 2.3.35?
-References: <20000106171919.015242@mailhost.mipsys.com> <Pine.LNX.4.05.10001062117021.11905-100000@callisto.of.borg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.10001062117021.11905-100000@callisto.of.borg>; from Geert Uytterhoeven on Thu, Jan 06, 2000 at 09:17:25PM +0100
+Date: Thu, 6 Jan 2000 16:39:38 -0500
+From: brad allison <jackal@aol.net>
+To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>,
+        linuxppc-user@lists.linuxppc.org
+Subject: MOL error: newworld: elf32_getehdr failed 
+Message-ID: <Pine.SGI.4.00.10001061636570.18356-100000@osiris.office.aol.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm taking a more active role in keeping the PPC/linux/BK trees working.
-Please bug me on a regular basis if you have problems.  
 
-I'm in the middle of cloning the trees to bitkeeper.com and I'll be putting
-bitkeeper.com on the net as a big fast machine that I'll let anyone into to
-do work.
+I did a search on lists.linuxppc.org for elf32_getehdr and came up with
+nothing...
 
-On Thu, Jan 06, 2000 at 09:17:25PM +0100, Geert Uytterhoeven wrote:
-> 
-> On Thu, 6 Jan 2000, Benjamin Herrenschmidt wrote:
-> > On Thu, Jan 6, 2000,  <jlquinn@us.ibm.com> wrote:
-> > >2.3.35 is the first unstable kernel that I've put some effort in getting to
-> > >build.  I only get to play with stuff for 2-3 hours a week, so it's hard to
-> > >really do debugging at the rate of kernel development :-)
-> > >
-> > >How does merging of the vger tree into Linus' development kernel work right
-> > >now?
-> > 
-> > The main ppc tree, for now, is not vger but Cort's bitkeeper. (I don't
-> > know if Cort keeps vger updated).
-> 
-> Vger is no longer kept up-to-date, except through Linus (which isn't up-to-date
-> neither :-(
-> 
-> Gr{oetje,eeting}s,
-> --
-> Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
+So like has anyone else experienced this?  Know a fix?
+
+bash-2.03# /usr/bin/startmol
+Using MOL library directory /usr/lib/mol
+Mac-on-Linux 0.9.30 
+(C) 1997-1999 Samuel Rydh, <samuel@ibrium.se>
+Using resource file '/etc/molrc'
+in_security_mode 0
+MOL kernel module 1.1.30
+OF Device tree copied from kernel
+Loading OF device tree from 'oftrees/oftree.nw'
+32MB RAM mapped at 0x20000000
+newworld: elf32_getehdr failed
+cleaning up...
+Terminating threads...
+Done
+DONE
 
 -- 
----
-Larry McVoy            	   lm@bitmover.com           http://www.bitmover.com/lm 
+AOL SAPI    jackal@aol.net    jackal@kmfms.com    703.265.0908   AIM:jackal242 
+http://jackal.fudge.org        `I was never more certain of how far away I was 
+from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
