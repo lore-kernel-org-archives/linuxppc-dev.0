@@ -1,135 +1,69 @@
-Date: Wed, 7 Jun 2000 22:56:17 -0700
+Date: Wed, 7 Jun 2000 23:15:03 -0700
 From: Matt Porter <mmporter@home.com>
 To: Dan Malek <dan@netx4.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: QUERY: Embedded PowerPC Linux?
-Message-ID: <20000607225617.A11485@cx258813-a.chnd1.az.home.com>
-References: <39243D0C.68406C9D@lucent.com> <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com> <392C039D.D0645FBD@embeddededge.com>
+Message-ID: <20000607231503.B11485@cx258813-a.chnd1.az.home.com>
+References: <39243D0C.68406C9D@lucent.com> <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com> <39289187.3AEDEE47@chicago.avenew.com> <slrn8ik4mu.349.mmporter@liberty.chnd1.az.home.com> <392C0B5D.A87105C@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <392C039D.D0645FBD@embeddededge.com>; from dan@netx4.com on Wed, May 24, 2000 at 12:30:21PM -0400
+In-Reply-To: <392C0B5D.A87105C@embeddededge.com>; from dan@netx4.com on Wed, May 24, 2000 at 01:03:25PM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 24, 2000 at 12:30:21PM -0400, Dan Malek wrote:
-> Matt Porter wrote:
-> > I stub out all the chrp/pmac/prep garbage like "prom_init()" to make the
-> > linker happy and have a reasonablly slim kernel for 29F040 boot flashes.
+On Wed, May 24, 2000 at 01:03:25PM -0400, Dan Malek wrote:
+> I will continue to point out that the Linux kernel is not a boot rom.
+> You first argue that head.S is too complicated, and then want to make
+> it initialize your processor???  I don't get it.  This is not the place
+> for processor initialization beyond what is necessary for Linux to
+> operate.  There is software in arch/ppc/mbxboot that does a little
+> more processor initialization for embedded systems, but that still isn't
+> a boot rom.
+
+I think you got the attributions confused...Tom was trying use kernel/head.S
+to init the processor.
+
+> Further, writing processor initilization functions is very tedious. I
+> certainly don't want to be downloading a half megabyte or more of kernel
+> just to test a few processor initialization instructions.  When the
+> kernel doesn't boot, where do you start?
+
+I think it's even more difficult for 7xx than on 8xx/82xx stuff since
+varying bridges and potentially an ISA bridge (shudder) make it a completely
+different game on every system.
+
+> For example, if you write some minimal boot rom to initialize an 8xx
+> or 82xx processor, verify that you can read/write memory, you can boot
+> a Linux kernel very quickly.  If you have a boot rom, I can have a Linux
+> kernel running in a day or two by changing a couple of lines of code
+> in arch/ppc/mbxboot/embed_config.c.  Set up an environment for Linux
+> to run, and it does so very easily.
+
+No argument.  Obviously, having bootrom/monitor/firmware takes a _vast_
+amount of the difficult work out of a port.
+
+> > >I think we need to separate the CPU from the machine....
+> >
+> > It's being worked on as far as making a framework for non-chrp/pmac/prep
+> > 6xx/7xx/74xx ports.  There just hasn't been a real pressing need until
+> > lately.
 >
-> We should try to find some common compressed boot image as well, or
-> better define why they are different.  I started the 'mbxboot' long
-> ago with the 8xx processors, and it has proved useful for the 8260
-> as well.  It seems to be the place where all of the highly integrated
-> processors boot because of their unique I/O devices.  The 'coffboot'
-> directory is where all of the standard I/O (like PCI with 165xx serial
-> ports) boards exist.
+> The CPU and system/board are separate.  Some boards imply a particular
+> CPU, or vice versa.  You have to specify both for the configuration,
+> and depending upon which you ask first, you can reduce the selection
+> set for the latter.  Updating the configuration choices is just part
+> of adding a new board or processor.
 
-I think an embedded 6xx/7xx bootloader will remain separate since
-most of these systems fall into mapping something close to PReP or CHRP
-(even if they have a flexible bridge, unlike the Mot. Semi ones).  Off
-topic: any chance we can change the "mbxboot" name?  It's kinda funny
-since MBX is EOLed or on it's way to being EOLed.
+So it seems on the surface, but I was referring to shortcuts made where
+ifndef 8XX conditionals are used to conditionally build things like
+the drivers/macintosh/ archive when that is not processor specific action.
+Similar things happen in the Makefiles to achieve a slimmer kernel.
 
-Hmmm...prepboot has 165xx support as well...which is what I've adapted for
-my ports.
-
-> > I'm adding a (rather simplistic) PCI autoconfig routine to the pci_init()
-> > call since a firmware/monitor is not always available or desired.
->
-> Is this the right place for it, or should it be done prior to calling
-> the Linux kernel?  I don't really know.  I have done this in both
-> places, each has advantages and disadvantages.  For further discussion
-
-I'm curious, what do you see as the disadvantages to enumerating the bus
-late in the game?  I like just hooking up my indirect config space method
-and using those calls rather than building something new the independent
-bootloader.
-
-> I am even considering a "PCI emulation" set of functions.  There are
-> more and more boards with PCI type I/O devices, but attached to the
-> processor busses instead of through a PCI bridge.  It would be nice to
-> use the standard PCI drivers, but right now I have to hack up something
-> custom because the PCI configuration functions don't make sense.  I
-> think it would be useful to have these functions return something useful
-> and use the standard driver.  Anyone else see this type of board design?
-
-Sounds neat.
-
-> > .......  The only intrusive thing I add is is a
-> > CONFIG_EMBEDDED which arch/ppc/kernel/Makefile keys off of to not link
->
-> Thank you.  That seems like a good thing.
->
-> > One sore point is that MACH_<board> is defined as a single bit flag so we
-> > will run out of those with the many MACH types that want to be in the
-> > kernel in the near future.  That should probably get fixed up to something
-> > with more longevity.
->
-> I could never understand why this was a bit flag.  I think it would
-> work equally well as a unique number, preferably monotonically increasing.
-> These are used in switch statements and tested for their value.  I
-> don't remember anything like 'if (_machine & MACH_<board>)'.
-
-Exactly.  I can easily see over 32 MACH_<board>'s in the next year.
-
-> > The other thing that needs to happen is that the directory structure
-> > will need a reorg to avoid clutter
->
-> Think very carefully about this.  A while back we broke head.S into
-> head.S and head_8xx.S to avoid "clutter".  I wish we had not done that
-> now.  There have been changes in the memory management and context
-> switching that are done in head.S, and not to head_8xx.S (or attempted
-> and not completed).  When generic changes are made, you have to visit
-> all of the files affected and it is easy to miss them or ignore your
-> duty to do so when they are separated.  I am all for avoiding the
-> clutter in the files, but if you are in there making changes it should
-> serve as a reminder that you are affecting many things you may have
-> not considered.
-
-Whoops.  I should have elaborated a bit more.  I've discussed this in
-detail with Cort a while back and he seemed receptive to my idea of a
-mostly cosmetic restructuring (it's at least a first phase).
-
-Since I've only done 6xx/7xx work I'm not real sure where the 8xx stuff
-fits into my view but the 6xx/7xx can probably be changed independently
-for the first cut at this.
-
-I'm basically looking at reorganizing directories plus the necessary
-Makefile changes to reduce the klutter in arch/ppc/kernel/
-
-It would now have something like:
-
-arch/ppc/kernel/
-		chrp
-		gemini
-		pmac
-		prep
-		<port a>
-		<port b>
-
-The generic stuff would either stay in kernel/ or move to kernel/common/
-Since all of this is board/arch specific code, there is no maintainence
-concern like when you split head.S for a different processor architecture.
-
-I'm thinking that bootloaders should possibly move a little bit but
-they're the least of my concern.
-
-The next thing that goes with this is to free some of the independent
-code from board specific files.  A good example is the m48t35 RTC driver
-that is buried in the gemini_time.c.  Why not make it obvious to a
-developer that the building block already exists?  I've already done
-this for my current project but there are more things like that.
-
-Next it would be great to abstract the find_end_of_memory calls from
-setup.c so it's not necessary to add a new condition to call a board
-specific routine if the kernel. Same thing in mm/init.c where the BATS
-are set on non-8xx's.  The idea is to get to a point where it's only
-necessary to add a few make rules and a directory of implement calls
-for an existing processor family.
-
-In between deadlines I'm experimenting with some different layouts so
-eventually I'll pass something more solid in front of folks.
+The point being that the approach taken by the gemini architecture boards
+is not a great one since it simply tacks it's objects onto the bloated
+chrp/pmac/prep kernel image.  Not pretty and not a suitable approach
+when many 6xx/7xx boards need to boot directly from a 512KB flash.
 
 --
 Matt Porter
