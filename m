@@ -1,46 +1,41 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-Id: <5.0.2.1.2.20010306110653.02979ea8@mail.munich.netsurf.de>
-Date: Tue, 06 Mar 2001 11:22:43 +0100
-To: Wolfgang Denk <wd@denx.de>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: "unhandled relocation type 18" ??? 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20010306080226.6846A287E8@denx.denx.de>
-References: <Your message of "Tue, 06 Mar 2001 08:25:41 +0100." <Pine.LNX.4.05.10103060824030.29713-100000@callisto.of.borg>
+From: pnilesh@in.ibm.com
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <CA256A07.003DA9D3.00@d73mta05.au.ibm.com>
+Date: Tue, 6 Mar 2001 16:34:04 +0530
+Subject: strange sigaction ()
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 09:02 06.03.2001, Wolfgang Denk wrote:
+I am seeing a strange problem with sigaction on powerpc.
 
->In message <Pine.LNX.4.05.10103060824030.29713-100000@callisto.of.borg>
->you wrote:
-> > On Mon, 5 Mar 2001, Wolfgang Denk wrote:
-> > > when trying to "insmod" a  kernel  module  that  uses  floating-point
-> > > functions  like  "sin", we get error messages:
-> > >
-> > >     unhandled relocation type 18
-> >
-> > Does it also complain about a missing symbol for `sin'?
->
->No, it does not.
->
->We made sure to link the module with  the  math  library  to  resolve
->those references.
->
->But we still get those  error  messages;  the  first  is  always  for
->lshrdi3  -  which is linked with our module (but also provided by the
->kernel - could there be any problems?), and then we get a  long  list
->of errors for pack and unpack functions - whatever they are.
+static struct sigaction act;
+static void handler (int,siginfo_t *,void *);
+main ()
+{
+sigaction (SIGALRM,&act,NULL);
+alarm (1);
+sleep (2);
+}
 
-18 is a PLTREL24 relocation, so a b/bl has to be involved, but it should be
-a REL24 relocation, the PLT usage points to compilation of a module with
--fpic/-fPIC?
+void handler (int x, siginfo_t *s,void *v)
+{
+    printf ("si_signo   = %d, si_code  = %d, si_errno  = %d\n",s->si_signo,
+s->si_code, s->si_errno);
+}
 
-Franz.
+This program gives meaningful values on Linux Intel Redhat.
+On Apple Dual G4 PowerPC I am getting junk values
+si_signo = 805464356
+si_errno = 805464640
+si_code = 21
+
+I dont know what is happening.
+Please educate me.
+
+Nilesh
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
