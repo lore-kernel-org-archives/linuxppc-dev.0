@@ -1,34 +1,35 @@
-Date: Thu, 28 Feb 2002 13:27:41 +0100 (MET)
-From: Gerard Basler <gbasler@ee.ethz.ch>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Bug in drivers/i2c/i2c-algo-ppc405.c ???
-Message-ID: <Pine.GSO.4.43.0202281312050.17976-100000@tardis-a01.ee.ethz.ch>
+Message-ID: <3C7E3471.4080708@capflow.com>
+Date: Thu, 28 Feb 2002 14:45:21 +0100
+From: Laurent Pinchart <laurent.pinchart@capflow.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Development tools version
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Reply-To: laurent.pinchart@capflow.com
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear list,
+Hi everybody.
 
-Does anybody use the i2c driver for ppc405?
-These drivers are not part of the standard linux kernel, I found them at
-www.netroedge.com/~lm78 (lm_sensors project). (Why?)
-I think there's a bug in i2c-algo-ppc405.c
-The function iic_xfer (ppc405 implementation of i2c_transfer) returns
-always the number of bytes read / written
-of the last sub-transaction.
-I think it's supposed to return the number of successfully completed
-transfers instead.
-Just now I can't find something in the documentation on this topic but
-I'm sure I've read that somewhere...
-(Other drivers like i2c-alg-pcf.c are implemented in this manner)
+I searched the web for some information about this, but haven't been
+able to find any answer to my question.
 
-Perhaps I should better contact the authors... I don't know what the
-usual proceeding is concerning such things.
+I'd appreciate if someone could give me an advice about which version of
+the different development tools (namely binutils & gcc), and which
+version of the C library (either glibc or newlib) I should use for a
+MPC860T processor.
 
-Best Regards,
-Gérard
+I currently use the Hard Hat Journeyman Edition (and recompiled
+everything from the rpm sources), but was wondering if it would be
+better to stick with it or use a newer version of some tools.
+
+I suppose that GCC 3.x is not ready for the MPC8xx yet (but I might be
+wrong).
+
+Thanks in advance for your help.
+
+Laurent Pinchart.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
