@@ -1,18 +1,33 @@
-Return-Path: <ncaruso@irobot.com>
-Received: from irobot.com (brick.irobot.com [66.238.211.199])
-	by ozlabs.org (Postfix) with ESMTP id AB5EF67ADF
+Return-Path: <johndavi@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.129])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "e32.co.us.ibm.com",
+	Issuer "Network Services" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1E99C67A6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Feb 2005 07:34:41 +1100 (EST)
+	Thu, 10 Feb 2005 07:53:07 +1100 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e31.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j19Kr1H5411940
+	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Feb 2005 15:53:01 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j19Kr1X5264826
+	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Feb 2005 13:53:01 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
+	j19Kr00V016682
+	for <linuxppc-embedded@ozlabs.org>; Wed, 9 Feb 2005 13:53:01 -0700
+In-Reply-To: <p0611041bbe2f959b9dda@mail.iridescent.org>
+To: "Lawrence E. Bakst" <ml@iridescent.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C50EE5.161C0EE5"
-Date: Wed, 9 Feb 2005 15:22:33 -0500
-Message-ID: <712A2DEC228C7448978CBD7A7AD5B090592CB4@fever.wardrobe.irobot.com>
-From: "Caruso, Nick" <ncaruso@irobot.com>
-To: "Jerry Van Baren" <gerald.vanbaren@smiths-aerospace.com>,
-	"Mark Chambers" <markc@mail.com>
+Message-ID: <OF903B0110.E2AB6D67-ON87256FA3.00726A1F-85256FA3.0073324C@us.ibm.com>
+From: John F Davis <johndavi@us.ibm.com>
+Date: Wed, 9 Feb 2005 15:53:00 -0500
+Content-Type: text/plain; charset="US-ASCII"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC5200 JTAG/BDM Flash Burning
+Subject: Re: ppc405 core, VIA VT82C686A chipset, linux_2.4.22_pre5,
+ and IDE DMA woes
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,72 +38,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+"Lawrence E. Bakst" <ml@iridescent.org> 
+02/09/2005 05:34 AM
 
-------_=_NextPart_001_01C50EE5.161C0EE5
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+To
+John F Davis/Raleigh/IBM@ibmus, linuxppc-embedded@ozlabs.org
+cc
 
-Well, I said this privately, but I guess I'll say it in public as well - =
-we like the BDI 2000.
-
-I don't have a huge amount of experience with it, but I can vouch that =
-it works fine with both the lite5200 and our custom MPC5200 board.  We =
-also bought ours from Ultimate Solutions.  (Hi Fahd!)
-
-  best regards,
-     Nick Caruso
+Subject
+Re: ppc405 core, VIA VT82C686A chipset, linux_2.4.22_pre5,      and IDE 
+DMA woes
 
 
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org on behalf of Jerry Van Baren
-Sent: Wed 2/9/2005 3:09 PM
 
-P.S. The BDI2000 gets my endorsement (disclaimer: my experience is with=20
-the 82xx family, not the 5200).  You can pay more, but why settle for =
-less?
 
-------_=_NextPart_001_01C50EE5.161C0EE5
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">
-<TITLE>RE: MPC5200 JTAG/BDM Flash Burning</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
 
-<P><FONT SIZE=3D2>Well, I said this privately, but I guess I'll say it =
-in public as well - we like the BDI 2000.<BR>
-<BR>
-I don't have a huge amount of experience with it, but I can vouch that =
-it works fine with both the lite5200 and our custom MPC5200 board.&nbsp; =
-We also bought ours from Ultimate Solutions.&nbsp; (Hi Fahd!)<BR>
-<BR>
-&nbsp; best regards,<BR>
-&nbsp;&nbsp;&nbsp;&nbsp; Nick Caruso<BR>
-<BR>
-<BR>
------Original Message-----<BR>
-From: linuxppc-embedded-bounces@ozlabs.org on behalf of Jerry Van =
-Baren<BR>
-Sent: Wed 2/9/2005 3:09 PM<BR>
-<BR>
-P.S. The BDI2000 gets my endorsement (disclaimer: my experience is =
-with<BR>
-the 82xx family, not the 5200).&nbsp; You can pay more, but why settle =
-for less?<BR>
-</FONT>
-</P>
+1. Can you say exactly which 405 core you are using?
+D4V6
 
-</BODY>
-</HTML>
-------_=_NextPart_001_01C50EE5.161C0EE5--
+2. Is it Xilinx?
+No
+
+3. Have you read all the eratta for your core?
+Yes
+
+4. How is the VIA VT82C686A hooked to the 405? Via a bus mastering EBC?
+
+PCI PLB Macro
+Best,
+
+leb
