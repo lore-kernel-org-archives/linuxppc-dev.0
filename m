@@ -1,29 +1,34 @@
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 29 Oct 2001 09:21:42 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Ethan Benson <erbenson@alaska.net>
 Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Sound on G4 tower, success
-References: <85r8rtcnzj.fsf@junk.nocrew.org>
-	<20011026120847.6797@smtp.adsl.oleane.com>
-From: Lars Brinkhoff <lars.spam@nocrew.org>
-Date: 29 Oct 2001 10:03:12 +0100
-In-Reply-To: <20011026120847.6797@smtp.adsl.oleane.com>
-Message-ID: <85pu766cof.fsf@junk.nocrew.org>
+Subject: Re: GeForce on PPC == _no work_
+In-Reply-To: <20011028201745.F32547@plato.local.lan>
+Message-ID: <Pine.BSF.4.32.0110290915570.22070-100000@shell.unixbox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> Can you tell me if the version of dmasound in my current rsync
-> helps getting sound our of speaker ? It should mute the speaker
-> when the jack is plugged and unmute it when unplugged. Can you
-> verify this behaviour ?
+On Sun, 28 Oct 2001, Ethan Benson wrote:
 
-A freshly rsynced tree works perfectly (apart from the config.in
-thing).  Yes, the speaker mutes and unmutes as intended.
+>
+> > also FreeBSD people, since they also can't use nVidia's binary drivers. I
+> > hope he has some success.
+>
+> don't hold your breath, you might suffocate.
 
---
-Lars Brinkhoff          http://lars.nocrew.org/     Linux, GCC, PDP-10
-Brinkhoff Consulting    http://www.brinkhoff.se/    programming
+Hmm, its nice to see such pessimism from the community.  Perhaps instead,
+you could try helping, but I suppose that's too much to ask from some.
+
+Anyhow, companies *do* change their policies with the proper polite
+lobbying.  This includes nVidia.
+
+> --
+> Ethan Benson
+
+ani
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
