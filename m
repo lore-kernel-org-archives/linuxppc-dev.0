@@ -1,37 +1,39 @@
-From: phandel@cise.ufl.edu
-Date: Thu, 7 Oct 1999 11:37:06 -0400 (EDT)
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Takashi Oe <toe@unlserve.unl.edu>, Benjamin Herrenschmidt <bh40@calva.net>,
-        Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-Subject: Re: update on macserial/DMA
-In-Reply-To: <4.2.1.9.19991007113857.00de0c00@mail.munich.netsurf.de>
-Message-ID: <Pine.LNX.4.10.9910071135260.2157-100000@dialup-l116.cise.ufl.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.10.9910061626290.10804-100000@opus.bloom.county>
+Date: Thu, 7 Oct 1999 18:15:41 +0200
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: ADB probing
+Message-Id: <19991007181541.031811@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 7 Oct 1999, Franz Sirl wrote:
+On Wed, Oct 6, 1999, Tom Rini <trini@kernel.crashing.org> wrote:
 
-> Wow, this (well, with slight mods for 2.3.18vger) works like a charm for me 
-> on my slooow 7200/75. Now heavy disk usage doesn't influence the transfer 
-> performance anymore and the error rate is extremely low. This patch should 
-> be added to the kernel sources ASAP IMHO.
+>I've run into a wierd problem with ADB stuff, and I wonder if anyone has
+>an idea on how to work/fix this.  What I'm trying to do right now is fix
+>up kudzu so it can probe for things on the ADB bus.  Right now it does
+>what all the other old config tools did, and pokes at /dev/adbmouse.  The
+>problem is right now this works if there's any adb device present (one of
+>the machines I checked only has an adb kbd, tho adbmouse suport is
+>compiled in).  Also, is there any way to see if the machine has an adb
+>keyboard installed?  Thanks..
 
-Same here - I used to have to run at a port rate of 56k; now I have either
-0 or 1 errors/overruns after hours of surfing/downloading at a port rate
-of 230.4k! (Using Paul's rsync 2.2.12)  Thanks a bunch, Takashi!
-
-
-Thanks,
-Peter
+Look at my trackpad tool source code, you'll find an example of probing
+the devices. That's not an ideal way since part of the "device type"
+information is the original address of the device before relocation, and
+you can't ask the device about this. You should be able to handle most
+cases with just the handlerID, but I'll look into adding a couple of
+ioctls to /dev/adb so you can also get the original address. (I'll do
+this next week end, ping me if I forget, I'm doing too many things at the
+same time those last few weeks).
 
 -- 
-Peter F. Handel          "[The anti-Christ] also forced everyone, small and
-phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
-www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
-FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
