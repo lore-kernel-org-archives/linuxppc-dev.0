@@ -1,77 +1,118 @@
-Date: Thu, 12 Oct 2000 20:44:30 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber <huber@mclx.com>,
-        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Date: Thu, 12 Oct 2000 19:57:08 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: dual head r128
-In-Reply-To: <39E5F33D.8166A4DD@student.ethz.ch>
-Message-ID: <Pine.LNX.4.21.0010122029001.1217-100000@idd-01.imbc.gr>
+In-Reply-To: <19340906102959.14429@192.168.1.2>
+Message-ID: <Pine.HPX.4.10.10010121921420.16113-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 12 Oct 2000, Michel [iso-8859-1] Dänzer wrote:
+On Thu, 12 Oct 2000, Benjamin Herrenschmidt wrote:
 
-> Kostas Gewrgiou wrote:
-> >
-> > Kevin Hendricks patches from Ani's tree will fix the memory/clock values
-> > for OF cards only, the patch breaks the calculations for the x86 cards
-> > (thats the reason why its not in the xfree cvs),
+> Note to linux-kenrel readers: This discussion is the Nth attempt to find
+> a solution to handle both legacy IOs and PCI IOs on machines with several
+> IO busses memory mapped at different locations in the CPU space.
+
+Yes, I know, but I still suspect that it is a more acceptable solution.
+How many ISA drivers are there in real use ?
+
+By decreasing order of importance (others might disagree):
+
+- 8259 (yuck) and RTC/CMOS (always handled by architecture specific code
+  AFAICT so it can be done in the way we want)
+- serial
+- DMA (used by floppy, perhaps parallel)
+- floppy
+- parallel
+- sound ? (I don't know anything about sound, none of my machines have
+  sound, I hate sound in computers and all the multimierda stuff, but most
+  people don't agree with me so I put it here)
+- old legacy devices like modems, SCSI (I have an ISA-SCSI at home)
+
+I don't know where to put RTC/CMOS on this scale, but it should be close
+to the top.
+
+> >No please, is there anybody bloat-conscious on this damned list ? Burying
+> >more and more code inside each {in,out}[bwl] is not the solution.
 >
-> But there is an #ifdef _powerpc_ so it can't break x86 machines?
+> Well, that is pretty small overhead, and probably ridiculous compared to
+> the overhead of the IO itself. Most fast devices use MMIO anyway.
 
-Yes but it *does* break x86 cards used in ppc machines.
-(linux/ppc isn't the only ppc os supported in xfree and they won't
-be happy if we break things for them)
+The problem is not the speed, it is the bloat. And increasing icache
+footprint may have impressive side effects. Given the average time
+between I/O the code will no more be in the cache when it is executed
+again, so it will be fetched from memory. Minimizing icache footprint
+is being nice to applications by not thrashing their cache (especially
+true for interrupt code). See the mail from David too. OTOH, the first
+thing to do is to revert the eieio->sync patch, first it is wrong, second
+it will be a killer on SMP machines with 4 or more processors.
 
-> > The new r128 code needs to read extra values from the rom for the flatpanel
-> > setup as well (Michel knows more about this) which we will have to find a
-> > solution too.
+> The problem is that whatever solution someone propose, there is _always_
+> somebody to reject it.
+
+Let us wait and see. This solution can be adapted little by little. As
+soon as you have the major devices working the other drivers can be
+upgraded gradually.
+
+> >Just define a macro ISA_PORT or something like this and update the kernel
+> >to replace all the in/out to fixed ports to do in/out(ISA_PORT(n)). If you
+> >don't do it you'll get a nice panic so you'll find all the places quite
+> >fast.
 >
-> And it will be hard. Rumour has it that the correct values are in MacOS and
-> only Apple knows how to do it right, not even ATI. The default values work
-> more or less on my Pismo, but there is always the danger of damaging the
-> panel.
+> That basically mean making different macros for ISA in/out and PCI in/
+> out. I've proposed this several time, but it requires changes to the
+> common code, and all I got when talking about this was flames from x86 people.
 
-Damn thats not good :(
+No it is not the same, it means that we acknowledge that ISA and PCI are
+too entangled on x86 to use different functions.
 
-> Note that the FP code is only needed for stretching modes with a lower
-> resolution than the panel's, just disabling it altogether works fine for the
-> full resolution.
+> >PCI I/O resources will have to be kernel virtual, physical is impossible
+> >with PreP if we want to lift the 2Gbuser space restriction (PreP I/O is
+> >from 2 to 3 Gb physical and the first thing to do is to reallocate devices
+> >which use it since most firmware use it too liberally, like one device
+> >every ... 256Mb). There are other and better ways to increase user
+> >available virtual space, however. And anyway I don't want any stinking add
+> >in each in/out macro.
 >
-> > The current test only checks if a rom is present not if a bios or OF segment
-> > is there, it needs to be fixed to check that its really reading from a
-> > bios rom and not from something else (OF).
+> Well, in 2.4 we can easily reassign PCI IOs if we configure the bridge
+> with proper resources. If all goes well, my new PCI code should handle
+> that fine (should be ready this week-end).
 >
-> So this code from the current X CVS:
+> >Indeed, this is too awkward (is tere no way to redirect only the VGA
+> >part of the legacy I/O space ? That's what the PCI-PCI bridges do, but
+> >I've not yet used a single machine with AGP so I'm ignorant).
 >
->     R128ReadBIOS(0x0000, info->VBIOS, R128_VBIOS_SIZE);
->     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {
->         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
->                    "Video BIOS not detected in PCI space!\n");
+> No, most bridges used on macs can't do that. In fact, AFAIK, it's not
+> possible to access the ISA memory space neither on those machines (on
+> UniN, I can't generate memory cycles at lower address than 0x80000000).
+
+Ok, than it's impossible to put a good old VGA and initialize it
+with the help of an emulator. It also means that UniN is not CHRP
+compliant but we all suspected that.
+
+> My "pet" solution would be to have all legacy drivers request an IO base
+> this way
 >
-> only checks if there is a ROM, not if it's a BIOS?
+>   base = isa_get_IO_base(legacy_addr);
+>
+> The isa_get_IO_base function could then be "tweaked" to recognize known
+> legacy addresses and return different bases. (There might still be
+> problems with VGA vs. parallell, I don't know x86 world well enough to be
+> sure).
 
-Right, from the pci spec the table is something like this
-Offset    Length    Value    Description
-0h          1        55h    ROM Signature, byte 1
-1h          1        AAh    ROM Signature, byte 2
-...
-18h-19h     2        xx     Pointer to PCI Data Structure
+I hate this, if VGA is basically the only problem, instead of using the
+ISA_PORT in the drivers, use another macro, something like VGA_PORT(n).
+This is reasonable if the problem is VGA versus the rest, you know what
+you want to access in the driver, and which kind of device you have.
+Other legacy drivers do not have to bother with it, they'll never have to
+go to AGP.
 
-PCI Data Structure
-Offset    Length  Description
-...
-14           1    Code Type
-..
-
-Code Type is 0 for bios and 1 for OF
-
-So you'll have to add one more test to check for BIOS/OF
-
- Kostas
+	Regards,
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
